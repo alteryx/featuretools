@@ -1,0 +1,149 @@
+from featuretools import variable_types, Relationship
+from ..testing_utils import make_ecommerce_entityset
+import pytest
+
+
+@pytest.fixture
+def es():
+    return make_ecommerce_entityset()
+
+
+@pytest.fixture
+def glob_es():
+    return make_ecommerce_entityset(split_by_time=True)
+
+
+@pytest.fixture
+def gzip_es():
+    return make_ecommerce_entityset(compressed=True)
+
+
+@pytest.fixture
+def gzip_glob_es():
+    return make_ecommerce_entityset(split_by_time=True, compressed=True)
+
+
+def test_cannot_readd_relationships_that_already_exists(es):
+    before_len = len(es.relationships)
+    es.add_relationship(es.relationships[0])
+    after_len = len(es.relationships)
+    assert before_len == after_len
+
+
+def test_add_relationships_convert_type(es):
+    for r in es.relationships:
+        try:
+            assert type(r.parent_variable) == variable_types.Index
+            assert type(r.child_variable) == variable_types.Id
+        except:
+            assert type(r.parent_variable) == variable_types.Index
+            assert type(r.child_variable) == variable_types.Id
+
+
+def test_get_forward_entities(es):
+    entities = es.get_forward_entities('log')
+    assert entities == set(['sessions', 'products'])
+
+
+def test_get_backward_entities(es):
+    entities = es.get_backward_entities('sessions')
+    assert entities == set(['log'])
+
+
+def test_get_forward_entities_deep(es):
+    entities = es.get_forward_entities('log', 'deep')
+    assert entities == set(['sessions', 'customers', 'products', 'regions', 'cohorts'])
+
+
+def test_get_backward_entities_deep(es):
+    entities = es.get_backward_entities('customers', deep=True)
+    assert entities == set(['log', 'sessions'])
+
+
+def test_get_forward_relationships(es):
+    relationships = es.get_forward_relationships('log')
+    assert len(relationships) == 2
+    assert relationships[0].parent_entity.id == 'sessions'
+    assert relationships[0].child_entity.id == 'log'
+    assert relationships[1].parent_entity.id == 'products'
+    assert relationships[1].child_entity.id == 'log'
+
+    relationships = es.get_forward_relationships('sessions')
+    assert len(relationships) == 1
+    assert relationships[0].parent_entity.id == 'customers'
+    assert relationships[0].child_entity.id == 'sessions'
+
+
+def test_get_backward_relationships(es):
+    relationships = es.get_backward_relationships('sessions')
+    assert len(relationships) == 1
+    assert relationships[0].parent_entity.id == 'sessions'
+    assert relationships[0].child_entity.id == 'log'
+
+    relationships = es.get_backward_relationships('customers')
+    assert len(relationships) == 1
+    assert relationships[0].parent_entity.id == 'customers'
+    assert relationships[0].child_entity.id == 'sessions'
+
+
+def test_find_forward_path(es):
+    path = es.find_forward_path('log', 'customers')
+
+    assert len(path) == 2
+    assert path[0].child_entity.id == 'log'
+    assert path[0].parent_entity.id == 'sessions'
+    assert path[1].child_entity.id == 'sessions'
+    assert path[1].parent_entity.id == 'customers'
+
+
+def test_find_backward_path(es):
+    path = es.find_backward_path('customers', 'log')
+
+    assert len(path) == 2
+    assert path[0].child_entity.id == 'sessions'
+    assert path[0].parent_entity.id == 'customers'
+    assert path[1].child_entity.id == 'log'
+    assert path[1].parent_entity.id == 'sessions'
+
+
+def test_find_path(es):
+    path, forward = es.find_path('products', 'customers',
+                                 include_num_forward=True)
+
+    assert len(path) == 3
+    assert forward == 2
+    assert path[0].child_entity.id == 'log'
+    assert path[0].parent_entity.id == 'products'
+    assert path[1].child_entity.id == 'log'
+    assert path[1].parent_entity.id == 'sessions'
+    assert path[2].child_entity.id == 'sessions'
+    assert path[2].parent_entity.id == 'customers'
+
+
+def test_raise_key_error_missing_entity(es):
+    with pytest.raises(KeyError):
+        es["this entity doesn't exist"]
+
+
+def test_add_parent_not_index_varible(es):
+    with pytest.raises(AttributeError):
+        es.add_relationship(Relationship(es['regions']['language'],
+                                         es['customers']['region_id']))
+
+
+def test_glob_entityset(es, glob_es):
+    df_1 = es.entity_stores['log'].df
+    df_2 = glob_es.entity_stores['log'].df
+    assert df_1.equals(df_2)
+
+
+def test_gzip_entityset(es, gzip_es):
+    df_1 = es.entity_stores['log'].df
+    df_2 = gzip_es.entity_stores['log'].df
+    assert df_1.equals(df_2)
+
+
+def test_gzip_glob_entityset(es, gzip_glob_es):
+    df_1 = es.entity_stores['log'].df
+    df_2 = gzip_glob_es.entity_stores['log'].df
+    assert df_1.equals(df_2)

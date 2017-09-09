@@ -1,0 +1,4 @@
+boolean,category,id,number,time
+True,a,0,4,2011-04-09 10:31:00
+False,b,1,5,2011-04-09 10:31:03
+True,a,2,6,2011-04-09 10:31:06

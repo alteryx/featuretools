@@ -1,0 +1,24 @@
+## Customize the test machine
+machine:
+  timezone:
+    America/New_York # Set the timezone
+
+  # Add some environment variables
+  environment:
+    CIRCLE_ENV: test
+
+## Customize database setup
+dependencies:
+  # We need to manually build (and cache) a more modern libhdf5 than
+  # ubuntu precise makes available via apt---there are bugs that
+  # affect us, in libhdf5 1.8.4
+  pre:
+    - pip install -U pip
+    - pip install -e .
+    - pip install -r dev-requirements.txt
+
+
+## Customize test commands
+test:
+  override:
+    - python setup.py test --addopts --boxed

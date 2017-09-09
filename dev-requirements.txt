@@ -1,0 +1,8 @@
+pytest>=3.0.1
+Sphinx==1.4.1
+sphinx_rtd_theme==0.1.9
+nbsphinx==0.2.13
+mock==2.0.0
+pytest-xdist>=1.15.0
+jupyter==1.0.0
+rst2pdf==0.93
