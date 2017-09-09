@@ -3,7 +3,7 @@
 Changelog
 ---------
 
-**v0.1.9** September 1, 2017
+**v0.1.9** September 8, 2017
     * Documentation improvements
     * New ``featuretools.demo.load_mock_customer`` function
 
