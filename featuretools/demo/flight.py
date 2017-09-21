@@ -5,24 +5,25 @@ import pandas as pd
 import dask.dataframe as dd
 
 
-def load_flight(id='flight_dataset', nrows=None, force=False):
+def load_flight(entity_id='flight_dataset', nrows=None, force=False):
     '''
     Returns the flight dataset. Publishes the dataset if it has not been
     published before.
 
     Args:
-        id (str):  id of retail dataset on scheduler
+        entity_id (str):  id of retail dataset on scheduler
     '''
     demo_save_path = make_flight_pathname(nrows)
 
-    es = ft.EntitySet(id)
+    es = ft.EntitySet(entity_id)
     csv_s3 = "s3://featuretools-static/raw_flight_data/raw_csv_data/data_*.csv"
 
     if not os.path.isfile(demo_save_path) or force:
         df = dd.read_csv(csv_s3,
                          parse_dates=["FL_DATE"],
                          blocksize=None,
-                         low_memory=False)
+                         low_memory=False,
+                         storage_options={'anon': True})
         if nrows:
             df = df.head(n=nrows, npartitions=-1, compute=False)
         df = df.compute()
@@ -33,7 +34,9 @@ def load_flight(id='flight_dataset', nrows=None, force=False):
                      parse_dates=["FL_DATE"])
 
     df.drop("Unnamed: 27", axis=1, inplace=True)
+    df = df.reset_index(drop=True)
     df['trip_id'] = df.index.values
+
     es.entity_from_dataframe("trips",
                              index='trip_id',
                              dataframe=df,
