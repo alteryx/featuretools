@@ -322,7 +322,7 @@ class PrimitiveBase(FTBase):
 
     def isin(self, list_of_output):
         from transform_primitive import IsIn
-        return IsIn(self, list_of_output)
+        return IsIn(self, list_of_outputs=list_of_output)
 
     def is_null(self):
         """Compares feature to null by equality"""

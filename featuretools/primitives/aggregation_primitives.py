@@ -1,7 +1,7 @@
 from featuretools.variable_types import (Index, Numeric, Discrete, Categorical,
                                          Boolean, Ordinal, DatetimeTimeIndex, Variable)
 from featuretools.entityset import Entity
-from .aggregation_primitive_base import AggregationPrimitive
+from .aggregation_primitive_base import AggregationPrimitive, make_agg_primitive
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
@@ -10,6 +10,8 @@ from scipy.stats import skew
 
 # TODO: make sure get func gets numpy arrays not series
 #
+
+
 class Count(AggregationPrimitive):
     """Counts the number of non null values."""
     name = "count"
@@ -86,16 +88,24 @@ class Mode(AggregationPrimitive):
         return pd_mode
 
 
-class Min(AggregationPrimitive):
-    """Finds the minimum non-null value of a numeric feature."""
-    name = "min"
-    input_types =  [Numeric]
-    return_type = None
-    # max_stack_depth = 1
-    stack_on_self = False
+Min = make_agg_primitive(np.min,
+                         "min",
+                         [Numeric],
+                         None,
+                         stacks_on_self=False,
+                         description="Finds the minimum non-null value of a numeric feature.")
 
-    def get_function(self):
-        return np.min
+
+# class Min(AggregationPrimitive):
+#     """Finds the minimum non-null value of a numeric feature."""
+#     name = "min"
+#     input_types =  [Numeric]
+#     return_type = None
+#     # max_stack_depth = 1
+#     stack_on_self = False
+
+#     def get_function(self):
+#         return np.min
 
 
 class Max(AggregationPrimitive):
@@ -417,3 +427,76 @@ def find_dividend_by_unit(time):
         if round(div) == div:
             return dividend
     return 1
+
+
+# Mean = make_agg_primitive(np.nanmean,
+#                           name="Mean",
+#                           input_types=[Numeric],
+#                           return_type=Numeric,
+#                           description="Calculate means ignoring nan values")
+
+# Min = make_agg_primitive(np.min,
+#                          name="Min",
+#                          input_types=[Numeric],
+#                          return_type=Numeric,
+#                          stacks_on_self=False,
+#                          description="Finds the minimum non-null value of a numeric feature.")
+
+
+# Max = make_agg_primitive(np.max,
+#                          name="Max",
+#                          input_types=[Numeric],
+#                          return_type=Numeric,
+#                          stacks_on_self=False,
+#                          description="Finds the maximum non-null value of a numeric feature.")
+
+# Std = make_agg_primitive(np.std,
+#                          name="Std",
+#                          input_types=[Numeric],
+#                          return_type=Numeric,
+#                          stacks_on_self=False,
+#                          description="Finds the standard deviation of a numeric feature.")
+
+# Median = make_agg_primitive(np.median,
+#                             name="Median",
+#                             input_types=[Numeric],
+#                             return_type=Numeric,
+#                             stacks_on_self=False,
+#                             description="Finds the median")
+
+# def pd_mode(x):
+#     if x.mode().shape[0] == 0:
+#         return np.nan
+#     return x.mode().iloc[0]
+
+# Mode = make_agg_primitive(pd_mode,
+#                           name="Mode",
+#                           input_types=[Discrete],
+#                           return_type=None,
+#                           description="Finds the most common element in a categorical feature.")
+
+
+# def percent_true(x):
+#     if len(x) == 0:
+#         return np.nan
+#     return np.nan_to_num(x.values).sum(dtype=np.float) / len(x)
+
+# PercentTrue = make_agg_primitive(percent_true,
+#                                  name="PercentTrue",
+#                                  input_types=[Boolean],
+#                                  return_type=Numeric,
+#                                  description="Finds the percent of 'True' values in a boolean feature.")
+
+
+# Last = make_agg_primitive(lambda x: x.iloc[-1],
+#                           name="Last",
+#                           input_types=[Variable],
+#                           return_type=None,
+#                           description="Returns the last value")
+
+# NUnique = make_agg_primitive(lambda x: x.nunique(),
+#                              name="NUnique",
+#                              input_types=[Discrete],
+#                              return_type=Numeric,
+#                              stacks_on_self=False,
+#                              description="Returns the number of unique values")

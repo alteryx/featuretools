@@ -1,9 +1,10 @@
 import pytest
 
 from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis, check_stacking, match
-from featuretools.primitives import Feature, Count, Mean, Sum, TimeSinceLast, AggregationPrimitive, get_aggregation_primitives
-from featuretools.variable_types import (Discrete, Numeric, Categorical,
-                                         Ordinal, Boolean, Text, Datetime)
+from featuretools.primitives import Feature, Count, Mean, Sum, TimeSinceLast, AggregationPrimitive, get_aggregation_primitives, make_agg_primitive
+from featuretools.variable_types import (Discrete, Numeric, Categorical, Index,
+                                         Ordinal, Boolean, Text, Datetime,
+                                         Variable, DatetimeTimeIndex)
 from featuretools import calculate_feature_matrix
 from ..testing_utils import make_ecommerce_entityset, feature_with_name
 from datetime import datetime
@@ -97,6 +98,29 @@ def test_makes_count(es):
     assert feature_with_name(features, 'customers.COUNT(sessions)')
     assert feature_with_name(features, 'customers.regions.language')
     assert feature_with_name(features, 'customers.COUNT(log)')
+
+
+def test_count_null_and_make_agg_primitive(es):
+    def count_func(values, count_null=False):
+        if len(values) == 0:
+            return 0
+
+        if count_null:
+            values = values.fillna(0)
+
+        return values.count()
+
+    def count_get_name(self):
+        where_str = self._where_str()
+        use_prev_str = self._use_prev_str()
+        return u"COUNT(%s%s%s)" % (self.child_entity.name, where_str, use_prev_str)
+
+    Count = make_agg_primitive(count_func, "count", [[Index], [Variable]], Numeric,
+                               stacks_on_self=False, cls_attributes={"_get_name": count_get_name})
+    count_null = Count(es['log']['value'], es['sessions'], count_null=True)
+    feature_matrix = calculate_feature_matrix([count_null], entityset=es)
+    values = [5, 4, 1, 2, 3, 2]
+    assert (values == feature_matrix[count_null.get_name()]).all()
 
 
 def test_check_input_types(es, child, parent):
@@ -206,6 +230,20 @@ def test_init_and_name(es):
 
 
 def test_time_since_last(es):
+    f = TimeSinceLast(es["log"]["datetime"], es["customers"])
+    fm = calculate_feature_matrix([f], instance_ids=[0, 1, 2], cutoff_time=datetime(2015, 6, 8))
+
+    correct = [131376600, 131289600, 131287800]
+    # note: must round to nearest second
+    assert all(fm[f.get_name()].round().values == correct)
+
+
+def test_time_since_last_custom(es):
+    def time_since_last(values, time=None):
+        time_since = time - values.iloc[0]
+        return time_since.total_seconds()
+
+    TimeSinceLast = make_agg_primitive(time_since_last, "time_since_last", [DatetimeTimeIndex], Numeric, uses_calc_time=True)
     f = TimeSinceLast(es["log"]["datetime"], es["customers"])
     fm = calculate_feature_matrix([f], instance_ids=[0, 1, 2], cutoff_time=datetime(2015, 6, 8))
 

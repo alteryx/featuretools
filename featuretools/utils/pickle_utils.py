@@ -1,4 +1,4 @@
-import pickle
+import cloudpickle
 import featuretools as ft
 
 
@@ -87,10 +87,10 @@ def load_features(filepath, entityset):
 
 def save_obj_pickle(obj, filepath):
     with open(filepath, "wb") as out:
-        pickle.dump(obj, out)
+        cloudpickle.dump(obj, out)
 
 
 def load_pickle(filepath):
     filestream = open(filepath, "rb")
-    obj = pickle.load(filestream)
+    obj = cloudpickle.load(filestream)
     return obj

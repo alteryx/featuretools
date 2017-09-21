@@ -2,11 +2,12 @@ from .primitive_base import PrimitiveBase
 from featuretools.variable_types import (Discrete, Numeric, Categorical, Boolean,
                                          Ordinal, Text, Datetime, Timedelta, Variable,
                                          TimeIndex, DatetimeTimeIndex, Id)
-
 import datetime
 import os
 import pandas as pd
 import numpy as np
+import inspect
+import functools
 current_path = os.path.dirname(os.path.realpath(__file__))
 FEATURE_DATASETS = os.path.join(os.path.join(current_path, '..'), 'feature_datasets')
 
@@ -34,6 +35,56 @@ class TransformPrimitive(PrimitiveBase):
     @property
     def default_value(self):
         return self.base_features[0].default_value
+
+
+def make_trans_primitive(function, name, input_types, return_type,
+                         description='A custom transform primitive',
+                         cls_attributes=None,
+                         uses_calc_time=False):
+    # TODO: docstring
+    # dictionary that holds attributes for class
+    cls = {"__doc__": description}
+    if cls_attributes is not None:
+        cls.update(cls_attributes)
+
+    # creates the new class and set name and types
+    new_class = type(name, (TransformPrimitive,), cls)
+    new_class.name = name
+    new_class.input_types = input_types
+    new_class.return_type = return_type
+
+    # inspect function to see if there are keyword arguments
+    argspec = inspect.getargspec(function)
+    if argspec.defaults is not None:
+        kwargs = {}
+        for i, default in enumerate(argspec.defaults):
+            keyword = argspec.args[-1 * len(argspec.defaults) + i]
+            if keyword == 'time':
+                if not uses_calc_time:
+                    raise ValueError("'time' is a restricted keyword.  Please"
+                                     " use a different keyword.")
+                else:
+                    new_class.uses_calc_time = True
+            kwargs[keyword] = default
+        new_class.kwargs = kwargs
+
+        def new_class_init(self, *args, **kwargs):
+            self.base_features = [self._check_feature(f) for f in args]
+            if any(bf.expanding for bf in self.base_features):
+                self.expanding = True
+            assert len(set([f.entity for f in self.base_features])) == 1, \
+                "More than one entity for base features"
+            self.kwargs.update(kwargs)
+            self.partial = functools.partial(function, **self.kwargs)
+            super(TransformPrimitive, self).__init__(self.base_features[0].entity,
+                                                     self.base_features)
+        new_class.__init__ = new_class_init
+        new_class.get_function = lambda self: self.partial
+    else:
+        # creates a lambda function that returns function every time
+        new_class.get_function = lambda self, f=function: f
+
+    return new_class
 
 
 class IsNull(TransformPrimitive):
@@ -254,7 +305,7 @@ class IsIn(TransformPrimitive):
     For each value of the base feature, checks whether it is in a list that is provided.
     """
     name = "isin"
-    input_types =  [Variable]
+    input_types = [Variable]
     return_type = Boolean
 
     def __init__(self, base_feature, list_of_outputs=None):
@@ -310,7 +361,7 @@ class Diff(TransformPrimitive):
 
 class Not(TransformPrimitive):
     name = "not"
-    input_types =  [Boolean]
+    input_types = [Boolean]
     return_type = Boolean
 
     def _get_name(self):
@@ -336,3 +387,141 @@ def pd_time_unit(time_unit):
     def inner(pd_index):
         return getattr(pd_index, time_unit).values
     return inner
+
+
+# Primitives defined by custom primitive function
+# Day = make_trans_primitive(lambda array: pd_time_unit("day")(pd.DatetimeIndex(array)),
+#                            "day",
+#                            [Datetime],
+#                            Numeric,
+#                            "")
+# Hour = make_trans_primitive(lambda array: pd_time_unit("hour")(pd.DatetimeIndex(array)),
+#                             "hour",
+#                             [Datetime],
+#                             Numeric,
+#                             "")
+# Second = make_trans_primitive(lambda array: pd_time_unit("second")(pd.DatetimeIndex(array)),
+#                               "second",
+#                               [Datetime],
+#                               Numeric,
+#                               "")
+# Minute = make_trans_primitive(lambda array: pd_time_unit("minute")(pd.DatetimeIndex(array)),
+#                               "minute",
+#                               [Datetime],
+#                               Numeric,
+#                               "")
+# Week = make_trans_primitive(lambda array: pd_time_unit("week")(pd.DatetimeIndex(array)),
+#                             "week",
+#                             [Datetime],
+#                             Numeric,
+#                             "")
+# Month = make_trans_primitive(lambda array: pd_time_unit("month")(pd.DatetimeIndex(array)),
+#                              "month",
+#                              [Datetime],
+#                              Numeric,
+#                              "")
+# Year = make_trans_primitive(lambda array: pd_time_unit("year")(pd.DatetimeIndex(array)),
+#                             "year",
+#                             [Datetime],
+#                             Numeric,
+#                             "")
+# Weekend = make_trans_primitive(lambda df: pd_time_unit("weekday")(pd.DatetimeIndex(df)) > 4,
+#                                "Is_Weekend",
+#                                [Datetime],
+#                                Boolean,
+#                                "")
+# Weekday = make_trans_primitive(lambda df: pd_time_unit("weekday")(pd.DatetimeIndex(df)),
+#                                "weekday",
+#                                [Datetime],
+#                                Numeric,
+#                                "")
+# Days = make_trans_primitive(lambda array: pd_time_unit("days")(pd.TimedeltaIndex(array)),
+#                             "days",
+#                             [Timedelta],
+#                             Numeric,
+#                             "")
+# Hours = make_trans_primitive(lambda array: pd_time_unit("seconds")(pd.TimedeltaIndex(array)) / 3600.,
+#                              "hours",
+#                              [Timedelta],
+#                              Numeric,
+#                              "")
+# Seconds = make_trans_primitive(lambda array: pd_time_unit("seconds")(pd.TimedeltaIndex(array)),
+#                                "seconds",
+#                                [Timedelta],
+#                                Numeric,
+#                                "")
+# Minutes = make_trans_primitive(lambda array: pd_time_unit("seconds")(pd.TimedeltaIndex(array)) / 60.,
+#                                "minutes",
+#                                [Timedelta],
+#                                Numeric,
+#                                "")
+# Weeks = make_trans_primitive(lambda array: pd_time_unit("days")(pd.TimedeltaIndex(array)) / 7.,
+#                              "weeks",
+#                              [Timedelta],
+#                              Numeric,
+#                              "")
+# Months = make_trans_primitive(lambda array: pd_time_unit("days")(pd.TimedeltaIndex(array)) * (12. / 365),
+#                               "months",
+#                               [Timedelta],
+#                               Numeric,
+#                               "")
+# Years = make_trans_primitive(lambda array: pd_time_unit("days")(pd.TimedeltaIndex(array)) / 365,
+#                              "years",
+#                              [Timedelta],
+#                              Numeric,
+#                              "")
+# Not = make_trans_primitive(lambda array: np.logical_not(array),
+#                            "Not",
+#                            [Boolean],
+#                            Boolean,
+#                            cls_attributes={"_get_op": lambda self: "__not__",
+#                                            "_get_name": lambda self: u"NOT({})".format(self.base_features[0].get_name())})
+
+
+# def time_since_pd_diff(base_array, group_array):
+#     bf_name = 'base_feature'
+#     groupby = 'groupby'
+#     grouped_df = pd.DataFrame.from_dict({bf_name: base_array, groupby: group_array}).groupby(groupby).diff()
+#     return grouped_df[bf_name].apply(lambda x:
+#                                      x.total_seconds())
+
+
+# def time_since_init(self, time_index, group_feature):
+#     """Summary
+
+#     Args:
+#         base_feature (:class:`PrimitiveBase`): base feature
+#         group_feature (None, optional): variable or feature to group
+#             rows by before calculating diff
+
+#     """
+#     group_feature = self._check_feature(group_feature)
+#     assert issubclass(group_feature.variable_type, Discrete), \
+#         "group_feature must have a discrete variable_type"
+#     self.group_feature = group_feature
+#     super(TimeSincePrevious, self).__init__(time_index, group_feature)
+
+
+# def time_since_get_name(self):
+#     return u"time_since_previous_by_%s" % self.group_feature.get_name()
+
+
+# TimeSincePrevious = make_trans_primitive(time_since_pd_diff,
+#                                          "time_since_previous",
+#                                          [DatetimeTimeIndex, Id],
+#                                          Numeric,
+#                                          "Compute the time since the previous instance for each instance in a time indexed entity",
+#                                          cls_attributes={"__init__": time_since_init,
+#                                                          "_get_name": time_since_get_name})
+
+# Absolute = make_trans_primitive(lambda self, array: np.absolute(array),
+#                                 "absolute",
+#                                 [Numeric, Ordinal],
+#                                 Numeric,
+#                                 "Absolute value of base feature")
+
+# IsNull = make_trans_primitive(lambda array: pd.isnull(pd.Series(array)),
+#                               "is_null",
+#                               [Variable],
+#                               Boolean,
+#                               "For each value of base feature, return true if value is null")

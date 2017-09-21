@@ -8,7 +8,8 @@ from featuretools.primitives import (Day, Hour, Diff, Compare, Not,
                                      Divide, CumSum, CumCount, CumMin, CumMax,
                                      CumMean, Mod, And, Or, Negate, Sum,
                                      IsIn, Feature, IsNull, get_transform_primitives,
-                                     Mode, Percentile)
+                                     Mode, Percentile, make_trans_primitive)
+from featuretools.variable_types import Numeric, Datetime, Boolean, Variable
 from featuretools import Timedelta
 from ..testing_utils import make_ecommerce_entityset
 import numpy as np
@@ -807,7 +808,7 @@ def test_override_cmp(es):
 
 
 def test_isin_feat(es):
-    isin = IsIn(es['log']['product_id'], ["toothpaste", "coke zero"])
+    isin = IsIn(es['log']['product_id'], list_of_outputs=["toothpaste", "coke zero"])
     features = [isin]
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(range(8), None)
@@ -827,6 +828,50 @@ def test_isin_feat_other_syntax(es):
 
 
 def test_isin_feat_other_syntax_int(es):
+    isin = Feature(es['log']['value']).isin([5, 10])
+    features = [isin]
+    pandas_backend = PandasBackend(es, features)
+    df = pandas_backend.calculate_all_features(range(8), None)
+    true = [False, True, True, False, False, False, False, False]
+    v = df[isin.get_name()].values.tolist()
+    assert true == v
+
+
+def test_isin_feat_custom(es):
+    def pd_is_in(array, list_of_outputs=None):
+        if list_of_outputs is None:
+            list_of_outputs = []
+        return pd.Series(array).isin(list_of_outputs)
+
+    def isin_init(self, base_feature, list_of_outputs=None):
+        self.list_of_outputs = list_of_outputs
+        super(IsIn, self).__init__(base_feature)
+
+    def isin_get_name(self):
+        return u"%s.isin(%s)" % (self.base_features[0].get_name(), str(self.kwargs['list_of_outputs']))
+
+    IsIn = make_trans_primitive(pd_is_in,
+                                "is_in",
+                                [Variable],
+                                Boolean,
+                                "For each value of the base feature, checks whether it is in a list that is provided.",
+                                cls_attributes={"__init__": isin_init, "_get_name": isin_get_name})
+    isin = IsIn(es['log']['product_id'], list_of_outputs=["toothpaste", "coke zero"])
+    features = [isin]
+    pandas_backend = PandasBackend(es, features)
+    df = pandas_backend.calculate_all_features(range(8), None)
+    true = [True, True, True, False, False, True, True, True]
+    v = df[isin.get_name()].values.tolist()
+    assert true == v
+
+    isin = Feature(es['log']['product_id']).isin(["toothpaste", "coke zero"])
+    features = [isin]
+    pandas_backend = PandasBackend(es, features)
+    df = pandas_backend.calculate_all_features(range(8), None)
+    true = [True, True, True, False, False, True, True, True]
+    v = df[isin.get_name()].values.tolist()
+    assert true == v
+
     isin = Feature(es['log']['value']).isin([5, 10])
     features = [isin]
     pandas_backend = PandasBackend(es, features)
@@ -873,6 +918,7 @@ def test_init_and_name(es):
             instance.get_name()
             instance.head()
 
+
 def test_percentile(es):
     v = Feature(es['log']['value'])
     p = Percentile(v)
@@ -903,3 +949,13 @@ def test_percentile(es):
 #     true = [True, True, True, False, False]
 #     v = df[like.get_name()].values.tolist()
 #     assert true == v
+
+
+def test_make_transform_restricts_time_keyword():
+
+    with pytest.raises(ValueError):
+        BadPrimitive = make_trans_primitive(lambda x, time=False: x,
+                                            "BadPrimitive",
+                                            [Datetime],
+                                            Numeric,
+                                            "This primitive should erorr")
