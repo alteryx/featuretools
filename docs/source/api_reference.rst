@@ -158,6 +158,9 @@ Feature methods
     PrimitiveBase.head
     PrimitiveBase.rename
     PrimitiveBase.get_depth
+    make_agg_primitive
+    make_trans_primitive
+
 
 Feature calculation
 ~~~~~~~~~~~~~~~~~~~~

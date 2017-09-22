@@ -843,10 +843,6 @@ def test_isin_feat_custom(es):
             list_of_outputs = []
         return pd.Series(array).isin(list_of_outputs)
 
-    def isin_init(self, base_feature, list_of_outputs=None):
-        self.list_of_outputs = list_of_outputs
-        super(IsIn, self).__init__(base_feature)
-
     def isin_get_name(self):
         return u"%s.isin(%s)" % (self.base_features[0].get_name(), str(self.kwargs['list_of_outputs']))
 
@@ -855,7 +851,8 @@ def test_isin_feat_custom(es):
                                 [Variable],
                                 Boolean,
                                 "For each value of the base feature, checks whether it is in a list that is provided.",
-                                cls_attributes={"__init__": isin_init, "_get_name": isin_get_name})
+                                cls_attributes={"_get_name": isin_get_name})
+
     isin = IsIn(es['log']['product_id'], list_of_outputs=["toothpaste", "coke zero"])
     features = [isin]
     pandas_backend = PandasBackend(es, features)

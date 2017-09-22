@@ -41,7 +41,51 @@ def make_trans_primitive(function, name, input_types, return_type,
                          description='A custom transform primitive',
                          cls_attributes=None,
                          uses_calc_time=False):
-    # TODO: docstring
+    '''Returns a new transform primitive class
+
+    Args:
+        function (function): function that takes in an array  and applies some
+            transformation to it.
+
+        name (string): name of the function
+
+        input_types (list): variable types of the inputs
+
+        return_type (:class: `.Variable`): variable type of return
+
+        description (string): description of primitive
+
+        cls_attributes (dict): custom attributes to be added to class
+
+        uses_calc_time (bool): if True, the cutoff time the feature is being
+            calculated at will be passed to the function as the keyword
+            argument 'time'.
+
+    Example:
+        .. ipython :: python
+            :suppress:
+
+            from featuretools.primitives import make_trans_primitive
+            from featuretools.variable_types import Variable, Boolean
+
+        .. ipython :: python
+
+            def pd_is_in(array, list_of_outputs=None):
+                if list_of_outputs is None:
+                    list_of_outputs = []
+                return pd.Series(array).isin(list_of_outputs)
+
+            def isin_get_name(self):
+                return u"%s.isin(%s)" % (self.base_features[0].get_name(),
+                                         str(self.kwargs['list_of_outputs']))
+
+            IsIn = make_trans_primitive(pd_is_in,
+                                        "is_in",
+                                        [Variable],
+                                        Boolean,
+                                        description="For each value of the base feature, checks whether it is in a list that provided.",
+                                        cls_attributes={"_get_name": isin_get_name})
+    '''
     # dictionary that holds attributes for class
     cls = {"__doc__": description}
     if cls_attributes is not None:

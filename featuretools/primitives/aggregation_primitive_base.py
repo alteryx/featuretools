@@ -75,7 +75,57 @@ def make_agg_primitive(function, name, input_types, return_type,
                        stack_on_exclude=None, base_of=None, base_of_exclude=None,
                        description='A custom primitive',
                        cls_attributes=None, uses_calc_time=False):
-    # TODO: docstring
+    '''Returns a new aggregation primitive class
+
+    Args:
+        function (function): function that takes in an array  and applies some
+            transformation to it.
+
+        name (string): name of the function
+
+        input_types (list): variable types of the inputs
+
+        return_type (:class: `.Variable`): variable type of return
+
+        stacks_on_self (bool): whether it can be in input_types of self
+
+        stack_on (list): whitelist of primitives that can be input_types
+
+        stack_on_exclude (list): blacklist of primitives that cannot be input_types
+
+        base_of (list): whitelist of primitives that can have this primitive in input_types
+
+        base_of_exclude (list): blacklist of primitives that cannot have this primitive in input_types
+
+        description (string): description of primitive
+
+        cls_attributes (dict): custom attributes to be added to class
+
+        uses_calc_time (bool): if True, the cutoff time the feature is being
+            calculated at will be passed to the function as the keyword
+            argument 'time'.
+
+    Example:
+        .. ipython :: python
+            :suppress:
+
+            from featuretools.primitives import make_agg_primitive
+            from featuretools.variable_types import DatetimeTimeIndex, Numeric
+
+        .. ipython :: python
+
+            def time_since_last(values, time=None):
+                time_since = time - values.iloc[0]
+                return time_since.total_seconds()
+
+            TimeSinceLast = make_agg_primitive(time_since_last,
+                                               "time_since_last",
+                                               [DatetimeTimeIndex],
+                                               Numeric,
+                                               description="Time since last related instance",
+                                               uses_calc_time=True)
+
+    '''
     cls = {"__doc__": description}
     if cls_attributes is not None:
         cls.update(cls_attributes)
