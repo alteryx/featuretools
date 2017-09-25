@@ -89,10 +89,10 @@ class Mode(AggregationPrimitive):
 
 
 Min = make_agg_primitive(np.min,
-                         "min",
                          [Numeric],
                          None,
-                         stacks_on_self=False,
+                         name="min",
+                         stack_on_self=False,
                          description="Finds the minimum non-null value of a numeric feature.")
 
 
@@ -439,7 +439,7 @@ def find_dividend_by_unit(time):
 #                          name="Min",
 #                          input_types=[Numeric],
 #                          return_type=Numeric,
-#                          stacks_on_self=False,
+#                          stack_on_self=False,
 #                          description="Finds the minimum non-null value of a numeric feature.")
 
 
@@ -447,21 +447,21 @@ def find_dividend_by_unit(time):
 #                          name="Max",
 #                          input_types=[Numeric],
 #                          return_type=Numeric,
-#                          stacks_on_self=False,
+#                          stack_on_self=False,
 #                          description="Finds the maximum non-null value of a numeric feature.")
 
 # Std = make_agg_primitive(np.std,
 #                          name="Std",
 #                          input_types=[Numeric],
 #                          return_type=Numeric,
-#                          stacks_on_self=False,
+#                          stack_on_self=False,
 #                          description="Finds the standard deviation of a numeric feature.")
 
 # Median = make_agg_primitive(np.median,
 #                             name="Median",
 #                             input_types=[Numeric],
 #                             return_type=Numeric,
-#                             stacks_on_self=False,
+#                             stack_on_self=False,
 #                             description="Finds the median")
 
 # def pd_mode(x):
@@ -498,5 +498,5 @@ def find_dividend_by_unit(time):
 #                              name="NUnique",
 #                              input_types=[Discrete],
 #                              return_type=Numeric,
-#                              stacks_on_self=False,
+#                              stack_on_self=False,
 #                              description="Returns the number of unique values")

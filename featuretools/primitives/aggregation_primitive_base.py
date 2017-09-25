@@ -1,5 +1,5 @@
 from .primitive_base import PrimitiveBase
-import inspect
+from .utils import inspect_function_args
 import functools
 
 
@@ -70,8 +70,8 @@ class AggregationPrimitive(PrimitiveBase):
                                    where_str, use_prev_str)
 
 
-def make_agg_primitive(function, name, input_types, return_type,
-                       stacks_on_self=True, stack_on=None,
+def make_agg_primitive(function, input_types, return_type, name=None,
+                       stack_on_self=True, stack_on=None,
                        stack_on_exclude=None, base_of=None, base_of_exclude=None,
                        description='A custom primitive',
                        cls_attributes=None, uses_calc_time=False):
@@ -81,21 +81,22 @@ def make_agg_primitive(function, name, input_types, return_type,
         function (function): function that takes in an array  and applies some
             transformation to it.
 
-        name (string): name of the function
+        input_types (list[:class:`.Variable`]): variable types of the inputs
 
-        input_types (list): variable types of the inputs
+        return_type (:class:`.Variable`): variable type of return
 
-        return_type (:class: `.Variable`): variable type of return
+        name (string): name of the function.  If no name is provided, the name
+            of `function` will be used
 
-        stacks_on_self (bool): whether it can be in input_types of self
+        stack_on_self (bool): whether it can be in input_types of self
 
-        stack_on (list): whitelist of primitives that can be input_types
+        stack_on (list[:class:`.PrimitiveBase`]): whitelist of primitives that can be input_types
 
-        stack_on_exclude (list): blacklist of primitives that cannot be input_types
+        stack_on_exclude (list[:class:`.PrimitiveBase`]): blacklist of primitives that cannot be input_types
 
-        base_of (list): whitelist of primitives that can have this primitive in input_types
+        base_of (list[:class:`.PrimitiveBase`]): whitelist of primitives that can have this primitive in input_types
 
-        base_of_exclude (list): blacklist of primitives that cannot have this primitive in input_types
+        base_of_exclude (list[:class:`.PrimitiveBase`]): blacklist of primitives that cannot have this primitive in input_types
 
         description (string): description of primitive
 
@@ -119,7 +120,6 @@ def make_agg_primitive(function, name, input_types, return_type,
                 return time_since.total_seconds()
 
             TimeSinceLast = make_agg_primitive(time_since_last,
-                                               "time_since_last",
                                                [DatetimeTimeIndex],
                                                Numeric,
                                                description="Time since last related instance",
@@ -129,29 +129,19 @@ def make_agg_primitive(function, name, input_types, return_type,
     cls = {"__doc__": description}
     if cls_attributes is not None:
         cls.update(cls_attributes)
+    name = name or function.func_name
     new_class = type(name, (AggregationPrimitive,), cls)
     new_class.name = name
     new_class.input_types = input_types
     new_class.return_type = return_type
-    new_class.stacks_on = stack_on
-    new_class.stacks_on_exclude = stack_on_exclude
-    new_class.stacks_on_self = stacks_on_self
+    new_class.stack_on = stack_on
+    new_class.stack_on_exclude = stack_on_exclude
+    new_class.stack_on_self = stack_on_self
     new_class.base_of = base_of
     new_class.base_of_exclude = base_of_exclude
+    new_class, kwargs = inspect_function_args(new_class, function, uses_calc_time)
 
-    # inspect function to see if there are keyword arguments
-    argspec = inspect.getargspec(function)
-    if argspec.defaults is not None:
-        kwargs = {}
-        for i, default in enumerate(argspec.defaults):
-            keyword = argspec.args[-1 * len(argspec.defaults) + i]
-            if keyword == 'time':
-                if not uses_calc_time:
-                    raise ValueError("'time' is a restricted keyword.  Please"
-                                     " use a different keyword.")
-                else:
-                    new_class.uses_calc_time = True
-            kwargs[keyword] = default
+    if len(kwargs) > 0:
         new_class.kwargs = kwargs
 
         def new_class_init(self, base_features, parent_entity, use_previous=None, where=None, **kwargs):

@@ -847,10 +847,10 @@ def test_isin_feat_custom(es):
         return u"%s.isin(%s)" % (self.base_features[0].get_name(), str(self.kwargs['list_of_outputs']))
 
     IsIn = make_trans_primitive(pd_is_in,
-                                "is_in",
                                 [Variable],
                                 Boolean,
-                                "For each value of the base feature, checks whether it is in a list that is provided.",
+                                name="is_in",
+                                description="For each value of the base feature, checks whether it is in a list that is provided.",
                                 cls_attributes={"_get_name": isin_get_name})
 
     isin = IsIn(es['log']['product_id'], list_of_outputs=["toothpaste", "coke zero"])
@@ -949,10 +949,30 @@ def test_percentile(es):
 
 
 def test_make_transform_restricts_time_keyword():
-
-    with pytest.raises(ValueError):
-        BadPrimitive = make_trans_primitive(lambda x, time=False: x,
-                                            "BadPrimitive",
+    AllowedPrimitive = make_trans_primitive(lambda x, time=False: x,
                                             [Datetime],
                                             Numeric,
-                                            "This primitive should erorr")
+                                            name="AllowedPrimitive",
+                                            description="This primitive should be accepted",
+                                            uses_calc_time=True)
+    with pytest.raises(ValueError):
+        BadPrimitive = make_trans_primitive(lambda x, time=False: x,
+                                            [Datetime],
+                                            Numeric,
+                                            name="BadPrimitive",
+                                            description="This primitive should erorr")
+
+
+def test_make_transform_restricts_time_arg():
+    AllowedPrimitive = make_trans_primitive(lambda time: time,
+                                            [Datetime],
+                                            Numeric,
+                                            name="AllowedPrimitive",
+                                            description="This primitive should be accepted",
+                                            uses_calc_time=True)
+    with pytest.raises(ValueError):
+        BadPrimitive = make_trans_primitive(lambda time: time,
+                                            [Datetime],
+                                            Numeric,
+                                            name="BadPrimitive",
+                                            description="This primitive should erorr")

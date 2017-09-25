@@ -1,4 +1,5 @@
 from .primitive_base import PrimitiveBase
+from .utils import inspect_function_args
 from featuretools.variable_types import (Discrete, Numeric, Categorical, Boolean,
                                          Ordinal, Text, Datetime, Timedelta, Variable,
                                          TimeIndex, DatetimeTimeIndex, Id)
@@ -37,7 +38,7 @@ class TransformPrimitive(PrimitiveBase):
         return self.base_features[0].default_value
 
 
-def make_trans_primitive(function, name, input_types, return_type,
+def make_trans_primitive(function, input_types, return_type, name=None,
                          description='A custom transform primitive',
                          cls_attributes=None,
                          uses_calc_time=False):
@@ -49,9 +50,9 @@ def make_trans_primitive(function, name, input_types, return_type,
 
         name (string): name of the function
 
-        input_types (list): variable types of the inputs
+        input_types (list[:class:`.Variable`]): variable types of the inputs
 
-        return_type (:class: `.Variable`): variable type of return
+        return_type (:class:`.Variable`): variable type of return
 
         description (string): description of primitive
 
@@ -80,9 +81,9 @@ def make_trans_primitive(function, name, input_types, return_type,
                                          str(self.kwargs['list_of_outputs']))
 
             IsIn = make_trans_primitive(pd_is_in,
-                                        "is_in",
                                         [Variable],
                                         Boolean,
+                                        name="is_in",
                                         description="For each value of the base feature, checks whether it is in a list that provided.",
                                         cls_attributes={"_get_name": isin_get_name})
     '''
@@ -92,24 +93,14 @@ def make_trans_primitive(function, name, input_types, return_type,
         cls.update(cls_attributes)
 
     # creates the new class and set name and types
+    name = name or function.func_name
     new_class = type(name, (TransformPrimitive,), cls)
     new_class.name = name
     new_class.input_types = input_types
     new_class.return_type = return_type
+    new_class, kwargs = inspect_function_args(new_class, function, uses_calc_time)
 
-    # inspect function to see if there are keyword arguments
-    argspec = inspect.getargspec(function)
-    if argspec.defaults is not None:
-        kwargs = {}
-        for i, default in enumerate(argspec.defaults):
-            keyword = argspec.args[-1 * len(argspec.defaults) + i]
-            if keyword == 'time':
-                if not uses_calc_time:
-                    raise ValueError("'time' is a restricted keyword.  Please"
-                                     " use a different keyword.")
-                else:
-                    new_class.uses_calc_time = True
-            kwargs[keyword] = default
+    if kwargs is not None:
         new_class.kwargs = kwargs
 
         def new_class_init(self, *args, **kwargs):

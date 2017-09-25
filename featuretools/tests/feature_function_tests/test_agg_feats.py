@@ -115,8 +115,9 @@ def test_count_null_and_make_agg_primitive(es):
         use_prev_str = self._use_prev_str()
         return u"COUNT(%s%s%s)" % (self.child_entity.name, where_str, use_prev_str)
 
-    Count = make_agg_primitive(count_func, "count", [[Index], [Variable]], Numeric,
-                               stacks_on_self=False, cls_attributes={"_get_name": count_get_name})
+    Count = make_agg_primitive(count_func, [[Index], [Variable]], Numeric,
+                               name="count", stack_on_self=False,
+                               cls_attributes={"_get_name": count_get_name})
     count_null = Count(es['log']['value'], es['sessions'], count_null=True)
     feature_matrix = calculate_feature_matrix([count_null], entityset=es)
     values = [5, 4, 1, 2, 3, 2]
@@ -193,7 +194,7 @@ def test_stack_on_self(es, test_primitive, parent_entity):
 #                                        parent)
 #     for f in [parent, grandparent]:
 #         f.stack_on = ['child']
-#         f.stacks_on_self = True
+#         f.stack_on_self = True
 #         f.base_of = ['parent']
 #         f.apply_to = [(Numeric,)]
 #         f.max_stack_depth = 2
@@ -243,10 +244,31 @@ def test_time_since_last_custom(es):
         time_since = time - values.iloc[0]
         return time_since.total_seconds()
 
-    TimeSinceLast = make_agg_primitive(time_since_last, "time_since_last", [DatetimeTimeIndex], Numeric, uses_calc_time=True)
+    TimeSinceLast = make_agg_primitive(time_since_last, [DatetimeTimeIndex], Numeric, name="time_since_last", uses_calc_time=True)
     f = TimeSinceLast(es["log"]["datetime"], es["customers"])
     fm = calculate_feature_matrix([f], instance_ids=[0, 1, 2], cutoff_time=datetime(2015, 6, 8))
 
     correct = [131376600, 131289600, 131287800]
     # note: must round to nearest second
     assert all(fm[f.get_name()].round().values == correct)
+
+    with pytest.raises(ValueError):
+        TimeSinceLast = make_agg_primitive(time_since_last, [DatetimeTimeIndex], Numeric, uses_calc_time=False)
+
+
+def test_custom_primitive_time_as_arg(es):
+    def time_since_last(values, time):
+        time_since = time - values.iloc[0]
+        return time_since.total_seconds()
+
+    TimeSinceLast = make_agg_primitive(time_since_last, [DatetimeTimeIndex], Numeric, uses_calc_time=True)
+    assert TimeSinceLast.name == "time_since_last"
+    f = TimeSinceLast(es["log"]["datetime"], es["customers"])
+    fm = calculate_feature_matrix([f], instance_ids=[0, 1, 2], cutoff_time=datetime(2015, 6, 8))
+
+    correct = [131376600, 131289600, 131287800]
+    # note: must round to nearest second
+    assert all(fm[f.get_name()].round().values == correct)
+
+    with pytest.raises(ValueError):
+        TimeSinceLast = make_agg_primitive(time_since_last, [DatetimeTimeIndex], Numeric, uses_calc_time=False)
