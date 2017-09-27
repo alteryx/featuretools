@@ -254,7 +254,7 @@ class IsIn(TransformPrimitive):
     For each value of the base feature, checks whether it is in a list that is provided.
     """
     name = "isin"
-    input_types =  [Variable]
+    input_types = [Variable]
     return_type = Boolean
 
     def __init__(self, base_feature, list_of_outputs=None):
@@ -280,7 +280,7 @@ class Diff(TransformPrimitive):
     If it is a Datetime feature, compute the difference in seconds
     """
     name = "diff"
-    input_types =  [Numeric, Id]
+    input_types = [Numeric, Id]
     return_type = Numeric
 
     def __init__(self, base_feature, group_feature):
@@ -310,7 +310,7 @@ class Diff(TransformPrimitive):
 
 class Not(TransformPrimitive):
     name = "not"
-    input_types =  [Boolean]
+    input_types = [Boolean]
     return_type = Boolean
 
     def _get_name(self):

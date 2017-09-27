@@ -65,7 +65,7 @@ class BinaryFeature(TransformPrimitive):
 
     def _get_name(self):
         return u"%s %s %s" % (self.left_str(),
-                             self.operator, self.right_str())
+                              self.operator, self.right_str())
 
     def _get_op(self):
         return self._operators[self.operator]
@@ -115,8 +115,8 @@ class ArithmeticFeature(BinaryFeature):
     }
 
     name = None
-    input_types =  [[Numeric, Numeric],
-                    [Numeric]]
+    input_types = [[Numeric, Numeric],
+                   [Numeric]]
     return_type = Numeric
     operator = None
 
@@ -161,37 +161,40 @@ class ArithmeticFeature(BinaryFeature):
 class Add(ArithmeticFeature):
     """Creates a transform feature that adds two features"""
     operator = ArithmeticFeature._ADD
-    input_types =  [[Numeric, Numeric],
-                    [Numeric],
-                    [TimeIndex],
-                    [Datetime],
-                    [Timedelta],
-                    [TimeIndex, Timedelta],
-                    [Timedelta, TimeIndex],
-                    [Timedelta, Timedelta],
-                    [Datetime, Timedelta],
-                    [Timedelta, Datetime],
-                    ]
+    associative = True
+    input_types = [[Numeric, Numeric],
+                   [Numeric],
+                   [TimeIndex],
+                   [Datetime],
+                   [Timedelta],
+                   [TimeIndex, Timedelta],
+                   [Timedelta, TimeIndex],
+                   [Timedelta, Timedelta],
+                   [Datetime, Timedelta],
+                   [Timedelta, Datetime],
+                   ]
+
 
 class Subtract(ArithmeticFeature):
     """Creates a transform feature that subtracts two features"""
     operator = ArithmeticFeature._SUB
-    input_types =  [[Numeric, Numeric],
-                    [Numeric],
-                    [TimeIndex],
-                    [Datetime],
-                    [Timedelta],
-                    [TimeIndex, Timedelta],
-                    [Timedelta, TimeIndex],
-                    [Timedelta, Timedelta],
-                    [Datetime, Timedelta],
-                    [Timedelta, Datetime],
-                    ]
+    input_types = [[Numeric, Numeric],
+                   [Numeric],
+                   [TimeIndex],
+                   [Datetime],
+                   [Timedelta],
+                   [TimeIndex, Timedelta],
+                   [Timedelta, TimeIndex],
+                   [Timedelta, Timedelta],
+                   [Datetime, Timedelta],
+                   [Timedelta, Datetime],
+                   ]
 
 
 class Multiply(ArithmeticFeature):
     """Creates a transform feature that multplies two features"""
     operator = ArithmeticFeature._MUL
+    associative = True
 
 
 class Divide(ArithmeticFeature):
@@ -206,7 +209,7 @@ class Mod(ArithmeticFeature):
 
 class Negate(Subtract):
     """Creates a transform feature that negates a feature"""
-    input_types =  [Numeric]
+    input_types = [Numeric]
 
     def __init__(self, f):
         super(Negate, self).__init__(0, f)
@@ -253,12 +256,13 @@ class Compare(BinaryFeature):
     }
 
     name = "compare"
-    input_types =  [[Variable], [Variable, Variable]]
+    input_types = [[Variable], [Variable, Variable]]
     return_type = Boolean
 
     def __init__(self, left, operator, right):
         self.operator = operator
-
+        if operator in ['=', '!=']:
+            self.associative = True
         super(Compare, self).__init__(left, right)
 
     def invert(self):
@@ -270,8 +274,9 @@ class Compare(BinaryFeature):
 
 class And(TransformPrimitive):
     name = "and"
-    input_types =  [Boolean, Boolean]
+    input_types = [Boolean, Boolean]
     return_type = Boolean
+    associative = True
 
     def get_function(self):
         return lambda left, right: np.logical_and(left, right)
@@ -279,8 +284,9 @@ class And(TransformPrimitive):
 
 class Or(TransformPrimitive):
     name = "or"
-    input_types =  [Boolean, Boolean]
+    input_types = [Boolean, Boolean]
     return_type = Boolean
+    associative = True
 
     def get_function(self):
         return lambda left, right: np.logical_or(left, right)

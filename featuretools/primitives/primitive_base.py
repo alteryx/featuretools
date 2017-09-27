@@ -27,6 +27,7 @@ class PrimitiveBase(FTBase):
     _name = None
     base_of = None  # whitelist of primitives can have this primitive in input_types
     base_of_exclude = None  # blacklist of primitives can have this primitive in input_types
+    associative = False  # (bool) If True, will only make one feature per unique set of base features
 
     def __init__(self, entity, base_features, **kwargs):
         assert all(isinstance(f, PrimitiveBase) for f in base_features), \

@@ -873,6 +873,7 @@ def test_init_and_name(es):
             instance.get_name()
             instance.head()
 
+
 def test_percentile(es):
     v = Feature(es['log']['value'])
     p = Percentile(v)

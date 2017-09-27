@@ -3,6 +3,9 @@
 Changelog
 ---------
 
+**v0.1.10** September XX, 2017
+    * Added ``associative`` property to some primitives.  If a feature is associative, DFS will only build one feature for each unique set of base features.
+
 **v0.1.9** September 8, 2017
     * Documentation improvements
     * New ``featuretools.demo.load_mock_customer`` function

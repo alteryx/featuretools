@@ -280,7 +280,6 @@ class DeepFeatureSynthesis(object):
     def _filter_features(self, features):
         assert isinstance(self.drop_exact, list), "drop_exact must be a list"
         assert isinstance(self.drop_contains, list), "drop_contains must be a list"
-
         f_keep = []
         for f in features:
             keep = True
@@ -518,7 +517,8 @@ class DeepFeatureSynthesis(object):
                                               variable_type=set(input_types),
                                               max_depth=new_max_depth)
 
-            matching_inputs = match(input_types, features)
+            matching_inputs = match(input_types, features,
+                                    associative=trans_prim.associative)
 
             for matching_input in matching_inputs:
                 new_f = trans_prim(*matching_input)
@@ -588,7 +588,8 @@ class DeepFeatureSynthesis(object):
 
             features = [f for f in features if not self._feature_in_relationship_path(relationship_path, f)]
 
-            matching_inputs = match(input_types, features)
+            matching_inputs = match(input_types, features,
+                                    associative=agg_prim.associative)
             wheres = list(self.where_clauses[child_entity.id])
 
             for matching_input in matching_inputs:
@@ -726,7 +727,7 @@ def match_by_type(features, t):
     return matches
 
 
-def match(input_types, features, replace=False):
+def match(input_types, features, replace=False, associative=False):
     to_match = input_types[0]
     matches = match_by_type(features, to_match)
 
@@ -734,6 +735,8 @@ def match(input_types, features, replace=False):
         return [(m,) for m in matches]
 
     matching_inputs = []
+    if associative:
+        matching_inputs_sets = set([])
 
     for m in matches:
         copy = features[:]
@@ -743,6 +746,13 @@ def match(input_types, features, replace=False):
 
         rest = match(input_types[1:], copy, replace)
         for r in rest:
-            matching_inputs.append([m] + list(r))
+            new_match = [m] + list(r)
+            if associative:
+                new_input_set = frozenset(new_match)
+                if new_input_set not in matching_inputs_sets:
+                    matching_inputs_sets.add(new_input_set)
+                else:
+                    continue
+            matching_inputs.append(new_match)
 
     return set([tuple(s) for s in matching_inputs])
