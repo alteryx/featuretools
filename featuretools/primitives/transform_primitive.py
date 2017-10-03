@@ -18,6 +18,8 @@ class TransformPrimitive(PrimitiveBase):
     rolling_function = False
 
     def __init__(self, *base_features):
+        # Any edits made to this method should also be made to the new_class_init
+        # method in make_trans_primitive
         self.base_features = [self._check_feature(f) for f in base_features]
         if any(bf.expanding for bf in self.base_features):
             self.expanding = True

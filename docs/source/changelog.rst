@@ -3,10 +3,6 @@
 Changelog
 ---------
 
-**v0.1.10** September XX, 2017
-    * Added :meth:`make_trans_primitive <featuretools.primitives.make_trans_primitive>` and :meth:`make_agg_primitive <featuretools.primitives.make_agg_primitive>` functions
-
-
 **v0.1.9** September 8, 2017
     * Documentation improvements
     * New ``featuretools.demo.load_mock_customer`` function

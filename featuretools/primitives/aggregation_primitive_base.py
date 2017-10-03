@@ -15,6 +15,8 @@ class AggregationPrimitive(PrimitiveBase):
 
     def __init__(self, base_features, parent_entity, use_previous=None,
                  where=None):
+        # Any edits made to this method should also be made to the
+        # new_class_init method in make_agg_primitive
         if not hasattr(base_features, '__iter__'):
             base_features = [self._check_feature(base_features)]
         else:
