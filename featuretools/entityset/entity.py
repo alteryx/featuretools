@@ -135,23 +135,24 @@ class Entity(BaseEntity):
 
         elif isinstance(cutoff_time, pd.DataFrame):
 
-            cutoff_index, cutoff_time_index = list(cutoff_time)
+            instance_ids, time = list(cutoff_time)
 
             # Prevent Name Colisions
-            if cutoff_index == self.index:
-                cutoff_index += "_cutoff"
+            if instance_ids == self.index:
+                instance_ids += "_cutoff"
 
-            if cutoff_time_index == self.time_index:
-                cutoff_time_index += "_cutoff"
+            if time == self.time_index:
+                time += "_cutoff"
 
-            cutoff_time.columns = [cutoff_index, cutoff_time_index]
+            cutoff_time.columns = [instance_ids, time]
 
+            # TODO filtering the top n before merge would be more efficient
             merged = self.df.merge(cutoff_time, left_on=self.index,
-                                   right_on=cutoff_index)
+                                   right_on=instance_ids)
             valid_data = merged[
-                    merged[self.time_index] < merged[cutoff_time_index]]
-            valid_data.drop(cutoff_time_index, axis=1, inplace=True)
-            valid_data.drop(cutoff_index, axis=1, inplace=True)
+                    merged[self.time_index] < merged[time]]
+            valid_data.drop(time, axis=1, inplace=True)
+            valid_data.drop(instance_ids, axis=1, inplace=True)
             valid_data.set_index(self.index, drop=False, inplace=True)
 
         else:
