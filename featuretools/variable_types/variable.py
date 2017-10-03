@@ -168,22 +168,9 @@ class Variable(FTBase):
             :class:`pd.DataFrame` : Pandas DataFrame
 
         """
-        series = self.entityset.head(entity_id=self.entity_id, n=n,
-                                         variable_id=self.id,cutoff_time = cutoff_time)
-
-        """
-        else:
-            from featuretools.computational_backends.calculate_feature_matrix import calculate_feature_matrix
-            from featuretools.primitives import Feature
-
-            f = Feature(self)
-
-            instance_ids = self.entityset.get_top_n_instances(self.entity.id, n)
-            cutoff_time = pd.DataFrame({'instance_id': instance_ids})
-            cutoff_time['time'] = cutoff_time
-            cfm = calculate_feature_matrix([f], cutoff_time=cutoff_time)
-            series = cfm[f.get_name()]
-        """
+        series = self.entityset.head(entity_id=self.entity_id,
+                                     n=n, variable_id=self.id,
+                                     cutoff_time=cutoff_time)
         return series.to_frame()
 
     @property

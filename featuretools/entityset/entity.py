@@ -120,12 +120,13 @@ class Entity(BaseEntity):
 
         Args:
             n (int) : number of instances to return
+            cutoff_time (Timestamp,DataFrame) : Timestamp(s) to restrict rows
 
         Returns:
             :class:`pd.DataFrame` : Pandas DataFrame
 
-
         """
+
         if cutoff_time is None:
             valid_data = self.df
 
@@ -133,27 +134,31 @@ class Entity(BaseEntity):
             valid_data = self.df[self.df[self.time_index] < cutoff_time]
 
         elif isinstance(cutoff_time, pd.DataFrame):
-            cutoff_index = list(cutoff_time)[0]
-            cutoff_time_index = list(cutoff_time)[1]
+
+            cutoff_index, cutoff_time_index = list(cutoff_time)
+
+            # Prevent Name Colisions
+            if cutoff_index == self.index:
+                cutoff_index += "_cutoff"
 
             if cutoff_time_index == self.time_index:
-                cutoff_time_index = cutoff_time_index + "_cutoff"
-                cutoff_time.columns = [cutoff_index,cutoff_time_index]
+                cutoff_time_index += "_cutoff"
 
-            merged = self.df.merge(cutoff_time,left_on = self.index, right_on = cutoff_index)
-            valid_data = merged[merged[self.time_index] < merged[cutoff_time_index]]
+            cutoff_time.columns = [cutoff_index, cutoff_time_index]
+
+            merged = self.df.merge(cutoff_time, left_on=self.index,
+                                   right_on=cutoff_index)
+            valid_data = merged[
+                    merged[self.time_index] < merged[cutoff_time_index]]
             valid_data.drop(cutoff_time_index, axis=1, inplace=True)
-            valid_data.set_index(self.index,drop = False, inplace = True)
-
+            valid_data.drop(cutoff_index, axis=1, inplace=True)
+            valid_data.set_index(self.index, drop=False, inplace=True)
 
         else:
-            raise ValueError('cutoff_time must be None, a TimeStamp, or a DataFrame')
-
-            
-
+            raise ValueError(
+                'cutoff_time must be None, a TimeStamp, or a DataFrame')
 
         return valid_data.head(n)
-
 
     def get_column_type(self, column_id):
         """ get type of column in underlying data structure """
