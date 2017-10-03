@@ -18,7 +18,7 @@ setup(
     packages=find_packages(),
     description='a framework for automated feature engineering',
     url='http://featuretools.com',
-    license='BSD 4-clause',
+    license='BSD 3-clause',
     author='Feature Labs, Inc.',
     author_email='support@featurelabs.com',
     classifiers=[
