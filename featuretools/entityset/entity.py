@@ -120,7 +120,7 @@ class Entity(BaseEntity):
 
         Args:
             n (int) : number of instances to return
-            cutoff_time (Timestamp,DataFrame) : Timestamp(s) to restrict rows
+            cutoff_time (pd.Timestamp,pd.DataFrame) : Timestamp(s) to restrict rows
 
         Returns:
             :class:`pd.DataFrame` : Pandas DataFrame

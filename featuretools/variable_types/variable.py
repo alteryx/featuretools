@@ -163,6 +163,7 @@ class Variable(FTBase):
 
         Args:
             n (int) : number of instances to return
+            cutoff_time (pd.Timestamp,pd.DataFrame) : Timestamp(s) to restrict rows
 
         Returns:
             :class:`pd.DataFrame` : Pandas DataFrame
