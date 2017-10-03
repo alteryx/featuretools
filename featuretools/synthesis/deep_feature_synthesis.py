@@ -5,7 +5,7 @@ from featuretools import variable_types
 from featuretools.variable_types import Categorical, Numeric, Boolean, Ordinal
 from featuretools.primitives.api import (IdentityFeature, BinaryFeature, Discrete,
                                          TimeSince, DirectFeature, Compare,
-                                         AggregationPrimitive)
+                                         AggregationPrimitive, Equals)
 import featuretools.primitives.api as ftypes
 from .dfs_filters import (TraverseUp, LimitModeUniques)
 
@@ -486,7 +486,7 @@ class DeepFeatureSynthesis(object):
                 continue
 
             for val in feat.variable.interesting_values:
-                self.where_clauses[entity.id].add(Compare(feat, Compare.EQ, val))
+                self.where_clauses[entity.id].add(Equals(feat, val))
 
     def _build_transform_features(self, all_features, entity, max_depth=0):
         """Creates trans_features for all the variables in an entity
@@ -734,9 +734,7 @@ def match(input_types, features, replace=False, associative=False):
     if len(input_types) == 1:
         return [(m,) for m in matches]
 
-    matching_inputs = []
-    if associative:
-        matching_inputs_sets = set([])
+    matching_inputs = set([])
 
     for m in matches:
         copy = features[:]
@@ -749,10 +747,11 @@ def match(input_types, features, replace=False, associative=False):
             new_match = [m] + list(r)
             if associative:
                 new_input_set = frozenset(new_match)
-                if new_input_set not in matching_inputs_sets:
-                    matching_inputs_sets.add(new_input_set)
+                if new_input_set not in matching_inputs:
+                    matching_inputs.add(new_input_set)
                 else:
                     continue
-            matching_inputs.append(new_match)
+            else:
+                matching_inputs.add(tuple(new_match))
 
     return set([tuple(s) for s in matching_inputs])

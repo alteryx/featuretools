@@ -259,17 +259,37 @@ class Compare(BinaryFeature):
     input_types = [[Variable], [Variable, Variable]]
     return_type = Boolean
 
-    def __init__(self, left, operator, right):
-        self.operator = operator
-        if operator in ['=', '!=']:
-            self.associative = True
-        super(Compare, self).__init__(left, right)
-
     def invert(self):
         self.operator = self._inv_operators[self.operator]
 
     def get_function(self):
         return self.pd_binary
+
+
+class Equals(Compare):
+    associative = True
+    operator = '='
+
+
+class NotEquals(Compare):
+    associative = True
+    operator = '!='
+
+
+class GreaterThan(Compare):
+    operator = '>'
+
+
+class GreaterThanEqualTo(Compare):
+    operator = '>='
+
+
+class LessThan(Compare):
+    operator = '<'
+
+
+class LessThanEqualTo(Compare):
+    operator = '<='
 
 
 class And(TransformPrimitive):
