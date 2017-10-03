@@ -8,7 +8,7 @@ import numpy as np
 import copy
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture()
 def entityset():
     return make_ecommerce_entityset()
 
@@ -632,3 +632,26 @@ class TestNormalizeEntity(object):
         assert entityset['values'].time_index == 'value_time'
         assert 'value_time' in entityset['values'].df.columns
         assert len(entityset['values'].df.columns) == 3
+
+
+def test_head_of_entity(entityset):#, entity):
+
+    entity = entityset['log']
+    assert(isinstance(entityset.head('log', 3), pd.DataFrame))
+    assert(isinstance(entity.head(3), pd.DataFrame))
+    assert(isinstance(entity['product_id'].head(3), pd.DataFrame))
+
+    assert(entity.head(n=5).shape == (5, 9))
+
+    timestamp1 = pd.to_datetime("2011-04-09 10:30:10")
+    timestamp2 = pd.to_datetime("2011-04-09 10:30:18")
+
+    assert(entity.head(5, cutoff_time=timestamp1).shape == (2, 9))
+    assert(entity.head(5, cutoff_time=timestamp2).shape == (3, 9))
+
+    time_list = [timestamp2]*3+[timestamp1]*2
+    cutoff_times = pd.DataFrame(zip(range(5), time_list))
+
+    assert(entityset.head('log', 5, cutoff_time=cutoff_times).shape == (3, 9))
+    assert(entity.head(5, cutoff_time=cutoff_times).shape == (3, 9))
+    assert(entity['product_id'].head(5, cutoff_time=cutoff_times).shape == (3, 1))
