@@ -745,13 +745,13 @@ def match(input_types, features, replace=False, associative=False):
         rest = match(input_types[1:], copy, replace)
         for r in rest:
             new_match = [m] + list(r)
+
+            # associative uses frozenset instead of tuple because it doesn't
+            # want multiple orderings of the same input
             if associative:
-                new_input_set = frozenset(new_match)
-                if new_input_set not in matching_inputs:
-                    matching_inputs.add(new_input_set)
-                else:
-                    continue
+                new_match = frozenset(new_match)
             else:
-                matching_inputs.add(tuple(new_match))
+                new_match = tuple(new_match)
+            matching_inputs.add(new_match)
 
     return set([tuple(s) for s in matching_inputs])
