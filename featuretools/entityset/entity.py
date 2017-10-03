@@ -126,7 +126,34 @@ class Entity(BaseEntity):
 
 
         """
-        return self.df.head(n=n)
+        if cutoff_time is None:
+            valid_data = self.df
+
+        elif isinstance(cutoff_time, pd.Timestamp):
+            valid_data = self.df[self.df[self.time_index] < cutoff_time]
+
+        elif isinstance(cutoff_time, pd.DataFrame):
+            cutoff_index = list(cutoff_time)[0]
+            cutoff_time_index = list(cutoff_time)[1]
+
+            if cutoff_time_index == self.time_index:
+                cutoff_time_index = cutoff_time_index + "_cutoff"
+                cutoff_time.columns = [cutoff_index,cutoff_time_index]
+
+            merged = self.df.merge(cutoff_time,left_on = self.index, right_on = cutoff_index)
+            valid_data = merged[merged[self.time_index] < merged[cutoff_time_index]]
+            valid_data.drop(cutoff_time_index, axis=1, inplace=True)
+            valid_data.set_index(self.index,drop = False, inplace = True)
+
+
+        else:
+            raise ValueError('cutoff_time must be None, a TimeStamp, or a DataFrame')
+
+            
+
+
+        return valid_data.head(n)
+
 
     def get_column_type(self, column_id):
         """ get type of column in underlying data structure """

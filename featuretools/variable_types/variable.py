@@ -168,9 +168,10 @@ class Variable(FTBase):
             :class:`pd.DataFrame` : Pandas DataFrame
 
         """
-        if cutoff_time is None:
-            series = self.entityset.head(entity_id=self.entity_id, n=n,
-                                         variable_id=self.id)
+        series = self.entityset.head(entity_id=self.entity_id, n=n,
+                                         variable_id=self.id,cutoff_time = cutoff_time)
+
+        """
         else:
             from featuretools.computational_backends.calculate_feature_matrix import calculate_feature_matrix
             from featuretools.primitives import Feature
@@ -182,6 +183,7 @@ class Variable(FTBase):
             cutoff_time['time'] = cutoff_time
             cfm = calculate_feature_matrix([f], cutoff_time=cutoff_time)
             series = cfm[f.get_name()]
+        """
         return series.to_frame()
 
     @property
