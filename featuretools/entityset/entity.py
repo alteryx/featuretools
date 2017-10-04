@@ -137,23 +137,11 @@ class Entity(BaseEntity):
 
             instance_ids, time = list(cutoff_time)
 
-            # Prevent Name Colisions
-            if instance_ids == self.index:
-                instance_ids += "_cutoff"
-
-            if time == self.time_index:
-                time += "_cutoff"
-
-            cutoff_time.columns = [instance_ids, time]
-
-            # TODO filtering the top n before merge would be more efficient
-            merged = self.df.merge(cutoff_time, left_on=self.index,
-                                   right_on=instance_ids)
-            valid_data = merged[
-                    merged[self.time_index] < merged[time]]
-            valid_data.drop(time, axis=1, inplace=True)
-            valid_data.drop(instance_ids, axis=1, inplace=True)
-            valid_data.set_index(self.index, drop=False, inplace=True)
+            # TODO filtering the top n during "isin" would be more efficient
+            valid_data = self.df[
+                self.df[self.index].isin(cutoff_time[instance_ids])]
+            valid_data = valid_data[
+                valid_data[self.time_index] < cutoff_time[time]]
 
         else:
             raise ValueError(
