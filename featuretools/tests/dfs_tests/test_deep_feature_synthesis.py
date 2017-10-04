@@ -6,7 +6,7 @@ from featuretools.primitives import (Last, Count, Hour, IdentityFeature,
                                      TransformPrimitive, AggregationPrimitive,
                                      Feature, Max, Mean, Min, Sum, Diff,
                                      TimeSincePrevious, CumMean, DirectFeature,
-                                     make_agg_primitive)
+                                     Add, make_agg_primitive)
 from ..testing_utils import make_ecommerce_entityset, feature_with_name
 import pandas as pd
 from featuretools.utils.gen_utils import getsize
@@ -544,3 +544,25 @@ def test_pickle_features_with_custom_primitive(es):
     assert os.path.getsize(filepath) < os.path.getsize(es_filepath)
     os.remove(filepath)
     os.remove(es_filepath)
+
+
+def test_associative(es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
+                                   entityset=es,
+                                   filters=[],
+                                   agg_primitives=[Sum],
+                                   trans_primitives=[Add],
+                                   max_depth=3)
+    feats = dfs_obj.build_features()
+    num_add_feats = 0
+    num_add_as_base_feat = 0
+
+    for feat in feats:
+        if isinstance(feat, Add):
+            num_add_feats += 1
+        for base_feat in feat.base_features:
+            if isinstance(base_feat, Add):
+                num_add_as_base_feat += 1
+
+    assert num_add_feats == 1
+    assert num_add_as_base_feat == 4

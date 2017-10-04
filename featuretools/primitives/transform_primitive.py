@@ -367,7 +367,7 @@ class Diff(TransformPrimitive):
     If it is a Datetime feature, compute the difference in seconds
     """
     name = "diff"
-    input_types =  [Numeric, Id]
+    input_types = [Numeric, Id]
     return_type = Numeric
 
     def __init__(self, base_feature, group_feature):

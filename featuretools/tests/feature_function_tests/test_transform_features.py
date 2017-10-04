@@ -8,11 +8,14 @@ from featuretools.primitives import (Day, Hour, Diff, Compare, Not,
                                      Divide, CumSum, CumCount, CumMin, CumMax,
                                      CumMean, Mod, And, Or, Negate, Sum,
                                      IsIn, Feature, IsNull, get_transform_primitives,
-                                     Mode, Percentile, make_trans_primitive)
+                                     Mode, Percentile, make_trans_primitive,
+                                     Equals, NotEquals, GreaterThan,
+                                     GreaterThanEqualTo, LessThan, LessThanEqualTo)
 from featuretools.variable_types import Numeric, Datetime, Boolean, Variable
 from featuretools import Timedelta
 from ..testing_utils import make_ecommerce_entityset
 import numpy as np
+
 
 @pytest.fixture(scope='module')
 def es():
@@ -64,16 +67,16 @@ def test_diff(es):
 
 
 def test_compare_of_identity(es):
-    to_test = [(Compare.EQ, [False, False, True, False]),
-               (Compare.NE, [True, True, False, True]),
-               (Compare.LT, [True, True, False, False]),
-               (Compare.LE, [True, True, True, False]),
-               (Compare.GT, [False, False, False, True]),
-               (Compare.GE, [False, False, True, True])]
+    to_test = [(Equals, [False, False, True, False]),
+               (NotEquals, [True, True, False, True]),
+               (LessThan, [True, True, False, False]),
+               (LessThanEqualTo, [True, True, True, False]),
+               (GreaterThan, [False, False, False, True]),
+               (GreaterThanEqualTo, [False, False, True, True])]
 
     features = []
     for test in to_test:
-        features.append(Compare(es['log']['value'], test[0], 10))
+        features.append(test[0](es['log']['value'], 10))
 
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2, 3],
@@ -87,16 +90,16 @@ def test_compare_of_identity(es):
 def test_compare_of_direct(es):
     log_rating = DirectFeature(es['products']['rating'],
                                child_entity=es['log'])
-    to_test = [(Compare.EQ, [False, False, False, False]),
-               (Compare.NE, [True, True, True, True]),
-               (Compare.LT, [False, False, False, True]),
-               (Compare.LE, [False, False, False, True]),
-               (Compare.GT, [True, True, True, False]),
-               (Compare.GE, [True, True, True, False])]
+    to_test = [(Equals, [False, False, False, False]),
+               (NotEquals, [True, True, True, True]),
+               (LessThan, [False, False, False, True]),
+               (LessThanEqualTo, [False, False, False, True]),
+               (GreaterThan, [True, True, True, False]),
+               (GreaterThanEqualTo, [True, True, True, False])]
 
     features = []
     for test in to_test:
-        features.append(Compare(log_rating, test[0], 4.5))
+        features.append(test[0](log_rating, 4.5))
 
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2, 3],
@@ -109,16 +112,16 @@ def test_compare_of_direct(es):
 
 def test_compare_of_transform(es):
     day = Day(es['log']['datetime'])
-    to_test = [(Compare.EQ, [False, True]),
-               (Compare.NE, [True, False]),
-               (Compare.LT, [True, False]),
-               (Compare.LE, [True, True]),
-               (Compare.GT, [False, False]),
-               (Compare.GE, [False, True])]
+    to_test = [(Equals, [False, True]),
+               (NotEquals, [True, False]),
+               (LessThan, [True, False]),
+               (LessThanEqualTo, [True, True]),
+               (GreaterThan, [False, False]),
+               (GreaterThanEqualTo, [False, True])]
 
     features = []
     for test in to_test:
-        features.append(Compare(day, test[0], 10))
+        features.append(test[0](day, 10))
 
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(instance_ids=[0, 14],
@@ -133,16 +136,16 @@ def test_compare_of_agg(es):
     count_logs = Count(es['log']['id'],
                        parent_entity=es['sessions'])
 
-    to_test = [(Compare.EQ, [False, False, False, True]),
-               (Compare.NE, [True, True, True, False]),
-               (Compare.LT, [False, False, True, False]),
-               (Compare.LE, [False, False, True, True]),
-               (Compare.GT, [True, True, False, False]),
-               (Compare.GE, [True, True, False, True])]
+    to_test = [(Equals, [False, False, False, True]),
+               (NotEquals, [True, True, True, False]),
+               (LessThan, [False, False, True, False]),
+               (LessThanEqualTo, [False, False, True, True]),
+               (GreaterThan, [True, True, False, False]),
+               (GreaterThanEqualTo, [True, True, False, True])]
 
     features = []
     for test in to_test:
-        features.append(Compare(count_logs, test[0], 2))
+        features.append(test[0](count_logs, 2))
 
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2, 3],
@@ -400,7 +403,7 @@ def test_cum_sum_use_previous_integer_time(int_es):
 
 def test_cum_sum_where(es):
     log_value_feat = es['log']['value']
-    compare_feat = Compare(log_value_feat, '>', 3)
+    compare_feat = GreaterThan(log_value_feat, 3)
     dfeat = Feature(es['sessions']['customer_id'], es['log'])
     cum_sum = CumSum(log_value_feat, dfeat,
                      where=compare_feat)
@@ -421,7 +424,7 @@ def test_cum_sum_where(es):
 
 def test_cum_sum_use_previous_and_where(es):
     log_value_feat = es['log']['value']
-    compare_feat = Compare(log_value_feat, '>', 3)
+    compare_feat = GreaterThan(log_value_feat, 3)
     # todo should this be cummean?
     dfeat = Feature(es['sessions']['customer_id'], es['log'])
     cum_sum = CumSum(log_value_feat, dfeat,
@@ -500,7 +503,7 @@ def test_cum_sum_use_previous_group_on_nan(es):
 
 def test_cum_sum_use_previous_and_where_absolute(es):
     log_value_feat = es['log']['value']
-    compare_feat = Compare(log_value_feat, '>', 3)
+    compare_feat = GreaterThan(log_value_feat, 3)
     dfeat = Feature(es['sessions']['customer_id'], es['log'])
     cum_sum = CumSum(log_value_feat, dfeat, es["log"]["datetime"],
                      where=compare_feat,
@@ -550,7 +553,7 @@ def test_cum_mean_use_previous(es):
 
 def test_cum_mean_where(es):
     log_value_feat = es['log']['value']
-    compare_feat = Compare(log_value_feat, '>', 3)
+    compare_feat = GreaterThan(log_value_feat, 3)
     dfeat = Feature(es['sessions']['customer_id'], es['log'])
     cum_mean = CumMean(log_value_feat, dfeat,
                        where=compare_feat)
@@ -572,7 +575,7 @@ def test_cum_mean_where(es):
 
 def test_cum_mean_use_previous_and_where(es):
     log_value_feat = es['log']['value']
-    compare_feat = Compare(log_value_feat, '>', 3)
+    compare_feat = GreaterThan(log_value_feat, 3)
     # todo should this be cummean?
     dfeat = Feature(es['sessions']['customer_id'], es['log'])
     cum_mean = CumMean(log_value_feat, dfeat,
@@ -639,8 +642,8 @@ def test_overrides(es):
 
     feats = [Add, Subtract, Multiply, Divide,
              Mod, And, Or]
-    compare_ops = ['>', '<', '=', '!=',
-                   '>=', '<=']
+    compare_ops = [GreaterThan, LessThan, Equals, NotEquals,
+                   GreaterThanEqualTo, LessThanEqualTo]
     assert Negate(hour).hash() == (-hour).hash()
 
     compares = [(hour, hour),
@@ -699,7 +702,7 @@ def test_overrides(es):
             i += 1
 
         for compare_op in compare_ops:
-            f = Compare(left, compare_op, right)
+            f = compare_op(left, right)
             o = overrides[i]
             assert o.hash() == f.hash()
             i += 1
@@ -728,7 +731,7 @@ def test_overrides(es):
         2 >= day]
     i = 0
     for compare_op in compare_ops:
-        f = Compare(day, compare_op, 2)
+        f = compare_op(day, 2)
         o = python_reverse_overrides[i]
         assert o.hash() == f.hash()
         i += 1
@@ -738,8 +741,8 @@ def test_override_boolean(es):
     # P TODO:
     return
     count = Count(es['log']['value'], es['sessions'])
-    count_lo = Compare(count, '>', 1)
-    count_hi = Compare(count, '<', 10)
+    count_lo = GreaterThan(count, 1)
+    count_hi = LessThan(count, 10)
 
     to_test = [[True, True, True],
                [True, True, False],
@@ -894,11 +897,11 @@ def test_isnull_feat(es):
 
 def test_init_and_name(es):
     log = es['log']
-    features = [Feature(v) for v in log.variables] + [Compare(Feature(es["products"]["rating"], es["log"]), '>', 2.5)]
+    features = [Feature(v) for v in log.variables] + [GreaterThan(Feature(es["products"]["rating"], es["log"]), 2.5)]
     # Add Timedelta feature
     features.append(pd.Timestamp.now() - Feature(log['datetime']))
     for transform_prim in get_transform_primitives():
-        if transform_prim == Compare:
+        if issubclass(transform_prim, Compare):
             continue
         # use the input_types matching function from DFS
         input_types = transform_prim.input_types
