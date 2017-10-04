@@ -645,9 +645,11 @@ def test_head_of_entity(entityset):
 
     timestamp1 = pd.to_datetime("2011-04-09 10:30:10")
     timestamp2 = pd.to_datetime("2011-04-09 10:30:18")
+    datetime1 = datetime(2011, 4, 9, 10, 30, 18)
 
     assert(entity.head(5, cutoff_time=timestamp1).shape == (2, 9))
     assert(entity.head(5, cutoff_time=timestamp2).shape == (3, 9))
+    assert(entity.head(5, cutoff_time=datetime1).shape == (3, 9))
 
     time_list = [timestamp2]*3+[timestamp1]*2
     cutoff_times = pd.DataFrame(zip(range(5), time_list))
