@@ -634,7 +634,7 @@ class TestNormalizeEntity(object):
         assert len(entityset['values'].df.columns) == 3
 
 
-def test_head_of_entity(entityset):#, entity):
+def test_head_of_entity(entityset):
 
     entity = entityset['log']
     assert(isinstance(entityset.head('log', 3), pd.DataFrame))
