@@ -130,7 +130,8 @@ class Entity(BaseEntity):
         if cutoff_time is None:
             valid_data = self.df
 
-        elif isinstance(cutoff_time, pd.Timestamp):
+        elif isinstance(cutoff_time, pd.Timestamp) or \
+                isinstance(cutoff_time, datetime):
             valid_data = self.df[self.df[self.time_index] < cutoff_time]
 
         elif isinstance(cutoff_time, pd.DataFrame):
@@ -145,7 +146,7 @@ class Entity(BaseEntity):
 
         else:
             raise ValueError(
-                'cutoff_time must be None, a TimeStamp, or a DataFrame')
+                'cutoff_time must be None, a Datetime, a pd.Timestamp, or a pd.DataFrame')
 
         return valid_data.head(n)
 
