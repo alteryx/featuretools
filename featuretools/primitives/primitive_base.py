@@ -27,6 +27,7 @@ class PrimitiveBase(FTBase):
     _name = None
     base_of = None  # whitelist of primitives can have this primitive in input_types
     base_of_exclude = None  # blacklist of primitives can have this primitive in input_types
+    associative = False  # (bool) If True, will only make one feature per unique set of base features
 
     def __init__(self, entity, base_features, **kwargs):
         assert all(isinstance(f, PrimitiveBase) for f in base_features), \
@@ -68,7 +69,6 @@ class PrimitiveBase(FTBase):
                     pickled[k] = v
             return pickled
         return self.__dict__
-
 
     def __setstate__(self, d):
         self.__dict__ = d
@@ -160,8 +160,8 @@ class PrimitiveBase(FTBase):
         See also:
             :meth:`PrimitiveBase.equal_to`
         """
-        from binary_transform import Compare
-        return Compare(self, "=", other_feature_or_val)
+        from binary_transform import Equals
+        return Equals(self, other_feature_or_val)
 
     def __ne__(self, other_feature_or_val):
         """Compares to other_feature_or_val by non-equality
@@ -169,8 +169,8 @@ class PrimitiveBase(FTBase):
         See also:
             :meth:`PrimitiveBase.not_equal_to`
         """
-        from binary_transform import Compare
-        return Compare(self, "!=", other_feature_or_val)
+        from binary_transform import NotEquals
+        return NotEquals(self, other_feature_or_val)
 
     def __gt__(self, other_feature_or_val):
         """Compares if greater than other_feature_or_val
@@ -178,8 +178,8 @@ class PrimitiveBase(FTBase):
         See also:
             :meth:`PrimitiveBase.GT`
         """
-        from binary_transform import Compare
-        return Compare(self, ">", other_feature_or_val)
+        from binary_transform import GreaterThan
+        return GreaterThan(self, other_feature_or_val)
 
     def __ge__(self, other_feature_or_val):
         """Compares if greater than or equal to other_feature_or_val
@@ -187,8 +187,8 @@ class PrimitiveBase(FTBase):
         See also:
             :meth:`PrimitiveBase.greater_than_equal_to`
         """
-        from binary_transform import Compare
-        return Compare(self, ">=", other_feature_or_val)
+        from binary_transform import GreaterThanEqualTo
+        return GreaterThanEqualTo(self, other_feature_or_val)
 
     def __lt__(self, other_feature_or_val):
         """Compares if less than other_feature_or_val
@@ -196,8 +196,8 @@ class PrimitiveBase(FTBase):
         See also:
             :meth:`PrimitiveBase.less_than`
         """
-        from binary_transform import Compare
-        return Compare(self, "<", other_feature_or_val)
+        from binary_transform import LessThan
+        return LessThan(self, other_feature_or_val)
 
     def __le__(self, other_feature_or_val):
         """Compares if less than or equal to other_feature_or_val
@@ -205,8 +205,8 @@ class PrimitiveBase(FTBase):
         See also:
             :meth:`PrimitiveBase.less_than_equal_to`
         """
-        from binary_transform import Compare
-        return Compare(self, "<=", other_feature_or_val)
+        from binary_transform import LessThanEqualTo
+        return LessThanEqualTo(self, other_feature_or_val)
 
     def __add__(self, other_feature_or_val):
         """Add other_feature_or_val"""

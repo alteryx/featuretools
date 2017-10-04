@@ -2,7 +2,9 @@ import pytest
 from featuretools.computational_backends.pandas_backend import PandasBackend
 from featuretools.primitives import (IdentityFeature, DirectFeature, Sum,
                                      Count, Min, Mode, Compare, Mean, And,
-                                     NMostCommon)
+                                     NMostCommon, GreaterThan, LessThan,
+                                     GreaterThanEqualTo, LessThanEqualTo,
+                                     Equals, NotEquals)
 from featuretools import Timedelta
 from ..testing_utils import make_ecommerce_entityset
 from datetime import datetime
@@ -151,13 +153,13 @@ def test_make_agg_feat_multiple_dtypes(entityset, backend):
 
 def test_make_agg_feat_where_different_identity_feat(entityset, backend):
     feats = []
-    where_cmps = [Compare.LT, Compare.GT, Compare.LE, Compare.GE, Compare.EQ, Compare.NE]
+    where_cmps = [LessThan, GreaterThan, LessThanEqualTo,
+                  GreaterThanEqualTo, Equals, NotEquals]
     for where_cmp in where_cmps:
         feats.append(Count(entityset['log']['id'],
                            parent_entity=entityset['sessions'],
-                           where=Compare(entityset['log']['datetime'],
-                                         where_cmp,
-                                         datetime(2011, 4, 10, 10, 40, 1))))
+                           where=where_cmp(entityset['log']['datetime'],
+                                           datetime(2011, 4, 10, 10, 40, 1))))
 
     pandas_backend = backend(feats)
     df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2, 3],
