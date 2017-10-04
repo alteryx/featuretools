@@ -24,7 +24,9 @@ class BinaryFeature(TransformPrimitive):
 
         self._right_index = -1
         if isinstance(right, PrimitiveBase):
-            base_features.append(right)
+            if (not isinstance(left, PrimitiveBase) or
+                    right.hash() != self.left.hash()):
+                base_features.append(right)
             self.right = right
         else:
             self.right = right
