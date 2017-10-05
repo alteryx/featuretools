@@ -1,11 +1,10 @@
 from setuptools import setup, find_packages
 from setuptools.command.build_ext import build_ext as _build_ext
 
-from featuretools.version import get_version
-
 
 # Bootstrap numpy install
 class build_ext(_build_ext):
+
     def finalize_options(self):
         _build_ext.finalize_options(self)
         # Prevent numpy from thinking it is still in its setup process:
@@ -16,7 +15,7 @@ class build_ext(_build_ext):
 
 setup(
     name='featuretools',
-    version=get_version().replace(' ', '-'),
+    version='0.1.9',
     packages=find_packages(),
     description='a framework for automated feature engineering',
     url='http://featuretools.com',
@@ -27,7 +26,6 @@ setup(
          'Development Status :: 3 - Alpha',
          'Intended Audience :: Developers',
          'Programming Language :: Python :: 2.7'],
-
     install_requires=['numpy>=1.11.0',
                       'scipy>=0.17.0',
                       'pandas==0.20.1',

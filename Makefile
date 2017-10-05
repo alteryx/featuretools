@@ -9,5 +9,5 @@ test: clean
 
 installdeps:
 	pip install --upgrade pip
-	pip install -r dev-requirements.txt
 	pip install -e .
+	pip install -r dev-requirements.txt
