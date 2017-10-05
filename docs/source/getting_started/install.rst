@@ -38,25 +38,22 @@ Development
 
 Virtualenv
 ~~~~~~~~~~
-We recommend developing in a virtualenv::
+We recommend developing in a `virtualenv <https://virtualenvwrapper.readthedocs.io/en/latest/>`_::
 
-    virtualenv venv
-    source venv/bin/activate
+    mkvirtualenv featuretools
 
 Install development requirements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Run::
 
-    pip install -e .
-    pip install -r dev-requirements.txt
+    make installdeps
 
 Test
 ~~~~
 Run featuretools tests::
 
-    cd featuretools
-    pytest featuretools
+    make test
 
 
 Build Documentation
