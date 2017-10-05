@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 from setuptools.command.build_ext import build_ext as _build_ext
 
-from featuretools import get_version
+from featuretools.version import get_version
 
 
 # Bootstrap numpy install
