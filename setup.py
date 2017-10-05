@@ -1,6 +1,8 @@
 from setuptools import setup, find_packages
 from setuptools.command.build_ext import build_ext as _build_ext
 
+from featuretools import get_version
+
 
 # Bootstrap numpy install
 class build_ext(_build_ext):
@@ -14,7 +16,7 @@ class build_ext(_build_ext):
 
 setup(
     name='featuretools',
-    version='0.1.9',
+    version=get_version().replace(' ', '-'),
     packages=find_packages(),
     description='a framework for automated feature engineering',
     url='http://featuretools.com',
