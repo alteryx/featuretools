@@ -2,15 +2,12 @@ import pytest
 import pandas as pd
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.computational_backends import PandasBackend
-from featuretools.primitives import (Day, Hour, Diff, Compare, Not,
-                                     DirectFeature, Count, Add,
-                                     Subtract, Multiply, IdentityFeature,
-                                     Divide, CumSum, CumCount, CumMin, CumMax,
-                                     CumMean, Mod, And, Or, Negate, Sum,
-                                     IsIn, Feature, IsNull, get_transform_primitives,
-                                     Mode, Percentile, make_trans_primitive,
-                                     Equals, NotEquals, GreaterThan,
-                                     GreaterThanEqualTo, LessThan, LessThanEqualTo)
+from featuretools.primitives import (
+    Day, Hour, Diff, Compare, Not, DirectFeature, Count, Add, Subtract,
+    Multiply, IdentityFeature, Divide, CumSum, CumCount, CumMin, CumMax,
+    CumMean, Mod, And, Or, Negate, Sum, IsIn, Feature, IsNull, Mode, Equals,
+    get_transform_primitives, Percentile, make_trans_primitive, NotEquals,
+    GreaterThan, GreaterThanEqualTo, LessThan, LessThanEqualTo)
 from featuretools.variable_types import Numeric, Datetime, Boolean, Variable
 from featuretools import Timedelta
 from ..testing_utils import make_ecommerce_entityset
@@ -51,7 +48,9 @@ def test_diff(es):
 
     val2 = df[diff2.get_name()].values.tolist()
     val3 = df[diff3.get_name()].values.tolist()
-    correct_vals2 = [np.nan, 5, 5, 5, 5, np.nan, 1, 1, 1, np.nan, np.nan, 5, np.nan, 7, 7]
+    correct_vals2 = [
+        np.nan, 5, 5, 5, 5, np.nan, 1, 1, 1, np.nan, np.nan, 5, np.nan, 7, 7
+    ]
     correct_vals3 = [np.nan, 5, 5, 5, 5, -20, 1, 1, 1, -3, np.nan, 5, -5, 7, 7]
     for i, v in enumerate(val2):
         v2 = val2[i]
@@ -313,8 +312,8 @@ def test_arithmetic_of_agg(es):
         features.append(test[0](count_customer, count_stores))
 
     pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(instance_ids=['United States', 'Mexico'],
-                                               time_last=None)
+    df = pandas_backend.calculate_all_features(
+        instance_ids=['United States', 'Mexico'], time_last=None)
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
@@ -480,7 +479,9 @@ def test_cum_sum_use_previous_group_on_nan(es):
                                   ['shoes'] +
                                   [np.nan] * 4 +
                                   ['coke_zero'] * 2)
-    cum_sum = CumSum(log_value_feat, es['log']['product_id'], es["log"]["datetime"],
+    cum_sum = CumSum(log_value_feat,
+                     es['log']['product_id'],
+                     es["log"]["datetime"],
                      use_previous=Timedelta(40, 'seconds'))
     features = [cum_sum]
     pandas_backend = PandasBackend(es, features)
@@ -811,7 +812,8 @@ def test_override_cmp(es):
 
 
 def test_isin_feat(es):
-    isin = IsIn(es['log']['product_id'], list_of_outputs=["toothpaste", "coke zero"])
+    isin = IsIn(es['log']['product_id'],
+                list_of_outputs=["toothpaste", "coke zero"])
     features = [isin]
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(range(8), None)
@@ -847,16 +849,20 @@ def test_isin_feat_custom(es):
         return pd.Series(array).isin(list_of_outputs)
 
     def isin_get_name(self):
-        return u"%s.isin(%s)" % (self.base_features[0].get_name(), str(self.kwargs['list_of_outputs']))
+        return u"%s.isin(%s)" % (self.base_features[0].get_name(),
+                                 str(self.kwargs['list_of_outputs']))
 
-    IsIn = make_trans_primitive(pd_is_in,
-                                [Variable],
-                                Boolean,
-                                name="is_in",
-                                description="For each value of the base feature, checks whether it is in a list that is provided.",
-                                cls_attributes={"_get_name": isin_get_name})
+    IsIn = make_trans_primitive(
+        pd_is_in,
+        [Variable],
+        Boolean,
+        name="is_in",
+        description="For each value of the base feature, checks whether it is "
+        "in a list that is provided.",
+        cls_attributes={"_get_name": isin_get_name})
 
-    isin = IsIn(es['log']['product_id'], list_of_outputs=["toothpaste", "coke zero"])
+    isin = IsIn(es['log']['product_id'],
+                list_of_outputs=["toothpaste", "coke zero"])
     features = [isin]
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(range(8), None)
@@ -888,7 +894,8 @@ def test_isnull_feat(es):
     features = [isnull]
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(range(15), None)
-    # correct_vals_diff = [np.nan, 5, 5, 5, 5, np.nan, 1, 1, 1, np.nan, np.nan, 5, np.nan, 7, 7]
+    # correct_vals_diff = [
+    #     np.nan, 5, 5, 5, 5, np.nan, 1, 1, 1, np.nan, np.nan, 5, np.nan, 7, 7]
     correct_vals = [True, False, False, False, False, True, False, False,
                     False, True, True, False, True, False, False]
     values = df[isnull.get_name()].values.tolist()
@@ -897,7 +904,8 @@ def test_isnull_feat(es):
 
 def test_init_and_name(es):
     log = es['log']
-    features = [Feature(v) for v in log.variables] + [GreaterThan(Feature(es["products"]["rating"], es["log"]), 2.5)]
+    features = [Feature(v) for v in log.variables] +\
+        [GreaterThan(Feature(es["products"]["rating"], es["log"]), 2.5)]
     # Add Timedelta feature
     features.append(pd.Timestamp.now() - Feature(log['datetime']))
     for transform_prim in get_transform_primitives():
@@ -906,11 +914,13 @@ def test_init_and_name(es):
         # use the input_types matching function from DFS
         input_types = transform_prim.input_types
         if type(input_types[0]) == list:
-            matching_inputs = [g for s in input_types for g in match(s, features)]
+            matching_inputs = [g for s in input_types
+                               for g in match(s, features)]
         else:
             matching_inputs = match(input_types, features)
         if len(matching_inputs) == 0:
-            raise Exception("Transform Primitive %s not tested" % transform_prim.name)
+            raise Exception(
+                "Transform Primitive %s not tested" % transform_prim.name)
         for s in matching_inputs:
             instance = transform_prim(*s)
 
@@ -952,30 +962,36 @@ def test_percentile(es):
 
 
 def test_make_transform_restricts_time_keyword():
-    AllowedPrimitive = make_trans_primitive(lambda x, time=False: x,
-                                            [Datetime],
-                                            Numeric,
-                                            name="AllowedPrimitive",
-                                            description="This primitive should be accepted",
-                                            uses_calc_time=True)
+    make_trans_primitive(
+        lambda x, time=False: x,
+        [Datetime],
+        Numeric,
+        name="AllowedPrimitive",
+        description="This primitive should be accepted",
+        uses_calc_time=True)
+
     with pytest.raises(ValueError):
-        BadPrimitive = make_trans_primitive(lambda x, time=False: x,
-                                            [Datetime],
-                                            Numeric,
-                                            name="BadPrimitive",
-                                            description="This primitive should erorr")
+        make_trans_primitive(
+            lambda x, time=False: x,
+            [Datetime],
+            Numeric,
+            name="BadPrimitive",
+            description="This primitive should error")
 
 
 def test_make_transform_restricts_time_arg():
-    AllowedPrimitive = make_trans_primitive(lambda time: time,
-                                            [Datetime],
-                                            Numeric,
-                                            name="AllowedPrimitive",
-                                            description="This primitive should be accepted",
-                                            uses_calc_time=True)
+    make_trans_primitive(
+        lambda time: time,
+        [Datetime],
+        Numeric,
+        name="AllowedPrimitive",
+        description="This primitive should be accepted",
+        uses_calc_time=True)
+
     with pytest.raises(ValueError):
-        BadPrimitive = make_trans_primitive(lambda time: time,
-                                            [Datetime],
-                                            Numeric,
-                                            name="BadPrimitive",
-                                            description="This primitive should erorr")
+        make_trans_primitive(
+            lambda time: time,
+            [Datetime],
+            Numeric,
+            name="BadPrimitive",
+            description="This primitive should erorr")

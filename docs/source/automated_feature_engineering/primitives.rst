@@ -83,10 +83,10 @@ In the example above, we use two types of primitives.
 
 
 
-Creating Custom Primitives
+Defining Custom Primitives
 **************************
 
-The library of primitives in Featuretools is constantly expanding. In a future release, users will be able to include their primitives through a Custom Primitive API. To contribute a primitive, a user will
+The library of primitives in Featuretools is constantly expanding.  Users can define their own primitive using the APIs below.  To define a primitive, a user will
 
 
   * Specify the type of primitive ``Aggregation`` or ``Transform``
@@ -95,78 +95,85 @@ The library of primitives in Featuretools is constantly expanding. In a future r
   * Annotate with attributes to constrain how it is applied
 
 
-Once a primitive is contributed, it can stack with existing primitives to generate complex patterns. This enables primitives known to be important for one problem to automatically be transfered to another.
+Once a primitive is defined, it can stack with existing primitives to generate complex patterns. This enables primitives known to be important for one domain to automatically be transfered to another.
 
-The code to define custom primitives at runtime already exists.  See the :meth:`make_trans_primitive <featuretools.primitives.make_trans_primitive>` and :meth:`make_agg_primitive <featuretools.primitives.make_agg_primitive>` functions.  A few basic arguments, ``function``, ``input_types``, and ``return_type``, need to be defined for either type of primitive.
+Simple Custom Primitives
+========================
+.. ipython :: python
 
-* ``function`` is the function to be applied to the input values.
-* ``input_types`` is a list that specifies the variable types of features this primitive accepts as input.  In the case of the ``Max`` primitive, it expects one numeric feature as input.  If a primitive requires multiple features as input, ``input_types`` has multiple entries, eg ``[Numeric, Numeric]`` would mean the primitive requires two Numeric features as input.  If a primitive can have multiple input configurations, `input_types` becomes a list of lists.  For example, if a primitive could either have one Numeric feature as input or two, ``input_types`` becomes ``[[Numeric], [Numeric, Numeric]]``.
-* ``return_type`` is the variable type of the output.  Since ``Max`` returns a singular value, it's type is None.
-
-Optional arguments when creating a new primitive:
-
-* ``name``: the name of the primitive. If no name is provided, the name of the function will be used instead.
-* ``description``: a brief text description of the primitive.
-* ``uses_calc_time``: if the function uses the timestamp for when the feature is being calculated, name that variable 'time' and set this to True
-
-Optional arguments when creating new aggregation primitives: `stack_on_self`, `stack_on`, `stack_on_exclude`, `base_of`, `base_of_exclude`. Use them to define the stacking behavior for the new primitive.
-
-Now let's look at an example of a custom primitive:
-
-.. ipython:: python
-    :suppress:
-
-    import featuretools as ft
-
-
-    es = ft.demo.load_retail()
-
-.. ipython:: python
-
-    from featuretools.variable_types import Numeric, DatetimeTimeIndex
-    from featuretools.primitives import make_agg_primitive, Feature
-    from featuretools import calculate_feature_matrix
+    from featuretools.primitives import make_agg_primitive, make_trans_primitive
+    from featuretools.variable_types import Text, Numeric
     import numpy as np
 
 
-    def mean_weekly_sum(y, x):
-        y.index = x
-        return y.fillna(0).resample("7d").mean().fillna(0).mean()
+    Absolute = make_trans_primitive(function=lambda array: np.absolute(array),
+                                    input_types=[Numeric],
+                                    return_type=Numeric)
 
-    MeanWeeklySum = make_agg_primitive(function=mean_weekly_sum,
-                                       input_types=[Numeric, DatetimeTimeIndex],
-                                       return_type=Numeric,
-                                       stack_on_self=False,
-                                       base_of=[])
+    Mean = make_agg_primitive(function=np.nanmean,
+                              input_types=[Numeric],
+                              return_type=Numeric)
 
-    number_per_week = MeanWeeklySum([Feature(es['item_purchases']['Quantity']),
-                                     Feature(es['item_purchases']['InvoiceDate'])],
-                                    es['items'])
+Both :meth:`make_agg_primitive <featuretools.primitives.make_agg_primitive>` and :meth:`make_trans_primitive <featuretools.primitives.make_trans_primitive>` require three arguments to create a new primitive class: ``function``, ``input_types``, and ``return_type``.
 
-    feature_matrix = calculate_feature_matrix([number_per_week])
-    feature_matrix.head(10)
-
-If a new primitive has default arguments in its function, those defaults can be overwritten by including those arguments when initializing the feature.  See the example below:
+Functions With Additonal Arguments
+==================================
+One caveat with the make\_primitive functions is that the required arguments of ``function`` must be input features.  Here we create a function for ``StringCount``, a primitive which counts the number of occurrences of a string in a ``Text`` input.  Since ``string`` is not a feature, it needs to be a keyword argument to ``string_count``.
 
 .. ipython:: python
 
-    from featuretools.primitives import make_trans_primitive
-    from featuretools.variable_types import Variable, Boolean
+    def string_count(array, string=None):
+        '''
+        ..note:: this is a naive implementation used for clarity
+        '''
+        assert string is not None, "string to count needs to be defined"
+        counts = [element.count(string) for element in array]
+        return counts
 
+Now that we have the function we create the primitive using the ``make_trans_primitive`` function.
 
-    def is_in(array, list_of_outputs=None):
-        import pandas as pd
-        if list_of_outputs is None:
-            list_of_outputs = []
-        return pd.Series(array).isin(list_of_outputs)
+.. ipython:: python
 
-    IsIn = make_trans_primitive(is_in,
-                                [Variable],
-                                Boolean,
-                                description="For each value of the base feature, checks whether it is in a list that provided.",)
+    StringCount = make_trans_primitive(function=string_count,
+                                       input_types=[Text],
+                                       return_type=Numeric)
 
-    isin_feature = IsIn(Feature(es['item_purchases']['StockCode']),
-                                list_of_outputs=['84029G'])
+Passing in ``string="test"`` as a keyword argument when creating a StringCount feature will make "test" the value used for string when ``string_count`` is called to calculate the feature values.  Now we use this primitive to create a feature and calculate the feature values.
 
-    feature_matrix = calculate_feature_matrix([isin_feature])
-    feature_matrix.head(10)
+.. ipython:: python
+
+    from featuretools.tests.testing_utils import make_ecommerce_entityset
+
+    es = make_ecommerce_entityset()
+    es["customers"].df["favorite_quote"].sort_index()
+    count_the_feat = StringCount(es['customers']['favorite_quote'], string="the")
+    feature_matrix = ft.calculate_feature_matrix(features=[count_the_feat])
+    feature_matrix
+
+Multiple Input Types
+====================
+If a primitive requires multiple features as input, ``input_types`` has multiple elements, eg ``[Numeric, Numeric]`` would mean the primitive requires two Numeric features as input.  Below is an example of a primitive that has multiple input features.
+
+.. ipython:: python
+
+    from featuretools.variable_types import Datetime, Timedelta, Variable
+    from featuretools.primitives import Feature, Equals
+    import pandas as pd
+
+    def count_sunday(to_count, datetime):
+        '''
+        Counts non-null values that occurred on Sundays
+        '''
+        days = pd.DatetimeIndex(datetime).weekday.values
+        df = pd.DataFrame({'to_count': to_count, 'time': days})
+        return df[df['time'] == 6]['to_count'].dropna().count()
+
+    CountSunday = make_agg_primitive(function=count_sunday,
+                                     input_types=[Variable, Datetime],
+                                     return_type=Numeric)
+
+    count_sunday_log_entries = CountSunday([es["log"]["value"],
+                                            es["log"]["datetime"]],
+                                           es["sessions"])
+    feature_matrix = ft.calculate_feature_matrix(features=[count_sunday_log_entries])
+    feature_matrix

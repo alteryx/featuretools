@@ -1,7 +1,8 @@
-from featuretools.variable_types import (Index, Numeric, Discrete, Categorical,
-                                         Boolean, Ordinal, DatetimeTimeIndex, Variable)
+from featuretools.variable_types import (Index, Numeric, Discrete, Boolean,
+                                         DatetimeTimeIndex, Variable)
 from featuretools.entityset import Entity
-from .aggregation_primitive_base import AggregationPrimitive, make_agg_primitive
+from .aggregation_primitive_base import (AggregationPrimitive,
+                                         make_agg_primitive)
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
@@ -9,7 +10,6 @@ from scipy.stats import skew
 
 
 # TODO: make sure get func gets numpy arrays not series
-#
 
 
 class Count(AggregationPrimitive):
@@ -88,12 +88,13 @@ class Mode(AggregationPrimitive):
         return pd_mode
 
 
-Min = make_agg_primitive(np.min,
-                         [Numeric],
-                         None,
-                         name="min",
-                         stack_on_self=False,
-                         description="Finds the minimum non-null value of a numeric feature.")
+Min = make_agg_primitive(
+    np.min,
+    [Numeric],
+    None,
+    name="min",
+    stack_on_self=False,
+    description="Finds the minimum non-null value of a numeric feature.")
 
 
 # class Min(AggregationPrimitive):
@@ -264,7 +265,8 @@ class Skew(AggregationPrimitive):
 
 
 class Std(AggregationPrimitive):
-    """Finds the standard deviation of a numeric feature ignoring null values."""
+    """Finds the standard deviation of a numeric feature ignoring null values.
+    """
     name = "std"
     input_types = [Numeric]
     return_type = Numeric
@@ -336,7 +338,9 @@ class Trend(AggregationPrimitive):
     def __init__(self, value, time_index, parent_entity, **kwargs):
         self.value = value
         self.time_index = time_index
-        super(Trend, self).__init__([value, time_index], parent_entity, **kwargs)
+        super(Trend, self).__init__([value, time_index],
+                                    parent_entity,
+                                    **kwargs)
 
     def get_function(self):
         def pd_trend(y, x):
@@ -427,76 +431,3 @@ def find_dividend_by_unit(time):
         if round(div) == div:
             return dividend
     return 1
-
-
-# Mean = make_agg_primitive(np.nanmean,
-#                           name="Mean",
-#                           input_types=[Numeric],
-#                           return_type=Numeric,
-#                           description="Calculate means ignoring nan values")
-
-# Min = make_agg_primitive(np.min,
-#                          name="Min",
-#                          input_types=[Numeric],
-#                          return_type=Numeric,
-#                          stack_on_self=False,
-#                          description="Finds the minimum non-null value of a numeric feature.")
-
-
-# Max = make_agg_primitive(np.max,
-#                          name="Max",
-#                          input_types=[Numeric],
-#                          return_type=Numeric,
-#                          stack_on_self=False,
-#                          description="Finds the maximum non-null value of a numeric feature.")
-
-# Std = make_agg_primitive(np.std,
-#                          name="Std",
-#                          input_types=[Numeric],
-#                          return_type=Numeric,
-#                          stack_on_self=False,
-#                          description="Finds the standard deviation of a numeric feature.")
-
-# Median = make_agg_primitive(np.median,
-#                             name="Median",
-#                             input_types=[Numeric],
-#                             return_type=Numeric,
-#                             stack_on_self=False,
-#                             description="Finds the median")
-
-# def pd_mode(x):
-#     if x.mode().shape[0] == 0:
-#         return np.nan
-#     return x.mode().iloc[0]
-
-# Mode = make_agg_primitive(pd_mode,
-#                           name="Mode",
-#                           input_types=[Discrete],
-#                           return_type=None,
-#                           description="Finds the most common element in a categorical feature.")
-
-
-# def percent_true(x):
-#     if len(x) == 0:
-#         return np.nan
-#     return np.nan_to_num(x.values).sum(dtype=np.float) / len(x)
-
-# PercentTrue = make_agg_primitive(percent_true,
-#                                  name="PercentTrue",
-#                                  input_types=[Boolean],
-#                                  return_type=Numeric,
-#                                  description="Finds the percent of 'True' values in a boolean feature.")
-
-
-# Last = make_agg_primitive(lambda x: x.iloc[-1],
-#                           name="Last",
-#                           input_types=[Variable],
-#                           return_type=None,
-#                           description="Returns the last value")
-
-# NUnique = make_agg_primitive(lambda x: x.nunique(),
-#                              name="NUnique",
-#                              input_types=[Discrete],
-#                              return_type=Numeric,
-#                              stack_on_self=False,
-#                              description="Returns the number of unique values")

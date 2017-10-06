@@ -8,10 +8,10 @@ class AggregationPrimitive(PrimitiveBase):
         related instances in a child entity"""
     stack_on = None  # whitelist of primitives that can be in input_types
     stack_on_exclude = None  # blacklist of primitives that can be insigniture
-    base_of = None  # whitelist of primitives can have this primitive in input_types
-    base_of_exclude = None  # blacklist of primitives can have this primitive in input_types
+    base_of = None  # whitelist of primitives this prim can be input for
+    base_of_exclude = None  # primitives this primitive can't be input for
     stack_on_self = True  # whether or not it can be in input_types of self
-    allow_where = True  # whether or not DFS can apply where clause to this primitive
+    allow_where = True  # whether DFS can apply where clause to this primitive
 
     def __init__(self, base_features, parent_entity, use_previous=None,
                  where=None):
@@ -29,7 +29,8 @@ class AggregationPrimitive(PrimitiveBase):
 
         if where is not None:
             self.where = self._check_feature(where)
-            msg = "Where feature must be defined on child entity {}".format(self.child_entity.id)
+            msg = "Where feature must be defined on child entity {}".format(
+                self.child_entity.id)
             assert self.where.entity.id == self.child_entity.id, msg
 
         if use_previous:
@@ -74,9 +75,10 @@ class AggregationPrimitive(PrimitiveBase):
 
 def make_agg_primitive(function, input_types, return_type, name=None,
                        stack_on_self=True, stack_on=None,
-                       stack_on_exclude=None, base_of=None, base_of_exclude=None,
-                       description='A custom primitive',
-                       cls_attributes=None, uses_calc_time=False):
+                       stack_on_exclude=None, base_of=None,
+                       base_of_exclude=None, description='A custom primitive',
+                       cls_attributes=None, uses_calc_time=False,
+                       associative=False):
     '''Returns a new aggregation primitive class
 
     Args:
@@ -92,13 +94,17 @@ def make_agg_primitive(function, input_types, return_type, name=None,
 
         stack_on_self (bool): whether it can be in input_types of self
 
-        stack_on (list[:class:`.PrimitiveBase`]): whitelist of primitives that can be input_types
+        stack_on (list[:class:`.PrimitiveBase`]): whitelist of primitives that
+            can be input_types
 
-        stack_on_exclude (list[:class:`.PrimitiveBase`]): blacklist of primitives that cannot be input_types
+        stack_on_exclude (list[:class:`.PrimitiveBase`]): blacklist of
+            primitives that cannot be input_types
 
-        base_of (list[:class:`.PrimitiveBase`]): whitelist of primitives that can have this primitive in input_types
+        base_of (list[:class:`.PrimitiveBase`]): whitelist of primitives that
+            can have this primitive in input_types
 
-        base_of_exclude (list[:class:`.PrimitiveBase`]): blacklist of primitives that cannot have this primitive in input_types
+        base_of_exclude (list[:class:`.PrimitiveBase`]): blacklist of
+            primitives that cannot have this primitive in input_types
 
         description (string): description of primitive
 
@@ -108,24 +114,26 @@ def make_agg_primitive(function, input_types, return_type, name=None,
             calculated at will be passed to the function as the keyword
             argument 'time'.
 
+        associative (bool): If True, will only make one feature per unique set
+            of base features
+
     Example:
         .. ipython :: python
-            :suppress:
 
             from featuretools.primitives import make_agg_primitive
             from featuretools.variable_types import DatetimeTimeIndex, Numeric
 
-        .. ipython :: python
 
             def time_since_last(values, time=None):
                 time_since = time - values.iloc[0]
                 return time_since.total_seconds()
 
-            TimeSinceLast = make_agg_primitive(time_since_last,
-                                               [DatetimeTimeIndex],
-                                               Numeric,
-                                               description="Time since last related instance",
-                                               uses_calc_time=True)
+            TimeSinceLast = make_agg_primitive(
+                time_since_last,
+                [DatetimeTimeIndex],
+                Numeric,
+                description="Time since last related instance",
+                uses_calc_time=True)
 
     '''
     cls = {"__doc__": description}
@@ -141,16 +149,21 @@ def make_agg_primitive(function, input_types, return_type, name=None,
     new_class.stack_on_self = stack_on_self
     new_class.base_of = base_of
     new_class.base_of_exclude = base_of_exclude
-    new_class, kwargs = inspect_function_args(new_class, function, uses_calc_time)
+    new_class.associative = associative
+    new_class, kwargs = inspect_function_args(new_class,
+                                              function,
+                                              uses_calc_time)
 
     if len(kwargs) > 0:
         new_class.kwargs = kwargs
 
-        def new_class_init(self, base_features, parent_entity, use_previous=None, where=None, **kwargs):
+        def new_class_init(self, base_features, parent_entity,
+                           use_previous=None, where=None, **kwargs):
             if not hasattr(base_features, '__iter__'):
                 base_features = [self._check_feature(base_features)]
             else:
-                base_features = [self._check_feature(bf) for bf in base_features]
+                base_features = [self._check_feature(bf)
+                                 for bf in base_features]
                 msg = "all base features must share the same entity"
                 assert len(set([bf.entity for bf in base_features])) == 1, msg
             self.base_features = base_features[:]
@@ -159,13 +172,14 @@ def make_agg_primitive(function, input_types, return_type, name=None,
 
             if where is not None:
                 self.where = self._check_feature(where)
-                msg = "Where feature must be defined on child entity {}".format(self.child_entity.id)
+                msg = "Where feature must be defined on child entity {}"
+                msg = msg.format(self.child_entity.id)
                 assert self.where.entity.id == self.child_entity.id, msg
 
             if use_previous:
                 assert self.child_entity.has_time_index(), (
-                    "Applying function that requires time index to entity that "
-                    "doesn't have one")
+                    "Applying function that requires time index to entity that"
+                    " doesn't have one")
 
             self.use_previous = use_previous
             self.kwargs = kwargs

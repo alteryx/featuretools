@@ -39,7 +39,8 @@ def get_aggregation_primitives():
     for attribute_string in dir(featuretools.primitives):
         attribute = getattr(featuretools.primitives, attribute_string)
         if isclass(attribute):
-            if issubclass(attribute, featuretools.primitives.AggregationPrimitive):
+            if issubclass(attribute,
+                          featuretools.primitives.AggregationPrimitive):
                 if attribute.name:
                     aggregation_primitives.add(attribute)
     return list(aggregation_primitives)
@@ -50,7 +51,8 @@ def get_transform_primitives():
     for attribute_string in dir(featuretools.primitives):
         attribute = getattr(featuretools.primitives, attribute_string)
         if isclass(attribute):
-            if issubclass(attribute, featuretools.primitives.TransformPrimitive):
+            if issubclass(attribute,
+                          featuretools.primitives.TransformPrimitive):
                 if attribute.name:
                     transform_primtives.add(attribute)
     return list(transform_primtives)
