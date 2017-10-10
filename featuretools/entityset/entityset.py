@@ -165,7 +165,7 @@ class EntitySet(BaseEntitySet):
                                                      final_entity_id=filter_eid,
                                                      instance_ids=instances,
                                                      time_last=time_last,
-                                                     training_window=window)
+                                                     training_window=training_window)
 
             eframes = {filter_eid: toplevel_slice}
 

@@ -191,14 +191,30 @@ def test_cutoff_time_binning(entityset):
 
 def test_handles_training_window_correctly(entityset):
     property_feature = Count(entityset['log']['id'], entityset['customers'])
+    top_level_agg = Count(entityset['customers']['id'], entityset['regions'])
+    # make sure we test feature target entity training window
     feature_matrix = calculate_feature_matrix([property_feature],
                                               instance_ids=[0, 1, 2],
                                               cutoff_time=[datetime(2011, 4, 9, 12, 31),
                                                            datetime(2011, 4, 10, 11),
                                                            datetime(2011, 4, 10, 13, 10, 1)],
+                                              training_window={'customers': '36 hours'})
+    prop_values = [0, 5, 0]
+    assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
+
+    # make sure features that have a direct to a higher level agg
+    # handle the training window correctly
+    dagg = DirectFeature(top_level_agg, entityset['customers'])
+    feature_matrix = calculate_feature_matrix([property_feature, dagg],
+                                              instance_ids=[0, 1, 2],
+                                              cutoff_time=[datetime(2011, 4, 9, 12, 31),
+                                                           datetime(2011, 4, 10, 11),
+                                                           datetime(2011, 4, 10, 13, 10, 1)],
                                               training_window={'log': '2 hours'})
-    labels = [5, 5, 1]
-    assert (feature_matrix == labels).values.all()
+    prop_values = [5, 5, 1]
+    dagg_values = [3, 3, 3]
+    assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
+    assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
 
     property_feature = Count(entityset['log']['id'], entityset['customers'])
     feature_matrix = calculate_feature_matrix([property_feature],
