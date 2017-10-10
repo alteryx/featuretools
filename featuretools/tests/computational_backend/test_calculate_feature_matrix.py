@@ -203,7 +203,8 @@ def test_handles_training_window_correctly(entityset):
     assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
 
     # make sure features that have a direct to a higher level agg
-    # handle the training window correctly
+    # so we have multiple "filter eids" in get_pandas_data_slice,
+    # and we go through the loop to pull data with a training_window param more than once
     dagg = DirectFeature(top_level_agg, entityset['customers'])
     feature_matrix = calculate_feature_matrix([property_feature, dagg],
                                               instance_ids=[0, 1, 2],
