@@ -1,12 +1,16 @@
 import pytest
 
-from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis, check_stacking, match
-from featuretools.primitives import Feature, Count, Mean, Sum, TimeSinceLast, AggregationPrimitive, get_aggregation_primitives
+from featuretools.synthesis.deep_feature_synthesis import (DeepFeatureSynthesis,
+                                                           check_stacking, match)
+from featuretools.primitives import(Feature, Count, Mean, Sum, TimeSinceLast,
+                                    AggregationPrimitive, NumTrue,
+                                    get_aggregation_primitives)
 from featuretools.variable_types import (Discrete, Numeric, Categorical,
                                          Ordinal, Boolean, Text, Datetime)
 from featuretools import calculate_feature_matrix
 from ..testing_utils import make_ecommerce_entityset, feature_with_name
 from datetime import datetime
+
 
 @pytest.fixture(scope='module')
 def es():
@@ -212,3 +216,14 @@ def test_time_since_last(es):
     correct = [131376600, 131289600, 131287800]
     # note: must round to nearest second
     assert all(fm[f.get_name()].round().values == correct)
+
+
+def test_makes_numtrue(es):
+    dfs = DeepFeatureSynthesis(target_entity_id='sessions',
+                               entityset=es,
+                               filters=[],
+                               agg_primitives=[NumTrue],
+                               trans_primitives=[])
+    features = dfs.build_features()
+    assert feature_with_name(features, 'customers.NUM_TRUE(log.purchased)')
+    assert feature_with_name(features, 'NUM_TRUE(log.purchased)')
