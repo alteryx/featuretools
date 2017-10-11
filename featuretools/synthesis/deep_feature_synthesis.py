@@ -5,7 +5,7 @@ from featuretools import variable_types
 from featuretools.variable_types import Categorical, Numeric, Boolean, Ordinal
 from featuretools.primitives.api import (IdentityFeature, BinaryFeature, Discrete,
                                          TimeSince, DirectFeature, Compare,
-                                         AggregationPrimitive)
+                                         AggregationPrimitive, Equals)
 import featuretools.primitives.api as ftypes
 from .dfs_filters import (TraverseUp, LimitModeUniques)
 
@@ -280,7 +280,6 @@ class DeepFeatureSynthesis(object):
     def _filter_features(self, features):
         assert isinstance(self.drop_exact, list), "drop_exact must be a list"
         assert isinstance(self.drop_contains, list), "drop_contains must be a list"
-
         f_keep = []
         for f in features:
             keep = True
@@ -487,7 +486,7 @@ class DeepFeatureSynthesis(object):
                 continue
 
             for val in feat.variable.interesting_values:
-                self.where_clauses[entity.id].add(Compare(feat, Compare.EQ, val))
+                self.where_clauses[entity.id].add(Equals(feat, val))
 
     def _build_transform_features(self, all_features, entity, max_depth=0):
         """Creates trans_features for all the variables in an entity
@@ -518,7 +517,8 @@ class DeepFeatureSynthesis(object):
                                               variable_type=set(input_types),
                                               max_depth=new_max_depth)
 
-            matching_inputs = match(input_types, features)
+            matching_inputs = match(input_types, features,
+                                    associative=trans_prim.associative)
 
             for matching_input in matching_inputs:
                 new_f = trans_prim(*matching_input)
@@ -588,7 +588,8 @@ class DeepFeatureSynthesis(object):
 
             features = [f for f in features if not self._feature_in_relationship_path(relationship_path, f)]
 
-            matching_inputs = match(input_types, features)
+            matching_inputs = match(input_types, features,
+                                    associative=agg_prim.associative)
             wheres = list(self.where_clauses[child_entity.id])
 
             for matching_input in matching_inputs:
@@ -726,14 +727,14 @@ def match_by_type(features, t):
     return matches
 
 
-def match(input_types, features, replace=False):
+def match(input_types, features, replace=False, associative=False):
     to_match = input_types[0]
     matches = match_by_type(features, to_match)
 
     if len(input_types) == 1:
         return [(m,) for m in matches]
 
-    matching_inputs = []
+    matching_inputs = set([])
 
     for m in matches:
         copy = features[:]
@@ -743,6 +744,14 @@ def match(input_types, features, replace=False):
 
         rest = match(input_types[1:], copy, replace)
         for r in rest:
-            matching_inputs.append([m] + list(r))
+            new_match = [m] + list(r)
+
+            # associative uses frozenset instead of tuple because it doesn't
+            # want multiple orderings of the same input
+            if associative:
+                new_match = frozenset(new_match)
+            else:
+                new_match = tuple(new_match)
+            matching_inputs.add(new_match)
 
     return set([tuple(s) for s in matching_inputs])

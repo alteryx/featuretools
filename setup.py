@@ -4,6 +4,7 @@ from setuptools.command.build_ext import build_ext as _build_ext
 
 # Bootstrap numpy install
 class build_ext(_build_ext):
+
     def finalize_options(self):
         _build_ext.finalize_options(self)
         # Prevent numpy from thinking it is still in its setup process:
@@ -18,14 +19,13 @@ setup(
     packages=find_packages(),
     description='a framework for automated feature engineering',
     url='http://featuretools.com',
-    license='BSD 4-clause',
+    license='BSD 3-clause',
     author='Feature Labs, Inc.',
     author_email='support@featurelabs.com',
     classifiers=[
          'Development Status :: 3 - Alpha',
          'Intended Audience :: Developers',
          'Programming Language :: Python :: 2.7'],
-
     install_requires=['numpy>=1.11.0',
                       'scipy>=0.17.0',
                       'pandas==0.20.1',

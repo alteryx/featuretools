@@ -113,11 +113,11 @@ class EntitySet(BaseEntitySet):
         self.entity_stores = full_entities
         return sampled
 
-    def head(self, entity_id, n=10, variable_id=None, calc_time=None):
+    def head(self, entity_id, n=10, variable_id=None, cutoff_time=None):
         if variable_id is None:
-            return self.entity_stores[entity_id].head(n=n, calc_time=calc_time)
+            return self.entity_stores[entity_id].head(n, cutoff_time=cutoff_time)
         else:
-            return self.entity_stores[entity_id][variable_id].head(n=n, calc_time=calc_time)
+            return self.entity_stores[entity_id].head(n, cutoff_time=cutoff_time)[variable_id]
 
     def get_instance_data(self, entity_id, instance_ids):
         return self.entity_stores[entity_id].query_by_values(instance_ids)

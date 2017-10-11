@@ -10,5 +10,4 @@ from . import tests
 from .utils.pickle_utils import *
 import featuretools.demo
 
-
-__version__ = "0.1.9"
+__version__ = '0.1.9'

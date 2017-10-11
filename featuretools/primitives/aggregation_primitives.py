@@ -13,7 +13,7 @@ from scipy.stats import skew
 class Count(AggregationPrimitive):
     """Counts the number of non null values."""
     name = "count"
-    input_types =  [[Index], [Variable]]
+    input_types = [[Index], [Variable]]
     return_type = Numeric
     stack_on_self = False
     default_value = 0
@@ -45,12 +45,12 @@ class Count(AggregationPrimitive):
         use_prev_str = self._use_prev_str()
 
         return u"COUNT(%s%s%s)" % (self.child_entity.name,
-                                  where_str, use_prev_str)
+                                   where_str, use_prev_str)
 
 
 class Sum(AggregationPrimitive):
     name = "sum"
-    input_types =  [Numeric]
+    input_types = [Numeric]
     return_type = Numeric
     stack_on_self = False
     stack_on_exclude = [Count]
@@ -64,7 +64,7 @@ class Sum(AggregationPrimitive):
 
 class Mean(AggregationPrimitive):
     name = "mean"
-    input_types =  [Numeric]
+    input_types = [Numeric]
     return_type = Numeric
 
     # p todo: handle nulls
@@ -75,7 +75,7 @@ class Mean(AggregationPrimitive):
 class Mode(AggregationPrimitive):
     """Finds the most common element in a categorical feature."""
     name = "mode"
-    input_types =  [Discrete]
+    input_types = [Discrete]
     return_type = None
 
     def get_function(self):
@@ -89,7 +89,7 @@ class Mode(AggregationPrimitive):
 class Min(AggregationPrimitive):
     """Finds the minimum non-null value of a numeric feature."""
     name = "min"
-    input_types =  [Numeric]
+    input_types = [Numeric]
     return_type = None
     # max_stack_depth = 1
     stack_on_self = False
@@ -101,7 +101,7 @@ class Min(AggregationPrimitive):
 class Max(AggregationPrimitive):
     """Finds the maximum non-null value of a numeric feature."""
     name = "max"
-    input_types =  [Numeric]
+    input_types = [Numeric]
     return_type = None
     # max_stack_depth = 1
     stack_on_self = False
@@ -131,7 +131,7 @@ class PercentTrue(AggregationPrimitive):
     Finds the percent of 'True' values in a boolean feature.
     """
     name = "percent_true"
-    input_types =  [Boolean]
+    input_types = [Boolean]
     return_type = Numeric
     max_stack_depth = 1
     stack_on = []
@@ -148,7 +148,7 @@ class PercentTrue(AggregationPrimitive):
 class NMostCommon(AggregationPrimitive):
     """Finds the N most common elements in a categorical feature."""
     name = "n_most_common"
-    input_types =  [Discrete]
+    input_types = [Discrete]
     return_type = Discrete
     # max_stack_depth = 1
     stack_on = []
@@ -187,7 +187,7 @@ class AvgTimeBetween(AggregationPrimitive):
     # should then calculate the average of that trans_feat
     # which amounts to AvgTimeBetween
     name = "avg_time_between"
-    input_types =  [DatetimeTimeIndex]
+    input_types = [DatetimeTimeIndex]
     return_type = Numeric
     # max_stack_depth = 1
 
@@ -227,7 +227,7 @@ class AvgTimeBetween(AggregationPrimitive):
 class Median(AggregationPrimitive):
     """Finds the median value of any feature with well-ordered values."""
     name = "median"
-    input_types =  [Numeric]
+    input_types = [Numeric]
     return_type = None
     # max_stack_depth = 2
 
@@ -243,7 +243,7 @@ class Skew(AggregationPrimitive):
     distribution.
     """
     name = "skew"
-    input_types =  [Numeric]
+    input_types = [Numeric]
     return_type = Numeric
     stack_on = []
     stack_on_self = False
@@ -256,7 +256,7 @@ class Skew(AggregationPrimitive):
 class Std(AggregationPrimitive):
     """Finds the standard deviation of a numeric feature ignoring null values."""
     name = "std"
-    input_types =  [Numeric]
+    input_types = [Numeric]
     return_type = Numeric
     # max_stack_depth = 2
     stack_on_self = False
@@ -268,7 +268,7 @@ class Std(AggregationPrimitive):
 class Last(AggregationPrimitive):
     """Returns the last value"""
     name = "last"
-    input_types =  [Variable]
+    input_types = [Variable]
     return_type = None
     stack_on_self = False
     # max_stack_depth = 1
@@ -282,7 +282,7 @@ class Last(AggregationPrimitive):
 class Any(AggregationPrimitive):
     """Test if any value is True"""
     name = "any"
-    input_types =  [Boolean]
+    input_types = [Boolean]
     return_type = Boolean
     stack_on_self = False
 
@@ -293,7 +293,7 @@ class Any(AggregationPrimitive):
 class All(AggregationPrimitive):
     """Test if all values are True"""
     name = "all"
-    input_types =  [Boolean]
+    input_types = [Boolean]
     return_type = Boolean
     stack_on_self = False
 
@@ -304,7 +304,7 @@ class All(AggregationPrimitive):
 class TimeSinceLast(AggregationPrimitive):
     """Time since last related instance"""
     name = "time_since_last"
-    input_types =  [DatetimeTimeIndex]
+    input_types = [DatetimeTimeIndex]
     return_type = Numeric
     uses_calc_time = True
 
@@ -320,7 +320,7 @@ class TimeSinceLast(AggregationPrimitive):
 class Trend(AggregationPrimitive):
     """Calculates the slope of the linear trend of variable overtime"""
     name = "trend"
-    input_types =  [Numeric, DatetimeTimeIndex]
+    input_types = [Numeric, DatetimeTimeIndex]
     return_type = Numeric
 
     def __init__(self, value, time_index, parent_entity, **kwargs):
