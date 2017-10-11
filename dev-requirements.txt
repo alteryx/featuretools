@@ -7,3 +7,4 @@ pytest-xdist>=1.15.0
 jupyter==1.0.0
 rst2pdf==0.93
 coveralls==1.2.0
+pytest-cov===2.5.1
