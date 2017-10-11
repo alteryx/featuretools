@@ -11,7 +11,7 @@ from scipy.stats import skew
 # TODO: make sure get func gets numpy arrays not series
 #
 class Count(AggregationPrimitive):
-    """Counts the number of non null values."""
+    """Counts the number of non null values"""
     name = "count"
     input_types = [[Index], [Variable]]
     return_type = Numeric
@@ -49,6 +49,7 @@ class Count(AggregationPrimitive):
 
 
 class Sum(AggregationPrimitive):
+    """Counts the number of elements of a numeric or boolean feature"""
     name = "sum"
     input_types = [Numeric]
     return_type = Numeric
@@ -63,6 +64,7 @@ class Sum(AggregationPrimitive):
 
 
 class Mean(AggregationPrimitive):
+    """Computes the average value of a numeric feature"""
     name = "mean"
     input_types = [Numeric]
     return_type = Numeric
@@ -73,7 +75,7 @@ class Mean(AggregationPrimitive):
 
 
 class Mode(AggregationPrimitive):
-    """Finds the most common element in a categorical feature."""
+    """Finds the most common element in a categorical feature"""
     name = "mode"
     input_types = [Discrete]
     return_type = None
@@ -87,7 +89,7 @@ class Mode(AggregationPrimitive):
 
 
 class Min(AggregationPrimitive):
-    """Finds the minimum non-null value of a numeric feature."""
+    """Finds the minimum non-null value of a numeric feature"""
     name = "min"
     input_types = [Numeric]
     return_type = None
@@ -99,7 +101,7 @@ class Min(AggregationPrimitive):
 
 
 class Max(AggregationPrimitive):
-    """Finds the maximum non-null value of a numeric feature."""
+    """Finds the maximum non-null value of a numeric feature"""
     name = "max"
     input_types = [Numeric]
     return_type = None
@@ -111,9 +113,7 @@ class Max(AggregationPrimitive):
 
 
 class NUnique(AggregationPrimitive):
-    """
-    Returns the number of unique categorical variables
-    """
+    """Returns the number of unique categorical variables"""
     name = "num_unique"
     # todo can we use discrete in input_types instead?
     input_types = [Discrete]
@@ -125,11 +125,23 @@ class NUnique(AggregationPrimitive):
         return lambda x: x.nunique()
 
 
-# p todo: NUM_TRUE
+class NumTrue(AggregationPrimitive):
+    """Finds the number of 'True' values in a boolean"""
+    name = "num_true"
+    input_types = [Boolean]
+    return_type = Numeric
+    default_value = 0
+    stack_on = []
+    stack_on_exclude = []
+
+    def get_function(self):
+        def num_true(x):
+            return np.nan_to_num(x.values).sum()
+        return num_true
+
+
 class PercentTrue(AggregationPrimitive):
-    """
-    Finds the percent of 'True' values in a boolean feature.
-    """
+    """Finds the percent of 'True' values in a boolean feature"""
     name = "percent_true"
     input_types = [Boolean]
     return_type = Numeric
@@ -146,7 +158,7 @@ class PercentTrue(AggregationPrimitive):
 
 
 class NMostCommon(AggregationPrimitive):
-    """Finds the N most common elements in a categorical feature."""
+    """Finds the N most common elements in a categorical feature"""
     name = "n_most_common"
     input_types = [Discrete]
     return_type = Discrete
@@ -176,12 +188,12 @@ class NMostCommon(AggregationPrimitive):
 
 
 class AvgTimeBetween(AggregationPrimitive):
-    """
-    Computes the average time between consecutive events
-    using the time index of the entity
+    """Computes the average time between consecutive events
+    using the time index of the entity.
 
     Note: equivalent to Mean(Diff(time_index)), but more performant
     """
+
     # Potentially unnecessary if we add an trans_feat that
     # calculates the difference between events. DFS
     # should then calculate the average of that trans_feat
@@ -225,7 +237,7 @@ class AvgTimeBetween(AggregationPrimitive):
 
 
 class Median(AggregationPrimitive):
-    """Finds the median value of any feature with well-ordered values."""
+    """Finds the median value of any feature with well-ordered values"""
     name = "median"
     input_types = [Numeric]
     return_type = None
@@ -254,7 +266,7 @@ class Skew(AggregationPrimitive):
 
 
 class Std(AggregationPrimitive):
-    """Finds the standard deviation of a numeric feature ignoring null values."""
+    """Finds the standard deviation of a numeric feature ignoring null values"""
     name = "std"
     input_types = [Numeric]
     return_type = Numeric
