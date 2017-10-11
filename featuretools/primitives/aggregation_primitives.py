@@ -130,8 +130,7 @@ class NumTrue(AggregationPrimitive):
     name = "num_true"
     input_types = [Boolean]
     return_type = Numeric
-    max_stack_depth = 1
-    default_value = np.nan
+    default_value = 0
     stack_on = []
     stack_on_exclude = []
 
