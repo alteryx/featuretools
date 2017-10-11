@@ -1,3 +1,4 @@
+TEST_CMD=setup.py test --addopts --boxed
 clean:
 	find . -name '*.pyo' -delete
 	find . -name '*.pyc' -delete
@@ -5,7 +6,13 @@ clean:
 	find . -name '*~' -delete
 
 test: clean
-	python setup.py test --addopts --boxed
+	python $(TEST_CMD)
+
+coverage:
+	coverage run --rcfile=.coveragerc $(TEST_CMD)
+
+coveralls:
+	coveralls
 
 installdeps:
 	pip install --upgrade pip

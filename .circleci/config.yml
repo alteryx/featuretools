@@ -7,4 +7,4 @@ jobs:
     steps:
       - checkout
       - run: make installdeps
-      - run: make test
+      - run: make coverage && make coveralls
