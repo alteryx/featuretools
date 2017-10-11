@@ -70,3 +70,10 @@ def test_get_depth(es):
     assert d2.get_depth(stop_at=[f, g, agg2]) == 2
     assert d2.get_depth(stop_at=[f, g, d1]) == 1
     assert d2.get_depth(stop_at=[f, g, d2]) == 0
+
+
+def test_squared(es):
+    feature = Feature(es['log']['value'])
+    squared = feature * feature
+    assert len(squared.base_features) == 1
+    assert squared.base_features[0].hash() == feature.hash()

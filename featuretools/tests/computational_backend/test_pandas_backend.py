@@ -446,3 +446,13 @@ def test_topn(entityset, backend):
     for i, values in enumerate(df[topn.get_name()].values):
         for j, v in enumerate(values):
             assert (v == true_results[i][j])
+
+
+def test_direct_squared(entityset, backend):
+    feature = IdentityFeature(entityset['log']['value'])
+    squared = feature * feature
+    pandas_backend = backend([feature, squared])
+    df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2],
+                                               time_last=None)
+    for i, row in df.iterrows():
+        assert (row[0] * row[0]) == row[1]
