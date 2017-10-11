@@ -449,7 +449,6 @@ def test_topn(entityset, backend):
 def test_direct_squared(entityset, backend):
     feature = IdentityFeature(entityset['log']['value'])
     squared = feature * feature
-    assert squared.base_features[0].hash() == feature.hash()
     pandas_backend = backend([feature, squared])
     df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2],
                                                time_last=None)
