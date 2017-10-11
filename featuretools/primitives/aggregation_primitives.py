@@ -50,7 +50,7 @@ class Count(AggregationPrimitive):
 
 class Sum(AggregationPrimitive):
     name = "sum"
-    input_types = [Numeric]
+    input_types = [[Numeric], [Boolean]]
     return_type = Numeric
     stack_on_self = False
     stack_on_exclude = [Count]
@@ -111,9 +111,7 @@ class Max(AggregationPrimitive):
 
 
 class NUnique(AggregationPrimitive):
-    """
-    Returns the number of unique categorical variables
-    """
+    """Returns the number of unique categorical variables."""
     name = "num_unique"
     # todo can we use discrete in input_types instead?
     input_types = [Discrete]
@@ -125,7 +123,22 @@ class NUnique(AggregationPrimitive):
         return lambda x: x.nunique()
 
 
-# p todo: NUM_TRUE
+class NumTrue(AggregationPrimitive):
+    """Finds the number of 'True' values in a boolean """
+    name = "num_true"
+    input_types = [Boolean]
+    return_type = Numeric
+    max_stack_depth = 1
+    default_value = np.nan
+    stack_on = []
+    stack_on_exclude = []
+
+    def get_function(self):
+        def num_true(x):
+            return np.nan_to_num(x.values).sum()
+        return num_true
+
+
 class PercentTrue(AggregationPrimitive):
     """
     Finds the percent of 'True' values in a boolean feature.
