@@ -9,7 +9,7 @@ test: clean
 	python $(TEST_CMD)
 
 coverage:
-	coverage run $(TEST_CMD)
+	coverage run --rcfile=.coveragerc $(TEST_CMD)
 
 coveralls:
 	coveralls
