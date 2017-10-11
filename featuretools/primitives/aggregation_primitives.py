@@ -51,7 +51,7 @@ class Count(AggregationPrimitive):
 class Sum(AggregationPrimitive):
     """Counts the number of elements of a numeric or boolean feature."""
     name = "sum"
-    input_types = [[Numeric], [Boolean]]
+    input_types = [Numeric]
     return_type = Numeric
     stack_on_self = False
     stack_on_exclude = [Count]
