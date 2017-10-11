@@ -57,7 +57,7 @@ class Absolute(TransformPrimitive):
 
 
 class TimeSincePrevious(TransformPrimitive):
-    """ Compute the time since the previous instance for each instance in a time indexed entity."""
+    """Compute the time since the previous instance for each instance in a time indexed entity."""
     name = "time_since_previous"
     input_types = [DatetimeTimeIndex, Id]
     return_type = Numeric

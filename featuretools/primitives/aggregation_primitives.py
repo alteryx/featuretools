@@ -195,6 +195,7 @@ class AvgTimeBetween(AggregationPrimitive):
 
     Note: equivalent to Mean(Diff(time_index)), but more performant
     """
+
     # Potentially unnecessary if we add an trans_feat that
     # calculates the difference between events. DFS
     # should then calculate the average of that trans_feat
