@@ -5,7 +5,10 @@ clean:
 	find . -name __pycache__ -delete
 	find . -name '*~' -delete
 
-test: clean
+lint:
+	flake8 featuretools
+
+test: lint
 	python $(TEST_CMD)
 
 coverage:
