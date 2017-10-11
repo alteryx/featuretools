@@ -49,6 +49,7 @@ class Count(AggregationPrimitive):
 
 
 class Sum(AggregationPrimitive):
+    """Counts the number of elements of a numeric or boolean feature."""
     name = "sum"
     input_types = [[Numeric], [Boolean]]
     return_type = Numeric
@@ -63,6 +64,7 @@ class Sum(AggregationPrimitive):
 
 
 class Mean(AggregationPrimitive):
+    """Computes the average value of a numeric feature."""
     name = "mean"
     input_types = [Numeric]
     return_type = Numeric
@@ -124,7 +126,7 @@ class NUnique(AggregationPrimitive):
 
 
 class NumTrue(AggregationPrimitive):
-    """Finds the number of 'True' values in a boolean """
+    """Finds the number of 'True' values in a boolean."""
     name = "num_true"
     input_types = [Boolean]
     return_type = Numeric
@@ -140,9 +142,7 @@ class NumTrue(AggregationPrimitive):
 
 
 class PercentTrue(AggregationPrimitive):
-    """
-    Finds the percent of 'True' values in a boolean feature.
-    """
+    """Finds the percent of 'True' values in a boolean feature."""
     name = "percent_true"
     input_types = [Boolean]
     return_type = Numeric
