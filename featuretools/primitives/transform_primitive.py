@@ -151,7 +151,7 @@ class Absolute(TransformPrimitive):
 
 
 class TimeSincePrevious(TransformPrimitive):
-    """ Compute the time since the previous instance for each instance in a
+    """Compute the time since the previous instance for each instance in a
      time indexed entity"""
     name = "time_since_previous"
     input_types = [DatetimeTimeIndex, Id]
@@ -210,18 +210,22 @@ class TimedeltaUnitBasePrimitive(TransformPrimitive):
 
 
 class Day(DatetimeUnitBasePrimitive):
+    """Transform a Datetime feature into the day"""
     name = "day"
 
 
 class Days(TimedeltaUnitBasePrimitive):
+    """Transform a Timedelta feature into the number of days"""
     name = "days"
 
 
 class Hour(DatetimeUnitBasePrimitive):
+    """Transform a Datetime feature into the hour"""
     name = "hour"
 
 
 class Hours(TimedeltaUnitBasePrimitive):
+    """Transform a Timedelta feature into the number of hours"""
     name = "hours"
 
     def get_function(self):
@@ -231,18 +235,22 @@ class Hours(TimedeltaUnitBasePrimitive):
 
 
 class Second(DatetimeUnitBasePrimitive):
+    """Transform a Datetime feature into the second"""
     name = "second"
 
 
 class Seconds(TimedeltaUnitBasePrimitive):
+    """Transform a Timedelta feature into the number of seconds"""
     name = "seconds"
 
 
 class Minute(DatetimeUnitBasePrimitive):
+    """Transform a Datetime feature into the minute"""
     name = "minute"
 
 
 class Minutes(TimedeltaUnitBasePrimitive):
+    """Transform a Timedelta feature into the number of minutes"""
     name = "minutes"
 
     def get_function(self):
@@ -252,10 +260,12 @@ class Minutes(TimedeltaUnitBasePrimitive):
 
 
 class Week(DatetimeUnitBasePrimitive):
+    """Transform a Datetime feature into the week"""
     name = "week"
 
 
 class Weeks(TimedeltaUnitBasePrimitive):
+    """Transform a Timedelta feature into the number of weeks"""
     name = "weeks"
 
     def get_function(self):
@@ -265,10 +275,12 @@ class Weeks(TimedeltaUnitBasePrimitive):
 
 
 class Month(DatetimeUnitBasePrimitive):
+    """Transform a Datetime feature into the month"""
     name = "month"
 
 
 class Months(TimedeltaUnitBasePrimitive):
+    """Transform a Timedelta feature into the number of months"""
     name = "months"
 
     def get_function(self):
@@ -278,10 +290,12 @@ class Months(TimedeltaUnitBasePrimitive):
 
 
 class Year(DatetimeUnitBasePrimitive):
+    """Transform a Datetime feature into the year"""
     name = "year"
 
 
 class Years(TimedeltaUnitBasePrimitive):
+    """Transform a Timedelta feature into the number of years"""
     name = "years"
 
     def get_function(self):
@@ -301,6 +315,7 @@ class Weekend(TransformPrimitive):
 
 
 class Weekday(DatetimeUnitBasePrimitive):
+    """Transform Datetime feature into the boolean of Weekday"""
     name = "weekday"
 
 
@@ -438,6 +453,9 @@ class Diff(TransformPrimitive):
 
 
 class Not(TransformPrimitive):
+    """
+    For each value of the base feature, negates the boolean value.
+    """
     name = "not"
     input_types = [Boolean]
     return_type = Boolean
@@ -453,6 +471,10 @@ class Not(TransformPrimitive):
 
 
 class Percentile(TransformPrimitive):
+    """
+    For each value of the base feature, determines the percentile in relation
+    to the rest of the feature.
+    """
     name = 'percentile'
     input_types = [Numeric]
     return_type = Numeric

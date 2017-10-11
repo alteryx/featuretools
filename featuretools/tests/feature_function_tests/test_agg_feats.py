@@ -3,8 +3,8 @@ import pandas as pd
 from featuretools.synthesis.deep_feature_synthesis import (
     DeepFeatureSynthesis, check_stacking, match)
 from featuretools.primitives import (
-    Feature, Count, Mean, Sum, TimeSinceLast, AggregationPrimitive,
-    get_aggregation_primitives, make_agg_primitive, Equals, IdentityFeature)
+    Feature, Count, Mean, Sum, TimeSinceLast, AggregationPrimitive, NumTrue,
+    get_aggregation_primitives, make_agg_primitive)
 from featuretools.variable_types import (Numeric, Index, Variable,
                                          DatetimeTimeIndex, Datetime)
 from featuretools import calculate_feature_matrix, dfs
@@ -330,3 +330,14 @@ def test_custom_primitive_multiple_inputs(es):
     where_feat = "MEAN_SUNDAY(log.value, datetime WHERE priority_level = 0)"
     for x, y in zip(fm[where_feat], mean_sunday_value_priority_0):
         assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+
+
+def test_makes_numtrue(es):
+    dfs = DeepFeatureSynthesis(target_entity_id='sessions',
+                               entityset=es,
+                               filters=[],
+                               agg_primitives=[NumTrue],
+                               trans_primitives=[])
+    features = dfs.build_features()
+    assert feature_with_name(features, 'customers.NUM_TRUE(log.purchased)')
+    assert feature_with_name(features, 'NUM_TRUE(log.purchased)')
