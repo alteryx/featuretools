@@ -1,5 +1,6 @@
 [run]
 source = featuretools
+
 [report]
 exclude_lines =
     pragma: no cover
