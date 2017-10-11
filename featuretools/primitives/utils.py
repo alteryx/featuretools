@@ -47,15 +47,15 @@ def get_aggregation_primitives():
 
 
 def get_transform_primitives():
-    transform_primtives = set([])
+    transform_primitives = set([])
     for attribute_string in dir(featuretools.primitives):
         attribute = getattr(featuretools.primitives, attribute_string)
         if isclass(attribute):
             if issubclass(attribute,
                           featuretools.primitives.TransformPrimitive):
                 if attribute.name:
-                    transform_primtives.add(attribute)
-    return list(transform_primtives)
+                    transform_primitives.add(attribute)
+    return list(transform_primitives)
 
 
 def ensure_compatible_dtype(left, right):

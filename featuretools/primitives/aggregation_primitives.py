@@ -21,15 +21,8 @@ class Count(AggregationPrimitive):
     default_value = 0
 
     def __init__(self, id_feature, parent_entity, count_null=False, **kwargs):
-        if isinstance(id_feature, Entity):
-            child_entity = id_feature
-            index = child_entity.index
-            # Really this is a variable but the check feature later on will
-            # convert it
-            id_feature = child_entity[index]
-        self.id_feature = id_feature
         self.count_null = count_null
-        super(Count, self).__init__([id_feature], parent_entity, **kwargs)
+        super(Count, self).__init__(id_feature, parent_entity, **kwargs)
 
     def get_function(self):
         def func(values, count_null=self.count_null):

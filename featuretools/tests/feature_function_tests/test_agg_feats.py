@@ -1,13 +1,13 @@
 import pytest
-
+import pandas as pd
 from featuretools.synthesis.deep_feature_synthesis import (
     DeepFeatureSynthesis, check_stacking, match)
 from featuretools.primitives import (
     Feature, Count, Mean, Sum, TimeSinceLast, AggregationPrimitive,
-    get_aggregation_primitives, make_agg_primitive)
+    get_aggregation_primitives, make_agg_primitive, Equals, IdentityFeature)
 from featuretools.variable_types import (Numeric, Index, Variable,
-                                         DatetimeTimeIndex)
-from featuretools import calculate_feature_matrix
+                                         DatetimeTimeIndex, Datetime)
+from featuretools import calculate_feature_matrix, dfs
 from ..testing_utils import make_ecommerce_entityset, feature_with_name
 from datetime import datetime
 
@@ -296,3 +296,37 @@ def test_custom_primitive_time_as_arg(es):
                            [DatetimeTimeIndex],
                            Numeric,
                            uses_calc_time=False)
+
+
+def test_custom_primitive_multiple_inputs(es):
+    def mean_sunday(numeric, datetime):
+        '''
+        Finds the mean of non-null values of a feature that occurred on Sundays
+        '''
+        days = pd.DatetimeIndex(datetime).weekday.values
+        df = pd.DataFrame({'numeric': numeric, 'time': days})
+        return df[df['time'] == 6]['numeric'].mean()
+
+    MeanSunday = make_agg_primitive(function=mean_sunday,
+                                    input_types=[Numeric, Datetime],
+                                    return_type=Numeric)
+
+    fm, features = dfs(entityset=es,
+                       target_entity="sessions",
+                       agg_primitives=[MeanSunday],
+                       trans_primitives=[])
+    mean_sunday_value = pd.Series([None, None, None, 2.5, 7, None])
+    iterator = zip(fm["MEAN_SUNDAY(log.value, datetime)"], mean_sunday_value)
+    for x, y in iterator:
+        assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+
+    es.add_interesting_values()
+    mean_sunday_value_priority_0 = pd.Series([None, None, None, 2.5, 0, None])
+    fm, features = dfs(entityset=es,
+                       target_entity="sessions",
+                       agg_primitives=[MeanSunday],
+                       trans_primitives=[],
+                       where_primitives=[MeanSunday])
+    where_feat = "MEAN_SUNDAY(log.value, datetime WHERE priority_level = 0)"
+    for x, y in zip(fm[where_feat], mean_sunday_value_priority_0):
+        assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))

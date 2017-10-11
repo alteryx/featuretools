@@ -197,6 +197,7 @@ Table of contents
    guides/tuning_dfs
    guides/deployment
    guides/exporting_feature_matrix
+   guides/advanced_custom_primitives
 .. guides/save_progress_example
 
 

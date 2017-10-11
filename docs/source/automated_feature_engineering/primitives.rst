@@ -103,52 +103,86 @@ Simple Custom Primitives
 
     from featuretools.primitives import make_agg_primitive, make_trans_primitive
     from featuretools.variable_types import Text, Numeric
-    import numpy as np
 
+    def absolute(column):
+        return abs(column)
 
-    Absolute = make_trans_primitive(function=lambda array: np.absolute(array),
+    Absolute = make_trans_primitive(function=absolute,
                                     input_types=[Numeric],
                                     return_type=Numeric)
 
-    Mean = make_agg_primitive(function=np.nanmean,
+Above we created a new transform primitive that can be used with Deep Feature Synthesis using :meth:`make_trans_primitive <featuretools.primitives.make_trans_primitive>` and a python function we defined.  Additionally, we annotated the input data types that the primitive can be applied to and the data type it returns.
+
+Similarly, we can make a new aggregation primitive using :meth:`make_agg_primitive <featuretools.primitives.make_agg_primitive>`.
+
+.. ipython :: python
+
+    def maximum(column):
+        return max(column)
+
+    Maximum = make_agg_primitive(function=maximum,
                               input_types=[Numeric],
                               return_type=Numeric)
 
-Both :meth:`make_agg_primitive <featuretools.primitives.make_agg_primitive>` and :meth:`make_trans_primitive <featuretools.primitives.make_trans_primitive>` require three arguments to create a new primitive class: ``function``, ``input_types``, and ``return_type``.
 
-Functions With Additonal Arguments
-==================================
-One caveat with the make\_primitive functions is that the required arguments of ``function`` must be input features.  Here we create a function for ``StringCount``, a primitive which counts the number of occurrences of a string in a ``Text`` input.  Since ``string`` is not a feature, it needs to be a keyword argument to ``string_count``.
+Because we defined an aggregation primitive, the function takes in a list of values but only returns one.
 
-.. ipython:: python
+Now that we've defined two primitives, we can use them with the dfs function as if they were built-in primitives.
 
-    def string_count(array, string=None):
+.. ipython :: python
+
+    feature_matrix, feature_defs = ft.dfs(entityset=es,
+                                          target_entity="sessions",
+                                          agg_primitives=[Maximum],
+                                          trans_primitives=[Absolute],
+                                          max_depth=2)
+
+    feature_matrix[["customers.MAXIMUM(transactions.amount)", "MAXIMUM(transactions.ABSOLUTE(amount))"]].head(5)
+
+Word Count Example
+=========================
+Here we define a function, ``word_count``, which counts the number of words in each row of an input and returns a  list of the counts.
+
+.. ipython :: python
+
+    def word_count(column):
         '''
-        ..note:: this is a naive implementation used for clarity
+        Counts the number of words in each row of the column. Returns a list
+        of the counts for each row.
         '''
-        assert string is not None, "string to count needs to be defined"
-        counts = [element.count(string) for element in array]
-        return counts
+        word_counts = []
+        for value in column:
+            words = value.split(None)
+            word_counts.append(len(words))
+        return word_counts
 
-Now that we have the function we create the primitive using the ``make_trans_primitive`` function.
+Next, we need to create a custom primitive from the ``word_count`` function.
 
-.. ipython:: python
+.. ipython :: python
 
-    StringCount = make_trans_primitive(function=string_count,
-                                       input_types=[Text],
-                                       return_type=Numeric)
+    WordCount = make_trans_primitive(function=word_count,
+                                     input_types=[Text],
+                                     return_type=Numeric)
 
-Passing in ``string="test"`` as a keyword argument when creating a StringCount feature will make "test" the value used for string when ``string_count`` is called to calculate the feature values.  Now we use this primitive to create a feature and calculate the feature values.
-
-.. ipython:: python
+.. ipython :: python
+    :suppress:
 
     from featuretools.tests.testing_utils import make_ecommerce_entityset
-
+    from featuretools.primitives import Mean, Std, Sum
     es = make_ecommerce_entityset()
-    es["customers"].df["favorite_quote"].sort_index()
-    count_the_feat = StringCount(es['customers']['favorite_quote'], string="the")
-    feature_matrix = ft.calculate_feature_matrix(features=[count_the_feat])
-    feature_matrix
+
+Since WordCount is a transform primitive, we need to add it to the list of transform primitives DFS can use when generating features.
+
+.. ipython :: python
+
+    feature_matrix, features = ft.dfs(entityset=es,
+                                      target_entity="sessions",
+                                      agg_primitives=[Sum, Mean, Std],
+                                      trans_primitives=[WordCount])
+
+    feature_matrix[["customers.WORD_COUNT(favorite_quote)", "STD(log.WORD_COUNT(comments))", "SUM(log.WORD_COUNT(comments))", "MEAN(log.WORD_COUNT(comments))"]]
+
+By adding some aggregation primitives as well, Deep Feature Synthesis was able to make four new features from one new primitive.
 
 Multiple Input Types
 ====================
@@ -160,20 +194,21 @@ If a primitive requires multiple features as input, ``input_types`` has multiple
     from featuretools.primitives import Feature, Equals
     import pandas as pd
 
-    def count_sunday(to_count, datetime):
+    def mean_sunday(numeric, datetime):
         '''
-        Counts non-null values that occurred on Sundays
+        Finds the mean of non-null values of a feature that occurred on Sundays
         '''
         days = pd.DatetimeIndex(datetime).weekday.values
-        df = pd.DataFrame({'to_count': to_count, 'time': days})
-        return df[df['time'] == 6]['to_count'].dropna().count()
+        df = pd.DataFrame({'numeric': numeric, 'time': days})
+        return df[df['time'] == 6]['numeric'].mean()
 
-    CountSunday = make_agg_primitive(function=count_sunday,
-                                     input_types=[Variable, Datetime],
+    MeanSunday = make_agg_primitive(function=mean_sunday,
+                                     input_types=[Numeric, Datetime],
                                      return_type=Numeric)
 
-    count_sunday_log_entries = CountSunday([es["log"]["value"],
-                                            es["log"]["datetime"]],
-                                           es["sessions"])
-    feature_matrix = ft.calculate_feature_matrix(features=[count_sunday_log_entries])
-    feature_matrix
+    feature_matrix, features = ft.dfs(entityset=es,
+                                      target_entity="sessions",
+                                      agg_primitives=[MeanSunday],
+                                      trans_primitives=[],
+                                      max_depth=1)
+    feature_matrix[["MEAN_SUNDAY(log.value, datetime)", "MEAN_SUNDAY(log.value_2, datetime)"]]

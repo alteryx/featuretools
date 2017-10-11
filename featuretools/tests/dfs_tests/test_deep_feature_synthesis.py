@@ -405,6 +405,58 @@ def test_where_primitives(es):
                 if isinstance(f, Count)]) == 0
 
 
+def test_stacking_where_primitives(es):
+    es = copy.deepcopy(es)
+    es['sessions']['device_type'].interesting_values = [0]
+    es['log']['product_id'].interesting_values = ["coke_zero"]
+    kwargs = dict(
+        target_entity_id='customers',
+        entityset=es,
+        agg_primitives=[Count, Last],
+        max_depth=3,
+    )
+    dfs_where_stack_limit_1 = DeepFeatureSynthesis(where_primitives=[Last, Count],
+                                                   **kwargs)
+    dfs_where_stack_limit_2 = DeepFeatureSynthesis(where_primitives=[Last, Count],
+                                                   where_stacking_limit=2,
+                                                   **kwargs)
+    stack_limit_1_features = dfs_where_stack_limit_1.build_features()
+    stack_limit_2_features = dfs_where_stack_limit_2.build_features()
+
+    where_stack_1_feats = [f for f in stack_limit_1_features
+                           if f.where is not None]
+    where_stack_2_feats = [f for f in stack_limit_2_features
+                           if f.where is not None]
+
+    assert len(where_stack_1_feats) >= 1
+    assert len(where_stack_2_feats) >= 1
+
+    assert len([f for f in where_stack_1_feats
+                if isinstance(f, Last)]) > 0
+    assert len([f for f in where_stack_1_feats
+                if isinstance(f, Count)]) > 0
+
+    assert len([f for f in where_stack_2_feats
+                if isinstance(f, Last)]) > 0
+    assert len([f for f in where_stack_2_feats
+                if isinstance(f, Count)]) > 0
+
+    stacked_where_limit_1_feats = []
+    stacked_where_limit_2_feats = []
+    where_double_where_tuples = [
+        (where_stack_1_feats, stacked_where_limit_1_feats),
+        (where_stack_2_feats, stacked_where_limit_2_feats)
+    ]
+    for where_list, double_where_list in where_double_where_tuples:
+        for feature in where_list:
+            for base_feat in feature.base_features:
+                if base_feat.where is not None:
+                    double_where_list.append(feature)
+
+    assert len(stacked_where_limit_1_feats) == 0
+    assert len(stacked_where_limit_2_feats) > 0
+
+
 def test_allow_where(es):
     es = copy.deepcopy(es)
     es['sessions']['device_type'].interesting_values = [0]
