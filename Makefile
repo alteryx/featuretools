@@ -11,9 +11,6 @@ test: clean
 coverage:
 	py.test --cov=featuretools
 
-coveralls:
-	coveralls
-
 installdeps:
 	pip install --upgrade pip
 	pip install -e .

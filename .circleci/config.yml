@@ -7,4 +7,4 @@ jobs:
     steps:
       - checkout
       - run: make installdeps
-      - run: make coverage && make coveralls
+      - run: make coverage && codecov
