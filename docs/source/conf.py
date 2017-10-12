@@ -37,7 +37,8 @@ extensions = [
     'nbsphinx',
     'rst2pdf.pdfbuilder',
     'IPython.sphinxext.ipython_console_highlighting',
-    'IPython.sphinxext.ipython_directive'
+    'IPython.sphinxext.ipython_directive',
+    'sphinx.ext.extlinks'
 ]
 
 
@@ -322,3 +323,8 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 nbsphinx_execute = 'never'
+
+extlinks = {
+    'issue': ('https://github.com/featuretools/featuretools/issues/%s', 'GH#'),
+    'pr': ('https://github.com/featuretools/featuretools/pull/%s', 'GH#')
+}
