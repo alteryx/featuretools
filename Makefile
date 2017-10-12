@@ -1,3 +1,4 @@
+TEST_CMD=setup.py test --addopts --boxed
 clean:
 	find . -name '*.pyo' -delete
 	find . -name '*.pyc' -delete
@@ -5,7 +6,10 @@ clean:
 	find . -name '*~' -delete
 
 test: clean
-	python setup.py test --addopts --boxed
+	python $(TEST_CMD)
+
+coverage:
+	py.test --cov=featuretools
 
 installdeps:
 	pip install --upgrade pip
