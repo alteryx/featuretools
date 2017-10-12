@@ -269,32 +269,39 @@ class Compare(BinaryFeature):
 
 
 class Equals(Compare):
+    """For each value, determine if it is equal to another value"""
     associative = True
     operator = '='
 
 
 class NotEquals(Compare):
+    """For each value, determine if it is not equal to another value"""
     associative = True
     operator = '!='
 
 
 class GreaterThan(Compare):
+    """For each value, determine if it is greater than another value"""
     operator = '>'
 
 
 class GreaterThanEqualTo(Compare):
+    """For each value, determine if it is greater than or equal to another value"""
     operator = '>='
 
 
 class LessThan(Compare):
+    """"For each value, determine if it is less than another value"""
     operator = '<'
 
 
 class LessThanEqualTo(Compare):
+    """"For each value, determien if it is less than or equal to another value"""
     operator = '<='
 
 
 class And(TransformPrimitive):
+    """For two boolean values, determine if both values are 'True'"""
     name = "and"
     input_types = [Boolean, Boolean]
     return_type = Boolean
@@ -305,6 +312,7 @@ class And(TransformPrimitive):
 
 
 class Or(TransformPrimitive):
+    """For two boolean values, determine if one value is 'True'"""
     name = "or"
     input_types = [Boolean, Boolean]
     return_type = Boolean
