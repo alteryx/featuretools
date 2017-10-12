@@ -1,4 +1,4 @@
-import pickle
+import cloudpickle
 import featuretools as ft
 
 
@@ -8,13 +8,14 @@ def save_features(features, filepath):
     Args:
         features (list[:class:`.PrimitiveBase`]): List of Feature definitions.
 
-        filepath (str): The location of where to save the pickled features list filepath.
-            This must include the name of the file.
+        filepath (str): The location of where to save the pickled features list
+             filepath. This must include the name of the file.
     Example:
         .. ipython:: python
             :suppress:
 
-            from featuretools.tests.testing_utils import make_ecommerce_entityset
+            from featuretools.tests.testing_utils import (
+                make_ecommerce_entityset)
             from featuretools.primitives import Feature
             import featuretools as ft
             es = make_ecommerce_entityset()
@@ -49,7 +50,8 @@ def load_features(filepath, entityset):
         filepath (str): The location of where pickled features has been saved.
             This must include the name of the file.
 
-        entityset (:class:`.EntitySet`): An already initialized entityset. Required.
+        entityset (:class:`.EntitySet`): An already initialized entityset.
+            Required.
 
     Returns:
         features (list[:class:`.PrimitiveBase`]): Feature definitions list.
@@ -58,7 +60,8 @@ def load_features(filepath, entityset):
         .. ipython:: python
             :suppress:
 
-            from featuretools.tests.testing_utils import make_ecommerce_entityset
+            from featuretools.tests.testing_utils import (
+                make_ecommerce_entityset)
             from featuretools.primitives import Feature
             import featuretools as ft
             es = make_ecommerce_entityset()
@@ -87,10 +90,10 @@ def load_features(filepath, entityset):
 
 def save_obj_pickle(obj, filepath):
     with open(filepath, "wb") as out:
-        pickle.dump(obj, out)
+        cloudpickle.dump(obj, out)
 
 
 def load_pickle(filepath):
     filestream = open(filepath, "rb")
-    obj = pickle.load(filestream)
+    obj = cloudpickle.load(filestream)
     return obj

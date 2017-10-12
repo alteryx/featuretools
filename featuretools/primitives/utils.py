@@ -1,5 +1,5 @@
 from .primitive_base import PrimitiveBase
-from inspect import isclass
+from inspect import isclass, getargspec
 import pandas as pd
 import featuretools.primitives
 
@@ -39,21 +39,23 @@ def get_aggregation_primitives():
     for attribute_string in dir(featuretools.primitives):
         attribute = getattr(featuretools.primitives, attribute_string)
         if isclass(attribute):
-            if issubclass(attribute, featuretools.primitives.AggregationPrimitive):
+            if issubclass(attribute,
+                          featuretools.primitives.AggregationPrimitive):
                 if attribute.name:
                     aggregation_primitives.add(attribute)
     return list(aggregation_primitives)
 
 
 def get_transform_primitives():
-    transform_primtives = set([])
+    transform_primitives = set([])
     for attribute_string in dir(featuretools.primitives):
         attribute = getattr(featuretools.primitives, attribute_string)
         if isclass(attribute):
-            if issubclass(attribute, featuretools.primitives.TransformPrimitive):
+            if issubclass(attribute,
+                          featuretools.primitives.TransformPrimitive):
                 if attribute.name:
-                    transform_primtives.add(attribute)
-    return list(transform_primtives)
+                    transform_primitives.add(attribute)
+    return list(transform_primitives)
 
 
 def ensure_compatible_dtype(left, right):
@@ -74,3 +76,22 @@ def ensure_compatible_dtype(left, right):
         if right.dtype != object and isinstance(left, basestring):
             right = right.astype(object)
     return left, right
+
+
+def inspect_function_args(new_class, function, uses_calc_time):
+    # inspect function to see if there are keyword arguments
+    argspec = getargspec(function)
+    kwargs = {}
+    if argspec.defaults is not None:
+        lowest_kwargs_position = len(argspec.args) - len(argspec.defaults)
+
+    for i, arg in enumerate(argspec.args):
+        if arg == 'time':
+            if not uses_calc_time:
+                raise ValueError("'time' is a restricted keyword.  Please"
+                                 " use a different keyword.")
+            else:
+                new_class.uses_calc_time = True
+        if argspec.defaults is not None and i >= lowest_kwargs_position:
+            kwargs[arg] = argspec.defaults[i - lowest_kwargs_position]
+    return new_class, kwargs

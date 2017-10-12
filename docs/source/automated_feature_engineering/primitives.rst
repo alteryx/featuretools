@@ -83,10 +83,10 @@ In the example above, we use two types of primitives.
 
 
 
-Creating Custom Primitives
+Defining Custom Primitives
 **************************
 
-The library of primitives in Featuretools is constantly expanding. In a future release, users will be able to include their primitives through a Custom Primitive API. To contribute a primitive, a user will
+The library of primitives in Featuretools is constantly expanding.  Users can define their own primitive using the APIs below.  To define a primitive, a user will
 
 
   * Specify the type of primitive ``Aggregation`` or ``Transform``
@@ -95,4 +95,120 @@ The library of primitives in Featuretools is constantly expanding. In a future r
   * Annotate with attributes to constrain how it is applied
 
 
-Once a primitive is contributed, it can stack with existing primitives to generate complex patterns. This enables primitives known to be important for one problem to automatically be transfered to another.
+Once a primitive is defined, it can stack with existing primitives to generate complex patterns. This enables primitives known to be important for one domain to automatically be transfered to another.
+
+Simple Custom Primitives
+========================
+.. ipython :: python
+
+    from featuretools.primitives import make_agg_primitive, make_trans_primitive
+    from featuretools.variable_types import Text, Numeric
+
+    def absolute(column):
+        return abs(column)
+
+    Absolute = make_trans_primitive(function=absolute,
+                                    input_types=[Numeric],
+                                    return_type=Numeric)
+
+Above we created a new transform primitive that can be used with Deep Feature Synthesis using :meth:`make_trans_primitive <featuretools.primitives.make_trans_primitive>` and a python function we defined.  Additionally, we annotated the input data types that the primitive can be applied to and the data type it returns.
+
+Similarly, we can make a new aggregation primitive using :meth:`make_agg_primitive <featuretools.primitives.make_agg_primitive>`.
+
+.. ipython :: python
+
+    def maximum(column):
+        return max(column)
+
+    Maximum = make_agg_primitive(function=maximum,
+                              input_types=[Numeric],
+                              return_type=Numeric)
+
+
+Because we defined an aggregation primitive, the function takes in a list of values but only returns one.
+
+Now that we've defined two primitives, we can use them with the dfs function as if they were built-in primitives.
+
+.. ipython :: python
+
+    feature_matrix, feature_defs = ft.dfs(entityset=es,
+                                          target_entity="sessions",
+                                          agg_primitives=[Maximum],
+                                          trans_primitives=[Absolute],
+                                          max_depth=2)
+
+    feature_matrix[["customers.MAXIMUM(transactions.amount)", "MAXIMUM(transactions.ABSOLUTE(amount))"]].head(5)
+
+Word Count Example
+=========================
+Here we define a function, ``word_count``, which counts the number of words in each row of an input and returns a  list of the counts.
+
+.. ipython :: python
+
+    def word_count(column):
+        '''
+        Counts the number of words in each row of the column. Returns a list
+        of the counts for each row.
+        '''
+        word_counts = []
+        for value in column:
+            words = value.split(None)
+            word_counts.append(len(words))
+        return word_counts
+
+Next, we need to create a custom primitive from the ``word_count`` function.
+
+.. ipython :: python
+
+    WordCount = make_trans_primitive(function=word_count,
+                                     input_types=[Text],
+                                     return_type=Numeric)
+
+.. ipython :: python
+    :suppress:
+
+    from featuretools.tests.testing_utils import make_ecommerce_entityset
+    from featuretools.primitives import Mean, Std, Sum
+    es = make_ecommerce_entityset()
+
+Since WordCount is a transform primitive, we need to add it to the list of transform primitives DFS can use when generating features.
+
+.. ipython :: python
+
+    feature_matrix, features = ft.dfs(entityset=es,
+                                      target_entity="sessions",
+                                      agg_primitives=[Sum, Mean, Std],
+                                      trans_primitives=[WordCount])
+
+    feature_matrix[["customers.WORD_COUNT(favorite_quote)", "STD(log.WORD_COUNT(comments))", "SUM(log.WORD_COUNT(comments))", "MEAN(log.WORD_COUNT(comments))"]]
+
+By adding some aggregation primitives as well, Deep Feature Synthesis was able to make four new features from one new primitive.
+
+Multiple Input Types
+====================
+If a primitive requires multiple features as input, ``input_types`` has multiple elements, eg ``[Numeric, Numeric]`` would mean the primitive requires two Numeric features as input.  Below is an example of a primitive that has multiple input features.
+
+.. ipython:: python
+
+    from featuretools.variable_types import Datetime, Timedelta, Variable
+    from featuretools.primitives import Feature, Equals
+    import pandas as pd
+
+    def mean_sunday(numeric, datetime):
+        '''
+        Finds the mean of non-null values of a feature that occurred on Sundays
+        '''
+        days = pd.DatetimeIndex(datetime).weekday.values
+        df = pd.DataFrame({'numeric': numeric, 'time': days})
+        return df[df['time'] == 6]['numeric'].mean()
+
+    MeanSunday = make_agg_primitive(function=mean_sunday,
+                                     input_types=[Numeric, Datetime],
+                                     return_type=Numeric)
+
+    feature_matrix, features = ft.dfs(entityset=es,
+                                      target_entity="sessions",
+                                      agg_primitives=[MeanSunday],
+                                      trans_primitives=[],
+                                      max_depth=1)
+    feature_matrix[["MEAN_SUNDAY(log.value, datetime)", "MEAN_SUNDAY(log.value_2, datetime)"]]
