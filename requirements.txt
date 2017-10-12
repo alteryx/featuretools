@@ -6,3 +6,4 @@ tqdm==4.19.2
 toolz==0.8.2
 dask[complete]==0.15.4
 pyyaml==3.12
+cloudpickle==0.4.0
