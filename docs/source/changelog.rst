@@ -5,7 +5,6 @@ Changelog
 
 
 **v0.1.10** October XX, 2017
-    * Custom primitive creation functions (:pr:`13`)
     * NumTrue primitive added and docstring of other primitives updated (:pr:`11`)
     * fixed hash issue with same base features (:pr:`8`)
     * Head fix (:pr:`9`)
