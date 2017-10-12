@@ -3,6 +3,16 @@
 Changelog
 ---------
 
+
+**v0.1.10** October XX, 2017
+    * NumTrue primitive added and docstring of other primitives updated (:pr:`11`)
+    * fixed hash issue with same base features (:pr:`8`)
+    * Head fix (:pr:`9`)
+    * Fix training window (:pr:`10`)
+    * Add associative attribute to primitives (:pr:`3`)
+    * Add status badges, fix license in setup.py (:pr:`1`)
+    * fixed head printout and flight demo index (:pr:`2`)
+
 **v0.1.9** September 8, 2017
     * Documentation improvements
     * New ``featuretools.demo.load_mock_customer`` function
