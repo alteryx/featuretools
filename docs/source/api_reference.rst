@@ -54,6 +54,14 @@ Primitive Types
 
 .. _api_ref.aggregation_features:
 
+Primitive Creation Functions
+----------------------------
+.. autosummary::
+    :toctree: generated/
+
+    make_agg_primitive
+    make_trans_primitive
+
 Aggregation Primitives
 ----------------------
 .. autosummary::
@@ -158,6 +166,7 @@ Feature methods
     PrimitiveBase.head
     PrimitiveBase.rename
     PrimitiveBase.get_depth
+
 
 Feature calculation
 ~~~~~~~~~~~~~~~~~~~~

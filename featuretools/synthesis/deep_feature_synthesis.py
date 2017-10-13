@@ -587,7 +587,6 @@ class DeepFeatureSynthesis(object):
                                                            child_entity.id)
 
             features = [f for f in features if not self._feature_in_relationship_path(relationship_path, f)]
-
             matching_inputs = match(input_types, features,
                                     associative=agg_prim.associative)
             wheres = list(self.where_clauses[child_entity.id])
@@ -595,8 +594,7 @@ class DeepFeatureSynthesis(object):
             for matching_input in matching_inputs:
                 if not check_stacking(agg_prim, matching_input):
                     continue
-
-                new_f = agg_prim(*matching_input,
+                new_f = agg_prim(matching_input,
                                  parent_entity=parent_entity)
                 self._handle_new_feature(new_f, all_features)
 
@@ -605,9 +603,15 @@ class DeepFeatureSynthesis(object):
                     continue
 
                 # limits the stacking of where features
-                feat_wheres = [feat for feat in f.get_deep_dependencies()
-                               if isinstance(feat, AggregationPrimitive) and
-                               feat.where is not None]
+                feat_wheres = []
+                for f in matching_input:
+                    if f.where is not None:
+                        feat_wheres.append(f)
+                    for feat in f.get_deep_dependencies():
+                        if (isinstance(feat, AggregationPrimitive) and
+                                feat.where is not None):
+                            feat_wheres.append(feat)
+
                 if len(feat_wheres) >= self.where_stacking_limit:
                     continue
 
@@ -620,7 +624,7 @@ class DeepFeatureSynthesis(object):
                     if any([base_feat.hash() in new_f.base_hashes for base_feat in where.base_features]):
                         continue
 
-                    new_f = agg_prim(*matching_input,
+                    new_f = agg_prim(matching_input,
                                      parent_entity=parent_entity,
                                      where=where)
                     self._handle_new_feature(new_f, all_features)

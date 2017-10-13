@@ -1,7 +1,7 @@
-from featuretools.variable_types import (Index, Numeric, Discrete, Categorical,
-                                         Boolean, Ordinal, DatetimeTimeIndex, Variable)
-from featuretools.entityset import Entity
-from .aggregation_primitive_base import AggregationPrimitive
+from featuretools.variable_types import (Index, Numeric, Discrete, Boolean,
+                                         DatetimeTimeIndex, Variable)
+from .aggregation_primitive_base import (AggregationPrimitive,
+                                         make_agg_primitive)
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
@@ -9,7 +9,8 @@ from scipy.stats import skew
 
 
 # TODO: make sure get func gets numpy arrays not series
-#
+
+
 class Count(AggregationPrimitive):
     """Counts the number of non null values"""
     name = "count"
@@ -19,15 +20,8 @@ class Count(AggregationPrimitive):
     default_value = 0
 
     def __init__(self, id_feature, parent_entity, count_null=False, **kwargs):
-        if isinstance(id_feature, Entity):
-            child_entity = id_feature
-            index = child_entity.index
-            # Really this is a variable but the check feature later on will
-            # convert it
-            id_feature = child_entity[index]
-        self.id_feature = id_feature
         self.count_null = count_null
-        super(Count, self).__init__([id_feature], parent_entity, **kwargs)
+        super(Count, self).__init__(id_feature, parent_entity, **kwargs)
 
     def get_function(self):
         def func(values, count_null=self.count_null):
@@ -88,16 +82,25 @@ class Mode(AggregationPrimitive):
         return pd_mode
 
 
-class Min(AggregationPrimitive):
-    """Finds the minimum non-null value of a numeric feature"""
-    name = "min"
-    input_types = [Numeric]
-    return_type = None
-    # max_stack_depth = 1
-    stack_on_self = False
+Min = make_agg_primitive(
+    np.min,
+    [Numeric],
+    None,
+    name="min",
+    stack_on_self=False,
+    description="Finds the minimum non-null value of a numeric feature.")
 
-    def get_function(self):
-        return np.min
+
+# class Min(AggregationPrimitive):
+#     """Finds the minimum non-null value of a numeric feature."""
+#     name = "min"
+#     input_types =  [Numeric]
+#     return_type = None
+#     # max_stack_depth = 1
+#     stack_on_self = False
+
+#     def get_function(self):
+#         return np.min
 
 
 class Max(AggregationPrimitive):
@@ -266,7 +269,9 @@ class Skew(AggregationPrimitive):
 
 
 class Std(AggregationPrimitive):
-    """Finds the standard deviation of a numeric feature ignoring null values"""
+    """
+    Finds the standard deviation of a numeric feature ignoring null values.
+    """
     name = "std"
     input_types = [Numeric]
     return_type = Numeric
@@ -338,7 +343,9 @@ class Trend(AggregationPrimitive):
     def __init__(self, value, time_index, parent_entity, **kwargs):
         self.value = value
         self.time_index = time_index
-        super(Trend, self).__init__([value, time_index], parent_entity, **kwargs)
+        super(Trend, self).__init__([value, time_index],
+                                    parent_entity,
+                                    **kwargs)
 
     def get_function(self):
         def pd_trend(y, x):

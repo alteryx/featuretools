@@ -3,6 +3,7 @@ from numpy.random import choice
 from numpy import random
 import featuretools as ft
 
+
 def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transactions=500,
                        random_seed=0, return_single_table=False, return_entityset=False):
     """Return dataframes of mock customer data"""
