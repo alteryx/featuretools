@@ -11,10 +11,17 @@ import pytest
 from ..testing_utils import make_ecommerce_entityset
 
 from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
-from featuretools.computational_backends.calculate_feature_matrix import \
+from featuretools.computational_backends.calculate_feature_matrix import (
     bin_cutoff_times
-from featuretools.primitives import (AggregationPrimitive, Count,
-                                     DirectFeature, IdentityFeature, Min, Sum)
+)
+from featuretools.primitives import (
+    AggregationPrimitive,
+    Count,
+    DirectFeature,
+    IdentityFeature,
+    Min,
+    Sum
+)
 
 
 @pytest.fixture(scope='module')

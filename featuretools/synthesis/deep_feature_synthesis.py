@@ -6,9 +6,16 @@ from .dfs_filters import LimitModeUniques, TraverseUp
 
 import featuretools.primitives.api as ftypes
 from featuretools import variable_types
-from featuretools.primitives.api import (AggregationPrimitive, BinaryFeature,
-                                         Compare, DirectFeature, Discrete,
-                                         Equals, IdentityFeature, TimeSince)
+from featuretools.primitives.api import (
+    AggregationPrimitive,
+    BinaryFeature,
+    Compare,
+    DirectFeature,
+    Discrete,
+    Equals,
+    IdentityFeature,
+    TimeSince
+)
 from featuretools.utils.gen_utils import make_tqdm_iterator
 from featuretools.variable_types import Boolean, Categorical, Numeric, Ordinal
 

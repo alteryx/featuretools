@@ -12,8 +12,11 @@ from pandas.tseries.frequencies import to_offset
 
 from .pandas_backend import PandasBackend
 
-from featuretools.primitives import (AggregationPrimitive, DirectFeature,
-                                     PrimitiveBase)
+from featuretools.primitives import (
+    AggregationPrimitive,
+    DirectFeature,
+    PrimitiveBase
+)
 from featuretools.utils.gen_utils import make_tqdm_iterator
 from featuretools.utils.wrangle import _check_timedelta
 

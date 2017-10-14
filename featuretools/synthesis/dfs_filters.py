@@ -1,5 +1,10 @@
-from featuretools.primitives import (AggregationPrimitive, DirectFeature,
-                                     IdentityFeature, Mode, TransformPrimitive)
+from featuretools.primitives import (
+    AggregationPrimitive,
+    DirectFeature,
+    IdentityFeature,
+    Mode,
+    TransformPrimitive
+)
 from featuretools.variable_types import Discrete
 
 

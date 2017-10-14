@@ -5,8 +5,12 @@ from collections import defaultdict
 from ..utils import gen_utils as utils
 
 from featuretools.exceptions import UnknownFeature
-from featuretools.primitives import (AggregationPrimitive, DirectFeature,
-                                     IdentityFeature, TransformPrimitive)
+from featuretools.primitives import (
+    AggregationPrimitive,
+    DirectFeature,
+    IdentityFeature,
+    TransformPrimitive
+)
 
 logger = logging.getLogger('featuretools.computational_backend')
 

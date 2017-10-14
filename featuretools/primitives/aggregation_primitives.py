@@ -4,11 +4,19 @@ import numpy as np
 import pandas as pd
 from scipy.stats import skew
 
-from .aggregation_primitive_base import (AggregationPrimitive,
-                                         make_agg_primitive)
+from .aggregation_primitive_base import (
+    AggregationPrimitive,
+    make_agg_primitive
+)
 
-from featuretools.variable_types import (Boolean, DatetimeTimeIndex, Discrete,
-                                         Index, Numeric, Variable)
+from featuretools.variable_types import (
+    Boolean,
+    DatetimeTimeIndex,
+    Discrete,
+    Index,
+    Numeric,
+    Variable
+)
 
 # TODO: make sure get func gets numpy arrays not series
 

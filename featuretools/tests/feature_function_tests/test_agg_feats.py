@@ -6,15 +6,29 @@ import pytest
 from ..testing_utils import feature_with_name, make_ecommerce_entityset
 
 from featuretools import calculate_feature_matrix, dfs
-from featuretools.primitives import (AggregationPrimitive, Count, Feature,
-                                     Mean, NumTrue, Sum, TimeSinceLast,
-                                     get_aggregation_primitives,
-                                     make_agg_primitive)
-from featuretools.synthesis.deep_feature_synthesis import (DeepFeatureSynthesis,
-                                                           check_stacking,
-                                                           match)
-from featuretools.variable_types import (Datetime, DatetimeTimeIndex, Index,
-                                         Numeric, Variable)
+from featuretools.primitives import (
+    AggregationPrimitive,
+    Count,
+    Feature,
+    Mean,
+    NumTrue,
+    Sum,
+    TimeSinceLast,
+    get_aggregation_primitives,
+    make_agg_primitive
+)
+from featuretools.synthesis.deep_feature_synthesis import (
+    DeepFeatureSynthesis,
+    check_stacking,
+    match
+)
+from featuretools.variable_types import (
+    Datetime,
+    DatetimeTimeIndex,
+    Index,
+    Numeric,
+    Variable
+)
 
 
 @pytest.fixture(scope='module')

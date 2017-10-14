@@ -6,16 +6,43 @@ from ..testing_utils import make_ecommerce_entityset
 
 from featuretools import Timedelta
 from featuretools.computational_backends import PandasBackend
-from featuretools.primitives import (Add, And, Compare, Count, CumCount,
-                                     CumMax, CumMean, CumMin, CumSum, Day,
-                                     Diff, DirectFeature, Divide, Equals,
-                                     Feature, GreaterThan, GreaterThanEqualTo,
-                                     Hour, IdentityFeature, IsIn, IsNull,
-                                     LessThan, LessThanEqualTo, Mod, Mode,
-                                     Multiply, Negate, Not, NotEquals, Or,
-                                     Percentile, Subtract, Sum,
-                                     get_transform_primitives,
-                                     make_trans_primitive)
+from featuretools.primitives import (
+    Add,
+    And,
+    Compare,
+    Count,
+    CumCount,
+    CumMax,
+    CumMean,
+    CumMin,
+    CumSum,
+    Day,
+    Diff,
+    DirectFeature,
+    Divide,
+    Equals,
+    Feature,
+    GreaterThan,
+    GreaterThanEqualTo,
+    Hour,
+    IdentityFeature,
+    IsIn,
+    IsNull,
+    LessThan,
+    LessThanEqualTo,
+    Mod,
+    Mode,
+    Multiply,
+    Negate,
+    Not,
+    NotEquals,
+    Or,
+    Percentile,
+    Subtract,
+    Sum,
+    get_transform_primitives,
+    make_trans_primitive
+)
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 

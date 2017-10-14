@@ -6,8 +6,14 @@ from .primitive_base import PrimitiveBase
 from .transform_primitive import TransformPrimitive
 from .utils import apply_dual_op_from_feat
 
-from featuretools.variable_types import (Boolean, Datetime, Numeric, Timedelta,
-                                         TimeIndex, Variable)
+from featuretools.variable_types import (
+    Boolean,
+    Datetime,
+    Numeric,
+    Timedelta,
+    TimeIndex,
+    Variable
+)
 
 
 class BinaryFeature(TransformPrimitive):

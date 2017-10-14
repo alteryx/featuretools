@@ -18,8 +18,12 @@ from .feature_tree import FeatureTree
 from featuretools import variable_types
 from featuretools.entityset.relationship import Relationship
 from featuretools.exceptions import UnknownFeature
-from featuretools.primitives import (AggregationPrimitive, DirectFeature,
-                                     IdentityFeature, TransformPrimitive)
+from featuretools.primitives import (
+    AggregationPrimitive,
+    DirectFeature,
+    IdentityFeature,
+    TransformPrimitive
+)
 # progress bar
 from featuretools.utils.gen_utils import make_tqdm_iterator
 

@@ -8,9 +8,17 @@ import pandas as pd
 from .primitive_base import PrimitiveBase
 from .utils import inspect_function_args
 
-from featuretools.variable_types import (Boolean, Datetime, DatetimeTimeIndex,
-                                         Discrete, Id, Numeric, Ordinal,
-                                         Timedelta, Variable)
+from featuretools.variable_types import (
+    Boolean,
+    Datetime,
+    DatetimeTimeIndex,
+    Discrete,
+    Id,
+    Numeric,
+    Ordinal,
+    Timedelta,
+    Variable
+)
 
 current_path = os.path.dirname(os.path.realpath(__file__))
 FEATURE_DATASETS = os.path.join(os.path.join(current_path, '..'),
