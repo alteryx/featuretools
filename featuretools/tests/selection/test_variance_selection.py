@@ -1,8 +1,9 @@
-from featuretools.selection import select_high_variance_features
-from featuretools.tests.testing_utils import make_ecommerce_entityset
-from featuretools import Feature
 import pandas as pd
 import pytest
+
+from featuretools import Feature
+from featuretools.selection import select_high_variance_features
+from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
 @pytest.fixture(scope='module')

@@ -1,5 +1,6 @@
 import pandas as pd
-from featuretools.variable_types import Numeric, Discrete
+
+from featuretools.variable_types import Discrete, Numeric
 
 
 def plot_feature_variances(feature_matrix,
@@ -132,7 +133,7 @@ def select_percent_null(feature_matrix, features, max_null_percent=1.0, keep=Non
     keep = keep or []
 
     null_counts = feature_matrix.isnull().sum()
-    null_percents = null_counts/feature_matrix.shape[0]
+    null_percents = null_counts / feature_matrix.shape[0]
 
     low_nulls = null_percents[null_percents < max_null_percent]
 

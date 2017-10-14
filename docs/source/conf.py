@@ -12,8 +12,10 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
 import os
+import sys
+
+import featuretools
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -42,8 +44,6 @@ extensions = [
 ]
 
 
-
-
 # ipython_mplbackend = None
 
 ipython_execlines = ["import pandas as pd", "pd.set_option('display.width', 1000000)"]
@@ -70,14 +70,14 @@ master_doc = 'index'
 project = u'Featuretools'
 copyright = u'2017, Feature Labs. BSD License'
 author = u'Feature Labs, Inc.'
-pdf_documents = [('index', u'featuretools', project, author),]
+pdf_documents = [('index', u'featuretools', project, author), ]
 pdf_use_index = False
 latex_documents = [
     (master_doc, 'featuretools.tex', u'test Documentation',
      u'test', 'manual'),
 ]
 latex_elements = {
-'preamble': r'''
+    'preamble': r'''
 \usepackage[utf8]{inputenc}
 '''
 }
@@ -87,7 +87,6 @@ latex_elements = {
 # built documents.
 #
 # The short X.Y version.
-import featuretools
 version = featuretools.__version__
 # The full version, including alpha/beta/rc tags.
 release = featuretools.__version__
@@ -190,7 +189,7 @@ html_static_path = ['_static']
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-html_sidebars = { '**': ['globaltoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html'], }
+html_sidebars = {'**': ['globaltoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html'], }
 
 
 # Additional templates that should be rendered to pages, maps page names to
@@ -244,17 +243,17 @@ htmlhelp_basename = 'featuretoolsdoc'
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    #'papersize': 'letterpaper',
 
-# The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    #'pointsize': '10pt',
 
-# Additional stuff for the LaTeX preamble.
-#'preamble': '',
+    # Additional stuff for the LaTeX preamble.
+    #'preamble': '',
 
-# Latex figure (float) alignment
-#'figure_align': 'htbp',
+    # Latex figure (float) alignment
+    #'figure_align': 'htbp',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples

@@ -1,11 +1,12 @@
 import logging
 import os
 import sys
+
 import yaml
 
 dirname = os.path.dirname(__file__)
-default_path = os.path.join(dirname, 'config_yaml.py')
-ft_config_path = os.path.join(os.path.expanduser('~'), '.featuretools', 'config_yaml.py')
+default_path = os.path.join(dirname, 'config_yaml.txt')
+ft_config_path = os.path.join(os.path.expanduser('~'), '.featuretools', 'config_yaml.txt')
 csv_save_location = os.path.join(os.path.expanduser('~'), '.featuretools', 'csv_files')
 
 

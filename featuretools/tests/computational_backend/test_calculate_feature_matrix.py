@@ -1,18 +1,21 @@
-from featuretools.computational_backends.calculate_feature_matrix import bin_cutoff_times
-from featuretools.primitives import (IdentityFeature, DirectFeature, Sum,
-                                     Count, Min,
-                                     AggregationPrimitive)
-
-from featuretools import Timedelta, EntitySet, calculate_feature_matrix, dfs
-from ..testing_utils import make_ecommerce_entityset
-import pandas as pd
-from random import randint
+import copy
 import os
 import shutil
-import copy
-import numpy as np
-import pytest
 from datetime import datetime
+from random import randint
+
+import numpy as np
+import pandas as pd
+import pytest
+
+from ..testing_utils import make_ecommerce_entityset
+
+from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
+from featuretools.computational_backends.calculate_feature_matrix import \
+    bin_cutoff_times
+from featuretools.primitives import (AggregationPrimitive, Count,
+                                     DirectFeature, IdentityFeature, Min, Sum)
+
 
 @pytest.fixture(scope='module')
 def entityset():
@@ -90,7 +93,8 @@ def test_cfm_approximate_correct_ordering():
     for column in feature_matrix:
         for x, y in zip(feature_matrix[column], feature_matrix_2[column]):
             if not ((pd.isnull(x) and pd.isnull(y)) or (x == y)):
-                import pdb; pdb.set_trace()
+                import pdb
+                pdb.set_trace()
             assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
 
 
@@ -162,7 +166,7 @@ def test_cutoff_time_correctly(entityset):
     property_feature = Count(entityset['log']['id'], entityset['customers'])
     feature_matrix = calculate_feature_matrix([property_feature], instance_ids=[0, 1, 2],
                                               cutoff_time=[datetime(2011, 4, 10), datetime(2011, 4, 11),
-                                              datetime(2011, 4, 7)])
+                                                           datetime(2011, 4, 7)])
     labels = [0, 10, 5]
     assert (feature_matrix == labels).values.all()
 
@@ -250,6 +254,7 @@ def test_approximate_multiple_instances_per_cutoff_time(entityset):
     assert feature_matrix.shape[0] == 2
     assert feature_matrix[dfeat.get_name()].dropna().shape[0] == 0
     assert feature_matrix[agg_feat.get_name()].tolist() == [5, 1]
+
 
 def test_approximate_dfeat_of_agg_on_target(entityset):
     es = entityset
@@ -421,12 +426,12 @@ def test_approximate_child_aggs_handled_correctly(entityset):
     assert fm[dfeat.get_name()].tolist() == [2, 3]
     assert fm_2[agg_feat_2.get_name()].tolist() == [0, 2]
 
+
 def test_cutoff_time_naming(entityset):
     es = entityset
 
     agg_feat = Count(es['customers']['id'], es['regions'])
     dfeat = DirectFeature(agg_feat, es['customers'])
-    agg_feat_2 = Count(es['log']['value'], es['customers'])
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-08 10:30:00'),
                                        pd.Timestamp('2011-04-09 10:30:06')],
                               'instance_id': [0, 0]})
@@ -437,9 +442,9 @@ def test_cutoff_time_naming(entityset):
 
     fm1 = calculate_feature_matrix([dfeat], cutoff_time=cutoff_df)
     for test_cutoff in [cutoff_df_index_name, cutoff_df_time_name, cutoff_df_index_name_time_name]:
-      fm2 = calculate_feature_matrix([dfeat], cutoff_time=test_cutoff)
+        fm2 = calculate_feature_matrix([dfeat], cutoff_time=test_cutoff)
 
-      assert all((fm1 == fm2.values).values)
+        assert all((fm1 == fm2.values).values)
 
     with pytest.raises(AttributeError):
-      calculate_feature_matrix([dfeat], cutoff_time=cutoff_df_wrong_index_name)
+        calculate_feature_matrix([dfeat], cutoff_time=cutoff_df_wrong_index_name)

@@ -1,8 +1,8 @@
 import sys
-from StringIO import StringIO
-from tqdm import tqdm_notebook, tqdm
+from collections import Mapping, Set, deque
 from numbers import Number
-from collections import Set, Mapping, deque
+
+from tqdm import tqdm
 
 try:  # Python 2
     zero_depth_bases = (basestring, Number, xrange, bytearray)
@@ -64,6 +64,7 @@ def session_type():
 
 
 class RedirectStdStreams(object):
+
     def __init__(self, stdout=None, stderr=None):
         self._stdout = stdout or sys.stdout
         self._stderr = stderr or sys.stderr

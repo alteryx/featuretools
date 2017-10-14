@@ -1,7 +1,7 @@
+import os
+
 from featuretools.demo import load_retail
 from featuretools.demo.retail import make_retail_pathname
-from featuretools.config import config as ft_config
-import os
 
 
 def test_load_retail_save():

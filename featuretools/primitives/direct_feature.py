@@ -1,5 +1,6 @@
 from .primitive_base import PrimitiveBase
-from featuretools.variable_types import (Variable)
+
+from featuretools.variable_types import Variable
 
 
 class DirectFeature(PrimitiveBase):

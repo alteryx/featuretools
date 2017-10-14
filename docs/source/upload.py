@@ -1,10 +1,11 @@
+import sys
 from subprocess import call
+
 from conf import release
 
 LOCAL_ROOT = "build/html/"
 REMOTE_ROOT = "s3://docs.featuretools.com"
 
-import sys
 
 def query_yes_no(question, default="yes"):
     """Ask a yes/no question via raw_input() and return their answer.
@@ -37,6 +38,7 @@ def query_yes_no(question, default="yes"):
         else:
             sys.stdout.write("Please respond with 'yes' or 'no' "
                              "(or 'y' or 'n').\n")
+
 
 def upload(root=False):
     # build html

@@ -1,4 +1,5 @@
 import cloudpickle
+
 import featuretools as ft
 
 
@@ -95,5 +96,6 @@ def save_obj_pickle(obj, filepath):
 
 def load_pickle(filepath):
     filestream = open(filepath, "rb")
+
     obj = cloudpickle.load(filestream)
     return obj

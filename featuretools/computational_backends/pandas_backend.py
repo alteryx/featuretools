@@ -1,30 +1,27 @@
-# general
+import cProfile
+import cStringIO
+import logging
+import os
+import pstats
+import sys
 import uuid
+import warnings
+from datetime import datetime
+
 import numpy as np
 import pandas as pd
-from datetime import datetime
 
 # featuretools
 from .base_backend import ComputationalBackend
 from .feature_tree import FeatureTree
+
 from featuretools import variable_types
 from featuretools.entityset.relationship import Relationship
 from featuretools.exceptions import UnknownFeature
-from featuretools.primitives import (IdentityFeature, TransformPrimitive,
-                                     DirectFeature, AggregationPrimitive)
+from featuretools.primitives import (AggregationPrimitive, DirectFeature,
+                                     IdentityFeature, TransformPrimitive)
 # progress bar
 from featuretools.utils.gen_utils import make_tqdm_iterator
-import sys
-
-# profiling/debugging
-import logging
-# import pdb
-import cProfile
-import cStringIO
-import pstats
-import os
-import warnings
-
 
 warnings.simplefilter('ignore', np.RankWarning)
 warnings.simplefilter("ignore", category=RuntimeWarning)
@@ -33,6 +30,7 @@ ROOT_DIR = os.path.expanduser("~")
 
 
 class PandasBackend(ComputationalBackend):
+
     def __init__(self, entityset, features):
         assert len(set(f.entity.id for f in features)) == 1, \
             "Features must all be defined on the same entity"

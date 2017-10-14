@@ -1,11 +1,14 @@
-import pytest
-from datetime import datetime
-from ..testing_utils import make_ecommerce_entityset, save_to_csv
-from featuretools.entityset import EntitySet
-from featuretools import variable_types
-import pandas as pd
-import numpy as np
 import copy
+from datetime import datetime
+
+import numpy as np
+import pandas as pd
+import pytest
+
+from ..testing_utils import make_ecommerce_entityset, save_to_csv
+
+from featuretools import variable_types
+from featuretools.entityset import EntitySet
 
 
 @pytest.fixture()
@@ -19,15 +22,16 @@ def entity(entityset):
 
 
 class TestQueryFuncs(object):
+
     def test_query_by_id(self, entityset):
         df = entityset.query_entity_by_values(entity_id='log',
-                                          instance_vals=[0])
+                                              instance_vals=[0])
         assert df['id'].values[0] == 0
 
     def test_query_by_id_with_sort(self, entityset):
         df = entityset.query_entity_by_values(entity_id='log',
-                                          instance_vals=[2, 1, 3],
-                                          return_sorted=True)
+                                              instance_vals=[2, 1, 3],
+                                              return_sorted=True)
         assert df['id'].values.tolist() == [2, 1, 3]
 
     def test_query_by_id_with_time(self, entityset):
@@ -62,6 +66,7 @@ class TestQueryFuncs(object):
 
 class TestVariableHandling(object):
     # TODO: rewrite now that ds and entityset are seperate
+
     def test_check_variables_and_dataframe(self):
         # matches
         df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
@@ -69,7 +74,7 @@ class TestVariableHandling(object):
                   'category': variable_types.Categorical}
         entityset = EntitySet(id='test')
         entityset.entity_from_dataframe('test_entity', df, index='id',
-                                    variable_types=vtypes)
+                                        variable_types=vtypes)
         assert entityset.entity_stores['test_entity'].variable_types['category'] == variable_types.Categorical
 
     def test_make_index_variable_ordering(self):
@@ -137,7 +142,7 @@ class TestVariableHandling(object):
                   'floats': variable_types.Numeric}
         entityset = EntitySet(id='test')
         entityset.entity_from_dataframe(entity_id='test_entity', index='id',
-                                    variable_types=vtypes, dataframe=df)
+                                        variable_types=vtypes, dataframe=df)
 
         entity_df = entityset.get_dataframe('test_entity')
         assert entity_df['ints'].dtype.name in variable_types.PandasTypes._pandas_numerics
@@ -156,7 +161,7 @@ class TestVariableHandling(object):
 
         entityset = EntitySet(id='test')
         entityset.entity_from_dataframe(entity_id='test_entity', index='id',
-                                    dataframe=df)
+                                        dataframe=df)
         e = entityset['test_entity']
         df = entityset.get_dataframe('test_entity')
 
@@ -187,8 +192,8 @@ class TestVariableHandling(object):
 
         entityset = EntitySet(id='test')
         entityset._import_from_dataframe(entity_id='test_entity', index='id',
-                                     time_index="time", variable_types=vtypes,
-                                     dataframe=df)
+                                         time_index="time", variable_types=vtypes,
+                                         dataframe=df)
         pd_col = entityset.get_column_data('test_entity', 'time')
         # assert type(es['test_entity']['time']) == variable_types.Datetime
         assert type(pd_col[0]) == pd.Timestamp
@@ -206,7 +211,7 @@ class TestVariableHandling(object):
 
         entityset = EntitySet(id='test')
         entityset._import_from_dataframe(entity_id='test_entity', index='id',
-                                     variable_types=vtypes, dataframe=df)
+                                         variable_types=vtypes, dataframe=df)
 
         col_format = entityset.get_column_data('test_entity', 'time_format')
         col_no_format = entityset.get_column_data('test_entity', 'time_no_format')
@@ -225,7 +230,7 @@ class TestVariableHandling(object):
         with pytest.raises(ValueError):
             entityset = EntitySet(id='test')
             entityset.entity_from_dataframe('test_entity', df, 'id',
-                                        time_index='time', variable_types=vtypes)
+                                            time_index='time', variable_types=vtypes)
 
     def test_calculates_statistics_on_init(self):
         df = pd.DataFrame({'id': [0, 1, 2],
@@ -243,7 +248,7 @@ class TestVariableHandling(object):
                   'boolean_with_nan': variable_types.Boolean}
         entityset = EntitySet(id='test')
         entityset.entity_from_dataframe('stats_test_entity', df, 'id',
-                                    variable_types=vtypes)
+                                        variable_types=vtypes)
         e = entityset["stats_test_entity"]
         # numerics don't have nunique or percent_unique defined
         for v in ['time', 'category', 'number']:
@@ -286,7 +291,7 @@ class TestVariableHandling(object):
 
         vtypes = {'time': variable_types.Datetime}
         entityset.entity_from_dataframe('test_entity', df, index='id',
-                                    time_index='time', variable_types=vtypes)
+                                        time_index='time', variable_types=vtypes)
         assert entityset.get_dataframe('test_entity').shape == df.shape
         assert entityset.get_index('test_entity') == 'id'
         assert entityset.get_time_index('test_entity') == 'time'
@@ -308,8 +313,8 @@ class TestVariableHandling(object):
         filename = save_to_csv('test_entity', df)
 
         entityset.entity_from_csv('test_entity', filename, index='id',
-                              time_index='datetime',
-                              time_index_components=['date', 'time'])
+                                  time_index='datetime',
+                                  time_index_components=['date', 'time'])
         assert entityset.entity_stores['test_entity'].time_index == 'datetime'
         new_df = entityset.get_dataframe('test_entity')
         assert new_df.shape == (2, 2)
@@ -322,22 +327,22 @@ class TestVariableHandling(object):
     def test_combine_variables(self, entityset):
         # basic case
         entityset.combine_variables('log', 'comment+product_id',
-                                ['comments', 'product_id'])
+                                    ['comments', 'product_id'])
 
         assert entityset['log']['comment+product_id'].dtype == 'categorical'
         assert 'comment+product_id' in entityset['log'].df
 
         # one variable to combine
         entityset.combine_variables('log', 'comment+',
-                                ['comments'])
+                                    ['comments'])
 
         assert entityset['log']['comment+'].dtype == 'categorical'
         assert 'comment+' in entityset['log'].df
 
         # drop columns
         entityset.combine_variables('log', 'new_priority_level',
-                                ['priority_level'],
-                                drop=True)
+                                    ['priority_level'],
+                                    drop=True)
 
         assert entityset['log']['new_priority_level'].dtype == 'categorical'
         assert 'new_priority_level' in entityset['log'].df
@@ -346,8 +351,8 @@ class TestVariableHandling(object):
 
         # hashed
         entityset.combine_variables('log', 'hashed_comment_product',
-                                ['comments', 'product_id'],
-                                hashed=True)
+                                    ['comments', 'product_id'],
+                                    hashed=True)
 
         assert entityset['log']['comment+product_id'].dtype == 'categorical'
         assert entityset['log'].df['hashed_comment_product'].dtype == 'int64'
@@ -385,7 +390,7 @@ class TestVariableHandling(object):
 
     def test_sort_time_id(self):
         transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
-                                "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s")[::-1]})
+                                        "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s")[::-1]})
 
         es = EntitySet("test", entities={"t": (transactions_df, "id", "transaction_time")})
         times = es["t"].df.transaction_time.tolist()
@@ -393,12 +398,12 @@ class TestVariableHandling(object):
 
     def test_already_sorted_parameter(self):
         transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
-                                "transaction_time": [datetime(2014, 4, 6),
-                                                     datetime(2012, 4, 8),
-                                                     datetime(2012, 4, 8),
-                                                     datetime(2013, 4, 8),
-                                                     datetime(2015, 4, 8),
-                                                     datetime(2016, 4, 9)]})
+                                        "transaction_time": [datetime(2014, 4, 6),
+                                                             datetime(2012, 4, 8),
+                                                             datetime(2012, 4, 8),
+                                                             datetime(2013, 4, 8),
+                                                             datetime(2015, 4, 8),
+                                                             datetime(2016, 4, 9)]})
 
         es = EntitySet(id='test')
         es.entity_from_dataframe('t',
@@ -454,6 +459,7 @@ class TestVariableHandling(object):
 
 
 class TestRelatedInstances(object):
+
     def test_related_instances_backward(self, entityset):
         result = entityset._related_instances(
             start_entity_id='regions', final_entity_id='log',
@@ -508,8 +514,8 @@ class TestRelatedInstances(object):
     def test_get_pandas_slice(self, entityset):
         filter_eids = ['products', 'regions', 'customers']
         result = entityset.get_pandas_data_slice(filter_entity_ids=filter_eids,
-                                             index_eid='customers',
-                                             instances=[0])
+                                                 index_eid='customers',
+                                                 instances=[0])
 
         # make sure all necessary filter frames are present
         assert set(result.keys()) == set(filter_eids)
@@ -529,9 +535,9 @@ class TestRelatedInstances(object):
         start = np.datetime64(datetime(2011, 4, 1))
         end = np.datetime64(datetime(2011, 4, 9, 10, 31, 10))
         result = entityset.get_pandas_data_slice(filter_entity_ids=filter_eids,
-                                             index_eid='customers',
-                                             instances=[0],
-                                             time_last=end)
+                                                 index_eid='customers',
+                                                 instances=[0],
+                                                 time_last=end)
 
         # make sure no times outside range are included in any frames
         for eid in filter_eids:
@@ -549,9 +555,9 @@ class TestRelatedInstances(object):
         start = np.datetime64(datetime(2011, 4, 1))
         end = np.datetime64(datetime(2011, 4, 9, 10, 31, 10))
         result = entityset.get_pandas_data_slice(filter_entity_ids=filter_eids,
-                                             index_eid='customers',
-                                             instances=[0],
-                                             time_last=end)
+                                                 index_eid='customers',
+                                                 instances=[0],
+                                                 time_last=end)
 
         # make sure no times outside range are included in any frames
         for eid in filter_eids:
@@ -568,9 +574,9 @@ class TestRelatedInstances(object):
         end = np.datetime64(datetime(2011, 10, 1))
         all_instances = [0, 1, 2]
         result = entityset.get_pandas_data_slice(filter_entity_ids=filter_eids,
-                                             index_eid='customers',
-                                             instances=all_instances,
-                                             time_last=end)
+                                                 index_eid='customers',
+                                                 instances=all_instances,
+                                                 time_last=end)
 
         # only customer 0 should have values from these columns
         customers_df = result["customers"]["customers"]
@@ -583,14 +589,15 @@ class TestRelatedInstances(object):
                    for e_id in ["log", "sessions", "customers", "regions"]}
 
         entityset._add_multigenerational_link_vars(frames=eframes,
-                                               start_entity_id='regions',
-                                               end_entity_id='log')
+                                                   start_entity_id='regions',
+                                                   end_entity_id='log')
 
         assert 'sessions.customer_id' in eframes['log'].columns
         assert 'sessions.customers.region_id' in eframes['log'].columns
 
 
 class TestNormalizeEntity(object):
+
     def test_normalize_entity(self, entityset):
         entityset.normalize_entity('sessions', 'device_types', 'device_type',
                                    additional_variables=['device_name'],
@@ -651,7 +658,7 @@ def test_head_of_entity(entityset):
     assert(entity.head(5, cutoff_time=timestamp2).shape == (3, 9))
     assert(entity.head(5, cutoff_time=datetime1).shape == (3, 9))
 
-    time_list = [timestamp2]*3+[timestamp1]*2
+    time_list = [timestamp2] * 3 + [timestamp1] * 2
     cutoff_times = pd.DataFrame(zip(range(5), time_list))
 
     assert(entityset.head('log', 5, cutoff_time=cutoff_times).shape == (3, 9))

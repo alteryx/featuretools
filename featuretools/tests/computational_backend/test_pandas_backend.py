@@ -1,13 +1,16 @@
-import pytest
-from featuretools.computational_backends.pandas_backend import PandasBackend
-from featuretools.primitives import (IdentityFeature, DirectFeature, Sum,
-                                     Count, Min, Mode, Compare, Mean, And,
-                                     NMostCommon, GreaterThan, LessThan,
-                                     GreaterThanEqualTo, LessThanEqualTo,
-                                     Equals, NotEquals)
-from featuretools import Timedelta
-from ..testing_utils import make_ecommerce_entityset
 from datetime import datetime
+
+import pytest
+
+from ..testing_utils import make_ecommerce_entityset
+
+from featuretools import Timedelta
+from featuretools.computational_backends.pandas_backend import PandasBackend
+from featuretools.primitives import (And, Count, DirectFeature, Equals,
+                                     GreaterThan, GreaterThanEqualTo,
+                                     IdentityFeature, LessThan,
+                                     LessThanEqualTo, Mean, Min, Mode,
+                                     NMostCommon, NotEquals, Sum)
 
 
 @pytest.fixture(scope='module')

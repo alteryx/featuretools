@@ -1,10 +1,13 @@
-from featuretools.core.base import FTBase
-from featuretools import variable_types as vtypes
 import logging
+
+from featuretools import variable_types as vtypes
+from featuretools.core.base import FTBase
+
 logger = logging.getLogger('featuretools.entityset')
 
 
 class BFSNode(object):
+
     def __init__(self, entity_id, parent, relationship):
         self.entity_id = entity_id
         self.parent = parent
@@ -259,7 +262,7 @@ class BaseEntitySet(FTBase):
                     queue.append(child_node)
 
         raise ValueError(("No path from {} to {}! Check that all entities "
-                         .format(start_entity_id, goal_entity_id)),
+                          .format(start_entity_id, goal_entity_id)),
                          "are connected by relationships")
 
     def find_forward_path(self, start_entity_id, goal_entity_id):

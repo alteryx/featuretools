@@ -1,6 +1,6 @@
-from featuretools.primitives import AggregationPrimitive, TransformPrimitive, DirectFeature, IdentityFeature
-from featuretools.primitives import Mean, Mode, Count
-from featuretools.variable_types import Discrete, Categorical
+from featuretools.primitives import (AggregationPrimitive, DirectFeature,
+                                     IdentityFeature, Mode, TransformPrimitive)
+from featuretools.variable_types import Discrete
 
 
 class DFSFilterBase(object):
@@ -76,7 +76,7 @@ class TraverseUp(DFSFilterBase):
             percent_unique = r.child_variable.percent_unique
             count = r.child_variable.count
             if (percent_unique is None or
-               count is None):
+                    count is None):
                 return True
 
             # Traverse if high absolute number of unique
@@ -89,7 +89,7 @@ class TraverseUp(DFSFilterBase):
 
             # Don't traverse if not unique enough or too unique
             if (percent_unique > self.percent_high or
-               percent_unique < self.percent_low):
+                    percent_unique < self.percent_low):
                 return False
 
         return True

@@ -1,8 +1,10 @@
-from featuretools.synthesis import encode_features
-from ..testing_utils import make_ecommerce_entityset
-from featuretools.primitives import IdentityFeature
-from featuretools import calculate_feature_matrix
 import pytest
+
+from ..testing_utils import make_ecommerce_entityset
+
+from featuretools import calculate_feature_matrix
+from featuretools.primitives import IdentityFeature
+from featuretools.synthesis import encode_features
 
 
 @pytest.fixture(scope='module')

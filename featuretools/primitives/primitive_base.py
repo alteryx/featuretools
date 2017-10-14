@@ -1,13 +1,16 @@
-from numpy import nan
-from featuretools.core.base import FTBase
 import copy
-from featuretools.variable_types.variable import Variable
-from featuretools.entityset import Entity, EntitySet
-from featuretools.utils.wrangle import (_check_timedelta,
-                                        _check_time_against_column)
-import featuretools as ft
-import pdb
 import logging
+import pdb
+
+from numpy import nan
+
+import featuretools as ft
+from featuretools.core.base import FTBase
+from featuretools.entityset import Entity, EntitySet
+from featuretools.utils.wrangle import (_check_time_against_column,
+                                        _check_timedelta)
+from featuretools.variable_types import Variable
+
 logger = logging.getLogger('featuretools')
 
 
@@ -470,6 +473,7 @@ class PrimitiveBase(FTBase):
 
 class IdentityFeature(PrimitiveBase):
     """Feature for entity that is equivalent to underlying variable"""
+
     def __init__(self, variable):
         # TODO: perhaps we can change the attributes of this class to
         # just entityset reference to original variable object
@@ -489,6 +493,7 @@ class Feature(PrimitiveBase):
     """
     Alias for IdentityFeature and DirectFeature depending on arguments
     """
+
     def __new__(self, feature_or_var, entity=None):
         import direct_feature
 

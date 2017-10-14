@@ -1,12 +1,14 @@
-from featuretools.variable_types import (Index, Numeric, Discrete, Boolean,
-                                         DatetimeTimeIndex, Variable)
-from .aggregation_primitive_base import (AggregationPrimitive,
-                                         make_agg_primitive)
+from datetime import datetime, timedelta
+
 import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
 from scipy.stats import skew
 
+from .aggregation_primitive_base import (AggregationPrimitive,
+                                         make_agg_primitive)
+
+from featuretools.variable_types import (Boolean, DatetimeTimeIndex, Discrete,
+                                         Index, Numeric, Variable)
 
 # TODO: make sure get func gets numpy arrays not series
 
