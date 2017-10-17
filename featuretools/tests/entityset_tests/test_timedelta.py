@@ -1,11 +1,13 @@
+import pandas as pd
 import pytest
-from ..testing_utils import make_ecommerce_entityset
-from featuretools.utils.wrangle import _check_timedelta
-from featuretools.primitives import Count#, SlidingMean
 from toolz import merge
+
+from ..testing_utils import make_ecommerce_entityset
+
 from featuretools.entityset import Timedelta
 from featuretools.exceptions import NotEnoughData
-import pandas as pd
+from featuretools.primitives import Count  # , SlidingMean
+from featuretools.utils.wrangle import _check_timedelta
 
 
 @pytest.fixture(scope='module')

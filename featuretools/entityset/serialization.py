@@ -1,10 +1,14 @@
-from pandas.io.pickle import to_pickle as pd_to_pickle, read_pickle as pd_read_pickle
-import os
-from featuretools import variable_types as vtypes
-from pandas import read_csv, Timestamp
-from tempfile import mkdtemp
-import shutil
 import logging
+import os
+import shutil
+from tempfile import mkdtemp
+
+from pandas import Timestamp, read_csv
+from pandas.io.pickle import read_pickle as pd_read_pickle
+from pandas.io.pickle import to_pickle as pd_to_pickle
+
+from featuretools import variable_types as vtypes
+
 logger = logging.getLogger('featuretools.entityset')
 
 _datetime_types = vtypes.PandasTypes._pandas_datetimes

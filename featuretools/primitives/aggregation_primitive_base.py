@@ -1,6 +1,7 @@
+import functools
+
 from .primitive_base import PrimitiveBase
 from .utils import inspect_function_args
-import functools
 
 
 class AggregationPrimitive(PrimitiveBase):
@@ -194,7 +195,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
 
     # infers default_value by passing empty data
     try:
-        new_class.default_value = function(*[[]]*len(input_types))
+        new_class.default_value = function(*[[]] * len(input_types))
     except:
         pass
 

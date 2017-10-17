@@ -1,3 +1,4 @@
+# flake8: noqa
 import config
 from .core import *
 import variable_types

@@ -1,6 +1,9 @@
-from .primitive_base import PrimitiveBase
-from inspect import isclass, getargspec
+from inspect import getargspec, isclass
+
 import pandas as pd
+
+from .primitive_base import PrimitiveBase
+
 import featuretools.primitives
 
 

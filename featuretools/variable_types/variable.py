@@ -1,6 +1,5 @@
-from featuretools.core.base import FTBase
-import pandas as pd
 import featuretools as ft
+from featuretools.core.base import FTBase
 
 COMMON_STATISTICS = ["count"]
 NUMERIC_STATISTICS = ["mean", "max", "min", "std"]

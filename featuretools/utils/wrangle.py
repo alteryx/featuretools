@@ -1,9 +1,11 @@
+import re
+from datetime import datetime
+
+import numpy as np
 import pandas as pd
+
 from featuretools import variable_types
 from featuretools.entityset.timedelta import Timedelta
-from datetime import datetime
-import re
-import numpy as np
 
 
 def flatten_2d(array):
@@ -178,7 +180,7 @@ def _check_time_against_column(time, time_column):
     elif isinstance(time, Timedelta):
         return (isinstance(time_column, (variable_types.Datetime, variable_types.DatetimeTimeIndex)) or
                 (isinstance(time_column, (variable_types.Ordinal, variable_types.Numeric, variable_types.TimeIndex)) and
-                time.unit not in Timedelta._time_units))
+                 time.unit not in Timedelta._time_units))
     else:
         return False
 

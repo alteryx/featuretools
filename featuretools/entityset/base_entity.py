@@ -1,7 +1,10 @@
-from featuretools.core.base import FTBase
-from featuretools import variable_types as vtypes
-import pandas as pd
 import logging
+
+import pandas as pd
+
+from featuretools import variable_types as vtypes
+from featuretools.core.base import FTBase
+
 logger = logging.getLogger('featuretools.entityset')
 
 
@@ -76,7 +79,6 @@ class BaseEntity(FTBase):
         self.set_index(index)
         self.set_time_index(time_index, already_sorted)
         self.set_secondary_time_index(secondary_time_index)
-
 
         # todo check the logic of this. can index not be in variable types?
         if self.index is not None and self.index not in inferred_variable_types:

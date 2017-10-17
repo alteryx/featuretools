@@ -1,13 +1,17 @@
+import copy
+import logging
+import time
+from datetime import datetime
+
+import numpy as np
+import pandas as pd
+
 from .base_entity import BaseEntity
 from .timedelta import Timedelta
-from datetime import datetime
-import pandas as pd
-import time
-import numpy as np
-import copy
+
 from featuretools import variable_types as vtypes
 from featuretools.utils.wrangle import _check_timedelta
-import logging
+
 logger = logging.getLogger('featuretools.entityset')
 
 _numeric_types = vtypes.PandasTypes._pandas_numerics
@@ -589,10 +593,10 @@ class Entity(BaseEntity):
 
         for secondary_time_index in self.secondary_time_index:
                 # should we use ignore time last here?
-                if time_last is not None and not df.empty:
-                    mask = df[secondary_time_index] >= time_last
-                    second_time_index_columns = self.secondary_time_index[secondary_time_index]
-                    df.loc[mask, second_time_index_columns] = np.nan
+            if time_last is not None and not df.empty:
+                mask = df[secondary_time_index] >= time_last
+                second_time_index_columns = self.secondary_time_index[secondary_time_index]
+                df.loc[mask, second_time_index_columns] = np.nan
 
         if columns is not None:
             df = df[columns]

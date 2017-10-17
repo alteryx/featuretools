@@ -1,7 +1,8 @@
 import pytest
-from featuretools.primitives import Count, Mode, Feature, DirectFeature, Compare
-from featuretools import variable_types
+
 from ..testing_utils import make_ecommerce_entityset
+
+from featuretools.primitives import Feature, Mode
 from featuretools.synthesis import dfs_filters as filt
 
 

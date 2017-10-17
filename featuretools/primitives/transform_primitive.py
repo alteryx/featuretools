@@ -1,13 +1,25 @@
+import datetime
+import functools
+import os
+
+import numpy as np
+import pandas as pd
+
 from .primitive_base import PrimitiveBase
 from .utils import inspect_function_args
-from featuretools.variable_types import (Discrete, Numeric, Boolean,
-                                         Ordinal, Datetime, Timedelta,
-                                         Variable, DatetimeTimeIndex, Id)
-import datetime
-import os
-import pandas as pd
-import numpy as np
-import functools
+
+from featuretools.variable_types import (
+    Boolean,
+    Datetime,
+    DatetimeTimeIndex,
+    Discrete,
+    Id,
+    Numeric,
+    Ordinal,
+    Timedelta,
+    Variable
+)
+
 current_path = os.path.dirname(os.path.realpath(__file__))
 FEATURE_DATASETS = os.path.join(os.path.join(current_path, '..'),
                                 'feature_datasets')

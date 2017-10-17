@@ -1,17 +1,50 @@
-import pytest
+import numpy as np
 import pandas as pd
-from featuretools.synthesis.deep_feature_synthesis import match
+import pytest
+
+from ..testing_utils import make_ecommerce_entityset
+
+from featuretools import Timedelta
 from featuretools.computational_backends import PandasBackend
 from featuretools.primitives import (
-    Day, Hour, Diff, Compare, Not, DirectFeature, Count, Add, Subtract,
-    Multiply, IdentityFeature, Divide, CumSum, CumCount, CumMin, CumMax,
-    CumMean, Mod, And, Or, Negate, Sum, IsIn, Feature, IsNull, Mode, Equals,
-    get_transform_primitives, Percentile, make_trans_primitive, NotEquals,
-    GreaterThan, GreaterThanEqualTo, LessThan, LessThanEqualTo)
-from featuretools.variable_types import Numeric, Datetime, Boolean, Variable
-from featuretools import Timedelta
-from ..testing_utils import make_ecommerce_entityset
-import numpy as np
+    Add,
+    And,
+    Compare,
+    Count,
+    CumCount,
+    CumMax,
+    CumMean,
+    CumMin,
+    CumSum,
+    Day,
+    Diff,
+    DirectFeature,
+    Divide,
+    Equals,
+    Feature,
+    GreaterThan,
+    GreaterThanEqualTo,
+    Hour,
+    IdentityFeature,
+    IsIn,
+    IsNull,
+    LessThan,
+    LessThanEqualTo,
+    Mod,
+    Mode,
+    Multiply,
+    Negate,
+    Not,
+    NotEquals,
+    Or,
+    Percentile,
+    Subtract,
+    Sum,
+    get_transform_primitives,
+    make_trans_primitive
+)
+from featuretools.synthesis.deep_feature_synthesis import match
+from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
 
 @pytest.fixture(scope='module')
@@ -172,7 +205,7 @@ def test_arithmetic_of_val(es):
                (Subtract, [-2.0, 3.0, 8.0, 13.0], [2.0, -3.0, -8.0, -13.0]),
                (Multiply, [0, 10, 20, 30], [0, 10, 20, 30]),
                (Divide, [0, 2.5, 5, 7.5], [np.inf, 0.4, 0.2, 2 / 15.0],
-                                          [np.nan, np.inf, np.inf, np.inf])]
+                [np.nan, np.inf, np.inf, np.inf])]
 
     features = []
     logs = es['log']

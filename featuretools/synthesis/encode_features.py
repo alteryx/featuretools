@@ -1,6 +1,7 @@
-from featuretools.variable_types.variable import Discrete
 import pandas as pd
+
 from featuretools.utils.gen_utils import make_tqdm_iterator
+from featuretools.variable_types.variable import Discrete
 
 
 def encode_features(feature_matrix, features, top_n=10, include_unknown=True,

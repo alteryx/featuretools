@@ -1,13 +1,16 @@
-from .transform_primitive import TransformPrimitive
-from featuretools.variable_types.variable import Discrete
-from .aggregation_primitives import Sum, Mean, Count, Max, Min
-from featuretools.variable_types import Numeric, TimeIndex, Index, Id
-from .primitive_base import PrimitiveBase, IdentityFeature
-from featuretools.utils.wrangle import _check_timedelta
-import pandas as pd
-import numpy as np
-from .utils import apply_dual_op_from_feat
 import uuid
+
+import numpy as np
+import pandas as pd
+
+from .aggregation_primitives import Count, Max, Mean, Min, Sum
+from .primitive_base import IdentityFeature, PrimitiveBase
+from .transform_primitive import TransformPrimitive
+from .utils import apply_dual_op_from_feat
+
+from featuretools.utils.wrangle import _check_timedelta
+from featuretools.variable_types import Id, Index, Numeric, TimeIndex
+from featuretools.variable_types.variable import Discrete
 
 
 class CumFeature(TransformPrimitive):
@@ -86,8 +89,8 @@ class CumSum(CumFeature):
     rolling_func_name = "sum"
     default_value = 0
     agg_feature = Sum
-    input_types =  [[Numeric, Id, TimeIndex],
-                 [Numeric, Discrete, TimeIndex]]
+    input_types = [[Numeric, Id, TimeIndex],
+                   [Numeric, Discrete, TimeIndex]]
 
 
 class CumMean(CumFeature):
@@ -98,8 +101,8 @@ class CumMean(CumFeature):
     rolling_func_name = "mean"
     default_value = 0
     agg_feature = Mean
-    input_types =  [[Numeric, Id, TimeIndex],
-                 [Numeric, Discrete, TimeIndex]]
+    input_types = [[Numeric, Id, TimeIndex],
+                   [Numeric, Discrete, TimeIndex]]
 
 
 class CumCount(CumFeature):
@@ -110,7 +113,7 @@ class CumCount(CumFeature):
     rolling_func_name = "count"
     default_value = 0
     agg_feature = Count
-    input_types =  [Index, Discrete, TimeIndex]
+    input_types = [Index, Discrete, TimeIndex]
 
 
 class CumMax(CumFeature):
@@ -121,8 +124,8 @@ class CumMax(CumFeature):
     rolling_func_name = "max"
     default_value = 0
     agg_feature = Max
-    input_types =  [[Numeric, Id, TimeIndex],
-                 [Numeric, Discrete, TimeIndex]]
+    input_types = [[Numeric, Id, TimeIndex],
+                   [Numeric, Discrete, TimeIndex]]
 
 
 class CumMin(CumFeature):
@@ -133,8 +136,8 @@ class CumMin(CumFeature):
     rolling_func_name = "min"
     default_value = 0
     agg_feature = Min
-    input_types =  [[Numeric, Id, TimeIndex],
-                 [Numeric, Discrete, TimeIndex]]
+    input_types = [[Numeric, Id, TimeIndex],
+                   [Numeric, Discrete, TimeIndex]]
 
 
 def pd_rolling_outer(rolling_func, f):

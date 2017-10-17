@@ -1,15 +1,24 @@
-from collections import defaultdict
-import sys
-from featuretools.utils.gen_utils import make_tqdm_iterator
-from featuretools import variable_types
-from featuretools.variable_types import Categorical, Numeric, Boolean, Ordinal
-from featuretools.primitives.api import (IdentityFeature, BinaryFeature, Discrete,
-                                         TimeSince, DirectFeature, Compare,
-                                         AggregationPrimitive, Equals)
-import featuretools.primitives.api as ftypes
-from .dfs_filters import (TraverseUp, LimitModeUniques)
-
 import logging
+import sys
+from collections import defaultdict
+
+from .dfs_filters import LimitModeUniques, TraverseUp
+
+import featuretools.primitives.api as ftypes
+from featuretools import variable_types
+from featuretools.primitives.api import (
+    AggregationPrimitive,
+    BinaryFeature,
+    Compare,
+    DirectFeature,
+    Discrete,
+    Equals,
+    IdentityFeature,
+    TimeSince
+)
+from featuretools.utils.gen_utils import make_tqdm_iterator
+from featuretools.variable_types import Boolean, Categorical, Numeric, Ordinal
+
 logger = logging.getLogger('featuretools')
 
 
@@ -617,7 +626,7 @@ class DeepFeatureSynthesis(object):
 
                 # limits the aggregation feature by the given allowed feature types.
                 if not any([issubclass(agg_prim, feature_type) for feature_type in self.where_primitives]):
-                        continue
+                    continue
 
                 for where in wheres:
                     # limits the where feats so they are different than base feats
