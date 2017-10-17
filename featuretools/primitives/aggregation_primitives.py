@@ -1,4 +1,9 @@
+from __future__ import division
+
+from builtins import range, str
 from datetime import datetime, timedelta
+
+from past.utils import old_div
 
 import numpy as np
 import pandas as pd
@@ -166,7 +171,7 @@ class PercentTrue(AggregationPrimitive):
         def percent_true(x):
             if len(x) == 0:
                 return np.nan
-            return np.nan_to_num(x.values).sum(dtype=np.float) / len(x)
+            return old_div(np.nan_to_num(x.values).sum(dtype=np.float), len(x))
         return percent_true
 
 
@@ -235,9 +240,9 @@ class AvgTimeBetween(AggregationPrimitive):
                 x = x.astype('int64')
                 # use len(x)-1 because we care about difference
                 # between values, len(x)-1 = len(diff(x))
-                avg = ((x.max() - x.min())) / float(len(x) - 1)
+                avg = old_div(((x.max() - x.min())), float(len(x) - 1))
             else:
-                avg = (x.max() - x.min()) / float(len(x) - 1)
+                avg = old_div((x.max() - x.min()), float(len(x) - 1))
 
             avg = avg * 1e-9
 
@@ -425,14 +430,14 @@ def convert_datetime_to_floats(x):
     first = int(x.iloc[0].value * 1e-9)
     x = pd.to_numeric(x).astype(np.float64).values
     dividend = find_dividend_by_unit(first)
-    x *= (1e-9 / dividend)
+    x *= (old_div(1e-9, dividend))
     return x
 
 
 def convert_timedelta_to_floats(x):
     first = int(x.iloc[0].total_seconds())
     dividend = find_dividend_by_unit(first)
-    x = pd.TimedeltaIndex(x).total_seconds().astype(np.float64) / dividend
+    x = old_div(pd.TimedeltaIndex(x).total_seconds().astype(np.float64), dividend)
     return x
 
 
@@ -442,7 +447,7 @@ def find_dividend_by_unit(time):
     days, hours, minutes, or seconds
     """
     for dividend in [86400., 3600., 60.]:
-        div = time / dividend
+        div = old_div(time, dividend)
         if round(div) == div:
             return dividend
     return 1

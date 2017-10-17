@@ -1,6 +1,7 @@
 import copy
 import os
 import shutil
+from builtins import range
 from datetime import datetime
 from random import randint
 
@@ -59,10 +60,10 @@ def test_calc_feature_matrix(entityset):
 
 def test_cfm_approximate_correct_ordering():
     trips = {
-        'trip_id': [i for i in xrange(1000)],
-        'flight_time': [datetime(1998, 4, 2) for i in xrange(350)] + [datetime(1997, 4, 3) for i in xrange(650)],
-        'flight_id': [randint(1, 25) for i in xrange(1000)],
-        'trip_duration': [randint(1, 999) for i in xrange(1000)]
+        'trip_id': [i for i in range(1000)],
+        'flight_time': [datetime(1998, 4, 2) for i in range(350)] + [datetime(1997, 4, 3) for i in range(650)],
+        'flight_id': [randint(1, 25) for i in range(1000)],
+        'trip_duration': [randint(1, 999) for i in range(1000)]
     }
     df = pd.DataFrame.from_dict(trips)
     es = EntitySet('flights')
@@ -150,7 +151,7 @@ def test_saveprogress(entityset):
                                        instance_ids=range(17),
                                        cutoff_time=times,
                                        save_progress=save_progress)
-    _, _, files = os.walk(save_progress).next()
+    _, _, files = next(os.walk(save_progress))
     files = [os.path.join(save_progress, file) for file in files]
     # there is 17 datetime files created above
     assert len(files) == 17

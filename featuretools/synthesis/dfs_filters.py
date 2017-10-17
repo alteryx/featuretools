@@ -1,3 +1,5 @@
+from builtins import object
+
 from featuretools.primitives import (
     AggregationPrimitive,
     DirectFeature,

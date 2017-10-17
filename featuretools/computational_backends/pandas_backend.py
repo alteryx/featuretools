@@ -1,5 +1,5 @@
 import cProfile
-import cStringIO
+import io
 import logging
 import os
 import pstats
@@ -7,6 +7,8 @@ import sys
 import uuid
 import warnings
 from datetime import datetime
+
+from future import standard_library
 
 import numpy as np
 import pandas as pd
@@ -27,6 +29,7 @@ from featuretools.primitives import (
 # progress bar
 from featuretools.utils.gen_utils import make_tqdm_iterator
 
+standard_library.install_aliases()
 warnings.simplefilter('ignore', np.RankWarning)
 warnings.simplefilter("ignore", category=RuntimeWarning)
 logger = logging.getLogger('featuretools.computational_backend')
@@ -174,7 +177,7 @@ class PandasBackend(ComputationalBackend):
         # debugging
         if profile:
             pr.disable()
-            s = cStringIO.StringIO()
+            s = io.StringIO()
             ps = pstats.Stats(pr, stream=s).sort_stats("cumulative", "tottime")
             ps.print_stats()
             prof_folder_path = os.path.join(ROOT_DIR, 'prof')
@@ -285,7 +288,7 @@ class PandasBackend(ComputationalBackend):
             col_map[f.base_features[0].get_name()] = f.get_name()
 
         # merge the identity feature from the parent entity into the child
-        merge_df = parent_df[col_map.keys()].rename(columns=col_map)
+        merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
         if index_as_feature is not None:
             merge_df.set_index(index_as_feature.get_name(), inplace=True, drop=False)
         else:
@@ -435,7 +438,7 @@ class PandasBackend(ComputationalBackend):
                                 for n1, n2 in to_merge.columns.ravel()]
             # to enable a rename
             to_merge = to_merge.rename(columns=agg_rename)
-            variables = agg_rename.values()
+            variables = list(agg_rename.values())
             to_merge = to_merge[variables]
             frame = pd.merge(left=frame, right=to_merge,
                              left_on=index_var, right_index=True, how='left')

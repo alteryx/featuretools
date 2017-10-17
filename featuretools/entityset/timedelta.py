@@ -1,4 +1,10 @@
+from __future__ import division
+
+from builtins import str
 from datetime import datetime
+
+from past.builtins import basestring
+from past.utils import old_div
 
 import numpy as np
 import pandas as pd
@@ -120,7 +126,7 @@ class Timedelta(FTBase):
             unit = self.readable_unit
             if self.readable_unit == "Weeks":
                 # divide to convert back
-                return "{} {}".format(self.value / self._convert_to_days["w"], unit)
+                return "{} {}".format(old_div(self.value, self._convert_to_days["w"]), unit)
             if self.value == 1:
                 unit = self.make_singular(unit)
 

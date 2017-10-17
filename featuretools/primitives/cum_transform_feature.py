@@ -1,4 +1,7 @@
 import uuid
+from builtins import str
+
+from past.builtins import basestring
 
 import numpy as np
 import pandas as pd

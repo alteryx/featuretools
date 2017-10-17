@@ -1,4 +1,5 @@
 import operator
+from builtins import str
 
 import numpy as np
 

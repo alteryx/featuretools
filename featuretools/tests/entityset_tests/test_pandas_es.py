@@ -1,4 +1,5 @@
 import copy
+from builtins import range
 from datetime import datetime
 
 import numpy as np
@@ -47,7 +48,7 @@ class TestQueryFuncs(object):
             time_last=datetime(2011, 4, 9, 10, 50, 0))
 
         true_values = [i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
-        assert df['id'].get_values().tolist() == range(10)
+        assert df['id'].get_values().tolist() == list(range(10))
         assert df['value'].get_values().tolist() == true_values
 
     def test_query_by_indexed_variable(self, entityset):
@@ -113,7 +114,7 @@ class TestVariableHandling(object):
                                         index='id',
                                         variable_types=vtypes, dataframe=df)
         assert entityset['test_entity'].index == 'id'
-        assert entityset['test_entity'].df['id'].tolist() == range(3)
+        assert entityset['test_entity'].df['id'].tolist() == list(range(3))
 
     def test_bad_index_variables(self):
         # more variables
@@ -429,7 +430,7 @@ class TestVariableHandling(object):
         entityset_2 = copy.deepcopy(entityset)
 
         emap = {
-            'log': [range(10) + [14, 15, 16], range(10, 14) + [15, 16]],
+            'log': [list(range(10)) + [14, 15, 16], list(range(10, 14)) + [15, 16]],
             'sessions': [[0, 1, 2, 5], [1, 3, 4, 5]],
             'customers': [[0, 2], [1, 2]],
             'test_entity': [[0, 1], [0, 2]],
@@ -525,7 +526,7 @@ class TestRelatedInstances(object):
 
         # make sure different subsets of the log are included in each filtering
         assert set(result['customers']['log']['id'].values) == set(range(10))
-        assert set(result['products']['log']['id'].values) == set(range(10) + range(11, 15))
+        assert set(result['products']['log']['id'].values) == set(list(range(10)) + list(range(11, 15)))
         assert set(result['regions']['log']['id'].values) == set(range(17))
 
     def test_get_pandas_slice_times(self, entityset):
@@ -630,11 +631,11 @@ class TestNormalizeEntity(object):
 
     def test_make_time_index_keeps_original_sorting(self):
         trips = {
-            'trip_id': [999 - i for i in xrange(1000)],
-            'flight_time': [datetime(1997, 4, 1) for i in xrange(1000)],
-            'flight_id': [1 for i in xrange(350)] + [2 for i in xrange(650)]
+            'trip_id': [999 - i for i in range(1000)],
+            'flight_time': [datetime(1997, 4, 1) for i in range(1000)],
+            'flight_id': [1 for i in range(350)] + [2 for i in range(650)]
         }
-        order = [i for i in xrange(1000)]
+        order = [i for i in range(1000)]
         df = pd.DataFrame.from_dict(trips)
         es = EntitySet('flights')
         es.entity_from_dataframe("trips",
@@ -734,7 +735,7 @@ def test_head_of_entity(entityset):
     assert(entity.head(5, cutoff_time=datetime1).shape == (3, 9))
 
     time_list = [timestamp2] * 3 + [timestamp1] * 2
-    cutoff_times = pd.DataFrame(zip(range(5), time_list))
+    cutoff_times = pd.DataFrame(list(zip(range(5), time_list)))
 
     assert(entityset.head('log', 5, cutoff_time=cutoff_times).shape == (3, 9))
     assert(entity.head(5, cutoff_time=cutoff_times).shape == (3, 9))

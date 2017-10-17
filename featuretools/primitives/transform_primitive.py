@@ -1,7 +1,12 @@
+from __future__ import division
+
+import copy
 import datetime
 import functools
 import os
-import copy
+from builtins import str
+
+from past.utils import old_div
 
 import numpy as np
 import pandas as pd
@@ -112,7 +117,7 @@ def make_trans_primitive(function, input_types, return_type, name=None,
         cls.update(cls_attributes)
 
     # creates the new class and set name and types
-    name = name or function.func_name
+    name = name or function.__name__
     new_class = type(name, (TransformPrimitive,), cls)
     new_class.name = name
     new_class.input_types = input_types
@@ -245,7 +250,7 @@ class Hours(TimedeltaUnitBasePrimitive):
 
     def get_function(self):
         def pd_hours(array):
-            return pd_time_unit("seconds")(pd.TimedeltaIndex(array)) / 3600.
+            return old_div(pd_time_unit("seconds")(pd.TimedeltaIndex(array)), 3600.)
         return pd_hours
 
 
@@ -270,7 +275,7 @@ class Minutes(TimedeltaUnitBasePrimitive):
 
     def get_function(self):
         def pd_minutes(array):
-            return pd_time_unit("seconds")(pd.TimedeltaIndex(array)) / 60.
+            return old_div(pd_time_unit("seconds")(pd.TimedeltaIndex(array)), 60.)
         return pd_minutes
 
 
@@ -285,7 +290,7 @@ class Weeks(TimedeltaUnitBasePrimitive):
 
     def get_function(self):
         def pd_weeks(array):
-            return pd_time_unit("days")(pd.TimedeltaIndex(array)) / 7.
+            return old_div(pd_time_unit("days")(pd.TimedeltaIndex(array)), 7.)
         return pd_weeks
 
 
@@ -300,7 +305,7 @@ class Months(TimedeltaUnitBasePrimitive):
 
     def get_function(self):
         def pd_months(array):
-            return pd_time_unit("days")(pd.TimedeltaIndex(array)) * (12. / 365)
+            return pd_time_unit("days")(pd.TimedeltaIndex(array)) * (old_div(12., 365))
         return pd_months
 
 
@@ -315,7 +320,7 @@ class Years(TimedeltaUnitBasePrimitive):
 
     def get_function(self):
         def pd_years(array):
-            return pd_time_unit("days")(pd.TimedeltaIndex(array)) / 365
+            return old_div(pd_time_unit("days")(pd.TimedeltaIndex(array)), 365)
         return pd_years
 
 

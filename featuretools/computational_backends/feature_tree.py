@@ -1,5 +1,6 @@
 import itertools
 import logging
+from builtins import object
 from collections import defaultdict
 
 from ..utils import gen_utils as utils
@@ -32,7 +33,7 @@ class FeatureTree(object):
             for dep in deps:
                 all_features[dep.hash()] = dep
                 feature_deps[dep.hash()] = dep.get_deep_dependencies(ignored=ignored)
-        self.all_features = all_features.values()
+        self.all_features = list(all_features.values())
         self.feature_deps = feature_deps
 
         self._generate_feature_tree(features)
@@ -41,7 +42,7 @@ class FeatureTree(object):
 
     def get_all_features(self):
         all_features = []
-        for e, groups in self.ordered_feature_groups.iteritems():
+        for e, groups in self.ordered_feature_groups.items():
             for g in groups:
                 for f in g:
                     all_features.append(f)
@@ -71,7 +72,7 @@ class FeatureTree(object):
         dependencies.
         """
         entity_deps = defaultdict(set)
-        for e, features in self.top_level_features.iteritems():
+        for e, features in self.top_level_features.items():
             # iterate over all dependency features of the top-level features on
             # this entity. If any of these are themselves top-level features, add
             # their entities as dependencies of the current entity.
@@ -150,7 +151,7 @@ class FeatureTree(object):
                 order[dep.hash()] = min(order[f.hash()] - 1, order[dep.hash()])
                 queue.append(dep)
 
-        return features.values(), out
+        return list(features.values()), out
 
 
 # These functions are used for sorting and grouping features
