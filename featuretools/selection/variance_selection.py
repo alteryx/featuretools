@@ -43,7 +43,7 @@ def get_categorical_nunique_ratio(df, drop_nonumeric=True):
 
     nunique = df.nunique(axis=0, dropna=True)
     total = df[nonnumeric_columns].count(axis=0)
-    return nunique // total
+    return nunique / total
 
 
 def plot_categorical_nunique_ratio(feature_matrix,
@@ -135,7 +135,7 @@ def select_percent_null(feature_matrix, features, max_null_percent=1.0, keep=Non
     keep = keep or []
 
     null_counts = feature_matrix.isnull().sum()
-    null_percents = null_counts // feature_matrix.shape[0]
+    null_percents = null_counts / feature_matrix.shape[0]
 
     low_nulls = null_percents[null_percents < max_null_percent]
 

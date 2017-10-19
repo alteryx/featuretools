@@ -125,7 +125,7 @@ class Timedelta(FTBase):
             unit = self.readable_unit
             if self.readable_unit == "Weeks":
                 # divide to convert back
-                return "{} {}".format(self.value // self._convert_to_days["w"], unit)
+                return "{} {}".format(self.value / self._convert_to_days["w"], unit)
             if self.value == 1:
                 unit = self.make_singular(unit)
 
