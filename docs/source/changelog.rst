@@ -3,6 +3,10 @@
 Changelog
 ---------
 
+**v0.1.11** October XX, 2017
+    * Package linting (:pr:`#7`)
+    * Custom primitive creation functions (:pr:`13`)
+    * Split requirements to separate files and pin to latest versions (:pr:`15`)
 
 **v0.1.10** October 12, 2017
     * NumTrue primitive added and docstring of other primitives updated (:pr:`11`)
@@ -47,3 +51,6 @@ Changelog
 **v0.1.2** July 3rd, 2017
 
     * Initial release
+
+.. command
+.. git log --pretty=oneline --abbrev-commit
