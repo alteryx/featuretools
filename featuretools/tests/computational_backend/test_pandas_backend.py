@@ -445,22 +445,21 @@ def test_deep_agg_feat_chain(entityset, backend):
 
 
 def test_topn(entityset, backend):
-    topn = NMostCommon(entityset['log']['product_id'],
-                       entityset['customers'], n=3)
-    pandas_backend = backend([topn])
+   topn = NMostCommon(entityset['log']['product_id'],
+                      entityset['customers'], n=2)
+   pandas_backend = backend([topn])
 
-    df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2],
-                                               time_last=None)
+   df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2],
+                                              time_last=None)
 
-    true_results = [
-        ['toothpaste', 'coke zero', 'brown bag'],
-        ['coke zero', 'Haribo sugar-free gummy bears'],
-        ['taco clock']
-    ]
-    assert (topn.get_name() in df.columns)
-    for i, values in enumerate(df[topn.get_name()].values):
-        for j, v in enumerate(values):
-            assert (v == true_results[i][j])
+   true_results = [
+       ['toothpaste', 'coke zero'],
+       ['coke zero', 'Haribo sugar-free gummy bears'],
+       ['taco clock']
+   ]
+   assert (topn.get_name() in df.columns)
+   for i, values in enumerate(df[topn.get_name()].values):
+       assert set(true_results[i]) == set(values)
 
 
 def test_direct_squared(entityset, backend):

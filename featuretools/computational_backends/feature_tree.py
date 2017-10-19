@@ -158,14 +158,15 @@ class FeatureTree(object):
 
 def _get_use_previous(f):
     if hasattr(f, "use_previous") and f.use_previous is not None:
-        return f.use_previous
+        previous = f.use_previous
+        return (previous.unit, previous.value)
     else:
-        return -1
+        return ("", -1)
 
 
 def _get_where(f):
     if hasattr(f, "where") and f.where is not None:
-        return f.where.get_name()
+        return f.where.hash()
     else:
         return -1
 
