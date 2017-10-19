@@ -9,8 +9,6 @@ from collections import defaultdict
 from datetime import datetime
 from functools import wraps
 
-from past.utils import old_div
-
 import numpy as np
 import pandas as pd
 from pandas.tseries.frequencies import to_offset
@@ -440,7 +438,7 @@ def datetime_round(dt, freq, round_up=False):
         round_f = np.floor
     dt = pd.DatetimeIndex(dt)
     freq = to_offset(freq).delta.value
-    return pd.DatetimeIndex(((round_f(old_div(dt.asi8, (float(freq)))) * freq).astype(np.int64)))
+    return pd.DatetimeIndex(((round_f(dt.asi8 / freq)) * freq).astype(np.int64))
 
 
 def gather_approximate_features(features):

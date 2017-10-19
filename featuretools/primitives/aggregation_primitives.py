@@ -3,8 +3,6 @@ from __future__ import division
 from builtins import range, str
 from datetime import datetime, timedelta
 
-from past.utils import old_div
-
 import numpy as np
 import pandas as pd
 from scipy.stats import skew
@@ -171,7 +169,7 @@ class PercentTrue(AggregationPrimitive):
         def percent_true(x):
             if len(x) == 0:
                 return np.nan
-            return old_div(np.nan_to_num(x.values).sum(dtype=np.float), len(x))
+            return np.nan_to_num(x.values).sum(dtype=np.float) / len(x)
         return percent_true
 
 
@@ -240,10 +238,8 @@ class AvgTimeBetween(AggregationPrimitive):
                 x = x.astype('int64')
                 # use len(x)-1 because we care about difference
                 # between values, len(x)-1 = len(diff(x))
-                avg = old_div(((x.max() - x.min())), float(len(x) - 1))
-            else:
-                avg = old_div((x.max() - x.min()), float(len(x) - 1))
 
+            avg = (x.max() - x.min()) / (len(x) - 1)
             avg = avg * 1e-9
 
             # long form:
@@ -430,14 +426,14 @@ def convert_datetime_to_floats(x):
     first = int(x.iloc[0].value * 1e-9)
     x = pd.to_numeric(x).astype(np.float64).values
     dividend = find_dividend_by_unit(first)
-    x *= (old_div(1e-9, dividend))
+    x *= (1e-9 / dividend)
     return x
 
 
 def convert_timedelta_to_floats(x):
     first = int(x.iloc[0].total_seconds())
     dividend = find_dividend_by_unit(first)
-    x = old_div(pd.TimedeltaIndex(x).total_seconds().astype(np.float64), dividend)
+    x = pd.TimedeltaIndex(x).total_seconds().astype(np.float64) / dividend
     return x
 
 
@@ -446,8 +442,8 @@ def find_dividend_by_unit(time):
     Finds whether time best corresponds to a value in
     days, hours, minutes, or seconds
     """
-    for dividend in [86400., 3600., 60.]:
-        div = old_div(time, dividend)
+    for dividend in [86400, 3600, 60]:
+        div = time / dividend
         if round(div) == div:
             return dividend
     return 1

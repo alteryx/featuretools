@@ -3,7 +3,6 @@ from __future__ import division
 from builtins import object
 
 from past.builtins import basestring
-from past.utils import old_div
 
 import featuretools as ft
 from featuretools.core.base import FTBase
@@ -203,7 +202,7 @@ class Discrete(Variable):
         if self.nunique is None or self.count is None:
             return None
         if self.count > 0:
-            return old_div(float(self.nunique), self.count)
+            return self.nunique / self.count
         return 0
 
     @property

@@ -6,8 +6,6 @@ import time
 from builtins import range
 from datetime import datetime
 
-from past.utils import old_div
-
 import numpy as np
 import pandas as pd
 
@@ -391,7 +389,7 @@ class Entity(BaseEntity):
                     .sample(min(10000, df[variable].nunique(dropna=False)))
 
                 unique = sample.unique()
-                percent_unique = old_div(sample.size, float(len(unique)))
+                percent_unique = sample.size / len(unique)
 
                 if percent_unique < .05:
                     inferred_type = vtypes.Categorical
@@ -465,7 +463,7 @@ class Entity(BaseEntity):
                             logger.info(msg.format(variable.id, idx))
                         variable.interesting_values += [idx]
                     else:
-                        fraction = old_div(float(counts[idx]), total_count)
+                        fraction = counts[idx] / total_count
                         if fraction > 0.05 and fraction < 0.95:
                             if verbose:
                                 msg = "Variable {}: Marking {} as an "
