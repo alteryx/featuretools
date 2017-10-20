@@ -7,7 +7,7 @@ Changelog
     * Package linting (:pr:`#7`)
     * Custom primitive creation functions (:pr:`13`)
     * Split requirements to separate files and pin to latest versions (:pr:`15`)
-    * Replace ``selection.select_high_variance_features`` and ``selection.select_percent_null`` with ``selection.remove_low_information_features`` (:pr:`18`)
+    * Select low information features (:pr:`18`)
 
 **v0.1.10** October 12, 2017
     * NumTrue primitive added and docstring of other primitives updated (:pr:`11`)
