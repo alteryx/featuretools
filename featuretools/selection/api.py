@@ -1,1 +1,1 @@
-from .variance_selection import *
+from .selection import *
