@@ -4,7 +4,7 @@ Representing Data with EntitySets
 =================================
 .. currentmodule:: featuretools
 
-An ``EntitySet`` is a collection of entities and the relationships between them relationships. They are useful for preparing raw, structured datasets for feature engineering. While many functions in Featuretools  take ``entities`` and ``relationships`` as separate arguments, it is recommended to create an ``EntitySet``, so you can more easily manipulate your data as needed.
+An ``EntitySet`` is a collection of entities and the relationships between them. They are useful for preparing raw, structured datasets for feature engineering. While many functions in Featuretools  take ``entities`` and ``relationships`` as separate arguments, it is recommended to create an ``EntitySet``, so you can more easily manipulate your data as needed.
 
 
 .. ipython:: python
@@ -86,7 +86,7 @@ With two entities in our entity set, we can add a relationship between them.
 
 Adding a Relationship
 ~~~~~~~~~~~~~~~~~~~~~
-We want to relate these two entities by the columns called "product_id" in each entity. Each product as multiple transactions associated with it, so it is called it the **parent entity**, while the transactions entity is known as the **child entity**. When specifying relationships we list the variable in the parent entity first.
+We want to relate these two entities by the columns called "product_id" in each entity. Each product has multiple transactions associated with it, so it is called it the **parent entity**, while the transactions entity is known as the **child entity**. When specifying relationships we list the variable in the parent entity first.
 
 .. ipython:: python
 
