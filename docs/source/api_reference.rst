@@ -303,3 +303,12 @@ Variable types
     Ordinal
     Boolean
     Text
+
+
+Feature Selection
+------------------
+.. currentmodule:: featuretools.selection
+.. autosummary::
+    :toctree: generated/
+
+    remove_low_information_features
