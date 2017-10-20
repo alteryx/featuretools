@@ -1,6 +1,8 @@
 import pytest
-from featuretools import variable_types
+
 from ..testing_utils import make_ecommerce_entityset
+
+from featuretools import variable_types
 
 
 @pytest.fixture

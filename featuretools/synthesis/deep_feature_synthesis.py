@@ -1,15 +1,24 @@
-from collections import defaultdict
-import sys
-from featuretools.utils.gen_utils import make_tqdm_iterator
-from featuretools import variable_types
-from featuretools.variable_types import Categorical, Numeric, Boolean, Ordinal
-from featuretools.primitives.api import (IdentityFeature, BinaryFeature, Discrete,
-                                         TimeSince, DirectFeature, Compare,
-                                         AggregationPrimitive, Equals)
-import featuretools.primitives.api as ftypes
-from .dfs_filters import (TraverseUp, LimitModeUniques)
-
 import logging
+import sys
+from collections import defaultdict
+
+from .dfs_filters import LimitModeUniques, TraverseUp
+
+import featuretools.primitives.api as ftypes
+from featuretools import variable_types
+from featuretools.primitives.api import (
+    AggregationPrimitive,
+    BinaryFeature,
+    Compare,
+    DirectFeature,
+    Discrete,
+    Equals,
+    IdentityFeature,
+    TimeSince
+)
+from featuretools.utils.gen_utils import make_tqdm_iterator
+from featuretools.variable_types import Boolean, Categorical, Numeric, Ordinal
+
 logger = logging.getLogger('featuretools')
 
 
@@ -587,7 +596,6 @@ class DeepFeatureSynthesis(object):
                                                            child_entity.id)
 
             features = [f for f in features if not self._feature_in_relationship_path(relationship_path, f)]
-
             matching_inputs = match(input_types, features,
                                     associative=agg_prim.associative)
             wheres = list(self.where_clauses[child_entity.id])
@@ -595,8 +603,7 @@ class DeepFeatureSynthesis(object):
             for matching_input in matching_inputs:
                 if not check_stacking(agg_prim, matching_input):
                     continue
-
-                new_f = agg_prim(*matching_input,
+                new_f = agg_prim(matching_input,
                                  parent_entity=parent_entity)
                 self._handle_new_feature(new_f, all_features)
 
@@ -605,22 +612,28 @@ class DeepFeatureSynthesis(object):
                     continue
 
                 # limits the stacking of where features
-                feat_wheres = [feat for feat in f.get_deep_dependencies()
-                               if isinstance(feat, AggregationPrimitive) and
-                               feat.where is not None]
+                feat_wheres = []
+                for f in matching_input:
+                    if f.where is not None:
+                        feat_wheres.append(f)
+                    for feat in f.get_deep_dependencies():
+                        if (isinstance(feat, AggregationPrimitive) and
+                                feat.where is not None):
+                            feat_wheres.append(feat)
+
                 if len(feat_wheres) >= self.where_stacking_limit:
                     continue
 
                 # limits the aggregation feature by the given allowed feature types.
                 if not any([issubclass(agg_prim, feature_type) for feature_type in self.where_primitives]):
-                        continue
+                    continue
 
                 for where in wheres:
                     # limits the where feats so they are different than base feats
                     if any([base_feat.hash() in new_f.base_hashes for base_feat in where.base_features]):
                         continue
 
-                    new_f = agg_prim(*matching_input,
+                    new_f = agg_prim(matching_input,
                                      parent_entity=parent_entity,
                                      where=where)
                     self._handle_new_feature(new_f, all_features)

@@ -1,8 +1,10 @@
+import os
+
+import dask.dataframe as dd
+import pandas as pd
+
 import featuretools as ft
 from featuretools.config import config as ft_config
-import os
-import pandas as pd
-import dask.dataframe as dd
 
 
 def load_flight(entity_id='flight_dataset', nrows=None, force=False):

@@ -1,16 +1,10 @@
-import pytest
-from featuretools.synthesis import DeepFeatureSynthesis, dfs
-import copy
-from featuretools.primitives import (Last, Count, Hour, IdentityFeature,
-                                     TransformPrimitive, AggregationPrimitive,
-                                     Feature, Max, Mean, Min, Sum, Diff,
-                                     TimeSincePrevious, CumMean, DirectFeature)
-from ..testing_utils import make_ecommerce_entityset, feature_with_name
 import pandas as pd
-from featuretools.utils.gen_utils import getsize
-from featuretools.utils.pickle_utils import save_obj_pickle
-import os
-import featuretools as ft
+import pytest
+
+from ..testing_utils import make_ecommerce_entityset
+
+from featuretools.primitives import Max, Mean, Min, Sum
+from featuretools.synthesis import dfs
 
 
 @pytest.fixture(scope='module')
@@ -36,6 +30,7 @@ def entities():
 def relationships():
     return [("cards", "id", "transactions", "card_id")]
 
+
 def test_accepts_cutoff_time_df(entities, relationships):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
                                     "time": [10, 12, 15]})
@@ -46,6 +41,7 @@ def test_accepts_cutoff_time_df(entities, relationships):
     assert len(feature_matrix.index) == 3
     assert len(feature_matrix.columns) == len(features)
 
+
 def test_accepts_single_cutoff_time(entities, relationships):
     feature_matrix, features = dfs(entities=entities,
                                    relationships=relationships,
@@ -54,6 +50,7 @@ def test_accepts_single_cutoff_time(entities, relationships):
     assert len(feature_matrix.index) == 6
     assert len(feature_matrix.columns) == len(features)
 
+
 def test_accepts_no_cutoff_time(entities, relationships):
     feature_matrix, features = dfs(entities=entities,
                                    relationships=relationships,
@@ -61,6 +58,7 @@ def test_accepts_no_cutoff_time(entities, relationships):
                                    instance_ids=[1, 2, 3, 5, 6])
     assert len(feature_matrix.index) == 5
     assert len(feature_matrix.columns) == len(features)
+
 
 def test_ignores_instance_ids_if_cutoff_df(entities, relationships):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
@@ -73,6 +71,7 @@ def test_ignores_instance_ids_if_cutoff_df(entities, relationships):
                                    instance_ids=instance_ids)
     assert len(feature_matrix.index) == 3
     assert len(feature_matrix.columns) == len(features)
+
 
 def test_approximate_features(entities, relationships):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 3, 1, 5, 3, 6],
@@ -93,6 +92,7 @@ def test_approximate_features(entities, relationships):
     assert ((feature_matrix[column] == feature_matrix_2[column]).all()
             for column in feature_matrix.columns)
 
+
 def test_all_variables(entities, relationships):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
                                     "time": [10, 12, 15]})
@@ -111,6 +111,7 @@ def test_all_variables(entities, relationships):
                                    seed_features=None)
     assert len(feature_matrix.index) == 3
     assert len(feature_matrix.columns) == len(features)
+
 
 def test_features_only(entities, relationships):
     features = dfs(entities=entities,

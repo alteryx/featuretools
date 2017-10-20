@@ -7,6 +7,7 @@ class Relationship(FTBase):
     See Also:
         :class:`.EntitySet`, :class:`.Entity`, :class:`.Variable`
     """
+
     def __init__(self, parent_variable, child_variable):
         """ Create a relationship
 

@@ -1,14 +1,28 @@
-from .primitive_base import PrimitiveBase
-from featuretools.variable_types import (Discrete, Numeric, Categorical, Boolean,
-                                         Ordinal, Text, Datetime, Timedelta, Variable,
-                                         TimeIndex, DatetimeTimeIndex, Id)
-
 import datetime
+import functools
 import os
-import pandas as pd
+
 import numpy as np
+import pandas as pd
+
+from .primitive_base import PrimitiveBase
+from .utils import inspect_function_args
+
+from featuretools.variable_types import (
+    Boolean,
+    Datetime,
+    DatetimeTimeIndex,
+    Discrete,
+    Id,
+    Numeric,
+    Ordinal,
+    Timedelta,
+    Variable
+)
+
 current_path = os.path.dirname(os.path.realpath(__file__))
-FEATURE_DATASETS = os.path.join(os.path.join(current_path, '..'), 'feature_datasets')
+FEATURE_DATASETS = os.path.join(os.path.join(current_path, '..'),
+                                'feature_datasets')
 
 
 class TransformPrimitive(PrimitiveBase):
@@ -17,6 +31,8 @@ class TransformPrimitive(PrimitiveBase):
     rolling_function = False
 
     def __init__(self, *base_features):
+        # Any edits made to this method should also be made to the
+        # new_class_init method in make_trans_primitive
         self.base_features = [self._check_feature(f) for f in base_features]
         if any(bf.expanding for bf in self.base_features):
             self.expanding = True
@@ -34,6 +50,96 @@ class TransformPrimitive(PrimitiveBase):
     @property
     def default_value(self):
         return self.base_features[0].default_value
+
+
+def make_trans_primitive(function, input_types, return_type, name=None,
+                         description='A custom transform primitive',
+                         cls_attributes=None, uses_calc_time=False,
+                         associative=False):
+    '''Returns a new transform primitive class
+
+    Args:
+        function (function): function that takes in an array  and applies some
+            transformation to it.
+
+        name (string): name of the function
+
+        input_types (list[:class:`.Variable`]): variable types of the inputs
+
+        return_type (:class:`.Variable`): variable type of return
+
+        description (string): description of primitive
+
+        cls_attributes (dict): custom attributes to be added to class
+
+        uses_calc_time (bool): if True, the cutoff time the feature is being
+            calculated at will be passed to the function as the keyword
+            argument 'time'.
+
+        associative (bool): If True, will only make one feature per unique set
+            of base features
+
+    Example:
+        .. ipython :: python
+
+            from featuretools.primitives import make_trans_primitive
+            from featuretools.variable_types import Variable, Boolean
+
+
+            def pd_is_in(array, list_of_outputs=None):
+                if list_of_outputs is None:
+                    list_of_outputs = []
+                return pd.Series(array).isin(list_of_outputs)
+
+            def isin_get_name(self):
+                return u"%s.isin(%s)" % (self.base_features[0].get_name(),
+                                         str(self.kwargs['list_of_outputs']))
+
+            IsIn = make_trans_primitive(
+                pd_is_in,
+                [Variable],
+                Boolean,
+                name="is_in",
+                description="For each value of the base feature, checks "
+                "whether it is in a list that provided.",
+                cls_attributes={"_get_name": isin_get_name})
+    '''
+    # dictionary that holds attributes for class
+    cls = {"__doc__": description}
+    if cls_attributes is not None:
+        cls.update(cls_attributes)
+
+    # creates the new class and set name and types
+    name = name or function.func_name
+    new_class = type(name, (TransformPrimitive,), cls)
+    new_class.name = name
+    new_class.input_types = input_types
+    new_class.return_type = return_type
+    new_class.associative = associative
+    new_class, kwargs = inspect_function_args(new_class,
+                                              function,
+                                              uses_calc_time)
+
+    if kwargs is not None:
+        new_class.kwargs = kwargs
+
+        def new_class_init(self, *args, **kwargs):
+            self.base_features = [self._check_feature(f) for f in args]
+            if any(bf.expanding for bf in self.base_features):
+                self.expanding = True
+            assert len(set([f.entity for f in self.base_features])) == 1, \
+                "More than one entity for base features"
+            self.kwargs.update(kwargs)
+            self.partial = functools.partial(function, **self.kwargs)
+            super(TransformPrimitive, self).__init__(
+                self.base_features[0].entity, self.base_features)
+        new_class.__init__ = new_class_init
+        new_class.get_function = lambda self: self.partial
+    else:
+        # creates a lambda function that returns function every time
+        new_class.get_function = lambda self, f=function: f
+
+    return new_class
 
 
 class IsNull(TransformPrimitive):
@@ -57,7 +163,8 @@ class Absolute(TransformPrimitive):
 
 
 class TimeSincePrevious(TransformPrimitive):
-    """Compute the time since the previous instance for each instance in a time indexed entity"""
+    """Compute the time since the previous instance for each instance in a
+     time indexed entity"""
     name = "time_since_previous"
     input_types = [DatetimeTimeIndex, Id]
     return_type = Numeric
@@ -84,14 +191,17 @@ class TimeSincePrevious(TransformPrimitive):
         def pd_diff(base_array, group_array):
             bf_name = 'base_feature'
             groupby = 'groupby'
-            grouped_df = pd.DataFrame.from_dict({bf_name: base_array, groupby: group_array}).groupby(groupby).diff()
+            grouped_df = pd.DataFrame.from_dict({bf_name: base_array,
+                                                 groupby: group_array})
+            grouped_df = grouped_df.groupby(groupby).diff()
             return grouped_df[bf_name].apply(lambda x:
                                              x.total_seconds())
         return pd_diff
 
 
 class DatetimeUnitBasePrimitive(TransformPrimitive):
-    """Transform Datetime feature into time or calendar units (second/day/week/etc)"""
+    """Transform Datetime feature into time or calendar units
+     (second/day/week/etc)"""
     name = None
     input_types = [Datetime]
     return_type = Ordinal
@@ -101,7 +211,8 @@ class DatetimeUnitBasePrimitive(TransformPrimitive):
 
 
 class TimedeltaUnitBasePrimitive(TransformPrimitive):
-    """Transform Timedelta features into number of time units (seconds/days/etc) they encompass"""
+    """Transform Timedelta features into number of time units
+     (seconds/days/etc) they encompass"""
     name = None
     input_types = [Timedelta]
     return_type = Numeric
@@ -130,7 +241,9 @@ class Hours(TimedeltaUnitBasePrimitive):
     name = "hours"
 
     def get_function(self):
-        return lambda array: pd_time_unit("seconds")(pd.TimedeltaIndex(array)) / 3600.
+        def pd_hours(array):
+            return pd_time_unit("seconds")(pd.TimedeltaIndex(array)) / 3600.
+        return pd_hours
 
 
 class Second(DatetimeUnitBasePrimitive):
@@ -153,7 +266,9 @@ class Minutes(TimedeltaUnitBasePrimitive):
     name = "minutes"
 
     def get_function(self):
-        return lambda array: pd_time_unit("seconds")(pd.TimedeltaIndex(array)) / 60.
+        def pd_minutes(array):
+            return pd_time_unit("seconds")(pd.TimedeltaIndex(array)) / 60.
+        return pd_minutes
 
 
 class Week(DatetimeUnitBasePrimitive):
@@ -166,7 +281,9 @@ class Weeks(TimedeltaUnitBasePrimitive):
     name = "weeks"
 
     def get_function(self):
-        return lambda array: pd_time_unit("days")(pd.TimedeltaIndex(array)) / 7.
+        def pd_weeks(array):
+            return pd_time_unit("days")(pd.TimedeltaIndex(array)) / 7.
+        return pd_weeks
 
 
 class Month(DatetimeUnitBasePrimitive):
@@ -179,7 +296,9 @@ class Months(TimedeltaUnitBasePrimitive):
     name = "months"
 
     def get_function(self):
-        return lambda array: pd_time_unit("days")(pd.TimedeltaIndex(array)) * (12. / 365)
+        def pd_months(array):
+            return pd_time_unit("days")(pd.TimedeltaIndex(array)) * (12. / 365)
+        return pd_months
 
 
 class Year(DatetimeUnitBasePrimitive):
@@ -192,7 +311,9 @@ class Years(TimedeltaUnitBasePrimitive):
     name = "years"
 
     def get_function(self):
-        return lambda array: pd_time_unit("days")(pd.TimedeltaIndex(array)) / 365
+        def pd_years(array):
+            return pd_time_unit("days")(pd.TimedeltaIndex(array)) / 365
+        return pd_years
 
 
 class Weekend(TransformPrimitive):
@@ -230,26 +351,41 @@ class Weekday(DatetimeUnitBasePrimitive):
 #         return pd_like
 
 
-class TimeSince(TransformPrimitive):
-    """
-    For each value of the base feature, compute the timedelta between it and a datetime
-    """
-    name = "time_since"
-    input_types = [[DatetimeTimeIndex], [Datetime]]
-    return_type = Timedelta
-    uses_calc_time = True
+# class TimeSince(TransformPrimitive):
+#     """
+#     For each value of the base feature, compute the timedelta between it and
+#     a datetime
+#     """
+#     name = "time_since"
+#     input_types = [[DatetimeTimeIndex], [Datetime]]
+#     return_type = Timedelta
+#     uses_calc_time = True
 
-    def get_function(self):
-        def pd_time_since(array, time):
-            if time is None:
-                time = datetime.now()
-            return (time - pd.DatetimeIndex(array)).values
-        return pd_time_since
+#     def get_function(self):
+#         def pd_time_since(array, time):
+#             if time is None:
+#                 time = datetime.now()
+#             return (time - pd.DatetimeIndex(array)).values
+#         return pd_time_since
+
+
+def pd_time_since(array, time):
+    if time is None:
+        time = datetime.now()
+    return (time - pd.DatetimeIndex(array)).values
+
+
+TimeSince = make_trans_primitive(function=pd_time_since,
+                                 input_types=[[DatetimeTimeIndex], [Datetime]],
+                                 return_type=Timedelta,
+                                 uses_calc_time=True,
+                                 name="time_since")
 
 
 class DaysSince(TransformPrimitive):
     """
-    For each value of the base feature, compute the number of days between it and a datetime
+    For each value of the base feature, compute the number of days between it
+    and a datetime
     """
     name = "days_since"
     input_types = [DatetimeTimeIndex]
@@ -266,7 +402,8 @@ class DaysSince(TransformPrimitive):
 
 class IsIn(TransformPrimitive):
     """
-    For each value of the base feature, checks whether it is in a list that is provided.
+    For each value of the base feature, checks whether it is in a list that is
+    provided.
     """
     name = "isin"
     input_types = [Variable]
@@ -285,12 +422,13 @@ class IsIn(TransformPrimitive):
 
     def _get_name(self):
         return u"%s.isin(%s)" % (self.base_features[0].get_name(),
-                                str(self.list_of_outputs))
+                                 str(self.list_of_outputs))
 
 
 class Diff(TransformPrimitive):
     """
-    For each value of the base feature, compute the difference between it and the previous value.
+    For each value of the base feature, compute the difference between it and
+    the previous value.
 
     If it is a Datetime feature, compute the difference in seconds
     """
@@ -303,22 +441,25 @@ class Diff(TransformPrimitive):
 
         Args:
             base_feature (:class:`PrimitiveBase`): base feature
-            group_feature (:class:`PrimitiveBase`): variable or feature to group
-                rows by before calculating diff
+            group_feature (:class:`PrimitiveBase`): variable or feature to
+                group rows by before calculating diff
 
         """
         self.group_feature = self._check_feature(group_feature)
         super(Diff, self).__init__(base_feature, group_feature)
 
     def _get_name(self):
-        base_features_str = self.base_features[0].get_name() + u" by " + self.group_feature.get_name()
+        base_features_str = self.base_features[0].get_name() + u" by " + \
+            self.group_feature.get_name()
         return u"%s(%s)" % (self.name.upper(), base_features_str)
 
     def get_function(self):
         def pd_diff(base_array, group_array):
             bf_name = 'base_feature'
             groupby = 'groupby'
-            grouped_df = pd.DataFrame.from_dict({bf_name: base_array, groupby: group_array}).groupby(groupby).diff()
+            grouped_df = pd.DataFrame.from_dict({bf_name: base_array,
+                                                 groupby: group_array})
+            grouped_df = grouped_df.groupby(groupby).diff()
             return grouped_df[bf_name]
         return pd_diff
 
@@ -343,7 +484,8 @@ class Not(TransformPrimitive):
 
 class Percentile(TransformPrimitive):
     """
-    For each value of the base feature, determines the percentile in relation to the rest of the feature.
+    For each value of the base feature, determines the percentile in relation
+    to the rest of the feature.
     """
     name = 'percentile'
     input_types = [Numeric]

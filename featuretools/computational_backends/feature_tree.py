@@ -1,14 +1,22 @@
 import itertools
-from collections import defaultdict
-from featuretools.exceptions import UnknownFeature
-from featuretools.primitives import IdentityFeature, TransformPrimitive,\
-    DirectFeature, AggregationPrimitive
-from ..utils import gen_utils as utils
 import logging
+from collections import defaultdict
+
+from ..utils import gen_utils as utils
+
+from featuretools.exceptions import UnknownFeature
+from featuretools.primitives import (
+    AggregationPrimitive,
+    DirectFeature,
+    IdentityFeature,
+    TransformPrimitive
+)
+
 logger = logging.getLogger('featuretools.computational_backend')
 
 
 class FeatureTree(object):
+
     def __init__(self, entityset, features, ignored=None):
         self.entityset = entityset
         self.target_eid = features[0].entity.id

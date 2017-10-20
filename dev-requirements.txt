@@ -1,8 +1,11 @@
-pytest>=3.0.1
-Sphinx==1.4.1
-sphinx_rtd_theme==0.1.9
-nbsphinx==0.2.13
-mock==2.0.0
-pytest-xdist>=1.15.0
+-r test-requirements.txt
+Sphinx==1.6.4
+sphinx_rtd_theme==0.2.4
+nbsphinx==0.2.14
+pytest-xdist>=1.20.1
 jupyter==1.0.0
 rst2pdf==0.93
+pytest-cov===2.5.1
+codecov==2.0.9
+flake8==3.4.1
+isort==4.2.15

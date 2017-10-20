@@ -1,7 +1,9 @@
+import os
+
+import pandas as pd
+
 import featuretools as ft
 from featuretools.config import config as ft_config
-import os
-import pandas as pd
 
 
 def load_retail(id='demo_retail_data', nrows=None):

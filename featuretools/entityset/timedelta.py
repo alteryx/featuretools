@@ -1,9 +1,11 @@
+from datetime import datetime
+
+import numpy as np
 import pandas as pd
+from dateutil.relativedelta import relativedelta
+
 from featuretools.core.base import FTBase
 from featuretools.exceptions import NotEnoughData
-from datetime import datetime
-import numpy as np
-from dateutil.relativedelta import relativedelta
 
 
 class Timedelta(FTBase):

@@ -1,7 +1,9 @@
-from featuretools.entityset import EntitySet
-from .deep_feature_synthesis import DeepFeatureSynthesis
-from featuretools.computational_backends import calculate_feature_matrix
 import pandas as pd
+
+from .deep_feature_synthesis import DeepFeatureSynthesis
+
+from featuretools.computational_backends import calculate_feature_matrix
+from featuretools.entityset import EntitySet
 
 
 def dfs(entities=None,

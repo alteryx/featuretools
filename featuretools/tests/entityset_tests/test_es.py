@@ -1,6 +1,8 @@
-from featuretools import variable_types, Relationship
-from ..testing_utils import make_ecommerce_entityset
 import pytest
+
+from ..testing_utils import make_ecommerce_entityset
+
+from featuretools import Relationship, variable_types
 
 
 @pytest.fixture

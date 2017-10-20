@@ -1,18 +1,25 @@
-import pandas as pd
-from .pandas_backend import PandasBackend
-from featuretools.utils.gen_utils import make_tqdm_iterator
-from featuretools.primitives import (PrimitiveBase, AggregationPrimitive,
-                                     DirectFeature)
-from datetime import datetime
-from collections import defaultdict
-from featuretools.utils.wrangle import _check_timedelta
-from pandas.tseries.frequencies import to_offset
 import gc
-import numpy as np
-import os
-from functools import wraps
-import shutil
 import logging
+import os
+import shutil
+from collections import defaultdict
+from datetime import datetime
+from functools import wraps
+
+import numpy as np
+import pandas as pd
+from pandas.tseries.frequencies import to_offset
+
+from .pandas_backend import PandasBackend
+
+from featuretools.primitives import (
+    AggregationPrimitive,
+    DirectFeature,
+    PrimitiveBase
+)
+from featuretools.utils.gen_utils import make_tqdm_iterator
+from featuretools.utils.wrangle import _check_timedelta
+
 logger = logging.getLogger('featuretools.computational_backend')
 
 
@@ -197,16 +204,15 @@ def calculate_batch(features, group, approximate, entityset, backend_verbose, tr
                     no_unapproximated_aggs, cutoff_df_time_var, target_time):
     if approximate is not None:
         precalculated_features, all_approx_feature_set = approximate_features(features,
-                                                               group,
-                                                               window=approximate,
-                                                               entityset=entityset,
-                                                               training_window=training_window,
-                                                               verbose=backend_verbose,
-                                                               profile=profile)
+                                                                              group,
+                                                                              window=approximate,
+                                                                              entityset=entityset,
+                                                                              training_window=training_window,
+                                                                              verbose=backend_verbose,
+                                                                              profile=profile)
     else:
         precalculated_features = None
         all_approx_feature_set = None
-
 
     if backend_verbose is None:
         one_cutoff_time = group[cutoff_df_time_var].nunique() == 1
@@ -251,8 +257,8 @@ def calculate_batch(features, group, approximate, entityset, backend_verbose, tr
                                              left_on=['instance_id'],
                                              right_index=True,
                                              how='left')
-                                      .set_index('instance_id')
-                                      .drop([cutoff_df_time_var], axis=1))
+                               .set_index('instance_id')
+                               .drop([cutoff_df_time_var], axis=1))
 
         time_index = pd.DatetimeIndex([time_last] * _feature_matrix.shape[0], name='time')
         _feature_matrix.set_index(time_index, append=True, inplace=True)

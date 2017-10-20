@@ -1,59 +1,86 @@
-from numpy import nan
-from featuretools.core.base import FTBase
 import copy
-from featuretools.variable_types.variable import Variable
-from featuretools.entityset import Entity, EntitySet
-from featuretools.utils.wrangle import _check_timedelta, _check_time_against_column
-import featuretools as ft
-import pdb
 import logging
+import pdb
+
+from numpy import nan
+
+import featuretools as ft
+from featuretools.core.base import FTBase
+from featuretools.entityset import Entity, EntitySet
+from featuretools.utils.wrangle import (
+    _check_time_against_column,
+    _check_timedelta
+)
+from featuretools.variable_types import Variable
+
 logger = logging.getLogger('featuretools')
 
 
 class PrimitiveBase(FTBase):
     """Base class for all features."""
-
-    name = None  #: (str): Name of backend function used to compute this feature
-    input_types = None  #: (list): Variable types of inputs
-    return_type = None  #: (:class:`.Variable`): variable type of return
-    default_value = nan  #: Default value this feature returns if no data found. deafults to np.nan
-    uses_calc_time = False  #: (bool): True if feature needs to know what the current calculation time is (provided to computational backend as "time_last")
-    where = None  #: (:class:`.PrimitiveBase`): Feature to condition this feature by in computation (e.g. take the Count of products where the product_id is "basketball".)
-    allow_where = False  #: (bool): If True, allow where clauses in DFS
-    use_previous = None  #: (str or :class:`.Timedelta`): Use only some amount of previous data from each time point during calculation
-    max_stack_depth = None  #: (int): Maximum number of features in the largest chain proceeding downward from this feature's base features.
+    #: (str): Name of backend function used to compute this feature
+    name = None
+    #: (list): Variable types of inputs
+    input_types = None
+    #: (:class:`.Variable`): variable type of return
+    return_type = None
+    #: Default value this feature returns if no data found. deafults to np.nan
+    default_value = nan
+    #: (bool): True if feature needs to know what the current calculation time
+    # is (provided to computational backend as "time_last")
+    uses_calc_time = False
+    #: (:class:`.PrimitiveBase`): Feature to condition this feature by in
+    # computation (e.g. take the Count of products where the product_id is
+    # "basketball".)
+    where = None
+    #: (bool): If True, allow where clauses in DFS
+    allow_where = False
+    #: (str or :class:`.Timedelta`): Use only some amount of previous data from
+    # each time point during calculation
+    use_previous = None
+    #: (int): Maximum number of features in the largest chain proceeding
+    # downward from this feature's base features.
+    max_stack_depth = None
     rolling_function = False
-    expanding = False  #: (bool): If True, feature will expand into multiple values during calculation
+    #: (bool): If True, feature will expand into multiple values during
+    # calculation
+    expanding = False
     _name = None
-    base_of = None  # whitelist of primitives can have this primitive in input_types
-    base_of_exclude = None  # blacklist of primitives can have this primitive in input_types
-    associative = False  # (bool) If True, will only make one feature per unique set of base features
+    # whitelist of primitives can have this primitive in input_types
+    base_of = None
+    # blacklist of primitives can have this primitive in input_types
+    base_of_exclude = None
+    # (bool) If True will only make one feature per unique set of base features
+    associative = False
 
     def __init__(self, entity, base_features, **kwargs):
         assert all(isinstance(f, PrimitiveBase) for f in base_features), \
             "All base features must be features"
         if len(set([bf.hash() for bf in base_features])) != len(base_features):
-            raise ValueError(u"Duplicate base features ({}): {}".format(self.__class__, base_features))
+            raise ValueError(u"Duplicate base features ({}): {}".format(
+                self.__class__, base_features))
 
         self.entity_id = entity.id
         self.entityset = entity.entityset
 
         # P TODO: where should this logic go?
-        # not all primitives support use previous so doesn't make sense to have in base
+        # not all primitives support use previous so doesn't make sense to have
+        # in base
         if self.use_previous:
             self.use_previous = _check_timedelta(self.use_previous)
             assert len(self.base_features) > 0
             time_index = self.base_features[0].entity.time_index
             time_col = self.base_features[0].entity[time_index]
-            assert time_index is not None,\
-                "Use previous can only be defined on entities with a time index"
+            assert time_index is not None, ("Use previous can only be defined "
+                                            "on entities with a time index")
             assert _check_time_against_column(self.use_previous, time_col)
 
         self.base_features = base_features
         # variable type can be declared or inferred from first base feature
         self.additional_attributes = kwargs
 
-        assert self._check_input_types(), "Provided inputs don't match input type requirements"
+        assert self._check_input_types(), ("Provided inputs don't match input "
+                                           "type requirements")
         super(PrimitiveBase, self).__init__(**kwargs)
 
     def __getstate__(self):
@@ -109,7 +136,8 @@ class PrimitiveBase(FTBase):
         new_base_features = []
         for f in base_features:
             if f.hash() not in normalized_base_features:
-                normalized_base_features[f.hash()] = f.normalize(normalizer, normalized_base_features)
+                normalized_base_features[f.hash()] = f.normalize(
+                    normalizer, normalized_base_features)
             f = normalized_base_features[f.hash()]
             new_base_features.append(f)
         d = {k: normalizer(v) for k, v in d.iteritems()}
@@ -126,14 +154,14 @@ class PrimitiveBase(FTBase):
         Returns:
             :class:`pd.DataFrame` : Pandas DataFrame
         """
-        from featuretools.computational_backends import calculate_feature_matrix
+        from featuretools import calculate_feature_matrix
         cfm = calculate_feature_matrix([self], cutoff_time=cutoff_time).head(n)
         return cfm
 
     def sample(self, n=10, cutoff_time=None):
-        from featuretools.computational_backends import calculate_feature_matrix
-        cfm = calculate_feature_matrix([self], cutoff_time=cutoff_time).sample(n)
-        return cfm
+        from featuretools import calculate_feature_matrix
+        cfm = calculate_feature_matrix([self], cutoff_time=cutoff_time)
+        return cfm.sample(n)
 
     def _check_feature(self, feature):
         if isinstance(feature, Variable):
@@ -322,7 +350,7 @@ class PrimitiveBase(FTBase):
 
     def isin(self, list_of_output):
         from transform_primitive import IsIn
-        return IsIn(self, list_of_output)
+        return IsIn(self, list_of_outputs=list_of_output)
 
     def is_null(self):
         """Compares feature to null by equality"""
@@ -380,7 +408,8 @@ class PrimitiveBase(FTBase):
 
         ..note::
 
-            If you only want the features that make up the input to the feature function use the base_features attribute instead.
+            If you only want the features that make up the input to the feature
+            function use the base_features attribute instead.
 
 
         """
@@ -402,7 +431,7 @@ class PrimitiveBase(FTBase):
         deps = [d for d in deps if d.hash() not in ignored]
 
         if deep:
-            for dep in deps[:]:  # copy so we don't modify the list we iterate over
+            for dep in deps[:]:  # copy so we don't modify list we iterate over
                 deep_deps = dep.get_dependencies(deep, ignored)
                 deps += deep_deps
 
@@ -446,6 +475,7 @@ class PrimitiveBase(FTBase):
 
 class IdentityFeature(PrimitiveBase):
     """Feature for entity that is equivalent to underlying variable"""
+
     def __init__(self, variable):
         # TODO: perhaps we can change the attributes of this class to
         # just entityset reference to original variable object
@@ -465,6 +495,7 @@ class Feature(PrimitiveBase):
     """
     Alias for IdentityFeature and DirectFeature depending on arguments
     """
+
     def __new__(self, feature_or_var, entity=None):
         import direct_feature
 

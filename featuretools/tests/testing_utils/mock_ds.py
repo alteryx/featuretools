@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
+
 import os
-# from StringIO import StringIO
-import pandas as pd
 from datetime import datetime
+
 import numpy as np
-from featuretools.tests import integration_data
-from featuretools.entityset import EntitySet, Relationship
+import pandas as pd
+
 from featuretools import variable_types
-# from featuretools.utils import upload_file
+from featuretools.entityset import EntitySet, Relationship
+from featuretools.tests import integration_data
 
 
 def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_location='local',

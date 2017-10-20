@@ -1,12 +1,23 @@
-from featuretools.variable_types import Numeric, Timedelta, Datetime, Variable, Boolean, TimeIndex
-from .transform_primitive import TransformPrimitive
-from .primitive_base import PrimitiveBase
-import numpy as np
 import operator
+
+import numpy as np
+
+from .primitive_base import PrimitiveBase
+from .transform_primitive import TransformPrimitive
 from .utils import apply_dual_op_from_feat
+
+from featuretools.variable_types import (
+    Boolean,
+    Datetime,
+    Numeric,
+    Timedelta,
+    TimeIndex,
+    Variable
+)
 
 
 class BinaryFeature(TransformPrimitive):
+
     def __init__(self, left, right):
         if isinstance(left, (PrimitiveBase, Variable)):
             left = self._check_feature(left)

@@ -1,7 +1,9 @@
 import pandas as pd
-from numpy.random import choice
 from numpy import random
+from numpy.random import choice
+
 import featuretools as ft
+
 
 def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transactions=500,
                        random_seed=0, return_single_table=False, return_entityset=False):
@@ -9,21 +11,21 @@ def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transaction
 
     random.seed(random_seed)
 
-    customers_df = pd.DataFrame({"customer_id": range(1, n_customers+1)})
+    customers_df = pd.DataFrame({"customer_id": range(1, n_customers + 1)})
     customers_df["zip_code"] = choice(["60091", "02139"], n_customers,)
-    customers_df["join_date"] = pd.date_range('1/1/2008', periods=n_customers, freq='50d') # todo make these less regular
+    customers_df["join_date"] = pd.date_range('1/1/2008', periods=n_customers, freq='50d')  # todo make these less regular
 
-    products_df = pd.DataFrame({"product_id": range(1, n_products+1)})
+    products_df = pd.DataFrame({"product_id": range(1, n_products + 1)})
     products_df["brand"] = choice(["A", "B", "C"], n_products)
 
-    sessions_df = pd.DataFrame({"session_id": range(1, n_sessions+1)})
+    sessions_df = pd.DataFrame({"session_id": range(1, n_sessions + 1)})
     sessions_df["customer_id"] = choice(customers_df["customer_id"], n_sessions)
     sessions_df["device"] = choice(["desktop", "mobile", "tablet"], n_sessions)
 
-    transactions_df = pd.DataFrame({"transaction_id": range(1, n_transactions+1)})
+    transactions_df = pd.DataFrame({"transaction_id": range(1, n_transactions + 1)})
     transactions_df["session_id"] = choice(sessions_df["session_id"], n_transactions)
     transactions_df = transactions_df.sort_values("session_id").reset_index(drop=True)
-    transactions_df["transaction_time"] = pd.date_range('1/1/2014', periods=n_transactions, freq='65s') # todo make these less regular
+    transactions_df["transaction_time"] = pd.date_range('1/1/2014', periods=n_transactions, freq='65s')  # todo make these less regular
     transactions_df["product_id"] = pd.Categorical(choice(products_df["product_id"], n_transactions))
     transactions_df["amount"] = random.randint(500, 15000, n_transactions) / 100.0
 

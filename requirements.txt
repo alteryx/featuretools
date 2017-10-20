@@ -1,0 +1,9 @@
+numpy==1.13.3
+scipy==0.19.1
+pandas==0.20.3
+s3fs==0.1.2
+tqdm==4.19.2
+toolz==0.8.2
+dask[complete]==0.15.4
+pyyaml==3.12
+cloudpickle==0.4.0

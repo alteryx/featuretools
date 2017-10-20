@@ -2,6 +2,7 @@ import copy
 
 
 class FTBase(object):
+
     def normalize(self, normalizer, remove_entityset=True):
         d = copy.copy(self.__dict__)
         if remove_entityset:
