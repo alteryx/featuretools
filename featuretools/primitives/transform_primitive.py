@@ -434,8 +434,7 @@ class Diff(TransformPrimitive):
     If it is a Datetime feature, compute the difference in seconds
     """
     name = "diff"
-    input_types = [[Numeric, Id],
-                   [Numeric, Index]]
+    input_types = [Numeric, Id]
     return_type = Numeric
 
     def __init__(self, base_feature, group_feature):
@@ -464,7 +463,7 @@ class Diff(TransformPrimitive):
             grouped_df = grouped_df.groupby(groupby).diff()
             try:
                 return grouped_df[bf_name]
-            except:
+            except KeyError:
                 return pd.Series([np.nan]*len(base_array))
         return pd_diff
 

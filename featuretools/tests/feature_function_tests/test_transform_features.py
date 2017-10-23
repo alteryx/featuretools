@@ -72,30 +72,30 @@ def test_diff(es):
     customer_id_feat = \
         DirectFeature(es['sessions']['customer_id'],
                       child_entity=es['log'])
-    diff2 = Diff(value, es['log']['session_id'])
-    diff3 = Diff(value, customer_id_feat)
+    diff1 = Diff(value, es['log']['session_id'])
+    diff2 = Diff(value, customer_id_feat)
 
-    pandas_backend = PandasBackend(es, [diff2, diff3])
+    pandas_backend = PandasBackend(es, [diff1, diff2])
     df = pandas_backend.calculate_all_features(instance_ids=range(15),
                                                time_last=None)
 
+    val1 = df[diff1.get_name()].values.tolist()
     val2 = df[diff2.get_name()].values.tolist()
-    val3 = df[diff3.get_name()].values.tolist()
-    correct_vals2 = [
+    correct_vals1 = [
         np.nan, 5, 5, 5, 5, np.nan, 1, 1, 1, np.nan, np.nan, 5, np.nan, 7, 7
     ]
-    correct_vals3 = [np.nan, 5, 5, 5, 5, -20, 1, 1, 1, -3, np.nan, 5, -5, 7, 7]
-    for i, v in enumerate(val2):
+    correct_vals2 = [np.nan, 5, 5, 5, 5, -20, 1, 1, 1, -3, np.nan, 5, -5, 7, 7]
+    for i, v in enumerate(val1):
+        v1 = val1[i]
+        if np.isnan(v1):
+            assert (np.isnan(correct_vals1[i]))
+        else:
+            assert v1 == correct_vals1[i]
         v2 = val2[i]
         if np.isnan(v2):
             assert (np.isnan(correct_vals2[i]))
         else:
             assert v2 == correct_vals2[i]
-        v3 = val3[i]
-        if np.isnan(v3):
-            assert (np.isnan(correct_vals3[i]))
-        else:
-            assert v3 == correct_vals3[i]
 
 
 def test_diff_single_value(es):
