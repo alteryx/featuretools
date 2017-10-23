@@ -4,7 +4,7 @@ Changelog
 ---------
 
 **v0.1.11** October XX, 2017
-    * Package linting (:pr:`#7`)
+    * Package linting (:pr:`7`)
     * Custom primitive creation functions (:pr:`13`)
     * Split requirements to separate files and pin to latest versions (:pr:`15`)
     * Select low information features (:pr:`18`)
