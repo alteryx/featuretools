@@ -16,7 +16,7 @@ When an entire dataset is not required to calculate the features for a given set
 
 Use Spark or Dask to distribute computation
 ---------------------------------------------
-If the data is so big that loading in chunks isn't an option, we can distribute the data and parallelize the computation using frameworks like `Spark <https://spark.apache.org/docs/latest/api/python/index.html>`_ or `Dask <http://dask.pydata.org/en/latest/>`_. Both of these systems support a dataframe interface that can easily be used to partition data as need. Because Featuretools is a python library, it is easy to integrate.
+If the data is so big that loading in chunks isn't an option, we can distribute the data and parallelize the computation using frameworks like `Spark <https://spark.apache.org/docs/latest/api/python/index.html>`_ or `Dask <http://dask.pydata.org/en/latest/>`_. Both of these systems support a dataframe interface that can easily be used to partition data as needed. Because Featuretools is a python library, it is easy to integrate.
 
 
 Feature Labs

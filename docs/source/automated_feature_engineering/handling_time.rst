@@ -19,7 +19,7 @@ Featuretools is designed to take time into consideration when required. By speci
 
 **Motivating Example**
 
-  Consider the problem to predict if a customer is likely to buy an upgrade to their membership plan. To do this, you first identify historical examples of customer who upgraded and others who did not. For each customer, you can only use the interactions s/he had prior to upgrading or not upgrading their membership. This is a requirement -- by definition.
+  Consider the problem to predict if a customer is likely to buy an upgrade to their membership plan. To do this, you first identify historical examples of customers who upgraded and others who did not. For each customer, you can only use the interactions s/he had prior to upgrading or not upgrading their membership. This is a requirement -- by definition.
 
   The example above illustrates the importance of time in calculating features. Other situations are more subtle, and hence when building predictive models it is important identify if time is a consideration. If feature calculation does not account for time, it may include data in calculations that is past the outcome we want to predict and may cause the well known problem of *Label Leakage*.
 

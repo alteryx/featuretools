@@ -86,7 +86,7 @@ Machine learning algorithms typically expect all numeric data. When Deep Feature
 
     feature_matrix
 
-This feature matrix contains 2 categorical variables, ``zip_code`` and ``MODE(sessions.device)``. We can use the feature matrix and feature definitions to encode these categorical values. Featuretools overs functionality to apply one hot encoding to the output of DFS.
+This feature matrix contains 2 categorical variables, ``zip_code`` and ``MODE(sessions.device)``. We can use the feature matrix and feature definitions to encode these categorical values. Featuretools offers functionality to apply one hot encoding to the output of DFS.
 
 .. ipython:: python
 
