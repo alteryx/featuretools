@@ -91,8 +91,8 @@ class EntitySet(BaseEntitySet):
         """
         return [e.id for e in self.entities]
 
-    def to_pickle(self, path, as_dir=False):
-        to_pickle(self, path, as_dir=as_dir)
+    def to_pickle(self, path):
+        to_pickle(self, path)
         return self
 
     @classmethod
@@ -710,6 +710,8 @@ class EntitySet(BaseEntitySet):
 
         transfer_types = {}
         transfer_types[new_index] = type(base_entity[index])
+        for v in additional_variables + copy_variables:
+            transfer_types[v] = type(base_entity[v])
 
         # create and add new entity
         new_entity_df = self.get_dataframe(base_entity_id)
@@ -740,6 +742,7 @@ class EntitySet(BaseEntitySet):
         selected_variables = [index] +\
             [v for v in additional_variables] +\
             [v for v in copy_variables]
+
 
         new_entity_df2 = new_entity_df. \
             drop_duplicates(index, keep=time_index_reduce)[selected_variables]

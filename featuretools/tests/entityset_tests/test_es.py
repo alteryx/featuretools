@@ -1,8 +1,10 @@
 import pytest
 
 from ..testing_utils import make_ecommerce_entityset
-
-from featuretools import Relationship, variable_types
+from featuretools.tests import integration_data
+from featuretools import Relationship, variable_types, EntitySet
+import os
+import shutil
 
 
 @pytest.fixture
@@ -149,3 +151,14 @@ def test_gzip_glob_entityset(es, gzip_glob_es):
     df_1 = es.entity_stores['log'].df
     df_2 = gzip_glob_es.entity_stores['log'].df
     assert df_1.equals(df_2)
+
+
+def test_serialization(es):
+    dirname = os.path.dirname(integration_data.__file__)
+    path = os.path.join(dirname, 'test_entityset.p')
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    es.to_pickle(path)
+    new_es = EntitySet.read_pickle(path)
+    assert es == new_es
+    shutil.rmtree(path)
