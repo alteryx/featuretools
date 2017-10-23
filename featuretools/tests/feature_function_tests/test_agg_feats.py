@@ -228,7 +228,7 @@ def test_init_and_name(es):
             if len(matching_types) == 0:
                 raise Exception("Agg Primitive %s not tested" % agg_prim.name)
             for t in matching_types:
-                instance = agg_prim(*t, parent_entity=session)
+                instance = agg_prim(t, parent_entity=session)
 
                 # try to get name and calculate
                 instance.get_name()
