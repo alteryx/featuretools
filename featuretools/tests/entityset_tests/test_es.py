@@ -160,5 +160,5 @@ def test_serialization(es):
         shutil.rmtree(path)
     es.to_pickle(path)
     new_es = EntitySet.read_pickle(path)
-    assert es == new_es
+    assert es.__eq__(new_es, deep=True)
     shutil.rmtree(path)
