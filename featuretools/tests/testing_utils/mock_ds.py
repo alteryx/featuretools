@@ -27,8 +27,9 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
     region_df = pd.DataFrame({'id': ['United States', 'Mexico'],
                               'language': ['en', 'sp']})
 
-    store_df = pd.DataFrame({'id': range(5),
-                             'region_id': ['United States'] * 3 + ['Mexico'] * 2})
+    store_df = pd.DataFrame({'id': range(6),
+                             'region_id': ['United States'] * 3 + ['Mexico'] * 2 + [np.nan],
+                             'num_square_feet': range(30000, 60000, 6000) + [np.nan]})
 
     product_df = pd.DataFrame({'id': ['Haribo sugar-free gummy bears', 'car',
                                       'toothpaste', 'brown bag', 'coke zero',

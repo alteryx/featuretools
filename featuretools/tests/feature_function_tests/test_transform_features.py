@@ -98,6 +98,15 @@ def test_diff(es):
             assert v3 == correct_vals3[i]
 
 
+def test_diff_single_value(es):
+    diff = Diff(es['stores']['num_square_feet'], es['stores']['region_id'])
+    pandas_backend = PandasBackend(es, [diff])
+    df = pandas_backend.calculate_all_features(instance_ids=[5],
+                                               time_last=None)
+    assert df.shape[0] == 1
+    assert df[diff.get_name()].dropna().shape[0] == 0
+
+
 def test_compare_of_identity(es):
     to_test = [(Equals, [False, False, True, False]),
                (NotEquals, [True, True, False, True]),
