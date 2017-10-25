@@ -14,6 +14,7 @@ from featuretools.variable_types import (
     DatetimeTimeIndex,
     Discrete,
     Id,
+    Index,
     Numeric,
     Ordinal,
     Timedelta,
@@ -460,7 +461,10 @@ class Diff(TransformPrimitive):
             grouped_df = pd.DataFrame.from_dict({bf_name: base_array,
                                                  groupby: group_array})
             grouped_df = grouped_df.groupby(groupby).diff()
-            return grouped_df[bf_name]
+            try:
+                return grouped_df[bf_name]
+            except KeyError:
+                return pd.Series([np.nan]*len(base_array))
         return pd_diff
 
 
