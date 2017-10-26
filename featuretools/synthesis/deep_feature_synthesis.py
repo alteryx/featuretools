@@ -40,26 +40,24 @@ class DeepFeatureSynthesis(object):
             agg_primitives (list[:class:`.primitives.AggregationPrimitive`], optional):
                 list of Aggregation Feature types to apply.
 
-                Default:
-
-                    [:class:`Sum <.primitives.Sum>`,
-                        :class:`Std <.primitives.Std>`,
-                        :class:`Max <.primitives.Max>`,
-                        :class:`Skew <.primitives.Skew>`,
-                        :class:`Min <.primitives.Min>`,
-                        :class:`Mean <.primitives.Mean>`,
-                        :class:`Count <.primitives.Count>`,
-                        :class:`PercentTrue <.primitives.PercentTrue>`,
-                        :class:`NUniqe <.primitives.NUnique>`,
-                        :class:`Mode <.primitives.Mode>`]
+                Default:[:class:`Sum <.primitives.Sum>`, \
+                         :class:`Std <.primitives.Std>`, \
+                         :class:`Max <.primitives.Max>`, \
+                         :class:`Skew <.primitives.Skew>`, \
+                         :class:`Min <.primitives.Min>`, \
+                         :class:`Mean <.primitives.Mean>`, \
+                         :class:`Count <.primitives.Count>`, \
+                         :class:`PercentTrue <.primitives.PercentTrue>`, \
+                         :class:`NUniqe <.primitives.NUnique>`, \
+                         :class:`Mode <.primitives.Mode>`]
 
             trans_primitives (list[:class:`.primitives.TransformPrimitive`], optional):
                 list of Transform Feature functions to apply.
 
-                Default: [:class:`Day <.primitives.Day>`,
-                    :class:`Year <.primitives.Year>`,
-                    :class:`Month <.primitives.Month>`,
-                    :class:`Weekday <.primitives.Weekday>`]
+                    Default:[:class:`Day <.primitives.Day>`, \
+                             :class:`Year <.primitives.Year>`, \
+                             :class:`Month <.primitives.Month>`, \
+                             :class:`Weekday <.primitives.Weekday>`])
 
             where_primitives (list[:class:`.primitives.AggregationPrimitive`], optional):
                 only add where clauses to these types of Aggregation

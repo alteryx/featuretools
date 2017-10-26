@@ -60,23 +60,23 @@ def dfs(entities=None,
             list of Aggregation Feature types to apply.
 
                 Default:[:class:`Sum <.primitives.Sum>`, \
-                    :class:`Std <.primitives.Std>`, \
-                    :class:`Max <.primitives.Max>`, \
-                    :class:`Skew <.primitives.Skew>`, \
-                    :class:`Min <.primitives.Min>`, \
-                    :class:`Mean <.primitives.Mean>`, \
-                    :class:`Count <.primitives.Count>`, \
-                    :class:`PercentTrue <.primitives.PercentTrue>`, \
-                    :class:`NUniqe <.primitives.NUnique>`, \
-                    :class:`Mode <.primitives.Mode>`]
+                         :class:`Std <.primitives.Std>`, \
+                         :class:`Max <.primitives.Max>`, \
+                         :class:`Skew <.primitives.Skew>`, \
+                         :class:`Min <.primitives.Min>`, \
+                         :class:`Mean <.primitives.Mean>`, \
+                         :class:`Count <.primitives.Count>`, \
+                         :class:`PercentTrue <.primitives.PercentTrue>`, \
+                         :class:`NUniqe <.primitives.NUnique>`, \
+                         :class:`Mode <.primitives.Mode>`]
 
         trans_primitives (list[:class:`TransformPrimitive <.primitives.TransformPrimitive>`], optional):
             list of Transform Feature functions to apply.
 
                 Default:[:class:`Day <.primitives.Day>`, \
-                    :class:`Year <.primitives.Year>`, \
-                    :class:`Month <.primitives.Month>`, \
-                    :class:`Weekday <.primitives.Weekday>`])
+                         :class:`Year <.primitives.Year>`, \
+                         :class:`Month <.primitives.Month>`, \
+                         :class:`Weekday <.primitives.Weekday>`])
 
         allowed_paths (list[list[str]]): Allowed entity paths to make
             features for
