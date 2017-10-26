@@ -35,34 +35,39 @@ class DeepFeatureSynthesis(object):
 
                 Default:
 
-                [:class:`synthesis.dfs_filters.TraverseUp`]
+                    [:class:`synthesis.dfs_filters.TraverseUp`]
 
-            agg_primitives (list[:class:`features.AggregationPrimitive`], optional):
+            agg_primitives (list[:class:`.primitives.AggregationPrimitive`], optional):
                 list of Aggregation Feature types to apply.
 
                 Default:
 
-                [:class:`features.Sum`, :class:`features.Std`,
-                 :class:`features.Max`, :class:`features.Skew`,
-                 :class:`features.Min`, :class:`features.Mean`,
-                 :class:`features.Count`, :class:`features.PercentTrue`,
-                 :class:`features.NUnique`, :class:`features.Mode`]
+                    [:class:`Sum <.primitives.Sum>`,
+                        :class:`Std <.primitives.Std>`,
+                        :class:`Max <.primitives.Max>`,
+                        :class:`Skew <.primitives.Skew>`,
+                        :class:`Min <.primitives.Min>`,
+                        :class:`Mean <.primitives.Mean>`,
+                        :class:`Count <.primitives.Count>`,
+                        :class:`PercentTrue <.primitives.PercentTrue>`,
+                        :class:`NUniqe <.primitives.NUnique>`,
+                        :class:`Mode <.primitives.Mode>`]
 
-            trans_primitives (list[:class:`features.TransformPrimitive`], optional):
+            trans_primitives (list[:class:`.primitives.TransformPrimitive`], optional):
                 list of Transform Feature functions to apply.
 
-                Default:
+                Default: [:class:`Day <.primitives.Day>`,
+                    :class:`Year <.primitives.Year>`,
+                    :class:`Month <.primitives.Month>`,
+                    :class:`Weekday <.primitives.Weekday>`]
 
-                [:class:`features.Day`, :class:`features.Year`,
-                 :class:`features.Month`, :class:`features.Weekday`]
-
-            where_primitives (list[:class:`features.AggregationPrimitive`], optional):
+            where_primitives (list[:class:`.primitives.AggregationPrimitive`], optional):
                 only add where clauses to these types of Aggregation
                 Features.
 
                 Default:
 
-                    [:class:`features.Count`]
+                    [:class:`Count <.primitives.Count>`]
 
             max_depth (int, optional) : maximum allowed depth of features.
                 Default: 2. If -1, no limit.
@@ -198,7 +203,7 @@ class DeepFeatureSynthesis(object):
             verbose (bool, optional): If True, print progress.
 
         Returns:
-            list[:class:`features.BaseFeature`]: returns a list of
+            list[:class:`.primitives.BaseFeature`]: returns a list of
                 features for target entity, sorted by feature depth
                 (shallow first)
         """
