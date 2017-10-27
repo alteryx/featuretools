@@ -2,7 +2,3 @@ pytest==3.2.3
 mock==2.0.0
 pytest-xdist==1.20.1
 pytest-cov===2.5.1
-codecov==2.0.9
-tox==2.9.1
-flake8==3.4.1
-isort==4.2.15
