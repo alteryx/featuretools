@@ -18,7 +18,6 @@ from featuretools.variable_types import (
     DatetimeTimeIndex,
     Discrete,
     Id,
-    Index,
     Numeric,
     Ordinal,
     Timedelta,
@@ -469,7 +468,7 @@ class Diff(TransformPrimitive):
             try:
                 return grouped_df[bf_name]
             except KeyError:
-                return pd.Series([np.nan]*len(base_array))
+                return pd.Series([np.nan] * len(base_array))
         return pd_diff
 
 
