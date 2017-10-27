@@ -1,10 +1,9 @@
 import re
 from datetime import datetime
 
-from past.builtins import basestring
-
 import numpy as np
 import pandas as pd
+from past.builtins import basestring
 
 from featuretools import variable_types
 from featuretools.entityset.timedelta import Timedelta

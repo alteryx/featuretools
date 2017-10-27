@@ -3,9 +3,8 @@ from __future__ import print_function
 import logging
 from builtins import map
 
-from past.builtins import basestring
-
 import pandas as pd
+from past.builtins import basestring
 
 from featuretools import variable_types as vtypes
 from featuretools.core.base import FTBase

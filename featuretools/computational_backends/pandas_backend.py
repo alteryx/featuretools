@@ -8,10 +8,9 @@ import uuid
 import warnings
 from datetime import datetime
 
-from future import standard_library
-
 import numpy as np
 import pandas as pd
+from future import standard_library
 
 # featuretools
 from .base_backend import ComputationalBackend

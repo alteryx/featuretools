@@ -7,5 +7,5 @@ jobs:
     steps:
       - checkout
       - run: pyenv local 2.7.13 3.4.5 3.5.2 3.6.0
-      - run: pip install --upgrade pip && pip install -r test-requirements.txt
+      - run: make installdeps
       - run: make lint && tox && codecov

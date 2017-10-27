@@ -1,10 +1,9 @@
 import uuid
 from builtins import str
 
-from past.builtins import basestring
-
 import numpy as np
 import pandas as pd
+from past.builtins import basestring
 
 from .aggregation_primitives import Count, Max, Mean, Min, Sum
 from .primitive_base import IdentityFeature, PrimitiveBase

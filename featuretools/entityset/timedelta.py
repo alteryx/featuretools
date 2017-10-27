@@ -3,11 +3,10 @@ from __future__ import division
 from builtins import str
 from datetime import datetime
 
-from past.builtins import basestring
-
 import numpy as np
 import pandas as pd
 from dateutil.relativedelta import relativedelta
+from past.builtins import basestring
 
 from featuretools.core.base import FTBase
 from featuretools.exceptions import NotEnoughData

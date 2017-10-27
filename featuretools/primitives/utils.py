@@ -1,8 +1,7 @@
 from inspect import getargspec, isclass
 
-from past.builtins import basestring
-
 import pandas as pd
+from past.builtins import basestring
 
 from .primitive_base import PrimitiveBase
 

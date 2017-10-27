@@ -5,9 +5,8 @@ import logging
 import pdb
 from builtins import zip
 
-from past.builtins import basestring
-
 from numpy import nan
+from past.builtins import basestring
 
 import featuretools as ft
 from featuretools.core.base import FTBase
