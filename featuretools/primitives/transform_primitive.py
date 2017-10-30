@@ -144,7 +144,7 @@ def make_trans_primitive(function, input_types, return_type, name=None,
 
 
 class IsNull(TransformPrimitive):
-    """For each value of base feature, return true if value is null"""
+    """For each value of base feature, return 'True' if value is null"""
     name = "is_null"
     input_types = [Variable]
     return_type = Boolean

@@ -307,7 +307,7 @@ class Last(AggregationPrimitive):
 
 
 class Any(AggregationPrimitive):
-    """Test if any value is True"""
+    """Test if any value is 'True'"""
     name = "any"
     input_types = [Boolean]
     return_type = Boolean
@@ -318,7 +318,7 @@ class Any(AggregationPrimitive):
 
 
 class All(AggregationPrimitive):
-    """Test if all values are True"""
+    """Test if all values are 'True'"""
     name = "all"
     input_types = [Boolean]
     return_type = Boolean
