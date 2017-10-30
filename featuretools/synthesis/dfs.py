@@ -76,7 +76,7 @@ def dfs(entities=None,
                 Default:[:class:`Day <.primitives.Day>`, \
                          :class:`Year <.primitives.Year>`, \
                          :class:`Month <.primitives.Month>`, \
-                         :class:`Weekday <.primitives.Weekday>`])
+                         :class:`Weekday <.primitives.Weekday>`]
 
         allowed_paths (list[list[str]]): Allowed entity paths to make
             features for

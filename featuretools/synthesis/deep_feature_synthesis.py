@@ -57,7 +57,7 @@ class DeepFeatureSynthesis(object):
                     Default:[:class:`Day <.primitives.Day>`, \
                              :class:`Year <.primitives.Year>`, \
                              :class:`Month <.primitives.Month>`, \
-                             :class:`Weekday <.primitives.Weekday>`])
+                             :class:`Weekday <.primitives.Weekday>`]
 
             where_primitives (list[:class:`.primitives.AggregationPrimitive`], optional):
                 only add where clauses to these types of Aggregation
