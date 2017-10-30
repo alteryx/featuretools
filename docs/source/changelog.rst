@@ -10,6 +10,7 @@ Changelog
     * Select low information features (:pr:`18`)
     * Fix docs typos (:pr:`19`)
     * Fixed Diff primitive for rare nan case (:pr:`21`)
+    * added some mising doc strings (:pr:`23`)
 
 **v0.1.10** October 12, 2017
     * NumTrue primitive added and docstring of other primitives updated (:pr:`11`)
