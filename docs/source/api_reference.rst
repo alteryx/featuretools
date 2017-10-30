@@ -48,8 +48,6 @@ Primitive Types
     :toctree: generated/
 
     Feature
-    IdentityFeature
-    DirectFeature
     TransformPrimitive
     AggregationPrimitive
 
