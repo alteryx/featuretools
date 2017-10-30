@@ -56,20 +56,27 @@ def dfs(entities=None,
         instance_ids (list): list of instances to calculate features on. Only
             used if cutoff_time is a single datetime.
 
-        agg_primitives (list[:class:`features.AggregationPrimitive`], optional):
+        agg_primitives (list[:class:`AggregationPrimitive .primitives.AggregationPrimitive`], optional):
             list of Aggregation Feature types to apply.
 
-            Default: [:class:`features.Sum`, :class:`features.Std`,
-             :class:`features.Max`, :class:`features.Skew`,
-             :class:`features.Min`, :class:`features.Mean`,
-             :class:`features.Count`, :class:`features.PercentTrue`,
-             :class:`features.NUnique`, :class:`features.Mode`]
+                Default:[:class:`Sum <.primitives.Sum>`, \
+                         :class:`Std <.primitives.Std>`, \
+                         :class:`Max <.primitives.Max>`, \
+                         :class:`Skew <.primitives.Skew>`, \
+                         :class:`Min <.primitives.Min>`, \
+                         :class:`Mean <.primitives.Mean>`, \
+                         :class:`Count <.primitives.Count>`, \
+                         :class:`PercentTrue <.primitives.PercentTrue>`, \
+                         :class:`NUniqe <.primitives.NUnique>`, \
+                         :class:`Mode <.primitives.Mode>`]
 
-        trans_primitives (list[:class:`features.TransformPrimitive`], optional):
+        trans_primitives (list[:class:`TransformPrimitive <.primitives.TransformPrimitive>`], optional):
             list of Transform Feature functions to apply.
 
-            Default: [:class:`features.Day`, :class:`features.Year`,
-             :class:`features.Month`, :class:`features.Weekday`]
+                Default:[:class:`Day <.primitives.Day>`, \
+                         :class:`Year <.primitives.Year>`, \
+                         :class:`Month <.primitives.Month>`, \
+                         :class:`Weekday <.primitives.Weekday>`]
 
         allowed_paths (list[list[str]]): Allowed entity paths to make
             features for
@@ -91,8 +98,7 @@ def dfs(entities=None,
         drop_exact (list[str], optional): drop features that
             exactly match these strings in name
 
-
-        where_primitives (list[:class:`features.AggregationPrimitive`], optional):
+        where_primitives (list[:class:`.primitives.AggregationPrimitive`], optional):
             list of Aggregation Feature types to apply with where clauses.
 
         max_features (int, optional) : Cap the number of generated features to
