@@ -27,8 +27,8 @@ class Entity(BaseEntity):
 
     def __init__(self, id, df, entityset, variable_types=None, name=None,
                  index=None, time_index=None, secondary_time_index=None,
-                 encoding=None, relationships=None, already_sorted=False,
-                 created_index=None, verbose=False):
+                 last_time_index=None, encoding=None, relationships=None,
+                 already_sorted=False, created_index=None, verbose=False):
         """ Create Entity
 
         Args:
@@ -45,6 +45,8 @@ class Entity(BaseEntity):
             time_index (str): name of time column in the dataframe
             secondary_time_index (dict[str->str]): dictionary mapping columns
                 in the dataframe to the time index column they are associated with
+            last_time_index (pd.Series): time index of the last event for each
+                instance across all child entities
             encoding (Optional(str)) : If None, will use 'ascii'. Another option is 'utf-8',
                 or any encoding supported by pandas. Passed into underlying
                 pandas.read_csv() and pandas.to_csv() calls, so see Pandas documentation
@@ -61,6 +63,7 @@ class Entity(BaseEntity):
         self.created_index = created_index
         self.convert_variable_types(variable_types)
         self.attempt_cast_index_to_int(index)
+        self.last_time_index = last_time_index
         super(Entity, self).__init__(id, entityset, variable_types, name, index,
                                      time_index, secondary_time_index, relationships, already_sorted)
 
@@ -544,6 +547,9 @@ class Entity(BaseEntity):
         self.convert_variable_type(variable_id, vtypes.Index, convert_data=False)
 
         super(Entity, self).set_index(variable_id)
+
+    def set_last_time_index(self, last_time_index):
+            self.last_time_index = last_time_index
 
     def _vals_to_series(self, instance_vals, variable_id):
         """

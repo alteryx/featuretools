@@ -640,6 +640,38 @@ class TestNormalizeEntity(object):
         assert 'value_time' in entityset['values'].df.columns
         assert len(entityset['values'].df.columns) == 3
 
+    def test_last_time_index(self, entityset):
+        entityset.normalize_entity('log', 'values', 'value',
+                                   make_time_index=True,
+                                   new_entity_time_index="value_time",
+                                   convert_links_to_integers=True)
+        entityset.add_last_time_indexes()
+        assert entityset["values"].last_time_index is not None
+        times = {
+            'values': [
+                datetime(2011, 4, 10, 10, 41, 0),
+                datetime(2011, 4, 10, 10, 40, 1),
+                datetime(2011, 4, 9, 10, 30, 12),
+                datetime(2011, 4, 9, 10, 30, 18),
+                datetime(2011, 4, 9, 10, 30, 24),
+                datetime(2011, 4, 9, 10, 31, 9),
+                datetime(2011, 4, 9, 10, 31, 18),
+                datetime(2011, 4, 9, 10, 31, 27),
+                datetime(2011, 4, 10, 10, 41, 3),
+                datetime(2011, 4, 10, 10, 41, 6),
+                datetime(2011, 4, 10, 11, 10, 03),
+            ],
+            'customers': [
+                datetime(2011, 4, 9, 10, 40, 0),
+                datetime(2011, 4, 10, 10, 41, 6),
+                datetime(2011, 4, 10, 11, 10, 03),
+            ]
+        }
+        region_series = pd.Series({'United States': datetime(2011, 4, 10, 11, 10, 03)})
+        assert (entityset["values"].last_time_index.sort_index() == pd.Series(times['values'])).all()
+        assert (entityset["customers"].last_time_index.sort_index() == pd.Series(times['customers'])).all()
+        assert (entityset["regions"].last_time_index.sort_index() == region_series).all()
+
 
 def test_head_of_entity(entityset):
 

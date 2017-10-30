@@ -6,6 +6,8 @@ import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 
+from collections import defaultdict
+
 from .base_entityset import BaseEntitySet
 from .entity import Entity
 from .relationship import Relationship
@@ -538,6 +540,7 @@ class EntitySet(BaseEntitySet):
                                make_index=False,
                                time_index=None,
                                secondary_time_index=None,
+                               last_time_index=None,
                                parse_date_cols=None,
                                encoding=None,
                                already_sorted=False):
@@ -620,6 +623,7 @@ class EntitySet(BaseEntitySet):
                         index=index,
                         time_index=time_index,
                         secondary_time_index=secondary_time_index,
+                        last_time_index=last_time_index,
                         encoding=encoding,
                         relationships=current_relationships,
                         already_sorted=already_sorted,
@@ -630,7 +634,6 @@ class EntitySet(BaseEntitySet):
                    entity_id,
                    df,
                    **kwargs):
-
         entity = Entity(entity_id,
                         df,
                         self,
@@ -720,6 +723,7 @@ class EntitySet(BaseEntitySet):
         if isinstance(make_time_index, (str, unicode)):
             base_time_index = make_time_index
             new_entity_time_index = base_entity[make_time_index].id
+            # TODO: handle LTI for this case
         elif make_time_index:
             base_time_index = base_entity.time_index
             if new_entity_time_index is None:
@@ -743,9 +747,11 @@ class EntitySet(BaseEntitySet):
 
         new_entity_df2 = new_entity_df. \
             drop_duplicates(index, keep=time_index_reduce)[selected_variables]
+        lti_df = new_entity_df.drop_duplicates(index, keep='last')[selected_variables]
 
         if make_time_index:
             new_entity_df2.rename(columns={base_time_index: new_entity_time_index}, inplace=True)
+            lti_df.rename(columns={base_time_index: new_entity_time_index}, inplace=True)
         if make_secondary_time_index:
             time_index_reduce = 'first'
 
@@ -769,7 +775,6 @@ class EntitySet(BaseEntitySet):
             old_entity_df = self.get_dataframe(base_entity_id)
             link_variable_id = self.make_index_variable_name(new_entity_id)
             new_entity_df[link_variable_id] = np.arange(0, new_entity_df.shape[0])
-
             just_index = old_entity_df[[index]]
             id_as_int = just_index.merge(new_entity_df,
                                          left_on=index,
@@ -779,7 +784,11 @@ class EntitySet(BaseEntitySet):
             old_entity_df.loc[:, index] = id_as_int.values
 
             base_entity.update_data(old_entity_df)
-
+            lti_df = lti_df[[new_entity_time_index]].merge(old_entity_df[[index]],
+                                                           left_index=True,
+                                                           right_index=True,
+                                                           how='left')
+            lti_df = lti_df.set_index(lti_df[index], drop=False)
             index = link_variable_id
 
         # TODO dfs: do i need this?
@@ -788,11 +797,11 @@ class EntitySet(BaseEntitySet):
         #         transfer_types[v_id] = variable_types[v_id]
 
         transfer_types[index] = vtypes.Categorical
-
         self._import_from_dataframe(new_entity_id, new_entity_df,
                                     index,
                                     time_index=new_entity_time_index,
                                     secondary_time_index=make_secondary_time_index,
+                                    last_time_index=None,
                                     variable_types=transfer_types,
                                     encoding=base_entity.encoding)
 
@@ -993,6 +1002,48 @@ class EntitySet(BaseEntitySet):
         child_entity = self.entity_stores[r.child_variable.entity.id]
         child_entity.index_by_parent(parent_entity=parent_entity)
 
+    def add_last_time_indexes(self):
+        """
+        Calculates the last time index values for each entity (the last time
+        an instance or children of that instance were observed).  Used when
+        calculating features using training windows
+        """
+        # Generate graph of entities to find leaf entities
+        children = defaultdict(list)
+        child_var_ids = defaultdict(dict)
+        for r in self.relationships:
+            children[r.parent_entity.id].append(r.child_entity)
+            child_var_ids[r.parent_entity.id][r.child_entity.id] = r.child_variable.id
+
+        explored = set([])
+        queue = self.entities[:]
+
+        while len(explored) < len(self.entities):
+            entity = queue.pop(0)
+            if entity.id not in children:
+                if entity.has_time_index():
+                    entity.set_last_time_index(entity.df[entity.time_index])
+                explored.add(entity.id)
+            else:
+                child_entities = children[entity.id]
+                if not set([e.id for e in child_entities]).issubset(explored):
+                    # TODO: handling broken graphs
+                    queue.append(entity)
+                else:
+                    for child_e in child_entities:
+                        child_lti = getattr(child_e, 'last_time_index', None)
+                        link_var = child_var_ids[entity.id][child_e.id]
+                        if child_lti is None:
+                            continue
+                        # TODO: how to handle updating last_time_index on subsequent calls
+                        df = child_e.last_time_index.to_frame()
+                        df[link_var] = child_e.df[link_var]
+                        lti = df.groupby(link_var)[child_e.last_time_index.name].max()
+                        if entity.last_time_index is None:
+                            entity.last_time_index = lti
+                        else:
+                            entity.last_time_index = entity.last_time_index.combine(lti, max, np.nan)
+                    explored.add(entity.id)
     ###########################################################################
     #  Other ###############################################
     ###########################################################################
