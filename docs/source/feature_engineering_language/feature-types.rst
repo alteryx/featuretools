@@ -37,7 +37,7 @@ Featuretools groups features into four general types:
 
 Identity Features
 -----------------
-In Featuretools, each feature is defined as a combination of other features.  At the lowest level are :class:`IdentityFeatures <.features.IdentityFeature>` features which are equal to the plain old value of a single variable.
+In Featuretools, each feature is defined as a combination of other features.  At the lowest level are :class:`IdentityFeature <.primitives.IdentityFeature>` features which are equal to the plain old value of a single variable.
 Most of the time, identity features will be defined transparently for you, such as in the transform feature example below. They may also be defined explicitly:
 
 .. ipython:: python
@@ -46,7 +46,7 @@ Most of the time, identity features will be defined transparently for you, such 
     time_feature = Feature(es["transactions"]["transaction_time"])
     time_feature
 
-Note: ``Feature`` is an alias for :class:`IdentityFeatures <.features.IdentityFeature>` if only a single argument is provided.
+Note: ``Feature`` is an alias for :class:`IdentityFeature <.primitives.IdentityFeature>` if only a single argument is provided.
 
 .. _feature-types.direct:
 
@@ -54,7 +54,7 @@ Direct Features
 ---------------
 Direct features are used to "inherit" feature values from a parent to a child entity. Suppose each event is associated with a single instance of the entity `products`.
 This entity has metadata about different products, such as brand, price, etc. We can pull the brand of the product into a feature of the event entity by including the event entity as an argument to ``Feature``.
-In this case, ``Feature`` is an alias for :class:`features.DirectFeature`:
+In this case, ``Feature`` is an alias for :class:`primitives.DirectFeature`:
 
 .. ipython:: python
 
@@ -75,7 +75,7 @@ Transform features take one or more features on an :class:`.Entity` and create a
     Hour(time_feature)
     Weekend(time_feature)
 
-The :class:`Hour <features.Hour>` feature takes one parameter: the variable or feature we want to transform. If a variable is passed in, as in this case, an :class:`IdentityFeature <.features.IdentityFeature>` will be created automatically.
+The :class:`Hour <.primitives.Hour>` feature takes one parameter: the variable or feature we want to transform. If a variable is passed in, as in this case, an :class:`IdentityFeature <.primitives.IdentityFeature>` will be created automatically.
 
 Using algebraic and boolean operations, transform features can combine other features into arbitrary expressions. For example, to determine if a given event event happened in the afternoon, we can write:
 
@@ -91,7 +91,7 @@ Using algebraic and boolean operations, transform features can combine other fea
 
 Aggregation Features
 --------------------
-Aggregation features are used to create features for a :term:`parent entity` by summarizing data from a :term:`child entity`. For example, we can create a :class:`Count <features.Count>` feature which counts the total number of events for each customer:
+Aggregation features are used to create features for a :term:`parent entity` by summarizing data from a :term:`child entity`. For example, we can create a :class:`Count <.primitives.Count>` feature which counts the total number of events for each customer:
 
 .. ipython:: python
 

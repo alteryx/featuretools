@@ -307,7 +307,7 @@ class Last(AggregationPrimitive):
 
 
 class Any(AggregationPrimitive):
-    """Test if any value is True"""
+    """Test if any value is 'True'"""
     name = "any"
     input_types = [Boolean]
     return_type = Boolean
@@ -318,7 +318,7 @@ class Any(AggregationPrimitive):
 
 
 class All(AggregationPrimitive):
-    """Test if all values are True"""
+    """Test if all values are 'True'"""
     name = "all"
     input_types = [Boolean]
     return_type = Boolean
@@ -350,10 +350,10 @@ class Trend(AggregationPrimitive):
     input_types = [Numeric, DatetimeTimeIndex]
     return_type = Numeric
 
-    def __init__(self, value, time_index, parent_entity, **kwargs):
-        self.value = value
-        self.time_index = time_index
-        super(Trend, self).__init__([value, time_index],
+    def __init__(self, base_features, parent_entity, **kwargs):
+        self.value = base_features[0]
+        self.time_index = base_features[1]
+        super(Trend, self).__init__(base_features,
                                     parent_entity,
                                     **kwargs)
 
