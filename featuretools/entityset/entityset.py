@@ -1,17 +1,19 @@
-import pandas as pd
 import copy
+import itertools
+import logging
+
 import dask.dataframe as dd
 import numpy as np
-import featuretools.variable_types.variable as vtypes
-from .relationship import Relationship
-from .entity import Entity
-from featuretools.utils.wrangle import _check_variable_list
+import pandas as pd
+
 from .base_entityset import BaseEntitySet
-from .serialization import to_pickle, read_pickle
+from .entity import Entity
+from .relationship import Relationship
+from .serialization import read_pickle, to_pickle
+
+import featuretools.variable_types.variable as vtypes
 from featuretools.utils.gen_utils import make_tqdm_iterator
-import itertools
-import sys
-import logging
+from featuretools.utils.wrangle import _check_variable_list
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
@@ -24,6 +26,7 @@ class EntitySet(BaseEntitySet):
     Attributes:
         entity_stores
     """
+
     def __init__(self, id, entities=None, relationships=None, verbose=False):
         """Creates EntitySet
 
@@ -88,8 +91,8 @@ class EntitySet(BaseEntitySet):
         """
         return [e.id for e in self.entities]
 
-    def to_pickle(self, path, as_dir=False):
-        to_pickle(self, path, as_dir=as_dir)
+    def to_pickle(self, path):
+        to_pickle(self, path)
         return self
 
     @classmethod
@@ -569,7 +572,7 @@ class EntitySet(BaseEntitySet):
         if index is None:
             assert not make_index, "Must specify an index name if make_index is True"
             logger.warning(("Using first column as index. ",
-                           "To change this, specify the index parameter"))
+                            "To change this, specify the index parameter"))
         else:
             if index not in variable_types:
                 variable_types[index] = vtypes.Index
@@ -707,6 +710,8 @@ class EntitySet(BaseEntitySet):
 
         transfer_types = {}
         transfer_types[new_index] = type(base_entity[index])
+        for v in additional_variables + copy_variables:
+            transfer_types[v] = type(base_entity[v])
 
         # create and add new entity
         new_entity_df = self.get_dataframe(base_entity_id)
@@ -737,6 +742,7 @@ class EntitySet(BaseEntitySet):
         selected_variables = [index] +\
             [v for v in additional_variables] +\
             [v for v in copy_variables]
+
 
         new_entity_df2 = new_entity_df. \
             drop_duplicates(index, keep=time_index_reduce)[selected_variables]
@@ -945,7 +951,7 @@ class EntitySet(BaseEntitySet):
             other_variable_ids = [o_variable.id for o_variable in
                                   other[entity.id].variables]
             assert (all([variable.id in other_variable_ids
-                    for variable in self[entity.id].variables])), assert_string
+                         for variable in self[entity.id].variables])), assert_string
 
         if inplace:
             combined_es = self
