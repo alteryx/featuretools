@@ -1,19 +1,17 @@
+import pandas as pd
 import copy
-import itertools
-import logging
-
 import dask.dataframe as dd
 import numpy as np
-import pandas as pd
-
-from .base_entityset import BaseEntitySet
-from .entity import Entity
-from .relationship import Relationship
-from .serialization import read_pickle, to_pickle
-
 import featuretools.variable_types.variable as vtypes
-from featuretools.utils.gen_utils import make_tqdm_iterator
+from .relationship import Relationship
+from .entity import Entity
 from featuretools.utils.wrangle import _check_variable_list
+from .base_entityset import BaseEntitySet
+from .serialization import to_pickle, read_pickle
+from featuretools.utils.gen_utils import make_tqdm_iterator
+import itertools
+import sys
+import logging
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
@@ -26,7 +24,6 @@ class EntitySet(BaseEntitySet):
     Attributes:
         entity_stores
     """
-
     def __init__(self, id, entities=None, relationships=None, verbose=False):
         """Creates EntitySet
 
@@ -572,7 +569,7 @@ class EntitySet(BaseEntitySet):
         if index is None:
             assert not make_index, "Must specify an index name if make_index is True"
             logger.warning(("Using first column as index. ",
-                            "To change this, specify the index parameter"))
+                           "To change this, specify the index parameter"))
         else:
             if index not in variable_types:
                 variable_types[index] = vtypes.Index
@@ -948,7 +945,7 @@ class EntitySet(BaseEntitySet):
             other_variable_ids = [o_variable.id for o_variable in
                                   other[entity.id].variables]
             assert (all([variable.id in other_variable_ids
-                         for variable in self[entity.id].variables])), assert_string
+                    for variable in self[entity.id].variables])), assert_string
 
         if inplace:
             combined_es = self
