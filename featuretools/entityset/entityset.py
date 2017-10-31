@@ -743,7 +743,6 @@ class EntitySet(BaseEntitySet):
             [v for v in additional_variables] +\
             [v for v in copy_variables]
 
-
         new_entity_df2 = new_entity_df. \
             drop_duplicates(index, keep=time_index_reduce)[selected_variables]
 
