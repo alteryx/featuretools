@@ -156,7 +156,6 @@ class EntitySet(BaseEntitySet):
         Get the slice of data related to the supplied instances of the index
         entity.
         """
-        window = training_window
         eframes_by_filter = {}
 
         if verbose:
@@ -195,12 +194,10 @@ class EntitySet(BaseEntitySet):
                 # Query the child of the current backwards relationship for the
                 # instances we want
                 instance_vals = eframes[parent_eid][r.parent_variable.id]
-                if isinstance(training_window, dict):
-                    window = training_window.get(child_eid)
                 eframes[child_eid] =\
                     self.entity_stores[child_eid].query_by_values(
                         instance_vals, variable_id=r.child_variable.id,
-                        time_last=time_last, training_window=window)
+                        time_last=time_last, training_window=training_window)
 
                 # add link variables to this dataframe in order to link it to its
                 # (grand)parents
@@ -1010,13 +1007,16 @@ class EntitySet(BaseEntitySet):
         """
         # Generate graph of entities to find leaf entities
         children = defaultdict(list)
-        child_var_ids = defaultdict(dict)
+        child_vars = defaultdict(dict)
         for r in self.relationships:
             children[r.parent_entity.id].append(r.child_entity)
-            child_var_ids[r.parent_entity.id][r.child_entity.id] = r.child_variable.id
+            child_vars[r.parent_entity.id][r.child_entity.id] = r.child_variable
 
         explored = set([])
         queue = self.entities[:]
+
+        for entity in self.entities:
+            entity.set_last_time_index(None)
 
         while len(explored) < len(self.entities):
             entity = queue.pop(0)
@@ -1032,18 +1032,22 @@ class EntitySet(BaseEntitySet):
                 else:
                     for child_e in child_entities:
                         child_lti = getattr(child_e, 'last_time_index', None)
-                        link_var = child_var_ids[entity.id][child_e.id]
+                        link_var = child_vars[entity.id][child_e.id].id
                         if child_lti is None:
                             continue
-                        # TODO: how to handle updating last_time_index on subsequent calls
                         df = child_e.last_time_index.to_frame()
                         df[link_var] = child_e.df[link_var]
-                        lti = df.groupby(link_var)[child_e.last_time_index.name].max()
+                        df.drop_duplicates(link_var, keep='last', inplace=True)
+                        df.set_index(link_var, inplace=True)
+                        lti = df[child_e.last_time_index.name]
                         if entity.last_time_index is None:
                             entity.last_time_index = lti
                         else:
-                            entity.last_time_index = entity.last_time_index.combine(lti, max, np.nan)
+                            _df = pd.DataFrame([entity.last_time_index, lti])
+                            entity.last_time_index = _df.max()
+                        entity.last_time_index.name = '_last_time_index'
                     explored.add(entity.id)
+
     ###########################################################################
     #  Other ###############################################
     ###########################################################################

@@ -595,7 +595,17 @@ class Entity(BaseEntity):
                 else:
                     df = df[df[self.time_index] <= time_last]
                     if training_window is not None:
-                        df = df[df[self.time_index] >= time_last - training_window]
+                        assert self.last_time_index is not None, "Last time "\
+                            "indexes must be set if using training windows."
+                        i = 0
+                        while i >= 0:
+                            if i in df.columns:
+                                i += 1
+                            else:
+                                df[i] = self.last_time_index
+                                df = df[df[i] >= time_last - training_window]
+                                df.drop(i, axis=1, inplace=True)
+                                i = -1
 
         for secondary_time_index in self.secondary_time_index:
                 # should we use ignore time last here?

@@ -7,7 +7,7 @@ import pytest
 
 from ..testing_utils import make_ecommerce_entityset, save_to_csv
 
-from featuretools import variable_types
+from featuretools import variable_types, Relationship
 from featuretools.entityset import EntitySet
 
 
@@ -641,12 +641,13 @@ class TestNormalizeEntity(object):
         assert len(entityset['values'].df.columns) == 3
 
     def test_last_time_index(self, entityset):
-        entityset.normalize_entity('log', 'values', 'value',
+        es = entityset
+        es.normalize_entity('log', 'values', 'value',
                                    make_time_index=True,
                                    new_entity_time_index="value_time",
                                    convert_links_to_integers=True)
-        entityset.add_last_time_indexes()
-        assert entityset["values"].last_time_index is not None
+        es.add_last_time_indexes()
+        assert es["values"].last_time_index is not None
         times = {
             'values': [
                 datetime(2011, 4, 10, 10, 41, 0),
@@ -667,10 +668,33 @@ class TestNormalizeEntity(object):
                 datetime(2011, 4, 10, 11, 10, 03),
             ]
         }
-        region_series = pd.Series({'United States': datetime(2011, 4, 10, 11, 10, 03)})
-        assert (entityset["values"].last_time_index.sort_index() == pd.Series(times['values'])).all()
-        assert (entityset["customers"].last_time_index.sort_index() == pd.Series(times['customers'])).all()
-        assert (entityset["regions"].last_time_index.sort_index() == region_series).all()
+        region_series = pd.Series({'United States':
+                                   datetime(2011, 4, 10, 11, 10, 03)})
+        values_lti = es["values"].last_time_index.sort_index()
+        customers_lti = es["customers"].last_time_index.sort_index()
+        regions_lti = es["regions"].last_time_index.sort_index()
+        assert (values_lti == pd.Series(times['values'])).all()
+        assert (customers_lti == pd.Series(times['customers'])).all()
+        assert (regions_lti == region_series).all()
+
+        # add promotions entity
+        promotions_df = pd.DataFrame({
+            "start_date": [datetime(2011, 4, 10, 11, 12, 06)],
+            "store_id": [4],
+            "product_id": ['coke zero']
+        })
+        es.entity_from_dataframe(entity_id="promotions",
+                                 dataframe=promotions_df,
+                                 index='id',
+                                 make_index=True,
+                                 time_index='start_date')
+        relationship = Relationship(es['stores']['id'],
+                                    es['promotions']['store_id'])
+        es.add_relationship(relationship)
+        es.add_last_time_indexes()
+        region_series['Mexico'] = datetime(2011, 4, 10, 11, 12, 06)
+        regions_lti = es["regions"].last_time_index.sort_index()
+        assert (regions_lti == region_series.sort_index()).all()
 
 
 def test_head_of_entity(entityset):

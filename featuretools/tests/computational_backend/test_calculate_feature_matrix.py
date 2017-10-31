@@ -203,40 +203,32 @@ def test_cutoff_time_binning(entityset):
 def test_handles_training_window_correctly(entityset):
     property_feature = Count(entityset['log']['id'], entityset['customers'])
     top_level_agg = Count(entityset['customers']['id'], entityset['regions'])
-    # make sure we test feature target entity training window
-    feature_matrix = calculate_feature_matrix([property_feature],
-                                              instance_ids=[0, 1, 2],
-                                              cutoff_time=[datetime(2011, 4, 9, 12, 31),
-                                                           datetime(2011, 4, 10, 11),
-                                                           datetime(2011, 4, 10, 13, 10, 1)],
-                                              training_window={'customers': '36 hours'})
-    prop_values = [0, 5, 0]
-    assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
 
     # make sure features that have a direct to a higher level agg
     # so we have multiple "filter eids" in get_pandas_data_slice,
     # and we go through the loop to pull data with a training_window param more than once
     dagg = DirectFeature(top_level_agg, entityset['customers'])
+
+    # for now, raises error if last_time_index not present
+    with pytest.raises(AssertionError):
+        feature_matrix = calculate_feature_matrix([property_feature, dagg],
+                                                  instance_ids=[0, 1, 2],
+                                                  cutoff_time=[datetime(2011, 4, 9, 12, 31),
+                                                               datetime(2011, 4, 10, 11),
+                                                               datetime(2011, 4, 10, 13, 10, 1)],
+                                                  training_window='2 hours')
+
+    entityset.add_last_time_indexes()
     feature_matrix = calculate_feature_matrix([property_feature, dagg],
                                               instance_ids=[0, 1, 2],
                                               cutoff_time=[datetime(2011, 4, 9, 12, 31),
                                                            datetime(2011, 4, 10, 11),
                                                            datetime(2011, 4, 10, 13, 10, 1)],
-                                              training_window={'log': '2 hours'})
+                                              training_window='2 hours')
     prop_values = [5, 5, 1]
-    dagg_values = [3, 3, 3]
+    dagg_values = [3, 2, 1]
     assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
     assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
-
-    property_feature = Count(entityset['log']['id'], entityset['customers'])
-    feature_matrix = calculate_feature_matrix([property_feature],
-                                              instance_ids=[0, 1, 2],
-                                              cutoff_time=[datetime(2011, 4, 9, 12, 31),
-                                                           datetime(2011, 4, 10, 11),
-                                                           datetime(2011, 4, 10, 13, 10, 1)],
-                                              training_window='2 hours')
-    labels = [0, 0, 0]
-    assert (feature_matrix == labels).values.all()
 
     with pytest.raises(AssertionError):
         feature_matrix = calculate_feature_matrix([property_feature],
