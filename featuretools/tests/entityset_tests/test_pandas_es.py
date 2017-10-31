@@ -610,16 +610,23 @@ class TestNormalizeEntity(object):
         assert 'device_type' in entityset['device_types'].df.columns
 
     def test_normalize_entity_copies_variable_types(self, entityset):
+        entityset['log'].convert_variable_type('value', variable_types.Ordinal, convert_data=False)
+        assert entityset['log'].variable_types['value'] == variable_types.Ordinal
+        assert entityset['log'].variable_types['priority_level'] == variable_types.Ordinal
         entityset.normalize_entity('log', 'values_2', 'value_2',
                                    additional_variables=['priority_level'],
+                                   copy_variables=['value'],
                                    make_time_index=False)
 
         assert len(entityset.get_forward_relationships('log')) == 3
         assert entityset.get_forward_relationships('log')[2].parent_entity.id == 'values_2'
         assert 'priority_level' in entityset['values_2'].df.columns
+        assert 'value' in entityset['values_2'].df.columns
         assert 'priority_level' not in entityset['log'].df.columns
+        assert 'value' in entityset['log'].df.columns
         assert 'value_2' in entityset['values_2'].df.columns
         assert entityset['values_2'].variable_types['priority_level'] == variable_types.Ordinal
+        assert entityset['values_2'].variable_types['value'] == variable_types.Ordinal
 
     def test_make_time_index_keeps_original_sorting(self):
         trips = {
