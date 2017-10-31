@@ -91,7 +91,7 @@ class EntitySet(BaseEntitySet):
         """
         return [e.id for e in self.entities]
 
-    def to_pickle(self, path)
+    def to_pickle(self, path):
         to_pickle(self, path)
         return self
 
