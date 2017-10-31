@@ -77,7 +77,6 @@ def to_pickle(entityset, path):
     if os.path.exists(entityset_path):
         shutil.rmtree(entityset_path)
     shutil.move(temp_dir, entityset_path)
-    os.chmod(entityset_path, 0o755)
 
 
 def read_pickle(path):
