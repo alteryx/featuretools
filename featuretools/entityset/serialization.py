@@ -14,18 +14,14 @@ logger = logging.getLogger('featuretools.entityset')
 _datetime_types = vtypes.PandasTypes._pandas_datetimes
 
 
-def to_pickle(entityset, path, as_dir=False):
+def to_pickle(entityset, path):
     """Save the entityset at the given path.
 
        Args:
            entityset (:class:`featuretools.BaseEntitySet`) : EntitySet to save
-           path : pathname of a pickle file or directory to save the entityset files.
-                if as_dir is False, this treats path as a pickle file to save the entire entityset to
-           as_dir (bool) : If True, each entity will be saved to a subfolder, with data saved as a
-               gzip-compressed CSV, index information saved as a pickle file and
-               metadata saved as a pickle file
-               Additional metadata about the entityset itself will be saved to a
-               pickle file.
+           path : pathname of a directory to save the entityset
+            (includes a CSV file for each entity, as well as a metadata
+            pickle file)
 
     """
     entityset_path = os.path.abspath(os.path.expanduser(path))
@@ -33,14 +29,7 @@ def to_pickle(entityset, path, as_dir=False):
         os.makedirs(entityset_path)
     except OSError:
         pass
-    if as_dir:
-        to_pickle_dir(entityset, entityset_path)
-    else:
-        pd_to_pickle(entityset, entityset_path)
-    os.chmod(entityset_path, 0o755)
 
-
-def to_pickle_dir(entityset, entityset_path):
     entity_store_dframes = {}
     entity_store_index_bys = {}
 
@@ -99,9 +88,6 @@ def read_pickle(path):
         path (str): Path of directory where entityset is stored
     """
     entityset_path = os.path.abspath(os.path.expanduser(path))
-    if os.path.isfile(path):
-        return pd_read_pickle(path)
-
     entityset = pd_read_pickle(os.path.join(entityset_path, 'entityset.p'))
     for e_id, entity_store in entityset.entity_stores.items():
         entity_path = os.path.join(entityset_path, e_id)
