@@ -597,6 +597,8 @@ class Entity(BaseEntity):
                     if training_window is not None:
                         assert self.last_time_index is not None, "Last time "\
                             "indexes must be set if using training windows."
+
+                        # iterate to find an unused column name
                         i = 0
                         while i >= 0:
                             if i in df.columns:

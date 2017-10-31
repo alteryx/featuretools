@@ -720,7 +720,6 @@ class EntitySet(BaseEntitySet):
         if isinstance(make_time_index, (str, unicode)):
             base_time_index = make_time_index
             new_entity_time_index = base_entity[make_time_index].id
-            # TODO: handle LTI for this case
         elif make_time_index:
             base_time_index = base_entity.time_index
             if new_entity_time_index is None:
@@ -744,11 +743,9 @@ class EntitySet(BaseEntitySet):
 
         new_entity_df2 = new_entity_df. \
             drop_duplicates(index, keep=time_index_reduce)[selected_variables]
-        lti_df = new_entity_df.drop_duplicates(index, keep='last')[selected_variables]
 
         if make_time_index:
             new_entity_df2.rename(columns={base_time_index: new_entity_time_index}, inplace=True)
-            lti_df.rename(columns={base_time_index: new_entity_time_index}, inplace=True)
         if make_secondary_time_index:
             time_index_reduce = 'first'
 
@@ -781,11 +778,6 @@ class EntitySet(BaseEntitySet):
             old_entity_df.loc[:, index] = id_as_int.values
 
             base_entity.update_data(old_entity_df)
-            lti_df = lti_df[[new_entity_time_index]].merge(old_entity_df[[index]],
-                                                           left_index=True,
-                                                           right_index=True,
-                                                           how='left')
-            lti_df = lti_df.set_index(lti_df[index], drop=False)
             index = link_variable_id
 
         # TODO dfs: do i need this?
@@ -1027,7 +1019,6 @@ class EntitySet(BaseEntitySet):
             else:
                 child_entities = children[entity.id]
                 if not set([e.id for e in child_entities]).issubset(explored):
-                    # TODO: handling broken graphs
                     queue.append(entity)
                 else:
                     for child_e in child_entities:
