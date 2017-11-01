@@ -3,6 +3,9 @@
 Changelog
 ---------
 
+**v0.1.13** November 1, 2017
+    * Add MANIFEST.in (:pr:`26`)
+
 **v0.1.11** October 31, 2017
     * Package linting (:pr:`7`)
     * Custom primitive creation functions (:pr:`13`)
