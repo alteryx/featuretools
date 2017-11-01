@@ -1,2 +1,2 @@
 include *.txt
-include featuretools/*.txt
+include featuretools/config_yaml.txt
