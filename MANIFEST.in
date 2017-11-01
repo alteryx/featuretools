@@ -1,1 +1,2 @@
+include *.txt
 include featuretools/*.txt
