@@ -1,10 +1,12 @@
+import os
+import shutil
+
 import pytest
 
 from ..testing_utils import make_ecommerce_entityset
+
+from featuretools import EntitySet, Relationship, variable_types
 from featuretools.tests import integration_data
-from featuretools import Relationship, variable_types, EntitySet
-import os
-import shutil
 
 
 @pytest.fixture
@@ -39,7 +41,7 @@ def test_add_relationships_convert_type(es):
         try:
             assert type(r.parent_variable) == variable_types.Index
             assert type(r.child_variable) == variable_types.Id
-        except:
+        except Exception:
             assert type(r.parent_variable) == variable_types.Index
             assert type(r.child_variable) == variable_types.Id
 

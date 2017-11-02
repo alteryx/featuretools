@@ -656,7 +656,7 @@ def col_is_datetime(col):
     elif col.dtype.name.find('str') > -1 or col.dtype.name.find('object') > -1:
         try:
             pd.to_datetime(col.dropna().iloc[:10], errors='raise')
-        except:
+        except Exception:
             return False
         else:
             return True
