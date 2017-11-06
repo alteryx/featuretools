@@ -597,17 +597,8 @@ class Entity(BaseEntity):
                     if training_window is not None:
                         assert self.last_time_index is not None, "Last time "\
                             "indexes must be set if using training windows."
-
-                        # iterate to find an unused column name
-                        i = 0
-                        while i >= 0:
-                            if i in df.columns:
-                                i += 1
-                            else:
-                                df[i] = self.last_time_index
-                                df = df[df[i] >= time_last - training_window]
-                                df.drop(i, axis=1, inplace=True)
-                                i = -1
+                        lti_slice = self.last_time_index[df.index]
+                        df = df[lti_slice >= time_last - training_window]
 
         for secondary_time_index in self.secondary_time_index:
                 # should we use ignore time last here?

@@ -1015,29 +1015,28 @@ class EntitySet(BaseEntitySet):
             if entity.id not in children:
                 if entity.has_time_index():
                     entity.set_last_time_index(entity.df[entity.time_index])
-                explored.add(entity.id)
             else:
                 child_entities = children[entity.id]
                 if not set([e.id for e in child_entities]).issubset(explored):
                     queue.append(entity)
-                else:
-                    for child_e in child_entities:
-                        child_lti = getattr(child_e, 'last_time_index', None)
-                        link_var = child_vars[entity.id][child_e.id].id
-                        if child_lti is None:
-                            continue
-                        df = child_e.last_time_index.to_frame()
-                        df[link_var] = child_e.df[link_var]
-                        df.drop_duplicates(link_var, keep='last', inplace=True)
-                        df.set_index(link_var, inplace=True)
-                        lti = df[child_e.last_time_index.name]
-                        if entity.last_time_index is None:
-                            entity.last_time_index = lti
-                        else:
-                            _df = pd.DataFrame([entity.last_time_index, lti])
-                            entity.last_time_index = _df.max()
-                        entity.last_time_index.name = '_last_time_index'
-                    explored.add(entity.id)
+                    continue
+                for child_e in child_entities:
+                    link_var = child_vars[entity.id][child_e.id].id
+                    if child_e.last_time_index is None:
+                        continue
+                    lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
+                                           entity.index: child_e.df[link_var]})
+                    lti_df.drop_duplicates(entity.index,
+                                           keep='last',
+                                           inplace=True)
+                    lti_df.set_index(entity.index, inplace=True)
+                    if entity.last_time_index is None:
+                        entity.last_time_index = lti_df['last_time']
+                    else:
+                        lti_df['last_time_old'] = entity.last_time_index
+                        entity.last_time_index = lti_df.max(axis=1).dropna()
+                        entity.last_time_index.name = 'last_time'
+            explored.add(entity.id)
 
     ###########################################################################
     #  Other ###############################################
