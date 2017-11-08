@@ -32,7 +32,7 @@ Entityset: transactions
     sessions.customer_id -> customers.customer_id
 ```
 
-Feautretools can automatically create a single table of features for any "target entity" using Deep Feature Synthesis (DFS)
+Featuretools can automatically create a single table of features for any "target entity" using Deep Feature Synthesis (DFS)
 ```python
 feature_matrix, features_defs = ft.dfs(entityset=es, target_entity="customers")						 
 ```
