@@ -18,7 +18,7 @@ import featuretools as ft
 es = ft.demo.load_mock_customer(return_entityset=True)
 ```
 
-``es`` is an Entityset which contain many related entities
+``es`` is an "entity set" which is used to represent related tables of data
 ```
 Entityset: transactions
   Entities:
@@ -34,8 +34,7 @@ Entityset: transactions
 
 Feautretools can automatically create a single table of features for any "target entity" using Deep Feature Synthesis (DFS)
 ```python
-feature_matrix, features_defs = ft.dfs(entityset=es,
-	                               target_entity="customers")						 
+feature_matrix, features_defs = ft.dfs(entityset=es, target_entity="customers")						 
 ```
 
 `feature_matrix` is now a single table of features for each customer that is ready for machine learning
