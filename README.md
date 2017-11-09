@@ -49,6 +49,6 @@ customer_id                                                                     
 
 [5 rows x 69 columns]
 ```
-`feature_matrix` is now a single table of features for each customer that is ready for machine learning
+We now have a single table of features for each customer that is ready for machine learning
 
 See the [documentation on Deep Feature Synthesis](https://docs.featuretools.com/automated_feature_engineering/afe.html) for more examples.
