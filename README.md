@@ -35,7 +35,7 @@ Entityset: transactions
 Featuretools can automatically create a single table of features for any "target entity"
 ```python
 >> feature_matrix, features_defs = ft.dfs(entityset=es, target_entity="customers")
->> feature_matrix
+>> feature_matrix.head(5)
 ```
 
 ```
@@ -49,6 +49,6 @@ customer_id                                                                     
 
 [5 rows x 69 columns]
 ```
-We now have a single table of features for each customer that is ready for machine learning
+We now have a feature vector for each customer that can be used for machine learning
 
 See the [documentation on Deep Feature Synthesis](https://docs.featuretools.com/automated_feature_engineering/afe.html) for more examples.
