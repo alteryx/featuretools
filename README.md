@@ -49,6 +49,4 @@ customer_id                                                                     
 
 [5 rows x 69 columns]
 ```
-We now have a feature vector for each customer that can be used for machine learning
-
-See the [documentation on Deep Feature Synthesis](https://docs.featuretools.com/automated_feature_engineering/afe.html) for more examples.
+We now have a feature vector for each customer that can be used for machine learning. See the [documentation on Deep Feature Synthesis](https://docs.featuretools.com/automated_feature_engineering/afe.html) for more examples.
