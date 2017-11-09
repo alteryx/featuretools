@@ -12,13 +12,13 @@ Install with pip
 	pip install featuretools
 
 ## Example
+Below is an example of using Deep Feature Synthesis (DFS) to perform automated feature engineering. In this example, we apply DFS to a multi-table dataset consisting of timestamped customer transactions.
 
 ```python
-import featuretools as ft
-es = ft.demo.load_mock_customer(return_entityset=True)
+>> import featuretools as ft
+>> es = ft.demo.load_mock_customer(return_entityset=True)
+>> es
 ```
-
-``es`` is an "entity set" which is used to represent related tables of data
 ```
 Entityset: transactions
   Entities:
@@ -32,12 +32,12 @@ Entityset: transactions
     sessions.customer_id -> customers.customer_id
 ```
 
-Featuretools can automatically create a single table of features for any "target entity" using Deep Feature Synthesis (DFS)
+Featuretools can automatically create a single table of features for any "target entity"
 ```python
-feature_matrix, features_defs = ft.dfs(entityset=es, target_entity="customers")						 
+>> feature_matrix, features_defs = ft.dfs(entityset=es, target_entity="customers")
+>> feature_matrix.head(5)
 ```
 
-`feature_matrix` is now a single table of features for each customer that is ready for machine learning
 ```
             zip_code  COUNT(transactions)  COUNT(sessions)  SUM(transactions.amount) MODE(sessions.device)  MIN(transactions.amount)  MAX(transactions.amount)  YEAR(join_date)  SKEW(transactions.amount)  DAY(join_date)                   ...                     SUM(sessions.MIN(transactions.amount))  MAX(sessions.SKEW(transactions.amount))  MAX(sessions.MIN(transactions.amount))  SUM(sessions.MEAN(transactions.amount))  STD(sessions.SUM(transactions.amount))  STD(sessions.MEAN(transactions.amount))  SKEW(sessions.MEAN(transactions.amount))  STD(sessions.MAX(transactions.amount))  NUM_UNIQUE(sessions.DAY(session_start))  MIN(sessions.SKEW(transactions.amount))
 customer_id                                                                                                                                                                                                                                  ...                                                                                                                                                                                                                                                                                                                                                                                                                                          
@@ -49,5 +49,9 @@ customer_id                                                                     
 
 [5 rows x 69 columns]
 ```
+We now have a feature vector for each customer that can be used for machine learning. See the [documentation on Deep Feature Synthesis](https://docs.featuretools.com/automated_feature_engineering/afe.html) for more examples.
 
-See the [documentation on Deep Feature Synthesis](https://docs.featuretools.com/automated_feature_engineering/afe.html) for more examples.
+
+## Feature Labs
+
+Featuretools is maintained by the team at [Feature Labs](https://www.featurelabs.com).
