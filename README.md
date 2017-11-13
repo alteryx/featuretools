@@ -54,4 +54,4 @@ We now have a feature vector for each customer that can be used for machine lear
 
 ## Feature Labs
 
-Featuretools is maintained by the team at [Feature Labs](https://www.featurelabs.com).
+Featuretools was created by the team at [Feature Labs](https://www.featurelabs.com).
