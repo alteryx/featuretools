@@ -66,7 +66,7 @@ def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transaction
                 ft.Relationship(es["customers"]["customer_id"],
                                 es["sessions"]["customer_id"])]
         es = es.add_relationships(rels)
-
+        es.add_last_time_indexes()
         return es
 
     return {"customers": customers_df,

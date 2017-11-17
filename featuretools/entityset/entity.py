@@ -598,7 +598,9 @@ class Entity(BaseEntity):
                         assert self.last_time_index is not None, "Last time "\
                             "indexes must be set if using training windows."
                         lti_slice = self.last_time_index[df.index]
-                        df = df[lti_slice >= time_last - training_window]
+                        lti_recent = df[lti_slice >= time_last - training_window]
+                        ti_recent = df[df[self.time_index] >= time_last - training_window]
+                        df = pd.concat([lti_recent, ti_recent]).drop_duplicates()
 
         for secondary_time_index in self.secondary_time_index:
                 # should we use ignore time last here?

@@ -86,6 +86,7 @@ def load_retail(id='demo_retail_data', nrows=None):
                         base_entity_id="invoices",
                         index="CustomerID",
                         additional_variables=["Country"])
+    es.add_last_time_indexes()
 
     return es
 
