@@ -200,7 +200,7 @@ def test_cutoff_time_binning(entityset):
         assert binned_cutoff_times['time'][i] == labels[i]
 
 
-def test_handles_training_window_correctly(entityset):
+def test_training_window(entityset):
     property_feature = Count(entityset['log']['id'], entityset['customers'])
     top_level_agg = Count(entityset['customers']['id'], entityset['regions'])
 
@@ -219,8 +219,17 @@ def test_handles_training_window_correctly(entityset):
                                                   training_window='2 hours')
 
     entityset.add_last_time_indexes()
+
+    with pytest.raises(AssertionError):
+        feature_matrix = calculate_feature_matrix([property_feature],
+                                                  instance_ids=[0, 1, 2],
+                                                  cutoff_time=[datetime(2011, 4, 9, 12, 31),
+                                                               datetime(2011, 4, 10, 11),
+                                                               datetime(2011, 4, 10, 13, 10, 1)],
+                                                  training_window=Timedelta(2, 'observations', entity='log'))
+
     feature_matrix = calculate_feature_matrix([property_feature, dagg],
-                                              instance_ids=[0, 1, 2],
+                                              instance_ids=[0, 1, 2, 4],
                                               cutoff_time=[datetime(2011, 4, 9, 12, 31),
                                                            datetime(2011, 4, 10, 11),
                                                            datetime(2011, 4, 10, 13, 10, 1)],
@@ -230,13 +239,47 @@ def test_handles_training_window_correctly(entityset):
     assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
     assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
 
-    with pytest.raises(AssertionError):
-        feature_matrix = calculate_feature_matrix([property_feature],
-                                                  instance_ids=[0, 1, 2],
-                                                  cutoff_time=[datetime(2011, 4, 9, 12, 31),
-                                                               datetime(2011, 4, 10, 11),
-                                                               datetime(2011, 4, 10, 13, 10, 1)],
-                                                  training_window=Timedelta(2, 'observations', entity='log'))
+
+def test_training_window_recent_time_index(entityset):
+    # customer with no sessions
+    row = {
+        'id': [3],
+        'age': [73],
+        'region_id': ['United States'],
+        'cohort': [1],
+        'cohort_name': ["Late Adopters"],
+        'loves_ice_cream': [True],
+        'favorite_quote': ["Who is John Galt?"],
+        'signup_date': [datetime(2011, 4, 10)],
+        'upgrade_date': [datetime(2011, 4, 12)],
+        'cancel_date': [datetime(2011, 5, 13)],
+        'date_of_birth': [datetime(1938, 2, 1)],
+        'engagement_level': [2],
+    }
+    df = pd.DataFrame(row)
+    df.index = xrange(3, 4)
+    df = entityset['customers'].df.append(df)
+    entityset['customers'].update_data(df)
+    entityset.add_last_time_indexes()
+
+    property_feature = Count(entityset['log']['id'], entityset['customers'])
+    top_level_agg = Count(entityset['customers']['id'], entityset['regions'])
+    dagg = DirectFeature(top_level_agg, entityset['customers'])
+
+    feature_matrix = calculate_feature_matrix(
+        [property_feature, dagg],
+        instance_ids=[0, 1, 2, 3],
+        cutoff_time=[datetime(2011, 4, 9, 12, 31),
+                     datetime(2011, 4, 10, 11),
+                     datetime(2011, 4, 10, 13, 10, 1),
+                     datetime(2011, 4, 10, 1, 59, 59)],
+        training_window='2 hours'
+    )
+    prop_values = [5, 5, 1, 0]
+    dagg_values = [3, 2, 1, 2]
+    feature_matrix.sort_index(inplace=True)
+    assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
+    assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
 
 
 def test_approximate_multiple_instances_per_cutoff_time(entityset):
