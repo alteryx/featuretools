@@ -51,6 +51,9 @@ customer_id                                                                     
 ```
 We now have a feature vector for each customer that can be used for machine learning. See the [documentation on Deep Feature Synthesis](https://docs.featuretools.com/automated_feature_engineering/afe.html) for more examples.
 
+## Support
+
+For installation or usage questions, please reach out on [Gitter](https://gitter.im/featuretools/featuretools). 
 
 ## Feature Labs
 
