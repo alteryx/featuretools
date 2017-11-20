@@ -209,14 +209,13 @@ def test_training_window(entityset):
     # and we go through the loop to pull data with a training_window param more than once
     dagg = DirectFeature(top_level_agg, entityset['customers'])
 
-    # for now, raises error if last_time_index not present
-    with pytest.raises(AssertionError):
-        feature_matrix = calculate_feature_matrix([property_feature, dagg],
-                                                  instance_ids=[0, 1, 2],
-                                                  cutoff_time=[datetime(2011, 4, 9, 12, 31),
-                                                               datetime(2011, 4, 10, 11),
-                                                               datetime(2011, 4, 10, 13, 10, 1)],
-                                                  training_window='2 hours')
+    # for now, warns if last_time_index not present
+    feature_matrix = calculate_feature_matrix([property_feature, dagg],
+                                              instance_ids=[0, 1, 2],
+                                              cutoff_time=[datetime(2011, 4, 9, 12, 31),
+                                                           datetime(2011, 4, 10, 11),
+                                                           datetime(2011, 4, 10, 13, 10, 1)],
+                                              training_window='2 hours')
 
     entityset.add_last_time_indexes()
 

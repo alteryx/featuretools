@@ -588,6 +588,7 @@ class Entity(BaseEntity):
         """
         if self.time_index:
             if time_last is not None and not df.empty:
+                # TODO: make sure this try/except is a good idea
                 try:
                     df.iloc[0][self.time_index] <= time_last
                 except TypeError:
@@ -595,13 +596,17 @@ class Entity(BaseEntity):
                 else:
                     df = df[df[self.time_index] <= time_last]
                     if training_window is not None:
-                        assert self.last_time_index is not None, "Last time "\
-                            "indexes must be set if using training windows."
-                        lti_slice = self.last_time_index[df.index]
-                        df = df[
-                            (df[self.time_index] >= time_last - training_window) |
-                            (lti_slice >= time_last - training_window)
-                        ]
+                        mask = df[self.time_index] >= time_last - training_window
+                        if self.last_time_index is not None:
+                            lti_slice = self.last_time_index[df.index]
+                            lti_mask = lti_slice >= time_last - training_window
+                            mask = mask | lti_mask
+                        else:
+                            logger.warning(
+                                "Using training_window but last_time_index is "
+                                "not set on entity %s" % (self.id)
+                            )
+                        df = df[mask]
 
         for secondary_time_index in self.secondary_time_index:
                 # should we use ignore time last here?
