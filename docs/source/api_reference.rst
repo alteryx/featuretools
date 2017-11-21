@@ -41,7 +41,7 @@ Feature Primitives
 ~~~~~~~~~~~~~~~~~~
 
 Primitive Types
--------------
+---------------
 .. currentmodule:: featuretools.primitives
 
 .. autosummary::
