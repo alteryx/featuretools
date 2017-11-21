@@ -3,6 +3,11 @@
 Changelog
 ---------
 
+**v0.1.14** November 20, 2017
+    * Last time index (:pr:`33`)
+    * Update Scipy version to 1.0.0 (:pr:`31`)
+
+
 **v0.1.13** November 1, 2017
     * Add MANIFEST.in (:pr:`26`)
 

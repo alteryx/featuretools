@@ -187,7 +187,6 @@ Table of contents
 * :doc:`guides/tuning_dfs`
 * :doc:`guides/deployment`
 * :doc:`guides/exporting_feature_matrix`
-.. * :doc:`guides/save_progress_example`
 
 .. toctree::
    :maxdepth: 1
@@ -198,7 +197,6 @@ Table of contents
    guides/deployment
    guides/exporting_feature_matrix
    guides/advanced_custom_primitives
-.. guides/save_progress_example
 
 
 .. **Tutorials and Demos**
@@ -239,7 +237,11 @@ Table of contents
 
 Get help
 --------
-The Featuretools community is happy to provide support. Reach us by email at help@featuretools.com.
+The Featuretools community is happy to provide support to users of Featuretools.
+
+* For installation, usage, or trouble shooting please join on the `Gitter chat room <https://gitter.im/featuretools/featuretools>`_
+* For bugs or pull requests, please put them on `GitHub <https://github.com/featuretools/featuretools>`_.
+* For everything else, the core developers can be reached by email at help@featuretools.com.
 
 
 Other links
