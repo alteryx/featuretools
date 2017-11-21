@@ -52,6 +52,7 @@ def load_flight(entity_id='flight_dataset', nrows=None, force=False):
                         additional_variables=["UNIQUE_CARRIER", "TAIL_NUM", "FL_NUM", "ORIGIN_AIRPORT_ID",
                                               "ORIGIN_CITY_MARKET_ID", "DEST_AIRPORT_ID", "DEST_CITY_MARKET_ID"],
                         make_time_index=True)
+    es.add_last_time_indexes()
     return es
 
 

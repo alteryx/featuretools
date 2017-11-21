@@ -27,8 +27,8 @@ class Entity(BaseEntity):
 
     def __init__(self, id, df, entityset, variable_types=None, name=None,
                  index=None, time_index=None, secondary_time_index=None,
-                 encoding=None, relationships=None, already_sorted=False,
-                 created_index=None, verbose=False):
+                 last_time_index=None, encoding=None, relationships=None,
+                 already_sorted=False, created_index=None, verbose=False):
         """ Create Entity
 
         Args:
@@ -45,6 +45,8 @@ class Entity(BaseEntity):
             time_index (str): name of time column in the dataframe
             secondary_time_index (dict[str->str]): dictionary mapping columns
                 in the dataframe to the time index column they are associated with
+            last_time_index (pd.Series): time index of the last event for each
+                instance across all child entities
             encoding (Optional(str)) : If None, will use 'ascii'. Another option is 'utf-8',
                 or any encoding supported by pandas. Passed into underlying
                 pandas.read_csv() and pandas.to_csv() calls, so see Pandas documentation
@@ -61,6 +63,7 @@ class Entity(BaseEntity):
         self.created_index = created_index
         self.convert_variable_types(variable_types)
         self.attempt_cast_index_to_int(index)
+        self.last_time_index = last_time_index
         super(Entity, self).__init__(id, entityset, variable_types, name, index,
                                      time_index, secondary_time_index, relationships, already_sorted)
 
@@ -545,6 +548,9 @@ class Entity(BaseEntity):
 
         super(Entity, self).set_index(variable_id)
 
+    def set_last_time_index(self, last_time_index):
+            self.last_time_index = last_time_index
+
     def _vals_to_series(self, instance_vals, variable_id):
         """
         instance_vals may be a pd.Dataframe, a pd.Series, a list, a single
@@ -582,6 +588,7 @@ class Entity(BaseEntity):
         """
         if self.time_index:
             if time_last is not None and not df.empty:
+                # TODO: make sure this try/except is a good idea
                 try:
                     df.iloc[0][self.time_index] <= time_last
                 except TypeError:
@@ -589,7 +596,17 @@ class Entity(BaseEntity):
                 else:
                     df = df[df[self.time_index] <= time_last]
                     if training_window is not None:
-                        df = df[df[self.time_index] >= time_last - training_window]
+                        mask = df[self.time_index] >= time_last - training_window
+                        if self.last_time_index is not None:
+                            lti_slice = self.last_time_index[df.index]
+                            lti_mask = lti_slice >= time_last - training_window
+                            mask = mask | lti_mask
+                        else:
+                            logger.warning(
+                                "Using training_window but last_time_index is "
+                                "not set on entity %s" % (self.id)
+                            )
+                        df = df[mask]
 
         for secondary_time_index in self.secondary_time_index:
                 # should we use ignore time last here?
