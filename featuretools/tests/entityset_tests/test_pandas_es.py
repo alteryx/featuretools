@@ -680,16 +680,16 @@ class TestNormalizeEntity(object):
                 datetime(2011, 4, 9, 10, 31, 27),
                 datetime(2011, 4, 10, 10, 41, 3),
                 datetime(2011, 4, 10, 10, 41, 6),
-                datetime(2011, 4, 10, 11, 10, 03),
+                datetime(2011, 4, 10, 11, 10, 3),
             ],
             'customers': [
                 datetime(2011, 4, 9, 10, 40, 0),
                 datetime(2011, 4, 10, 10, 41, 6),
-                datetime(2011, 4, 10, 11, 10, 03),
+                datetime(2011, 4, 10, 11, 10, 3),
             ]
         }
         region_series = pd.Series({'United States':
-                                   datetime(2011, 4, 10, 11, 10, 03)})
+                                   datetime(2011, 4, 10, 11, 10, 3)})
         values_lti = es["values"].last_time_index.sort_index()
         customers_lti = es["customers"].last_time_index.sort_index()
         regions_lti = es["regions"].last_time_index.sort_index()
@@ -699,7 +699,7 @@ class TestNormalizeEntity(object):
 
         # add promotions entity
         promotions_df = pd.DataFrame({
-            "start_date": [datetime(2011, 4, 10, 11, 12, 06)],
+            "start_date": [datetime(2011, 4, 10, 11, 12, 6)],
             "store_id": [4],
             "product_id": ['coke zero']
         })
@@ -712,7 +712,7 @@ class TestNormalizeEntity(object):
                                     es['promotions']['store_id'])
         es.add_relationship(relationship)
         es.add_last_time_indexes()
-        region_series['Mexico'] = datetime(2011, 4, 10, 11, 12, 06)
+        region_series['Mexico'] = datetime(2011, 4, 10, 11, 12, 6)
         regions_lti = es["regions"].last_time_index.sort_index()
         assert (regions_lti == region_series.sort_index()).all()
 
