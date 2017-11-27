@@ -2,12 +2,11 @@ import copy
 import itertools
 import logging
 from builtins import range, zip
+from collections import defaultdict
 
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
-
-from collections import defaultdict
 
 from .base_entityset import BaseEntitySet
 from .entity import Entity
