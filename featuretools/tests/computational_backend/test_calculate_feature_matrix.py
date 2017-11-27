@@ -257,7 +257,7 @@ def test_training_window_recent_time_index(entityset):
         'engagement_level': [2],
     }
     df = pd.DataFrame(row)
-    df.index = xrange(3, 4)
+    df.index = range(3, 4)
     df = entityset['customers'].df.append(df)
     entityset['customers'].update_data(df)
     entityset.add_last_time_indexes()
