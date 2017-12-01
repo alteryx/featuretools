@@ -3,6 +3,7 @@ from numpy import random
 from numpy.random import choice
 
 import featuretools as ft
+from featuretools.variable_types import Categorical
 
 
 def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transactions=500,
@@ -57,7 +58,8 @@ def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transaction
         es = es.entity_from_dataframe(entity_id="customers",
                                       dataframe=customers_df,
                                       index="customer_id",
-                                      time_index="join_date")
+                                      time_index="join_date",
+                                      variable_types={"zip_code": Categorical})
 
         rels = [ft.Relationship(es["products"]["product_id"],
                                 es["transactions"]["product_id"]),
