@@ -86,7 +86,7 @@ Training windows are an extension of cutoff times: starting from the cutoff time
                                         target_entity="customers",
                                         cutoff_time=cutoff_times,
                                         cutoff_time_in_index=True,
-                                        training_window={"transactions": "1 hour"})
+                                        training_window="1 hour")
     window_fm
 
 
