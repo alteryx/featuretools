@@ -1037,3 +1037,34 @@ def test_make_transform_restricts_time_arg():
             Numeric,
             name="BadPrimitive",
             description="This primitive should erorr")
+
+
+def test_make_transform_sets_kwargs_correctly(es):
+    def pd_is_in(array, list_of_outputs=None):
+        if list_of_outputs is None:
+            list_of_outputs = []
+        return pd.Series(array).isin(list_of_outputs)
+
+    def isin_get_name(self):
+        return u"%s.isin(%s)" % (self.base_features[0].get_name(),
+                                 str(self.kwargs['list_of_outputs']))
+
+    IsIn = make_trans_primitive(
+        pd_is_in,
+        [Variable],
+        Boolean,
+        name="is_in",
+        description="For each value of the base feature, checks whether it is "
+        "in a list that is provided.",
+        cls_attributes={"_get_name": isin_get_name})
+
+    isin_1_list = ["toothpaste", "coke_zero"]
+    isin_1_base_f = Feature(es['log']['product_id'])
+    isin_1 = IsIn(isin_1_base_f, list_of_outputs=isin_1_list)
+    isin_2_list = ["coke_zero"]
+    isin_2_base_f = Feature(es['log']['session_id'])
+    isin_2 = IsIn(isin_2_base_f, list_of_outputs=isin_2_list)
+    assert isin_1_base_f == isin_1.base_features[0]
+    assert isin_1_list == isin_1.kwargs['list_of_outputs']
+    assert isin_2_base_f == isin_2.base_features[0]
+    assert isin_2_list == isin_2.kwargs['list_of_outputs']

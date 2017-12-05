@@ -1,4 +1,5 @@
 import functools
+import copy
 
 from .primitive_base import PrimitiveBase
 from .utils import inspect_function_args
@@ -151,12 +152,12 @@ def make_agg_primitive(function, input_types, return_type, name=None,
     new_class.base_of = base_of
     new_class.base_of_exclude = base_of_exclude
     new_class.associative = associative
-    new_class, kwargs = inspect_function_args(new_class,
-                                              function,
-                                              uses_calc_time)
+    new_class, default_kwargs = inspect_function_args(new_class,
+                                                      function,
+                                                      uses_calc_time)
 
-    if len(kwargs) > 0:
-        new_class.kwargs = kwargs
+    if len(default_kwargs) > 0:
+        new_class.default_kwargs = default_kwargs
 
         def new_class_init(self, base_features, parent_entity,
                            use_previous=None, where=None, **kwargs):
@@ -183,7 +184,8 @@ def make_agg_primitive(function, input_types, return_type, name=None,
                     " doesn't have one")
 
             self.use_previous = use_previous
-            self.kwargs = kwargs
+            self.kwargs = copy.deepcopy(self.default_kwargs)
+            self.kwargs.update(kwargs)
             self.partial = functools.partial(function, **self.kwargs)
             super(AggregationPrimitive, self).__init__(parent_entity,
                                                        self.base_features)

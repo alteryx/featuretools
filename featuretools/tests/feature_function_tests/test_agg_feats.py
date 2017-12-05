@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import pandas as pd
+import numpy as np
 import pytest
 
 from ..testing_utils import feature_with_name, make_ecommerce_entityset
@@ -349,6 +350,26 @@ def test_custom_primitive_multiple_inputs(es):
     where_feat = "MEAN_SUNDAY(log.value, datetime WHERE priority_level = 0)"
     for x, y in zip(fm[where_feat], mean_sunday_value_priority_0):
         assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+
+
+def test_custom_primitive_default_kwargs(es):
+    def sum_n_times(numeric, n=1):
+        return np.nan_to_num(numeric).sum(dtype=np.float) * n
+
+    SumNTimes = make_agg_primitive(function=sum_n_times,
+                                   input_types=[Numeric],
+                                   return_type=Numeric)
+
+    sum_n_1_n = 1
+    sum_n_1_base_f = Feature(es['log']['value'])
+    sum_n_1 = SumNTimes([sum_n_1_base_f], es['sessions'], n=sum_n_1_n)
+    sum_n_2_n = 2
+    sum_n_2_base_f = Feature(es['log']['value_2'])
+    sum_n_2 = SumNTimes([sum_n_2_base_f], es['sessions'], n=sum_n_2_n)
+    assert sum_n_1_base_f == sum_n_1.base_features[0]
+    assert sum_n_1_n == sum_n_1.kwargs['n']
+    assert sum_n_2_base_f == sum_n_2.base_features[0]
+    assert sum_n_2_n == sum_n_2.kwargs['n']
 
 
 def test_makes_numtrue(es):

@@ -1,6 +1,7 @@
 import datetime
 import functools
 import os
+import copy
 
 import numpy as np
 import pandas as pd
@@ -117,14 +118,15 @@ def make_trans_primitive(function, input_types, return_type, name=None,
     new_class.input_types = input_types
     new_class.return_type = return_type
     new_class.associative = associative
-    new_class, kwargs = inspect_function_args(new_class,
-                                              function,
-                                              uses_calc_time)
+    new_class, default_kwargs = inspect_function_args(new_class,
+                                                      function,
+                                                      uses_calc_time)
 
-    if kwargs is not None:
-        new_class.kwargs = kwargs
+    if len(default_kwargs) > 0:
+        new_class.default_kwargs = default_kwargs
 
         def new_class_init(self, *args, **kwargs):
+            self.kwargs = copy.deepcopy(self.default_kwargs)
             self.base_features = [self._check_feature(f) for f in args]
             if any(bf.expanding for bf in self.base_features):
                 self.expanding = True
