@@ -43,7 +43,7 @@ class TransformPrimitive(PrimitiveBase):
         super(TransformPrimitive, self).__init__(self.base_features[0].entity,
                                                  self.base_features)
 
-    def _get_name(self):
+    def generate_name(self):
         name = u"{}(".format(self.name.upper())
         name += u", ".join(f.get_name() for f in self.base_features)
         name += u")"
@@ -93,7 +93,7 @@ def make_trans_primitive(function, input_types, return_type, name=None,
                     list_of_outputs = []
                 return pd.Series(array).isin(list_of_outputs)
 
-            def isin_get_name(self):
+            def isin_generate_name(self):
                 return u"%s.isin(%s)" % (self.base_features[0].get_name(),
                                          str(self.kwargs['list_of_outputs']))
 
@@ -104,7 +104,7 @@ def make_trans_primitive(function, input_types, return_type, name=None,
                 name="is_in",
                 description="For each value of the base feature, checks "
                 "whether it is in a list that provided.",
-                cls_attributes={"_get_name": isin_get_name})
+                cls_attributes={"generate_name": isin_generate_name})
     '''
     # dictionary that holds attributes for class
     cls = {"__doc__": description}
@@ -187,7 +187,7 @@ class TimeSincePrevious(TransformPrimitive):
         self.group_feature = group_feature
         super(TimeSincePrevious, self).__init__(time_index, group_feature)
 
-    def _get_name(self):
+    def generate_name(self):
         return u"time_since_previous_by_%s" % self.group_feature.get_name()
 
     def get_function(self):
@@ -423,7 +423,7 @@ class IsIn(TransformPrimitive):
             return pd.Series(array).isin(list_of_outputs)
         return pd_is_in
 
-    def _get_name(self):
+    def generate_name(self):
         return u"%s.isin(%s)" % (self.base_features[0].get_name(),
                                  str(self.list_of_outputs))
 
@@ -451,7 +451,7 @@ class Diff(TransformPrimitive):
         self.group_feature = self._check_feature(group_feature)
         super(Diff, self).__init__(base_feature, group_feature)
 
-    def _get_name(self):
+    def generate_name(self):
         base_features_str = self.base_features[0].get_name() + u" by " + \
             self.group_feature.get_name()
         return u"%s(%s)" % (self.name.upper(), base_features_str)
@@ -478,7 +478,7 @@ class Not(TransformPrimitive):
     input_types = [Boolean]
     return_type = Boolean
 
-    def _get_name(self):
+    def generate_name(self):
         return u"NOT({})".format(self.base_features[0].get_name())
 
     def _get_op(self):

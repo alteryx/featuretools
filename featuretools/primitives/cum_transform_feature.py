@@ -61,7 +61,7 @@ class CumFeature(TransformPrimitive):
 
         super(CumFeature, self).__init__(*self.base_features)
 
-    def _get_name(self):
+    def generate_name(self):
         where_str = u""
         use_prev_str = u""
 

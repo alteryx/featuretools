@@ -890,7 +890,7 @@ def test_isin_feat_custom(es):
             list_of_outputs = []
         return pd.Series(array).isin(list_of_outputs)
 
-    def isin_get_name(self):
+    def isin_generate_name(self):
         return u"%s.isin(%s)" % (self.base_features[0].get_name(),
                                  str(self.kwargs['list_of_outputs']))
 
@@ -901,7 +901,7 @@ def test_isin_feat_custom(es):
         name="is_in",
         description="For each value of the base feature, checks whether it is "
         "in a list that is provided.",
-        cls_attributes={"_get_name": isin_get_name})
+        cls_attributes={"generate_name": isin_generate_name})
 
     isin = IsIn(es['log']['product_id'],
                 list_of_outputs=["toothpaste", "coke zero"])
@@ -1045,7 +1045,7 @@ def test_make_transform_sets_kwargs_correctly(es):
             list_of_outputs = []
         return pd.Series(array).isin(list_of_outputs)
 
-    def isin_get_name(self):
+    def isin_generate_name(self):
         return u"%s.isin(%s)" % (self.base_features[0].get_name(),
                                  str(self.kwargs['list_of_outputs']))
 
@@ -1056,7 +1056,7 @@ def test_make_transform_sets_kwargs_correctly(es):
         name="is_in",
         description="For each value of the base feature, checks whether it is "
         "in a list that is provided.",
-        cls_attributes={"_get_name": isin_get_name})
+        cls_attributes={"generate_name": isin_generate_name})
 
     isin_1_list = ["toothpaste", "coke_zero"]
     isin_1_base_f = Feature(es['log']['product_id'])

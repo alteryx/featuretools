@@ -63,7 +63,7 @@ class AggregationPrimitive(PrimitiveBase):
         return u', ' \
             .join([bf.get_name() for bf in self.base_features])
 
-    def _get_name(self):
+    def generate_name(self):
         where_str = self._where_str()
         use_prev_str = self._use_prev_str()
 

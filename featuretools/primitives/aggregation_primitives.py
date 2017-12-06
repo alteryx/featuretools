@@ -44,7 +44,7 @@ class Count(AggregationPrimitive):
             return values.count()
         return func
 
-    def _get_name(self):
+    def generate_name(self):
         where_str = self._where_str()
         use_prev_str = self._use_prev_str()
 

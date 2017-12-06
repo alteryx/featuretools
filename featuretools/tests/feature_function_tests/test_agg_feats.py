@@ -133,7 +133,7 @@ def test_count_null_and_make_agg_primitive(es):
 
         return values.count()
 
-    def count_get_name(self):
+    def count_generate_name(self):
         where_str = self._where_str()
         use_prev_str = self._use_prev_str()
         return u"COUNT(%s%s%s)" % (self.child_entity.name,
@@ -142,7 +142,7 @@ def test_count_null_and_make_agg_primitive(es):
 
     Count = make_agg_primitive(count_func, [[Index], [Variable]], Numeric,
                                name="count", stack_on_self=False,
-                               cls_attributes={"_get_name": count_get_name})
+                               cls_attributes={"generate_name": count_generate_name})
     count_null = Count(es['log']['value'], es['sessions'], count_null=True)
     feature_matrix = calculate_feature_matrix([count_null], entityset=es)
     values = [5, 4, 1, 2, 3, 2]
