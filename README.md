@@ -57,4 +57,11 @@ For installation or usage questions, please reach out on [Gitter](https://gitter
 
 ## Feature Labs
 
-Featuretools was created by the team at [Feature Labs](https://www.featurelabs.com).
+
+<a href="https://www.featurelabs.com/">
+    <img src="https://www.featurelabs.com/img/logo.png" alt="Featuretools" />
+</a>
+
+
+Featuretools was created by the developers at [Feature Labs](https://www.featurelabs.com/). If building impactful data science pipelines is important to you or your business, please [get in touch](https://www.featurelabs.com/contact.html).
+
