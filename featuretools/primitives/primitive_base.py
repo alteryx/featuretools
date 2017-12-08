@@ -398,7 +398,7 @@ class PrimitiveBase(FTBase):
     def get_name(self):
         if self._name is not None:
             return self._name
-        return self._get_name()
+        return self.generate_name()
 
     def get_function(self):
         raise NotImplementedError("Implement in subclass")
@@ -484,7 +484,7 @@ class IdentityFeature(PrimitiveBase):
         self.base_feature = None
         super(IdentityFeature, self).__init__(variable.entity, [])
 
-    def _get_name(self):
+    def generate_name(self):
         return self.variable.name
 
     def get_depth(self, stop_at=None):

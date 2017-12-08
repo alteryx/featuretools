@@ -416,8 +416,10 @@ class Entity(BaseEntity):
         return copied
 
     def add_interesting_values(self, max_values=5, verbose=False):
-        """Find interesting values for categorical variables, to be used to
+        """
+        Find interesting values for categorical variables, to be used to
             generate "where" clauses
+
         Args:
             max_values (int) : maximum number of values per variable to add
             verbose (bool) : If True, print summary of interesting values found
