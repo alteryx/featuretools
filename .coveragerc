@@ -1,7 +1,7 @@
 [run]
 source = featuretools
 omit =
-    featuretools/tests/
+    featuretools/tests/*
     
 [report]
 exclude_lines =
