@@ -314,4 +314,10 @@ class PandasTypes:
                         'float16', 'float32', 'float64']
 
 
-ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta, Categorical, Text, Ordinal, Boolean]
+class LatLong(Variable):
+    _dtype_repr = "latlong"
+
+
+ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
+                      Categorical, Text, Ordinal,
+                      Boolean, LatLong]

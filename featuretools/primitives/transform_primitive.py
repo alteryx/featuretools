@@ -18,7 +18,8 @@ from featuretools.variable_types import (
     Numeric,
     Ordinal,
     Timedelta,
-    Variable
+    Variable,
+    LatLong
 )
 
 current_path = os.path.dirname(os.path.realpath(__file__))
@@ -503,3 +504,29 @@ def pd_time_unit(time_unit):
     def inner(pd_index):
         return getattr(pd_index, time_unit).values
     return inner
+
+
+class Latitude(TransformPrimitive):
+    """
+    Returns the first value of the tuple base feature. For
+    use with the LatLong variable type.
+    """
+    name = 'latitude'
+    input_types = [LatLong]
+    return_type = Numeric
+
+    def get_function(self):
+        return lambda array: pd.Series(array[0])
+
+
+class Longitude(TransformPrimitive):
+    """
+    Returns the second value on the tuple base feature. For
+    use with the LatLong variable type.
+    """
+    name = 'longitude'
+    input_types = [LatLong]
+    return_type = Numeric
+
+    def get_function(self):
+        return lambda array: pd.Series(array[1])
