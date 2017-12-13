@@ -516,7 +516,7 @@ class Latitude(TransformPrimitive):
     return_type = Numeric
 
     def get_function(self):
-        return lambda array: pd.Series(array[0])
+        return lambda array: pd.Series([x[0] for x in array] )
 
 
 class Longitude(TransformPrimitive):
@@ -529,4 +529,4 @@ class Longitude(TransformPrimitive):
     return_type = Numeric
 
     def get_function(self):
-        return lambda array: pd.Series(array[1])
+        return lambda array: pd.Series([x[1] for x in array])
