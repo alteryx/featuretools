@@ -28,8 +28,10 @@ from featuretools.primitives import (
     IdentityFeature,
     IsIn,
     IsNull,
+    Latitude,
     LessThan,
     LessThanEqualTo,
+    Longitude,
     Mod,
     Mode,
     Multiply,
@@ -361,6 +363,24 @@ def test_arithmetic_of_agg(es):
         v = df[features[i].get_name()].values.tolist()
         assert v == test[1]
 
+def test_latlong(es):
+    log_latlong_feat = es['log']['latlong']
+    latitude = Latitude(log_latlong_feat)
+    longitude = Longitude(log_latlong_feat)
+    features = [latitude, longitude]
+    pandas_backend = PandasBackend(es, features)
+    df = pandas_backend.calculate_all_features(instance_ids=range(15),
+                                               time_last=None)
+    latvalues = df[latitude.get_name()].values
+    lonvalues = df[longitude.get_name()].values
+    assert len(latvalues) == 15
+    assert len(lonvalues) == 15
+    real_lats = [0, 5, 15, 30, 50, 0, 1, 3, 6, 0, 0, 5, 0, 7, 21]
+    real_lons = [0, 2, 4, 6, 8, 0, 1, 2, 3, 0, 0, 2, 0, 3, 6]
+    # for i, v, in enumerate(real_lats):
+    #     assert v == latvalues[i]
+    # for i, v, in enumerate(real_lons):
+    #     assert v == lonvalues[i]
 
 def test_cum_sum(es):
     log_value_feat = es['log']['value']

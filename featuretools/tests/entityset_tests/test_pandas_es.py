@@ -723,19 +723,19 @@ def test_head_of_entity(entityset):
     assert(isinstance(entity.head(3), pd.DataFrame))
     assert(isinstance(entity['product_id'].head(3), pd.DataFrame))
 
-    assert(entity.head(n=5).shape == (5, 9))
+    assert(entity.head(n=5).shape == (5, 10))
 
     timestamp1 = pd.to_datetime("2011-04-09 10:30:10")
     timestamp2 = pd.to_datetime("2011-04-09 10:30:18")
     datetime1 = datetime(2011, 4, 9, 10, 30, 18)
 
-    assert(entity.head(5, cutoff_time=timestamp1).shape == (2, 9))
-    assert(entity.head(5, cutoff_time=timestamp2).shape == (3, 9))
-    assert(entity.head(5, cutoff_time=datetime1).shape == (3, 9))
+    assert(entity.head(5, cutoff_time=timestamp1).shape == (2, 10))
+    assert(entity.head(5, cutoff_time=timestamp2).shape == (3, 10))
+    assert(entity.head(5, cutoff_time=datetime1).shape == (3, 10))
 
     time_list = [timestamp2] * 3 + [timestamp1] * 2
     cutoff_times = pd.DataFrame(zip(range(5), time_list))
 
-    assert(entityset.head('log', 5, cutoff_time=cutoff_times).shape == (3, 9))
-    assert(entity.head(5, cutoff_time=cutoff_times).shape == (3, 9))
+    assert(entityset.head('log', 5, cutoff_time=cutoff_times).shape == (3, 10))
+    assert(entity.head(5, cutoff_time=cutoff_times).shape == (3, 10))
     assert(entity['product_id'].head(5, cutoff_time=cutoff_times).shape == (3, 1))

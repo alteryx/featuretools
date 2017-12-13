@@ -88,6 +88,8 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                     [i * 3 for i in range(3)] +
                     [np.nan] * 2)
 
+    latlong = list([(values[i], values_2[i]) for i, _ in enumerate(values)])
+
     log_df = pd.DataFrame({
         'id': range(17),
         'session_id': [0] * 5 + [1] * 4 + [2] * 1 + [3] * 2 + [4] * 3 + [5] * 2,
@@ -97,6 +99,7 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
         'datetime': times,
         'value': values,
         'value_2': values_2,
+        'latlong': latlong,
         'priority_level': [0] * 2 + [1] * 5 + [0] * 6 + [2] * 2 + [1] * 2,
         'purchased': [True] * 11 + [False] * 4 + [True, False],
         'comments': [coke_zero_review()] + ['I loved it'] * 2 +
@@ -227,6 +230,7 @@ def make_variable_types(with_integer_time_index=False):
         'datetime': variable_types.Datetime,
         'value': variable_types.Numeric,
         'value_2': variable_types.Numeric,
+        'latlong': variable_types.LatLong,
         'priority_level': variable_types.Ordinal,
         'purchased': variable_types.Boolean,
         'comments': variable_types.Text
