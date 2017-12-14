@@ -912,10 +912,10 @@ class EntitySet(BaseEntitySet):
         new_data = None
         for v in to_combine:
             if new_data is None:
-                new_data = df[v.id].map(lambda x: (str(x) if isinstance(x, int) else x).encode('utf-8'))
+                new_data = df[v.id].map(lambda x: (str(x) if isinstance(x, (int, float)) else x).encode('utf-8'))
                 continue
             new_data += "_".encode('utf-8')
-            new_data = df[v.id].map(lambda x: (str(x) if isinstance(x, int) else x).encode('utf-8'))
+            new_data = df[v.id].map(lambda x: (str(x) if isinstance(x, (int, float)) else x).encode('utf-8'))
 
         if hashed:
             new_data = new_data.map(hash)
