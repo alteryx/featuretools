@@ -63,11 +63,11 @@ def make_trans_primitive(function, input_types, return_type, name=None,
         function (function): function that takes in an array  and applies some
             transformation to it.
 
-        name (string): name of the function
-
         input_types (list[:class:`.Variable`]): variable types of the inputs
 
         return_type (:class:`.Variable`): variable type of return
+
+        name (string): name of new primitive class to be generated
 
         description (string): description of primitive
 
