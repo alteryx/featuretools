@@ -1,5 +1,5 @@
-import functools
 import copy
+import functools
 
 from .primitive_base import PrimitiveBase
 from .utils import inspect_function_args
