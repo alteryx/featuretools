@@ -465,7 +465,7 @@ class Diff(TransformPrimitive):
             try:
                 return grouped_df[bf_name]
             except KeyError:
-                return pd.Series([np.nan]*len(base_array))
+                return pd.Series([np.nan] * len(base_array))
         return pd_diff
 
 
@@ -505,9 +505,10 @@ def pd_time_unit(time_unit):
         return getattr(pd_index, time_unit).values
     return inner
 
+
 def latlong_unstringify(latlong):
-    lat = float(latlong.split(", ")[0].replace("(",""))
-    lon = float(latlong.split(", ")[1].replace(")",""))
+    lat = float(latlong.split(", ")[0].replace("(", ""))
+    lon = float(latlong.split(", ")[1].replace(")", ""))
     return (lat, lon)
 
 

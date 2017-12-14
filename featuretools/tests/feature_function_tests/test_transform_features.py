@@ -363,6 +363,7 @@ def test_arithmetic_of_agg(es):
         v = df[features[i].get_name()].values.tolist()
         assert v == test[1]
 
+
 def test_latlong(es):
     log_latlong_feat = es['log']['latlong']
     latitude = Latitude(log_latlong_feat)
@@ -381,6 +382,7 @@ def test_latlong(es):
         assert v == latvalues[i]
     for i, v, in enumerate(real_lons):
         assert v == lonvalues[i]
+
 
 def test_cum_sum(es):
     log_value_feat = es['log']['value']
