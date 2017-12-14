@@ -7,6 +7,7 @@
 [Featuretools](https://www.featuretools.com) is a python library for automated feature engineering. See the [documentation](https://docs.featuretools.com) for more information.
 
 *"One of the holy grails of machine learning is to automate more and more of the feature engineering process."* 
+
 ― Pedro Domingos, [A Few Useful Things to Know about Machine Learning](https://homes.cs.washington.edu/~pedrod/papers/cacm12.pdf)
 
 ## Installation
@@ -53,6 +54,19 @@ customer_id                                                                     
 [5 rows x 69 columns]
 ```
 We now have a feature vector for each customer that can be used for machine learning. See the [documentation on Deep Feature Synthesis](https://docs.featuretools.com/automated_feature_engineering/afe.html) for more examples.
+
+## Demos
+**Predict Next Purchase**
+
+[Repository](https://github.com/Featuretools/predict_next_purchase/) | [Notebook](https://github.com/Featuretools/predict_next_purchase/blob/master/Tutorial.ipynb)
+
+In this demonstration, we use a multi-table dataset of 3 million online grocery orders from Instacart to predict what a customer will buy next. We show how to generate features with automated feature engineering and build an accurate machine learning pipeline using Featuretools, which can be reused for multiple prediction problems. For more advanced users, we show how to scale that pipeline to a large dataset using Dask.
+
+**NYC Taxi**
+
+[Repository](https://github.com/Featuretools/NYC-Taxi-Demo/) | [Baseline Featuretools](https://github.com/Featuretools/NYC-Taxi-Demo/blob/master/NYC%20Taxi%203%20-%20Simple%20Featuretools.ipynb) | [Custom Primitives](https://github.com/Featuretools/NYC-Taxi-Demo/blob/master/NYC%20Taxi%205%20-%20Custom%20Featuretools%20Primitives.ipynb)
+
+Over five workbooks we go into depth in several aspects of Featuretools functionality while building a model which predicts how long a New York City taxi trip will take from the pickup location. We show how to augment a basic machine learning data science pipeline quickly with Featuretools and demonstrate how to write your own custom primitives.
 
 ## Support
 
