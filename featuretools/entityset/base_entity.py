@@ -1,3 +1,4 @@
+from __future__ import print_function
 import logging
 
 import pandas as pd
@@ -228,14 +229,14 @@ class BaseEntity(FTBase):
                 value = self.get_column_stat(var_id, stat)
                 setattr(self._get_variable(var_id), stat, value)
             except TypeError as e:
-                print e
+                print(e)
 
         stats = vartype._computed_stats
         for stat in stats:
             try:
                 setattr(self._get_variable(var_id), stat, value)
             except TypeError as e:
-                print e
+                print(e)
 
     def get_column_stat(self, variable_id, stat):
         raise NotImplementedError()

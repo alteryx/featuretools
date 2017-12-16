@@ -112,7 +112,7 @@ def make_trans_primitive(function, input_types, return_type, name=None,
         cls.update(cls_attributes)
 
     # creates the new class and set name and types
-    name = name or function.func_name
+    name = name or function.__name__
     new_class = type(name, (TransformPrimitive,), cls)
     new_class.name = name
     new_class.input_types = input_types

@@ -1,3 +1,4 @@
+from __future__ import print_function
 def print_graph(self, start_eid):
     """
     Print a representation of the entityset with parents & children, like
@@ -22,7 +23,7 @@ def print_graph(self, start_eid):
     top_strings = self._build_strings(back_graph[start_eid])[::-1]
     bot_strings = self._build_strings(forward_graph[start_eid])
 
-    print '\n'.join(reversed(top_strings + [start_eid] + bot_strings))
+    print('\n'.join(reversed(top_strings + [start_eid] + bot_strings)))
 
 
 def _build_fwd_graph(self, graph, eid):

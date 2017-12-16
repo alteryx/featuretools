@@ -150,7 +150,7 @@ def test_saveprogress(entityset):
                                        instance_ids=range(17),
                                        cutoff_time=times,
                                        save_progress=save_progress)
-    _, _, files = os.walk(save_progress).next()
+    _, _, files = next(os.walk(save_progress))
     files = [os.path.join(save_progress, file) for file in files]
     # there is 17 datetime files created above
     assert len(files) == 17
