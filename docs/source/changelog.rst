@@ -6,7 +6,7 @@ Changelog
 **v0.1.15** Dec 18, 2017
     * Fix variable type in demo data (:pr:`37`)
     * Custom primitive kwarg fix (:pr:`38`)
-    * fixed make_trans_primitive docstring (:pr:`42`)
+    * Changed order and text of arguments in make_trans_primitive docstring (:pr:`42`)
 
 **v0.1.14** November 20, 2017
     * Last time index (:pr:`33`)
