@@ -141,7 +141,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
     cls = {"__doc__": description}
     if cls_attributes is not None:
         cls.update(cls_attributes)
-    name = name or function.func_name
+    name = name or function.__name__
     new_class = type(name, (AggregationPrimitive,), cls)
     new_class.name = name
     new_class.input_types = input_types

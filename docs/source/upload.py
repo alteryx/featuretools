@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 from subprocess import call
 
@@ -43,11 +44,11 @@ def query_yes_no(question, default="yes"):
 def upload(root=False):
     # build html
     if not query_yes_no("Upload Release: %s" % str(release)):
-        print "Not uploading"
+        print("Not uploading")
         return
 
     if root and not query_yes_no("Upload to root?"):
-        print "Not uploading"
+        print("Not uploading")
         return
 
     call(["make", "clean", "html"])

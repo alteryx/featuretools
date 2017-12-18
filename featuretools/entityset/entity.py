@@ -1,3 +1,4 @@
+from __future__ import print_function
 import copy
 import logging
 import time
@@ -297,7 +298,7 @@ class Entity(BaseEntity):
             self.indexed_by[relation_var_id] = {}
         else:
             if self._verbose:
-                print 'Re-indexing %s by %s' % (self.id, parent_entity.id)
+                print('Re-indexing %s by %s' % (self.id, parent_entity.id))
 
         self.index_by_variable(relation_var_id)
 
@@ -311,16 +312,16 @@ class Entity(BaseEntity):
         index = self.indexed_by[variable_id]
 
         if self._verbose:
-            print "Indexing '%s' in %d groups by variable '%s'" %\
-                (self.id, len(gb.groups), variable_id)
+            print("Indexing '%s' in %d groups by variable '%s'" %\
+                (self.id, len(gb.groups), variable_id))
 
         # index by each parent instance separately
         for i in gb.groups:
             index[i] = np.array(gb.groups[i])
 
         if self._verbose:
-            print "...%d child instances took %.2f seconds" %\
-                (len(self.df.index), time.time() - ts)
+            print("...%d child instances took %.2f seconds" %\
+                (len(self.df.index), time.time() - ts))
 
     def infer_variable_types(self, ignore=None, link_vars=None):
         """Extracts the variables from a dataframe
