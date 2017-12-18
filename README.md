@@ -68,11 +68,7 @@ We now have a feature vector for each customer that can be used for machine lear
 
 In this demonstration, we use a multi-table dataset of 3 million online grocery orders from Instacart to predict what a customer will buy next. We show how to generate features with automated feature engineering and build an accurate machine learning pipeline using Featuretools, which can be reused for multiple prediction problems. For more advanced users, we show how to scale that pipeline to a large dataset using Dask.
 
-**NYC Taxi**
-
-[Repository](https://github.com/Featuretools/NYC-Taxi-Demo/) | [Baseline Featuretools](https://github.com/Featuretools/NYC-Taxi-Demo/blob/master/NYC%20Taxi%203%20-%20Simple%20Featuretools.ipynb) | [Custom Primitives](https://github.com/Featuretools/NYC-Taxi-Demo/blob/master/NYC%20Taxi%205%20-%20Custom%20Featuretools%20Primitives.ipynb)
-
-Over five workbooks we go into depth in several aspects of Featuretools functionality while building a model which predicts how long a New York City taxi trip will take from the pickup location. We show how to augment a basic machine learning data science pipeline quickly with Featuretools and demonstrate how to write your own custom primitives.
+For more examples of how to use Featuretools, check out our [demos](https://www.featuretools.com/demos) page.
 
 ## Support
 
