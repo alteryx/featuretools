@@ -8,10 +8,6 @@ The recommended way to install Featuretool is with pip
 
 ``pip install featuretools``
 
-.. note::
-
-    Featuretools currently only supports Python 2.7. Check back in the near future for Python 3 support
-
 
 
 Install from Source
