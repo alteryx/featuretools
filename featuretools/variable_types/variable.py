@@ -1,3 +1,9 @@
+from __future__ import division
+
+from builtins import object
+
+from past.builtins import basestring
+
 import featuretools as ft
 from featuretools.core.base import FTBase
 
@@ -196,7 +202,7 @@ class Discrete(Variable):
         if self.nunique is None or self.count is None:
             return None
         if self.count > 0:
-            return float(self.nunique) / self.count
+            return self.nunique / self.count
         return 0
 
     @property
@@ -305,7 +311,7 @@ class Text(Variable):
     _dtype_repr = "text"
 
 
-class PandasTypes:
+class PandasTypes(object):
     _all = 'all'
     _categorical = 'category'
     _pandas_datetimes = ['datetime64[ns]', 'datetime64[ns, tz]']

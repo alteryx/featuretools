@@ -38,7 +38,7 @@ def save_features(features, filepath):
     ft._pickling = True
     try:
         save_obj_pickle(features, filepath)
-    except:
+    except Exception:
         ft._pickling = False
         raise
     ft._pickling = False
@@ -80,7 +80,7 @@ def load_features(filepath, entityset):
 
     try:
         features = load_pickle(filepath)
-    except:
+    except Exception:
         ft._current_es = None
         ft._pickling = False
         raise

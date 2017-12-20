@@ -1,8 +1,12 @@
+from __future__ import absolute_import
+
 import copy
 import logging
 import pdb
+from builtins import zip
 
 from numpy import nan
+from past.builtins import basestring
 
 import featuretools as ft
 from featuretools.core.base import FTBase
@@ -87,7 +91,7 @@ class PrimitiveBase(FTBase):
         if hasattr(ft, '_pickling') and ft._pickling:
             from featuretools.entityset import EntitySet, Entity
             pickled = {}
-            for k, v in self.__dict__.iteritems():
+            for k, v in self.__dict__.items():
                 if isinstance(v, Entity):
                     pickled[k] = "entity:{}".format(v.id)
                 elif isinstance(v, EntitySet):
@@ -140,7 +144,7 @@ class PrimitiveBase(FTBase):
                     normalizer, normalized_base_features)
             f = normalized_base_features[f.hash()]
             new_base_features.append(f)
-        d = {k: normalizer(v) for k, v in d.iteritems()}
+        d = {k: normalizer(v) for k, v in d.items()}
         d['base_features'] = new_base_features
         d['entityset'] = normed
         return d
@@ -173,7 +177,7 @@ class PrimitiveBase(FTBase):
         raise Exception("Not a feature")
 
     def __repr__(self):
-        return (u"<Feature: %s>" % (self.get_name())).encode('utf-8')
+        return "<Feature: %s>" % (self.get_name())
 
     def hash(self):
         return hash(self.get_name() + self.entity.id)
@@ -188,7 +192,7 @@ class PrimitiveBase(FTBase):
         See also:
             :meth:`PrimitiveBase.equal_to`
         """
-        from binary_transform import Equals
+        from .binary_transform import Equals
         return Equals(self, other_feature_or_val)
 
     def __ne__(self, other_feature_or_val):
@@ -197,7 +201,7 @@ class PrimitiveBase(FTBase):
         See also:
             :meth:`PrimitiveBase.not_equal_to`
         """
-        from binary_transform import NotEquals
+        from .binary_transform import NotEquals
         return NotEquals(self, other_feature_or_val)
 
     def __gt__(self, other_feature_or_val):
@@ -206,7 +210,7 @@ class PrimitiveBase(FTBase):
         See also:
             :meth:`PrimitiveBase.GT`
         """
-        from binary_transform import GreaterThan
+        from .binary_transform import GreaterThan
         return GreaterThan(self, other_feature_or_val)
 
     def __ge__(self, other_feature_or_val):
@@ -215,7 +219,7 @@ class PrimitiveBase(FTBase):
         See also:
             :meth:`PrimitiveBase.greater_than_equal_to`
         """
-        from binary_transform import GreaterThanEqualTo
+        from .binary_transform import GreaterThanEqualTo
         return GreaterThanEqualTo(self, other_feature_or_val)
 
     def __lt__(self, other_feature_or_val):
@@ -224,7 +228,7 @@ class PrimitiveBase(FTBase):
         See also:
             :meth:`PrimitiveBase.less_than`
         """
-        from binary_transform import LessThan
+        from .binary_transform import LessThan
         return LessThan(self, other_feature_or_val)
 
     def __le__(self, other_feature_or_val):
@@ -233,16 +237,16 @@ class PrimitiveBase(FTBase):
         See also:
             :meth:`PrimitiveBase.less_than_equal_to`
         """
-        from binary_transform import LessThanEqualTo
+        from .binary_transform import LessThanEqualTo
         return LessThanEqualTo(self, other_feature_or_val)
 
     def __add__(self, other_feature_or_val):
         """Add other_feature_or_val"""
-        from binary_transform import Add
+        from .binary_transform import Add
         return Add(self, other_feature_or_val)
 
     def __radd__(self, other):
-        from binary_transform import Add
+        from .binary_transform import Add
         return Add(other, self)
 
     def __sub__(self, other_feature_or_val):
@@ -251,11 +255,11 @@ class PrimitiveBase(FTBase):
         See also:
             :meth:`PrimitiveBase.subtract`
         """
-        from binary_transform import Subtract
+        from .binary_transform import Subtract
         return Subtract(self, other_feature_or_val)
 
     def __rsub__(self, other):
-        from binary_transform import Subtract
+        from .binary_transform import Subtract
         return Subtract(other, self)
 
     def __div__(self, other_feature_or_val):
@@ -264,18 +268,18 @@ class PrimitiveBase(FTBase):
         See also:
             :meth:`PrimitiveBase.divide`
         """
-        from binary_transform import Divide
+        from .binary_transform import Divide
         return Divide(self, other_feature_or_val)
 
     def __truediv__(self, other_feature_or_val):
         return self.__div__(other_feature_or_val)
 
     def __rtruediv__(self, other_feature_or_val):
-        from binary_transform import Divide
+        from .binary_transform import Divide
         return Divide(other_feature_or_val, self)
 
     def __rdiv__(self, other_feature_or_val):
-        from binary_transform import Divide
+        from .binary_transform import Divide
         return Divide(other_feature_or_val, self)
 
     def __mul__(self, other_feature_or_val):
@@ -284,11 +288,11 @@ class PrimitiveBase(FTBase):
         See also:
             :meth:`PrimitiveBase.multiply`
         """
-        from binary_transform import Multiply
+        from .binary_transform import Multiply
         return Multiply(self, other_feature_or_val)
 
     def __rmul__(self, other):
-        from binary_transform import Multiply
+        from .binary_transform import Multiply
         return Multiply(other, self)
 
     def __mod__(self, other_feature_or_val):
@@ -297,21 +301,21 @@ class PrimitiveBase(FTBase):
         See also:
             :meth:`PrimitiveBase.modulo`
         """
-        from binary_transform import Mod
+        from .binary_transform import Mod
         return Mod(self, other_feature_or_val)
 
     def __and__(self, other):
         return self.AND(other)
 
     def __rand__(self, other):
-        from binary_transform import And
+        from .binary_transform import And
         return And(other, self)
 
     def __or__(self, other):
         return self.OR(other)
 
     def __ror__(self, other):
-        from binary_transform import Or
+        from .binary_transform import Or
         return Or(other, self)
 
     def __not__(self, other):
@@ -327,34 +331,34 @@ class PrimitiveBase(FTBase):
 
     def AND(self, other_feature):
         """Logical AND with other_feature"""
-        from binary_transform import And
+        from .binary_transform import And
         return And(self, other_feature)
 
     def OR(self, other_feature):
         """Logical OR with other_feature"""
-        from binary_transform import Or
+        from .binary_transform import Or
         return Or(self, other_feature)
 
     def NOT(self):
         """Creates inverse of feature"""
-        from transform_primitive import Not
-        from binary_transform import Compare
+        from .transform_primitive import Not
+        from .binary_transform import Compare
         if isinstance(self, Compare):
             return self.invert()
         return Not(self)
 
     def LIKE(self, like_string, case_sensitive=False):
-        from transform_primitive import Like
+        from .transform_primitive import Like
         return Like(self, like_string,
                     case_sensitive=case_sensitive)
 
     def isin(self, list_of_output):
-        from transform_primitive import IsIn
+        from .transform_primitive import IsIn
         return IsIn(self, list_of_outputs=list_of_output)
 
     def is_null(self):
         """Compares feature to null by equality"""
-        from transform_primitive import IsNull
+        from .transform_primitive import IsNull
         return IsNull(self)
 
     def __invert__(self):
@@ -464,7 +468,7 @@ class PrimitiveBase(FTBase):
                 input_types = [input_types]
 
             for t in input_types:
-                zipped = zip(t, self.base_features)
+                zipped = list(zip(t, self.base_features))
                 if all([issubclass(f.variable_type, v) for v, f in zipped]):
                     return True
         else:
@@ -497,7 +501,7 @@ class Feature(PrimitiveBase):
     """
 
     def __new__(self, feature_or_var, entity=None):
-        import direct_feature
+        from . import direct_feature
 
         if entity is None:
             assert isinstance(feature_or_var, (Variable))

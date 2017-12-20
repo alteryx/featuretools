@@ -29,7 +29,7 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
 
     store_df = pd.DataFrame({'id': range(6),
                              'region_id': ['United States'] * 3 + ['Mexico'] * 2 + [np.nan],
-                             'num_square_feet': range(30000, 60000, 6000) + [np.nan]})
+                             'num_square_feet': list(range(30000, 60000, 6000)) + [np.nan]})
 
     product_df = pd.DataFrame({'id': ['Haribo sugar-free gummy bears', 'car',
                                       'toothpaste', 'brown bag', 'coke zero',
@@ -72,7 +72,7 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                  [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
                  [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
     if with_integer_time_index:
-        times = range(5) + range(5, 9) + [9] + range(9, 11) + range(11, 14) + range(14, 16)
+        times = list(range(9)) + [9] + list(range(9, 16))
 
     values = list([i * 5 for i in range(5)] +
                   [i * 1 for i in range(4)] +

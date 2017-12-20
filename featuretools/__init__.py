@@ -1,7 +1,8 @@
+from __future__ import absolute_import
 # flake8: noqa
-import config
+from . import config
 from .core import *
-import variable_types
+from . import variable_types
 from .entityset.api import *
 from . import primitives
 from .synthesis.api import *

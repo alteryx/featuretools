@@ -3,6 +3,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+from past.builtins import basestring
 
 from featuretools import variable_types
 from featuretools.entityset.timedelta import Timedelta
@@ -96,10 +97,10 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
     value = None
     try:
         value = int(td)
-    except:
+    except Exception:
         try:
             value = float(td)
-        except:
+        except Exception:
             pass
     if value is not None and entity_id is not None:
         unit = 'o'
@@ -111,10 +112,10 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
         value, unit = match.groups()
         try:
             value = int(value)
-        except:
+        except Exception:
             try:
                 value = float(value)
-            except:
+            except Exception:
                 raise ValueError("Unable to parse value {} from ".format(value) +
                                  "timedelta string: {}".format(td))
     return Timedelta(value, unit, entity=entity_id)

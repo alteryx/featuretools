@@ -1,12 +1,12 @@
 import copy
 import itertools
 import logging
+from builtins import range, zip
+from collections import defaultdict
 
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
-
-from collections import defaultdict
 
 from .base_entityset import BaseEntitySet
 from .entity import Entity
@@ -584,7 +584,7 @@ class EntitySet(BaseEntitySet):
                                index)
             if index in dataframe.columns:
                 raise RuntimeError("Cannot make index: index variable already present")
-            dataframe.insert(0, index, xrange(0, len(dataframe)))
+            dataframe.insert(0, index, range(0, len(dataframe)))
             created_index = index
         elif index is None:
             index = dataframe.columns[0]
@@ -719,7 +719,7 @@ class EntitySet(BaseEntitySet):
         if make_time_index is None and base_entity.has_time_index():
             make_time_index = True
 
-        if isinstance(make_time_index, (str, unicode)):
+        if isinstance(make_time_index, str):
             base_time_index = make_time_index
             new_entity_time_index = base_entity[make_time_index].id
         elif make_time_index:
@@ -752,8 +752,8 @@ class EntitySet(BaseEntitySet):
             time_index_reduce = 'first'
 
             assert len(make_secondary_time_index) == 1, "Can only provide 1 secondary time index"
-            secondary_time_index = make_secondary_time_index.keys()[0]
-            secondary_variables = [index, secondary_time_index] + make_secondary_time_index.values()[0]
+            secondary_time_index = list(make_secondary_time_index.keys())[0]
+            secondary_variables = [index, secondary_time_index] + list(make_secondary_time_index.values())[0]
             secondary_df = new_entity_df. \
                 drop_duplicates(index, keep='last')[secondary_variables]
             if new_entity_secondary_time_index:
@@ -836,8 +836,8 @@ class EntitySet(BaseEntitySet):
         if include_secondary_time_index:
             msg = "Parent entity has no secondary time index"
             assert len(parent_entity.secondary_time_index), msg
-            parent_sec_ti_id = parent_entity.secondary_time_index.keys()[0]
-            parent_sec_ti_vars = parent_entity.secondary_time_index.values()[0]
+            parent_sec_ti_id = list(parent_entity.secondary_time_index.keys())[0]
+            parent_sec_ti_vars = list(parent_entity.secondary_time_index.values())[0]
             if isinstance(secondary_time_index_variables, list):
                 parent_sec_ti_vars = [v for v in parent_sec_ti_vars
                                       if v in secondary_time_index_variables]
@@ -912,10 +912,10 @@ class EntitySet(BaseEntitySet):
         new_data = None
         for v in to_combine:
             if new_data is None:
-                new_data = df[v.id].map(unicode)
+                new_data = df[v.id].map(lambda x: (str(x) if isinstance(x, (int, float)) else x).encode('utf-8'))
                 continue
-            new_data += "_"
-            new_data = new_data + df[v.id].map(str)
+            new_data += "_".encode('utf-8')
+            new_data = df[v.id].map(lambda x: (str(x) if isinstance(x, (int, float)) else x).encode('utf-8'))
 
         if hashed:
             new_data = new_data.map(hash)
@@ -1179,7 +1179,7 @@ class EntitySet(BaseEntitySet):
             path = self.find_path(start_entity_id, end_entity_id)
 
         directions = self.path_relationships(path, start_entity_id)
-        relationship_directions = zip(directions, path)
+        relationship_directions = list(zip(directions, path))
         groups = itertools.groupby(relationship_directions, key=lambda k: k[0])
 
         # each group is a contiguous series of backward relationships on `path`
@@ -1224,7 +1224,7 @@ class EntitySet(BaseEntitySet):
                     # original parent's id.
                     col_map = {r.parent_variable.id: r.child_variable.id,
                                parent_link_name: child_link_name}
-                    merge_df = parent_df[col_map.keys()].rename(columns=col_map)
+                    merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
 
                     # merge the dataframe, adding the link variable to the child
                     frames[child_entity.id] = pd.merge(left=merge_df,

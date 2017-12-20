@@ -1,5 +1,5 @@
-import functools
 import copy
+import functools
 
 from .primitive_base import PrimitiveBase
 from .utils import inspect_function_args
@@ -141,7 +141,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
     cls = {"__doc__": description}
     if cls_attributes is not None:
         cls.update(cls_attributes)
-    name = name or function.func_name
+    name = name or function.__name__
     new_class = type(name, (AggregationPrimitive,), cls)
     new_class.name = name
     new_class.input_types = input_types
@@ -198,7 +198,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
     # infers default_value by passing empty data
     try:
         new_class.default_value = function(*[[]] * len(input_types))
-    except:
+    except Exception:
         pass
 
     return new_class

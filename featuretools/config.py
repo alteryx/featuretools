@@ -53,8 +53,8 @@ def initialize_logging(config):
     err_handler.setFormatter(logging.Formatter(fmt))
     err_levels = ['WARNING', 'ERROR', 'CRITICAL']
 
-    for name, level in loggers.items():
-        LEVEL = logging._levelNames[level.upper()]
+    for name, level in list(loggers.items()):
+        LEVEL = getattr(logging, level.upper())
         logger = logging.getLogger(name)
         logger.setLevel(LEVEL)
         for _handler in logger.handlers:
