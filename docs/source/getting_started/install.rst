@@ -4,7 +4,7 @@ Install
 Pip
 ---
 
-Featuretools is available for all version of python. The recommended way to install Featuretools is with pip
+Featuretools is available for all versions of Python. The recommended way to install Featuretools is with pip
 
 ``pip install featuretools``
 
