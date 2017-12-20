@@ -3,6 +3,10 @@
 Changelog
 ---------
 
+**v0.1.16** Dec 19, 2017
+    * fix EntitySet.combine_variables and standardize encode_features (:pr:`47`)
+    * Python 3 compatibility (:pr:`16`)
+
 **v0.1.15** Dec 18, 2017
     * Fix variable type in demo data (:pr:`37`)
     * Custom primitive kwarg fix (:pr:`38`)

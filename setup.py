@@ -15,7 +15,7 @@ class build_ext(_build_ext):
 
 setup(
     name='featuretools',
-    version='0.1.15',
+    version='0.1.16',
     packages=find_packages(),
     package_data={'featuretools': ['config_yaml.txt']},
     description='a framework for automated feature engineering',
