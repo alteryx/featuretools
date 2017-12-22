@@ -336,6 +336,7 @@ class Weekday(DatetimeUnitBasePrimitive):
     """Transform Datetime feature into the boolean of Weekday"""
     name = "weekday"
 
+
 class NumCharacter(TransformPrimitive):
     """
     Return the characters in a given string.
@@ -346,6 +347,7 @@ class NumCharacter(TransformPrimitive):
 
     def get_function(self):
         return lambda array: pd.Series([len(x) for x in array])
+
 
 class NumWords(TransformPrimitive):
     """
