@@ -9,7 +9,6 @@ from featuretools.computational_backends import PandasBackend
 from featuretools.primitives import (
     Add,
     And,
-    NumCharacter,
     Compare,
     Count,
     CumCount,
@@ -37,11 +36,12 @@ from featuretools.primitives import (
     Negate,
     Not,
     NotEquals,
+    NumCharacter,
+    NumWords,
     Or,
     Percentile,
     Subtract,
     Sum,
-    NumWords,
     get_transform_primitives,
     make_trans_primitive
 )
