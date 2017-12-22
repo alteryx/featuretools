@@ -653,6 +653,7 @@ def test_cum_count(es):
     for i, v in enumerate(cum_count_values):
         assert v == cvalues[i]
 
+
 def test_text_primitives(es):
     words = NumWords(es['log']['comments'])
     chars = NumCharacter(es['log']['comments'])
@@ -673,6 +674,7 @@ def test_text_primitives(es):
         assert v == word_counts[i]
     for i, v in enumerate(char_values):
         assert v == char_counts[i]
+
 
 def test_arithmetic(es):
     # P TODO:
