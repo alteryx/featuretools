@@ -259,7 +259,7 @@ class Entity(BaseEntity):
             df = self.df
 
         elif variable_id is None or variable_id == self.index:
-            df = self.df.reindex(instance_vals).loc[instance_vals]
+            df = self.df.loc[instance_vals]
             df.dropna(subset=[self.index], inplace=True)
 
         elif variable_id in self.indexed_by:
