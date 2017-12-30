@@ -4,7 +4,6 @@ import logging
 from builtins import range, zip
 from collections import defaultdict
 
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 
