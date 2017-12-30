@@ -1,6 +1,7 @@
 import os
 from builtins import str
 
+import dask.dataframe as dd
 import pandas as pd
 
 import featuretools as ft

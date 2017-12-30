@@ -4,6 +4,7 @@ pandas==0.20.3
 s3fs>=0.1.2
 tqdm>=4.19.2
 toolz>=0.8.2
+dask[complete]
 pyyaml>=3.12
 cloudpickle>=0.4.0
 future>=0.16.0
