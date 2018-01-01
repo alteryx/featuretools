@@ -36,7 +36,7 @@ from featuretools.primitives import (
     Negate,
     Not,
     NotEquals,
-    NumCharacter,
+    NumCharacters,
     NumWords,
     Or,
     Percentile,
@@ -656,7 +656,7 @@ def test_cum_count(es):
 
 def test_text_primitives(es):
     words = NumWords(es['log']['comments'])
-    chars = NumCharacter(es['log']['comments'])
+    chars = NumCharacters(es['log']['comments'])
 
     features = [words, chars]
     pandas_backend = PandasBackend(es, features)
