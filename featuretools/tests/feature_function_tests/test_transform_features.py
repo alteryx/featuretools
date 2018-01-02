@@ -36,6 +36,8 @@ from featuretools.primitives import (
     Negate,
     Not,
     NotEquals,
+    NumCharacters,
+    NumWords,
     Or,
     Percentile,
     Subtract,
@@ -650,6 +652,28 @@ def test_cum_count(es):
     cum_count_values = [1, 2, 3, 4, 5, 1, 2, 3, 4, 1, 1, 2, 1, 2, 3]
     for i, v in enumerate(cum_count_values):
         assert v == cvalues[i]
+
+
+def test_text_primitives(es):
+    words = NumWords(es['log']['comments'])
+    chars = NumCharacters(es['log']['comments'])
+
+    features = [words, chars]
+    pandas_backend = PandasBackend(es, features)
+    df = pandas_backend.calculate_all_features(instance_ids=range(15),
+                                               time_last=None)
+
+    word_counts = [514, 3, 3, 644, 1268, 1269, 177, 172, 79,
+                   240, 1239, 3, 3, 3, 3]
+    char_counts = [3392, 10, 10, 4116, 7961, 7580, 992, 957,
+                   437, 1325, 6322, 10, 10, 10, 10]
+    word_values = df[words.get_name()].values
+    char_values = df[chars.get_name()].values
+    assert len(word_values) == 15
+    for i, v in enumerate(word_values):
+        assert v == word_counts[i]
+    for i, v in enumerate(char_values):
+        assert v == char_counts[i]
 
 
 def test_arithmetic(es):

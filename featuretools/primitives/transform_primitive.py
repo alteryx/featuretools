@@ -20,6 +20,7 @@ from featuretools.variable_types import (
     Id,
     Numeric,
     Ordinal,
+    Text,
     Timedelta,
     Variable
 )
@@ -334,6 +335,30 @@ class Weekend(TransformPrimitive):
 class Weekday(DatetimeUnitBasePrimitive):
     """Transform Datetime feature into the boolean of Weekday"""
     name = "weekday"
+
+
+class NumCharacters(TransformPrimitive):
+    """
+    Return the characters in a given string.
+    """
+    name = 'characters'
+    input_types = [Text]
+    return_type = Numeric
+
+    def get_function(self):
+        return lambda array: pd.Series(array).str.len()
+
+
+class NumWords(TransformPrimitive):
+    """
+    Returns the words in a given string by counting the spaces.
+    """
+    name = 'numwords'
+    input_types = [Text]
+    return_type = Numeric
+
+    def get_function(self):
+        return lambda array: pd.Series([x.count(" ") + 1 for x in array])
 
 
 # class Like(TransformPrimitive):
