@@ -14,7 +14,6 @@ from featuretools.variable_types import (
     DatetimeTimeIndex,
     Discrete,
     Id,
-    Index,
     Numeric,
     Ordinal,
     Timedelta,
@@ -506,12 +505,6 @@ def pd_time_unit(time_unit):
     return inner
 
 
-def latlong_unstringify(latlong):
-    lat = float(latlong.split(", ")[0].replace("(", ""))
-    lon = float(latlong.split(", ")[1].replace(")", ""))
-    return (lat, lon)
-
-
 class Latitude(TransformPrimitive):
     """
     Returns the first value of the tuple base feature. For
@@ -522,7 +515,7 @@ class Latitude(TransformPrimitive):
     return_type = Numeric
 
     def get_function(self):
-        return lambda array: pd.Series([latlong_unstringify(x)[0] for x in array])
+        return lambda array: pd.Series([x[0] for x in array])
 
 
 class Longitude(TransformPrimitive):
@@ -535,4 +528,4 @@ class Longitude(TransformPrimitive):
     return_type = Numeric
 
     def get_function(self):
-        return lambda array: pd.Series([latlong_unstringify(x)[1] for x in array])
+        return lambda array: pd.Series([x[1] for x in array])
