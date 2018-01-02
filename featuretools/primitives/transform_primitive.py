@@ -346,7 +346,7 @@ class NumCharacters(TransformPrimitive):
     return_type = Numeric
 
     def get_function(self):
-        return lambda array: pd.Series([len(x) for x in array])
+        return lambda array: pd.Series(array).str.len()
 
 
 class NumWords(TransformPrimitive):
