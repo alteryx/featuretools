@@ -259,6 +259,12 @@ def make_time_indexes(with_integer_time_index=False):
             }
 
 
+def latlong_unstringify(latlong):
+    lat = float(latlong.split(", ")[0].replace("(", ""))
+    lon = float(latlong.split(", ")[1].replace(")", ""))
+    return (lat, lon)
+
+
 def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save_files=True, file_location='local',
                              split_by_time=False, compressed=False, entityset_type=EntitySet):
     if file_location == 'local' and save_files:
@@ -289,13 +295,18 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
         if time_index is not None:
             ti_name = time_index['name']
             secondary = time_index['secondary']
-        es.entity_from_csv(entity,
-                           filenames[entity],
-                           index='id',
-                           variable_types=variable_types[entity],
-                           encoding='utf-8',
-                           time_index=ti_name,
-                           secondary_time_index=secondary)
+        
+        df = pd.read_csv(filenames[entity])
+        if entity is 'log':
+            df['latlong'] = map(lambda x: latlong_unstringify(x), df['latlong'])
+            
+        es.entity_from_dataframe(entity,
+                                 df,
+                                 index='id',
+                                 variable_types=variable_types[entity],
+                                 encoding='utf-8',
+                                 time_index=ti_name,
+                                 secondary_time_index=secondary)
 
     es.normalize_entity('customers', 'cohorts', 'cohort',
                         additional_variables=['cohort_name'],
