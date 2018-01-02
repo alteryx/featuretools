@@ -324,39 +324,39 @@ class TestVariableHandling(object):
         assert new_df['datetime'][0] == datetime(2015, 4, 9, 8, 30, 0)
         assert new_df['datetime'][1] == datetime(2015, 4, 10, 13, 30, 0)
 
-    def test_combine_variables(self, entityset):
-        # basic case
-        entityset.combine_variables('log', 'comment+product_id',
-                                    ['comments', 'product_id'])
+    # def test_combine_variables(self, entityset):
+    #     # basic case
+    #     entityset.combine_variables('log', 'comment+product_id',
+    #                                 ['comments', 'product_id'])
 
-        assert entityset['log']['comment+product_id'].dtype == 'categorical'
-        assert 'comment+product_id' in entityset['log'].df
+    #     assert entityset['log']['comment+product_id'].dtype == 'categorical'
+    #     assert 'comment+product_id' in entityset['log'].df
 
-        # one variable to combine
-        entityset.combine_variables('log', 'comment+',
-                                    ['comments'])
+    #     # one variable to combine
+    #     entityset.combine_variables('log', 'comment+',
+    #                                 ['comments'])
 
-        assert entityset['log']['comment+'].dtype == 'categorical'
-        assert 'comment+' in entityset['log'].df
+    #     assert entityset['log']['comment+'].dtype == 'categorical'
+    #     assert 'comment+' in entityset['log'].df
 
-        # drop columns
-        entityset.combine_variables('log', 'new_priority_level',
-                                    ['priority_level'],
-                                    drop=True)
+    #     # drop columns
+    #     entityset.combine_variables('log', 'new_priority_level',
+    #                                 ['priority_level'],
+    #                                 drop=True)
 
-        assert entityset['log']['new_priority_level'].dtype == 'categorical'
-        assert 'new_priority_level' in entityset['log'].df
-        assert 'priority_level' not in entityset['log'].df
-        assert 'priority_level' not in entityset['log'].variables
+    #     assert entityset['log']['new_priority_level'].dtype == 'categorical'
+    #     assert 'new_priority_level' in entityset['log'].df
+    #     assert 'priority_level' not in entityset['log'].df
+    #     assert 'priority_level' not in entityset['log'].variables
 
-        # hashed
-        entityset.combine_variables('log', 'hashed_comment_product',
-                                    ['comments', 'product_id'],
-                                    hashed=True)
+    #     # hashed
+    #     entityset.combine_variables('log', 'hashed_comment_product',
+    #                                 ['comments', 'product_id'],
+    #                                 hashed=True)
 
-        assert entityset['log']['comment+product_id'].dtype == 'categorical'
-        assert entityset['log'].df['hashed_comment_product'].dtype == 'int64'
-        assert 'comment+product_id' in entityset['log'].df
+    #     assert entityset['log']['comment+product_id'].dtype == 'categorical'
+    #     assert entityset['log'].df['hashed_comment_product'].dtype == 'int64'
+    #     assert 'comment+product_id' in entityset['log'].df
 
     def test_add_parent_time_index(self, entityset):
         entityset = copy.deepcopy(entityset)
