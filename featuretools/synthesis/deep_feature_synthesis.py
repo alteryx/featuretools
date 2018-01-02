@@ -531,7 +531,7 @@ class DeepFeatureSynthesis(object):
                                               max_depth=new_max_depth)
 
             matching_inputs = match(input_types, features,
-                                    associative=trans_prim.associative)
+                                    commutative=trans_prim.commutative)
 
             for matching_input in matching_inputs:
                 new_f = trans_prim(*matching_input)
@@ -601,7 +601,7 @@ class DeepFeatureSynthesis(object):
 
             features = [f for f in features if not self._feature_in_relationship_path(relationship_path, f)]
             matching_inputs = match(input_types, features,
-                                    associative=agg_prim.associative)
+                                    commutative=agg_prim.commutative)
             wheres = list(self.where_clauses[child_entity.id])
 
             for matching_input in matching_inputs:
@@ -744,7 +744,7 @@ def match_by_type(features, t):
     return matches
 
 
-def match(input_types, features, replace=False, associative=False):
+def match(input_types, features, replace=False, commutative=False):
     to_match = input_types[0]
     matches = match_by_type(features, to_match)
 
@@ -763,9 +763,9 @@ def match(input_types, features, replace=False, associative=False):
         for r in rest:
             new_match = [m] + list(r)
 
-            # associative uses frozenset instead of tuple because it doesn't
+            # commutative uses frozenset instead of tuple because it doesn't
             # want multiple orderings of the same input
-            if associative:
+            if commutative:
                 new_match = frozenset(new_match)
             else:
                 new_match = tuple(new_match)

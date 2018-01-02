@@ -640,7 +640,7 @@ def test_pickle_features_with_custom_primitive(es):
     os.remove(es_filepath)
 
 
-def test_associative(es):
+def test_commutative(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
                                    filters=[],
