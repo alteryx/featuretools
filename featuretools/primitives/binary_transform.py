@@ -175,7 +175,7 @@ class ArithmeticFeature(BinaryFeature):
 class Add(ArithmeticFeature):
     """Creates a transform feature that adds two features"""
     operator = ArithmeticFeature._ADD
-    associative = True
+    commutative = True
     input_types = [[Numeric, Numeric],
                    [Numeric],
                    [TimeIndex],
@@ -208,7 +208,7 @@ class Subtract(ArithmeticFeature):
 class Multiply(ArithmeticFeature):
     """Creates a transform feature that multplies two features"""
     operator = ArithmeticFeature._MUL
-    associative = True
+    commutative = True
 
 
 class Divide(ArithmeticFeature):
@@ -282,13 +282,13 @@ class Compare(BinaryFeature):
 
 class Equals(Compare):
     """For each value, determine if it is equal to another value"""
-    associative = True
+    commutative = True
     operator = '='
 
 
 class NotEquals(Compare):
     """For each value, determine if it is not equal to another value"""
-    associative = True
+    commutative = True
     operator = '!='
 
 
@@ -317,7 +317,7 @@ class And(TransformPrimitive):
     name = "and"
     input_types = [Boolean, Boolean]
     return_type = Boolean
-    associative = True
+    commutative = True
 
     def get_function(self):
         return lambda left, right: np.logical_and(left, right)
@@ -328,7 +328,7 @@ class Or(TransformPrimitive):
     name = "or"
     input_types = [Boolean, Boolean]
     return_type = Boolean
-    associative = True
+    commutative = True
 
     def get_function(self):
         return lambda left, right: np.logical_or(left, right)

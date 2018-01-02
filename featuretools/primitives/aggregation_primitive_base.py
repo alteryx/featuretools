@@ -80,7 +80,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
                        stack_on_exclude=None, base_of=None,
                        base_of_exclude=None, description='A custom primitive',
                        cls_attributes=None, uses_calc_time=False,
-                       associative=False):
+                       commutative=False):
     '''Returns a new aggregation primitive class
 
     Args:
@@ -116,7 +116,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
             calculated at will be passed to the function as the keyword
             argument 'time'.
 
-        associative (bool): If True, will only make one feature per unique set
+        commutative (bool): If True, will only make one feature per unique set
             of base features
 
     Example:
@@ -151,7 +151,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
     new_class.stack_on_self = stack_on_self
     new_class.base_of = base_of
     new_class.base_of_exclude = base_of_exclude
-    new_class.associative = associative
+    new_class.commutative = commutative
     new_class, default_kwargs = inspect_function_args(new_class,
                                                       function,
                                                       uses_calc_time)

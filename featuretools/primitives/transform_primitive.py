@@ -59,7 +59,7 @@ class TransformPrimitive(PrimitiveBase):
 def make_trans_primitive(function, input_types, return_type, name=None,
                          description='A custom transform primitive',
                          cls_attributes=None, uses_calc_time=False,
-                         associative=False):
+                         commutative=False):
     '''Returns a new transform primitive class
 
     Args:
@@ -80,7 +80,7 @@ def make_trans_primitive(function, input_types, return_type, name=None,
             calculated at will be passed to the function as the keyword
             argument 'time'.
 
-        associative (bool): If True, will only make one feature per unique set
+        commutative (bool): If True, will only make one feature per unique set
             of base features
 
     Example:
@@ -119,7 +119,7 @@ def make_trans_primitive(function, input_types, return_type, name=None,
     new_class.name = name
     new_class.input_types = input_types
     new_class.return_type = return_type
-    new_class.associative = associative
+    new_class.commutative = commutative
     new_class, default_kwargs = inspect_function_args(new_class,
                                                       function,
                                                       uses_calc_time)
