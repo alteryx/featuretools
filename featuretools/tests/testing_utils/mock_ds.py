@@ -296,7 +296,7 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
             ti_name = time_index['name']
             secondary = time_index['secondary']
         
-        df = pd.read_csv(filenames[entity])
+        df = pd.read_csv(filenames[entity], encoding='utf-8')
         if entity is 'log':
             df['latlong'] = map(lambda x: latlong_unstringify(x), df['latlong'])
             
