@@ -78,7 +78,7 @@ For installation or usage questions, please reach out on [Gitter](https://gitter
 
 
 <a href="https://www.featurelabs.com/">
-    <img src="https://www.featurelabs.com/img/logo.png" alt="Featuretools" />
+    <img src="http://www.featurelabs.com/wp-content/uploads/2017/12/logo.png" alt="Featuretools" />
 </a>
 
 
