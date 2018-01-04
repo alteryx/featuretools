@@ -802,7 +802,8 @@ class EntitySet(BaseEntitySet):
         self.delete_entity_variables(base_entity_id, additional_variables)
 
         new_entity = self.entity_stores[new_entity_id]
-        new_entity.secondary_time_index = {secondary_time_index: [secondary_time_index]}
+        if make_secondary_time_index:
+            new_entity.secondary_time_index = {secondary_time_index: [secondary_time_index]}
 
         base_entity.convert_variable_type(base_entity_index, vtypes.Id, convert_data=False)
 
