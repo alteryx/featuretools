@@ -716,6 +716,17 @@ class TestNormalizeEntity(object):
         regions_lti = es["regions"].last_time_index.sort_index()
         assert (regions_lti == region_series.sort_index()).all()
 
+    def test_secondary_time_index(self, entityset):
+        es = entityset
+        es.normalize_entity('log', 'values', 'value',
+                            make_time_index=True,
+                            make_secondary_time_index={'datetime':[]},
+                            new_entity_time_index="value_time",
+                            new_entity_secondary_time_index='second_ti',
+                            convert_links_to_integers=True)
+        assert (isinstance(es['values'].df['second_ti'], pd.Series))
+        assert (es['values']['second_ti']._dtype_repr == 'datetime')
+        assert (es['values'].secondary_time_index == {'second_ti': ['second_ti']})
 
 def test_head_of_entity(entityset):
 
