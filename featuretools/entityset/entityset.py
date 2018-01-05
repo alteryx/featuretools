@@ -753,6 +753,7 @@ class EntitySet(BaseEntitySet):
 
             assert len(make_secondary_time_index) == 1, "Can only provide 1 secondary time index"
             secondary_time_index = list(make_secondary_time_index.keys())[0]
+
             secondary_variables = [index, secondary_time_index] + list(make_secondary_time_index.values())[0]
             secondary_df = new_entity_df. \
                 drop_duplicates(index, keep='last')[secondary_variables]
@@ -803,7 +804,14 @@ class EntitySet(BaseEntitySet):
 
         new_entity = self.entity_stores[new_entity_id]
         if make_secondary_time_index:
-            new_entity.secondary_time_index = {secondary_time_index: [secondary_time_index]}
+            values = make_secondary_time_index.values()[0]
+            values.remove(make_secondary_time_index.keys()[0])
+            new_dict = {secondary_time_index: values}
+
+            new_entity.secondary_time_index = new_dict
+            for ti, cols in new_entity.secondary_time_index.items():
+                if ti not in cols:
+                    cols.append(ti)
 
         base_entity.convert_variable_type(base_entity_index, vtypes.Id, convert_data=False)
 
