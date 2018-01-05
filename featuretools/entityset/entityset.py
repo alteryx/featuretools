@@ -804,7 +804,7 @@ class EntitySet(BaseEntitySet):
 
         new_entity = self.entity_stores[new_entity_id]
         if make_secondary_time_index:
-            values = list(make_secondary_time_index.values()[0])
+            values = list(make_secondary_time_index.values())[0]
             values.remove(list(make_secondary_time_index.keys())[0])
             new_dict = {secondary_time_index: values}
 
