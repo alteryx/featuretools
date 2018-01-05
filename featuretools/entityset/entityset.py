@@ -804,14 +804,11 @@ class EntitySet(BaseEntitySet):
 
         new_entity = self.entity_stores[new_entity_id]
         if make_secondary_time_index:
-            values = list(make_secondary_time_index.values())[0]
-            values.remove(list(make_secondary_time_index.keys())[0])
-            new_dict = {secondary_time_index: values}
-
+            old_ti_name = list(make_secondary_time_index.keys())[0]
+            ti_cols = list(make_secondary_time_index.values())[0]
+            ti_cols = [c if c != old_ti_name else secondary_time_index for c in ti_cols]
+            new_dict = {secondary_time_index: ti_cols}
             new_entity.secondary_time_index = new_dict
-            for ti, cols in new_entity.secondary_time_index.items():
-                if ti not in cols:
-                    cols.append(ti)
 
         base_entity.convert_variable_type(base_entity_index, vtypes.Id, convert_data=False)
 
