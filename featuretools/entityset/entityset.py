@@ -1000,44 +1000,52 @@ class EntitySet(BaseEntitySet):
         calculating features using training windows
         """
         # Generate graph of entities to find leaf entities
-        children = defaultdict(list)
+        children = defaultdict(list)  # parent --> child mapping
         child_vars = defaultdict(dict)
         for r in self.relationships:
             children[r.parent_entity.id].append(r.child_entity)
             child_vars[r.parent_entity.id][r.child_entity.id] = r.child_variable
 
         explored = set([])
-        queue = self.entities[:]
+        queue = [e for e in self.entities if e.has_time_index()]
 
         for entity in self.entities:
             entity.set_last_time_index(None)
 
         while len(explored) < len(self.entities):
             entity = queue.pop(0)
-            if entity.id not in children:
-                if entity.has_time_index():
-                    entity.set_last_time_index(entity.df[entity.time_index])
-            else:
+
+            if entity.last_time_index is None:
+                entity.set_last_time_index(entity.df[entity.time_index])
+
+            if entity.id in children:
                 child_entities = children[entity.id]
+
+                # if all children not explored, skip for now
                 if not set([e.id for e in child_entities]).issubset(explored):
                     queue.append(entity)
                     continue
+
+                # updated last time from all children
                 for child_e in child_entities:
                     link_var = child_vars[entity.id][child_e.id].id
                     if child_e.last_time_index is None:
                         continue
                     lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
                                            entity.index: child_e.df[link_var]})
+
+                    # we can assume that entities are already sorted by time
                     lti_df.drop_duplicates(entity.index,
                                            keep='last',
                                            inplace=True)
+
                     lti_df.set_index(entity.index, inplace=True)
-                    if entity.last_time_index is None:
-                        entity.last_time_index = lti_df['last_time']
-                    else:
-                        lti_df['last_time_old'] = entity.last_time_index
-                        entity.last_time_index = lti_df.max(axis=1).dropna()
-                        entity.last_time_index.name = 'last_time'
+
+                    lti_df = lti_df.reindex(entity.last_time_index.index)
+                    lti_df['last_time_old'] = entity.last_time_index
+                    entity.last_time_index = lti_df.max(axis=1).dropna()
+                    entity.last_time_index.name = 'last_time'
+
             explored.add(entity.id)
 
     ###########################################################################
@@ -1101,7 +1109,6 @@ class EntitySet(BaseEntitySet):
             df = start_estore.query_by_values(instance_ids,
                                               time_last=time_last,
                                               training_window=window)
-
         # if we're querying on a path that's not actually a path, just return
         # the relevant slice of the entityset
         if start_entity_id == final_entity_id:
