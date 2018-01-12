@@ -24,6 +24,7 @@ from featuretools.primitives import (
     Feature,
     GreaterThan,
     GreaterThanEqualTo,
+    Haversine,
     Hour,
     IdentityFeature,
     IsIn,
@@ -389,6 +390,24 @@ def test_latlong(es):
         assert v == latvalues[i]
     for i, v, in enumerate(real_lons):
         assert v == lonvalues[i]
+
+
+def test_haversine(es):
+    log_latlong_feat = es['log']['latlong']
+    log_latlong_feat2 = es['log']['latlong2']
+    haversine = Haversine(log_latlong_feat, log_latlong_feat2)
+    features = [haversine]
+    pandas_backend = PandasBackend(es, features)
+    df = pandas_backend.calculate_all_features(instance_ids=range(15),
+                                               time_last=None)
+    values = df[haversine.get_name()].values
+    real = [0., 524.15585776, 1043.00845747, 1551.12130243,
+            2042.79840241, 0., 137.86000883, 275.59396684,
+            413.07563177, 0., 0., 524.15585776,
+            0., 739.93819145, 1464.27975511]
+    assert len(values) == 15
+    for i, v in enumerate(real):
+        assert v - values[i] < .0001
 
 
 def test_cum_sum(es):

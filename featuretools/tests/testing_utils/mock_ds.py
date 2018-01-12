@@ -89,6 +89,7 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                     [np.nan] * 2)
 
     latlong = list([(values[i], values_2[i]) for i, _ in enumerate(values)])
+    latlong2 = list([(values_2[i], -values[i]) for i, _ in enumerate(values)])
 
     log_df = pd.DataFrame({
         'id': range(17),
@@ -100,6 +101,7 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
         'value': values,
         'value_2': values_2,
         'latlong': latlong,
+        'latlong2': latlong2,
         'priority_level': [0] * 2 + [1] * 5 + [0] * 6 + [2] * 2 + [1] * 2,
         'purchased': [True] * 11 + [False] * 4 + [True, False],
         'comments': [coke_zero_review()] + ['I loved it'] * 2 +
@@ -231,6 +233,7 @@ def make_variable_types(with_integer_time_index=False):
         'value': variable_types.Numeric,
         'value_2': variable_types.Numeric,
         'latlong': variable_types.LatLong,
+        'latlong2': variable_types.LatLong,
         'priority_level': variable_types.Ordinal,
         'purchased': variable_types.Boolean,
         'comments': variable_types.Text
@@ -295,11 +298,12 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
         if time_index is not None:
             ti_name = time_index['name']
             secondary = time_index['secondary']
-        
+
         df = pd.read_csv(filenames[entity], encoding='utf-8')
         if entity is 'log':
             df['latlong'] = map(lambda x: latlong_unstringify(x), df['latlong'])
-            
+            df['latlong2'] = map(lambda x: latlong_unstringify(x), df['latlong2'])
+
         es.entity_from_dataframe(entity,
                                  df,
                                  index='id',

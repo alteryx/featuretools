@@ -303,26 +303,29 @@ class TestVariableHandling(object):
         assert entityset.get_column_count('test_entity', 'number') == 3
         assert entityset.get_column_mean('test_entity', 'number') == 5
         assert entityset.get_column_nunique('test_entity', 'number') == 3
-        assert entityset.get_column_type('test_entity', 'time') == df['time'].dtype
-        assert set(entityset.get_column_data('test_entity', 'id')) == set(df['id'])
+        assert entityset.get_column_type(
+            'test_entity', 'time') == df['time'].dtype
+        assert set(entityset.get_column_data(
+            'test_entity', 'id')) == set(df['id'])
 
-    def test_time_index_components(self, entityset):
-        df = pd.DataFrame({'id': [0, 1],
-                           'date': ['4/9/2015', '4/10/2015'],
-                           'time': ['8:30', '13:30']})
-        filename = save_to_csv('test_entity', df)
+    # Tests functionality of from_csv. To be removed
+    # def test_time_index_components(self, entityset):
+    #     df = pd.DataFrame({'id': [0, 1],
+    #                        'date': ['4/9/2015', '4/10/2015'],
+    #                        'time': ['8:30', '13:30']})
+    #     filename = save_to_csv('test_entity', df)
 
-        entityset.entity_from_csv('test_entity', filename, index='id',
-                                  time_index='datetime',
-                                  time_index_components=['date', 'time'])
-        assert entityset.entity_stores['test_entity'].time_index == 'datetime'
-        new_df = entityset.get_dataframe('test_entity')
-        assert new_df.shape == (2, 2)
-        assert len(new_df.columns) == 2
-        assert 'id' in new_df.columns
-        assert 'datetime' in new_df.columns
-        assert new_df['datetime'][0] == datetime(2015, 4, 9, 8, 30, 0)
-        assert new_df['datetime'][1] == datetime(2015, 4, 10, 13, 30, 0)
+    #     entityset.entity_from_csv('test_entity', filename, index='id',
+    #                               time_index='datetime',
+    #                               time_index_components=['date', 'time'])
+    #     assert entityset.entity_stores['test_entity'].time_index == 'datetime'
+    #     new_df = entityset.get_dataframe('test_entity')
+    #     assert new_df.shape == (2, 2)
+    #     assert len(new_df.columns) == 2
+    #     assert 'id' in new_df.columns
+    #     assert 'datetime' in new_df.columns
+    #     assert new_df['datetime'][0] == datetime(2015, 4, 9, 8, 30, 0)
+    #     assert new_df['datetime'][1] == datetime(2015, 4, 10, 13, 30, 0)
 
     def test_combine_variables(self, entityset):
         # basic case
@@ -723,19 +726,20 @@ def test_head_of_entity(entityset):
     assert(isinstance(entity.head(3), pd.DataFrame))
     assert(isinstance(entity['product_id'].head(3), pd.DataFrame))
 
-    assert(entity.head(n=5).shape == (5, 10))
+    assert(entity.head(n=5).shape == (5, 11))
 
     timestamp1 = pd.to_datetime("2011-04-09 10:30:10")
     timestamp2 = pd.to_datetime("2011-04-09 10:30:18")
     datetime1 = datetime(2011, 4, 9, 10, 30, 18)
 
-    assert(entity.head(5, cutoff_time=timestamp1).shape == (2, 10))
-    assert(entity.head(5, cutoff_time=timestamp2).shape == (3, 10))
-    assert(entity.head(5, cutoff_time=datetime1).shape == (3, 10))
+    assert(entity.head(5, cutoff_time=timestamp1).shape == (2, 11))
+    assert(entity.head(5, cutoff_time=timestamp2).shape == (3, 11))
+    assert(entity.head(5, cutoff_time=datetime1).shape == (3, 11))
 
     time_list = [timestamp2] * 3 + [timestamp1] * 2
     cutoff_times = pd.DataFrame(zip(range(5), time_list))
 
-    assert(entityset.head('log', 5, cutoff_time=cutoff_times).shape == (3, 10))
-    assert(entity.head(5, cutoff_time=cutoff_times).shape == (3, 10))
-    assert(entity['product_id'].head(5, cutoff_time=cutoff_times).shape == (3, 1))
+    assert(entityset.head('log', 5, cutoff_time=cutoff_times).shape == (3, 11))
+    assert(entity.head(5, cutoff_time=cutoff_times).shape == (3, 11))
+    assert(entity['product_id'].head(
+        5, cutoff_time=cutoff_times).shape == (3, 1))
