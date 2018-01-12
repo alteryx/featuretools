@@ -1,6 +1,6 @@
-numpy
+numpy>=1.14.0
 scipy>=1.0.0
-pandas==0.20.3
+pandas>=0.22.0
 s3fs>=0.1.2
 tqdm>=4.19.2
 toolz>=0.8.2
