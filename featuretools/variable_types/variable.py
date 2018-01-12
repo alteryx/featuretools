@@ -315,6 +315,10 @@ class PandasTypes:
 
 
 class LatLong(Variable):
+    """Represents an ordered pair (Latitude, Longitude)
+    To make a latlong in a dataframe do
+    data['latlong'] = data[['latitude', 'longitude']].apply(tuple, axis=1)
+    """
     _dtype_repr = "latlong"
 
 
