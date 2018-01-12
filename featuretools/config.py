@@ -18,7 +18,10 @@ def ensure_config_file(destination=ft_config_path):
                 os.mkdir(os.path.dirname(destination))
             except OSError:
                 pass
-        shutil.copy(default_path, destination)
+        try:
+            shutil.copy(default_path, destination)
+        except OSError:
+            print("Unable to copy config file. Check file permissions")
 
 
 def load_config_file(path=ft_config_path):
