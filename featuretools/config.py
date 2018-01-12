@@ -27,16 +27,25 @@ def ensure_config_file(destination=ft_config_path):
 def load_config_file(path=ft_config_path):
     if not os.path.exists(path):
         path = default_path
-    with open(path) as f:
-        text = f.read()
-        config_dict = yaml.load(text)
-        return config_dict
+    try:
+        with open(path) as f:
+            text = f.read()
+            config_dict = yaml.load(text)
+            return config_dict
+    except OSError:
+        print("Unable to load config file. Check file permissions")
+        return {'logging': {'featuretools': 'info',
+                            'featuretools.entityset': 'info',
+                            'featuretools.computation_backend': 'info'}}
 
 
 def ensure_data_folders():
     for dest in [csv_save_location]:
         if not os.path.exists(dest):
-            os.makedirs(dest)
+            try:
+                os.makedirs(dest)
+            except OSError:
+                print("Unable to make folder {}. Check file permissions".format(dest))
 
 
 ensure_config_file()
