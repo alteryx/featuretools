@@ -64,6 +64,7 @@ class Sum(AggregationPrimitive):
     stack_on_exclude = [Count]
 
     # todo: handle count nulls
+    @classmethod
     def get_function(self):
         def sum_func(x):
             return np.nan_to_num(x.values).sum(dtype=np.float)
@@ -77,6 +78,7 @@ class Mean(AggregationPrimitive):
     return_type = Numeric
 
     # p todo: handle nulls
+    @classmethod
     def get_function(self):
         return np.nanmean
 
@@ -87,6 +89,7 @@ class Mode(AggregationPrimitive):
     input_types = [Discrete]
     return_type = None
 
+    @classmethod
     def get_function(self):
         def pd_mode(x):
             if x.mode().shape[0] == 0:
@@ -124,6 +127,7 @@ class Max(AggregationPrimitive):
     # max_stack_depth = 1
     stack_on_self = False
 
+    @classmethod
     def get_function(self):
         return np.max
 
@@ -137,6 +141,7 @@ class NUnique(AggregationPrimitive):
     # max_stack_depth = 1
     stack_on_self = False
 
+    @classmethod
     def get_function(self):
         return lambda x: x.nunique()
 
@@ -150,6 +155,7 @@ class NumTrue(AggregationPrimitive):
     stack_on = []
     stack_on_exclude = []
 
+    @classmethod
     def get_function(self):
         def num_true(x):
             return np.nan_to_num(x.values).sum()
@@ -165,6 +171,7 @@ class PercentTrue(AggregationPrimitive):
     stack_on = []
     stack_on_exclude = []
 
+    @classmethod
     def get_function(self):
         def percent_true(x):
             if len(x) == 0:
@@ -219,6 +226,7 @@ class AvgTimeBetween(AggregationPrimitive):
     return_type = Numeric
     # max_stack_depth = 1
 
+    @classmethod
     def get_function(self):
         def pd_avg_time_between(x):
             """
@@ -257,6 +265,7 @@ class Median(AggregationPrimitive):
     return_type = None
     # max_stack_depth = 2
 
+    @classmethod
     def get_function(self):
         return np.median
 
@@ -275,6 +284,7 @@ class Skew(AggregationPrimitive):
     stack_on_self = False
     # max_stack_depth = 1
 
+    @classmethod
     def get_function(self):
         return skew
 
@@ -289,6 +299,7 @@ class Std(AggregationPrimitive):
     # max_stack_depth = 2
     stack_on_self = False
 
+    @classmethod
     def get_function(self):
         return np.nanstd
 
@@ -301,6 +312,7 @@ class Last(AggregationPrimitive):
     stack_on_self = False
     # max_stack_depth = 1
 
+    @classmethod
     def get_function(self):
         def pd_last(x):
             return x.iloc[-1]
@@ -314,6 +326,7 @@ class Any(AggregationPrimitive):
     return_type = Boolean
     stack_on_self = False
 
+    @classmethod
     def get_function(self):
         return np.any
 
@@ -325,6 +338,7 @@ class All(AggregationPrimitive):
     return_type = Boolean
     stack_on_self = False
 
+    @classmethod
     def get_function(self):
         return np.all
 
@@ -336,6 +350,7 @@ class TimeSinceLast(AggregationPrimitive):
     return_type = Numeric
     uses_calc_time = True
 
+    @classmethod
     def get_function(self):
 
         def time_since_last(values, time=None):
@@ -358,6 +373,7 @@ class Trend(AggregationPrimitive):
                                     parent_entity,
                                     **kwargs)
 
+    @classmethod
     def get_function(self):
         def pd_trend(y, x):
             df = pd.DataFrame({"x": x, "y": y}).dropna()
