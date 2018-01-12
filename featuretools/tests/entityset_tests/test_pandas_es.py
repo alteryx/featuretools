@@ -22,6 +22,16 @@ def entity(entityset):
     return entityset['log']
 
 
+@pytest.fixture
+def values_es(entityset):
+    new_es = copy.deepcopy(entityset)
+    new_es.normalize_entity('log', 'values', 'value',
+                            make_time_index=True,
+                            new_entity_time_index="value_time",
+                            convert_links_to_integers=True)
+    return new_es
+
+
 class TestQueryFuncs(object):
 
     def test_query_by_id(self, entityset):
@@ -460,7 +470,6 @@ class TestVariableHandling(object):
 
 
 class TestRelatedInstances(object):
-
     def test_related_instances_backward(self, entityset):
         result = entityset._related_instances(
             start_entity_id='regions', final_entity_id='log',
@@ -660,6 +669,328 @@ class TestNormalizeEntity(object):
         assert 'value_time' in entityset['values'].df.columns
         assert len(entityset['values'].df.columns) == 3
 
+
+def test_head_of_entity(entityset):
+
+    entity = entityset['log']
+    assert(isinstance(entityset.head('log', 3), pd.DataFrame))
+    assert(isinstance(entity.head(3), pd.DataFrame))
+    assert(isinstance(entity['product_id'].head(3), pd.DataFrame))
+
+    assert(entity.head(n=5).shape == (5, 9))
+
+    timestamp1 = pd.to_datetime("2011-04-09 10:30:10")
+    timestamp2 = pd.to_datetime("2011-04-09 10:30:18")
+    datetime1 = datetime(2011, 4, 9, 10, 30, 18)
+
+    assert(entity.head(5, cutoff_time=timestamp1).shape == (2, 9))
+    assert(entity.head(5, cutoff_time=timestamp2).shape == (3, 9))
+    assert(entity.head(5, cutoff_time=datetime1).shape == (3, 9))
+
+    time_list = [timestamp2] * 3 + [timestamp1] * 2
+    cutoff_times = pd.DataFrame(list(zip(range(5), time_list)))
+
+    assert(entityset.head('log', 5, cutoff_time=cutoff_times).shape == (3, 9))
+    assert(entity.head(5, cutoff_time=cutoff_times).shape == (3, 9))
+    assert(entity['product_id'].head(5, cutoff_time=cutoff_times).shape == (3, 1))
+
+
+class TestLastTimeIndex(object):
+    def test_leaf(self, entityset):
+        entityset.add_last_time_indexes()
+        log = entityset['log']
+        assert len(log.last_time_index) == 17
+        for v1, v2 in zip(log.last_time_index, log.df['datetime']):
+            assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
+
+    def test_leaf_no_time_index(self, entityset):
+        entityset.add_last_time_indexes()
+        stores = entityset['stores']
+        stores_lti = pd.Series([None for x in range(6)], dtype='datetime64[ns]')
+        assert len(stores_lti) == len(stores.last_time_index)
+        for v1, v2 in zip(stores.last_time_index, stores_lti):
+            assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
+
+    def test_parent(self, values_es):
+        # test entity with time index and all instances in child entity
+        values_es.add_last_time_indexes()
+        values = values_es['values']
+        values_lti = pd.Series([datetime(2011, 4, 10, 10, 41, 0),
+                                datetime(2011, 4, 10, 10, 40, 1),
+                                datetime(2011, 4, 9, 10, 30, 12),
+                                datetime(2011, 4, 9, 10, 30, 18),
+                                datetime(2011, 4, 9, 10, 30, 24),
+                                datetime(2011, 4, 9, 10, 31, 9),
+                                datetime(2011, 4, 9, 10, 31, 18),
+                                datetime(2011, 4, 9, 10, 31, 27),
+                                datetime(2011, 4, 10, 10, 41, 3),
+                                datetime(2011, 4, 10, 10, 41, 6),
+                                datetime(2011, 4, 10, 11, 10, 3)])
+        assert len(values.last_time_index) == 11
+        for v1, v2 in zip(values.last_time_index.sort_index(), values_lti):
+            assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
+
+    def test_parent_some_missing(self, values_es):
+        # test entity with time index and not all instances have children
+        values = values_es['values']
+        row_values = {'value': 6.0,
+                      'value_time': pd.Timestamp("2011-04-10 11:10:02"),
+                      'values_id': 11}
+        row = pd.DataFrame(row_values, index=pd.Index([11], name='values_id'))
+        df = values.df.append(row).sort_values(['value_time', 'values_id'])
+        values.update_data(df)
+        values_es.add_last_time_indexes()
+        values_lti = pd.Series([datetime(2011, 4, 10, 10, 41, 0),
+                                datetime(2011, 4, 10, 10, 40, 1),
+                                datetime(2011, 4, 9, 10, 30, 12),
+                                datetime(2011, 4, 9, 10, 30, 18),
+                                datetime(2011, 4, 9, 10, 30, 24),
+                                datetime(2011, 4, 9, 10, 31, 9),
+                                datetime(2011, 4, 9, 10, 31, 18),
+                                datetime(2011, 4, 9, 10, 31, 27),
+                                datetime(2011, 4, 10, 10, 41, 3),
+                                datetime(2011, 4, 10, 10, 41, 6),
+                                datetime(2011, 4, 10, 11, 10, 3),
+                                datetime(2011, 4, 10, 11, 10, 2)])
+        assert len(values.last_time_index) == 12
+        for v1, v2 in zip(values.last_time_index.sort_index(), values_lti):
+            assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
+
+    def test_parent_no_time_index(self, entityset):
+        # test entity without time index and all instances have children
+        entityset.add_last_time_indexes()
+        sessions = entityset['sessions']
+        sessions_lti = pd.Series([datetime(2011, 4, 9, 10, 30, 24),
+                                  datetime(2011, 4, 9, 10, 31, 27),
+                                  datetime(2011, 4, 9, 10, 40, 0),
+                                  datetime(2011, 4, 10, 10, 40, 1),
+                                  datetime(2011, 4, 10, 10, 41, 6),
+                                  datetime(2011, 4, 10, 11, 10, 3)])
+        assert len(sessions.last_time_index) == 6
+        for v1, v2 in zip(sessions.last_time_index.sort_index(), sessions_lti):
+            assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
+
+    def test_parent_no_time_index_some_missing(self, entityset):
+        # test entity without time index and not all instance have children
+        sessions = entityset['sessions']
+        row_values = {'customer_id': 2,
+                      'device_name': 'PC',
+                      'device_type': 0,
+                      'id': 6}
+        row = pd.DataFrame(row_values, index=pd.Index([6], name='id'))
+        df = sessions.df.append(row).sort_index()
+        sessions.update_data(df)
+        entityset.add_last_time_indexes()
+        sessions_lti = pd.Series([datetime(2011, 4, 9, 10, 30, 24),
+                                  datetime(2011, 4, 9, 10, 31, 27),
+                                  datetime(2011, 4, 9, 10, 40, 0),
+                                  datetime(2011, 4, 10, 10, 40, 1),
+                                  datetime(2011, 4, 10, 10, 41, 6),
+                                  datetime(2011, 4, 10, 11, 10, 3),
+                                  None])
+        assert len(sessions.last_time_index) == 7
+        for v1, v2 in zip(sessions.last_time_index.sort_index(), sessions_lti):
+            assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
+
+    def test_multiple_children(self, entityset):
+        # test all instances in both children
+        wishlist_df = pd.DataFrame({
+            "session_id": [0, 1, 2, 2, 3, 4, 5],
+            "datetime": [datetime(2011, 4, 9, 10, 30, 15),
+                         datetime(2011, 4, 9, 10, 31, 30),
+                         datetime(2011, 4, 9, 10, 30, 30),
+                         datetime(2011, 4, 9, 10, 35, 30),
+                         datetime(2011, 4, 10, 10, 41, 0),
+                         datetime(2011, 4, 10, 10, 39, 59),
+                         datetime(2011, 4, 10, 11, 10, 02)],
+            "product_id": ['coke zero', 'taco clock', 'coke zero', 'car',
+                           'toothpaste', 'brown bag', 'coke zero'],
+        })
+        entityset.entity_from_dataframe(entity_id="wishlist_log",
+                                        dataframe=wishlist_df,
+                                        index='id',
+                                        make_index=True,
+                                        time_index='datetime')
+        relationship = Relationship(entityset['sessions']['id'],
+                                    entityset['wishlist_log']['session_id'])
+        entityset.add_relationship(relationship)
+        entityset.add_last_time_indexes()
+        sessions = entityset['sessions']
+        sessions_lti = pd.Series([datetime(2011, 4, 9, 10, 30, 24),
+                                  datetime(2011, 4, 9, 10, 31, 30),
+                                  datetime(2011, 4, 9, 10, 40, 0),
+                                  datetime(2011, 4, 10, 10, 41, 0),
+                                  datetime(2011, 4, 10, 10, 41, 6),
+                                  datetime(2011, 4, 10, 11, 10, 3)])
+        assert len(sessions.last_time_index) == 6
+        for v1, v2 in zip(sessions.last_time_index.sort_index(), sessions_lti):
+            assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
+
+    def test_multiple_children_right_missing(self, entityset):
+        # test all instances in left child
+        wishlist_df = pd.DataFrame({
+            "session_id": [0, 1, 2, 2, 4, 5],
+            "datetime": [datetime(2011, 4, 9, 10, 30, 15),
+                         datetime(2011, 4, 9, 10, 31, 30),
+                         datetime(2011, 4, 9, 10, 30, 30),
+                         datetime(2011, 4, 9, 10, 35, 30),
+                         datetime(2011, 4, 10, 10, 39, 59),
+                         datetime(2011, 4, 10, 11, 10, 02)],
+            "product_id": ['coke zero', 'taco clock', 'coke zero', 'car',
+                           'brown bag', 'coke zero'],
+        })
+        entityset.entity_from_dataframe(entity_id="wishlist_log",
+                                        dataframe=wishlist_df,
+                                        index='id',
+                                        make_index=True,
+                                        time_index='datetime')
+        relationship = Relationship(entityset['sessions']['id'],
+                                    entityset['wishlist_log']['session_id'])
+        entityset.add_relationship(relationship)
+        entityset.add_last_time_indexes()
+        sessions = entityset['sessions']
+        sessions_lti = pd.Series([datetime(2011, 4, 9, 10, 30, 24),
+                                  datetime(2011, 4, 9, 10, 31, 30),
+                                  datetime(2011, 4, 9, 10, 40, 0),
+                                  datetime(2011, 4, 10, 10, 40, 1),
+                                  datetime(2011, 4, 10, 10, 41, 6),
+                                  datetime(2011, 4, 10, 11, 10, 3)])
+        assert len(sessions.last_time_index) == 6
+        for v1, v2 in zip(sessions.last_time_index.sort_index(), sessions_lti):
+            assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
+
+    def test_multiple_children_left_missing(self, entityset):
+        # test all instances in right child
+        sessions = entityset['sessions']
+        row_values = {'customer_id': 2,
+                      'device_name': 'PC',
+                      'device_type': 0,
+                      'id': 6}
+        row = pd.DataFrame(row_values, index=pd.Index([6], name='id'))
+        df = sessions.df.append(row).sort_index()
+        sessions.update_data(df)
+        wishlist_df = pd.DataFrame({
+            "session_id": [0, 1, 2, 2, 4, 5, 6],
+            "datetime": [datetime(2011, 4, 9, 10, 30, 15),
+                         datetime(2011, 4, 9, 10, 31, 30),
+                         datetime(2011, 4, 9, 10, 30, 30),
+                         datetime(2011, 4, 9, 10, 35, 30),
+                         datetime(2011, 4, 10, 10, 39, 59),
+                         datetime(2011, 4, 10, 11, 10, 02),
+                         datetime(2011, 4, 11, 11, 11, 11)],
+            "product_id": ['coke zero', 'taco clock', 'coke zero', 'car',
+                           'brown bag', 'coke zero', 'toothpaste'],
+        })
+        entityset.entity_from_dataframe(entity_id="wishlist_log",
+                                        dataframe=wishlist_df,
+                                        index='id',
+                                        make_index=True,
+                                        time_index='datetime')
+        relationship = Relationship(entityset['sessions']['id'],
+                                    entityset['wishlist_log']['session_id'])
+        entityset.add_relationship(relationship)
+        entityset.add_last_time_indexes()
+        sessions = entityset['sessions']
+        sessions_lti = pd.Series([datetime(2011, 4, 9, 10, 30, 24),
+                                  datetime(2011, 4, 9, 10, 31, 30),
+                                  datetime(2011, 4, 9, 10, 40, 0),
+                                  datetime(2011, 4, 10, 10, 40, 1),
+                                  datetime(2011, 4, 10, 10, 41, 6),
+                                  datetime(2011, 4, 10, 11, 10, 3),
+                                  datetime(2011, 4, 11, 11, 11, 11)])
+        assert len(sessions.last_time_index) == 7
+        for v1, v2 in zip(sessions.last_time_index.sort_index(), sessions_lti):
+            assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
+
+    def test_multiple_children_all_combined(self, entityset):
+        # test some instances in right, some in left, all combined
+        sessions = entityset['sessions']
+        row_values = {'customer_id': 2,
+                      'device_name': 'PC',
+                      'device_type': 0,
+                      'id': 6}
+        row = pd.DataFrame(row_values, index=pd.Index([6], name='id'))
+        df = sessions.df.append(row).sort_index()
+        sessions.update_data(df)
+        wishlist_df = pd.DataFrame({
+            "session_id": [0, 1, 2, 2, 4, 5, 6],
+            "datetime": [datetime(2011, 4, 9, 10, 30, 15),
+                         datetime(2011, 4, 9, 10, 31, 30),
+                         datetime(2011, 4, 9, 10, 30, 30),
+                         datetime(2011, 4, 9, 10, 35, 30),
+                         datetime(2011, 4, 10, 10, 39, 59),
+                         datetime(2011, 4, 10, 11, 10, 02),
+                         datetime(2011, 4, 11, 11, 11, 11)],
+            "product_id": ['coke zero', 'taco clock', 'coke zero', 'car',
+                           'brown bag', 'coke zero', 'toothpaste'],
+        })
+        entityset.entity_from_dataframe(entity_id="wishlist_log",
+                                        dataframe=wishlist_df,
+                                        index='id',
+                                        make_index=True,
+                                        time_index='datetime')
+        relationship = Relationship(entityset['sessions']['id'],
+                                    entityset['wishlist_log']['session_id'])
+        entityset.add_relationship(relationship)
+        entityset.add_last_time_indexes()
+        sessions = entityset['sessions']
+        sessions_lti = pd.Series([datetime(2011, 4, 9, 10, 30, 24),
+                                  datetime(2011, 4, 9, 10, 31, 30),
+                                  datetime(2011, 4, 9, 10, 40, 0),
+                                  datetime(2011, 4, 10, 10, 40, 1),
+                                  datetime(2011, 4, 10, 10, 41, 6),
+                                  datetime(2011, 4, 10, 11, 10, 3),
+                                  datetime(2011, 4, 11, 11, 11, 11)])
+        assert len(sessions.last_time_index) == 7
+        for v1, v2 in zip(sessions.last_time_index.sort_index(), sessions_lti):
+            assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
+
+    def test_multiple_children_both_missing(self, entityset):
+        # test all instances in neither child
+        sessions = entityset['sessions']
+        row_values = {'customer_id': 2,
+                      'device_name': 'PC',
+                      'device_type': 0,
+                      'id': 6}
+        row = pd.DataFrame(row_values, index=pd.Index([6], name='id'))
+        df = sessions.df.append(row).sort_index()
+        sessions.update_data(df)
+        wishlist_df = pd.DataFrame({
+            "session_id": [0, 1, 2, 2, 4, 5],
+            "datetime": [datetime(2011, 4, 9, 10, 30, 15),
+                         datetime(2011, 4, 9, 10, 31, 30),
+                         datetime(2011, 4, 9, 10, 30, 30),
+                         datetime(2011, 4, 9, 10, 35, 30),
+                         datetime(2011, 4, 10, 10, 39, 59),
+                         datetime(2011, 4, 10, 11, 10, 02)],
+            "product_id": ['coke zero', 'taco clock', 'coke zero', 'car',
+                           'brown bag', 'coke zero'],
+        })
+        entityset.entity_from_dataframe(entity_id="wishlist_log",
+                                        dataframe=wishlist_df,
+                                        index='id',
+                                        make_index=True,
+                                        time_index='datetime')
+        relationship = Relationship(entityset['sessions']['id'],
+                                    entityset['wishlist_log']['session_id'])
+        entityset.add_relationship(relationship)
+        entityset.add_last_time_indexes()
+        sessions = entityset['sessions']
+        sessions_lti = pd.Series([datetime(2011, 4, 9, 10, 30, 24),
+                                  datetime(2011, 4, 9, 10, 31, 30),
+                                  datetime(2011, 4, 9, 10, 40, 0),
+                                  datetime(2011, 4, 10, 10, 40, 1),
+                                  datetime(2011, 4, 10, 10, 41, 6),
+                                  datetime(2011, 4, 10, 11, 10, 3),
+                                  None])
+        assert len(sessions.last_time_index) == 7
+        for v1, v2 in zip(sessions.last_time_index.sort_index(), sessions_lti):
+            assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
+
+    def test_grandparent(self, entityset):
+        # test sorting works correctly across two generations
+        pass
+
     def test_last_time_index(self, entityset):
         es = entityset
         es.normalize_entity('log', 'values', 'value',
@@ -688,19 +1019,25 @@ class TestNormalizeEntity(object):
                 datetime(2011, 4, 10, 11, 10, 3),
             ]
         }
-        region_series = pd.Series({'United States':
-                                   datetime(2011, 4, 10, 11, 10, 3)})
+        region_series = pd.Series({
+            'United States': datetime(2011, 4, 10, 11, 10, 3),
+            'Mexico': None
+        })
         values_lti = es["values"].last_time_index.sort_index()
         customers_lti = es["customers"].last_time_index.sort_index()
         regions_lti = es["regions"].last_time_index.sort_index()
-        assert (values_lti == pd.Series(times['values'])).all()
-        assert (customers_lti == pd.Series(times['customers'])).all()
-        assert (regions_lti == region_series).all()
+        values_truth = pd.Series(times['values'])
+        customers_truth = pd.Series(times['customers'])
+        for s1, s2 in [(values_lti, values_truth),
+                       (customers_lti, customers_truth),
+                       (regions_lti, region_series)]:
+            for v1, v2 in zip(s1, s2):
+                assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
         # add promotions entity
         promotions_df = pd.DataFrame({
             "start_date": [datetime(2011, 4, 10, 11, 12, 6)],
-            "store_id": [4],
+            "region_id": ["Mexico"],
             "product_id": ['coke zero']
         })
         es.entity_from_dataframe(entity_id="promotions",
@@ -708,35 +1045,18 @@ class TestNormalizeEntity(object):
                                  index='id',
                                  make_index=True,
                                  time_index='start_date')
-        relationship = Relationship(es['stores']['id'],
-                                    es['promotions']['store_id'])
+        relationship = Relationship(es['regions']['id'],
+                                    es['promotions']['region_id'])
         es.add_relationship(relationship)
         es.add_last_time_indexes()
         region_series['Mexico'] = datetime(2011, 4, 10, 11, 12, 6)
         regions_lti = es["regions"].last_time_index.sort_index()
-        assert (regions_lti == region_series.sort_index()).all()
-
-
-def test_head_of_entity(entityset):
-
-    entity = entityset['log']
-    assert(isinstance(entityset.head('log', 3), pd.DataFrame))
-    assert(isinstance(entity.head(3), pd.DataFrame))
-    assert(isinstance(entity['product_id'].head(3), pd.DataFrame))
-
-    assert(entity.head(n=5).shape == (5, 9))
-
-    timestamp1 = pd.to_datetime("2011-04-09 10:30:10")
-    timestamp2 = pd.to_datetime("2011-04-09 10:30:18")
-    datetime1 = datetime(2011, 4, 9, 10, 30, 18)
-
-    assert(entity.head(5, cutoff_time=timestamp1).shape == (2, 9))
-    assert(entity.head(5, cutoff_time=timestamp2).shape == (3, 9))
-    assert(entity.head(5, cutoff_time=datetime1).shape == (3, 9))
-
-    time_list = [timestamp2] * 3 + [timestamp1] * 2
-    cutoff_times = pd.DataFrame(list(zip(range(5), time_list)))
-
-    assert(entityset.head('log', 5, cutoff_time=cutoff_times).shape == (3, 9))
-    assert(entity.head(5, cutoff_time=cutoff_times).shape == (3, 9))
-    assert(entity['product_id'].head(5, cutoff_time=cutoff_times).shape == (3, 1))
+        values_lti = es["values"].last_time_index.sort_index()
+        customers_lti = es["customers"].last_time_index.sort_index()
+        values_truth = pd.Series(times['values'])
+        customers_truth = pd.Series(times['customers'])
+        for s1, s2 in [(values_lti, values_truth),
+                       (customers_lti, customers_truth),
+                       (regions_lti, region_series)]:
+            for v1, v2 in zip(s1, s2):
+                assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
