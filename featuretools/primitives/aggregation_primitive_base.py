@@ -81,7 +81,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
                        base_of_exclude=None, description='A custom primitive',
                        cls_attributes=None, uses_calc_time=False,
                        commutative=False):
-    '''Returns a new aggregation primitive class. The primitive infers default 
+    '''Returns a new aggregation primitive class. The primitive infers default
     values by passing in empty data.
 
     Args:
