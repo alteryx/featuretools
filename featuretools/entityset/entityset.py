@@ -1007,7 +1007,7 @@ class EntitySet(BaseEntitySet):
             child_vars[r.parent_entity.id][r.child_entity.id] = r.child_variable
 
         explored = set([])
-        queue = [e for e in self.entities if e.has_time_index()]
+        queue = [e for e in self.entities]
 
         for entity in self.entities:
             entity.set_last_time_index(None)
@@ -1016,7 +1016,12 @@ class EntitySet(BaseEntitySet):
             entity = queue.pop(0)
 
             if entity.last_time_index is None:
-                entity.set_last_time_index(entity.df[entity.time_index])
+                if entity.has_time_index():
+                    entity.set_last_time_index(entity.df[entity.time_index])
+                else:
+                    entity.set_last_time_index(entity.df[entity.index].copy())
+                    entity.last_time_index[:] = None
+                    entity.last_time_index = pd.to_datetime(entity.last_time_index)
 
             if entity.id in children:
                 child_entities = children[entity.id]
@@ -1031,8 +1036,12 @@ class EntitySet(BaseEntitySet):
                     link_var = child_vars[entity.id][child_e.id].id
                     if child_e.last_time_index is None:
                         continue
+
                     lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
                                            entity.index: child_e.df[link_var]})
+                    lti_df.sort_values(['last_time', entity.index],
+                                       kind="mergesort",
+                                       inplace=True)
 
                     # we can assume that entities are already sorted by time
                     lti_df.drop_duplicates(entity.index,
@@ -1040,10 +1049,9 @@ class EntitySet(BaseEntitySet):
                                            inplace=True)
 
                     lti_df.set_index(entity.index, inplace=True)
-
                     lti_df = lti_df.reindex(entity.last_time_index.index)
-                    lti_df['last_time_old'] = entity.last_time_index
-                    entity.last_time_index = lti_df.max(axis=1).dropna()
+                    lti_df['last_time_old'] = pd.to_datetime(entity.last_time_index)
+                    entity.last_time_index = lti_df.max(axis=1)
                     entity.last_time_index.name = 'last_time'
 
             explored.add(entity.id)
