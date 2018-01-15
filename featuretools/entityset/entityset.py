@@ -36,9 +36,9 @@ class EntitySet(BaseEntitySet):
                 id (str) : unique identifier to associate with this instance
                 verbose (boolean)
 
-                entities (dict[str: tuple(pd.DataFrame, str, str)]): dictionary of
+                entities (dict[str -> tuple(pd.DataFrame, str, str)]): dictionary of
                     entities. Entries take the format
-                    {entity id: (dataframe, id column, (time_column), (variable_types))}
+                    {entity id -> (dataframe, id column, (time_column), (variable_types))}
                     Note that time_column and variable_types are optional
 
                 relationships (list[(str, str, str, str)]): list of relationships
