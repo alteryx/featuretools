@@ -1,8 +1,13 @@
+from __future__ import print_function
 import logging
 import os
 import sys
-
 import yaml
+
+
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
 
 dirname = os.path.dirname(__file__)
 default_path = os.path.join(dirname, 'config_yaml.txt')
@@ -21,7 +26,7 @@ def ensure_config_file(destination=ft_config_path):
         try:
             shutil.copy(default_path, destination)
         except OSError:
-            print("Unable to copy config file. Check file permissions")
+            eprint("Unable to copy config file. Check file permissions")
 
 
 def load_config_file(path=ft_config_path):
@@ -33,7 +38,7 @@ def load_config_file(path=ft_config_path):
             config_dict = yaml.load(text)
             return config_dict
     except OSError:
-        print("Unable to load config file. Check file permissions")
+        eprint("Unable to load config file. Check file permissions")
         return {'logging': {'featuretools': 'info',
                             'featuretools.entityset': 'info',
                             'featuretools.computation_backend': 'info'}}
@@ -45,7 +50,7 @@ def ensure_data_folders():
             try:
                 os.makedirs(dest)
             except OSError:
-                print("Unable to make folder {}. Check file permissions".format(dest))
+                eprint("Unable to make folder {}. Check file permissions".format(dest))
 
 
 ensure_config_file()
