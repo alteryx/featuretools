@@ -1007,7 +1007,7 @@ class EntitySet(BaseEntitySet):
             child_vars[r.parent_entity.id][r.child_entity.id] = r.child_variable
 
         explored = set([])
-        queue = [e for e in self.entities]
+        queue = self.entities[:]
 
         for entity in self.entities:
             entity.set_last_time_index(None)
@@ -1017,11 +1017,12 @@ class EntitySet(BaseEntitySet):
 
             if entity.last_time_index is None:
                 if entity.has_time_index():
-                    entity.set_last_time_index(entity.df[entity.time_index])
+                    lti = copy.deepcopy(entity.df[entity.time_index])
                 else:
-                    entity.set_last_time_index(entity.df[entity.index].copy())
-                    entity.last_time_index[:] = None
-                    entity.last_time_index = pd.to_datetime(entity.last_time_index)
+                    lti = copy.deepcopy(entity.df[entity.index])
+                    lti[:] = None
+                lti = pd.to_datetime(lti)
+                entity.set_last_time_index(lti)
 
             if entity.id in children:
                 child_entities = children[entity.id]
@@ -1033,10 +1034,10 @@ class EntitySet(BaseEntitySet):
 
                 # updated last time from all children
                 for child_e in child_entities:
-                    link_var = child_vars[entity.id][child_e.id].id
                     if child_e.last_time_index is None:
                         continue
 
+                    link_var = child_vars[entity.id][child_e.id].id
                     lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
                                            entity.index: child_e.df[link_var]})
                     lti_df.sort_values(['last_time', entity.index],
