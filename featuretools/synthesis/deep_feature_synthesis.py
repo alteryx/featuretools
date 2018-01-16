@@ -212,7 +212,7 @@ class DeepFeatureSynthesis(object):
         """
         self.verbose = verbose
         if verbose:
-            self.pbar = make_tqdm_iterator(desc="Building features")
+            self.pbar = make_tqdm_iterator(desc="Building features", unit=' features')
         all_features = {}
         for e in self.es.entities:
             if e not in self.ignore_entities:
@@ -241,8 +241,11 @@ class DeepFeatureSynthesis(object):
             assert isinstance(variable_types, list), msg
 
         if variable_types is not None:
+            before_len = len(new_features)
             new_features = [f for f in new_features
                             if any(issubclass(f.variable_type, vt) for vt in variable_types)]
+            if verbose and before_len > len(new_features):
+                self.pbar.write("Removed {} features with undesired variable types".format(before_len - len(new_features)))
 
         def check_secondary_index(f):
             secondary_time_index = self.es[self.target_entity_id].secondary_time_index
@@ -272,7 +275,10 @@ class DeepFeatureSynthesis(object):
 
             return True
 
+        before_len = len(new_features)
         new_features = list(filter(filt, new_features))
+        if verbose and before_len > len(new_features):
+            self.pbar.write("Removed {} target entity index features".format(before_len - len(new_features)))
 
         # sanity check for duplicate features
         l = [f.hash() for f in new_features]
@@ -282,7 +288,10 @@ class DeepFeatureSynthesis(object):
 
         new_features.sort(key=lambda f: f.get_depth())
 
+        before_len = len(new_features)
         new_features = self._filter_features(new_features)
+        if verbose and before_len > len(new_features):
+            self.pbar.write("Removed {} features from drop_exact and drop_contains lists".format(before_len - len(new_features)))
 
         if self.max_features > 0:
             new_features = new_features[:self.max_features]
@@ -463,7 +472,7 @@ class DeepFeatureSynthesis(object):
                             " more than once" % (new_feature.get_name()))
 
         # update the dict
-        if self.verbose:
+        if self.verbose and entity_id == self.target_entity_id:
             self.pbar.update(1)
         all_features[entity_id][new_feature.hash()] = new_feature
 
