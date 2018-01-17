@@ -603,7 +603,7 @@ class Entity(BaseEntity):
                     if training_window is not None:
                         mask = df[self.time_index] >= time_last - training_window
                         if self.last_time_index is not None:
-                            lti_slice = self.last_time_index.reindex(df.index)  # todo consider reindex
+                            lti_slice = self.last_time_index.reindex(df.index)
                             lti_mask = lti_slice >= time_last - training_window
                             mask = mask | lti_mask
                         else:

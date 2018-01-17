@@ -1048,11 +1048,10 @@ class EntitySet(BaseEntitySet):
                     link_var = child_vars[entity.id][child_e.id].id
                     lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
                                            entity.index: child_e.df[link_var]})
+                    # sort by time and keep only the most recent
                     lti_df.sort_values(['last_time', entity.index],
                                        kind="mergesort",
                                        inplace=True)
-
-                    # we can assume that entities are already sorted by time
                     lti_df.drop_duplicates(entity.index,
                                            keep='last',
                                            inplace=True)
