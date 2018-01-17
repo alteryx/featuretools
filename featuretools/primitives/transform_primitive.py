@@ -18,12 +18,12 @@ from featuretools.variable_types import (
     DatetimeTimeIndex,
     Discrete,
     Id,
+    LatLong,
     Numeric,
     Ordinal,
     Text,
     Timedelta,
-    Variable,
-    LatLong
+    Variable
 )
 
 current_path = os.path.dirname(os.path.realpath(__file__))
