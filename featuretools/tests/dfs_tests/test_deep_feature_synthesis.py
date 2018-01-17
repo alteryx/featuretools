@@ -658,5 +658,5 @@ def test_commutative(es):
             if isinstance(base_feat, Add):
                 num_add_as_base_feat += 1
 
-    assert num_add_feats == 1
-    assert num_add_as_base_feat == 4
+    assert num_add_feats == 3
+    assert num_add_as_base_feat == 9
