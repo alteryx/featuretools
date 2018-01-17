@@ -1,8 +1,13 @@
+from __future__ import division
+
+from builtins import range
+
 import pandas as pd
 from numpy import random
 from numpy.random import choice
 
 import featuretools as ft
+from featuretools.variable_types import Categorical
 
 
 def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transactions=500,
@@ -27,7 +32,7 @@ def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transaction
     transactions_df = transactions_df.sort_values("session_id").reset_index(drop=True)
     transactions_df["transaction_time"] = pd.date_range('1/1/2014', periods=n_transactions, freq='65s')  # todo make these less regular
     transactions_df["product_id"] = pd.Categorical(choice(products_df["product_id"], n_transactions))
-    transactions_df["amount"] = random.randint(500, 15000, n_transactions) / 100.0
+    transactions_df["amount"] = random.randint(500, 15000, n_transactions) / 100
 
     # calculate and merge in session start
     # based on the times we came up with for transactions
@@ -57,7 +62,8 @@ def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transaction
         es = es.entity_from_dataframe(entity_id="customers",
                                       dataframe=customers_df,
                                       index="customer_id",
-                                      time_index="join_date")
+                                      time_index="join_date",
+                                      variable_types={"zip_code": Categorical})
 
         rels = [ft.Relationship(es["products"]["product_id"],
                                 es["transactions"]["product_id"]),

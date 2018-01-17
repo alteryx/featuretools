@@ -11,9 +11,6 @@ lint:
 test: lint
 	python $(TEST_CMD)
 
-coverage:
-	py.test --cov=featuretools
-
 installdeps:
 	pip install --upgrade pip
 	pip install -e .

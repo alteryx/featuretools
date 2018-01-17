@@ -1,7 +1,8 @@
+from __future__ import absolute_import
 # flake8: noqa
-import config
+from . import config
 from .core import *
-import variable_types
+from . import variable_types
 from .entityset.api import *
 from . import primitives
 from .synthesis.api import *
@@ -11,4 +12,4 @@ from . import tests
 from .utils.pickle_utils import *
 import featuretools.demo
 
-__version__ = '0.1.14'
+__version__ = '0.1.16'

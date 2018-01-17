@@ -4,13 +4,9 @@ Install
 Pip
 ---
 
-The recommended way to install Featuretool is with pip
+Featuretools is available for Python 2.7, 3.5, and 3.6. The recommended way to install Featuretools is with pip
 
 ``pip install featuretools``
-
-.. note::
-
-    Featuretools currently only supports Python 2.7. Check back in the near future for Python 3 support
 
 
 

@@ -1,3 +1,6 @@
+from __future__ import division
+
+from builtins import range, str
 from datetime import datetime, timedelta
 
 import numpy as np
@@ -44,7 +47,7 @@ class Count(AggregationPrimitive):
             return values.count()
         return func
 
-    def _get_name(self):
+    def generate_name(self):
         where_str = self._where_str()
         use_prev_str = self._use_prev_str()
 
@@ -235,10 +238,8 @@ class AvgTimeBetween(AggregationPrimitive):
                 x = x.astype('int64')
                 # use len(x)-1 because we care about difference
                 # between values, len(x)-1 = len(diff(x))
-                avg = ((x.max() - x.min())) / float(len(x) - 1)
-            else:
-                avg = (x.max() - x.min()) / float(len(x) - 1)
 
+            avg = (x.max() - x.min()) / (len(x) - 1)
             avg = avg * 1e-9
 
             # long form:
@@ -441,7 +442,7 @@ def find_dividend_by_unit(time):
     Finds whether time best corresponds to a value in
     days, hours, minutes, or seconds
     """
-    for dividend in [86400., 3600., 60.]:
+    for dividend in [86400, 3600, 60]:
         div = time / dividend
         if round(div) == div:
             return dividend

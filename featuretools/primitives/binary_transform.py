@@ -1,4 +1,5 @@
 import operator
+from builtins import str
 
 import numpy as np
 
@@ -76,7 +77,7 @@ class BinaryFeature(TransformPrimitive):
             return getattr(operator, self._get_op())(left_default_val,
                                                      right_default_val)
 
-    def _get_name(self):
+    def generate_name(self):
         return u"%s %s %s" % (self.left_str(),
                               self.operator, self.right_str())
 
@@ -174,7 +175,7 @@ class ArithmeticFeature(BinaryFeature):
 class Add(ArithmeticFeature):
     """Creates a transform feature that adds two features"""
     operator = ArithmeticFeature._ADD
-    associative = True
+    commutative = True
     input_types = [[Numeric, Numeric],
                    [Numeric],
                    [TimeIndex],
@@ -207,7 +208,7 @@ class Subtract(ArithmeticFeature):
 class Multiply(ArithmeticFeature):
     """Creates a transform feature that multplies two features"""
     operator = ArithmeticFeature._MUL
-    associative = True
+    commutative = True
 
 
 class Divide(ArithmeticFeature):
@@ -227,7 +228,7 @@ class Negate(Subtract):
     def __init__(self, f):
         super(Negate, self).__init__(0, f)
 
-    def _get_name(self):
+    def generate_name(self):
         return u"-%s" % (self.right_str())
 
 
@@ -281,13 +282,13 @@ class Compare(BinaryFeature):
 
 class Equals(Compare):
     """For each value, determine if it is equal to another value"""
-    associative = True
+    commutative = True
     operator = '='
 
 
 class NotEquals(Compare):
     """For each value, determine if it is not equal to another value"""
-    associative = True
+    commutative = True
     operator = '!='
 
 
@@ -316,7 +317,7 @@ class And(TransformPrimitive):
     name = "and"
     input_types = [Boolean, Boolean]
     return_type = Boolean
-    associative = True
+    commutative = True
 
     def get_function(self):
         return lambda left, right: np.logical_and(left, right)
@@ -327,7 +328,7 @@ class Or(TransformPrimitive):
     name = "or"
     input_types = [Boolean, Boolean]
     return_type = Boolean
-    associative = True
+    commutative = True
 
     def get_function(self):
         return lambda left, right: np.logical_or(left, right)

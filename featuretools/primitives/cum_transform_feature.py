@@ -1,7 +1,9 @@
 import uuid
+from builtins import str
 
 import numpy as np
 import pandas as pd
+from past.builtins import basestring
 
 from .aggregation_primitives import Count, Max, Mean, Min, Sum
 from .primitive_base import IdentityFeature, PrimitiveBase
@@ -61,7 +63,7 @@ class CumFeature(TransformPrimitive):
 
         super(CumFeature, self).__init__(*self.base_features)
 
-    def _get_name(self):
+    def generate_name(self):
         where_str = u""
         use_prev_str = u""
 

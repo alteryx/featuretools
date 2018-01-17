@@ -22,11 +22,11 @@ One caveat with the make\_primitive functions is that the required arguments of 
         counts = [element.lower().count(string) for element in column]
         return counts
 
-In order to have features defined using the primitive reflect what string is being counted, we define a custom ``get_name`` function.
+In order to have features defined using the primitive reflect what string is being counted, we define a custom ``generate_name`` function.
 
 .. ipython:: python
 
-    def string_count_get_name(self):
+    def string_count_generate_name(self):
         return u"STRING_COUNT(%s, %s)" % (self.base_features[0].get_name(),
                                           '"'+str(self.kwargs['string']+'"'))
 
@@ -38,7 +38,7 @@ Now that we have the function, we create the primitive using the ``make_trans_pr
     StringCount = make_trans_primitive(function=string_count,
                                        input_types=[Text],
                                        return_type=Numeric,
-                                       cls_attributes={"get_name": string_count_get_name})
+                                       cls_attributes={"generate_name": string_count_generate_name})
 
 Passing in ``string="test"`` as a keyword argument when creating a StringCount feature will make "test" the value used for string when ``string_count`` is called to calculate the feature values.  Now we use this primitive to create a feature and calculate the feature values.
 

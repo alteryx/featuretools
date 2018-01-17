@@ -1,10 +1,20 @@
-# Introduction
+<p align="center"> 
+<img width=50% src="https://www.featuretools.com/wp-content/uploads/2017/12/FeatureLabs-Logo-Tangerine-800.png" alt="Featuretools" />
+</p>
+<p align="center"> 
+<i>"One of the holy grails of machine learning is to automate more and more of the feature engineering process."</i> ― Pedro Domingos, <a href="https://bit.ly/things_to_know_ml">A Few Useful Things to Know about Machine Learning</a>
+
+</p>
+
+
 
 [![Circle CI](https://circleci.com/gh/Featuretools/featuretools.svg?maxAge=2592000&style=shield)](https://circleci.com/gh/Featuretools/featuretools)
 [![Coverage Status](https://codecov.io/gh/Featuretools/featuretools/branch/master/graph/badge.svg)](https://codecov.io/gh/Featuretools/featuretools)
 [![PyPI version](https://badge.fury.io/py/featuretools.svg?maxAge=2592000)](https://badge.fury.io/py/featuretools)
 
 [Featuretools](https://www.featuretools.com) is a python library for automated feature engineering. See the [documentation](https://docs.featuretools.com) for more information.
+
+
 
 ## Installation
 Install with pip
@@ -51,10 +61,26 @@ customer_id                                                                     
 ```
 We now have a feature vector for each customer that can be used for machine learning. See the [documentation on Deep Feature Synthesis](https://docs.featuretools.com/automated_feature_engineering/afe.html) for more examples.
 
+## Demos
+**Predict Next Purchase**
+
+[Repository](https://github.com/Featuretools/predict_next_purchase/) | [Notebook](https://github.com/Featuretools/predict_next_purchase/blob/master/Tutorial.ipynb)
+
+In this demonstration, we use a multi-table dataset of 3 million online grocery orders from Instacart to predict what a customer will buy next. We show how to generate features with automated feature engineering and build an accurate machine learning pipeline using Featuretools, which can be reused for multiple prediction problems. For more advanced users, we show how to scale that pipeline to a large dataset using Dask.
+
+For more examples of how to use Featuretools, check out our [demos](https://www.featuretools.com/demos) page.
+
 ## Support
 
 For installation or usage questions, please reach out on [Gitter](https://gitter.im/featuretools/featuretools). 
 
 ## Feature Labs
 
-Featuretools was created by the team at [Feature Labs](https://www.featurelabs.com).
+
+<a href="https://www.featurelabs.com/">
+    <img src="http://www.featurelabs.com/wp-content/uploads/2017/12/logo.png" alt="Featuretools" />
+</a>
+
+
+Featuretools was created by the developers at [Feature Labs](https://www.featurelabs.com/). If building impactful data science pipelines is important to you or your business, please [get in touch](https://www.featurelabs.com/contact.html).
+

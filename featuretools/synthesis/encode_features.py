@@ -83,7 +83,18 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
             encoded.append(f)
             continue
 
-        unique = X[f.get_name()].value_counts().head(top_n).index.tolist()
+        val_counts = X[f.get_name()].value_counts().to_frame()
+        index_name = val_counts.index.name
+        if index_name is None:
+            if 'index' in val_counts.columns:
+                index_name = 'level_0'
+            else:
+                index_name = 'index'
+        val_counts.reset_index(inplace=True)
+        val_counts = val_counts.sort_values([f.get_name(), index_name],
+                                            ascending=False)
+        val_counts.set_index(index_name, inplace=True)
+        unique = val_counts.head(top_n).index.tolist()
         for label in unique:
             add = f == label
             encoded.append(add)

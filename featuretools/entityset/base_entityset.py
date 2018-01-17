@@ -1,4 +1,5 @@
 import logging
+from builtins import object
 
 from featuretools import variable_types as vtypes
 from featuretools.core.base import FTBase
@@ -87,7 +88,7 @@ class BaseEntitySet(FTBase):
 
     @property
     def entities(self):
-        return self.entity_stores.values()
+        return list(self.entity_stores.values())
 
     def _get_entity(self, entity_id):
         """Get entity instance from entityset
@@ -150,7 +151,7 @@ class BaseEntitySet(FTBase):
             num_left = len(self.relationships) - 5
             repr_out += u"\n    ...and {} more".format(num_left)
 
-        return repr_out.encode("utf-8")
+        return repr_out
 
     def delete_entity_variables(self, entity_id, variables, **kwargs):
         entity = self._get_entity(entity_id)

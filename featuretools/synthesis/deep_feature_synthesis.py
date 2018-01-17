@@ -1,5 +1,6 @@
 import logging
 import sys
+from builtins import filter, object, str
 from collections import defaultdict
 
 from .dfs_filters import LimitModeUniques, TraverseUp
@@ -148,7 +149,7 @@ class DeepFeatureSynthesis(object):
 
         self.ignore_variables = defaultdict(set)
         if ignore_variables is not None:
-            for eid, vars in ignore_variables.iteritems():
+            for eid, vars in ignore_variables.items():
                 self.ignore_variables[eid] = set(vars)
         self.target_entity_id = target_entity_id
         self.es = entityset
@@ -223,7 +224,7 @@ class DeepFeatureSynthesis(object):
         self._run_dfs(self.es[self.target_entity_id], [],
                       all_features, max_depth=self.max_depth)
 
-        new_features = all_features[self.target_entity_id].values()
+        new_features = list(all_features[self.target_entity_id].values())
 
         if variable_types is None:
             variable_types = [Numeric,
@@ -267,7 +268,7 @@ class DeepFeatureSynthesis(object):
 
             return True
 
-        new_features = filter(filt, new_features)
+        new_features = list(filter(filt, new_features))
 
         # sanity check for duplicate features
         l = [f.hash() for f in new_features]
@@ -490,7 +491,7 @@ class DeepFeatureSynthesis(object):
                 has features as values with their ids as keys
             entity (:class:`.Entity`): entity to calculate features for
         """
-        identities = [f for _, f in all_features[entity.id].iteritems()
+        identities = [f for _, f in all_features[entity.id].items()
                       if isinstance(f, IdentityFeature)]
 
         for feat in identities:
@@ -530,7 +531,7 @@ class DeepFeatureSynthesis(object):
                                               max_depth=new_max_depth)
 
             matching_inputs = match(input_types, features,
-                                    associative=trans_prim.associative)
+                                    commutative=trans_prim.commutative)
 
             for matching_input in matching_inputs:
                 new_f = trans_prim(*matching_input)
@@ -600,7 +601,7 @@ class DeepFeatureSynthesis(object):
 
             features = [f for f in features if not self._feature_in_relationship_path(relationship_path, f)]
             matching_inputs = match(input_types, features,
-                                    associative=agg_prim.associative)
+                                    commutative=agg_prim.commutative)
             wheres = list(self.where_clauses[child_entity.id])
 
             for matching_input in matching_inputs:
@@ -743,7 +744,7 @@ def match_by_type(features, t):
     return matches
 
 
-def match(input_types, features, replace=False, associative=False):
+def match(input_types, features, replace=False, commutative=False):
     to_match = input_types[0]
     matches = match_by_type(features, to_match)
 
@@ -762,9 +763,9 @@ def match(input_types, features, replace=False, associative=False):
         for r in rest:
             new_match = [m] + list(r)
 
-            # associative uses frozenset instead of tuple because it doesn't
+            # commutative uses frozenset instead of tuple because it doesn't
             # want multiple orderings of the same input
-            if associative:
+            if commutative:
                 new_match = frozenset(new_match)
             else:
                 new_match = tuple(new_match)

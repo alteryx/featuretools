@@ -39,6 +39,8 @@ from featuretools.primitives import (
     Negate,
     Not,
     NotEquals,
+    NumCharacters,
+    NumWords,
     Or,
     Percentile,
     Subtract,
@@ -700,6 +702,28 @@ def test_cum_count(es):
         assert v == cvalues[i]
 
 
+def test_text_primitives(es):
+    words = NumWords(es['log']['comments'])
+    chars = NumCharacters(es['log']['comments'])
+
+    features = [words, chars]
+    pandas_backend = PandasBackend(es, features)
+    df = pandas_backend.calculate_all_features(instance_ids=range(15),
+                                               time_last=None)
+
+    word_counts = [514, 3, 3, 644, 1268, 1269, 177, 172, 79,
+                   240, 1239, 3, 3, 3, 3]
+    char_counts = [3392, 10, 10, 4116, 7961, 7580, 992, 957,
+                   437, 1325, 6322, 10, 10, 10, 10]
+    word_values = df[words.get_name()].values
+    char_values = df[chars.get_name()].values
+    assert len(word_values) == 15
+    for i, v in enumerate(word_values):
+        assert v == word_counts[i]
+    for i, v in enumerate(char_values):
+        assert v == char_counts[i]
+
+
 def test_arithmetic(es):
     # P TODO:
     return
@@ -938,7 +962,7 @@ def test_isin_feat_custom(es):
             list_of_outputs = []
         return pd.Series(array).isin(list_of_outputs)
 
-    def isin_get_name(self):
+    def isin_generate_name(self):
         return u"%s.isin(%s)" % (self.base_features[0].get_name(),
                                  str(self.kwargs['list_of_outputs']))
 
@@ -949,7 +973,7 @@ def test_isin_feat_custom(es):
         name="is_in",
         description="For each value of the base feature, checks whether it is "
         "in a list that is provided.",
-        cls_attributes={"_get_name": isin_get_name})
+        cls_attributes={"generate_name": isin_generate_name})
 
     isin = IsIn(es['log']['product_id'],
                 list_of_outputs=["toothpaste", "coke zero"])
@@ -1085,3 +1109,34 @@ def test_make_transform_restricts_time_arg():
             Numeric,
             name="BadPrimitive",
             description="This primitive should erorr")
+
+
+def test_make_transform_sets_kwargs_correctly(es):
+    def pd_is_in(array, list_of_outputs=None):
+        if list_of_outputs is None:
+            list_of_outputs = []
+        return pd.Series(array).isin(list_of_outputs)
+
+    def isin_generate_name(self):
+        return u"%s.isin(%s)" % (self.base_features[0].get_name(),
+                                 str(self.kwargs['list_of_outputs']))
+
+    IsIn = make_trans_primitive(
+        pd_is_in,
+        [Variable],
+        Boolean,
+        name="is_in",
+        description="For each value of the base feature, checks whether it is "
+        "in a list that is provided.",
+        cls_attributes={"generate_name": isin_generate_name})
+
+    isin_1_list = ["toothpaste", "coke_zero"]
+    isin_1_base_f = Feature(es['log']['product_id'])
+    isin_1 = IsIn(isin_1_base_f, list_of_outputs=isin_1_list)
+    isin_2_list = ["coke_zero"]
+    isin_2_base_f = Feature(es['log']['session_id'])
+    isin_2 = IsIn(isin_2_base_f, list_of_outputs=isin_2_list)
+    assert isin_1_base_f == isin_1.base_features[0]
+    assert isin_1_list == isin_1.kwargs['list_of_outputs']
+    assert isin_2_base_f == isin_2.base_features[0]
+    assert isin_2_list == isin_2.kwargs['list_of_outputs']

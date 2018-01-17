@@ -1,6 +1,10 @@
+from __future__ import print_function
+
 import logging
+from builtins import map
 
 import pandas as pd
+from past.builtins import basestring
 
 from featuretools import variable_types as vtypes
 from featuretools.core.base import FTBase
@@ -55,9 +59,9 @@ class BaseEntity(FTBase):
         link_vars = [v.id for rel in relationships for v in [rel.parent_variable, rel.child_variable]
                      if v.entity.id == self.id]
 
-        inferred_variable_types = self.infer_variable_types(ignore=variable_types.keys(),
+        inferred_variable_types = self.infer_variable_types(ignore=list(variable_types.keys()),
                                                             link_vars=link_vars)
-        for var_id, desired_type in variable_types.iteritems():
+        for var_id, desired_type in variable_types.items():
             if isinstance(desired_type, tuple):
                 desired_type = desired_type[0]
             inferred_variable_types.update({var_id: desired_type})
@@ -178,7 +182,7 @@ class BaseEntity(FTBase):
             from featuretools.computational_backends.calculate_feature_matrix import calculate_feature_matrix
             from featuretools.features import Feature
 
-            row = map(Feature, self.variables)
+            row = list(map(Feature, self.variables))
             instance_ids = self.entityset.get_top_n_instances(self.id, n)
             cutoff_time = pd.DataFrame({'instance_id': instance_ids})
             cutoff_time['time'] = cutoff_time
@@ -228,14 +232,14 @@ class BaseEntity(FTBase):
                 value = self.get_column_stat(var_id, stat)
                 setattr(self._get_variable(var_id), stat, value)
             except TypeError as e:
-                print e
+                print(e)
 
         stats = vartype._computed_stats
         for stat in stats:
             try:
                 setattr(self._get_variable(var_id), stat, value)
             except TypeError as e:
-                print e
+                print(e)
 
     def get_column_stat(self, variable_id, stat):
         raise NotImplementedError()

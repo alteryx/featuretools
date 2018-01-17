@@ -1,6 +1,10 @@
+from __future__ import division
+
+import copy
 import datetime
 import functools
 import os
+from builtins import str
 
 import numpy as np
 import pandas as pd
@@ -16,6 +20,7 @@ from featuretools.variable_types import (
     Id,
     Numeric,
     Ordinal,
+    Text,
     Timedelta,
     Variable,
     LatLong
@@ -42,7 +47,7 @@ class TransformPrimitive(PrimitiveBase):
         super(TransformPrimitive, self).__init__(self.base_features[0].entity,
                                                  self.base_features)
 
-    def _get_name(self):
+    def generate_name(self):
         name = u"{}(".format(self.name.upper())
         name += u", ".join(f.get_name() for f in self.base_features)
         name += u")"
@@ -56,18 +61,18 @@ class TransformPrimitive(PrimitiveBase):
 def make_trans_primitive(function, input_types, return_type, name=None,
                          description='A custom transform primitive',
                          cls_attributes=None, uses_calc_time=False,
-                         associative=False):
+                         commutative=False):
     '''Returns a new transform primitive class
 
     Args:
         function (function): function that takes in an array  and applies some
             transformation to it.
 
-        name (string): name of the function
-
         input_types (list[:class:`.Variable`]): variable types of the inputs
 
         return_type (:class:`.Variable`): variable type of return
+
+        name (string): name of new primitive class to be generated
 
         description (string): description of primitive
 
@@ -77,7 +82,7 @@ def make_trans_primitive(function, input_types, return_type, name=None,
             calculated at will be passed to the function as the keyword
             argument 'time'.
 
-        associative (bool): If True, will only make one feature per unique set
+        commutative (bool): If True, will only make one feature per unique set
             of base features
 
     Example:
@@ -92,7 +97,7 @@ def make_trans_primitive(function, input_types, return_type, name=None,
                     list_of_outputs = []
                 return pd.Series(array).isin(list_of_outputs)
 
-            def isin_get_name(self):
+            def isin_generate_name(self):
                 return u"%s.isin(%s)" % (self.base_features[0].get_name(),
                                          str(self.kwargs['list_of_outputs']))
 
@@ -103,7 +108,7 @@ def make_trans_primitive(function, input_types, return_type, name=None,
                 name="is_in",
                 description="For each value of the base feature, checks "
                 "whether it is in a list that provided.",
-                cls_attributes={"_get_name": isin_get_name})
+                cls_attributes={"generate_name": isin_generate_name})
     '''
     # dictionary that holds attributes for class
     cls = {"__doc__": description}
@@ -111,20 +116,21 @@ def make_trans_primitive(function, input_types, return_type, name=None,
         cls.update(cls_attributes)
 
     # creates the new class and set name and types
-    name = name or function.func_name
+    name = name or function.__name__
     new_class = type(name, (TransformPrimitive,), cls)
     new_class.name = name
     new_class.input_types = input_types
     new_class.return_type = return_type
-    new_class.associative = associative
-    new_class, kwargs = inspect_function_args(new_class,
-                                              function,
-                                              uses_calc_time)
+    new_class.commutative = commutative
+    new_class, default_kwargs = inspect_function_args(new_class,
+                                                      function,
+                                                      uses_calc_time)
 
-    if kwargs is not None:
-        new_class.kwargs = kwargs
+    if len(default_kwargs) > 0:
+        new_class.default_kwargs = default_kwargs
 
         def new_class_init(self, *args, **kwargs):
+            self.kwargs = copy.deepcopy(self.default_kwargs)
             self.base_features = [self._check_feature(f) for f in args]
             if any(bf.expanding for bf in self.base_features):
                 self.expanding = True
@@ -185,7 +191,7 @@ class TimeSincePrevious(TransformPrimitive):
         self.group_feature = group_feature
         super(TimeSincePrevious, self).__init__(time_index, group_feature)
 
-    def _get_name(self):
+    def generate_name(self):
         return u"time_since_previous_by_%s" % self.group_feature.get_name()
 
     def get_function(self):
@@ -268,7 +274,7 @@ class Minutes(TimedeltaUnitBasePrimitive):
 
     def get_function(self):
         def pd_minutes(array):
-            return pd_time_unit("seconds")(pd.TimedeltaIndex(array)) / 60.
+            return pd_time_unit("seconds")(pd.TimedeltaIndex(array)) / 60
         return pd_minutes
 
 
@@ -283,7 +289,7 @@ class Weeks(TimedeltaUnitBasePrimitive):
 
     def get_function(self):
         def pd_weeks(array):
-            return pd_time_unit("days")(pd.TimedeltaIndex(array)) / 7.
+            return pd_time_unit("days")(pd.TimedeltaIndex(array)) / 7
         return pd_weeks
 
 
@@ -298,7 +304,7 @@ class Months(TimedeltaUnitBasePrimitive):
 
     def get_function(self):
         def pd_months(array):
-            return pd_time_unit("days")(pd.TimedeltaIndex(array)) * (12. / 365)
+            return pd_time_unit("days")(pd.TimedeltaIndex(array)) * (12 / 365)
         return pd_months
 
 
@@ -330,6 +336,30 @@ class Weekend(TransformPrimitive):
 class Weekday(DatetimeUnitBasePrimitive):
     """Transform Datetime feature into the boolean of Weekday"""
     name = "weekday"
+
+
+class NumCharacters(TransformPrimitive):
+    """
+    Return the characters in a given string.
+    """
+    name = 'characters'
+    input_types = [Text]
+    return_type = Numeric
+
+    def get_function(self):
+        return lambda array: pd.Series(array).str.len()
+
+
+class NumWords(TransformPrimitive):
+    """
+    Returns the words in a given string by counting the spaces.
+    """
+    name = 'numwords'
+    input_types = [Text]
+    return_type = Numeric
+
+    def get_function(self):
+        return lambda array: pd.Series([x.count(" ") + 1 for x in array])
 
 
 # class Like(TransformPrimitive):
@@ -421,7 +451,7 @@ class IsIn(TransformPrimitive):
             return pd.Series(array).isin(list_of_outputs)
         return pd_is_in
 
-    def _get_name(self):
+    def generate_name(self):
         return u"%s.isin(%s)" % (self.base_features[0].get_name(),
                                  str(self.list_of_outputs))
 
@@ -449,7 +479,7 @@ class Diff(TransformPrimitive):
         self.group_feature = self._check_feature(group_feature)
         super(Diff, self).__init__(base_feature, group_feature)
 
-    def _get_name(self):
+    def generate_name(self):
         base_features_str = self.base_features[0].get_name() + u" by " + \
             self.group_feature.get_name()
         return u"%s(%s)" % (self.name.upper(), base_features_str)
@@ -476,7 +506,7 @@ class Not(TransformPrimitive):
     input_types = [Boolean]
     return_type = Boolean
 
-    def _get_name(self):
+    def generate_name(self):
         return u"NOT({})".format(self.base_features[0].get_name())
 
     def _get_op(self):
