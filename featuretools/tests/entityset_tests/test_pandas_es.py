@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ..testing_utils import make_ecommerce_entityset, save_to_csv
+from ..testing_utils import make_ecommerce_entityset
 
 from featuretools import Relationship, variable_types
 from featuretools.entityset import EntitySet
