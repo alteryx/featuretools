@@ -659,6 +659,19 @@ class TestNormalizeEntity(object):
         assert 'value_time' in entityset['values'].df.columns
         assert len(entityset['values'].df.columns) == 3
 
+    def test_secondary_time_index(self, entityset):
+        es = entityset
+        es.normalize_entity('log', 'values', 'value',
+                            make_time_index=True,
+                            make_secondary_time_index={'datetime': ['comments']},
+                            new_entity_time_index="value_time",
+                            new_entity_secondary_time_index='second_ti',
+                            convert_links_to_integers=True)
+
+        assert (isinstance(es['values'].df['second_ti'], pd.Series))
+        assert (es['values']['second_ti']._dtype_repr == 'datetime')
+        assert (es['values'].secondary_time_index == {'second_ti': ['comments', 'second_ti']})
+
 
 def test_head_of_entity(entityset):
 
