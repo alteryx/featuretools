@@ -258,7 +258,7 @@ class Median(AggregationPrimitive):
     # max_stack_depth = 2
 
     def get_function(self):
-        return np.median
+        return lambda x: x.median()
 
 
 class Skew(AggregationPrimitive):
