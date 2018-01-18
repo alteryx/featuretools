@@ -301,8 +301,10 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
 
         df = pd.read_csv(filenames[entity], encoding='utf-8')
         if entity is 'log':
-            df['latlong'] = map(lambda x: latlong_unstringify(x), df['latlong'])
-            df['latlong2'] = map(lambda x: latlong_unstringify(x), df['latlong2'])
+            df['latlong'] = list(map(
+                lambda x: latlong_unstringify(x), df['latlong']))
+            df['latlong2'] = list(map(
+                lambda x: latlong_unstringify(x), df['latlong2']))
 
         es.entity_from_dataframe(entity,
                                  df,
