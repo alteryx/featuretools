@@ -243,7 +243,6 @@ EntitySet load and prepare data
 .. autosummary::
     :toctree: generated/
 
-    EntitySet.entity_from_csv
     EntitySet.entity_from_dataframe
     EntitySet.add_relationship
     EntitySet.normalize_entity
@@ -320,6 +319,7 @@ Variable types
     Ordinal
     Boolean
     Text
+    LatLong
 
 
 Feature Selection
