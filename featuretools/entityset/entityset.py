@@ -1029,7 +1029,6 @@ class EntitySet(BaseEntitySet):
                 else:
                     lti = copy.deepcopy(entity.df[entity.index])
                     lti[:] = None
-                lti = pd.to_datetime(lti)
                 entity.set_last_time_index(lti)
 
             if entity.id in children:
@@ -1058,8 +1057,9 @@ class EntitySet(BaseEntitySet):
 
                     lti_df.set_index(entity.index, inplace=True)
                     lti_df = lti_df.reindex(entity.last_time_index.index)
-                    lti_df['last_time_old'] = pd.to_datetime(entity.last_time_index)
-                    entity.last_time_index = lti_df.max(axis=1)
+                    lti_df['last_time_old'] = entity.last_time_index
+                    lti_df = lti_df.apply(lambda x: x.dropna().max(), axis=1)
+                    entity.last_time_index = lti_df
                     entity.last_time_index.name = 'last_time'
 
             explored.add(entity.id)
