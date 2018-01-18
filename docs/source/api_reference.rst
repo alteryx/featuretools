@@ -158,6 +158,23 @@ Cumulative Transform Primitives
     Diff
     TimeSincePrevious
 
+Text Transform Primitives
+*************************
+.. autosummary::
+   :toctree: generated/
+
+   NumCharacters
+   NumWords
+
+Location Transform Primitives
+*****************************
+.. autosummary::
+   :toctree generated/
+   
+   Latitude
+   Longitude
+   Haversine
+
 Feature methods
 ---------------
 .. autosummary::
