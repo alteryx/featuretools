@@ -8,7 +8,7 @@ import pytest
 
 from ..testing_utils import make_ecommerce_entityset, save_to_csv
 
-from featuretools import Relationship, variable_types
+from featuretools import variable_types
 from featuretools.entityset import EntitySet
 
 

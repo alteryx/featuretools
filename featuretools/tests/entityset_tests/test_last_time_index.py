@@ -1,10 +1,11 @@
 import copy
 from datetime import datetime
 
-import pytest
 import pandas as pd
+import pytest
 
 from ..testing_utils import make_ecommerce_entityset
+
 from featuretools import Relationship
 
 
@@ -60,7 +61,7 @@ def wishlist_df():
                      datetime(2011, 4, 9, 10, 35, 30),
                      datetime(2011, 4, 10, 10, 41, 0),
                      datetime(2011, 4, 10, 10, 39, 59),
-                     datetime(2011, 4, 10, 11, 10, 02)],
+                     datetime(2011, 4, 10, 11, 10, 2)],
         "product_id": ['coke zero', 'taco clock', 'coke zero', 'car',
                        'toothpaste', 'brown bag', 'coke zero'],
     })
@@ -89,9 +90,9 @@ class TestLastTimeIndex(object):
     def test_leaf_no_time_index(self, entityset):
         entityset.add_last_time_indexes()
         stores = entityset['stores']
-        stores_lti = pd.Series([None for x in range(6)], dtype='datetime64[ns]')
-        assert len(stores_lti) == len(stores.last_time_index)
-        for v1, v2 in zip(stores.last_time_index, stores_lti):
+        true_lti = pd.Series([None for x in range(6)], dtype='datetime64[ns]')
+        assert len(true_lti) == len(stores.last_time_index)
+        for v1, v2 in zip(stores.last_time_index, true_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_parent(self, values_es, true_values_lti):
@@ -99,7 +100,8 @@ class TestLastTimeIndex(object):
         values_es.add_last_time_indexes()
         values = values_es['values']
         assert len(values.last_time_index) == 11
-        for v1, v2 in zip(values.last_time_index.sort_index(), true_values_lti):
+        sorted_lti = values.last_time_index.sort_index()
+        for v1, v2 in zip(sorted_lti, true_values_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_parent_some_missing(self, values_es, true_values_lti):
@@ -119,7 +121,8 @@ class TestLastTimeIndex(object):
         true_values_lti[11] = pd.Timestamp("2011-04-10 11:10:02")
 
         assert len(values.last_time_index) == 12
-        for v1, v2 in zip(values.last_time_index.sort_index(), true_values_lti):
+        sorted_lti = values.last_time_index.sort_index()
+        for v1, v2 in zip(sorted_lti, true_values_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_parent_no_time_index(self, entityset, true_sessions_lti):
@@ -127,10 +130,12 @@ class TestLastTimeIndex(object):
         entityset.add_last_time_indexes()
         sessions = entityset['sessions']
         assert len(sessions.last_time_index) == 6
-        for v1, v2 in zip(sessions.last_time_index.sort_index(), true_sessions_lti):
+        sorted_lti = sessions.last_time_index.sort_index()
+        for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
-    def test_parent_no_time_index_some_missing(self, entityset, extra_session_df, true_sessions_lti):
+    def test_parent_no_time_index_missing(self, entityset, extra_session_df,
+                                          true_sessions_lti):
         # test entity without time index and not all instance have children
         sessions = entityset['sessions']
 
@@ -141,10 +146,12 @@ class TestLastTimeIndex(object):
         true_sessions_lti[6] = pd.NaT
 
         assert len(sessions.last_time_index) == 7
-        for v1, v2 in zip(sessions.last_time_index.sort_index(), true_sessions_lti):
+        sorted_lti = sessions.last_time_index.sort_index()
+        for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
-    def test_multiple_children(self, entityset, wishlist_df, true_sessions_lti):
+    def test_multiple_children(self, entityset, wishlist_df,
+                               true_sessions_lti):
         # test all instances in both children
         entityset.entity_from_dataframe(entity_id="wishlist_log",
                                         dataframe=wishlist_df,
@@ -161,10 +168,12 @@ class TestLastTimeIndex(object):
         true_sessions_lti[3] = pd.Timestamp("2011-4-10 10:41:00")
 
         assert len(sessions.last_time_index) == 6
-        for v1, v2 in zip(sessions.last_time_index.sort_index(), true_sessions_lti):
+        sorted_lti = sessions.last_time_index.sort_index()
+        for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
-    def test_multiple_children_right_missing(self, entityset, wishlist_df, true_sessions_lti):
+    def test_multiple_children_right_missing(self, entityset, wishlist_df,
+                                             true_sessions_lti):
         # test all instances in left child
         sessions = entityset['sessions']
 
@@ -184,7 +193,8 @@ class TestLastTimeIndex(object):
         true_sessions_lti[1] = pd.Timestamp("2011-4-9 10:31:30")
 
         assert len(sessions.last_time_index) == 6
-        for v1, v2 in zip(sessions.last_time_index.sort_index(), true_sessions_lti):
+        sorted_lti = sessions.last_time_index.sort_index()
+        for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_multiple_children_left_missing(self, entityset, extra_session_df,
@@ -301,7 +311,7 @@ class TestLastTimeIndex(object):
 
         true_customers_lti = pd.Series([datetime(2011, 4, 9, 10, 40, 1),
                                         datetime(2011, 4, 10, 10, 41, 6),
-                                        datetime(2011, 4, 10, 11, 10, 03)])
+                                        datetime(2011, 4, 10, 11, 10, 3)])
 
         assert len(customers.last_time_index) == 3
         sorted_lti = customers.last_time_index.sort_index()
