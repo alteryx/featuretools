@@ -333,6 +333,7 @@ class EntitySet(BaseEntitySet):
                         **kwargs):
         """
         Load the data for a specified entity from a CSV file.
+        WARNING: Depreciated. Use pd.read_csv and entity_from_dataframe instead
 
         Args:
             entity_id (str) : unique id to associate with this entity
@@ -379,6 +380,8 @@ class EntitySet(BaseEntitySet):
         # TODO look into handling secondary_time_index here
 
         # _operations?
+        logger.warning(("EntitySet.from_csv will be depreciated in v0.1.18",
+                        "Use pd.read_csv and EntitySet.from_dataframe instead"))
         if parse_date_cols:
             parse_date_cols = parse_date_cols or []
 

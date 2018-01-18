@@ -58,7 +58,9 @@ class DeepFeatureSynthesis(object):
                     Default:[:class:`Day <.primitives.Day>`, \
                              :class:`Year <.primitives.Year>`, \
                              :class:`Month <.primitives.Month>`, \
-                             :class:`Weekday <.primitives.Weekday>`]
+                             :class:`Haversine <.primitives.Haversine>`,\
+                             :class:`NumWords <.primitives.NumWords>`,\
+                             :class:`NumCharacters <.primitives.NumCharacters>`]
 
             where_primitives (list[:class:`.primitives.AggregationPrimitive`], optional):
                 only add where clauses to these types of Aggregation
@@ -181,7 +183,9 @@ class DeepFeatureSynthesis(object):
         self.agg_primitives = agg_primitives
 
         if trans_primitives is None:
-            trans_primitives = [ftypes.Day, ftypes.Year, ftypes.Month, ftypes.Weekday]  # ftypes.TimeSince
+            trans_primitives = [ftypes.Day, ftypes.Year, ftypes.Month,
+                                ftypes.Weekday, ftypes.Haversine,
+                                ftypes.NumWords, ftypes.NumCharacters]  # ftypes.TimeSince
         self.trans_primitives = trans_primitives
 
         self.seed_features = seed_features or []

@@ -95,6 +95,9 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                             [i * 3 for i in range(3)] +
                             [np.nan] * 2)
 
+    latlong = list([(values[i], values_2[i]) for i, _ in enumerate(values)])
+    latlong2 = list([(values_2[i], -values[i]) for i, _ in enumerate(values)])
+
     log_df = pd.DataFrame({
         'id': range(17),
         'session_id': [0] * 5 + [1] * 4 + [2] * 1 + [3] * 2 + [4] * 3 + [5] * 2,
@@ -104,6 +107,8 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
         'datetime': times,
         'value': values,
         'value_2': values_2,
+        'latlong': latlong,
+        'latlong2': latlong2,
         'value_many_nans': values_many_nans,
         'priority_level': [0] * 2 + [1] * 5 + [0] * 6 + [2] * 2 + [1] * 2,
         'purchased': [True] * 11 + [False] * 4 + [True, False],
@@ -235,6 +240,8 @@ def make_variable_types(with_integer_time_index=False):
         'datetime': variable_types.Datetime,
         'value': variable_types.Numeric,
         'value_2': variable_types.Numeric,
+        'latlong': variable_types.LatLong,
+        'latlong2': variable_types.LatLong,
         'value_many_nans': variable_types.Numeric,
         'priority_level': variable_types.Ordinal,
         'purchased': variable_types.Boolean,
@@ -264,6 +271,12 @@ def make_time_indexes(with_integer_time_index=False):
             }
 
 
+def latlong_unstringify(latlong):
+    lat = float(latlong.split(", ")[0].replace("(", ""))
+    lon = float(latlong.split(", ")[1].replace(")", ""))
+    return (lat, lon)
+
+
 def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save_files=True, file_location='local',
                              split_by_time=False, compressed=False, entityset_type=EntitySet):
     if file_location == 'local' and save_files:
@@ -271,7 +284,8 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
                                          split_by_time=split_by_time, compressed=compressed)
         entities = filenames.keys()
     else:
-        entities = ['regions', 'stores', 'products', 'customers', 'sessions', 'log']
+        entities = ['regions', 'stores', 'products',
+                    'customers', 'sessions', 'log']
         filenames = {e: entity_filename(e, base_path, file_location=file_location,
                                         glob=(split_by_time and e == 'log'),
                                         compressed=compressed)
@@ -282,8 +296,10 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
     if split_by_time:
         id += "_glob"
 
-    variable_types = make_variable_types(with_integer_time_index=with_integer_time_index)
-    time_indexes = make_time_indexes(with_integer_time_index=with_integer_time_index)
+    variable_types = make_variable_types(
+        with_integer_time_index=with_integer_time_index)
+    time_indexes = make_time_indexes(
+        with_integer_time_index=with_integer_time_index)
 
     es = entityset_type(id=id)
 
@@ -294,13 +310,19 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
         if time_index is not None:
             ti_name = time_index['name']
             secondary = time_index['secondary']
-        es.entity_from_csv(entity,
-                           filenames[entity],
-                           index='id',
-                           variable_types=variable_types[entity],
-                           encoding='utf-8',
-                           time_index=ti_name,
-                           secondary_time_index=secondary)
+
+        df = pd.read_csv(filenames[entity], encoding='utf-8')
+        if entity is 'log':
+            df['latlong'] = df['latlong'].apply(latlong_unstringify)
+            df['latlong2'] = df['latlong2'].apply(latlong_unstringify)
+
+        es.entity_from_dataframe(entity,
+                                 df,
+                                 index='id',
+                                 variable_types=variable_types[entity],
+                                 encoding='utf-8',
+                                 time_index=ti_name,
+                                 secondary_time_index=secondary)
 
     es.normalize_entity('customers', 'cohorts', 'cohort',
                         additional_variables=['cohort_name'],
