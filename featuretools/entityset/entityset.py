@@ -1025,9 +1025,9 @@ class EntitySet(BaseEntitySet):
 
             if entity.last_time_index is None:
                 if entity.has_time_index():
-                    lti = copy.deepcopy(entity.df[entity.time_index])
+                    lti = entity.df[entity.time_index].copy()
                 else:
-                    lti = copy.deepcopy(entity.df[entity.index])
+                    lti = entity.df[entity.index].copy()
                     lti[:] = None
                 entity.set_last_time_index(lti)
 
