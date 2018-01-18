@@ -2,6 +2,15 @@
 
 Changelog
 ---------
+**v0.1.17** Jan 18, 2018
+    * LatLong type (:pr:`57`)
+    * Last time index fixes (:pr:`70`)
+    * Make median agg primitives ignore nans by default (:pr:`61`)
+    * Remove Python 3.4 support (:pr:`64`)
+    * Change `normalize_entity` to update `secondary_time_index` (:pr:`59`)
+    * Unpin requirements (:pr:`53`)
+    * associative -> commutative (:pr:`56`)
+    * Add Words and Chars primitives (:pr:`51`)
 
 **v0.1.16** Dec 19, 2017
     * fix EntitySet.combine_variables and standardize encode_features (:pr:`47`)
