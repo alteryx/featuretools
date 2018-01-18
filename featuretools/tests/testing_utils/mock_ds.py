@@ -88,6 +88,13 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                     [i * 3 for i in range(3)] +
                     [np.nan] * 2)
 
+    values_many_nans = list([np.nan] * 5 +
+                            [i * 1 for i in range(4)] +
+                            [0] +
+                            [np.nan] * 2 +
+                            [i * 3 for i in range(3)] +
+                            [np.nan] * 2)
+
     latlong = list([(values[i], values_2[i]) for i, _ in enumerate(values)])
     latlong2 = list([(values_2[i], -values[i]) for i, _ in enumerate(values)])
 
@@ -102,6 +109,7 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
         'value_2': values_2,
         'latlong': latlong,
         'latlong2': latlong2,
+        'value_many_nans': values_many_nans,
         'priority_level': [0] * 2 + [1] * 5 + [0] * 6 + [2] * 2 + [1] * 2,
         'purchased': [True] * 11 + [False] * 4 + [True, False],
         'comments': [coke_zero_review()] + ['I loved it'] * 2 +
@@ -234,6 +242,7 @@ def make_variable_types(with_integer_time_index=False):
         'value_2': variable_types.Numeric,
         'latlong': variable_types.LatLong,
         'latlong2': variable_types.LatLong,
+        'value_many_nans': variable_types.Numeric,
         'priority_level': variable_types.Ordinal,
         'purchased': variable_types.Boolean,
         'comments': variable_types.Text
@@ -275,7 +284,8 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
                                          split_by_time=split_by_time, compressed=compressed)
         entities = filenames.keys()
     else:
-        entities = ['regions', 'stores', 'products', 'customers', 'sessions', 'log']
+        entities = ['regions', 'stores', 'products',
+                    'customers', 'sessions', 'log']
         filenames = {e: entity_filename(e, base_path, file_location=file_location,
                                         glob=(split_by_time and e == 'log'),
                                         compressed=compressed)
@@ -286,8 +296,10 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
     if split_by_time:
         id += "_glob"
 
-    variable_types = make_variable_types(with_integer_time_index=with_integer_time_index)
-    time_indexes = make_time_indexes(with_integer_time_index=with_integer_time_index)
+    variable_types = make_variable_types(
+        with_integer_time_index=with_integer_time_index)
+    time_indexes = make_time_indexes(
+        with_integer_time_index=with_integer_time_index)
 
     es = entityset_type(id=id)
 
