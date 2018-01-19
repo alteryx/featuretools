@@ -381,23 +381,6 @@ class NumWords(TransformPrimitive):
 #         return pd_like
 
 
-# class TimeSince(TransformPrimitive):
-#     """
-#     For each value of the base feature, compute the timedelta between it and
-#     a datetime
-#     """
-#     name = "time_since"
-#     input_types = [[DatetimeTimeIndex], [Datetime]]
-#     return_type = Timedelta
-#     uses_calc_time = True
-
-#     def get_function(self):
-#         def pd_time_since(array, time):
-#             if time is None:
-#                 time = datetime.now()
-#             return (time - pd.DatetimeIndex(array)).values
-#         return pd_time_since
-
 
 def pd_time_since(array, time):
     if time is None:
@@ -405,11 +388,25 @@ def pd_time_since(array, time):
     return (time - pd.DatetimeIndex(array)).values
 
 
-TimeSince = make_trans_primitive(function=pd_time_since,
-                                 input_types=[[DatetimeTimeIndex], [Datetime]],
-                                 return_type=Timedelta,
-                                 uses_calc_time=True,
-                                 name="time_since")
+class TimeSince(TransformPrimitive):
+    """
+    For each value of the base feature, compute the timedelta between it and
+    a datetime
+    """
+    name = "time_since"
+    input_types = [[DatetimeTimeIndex], [Datetime]]
+    return_type = Timedelta
+    uses_calc_time = True
+
+    def get_function(self):
+        return pd_time_since
+
+
+# TimeSince = make_trans_primitive(function=pd_time_since,
+                                 # input_types=[[DatetimeTimeIndex], [Datetime]],
+                                 # return_type=Timedelta,
+                                 # uses_calc_time=True,
+                                 # name="time_since")
 
 
 class DaysSince(TransformPrimitive):
