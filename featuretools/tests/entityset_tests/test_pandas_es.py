@@ -313,25 +313,6 @@ class TestVariableHandling(object):
         assert set(entityset.get_column_data(
             'test_entity', 'id')) == set(df['id'])
 
-    # Tests functionality of from_csv. To be removed
-    # def test_time_index_components(self, entityset):
-    #     df = pd.DataFrame({'id': [0, 1],
-    #                        'date': ['4/9/2015', '4/10/2015'],
-    #                        'time': ['8:30', '13:30']})
-    #     filename = save_to_csv('test_entity', df)
-
-    #     entityset.entity_from_csv('test_entity', filename, index='id',
-    #                               time_index='datetime',
-    #                               time_index_components=['date', 'time'])
-    #     assert entityset.entity_stores['test_entity'].time_index == 'datetime'
-    #     new_df = entityset.get_dataframe('test_entity')
-    #     assert new_df.shape == (2, 2)
-    #     assert len(new_df.columns) == 2
-    #     assert 'id' in new_df.columns
-    #     assert 'datetime' in new_df.columns
-    #     assert new_df['datetime'][0] == datetime(2015, 4, 9, 8, 30, 0)
-    #     assert new_df['datetime'][1] == datetime(2015, 4, 10, 13, 30, 0)
-
     def test_combine_variables(self, entityset):
         # basic case
         entityset.combine_variables('log', 'comment+product_id',
