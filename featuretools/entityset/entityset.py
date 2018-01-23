@@ -340,8 +340,8 @@ class EntitySet(BaseEntitySet):
             index (str, optional): Name of the variable used to index the entity.
                 If None, take the first column.
 
-            variable_types (dict[str -> Variable], optional):  
-                Mapping of variable_id -> variable_types with which to
+            variable_types (dict[str -> Variable], optional):
+                Keys are of variable ids and values are variable types. Used to to
                 initialize an entity's store.
 
             make_index (bool, optional) : If True, assume index does not
@@ -516,51 +516,54 @@ class EntitySet(BaseEntitySet):
                          make_secondary_time_index=None,
                          new_entity_time_index=None,
                          new_entity_secondary_time_index=None,
-                         time_index_reduce='first', variable_types=None):
+                         time_index_reduce='first',
+                         variable_types=None):
         """Utility to normalize an entity_store
 
         Args:
-            base_entity_id (str) : entity id to split from
+            base_entity_id (str) : Entity id from which to split.
 
-            new_entity_id (str): id of the new entity
+            new_entity_id (str): Id of the new entity.
 
-            index (str): variable in old entity
+            index (str): Variable in old entity
                 that will become index of new entity. Relationship
-                will be across this variable.
+                will be created across this variable.
 
             additional_variables (list[str]):
-                list of variable ids to remove from
-                base_entity and move to new entity
+                List of variable ids to remove from
+                base_entity and move to new entity.
 
-            copy_variables (list[str]): list of
+            copy_variables (list[str]): List of
                 variable ids to copy from old entity
-                and move to new enentity
+                and move to new entity.
 
             convert_links_to_integers (bool) : If True,
                 convert the linking variable between the two
                 entities to an integer. Old variable will be kept only
                 in the new normalized entity, and the new variable will have
-                the old variable's name plus "_id"
+                the old variable's name plus "_id".
 
-            make_time_index (bool or str, optional): create time index for new entity based
+            make_time_index (bool or str, optional): Create time index for new entity based
                 on time index in base_entity, optionally specifying which variable in base_entity
                 to use for time_index. If specified as True without a specific variable,
-                uses the primary time index. Defaults to True is base entity has time index
+                uses the primary time index. Defaults to True if base entity has a time index.
 
-            make_secondary_time_index (dict[str=>list[str]], optional): create secondary time index(es)
-                for new entity based on secondary time indexes in base entity. Values of dictionary
+            make_secondary_time_index (dict[str -> list[str]], optional): Create a secondary time index
+                from key. Values of dictionary
                 are the variables to associate with the secondary time index. Only one
-                secondary time index is allowed. If values left blank, only associate the time index.
+                secondary time index is allowed. If None, only associate the time index.
 
+            new_entity_time_index (str, optional): Rename new entity time index.
 
-            new_entity_time_index (Optional[str]): rename new entity time index
-
-            new_entity_secondary_time_index (Optional[str]): rename new entity secondary time index
+            new_entity_secondary_time_index (str, optional): Rename new entity secondary time index.
 
             time_index_reduce (str): If making a time_index, choose either
                 the 'first' time or the 'last' time from the associated children instances.
                 If creating a secondary time index, then the primary time index always reduces
-                using 'first', and secondary using 'last'
+                using 'first', and secondary using 'last'.
+
+            variable_types (dict[str -> Variable]): A dictionary of variable types for the new entity.
+                Keys are variable ids and values are variable types.
 
         """
         base_entity = self.entity_stores[base_entity_id]
