@@ -242,29 +242,32 @@ def calculate_batch(features, group, approximate, entityset, backend_verbose, tr
 
     feature_matrix = []
     for _time_last_to_calc, group in grouped:
-        time_last = group[cutoff_df_time_var].iloc[0]
+        # sort group by instance id
         ids = group['instance_id'].sort_values().values
-
+        time_last = group[cutoff_df_time_var].iloc[0]
         if no_unapproximated_aggs and approximate is not None:
             window = None
         else:
             window = training_window
 
+        # calculate values for those instances at time _time_last_to_calc
         _feature_matrix = calc_results(_time_last_to_calc, ids, precalculated_features=precalculated_features, training_window=window)
 
         # this can occur when the features for an instance are calculated at
         # multiple cutoff times which were binned to the same frequency.
-        if len(_feature_matrix) != len(group):
-            indexer = group[['instance_id', cutoff_df_time_var]]
+        if approximate:
+            id_name = _feature_matrix.index.name
+            indexer = group[['instance_id', target_time]]
+
             _feature_matrix = (indexer.merge(_feature_matrix,
                                              left_on=['instance_id'],
                                              right_index=True,
                                              how='left')
-                               .set_index('instance_id')
-                               .drop([cutoff_df_time_var], axis=1))
-
-        time_index = pd.DatetimeIndex([time_last] * _feature_matrix.shape[0], name='time')
-        _feature_matrix.set_index(time_index, append=True, inplace=True)
+                               .set_index(['instance_id', target_time]))
+            _feature_matrix.index.set_names([id_name, 'time'], inplace=True)
+        else:
+            time_index = pd.DatetimeIndex([time_last] * _feature_matrix.shape[0], name='time')
+            _feature_matrix.set_index(time_index, append=True, inplace=True)
         feature_matrix.append(_feature_matrix)
 
     feature_matrix = pd.concat(feature_matrix)

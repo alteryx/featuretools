@@ -520,21 +520,37 @@ def test_cutoff_time_extra_columns(entityset):
     assert (fm_2['label'] == true_series).all()
 
 
-def test_approximate_returns_original_time_indexes(entityset):
+def test_cfm_returns_original_time_indexes(entityset):
     es = entityset
 
     agg_feat = Count(es['customers']['id'], es['regions'])
     dfeat = DirectFeature(agg_feat, es['customers'])
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),
+                                       pd.Timestamp('2011-04-09 10:30:03'),
                                        pd.Timestamp('2011-04-08 10:30:00')],
-                              'instance_id': [0, 0]})
+                              'instance_id': [0, 1, 0]})
+    sorted_df = cutoff_df.sort_values(['time'], kind='mergesort')
 
-    fm = calculate_feature_matrix([dfeat],
-                                  cutoff_time=cutoff_df,
-                                  approximate="2 days",
+    # no approximate
+    fm = calculate_feature_matrix([dfeat], cutoff_time=cutoff_df,
                                   cutoff_time_in_index=True)
     instance_level_vals = fm.index.get_level_values(0).values
     time_level_vals = fm.index.get_level_values(1).values
-    cutoff_df.sort_values(['time'], inplace=True, kind='mergesort')
-    assert (instance_level_vals == cutoff_df['instance_id'].values).all()
-    assert (time_level_vals == cutoff_df['time'].values).all()
+    assert (instance_level_vals == sorted_df['instance_id'].values).all()
+    assert (time_level_vals == sorted_df['time'].values).all()
+
+    # approximate, in different windows
+    fm = calculate_feature_matrix([dfeat], cutoff_time=cutoff_df,
+                                  cutoff_time_in_index=True, approximate="1 m")
+    instance_level_vals = fm.index.get_level_values(0).values
+    time_level_vals = fm.index.get_level_values(1).values
+    assert (instance_level_vals == sorted_df['instance_id'].values).all()
+    assert (time_level_vals == sorted_df['time'].values).all()
+
+    # approximate, in same window
+    fm = calculate_feature_matrix([dfeat], cutoff_time=cutoff_df,
+                                  cutoff_time_in_index=True, approximate="2 d")
+    instance_level_vals = fm.index.get_level_values(0).values
+    time_level_vals = fm.index.get_level_values(1).values
+    assert (instance_level_vals == sorted_df['instance_id'].values).all()
+    assert (time_level_vals == sorted_df['time'].values).all()
