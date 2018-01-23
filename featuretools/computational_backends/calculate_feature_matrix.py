@@ -365,11 +365,11 @@ def approximate_features(features, cutoff_time, window, entityset,
             which entities to apply windows to, use a dictionary mapping entity
             id -> Timedelta. If None, all older data is used.
 
-        verbose (Optional(boolean)): Print progress info.
+        verbose (bool, optional): Print progress info.
 
-        profile (Optional(boolean)): Enables profiling if True
+        profile (bool, optional): Enables profiling if True
 
-        save_progress (Optional(str)): path to save intermediate computational results
+        save_progress (str, optional): path to save intermediate computational results
     '''
     if verbose:
         logger.info("Approximating features...")

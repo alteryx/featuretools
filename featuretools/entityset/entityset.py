@@ -420,18 +420,18 @@ class EntitySet(BaseEntitySet):
             variable_types (dict[str->dict[str->type]]) : Optional mapping of
                 entity_id -> variable_types dict with which to initialize an
                 entity's store.
-            make_index (Optional(boolean)) : If True, assume index does not exist as a column in
+            make_index (bool, optional) : If True, assume index does not exist as a column in
                 dataframe, and create a new column of that name using integers the (0, len(dataframe)).
                 Otherwise, assume index exists in dataframe
                 An entity's variable_types dict maps string variable ids to types (:class:`.Variable`)
-            time_index (Optional(str)) : Name of column to use as a time index for this entity. Must be
+            time_index (str, optional) : Name of column to use as a time index for this entity. Must be
                 a Datetime or Numeric dtype
-            secondary_time_index (Optional[str]): Name of variable containing
+            secondary_time_index (str, optional): Name of variable containing
                 time data to use a second time index for the entity
-            encoding (Optional[str]) : If None, will use 'ascii'. Another option is 'utf-8',
+            encoding (str, optional) : If None, will use 'ascii'. Another option is 'utf-8',
                 or any encoding supported by pandas. Passed into underlying pandas.to_csv() calls,
                 so see Pandas documentation for more information.
-            already_sorted (Optional[boolean]) : If True, assumes that input dataframe is already sorted by time.
+            already_sorted (boolean, optional) : If True, assumes that input dataframe is already sorted by time.
                 Defaults to False.
         """
         variable_types = variable_types or {}
@@ -772,9 +772,9 @@ class EntitySet(BaseEntitySet):
             new_id (str): Id of new variable being created
             to_combine (list[:class:`.Variable`] or list[str]): list of
                 variables to combine
-            drop (Optional[bool]): if True, variables that are combined are
+            drop (bool, optional): if True, variables that are combined are
                 dropped from the entity
-            hashed (Optional[bool]): if True, combination variables values are
+            hashed (bool, optional): if True, combination variables values are
                 hashed, resulting in an integer column dtype. Otherwise, values
                 are just concatenated.
 

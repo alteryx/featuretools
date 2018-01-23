@@ -38,9 +38,9 @@ class BaseEntity(FTBase):
                 subclasses of :class:`.Variable` that this entity will use to
                 create variables
             entityset (:class:`.base_entityset`): EntitySet this entity belongs to
-            name (Optional(str)): Optional human readable name
-            index (Optional(str)) : Id of index variable. Ignored if entityset provided
-            time_index (Optional(str)) : Id of time index variable. Ignored if entityset provided
+            name (str, optional): Optional human readable name
+            index (str, optional) : Id of index variable. Ignored if entityset provided
+            time_index (str, optional) : Id of time index variable. Ignored if entityset provided
         """
         assert isinstance(id, basestring), "Entity id must be a string"
 
@@ -277,7 +277,8 @@ class BaseEntity(FTBase):
         """
         if convert_data:
             # first, convert the underlying data (or at least try to)
-            self.entityset_convert_variable_type(variable_id, new_type, **kwargs)
+            self.entityset_convert_variable_type(
+                variable_id, new_type, **kwargs)
 
         # replace the old variable with the new one, maintaining order
         variable = self._get_variable(variable_id)

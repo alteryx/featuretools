@@ -32,7 +32,7 @@ class Variable(FTBase):
         id (str) : id of variable. must match underlying data in Entity
             it belongs to
         entity (:class:`.Entity`) : Entity this variable belongs to
-        name (Optional[str]) : Give this variable a name that is
+        name (str, optional) : Give this variable a name that is
             different than its id
 
     See Also:

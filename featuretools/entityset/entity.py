@@ -50,7 +50,7 @@ class Entity(BaseEntity):
                 in the dataframe to the time index column they are associated with
             last_time_index (pd.Series): time index of the last event for each
                 instance across all child entities
-            encoding (Optional(str)) : If None, will use 'ascii'. Another option is 'utf-8',
+            encoding (str, optional)) : If None, will use 'ascii'. Another option is 'utf-8',
                 or any encoding supported by pandas. Passed into underlying
                 pandas.read_csv() and pandas.to_csv() calls, so see Pandas documentation
                 for more information

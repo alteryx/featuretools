@@ -67,11 +67,11 @@ class Timedelta(FTBase):
             value (float, str) : value of timedelta, or string providing
                 both unit and value
             unit (str) : unit of time delta.
-            entity (Optional[str]) : entity id to use if unit equals
+            entity (str, optional) : entity id to use if unit equals
                 "observations"
-            data (Optional[:class:`pd.Series`]) : series of timestamps to use
+            data (:class:`pd.Series`, optional) : series of timestamps to use
                 with observations. Can be calculated later.
-            inclusive (Optional[boolean]) : if True, include events that are
+            inclusive (bool, optional) : if True, include events that are
                 exactly timedelta distance away from the original time/observation
         """
         # TODO: check if value is int or float
@@ -180,7 +180,7 @@ class Timedelta(FTBase):
             instance_id (str, int) : instance ID on the parent entity used to
                 select ids on this entity
             entityset (:class:`.BaseEntitySet`) : associated entityset from which to access data
-            inclusive (Optional[boolean]) : if True, include events that are
+            inclusive (bool, optional]) : if True, include events that are
                 exactly timedelta distance away from the original time/observation
 
         Returns:
