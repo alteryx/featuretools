@@ -68,16 +68,16 @@ def make_trans_primitive(function, input_types, return_type, name=None,
         function (function): Function that takes in an array and applies some
             transformation to it, returning an array
 
-        input_types (list[:class:`.Variable`]): Variable types of the inputs.
+        input_types (list[Variable]): Variable types of the inputs.
 
-        return_type (:class:`.Variable`): Variable type of return.
+        return_type (Variable): Variable type of return.
 
         name (str): Name of the primitive. If no name is provided, the name
             of `function` will be used.
 
         description (str): Description of primitive.
 
-        cls_attributes (dict[str->anytype]): Custom attributes to be added to 
+        cls_attributes (dict[str -> anytype]): Custom attributes to be added to 
             class. Key is attribute name, value is the attribute value.
 
         uses_calc_time (bool): If True, the cutoff time the feature is being
@@ -579,10 +579,12 @@ class Haversine(TransformPrimitive):
             lon_1s = np.array([x[1] for x in latlong1])
             lat_2s = np.array([x[0] for x in latlong2])
             lon_2s = np.array([x[1] for x in latlong2])
-            lon1, lat1, lon2, lat2 = map(np.radians, [lon_1s, lat_1s, lon_2s, lat_2s])
+            lon1, lat1, lon2, lat2 = map(
+                np.radians, [lon_1s, lat_1s, lon_2s, lat_2s])
             dlon = lon2 - lon1
             dlat = lat2 - lat1
-            a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.0)**2
+            a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * \
+                np.cos(lat2) * np.sin(dlon / 2.0)**2
             mi = 3950 * 2 * np.arcsin(np.sqrt(a))
             return mi
         return haversine

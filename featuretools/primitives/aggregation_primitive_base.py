@@ -88,30 +88,30 @@ def make_agg_primitive(function, input_types, return_type, name=None,
         function (function): Function that takes in an array  and applies some
             transformation to it.
 
-        input_types (list[:class:`.Variable`]): Variable types of the inputs.
+        input_types (list[Variable]): Variable types of the inputs.
 
-        return_type (:class:`.Variable`): Variable type of return.
+        return_type (Variable): Variable type of return.
 
         name (str): Name of the function.  If no name is provided, the name
             of `function` will be used.
 
         stack_on_self (bool): Whether this primitive can be in input_types of self.
 
-        stack_on (list[:class:`.PrimitiveBase`]): Whitelist of primitives that
+        stack_on (list[PrimitiveBase]): Whitelist of primitives that
             can be input_types.
 
         stack_on_exclude (list[:class:`.PrimitiveBase`]): Blacklist of
             primitives that cannot be input_types.
 
-        base_of (list[:class:`.PrimitiveBase`]): Whitelist of primitives that
+        base_of (list[PrimitiveBase): Whitelist of primitives that
             can have this primitive in input_types.
 
-        base_of_exclude (list[:class:`.PrimitiveBase`]): Blacklist of
+        base_of_exclude (list[PrimitiveBase]): Blacklist of
             primitives that cannot have this primitive in input_types.
 
         description (str): Description of primitive.
 
-        cls_attributes (dict[str->anytype]): Custom attributes to be added to                     class. Key is attribute name, value is the attribute value.
+        cls_attributes (dict[str -> anytype]): Custom attributes to be added to                     class. Key is attribute name, value is the attribute value.
 
         uses_calc_time (bool): If True, the cutoff time the feature is being
             calculated at will be passed to the function as the keyword

@@ -333,35 +333,33 @@ class EntitySet(BaseEntitySet):
         Load the data for a specified entity from a Pandas DataFrame.
 
         Args:
-            entity_id (str) : unique id to associate with this entity
+            entity_id (str) : Unique id to associate with this entity.
 
-            dataframe (pandas.DataFrame) : dataframe containing the data
+            dataframe (pandas.DataFrame) : Dataframe containing the data.
 
             index (str, optional): Name of the variable used to index the entity.
-                If None, take the first column
+                If None, take the first column.
 
-            variable_types (dict[str->dict[str->type]]) : Optional mapping of
-                entity_id -> variable_types dict with which to initialize an
-                entity's store.
-                An entity's variable_types dict maps string variable ids to types (:class:`.Variable`)
+            variable_types (dict[str -> Variable], optional):  
+                Mapping of variable_id -> variable_types with which to
+                initialize an entity's store.
 
-            make_index (Optional(boolean)) : If True, assume index does not exist as a column in
-                csv, and create a new column of that name using integers the (0, len(dataframe)).
-                Otherwise, assume index exists in csv
+            make_index (bool, optional) : If True, assume index does not
+                exist as a column in dataframe, and create a new column of that name
+                using integers. Otherwise, assume index exists.
 
-            time_index (Optional[str]): Name of the variable containing
-                time data. Type must be in Variables.datetime or be able to be
-                cast to datetime (e.g. str, float), or numeric.
+            time_index (str, optional): Name of the variable containing
+                time data. Type must be in :class:`variables.DateTime` or be
+                able to be cast to datetime (e.g. str, float, or numeric.)
 
-            secondary_time_index (Optional[str]): Name of variable containing
-                time data to use a second time index for the entity
+            secondary_time_index (dict[str -> Variable]): Name of variable
+                containing time data to use a second time index for the entity.
 
-            encoding (Optional[str]) : If None, will use 'ascii'. Another option is 'utf-8',
-                or any encoding supported by pandas. Passed into underlying pandas.to_csv() calls,
-                so see Pandas documentation for more information.
+            encoding (str, optional): If None, will use 'ascii'. Another option is
+                'utf-8', or any encoding supported by pandas.
 
-            already_sorted (Optional[boolean]) : If True, assumes that input dataframe is already sorted by time.
-                Defaults to False.
+            already_sorted (bool, optional) : If True, assumes that input dataframe
+                is already sorted by time. Defaults to False.
 
         Notes:
 
