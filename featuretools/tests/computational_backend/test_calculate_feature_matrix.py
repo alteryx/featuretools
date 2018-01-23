@@ -490,3 +490,31 @@ def test_cutoff_time_naming(entityset):
 
     with pytest.raises(AttributeError):
         calculate_feature_matrix([dfeat], cutoff_time=cutoff_df_wrong_index_name)
+
+
+def test_cutoff_time_extra_columns(entityset):
+    es = entityset
+
+    agg_feat = Count(es['customers']['id'], es['regions'])
+    dfeat = DirectFeature(agg_feat, es['customers'])
+
+    cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),
+                                       pd.Timestamp('2011-04-08 10:30:00')],
+                              'instance_id': [0, 0],
+                              'label': [True, False]},
+                             columns=['time', 'instance_id', 'label'])
+    fm = calculate_feature_matrix([dfeat], cutoff_time=cutoff_df)
+    # check column was added to end of matrix
+    assert 'label' == fm.columns[-1]
+    # check column was sorted by time labelike the rest of the feature matrix
+    true_series = pd.Series([False, True], index=[0, 0])
+    assert (fm['label'] == true_series).all()
+
+    fm_2 = calculate_feature_matrix([dfeat],
+                                    cutoff_time=cutoff_df,
+                                    approximate="2 days")
+    # check column was added to end of matrix
+    assert 'label' in fm_2.columns
+    # check column was sorted by time like the rest of the feature matrix
+    true_series = pd.Series([False, True], index=[0, 0])
+    assert (fm_2['label'] == true_series).all()
