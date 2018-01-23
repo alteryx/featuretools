@@ -42,7 +42,7 @@ def dfs(entities=None,
             between entities. List items are a tuple with the format
             (parent entity id, parent variable, child entity id, child variable).
 
-        entityset (:class:`.EntitySet`): An already initialized entityset. Required if
+        entityset (EntitySet): An already initialized entityset. Required if
             entities and relationships are not defined.
 
         target_entity (str): Entity id of entity on which to make predictions.
@@ -57,8 +57,8 @@ def dfs(entities=None,
         instance_ids (list): List of instances on which to calculate features. Only
             used if cutoff_time is a single datetime.
 
-        agg_primitives (list[AggregationPrimitive], optional):
-            List of Aggregation Feature types to apply.
+        agg_primitives (list[AggregationPrimitive], optional): List of Aggregation
+            Feature types to apply.
 
                 Default:[:class:`Sum <.primitives.Sum>`, \
                          :class:`Std <.primitives.Std>`, \
