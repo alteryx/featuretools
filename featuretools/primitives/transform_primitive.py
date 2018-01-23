@@ -65,20 +65,21 @@ def make_trans_primitive(function, input_types, return_type, name=None,
     '''Returns a new transform primitive class
 
     Args:
-        function (function): function that takes in an array  and applies some
-            transformation to it.
+        function (function): Function that takes in an array and applies some
+            transformation to it, returning an array.
 
-        input_types (list[:class:`.Variable`]): variable types of the inputs
+        input_types (list[:class:`.Variable`]): Variable types of the inputs
 
-        return_type (:class:`.Variable`): variable type of return
+        return_type (:class:`.Variable`): Variable type of return
 
-        name (string): name of new primitive class to be generated
+        name (str): Name of new primitive class to be generated
 
-        description (string): description of primitive
+        description (str): Description of primitive
 
-        cls_attributes (dict): custom attributes to be added to class
+        cls_attributes (dict[str->anytype]): Custom attributes to be added to 
+            class. Key is attribute name, value is the attribute value.
 
-        uses_calc_time (bool): if True, the cutoff time the feature is being
+        uses_calc_time (bool): If True, the cutoff time the feature is being
             calculated at will be passed to the function as the keyword
             argument 'time'.
 
@@ -102,9 +103,9 @@ def make_trans_primitive(function, input_types, return_type, name=None,
                                          str(self.kwargs['list_of_outputs']))
 
             IsIn = make_trans_primitive(
-                pd_is_in,
-                [Variable],
-                Boolean,
+                function=pd_is_in,
+                input_types=[Variable],
+                return_type=Boolean,
                 name="is_in",
                 description="For each value of the base feature, checks "
                 "whether it is in a list that provided.",
