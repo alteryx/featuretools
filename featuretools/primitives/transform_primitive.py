@@ -66,15 +66,16 @@ def make_trans_primitive(function, input_types, return_type, name=None,
 
     Args:
         function (function): Function that takes in an array and applies some
-            transformation to it, returning an array.
+            transformation to it, returning an array
 
-        input_types (list[:class:`.Variable`]): Variable types of the inputs
+        input_types (list[:class:`.Variable`]): Variable types of the inputs.
 
-        return_type (:class:`.Variable`): Variable type of return
+        return_type (:class:`.Variable`): Variable type of return.
 
-        name (str): Name of new primitive class to be generated
+        name (str): Name of the primitive. If no name is provided, the name
+            of `function` will be used.
 
-        description (str): Description of primitive
+        description (str): Description of primitive.
 
         cls_attributes (dict[str->anytype]): Custom attributes to be added to 
             class. Key is attribute name, value is the attribute value.
@@ -84,7 +85,7 @@ def make_trans_primitive(function, input_types, return_type, name=None,
             argument 'time'.
 
         commutative (bool): If True, will only make one feature per unique set
-            of base features
+            of base features.
 
     Example:
         .. ipython :: python

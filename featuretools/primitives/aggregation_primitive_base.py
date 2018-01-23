@@ -85,40 +85,40 @@ def make_agg_primitive(function, input_types, return_type, name=None,
     values by passing in empty data.
 
     Args:
-        function (function): function that takes in an array  and applies some
+        function (function): Function that takes in an array  and applies some
             transformation to it.
 
-        input_types (list[:class:`.Variable`]): variable types of the inputs
+        input_types (list[:class:`.Variable`]): Variable types of the inputs.
 
-        return_type (:class:`.Variable`): variable type of return
+        return_type (:class:`.Variable`): Variable type of return.
 
-        name (str): name of the function.  If no name is provided, the name
-            of `function` will be used
+        name (str): Name of the function.  If no name is provided, the name
+            of `function` will be used.
 
-        stack_on_self (bool): whether it can be in input_types of self
+        stack_on_self (bool): Whether this primitive can be in input_types of self.
 
-        stack_on (list[:class:`.PrimitiveBase`]): whitelist of primitives that
-            can be input_types
+        stack_on (list[:class:`.PrimitiveBase`]): Whitelist of primitives that
+            can be input_types.
 
-        stack_on_exclude (list[:class:`.PrimitiveBase`]): blacklist of
-            primitives that cannot be input_types
+        stack_on_exclude (list[:class:`.PrimitiveBase`]): Blacklist of
+            primitives that cannot be input_types.
 
-        base_of (list[:class:`.PrimitiveBase`]): whitelist of primitives that
-            can have this primitive in input_types
+        base_of (list[:class:`.PrimitiveBase`]): Whitelist of primitives that
+            can have this primitive in input_types.
 
-        base_of_exclude (list[:class:`.PrimitiveBase`]): blacklist of
-            primitives that cannot have this primitive in input_types
+        base_of_exclude (list[:class:`.PrimitiveBase`]): Blacklist of
+            primitives that cannot have this primitive in input_types.
 
-        description (str): description of primitive
+        description (str): Description of primitive.
 
-        cls_attributes (dict[str->anytype]): custom attributes to be added to class
+        cls_attributes (dict[str->anytype]): Custom attributes to be added to                     class. Key is attribute name, value is the attribute value.
 
-        uses_calc_time (bool): if True, the cutoff time the feature is being
+        uses_calc_time (bool): If True, the cutoff time the feature is being
             calculated at will be passed to the function as the keyword
             argument 'time'.
 
         commutative (bool): If True, will only make one feature per unique set
-            of base features
+            of base features.
 
     Example:
         .. ipython :: python
