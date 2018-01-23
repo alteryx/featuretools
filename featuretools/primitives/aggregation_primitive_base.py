@@ -92,7 +92,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
 
         return_type (:class:`.Variable`): variable type of return
 
-        name (string): name of the function.  If no name is provided, the name
+        name (str): name of the function.  If no name is provided, the name
             of `function` will be used
 
         stack_on_self (bool): whether it can be in input_types of self
@@ -109,9 +109,9 @@ def make_agg_primitive(function, input_types, return_type, name=None,
         base_of_exclude (list[:class:`.PrimitiveBase`]): blacklist of
             primitives that cannot have this primitive in input_types
 
-        description (string): description of primitive
+        description (str): description of primitive
 
-        cls_attributes (dict): custom attributes to be added to class
+        cls_attributes (dict[str->anytype]): custom attributes to be added to class
 
         uses_calc_time (bool): if True, the cutoff time the feature is being
             calculated at will be passed to the function as the keyword
@@ -132,9 +132,9 @@ def make_agg_primitive(function, input_types, return_type, name=None,
                 return time_since.total_seconds()
 
             TimeSinceLast = make_agg_primitive(
-                time_since_last,
-                [DatetimeTimeIndex],
-                Numeric,
+                function=time_since_last,
+                input_types=[DatetimeTimeIndex],
+                return_type=Numeric,
                 description="Time since last related instance",
                 uses_calc_time=True)
 
