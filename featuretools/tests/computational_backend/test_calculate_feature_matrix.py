@@ -529,7 +529,7 @@ def test_cfm_returns_original_time_indexes(entityset):
                                        pd.Timestamp('2011-04-09 10:30:03'),
                                        pd.Timestamp('2011-04-08 10:30:00')],
                               'instance_id': [0, 1, 0]})
-    sorted_df = cutoff_df.sort_values(['time'], kind='mergesort')
+    sorted_df = cutoff_df.sort_values(['time', 'instance_id'], kind='mergesort')
 
     # no approximate
     fm = calculate_feature_matrix([dfeat], cutoff_time=cutoff_df,
@@ -540,17 +540,17 @@ def test_cfm_returns_original_time_indexes(entityset):
     assert (time_level_vals == sorted_df['time'].values).all()
 
     # approximate, in different windows
-    fm = calculate_feature_matrix([dfeat], cutoff_time=cutoff_df,
-                                  cutoff_time_in_index=True, approximate="1 m")
-    instance_level_vals = fm.index.get_level_values(0).values
-    time_level_vals = fm.index.get_level_values(1).values
+    fm2 = calculate_feature_matrix([dfeat], cutoff_time=cutoff_df,
+                                   cutoff_time_in_index=True, approximate="1 m")
+    instance_level_vals = fm2.index.get_level_values(0).values
+    time_level_vals = fm2.index.get_level_values(1).values
     assert (instance_level_vals == sorted_df['instance_id'].values).all()
     assert (time_level_vals == sorted_df['time'].values).all()
 
     # approximate, in same window
-    fm = calculate_feature_matrix([dfeat], cutoff_time=cutoff_df,
-                                  cutoff_time_in_index=True, approximate="2 d")
-    instance_level_vals = fm.index.get_level_values(0).values
-    time_level_vals = fm.index.get_level_values(1).values
+    fm3 = calculate_feature_matrix([dfeat], cutoff_time=cutoff_df,
+                                   cutoff_time_in_index=True, approximate="2 d")
+    instance_level_vals = fm3.index.get_level_values(0).values
+    time_level_vals = fm3.index.get_level_values(1).values
     assert (instance_level_vals == sorted_df['instance_id'].values).all()
     assert (time_level_vals == sorted_df['time'].values).all()

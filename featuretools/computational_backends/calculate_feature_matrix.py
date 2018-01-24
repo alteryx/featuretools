@@ -258,13 +258,13 @@ def calculate_batch(features, group, approximate, entityset, backend_verbose, tr
         if approximate:
             id_name = _feature_matrix.index.name
             indexer = group[['instance_id', target_time]]
-
-            _feature_matrix = (indexer.merge(_feature_matrix,
-                                             left_on=['instance_id'],
-                                             right_index=True,
-                                             how='left')
-                               .set_index(['instance_id', target_time]))
+            _feature_matrix = indexer.merge(_feature_matrix,
+                                            left_on=['instance_id'],
+                                            right_index=True,
+                                            how='left')
+            _feature_matrix.set_index(['instance_id', target_time], inplace=True)
             _feature_matrix.index.set_names([id_name, 'time'], inplace=True)
+            _feature_matrix.sort_index(level=1, kind='mergesort', inplace=True)
         else:
             time_index = pd.DatetimeIndex([time_last] * _feature_matrix.shape[0], name='time')
             _feature_matrix.set_index(time_index, append=True, inplace=True)
