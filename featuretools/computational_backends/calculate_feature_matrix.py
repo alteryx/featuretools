@@ -99,6 +99,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
 
     entityset = features[0].entityset
     target_entity = features[0].entity
+    pass_columns = []
 
     if not isinstance(cutoff_time, pd.DataFrame):
         if cutoff_time is None:
@@ -130,6 +131,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
             # take the first column that isn't instance_id and assume it is time
             not_instance_id = [c for c in cutoff_time.columns if c != "instance_id"]
             cutoff_time.rename(columns={not_instance_id[0]: "time"}, inplace=True)
+        pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
 
     # Get dictionary of features to approximate
     if approximate is not None:
@@ -186,7 +188,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
                                           training_window, profile, verbose,
                                           save_progress, backend,
                                           no_unapproximated_aggs, cutoff_df_time_var,
-                                          target_time)
+                                          target_time, pass_columns)
         feature_matrix.append(_feature_matrix)
         # Do a manual garbage collection in case objects from calculate_batch
         # weren't collected automatically
@@ -202,9 +204,11 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
     return feature_matrix
 
 
-def calculate_batch(features, group, approximate, entityset, backend_verbose, training_window,
-                    profile, verbose, save_progress, backend,
-                    no_unapproximated_aggs, cutoff_df_time_var, target_time):
+def calculate_batch(features, group, approximate, entityset, backend_verbose,
+                    training_window, profile, verbose, save_progress, backend,
+                    no_unapproximated_aggs, cutoff_df_time_var, target_time,
+                    pass_columns):
+    # if approximating, calculate the approximate features
     if approximate is not None:
         precalculated_features, all_approx_feature_set = approximate_features(features,
                                                                               group,
@@ -217,6 +221,8 @@ def calculate_batch(features, group, approximate, entityset, backend_verbose, tr
         precalculated_features = None
         all_approx_feature_set = None
 
+    # if backend verbose wasn't set explicitly, set to True if verbose is true
+    # and there is only 1 cutoff time
     if backend_verbose is None:
         one_cutoff_time = group[cutoff_df_time_var].nunique() == 1
         backend_verbose = verbose and one_cutoff_time
@@ -231,6 +237,7 @@ def calculate_batch(features, group, approximate, entityset, backend_verbose, tr
                                                 verbose=backend_verbose)
         return matrix
 
+    # if all aggregations have been approximated, can calculate all together
     if no_unapproximated_aggs and approximate is not None:
         grouped = [[datetime.now(), group]]
     else:
@@ -255,9 +262,10 @@ def calculate_batch(features, group, approximate, entityset, backend_verbose, tr
 
         # this can occur when the features for an instance are calculated at
         # multiple cutoff times which were binned to the same frequency.
+        id_name = _feature_matrix.index.name
+
         if approximate:
-            id_name = _feature_matrix.index.name
-            indexer = group[['instance_id', target_time]]
+            indexer = group[['instance_id', target_time] + pass_columns]
             _feature_matrix = indexer.merge(_feature_matrix,
                                             left_on=['instance_id'],
                                             right_index=True,
@@ -268,6 +276,14 @@ def calculate_batch(features, group, approximate, entityset, backend_verbose, tr
         else:
             time_index = pd.DatetimeIndex([time_last] * _feature_matrix.shape[0], name='time')
             _feature_matrix.set_index(time_index, append=True, inplace=True)
+            if pass_columns:
+                pass_through = group[['instance_id', cutoff_df_time_var] + pass_columns]
+                pass_through.rename(columns={'instance_id': id_name,
+                                             cutoff_df_time_var: 'time'},
+                                    inplace=True)
+                pass_through.set_index([id_name, 'time'], inplace=True)
+                for col in pass_columns:
+                    _feature_matrix[col] = pass_through[col]
         feature_matrix.append(_feature_matrix)
 
     feature_matrix = pd.concat(feature_matrix)
