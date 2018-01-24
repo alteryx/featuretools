@@ -9,15 +9,15 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
     """Encode categorical features
 
         Args:
-            feature_matrix (pd.DataFrame): Dataframe of features
-            features (list[:class:`.PrimitiveBase`]): Feature definitions in feature_matrix
-            top_n (pd.DataFrame): number of top values to include
-            include_unknown (pd.DataFrame): add feature encoding an unkwown class.
+            feature_matrix (pd.DataFrame): Dataframe of features.
+            features (list[PrimitiveBase]): Feature definitions in feature_matrix.
+            top_n (pd.DataFrame): Number of top values to include.
+            include_unknown (pd.DataFrame): Add feature encoding an unkwown class.
                 defaults to True
-            to_encode (list[str]): list of feature names to encode.
+            to_encode (list[str]): List of feature names to encode.
                 features not in this list are unencoded in the output matrix
-                defaults to encode all necessary features
-            inplace (bool): encode feature_matrix in place. Defaults to False.
+                defaults to encode all necessary features.
+            inplace (bool): Encode feature_matrix in place. Defaults to False.
             verbose (str): Print progress info.
 
         Returns:
