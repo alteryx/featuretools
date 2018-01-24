@@ -32,17 +32,17 @@ class EntitySet(BaseEntitySet):
         """Creates EntitySet
 
             Args:
-                id (str) : unique identifier to associate with this instance
-                verbose (bool)
+                id (str) : Unique identifier to associate with this instance
+                verbose (bool): Show additional information.
 
-                entities (dict[str -> tuple(pd.DataFrame, str, str)]): dictionary of
+                entities (dict[str -> tuple(pd.DataFrame, str, str)]): Dictionary of
                     entities. Entries take the format
-                    {entity id -> (dataframe, id column, (time_column), (variable_types))}
-                    Note that time_column and variable_types are optional
+                    {entity id -> (dataframe, id column, (time_column), (variable_types))}.
+                    Note that time_column and variable_types are optional.
 
-                relationships (list[(str, str, str, str)]): list of relationships
+                relationships (list[(str, str, str, str)]): List of relationships
                     between entities. List items are a tuple with the format
-                    (parent entity id, parent variable, child entity id, child variable)
+                    (parent entity id, parent variable, child entity id, child variable).
 
             Example:
 
@@ -413,21 +413,21 @@ class EntitySet(BaseEntitySet):
         Load the data for a specified entity from a pandas dataframe.
 
         Args:
-            entity_id (str) : unique id to associate with this entity
-            dataframe (:class:`.pd.DataFrame`) : Pandas dataframe containing the data
+            entity_id (str) : Unique id to associate with this entity.
+            dataframe (pd.DataFrame) : Pandas dataframe containing the data.
             index (str, optional): Name of the variable used to index the entity.
-                If None, take the first column
-            variable_types (dict[str->dict[str->type]]) : Optional mapping of
-                entity_id -> variable_types dict with which to initialize an
+                If None, take the first column.
+            variable_types (dict[str -> dict[str -> type]]) : Optional mapping of
+                entity_id to variable_types dict with which to initialize an
                 entity's store.
             make_index (bool, optional) : If True, assume index does not exist as a column in
                 dataframe, and create a new column of that name using integers the (0, len(dataframe)).
-                Otherwise, assume index exists in dataframe
-                An entity's variable_types dict maps string variable ids to types (:class:`.Variable`)
+                Otherwise, assume index exists in dataframe.
+                An entity's variable_types dict maps string variable ids to types (:class:`.Variable`).
             time_index (str, optional) : Name of column to use as a time index for this entity. Must be
-                a Datetime or Numeric dtype
+                a Datetime or Numeric dtype.
             secondary_time_index (str, optional): Name of variable containing
-                time data to use a second time index for the entity
+                time data to use a second time index for the entity.
             encoding (str, optional) : If None, will use 'ascii'. Another option is 'utf-8',
                 or any encoding supported by pandas. Passed into underlying pandas.to_csv() calls,
                 so see Pandas documentation for more information.
@@ -768,18 +768,18 @@ class EntitySet(BaseEntitySet):
         """Combines two variable into variable new_id
 
         Args:
-            entity_id (str): ID of Entity to be modified
-            new_id (str): Id of new variable being created
-            to_combine (list[:class:`.Variable`] or list[str]): list of
-                variables to combine
-            drop (bool, optional): if True, variables that are combined are
-                dropped from the entity
-            hashed (bool, optional): if True, combination variables values are
+            entity_id (str): Id of Entity to be modified.
+            new_id (str): Id of new variable being created.
+            to_combine (list[Variable] or list[str]): List of
+                variables to combine.
+            drop (bool, optional): If True, variables that are combined are
+                dropped from the entity.
+            hashed (bool, optional): If True, combination variables values are
                 hashed, resulting in an integer column dtype. Otherwise, values
                 are just concatenated.
 
         Note:
-            underlying data for variable must be of type str
+            Underlying data for variable must be of type str.
 
         """
         # _operations?
@@ -943,8 +943,8 @@ class EntitySet(BaseEntitySet):
         """Find interesting values for categorical variables, to be used to generate "where" clauses
 
         Args:
-            max_values (int) : maximum number of values per variable to add
-            verbose (bool) : If True, print summary of interesting values found
+            max_values (int) : Maximum number of values per variable to add.
+            verbose (bool) : If True, print summary of interesting values found.
 
         Returns:
             None
@@ -968,12 +968,12 @@ class EntitySet(BaseEntitySet):
         exclude data if it does not lie within  and time_last
 
         Args:
-            start_entity_id (str) : id of start entity
-            final_entity_id (str) : id of final entity
-            instance_ids (list[str]) : list of start entity instance ids from
-                which to find related instances in final entity
-            time_last (pd.TimeStamp) :  latest allowed time
-            add_link (bool) : if True, add a link variable from the first
+            start_entity_id (str) : Id of start entity.
+            final_entity_id (str) : Id of final entity.
+            instance_ids (list[str]) : List of start entity instance ids from
+                which to find related instances in final entity.
+            time_last (pd.TimeStamp) :  Latest allowed time.
+            add_link (bool) : If True, add a link variable from the first
                 entity in the path to the last. Assumes the path is made up of
                 only backwards relationships.
 
