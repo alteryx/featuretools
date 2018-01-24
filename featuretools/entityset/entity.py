@@ -51,7 +51,7 @@ class Entity(BaseEntity):
             last_time_index (pd.Series): Time index of the last event for each
                 instance across all child entities.
             encoding (str, optional)) : If None, will use 'ascii'. Another option is 'utf-8',
-                or any encoding supported by pandas. 
+                or any encoding supported by pandas.
             relationships (list): List of known relationships to other entities,
                 used for inferring variable types.
 

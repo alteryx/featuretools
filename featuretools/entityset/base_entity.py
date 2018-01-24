@@ -33,14 +33,14 @@ class BaseEntity(FTBase):
         """ Create Entity
 
         Args:
-            id (str): A unique string identifying the entity
-            variable_types (dict[str->type]): A mapping of variable IDs to
+            id (str): A unique string identifying the entity.
+            variable_types (dict[str -> type]): A mapping of variable IDs to
                 subclasses of :class:`.Variable` that this entity will use to
-                create variables
-            entityset (:class:`.base_entityset`): EntitySet this entity belongs to
-            name (str, optional): Optional human readable name
-            index (str, optional) : Id of index variable. Ignored if entityset provided
-            time_index (str, optional) : Id of time index variable. Ignored if entityset provided
+                create variables.
+            entityset (:class:`.base_entityset`): EntitySet this entity belongs to.
+            name (str, optional): Optional human readable name.
+            index (str, optional) : Id of index variable. Ignored if entityset provided.
+            time_index (str, optional) : Id of time index variable. Ignored if entityset provided.
         """
         assert isinstance(id, basestring), "Entity id must be a string"
 
@@ -136,10 +136,10 @@ class BaseEntity(FTBase):
         """Get variable instance
 
         Args:
-            variable_id (str) : id of variable to get
+            variable_id (str) : Id of variable to get.
 
         Returns:
-            :class:`.Variable` : instance of variable
+            :class:`.Variable` : Instance of variable.
 
         Raises:
             RuntimeError : if no variable exist with provided id
@@ -154,7 +154,7 @@ class BaseEntity(FTBase):
         """See row corresponding to instance id
 
         Args:
-            instance_ids (object, list) : instance id or list of instance ids
+            instance_ids (object, list[object]) : Instance id or list of instance ids.
 
         Returns:
             :class:`pd.DataFrame` : Pandas DataFrame
@@ -169,7 +169,7 @@ class BaseEntity(FTBase):
         """See first n instance in entity
 
         Args:
-            n (int) : number of instances to return
+            n (int) : Number of instances to return.
 
         Returns:
             :class:`pd.DataFrame` : Pandas DataFrame
@@ -206,8 +206,8 @@ class BaseEntity(FTBase):
         """Add variable to entity
 
         Args:
-            new_id (str) : id of variable to be added
-            type (:class:`.Variable`) : class of variable
+            new_id (str) : Id of variable to be added.
+            type (Variable) : Class of variable.
         """
         if new_id in [v.id for v in self.variables]:
             logger.warning("Not adding duplicate variable: %s", new_id)
@@ -263,10 +263,10 @@ class BaseEntity(FTBase):
         """Convert variable in dataframe to different type
 
         Args:
-            variable_id (str) : id of variable to convert
-            new_type (subclass of `Variable`) : type of variable to convert to
-            entityset (:class:`.BaseEntitySet`) : EntitySet associated with this entity
-            convert_data (bool) : If True, convert underlying data in the EntitySet
+            variable_id (str) : Id of variable to convert.
+            new_type (subclass of `Variable`) : Type of variable to convert to.
+            entityset (:class:`.BaseEntitySet`) : EntitySet associated with this entity.
+            convert_data (bool) : If True, convert underlying data in the EntitySet.
 
         Raises:
             RuntimeError : Raises if it cannot convert the underlying data
