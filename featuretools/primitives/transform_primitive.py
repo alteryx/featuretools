@@ -66,7 +66,7 @@ def make_trans_primitive(function, input_types, return_type, name=None,
 
     Args:
         function (function): Function that takes in an array and applies some
-            transformation to it, returning an array
+            transformation to it, returning an array.
 
         input_types (list[Variable]): Variable types of the inputs.
 
@@ -182,9 +182,9 @@ class TimeSincePrevious(TransformPrimitive):
         """Summary
 
         Args:
-            base_feature (:class:`PrimitiveBase`): base feature
-            group_feature (None, optional): variable or feature to group
-                rows by before calculating diff
+            base_feature (PrimitiveBase): Base feature.
+            group_feature (None, optional): Variable or feature to group
+                rows by before calculating diff.
 
         """
         group_feature = self._check_feature(group_feature)
@@ -473,9 +473,9 @@ class Diff(TransformPrimitive):
         """Summary
 
         Args:
-            base_feature (:class:`PrimitiveBase`): base feature
-            group_feature (:class:`PrimitiveBase`): variable or feature to
-                group rows by before calculating diff
+            base_feature (PrimitiveBase): Base feature.
+            group_feature (PrimitiveBase): Variable or feature to
+                group rows by before calculating diff.
 
         """
         self.group_feature = self._check_feature(group_feature)

@@ -64,12 +64,12 @@ class Timedelta(FTBase):
     def __init__(self, value, unit=None, entity=None, data=None, inclusive=False):
         """
         Args:
-            value (float, str) : value of timedelta, or string providing
-                both unit and value
-            unit (str) : unit of time delta.
-            entity (str, optional) : entity id to use if unit equals
-                "observations"
-            data (:class:`pd.Series`, optional) : series of timestamps to use
+            value (float, str) : Value of timedelta, or string providing
+                both unit and value.
+            unit (str) : Unit of time delta.
+            entity (str, optional) : Entity id to use if unit equals
+                "observations".
+            data (pd.Series, optional) : series of timestamps to use
                 with observations. Can be calculated later.
             inclusive (bool, optional) : if True, include events that are
                 exactly timedelta distance away from the original time/observation
@@ -175,13 +175,13 @@ class Timedelta(FTBase):
     def __call__(self, parent_entity, instance_id, entityset, inclusive=False):
         """
         Args:
-            parent_entity (str) : ID of parent entity, from which our entity
-                will be filtered
-            instance_id (str, int) : instance ID on the parent entity used to
-                select ids on this entity
-            entityset (:class:`.BaseEntitySet`) : associated entityset from which to access data
-            inclusive (bool, optional]) : if True, include events that are
-                exactly timedelta distance away from the original time/observation
+            parent_entity (str) : Id of parent entity, from which our entity
+                will be filtered.
+            instance_id (str, int) : Instance ID on the parent entity used to
+                select ids on this entity.
+            entityset (BaseEntitySet) : Associated entityset from which to access data.
+            inclusive (bool, optional]) : If True, include events that are
+                exactly timedelta distance away from the original time/observation.
 
         Returns:
             :class:`Timedelta`

@@ -19,7 +19,7 @@ def load_flight(entity_id='flight_dataset', nrows=None, force=False):
     of Featuretools.
 
     Args:
-        entity_id (str):  id of retail dataset on scheduler
+        entity_id (str):  Id of retail dataset on scheduler.
     '''
     demo_save_path = make_flight_pathname(nrows)
 

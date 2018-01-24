@@ -100,7 +100,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
         stack_on (list[PrimitiveBase]): Whitelist of primitives that
             can be input_types.
 
-        stack_on_exclude (list[:class:`.PrimitiveBase`]): Blacklist of
+        stack_on_exclude (list[PrimitiveBase]): Blacklist of
             primitives that cannot be input_types.
 
         base_of (list[PrimitiveBase): Whitelist of primitives that
