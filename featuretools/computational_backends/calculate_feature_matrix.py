@@ -210,13 +210,15 @@ def calculate_batch(features, group, approximate, entityset, backend_verbose,
                     pass_columns):
     # if approximating, calculate the approximate features
     if approximate is not None:
-        precalculated_features, all_approx_feature_set = approximate_features(features,
-                                                                              group,
-                                                                              window=approximate,
-                                                                              entityset=entityset,
-                                                                              training_window=training_window,
-                                                                              verbose=backend_verbose,
-                                                                              profile=profile)
+        precalculated_features, all_approx_feature_set = approximate_features(
+            features,
+            group,
+            window=approximate,
+            entityset=entityset,
+            training_window=training_window,
+            verbose=backend_verbose,
+            profile=profile
+        )
     else:
         precalculated_features = None
         all_approx_feature_set = None
@@ -258,12 +260,15 @@ def calculate_batch(features, group, approximate, entityset, backend_verbose,
             window = training_window
 
         # calculate values for those instances at time _time_last_to_calc
-        _feature_matrix = calc_results(_time_last_to_calc, ids, precalculated_features=precalculated_features, training_window=window)
+        _feature_matrix = calc_results(_time_last_to_calc,
+                                       ids,
+                                       precalculated_features=precalculated_features,
+                                       training_window=window)
 
-        # this can occur when the features for an instance are calculated at
-        # multiple cutoff times which were binned to the same frequency.
         id_name = _feature_matrix.index.name
 
+        # if approximate, merge feature matrix with group frame to get original
+        # cutoff times and passed columns
         if approximate:
             indexer = group[['instance_id', target_time] + pass_columns]
             _feature_matrix = indexer.merge(_feature_matrix,
@@ -274,9 +279,11 @@ def calculate_batch(features, group, approximate, entityset, backend_verbose,
             _feature_matrix.index.set_names([id_name, 'time'], inplace=True)
             _feature_matrix.sort_index(level=1, kind='mergesort', inplace=True)
         else:
-            time_index = pd.DatetimeIndex([time_last] * _feature_matrix.shape[0], name='time')
+            # all rows have same cutoff time. set time and add passed columns
+            num_rows = _feature_matrix.shape[0]
+            time_index = pd.DatetimeIndex([time_last] * num_rows, name='time')
             _feature_matrix.set_index(time_index, append=True, inplace=True)
-            if pass_columns:
+            if len(pass_columns) > 0:
                 pass_through = group[['instance_id', cutoff_df_time_var] + pass_columns]
                 pass_through.rename(columns={'instance_id': id_name,
                                              cutoff_df_time_var: 'time'},
