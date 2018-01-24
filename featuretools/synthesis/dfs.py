@@ -105,7 +105,7 @@ def dfs(entities=None,
         max_features (int, optional) : Cap the number of generated features to
                 this number. If -1, no limit.
 
-        features_only (boolean, optional): If True, returns the list of
+        features_only (bool, optional): If True, returns the list of
             features without calculating the feature matrix.
 
         cutoff_time_in_index (bool): If True, return a DataFrame with a MultiIndex

@@ -33,7 +33,7 @@ class EntitySet(BaseEntitySet):
 
             Args:
                 id (str) : unique identifier to associate with this instance
-                verbose (boolean)
+                verbose (bool)
 
                 entities (dict[str -> tuple(pd.DataFrame, str, str)]): dictionary of
                     entities. Entries take the format
@@ -431,7 +431,7 @@ class EntitySet(BaseEntitySet):
             encoding (str, optional) : If None, will use 'ascii'. Another option is 'utf-8',
                 or any encoding supported by pandas. Passed into underlying pandas.to_csv() calls,
                 so see Pandas documentation for more information.
-            already_sorted (boolean, optional) : If True, assumes that input dataframe is already sorted by time.
+            already_sorted (bool, optional) : If True, assumes that input dataframe is already sorted by time.
                 Defaults to False.
         """
         variable_types = variable_types or {}

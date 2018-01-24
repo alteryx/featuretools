@@ -55,17 +55,17 @@ class PandasBackend(ComputationalBackend):
         generate and return a mapping of instance -> feature values.
 
         Args:
-            instance_ids (list): list of instance id to build features for
+            instance_ids (list): List of instance id for which to build features.
 
-            time_last (pd.Timestamp): last allowed time. Data from exactly this
-                time not allowed
+            time_last (pd.Timestamp): Last allowed time. Data from exactly this
+                time not allowed.
 
-            training_window (:class:Timedelta, optional): Data older than
-                time_last by more than this will be ignored
+            training_window (Timedelta, optional): Data older than
+                time_last by more than this will be ignored.
 
-            profile (boolean): enable profiler if True
+            profile (bool): Enable profiler if True.
 
-            verbose (boolean): print output progress if True
+            verbose (bool): Print output progress if True.
 
         Returns:
             pd.DataFrame : Pandas DataFrame of calculated feature values.
