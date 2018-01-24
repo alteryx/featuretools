@@ -158,6 +158,23 @@ Cumulative Transform Primitives
     Diff
     TimeSincePrevious
 
+Text Transform Primitives
+*************************
+.. autosummary::
+   :toctree: generated/
+
+   NumCharacters
+   NumWords
+
+Location Transform Primitives
+*****************************
+.. autosummary::
+   :toctree generated/
+   
+   Latitude
+   Longitude
+   Haversine
+
 Feature methods
 ---------------
 .. autosummary::
@@ -226,7 +243,6 @@ EntitySet load and prepare data
 .. autosummary::
     :toctree: generated/
 
-    EntitySet.entity_from_csv
     EntitySet.entity_from_dataframe
     EntitySet.add_relationship
     EntitySet.normalize_entity
@@ -303,6 +319,7 @@ Variable types
     Ordinal
     Boolean
     Text
+    LatLong
 
 
 Feature Selection

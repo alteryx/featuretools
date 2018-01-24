@@ -18,6 +18,7 @@ from featuretools.variable_types import (
     DatetimeTimeIndex,
     Discrete,
     Id,
+    LatLong,
     Numeric,
     Ordinal,
     Text,
@@ -529,3 +530,54 @@ def pd_time_unit(time_unit):
     def inner(pd_index):
         return getattr(pd_index, time_unit).values
     return inner
+
+
+class Latitude(TransformPrimitive):
+    """
+    Returns the first value of the tuple base feature. For
+    use with the LatLong variable type.
+    """
+    name = 'latitude'
+    input_types = [LatLong]
+    return_type = Numeric
+
+    def get_function(self):
+        return lambda array: pd.Series([x[0] for x in array])
+
+
+class Longitude(TransformPrimitive):
+    """
+    Returns the second value on the tuple base feature. For
+    use with the LatLong variable type.
+    """
+    name = 'longitude'
+    input_types = [LatLong]
+    return_type = Numeric
+
+    def get_function(self):
+        return lambda array: pd.Series([x[1] for x in array])
+
+
+class Haversine(TransformPrimitive):
+    """
+    Calculate the approximate haversine distance in miles between
+    two LatLong variable types.
+    """
+    name = 'haversine'
+    input_types = [LatLong, LatLong]
+    return_type = Numeric
+    commutative = True
+
+    def get_function(self):
+        def haversine(latlong1, latlong2):
+            lat_1s = np.array([x[0] for x in latlong1])
+            lon_1s = np.array([x[1] for x in latlong1])
+            lat_2s = np.array([x[0] for x in latlong2])
+            lon_2s = np.array([x[1] for x in latlong2])
+            lon1, lat1, lon2, lat2 = map(np.radians, [lon_1s, lat_1s, lon_2s, lat_2s])
+            dlon = lon2 - lon1
+            dlat = lat2 - lat1
+            a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.0)**2
+            mi = 3950 * 2 * np.arcsin(np.sqrt(a))
+            return mi
+        return haversine

@@ -34,9 +34,9 @@ def dfs(entities=None,
 
 
     Args:
-        entities (dict[str: tuple(pd.DataFrame, str, str)]): dictionary of
+        entities (dict[str -> tuple(pd.DataFrame, str, str)]): dictionary of
             entities. Entries take the format
-            {entity id: (dataframe, id column, (time_column))}
+            {entity id -> (dataframe, id column, (time_column))}
 
         relationships (list[(str, str, str, str)]): list of relationships
             between entities. List items are a tuple with the format
@@ -86,7 +86,7 @@ def dfs(entities=None,
         ignore_entities (list[str], optional): List of entities to
             blacklist when creating features
 
-        ignore_variables (dict[str : str], optional): List of specific
+        ignore_variables (dict[str -> str], optional): List of specific
             variables within each entity to blacklist when creating features
 
         seed_features (list[:class:`.PrimitiveBase`]): List of manually defined

@@ -136,23 +136,22 @@ def test_add_parent_not_index_varible(es):
         es.add_relationship(Relationship(es['regions']['language'],
                                          es['customers']['region_id']))
 
-
-def test_glob_entityset(es, glob_es):
-    df_1 = es.entity_stores['log'].df
-    df_2 = glob_es.entity_stores['log'].df
-    assert df_1.equals(df_2)
-
-
-def test_gzip_entityset(es, gzip_es):
-    df_1 = es.entity_stores['log'].df
-    df_2 = gzip_es.entity_stores['log'].df
-    assert df_1.equals(df_2)
+# def test_glob_entityset(es, glob_es):
+#     df_1 = es.entity_stores['log'].df
+#     df_2 = glob_es.entity_stores['log'].df
+#     assert df_1.equals(df_2)
 
 
-def test_gzip_glob_entityset(es, gzip_glob_es):
-    df_1 = es.entity_stores['log'].df
-    df_2 = gzip_glob_es.entity_stores['log'].df
-    assert df_1.equals(df_2)
+# def test_gzip_entityset(es, gzip_es):
+#     df_1 = es.entity_stores['log'].df
+#     df_2 = gzip_es.entity_stores['log'].df
+#     assert df_1.equals(df_2)
+
+
+# def test_gzip_glob_entityset(es, gzip_glob_es):
+#     df_1 = es.entity_stores['log'].df
+#     df_2 = gzip_glob_es.entity_stores['log'].df
+#     assert df_1.equals(df_2)
 
 
 def test_serialization(es):
