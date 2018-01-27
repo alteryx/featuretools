@@ -712,6 +712,8 @@ class EntitySet(BaseEntitySet):
             new_index = self.make_index_variable_name(new_entity_id)
 
         transfer_types = {}
+        # If convert_links_to_integers is True, then these two will be different.
+        transfer_types[index] = type(base_entity[index])
         transfer_types[new_index] = type(base_entity[index])
         for v in additional_variables + copy_variables:
             transfer_types[v] = type(base_entity[v])
