@@ -12,4 +12,4 @@ from . import tests
 from .utils.pickle_utils import *
 import featuretools.demo
 
-__version__ = '0.1.17.d3m.2018.1.6'
+__version__ = '0.1.17.d3m.2018.1.26'
