@@ -43,7 +43,8 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
             the features for each instance at.  Can either be a DataFrame with
             'instance_id' and 'time' columns, DataFrame with the name of the
             index variable in the target entity and a time column, a list of values, or a single
-            value to calculate for all instances.
+            value to calculate for all instances. If the dataframe has more than two columns, any additional
+            columns will be added to the resulting feature matrix.
 
         instance_ids (list): list of instances to calculate features on. Only
             used if cutoff_time is a single datetime.

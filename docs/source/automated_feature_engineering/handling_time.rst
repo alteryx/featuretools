@@ -71,8 +71,18 @@ There is one row in the feature matrix corresponding to a row in ``cutoff_times`
                                       cutoff_time_in_index=True)
     feature_matrix
 
+It is often the case that we want our labels in our calculated feature matrix so that the ordering is consistent between the labels and the rows of the feature matrix. However, adding labels to the initial dataframe means that you would have to explicitly prohibit ``dfs`` from building features with that column. To bypass this, we can provide additional columns to cutoff times which will be added directly the feature matrix. While the two columns will be used as an index and cutoff time, any additional columns will appear as features in the resulting feature matrix. 
 
+.. ipython:: python
 
+    cutoff_times['labels'] = pd.Series([0, 0, 1, 0, 1])
+
+    feature_matrix, features = ft.dfs(entityset=es,
+                                      target_entity="customers",
+                                      cutoff_time=cutoff_times,
+                                      cutoff_time_in_index=True)
+
+    feature_matrix['labels']
 
 Running DFS with training windows
 ---------------------------------
