@@ -77,7 +77,10 @@ def dfs(entities=None,
                 Default:[:class:`Day <.primitives.Day>`, \
                          :class:`Year <.primitives.Year>`, \
                          :class:`Month <.primitives.Month>`, \
-                         :class:`Weekday <.primitives.Weekday>`]
+                         :class:`Weekday <.primitives.Weekday>`, \
+                         :class:`Haversine <.primitives.Haversine>`, \
+                         :class:`NumWords <.primitives.NumWords>`, \
+                         :class:`NumCharacters <.primitives.NumCharacters>`]
 
         allowed_paths (list[list[str]]): Allowed entity paths on which to make
             features.
@@ -123,7 +126,7 @@ def dfs(entities=None,
             if bucket is 24 hours, all instances with cutoff times on the same
             day will use the same calculation for expensive features.
 
-        save_progress (str, optional): Path to save intermediate computational results
+        save_progress (str, optional): Path to save intermediate computational results.
 
 
     Examples:

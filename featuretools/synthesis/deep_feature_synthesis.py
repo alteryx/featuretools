@@ -58,8 +58,9 @@ class DeepFeatureSynthesis(object):
                     Default:[:class:`Day <.primitives.Day>`, \
                              :class:`Year <.primitives.Year>`, \
                              :class:`Month <.primitives.Month>`, \
-                             :class:`Haversine <.primitives.Haversine>`,\
-                             :class:`NumWords <.primitives.NumWords>`,\
+                            :class:`Weekday <.primitives.Weekday>`, \
+                             :class:`Haversine <.primitives.Haversine>`, \
+                             :class:`NumWords <.primitives.NumWords>`, \
                              :class:`NumCharacters <.primitives.NumCharacters>`]
 
             where_primitives (list[:class:`.primitives.AggregationPrimitive`], optional):
@@ -83,20 +84,20 @@ class DeepFeatureSynthesis(object):
                 features for. If None, use all paths.
 
             ignore_entities (list[str], optional): List of entities to
-                blacklist when creating features. If None, use all entities
+                blacklist when creating features. If None, use all entities.
 
             ignore_variables (dict[str : str], optional): List of specific
                 variables within each entity to blacklist when creating features.
-                If None, use all variables
+                If None, use all variables.
 
             seed_features (list[:class:`.PrimitiveBase`], optional): List of manually
                 defined features to use.
 
-            drop_contains (list[str], optional): drop features
-                that contains these strings in name
+            drop_contains (list[str], optional): Drop features
+                that contains these strings in name.
 
-            drop_exact (list[str], optional): drop features that
-                exactly match these strings in name
+            drop_exact (list[str], optional): Drop features that
+                exactly match these strings in name.
 
             where_stacking_limit (int, optional): Cap the depth of the where features.
                 Default: 1
