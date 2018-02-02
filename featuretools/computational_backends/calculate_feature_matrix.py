@@ -9,8 +9,10 @@ from collections import defaultdict
 from datetime import datetime
 from functools import wraps
 
+import dask.bag
 import numpy as np
 import pandas as pd
+from dask.diagnostics import ProgressBar
 from pandas.tseries.frequencies import to_offset
 
 from .pandas_backend import PandasBackend
@@ -33,6 +35,8 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
                              save_progress=None, verbose=False,
                              backend_verbose=False,
                              verbose_desc='calculate_feature_matrix',
+                             njobs=1,
+                             chunk_size=0.1,
                              profile=False):
     """Calculates a matrix for a given set of instance ids and calculation times.
 
@@ -169,30 +173,84 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
     else:
         grouped = cutoff_time.groupby(cutoff_df_time_var, sort=True)
 
-    # if the backend is going to be verbose, don't make cutoff times verbose
-    if verbose and not backend_verbose:
-        iterator = make_tqdm_iterator(iterable=grouped,
-                                      total=len(grouped),
-                                      desc="Progress",
-                                      unit="cutoff time")
-    else:
-        iterator = grouped
-
-    feature_matrix = []
     backend = PandasBackend(entityset, features)
-    for _, group in iterator:
-        _feature_matrix = calculate_batch(features, group, approximate,
-                                          entityset, backend_verbose,
-                                          training_window, profile, verbose,
-                                          save_progress, backend,
-                                          no_unapproximated_aggs, cutoff_df_time_var,
-                                          target_time)
-        feature_matrix.append(_feature_matrix)
-        # Do a manual garbage collection in case objects from calculate_batch
-        # weren't collected automatically
-        gc.collect()
 
-    feature_matrix = pd.concat(feature_matrix)
+    if njobs != 1:
+        # Determine shape of cutoff_time and calculate chunks
+        num_per_chunk = False
+        if chunk_size > 0 and chunk_size < 1:
+            num_per_chunk = int(cutoff_time.shape[0] / float(chunk_size))
+        elif chunk_size >= 1:
+            num_per_chunk = chunk_size
+        elif chunk_size is None:
+            num_per_chunk = cutoff_time.shape[0]
+        assert num_per_chunk, ("chunk_size must be None, a float between 0 and 1,"
+                               "a positive integer")
+
+        # initialize chunks
+        chunks = []
+        for _, group in grouped:
+            values = group.values.tolist()
+            group_size = len(values)
+            if group_size > num_per_chunk:
+                for i in range(0, group_size, num_per_chunk):
+                    chunks.append(values[i:i+num_per_chunk])
+            else:
+                chunks.append(values)
+
+        # put chunks in dask bag
+        chunks = dask.bag.from_sequence(chunks, npartitions=njobs*4)
+        chunks = chunks.map(chunk_to_dataframe, group.columns)
+        chunks = chunks.map(calculate_chunk,
+                            features,
+                            approximate,
+                            entityset,
+                            backend_verbose,
+                            training_window,
+                            profile,
+                            verbose,
+                            save_progress,
+                            backend,
+                            no_unapproximated_aggs,
+                            cutoff_df_time_var,
+                            target_time)
+
+        # compute chunks
+        if verbose:
+            with ProgressBar():
+                feature_matrix = chunks.compute(num_workers=njobs)
+        else:
+            feature_matrix = chunks.compute(num_workers=njobs)
+
+        feature_matrix = pd.concat(feature_matrix)
+        feature_matrix.sort_index(level='time', kind='mergesort', inplace=True)
+
+    else:
+        # if the backend is going to be verbose, don't make cutoff times verbose
+        if verbose and not backend_verbose:
+            iterator = make_tqdm_iterator(iterable=grouped,
+                                          total=len(grouped),
+                                          desc="Progress",
+                                          unit="cutoff time")
+        else:
+            iterator = grouped
+
+        feature_matrix = []
+        for _, group in iterator:
+            _feature_matrix = calculate_batch(features, group, approximate,
+                                              entityset, backend_verbose,
+                                              training_window, profile,
+                                              verbose,
+                                              save_progress, backend,
+                                              no_unapproximated_aggs,
+                                              cutoff_df_time_var,
+                                              target_time)
+            feature_matrix.append(_feature_matrix)
+            # Do a manual garbage collection in case objects from
+            # calculate_batch weren't collected automatically
+            gc.collect()
+
+        feature_matrix = pd.concat(feature_matrix)
     if not cutoff_time_in_index:
         feature_matrix.reset_index(level='time', drop=True, inplace=True)
 
@@ -465,3 +523,32 @@ def gen_empty_approx_features_df(approx_features):
     df.index.name = approx_features[0].entity.index
     approx_fms_by_entity = {approx_entity_id: df}
     return approx_fms_by_entity
+
+
+# TODO: handle additional columns
+def chunk_to_dataframe(chunk, columns):
+    columns_dict = defaultdict(list)
+    for i in range(len(chunk)):
+        for j in range(len(columns)):
+            columns_dict[columns[j]].append(chunk[i][j])
+    return pd.DataFrame(columns_dict)
+
+
+def calculate_chunk(cutoff_time, features, approximate, entityset,
+                    backend_verbose, training_window, profile, verbose,
+                    save_progress, backend, no_unapproximated_aggs,
+                    cutoff_df_time_var, target_time):
+    fm = calculate_batch(features,
+                         cutoff_time,
+                         approximate,
+                         entityset,
+                         backend_verbose,
+                         training_window,
+                         profile,
+                         verbose,
+                         save_progress,
+                         backend,
+                         no_unapproximated_aggs,
+                         cutoff_df_time_var,
+                         target_time)
+    return fm
