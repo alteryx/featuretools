@@ -36,7 +36,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
                              backend_verbose=False,
                              verbose_desc='calculate_feature_matrix',
                              njobs=1,
-                             chunk_size=0.1,
+                             chunk_size=None,
                              profile=False):
     """Calculates a matrix for a given set of instance ids and calculation times.
 
@@ -176,28 +176,20 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
     backend = PandasBackend(entityset, features)
 
     # Determine shape of cutoff_time and calculate chunks
-    num_per_chunk = False
-    if chunk_size > 0 and chunk_size < 1:
-        num_per_chunk = int(cutoff_time.shape[0] * float(chunk_size))
-    elif chunk_size >= 1:
-        num_per_chunk = chunk_size
-    elif chunk_size is None:
-        num_per_chunk = cutoff_time.shape[0]
-    assert num_per_chunk, ("chunk_size must be None, a float between 0 and 1,"
-                           "a positive integer")
+    num_per_chunk = calc_num_per_chunk(chunk_size, cutoff_time.shape)
 
     # initialize chunks
     chunks = []
     for _, group in grouped:
         if group.shape[0] > num_per_chunk:
             for i in range(0, group.shape[0], num_per_chunk):
-                chunks.append((_, group.iloc[i:i+num_per_chunk]))
+                chunks.append((_, group.iloc[i:i + num_per_chunk]))
         else:
             chunks.append((_, group))
 
     if njobs != 1:
         # put chunks in dask bag
-        chunks = dask.bag.from_sequence(chunks, npartitions=njobs*4)
+        chunks = dask.bag.from_sequence(chunks, npartitions=njobs * 4)
         chunks = chunks.map(calculate_chunk,
                             features,
                             approximate,
@@ -522,13 +514,19 @@ def gen_empty_approx_features_df(approx_features):
     return approx_fms_by_entity
 
 
-# TODO: handle additional columns
-def chunk_to_dataframe(chunk, columns):
-    columns_dict = defaultdict(list)
-    for i in range(len(chunk)):
-        for j in range(len(columns)):
-            columns_dict[columns[j]].append(chunk[i][j])
-    return pd.DataFrame(columns_dict)
+def calc_num_per_chunk(chunk_size, shape):
+    if isinstance(chunk_size, float) and chunk_size > 0 and chunk_size < 1:
+        num_per_chunk = int(shape[0] * float(chunk_size))
+        # must be at least 1 cutoff per chunk
+        num_per_chunk = max(1, num_per_chunk)
+    elif isinstance(chunk_size, int) and chunk_size >= 1:
+        num_per_chunk = chunk_size
+    elif chunk_size is None:
+        num_per_chunk = shape[0]
+    else:
+        raise ValueError("chunk_size must be None, a float between 0 and 1,"
+                         "or a positive integer")
+    return num_per_chunk
 
 
 def calculate_chunk(chunk, features, approximate, entityset,
