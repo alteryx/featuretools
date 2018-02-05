@@ -567,3 +567,85 @@ def test_njobs(entityset):
                                               approximate='1 hour')
 
     assert (feature_matrix == labels).values.all()
+
+
+def test_cutoff_time_extra_columns(entityset):
+    es = entityset
+
+    agg_feat = Count(es['customers']['id'], es['regions'])
+    dfeat = DirectFeature(agg_feat, es['customers'])
+
+    cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),
+                                       pd.Timestamp('2011-04-09 10:30:03'),
+                                       pd.Timestamp('2011-04-08 10:30:00')],
+                              'instance_id': [0, 1, 0],
+                              'label': [True, True, False]},
+                             columns=['time', 'instance_id', 'label'])
+    fm = calculate_feature_matrix([dfeat], cutoff_time=cutoff_df)
+    # check column was added to end of matrix
+    assert 'label' == fm.columns[-1]
+    # check column was sorted by time labelike the rest of the feature matrix
+    true_series = pd.Series([False, True, True], index=[0, 1, 0])
+    assert (fm['label'] == true_series).all()
+
+    fm_2 = calculate_feature_matrix([dfeat],
+                                    cutoff_time=cutoff_df,
+                                    approximate="2 days")
+    # check column was added to end of matrix
+    assert 'label' in fm_2.columns
+    # check column was sorted by time like the rest of the feature matrix
+    true_series = pd.Series([False, True, True], index=[0, 1, 0])
+    assert (fm_2['label'] == true_series).all()
+
+
+def test_cfm_returns_original_time_indexes(entityset):
+    es = entityset
+
+    agg_feat = Count(es['customers']['id'], es['regions'])
+    dfeat = DirectFeature(agg_feat, es['customers'])
+    agg_feat_2 = Count(es['sessions']['id'], es['customers'])
+    cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),
+                                       pd.Timestamp('2011-04-09 10:30:03'),
+                                       pd.Timestamp('2011-04-08 10:30:00')],
+                              'instance_id': [0, 1, 0]})
+    sorted_df = cutoff_df.sort_values(['time', 'instance_id'], kind='mergesort')
+
+    # no approximate
+    fm = calculate_feature_matrix([dfeat], cutoff_time=cutoff_df,
+                                  cutoff_time_in_index=True)
+    instance_level_vals = fm.index.get_level_values(0).values
+    time_level_vals = fm.index.get_level_values(1).values
+    assert (instance_level_vals == sorted_df['instance_id'].values).all()
+    assert (time_level_vals == sorted_df['time'].values).all()
+
+    # approximate, in different windows, no unapproximated aggs
+    fm2 = calculate_feature_matrix([dfeat], cutoff_time=cutoff_df,
+                                   cutoff_time_in_index=True, approximate="1 m")
+    instance_level_vals = fm2.index.get_level_values(0).values
+    time_level_vals = fm2.index.get_level_values(1).values
+    assert (instance_level_vals == sorted_df['instance_id'].values).all()
+    assert (time_level_vals == sorted_df['time'].values).all()
+
+    # approximate, in different windows, unapproximated aggs
+    fm2 = calculate_feature_matrix([dfeat, agg_feat_2], cutoff_time=cutoff_df,
+                                   cutoff_time_in_index=True, approximate="1 m")
+    instance_level_vals = fm2.index.get_level_values(0).values
+    time_level_vals = fm2.index.get_level_values(1).values
+    assert (instance_level_vals == sorted_df['instance_id'].values).all()
+    assert (time_level_vals == sorted_df['time'].values).all()
+
+    # approximate, in same window, no unapproximated aggs
+    fm3 = calculate_feature_matrix([dfeat], cutoff_time=cutoff_df,
+                                   cutoff_time_in_index=True, approximate="2 d")
+    instance_level_vals = fm3.index.get_level_values(0).values
+    time_level_vals = fm3.index.get_level_values(1).values
+    assert (instance_level_vals == sorted_df['instance_id'].values).all()
+    assert (time_level_vals == sorted_df['time'].values).all()
+
+    # approximate, in same window, unapproximated aggs
+    fm3 = calculate_feature_matrix([dfeat, agg_feat_2], cutoff_time=cutoff_df,
+                                   cutoff_time_in_index=True, approximate="2 d")
+    instance_level_vals = fm3.index.get_level_values(0).values
+    time_level_vals = fm3.index.get_level_values(1).values
+    assert (instance_level_vals == sorted_df['instance_id'].values).all()
+    assert (time_level_vals == sorted_df['time'].values).all()
