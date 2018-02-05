@@ -175,32 +175,29 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
 
     backend = PandasBackend(entityset, features)
 
+    # Determine shape of cutoff_time and calculate chunks
+    num_per_chunk = False
+    if chunk_size > 0 and chunk_size < 1:
+        num_per_chunk = int(cutoff_time.shape[0] * float(chunk_size))
+    elif chunk_size >= 1:
+        num_per_chunk = chunk_size
+    elif chunk_size is None:
+        num_per_chunk = cutoff_time.shape[0]
+    assert num_per_chunk, ("chunk_size must be None, a float between 0 and 1,"
+                           "a positive integer")
+
+    # initialize chunks
+    chunks = []
+    for _, group in grouped:
+        if group.shape[0] > num_per_chunk:
+            for i in range(0, group.shape[0], num_per_chunk):
+                chunks.append((_, group.iloc[i:i+num_per_chunk]))
+        else:
+            chunks.append((_, group))
+
     if njobs != 1:
-        # Determine shape of cutoff_time and calculate chunks
-        num_per_chunk = False
-        if chunk_size > 0 and chunk_size < 1:
-            num_per_chunk = int(cutoff_time.shape[0] / float(chunk_size))
-        elif chunk_size >= 1:
-            num_per_chunk = chunk_size
-        elif chunk_size is None:
-            num_per_chunk = cutoff_time.shape[0]
-        assert num_per_chunk, ("chunk_size must be None, a float between 0 and 1,"
-                               "a positive integer")
-
-        # initialize chunks
-        chunks = []
-        for _, group in grouped:
-            values = group.values.tolist()
-            group_size = len(values)
-            if group_size > num_per_chunk:
-                for i in range(0, group_size, num_per_chunk):
-                    chunks.append(values[i:i+num_per_chunk])
-            else:
-                chunks.append(values)
-
         # put chunks in dask bag
         chunks = dask.bag.from_sequence(chunks, npartitions=njobs*4)
-        chunks = chunks.map(chunk_to_dataframe, group.columns)
         chunks = chunks.map(calculate_chunk,
                             features,
                             approximate,
@@ -228,12 +225,12 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
     else:
         # if the backend is going to be verbose, don't make cutoff times verbose
         if verbose and not backend_verbose:
-            iterator = make_tqdm_iterator(iterable=grouped,
-                                          total=len(grouped),
+            iterator = make_tqdm_iterator(iterable=chunks,
+                                          total=len(chunks),
                                           desc="Progress",
                                           unit="cutoff time")
         else:
-            iterator = grouped
+            iterator = chunks
 
         feature_matrix = []
         for _, group in iterator:
@@ -534,12 +531,12 @@ def chunk_to_dataframe(chunk, columns):
     return pd.DataFrame(columns_dict)
 
 
-def calculate_chunk(cutoff_time, features, approximate, entityset,
+def calculate_chunk(chunk, features, approximate, entityset,
                     backend_verbose, training_window, profile, verbose,
                     save_progress, backend, no_unapproximated_aggs,
                     cutoff_df_time_var, target_time):
     fm = calculate_batch(features,
-                         cutoff_time,
+                         chunk[1],
                          approximate,
                          entityset,
                          backend_verbose,
