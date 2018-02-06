@@ -6,7 +6,7 @@ clean:
 	find . -name '*~' -delete
 
 lint:
-	flake8 featuretools && isort --check-only --recursive featuretools
+	flake8 featuretools && isort --check-only --verbose --recursive featuretools
 
 test: lint
 	python $(TEST_CMD)
