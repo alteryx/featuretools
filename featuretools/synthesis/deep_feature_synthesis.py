@@ -212,7 +212,10 @@ class DeepFeatureSynthesis(object):
         """
         self.verbose = verbose
         if verbose:
-            self.pbar = make_tqdm_iterator(desc="Building features", unit=' features')
+            pbar_string = "Elapsed: {elapsed}, Remaining: {remaining}, Progress: {l_bar}{bar}||"
+            self.pbar = make_tqdm_iterator(desc="Building features",
+                                           unit=' features',
+                                           bar_format=pbar_string)
         all_features = {}
         for e in self.es.entities:
             if e not in self.ignore_entities:
