@@ -20,12 +20,12 @@ from featuretools.primitives import (
     IdentityFeature,
     Last,
     Mean,
+    NMostCommon,
+    NUnique,
     Sum,
     TimeSincePrevious,
     TransformPrimitive,
-    make_agg_primitive,
-    NMostCommon,
-    NUnique
+    make_agg_primitive
 )
 from featuretools.synthesis import DeepFeatureSynthesis
 from featuretools.utils.gen_utils import getsize
