@@ -674,4 +674,3 @@ def test_no_stack_on_expanding(es):
     feats = dfs_obj.build_features()
     feat_names = [f.get_name() for f in feats]
     assert (NUnique(nmostcommon, es['customers']).get_name() not in feat_names)
-
