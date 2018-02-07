@@ -736,6 +736,10 @@ def check_stacking(primitive, input_types):
         else:
             continue
         return False
+    # Don't stack on expanding features for now.
+    # pandas_backend can't handle them
+    if any([f.expanding for f in input_types]):
+        return False
 
     return True
 
