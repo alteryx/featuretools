@@ -186,9 +186,9 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
     for _, group in grouped:
         if group.shape[0] > num_per_chunk:
             for i in range(0, group.shape[0], num_per_chunk):
-                chunks.append((_, group.iloc[i:i + num_per_chunk]))
+                chunks.append(group.iloc[i:i + num_per_chunk])
         else:
-            chunks.append((_, group))
+            chunks.append(group)
 
     if njobs != 1:
         # put chunks in dask bag
@@ -229,7 +229,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
             iterator = chunks
 
         feature_matrix = []
-        for _, group in iterator:
+        for group in iterator:
             _feature_matrix = calculate_batch(features, group, approximate,
                                               entityset, backend_verbose,
                                               training_window, profile,
