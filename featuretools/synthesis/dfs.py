@@ -52,7 +52,9 @@ def dfs(entities=None,
             'instance_id' and 'time' columns, a DataFrame with the name of the
             index variable in the target entity and a time column, a
             list of values, or a single
-            value to calculate for all instances.
+            value to calculate for all instances. If the dataframe has more than
+            two columns, any additional columns will be added to the resulting
+            feature matrix.
 
         instance_ids (list): List of instances on which to calculate features. Only
             used if cutoff_time is a single datetime.
