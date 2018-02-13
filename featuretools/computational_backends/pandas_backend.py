@@ -122,7 +122,6 @@ class PandasBackend(ComputationalBackend):
 
         finished_entity_ids = []
         # Populate entity_frames with precalculated features
-        # TODO: handle approx features built on needs_all_values features
         if len(precalculated_features) > 0:
             for entity_id, precalc_feature_values in precalculated_features.items():
                 if entity_id in eframes_by_filter:
