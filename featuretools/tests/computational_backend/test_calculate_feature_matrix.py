@@ -345,7 +345,6 @@ def test_approximate_dfeat_of_need_all_values(entityset):
         true_vals_approx.append(round(true_agg_approx, 3))
     lapprox = [round(x, 3) for x in feature_matrix[dfeat.get_name()].tolist()]
     l = [round(x, 3) for x in feature_matrix[agg_feat.get_name()].tolist()]
-    import pdb; pdb.set_trace()
     assert lapprox == true_vals_approx
     assert l == true_vals
 

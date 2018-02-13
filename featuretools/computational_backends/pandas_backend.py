@@ -107,7 +107,7 @@ class PandasBackend(ComputationalBackend):
                                                  verbose=verbose)
         large_eframes_by_filter = None
         if any([f.needs_all_values for f in self.feature_tree.all_features]):
-            large_necessary_columns = self._find_necessary_columns(only_if_needs_all_values=False)
+            large_necessary_columns = self._find_necessary_columns(only_if_needs_all_values=True)
             large_eframes_by_filter = \
                 self.entityset.get_pandas_data_slice(filter_entity_ids=ordered_entities,
                                                      index_eid=self.target_eid,
