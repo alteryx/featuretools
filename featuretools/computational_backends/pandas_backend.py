@@ -7,7 +7,7 @@ import sys
 import uuid
 import warnings
 from datetime import datetime
-
+from collections import defaultdict
 import numpy as np
 import pandas as pd
 from future import standard_library
@@ -95,20 +95,34 @@ class PandasBackend(ComputationalBackend):
             ordered_entities = FeatureTree(self.entityset, self.features, ignored=ignored).ordered_entities
         else:
             ordered_entities = self.feature_tree.ordered_entities
+
+        necessary_columns = self._find_necessary_columns(only_if_needs_all_values=False)
         eframes_by_filter = \
             self.entityset.get_pandas_data_slice(filter_entity_ids=ordered_entities,
                                                  index_eid=self.target_eid,
                                                  instances=instance_ids,
+                                                 entity_columns=necessary_columns,
                                                  time_last=time_last,
                                                  training_window=training_window,
                                                  verbose=verbose)
-
+        large_eframes_by_filter = None
+        if any([f.needs_all_values for f in self.feature_tree.all_features]):
+            large_necessary_columns = self._find_necessary_columns(only_if_needs_all_values=False)
+            large_eframes_by_filter = \
+                self.entityset.get_pandas_data_slice(filter_entity_ids=ordered_entities,
+                                                     index_eid=self.target_eid,
+                                                     instances=None,
+                                                     entity_columns=large_necessary_columns,
+                                                     time_last=time_last,
+                                                     training_window=training_window,
+                                                     verbose=verbose)
         # Handle an empty time slice by returning a dataframe with defaults
         if eframes_by_filter is None:
             return self.generate_default_df(instance_ids=instance_ids)
 
         finished_entity_ids = []
         # Populate entity_frames with precalculated features
+        # TODO: handle approx features built on needs_all_values features
         if len(precalculated_features) > 0:
             for entity_id, precalc_feature_values in precalculated_features.items():
                 if entity_id in eframes_by_filter:
@@ -140,6 +154,9 @@ class PandasBackend(ComputationalBackend):
 
         for filter_eid in ordered_entities:
             entity_frames = eframes_by_filter[filter_eid]
+            large_entity_frames = None
+            if large_eframes_by_filter is not None:
+                large_entity_frames = large_eframes_by_filter[filter_eid]
 
             # update the current set of entity frames with the computed features
             # from previously finished entities
@@ -151,6 +168,9 @@ class PandasBackend(ComputationalBackend):
                 if not self.entityset.find_backward_path(start_entity_id=filter_eid,
                                                          goal_entity_id=eid):
                     entity_frames[eid] = eframes_by_filter[eid][eid]
+                    if (large_eframes_by_filter is not None and
+                            eid in large_eframes_by_filter and eid in large_eframes_by_filter[eid]):
+                        large_entity_frames[eid] = large_eframes_by_filter[eid][eid]
 
             if filter_eid in self.feature_tree.ordered_feature_groups:
                 for group in self.feature_tree.ordered_feature_groups[filter_eid]:
@@ -158,8 +178,20 @@ class PandasBackend(ComputationalBackend):
 
                         pbar.set_postfix({'running': 0})
 
-                    handler = self._feature_type_handler(group[0])
-                    handler(group, entity_frames)
+                    test_feature = group[0]
+
+                    input_frames, output_frames = \
+                        self._determine_input_output_frames(
+                            test_feature,
+                            entity_frames,
+                            large_entity_frames)
+
+                    handler = self._feature_type_handler(test_feature)
+                    result_frame = handler(group, input_frames)
+
+                    self._place_in_output_frames(result_frame,
+                                                 output_frames,
+                                                 test_feature)
 
                     if verbose:
                         pbar.update(1)
@@ -210,6 +242,72 @@ class PandasBackend(ComputationalBackend):
                     default_df[c] = [np.nan] * len(instance_ids)
         return default_df
 
+    def _find_necessary_columns(self, only_if_needs_all_values=False):
+        # TODO: If only_if_needs_all_values is False,
+        # can try to remove columns that are only used in the
+        # intermediate large_entity_frames
+        # TODO: Can try to only keep Id/Index/DatetimeTimeIndex if actually
+        # used for features
+        necessary_columns = defaultdict(set)
+        entities = set([f.entity.id for f in self.feature_tree.all_features])
+        for eid in entities:
+            entity = self.entityset[eid]
+            index_cols = [v.id for v in entity.variables
+                          if isinstance(v, (variable_types.Index,
+                                            variable_types.Id,
+                                            variable_types.TimeIndex))]
+            necessary_columns[eid] |= set(index_cols)
+
+        identity_features = [f for f in self.feature_tree.all_features
+                             if isinstance(f, IdentityFeature) and
+                             (not only_if_needs_all_values or
+                              self.feature_tree._needs_all_values(f))]
+        for f in identity_features:
+            necessary_columns[f.entity.id].add(f.variable.id)
+        necessary_columns = {eid: list(cols) for eid, cols in necessary_columns.items()}
+        return necessary_columns
+
+    def _place_in_output_frames(self, result_frame, output_frames,
+                                test_feature):
+        entity_id = test_feature.entity.id
+        for frames in output_frames:
+            index = frames[entity_id].index
+            frames[entity_id] = result_frame.loc[index]
+
+    def _determine_input_output_frames(self, test_feature, entity_frames,
+                                       large_entity_frames):
+        needs_all_values_type = \
+            self.feature_tree.needs_all_values_differentiator(test_feature)
+
+        input_frames = large_entity_frames
+
+        # input is the full set of instances since
+        # dependent feature needs all the values
+        # feature itself is an output, so also need to place result
+        # in selected (small) output frame
+        if needs_all_values_type == "dependent_and_output":
+            assert large_entity_frames is not None
+            output_frames = (large_entity_frames, entity_frames)
+
+        # feature is not itself an output
+        elif needs_all_values_type == "dependent":
+            assert large_entity_frames is not None
+            output_frames = (large_entity_frames,)
+
+        # feature itself needs all values,
+        # but no dependent features
+        # so can go straight in the selected (small) output frame
+        elif needs_all_values_type == "needs_all_no_dependent":
+            assert large_entity_frames is not None
+            output_frames = (entity_frames, )
+
+        # normal path
+        # needs_all_values_type == "normal_no_dependent"
+        else:
+            input_frames = entity_frames
+            output_frames = (entity_frames, )
+        return input_frames, output_frames
+
     def _feature_type_handler(self, f):
         if isinstance(f, TransformPrimitive):
             return self._calculate_transform_features
@@ -224,7 +322,9 @@ class PandasBackend(ComputationalBackend):
 
     def _calculate_identity_features(self, features, entity_frames):
         entity_id = features[0].entity.id
-        assert entity_id in entity_frames and features[0].get_name() in entity_frames[entity_id].columns
+        assert (entity_id in entity_frames and
+                features[0].get_name() in entity_frames[entity_id].columns)
+        return entity_frames[entity_id]
 
     def _calculate_transform_features(self, features, entity_frames):
         entity_id = features[0].entity.id
@@ -254,8 +354,7 @@ class PandasBackend(ComputationalBackend):
             if isinstance(values, pd.Series):
                 values = values.values
             frame[f.get_name()] = list(values)
-
-        entity_frames[entity_id] = frame
+        return frame
 
     def _calculate_direct_features(self, features, entity_frames):
         entity_id = features[0].entity.id
@@ -288,7 +387,8 @@ class PandasBackend(ComputationalBackend):
         # merge the identity feature from the parent entity into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
         if index_as_feature is not None:
-            merge_df.set_index(index_as_feature.get_name(), inplace=True, drop=False)
+            merge_df.set_index(index_as_feature.get_name(), inplace=True,
+                               drop=False)
         else:
             merge_df.set_index(merge_var, inplace=True)
 
@@ -296,7 +396,7 @@ class PandasBackend(ComputationalBackend):
                           left_on=merge_var, right_index=True,
                           how='left')
 
-        entity_frames[entity_id] = new_df
+        return new_df
 
     def _calculate_agg_features(self, features, entity_frames):
         test_feature = features[0]
@@ -317,7 +417,7 @@ class PandasBackend(ComputationalBackend):
         features = [f for f in features if f.get_name()
                     not in frame.columns]
         if not len(features):
-            return
+            return frame
 
         # handle where clause for all functions below
         if where is not None:
@@ -366,15 +466,17 @@ class PandasBackend(ComputationalBackend):
                                                 child_entity.id, groupby_var,
                                                 base_frame[groupby_var].dtype))
                 else:
-                    no_instances = check_no_related_instances(frame_as_obj.values, base_frame_as_obj.values)
+                    no_instances = check_no_related_instances(
+                        frame_as_obj.values, base_frame_as_obj.values)
             else:
-                no_instances = check_no_related_instances(frame[index_var].values, base_frame[groupby_var].values)
+                no_instances = check_no_related_instances(
+                    frame[index_var].values, base_frame[groupby_var].values)
 
         if base_frame.empty or no_instances:
             for f in features:
                 set_default_column(entity_frames[entity.id], f)
 
-            return
+            return frame
 
         def wrap_func_with_name(func, name):
             def inner(x):
@@ -398,7 +500,8 @@ class PandasBackend(ComputationalBackend):
                 func = wrap_func_with_name(func, random_id)
                 funcname = random_id
                 to_agg[variable_id].append(func)
-                agg_rename[u"{}-{}".format(variable_id, funcname)] = f.get_name()
+                agg_rename[u"{}-{}".format(variable_id, funcname)] = \
+                    f.get_name()
 
                 continue
 
@@ -458,11 +561,12 @@ class PandasBackend(ComputationalBackend):
         # convert boolean dtypes to floats as appropriate
         # pandas behavior: https://github.com/pydata/pandas/issues/3752
         for f in features:
-            if (not f.expanding and f.variable_type == variable_types.Numeric and
+            if (not f.expanding and
+                    f.variable_type == variable_types.Numeric and
                     frame[f.get_name()].dtype.name in ['object', 'bool']):
                 frame[f.get_name()] = frame[f.get_name()].astype(float)
 
-        entity_frames[entity.id] = frame
+        return frame
 
 
 def _can_agg(feature):

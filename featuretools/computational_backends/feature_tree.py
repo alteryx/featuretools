@@ -25,6 +25,9 @@ class FeatureTree(object):
             self.ignored = set([])
         else:
             self.ignored = ignored
+
+        self.feature_hashes = set([f.hash() for f in features])
+
         all_features = {f.hash(): f for f in features}
         feature_deps = {}
         for f in features:
@@ -32,9 +35,11 @@ class FeatureTree(object):
             feature_deps[f.hash()] = deps
             for dep in deps:
                 all_features[dep.hash()] = dep
-                feature_deps[dep.hash()] = dep.get_deep_dependencies(ignored=ignored)
+                feature_deps[dep.hash()] = dep.get_deep_dependencies(
+                    ignored=ignored)
         self.all_features = list(all_features.values())
         self.feature_deps = feature_deps
+        self.feature_dependents = self._build_dependents()
 
         self._generate_feature_tree(features)
         self._order_entities()
@@ -108,7 +113,8 @@ class FeatureTree(object):
                         _get_base_entity_id(f),
                         _get_ftype_string(f),
                         _get_use_previous(f),
-                        _get_where(f))
+                        _get_where(f),
+                        self.needs_all_values_differentiator(f))
 
             # Sort the list of features by the complex key function above, then
             # group them by the same key
@@ -153,8 +159,43 @@ class FeatureTree(object):
 
         return list(features.values()), out
 
+    def _build_dependents(self):
+        feature_dependents = defaultdict(set)
+        for f in self.all_features:
+            dependencies = self.feature_deps[f.hash()]
+            for d in dependencies:
+                feature_dependents[d.hash()].add(f)
+        return feature_dependents
+
+    def _needs_all_values(self, feature):
+        if feature.needs_all_values:
+            return True
+        for d in self.feature_dependents[feature.hash()]:
+            if d.needs_all_values:
+                return True
+        return False
+
+    def _dependent_needs_all_values(self, feature):
+        for d in self.feature_dependents[feature.hash()]:
+            if d.needs_all_values:
+                return True
+        return False
+
+    def _is_output_feature(self, f):
+        return f.hash() in self.feature_hashes
 
 # These functions are used for sorting and grouping features
+
+    def needs_all_values_differentiator(self, f):
+        if self._dependent_needs_all_values(f) and self._is_output_feature(f):
+            return "dependent_and_output"
+        elif self._dependent_needs_all_values(f):
+            return "dependent"
+        elif self._needs_all_values(f):
+            return "needs_all_no_dependent"
+        else:
+            return "normal_no_dependent"
+
 
 def _get_use_previous(f):
     if hasattr(f, "use_previous") and f.use_previous is not None:
@@ -191,3 +232,4 @@ def _get_ftype_string(f):
         return "identity"
     else:
         raise UnknownFeature("{} feature unknown".format(f.__class__))
+

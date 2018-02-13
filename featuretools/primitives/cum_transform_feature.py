@@ -19,6 +19,7 @@ class CumFeature(TransformPrimitive):
     allow_where = True
     agg_feature = None
     rolling_function = True
+    needs_all_values = True
 
     # Note: Any row with a nan value in the group by feature will have a
     # NaN value in the cumfeat
