@@ -21,8 +21,8 @@ from featuretools.primitives import (
     DirectFeature,
     IdentityFeature,
     Min,
-    Sum,
-    Percentile
+    Percentile,
+    Sum
 )
 
 
@@ -344,9 +344,9 @@ def test_approximate_dfeat_of_need_all_values(entityset):
         true_agg_approx = log_data_approx.loc[log_data_approx['session_id'].isin([0, 1, 2]), 'percentile'].fillna(0).sum()
         true_vals_approx.append(round(true_agg_approx, 3))
     lapprox = [round(x, 3) for x in feature_matrix[dfeat.get_name()].tolist()]
-    l = [round(x, 3) for x in feature_matrix[agg_feat.get_name()].tolist()]
+    test_list = [round(x, 3) for x in feature_matrix[agg_feat.get_name()].tolist()]
     assert lapprox == true_vals_approx
-    assert l == true_vals
+    assert test_list == true_vals
 
 
 def test_approximate_dfeat_of_dfeat_of_agg_on_target(entityset):

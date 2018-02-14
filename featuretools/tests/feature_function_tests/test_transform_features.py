@@ -1136,9 +1136,9 @@ def test_direct_agg_percentile(es):
 
     log_vals = es['log'].df[[v.get_name(), 'session_id']]
     log_vals['percentile'] = log_vals[v.get_name()].rank(pct=True)
-    log_vals['customer_id'] = [0]*10 + [1]*5 + [2] * 2
+    log_vals['customer_id'] = [0] * 10 + [1] * 5 + [2] * 2
     true_p = log_vals.groupby('customer_id')['percentile'].sum().fillna(0)
-    true_p = true_p[[0,0]]
+    true_p = true_p[[0, 0]]
     for t, a in zip(true_p.values, df[d.get_name()].values):
         assert (pd.isnull(t) and pd.isnull(a)) or round(t, 3) == round(a, 3)
 
