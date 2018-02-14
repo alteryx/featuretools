@@ -6,8 +6,9 @@ import pstats
 import sys
 import uuid
 import warnings
-from datetime import datetime
 from collections import defaultdict
+from datetime import datetime
+
 import numpy as np
 import pandas as pd
 from future import standard_library

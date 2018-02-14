@@ -21,8 +21,8 @@ from featuretools.primitives import (
     DirectFeature,
     IdentityFeature,
     Min,
-    Sum,
-    Percentile
+    Percentile,
+    Sum
 )
 
 
