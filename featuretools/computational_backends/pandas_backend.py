@@ -614,6 +614,6 @@ def check_no_related_instances(array1, array2):
 def set_default_column(frame, f):
     default = f.default_value
     if hasattr(default, '__iter__'):
-        l = frame.shape[0]
-        default = [f.default_value] * l
+        length = frame.shape[0]
+        default = [f.default_value] * length
     frame[f.get_name()] = default
