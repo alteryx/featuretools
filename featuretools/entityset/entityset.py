@@ -188,7 +188,7 @@ class EntitySet(BaseEntitySet):
                     # we need to at least add the ids of the intermediate entity
                     child_columns = [v.id for v in self[child_eid].variables
                                      if isinstance(v, (vtypes.Index, vtypes.Id,
-                                                      vtypes.TimeIndex))]
+                                                       vtypes.TimeIndex))]
                 elif entity_columns is not None:
                     child_columns = entity_columns[child_eid]
 

@@ -232,4 +232,3 @@ def _get_ftype_string(f):
         return "identity"
     else:
         raise UnknownFeature("{} feature unknown".format(f.__class__))
-
