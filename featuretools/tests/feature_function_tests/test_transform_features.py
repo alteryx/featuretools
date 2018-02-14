@@ -1142,6 +1142,15 @@ def test_direct_agg_percentile(es):
     for t, a in zip(true_p.values, df[d.get_name()].values):
         assert (pd.isnull(t) and pd.isnull(a)) or round(t, 3) == round(a, 3)
 
+
+def test_percentile_with_cutoff(es):
+    v = Feature(es['log']['value'])
+    p = Percentile(v)
+    pandas_backend = PandasBackend(es, [p])
+    df = pandas_backend.calculate_all_features(
+        [2], pd.Timestamp('2011/04/09 10:30:13'))
+    assert df[p.get_name()].tolist()[0] == 1.0
+
 # P TODO: reimplement like
 # def test_like_feat(es):
 #     like = Like(es['log']['product_id'], "coke")
