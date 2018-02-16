@@ -4,6 +4,7 @@ import logging
 from builtins import map
 
 import pandas as pd
+import numpy as np
 from past.builtins import basestring
 
 from featuretools import variable_types as vtypes
@@ -124,6 +125,17 @@ class BaseEntity(FTBase):
             for v in self.variables:
                 if v not in other.variables:
                     return False
+            if self.indexed_by is None and other.indexed_by is not None:
+                return False
+            else:
+                for v, index_map in self.indexed_by.items():
+                    if v not in other.indexed_by:
+                        return False
+                    for i, related in index_map.items():
+                        if i not in other.indexed_by[v]:
+                            return False
+                        if not (np.sort(related) == np.sort(other.indexed_by[v][i])).all():
+                            return False
             return True
 
     def __hash__(self):
