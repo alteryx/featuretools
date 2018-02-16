@@ -236,6 +236,49 @@ class TestVariableHandling(object):
             entityset.entity_from_dataframe('test_entity', df, 'id',
                                             time_index='time', variable_types=vtypes)
 
+    def test_converts_boolean(self):
+        boolean_strs = [['Y', 'N', 'N'],
+                        ['y', 'n', 'n'],
+                        ['T', 'F', 'F'],
+                        ['P', 'N', 'N'],
+                        ['Yes', 'No', 'No'],
+                        ['True', 'False', 'False'],
+                        ['true', 'false', 'false'],
+                        ['pos', 'neg', 'neg'],
+                        ['pos', 'neg', 'neg'],
+                        ]
+        df = pd.DataFrame({'id': [0, 1, 2]})
+        cnames = []
+        for i, b in enumerate(boolean_strs):
+            cname = "boolean_{}".format(i)
+            cnames.append(cname)
+            df[cname] = b
+
+        entityset = EntitySet(id='test')
+        entityset._import_from_dataframe(entity_id='test_entity', index='id',
+                                         dataframe=df)
+        for cname in cnames:
+            pd_col = entityset.get_column_data('test_entity', cname)
+            assert type(entityset['test_entity'][cname]) == variable_types.Boolean
+            assert isinstance(pd_col[0], (np.bool_, bool))
+
+    def test_handles_boolean_format(self):
+        boolean_format = {'true_vals': ['val1', 'Val1'],
+                          'false_vals': ['Val2', 'val2']}
+        boolean_strs = [np.nan, 'val1', 'Val1', 'val2', 'Val2']
+        df = pd.DataFrame(
+            {'id': [0, 1, 2, 3, 4], 'bool': boolean_strs})
+        vtypes = {'id': variable_types.Categorical,
+                  'bool': (variable_types.Boolean, boolean_format)}
+
+        entityset = EntitySet(id='test')
+        entityset._import_from_dataframe(entity_id='test_entity', index='id',
+                                         variable_types=vtypes, dataframe=df)
+
+        col = entityset.get_column_data('test_entity', 'bool')
+        assert (col[1:] == np.array([True, True, False, False])).all()
+        assert np.isnan(col[0])
+
     def test_calculates_statistics_on_init(self):
         df = pd.DataFrame({'id': [0, 1, 2],
                            'time': [datetime(2011, 4, 9, 10, 31, 3 * i)

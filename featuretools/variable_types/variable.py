@@ -318,6 +318,7 @@ class PandasTypes(object):
     _pandas_timedeltas = ['Timedelta']
     _pandas_numerics = ['int16', 'int32', 'int64',
                         'float16', 'float32', 'float64']
+    _pandas_booleans = ['bool']
 
 
 class LatLong(Variable):

@@ -18,6 +18,7 @@ from featuretools.utils.wrangle import _check_timedelta
 logger = logging.getLogger('featuretools.entityset')
 
 _numeric_types = vtypes.PandasTypes._pandas_numerics
+_boolean_types = vtypes.PandasTypes._pandas_booleans
 _categorical_types = [vtypes.PandasTypes._categorical]
 _datetime_types = vtypes.PandasTypes._pandas_datetimes
 
@@ -94,6 +95,10 @@ class Entity(BaseEntity):
 
             if issubclass(desired_type, vtypes.Numeric) and \
                     current_type not in _numeric_types:
+                self.entityset_convert_variable_type(var_id, desired_type, **type_args)
+
+            if issubclass(desired_type, vtypes.Boolean) and \
+                    current_type not in _boolean_types:
                 self.entityset_convert_variable_type(var_id, desired_type, **type_args)
 
             if issubclass(desired_type, vtypes.Discrete) and \
@@ -365,12 +370,16 @@ class Entity(BaseEntity):
                         inferred_type = vtypes.Datetime
                     else:
                         # heuristics to predict this some other than categorical
-                        sample = df[variable].sample(min(10000, df[variable].nunique()))
-                        avg_length = sample.str.len().mean()
-                        if avg_length > 50:
-                            inferred_type = vtypes.Text
+                        nunique = df[variable].dropna().nunique()
+                        if nunique == 2:
+                            inferred_type = vtypes.Boolean
                         else:
-                            inferred_type = vtypes.Categorical
+                            sample = df[variable].sample(min(10000, nunique))
+                            avg_length = sample.str.len().mean()
+                            if avg_length > 50:
+                                inferred_type = vtypes.Text
+                            else:
+                                inferred_type = vtypes.Categorical
 
             elif df[variable].dtype == "bool":
                 inferred_type = vtypes.Boolean
@@ -499,7 +508,12 @@ class Entity(BaseEntity):
         if df[column_id].empty:
             return
         if new_type == vtypes.Numeric:
-            df[column_id] = pd.to_numeric(df[column_id], errors='coerce')
+            if df[column_id].dtype.name == 'bool':
+                # pandas treats bools as numerics
+                # so can't use to_numeric()
+                df[column_id] = df[column_id].astype(int)
+            else:
+                df[column_id] = pd.to_numeric(df[column_id], errors='coerce')
         elif new_type == vtypes.Datetime:
             format = kwargs.get("format", None)
             # TODO: if float convert to int?
@@ -510,8 +524,15 @@ class Entity(BaseEntity):
                         kwargs.get("false_val", False): False,
                         True: True,
                         False: False}
-            # TODO: what happens to nans?
-            df[column_id] = df[column_id].map(map_dict).astype(np.bool)
+            if 'true_vals' in kwargs:
+                for v in kwargs['true_vals']:
+                    map_dict[v] = True
+            if 'false_vals' in kwargs:
+                for v in kwargs['false_vals']:
+                    map_dict[v] = False
+            df[column_id] = df[column_id].replace(map_dict)
+            if df[column_id].dropna().shape[0] == df.shape[0]:
+                df[column_id] = df[column_id].astype(np.bool)
         elif not issubclass(new_type, vtypes.Discrete):
             raise Exception("Cannot convert column %s to %s" %
                             (column_id, new_type))
