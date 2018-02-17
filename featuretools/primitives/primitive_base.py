@@ -15,7 +15,7 @@ from featuretools.utils.wrangle import (
     _check_time_against_column,
     _check_timedelta
 )
-from featuretools.variable_types import Variable, ListVariable
+from featuretools.variable_types import ListVariable, Variable
 
 logger = logging.getLogger('featuretools')
 

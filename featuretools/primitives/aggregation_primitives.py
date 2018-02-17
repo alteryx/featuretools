@@ -16,8 +16,8 @@ from featuretools.variable_types import (
     Boolean,
     DatetimeTimeIndex,
     Discrete,
-    ListDiscrete,
     Index,
+    ListDiscrete,
     Numeric,
     Variable
 )

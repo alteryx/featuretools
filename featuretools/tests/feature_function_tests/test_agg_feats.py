@@ -13,10 +13,10 @@ from featuretools.primitives import (
     Feature,
     Mean,
     Median,
+    NMostCommon,
     NumTrue,
     Sum,
     TimeSinceLast,
-    NMostCommon,
     get_aggregation_primitives,
     make_agg_primitive
 )
@@ -29,9 +29,9 @@ from featuretools.variable_types import (
     Datetime,
     DatetimeTimeIndex,
     Index,
+    ListDiscrete,
     Numeric,
-    Variable,
-    ListDiscrete
+    Variable
 )
 
 
