@@ -31,8 +31,7 @@ from featuretools.variable_types import (
     Index,
     Numeric,
     Variable,
-    ListDiscrete,
-    ListNumeric
+    ListDiscrete
 )
 
 
