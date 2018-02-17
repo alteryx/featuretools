@@ -170,7 +170,7 @@ Location Transform Primitives
 *****************************
 .. autosummary::
    :toctree generated/
-   
+
    Latitude
    Longitude
    Haversine
@@ -320,6 +320,8 @@ Variable types
     Boolean
     Text
     LatLong
+    ListDiscrete
+    ListNumeric
 
 
 Feature Selection

@@ -16,6 +16,7 @@ from featuretools.variable_types import (
     Boolean,
     DatetimeTimeIndex,
     Discrete,
+    ListDiscrete,
     Index,
     Numeric,
     Variable
@@ -177,11 +178,10 @@ class NMostCommon(AggregationPrimitive):
     """Finds the N most common elements in a categorical feature"""
     name = "n_most_common"
     input_types = [Discrete]
-    return_type = Discrete
+    return_type = ListDiscrete
     # max_stack_depth = 1
     stack_on = []
     stack_on_exclude = []
-    expanding = True
 
     def __init__(self, base_feature, parent_entity, n=3):
         self.n = n

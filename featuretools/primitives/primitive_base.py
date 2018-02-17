@@ -15,7 +15,7 @@ from featuretools.utils.wrangle import (
     _check_time_against_column,
     _check_timedelta
 )
-from featuretools.variable_types import Variable
+from featuretools.variable_types import Variable, ListVariable
 
 logger = logging.getLogger('featuretools')
 
@@ -46,9 +46,7 @@ class PrimitiveBase(FTBase):
     # downward from this feature's base features.
     max_stack_depth = None
     rolling_function = False
-    #: (bool): If True, feature will expand into multiple values during
-    # calculation
-    expanding = False
+
     _name = None
     # whitelist of primitives can have this primitive in input_types
     base_of = None
@@ -126,6 +124,12 @@ class PrimitiveBase(FTBase):
             return_type = feature.return_type
 
         return return_type
+
+    @property
+    def expanding(self):
+        #: (bool): If True, feature will expand into multiple values during
+        # calculation
+        return issubclass(self.variable_type, ListVariable)
 
     @property
     def base_hashes(self):

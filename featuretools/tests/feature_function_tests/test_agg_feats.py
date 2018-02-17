@@ -16,6 +16,7 @@ from featuretools.primitives import (
     NumTrue,
     Sum,
     TimeSinceLast,
+    NMostCommon,
     get_aggregation_primitives,
     make_agg_primitive
 )
@@ -29,7 +30,9 @@ from featuretools.variable_types import (
     DatetimeTimeIndex,
     Index,
     Numeric,
-    Variable
+    Variable,
+    ListDiscrete,
+    ListNumeric
 )
 
 
@@ -392,3 +395,35 @@ def test_makes_numtrue(es):
     features = dfs.build_features()
     assert feature_with_name(features, 'customers.NUM_TRUE(log.purchased)')
     assert feature_with_name(features, 'NUM_TRUE(log.purchased)')
+
+
+def test_makes_and_computes_nmostcommon(es):
+    dfs = DeepFeatureSynthesis(target_entity_id='sessions',
+                               entityset=es,
+                               filters=[],
+                               agg_primitives=[NMostCommon],
+                               trans_primitives=[])
+    features = dfs.build_features(variable_types=[ListDiscrete])
+    assert feature_with_name(features, 'N_MOST_COMMON(log.product_id)')
+    assert feature_with_name(features, 'N_MOST_COMMON(log.priority_level)')
+    fm = calculate_feature_matrix(features)
+    true_values1 = [
+        [1, 0],
+        [1, 0],
+        [0],
+        [0],
+        [2, 0],
+        [1],
+    ]
+    true_values2 = [
+        ['coke zero', 'car'],
+        ['toothpaste', 'brown bag'],
+        ['brown bag'],
+        ['Haribo sugar-free gummy bears', 'coke zero'],
+        ['coke zero'],
+        ['taco clock']]
+
+    for t, v in zip(true_values1, fm['N_MOST_COMMON(log.priority_level)']):
+        assert (t == v).all()
+    for t, v in zip(true_values2, fm['N_MOST_COMMON(log.product_id)']):
+        assert sorted(t) == sorted(v)

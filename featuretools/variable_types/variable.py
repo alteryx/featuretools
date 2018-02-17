@@ -328,6 +328,26 @@ class LatLong(Variable):
     _dtype_repr = "latlong"
 
 
+class ListVariable(Variable):
+    """Represents a list of values
+       This class is meant as an abstract base class
+       for ListDiscrete, ListNumeric, and other subclasses
+    """
+    _dtype_repr = "list_object"
+
+
+class ListDiscrete(ListVariable):
+    """Represents a list of discrete values
+    """
+    _dtype_repr = "list_discrete"
+
+
+class ListNumeric(ListVariable):
+    """Represents a list of numeric values
+    """
+    _dtype_repr = "list_numeric"
+
+
 ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
                       Categorical, Text, Ordinal,
-                      Boolean, LatLong]
+                      Boolean, LatLong, ListDiscrete, ListNumeric]
