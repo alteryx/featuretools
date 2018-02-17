@@ -20,6 +20,8 @@ from featuretools.primitives import (
     IdentityFeature,
     Last,
     Mean,
+    NMostCommon,
+    NUnique,
     Sum,
     TimeSincePrevious,
     TransformPrimitive,
@@ -660,3 +662,15 @@ def test_commutative(es):
 
     assert num_add_feats == 3
     assert num_add_as_base_feat == 9
+
+
+def test_no_stack_on_expanding(es):
+    nmostcommon = NMostCommon(es['log']['product_id'], es['sessions'])
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   agg_primitives=[NUnique],
+                                   seed_features=[nmostcommon],
+                                   max_depth=2)
+    feats = dfs_obj.build_features()
+    feat_names = [f.get_name() for f in feats]
+    assert (NUnique(nmostcommon, es['customers']).get_name() not in feat_names)
