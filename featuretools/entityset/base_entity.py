@@ -3,9 +3,10 @@ from __future__ import print_function
 import logging
 from builtins import map
 
-import pandas as pd
-import numpy as np
 from past.builtins import basestring
+
+import numpy as np
+import pandas as pd
 
 from featuretools import variable_types as vtypes
 from featuretools.core.base import FTBase
