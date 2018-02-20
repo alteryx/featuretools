@@ -983,18 +983,15 @@ class EntitySet(BaseEntitySet):
         training_window_is_dict = isinstance(training_window, dict)
         window = training_window
         start_estore = self.entity_stores[start_entity_id]
-        if instance_ids is None:
-            df = start_estore.df
-        else:   # instance_ids was passed in
-            # This check might be brittle
-            if not hasattr(instance_ids, '__iter__'):
-                instance_ids = [instance_ids]
+        # This check might be brittle
+        if instance_ids is not None and not hasattr(instance_ids, '__iter__'):
+            instance_ids = [instance_ids]
 
-            if training_window_is_dict:
-                window = training_window.get(start_estore.id)
-            df = start_estore.query_by_values(instance_ids,
-                                              time_last=time_last,
-                                              training_window=window)
+        if training_window_is_dict:
+            window = training_window.get(start_estore.id)
+        df = start_estore.query_by_values(instance_vals=instance_ids,
+                                          time_last=time_last,
+                                          training_window=window)
         # if we're querying on a path that's not actually a path, just return
         # the relevant slice of the entityset
         if start_entity_id == final_entity_id:
