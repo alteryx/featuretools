@@ -523,7 +523,7 @@ class DeepFeatureSynthesis(object):
 
         self._add_identity_features(all_features, entity)
 
-        for trans_prim in self.trans_primitives:
+        for i, trans_prim in enumerate(self.trans_primitives):
             # if multiple input_types, only use first one for DFS
             input_types = trans_prim.input_types
             if type(input_types[0]) == list:
@@ -544,6 +544,10 @@ class DeepFeatureSynthesis(object):
 
                 self._handle_new_feature(all_features=all_features,
                                          new_feature=new_f)
+                for earlier_trans in self.trans_primitives[:i]:
+                    new_f = earlier_trans(*matching_input)
+                    self._handle_new_feature(all_features=all_features,
+                                             new_feature=new_f)
 
         # now that all transform features are added, build where clauses
         self._build_where_clauses(all_features, entity)
