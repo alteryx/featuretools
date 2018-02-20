@@ -134,6 +134,10 @@ class BaseEntity(FTBase):
                     for i, related in index_map.items():
                         if i not in other.indexed_by[v]:
                             return False
+                        # indexed_by maps instances of two entities together by lists
+                        # We want to check that all the elements of the lists of instances
+                        # for each relationship are the same in both entities being
+                        # checked for equality, but don't care about the order.
                         if not (np.sort(related) == np.sort(other.indexed_by[v][i])).all():
                             return False
             return True
