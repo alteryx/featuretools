@@ -155,6 +155,7 @@ class IsNull(TransformPrimitive):
     input_types = [Variable]
     return_type = Boolean
 
+    @classmethod
     def get_function(self):
         return lambda array: pd.isnull(pd.Series(array))
 
@@ -165,6 +166,7 @@ class Absolute(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
 
+    @classmethod
     def get_function(self):
         return lambda array: np.absolute(array)
 
@@ -194,6 +196,7 @@ class TimeSincePrevious(TransformPrimitive):
     def generate_name(self):
         return u"time_since_previous_by_%s" % self.group_feature.get_name()
 
+    @classmethod
     def get_function(self):
         def pd_diff(base_array, group_array):
             bf_name = 'base_feature'
@@ -272,6 +275,7 @@ class Minutes(TimedeltaUnitBasePrimitive):
     """Transform a Timedelta feature into the number of minutes"""
     name = "minutes"
 
+    @classmethod
     def get_function(self):
         def pd_minutes(array):
             return pd_time_unit("seconds")(pd.TimedeltaIndex(array)) / 60
@@ -287,6 +291,7 @@ class Weeks(TimedeltaUnitBasePrimitive):
     """Transform a Timedelta feature into the number of weeks"""
     name = "weeks"
 
+    @classmethod
     def get_function(self):
         def pd_weeks(array):
             return pd_time_unit("days")(pd.TimedeltaIndex(array)) / 7
@@ -302,6 +307,7 @@ class Months(TimedeltaUnitBasePrimitive):
     """Transform a Timedelta feature into the number of months"""
     name = "months"
 
+    @classmethod
     def get_function(self):
         def pd_months(array):
             return pd_time_unit("days")(pd.TimedeltaIndex(array)) * (12 / 365)
@@ -317,6 +323,7 @@ class Years(TimedeltaUnitBasePrimitive):
     """Transform a Timedelta feature into the number of years"""
     name = "years"
 
+    @classmethod
     def get_function(self):
         def pd_years(array):
             return pd_time_unit("days")(pd.TimedeltaIndex(array)) / 365
@@ -329,6 +336,7 @@ class Weekend(TransformPrimitive):
     input_types = [Datetime]
     return_type = Boolean
 
+    @classmethod
     def get_function(self):
         return lambda df: pd_time_unit("weekday")(pd.DatetimeIndex(df)) > 4
 
@@ -346,6 +354,7 @@ class NumCharacters(TransformPrimitive):
     input_types = [Text]
     return_type = Numeric
 
+    @classmethod
     def get_function(self):
         return lambda array: pd.Series(array).str.len()
 
@@ -358,6 +367,7 @@ class NumWords(TransformPrimitive):
     input_types = [Text]
     return_type = Numeric
 
+    @classmethod
     def get_function(self):
         return lambda array: pd.Series([x.count(" ") + 1 for x in array])
 
@@ -423,6 +433,7 @@ class DaysSince(TransformPrimitive):
     return_type = Numeric
     uses_calc_time = True
 
+    @classmethod
     def get_function(self):
         def pd_days_since(array, time):
             if time is None:
@@ -484,6 +495,7 @@ class Diff(TransformPrimitive):
             self.group_feature.get_name()
         return u"%s(%s)" % (self.name.upper(), base_features_str)
 
+    @classmethod
     def get_function(self):
         def pd_diff(base_array, group_array):
             bf_name = 'base_feature'
@@ -512,6 +524,7 @@ class Not(TransformPrimitive):
     def _get_op(self):
         return "__not__"
 
+    @classmethod
     def get_function(self):
         return lambda array: np.logical_not(array)
 
@@ -525,6 +538,7 @@ class Percentile(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
 
+    @classmethod
     def get_function(self):
         return lambda array: pd.Series(array).rank(pct=True)
 
