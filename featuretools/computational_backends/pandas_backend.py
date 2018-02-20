@@ -118,6 +118,7 @@ class PandasBackend(ComputationalBackend):
                                                      time_last=time_last,
                                                      training_window=training_window,
                                                      verbose=verbose)
+
         # Handle an empty time slice by returning a dataframe with defaults
         if eframes_by_filter is None:
             return self.generate_default_df(instance_ids=instance_ids)
