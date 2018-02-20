@@ -138,7 +138,7 @@ class BaseEntity(FTBase):
                         # We want to check that all the elements of the lists of instances
                         # for each relationship are the same in both entities being
                         # checked for equality, but don't care about the order.
-                        if not (np.sort(related) == np.sort(other.indexed_by[v][i])).all():
+                        if not set(related) == set(other.indexed_by[v][i]):
                             return False
             return True
 
