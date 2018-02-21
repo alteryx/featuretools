@@ -8,6 +8,14 @@ import uuid
 import warnings
 from datetime import datetime
 
+import numpy as np
+import pandas as pd
+# progress bar
+from future import standard_library
+
+from .base_backend import ComputationalBackend
+from .feature_tree import FeatureTree
+
 from featuretools import variable_types
 from featuretools.entityset.relationship import Relationship
 from featuretools.exceptions import UnknownFeature
@@ -17,18 +25,10 @@ from featuretools.primitives import (
     IdentityFeature,
     TransformPrimitive
 )
-# progress bar
 from featuretools.utils.gen_utils import make_tqdm_iterator
 
-from future import standard_library
-
-import numpy as np
-
-import pandas as pd
-
 # featuretools
-from .base_backend import ComputationalBackend
-from .feature_tree import FeatureTree
+
 
 standard_library.install_aliases()
 warnings.simplefilter('ignore', np.RankWarning)

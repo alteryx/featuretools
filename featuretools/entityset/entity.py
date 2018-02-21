@@ -6,16 +6,14 @@ import time
 from builtins import range
 from datetime import datetime
 
-from featuretools import variable_types as vtypes
-from featuretools.utils.wrangle import _check_timedelta
-
 import numpy as np
-
 import pandas as pd
 
 from .base_entity import BaseEntity
 from .timedelta import Timedelta
 
+from featuretools import variable_types as vtypes
+from featuretools.utils.wrangle import _check_timedelta
 
 logger = logging.getLogger('featuretools.entityset')
 

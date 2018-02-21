@@ -3,13 +3,12 @@
 import os
 from datetime import datetime
 
+import numpy as np
+import pandas as pd
+
 from featuretools import variable_types
 from featuretools.entityset import EntitySet, Relationship
 from featuretools.tests import integration_data
-
-import numpy as np
-
-import pandas as pd
 
 
 def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_location='local',

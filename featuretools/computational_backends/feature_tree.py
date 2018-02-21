@@ -4,6 +4,8 @@ import logging
 from builtins import object
 from collections import defaultdict
 
+from ..utils import gen_utils as utils
+
 from featuretools import variable_types
 from featuretools.exceptions import UnknownFeature
 from featuretools.primitives import (
@@ -12,8 +14,6 @@ from featuretools.primitives import (
     IdentityFeature,
     TransformPrimitive
 )
-
-from ..utils import gen_utils as utils
 
 logger = logging.getLogger('featuretools.computational_backend')
 
