@@ -97,7 +97,7 @@ class PandasBackend(ComputationalBackend):
         else:
             ordered_entities = self.feature_tree.ordered_entities
 
-        necessary_columns = self._find_necessary_columns(only_if_needs_all_values=False)
+        necessary_columns = self.feature_tree.necessary_columns
         eframes_by_filter = \
             self.entityset.get_pandas_data_slice(filter_entity_ids=ordered_entities,
                                                  index_eid=self.target_eid,
@@ -108,7 +108,7 @@ class PandasBackend(ComputationalBackend):
                                                  verbose=verbose)
         large_eframes_by_filter = None
         if any([f.needs_all_values for f in self.feature_tree.all_features]):
-            large_necessary_columns = self._find_necessary_columns(only_if_needs_all_values=True)
+            large_necessary_columns = self.feature_tree.necessary_columns_for_all_values
             all_instances = self.entityset[self.target_eid].get_all_instances()
             large_eframes_by_filter = \
                 self.entityset.get_pandas_data_slice(filter_entity_ids=ordered_entities,
@@ -177,23 +177,36 @@ class PandasBackend(ComputationalBackend):
             if filter_eid in self.feature_tree.ordered_feature_groups:
                 for group in self.feature_tree.ordered_feature_groups[filter_eid]:
                     if verbose:
-
                         pbar.set_postfix({'running': 0})
 
                     test_feature = group[0]
+                    entity_id = test_feature.entity.id
 
-                    input_frames, output_frames = \
-                        self._determine_input_output_frames(
-                            test_feature,
-                            entity_frames,
-                            large_entity_frames)
+                    needs_all_values_type = \
+                        self.feature_tree.needs_all_values_differentiator(test_feature)
+
+                    input_frames = large_entity_frames
+                    if needs_all_values_type == "normal_no_dependent":
+                        input_frames = entity_frames
 
                     handler = self._feature_type_handler(test_feature)
                     result_frame = handler(group, input_frames)
 
-                    self._place_in_output_frames(result_frame,
-                                                 output_frames,
-                                                 test_feature)
+                    output_frames = []
+                    if needs_all_values_type.startswith('dependent'):
+                        # input is the full set of instances since
+                        # dependent feature needs all the values
+                        output_frames.append(large_entity_frames)
+                    if needs_all_values_type != "dependent":
+                        # input was selected (small) set of instances, or
+                        # feature itself is an output,
+                        # so need to place result
+                        # in selected (small) output frame
+                        output_frames.append(entity_frames)
+
+                    for frames in output_frames:
+                        index = frames[entity_id].index
+                        frames[entity_id] = result_frame.loc[index]
 
                     if verbose:
                         pbar.update(1)
@@ -243,72 +256,6 @@ class PandasBackend(ComputationalBackend):
                 if c not in default_df.columns:
                     default_df[c] = [np.nan] * len(instance_ids)
         return default_df
-
-    def _find_necessary_columns(self, only_if_needs_all_values=False):
-        # TODO: If only_if_needs_all_values is False,
-        # can try to remove columns that are only used in the
-        # intermediate large_entity_frames
-        # TODO: Can try to only keep Id/Index/DatetimeTimeIndex if actually
-        # used for features
-        necessary_columns = defaultdict(set)
-        entities = set([f.entity.id for f in self.feature_tree.all_features])
-        for eid in entities:
-            entity = self.entityset[eid]
-            index_cols = [v.id for v in entity.variables
-                          if isinstance(v, (variable_types.Index,
-                                            variable_types.Id,
-                                            variable_types.TimeIndex))]
-            necessary_columns[eid] |= set(index_cols)
-
-        identity_features = [f for f in self.feature_tree.all_features
-                             if isinstance(f, IdentityFeature) and
-                             (not only_if_needs_all_values or
-                              self.feature_tree._needs_all_values(f))]
-        for f in identity_features:
-            necessary_columns[f.entity.id].add(f.variable.id)
-        necessary_columns = {eid: list(cols) for eid, cols in necessary_columns.items()}
-        return necessary_columns
-
-    def _place_in_output_frames(self, result_frame, output_frames,
-                                test_feature):
-        entity_id = test_feature.entity.id
-        for frames in output_frames:
-            index = frames[entity_id].index
-            frames[entity_id] = result_frame.loc[index]
-
-    def _determine_input_output_frames(self, test_feature, entity_frames,
-                                       large_entity_frames):
-        needs_all_values_type = \
-            self.feature_tree.needs_all_values_differentiator(test_feature)
-
-        input_frames = large_entity_frames
-
-        # input is the full set of instances since
-        # dependent feature needs all the values
-        # feature itself is an output, so also need to place result
-        # in selected (small) output frame
-        if needs_all_values_type == "dependent_and_output":
-            assert large_entity_frames is not None
-            output_frames = (large_entity_frames, entity_frames)
-
-        # feature is not itself an output
-        elif needs_all_values_type == "dependent":
-            assert large_entity_frames is not None
-            output_frames = (large_entity_frames,)
-
-        # feature itself needs all values,
-        # but no dependent features
-        # so can go straight in the selected (small) output frame
-        elif needs_all_values_type == "needs_all_no_dependent":
-            assert large_entity_frames is not None
-            output_frames = (entity_frames, )
-
-        # normal path
-        # needs_all_values_type == "normal_no_dependent"
-        else:
-            input_frames = entity_frames
-            output_frames = (entity_frames, )
-        return input_frames, output_frames
 
     def _feature_type_handler(self, f):
         if isinstance(f, TransformPrimitive):

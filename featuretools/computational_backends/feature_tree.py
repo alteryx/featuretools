@@ -1,10 +1,10 @@
+import copy
 import itertools
 import logging
 from builtins import object
 from collections import defaultdict
 
-from ..utils import gen_utils as utils
-
+from featuretools import variable_types
 from featuretools.exceptions import UnknownFeature
 from featuretools.primitives import (
     AggregationPrimitive,
@@ -12,6 +12,8 @@ from featuretools.primitives import (
     IdentityFeature,
     TransformPrimitive
 )
+
+from ..utils import gen_utils as utils
 
 logger = logging.getLogger('featuretools.computational_backend')
 
@@ -29,21 +31,58 @@ class FeatureTree(object):
         self.feature_hashes = set([f.hash() for f in features])
 
         all_features = {f.hash(): f for f in features}
-        feature_deps = {}
+        feature_dependencies = {}
+        feature_dependents = defaultdict(set)
         for f in features:
             deps = f.get_deep_dependencies(ignored=ignored)
-            feature_deps[f.hash()] = deps
+            feature_dependencies[f.hash()] = deps
             for dep in deps:
+                feature_dependents[dep.hash()].add(f.hash())
                 all_features[dep.hash()] = dep
-                feature_deps[dep.hash()] = dep.get_deep_dependencies(
+                subdeps = dep.get_deep_dependencies(
                     ignored=ignored)
+                feature_dependencies[dep.hash()] = subdeps
+                for sd in subdeps:
+                    feature_dependents[sd.hash()].add(dep.hash())
+        # turn values which were hashes of features into the features themselves
+        # (note that they were hashes to prevent checking equality of feature objects,
+        #  which is not currently an allowed operation)
+        self.feature_dependents = {fhash: [all_features[dhash] for dhash in feature_dependents[fhash]]
+                                   for fhash, f in all_features.items()}
+        self.feature_dependencies = feature_dependencies
         self.all_features = list(all_features.values())
-        self.feature_deps = feature_deps
-        self.feature_dependents = self._build_dependents()
+        self._find_necessary_columns()
 
         self._generate_feature_tree(features)
         self._order_entities()
         self._order_feature_groups()
+
+    def _find_necessary_columns(self):
+        # TODO: If only_if_needs_all_values is False,
+        # can try to remove columns that are only used in the
+        # intermediate large_entity_frames
+        # TODO: Can try to only keep Id/Index/DatetimeTimeIndex if actually
+        # used for features
+        self.necessary_columns = defaultdict(set)
+        entities = set([f.entity.id for f in self.all_features])
+        for eid in entities:
+            entity = self.entityset[eid]
+            index_cols = [v.id for v in entity.variables
+                          if isinstance(v, (variable_types.Index,
+                                            variable_types.Id,
+                                            variable_types.TimeIndex))]
+            self.necessary_columns[eid] |= set(index_cols)
+        self.necessary_columns_for_all_values = copy.copy(self.necessary_columns)
+
+        identity_features = [f for f in self.all_features
+                             if isinstance(f, IdentityFeature)]
+
+        for f in identity_features:
+            self.necessary_columns[f.entity.id].add(f.variable.id)
+            if self._needs_all_values(f):
+                self.necessary_columns_for_all_values[f.entity.id].add(f.variable.id)
+        self.necessary_columns = {eid: list(cols) for eid, cols in self.necessary_columns.items()}
+        self.necessary_columns_for_all_values = {eid: list(cols) for eid, cols in self.necessary_columns_for_all_values.items()}
 
     def get_all_features(self):
         all_features = []
@@ -82,7 +121,7 @@ class FeatureTree(object):
             # this entity. If any of these are themselves top-level features, add
             # their entities as dependencies of the current entity.
             deps = {g.hash(): g for f in features
-                    for g in self.feature_deps[f.hash()]}
+                    for g in self.feature_dependencies[f.hash()]}
             for d in deps.values():
                 _, num_forward = self.entityset.find_path(e, d.entity.id,
                                                           include_num_forward=True)
@@ -162,7 +201,7 @@ class FeatureTree(object):
     def _build_dependents(self):
         feature_dependents = defaultdict(set)
         for f in self.all_features:
-            dependencies = self.feature_deps[f.hash()]
+            dependencies = self.feature_dependencies[f.hash()]
             for d in dependencies:
                 feature_dependents[d.hash()].add(f)
         return feature_dependents
