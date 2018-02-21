@@ -259,22 +259,6 @@ class EntitySet(BaseEntitySet):
         """
         return self.entity_stores[entity_id].secondary_time_index
 
-    def query_entity_by_values(self, entity_id, instance_vals, variable_id=None,
-                               columns=None, time_last=None,
-                               training_window=None,
-                               return_sorted=False):
-        """
-        Query entity for all rows which have one of instance_vals in the
-        variable_id column.
-        """
-        estore = self.entity_stores[entity_id]
-        return estore.query_by_values(instance_vals,
-                                      variable_id=variable_id,
-                                      columns=columns,
-                                      time_last=time_last,
-                                      training_window=training_window,
-                                      return_sorted=return_sorted)
-
     # Read-only variable-level methods
 
     def get_column_type(self, entity_id, column_id):

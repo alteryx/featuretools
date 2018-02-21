@@ -58,9 +58,8 @@ class FeatureTree(object):
         self._order_feature_groups()
 
     def _find_necessary_columns(self):
-        # TODO: If only_if_needs_all_values is False,
-        # can try to remove columns that are only used in the
-        # intermediate large_entity_frames
+        # TODO: Can try to remove columns that are only used in the
+        # intermediate large_entity_frames from self.necessary_columns
         # TODO: Can try to only keep Id/Index/DatetimeTimeIndex if actually
         # used for features
         self.necessary_columns = defaultdict(set)
@@ -72,7 +71,7 @@ class FeatureTree(object):
                                             variable_types.Id,
                                             variable_types.TimeIndex))]
             self.necessary_columns[eid] |= set(index_cols)
-        self.necessary_columns_for_all_values = copy.copy(self.necessary_columns)
+        self.necessary_columns_for_all_values_features = copy.copy(self.necessary_columns)
 
         identity_features = [f for f in self.all_features
                              if isinstance(f, IdentityFeature)]
@@ -80,9 +79,9 @@ class FeatureTree(object):
         for f in identity_features:
             self.necessary_columns[f.entity.id].add(f.variable.id)
             if self._needs_all_values(f):
-                self.necessary_columns_for_all_values[f.entity.id].add(f.variable.id)
+                self.necessary_columns_for_all_values_features[f.entity.id].add(f.variable.id)
         self.necessary_columns = {eid: list(cols) for eid, cols in self.necessary_columns.items()}
-        self.necessary_columns_for_all_values = {eid: list(cols) for eid, cols in self.necessary_columns_for_all_values.items()}
+        self.necessary_columns_for_all_values_features = {eid: list(cols) for eid, cols in self.necessary_columns_for_all_values_features.items()}
 
     def get_all_features(self):
         all_features = []

@@ -108,7 +108,7 @@ class PandasBackend(ComputationalBackend):
                                                  verbose=verbose)
         large_eframes_by_filter = None
         if any([f.needs_all_values for f in self.feature_tree.all_features]):
-            large_necessary_columns = self.feature_tree.necessary_columns_for_all_values
+            large_necessary_columns = self.feature_tree.necessary_columns_for_all_values_features
             all_instances = self.entityset[self.target_eid].get_all_instances()
             large_eframes_by_filter = \
                 self.entityset.get_pandas_data_slice(filter_entity_ids=ordered_entities,
@@ -170,6 +170,11 @@ class PandasBackend(ComputationalBackend):
                 if not self.entityset.find_backward_path(start_entity_id=filter_eid,
                                                          goal_entity_id=eid):
                     entity_frames[eid] = eframes_by_filter[eid][eid]
+                    # precalculated features will only be placed in entity_frames,
+                    # and it's possible that that they are the only features computed
+                    # for an entity. In this case, the entity won't be present in
+                    # large_eframes_by_filter. The relevant lines that this case passes
+                    # through are 136-143
                     if (large_eframes_by_filter is not None and
                             eid in large_eframes_by_filter and eid in large_eframes_by_filter[eid]):
                         large_entity_frames[eid] = large_eframes_by_filter[eid][eid]
