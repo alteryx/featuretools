@@ -4,7 +4,12 @@ import logging
 from builtins import range, zip
 from collections import defaultdict
 
+import featuretools.variable_types.variable as vtypes
+from featuretools.utils.gen_utils import make_tqdm_iterator
+from featuretools.utils.wrangle import _check_variable_list
+
 import numpy as np
+
 import pandas as pd
 
 from .base_entityset import BaseEntitySet
@@ -12,9 +17,6 @@ from .entity import Entity
 from .relationship import Relationship
 from .serialization import read_pickle, to_pickle
 
-import featuretools.variable_types.variable as vtypes
-from featuretools.utils.gen_utils import make_tqdm_iterator
-from featuretools.utils.wrangle import _check_variable_list
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')

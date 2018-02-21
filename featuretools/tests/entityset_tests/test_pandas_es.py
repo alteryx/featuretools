@@ -2,14 +2,16 @@ import copy
 from builtins import range
 from datetime import datetime
 
+from featuretools import variable_types
+from featuretools.entityset import EntitySet
+
 import numpy as np
+
 import pandas as pd
+
 import pytest
 
 from ..testing_utils import make_ecommerce_entityset
-
-from featuretools import variable_types
-from featuretools.entityset import EntitySet
 
 
 @pytest.fixture()
