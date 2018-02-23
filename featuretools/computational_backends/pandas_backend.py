@@ -110,11 +110,10 @@ class PandasBackend(ComputationalBackend):
         large_eframes_by_filter = None
         if any([f.needs_all_values for f in self.feature_tree.all_features]):
             large_necessary_columns = self.feature_tree.necessary_columns_for_all_values_features
-            all_instances = self.entityset[self.target_eid].get_all_instances()
             large_eframes_by_filter = \
                 self.entityset.get_pandas_data_slice(filter_entity_ids=ordered_entities,
                                                      index_eid=self.target_eid,
-                                                     instances=all_instances,
+                                                     instances=None,
                                                      entity_columns=large_necessary_columns,
                                                      time_last=time_last,
                                                      training_window=training_window,
@@ -199,7 +198,7 @@ class PandasBackend(ComputationalBackend):
                     result_frame = handler(group, input_frames)
 
                     output_frames = []
-                    if needs_all_values_type.startswith('dependent'):
+                    if needs_all_values_type in ['dependent', 'dependent_and_output']:
                         # input is the full set of instances since
                         # dependent feature needs all the values
                         output_frames.append(large_entity_frames)
