@@ -64,12 +64,21 @@ class FeatureTree(object):
         # used for features
         self.necessary_columns = defaultdict(set)
         entities = set([f.entity.id for f in self.all_features])
+
+        relationships = self.entityset.relationships
+        relationship_vars = defaultdict(set)
+        for r in relationships:
+            relationship_vars[r.parent_entity.id].add(r.parent_variable.id)
+            relationship_vars[r.child_entity.id].add(r.child_variable.id)
+
         for eid in entities:
             entity = self.entityset[eid]
+            # Need to keep all columns used to link entities together
+            # and to sort by time
             index_cols = [v.id for v in entity.variables
                           if isinstance(v, (variable_types.Index,
-                                            variable_types.Id,
-                                            variable_types.TimeIndex))]
+                                            variable_types.TimeIndex)) or
+                          v.id in relationship_vars[eid]]
             self.necessary_columns[eid] |= set(index_cols)
         self.necessary_columns_for_all_values_features = copy.copy(self.necessary_columns)
 
