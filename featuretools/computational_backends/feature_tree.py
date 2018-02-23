@@ -83,14 +83,6 @@ class FeatureTree(object):
         self.necessary_columns = {eid: list(cols) for eid, cols in self.necessary_columns.items()}
         self.necessary_columns_for_all_values_features = {eid: list(cols) for eid, cols in self.necessary_columns_for_all_values_features.items()}
 
-    def get_all_features(self):
-        all_features = []
-        for e, groups in self.ordered_feature_groups.items():
-            for g in groups:
-                for f in g:
-                    all_features.append(f)
-        return all_features
-
     def _generate_feature_tree(self, features):
         """
         Given a set of features for a target entity, build a tree linking
@@ -208,10 +200,7 @@ class FeatureTree(object):
     def _needs_all_values(self, feature):
         if feature.needs_all_values:
             return True
-        for d in self.feature_dependents[feature.hash()]:
-            if d.needs_all_values:
-                return True
-        return False
+        return self._dependent_needs_all_values(feature)
 
     def _dependent_needs_all_values(self, feature):
         for d in self.feature_dependents[feature.hash()]:
@@ -219,18 +208,30 @@ class FeatureTree(object):
                 return True
         return False
 
-    def _is_output_feature(self, f):
-        return f.hash() in self.feature_hashes
-
 # These functions are used for sorting and grouping features
 
     def needs_all_values_differentiator(self, f):
-        if self._dependent_needs_all_values(f) and self._is_output_feature(f):
+        is_output = f.hash() in self.feature_hashes
+        # If a dependent feature requires all the instance values
+        # of the associated entity, then we need to calculate this
+        # feature on all values
+        # If the feature is one in which the user requested as
+        # an output (meaning it's part of the input feature list
+        # to calculate_feature_matrix), then we also need
+        # to subselect the output based on the desired instance ids
+        # and place in the return data frame.
+        if self._dependent_needs_all_values(f) and is_output:
             return "dependent_and_output"
         elif self._dependent_needs_all_values(f):
             return "dependent"
+        # If the feature itself requires all the instance values
+        # but no dependent features do, then we need to provide
+        # all the values as input, but subselect the output
+        # to only desired instances
         elif self._needs_all_values(f):
             return "needs_all_no_dependent"
+        # None of the above cases, feature and accept selected
+        # instances and output selected instances
         else:
             return "normal_no_dependent"
 
