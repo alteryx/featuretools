@@ -501,6 +501,14 @@ class TestRelatedInstances(object):
         for p in entityset.get_column_data('products', 'id').values:
             assert p in result['id'].values
 
+    def test_related_instances_all_cutoff_time_same_entity(self, entityset):
+        # test querying across the entityset
+        result = entityset._related_instances(
+            start_entity_id='log', final_entity_id='log',
+            instance_ids=None, time_last=pd.Timestamp('2011/04/09 10:30:31'))
+
+        assert result['id'].values.tolist() == list(range(5))
+
     def test_related_instances_link_vars(self, entityset):
         # test adding link variables on the fly during _related_instances
         frame = entityset._related_instances(
