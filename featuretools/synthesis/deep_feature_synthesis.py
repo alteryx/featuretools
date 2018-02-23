@@ -328,7 +328,6 @@ class DeepFeatureSynthesis(object):
         if max_depth is not None and max_depth < 0:
             return
 
-        print(entity_path)
         entity_path.append(entity.id)
         """
         Step 1 - Recursively build features for each entity in a backward relationship
@@ -383,7 +382,6 @@ class DeepFeatureSynthesis(object):
         Step 4 - Recursively build features for each entity in a forward relationship
         """
         forward_entities = self.es.get_forward_entities(entity.id)
-        print("forward of {}".format(entity.id), forward_entities)
         # filter entities in path and using traversal filters
         forward_entities = [f_id for f_id in forward_entities
                             if self._apply_traversal_filters(entity,
