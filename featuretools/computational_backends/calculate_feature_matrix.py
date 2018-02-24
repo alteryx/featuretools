@@ -31,7 +31,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
                              cutoff_time_in_index=False,
                              training_window=None, approximate=None,
                              save_progress=None, verbose=False,
-                             backend_verbose=False,
+                             backend_verbose=False, chunk_size=None,
                              verbose_desc='calculate_feature_matrix',
                              profile=False):
     """Calculates a matrix for a given set of instance ids and calculation times.
@@ -83,6 +83,18 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
         profile (Optional(boolean)): Enables profiling if True
 
         save_progress (Optional(str)): path to save intermediate computational results
+
+        chunk_size (int or float or None or "cutoff time"): Instead of
+            calculating all rows with the same cutoff time together, splits
+            the rows of the matrix into chunks, prioritizing keeping rows with
+            the same cutoff time in the same chunk. If passed an integer
+            greater than 0, will try to use that many rows per chunk (for
+            example chunk_size=350, would mean 350 rows per chunk).  Passing a
+            float value between 0 and 1 sets the chunk size to that percentage
+            of all instances (chunk_size=0.1 would mean each chunk would
+            constitute 10% of the feature matrix). By default, splits rows into
+            chunks of 10% or 10, whichever is larger. If passed the string
+            "cutoff time", chunking is not used.
     """
     assert (isinstance(features, list) and features != [] and
             all([isinstance(feature, PrimitiveBase) for feature in features])), \
@@ -159,6 +171,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
 
     cutoff_df_time_var = 'time'
     target_time = '_original_time'
+    num_per_chunk = calc_num_per_chunk(chunk_size, cutoff_time.shape)
 
     if approximate is not None:
         # If there are approximated aggs, bin times
@@ -167,35 +180,47 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
         # Think about collisions: what if original time is a feature
         binned_cutoff_time[target_time] = cutoff_time[cutoff_df_time_var]
 
-        grouped = binned_cutoff_time.groupby(cutoff_df_time_var, sort=True)
+        cutoff_time_to_pass = binned_cutoff_time
 
     else:
-        grouped = cutoff_time.groupby(cutoff_df_time_var, sort=True)
+        cutoff_time_to_pass = cutoff_time
 
     # if the backend is going to be verbose, don't make cutoff times verbose
     if verbose and not backend_verbose:
-        iterator = make_tqdm_iterator(iterable=grouped,
-                                      total=len(grouped),
-                                      desc="Progress",
-                                      unit="cutoff time")
+        pbar = make_tqdm_iterator(total=len(cutoff_time),
+                                  desc="Progress",
+                                  unit="cutoff time")
+
+    if num_per_chunk == "cutoff time":
+        iterator = cutoff_time_to_pass.groupby(cutoff_df_time_var)
     else:
-        iterator = grouped
+        iterator = get_next_chunk(cutoff_time=cutoff_time_to_pass,
+                                  time_variable=cutoff_df_time_var,
+                                  num_per_chunk=num_per_chunk)
 
     feature_matrix = []
     backend = PandasBackend(entityset, features)
-    for _, group in iterator:
-        _feature_matrix = calculate_batch(features, group, approximate,
+    for chunk in iterator:
+        # if not using chunks, pull out the group dataframe
+        if isinstance(chunk, tuple):
+            chunk = chunk[1]
+        _feature_matrix = calculate_chunk(features, chunk, approximate,
                                           entityset, backend_verbose,
                                           training_window, profile, verbose,
                                           save_progress, backend,
-                                          no_unapproximated_aggs, cutoff_df_time_var,
+                                          no_unapproximated_aggs,
+                                          cutoff_df_time_var,
                                           target_time, pass_columns)
         feature_matrix.append(_feature_matrix)
         # Do a manual garbage collection in case objects from calculate_batch
         # weren't collected automatically
         gc.collect()
-
+        if verbose:
+            pbar.update(len(_feature_matrix))
+    if verbose:
+        pbar.close()
     feature_matrix = pd.concat(feature_matrix)
+    feature_matrix.sort_index(level='time', kind='mergesort', inplace=True)
     if not cutoff_time_in_index:
         feature_matrix.reset_index(level='time', drop=True, inplace=True)
 
@@ -205,94 +230,95 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
     return feature_matrix
 
 
-def calculate_batch(features, group, approximate, entityset, backend_verbose,
+def calculate_chunk(features, chunk, approximate, entityset, backend_verbose,
                     training_window, profile, verbose, save_progress, backend,
                     no_unapproximated_aggs, cutoff_df_time_var, target_time,
                     pass_columns):
-    # if approximating, calculate the approximate features
-    if approximate is not None:
-        precalculated_features, all_approx_feature_set = approximate_features(
-            features,
-            group,
-            window=approximate,
-            entityset=entityset,
-            training_window=training_window,
-            verbose=backend_verbose,
-            profile=profile
-        )
-    else:
-        precalculated_features = None
-        all_approx_feature_set = None
-
-    # if backend verbose wasn't set explicitly, set to True if verbose is true
-    # and there is only 1 cutoff time
-    if backend_verbose is None:
-        one_cutoff_time = group[cutoff_df_time_var].nunique() == 1
-        backend_verbose = verbose and one_cutoff_time
-
-    @save_csv_decorator(save_progress)
-    def calc_results(time_last, ids, precalculated_features=None, training_window=None):
-        matrix = backend.calculate_all_features(ids, time_last,
-                                                training_window=training_window,
-                                                precalculated_features=precalculated_features,
-                                                ignored=all_approx_feature_set,
-                                                profile=profile,
-                                                verbose=backend_verbose)
-        return matrix
-
-    # if all aggregations have been approximated, can calculate all together
-    if no_unapproximated_aggs and approximate is not None:
-        grouped = [[datetime.now(), group]]
-    else:
-        # if approximated features, set cutoff_time to unbinned time
-        if precalculated_features is not None:
-            group[cutoff_df_time_var] = group[target_time]
-
-        grouped = group.groupby(cutoff_df_time_var, sort=True)
-
     feature_matrix = []
-    for _time_last_to_calc, group in grouped:
-        # sort group by instance id
-        ids = group['instance_id'].sort_values().values
-        time_last = group[cutoff_df_time_var].iloc[0]
+    for _, group in chunk.groupby(cutoff_df_time_var):
+        # if approximating, calculate the approximate features
+        if approximate is not None:
+            precalculated_features, all_approx_feature_set = approximate_features(
+                features,
+                group,
+                window=approximate,
+                entityset=entityset,
+                training_window=training_window,
+                verbose=backend_verbose,
+                profile=profile
+            )
+        else:
+            precalculated_features = None
+            all_approx_feature_set = None
+
+        # if backend verbose wasn't set explicitly, set to True if verbose is true
+        # and there is only 1 cutoff time
+        if backend_verbose is None:
+            one_cutoff_time = group[cutoff_df_time_var].nunique() == 1
+            backend_verbose = verbose and one_cutoff_time
+
+        @save_csv_decorator(save_progress)
+        def calc_results(time_last, ids, precalculated_features=None, training_window=None):
+            matrix = backend.calculate_all_features(ids, time_last,
+                                                    training_window=training_window,
+                                                    precalculated_features=precalculated_features,
+                                                    ignored=all_approx_feature_set,
+                                                    profile=profile,
+                                                    verbose=backend_verbose)
+            return matrix
+
+        # if all aggregations have been approximated, can calculate all together
         if no_unapproximated_aggs and approximate is not None:
-            window = None
+            grouped = [[datetime.now(), group]]
         else:
-            window = training_window
+            # if approximated features, set cutoff_time to unbinned time
+            if precalculated_features is not None:
+                group[cutoff_df_time_var] = group[target_time]
 
-        # calculate values for those instances at time _time_last_to_calc
-        _feature_matrix = calc_results(_time_last_to_calc,
-                                       ids,
-                                       precalculated_features=precalculated_features,
-                                       training_window=window)
+            grouped = group.groupby(cutoff_df_time_var, sort=True)
 
-        id_name = _feature_matrix.index.name
+        for _time_last_to_calc, group in grouped:
+            # sort group by instance id
+            ids = group['instance_id'].sort_values().values
+            time_last = group[cutoff_df_time_var].iloc[0]
+            if no_unapproximated_aggs and approximate is not None:
+                window = None
+            else:
+                window = training_window
 
-        # if approximate, merge feature matrix with group frame to get original
-        # cutoff times and passed columns
-        if approximate:
-            indexer = group[['instance_id', target_time] + pass_columns]
-            _feature_matrix = indexer.merge(_feature_matrix,
-                                            left_on=['instance_id'],
-                                            right_index=True,
-                                            how='left')
-            _feature_matrix.set_index(['instance_id', target_time], inplace=True)
-            _feature_matrix.index.set_names([id_name, 'time'], inplace=True)
-            _feature_matrix.sort_index(level=1, kind='mergesort', inplace=True)
-        else:
-            # all rows have same cutoff time. set time and add passed columns
-            num_rows = _feature_matrix.shape[0]
-            time_index = pd.DatetimeIndex([time_last] * num_rows, name='time')
-            _feature_matrix.set_index(time_index, append=True, inplace=True)
-            if len(pass_columns) > 0:
-                pass_through = group[['instance_id', cutoff_df_time_var] + pass_columns]
-                pass_through.rename(columns={'instance_id': id_name,
-                                             cutoff_df_time_var: 'time'},
-                                    inplace=True)
-                pass_through.set_index([id_name, 'time'], inplace=True)
-                for col in pass_columns:
-                    _feature_matrix[col] = pass_through[col]
-        feature_matrix.append(_feature_matrix)
+            # calculate values for those instances at time _time_last_to_calc
+            _feature_matrix = calc_results(_time_last_to_calc,
+                                           ids,
+                                           precalculated_features=precalculated_features,
+                                           training_window=window)
+
+            id_name = _feature_matrix.index.name
+
+            # if approximate, merge feature matrix with group frame to get original
+            # cutoff times and passed columns
+            if approximate:
+                indexer = group[['instance_id', target_time] + pass_columns]
+                _feature_matrix = indexer.merge(_feature_matrix,
+                                                left_on=['instance_id'],
+                                                right_index=True,
+                                                how='left')
+                _feature_matrix.set_index(['instance_id', target_time], inplace=True)
+                _feature_matrix.index.set_names([id_name, 'time'], inplace=True)
+                _feature_matrix.sort_index(level=1, kind='mergesort', inplace=True)
+            else:
+                # all rows have same cutoff time. set time and add passed columns
+                num_rows = _feature_matrix.shape[0]
+                time_index = pd.DatetimeIndex([time_last] * num_rows, name='time')
+                _feature_matrix.set_index(time_index, append=True, inplace=True)
+                if len(pass_columns) > 0:
+                    pass_through = group[['instance_id', cutoff_df_time_var] + pass_columns]
+                    pass_through.rename(columns={'instance_id': id_name,
+                                                 cutoff_df_time_var: 'time'},
+                                        inplace=True)
+                    pass_through.set_index([id_name, 'time'], inplace=True)
+                    for col in pass_columns:
+                        _feature_matrix[col] = pass_through[col]
+            feature_matrix.append(_feature_matrix)
 
     feature_matrix = pd.concat(feature_matrix)
     return feature_matrix
@@ -435,6 +461,7 @@ def approximate_features(features, cutoff_time, window, entityset,
                                              training_window=training_window,
                                              approximate=None,
                                              cutoff_time_in_index=False,
+                                             chunk_size="cutoff time",
                                              profile=profile)
 
         approx_fms_by_entity[approx_entity_id] = approx_fm
@@ -492,3 +519,65 @@ def gen_empty_approx_features_df(approx_features):
     df.index.name = approx_features[0].entity.index
     approx_fms_by_entity = {approx_entity_id: df}
     return approx_fms_by_entity
+
+
+def calc_num_per_chunk(chunk_size, shape):
+    if isinstance(chunk_size, float) and chunk_size > 0 and chunk_size < 1:
+        num_per_chunk = int(shape[0] * float(chunk_size))
+        # must be at least 1 cutoff per chunk
+        num_per_chunk = max(1, num_per_chunk)
+    elif isinstance(chunk_size, int) and chunk_size >= 1:
+        num_per_chunk = chunk_size
+    elif chunk_size is None:
+        num_per_chunk = max(int(shape[0] * .1), 10)
+    elif chunk_size == "cutoff time":
+        return "cutoff time"
+    else:
+        raise ValueError("chunk_size must be None, a float between 0 and 1,"
+                         "or a positive integer")
+    return num_per_chunk
+
+
+def get_next_chunk(cutoff_time, time_variable, num_per_chunk):
+    # groupby time an calculate size of cutoffs
+    grouped = cutoff_time.groupby(time_variable, sort=False)
+
+    # sort groups by size
+    groups = grouped.size().sort_values(ascending=False).index
+
+    chunks = []
+
+    for group_name in groups:
+        # get group locations
+        group = grouped.groups[group_name].values.tolist()
+
+        # divide up group if too large to fit in a single chunk
+        group_slices = []
+        if len(group) > num_per_chunk:
+            for i in range(0, len(group), num_per_chunk):
+                    group_slices.append(group[i: i + num_per_chunk])
+        else:
+            group_slices.append(group)
+
+        for group_slice in group_slices:
+            if len(group_slice) == num_per_chunk:
+                yield cutoff_time.loc[group_slice]
+                continue
+
+            found_chunk = False
+            for i in range(len(chunks)):
+                chunk = chunks[i]
+                if len(chunk) + len(group_slice) <= num_per_chunk:
+                    chunk.extend(group_slice)
+                    found_chunk = True
+                    if len(chunk) == num_per_chunk:
+                        # if chunk is full, pop from partial list and yield
+                        loc_list = chunks.pop(i)
+                        yield cutoff_time.loc[loc_list]
+                    break
+
+            if not found_chunk:
+                chunks.append(group_slice)
+
+    for chunk in chunks:
+        yield cutoff_time.loc[chunk]

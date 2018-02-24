@@ -28,6 +28,7 @@ def dfs(entities=None,
         features_only=False,
         training_window=None,
         approximate=None,
+        chunk_size=None,
         verbose=False):
     '''Calculates a feature matrix and features given a dictionary of entities
     and a list of relationships.
@@ -125,6 +126,17 @@ def dfs(entities=None,
 
         save_progress (Optional(str)): path to save intermediate computational results
 
+        chunk_size (int or float or None or "cutoff time", optionsal): Instead
+            of calculating all rows with the same cutoff time together, splits
+            the rows of the matrix into chunks, prioritizing keeping rows with
+            the same cutoff time in the same chunk. If passed an integer
+            greater than 0, will try to use that many rows per chunk (for
+            example chunk_size=350, would mean 350 rows per chunk).  Passing a
+            float value between 0 and 1 sets the chunk size to that percentage
+            of all instances (chunk_size=0.1 would mean each chunk would
+            constitute 10% of the feature matrix). By default, splits rows into
+            chunks of 10% or 10, whichever is larger. If passed the string
+            "cutoff time", chunking is not used.
 
     Examples:
         .. code-block:: python
@@ -175,6 +187,7 @@ def dfs(entities=None,
                                                   approximate=approximate,
                                                   cutoff_time_in_index=cutoff_time_in_index,
                                                   save_progress=save_progress,
+                                                  chunk_size=chunk_size,
                                                   verbose=verbose)
     else:
         feature_matrix = calculate_feature_matrix(features,
@@ -184,5 +197,6 @@ def dfs(entities=None,
                                                   approximate=approximate,
                                                   cutoff_time_in_index=cutoff_time_in_index,
                                                   save_progress=save_progress,
+                                                  chunk_size=chunk_size,
                                                   verbose=verbose)
     return feature_matrix, features
