@@ -531,7 +531,7 @@ def calc_num_per_chunk(chunk_size, shape):
     elif chunk_size is None:
         num_per_chunk = max(int(shape[0] * .1), 10)
     elif chunk_size == "cutoff time":
-        return "cutoff time"
+        num_per_chunk = "cutoff time"
     else:
         raise ValueError("chunk_size must be None, a float between 0 and 1,"
                          "or a positive integer")

@@ -630,5 +630,4 @@ def test_get_next_chunk(entityset):
     largest = pd.Series([datetime(2011, 4, 9, 10, 30, 6) for i in range(4)])
     assert (chunks[0]['time'] == largest).all()
     # additional part of cutoff time added to another chunk
-    # note: not guaranteed to be the next chunk returned, but is in this case
     assert (chunks[2]['time'] == times[4]).any()

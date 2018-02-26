@@ -52,12 +52,12 @@ from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture()
 def es():
     return make_ecommerce_entityset()
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture()
 def int_es():
     return make_ecommerce_entityset(with_integer_time_index=True)
 
