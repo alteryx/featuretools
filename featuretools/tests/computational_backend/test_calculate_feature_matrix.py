@@ -15,7 +15,7 @@ from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
 from featuretools.computational_backends.calculate_feature_matrix import (
     bin_cutoff_times,
     calc_num_per_chunk,
-    get_next_chunk,
+    get_next_chunk
 )
 from featuretools.primitives import (
     AggregationPrimitive,
