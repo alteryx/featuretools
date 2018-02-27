@@ -60,13 +60,13 @@ def load_retail(id='demo_retail_data', nrows=None):
         df = pd.read_csv(csv_s3,
                          nrows=nrows,
                          parse_dates=["InvoiceDate"])
-        df.to_csv(demo_save_path)
+        df.to_csv(demo_save_path, index_label='transaction_id')
 
     df = pd.read_csv(demo_save_path,
                      nrows=nrows,
                      parse_dates=["InvoiceDate"])
-    df.rename(columns={'Unnamed: 0': 'transaction_id',
-                       'InvoiceNo': 'order_id',
+
+    df.rename(columns={'InvoiceNo': 'order_id',
                        'StockCode': 'product_id',
                        'Description': 'description',
                        'Quantity': 'quantity',
