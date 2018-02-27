@@ -2,6 +2,12 @@
 
 Changelog
 ---------
+**v0.1.18** Feb 27, 2018
+    * fixes related instances bug (:pr:`97`)
+    * Adding non-feature columns to calculated feature matrix (:pr:`78`)
+    * Relax numpy version req (:pr:`82`)
+    * Remove `entity_from_csv`, tests, and lint (:pr:`71`)
+
 **v0.1.17** Jan 18, 2018
     * LatLong type (:pr:`57`)
     * Last time index fixes (:pr:`70`)
