@@ -32,7 +32,7 @@ def load_retail(id='demo_retail_data', nrows=None):
                 invoices (shape = [25900, 3])
                 items (shape = [4070, 3])
                 customers (shape = [4373, 3])
-                item_purchases (shape = [541909, 6])
+                transactions (shape = [541909, 6])
 
         Load in subset of data
 
@@ -48,7 +48,7 @@ def load_retail(id='demo_retail_data', nrows=None):
                 invoices (shape = [66, 3])
                 items (shape = [590, 3])
                 customers (shape = [49, 3])
-                item_purchases (shape = [1000, 6])
+                transactions (shape = [1000, 6])
 
     '''
     demo_save_path = make_retail_pathname(nrows)
@@ -66,27 +66,36 @@ def load_retail(id='demo_retail_data', nrows=None):
                      nrows=nrows,
                      parse_dates=["InvoiceDate"])
 
-    df.rename(columns={"Unnamed: 0": 'item_purchase_id'}, inplace=True)
+    df.rename(columns={'Unnamed: 0': 'transaction_id',
+                       'InvoiceNo': 'invoice_id',
+                       'StockCode': 'product_id',
+                       'Description': 'description',
+                       'Quantity': 'quantity',
+                       'InvoiceDate': 'invoice_date',
+                       'UnitPrice': 'price',
+                       'CustomerID': 'customer_id',
+                       'Country': 'country'},
+              inplace=True)
 
-    es.entity_from_dataframe("item_purchases",
+    es.entity_from_dataframe("transactions",
                              dataframe=df,
-                             index="item_purchase_id",
-                             time_index="InvoiceDate")
+                             index="transaction_id",
+                             time_index="invoice_date")
 
     es.normalize_entity(new_entity_id="items",
-                        base_entity_id="item_purchases",
-                        index="StockCode",
-                        additional_variables=["Description"])
+                        base_entity_id="transactions",
+                        index="product_id",
+                        additional_variables=["description"])
 
     es.normalize_entity(new_entity_id="invoices",
-                        base_entity_id="item_purchases",
-                        index="InvoiceNo",
-                        additional_variables=["CustomerID", "Country"])
+                        base_entity_id="transactions",
+                        index="invoice_id",
+                        additional_variables=["customer_id", "country"])
 
     es.normalize_entity(new_entity_id="customers",
                         base_entity_id="invoices",
-                        index="CustomerID",
-                        additional_variables=["Country"])
+                        index="customer_id",
+                        additional_variables=["country"])
     es.add_last_time_indexes()
 
     return es
