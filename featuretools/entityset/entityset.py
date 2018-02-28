@@ -149,7 +149,8 @@ class EntitySet(BaseEntitySet):
         return entity.get_sliced_instance_ids(start, end, random_seed=random_seed, shuffle=shuffle)
 
     def get_pandas_data_slice(self, filter_entity_ids, index_eid,
-                              instances, time_last=None, training_window=None,
+                              instances, entity_columns=None,
+                              time_last=None, training_window=None,
                               verbose=False):
         """
         Get the slice of data related to the supplied instances of the index
@@ -180,6 +181,17 @@ class EntitySet(BaseEntitySet):
             while r_queue:
                 r = r_queue.pop(0)
                 child_eid = r.child_variable.entity.id
+                child_columns = None
+                if entity_columns is not None and child_eid not in entity_columns:
+                    # entity_columns specifies which columns to extract
+                    # if it skips a relationship (specifies child and grandparent columns)
+                    # we need to at least add the ids of the intermediate entity
+                    child_columns = [v.id for v in self[child_eid].variables
+                                     if isinstance(v, (vtypes.Index, vtypes.Id,
+                                                       vtypes.TimeIndex))]
+                elif entity_columns is not None:
+                    child_columns = entity_columns[child_eid]
+
                 parent_eid = r.parent_variable.entity.id
 
                 # If we've already seen this child, this is a diamond graph and
@@ -195,8 +207,11 @@ class EntitySet(BaseEntitySet):
                 instance_vals = eframes[parent_eid][r.parent_variable.id]
                 eframes[child_eid] =\
                     self.entity_stores[child_eid].query_by_values(
-                        instance_vals, variable_id=r.child_variable.id,
-                        time_last=time_last, training_window=training_window)
+                        instance_vals,
+                        variable_id=r.child_variable.id,
+                        columns=child_columns,
+                        time_last=time_last,
+                        training_window=training_window)
 
                 # add link variables to this dataframe in order to link it to its
                 # (grand)parents
@@ -243,20 +258,6 @@ class EntitySet(BaseEntitySet):
         Get names and associated variables of the secondary time index columns for this entity
         """
         return self.entity_stores[entity_id].secondary_time_index
-
-    def query_entity_by_values(self, entity_id, instance_vals, variable_id=None,
-                               columns=None, time_last=None,
-                               return_sorted=False):
-        """
-        Query entity for all rows which have one of instance_vals in the
-        variable_id column.
-        """
-        estore = self.entity_stores[entity_id]
-        return estore.query_by_values(instance_vals,
-                                      variable_id=variable_id,
-                                      columns=columns,
-                                      time_last=time_last,
-                                      return_sorted=return_sorted)
 
     # Read-only variable-level methods
 
