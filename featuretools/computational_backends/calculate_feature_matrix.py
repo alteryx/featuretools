@@ -382,7 +382,6 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
     target_index_var = target_entity.index
 
     to_approximate, all_approx_feature_set = gather_approximate_features(features, backend)
-    import pdb; pdb.set_trace()
 
     target_time_colname = 'target_time'
     cutoff_time[target_time_colname] = cutoff_time['time']
