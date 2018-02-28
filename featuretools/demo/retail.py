@@ -9,11 +9,11 @@ from featuretools.config import config as ft_config
 
 def load_retail(id='demo_retail_data', nrows=None):
     '''
-    Returns the retail entityset example
+    Returns the retail entityset example.
 
     Args:
-        id (str):  id to assign to EntitySet
-        nrows (int):  number of rows to load of item_purchases
+        id (str):  Id to assign to EntitySet.
+        nrows (int):  Number of rows to load of item_purchases
             entity. If None, load all.
 
     Examples:

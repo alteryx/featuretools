@@ -65,25 +65,27 @@ def make_trans_primitive(function, input_types, return_type, name=None,
     '''Returns a new transform primitive class
 
     Args:
-        function (function): function that takes in an array  and applies some
-            transformation to it.
+        function (function): Function that takes in an array and applies some
+            transformation to it, returning an array.
 
-        input_types (list[:class:`.Variable`]): variable types of the inputs
+        input_types (list[Variable]): Variable types of the inputs.
 
-        return_type (:class:`.Variable`): variable type of return
+        return_type (Variable): Variable type of return.
 
-        name (string): name of new primitive class to be generated
+        name (str): Name of the primitive. If no name is provided, the name
+            of `function` will be used.
 
-        description (string): description of primitive
+        description (str): Description of primitive.
 
-        cls_attributes (dict): custom attributes to be added to class
+        cls_attributes (dict[str -> anytype]): Custom attributes to be added to
+            class. Key is attribute name, value is the attribute value.
 
-        uses_calc_time (bool): if True, the cutoff time the feature is being
+        uses_calc_time (bool): If True, the cutoff time the feature is being
             calculated at will be passed to the function as the keyword
             argument 'time'.
 
         commutative (bool): If True, will only make one feature per unique set
-            of base features
+            of base features.
 
     Example:
         .. ipython :: python
@@ -102,9 +104,9 @@ def make_trans_primitive(function, input_types, return_type, name=None,
                                          str(self.kwargs['list_of_outputs']))
 
             IsIn = make_trans_primitive(
-                pd_is_in,
-                [Variable],
-                Boolean,
+                function=pd_is_in,
+                input_types=[Variable],
+                return_type=Boolean,
                 name="is_in",
                 description="For each value of the base feature, checks "
                 "whether it is in a list that provided.",
@@ -180,9 +182,9 @@ class TimeSincePrevious(TransformPrimitive):
         """Summary
 
         Args:
-            base_feature (:class:`PrimitiveBase`): base feature
-            group_feature (None, optional): variable or feature to group
-                rows by before calculating diff
+            base_feature (PrimitiveBase): Base feature.
+            group_feature (None, optional): Variable or feature to group
+                rows by before calculating diff.
 
         """
         group_feature = self._check_feature(group_feature)
@@ -471,9 +473,9 @@ class Diff(TransformPrimitive):
         """Summary
 
         Args:
-            base_feature (:class:`PrimitiveBase`): base feature
-            group_feature (:class:`PrimitiveBase`): variable or feature to
-                group rows by before calculating diff
+            base_feature (PrimitiveBase): Base feature.
+            group_feature (PrimitiveBase): Variable or feature to
+                group rows by before calculating diff.
 
         """
         self.group_feature = self._check_feature(group_feature)
@@ -577,10 +579,12 @@ class Haversine(TransformPrimitive):
             lon_1s = np.array([x[1] for x in latlong1])
             lat_2s = np.array([x[0] for x in latlong2])
             lon_2s = np.array([x[1] for x in latlong2])
-            lon1, lat1, lon2, lat2 = map(np.radians, [lon_1s, lat_1s, lon_2s, lat_2s])
+            lon1, lat1, lon2, lat2 = map(
+                np.radians, [lon_1s, lat_1s, lon_2s, lat_2s])
             dlon = lon2 - lon1
             dlat = lat2 - lat1
-            a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.0)**2
+            a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * \
+                np.cos(lat2) * np.sin(dlon / 2.0)**2
             mi = 3950 * 2 * np.arcsin(np.sqrt(a))
             return mi
         return haversine

@@ -27,11 +27,11 @@ class DeepFeatureSynthesis(object):
     """Automatically produce features for a target entity in an Entityset.
 
         Args:
-            target_entity_id (str): id of entity to build features for
+            target_entity_id (str): Id of entity for which to build features.
 
-            entityset (:class:`.EntitySet`): Entityset to build features for
+            entityset (EntitySet): Entityset for which to build features.
 
-            filters (list[:class:`.DFSFilterBase`], optional) : list of dfs filters
+            filters (list[DFSFilterBase], optional) : List of dfs filters
                 to apply.
 
                 Default:
@@ -58,8 +58,9 @@ class DeepFeatureSynthesis(object):
                     Default:[:class:`Day <.primitives.Day>`, \
                              :class:`Year <.primitives.Year>`, \
                              :class:`Month <.primitives.Month>`, \
-                             :class:`Haversine <.primitives.Haversine>`,\
-                             :class:`NumWords <.primitives.NumWords>`,\
+                            :class:`Weekday <.primitives.Weekday>`, \
+                             :class:`Haversine <.primitives.Haversine>`, \
+                             :class:`NumWords <.primitives.NumWords>`, \
                              :class:`NumCharacters <.primitives.NumCharacters>`]
 
             where_primitives (list[:class:`.primitives.AggregationPrimitive`], optional):
@@ -83,20 +84,20 @@ class DeepFeatureSynthesis(object):
                 features for. If None, use all paths.
 
             ignore_entities (list[str], optional): List of entities to
-                blacklist when creating features. If None, use all entities
+                blacklist when creating features. If None, use all entities.
 
             ignore_variables (dict[str : str], optional): List of specific
                 variables within each entity to blacklist when creating features.
-                If None, use all variables
+                If None, use all variables.
 
             seed_features (list[:class:`.PrimitiveBase`], optional): List of manually
                 defined features to use.
 
-            drop_contains (list[str], optional): drop features
-                that contains these strings in name
+            drop_contains (list[str], optional): Drop features
+                that contains these strings in name.
 
-            drop_exact (list[str], optional): drop features that
-                exactly match these strings in name
+            drop_exact (list[str], optional): Drop features that
+                exactly match these strings in name.
 
             where_stacking_limit (int, optional): Cap the depth of the where features.
                 Default: 1
@@ -198,17 +199,17 @@ class DeepFeatureSynthesis(object):
             entity using Deep Feature Synthesis algorithm
 
         Args:
-            variable_types (list[:class:`variable_types.Variable`] or str,
-                optional): Types of variables to return. If None, default to
+            variable_types (list[Variable] or str, optional): Types of
+                variables to return. If None, default to
                 Numeric, Categorical, Ordinal, and Boolean. If given as
                 the string 'all', use all available variable types.
 
             verbose (bool, optional): If True, print progress.
 
         Returns:
-            list[:class:`.primitives.BaseFeature`]: returns a list of
+            list[BaseFeature]: Returns a list of
                 features for target entity, sorted by feature depth
-                (shallow first)
+                (shallow first).
         """
         self.verbose = verbose
         if verbose:
@@ -318,12 +319,12 @@ class DeepFeatureSynthesis(object):
         create features for the provided entity
 
         Args:
-            entity (:class:`.Entity`): entity to create features for
-            entity_path (list[str]): list of entity ids
-            all_features (dict[:class:`.Entity`.id:dict->[str->:class:`BaseFeature`]]):
+            entity (Entity): Entity for which to create features.
+            entity_path (list[str]): List of entity ids.
+            all_features (dict[Entity.id -> dict[str -> BaseFeature]]):
                 Dict containing a dict for each entity. Each nested dict
-                has features as values with their ids as keys
-            max_depth (int) : maximum allowed depth of features
+                has features as values with their ids as keys.
+            max_depth (int) : Maximum allowed depth of features.
         """
         if max_depth is not None and max_depth < 0:
             return
@@ -438,14 +439,14 @@ class DeepFeatureSynthesis(object):
 
         Args:
             new_feature (:class:`.PrimitiveBase`): New feature being
-                checked
-            all_features (dict[:class:`.Entity`.id:dict->[str->:class:`BaseFeature`]]):
+                checked.
+            all_features (dict[Entity.id -> dict[str -> BaseFeature]]):
                 Dict containing a dict for each entity. Each nested dict
-                has features as values with their ids as keys
+                has features as values with their ids as keys.
 
         Returns:
-            dict{:class:`.PrimitiveBase`: {featureid: feature}: Dict of
-                features with any new features
+            dict[PrimitiveBase -> dict[featureid -> feature]]: Dict of
+                features with any new features.
 
         Raises:
             Exception: Attempted to add a single feature multiple times
@@ -471,10 +472,10 @@ class DeepFeatureSynthesis(object):
         """converts all variables from the given entity into features
 
         Args:
-            all_features (dict[:class:`.Entity`.id:dict->[str->:class:`BaseFeature`]]):
+            all_features (dict[Entity.id -> dict[str -> BaseFeature]]):
                 Dict containing a dict for each entity. Each nested dict
-                has features as values with their ids as keys
-            entity (:class:`.Entity`): entity to calculate features for
+                has features as values with their ids as keys.
+            entity (Entity): Entity to calculate features for.
         """
         variables = entity.variables
         ignore_variables = self.ignore_variables[entity.id]
@@ -490,10 +491,10 @@ class DeepFeatureSynthesis(object):
             each one, based on some heuristics
 
         Args:
-            all_features (dict[:class:`.Entity`.id:dict->[str->:class:`BaseFeature`]]):
+            all_features (dict[Entity.id -> dict[str -> BaseFeature]]):
                 Dict containing a dict for each entity. Each nested dict
-                has features as values with their ids as keys
-            entity (:class:`.Entity`): entity to calculate features for
+                has features as values with their ids as keys.
+          entity (Entity): Entity to calculate features for.
         """
         identities = [f for _, f in all_features[entity.id].items()
                       if isinstance(f, IdentityFeature)]
@@ -512,7 +513,8 @@ class DeepFeatureSynthesis(object):
             all_features (dict[:class:`.Entity`.id:dict->[str->:class:`BaseFeature`]]):
                 Dict containing a dict for each entity. Each nested dict
                 has features as values with their ids as keys
-            entity (:class:`.Entity`): entity to calculate features for
+
+          entity (Entity): Entity to calculate features for.
         """
         if max_depth is not None and max_depth < 0:
             return

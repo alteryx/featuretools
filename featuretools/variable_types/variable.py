@@ -29,11 +29,10 @@ class Variable(FTBase):
     A Variable is analogous to a column in table in a relational database
 
     Args:
-        id (str) : id of variable. must match underlying data in Entity
-            it belongs to
-        entity (:class:`.Entity`) : Entity this variable belongs to
-        name (Optional[str]) : Give this variable a name that is
-            different than its id
+        id (str) : Id of variable. Must match underlying data in Entity
+            it belongs to.
+        entity (:class:`.Entity`) : Entity this variable belongs to.
+        name (str, optional) : Variable name. Defaults to id.
 
     See Also:
         :class:`.Entity`, :class:`.Relationship`, :class:`.BaseEntitySet`
@@ -78,8 +77,8 @@ class Variable(FTBase):
         """Create new variable this type from existing
 
         Args:
-            variable (:class:`.Variable`) : existing variable to create from
-            keep_stats (bool) : If False, statistics stored on the original variable are lost
+            variable (Variable) : Existing variable to create from.
+            keep_stats (bool) : If False, statistics stored on the original variable are lost.
 
         Returns:
             :class:`.Variable` : new variable
@@ -167,8 +166,8 @@ class Variable(FTBase):
         """See first n instance in variable
 
         Args:
-            n (int) : number of instances to return
-            cutoff_time (pd.Timestamp,pd.DataFrame) : Timestamp(s) to restrict rows
+            n (int) : Number of instances to return.
+            cutoff_time (pd.Timestamp,pd.DataFrame) : Timestamp(s) to restrict rows.
 
         Returns:
             :class:`pd.DataFrame` : Pandas DataFrame

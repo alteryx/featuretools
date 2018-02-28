@@ -37,52 +37,52 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
     """Calculates a matrix for a given set of instance ids and calculation times.
 
     Args:
-        features (list[:class:`.PrimitiveBase`]): Feature definitions to be calculated.
+        features (list[PrimitiveBase]): Feature definitions to be calculated.
 
-        cutoff_time (pd.DataFrame or Datetime): specifies what time to calculate
-            the features for each instance at.  Can either be a DataFrame with
+        cutoff_time (pd.DataFrame or Datetime): Specifies at which time to calculate
+            the features for each instance.  Can either be a DataFrame with
             'instance_id' and 'time' columns, DataFrame with the name of the
             index variable in the target entity and a time column, a list of values, or a single
             value to calculate for all instances. If the dataframe has more than two columns, any additional
             columns will be added to the resulting feature matrix.
 
-        instance_ids (list): list of instances to calculate features on. Only
+        instance_ids (list): List of instances to calculate features on. Only
             used if cutoff_time is a single datetime.
 
-        entities (dict[str->tuple(pd.DataFrame, str, str)]): dictionary of
+        entities (dict[str -> tuple(pd.DataFrame, str, str)]): dictionary of
             entities. Entries take the format
-            {entity id: (dataframe, id column, (time_column))}
+            {entity id: (dataframe, id column, (time_column))}.
 
         relationships (list[(str, str, str, str)]): list of relationships
             between entities. List items are a tuple with the format
-            (parent entity id, parent variable, child entity id, child variable)
+            (parent entity id, parent variable, child entity id, child variable).
 
-        entityset (:class:`.EntitySet`): An already initialized entityset. Required if
-            entities and relationships are not defined
+        entityset (EntitySet): An already initialized entityset. Required if
+            entities and relationships are not defined.
 
         cutoff_time_in_index (bool): If True, return a DataFrame with a MultiIndex
             where the second index is the cutoff time (first is instance id).
             DataFrame will be sorted by (time, instance_id).
 
-        training_window (dict[str-> :class:`Timedelta`] or :class:`Timedelta`, optional):
+        training_window (dict[str -> Timedelta] or Timedelta, optional):
             Window or windows defining how much older than the cutoff time data
             can be to be included when calculating the feature.  To specify
             which entities to apply windows to, use a dictionary mapping entity
             id -> Timedelta. If None, all older data is used.
 
-        approximate (Timedelta or str): frequency to group instances with similar
+        approximate (Timedelta or str): Frequency to group instances with similar
             cutoff times by for features with costly calculations. For example,
             if bucket is 24 hours, all instances with cutoff times on the same
             day will use the same calculation for expensive features.
 
-        verbose (Optional(boolean)): Print progress info. The time granularity is per time group
+        verbose (bool, optional): Print progress info. The time granularity is per time group
             unless there is only a single cutoff time, in which case backend_verbose is turned on
 
-        backend_verbose (Optional(boolean)): Print progress info of each feature calculatation step per time group
+        backend_verbose (bool, optional): Print progress info of each feature calculatation step per time group.
 
-        profile (Optional(boolean)): Enables profiling if True
+        profile (bool, optional): Enables profiling if True.
 
-        save_progress (Optional(str)): path to save intermediate computational results
+        save_progress (str, optional): path to save intermediate computational results.
     """
     assert (isinstance(features, list) and features != [] and
             all([isinstance(feature, PrimitiveBase) for feature in features])), \
@@ -365,11 +365,11 @@ def approximate_features(features, cutoff_time, window, entityset,
             which entities to apply windows to, use a dictionary mapping entity
             id -> Timedelta. If None, all older data is used.
 
-        verbose (Optional(boolean)): Print progress info.
+        verbose (bool, optional): Print progress info.
 
-        profile (Optional(boolean)): Enables profiling if True
+        profile (bool, optional): Enables profiling if True
 
-        save_progress (Optional(str)): path to save intermediate computational results
+        save_progress (str, optional): path to save intermediate computational results
     '''
     if verbose:
         logger.info("Approximating features...")
