@@ -198,14 +198,6 @@ class FeatureTree(object):
 
         return list(features.values()), out
 
-    def _build_dependents(self):
-        feature_dependents = defaultdict(set)
-        for f in self.all_features:
-            dependencies = self.feature_dependencies[f.hash()]
-            for d in dependencies:
-                feature_dependents[d.hash()].add(f)
-        return feature_dependents
-
     def _needs_all_values(self, feature):
         if feature.needs_all_values:
             return True

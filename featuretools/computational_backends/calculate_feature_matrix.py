@@ -209,10 +209,22 @@ def calculate_batch(features, group, approximate, entityset, backend_verbose,
                     training_window, profile, verbose, save_progress, backend,
                     no_unapproximated_aggs, cutoff_df_time_var, target_time,
                     pass_columns):
+    es = features[0].entityset
+    target_eid = features[0].entity.id
+    needs_all_values_features = [f for f in features
+                                 if backend.feature_tree._needs_all_values(f)]
+    normal_features = [f for f in features
+                       if not backend.feature_tree._needs_all_values(f)]
+
+    precalculated_features = None
+    all_approx_feature_set = None
+    large_precalc_feature_values = None
+    large_all_approx_feature_set = None
+
     # if approximating, calculate the approximate features
-    if approximate is not None:
+    if approximate is not None and len(normal_features):
         precalculated_features, all_approx_feature_set = approximate_features(
-            features,
+            normal_features,
             group,
             window=approximate,
             entityset=entityset,
@@ -220,9 +232,33 @@ def calculate_batch(features, group, approximate, entityset, backend_verbose,
             verbose=backend_verbose,
             profile=profile
         )
-    else:
-        precalculated_features = None
-        all_approx_feature_set = None
+
+    if approximate is not None and len(needs_all_values_features):
+        # Need all instances at all cutoff times
+        all_cutoff_times = group[cutoff_df_time_var].drop_duplicates()
+        all_instance_ids = es[target_eid].get_all_instances()
+        large_group = pd.DataFrame([(i, t) for t in all_cutoff_times
+                                    for i in all_instance_ids],
+                                   columns=['instance_id', cutoff_df_time_var])
+        large_precalc_feature_values, large_all_approx_feature_set = approximate_features(
+            needs_all_values_features,
+            large_group,
+            window=approximate,
+            entityset=entityset,
+            training_window=training_window,
+            verbose=backend_verbose,
+            profile=profile
+        )
+    full_precalculated_features = {}
+    if precalculated_features is not None:
+        full_precalculated_features = {eid: [vals, None] for eid, vals in precalculated_features.items()}
+    if large_precalc_feature_values is not None:
+        for eid, vals in large_precalc_feature_values.items():
+            if eid not in full_precalculated_features:
+                full_precalculated_features[eid] = [None, vals]
+            else:
+                full_precalculated_features[eid][1] = vals
+
 
     # if backend verbose wasn't set explicitly, set to True if verbose is true
     # and there is only 1 cutoff time
@@ -245,7 +281,7 @@ def calculate_batch(features, group, approximate, entityset, backend_verbose,
         grouped = [[datetime.now(), group]]
     else:
         # if approximated features, set cutoff_time to unbinned time
-        if precalculated_features is not None:
+        if len(full_precalculated_features):
             group[cutoff_df_time_var] = group[target_time]
 
         grouped = group.groupby(cutoff_df_time_var, sort=True)
@@ -263,7 +299,7 @@ def calculate_batch(features, group, approximate, entityset, backend_verbose,
         # calculate values for those instances at time _time_last_to_calc
         _feature_matrix = calc_results(_time_last_to_calc,
                                        ids,
-                                       precalculated_features=precalculated_features,
+                                       precalculated_features=full_precalculated_features,
                                        training_window=window)
 
         id_name = _feature_matrix.index.name

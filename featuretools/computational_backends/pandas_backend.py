@@ -10,7 +10,6 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
-# progress bar
 from future import standard_library
 
 from .base_backend import ComputationalBackend
@@ -26,8 +25,6 @@ from featuretools.primitives import (
     TransformPrimitive
 )
 from featuretools.utils.gen_utils import make_tqdm_iterator
-
-# featuretools
 
 
 standard_library.install_aliases()
@@ -124,23 +121,28 @@ class PandasBackend(ComputationalBackend):
             return self.generate_default_df(instance_ids=instance_ids)
 
         finished_entity_ids = []
+        large_finished_entity_ids = []
         # Populate entity_frames with precalculated features
         if len(precalculated_features) > 0:
-            for entity_id, precalc_feature_values in precalculated_features.items():
-                if entity_id in eframes_by_filter:
-                    frame = eframes_by_filter[entity_id][entity_id]
-                    eframes_by_filter[entity_id][entity_id] = pd.merge(frame,
-                                                                       precalc_feature_values,
-                                                                       left_index=True,
-                                                                       right_index=True)
-                else:
-                    # Only features we're taking from this entity
-                    # are precomputed
-                    # Make sure the id variable is a column as well as an index
-                    entity_id_var = self.entityset[entity_id].index
-                    precalc_feature_values[entity_id_var] = precalc_feature_values.index.values
-                    eframes_by_filter[entity_id] = {entity_id: precalc_feature_values}
-                    finished_entity_ids.append(entity_id)
+            for entity_id, all_precalc_values in precalculated_features.items():
+                precalc_feature_values, large_precalc_feature_values = all_precalc_values
+                for _pfvals, _eframes_by_filter, _finished_eids in [[precalc_feature_values, eframes_by_filter, finished_entity_ids],
+                                                                    [large_precalc_feature_values, large_eframes_by_filter, large_finished_entity_ids]]:
+                    if _pfvals is not None:
+                        if entity_id in _eframes_by_filter:
+                            frame = _eframes_by_filter[entity_id][entity_id]
+                            _eframes_by_filter[entity_id][entity_id] = pd.merge(frame,
+                                                                               _pfvals,
+                                                                               left_index=True,
+                                                                               right_index=True)
+                        else:
+                            # Only features we're taking from this entity
+                            # are precomputed
+                            # Make sure the id variable is a column as well as an index
+                            entity_id_var = self.entityset[entity_id].index
+                            _pfvals[entity_id_var] = _pfvals.index.values
+                            _eframes_by_filter[entity_id] = {entity_id: _pfvals}
+                            _finished_eids.append(entity_id)
 
         # Iterate over the top-level entities (filter entities) in sorted order
         # and calculate all relevant features under each one.
@@ -170,6 +172,7 @@ class PandasBackend(ComputationalBackend):
                 if not self.entityset.find_backward_path(start_entity_id=filter_eid,
                                                          goal_entity_id=eid):
                     entity_frames[eid] = eframes_by_filter[eid][eid]
+                    # TODO: look this over again
                     # precalculated features will only be placed in entity_frames,
                     # and it's possible that that they are the only features computed
                     # for an entity. In this case, the entity won't be present in
@@ -211,7 +214,7 @@ class PandasBackend(ComputationalBackend):
 
                     for frames in output_frames:
                         index = frames[entity_id].index
-                        frames[entity_id] = result_frame.loc[index]
+                        frames[entity_id] = result_frame.reindex(index)
 
                     if verbose:
                         pbar.update(1)

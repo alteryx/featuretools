@@ -316,7 +316,7 @@ def test_approximate_dfeat_of_agg_on_target(entityset):
 
 def test_approximate_dfeat_of_need_all_values(entityset):
     es = entityset
-    p = Percentile(es['log']['value'])
+    p = percentile(es['lo']['value'])
     agg_feat = Sum(p, es['sessions'])
     agg_feat2 = Sum(agg_feat, es['customers'])
     dfeat = DirectFeature(agg_feat2, es['sessions'])
@@ -347,6 +347,55 @@ def test_approximate_dfeat_of_need_all_values(entityset):
     test_list = [round(x, 3) for x in feature_matrix[agg_feat.get_name()].tolist()]
     assert lapprox == true_vals_approx
     assert test_list == true_vals
+
+
+def test_needs_all_values_feat_of_approximate(entityset):
+    es = entityset
+    agg_feat = Sum(es['log']['value'], es['sessions'])
+    agg_feat2 = Sum(agg_feat, es['customers'])
+    dfeat = DirectFeature(agg_feat2, es['sessions'])
+    p = Percentile(dfeat)
+
+    # feature_matrix = calculate_feature_matrix([p, dfeat, agg_feat],
+                                              # instance_ids=[0, 2],
+                                              # approximate=Timedelta(10, 's'),
+                                              # cutoff_time_in_index=True,
+                                              # cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
+                                                           # datetime(2011, 4, 9, 11, 0, 0)])
+    feature_matrix_small_approx = calculate_feature_matrix([p, dfeat, agg_feat],
+                                              instance_ids=[0, 2],
+                                              approximate=Timedelta(10, 'ms'),
+                                              cutoff_time_in_index=True,
+                                              cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
+                                                           datetime(2011, 4, 9, 11, 0, 0)])
+
+    feature_matrix_no_approx = calculate_feature_matrix([p, dfeat, agg_feat],
+                                              instance_ids=[0, 2],
+                                              cutoff_time_in_index=True,
+                                              cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
+                                                           datetime(2011, 4, 9, 11, 0, 0)])
+    for f in [p, dfeat, agg_feat]:
+        assert feature_matrix_small_approx[f.get_name()].tolist() == feature_matrix_no_approx[f.get_name()].tolist()
+    # log_df = es['log'].df
+    # instances = [0, 2]
+    # cutoffs = [pd.Timestamp('2011-04-09 10:31:19'), pd.Timestamp('2011-04-09 11:00:00')]
+    # approxes = [pd.Timestamp('2011-04-09 10:31:10'), pd.Timestamp('2011-04-09 11:00:00')]
+    # true_vals = []
+    # true_vals_approx = []
+    # for instance, cutoff, approx in zip(instances, cutoffs, approxes):
+        # log_data_cutoff = log_df[log_df['datetime'] < cutoff]
+        # log_data_cutoff['percentile'] = log_data_cutoff['value'].rank(pct=True)
+        # true_agg = log_data_cutoff.loc[log_data_cutoff['session_id'] == instance, 'percentile'].fillna(0).sum()
+        # true_vals.append(round(true_agg, 3))
+
+        # log_data_approx = log_df[log_df['datetime'] < approx]
+        # log_data_approx['percentile'] = log_data_approx['value'].rank(pct=True)
+        # true_agg_approx = log_data_approx.loc[log_data_approx['session_id'].isin([0, 1, 2]), 'percentile'].fillna(0).sum()
+        # true_vals_approx.append(round(true_agg_approx, 3))
+    # lapprox = [round(x, 3) for x in feature_matrix[dfeat.get_name()].tolist()]
+    # test_list = [round(x, 3) for x in feature_matrix[agg_feat.get_name()].tolist()]
+    # assert lapprox == true_vals_approx
+    # assert test_list == true_vals
 
 
 def test_approximate_dfeat_of_dfeat_of_agg_on_target(entityset):
