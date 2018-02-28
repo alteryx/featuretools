@@ -87,7 +87,7 @@ class FeatureTree(object):
 
         for f in identity_features:
             self.necessary_columns[f.entity.id].add(f.variable.id)
-            if self.needs_all_values(f):
+            if self.uses_full_entity(f):
                 self.necessary_columns_for_all_values_features[f.entity.id].add(f.variable.id)
         self.necessary_columns = {eid: list(cols) for eid, cols in self.necessary_columns.items()}
         self.necessary_columns_for_all_values_features = {eid: list(cols) for eid, cols in self.necessary_columns_for_all_values_features.items()}
@@ -153,7 +153,7 @@ class FeatureTree(object):
                         _get_ftype_string(f),
                         _get_use_previous(f),
                         _get_where(f),
-                        self.needs_all_values_differentiator(f))
+                        self.uses_full_entity_differentiator(f))
 
             # Sort the list of features by the complex key function above, then
             # group them by the same key
@@ -198,20 +198,20 @@ class FeatureTree(object):
 
         return list(features.values()), out
 
-    def needs_all_values(self, feature):
-        if feature.needs_all_values:
+    def uses_full_entity(self, feature):
+        if feature.uses_full_entity:
             return True
-        return self._dependent_needs_all_values(feature)
+        return self._dependent_uses_full_entity(feature)
 
-    def _dependent_needs_all_values(self, feature):
+    def _dependent_uses_full_entity(self, feature):
         for d in self.feature_dependents[feature.hash()]:
-            if d.needs_all_values:
+            if d.uses_full_entity:
                 return True
         return False
 
 # These functions are used for sorting and grouping features
 
-    def needs_all_values_differentiator(self, f):
+    def uses_full_entity_differentiator(self, f):
         is_output = f.hash() in self.feature_hashes
         # If a dependent feature requires all the instance values
         # of the associated entity, then we need to calculate this
@@ -221,16 +221,16 @@ class FeatureTree(object):
         # to calculate_feature_matrix), then we also need
         # to subselect the output based on the desired instance ids
         # and place in the return data frame.
-        if self._dependent_needs_all_values(f) and is_output:
+        if self._dependent_uses_full_entity(f) and is_output:
             return "dependent_and_output"
-        elif self._dependent_needs_all_values(f):
+        elif self._dependent_uses_full_entity(f):
             return "dependent"
         # If the feature itself requires all the instance values
         # but no dependent features do, then we need to provide
         # all the values as input, but subselect the output
         # to only desired instances
-        elif self.needs_all_values(f):
-            return "needs_all_no_dependent"
+        elif self.uses_full_entity(f):
+            return "uses_full_no_dependent"
         # None of the above cases, feature and accept selected
         # instances and output selected instances
         else:

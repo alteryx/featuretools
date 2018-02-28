@@ -350,7 +350,7 @@ def test_approximate_dfeat_of_need_all_values(entityset):
     assert test_list == true_vals
 
 
-def test_needs_all_values_feat_of_approximate(entityset):
+def test_uses_full_entity_feat_of_approximate(entityset):
     es = entityset
     agg_feat = Sum(es['log']['value'], es['sessions'])
     agg_feat2 = Sum(agg_feat, es['customers'])

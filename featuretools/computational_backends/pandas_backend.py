@@ -105,7 +105,7 @@ class PandasBackend(ComputationalBackend):
                                                  training_window=training_window,
                                                  verbose=verbose)
         large_eframes_by_filter = None
-        if any([f.needs_all_values for f in self.feature_tree.all_features]):
+        if any([f.uses_full_entity for f in self.feature_tree.all_features]):
             large_necessary_columns = self.feature_tree.necessary_columns_for_all_values_features
             large_eframes_by_filter = \
                 self.entityset.get_pandas_data_slice(filter_entity_ids=ordered_entities,
@@ -185,22 +185,22 @@ class PandasBackend(ComputationalBackend):
                     test_feature = group[0]
                     entity_id = test_feature.entity.id
 
-                    needs_all_values_type = \
-                        self.feature_tree.needs_all_values_differentiator(test_feature)
+                    uses_full_entity_type = \
+                        self.feature_tree.uses_full_entity_differentiator(test_feature)
 
                     input_frames = large_entity_frames
-                    if needs_all_values_type == "normal_no_dependent":
+                    if uses_full_entity_type == "normal_no_dependent":
                         input_frames = entity_frames
 
                     handler = self._feature_type_handler(test_feature)
                     result_frame = handler(group, input_frames)
 
                     output_frames = []
-                    if needs_all_values_type in ['dependent', 'dependent_and_output']:
+                    if uses_full_entity_type in ['dependent', 'dependent_and_output']:
                         # input is the full set of instances since
                         # dependent feature needs all the values
                         output_frames.append(large_entity_frames)
-                    if needs_all_values_type != "dependent":
+                    if uses_full_entity_type != "dependent":
                         # input was selected (small) set of instances, or
                         # feature itself is an output,
                         # so need to place result
@@ -209,7 +209,7 @@ class PandasBackend(ComputationalBackend):
 
                     for frames in output_frames:
                         index = frames[entity_id].index
-                        # If result_frame came from a needs_all_values feature,
+                        # If result_frame came from a uses_full_entity feature,
                         # and the input was large_entity_frames,
                         # then it's possible it doesn't contain some of the features
                         # in the output entity_frames

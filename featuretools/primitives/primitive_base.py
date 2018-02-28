@@ -58,7 +58,7 @@ class PrimitiveBase(FTBase):
     commutative = False
     # (bool) If True, feature function depends on all values of entity
     #   (and will receive these values as input, regardless of specified instance ids)
-    needs_all_values = False
+    uses_full_entity = False
 
     def __init__(self, entity, base_features, **kwargs):
         assert all(isinstance(f, PrimitiveBase) for f in base_features), \
