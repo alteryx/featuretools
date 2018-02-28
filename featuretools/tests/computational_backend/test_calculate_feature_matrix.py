@@ -3,6 +3,7 @@ import os
 import shutil
 from builtins import range
 from datetime import datetime
+from itertools import combinations
 from random import randint
 
 import numpy as np
@@ -354,28 +355,40 @@ def test_needs_all_values_feat_of_approximate(entityset):
     agg_feat = Sum(es['log']['value'], es['sessions'])
     agg_feat2 = Sum(agg_feat, es['customers'])
     dfeat = DirectFeature(agg_feat2, es['sessions'])
+    dfeat2 = DirectFeature(agg_feat, es['sessions'])
     p = Percentile(dfeat)
 
-    # feature_matrix = calculate_feature_matrix([p, dfeat, agg_feat],
-                                              # instance_ids=[0, 2],
-                                              # approximate=Timedelta(10, 's'),
-                                              # cutoff_time_in_index=True,
-                                              # cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
-                                                           # datetime(2011, 4, 9, 11, 0, 0)])
-    feature_matrix_small_approx = calculate_feature_matrix([p, dfeat, agg_feat],
+    # only dfeat2 should be approximated
+    # because Percentile needs all values
+    feature_matrix = calculate_feature_matrix([dfeat2],
+                                              instance_ids=[0, 2],
+                                              approximate=Timedelta(10, 's'),
+                                              cutoff_time_in_index=True,
+                                              cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
+                                                           datetime(2011, 4, 9, 11, 0, 0)])
+    import pdb; pdb.set_trace()
+    feature_matrix = calculate_feature_matrix([p, dfeat, dfeat2, agg_feat],
+                                              instance_ids=[0, 2],
+                                              approximate=Timedelta(10, 's'),
+                                              cutoff_time_in_index=True,
+                                              cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
+                                                           datetime(2011, 4, 9, 11, 0, 0)])
+    feature_matrix_small_approx = calculate_feature_matrix([p, dfeat, dfeat2, agg_feat],
                                               instance_ids=[0, 2],
                                               approximate=Timedelta(10, 'ms'),
                                               cutoff_time_in_index=True,
                                               cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
                                                            datetime(2011, 4, 9, 11, 0, 0)])
 
-    feature_matrix_no_approx = calculate_feature_matrix([p, dfeat, agg_feat],
+    feature_matrix_no_approx = calculate_feature_matrix([p, dfeat, dfeat2, agg_feat],
                                               instance_ids=[0, 2],
                                               cutoff_time_in_index=True,
                                               cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
                                                            datetime(2011, 4, 9, 11, 0, 0)])
     for f in [p, dfeat, agg_feat]:
-        assert feature_matrix_small_approx[f.get_name()].tolist() == feature_matrix_no_approx[f.get_name()].tolist()
+        for fm1, fm2 in combinations([feature_matrix, feature_matrix_small_approx, feature_matrix_no_approx], 2):
+            assert fm1[f.get_name()].tolist() == fm2[f.get_name()].tolist()
+    import pdb; pdb.set_trace()
     # log_df = es['log'].df
     # instances = [0, 2]
     # cutoffs = [pd.Timestamp('2011-04-09 10:31:19'), pd.Timestamp('2011-04-09 11:00:00')]

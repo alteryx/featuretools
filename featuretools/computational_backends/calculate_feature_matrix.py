@@ -134,9 +134,11 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
             cutoff_time.rename(columns={not_instance_id[0]: "time"}, inplace=True)
         pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
 
+    backend = PandasBackend(entityset, features)
+
     # Get dictionary of features to approximate
     if approximate is not None:
-        to_approximate, all_approx_feature_set = gather_approximate_features(features)
+        to_approximate, all_approx_feature_set = gather_approximate_features(features, backend)
     else:
         to_approximate = defaultdict(list)
         all_approx_feature_set = None
@@ -182,7 +184,6 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
         iterator = grouped
 
     feature_matrix = []
-    backend = PandasBackend(entityset, features)
     for _, group in iterator:
         _feature_matrix = calculate_batch(features, group, approximate,
                                           entityset, backend_verbose,
@@ -209,56 +210,21 @@ def calculate_batch(features, group, approximate, entityset, backend_verbose,
                     training_window, profile, verbose, save_progress, backend,
                     no_unapproximated_aggs, cutoff_df_time_var, target_time,
                     pass_columns):
-    es = features[0].entityset
-    target_eid = features[0].entity.id
-    needs_all_values_features = [f for f in features
-                                 if backend.feature_tree._needs_all_values(f)]
-    normal_features = [f for f in features
-                       if not backend.feature_tree._needs_all_values(f)]
-
-    precalculated_features = None
-    all_approx_feature_set = None
-    large_precalc_feature_values = None
-    large_all_approx_feature_set = None
-
     # if approximating, calculate the approximate features
-    if approximate is not None and len(normal_features):
+    if approximate is not None:
         precalculated_features, all_approx_feature_set = approximate_features(
-            normal_features,
+            features,
             group,
             window=approximate,
             entityset=entityset,
+            backend=backend,
             training_window=training_window,
             verbose=backend_verbose,
             profile=profile
         )
-
-    if approximate is not None and len(needs_all_values_features):
-        # Need all instances at all cutoff times
-        all_cutoff_times = group[cutoff_df_time_var].drop_duplicates()
-        all_instance_ids = es[target_eid].get_all_instances()
-        large_group = pd.DataFrame([(i, t) for t in all_cutoff_times
-                                    for i in all_instance_ids],
-                                   columns=['instance_id', cutoff_df_time_var])
-        large_precalc_feature_values, large_all_approx_feature_set = approximate_features(
-            needs_all_values_features,
-            large_group,
-            window=approximate,
-            entityset=entityset,
-            training_window=training_window,
-            verbose=backend_verbose,
-            profile=profile
-        )
-    full_precalculated_features = {}
-    if precalculated_features is not None:
-        full_precalculated_features = {eid: [vals, None] for eid, vals in precalculated_features.items()}
-    if large_precalc_feature_values is not None:
-        for eid, vals in large_precalc_feature_values.items():
-            if eid not in full_precalculated_features:
-                full_precalculated_features[eid] = [None, vals]
-            else:
-                full_precalculated_features[eid][1] = vals
-
+    else:
+        precalculated_features = None
+        all_approx_feature_set = None
 
     # if backend verbose wasn't set explicitly, set to True if verbose is true
     # and there is only 1 cutoff time
@@ -281,7 +247,7 @@ def calculate_batch(features, group, approximate, entityset, backend_verbose,
         grouped = [[datetime.now(), group]]
     else:
         # if approximated features, set cutoff_time to unbinned time
-        if len(full_precalculated_features):
+        if precalculated_features is not None:
             group[cutoff_df_time_var] = group[target_time]
 
         grouped = group.groupby(cutoff_df_time_var, sort=True)
@@ -299,7 +265,7 @@ def calculate_batch(features, group, approximate, entityset, backend_verbose,
         # calculate values for those instances at time _time_last_to_calc
         _feature_matrix = calc_results(_time_last_to_calc,
                                        ids,
-                                       precalculated_features=full_precalculated_features,
+                                       precalculated_features=precalculated_features,
                                        training_window=window)
 
         id_name = _feature_matrix.index.name
@@ -366,7 +332,7 @@ def save_csv_decorator(save_progress=None):
     return inner_decorator
 
 
-def approximate_features(features, cutoff_time, window, entityset,
+def approximate_features(features, cutoff_time, window, entityset, backend,
                          training_window=None, verbose=None, profile=None):
     '''Given a list of features and cutoff_times to be passed to
     calculate_feature_matrix, calculates approximate values of some features
@@ -415,7 +381,8 @@ def approximate_features(features, cutoff_time, window, entityset,
     target_entity = features[0].entity
     target_index_var = target_entity.index
 
-    to_approximate, all_approx_feature_set = gather_approximate_features(features)
+    to_approximate, all_approx_feature_set = gather_approximate_features(features, backend)
+    import pdb; pdb.set_trace()
 
     target_time_colname = 'target_time'
     cutoff_time[target_time_colname] = cutoff_time['time']
@@ -504,10 +471,12 @@ def datetime_round(dt, freq, round_up=False):
     return pd.DatetimeIndex(((round_f(dt.asi8 / freq)) * freq).astype(np.int64))
 
 
-def gather_approximate_features(features):
+def gather_approximate_features(features, backend):
     approximate_by_entity = defaultdict(list)
     approximate_feature_set = set([])
     for feature in features:
+        if backend.feature_tree.needs_all_values(feature):
+            continue
         if isinstance(feature, DirectFeature):
             base_feature = feature.base_features[0]
             while not isinstance(base_feature, AggregationPrimitive):

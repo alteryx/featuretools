@@ -87,7 +87,7 @@ class FeatureTree(object):
 
         for f in identity_features:
             self.necessary_columns[f.entity.id].add(f.variable.id)
-            if self._needs_all_values(f):
+            if self.needs_all_values(f):
                 self.necessary_columns_for_all_values_features[f.entity.id].add(f.variable.id)
         self.necessary_columns = {eid: list(cols) for eid, cols in self.necessary_columns.items()}
         self.necessary_columns_for_all_values_features = {eid: list(cols) for eid, cols in self.necessary_columns_for_all_values_features.items()}
@@ -198,7 +198,7 @@ class FeatureTree(object):
 
         return list(features.values()), out
 
-    def _needs_all_values(self, feature):
+    def needs_all_values(self, feature):
         if feature.needs_all_values:
             return True
         return self._dependent_needs_all_values(feature)
@@ -229,7 +229,7 @@ class FeatureTree(object):
         # but no dependent features do, then we need to provide
         # all the values as input, but subselect the output
         # to only desired instances
-        elif self._needs_all_values(f):
+        elif self.needs_all_values(f):
             return "needs_all_no_dependent"
         # None of the above cases, feature and accept selected
         # instances and output selected instances
