@@ -185,12 +185,6 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
     else:
         cutoff_time_to_pass = cutoff_time
 
-    # if the backend is going to be verbose, don't make cutoff times verbose
-    if verbose and not backend_verbose:
-        pbar = make_tqdm_iterator(total=len(cutoff_time),
-                                  desc="Progress",
-                                  unit="cutoff time")
-
     if num_per_chunk == "cutoff time":
         iterator = cutoff_time_to_pass.groupby(cutoff_df_time_var)
     else:
@@ -198,6 +192,36 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
                                   time_variable=cutoff_df_time_var,
                                   num_per_chunk=num_per_chunk)
 
+    # if the backend is going to be verbose, don't make cutoff times verbose
+    if verbose and not backend_verbose:
+        chunks = []
+        pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
+                       "Progress: {l_bar}{bar}||")
+        if num_per_chunk == "cutoff time":
+            pbar_string += ", Chunks created: {n}"
+            pbar = make_tqdm_iterator(iterable=iterator,
+                                      bar_format=pbar_string)
+            for _, group in pbar:
+                chunks.append(group)
+        else:
+            pbar_string += "{postfix}"
+            pbar = make_tqdm_iterator(total=cutoff_time_to_pass.shape[0],
+                                      bar_format=pbar_string,
+                                      postfix={"Chunks": 0})
+            pbar.set_postfix_str("Chunks created: 0")
+            for chunk in iterator:
+                chunks.append(chunk)
+                pbar.set_postfix_str("Chunks created: %s" % (len(chunks)),
+                                     False)
+                pbar.update(n=chunk.shape[0])
+
+        pbar.close()
+        pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
+                       "Progress: {l_bar}{bar}|| "
+                       "Calculated: {n}/{total} chunks")
+        iterator = make_tqdm_iterator(iterable=chunks,
+                                      total=len(chunks),
+                                      bar_format=pbar_string)
     feature_matrix = []
     backend = PandasBackend(entityset, features)
     for chunk in iterator:
@@ -215,8 +239,6 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
         # Do a manual garbage collection in case objects from calculate_batch
         # weren't collected automatically
         gc.collect()
-        if verbose:
-            pbar.update(len(_feature_matrix))
     if verbose:
         pbar.close()
     feature_matrix = pd.concat(feature_matrix)
