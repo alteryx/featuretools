@@ -134,9 +134,11 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
             cutoff_time.rename(columns={not_instance_id[0]: "time"}, inplace=True)
         pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
 
+    backend = PandasBackend(entityset, features)
+
     # Get dictionary of features to approximate
     if approximate is not None:
-        to_approximate, all_approx_feature_set = gather_approximate_features(features)
+        to_approximate, all_approx_feature_set = gather_approximate_features(features, backend)
     else:
         to_approximate = defaultdict(list)
         all_approx_feature_set = None
@@ -182,7 +184,6 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
         iterator = grouped
 
     feature_matrix = []
-    backend = PandasBackend(entityset, features)
     for _, group in iterator:
         _feature_matrix = calculate_batch(features, group, approximate,
                                           entityset, backend_verbose,
@@ -216,6 +217,7 @@ def calculate_batch(features, group, approximate, entityset, backend_verbose,
             group,
             window=approximate,
             entityset=entityset,
+            backend=backend,
             training_window=training_window,
             verbose=backend_verbose,
             profile=profile
@@ -330,7 +332,7 @@ def save_csv_decorator(save_progress=None):
     return inner_decorator
 
 
-def approximate_features(features, cutoff_time, window, entityset,
+def approximate_features(features, cutoff_time, window, entityset, backend,
                          training_window=None, verbose=None, profile=None):
     '''Given a list of features and cutoff_times to be passed to
     calculate_feature_matrix, calculates approximate values of some features
@@ -379,7 +381,7 @@ def approximate_features(features, cutoff_time, window, entityset,
     target_entity = features[0].entity
     target_index_var = target_entity.index
 
-    to_approximate, all_approx_feature_set = gather_approximate_features(features)
+    to_approximate, all_approx_feature_set = gather_approximate_features(features, backend)
 
     target_time_colname = 'target_time'
     cutoff_time[target_time_colname] = cutoff_time['time']
@@ -468,10 +470,12 @@ def datetime_round(dt, freq, round_up=False):
     return pd.DatetimeIndex(((round_f(dt.asi8 / freq)) * freq).astype(np.int64))
 
 
-def gather_approximate_features(features):
+def gather_approximate_features(features, backend):
     approximate_by_entity = defaultdict(list)
     approximate_feature_set = set([])
     for feature in features:
+        if backend.feature_tree.uses_full_entity(feature):
+            continue
         if isinstance(feature, DirectFeature):
             base_feature = feature.base_features[0]
             while not isinstance(base_feature, AggregationPrimitive):

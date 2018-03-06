@@ -524,6 +524,7 @@ class Percentile(TransformPrimitive):
     to the rest of the feature.
     """
     name = 'percentile'
+    uses_full_entity = True
     input_types = [Numeric]
     return_type = Numeric
 
