@@ -26,7 +26,6 @@ from featuretools.primitives import (
 )
 from featuretools.utils.gen_utils import make_tqdm_iterator
 
-
 standard_library.install_aliases()
 warnings.simplefilter('ignore', np.RankWarning)
 warnings.simplefilter("ignore", category=RuntimeWarning)
