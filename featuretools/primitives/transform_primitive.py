@@ -361,7 +361,7 @@ class NumWords(TransformPrimitive):
     return_type = Numeric
 
     def get_function(self):
-        return lambda array: pd.Series([x.count(" ") + 1 for x in array])
+        return lambda array: pd.Series([str(x).count(" ") + 1 for x in array])
 
 
 # class Like(TransformPrimitive):
