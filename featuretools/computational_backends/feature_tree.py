@@ -213,15 +213,20 @@ class FeatureTree(object):
 
     def uses_full_entity_differentiator(self, f):
         is_output = f.hash() in self.feature_hashes
+        normal_dependent_is_output = any([(not d.uses_full_entity and
+                                           d.hash() in self.feature_hashes)
+                                          for d in self.feature_dependents[f.hash()]])
+        need_selected_output = is_output or normal_dependent_is_output
         # If a dependent feature requires all the instance values
         # of the associated entity, then we need to calculate this
         # feature on all values
         # If the feature is one in which the user requested as
         # an output (meaning it's part of the input feature list
-        # to calculate_feature_matrix), then we also need
+        # to calculate_feature_matrix), or a normal, non-uses_full_entity dependent
+        # feature is an output, then we also need
         # to subselect the output based on the desired instance ids
         # and place in the return data frame.
-        if self._dependent_uses_full_entity(f) and is_output:
+        if self._dependent_uses_full_entity(f) and need_selected_output:
             return "dependent_and_output"
         elif self._dependent_uses_full_entity(f):
             return "dependent"
