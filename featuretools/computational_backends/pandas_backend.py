@@ -214,10 +214,10 @@ class PandasBackend(ComputationalBackend):
                         # in the output entity_frames
                         # We thus need to concatenate the existing frame with the result frame,
                         # making sure not to duplicate any columns
-                        result_frame = result_frame[[c for c in result_frame.columns
+                        _result_frame = result_frame[[c for c in result_frame.columns
                                                      if c not in frames[entity_id].columns]]
-                        result_frame = result_frame.reindex(index)
-                        frames[entity_id] = pd.concat([frames[entity_id], result_frame], axis=1)
+                        _result_frame = _result_frame.reindex(index)
+                        frames[entity_id] = pd.concat([frames[entity_id], _result_frame], axis=1)
 
                     if verbose:
                         pbar.update(1)
