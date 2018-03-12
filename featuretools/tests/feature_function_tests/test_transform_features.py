@@ -7,6 +7,7 @@ from ..testing_utils import make_ecommerce_entityset
 from featuretools import Timedelta
 from featuretools.computational_backends import PandasBackend
 from featuretools.primitives import (
+    Absolute,
     Add,
     And,
     Compare,
@@ -52,7 +53,9 @@ from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
 
-@pytest.fixture(scope='module')
+# some tests change the entityset values, so we have to create it fresh
+# for each test (rather than setting scope='module')
+@pytest.fixture
 def es():
     return make_ecommerce_entityset()
 
@@ -1157,7 +1160,6 @@ def test_two_kinds_of_dependents(es):
     product = Feature(es['log']['product_id'])
     agg = Sum(v, es['customers'], where=product=='coke zero')
     p = Percentile(agg)
-    from featuretools.primitives import Absolute
     g = Absolute(agg)
     agg2 = Sum(v, es['sessions'], where=product=='coke zero')
     # Adding this feature in tests line 218 in pandas_backend

@@ -184,30 +184,18 @@ class PandasBackend(ComputationalBackend):
                     test_feature = group[0]
                     entity_id = test_feature.entity.id
 
-                    uses_full_entity_type = \
-                        self.feature_tree.uses_full_entity_differentiator(test_feature)
+                    input_frames_type = self.feature_tree.input_frames_type(test_feature)
 
                     input_frames = large_entity_frames
-                    if uses_full_entity_type == "normal_no_dependent":
+                    if input_frames_type == "normal_entity_frames":
                         input_frames = entity_frames
 
                     handler = self._feature_type_handler(test_feature)
                     result_frame = handler(group, input_frames)
 
-                    output_frames = []
-                    if uses_full_entity_type in ['dependent', 'dependent_and_output']:
-                        # input is the full set of instances since
-                        # dependent feature needs all the values
-                        output_frames.append(large_entity_frames)
-                    if uses_full_entity_type != "dependent":
-                        # input was selected (small) set of instances, or
-                        # feature itself is an output,
-                        # so need to place result
-                        # in selected (small) output frame
-                        output_frames.append(entity_frames)
-
-                    for frames in output_frames:
-                        index = frames[entity_id].index
+                    output_frames_type = self.feature_tree.output_frames_type(test_feature)
+                    if output_frames_type in ['full_and_normal_entity_frames', 'normal_entity_frames']:
+                        index = entity_frames[entity_id].index
                         # If result_frame came from a uses_full_entity feature,
                         # and the input was large_entity_frames,
                         # then it's possible it doesn't contain some of the features
@@ -215,9 +203,20 @@ class PandasBackend(ComputationalBackend):
                         # We thus need to concatenate the existing frame with the result frame,
                         # making sure not to duplicate any columns
                         _result_frame = result_frame[[c for c in result_frame.columns
-                                                     if c not in frames[entity_id].columns]]
+                                                     if c not in entity_frames[entity_id].columns]]
                         _result_frame = _result_frame.reindex(index)
-                        frames[entity_id] = pd.concat([frames[entity_id], _result_frame], axis=1)
+                        entity_frames[entity_id] = pd.concat([entity_frames[entity_id],
+                                                              _result_frame],
+                                                             axis=1)
+
+                    if output_frames_type in ['full_and_normal_entity_frames', 'full_entity_frames']:
+                        index = large_entity_frames[entity_id].index
+                        _result_frame = result_frame[[c for c in result_frame.columns
+                                                     if c not in large_entity_frames[entity_id].columns]]
+                        _result_frame = _result_frame.reindex(index)
+                        large_entity_frames[entity_id] = pd.concat([large_entity_frames[entity_id],
+                                                                    _result_frame],
+                                                                   axis=1)
 
                     if verbose:
                         pbar.update(1)
