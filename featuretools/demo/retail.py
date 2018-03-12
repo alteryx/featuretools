@@ -8,7 +8,7 @@ import featuretools.variable_types as vtypes
 from featuretools.config import config as ft_config
 
 
-def load_retail(id='demo_retail_data', nrows=None):
+def load_retail(id='demo_retail_data', nrows=None, redownload=False):
     '''
     Returns the retail entityset example
 
@@ -57,7 +57,7 @@ def load_retail(id='demo_retail_data', nrows=None):
     es = ft.EntitySet(id)
     csv_s3 = "s3://featuretools-static/uk_online_retail.csv"
 
-    if not os.path.isfile(demo_save_path):
+    if redownload or not os.path.isfile(demo_save_path):
         df = pd.read_csv(csv_s3,
                          nrows=nrows,
                          parse_dates=["InvoiceDate"])
