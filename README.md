@@ -71,8 +71,13 @@ In this demonstration, we use a multi-table dataset of 3 million online grocery 
 For more examples of how to use Featuretools, check out our [demos](https://www.featuretools.com/demos) page.
 
 ## Support
+The Featuretools community is happy to provide support to users of Featuretools. Project support can be found in four places depending on the type of question:
 
-For installation or usage questions, please reach out on [Gitter](https://gitter.im/featuretools/featuretools). 
+1. For usage questions, use [Stack Overflow](https://stackoverflow.com/questions/tagged/featuretools) with the `featuretools` tag.
+2. For bugs, issues, or feature requests start a [Github issue](https://github.com/featuretools/featuretools/issues).
+3. For discussion regarding development on the core library, use [gitter](https://gitter.im/featuretools/featuretools).
+4. For everything else, the core developers can be reached by email at help@featuretools.com.
+
 
 ## Feature Labs
 
