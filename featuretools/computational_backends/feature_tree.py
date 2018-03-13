@@ -218,29 +218,31 @@ class FeatureTree(object):
         # feature on all values
         if self.uses_full_entity(f):
             return 'full_entity_frames'
-        return 'normal_entity_frames'
+        return 'subset_entity_frames'
 
     def output_frames_type(self, f):
         is_output = f.hash() in self.feature_hashes
-        normal_dependent_is_output = any([(not d.uses_full_entity and
+        dependent_uses_full_entity = self._dependent_uses_full_entity(f)
+        dependent_has_subset_input = any([(not d.uses_full_entity and
                                            d.hash() in self.feature_hashes)
                                           for d in self.feature_dependents[f.hash()]])
-        need_selected_output = is_output or normal_dependent_is_output
         # If the feature is one in which the user requested as
         # an output (meaning it's part of the input feature list
-        # to calculate_feature_matrix), or a normal, non-uses_full_entity dependent
-        # feature is an output, then we need
+        # to calculate_feature_matrix), or a dependent feature
+        # takes the subset entity_frames as input, then we need
         # to subselect the output based on the desired instance ids
         # and place in the return data frame.
-        if self._dependent_uses_full_entity(f) and need_selected_output:
-            return 'full_and_normal_entity_frames'
-        elif self._dependent_uses_full_entity(f):
+        if dependent_uses_full_entity and is_output:
+            return 'full_and_subset_entity_frames'
+        elif dependent_uses_full_entity and dependent_has_subset_input:
+            return 'full_and_subset_entity_frames'
+        elif dependent_uses_full_entity:
             return 'full_entity_frames'
         # If the feature itself does not require all the instance values
         # or no dependent features do, then we
         # subselect the output
         # to only desired instances
-        return 'normal_entity_frames'
+        return 'subset_entity_frames'
 
 
 def _get_use_previous(f):

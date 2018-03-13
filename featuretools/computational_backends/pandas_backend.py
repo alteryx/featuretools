@@ -187,14 +187,14 @@ class PandasBackend(ComputationalBackend):
                     input_frames_type = self.feature_tree.input_frames_type(test_feature)
 
                     input_frames = large_entity_frames
-                    if input_frames_type == "normal_entity_frames":
+                    if input_frames_type == "subset_entity_frames":
                         input_frames = entity_frames
 
                     handler = self._feature_type_handler(test_feature)
                     result_frame = handler(group, input_frames)
 
                     output_frames_type = self.feature_tree.output_frames_type(test_feature)
-                    if output_frames_type in ['full_and_normal_entity_frames', 'normal_entity_frames']:
+                    if output_frames_type in ['full_and_subset_entity_frames', 'subset_entity_frames']:
                         index = entity_frames[entity_id].index
                         # If result_frame came from a uses_full_entity feature,
                         # and the input was large_entity_frames,
@@ -209,7 +209,7 @@ class PandasBackend(ComputationalBackend):
                                                               _result_frame],
                                                              axis=1)
 
-                    if output_frames_type in ['full_and_normal_entity_frames', 'full_entity_frames']:
+                    if output_frames_type in ['full_and_subset_entity_frames', 'full_entity_frames']:
                         index = large_entity_frames[entity_id].index
                         _result_frame = result_frame[[c for c in result_frame.columns
                                                      if c not in large_entity_frames[entity_id].columns]]
