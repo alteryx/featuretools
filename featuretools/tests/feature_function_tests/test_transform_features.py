@@ -1158,10 +1158,10 @@ def test_percentile_with_cutoff(es):
 def test_two_kinds_of_dependents(es):
     v = Feature(es['log']['value'])
     product = Feature(es['log']['product_id'])
-    agg = Sum(v, es['customers'], where=product=='coke zero')
+    agg = Sum(v, es['customers'], where=product == 'coke zero')
     p = Percentile(agg)
     g = Absolute(agg)
-    agg2 = Sum(v, es['sessions'], where=product=='coke zero')
+    agg2 = Sum(v, es['sessions'], where=product == 'coke zero')
     # Adding this feature in tests line 218 in pandas_backend
     # where we remove columns in result_frame that already exist
     # in the output entity_frames in preparation for pd.concat

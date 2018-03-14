@@ -202,20 +202,20 @@ class PandasBackend(ComputationalBackend):
                         # in the output entity_frames
                         # We thus need to concatenate the existing frame with the result frame,
                         # making sure not to duplicate any columns
-                        _result_frame = result_frame[[c for c in result_frame.columns
-                                                     if c not in entity_frames[entity_id].columns]]
-                        _result_frame = _result_frame.reindex(index)
+                        _result_frame = result_frame.reindex(index)
+                        cols_to_keep = [c for c in _result_frame.columns
+                                        if c not in entity_frames[entity_id].columns]
                         entity_frames[entity_id] = pd.concat([entity_frames[entity_id],
-                                                              _result_frame],
+                                                              _result_frame[cols_to_keep]],
                                                              axis=1)
 
                     if output_frames_type in ['full_and_subset_entity_frames', 'full_entity_frames']:
                         index = large_entity_frames[entity_id].index
-                        _result_frame = result_frame[[c for c in result_frame.columns
-                                                     if c not in large_entity_frames[entity_id].columns]]
-                        _result_frame = _result_frame.reindex(index)
+                        _result_frame = result_frame.reindex(index)
+                        cols_to_keep = [c for c in _result_frame.columns
+                                        if c not in large_entity_frames[entity_id].columns]
                         large_entity_frames[entity_id] = pd.concat([large_entity_frames[entity_id],
-                                                                    _result_frame],
+                                                                    _result_frame[cols_to_keep]],
                                                                    axis=1)
 
                     if verbose:
