@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 
 from ..testing_utils import make_ecommerce_entityset
@@ -65,3 +66,29 @@ def test_to_encode_features(entityset):
     to_encode = ['value']
     feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features, to_encode=to_encode)
     assert feature_matrix_encoded_shape != feature_matrix_encoded.shape
+
+
+def test_encode_features_handles_pass_columns(entityset):
+    f1 = IdentityFeature(entityset["log"]["product_id"])
+    f2 = IdentityFeature(entityset["log"]["value"])
+
+    features = [f1, f2]
+    cutoff_time = pd.DataFrame({'instance_id': range(6),
+                                'time': entityset['log'].df['datetime'][0:6],
+                                'label': [i % 2 for i in range(6)]},
+                               columns=["instance_id", "time", "label"])
+    feature_matrix = calculate_feature_matrix(features, cutoff_time)
+
+    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features)
+    feature_matrix_encoded_shape = feature_matrix_encoded.shape
+
+    # to_encode should keep product_id as a string, and not create 3 additional columns
+    to_encode = []
+    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features, to_encode=to_encode)
+    assert feature_matrix_encoded_shape != feature_matrix_encoded.shape
+
+    to_encode = ['value']
+    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features, to_encode=to_encode)
+    assert feature_matrix_encoded_shape != feature_matrix_encoded.shape
+
+    assert 'label' in feature_matrix_encoded.columns
