@@ -65,6 +65,15 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
         X = feature_matrix.copy()
 
     encoded = []
+    feature_names = []
+    for feature in features:
+        fname = feature.get_name()
+        assert fname in X.columns, (
+            "Feature %s not found in feature matrix" % (fname)
+        )
+        feature_names.append(fname)
+
+    extra_columns = [col for col in X.columns if col not in feature_names]
 
     if verbose:
         iterator = make_tqdm_iterator(iterable=features,
@@ -107,15 +116,16 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
 
         X.drop(f.get_name(), axis=1, inplace=True)
 
-    new_X = X[[e.get_name() for e in encoded]]
+    new_X = X[[e.get_name() for e in encoded] + extra_columns]
     iterator = new_X.columns
     if verbose:
         iterator = make_tqdm_iterator(iterable=new_X.columns,
                                       total=len(new_X.columns),
                                       desc="Encoding pass 2",
                                       unit="feature")
-
     for c in iterator:
+        if c in extra_columns:
+            continue
         try:
             new_X[c] = pd.to_numeric(new_X[c], errors='raise')
         except (TypeError, ValueError):
