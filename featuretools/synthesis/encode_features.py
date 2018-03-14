@@ -118,7 +118,7 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
                                       unit="feature")
     for c in iterator:
         if c in extra_columns:
-            pass
+            continue
         try:
             new_X[c] = pd.to_numeric(new_X[c], errors='raise')
         except (TypeError, ValueError):
