@@ -94,3 +94,21 @@ def test_encode_features_handles_pass_columns(entityset):
     assert feature_matrix_encoded_shape != feature_matrix_encoded.shape
 
     assert 'label' in feature_matrix_encoded.columns
+
+
+def test_encode_features_catches_features_mismatch(entityset):
+    f1 = IdentityFeature(entityset["log"]["product_id"])
+    f2 = IdentityFeature(entityset["log"]["value"])
+    f3 = IdentityFeature(entityset["log"]["session_id"])
+
+    features = [f1, f2]
+    cutoff_time = pd.DataFrame({'instance_id': range(6),
+                                'time': entityset['log'].df['datetime'][0:6],
+                                'label': [i % 2 for i in range(6)]},
+                               columns=["instance_id", "time", "label"])
+    feature_matrix = calculate_feature_matrix(features, cutoff_time)
+
+    assert 'label' in feature_matrix.columns
+
+    with pytest.raises(AssertionError):
+        encode_features(feature_matrix, [f1, f3])

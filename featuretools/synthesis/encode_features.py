@@ -65,7 +65,14 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
         X = feature_matrix.copy()
 
     encoded = []
-    feature_names = [f.get_name() for f in features]
+    feature_names = []
+    for feature in features:
+        fname = feature.get_name()
+        assert fname in X.columns, (
+            "Feature %s not found in feature matrix" % (fname)
+        )
+        feature_names.append(fname)
+
     extra_columns = [col for col in X.columns if col not in feature_names]
 
     if verbose:
