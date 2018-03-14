@@ -79,6 +79,8 @@ def test_encode_features_handles_pass_columns(entityset):
                                columns=["instance_id", "time", "label"])
     feature_matrix = calculate_feature_matrix(features, cutoff_time)
 
+    assert 'label' in feature_matrix.columns
+
     feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features)
     feature_matrix_encoded_shape = feature_matrix_encoded.shape
 
