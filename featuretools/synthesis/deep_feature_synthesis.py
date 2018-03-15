@@ -304,7 +304,6 @@ class DeepFeatureSynthesis(object):
             new_features = new_features[:self.max_features]
 
         if verbose:
-            #self.pbar.update(0)
             sys.stdout.flush()
             self.pbar.close()
             self.verbose = None
