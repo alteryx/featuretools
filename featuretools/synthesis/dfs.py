@@ -34,31 +34,33 @@ def dfs(entities=None,
 
 
     Args:
-        entities (dict[str -> tuple(pd.DataFrame, str, str)]): dictionary of
+        entities (dict[str -> tuple(pd.DataFrame, str, str)]): Dictionary of
             entities. Entries take the format
-            {entity id -> (dataframe, id column, (time_column))}
+            {entity id -> (dataframe, id column, (time_column))}.
 
-        relationships (list[(str, str, str, str)]): list of relationships
+        relationships (list[(str, str, str, str)]): List of relationships
             between entities. List items are a tuple with the format
-            (parent entity id, parent variable, child entity id, child variable)
+            (parent entity id, parent variable, child entity id, child variable).
 
-        entityset (:class:`.EntitySet`): An already initialized entityset. Required if
-            entities and relationships are not defined
+        entityset (EntitySet): An already initialized entityset. Required if
+            entities and relationships are not defined.
 
-        target_entity (str): id of entity to predict on
+        target_entity (str): Entity id of entity on which to make predictions.
 
-        cutoff_time (pd.DataFrame or Datetime): specifies what time to calculate
-            the features for each instance at.  Can either be a DataFrame with
-            'instance_id' and 'time' columns, DataFrame with the name of the
-            index variable in the target entity and a time column, a list of values, or a single
-            value to calculate for all instances. If the dataframe has more than two columns, any additional
-            columns will be added to the resulting feature matrix.
+        cutoff_time (pd.DataFrame or Datetime): Specifies times at which to
+            calculate each instance. Can either be a DataFrame with
+            'instance_id' and 'time' columns, a DataFrame with the name of the
+            index variable in the target entity and a time column, a
+            list of values, or a single
+            value to calculate for all instances. If the dataframe has more than
+            two columns, any additional columns will be added to the resulting
+            feature matrix.
 
-        instance_ids (list): list of instances to calculate features on. Only
+        instance_ids (list): List of instances on which to calculate features. Only
             used if cutoff_time is a single datetime.
 
-        agg_primitives (list[:class:`AggregationPrimitive .primitives.AggregationPrimitive`], optional):
-            list of Aggregation Feature types to apply.
+        agg_primitives (list[AggregationPrimitive], optional): List of Aggregation
+            Feature types to apply.
 
                 Default:[:class:`Sum <.primitives.Sum>`, \
                          :class:`Std <.primitives.Std>`, \
@@ -71,59 +73,62 @@ def dfs(entities=None,
                          :class:`NUniqe <.primitives.NUnique>`, \
                          :class:`Mode <.primitives.Mode>`]
 
-        trans_primitives (list[:class:`TransformPrimitive <.primitives.TransformPrimitive>`], optional):
-            list of Transform Feature functions to apply.
+        trans_primitives (list[TransformPrimitive], optional):
+            List of Transform Feature functions to apply.
 
                 Default:[:class:`Day <.primitives.Day>`, \
                          :class:`Year <.primitives.Year>`, \
                          :class:`Month <.primitives.Month>`, \
-                         :class:`Weekday <.primitives.Weekday>`]
+                         :class:`Weekday <.primitives.Weekday>`, \
+                         :class:`Haversine <.primitives.Haversine>`, \
+                         :class:`NumWords <.primitives.NumWords>`, \
+                         :class:`NumCharacters <.primitives.NumCharacters>`]
 
-        allowed_paths (list[list[str]]): Allowed entity paths to make
-            features for
+        allowed_paths (list[list[str]]): Allowed entity paths on which to make
+            features.
 
-        max_depth (int) : maximum allowed depth of features
+        max_depth (int) : Maximum allowed depth of features.
 
         ignore_entities (list[str], optional): List of entities to
-            blacklist when creating features
+            blacklist when creating features.
 
         ignore_variables (dict[str -> str], optional): List of specific
-            variables within each entity to blacklist when creating features
+            variables within each entity to blacklist when creating features.
 
         seed_features (list[:class:`.PrimitiveBase`]): List of manually defined
             features to use.
 
-        drop_contains (list[str], optional): drop features
-            that contains these strings in name
+        drop_contains (list[str], optional): Drop features
+            that contains these strings in name.
 
-        drop_exact (list[str], optional): drop features that
-            exactly match these strings in name
+        drop_exact (list[str], optional): Drop features that
+            exactly match these strings in name.
 
-        where_primitives (list[:class:`.primitives.AggregationPrimitive`], optional):
-            list of Aggregation Feature types to apply with where clauses.
+        where_primitives (list[AggregationPrimitive], optional):
+            List of Aggregation Feature types to apply with where clauses.
 
         max_features (int, optional) : Cap the number of generated features to
                 this number. If -1, no limit.
 
-        features_only (boolean, optional): if True, returns the list of
+        features_only (bool, optional): If True, returns the list of
             features without calculating the feature matrix.
 
         cutoff_time_in_index (bool): If True, return a DataFrame with a MultiIndex
             where the second index is the cutoff time (first is instance id).
             DataFrame will be sorted by (time, instance_id).
 
-        training_window (dict[str-> :class:`Timedelta`] or :class:`Timedelta`, optional):
+        training_window (dict[str -> Timedelta] or Timedelta, optional):
             Window or windows defining how much older than the cutoff time data
             can be to be included when calculating the feature.  To specify
-            which entities to apply windows to, use a dictionary mapping entity
-            id -> Timedelta. If None, all older data is used.
+            which entities to apply windows to, use a dictionary mapping an entity
+            id to Timedelta. If None, all older data is used.
 
-        approximate (Timedelta): bucket size to group instances with similar
+        approximate (Timedelta): Bucket size to group instances with similar
             cutoff times by for features with costly calculations. For example,
             if bucket is 24 hours, all instances with cutoff times on the same
             day will use the same calculation for expensive features.
 
-        save_progress (Optional(str)): path to save intermediate computational results
+        save_progress (str, optional): Path to save intermediate computational results.
 
 
     Examples:

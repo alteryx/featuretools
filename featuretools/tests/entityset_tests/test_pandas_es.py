@@ -25,26 +25,25 @@ def entity(entityset):
 class TestQueryFuncs(object):
 
     def test_query_by_id(self, entityset):
-        df = entityset.query_entity_by_values(entity_id='log',
-                                              instance_vals=[0])
+        df = entityset['log'].query_by_values(instance_vals=[0])
         assert df['id'].values[0] == 0
 
     def test_query_by_id_with_sort(self, entityset):
-        df = entityset.query_entity_by_values(entity_id='log',
-                                              instance_vals=[2, 1, 3],
-                                              return_sorted=True)
+        df = entityset['log'].query_by_values(
+            instance_vals=[2, 1, 3],
+            return_sorted=True)
         assert df['id'].values.tolist() == [2, 1, 3]
 
     def test_query_by_id_with_time(self, entityset):
-        df = entityset.query_entity_by_values(
-            entity_id='log', instance_vals=[0, 1, 2, 3, 4],
+        df = entityset['log'].query_by_values(
+            instance_vals=[0, 1, 2, 3, 4],
             time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
 
         assert df['id'].get_values().tolist() == [0, 1, 2]
 
     def test_query_by_variable_with_time(self, entityset):
-        df = entityset.query_entity_by_values(
-            entity_id='log', instance_vals=[0, 1, 2], variable_id='session_id',
+        df = entityset['log'].query_by_values(
+            instance_vals=[0, 1, 2], variable_id='session_id',
             time_last=datetime(2011, 4, 9, 10, 50, 0))
 
         true_values = [
@@ -52,17 +51,26 @@ class TestQueryFuncs(object):
         assert df['id'].get_values().tolist() == list(range(10))
         assert df['value'].get_values().tolist() == true_values
 
+    def test_query_by_variable_with_training_window(self, entityset):
+        df = entityset['log'].query_by_values(
+            instance_vals=[0, 1, 2], variable_id='session_id',
+            time_last=datetime(2011, 4, 9, 10, 50, 0),
+            training_window='15m')
+
+        assert df['id'].get_values().tolist() == [9]
+        assert df['value'].get_values().tolist() == [0]
+
     def test_query_by_indexed_variable(self, entityset):
-        df = entityset.query_entity_by_values(
-            entity_id='log', instance_vals=['taco clock'],
+        df = entityset['log'].query_by_values(
+            instance_vals=['taco clock'],
             variable_id='product_id')
 
         assert df['id'].get_values().tolist() == [15, 16]
 
     def test_query_by_non_unique_sort_raises(self, entityset):
         with pytest.raises(ValueError):
-            entityset.query_entity_by_values(
-                entity_id='log', instance_vals=[0, 2, 1],
+            entityset['log'].query_by_values(
+                instance_vals=[0, 2, 1],
                 variable_id='session_id', return_sorted=True)
 
 
@@ -492,6 +500,14 @@ class TestRelatedInstances(object):
 
         for p in entityset.get_column_data('products', 'id').values:
             assert p in result['id'].values
+
+    def test_related_instances_all_cutoff_time_same_entity(self, entityset):
+        # test querying across the entityset
+        result = entityset._related_instances(
+            start_entity_id='log', final_entity_id='log',
+            instance_ids=None, time_last=pd.Timestamp('2011/04/09 10:30:31'))
+
+        assert result['id'].values.tolist() == list(range(5))
 
     def test_related_instances_link_vars(self, entityset):
         # test adding link variables on the fly during _related_instances
