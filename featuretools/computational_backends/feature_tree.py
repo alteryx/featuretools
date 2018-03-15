@@ -153,7 +153,8 @@ class FeatureTree(object):
                         _get_ftype_string(f),
                         _get_use_previous(f),
                         _get_where(f),
-                        self.uses_full_entity_differentiator(f))
+                        self.input_frames_type(f),
+                        self.output_frames_type(f))
 
             # Sort the list of features by the complex key function above, then
             # group them by the same key
@@ -211,30 +212,37 @@ class FeatureTree(object):
 
 # These functions are used for sorting and grouping features
 
-    def uses_full_entity_differentiator(self, f):
-        is_output = f.hash() in self.feature_hashes
+    def input_frames_type(self, f):
         # If a dependent feature requires all the instance values
         # of the associated entity, then we need to calculate this
         # feature on all values
+        if self.uses_full_entity(f):
+            return 'full_entity_frames'
+        return 'subset_entity_frames'
+
+    def output_frames_type(self, f):
+        is_output = f.hash() in self.feature_hashes
+        dependent_uses_full_entity = self._dependent_uses_full_entity(f)
+        dependent_has_subset_input = any([(not d.uses_full_entity and
+                                           d.hash() in self.feature_hashes)
+                                          for d in self.feature_dependents[f.hash()]])
         # If the feature is one in which the user requested as
         # an output (meaning it's part of the input feature list
-        # to calculate_feature_matrix), then we also need
+        # to calculate_feature_matrix), or a dependent feature
+        # takes the subset entity_frames as input, then we need
         # to subselect the output based on the desired instance ids
         # and place in the return data frame.
-        if self._dependent_uses_full_entity(f) and is_output:
-            return "dependent_and_output"
-        elif self._dependent_uses_full_entity(f):
-            return "dependent"
-        # If the feature itself requires all the instance values
-        # but no dependent features do, then we need to provide
-        # all the values as input, but subselect the output
+        if dependent_uses_full_entity and is_output:
+            return 'full_and_subset_entity_frames'
+        elif dependent_uses_full_entity and dependent_has_subset_input:
+            return 'full_and_subset_entity_frames'
+        elif dependent_uses_full_entity:
+            return 'full_entity_frames'
+        # If the feature itself does not require all the instance values
+        # or no dependent features do, then we
+        # subselect the output
         # to only desired instances
-        elif self.uses_full_entity(f):
-            return "uses_full_no_dependent"
-        # None of the above cases, feature and accept selected
-        # instances and output selected instances
-        else:
-            return "normal_no_dependent"
+        return 'subset_entity_frames'
 
 
 def _get_use_previous(f):
