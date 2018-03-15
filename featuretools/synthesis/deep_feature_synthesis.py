@@ -244,12 +244,14 @@ class DeepFeatureSynthesis(object):
             msg = "variable_types must be a list, or 'all'"
             assert isinstance(variable_types, list), msg
 
+        removed_features = 0
         if variable_types is not None:
             before_len = len(new_features)
             new_features = [f for f in new_features
                             if any(issubclass(f.variable_type, vt) for vt in variable_types)]
             if verbose and before_len > len(new_features):
-                self.pbar.write("Removed {} features with undesired variable types".format(before_len - len(new_features)))
+                removed_features += before_len - len(new_features)
+                self.pbar.set_postfix({"features excluded": removed_features})
 
         def check_secondary_index(f):
             secondary_time_index = self.es[self.target_entity_id].secondary_time_index
@@ -282,7 +284,8 @@ class DeepFeatureSynthesis(object):
         before_len = len(new_features)
         new_features = list(filter(filt, new_features))
         if verbose and before_len > len(new_features):
-            self.pbar.write("Removed {} target entity index features".format(before_len - len(new_features)))
+            removed_features += before_len - len(new_features)
+            self.pbar.set_postfix({"features excluded": removed_features})
 
         # sanity check for duplicate features
         l = [f.hash() for f in new_features]
