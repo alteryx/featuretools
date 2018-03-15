@@ -320,4 +320,14 @@ class PandasTypes(object):
                         'float16', 'float32', 'float64']
 
 
-ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta, Categorical, Text, Ordinal, Boolean]
+class LatLong(Variable):
+    """Represents an ordered pair (Latitude, Longitude)
+    To make a latlong in a dataframe do
+    data['latlong'] = data[['latitude', 'longitude']].apply(tuple, axis=1)
+    """
+    _dtype_repr = "latlong"
+
+
+ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
+                      Categorical, Text, Ordinal,
+                      Boolean, LatLong]

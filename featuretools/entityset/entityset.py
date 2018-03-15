@@ -4,7 +4,6 @@ import logging
 from builtins import range, zip
 from collections import defaultdict
 
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 
@@ -36,9 +35,9 @@ class EntitySet(BaseEntitySet):
                 id (str) : unique identifier to associate with this instance
                 verbose (boolean)
 
-                entities (dict[str: tuple(pd.DataFrame, str, str)]): dictionary of
+                entities (dict[str -> tuple(pd.DataFrame, str, str)]): dictionary of
                     entities. Entries take the format
-                    {entity id: (dataframe, id column, (time_column), (variable_types))}
+                    {entity id -> (dataframe, id column, (time_column), (variable_types))}
                     Note that time_column and variable_types are optional
 
                 relationships (list[(str, str, str, str)]): list of relationships
@@ -319,135 +318,6 @@ class EntitySet(BaseEntitySet):
     ###########################################################################
     #  Entity creation methods  ##############################################
     ###########################################################################
-    def entity_from_csv(self, entity_id,
-                        csv_path,
-                        index=None,
-                        variable_types=None,
-                        use_variables=None,
-                        make_index=False,
-                        time_index=None,
-                        secondary_time_index=None,
-                        time_index_components=None,
-                        parse_date_cols=None,
-                        encoding=None,
-                        **kwargs):
-        """
-        Load the data for a specified entity from a CSV file.
-
-        Args:
-            entity_id (str) : unique id to associate with this entity
-
-            csv_path (str) : path to the file containing the data
-
-            index (str, optional): Name of the variable used to index the entity.
-                If None, take the first column
-
-            variable_types (dict[str->dict[str->type]]) : Optional mapping of
-                entity_id -> variable_types dict with which to initialize an
-                entity's store.
-                An entity's variable_types dict maps string variable ids to types (:class:`.Variable`)
-
-            use_variables (Optional(list[str])) : List of column names to pull from csv
-
-            make_index (Optional(boolean)) : If True, assume index does not exist as a column in
-                csv, and create a new column of that name using integers the (0, len(dataframe)).
-                Otherwise, assume index exists in csv
-
-            time_index (Optional[str]): Name of the variable containing
-                time data. Type must be in Variables.datetime or be able to be
-                cast to datetime (e.g. str, float), or numeric.
-
-            secondary_time_index (Optional[str]): Name of variable containing
-                time data to use a second time index for the entity
-
-            time_index_components (Optional((list[str])) : Names of columns to combine (separated by spaces)
-                and allow Pandas to parse as a single Datetime time_index column. Columns are
-                combined in the order provided. Useful if there are separate date and time
-                columns (e.g. col1[0] = '8/8/2016' and col2[0] = '4:30')
-
-            parse_date_cols (Optional(list[str])) : list of column names to parse as datetimes
-
-            encoding (Optional(str)) : If None, will use 'ascii'. Another option is 'utf-8',
-                or any encoding supported by pandas. Passed into underlying
-                pandas.read_csv() and pandas.to_csv() calls, so see Pandas documentation
-                for more information
-
-            **kwargs : Extra arguments will be passed to :func:`pd.read_csv`
-        """
-
-        # If time index components are passed, combine them into a single column
-        # TODO look into handling secondary_time_index here
-
-        # _operations?
-        if parse_date_cols:
-            parse_date_cols = parse_date_cols or []
-
-        def load_df(e, csv_path):
-            ext = csv_path.split('.')[-1]
-            compression = None
-            compression_formats = ['bz2', 'gzip']
-            if ext in compression_formats:
-                compression = ext
-            elif ext != 'csv':
-                raise ValueError("Unknown extension: %s", ext)
-
-            read_csv = pd.read_csv
-            glob = False
-
-            if "*" in csv_path:
-                glob = True
-                # read dask dataframe from multiple files
-                read_csv = dd.read_csv
-                kwargs['blocksize'] = None
-
-            if time_index_components:
-                parse_dates = {time_index: time_index_components}
-                df = read_csv(csv_path, low_memory=False,
-                              parse_dates=parse_dates,
-                              compression=compression,
-                              usecols=use_variables,
-                              encoding=encoding,
-                              **kwargs)
-            else:
-                df = read_csv(csv_path, low_memory=False,
-                              parse_dates=parse_date_cols,
-                              compression=compression,
-                              usecols=use_variables,
-                              encoding=encoding,
-                              **kwargs)
-
-            if glob:
-                # convert dask dataframe back to pandas
-                if e:
-                    df = e.compute(df)
-                else:
-                    df = df.compute()
-            return df
-
-        # handle if we are working list of csv_path
-        # TODO: handle multiple csvs using dask so that they will be downloaded in parallel
-        dfs = []
-        if not isinstance(csv_path, list):
-            csv_path = [csv_path]
-
-        # DFS todo: what about
-        # # try:
-        #         with worker_client() as e:
-        #             df = load_df(e, csv)
-        #     except AttributeError:
-        for csv in csv_path:
-            df = load_df(None, csv)
-            dfs.append(df)
-
-        df = pd.concat(dfs)
-
-        return self._import_from_dataframe(entity_id, df, index=index,
-                                           make_index=make_index,
-                                           time_index=time_index,
-                                           secondary_time_index=secondary_time_index,
-                                           variable_types=variable_types,
-                                           parse_date_cols=parse_date_cols,
-                                           encoding=encoding)
 
     def entity_from_dataframe(self,
                               entity_id,
@@ -1008,7 +878,7 @@ class EntitySet(BaseEntitySet):
         calculating features using training windows
         """
         # Generate graph of entities to find leaf entities
-        children = defaultdict(list)
+        children = defaultdict(list)  # parent --> child mapping
         child_vars = defaultdict(dict)
         for r in self.relationships:
             children[r.parent_entity.id].append(r.child_entity)
@@ -1022,30 +892,46 @@ class EntitySet(BaseEntitySet):
 
         while len(explored) < len(self.entities):
             entity = queue.pop(0)
-            if entity.id not in children:
+
+            if entity.last_time_index is None:
                 if entity.has_time_index():
-                    entity.set_last_time_index(entity.df[entity.time_index])
-            else:
+                    lti = entity.df[entity.time_index].copy()
+                else:
+                    lti = entity.df[entity.index].copy()
+                    lti[:] = None
+                entity.set_last_time_index(lti)
+
+            if entity.id in children:
                 child_entities = children[entity.id]
+
+                # if all children not explored, skip for now
                 if not set([e.id for e in child_entities]).issubset(explored):
                     queue.append(entity)
                     continue
+
+                # updated last time from all children
                 for child_e in child_entities:
-                    link_var = child_vars[entity.id][child_e.id].id
                     if child_e.last_time_index is None:
                         continue
+
+                    link_var = child_vars[entity.id][child_e.id].id
                     lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
                                            entity.index: child_e.df[link_var]})
+                    # sort by time and keep only the most recent
+                    lti_df.sort_values(['last_time', entity.index],
+                                       kind="mergesort",
+                                       inplace=True)
                     lti_df.drop_duplicates(entity.index,
                                            keep='last',
                                            inplace=True)
+
                     lti_df.set_index(entity.index, inplace=True)
-                    if entity.last_time_index is None:
-                        entity.last_time_index = lti_df['last_time']
-                    else:
-                        lti_df['last_time_old'] = entity.last_time_index
-                        entity.last_time_index = lti_df.max(axis=1).dropna()
-                        entity.last_time_index.name = 'last_time'
+                    lti_df = lti_df.reindex(entity.last_time_index.index)
+                    lti_df['last_time_old'] = entity.last_time_index
+                    lti_df = lti_df.apply(lambda x: x.dropna().max(), axis=1)
+                    entity.last_time_index = lti_df
+                    entity.last_time_index.name = 'last_time'
+
             explored.add(entity.id)
 
     ###########################################################################
@@ -1109,7 +995,6 @@ class EntitySet(BaseEntitySet):
             df = start_estore.query_by_values(instance_ids,
                                               time_last=time_last,
                                               training_window=window)
-
         # if we're querying on a path that's not actually a path, just return
         # the relevant slice of the entityset
         if start_entity_id == final_entity_id:

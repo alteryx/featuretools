@@ -1,4 +1,4 @@
-comments,datetime,id,priority_level,product_id,purchased,session_id,value,value_2
+comments,datetime,id,priority_level,product_id,purchased,session_id,value,value_2,value_many_nans
 "
 The place: BMO Harris Bradley Center
 The event: Bucks VS Spurs
@@ -26,14 +26,14 @@ Not a word was said, but a diaper was thrown over the stall. I catch it, line my
 
 My son asks me, ""Daddy, why are we leaving early?""
 ""Well son, I need to change my diaper""
-",2011-04-10 10:40:00,10,0,Haribo sugar-free gummy bears,True,3,0.0,0.0
-I loved it,2011-04-10 10:40:01,11,0,coke zero,False,3,5.0,2.0
-I loved it,2011-04-10 10:41:00,12,0,coke zero,False,4,0.0,0.0
-I loved it,2011-04-10 10:41:03,13,2,coke zero,False,4,7.0,3.0
-I loved it,2011-04-10 10:41:06,14,2,coke zero,False,4,14.0,6.0
+",2011-04-10 10:40:00,10,0,Haribo sugar-free gummy bears,True,3,0.0,0.0,
+I loved it,2011-04-10 10:40:01,11,0,coke zero,False,3,5.0,2.0,
+I loved it,2011-04-10 10:41:00,12,0,coke zero,False,4,0.0,0.0,0.0
+I loved it,2011-04-10 10:41:03,13,2,coke zero,False,4,7.0,3.0,3.0
+I loved it,2011-04-10 10:41:06,14,2,coke zero,False,4,14.0,6.0,6.0
 "
 This timer does what it is supposed to do. Setup is elementary. Replacing the old one (after 12 years) was relatively easy. It has performed flawlessly since. I'm delighted I could find an esoteric product like this at Amazon. Their service, and the customer reviews, are just excellent.
-",2011-04-10 11:10:00,15,1,taco clock,True,5,,
+",2011-04-10 11:10:00,15,1,taco clock,True,5,,,
 "
 Funny, cute clock. A little spendy for how light the clock is, but its hard to find a taco clock.
-",2011-04-10 11:10:03,16,1,taco clock,False,5,,
+",2011-04-10 11:10:03,16,1,taco clock,False,5,,,

@@ -34,9 +34,9 @@ def dfs(entities=None,
 
 
     Args:
-        entities (dict[str: tuple(pd.DataFrame, str, str)]): dictionary of
+        entities (dict[str -> tuple(pd.DataFrame, str, str)]): dictionary of
             entities. Entries take the format
-            {entity id: (dataframe, id column, (time_column))}
+            {entity id -> (dataframe, id column, (time_column))}
 
         relationships (list[(str, str, str, str)]): list of relationships
             between entities. List items are a tuple with the format
@@ -51,7 +51,8 @@ def dfs(entities=None,
             the features for each instance at.  Can either be a DataFrame with
             'instance_id' and 'time' columns, DataFrame with the name of the
             index variable in the target entity and a time column, a list of values, or a single
-            value to calculate for all instances.
+            value to calculate for all instances. If the dataframe has more than two columns, any additional
+            columns will be added to the resulting feature matrix.
 
         instance_ids (list): list of instances to calculate features on. Only
             used if cutoff_time is a single datetime.
@@ -86,7 +87,7 @@ def dfs(entities=None,
         ignore_entities (list[str], optional): List of entities to
             blacklist when creating features
 
-        ignore_variables (dict[str : str], optional): List of specific
+        ignore_variables (dict[str -> str], optional): List of specific
             variables within each entity to blacklist when creating features
 
         seed_features (list[:class:`.PrimitiveBase`]): List of manually defined

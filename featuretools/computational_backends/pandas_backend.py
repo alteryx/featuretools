@@ -128,7 +128,6 @@ class PandasBackend(ComputationalBackend):
 
         # Iterate over the top-level entities (filter entities) in sorted order
         # and calculate all relevant features under each one.
-
         if verbose:
             total_groups_to_compute = sum(len(group)
                                           for group in self.feature_tree.ordered_feature_groups.values())

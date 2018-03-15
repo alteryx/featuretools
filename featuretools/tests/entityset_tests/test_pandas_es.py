@@ -6,9 +6,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ..testing_utils import make_ecommerce_entityset, save_to_csv
+from ..testing_utils import make_ecommerce_entityset
 
-from featuretools import Relationship, variable_types
+from featuretools import variable_types
 from featuretools.entityset import EntitySet
 
 
@@ -47,7 +47,8 @@ class TestQueryFuncs(object):
             entity_id='log', instance_vals=[0, 1, 2], variable_id='session_id',
             time_last=datetime(2011, 4, 9, 10, 50, 0))
 
-        true_values = [i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
+        true_values = [
+            i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
         assert df['id'].get_values().tolist() == list(range(10))
         assert df['value'].get_values().tolist() == true_values
 
@@ -205,7 +206,8 @@ class TestVariableHandling(object):
         datetime_format = "%d-%m-%Y"
         actual = pd.Timestamp('Jan 2, 2011')
         time_strs = [actual.strftime(datetime_format)] * 3
-        df = pd.DataFrame({'id': [0, 1, 2], 'time_format': time_strs, 'time_no_format': time_strs})
+        df = pd.DataFrame(
+            {'id': [0, 1, 2], 'time_format': time_strs, 'time_no_format': time_strs})
         vtypes = {'id': variable_types.Categorical,
                   'time_format': (variable_types.Datetime, {"format": datetime_format}),
                   'time_no_format': variable_types.Datetime}
@@ -215,7 +217,8 @@ class TestVariableHandling(object):
                                          variable_types=vtypes, dataframe=df)
 
         col_format = entityset.get_column_data('test_entity', 'time_format')
-        col_no_format = entityset.get_column_data('test_entity', 'time_no_format')
+        col_no_format = entityset.get_column_data(
+            'test_entity', 'time_no_format')
         # without formatting pandas gets it wrong
         assert (col_no_format != actual).all()
 
@@ -296,7 +299,8 @@ class TestVariableHandling(object):
         assert entityset.get_dataframe('test_entity').shape == df.shape
         assert entityset.get_index('test_entity') == 'id'
         assert entityset.get_time_index('test_entity') == 'time'
-        assert set(entityset.get_column_names('test_entity')) == set(df.columns)
+        assert set(entityset.get_column_names(
+            'test_entity')) == set(df.columns)
 
         assert entityset.get_column_max('test_entity', 'number') == 6
         assert entityset.get_column_min('test_entity', 'number') == 4
@@ -304,26 +308,10 @@ class TestVariableHandling(object):
         assert entityset.get_column_count('test_entity', 'number') == 3
         assert entityset.get_column_mean('test_entity', 'number') == 5
         assert entityset.get_column_nunique('test_entity', 'number') == 3
-        assert entityset.get_column_type('test_entity', 'time') == df['time'].dtype
-        assert set(entityset.get_column_data('test_entity', 'id')) == set(df['id'])
-
-    def test_time_index_components(self, entityset):
-        df = pd.DataFrame({'id': [0, 1],
-                           'date': ['4/9/2015', '4/10/2015'],
-                           'time': ['8:30', '13:30']})
-        filename = save_to_csv('test_entity', df)
-
-        entityset.entity_from_csv('test_entity', filename, index='id',
-                                  time_index='datetime',
-                                  time_index_components=['date', 'time'])
-        assert entityset.entity_stores['test_entity'].time_index == 'datetime'
-        new_df = entityset.get_dataframe('test_entity')
-        assert new_df.shape == (2, 2)
-        assert len(new_df.columns) == 2
-        assert 'id' in new_df.columns
-        assert 'datetime' in new_df.columns
-        assert new_df['datetime'][0] == datetime(2015, 4, 9, 8, 30, 0)
-        assert new_df['datetime'][1] == datetime(2015, 4, 10, 13, 30, 0)
+        assert entityset.get_column_type(
+            'test_entity', 'time') == df['time'].dtype
+        assert set(entityset.get_column_data(
+            'test_entity', 'id')) == set(df['id'])
 
     def test_combine_variables(self, entityset):
         # basic case
@@ -369,7 +357,8 @@ class TestVariableHandling(object):
                                         secondary_time_index_variables=['cancel_reason'])
         sessions = entityset['sessions']
         assert sessions.time_index == 'session_date'
-        assert sessions.secondary_time_index == {'cancel_date': ['cancel_reason']}
+        assert sessions.secondary_time_index == {
+            'cancel_date': ['cancel_reason']}
         true_session_dates = ([datetime(2011, 4, 6)] +
                               [datetime(2011, 4, 8)] * 3 +
                               [datetime(2011, 4, 9)] * 2)
@@ -393,17 +382,22 @@ class TestVariableHandling(object):
         transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                                         "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s")[::-1]})
 
-        es = EntitySet("test", entities={"t": (transactions_df, "id", "transaction_time")})
+        es = EntitySet("test", entities={"t": (
+            transactions_df, "id", "transaction_time")})
         times = es["t"].df.transaction_time.tolist()
         assert times == sorted(transactions_df.transaction_time.tolist())
 
     def test_already_sorted_parameter(self):
         transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                                         "transaction_time": [datetime(2014, 4, 6),
-                                                             datetime(2012, 4, 8),
-                                                             datetime(2012, 4, 8),
-                                                             datetime(2013, 4, 8),
-                                                             datetime(2015, 4, 8),
+                                                             datetime(
+                                                                 2012, 4, 8),
+                                                             datetime(
+                                                                 2012, 4, 8),
+                                                             datetime(
+                                                                 2013, 4, 8),
+                                                             datetime(
+                                                                 2015, 4, 8),
                                                              datetime(2016, 4, 9)]})
 
         es = EntitySet(id='test')
@@ -460,7 +454,6 @@ class TestVariableHandling(object):
 
 
 class TestRelatedInstances(object):
-
     def test_related_instances_backward(self, entityset):
         result = entityset._related_instances(
             start_entity_id='regions', final_entity_id='log',
@@ -521,12 +514,15 @@ class TestRelatedInstances(object):
         # make sure all necessary filter frames are present
         assert set(result.keys()) == set(filter_eids)
         assert set(result['products'].keys()), set(['products', 'log'])
-        assert set(result['customers'].keys()) == set(['customers', 'sessions', 'log'])
-        assert set(result['regions'].keys()) == set(['regions', 'stores', 'customers', 'sessions', 'log'])
+        assert set(result['customers'].keys()) == set(
+            ['customers', 'sessions', 'log'])
+        assert set(result['regions'].keys()) == set(
+            ['regions', 'stores', 'customers', 'sessions', 'log'])
 
         # make sure different subsets of the log are included in each filtering
         assert set(result['customers']['log']['id'].values) == set(range(10))
-        assert set(result['products']['log']['id'].values) == set(list(range(10)) + list(range(11, 15)))
+        assert set(result['products']['log']['id'].values) == set(
+            list(range(10)) + list(range(11, 15)))
         assert set(result['regions']['log']['id'].values) == set(range(17))
 
     def test_get_pandas_slice_times(self, entityset):
@@ -582,7 +578,8 @@ class TestRelatedInstances(object):
         # only customer 0 should have values from these columns
         customers_df = result["customers"]["customers"]
         for col in ["cancel_date", "cancel_reason"]:
-            nulls = customers_df.iloc[all_instances][col].isnull() == [False, True, True]
+            nulls = customers_df.iloc[all_instances][col].isnull() == [
+                False, True, True]
             assert nulls.all(), "Some instance has data it shouldn't for column %s" % col
 
     def test_add_link_vars(self, entityset):
@@ -605,13 +602,15 @@ class TestNormalizeEntity(object):
                                    make_time_index=False)
 
         assert len(entityset.get_forward_relationships('sessions')) == 2
-        assert entityset.get_forward_relationships('sessions')[1].parent_entity.id == 'device_types'
+        assert entityset.get_forward_relationships(
+            'sessions')[1].parent_entity.id == 'device_types'
         assert 'device_name' in entityset['device_types'].df.columns
         assert 'device_name' not in entityset['sessions'].df.columns
         assert 'device_type' in entityset['device_types'].df.columns
 
     def test_normalize_entity_copies_variable_types(self, entityset):
-        entityset['log'].convert_variable_type('value', variable_types.Ordinal, convert_data=False)
+        entityset['log'].convert_variable_type(
+            'value', variable_types.Ordinal, convert_data=False)
         assert entityset['log'].variable_types['value'] == variable_types.Ordinal
         assert entityset['log'].variable_types['priority_level'] == variable_types.Ordinal
         entityset.normalize_entity('log', 'values_2', 'value_2',
@@ -620,7 +619,8 @@ class TestNormalizeEntity(object):
                                    make_time_index=False)
 
         assert len(entityset.get_forward_relationships('log')) == 3
-        assert entityset.get_forward_relationships('log')[2].parent_entity.id == 'values_2'
+        assert entityset.get_forward_relationships(
+            'log')[2].parent_entity.id == 'values_2'
         assert 'priority_level' in entityset['values_2'].df.columns
         assert 'value' in entityset['values_2'].df.columns
         assert 'priority_level' not in entityset['log'].df.columns
@@ -660,74 +660,20 @@ class TestNormalizeEntity(object):
         assert 'value_time' in entityset['values'].df.columns
         assert len(entityset['values'].df.columns) == 3
 
-    def test_last_time_index(self, entityset):
-        es = entityset
-        es.normalize_entity('log', 'values', 'value',
-                                   make_time_index=True,
-                                   new_entity_time_index="value_time",
-                                   convert_links_to_integers=True)
-        es.add_last_time_indexes()
-        assert es["values"].last_time_index is not None
-        times = {
-            'values': [
-                datetime(2011, 4, 10, 10, 41, 0),
-                datetime(2011, 4, 10, 10, 40, 1),
-                datetime(2011, 4, 9, 10, 30, 12),
-                datetime(2011, 4, 9, 10, 30, 18),
-                datetime(2011, 4, 9, 10, 30, 24),
-                datetime(2011, 4, 9, 10, 31, 9),
-                datetime(2011, 4, 9, 10, 31, 18),
-                datetime(2011, 4, 9, 10, 31, 27),
-                datetime(2011, 4, 10, 10, 41, 3),
-                datetime(2011, 4, 10, 10, 41, 6),
-                datetime(2011, 4, 10, 11, 10, 3),
-            ],
-            'customers': [
-                datetime(2011, 4, 9, 10, 40, 0),
-                datetime(2011, 4, 10, 10, 41, 6),
-                datetime(2011, 4, 10, 11, 10, 3),
-            ]
-        }
-        region_series = pd.Series({'United States':
-                                   datetime(2011, 4, 10, 11, 10, 3)})
-        values_lti = es["values"].last_time_index.sort_index()
-        customers_lti = es["customers"].last_time_index.sort_index()
-        regions_lti = es["regions"].last_time_index.sort_index()
-        assert (values_lti == pd.Series(times['values'])).all()
-        assert (customers_lti == pd.Series(times['customers'])).all()
-        assert (regions_lti == region_series).all()
-
-        # add promotions entity
-        promotions_df = pd.DataFrame({
-            "start_date": [datetime(2011, 4, 10, 11, 12, 6)],
-            "store_id": [4],
-            "product_id": ['coke zero']
-        })
-        es.entity_from_dataframe(entity_id="promotions",
-                                 dataframe=promotions_df,
-                                 index='id',
-                                 make_index=True,
-                                 time_index='start_date')
-        relationship = Relationship(es['stores']['id'],
-                                    es['promotions']['store_id'])
-        es.add_relationship(relationship)
-        es.add_last_time_indexes()
-        region_series['Mexico'] = datetime(2011, 4, 10, 11, 12, 6)
-        regions_lti = es["regions"].last_time_index.sort_index()
-        assert (regions_lti == region_series.sort_index()).all()
-
     def test_secondary_time_index(self, entityset):
         es = entityset
         es.normalize_entity('log', 'values', 'value',
                             make_time_index=True,
-                            make_secondary_time_index={'datetime': ['comments']},
+                            make_secondary_time_index={
+                                'datetime': ['comments']},
                             new_entity_time_index="value_time",
                             new_entity_secondary_time_index='second_ti',
                             convert_links_to_integers=True)
 
         assert (isinstance(es['values'].df['second_ti'], pd.Series))
         assert (es['values']['second_ti']._dtype_repr == 'datetime')
-        assert (es['values'].secondary_time_index == {'second_ti': ['comments', 'second_ti']})
+        assert (es['values'].secondary_time_index == {
+                'second_ti': ['comments', 'second_ti']})
 
 
 def test_head_of_entity(entityset):
@@ -737,19 +683,22 @@ def test_head_of_entity(entityset):
     assert(isinstance(entity.head(3), pd.DataFrame))
     assert(isinstance(entity['product_id'].head(3), pd.DataFrame))
 
-    assert(entity.head(n=5).shape == (5, 9))
+    num_columns = 12
+    assert(entity.head(n=5).shape == (5, num_columns))
 
     timestamp1 = pd.to_datetime("2011-04-09 10:30:10")
     timestamp2 = pd.to_datetime("2011-04-09 10:30:18")
     datetime1 = datetime(2011, 4, 9, 10, 30, 18)
 
-    assert(entity.head(5, cutoff_time=timestamp1).shape == (2, 9))
-    assert(entity.head(5, cutoff_time=timestamp2).shape == (3, 9))
-    assert(entity.head(5, cutoff_time=datetime1).shape == (3, 9))
+    assert(entity.head(5, cutoff_time=timestamp1).shape == (2, num_columns))
+    assert(entity.head(5, cutoff_time=timestamp2).shape == (3, num_columns))
+    assert(entity.head(5, cutoff_time=datetime1).shape == (3, num_columns))
 
     time_list = [timestamp2] * 3 + [timestamp1] * 2
     cutoff_times = pd.DataFrame(list(zip(range(5), time_list)))
 
-    assert(entityset.head('log', 5, cutoff_time=cutoff_times).shape == (3, 9))
-    assert(entity.head(5, cutoff_time=cutoff_times).shape == (3, 9))
-    assert(entity['product_id'].head(5, cutoff_time=cutoff_times).shape == (3, 1))
+    assert(entityset.head('log', 5, cutoff_time=cutoff_times).shape ==
+           (3, num_columns))
+    assert(entity.head(5, cutoff_time=cutoff_times).shape == (3, num_columns))
+    assert(entity['product_id'].head(
+        5, cutoff_time=cutoff_times).shape == (3, 1))
