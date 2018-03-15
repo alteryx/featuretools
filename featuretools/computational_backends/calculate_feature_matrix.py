@@ -199,7 +199,6 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
         # weren't collected automatically
         gc.collect()
 
-
     feature_matrix = pd.concat(feature_matrix)
     if not cutoff_time_in_index:
         feature_matrix.reset_index(level='time', drop=True, inplace=True)
