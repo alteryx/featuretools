@@ -298,7 +298,8 @@ class DeepFeatureSynthesis(object):
         before_len = len(new_features)
         new_features = self._filter_features(new_features)
         if verbose and before_len > len(new_features):
-            self.pbar.write("Removed {} features from drop_exact and drop_contains lists".format(before_len - len(new_features)))
+            removed_features += before_len - len(new_features)
+            self.pbar.set_postfix({"features excluded": removed_features})
 
         if self.max_features > 0:
             new_features = new_features[:self.max_features]
