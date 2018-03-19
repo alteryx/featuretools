@@ -362,8 +362,7 @@ class NumWords(TransformPrimitive):
 
     def get_function(self):
         def word_counter(array):
-            array = pd.Series(array).fillna('')
-            return pd.Series([str(x).count(' ') + 1 for x in array])
+            return pd.Series(array).fillna('').str.count(' ') + 1
         return word_counter
 
 
