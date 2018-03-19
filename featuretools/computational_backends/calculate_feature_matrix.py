@@ -176,9 +176,12 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
 
     # if the backend is going to be verbose, don't make cutoff times verbose
     if verbose and not backend_verbose:
+        pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
+                       "Progress: {l_bar}{bar}|| "
+                       "Calculated: {n}/{total} cutoff times")
         iterator = make_tqdm_iterator(iterable=grouped,
                                       total=len(grouped),
-                                      desc="Progress",
+                                      bar_format=pbar_string,
                                       unit="cutoff time")
     else:
         iterator = grouped

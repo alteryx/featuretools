@@ -1,5 +1,4 @@
 import logging
-import sys
 from builtins import filter, object, str
 from collections import defaultdict
 
@@ -17,7 +16,6 @@ from featuretools.primitives.api import (
     IdentityFeature,
     TimeSince
 )
-from featuretools.utils.gen_utils import make_tqdm_iterator
 from featuretools.variable_types import Boolean, Categorical, Numeric, Ordinal
 
 logger = logging.getLogger('featuretools')
@@ -211,9 +209,6 @@ class DeepFeatureSynthesis(object):
                 features for target entity, sorted by feature depth
                 (shallow first).
         """
-        self.verbose = verbose
-        if verbose:
-            self.pbar = make_tqdm_iterator(desc="Building features")
         all_features = {}
         for e in self.es.entities:
             if e not in self.ignore_entities:
@@ -289,10 +284,8 @@ class DeepFeatureSynthesis(object):
             new_features = new_features[:self.max_features]
 
         if verbose:
-            self.pbar.update(0)
-            sys.stdout.flush()
-            self.pbar.close()
-            self.verbose = None
+            print("Built {} features".format(len(new_features)))
+            verbose = None
         return new_features
 
     def _filter_features(self, features):
@@ -463,9 +456,6 @@ class DeepFeatureSynthesis(object):
             raise Exception("DFS runtime error: tried to add feature %s"
                             " more than once" % (new_feature.get_name()))
 
-        # update the dict
-        if self.verbose:
-            self.pbar.update(1)
         all_features[entity_id][new_feature.hash()] = new_feature
 
     def _add_identity_features(self, all_features, entity):
