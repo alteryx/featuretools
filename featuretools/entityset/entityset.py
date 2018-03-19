@@ -846,6 +846,8 @@ class EntitySet(BaseEntitySet):
             combined_df.drop_duplicates(columns, inplace=True)
             combined_es[entity.id].update_data(combined_df)
 
+        for r in combined_es.relationships:
+            combined_es.index_data(r)
         return combined_es
 
     # TODO DFS: is this used anywhere?

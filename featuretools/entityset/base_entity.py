@@ -124,6 +124,21 @@ class BaseEntity(FTBase):
             for v in self.variables:
                 if v not in other.variables:
                     return False
+            if self.indexed_by is None and other.indexed_by is not None:
+                return False
+            else:
+                for v, index_map in self.indexed_by.items():
+                    if v not in other.indexed_by:
+                        return False
+                    for i, related in index_map.items():
+                        if i not in other.indexed_by[v]:
+                            return False
+                        # indexed_by maps instances of two entities together by lists
+                        # We want to check that all the elements of the lists of instances
+                        # for each relationship are the same in both entities being
+                        # checked for equality, but don't care about the order.
+                        if not set(related) == set(other.indexed_by[v][i]):
+                            return False
             return True
 
     def __hash__(self):
