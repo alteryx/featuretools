@@ -237,11 +237,12 @@ Table of contents
 
 Get help
 --------
-The Featuretools community is happy to provide support to users of Featuretools.
+The Featuretools community is happy to provide support to users of Featuretools. Project support can be found in four places depending on the type of question:
 
-* For installation, usage, or trouble shooting please join on the `Gitter chat room <https://gitter.im/featuretools/featuretools>`_
-* For bugs or pull requests, please put them on `GitHub <https://github.com/featuretools/featuretools>`_.
-* For everything else, the core developers can be reached by email at help@featuretools.com.
+1. For usage questions, use `Stack Overflow <https://stackoverflow.com/questions/tagged/featuretools>`_ with the ``featuretools`` tag.
+2. For bugs, issues, or feature requests start a `Github issue <https://github.com/featuretools/featuretools/issues>`_.
+3. For discussion regarding development on the core library, use `gitter <https://gitter.im/featuretools/featuretools>`_.
+4. For everything else, the core developers can be reached by email at help@featuretools.com.
 
 
 Other links

@@ -6,11 +6,6 @@ import pandas as pd
 import featuretools as ft
 from featuretools.config import config as ft_config
 
-try:
-    import dask.dataframe as dd
-except ImportError:
-    ImportError('Dask is a requirement of the load_flight function')
-
 
 def load_flight(entity_id='flight_dataset', nrows=None, force=False):
     '''
@@ -19,8 +14,13 @@ def load_flight(entity_id='flight_dataset', nrows=None, force=False):
     of Featuretools.
 
     Args:
-        entity_id (str):  id of retail dataset on scheduler
+        entity_id (str):  Id of retail dataset on scheduler.
     '''
+    try:
+        import dask.dataframe as dd
+    except:
+        raise ImportError('Dask is a requirement of load_flight. Please make sure you have the latest version installed.')
+
     demo_save_path = make_flight_pathname(nrows)
 
     es = ft.EntitySet(entity_id)

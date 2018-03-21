@@ -64,12 +64,21 @@ class FeatureTree(object):
         # used for features
         self.necessary_columns = defaultdict(set)
         entities = set([f.entity.id for f in self.all_features])
+
+        relationships = self.entityset.relationships
+        relationship_vars = defaultdict(set)
+        for r in relationships:
+            relationship_vars[r.parent_entity.id].add(r.parent_variable.id)
+            relationship_vars[r.child_entity.id].add(r.child_variable.id)
+
         for eid in entities:
             entity = self.entityset[eid]
+            # Need to keep all columns used to link entities together
+            # and to sort by time
             index_cols = [v.id for v in entity.variables
                           if isinstance(v, (variable_types.Index,
-                                            variable_types.Id,
-                                            variable_types.TimeIndex))]
+                                            variable_types.TimeIndex)) or
+                          v.id in relationship_vars[eid]]
             self.necessary_columns[eid] |= set(index_cols)
         self.necessary_columns_for_all_values_features = copy.copy(self.necessary_columns)
 
@@ -78,18 +87,11 @@ class FeatureTree(object):
 
         for f in identity_features:
             self.necessary_columns[f.entity.id].add(f.variable.id)
-            if self._needs_all_values(f):
+
+            if self.uses_full_entity(f):
                 self.necessary_columns_for_all_values_features[f.entity.id].add(f.variable.id)
         self.necessary_columns = {eid: list(cols) for eid, cols in self.necessary_columns.items()}
         self.necessary_columns_for_all_values_features = {eid: list(cols) for eid, cols in self.necessary_columns_for_all_values_features.items()}
-
-    def get_all_features(self):
-        all_features = []
-        for e, groups in self.ordered_feature_groups.items():
-            for g in groups:
-                for f in g:
-                    all_features.append(f)
-        return all_features
 
     def _generate_feature_tree(self, features):
         """
@@ -152,7 +154,8 @@ class FeatureTree(object):
                         _get_ftype_string(f),
                         _get_use_previous(f),
                         _get_where(f),
-                        self.needs_all_values_differentiator(f))
+                        self.input_frames_type(f),
+                        self.output_frames_type(f))
 
             # Sort the list of features by the complex key function above, then
             # group them by the same key
@@ -197,42 +200,50 @@ class FeatureTree(object):
 
         return list(features.values()), out
 
-    def _build_dependents(self):
-        feature_dependents = defaultdict(set)
-        for f in self.all_features:
-            dependencies = self.feature_dependencies[f.hash()]
-            for d in dependencies:
-                feature_dependents[d.hash()].add(f)
-        return feature_dependents
-
-    def _needs_all_values(self, feature):
-        if feature.needs_all_values:
+    def uses_full_entity(self, feature):
+        if feature.uses_full_entity:
             return True
+        return self._dependent_uses_full_entity(feature)
+
+    def _dependent_uses_full_entity(self, feature):
         for d in self.feature_dependents[feature.hash()]:
-            if d.needs_all_values:
+            if d.uses_full_entity:
                 return True
         return False
-
-    def _dependent_needs_all_values(self, feature):
-        for d in self.feature_dependents[feature.hash()]:
-            if d.needs_all_values:
-                return True
-        return False
-
-    def _is_output_feature(self, f):
-        return f.hash() in self.feature_hashes
 
 # These functions are used for sorting and grouping features
 
-    def needs_all_values_differentiator(self, f):
-        if self._dependent_needs_all_values(f) and self._is_output_feature(f):
-            return "dependent_and_output"
-        elif self._dependent_needs_all_values(f):
-            return "dependent"
-        elif self._needs_all_values(f):
-            return "needs_all_no_dependent"
-        else:
-            return "normal_no_dependent"
+    def input_frames_type(self, f):
+        # If a dependent feature requires all the instance values
+        # of the associated entity, then we need to calculate this
+        # feature on all values
+        if self.uses_full_entity(f):
+            return 'full_entity_frames'
+        return 'subset_entity_frames'
+
+    def output_frames_type(self, f):
+        is_output = f.hash() in self.feature_hashes
+        dependent_uses_full_entity = self._dependent_uses_full_entity(f)
+        dependent_has_subset_input = any([(not d.uses_full_entity and
+                                           d.hash() in self.feature_hashes)
+                                          for d in self.feature_dependents[f.hash()]])
+        # If the feature is one in which the user requested as
+        # an output (meaning it's part of the input feature list
+        # to calculate_feature_matrix), or a dependent feature
+        # takes the subset entity_frames as input, then we need
+        # to subselect the output based on the desired instance ids
+        # and place in the return data frame.
+        if dependent_uses_full_entity and is_output:
+            return 'full_and_subset_entity_frames'
+        elif dependent_uses_full_entity and dependent_has_subset_input:
+            return 'full_and_subset_entity_frames'
+        elif dependent_uses_full_entity:
+            return 'full_entity_frames'
+        # If the feature itself does not require all the instance values
+        # or no dependent features do, then we
+        # subselect the output
+        # to only desired instances
+        return 'subset_entity_frames'
 
 
 def _get_use_previous(f):

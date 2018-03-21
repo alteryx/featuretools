@@ -7,6 +7,7 @@ from ..testing_utils import make_ecommerce_entityset
 from featuretools import Timedelta
 from featuretools.computational_backends import PandasBackend
 from featuretools.primitives import (
+    Absolute,
     Add,
     And,
     Compare,
@@ -52,7 +53,9 @@ from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
 
-@pytest.fixture()
+# some tests change the entityset values, so we have to create it fresh
+# for each test (rather than setting scope='module')
+@pytest.fixture
 def es():
     return make_ecommerce_entityset()
 
@@ -1150,6 +1153,28 @@ def test_percentile_with_cutoff(es):
     df = pandas_backend.calculate_all_features(
         [2], pd.Timestamp('2011/04/09 10:30:13'))
     assert df[p.get_name()].tolist()[0] == 1.0
+
+
+def test_two_kinds_of_dependents(es):
+    v = Feature(es['log']['value'])
+    product = Feature(es['log']['product_id'])
+    agg = Sum(v, es['customers'], where=product == 'coke zero')
+    p = Percentile(agg)
+    g = Absolute(agg)
+    agg2 = Sum(v, es['sessions'], where=product == 'coke zero')
+    # Adding this feature in tests line 218 in pandas_backend
+    # where we remove columns in result_frame that already exist
+    # in the output entity_frames in preparation for pd.concat
+    # In a prior version, this failed because we changed the result_frame
+    # variable itself, rather than making a new variable _result_frame.
+    # When len(output_frames) > 1, the second iteration won't have
+    # all the necessary columns because they were removed in the first
+    agg3 = Sum(agg2, es['customers'])
+    pandas_backend = PandasBackend(es, [p, g, agg3])
+    df = pandas_backend.calculate_all_features([0, 1], None)
+    assert df[p.get_name()].tolist() == [0.5, 1.0]
+    assert df[g.get_name()].tolist() == [15, 26]
+
 
 # P TODO: reimplement like
 # def test_like_feat(es):

@@ -57,17 +57,17 @@ class PandasBackend(ComputationalBackend):
         generate and return a mapping of instance -> feature values.
 
         Args:
-            instance_ids (list): list of instance id to build features for
+            instance_ids (list): List of instance id for which to build features.
 
-            time_last (pd.Timestamp): last allowed time. Data from exactly this
-                time not allowed
+            time_last (pd.Timestamp): Last allowed time. Data from exactly this
+                time not allowed.
 
-            training_window (:class:Timedelta, optional): Data older than
-                time_last by more than this will be ignored
+            training_window (Timedelta, optional): Data older than
+                time_last by more than this will be ignored.
 
-            profile (boolean): enable profiler if True
+            profile (bool): Enable profiler if True.
 
-            verbose (boolean): print output progress if True
+            verbose (bool): Print output progress if True.
 
         Returns:
             pd.DataFrame : Pandas DataFrame of calculated feature values.
@@ -108,13 +108,12 @@ class PandasBackend(ComputationalBackend):
                                                  training_window=training_window,
                                                  verbose=verbose)
         large_eframes_by_filter = None
-        if any([f.needs_all_values for f in self.feature_tree.all_features]):
+        if any([f.uses_full_entity for f in self.feature_tree.all_features]):
             large_necessary_columns = self.feature_tree.necessary_columns_for_all_values_features
-            all_instances = self.entityset[self.target_eid].get_all_instances()
             large_eframes_by_filter = \
                 self.entityset.get_pandas_data_slice(filter_entity_ids=ordered_entities,
                                                      index_eid=self.target_eid,
-                                                     instances=all_instances,
+                                                     instances=None,
                                                      entity_columns=large_necessary_columns,
                                                      time_last=time_last,
                                                      training_window=training_window,
@@ -171,6 +170,8 @@ class PandasBackend(ComputationalBackend):
                 if not self.entityset.find_backward_path(start_entity_id=filter_eid,
                                                          goal_entity_id=eid):
                     entity_frames[eid] = eframes_by_filter[eid][eid]
+
+                    # TODO: look this over again
                     # precalculated features will only be placed in entity_frames,
                     # and it's possible that that they are the only features computed
                     # for an entity. In this case, the entity won't be present in
@@ -188,31 +189,39 @@ class PandasBackend(ComputationalBackend):
                     test_feature = group[0]
                     entity_id = test_feature.entity.id
 
-                    needs_all_values_type = \
-                        self.feature_tree.needs_all_values_differentiator(test_feature)
+                    input_frames_type = self.feature_tree.input_frames_type(test_feature)
 
                     input_frames = large_entity_frames
-                    if needs_all_values_type == "normal_no_dependent":
+                    if input_frames_type == "subset_entity_frames":
                         input_frames = entity_frames
 
                     handler = self._feature_type_handler(test_feature)
                     result_frame = handler(group, input_frames)
 
-                    output_frames = []
-                    if needs_all_values_type.startswith('dependent'):
-                        # input is the full set of instances since
-                        # dependent feature needs all the values
-                        output_frames.append(large_entity_frames)
-                    if needs_all_values_type != "dependent":
-                        # input was selected (small) set of instances, or
-                        # feature itself is an output,
-                        # so need to place result
-                        # in selected (small) output frame
-                        output_frames.append(entity_frames)
+                    output_frames_type = self.feature_tree.output_frames_type(test_feature)
+                    if output_frames_type in ['full_and_subset_entity_frames', 'subset_entity_frames']:
+                        index = entity_frames[entity_id].index
+                        # If result_frame came from a uses_full_entity feature,
+                        # and the input was large_entity_frames,
+                        # then it's possible it doesn't contain some of the features
+                        # in the output entity_frames
+                        # We thus need to concatenate the existing frame with the result frame,
+                        # making sure not to duplicate any columns
+                        _result_frame = result_frame.reindex(index)
+                        cols_to_keep = [c for c in _result_frame.columns
+                                        if c not in entity_frames[entity_id].columns]
+                        entity_frames[entity_id] = pd.concat([entity_frames[entity_id],
+                                                              _result_frame[cols_to_keep]],
+                                                             axis=1)
 
-                    for frames in output_frames:
-                        index = frames[entity_id].index
-                        frames[entity_id] = result_frame.loc[index]
+                    if output_frames_type in ['full_and_subset_entity_frames', 'full_entity_frames']:
+                        index = large_entity_frames[entity_id].index
+                        _result_frame = result_frame.reindex(index)
+                        cols_to_keep = [c for c in _result_frame.columns
+                                        if c not in large_entity_frames[entity_id].columns]
+                        large_entity_frames[entity_id] = pd.concat([large_entity_frames[entity_id],
+                                                                    _result_frame[cols_to_keep]],
+                                                                   axis=1)
 
                     if verbose:
                         pbar.update(1)

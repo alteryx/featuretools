@@ -442,6 +442,12 @@ class TestVariableHandling(object):
             for entity, rows in emap.items():
                 df = es[entity].df
                 es[entity].update_data(df.loc[rows[i]])
+            for r in entityset.relationships:
+                es.index_data(r)
+
+        # make sure internal indexes work before concat
+        regions = entityset_1['customers'].query_by_values(['United States'], variable_id='region_id')
+        assert regions.index.isin(entityset_1['customers'].df.index).all()
 
         assert entityset_1.__eq__(entityset_2)
         assert not entityset_1.__eq__(entityset_2, deep=True)
