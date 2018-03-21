@@ -20,7 +20,7 @@ def load_flight(entity_id='flight_dataset', nrows=None, force=False):
         import dask.dataframe as dd
     except:
         raise ImportError('Dask is a requirement of load_flight. Please make sure you have the latest version installed.')
-    
+
     demo_save_path = make_flight_pathname(nrows)
 
     es = ft.EntitySet(entity_id)
