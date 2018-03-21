@@ -8,7 +8,7 @@ from featuretools.config import config as ft_config
 
 try:
     import dask.dataframe as dd
-except ImportError:
+except:
     ImportError('Dask is a requirement of the load_flight function')
 
 
