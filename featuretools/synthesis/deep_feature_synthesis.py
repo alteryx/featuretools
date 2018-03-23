@@ -84,7 +84,7 @@ class DeepFeatureSynthesis(object):
             ignore_entities (list[str], optional): List of entities to
                 blacklist when creating features. If None, use all entities.
 
-            ignore_variables (dict[str : str], optional): List of specific
+            ignore_variables (dict[str -> list[str]], optional): List of specific
                 variables within each entity to blacklist when creating features.
                 If None, use all variables.
 
