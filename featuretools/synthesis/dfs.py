@@ -92,7 +92,7 @@ def dfs(entities=None,
         ignore_entities (list[str], optional): List of entities to
             blacklist when creating features.
 
-        ignore_variables (dict[str -> str], optional): List of specific
+        ignore_variables (dict[str -> list[str]], optional): List of specific
             variables within each entity to blacklist when creating features.
 
         seed_features (list[:class:`.PrimitiveBase`]): List of manually defined
