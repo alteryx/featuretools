@@ -200,24 +200,12 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
         pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
                        "Progress: {l_bar}{bar}||")
         if num_per_chunk == "cutoff time":
-            pbar_string += ", Chunks created: {n}"
-            pbar = make_tqdm_iterator(iterable=iterator,
-                                      bar_format=pbar_string)
-            for _, group in pbar:
+            for _, group in iterator:
                 chunks.append(group)
         else:
-            pbar_string += "{postfix}"
-            pbar = make_tqdm_iterator(total=cutoff_time_to_pass.shape[0],
-                                      bar_format=pbar_string,
-                                      postfix={"Chunks": 0})
-            pbar.set_postfix_str("Chunks created: 0")
             for chunk in iterator:
                 chunks.append(chunk)
-                pbar.set_postfix_str("Chunks created: %s" % (len(chunks)),
-                                     False)
-                pbar.update(n=chunk.shape[0])
 
-        pbar.close()
         pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
                        "Progress: {l_bar}{bar}|| "
                        "Calculated: {n}/{total} chunks")
@@ -243,7 +231,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
         # weren't collected automatically
         gc.collect()
     if verbose:
-        pbar.close()
+        iterator.close()
     feature_matrix = pd.concat(feature_matrix)
     feature_matrix.sort_index(level='time', kind='mergesort', inplace=True)
     if not cutoff_time_in_index:
