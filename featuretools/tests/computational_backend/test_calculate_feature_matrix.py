@@ -46,8 +46,11 @@ def test_calc_feature_matrix(entityset):
 
     property_feature = IdentityFeature(entityset['log']['value']) > 10
 
-    feature_matrix = calculate_feature_matrix([property_feature], instance_ids=range(17),
-                                              cutoff_time=times, verbose=True)
+    feature_matrix = calculate_feature_matrix([property_feature],
+                                              instance_ids=range(17),
+                                              cutoff_time=times,
+                                              chunk_size="cutoff time",
+                                              verbose=True)
 
     assert (feature_matrix == labels).values.all()
 
