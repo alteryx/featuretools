@@ -200,7 +200,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
                 chunks.append(chunk)
 
         pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
-                       "Progress: {l_bar}{bar}|| "
+                       "Progress: {l_bar}{bar}| "
                        "Calculated: {n}/{total} chunks")
         iterator = make_tqdm_iterator(iterable=chunks,
                                       total=len(chunks),
