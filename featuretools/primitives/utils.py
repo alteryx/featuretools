@@ -45,9 +45,8 @@ def get_aggregation_primitives():
         if isclass(attribute):
             if issubclass(attribute,
                           featuretools.primitives.AggregationPrimitive):
-                if not issubclass(attribute, featuretools.primitives.Compare):
-                    if attribute.name:
-                        aggregation_primitives.add(attribute)
+                if attribute.name:
+                    aggregation_primitives.add(attribute)
     return list(aggregation_primitives)
 
 
@@ -58,9 +57,8 @@ def get_transform_primitives():
         if isclass(attribute):
             if issubclass(attribute,
                           featuretools.primitives.TransformPrimitive):
-                if not issubclass(attribute, featuretools.primitives.Compare):
-                    if attribute.name:
-                        transform_primitives.add(attribute)
+                if attribute.name:
+                    transform_primitives.add(attribute)
     return list(transform_primitives)
 
 
