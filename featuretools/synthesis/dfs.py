@@ -131,17 +131,12 @@ def dfs(entities=None,
 
         save_progress (str, optional): Path to save intermediate computational results.
 
-        chunk_size (int or float or None or "cutoff time", optionsal): Instead
-            of calculating all rows with the same cutoff time together, splits
-            the rows of the matrix into chunks, prioritizing keeping rows with
-            the same cutoff time in the same chunk. If passed an integer
-            greater than 0, will try to use that many rows per chunk (for
-            example chunk_size=350, would mean 350 rows per chunk).  Passing a
-            float value between 0 and 1 sets the chunk size to that percentage
-            of all instances (chunk_size=0.1 would mean each chunk would
-            constitute 10% of the feature matrix). By default, splits rows into
-            chunks of 10% or 10, whichever is larger. If passed the string
-            "cutoff time", chunking is not used.
+        chunk_size (int or float or None or "cutoff time", optionsal): Number
+            of rows of output feature matrix to calculate at time. If passed an
+            integer greater than 0, will try to use that many rows per chunk.
+            If passed a float value between 0 and 1 sets the chunk size to that
+            percentage of all instances. If passed the string "cutoff time",
+            rows are split per cutoff time.
 
     Examples:
         .. code-block:: python
