@@ -530,6 +530,10 @@ def gen_empty_approx_features_df(approx_features):
 
 
 def calc_num_per_chunk(chunk_size, shape):
+    """
+    Given a chunk size and the shape of the feature matrix to split into
+    chunk, returns the number of rows there should be per chunk
+    """
     if isinstance(chunk_size, float) and chunk_size > 0 and chunk_size < 1:
         num_per_chunk = int(shape[0] * float(chunk_size))
         # must be at least 1 cutoff per chunk
@@ -542,24 +546,35 @@ def calc_num_per_chunk(chunk_size, shape):
         num_per_chunk = "cutoff time"
     else:
         raise ValueError("chunk_size must be None, a float between 0 and 1,"
-                         "or a positive integer")
+                         "a positive integer, or the string 'cutoff time'")
     return num_per_chunk
 
 
 def get_next_chunk(cutoff_time, time_variable, num_per_chunk):
-    # groupby time an calculate size of cutoffs
+    """
+    Generator function that takes a DataFrame of cutoff times and the number of
+    rows to include per chunk and returns an iterator of the resulting chunks.
+
+    Args:
+        cutoff_time (pd.DataFrame): dataframe of cutoff times to chunk
+        time_variable (str): name of time column in cutoff_time dataframe
+        num_per_chunk (int): maximum number of rows to include in a chunk
+    """
+    # split rows of cutoff_time into groups based on time variable
     grouped = cutoff_time.groupby(time_variable, sort=False)
 
-    # sort groups by size
+    # sort groups by size, largest first
     groups = grouped.size().sort_values(ascending=False).index
 
+    # list of partially filled chunks
     chunks = []
 
+    # iterate through each group and try to make completely filled chunks
     for group_name in groups:
-        # get group locations
+        # get locations in cutoff_time (iloc) of all rows in group
         group = grouped.groups[group_name].values.tolist()
 
-        # divide up group if too large to fit in a single chunk
+        # divide up group into slices if too large to fit in a single chunk
         group_slices = []
         if len(group) > num_per_chunk:
             for i in range(0, len(group), num_per_chunk):
@@ -567,11 +582,15 @@ def get_next_chunk(cutoff_time, time_variable, num_per_chunk):
         else:
             group_slices.append(group)
 
+        # for each slice of the group, try to find a chunk it can fit in
         for group_slice in group_slices:
+            # if slice is exactly the number of rows for a chunk, yield the
+            # slice's rows of cutoff_time as the next chunk and move on
             if len(group_slice) == num_per_chunk:
                 yield cutoff_time.loc[group_slice]
                 continue
 
+            # if not, look for partially filled chunks that have room
             found_chunk = False
             for i in range(len(chunks)):
                 chunk = chunks[i]
@@ -584,8 +603,10 @@ def get_next_chunk(cutoff_time, time_variable, num_per_chunk):
                         yield cutoff_time.loc[loc_list]
                     break
 
+            # if no chunk has room, this slice becomes another partial chunk
             if not found_chunk:
                 chunks.append(group_slice)
 
+    # after iterating through every group, yield any remaining partial chunks
     for chunk in chunks:
         yield cutoff_time.loc[chunk]
