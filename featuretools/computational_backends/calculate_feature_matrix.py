@@ -197,8 +197,6 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
     # if the backend is going to be verbose, don't make cutoff times verbose
     if verbose and not backend_verbose:
         chunks = []
-        pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
-                       "Progress: {l_bar}{bar}||")
         if num_per_chunk == "cutoff time":
             for _, group in iterator:
                 chunks.append(group)
@@ -475,7 +473,6 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
                                              training_window=training_window,
                                              approximate=None,
                                              cutoff_time_in_index=False,
-                                             chunk_size="cutoff time",
                                              profile=profile)
 
         approx_fms_by_entity[approx_entity_id] = approx_fm
