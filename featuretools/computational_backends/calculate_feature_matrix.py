@@ -4,6 +4,7 @@ import gc
 import logging
 import os
 import shutil
+import warnings
 from builtins import zip
 from collections import defaultdict
 from datetime import datetime
@@ -468,6 +469,7 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
                                              training_window=training_window,
                                              approximate=None,
                                              cutoff_time_in_index=False,
+                                             chunk_size=cutoff_time_to_pass.shape[0],
                                              profile=profile)
 
         approx_fms_by_entity[approx_entity_id] = approx_fm
@@ -539,7 +541,11 @@ def calc_num_per_chunk(chunk_size, shape):
         # must be at least 1 cutoff per chunk
         num_per_chunk = max(1, num_per_chunk)
     elif isinstance(chunk_size, int) and chunk_size >= 1:
-        num_per_chunk = chunk_size
+        if chunk_size > shape[0]:
+            warnings.warn("Chunk size is greater than size of feature matrix")
+            num_per_chunk = shape[0]
+        else:
+            num_per_chunk = chunk_size
     elif chunk_size is None:
         num_per_chunk = max(int(shape[0] * .1), 10)
     elif chunk_size == "cutoff time":
@@ -560,6 +566,11 @@ def get_next_chunk(cutoff_time, time_variable, num_per_chunk):
         time_variable (str): name of time column in cutoff_time dataframe
         num_per_chunk (int): maximum number of rows to include in a chunk
     """
+    # if chunk_size is 100%, return DataFrame immediately and stop iteration
+    if cutoff_time.shape[0] <= num_per_chunk:
+        yield cutoff_time
+        return
+
     # split rows of cutoff_time into groups based on time variable
     grouped = cutoff_time.groupby(time_variable, sort=False)
 

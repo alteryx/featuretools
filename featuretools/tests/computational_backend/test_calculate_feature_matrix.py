@@ -684,6 +684,10 @@ def test_calculating_number_per_chunk():
     with pytest.raises(ValueError):
         calc_num_per_chunk(2.5, shape)
 
+    with pytest.warns(UserWarning):
+        assert calc_num_per_chunk(201, shape) == 200
+
+    assert calc_num_per_chunk(200, shape) == 200
     assert calc_num_per_chunk(11, shape) == 11
     assert calc_num_per_chunk(.7, shape) == 140
     assert calc_num_per_chunk(.6749, shape) == 134
@@ -721,6 +725,10 @@ def test_get_next_chunk(entityset):
     assert (chunks[0]['time'] == largest).all()
     # additional part of cutoff time added to another chunk
     assert (chunks[2]['time'] == times[4]).any()
+
+    # test when cutoff_time is smaller than num_per_chunk
+    chunks = [chunk for chunk in get_next_chunk(cutoff_time, 'time', 18)]
+    assert len(chunks) == 1
 
 
 def test_verbose_cutoff_time_chunks(entityset):
