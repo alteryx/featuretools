@@ -32,7 +32,6 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
                              training_window=None, approximate=None,
                              save_progress=None, verbose=False,
                              backend_verbose=False,
-                             verbose_desc='calculate_feature_matrix',
                              profile=False):
     """Calculates a matrix for a given set of instance ids and calculation times.
 
