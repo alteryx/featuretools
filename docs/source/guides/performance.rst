@@ -3,7 +3,7 @@
 Improving computational performance
 ===================================
 
-Feature engineering is a computationally expensive task. While featuretools comes with reasonable default settings for feature calculation, there are a number of built-in approaches to improve computational performance based on dataset and problem specific considerations.
+Feature engineering is a computationally expensive task. While Featuretools comes with reasonable default settings for feature calculation, there are a number of built-in approaches to improve computational performance based on dataset and problem specific considerations.
 
 Reduce number of unique cutoff times
 ------------------------------------
@@ -20,20 +20,20 @@ Approximating features by rounding cutoff time
 ----------------------------------------------
 One way to decrease the number of unique cutoff times is to round cutoff times to an nearby earlier point in time. An earlier cutoff time is always valid for predictive modeling — it just means we’re not using some of the data we could potentially use while calculating that feature. In that way, we gain computational speed by losing some information.
 
-To understand when approximation is useful, consider calculating features for a model to predict fraudulent credit card transactions. In this case, an important feature might be, “the average transaction amount for this card in the past”. While this value can change every time there is a new transaction, updating it less frequently might not impact accuracy.
+To understand when approximation is useful, consider calculating features for a model to predict fraudulent credit card transactions. In this case, an important feature might be, "the average transaction amount for this card in the past". While this value can change every time there is a new transaction, updating it less frequently might not impact accuracy.
 
 .. note::
 
-    The bank BBVA used approximation when building a predictive model for credit card fraud using Featuretools. For more details, see the “Real-time deployment considerations” section of the `white paper <https://arxiv.org/pdf/1710.07709.pdf>`_ describing the work.
+    The bank BBVA used approximation when building a predictive model for credit card fraud using Featuretools. For more details, see the "Real-time deployment considerations" section of the `white paper <https://arxiv.org/pdf/1710.07709.pdf>`_ describing the work.
 
-The frequency of approximation is controlled using the `approximate` parameter to `dfs` or `calculate_feature_matrix`. For example, the following code would approximate aggregation features at 1 day intervals::
+The frequency of approximation is controlled using the ``approximate`` parameter to ``dfs`` or ``calculate_feature_matrix``. For example, the following code would approximate aggregation features at 1 day intervals::
 
     fm = ft.calculate_feature_matrix(entityset=entityset
                                      features=feature_list,
                                      cutoff_time=cutoff_times,
-                                     approximate=”1 day”)
+                                     approximate="1 day")
 
-In this computation, features that can be approximated will be calculated at 1 day intervals, while features that cannot be approximated (e.g “is the current transaction > $50”) will be calculated at the exact cutoff time.
+In this computation, features that can be approximated will be calculated at 1 day intervals, while features that cannot be approximated (e.g "is the current transaction > $50") will be calculated at the exact cutoff time.
 
 Adjust chunk size when calculating feature matrix
 -------------------------------------------------
@@ -51,11 +51,11 @@ After the completion of a chunk, there is a progress update along with an estima
 
 However, if we make the chunk size too small, we may split up rows that share the same cutoff time into separate chunks. This means Featuretools will have to slice the data for that cutoff time multiple times, resulting in repeated work. Additionally, if chunks get really small (e.g. one row per chunk), then the overhead from other parts of the calculation process will start to contribute more significantly to overall runtime.
 
-We can control chunk size using the `chunk_size` argument to `dfs` or `calculate_feature_matrix`. By default, the chunk size is set to 10% of all rows in the feature matrix. We can modify it like this::
+We can control chunk size using the ``chunk_size`` argument to ``dfs`` or ``calculate_feature_matrix``. By default, the chunk size is set to 10% of all rows in the feature matrix. We can modify it like this::
 
     # use 100 rows per chunk
     feature_matrix, features_list = ft.dfs(entityset=es,
-                                           target_entity=”customers”,
+                                           target_entity="customers",
                                            chunk_size=100)
 
 
@@ -63,13 +63,13 @@ We can also set chunksize to be a percentage of total rows or variable based on 
 
     # use 5% of rows per chunk
     feature_matrix, features_list = ft.dfs(entityset=es,
-                                           target_entity=”customers”,
+                                           target_entity="customers",
                                            chunk_size=.05)
 
     # use one chunk per unique cutoff time
     feature_matrix, features_list = ft.dfs(entityset=es,
-                                           target_entity=”customers”,
-                                           chunk_size=”cutoff time”)
+                                           target_entity="customers",
+                                           chunk_size="cutoff time")
 
 
 To understand the impact of chunk size on one Entity Set with multiple entities, see the graph below
