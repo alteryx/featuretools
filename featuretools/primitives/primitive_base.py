@@ -93,7 +93,9 @@ class PrimitiveBase(FTBase):
     def __getstate__(self):
         if hasattr(ft, '_pickling') and ft._pickling:
             from featuretools.entityset import EntitySet, Entity
-            pickled = {}
+            ft._pickling = False
+            pickled = {"head_entityset": self.entityset.head(n=10)}
+            ft._pickling = True
             for k, v in self.__dict__.items():
                 if isinstance(v, Entity):
                     pickled[k] = "entity:{}".format(v.id)
@@ -105,8 +107,12 @@ class PrimitiveBase(FTBase):
         return self.__dict__
 
     def __setstate__(self, d):
+        head_entityset = d.pop("head_entityset")
         self.__dict__ = d
         if hasattr(ft, '_pickling') and ft._pickling:
+            current_es = ft._current_es
+            if current_es is None:
+                current_es = head_entityset
             for k, v in d.items():
                 if isinstance(v, basestring) and v.startswith('entity:'):
                     self.__dict__[k] = ft._current_es[v.replace('entity:', '')]

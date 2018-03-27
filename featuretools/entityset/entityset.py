@@ -117,13 +117,29 @@ class EntitySet(BaseEntitySet):
         self.entity_stores = full_entities
         return sampled
 
-    def head(self, entity_id, n=10, variable_id=None, cutoff_time=None):
-        if variable_id is None:
-            return self.entity_stores[entity_id].head(
-                n, cutoff_time=cutoff_time)
+    def head(self, entity_id=None, n=10, variable_id=None, cutoff_time=None):
+        if entity_id is None:
+            old_data = {}
+            old_indexes = {}
+            for eid, e in self.entity_stores.items():
+                old_data[eid] = e.df
+                old_indexes[eid] = e.indexed_by
+                e.df = e.df.head(n)
+                # TODO: deal with indexes
+                e.indexed_by = None
+            head_es = copy.deepcopy(self)
+            for eid, e in self.entity_stores.items():
+                e.df = old_data[eid]
+                e.indexed_by = old_indexes[eid]
+            return head_es
+
         else:
-            return self.entity_stores[entity_id].head(
-                n, cutoff_time=cutoff_time)[variable_id]
+            if variable_id is None:
+                return self.entity_stores[entity_id].head(
+                    n, cutoff_time=cutoff_time)
+            else:
+                return self.entity_stores[entity_id].head(
+                    n, cutoff_time=cutoff_time)[variable_id]
 
     def get_instance_data(self, entity_id, instance_ids):
         return self.entity_stores[entity_id].query_by_values(instance_ids)

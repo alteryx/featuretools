@@ -44,7 +44,7 @@ def save_features(features, filepath):
     ft._pickling = False
 
 
-def load_features(filepath, entityset):
+def load_features(filepath, entityset=None):
     """Loads the features from a filepath.
 
     Args:
