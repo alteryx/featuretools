@@ -74,9 +74,9 @@ We can also set chunksize to be a percentage of total rows or variable based on 
 
 To understand the impact of chunk size on one Entity Set with multiple entities, see the graph below
 
-TODO: insert picture here
+.. image:: images/chunk_size_graph.png
 
-For a more in-depth look at chunk sizes see TODO: add ref
+For a more in-depth look at chunk sizes see the :doc:`chunking`
 
 Partition and Distribute Data
 -----------------------------
