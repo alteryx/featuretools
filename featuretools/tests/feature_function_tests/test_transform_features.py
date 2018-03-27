@@ -60,8 +60,8 @@ def es():
     return make_ecommerce_entityset()
 
 
-@pytest.fixture()
-def int_es(scope='module'):
+@pytest.fixture(scope='module')
+def int_es():
     return make_ecommerce_entityset(with_integer_time_index=True)
 
 
