@@ -10,7 +10,6 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
-# progress bar
 from future import standard_library
 
 from .base_backend import ComputationalBackend
@@ -26,9 +25,6 @@ from featuretools.primitives import (
     TransformPrimitive
 )
 from featuretools.utils.gen_utils import make_tqdm_iterator
-
-# featuretools
-
 
 standard_library.install_aliases()
 warnings.simplefilter('ignore', np.RankWarning)
@@ -170,7 +166,6 @@ class PandasBackend(ComputationalBackend):
                 if not self.entityset.find_backward_path(start_entity_id=filter_eid,
                                                          goal_entity_id=eid):
                     entity_frames[eid] = eframes_by_filter[eid][eid]
-
                     # TODO: look this over again
                     # precalculated features will only be placed in entity_frames,
                     # and it's possible that that they are the only features computed

@@ -87,7 +87,6 @@ class FeatureTree(object):
 
         for f in identity_features:
             self.necessary_columns[f.entity.id].add(f.variable.id)
-
             if self.uses_full_entity(f):
                 self.necessary_columns_for_all_values_features[f.entity.id].add(f.variable.id)
         self.necessary_columns = {eid: list(cols) for eid, cols in self.necessary_columns.items()}
