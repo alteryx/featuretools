@@ -187,6 +187,7 @@ Table of contents
 * :doc:`guides/tuning_dfs`
 * :doc:`guides/deployment`
 * :doc:`guides/exporting_feature_matrix`
+* :doc:`guides/performance`
 
 .. toctree::
    :maxdepth: 1
@@ -197,6 +198,7 @@ Table of contents
    guides/deployment
    guides/exporting_feature_matrix
    guides/advanced_custom_primitives
+   guides/performance
 
 
 .. **Tutorials and Demos**
@@ -218,7 +220,6 @@ Table of contents
 **Resources and References**
 
 * :doc:`usage_tips/limitations`
-* :doc:`usage_tips/scaling`
 * :doc:`usage_tips/glossary`
 * :doc:`api_reference`
 * :doc:`changelog`
@@ -229,7 +230,6 @@ Table of contents
    :caption: Resources and References
 
    usage_tips/limitations
-   usage_tips/scaling
    usage_tips/glossary
    api_reference
    changelog

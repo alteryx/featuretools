@@ -3,7 +3,7 @@ Limitations
 In-memory
 *********
 
-Featuretools is intended to be run on datasets that can fit in memory on one machine. For advice on handing large dataset refer to :ref:`scaling`.
+Featuretools is intended to be run on datasets that can fit in memory on one machine. For advice on handing large dataset refer to :ref:`performance`.
 
 Bring your own labels
 *********************
