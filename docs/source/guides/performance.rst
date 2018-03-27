@@ -74,7 +74,7 @@ We can also set chunksize to be a percentage of total rows or variable based on 
 
 To understand the impact of chunk size on one Entity Set with multiple entities, see the graph below
 
-.. image:: images/chunk_size_graph.png
+.. image:: /images/chunk_size_graph.png
 
 For a more in-depth look at chunk sizes see the :doc:`chunking`
 
@@ -82,7 +82,7 @@ Partition and Distribute Data
 -----------------------------
 When an entire dataset is not required to calculate the features for a given set of instances, we can split the data into independent partitions and calculate on each partition. For example, imagine we are calculating features for customers and the features are "number of other customers in this zip code" or "average age of other customers in this zip code". In this case, we can load in data partitioned by zip code. As long as we have all of the data for a zip code when calculating, we can calculate all features for a subset of customers.
 
-An example of this approach can be seen in the `Predict Next Purchase demo notebook <https://github.com/featuretools/predict_next_purchase>`_. In this example, we partition data by customer and only load a fixed number of customers into memory at any given time. We implement this easily using `Dask <http://dask.pydata.org/>`_, which could also be used to scale the computation to a cluster of computers. A framework like `Spark <https://spark.apache.org/>`_ could be used similarly.
+An example of this approach can be seen in the `Predict Next Purchase demo notebook <https://github.com/featuretools/predict_next_purchase>`_. In this example, we partition data by customer and only load a fixed number of customers into memory at any given time. We implement this easily using `Dask <https://dask.pydata.org/>`_, which could also be used to scale the computation to a cluster of computers. A framework like `Spark <https://spark.apache.org/>`_ could be used similarly.
 
 Feature Labs
 ------------
