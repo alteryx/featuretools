@@ -32,7 +32,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
                              cutoff_time_in_index=False,
                              training_window=None, approximate=None,
                              save_progress=None, verbose=False,
-                             backend_verbose=False, chunk_size=None,
+                             chunk_size=None,
                              verbose_desc='calculate_feature_matrix',
                              profile=False):
     """Calculates a matrix for a given set of instance ids and calculation times.
@@ -76,10 +76,8 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
             if bucket is 24 hours, all instances with cutoff times on the same
             day will use the same calculation for expensive features.
 
-        verbose (bool, optional): Print progress info. The time granularity is per time group
-            unless there is only a single cutoff time, in which case backend_verbose is turned on
-
-        backend_verbose (bool, optional): Print progress info of each feature calculatation step per time group.
+        verbose (bool, optional): Print progress info. The time granularity is
+            per chunk.
 
         profile (bool, optional): Enables profiling if True.
 
@@ -190,8 +188,8 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
                                   time_variable=cutoff_df_time_var,
                                   num_per_chunk=num_per_chunk)
 
-    # if the backend is going to be verbose, don't make cutoff times verbose
-    if verbose and not backend_verbose:
+    # if verbose, create progess bar
+    if verbose:
         chunks = []
         if num_per_chunk == "cutoff time":
             for _, group in iterator:
@@ -214,8 +212,8 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
         if isinstance(chunk, tuple):
             chunk = chunk[1]
         _feature_matrix = calculate_chunk(features, chunk, approximate,
-                                          entityset, backend_verbose,
-                                          training_window, profile, verbose,
+                                          entityset, training_window,
+                                          profile, verbose,
                                           save_progress, backend,
                                           no_unapproximated_aggs,
                                           cutoff_df_time_var,
@@ -237,8 +235,8 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
     return feature_matrix
 
 
-def calculate_chunk(features, chunk, approximate, entityset, backend_verbose,
-                    training_window, profile, verbose, save_progress, backend,
+def calculate_chunk(features, chunk, approximate, entityset, training_window,
+                    profile, verbose, save_progress, backend,
                     no_unapproximated_aggs, cutoff_df_time_var, target_time,
                     pass_columns):
     feature_matrix = []
@@ -252,18 +250,11 @@ def calculate_chunk(features, chunk, approximate, entityset, backend_verbose,
                 entityset=entityset,
                 backend=backend,
                 training_window=training_window,
-                verbose=backend_verbose,
                 profile=profile
             )
         else:
             precalculated_features = None
             all_approx_feature_set = None
-
-        # if backend verbose wasn't set explicitly, set to True if verbose is true
-        # and there is only 1 cutoff time
-        if backend_verbose is None:
-            one_cutoff_time = group[cutoff_df_time_var].nunique() == 1
-            backend_verbose = verbose and one_cutoff_time
 
         @save_csv_decorator(save_progress)
         def calc_results(time_last, ids, precalculated_features=None, training_window=None):
@@ -271,8 +262,7 @@ def calculate_chunk(features, chunk, approximate, entityset, backend_verbose,
                                                     training_window=training_window,
                                                     precalculated_features=precalculated_features,
                                                     ignored=all_approx_feature_set,
-                                                    profile=profile,
-                                                    verbose=backend_verbose)
+                                                    profile=profile)
             return matrix
 
         # if all aggregations have been approximated, can calculate all together
@@ -365,7 +355,7 @@ def save_csv_decorator(save_progress=None):
 
 
 def approximate_features(features, cutoff_time, window, entityset, backend,
-                         training_window=None, verbose=None, profile=None):
+                         training_window=None, profile=None):
     '''Given a list of features and cutoff_times to be passed to
     calculate_feature_matrix, calculates approximate values of some features
     to speed up calculations.  Cutoff times are sorted into
@@ -399,15 +389,10 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
             which entities to apply windows to, use a dictionary mapping entity
             id -> Timedelta. If None, all older data is used.
 
-        verbose (bool, optional): Print progress info.
-
         profile (bool, optional): Enables profiling if True
 
         save_progress (str, optional): path to save intermediate computational results
     '''
-    if verbose:
-        logger.info("Approximating features...")
-
     approx_fms_by_entity = {}
     all_approx_feature_set = None
     target_entity = features[0].entity
