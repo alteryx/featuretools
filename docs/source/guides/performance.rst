@@ -1,6 +1,6 @@
 .. _performance:
 
-Improving computational performance
+Improving Computational Performance
 ===================================
 
 Feature engineering is a computationally expensive task. While Featuretools comes with reasonable default settings for feature calculation, there are a number of built-in approaches to improve computational performance based on dataset and problem specific considerations.
