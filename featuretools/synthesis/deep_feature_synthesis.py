@@ -216,6 +216,8 @@ class DeepFeatureSynthesis(object):
         self._run_dfs(self.es[self.target_entity_id], RelationshipPath([]),
                       all_features, max_depth=self.max_depth)
 
+        breakpoint()
+
         new_features = list(all_features[self.target_entity_id].values())
 
         def filt(f):
@@ -329,13 +331,7 @@ class DeepFeatureSynthesis(object):
                                      relationship_path=sub_relationship_path)
 
         """
-        Step 3 - Create Transform features
-        """
-        self._build_transform_features(
-            all_features, entity, max_depth=max_depth)
-
-        """
-        Step 4 - Recursively build features for each entity in a forward relationship
+        Step 3 - Recursively build features for each entity in a forward relationship
         """
         forward_entities = self.es.get_forward_entities(entity.id)
         for f_entity_id, sub_relationship_path in forward_entities:
@@ -359,7 +355,7 @@ class DeepFeatureSynthesis(object):
                           max_depth=new_max_depth)
 
         """
-        Step 5 - Create dfeat features for forward relationships
+        Step 4 - Create dfeat features for forward relationships
         """
         forward_entities = self.es.get_forward_entities(entity.id)
         for f_entity_id, sub_relationship_path in forward_entities:
@@ -374,6 +370,11 @@ class DeepFeatureSynthesis(object):
                 all_features=all_features,
                 relationship_path=sub_relationship_path,
                 max_depth=max_depth)
+
+        """
+        Step 5 - Create Transform features
+        """
+        self._build_transform_features(all_features, entity, max_depth=max_depth)
 
         # now that all  features are added, build where clauses
         self._build_where_clauses(all_features, entity)
@@ -487,6 +488,13 @@ class DeepFeatureSynthesis(object):
             matching_inputs = match(input_types, features,
                                     commutative=trans_prim.commutative)
 
+            # filter matching_inputs to avoid duplicating problem when assign dfeat to trans_prim
+            def filt_trans(matching_input):
+                # as long as the original features are not all dfeat, the trans_prim
+                # can generate brand new features instead of duplicate ones
+                return not all(isinstance(ftr, DirectFeature) for ftr in matching_input)
+
+            matching_inputs = set(filter(filt_trans, matching_inputs))
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
                     new_f = TransformFeature(matching_input,
