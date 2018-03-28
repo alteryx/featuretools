@@ -630,9 +630,8 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
     scattered_data = client.scatter({'features': features,
                                      'backend': backend},
                                     broadcast=True)
-    scattered_chunks = client.scatter(chunks, broadcast=True)
     chunk_futures = client.map(calculate_chunk,
-                               scattered_chunks,
+                               chunks,
                                features=scattered_data['features'],
                                approximate=approximate,
                                training_window=training_window,
