@@ -187,29 +187,27 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
                                   time_variable=cutoff_df_time_var,
                                   num_per_chunk=num_per_chunk)
 
+    chunks = []
+    if num_per_chunk == "cutoff time":
+        for _, group in iterator:
+            chunks.append(group)
+    else:
+        for chunk in iterator:
+            chunks.append(chunk)
+
     # if verbose, create progess bar
     if verbose:
-        chunks = []
-        if num_per_chunk == "cutoff time":
-            for _, group in iterator:
-                chunks.append(group)
-        else:
-            for chunk in iterator:
-                chunks.append(chunk)
-
         pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
                        "Progress: {l_bar}{bar}| "
                        "Calculated: {n}/{total} chunks")
-        iterator = make_tqdm_iterator(iterable=chunks,
-                                      total=len(chunks),
-                                      bar_format=pbar_string)
+        chunks = make_tqdm_iterator(iterable=chunks,
+                                    total=len(chunks),
+                                    bar_format=pbar_string)
+
     feature_matrix = []
     backend = PandasBackend(entityset, features)
 
-    for chunk in iterator:
-        # if not using chunks, pull out the group dataframe
-        if isinstance(chunk, tuple):
-            chunk = chunk[1]
+    for chunk in chunks:
         _feature_matrix = calculate_chunk(features, chunk, approximate,
                                           entityset, training_window,
                                           profile, verbose,
@@ -222,7 +220,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
         # weren't collected automatically
         gc.collect()
     if verbose:
-        iterator.close()
+        chunks.close()
     feature_matrix = pd.concat(feature_matrix)
     feature_matrix.sort_index(level='time', kind='mergesort', inplace=True)
     if not cutoff_time_in_index:
