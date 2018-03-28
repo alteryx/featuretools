@@ -368,12 +368,7 @@ class DeepFeatureSynthesis(object):
                                      max_depth=max_depth)
 
         """
-        Step 3 - Create Transform features
-        """
-        self._build_transform_features(all_features, entity, max_depth=max_depth)
-
-        """
-        Step 4 - Recursively build features for each entity in a forward relationship
+        Step 3 - Recursively build features for each entity in a forward relationship
         """
         forward_entities = self.es.get_forward_entities(entity.id)
         # filter entities in path and using traversal filters
@@ -400,7 +395,7 @@ class DeepFeatureSynthesis(object):
                           max_depth=new_max_depth)
 
         """
-        Step 5 - Create dfeat features for forward relationships
+        Step 4 - Create dfeat features for forward relationships
         """
         # get forward relationship involving forward entities
         forward = [r for r in self.es.get_forward_relationships(entity.id)
@@ -415,6 +410,11 @@ class DeepFeatureSynthesis(object):
                                          child_entity=r.child_entity,
                                          relationship=r,
                                          max_depth=max_depth)
+
+        """
+        Step 5 - Create Transform features
+        """
+        self._build_transform_features(all_features, entity, max_depth=max_depth)
 
     def _apply_traversal_filters(self, parent_entity, child_entity,
                                  entity_path, forward=True):
@@ -529,6 +529,13 @@ class DeepFeatureSynthesis(object):
             matching_inputs = match(input_types, features,
                                     commutative=trans_prim.commutative)
 
+            # filter matching_inputs to avoid duplicating problem when assign dfeat to trans_prim
+            def filt_trans(matching_input):
+                # as long as the original features are not all dfeat, the trans_prim
+                # can generate brand new features instead of duplicate ones
+                return not all(isinstance(ftr, DirectFeature) for ftr in matching_input)
+
+            matching_inputs = set(filter(filt_trans, matching_inputs))
             for matching_input in matching_inputs:
                 new_f = trans_prim(*matching_input)
                 if new_f.expanding:
