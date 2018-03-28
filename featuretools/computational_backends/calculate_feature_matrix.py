@@ -12,6 +12,7 @@ from functools import wraps
 
 import numpy as np
 import pandas as pd
+from distributed import Client, LocalCluster
 from pandas.tseries.frequencies import to_offset
 
 from .pandas_backend import PandasBackend
@@ -32,7 +33,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
                              cutoff_time_in_index=False,
                              training_window=None, approximate=None,
                              save_progress=None, verbose=False,
-                             chunk_size=None,
+                             chunk_size=None, njobs=1,
                              profile=False):
     """Calculates a matrix for a given set of instance ids and calculation times.
 
@@ -195,32 +196,46 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
         for chunk in iterator:
             chunks.append(chunk)
 
-    # if verbose, create progess bar
-    if verbose:
-        pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
-                       "Progress: {l_bar}{bar}| "
-                       "Calculated: {n}/{total} chunks")
-        chunks = make_tqdm_iterator(iterable=chunks,
-                                    total=len(chunks),
-                                    bar_format=pbar_string)
-
     feature_matrix = []
     backend = PandasBackend(entityset, features)
 
-    for chunk in chunks:
-        _feature_matrix = calculate_chunk(features, chunk, approximate,
-                                          entityset, training_window,
-                                          profile, verbose,
-                                          save_progress, backend,
-                                          no_unapproximated_aggs,
-                                          cutoff_df_time_var,
-                                          target_time, pass_columns)
-        feature_matrix.append(_feature_matrix)
-        # Do a manual garbage collection in case objects from calculate_chunk
-        # weren't collected automatically
-        gc.collect()
-    if verbose:
-        chunks.close()
+    if njobs != 1:
+        feature_matrix = parallel_calculate_chunks(chunks,
+                                                   features,
+                                                   approximate,
+                                                   training_window,
+                                                   verbose,
+                                                   save_progress,
+                                                   backend,
+                                                   njobs,
+                                                   no_unapproximated_aggs,
+                                                   cutoff_df_time_var,
+                                                   target_time,
+                                                   pass_columns)
+    else:
+        # if verbose, create progess bar
+        if verbose:
+            pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
+                           "Progress: {l_bar}{bar}| "
+                           "Calculated: {n}/{total} chunks")
+            chunks = make_tqdm_iterator(iterable=chunks,
+                                        total=len(chunks),
+                                        bar_format=pbar_string)
+
+        for chunk in chunks:
+            _feature_matrix = calculate_chunk(chunk, features, approximate,
+                                              training_window,
+                                              profile, verbose,
+                                              save_progress, backend,
+                                              no_unapproximated_aggs,
+                                              cutoff_df_time_var,
+                                              target_time, pass_columns)
+            feature_matrix.append(_feature_matrix)
+            # Do a manual garbage collection in case objects from calculate_chunk
+            # weren't collected automatically
+            gc.collect()
+        if verbose:
+            chunks.close()
     feature_matrix = pd.concat(feature_matrix)
     feature_matrix.sort_index(level='time', kind='mergesort', inplace=True)
     if not cutoff_time_in_index:
@@ -232,7 +247,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
     return feature_matrix
 
 
-def calculate_chunk(features, chunk, approximate, entityset, training_window,
+def calculate_chunk(chunk, features, approximate, training_window,
                     profile, verbose, save_progress, backend,
                     no_unapproximated_aggs, cutoff_df_time_var, target_time,
                     pass_columns):
@@ -244,7 +259,7 @@ def calculate_chunk(features, chunk, approximate, entityset, training_window,
                 features,
                 group,
                 window=approximate,
-                entityset=entityset,
+                entityset=backend.entityset,
                 backend=backend,
                 training_window=training_window,
                 profile=profile
@@ -603,3 +618,35 @@ def get_next_chunk(cutoff_time, time_variable, num_per_chunk):
     # after iterating through every group, yield any remaining partial chunks
     for chunk in chunks:
         yield cutoff_time.loc[chunk]
+
+
+def parallel_calculate_chunks(chunks, features, approximate, training_window,
+                              verbose, save_progress, backend, njobs,
+                              no_unapproximated_aggs, cutoff_df_time_var,
+                              target_time, pass_columns):
+    # todo: support additional dask configuration.  dask_kwargs parameter?
+    cluster = LocalCluster(n_workers=njobs)
+    client = Client(cluster)
+    scattered_data = client.scatter({'features': features,
+                                     'backend': backend},
+                                    broadcast=True)
+    scattered_chunks = client.scatter(chunks, broadcast=True)
+    chunk_futures = client.map(calculate_chunk,
+                               scattered_chunks,
+                               features=scattered_data['features'],
+                               approximate=approximate,
+                               training_window=training_window,
+                               profile=False,
+                               verbose=False,
+                               save_progress=save_progress,
+                               backend=scattered_data['backend'],
+                               no_unapproximated_aggs=no_unapproximated_aggs,
+                               cutoff_df_time_var=cutoff_df_time_var,
+                               target_time=target_time,
+                               pass_columns=pass_columns)
+
+    # TODO: verbose
+    feature_matrix = client.gather(chunk_futures)
+    cluster.close()
+    client.close()
+    return feature_matrix
