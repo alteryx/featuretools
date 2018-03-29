@@ -88,6 +88,9 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
             percentage of all instances. If passed the string "cutoff time",
             rows are split per cutoff time.
 
+        njobs (int, optional): number of parallel threads to use when
+            calculating feature matrix
+
         save_progress (str, optional): path to save intermediate computational results.
     """
     assert (isinstance(features, list) and features != [] and
