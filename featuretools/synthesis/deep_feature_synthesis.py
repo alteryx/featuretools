@@ -323,6 +323,8 @@ class DeepFeatureSynthesis(object):
             return
 
         entity_path.append(entity.id)
+
+        self._add_identity_features(all_features, entity)
         """
         Step 1 - Recursively build features for each entity in a backward relationship
         """
@@ -512,8 +514,6 @@ class DeepFeatureSynthesis(object):
         new_max_depth = None
         if max_depth is not None:
             new_max_depth = max_depth - 1
-
-        self._add_identity_features(all_features, entity)
 
         for trans_prim in self.trans_primitives:
             # if multiple input_types, only use first one for DFS
