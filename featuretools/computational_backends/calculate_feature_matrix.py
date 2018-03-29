@@ -33,7 +33,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
                              cutoff_time_in_index=False,
                              training_window=None, approximate=None,
                              save_progress=None, verbose=False,
-                             chunk_size=None, njobs=1,
+                             chunk_size=None, njobs=1, dask_kwargs=None,
                              profile=False):
     """Calculates a matrix for a given set of instance ids and calculation times.
 
@@ -90,6 +90,12 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
 
         njobs (int, optional): number of parallel threads to use when
             calculating feature matrix
+
+        dask_kwargs (dict, optional): Dictionary of keyword arguments to be
+            passed when creating the dask client and scheduler. Even if njobs
+            is not set, using `dask_kwargs` will enable multiprocessing.
+            Valid options:
+                * 'cluster' -> str or dask.LocalCluster
 
         save_progress (str, optional): path to save intermediate computational results.
     """
@@ -202,7 +208,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
     feature_matrix = []
     backend = PandasBackend(entityset, features)
 
-    if njobs != 1:
+    if njobs != 1 or dask_kwargs is not None:
         feature_matrix = parallel_calculate_chunks(chunks,
                                                    features,
                                                    approximate,
@@ -214,7 +220,8 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
                                                    no_unapproximated_aggs,
                                                    cutoff_df_time_var,
                                                    target_time,
-                                                   pass_columns)
+                                                   pass_columns,
+                                                   dask_kwargs)
     else:
         # if verbose, create progess bar
         if verbose:
@@ -626,9 +633,12 @@ def get_next_chunk(cutoff_time, time_variable, num_per_chunk):
 def parallel_calculate_chunks(chunks, features, approximate, training_window,
                               verbose, save_progress, backend, njobs,
                               no_unapproximated_aggs, cutoff_df_time_var,
-                              target_time, pass_columns):
-    # todo: support additional dask configuration.  dask_kwargs parameter?
-    cluster = LocalCluster(n_workers=njobs)
+                              target_time, pass_columns, dask_kwargs=None):
+    # TODO: support additional dask configuration
+    if 'cluster' in dask_kwargs:
+        cluster = dask_kwargs['cluster']
+    else:
+        cluster = LocalCluster(n_workers=njobs)
     client = Client(cluster)
     scattered_data = client.scatter({'features': features,
                                      'backend': backend},
@@ -649,6 +659,10 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
 
     # TODO: verbose
     feature_matrix = client.gather(chunk_futures)
-    cluster.close()
+
+    # only close cluster if create within function
+    # TODO: check if LocalCluster will clean itself up
+    if 'cluster' not in dask_kwargs:
+        cluster.close()
     client.close()
     return feature_matrix

@@ -30,6 +30,7 @@ def dfs(entities=None,
         approximate=None,
         chunk_size=None,
         njobs=1,
+        dask_kwargs=None,
         verbose=False):
     '''Calculates a feature matrix and features given a dictionary of entities
     and a list of relationships.
@@ -142,6 +143,12 @@ def dfs(entities=None,
             percentage of all instances. If passed the string "cutoff time",
             rows are split per cutoff time.
 
+        dask_kwargs (dict, optional): Dictionary of keyword arguments to be
+            passed when creating the dask client and scheduler. Even if njobs
+            is not set, using `dask_kwargs` will enable multiprocessing.
+            Valid options:
+                * 'cluster' -> str or dask.LocalCluster
+
     Examples:
         .. code-block:: python
 
@@ -193,6 +200,7 @@ def dfs(entities=None,
                                                   save_progress=save_progress,
                                                   chunk_size=chunk_size,
                                                   njobs=njobs,
+                                                  dask_kwargs=dask_kwargs,
                                                   verbose=verbose)
     else:
         feature_matrix = calculate_feature_matrix(features,
@@ -204,5 +212,6 @@ def dfs(entities=None,
                                                   save_progress=save_progress,
                                                   chunk_size=chunk_size,
                                                   njobs=njobs,
+                                                  dask_kwargs=dask_kwargs,
                                                   verbose=verbose)
     return feature_matrix, features
