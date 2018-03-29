@@ -25,6 +25,8 @@ Deep Feature Synthesis
     :toctree: generated/
 
     dfs
+    tdfs
+    make_temporal_cutoffs
 
 .. DeepFeatureSynthesis
 
@@ -170,7 +172,7 @@ Location Transform Primitives
 *****************************
 .. autosummary::
    :toctree generated/
-   
+
    Latitude
    Longitude
    Haversine

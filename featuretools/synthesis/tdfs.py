@@ -1,4 +1,4 @@
-import featuretools as ft
+from .dfs import dfs
 from featuretools.entityset import EntitySet
 import pandas as pd
 
@@ -79,12 +79,12 @@ def tdfs(entities=None,
                                                  window_size,
                                                  num_windows,
                                                  start)
-    result = ft.dfs(entityset=entityset,
-                    features_only=features_only,
-                    cutoff_time=temporal_cutoffs,
-                    target_entity=target_entity,
-                    cutoff_time_in_index=True,
-                    **kwargs)
+    result = dfs(entityset=entityset,
+                 features_only=features_only,
+                 cutoff_time=temporal_cutoffs,
+                 target_entity=target_entity,
+                 cutoff_time_in_index=True,
+                 **kwargs)
     if not features_only:
         fm, fl = result
         return fm.sort_index(level=[entityset[target_entity].index,

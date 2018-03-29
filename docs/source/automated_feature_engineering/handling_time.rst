@@ -118,3 +118,49 @@ We can see that that the counts for the same feature are lower when we shorten t
 
 ..     # Note: observation entity is defined
 ..     offset_2 = ft.Timedelta(3, "observations", es["logs"])
+
+
+TDFS: Creating a 3-Dimensional Feature Tensor Using Multiple Cutoff Times
+---------------------------------------------------------------------------------------------------
+
+
+The `tdfs` function generates a feature tensor (flattened as a 2D matrix with multiple rows per instance) and list of Featuretools feature definitions. This function
+takes in the same parameters as `featuretools.dfs`, with the following additional ones:
+
+ * `window_size (str or pandas.DateOffset)`: amount of time between each cutoff time in the created time series
+ * `start (datetime.datetime or pd.Timestamp)`: first cutoff time in the created time series
+ * `num_windows (int)`: number of cutoff times in the created time series
+
+Only 2 of these need to be specified to uniquely determine an equally-spaced set of cutoff times at which to compute each instance.
+
+Let's say the final cutoff times (which could be directly passed into `featuretools.dfs()`) look like this:
+
+.. ipython:: python
+
+    cutoffs = pd.DataFrame({
+      'customer_id': [13458, 13602, 15222],
+      'cutoff_time': [pd.Timestamp('2011/12/15'), pd.Timestamp('2012/10/05'), pd.Timestamp('2012/01/25')]
+    })
+
+Then passing in `window_size='3d'` and `num_windows=2` produces the following cutoff times to be passed into DFS:
+.. ipython:: python
+
+    pd.DataFrame({
+      'customer_id': [13458, 13438, 13602, 13602, 15222, 15222],
+      'cutoff_time': [pd.Timestamp('2011/12/12'), pd.Timestamp('2011/12/15'),
+                      pd.Timestamp('2012/10/02'), pd.Timestamp('2012/10/05'),
+                      pd.Timestamp('2012/01/22'), pd.Timestamp('2012/01/25')]
+    })
+
+Example:
+
+.. ipython:: python
+
+    import featuretools as ft
+    entityset = ft.demo.load_retail()
+    feature_tensor, feature_defs = ft.tdfs(entityset=entityset,
+                                           target_entity='customers',
+                                           cutoffs=cutoffs,
+                                           window_size='3d',
+                                           num_windows=2)
+    feature_tensor
