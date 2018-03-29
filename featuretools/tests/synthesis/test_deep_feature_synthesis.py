@@ -592,8 +592,8 @@ def test_commutative(es):
             if isinstance(base_feat.primitive, AddNumeric):
                 num_add_as_base_feat += 1
 
-    assert num_add_feats == 3
-    assert num_add_as_base_feat == 9
+    assert num_add_feats == 27
+    assert num_add_as_base_feat == 12
 
 
 def test_transform_consistency():
