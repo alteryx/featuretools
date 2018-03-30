@@ -305,7 +305,7 @@ def calculate_chunk(features, chunk, approximate, entityset, training_window,
             else:
                 # all rows have same cutoff time. set time and add passed columns
                 num_rows = _feature_matrix.shape[0]
-                time_index = pd.DatetimeIndex([time_last] * num_rows, name='time')
+                time_index = pd.Index([time_last] * num_rows, name='time')
                 _feature_matrix.set_index(time_index, append=True, inplace=True)
                 if len(pass_columns) > 0:
                     pass_through = group[['instance_id', cutoff_df_time_var] + pass_columns]
