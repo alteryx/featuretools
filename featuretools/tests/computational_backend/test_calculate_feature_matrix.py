@@ -34,6 +34,11 @@ def entityset():
     return make_ecommerce_entityset()
 
 
+@pytest.fixture
+def int_es():
+    return make_ecommerce_entityset(with_integer_time_index=True)
+
+
 # TODO test mean ignores nan values
 def test_calc_feature_matrix(entityset):
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
@@ -749,3 +754,36 @@ def test_verbose_cutoff_time_chunks(entityset):
                                               verbose=True)
 
     assert (feature_matrix == labels).values.all()
+
+
+def test_integer_time_index(int_es):
+    times = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 10, 11, 12, 13, 14, 15]
+    labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
+    cutoff_df = pd.DataFrame({'time': times, 'instance_id': range(17)})
+    property_feature = IdentityFeature(int_es['log']['value']) > 10
+
+    feature_matrix = calculate_feature_matrix([property_feature],
+                                              cutoff_time=cutoff_df,
+                                              cutoff_time_in_index=True)
+
+    time_level_vals = feature_matrix.index.get_level_values(1).values
+    sorted_df = cutoff_df.sort_values(['time', 'instance_id'], kind='mergesort')
+    assert (time_level_vals == sorted_df['time'].values).all()
+    assert (feature_matrix == labels).values.all()
+
+
+def test_integer_time_index_passes_extra_columns(int_es):
+    times = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 10, 11, 12, 15, 14, 13]
+    labels = [False] * 3 + [True] * 2 + [False] * 9 + [False] * 2 + [True]
+    instances = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 15, 14]
+    cutoff_df = pd.DataFrame({'time': times,
+                              'instance_id': instances,
+                              'labels': labels})
+    cutoff_df = cutoff_df[['time', 'instance_id', 'labels']]
+    property_feature = IdentityFeature(int_es['log']['value']) > 10
+
+    fm = calculate_feature_matrix([property_feature],
+                                  cutoff_time=cutoff_df,
+                                  cutoff_time_in_index=True)
+
+    assert (fm[property_feature.get_name()] == fm['labels']).all()
