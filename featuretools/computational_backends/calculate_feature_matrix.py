@@ -26,6 +26,8 @@ from featuretools.utils.wrangle import _check_timedelta
 
 logger = logging.getLogger('featuretools.computational_backend')
 
+_numeric_types = (int, np.int32, np.int64)
+
 
 def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
                              entities=None, relationships=None, entityset=None,
@@ -110,6 +112,11 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
     if not isinstance(cutoff_time, pd.DataFrame):
         if cutoff_time is None:
             cutoff_time = datetime.now()
+            # if integer time index, use max value as cutoff time instead
+            if target_entity.time_index:
+                target_time_index = target_entity.df[target_entity.time_index]
+                if isinstance(target_time_index.iloc[0], _numeric_types):
+                    cutoff_time = target_time_index.max()
 
         if instance_ids is None:
             index_var = target_entity.index
@@ -266,7 +273,10 @@ def calculate_chunk(features, chunk, approximate, entityset, training_window,
 
         # if all aggregations have been approximated, can calculate all together
         if no_unapproximated_aggs and approximate is not None:
-            grouped = [[datetime.now(), group]]
+            if isinstance(group[target_time].iloc[0], _numeric_types):
+                grouped = [[group[target_time].max(), group]]
+            else:
+                grouped = [[datetime.now(), group]]
         else:
             # if approximated features, set cutoff_time to unbinned time
             if precalculated_features is not None:
