@@ -67,6 +67,10 @@ def test_calc_feature_matrix(entityset):
     with pytest.raises(AssertionError):
         feature_matrix = calculate_feature_matrix([1, 2, 3], instance_ids=range(17),
                                                   cutoff_time=times)
+    with pytest.raises(TypeError):
+        calculate_feature_matrix([property_feature],
+                                 instance_ids=range(17),
+                                 cutoff_time=17)
 
 
 def test_cfm_approximate_correct_ordering():
@@ -770,6 +774,17 @@ def test_integer_time_index(int_es):
     sorted_df = cutoff_df.sort_values(['time', 'instance_id'], kind='mergesort')
     assert (time_level_vals == sorted_df['time'].values).all()
     assert (feature_matrix == labels).values.all()
+
+
+def test_integer_time_index_datetime_cutoffs(int_es):
+    times = [datetime.now()] * 17
+    cutoff_df = pd.DataFrame({'time': times, 'instance_id': range(17)})
+    property_feature = IdentityFeature(int_es['log']['value']) > 10
+
+    with pytest.raises(TypeError):
+        calculate_feature_matrix([property_feature],
+                                 cutoff_time=cutoff_df,
+                                 cutoff_time_in_index=True)
 
 
 def test_integer_time_index_passes_extra_columns(int_es):
