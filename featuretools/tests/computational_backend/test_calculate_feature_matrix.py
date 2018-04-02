@@ -787,3 +787,12 @@ def test_integer_time_index_passes_extra_columns(int_es):
                                   cutoff_time_in_index=True)
 
     assert (fm[property_feature.get_name()] == fm['labels']).all()
+
+
+def test_string_time_values_in_cutoff_time(entityset):
+    times = ['2011-04-09 10:31:27', '2011-04-09 10:30:18']
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 0]})
+    agg_feature = Sum(entityset['log']['value'], entityset['customers'])
+
+    with pytest.raises(ValueError):
+        calculate_feature_matrix([agg_feature], cutoff_time=cutoff_time)
