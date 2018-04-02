@@ -147,7 +147,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
             cutoff_time.rename(columns={not_instance_id[0]: "time"}, inplace=True)
         pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
 
-    if not isinstance(cutoff_time['time'].iloc[0],  (datetime,) + _numeric_types):
+    if not isinstance(cutoff_time['time'].iloc[0], (datetime,) + _numeric_types):
         raise ValueError("cutoff_time time values must be datetime or numeric")
 
     backend = PandasBackend(entityset, features)
