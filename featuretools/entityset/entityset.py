@@ -82,6 +82,9 @@ class EntitySet(BaseEntitySet):
             self.add_relationship(Relationship(parent_variable,
                                                child_variable))
 
+    def __sizeof__(self):
+        return sum([entity.__sizeof__() for entity in self.entities])
+
     def normalize(self, normalizer):
         return super(EntitySet, self).normalize(normalizer=normalizer, remove_entityset=False)
 

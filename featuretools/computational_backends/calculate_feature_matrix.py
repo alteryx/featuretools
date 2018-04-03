@@ -221,7 +221,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
                                                    cutoff_df_time_var,
                                                    target_time,
                                                    pass_columns,
-                                                   dask_kwargs)
+                                                   dask_kwargs or {})
     else:
         # if verbose, create progess bar
         if verbose:

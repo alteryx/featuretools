@@ -68,6 +68,9 @@ class Entity(BaseEntity):
         super(Entity, self).__init__(id, entityset, variable_types, name, index,
                                      time_index, secondary_time_index, relationships, already_sorted)
 
+    def __sizeof__(self):
+        return self.df.__sizeof__()
+
     def attempt_cast_index_to_int(self, index_var):
         dtype_name = self.df[index_var].dtype.name
         if (dtype_name.find('int') == -1 and
