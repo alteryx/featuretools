@@ -57,6 +57,29 @@ def relationships():
     return [("cards", "id", "transactions", "card_id")]
 
 
+def test_makes_agg_features_from_str(es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
+                                   entityset=es,
+                                   filters=[],
+                                   agg_primitives=['last'],
+                                   trans_primitives=[])
+
+    features = dfs_obj.build_features()
+    assert (feature_with_name(features, 'LAST(log.value)'))
+
+
+def test_makes_agg_features_from_mixed_str(es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
+                                   entityset=es,
+                                   filters=[],
+                                   agg_primitives=[Count, 'last'],
+                                   trans_primitives=[])
+
+    features = dfs_obj.build_features()
+    assert (feature_with_name(features, 'LAST(log.value)'))
+    assert (feature_with_name(features, 'COUNT(log)'))
+
+
 def test_makes_agg_features(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,

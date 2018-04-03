@@ -179,13 +179,33 @@ class DeepFeatureSynthesis(object):
             agg_primitives = [ftypes.Sum, ftypes.Std, ftypes.Max, ftypes.Skew,
                               ftypes.Min, ftypes.Mean, ftypes.Count,
                               ftypes.PercentTrue, ftypes.NUnique, ftypes.Mode]
-        self.agg_primitives = agg_primitives
+        self.agg_primitives = []
+        agg_prim_dict = ftypes.get_aggregation_primitives()
+        for a in agg_primitives:
+            if isinstance(a, str):
+                if a not in agg_prim_dict:
+                    raise ValueError("Unknown aggregation primitive {}. ".format(a),
+                                     "Call ft.primitives.list_primitives() to get",
+                                     " a list of available primitives")
+                self.agg_primitives.append(agg_prim_dict[a])
+            else:
+                self.agg_primitives.append(a)
 
         if trans_primitives is None:
             trans_primitives = [ftypes.Day, ftypes.Year, ftypes.Month,
                                 ftypes.Weekday, ftypes.Haversine,
                                 ftypes.NumWords, ftypes.NumCharacters]  # ftypes.TimeSince
-        self.trans_primitives = trans_primitives
+        self.trans_primitives = []
+        trans_prim_dict = ftypes.get_transform_primitives()
+        for t in trans_primitives:
+            if isinstance(t, str):
+                if t not in trans_prim_dict:
+                    raise ValueError("Unknown transform primitive {}. ".format(t),
+                                     "Call ft.primitives.list_primitives() to get",
+                                     " a list of available primitives")
+                self.trans_primitives.append(trans_prim_dict[t])
+            else:
+                self.trans_primitives.append(t)
 
         self.seed_features = seed_features or []
         self.drop_exact = drop_exact or []
