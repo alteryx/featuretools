@@ -724,3 +724,11 @@ def test_head_of_entity(entityset):
     assert(entity.head(5, cutoff_time=cutoff_times).shape == (3, num_columns))
     assert(entity['product_id'].head(
         5, cutoff_time=cutoff_times).shape == (3, 1))
+
+
+def test_sizeof(entityset):
+    total_df_size = 0
+    for entity in entityset.entities:
+        total_df_size += entity.df.__sizeof__()
+
+    assert entityset.__sizeof__() == total_df_size
