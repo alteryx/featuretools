@@ -53,9 +53,11 @@ class Variable(FTBase):
 
     def __getstate__(self):
         if hasattr(ft, '_pickling') and ft._pickling:
-            ft._pickling = False
-            head_entity = self.entityset.head(n=10)[self.entity_id]
-            ft._pickling = True
+            if ft._head_es is None:
+                ft._pickling = False
+                ft._head_es = self.entityset.head(n=10)
+                ft._pickling = True
+            head_entity = ft._head_es[self.entity_id]
             return {k: v if k != 'entity' else head_entity
                     for (k, v) in self.__dict__.items()}
         return self.__dict__

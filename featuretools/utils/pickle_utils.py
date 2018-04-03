@@ -35,6 +35,7 @@ def save_features(features, filepath):
     .. seealso::
         :func:`.load_features`
     """
+    ft._head_es = features[0].entityset.head(n=10)
     ft._pickling = True
     try:
         save_obj_pickle(features, filepath)
