@@ -34,6 +34,7 @@ Creating entities
 An :class:`Entity` corresponds to a single table-like collection of data in a Dataset. Entities must be initialized by an existing Dataset. An entity can be created from a pandas DataFrame or a CSV file using the :class:`Dataset` API:
 
 .. code-block:: python
+
   import pandas as pd
   data = pd.read_csv("data/events.csv")
   dataset.entity_from_dataframe(entity_id="events",

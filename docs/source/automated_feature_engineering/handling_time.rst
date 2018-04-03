@@ -120,20 +120,23 @@ We can see that that the counts for the same feature are lower when we shorten t
 ..     offset_2 = ft.Timedelta(3, "observations", es["logs"])
 
 
-TDFS: Creating a 3-Dimensional Feature Tensor Using Multiple Cutoff Times
+Creating a 3-Dimensional Feature Tensor Using Multiple Cutoff Times from make_temporal_cutoffs()
 ---------------------------------------------------------------------------------------------------
 
 
-The `tdfs` function generates a feature tensor (flattened as a 2D matrix with multiple rows per instance) and list of Featuretools feature definitions. This function
-takes in the same parameters as `featuretools.dfs`, with the following additional ones:
+The ``make_temporal_cutoffs`` function generates a series of equally spaced cutoff times from a given set of cutoff times and instance ids.
+This function can be paired with ``dfs`` to create a feature tensor rather than feature matrix (but flattened as a 2D DataFrame with multiple rows per instance) and list of Featuretools feature definitions. This function
+takes in the the following parameters:
 
- * `window_size (str or pandas.DateOffset)`: amount of time between each cutoff time in the created time series
- * `start (datetime.datetime or pd.Timestamp)`: first cutoff time in the created time series
- * `num_windows (int)`: number of cutoff times in the created time series
+ * ``instance_ids (list, pd.Series, or np.ndarray)``: list of instances
+ * ``cutoffs (list, pd.Series, or np.ndarray)``: associated list of cutoff times
+ * ``window_size (str or pandas.DateOffset)``: amount of time between each cutoff time in the created time series
+ * ``start (datetime.datetime or pd.Timestamp)``: first cutoff time in the created time series
+ * ``num_windows (int)``: number of cutoff times in the created time series
 
-Only 2 of these need to be specified to uniquely determine an equally-spaced set of cutoff times at which to compute each instance.
+Only 2 of ``window_size``, ``start``, and ``num_windows`` need to be specified to uniquely determine an equally-spaced set of cutoff times at which to compute each instance.
 
-Let's say the final cutoff times (which could be directly passed into `featuretools.dfs()`) look like this:
+Let's say the final cutoff times (which could be directly passed into ``dfs()``) look like this:
 
 .. ipython:: python
 
@@ -142,25 +145,21 @@ Let's say the final cutoff times (which could be directly passed into `featureto
       'cutoff_time': [pd.Timestamp('2011/12/15'), pd.Timestamp('2012/10/05'), pd.Timestamp('2012/01/25')]
     })
 
-Then passing in `window_size='3d'` and `num_windows=2` produces the following cutoff times to be passed into DFS:
-.. ipython:: python
-
-    pd.DataFrame({
-      'customer_id': [13458, 13438, 13602, 13602, 15222, 15222],
-      'cutoff_time': [pd.Timestamp('2011/12/12'), pd.Timestamp('2011/12/15'),
-                      pd.Timestamp('2012/10/02'), pd.Timestamp('2012/10/05'),
-                      pd.Timestamp('2012/01/22'), pd.Timestamp('2012/01/25')]
-    })
-
-Example:
+Then passing in ``window_size='3d'`` and ``num_windows=2`` produces the following cutoff times to be passed into DFS.
 
 .. ipython:: python
+
+    temporal_cutoffs = ft.make_temporal_cutoffs(cutoffs['customer_id'],
+                                                cutoffs['cutoff_time'],
+                                                window_size='3d',
+                                                num_windows=2)
+    temporal_cutoffs
 
     import featuretools as ft
     entityset = ft.demo.load_retail()
-    feature_tensor, feature_defs = ft.tdfs(entityset=entityset,
-                                           target_entity='customers',
-                                           cutoffs=cutoffs,
-                                           window_size='3d',
-                                           num_windows=2)
+    feature_tensor, feature_defs = ft.dfs(entityset=entityset,
+                                          target_entity='customers',
+                                          cutoff_time=temporal_cutoffs,
+                                          cutoff_time_in_index=True,
+                                          max_features=4)
     feature_tensor

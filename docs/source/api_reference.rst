@@ -25,8 +25,6 @@ Deep Feature Synthesis
     :toctree: generated/
 
     dfs
-    tdfs
-    make_temporal_cutoffs
 
 .. DeepFeatureSynthesis
 
@@ -38,6 +36,16 @@ Timedelta
     :toctree: generated/
 
     Timedelta
+
+Time utils
+~~~~~~~~~~
+.. currentmodule:: featuretools
+
+.. autosummary::
+    :toctree: generated/
+
+    make_temporal_cutoffs
+
 
 Feature Primitives
 ~~~~~~~~~~~~~~~~~~
