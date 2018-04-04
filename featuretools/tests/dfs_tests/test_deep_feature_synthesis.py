@@ -9,6 +9,7 @@ from ..testing_utils import feature_with_name, make_ecommerce_entityset
 
 import featuretools as ft
 from featuretools.primitives import (
+    Absolute,
     Add,
     AggregationPrimitive,
     Count,
@@ -418,10 +419,11 @@ def test_where_primitives(es):
         target_entity_id='customers',
         entityset=es,
         agg_primitives=[Count, Last],
+        trans_primitives=[Absolute],
         max_depth=3,
     )
     dfs_unconstrained = DeepFeatureSynthesis(filters=[], **kwargs)
-    dfs_constrained = DeepFeatureSynthesis(where_primitives=[Last], **kwargs)
+    dfs_constrained = DeepFeatureSynthesis(where_primitives=['last', 'absolute'], **kwargs)
     features_unconstrained = dfs_unconstrained.build_features()
     features = dfs_constrained.build_features()
 
@@ -441,6 +443,9 @@ def test_where_primitives(es):
                 if isinstance(f, Last)]) > 0
     assert len([f for f in where_feats
                 if isinstance(f, Count)]) == 0
+    assert len([d for f in where_feats
+                for d in f.get_deep_dependencies()
+                if isinstance(d, Absolute)]) > 0
 
 
 def test_stacking_where_primitives(es):
@@ -453,9 +458,9 @@ def test_stacking_where_primitives(es):
         agg_primitives=[Count, Last],
         max_depth=3,
     )
-    dfs_where_stack_limit_1 = DeepFeatureSynthesis(where_primitives=[Last, Count],
+    dfs_where_stack_limit_1 = DeepFeatureSynthesis(where_primitives=['last', Count],
                                                    **kwargs)
-    dfs_where_stack_limit_2 = DeepFeatureSynthesis(where_primitives=[Last, Count],
+    dfs_where_stack_limit_2 = DeepFeatureSynthesis(where_primitives=['last', Count],
                                                    where_stacking_limit=2,
                                                    **kwargs)
     stack_limit_1_features = dfs_where_stack_limit_1.build_features()

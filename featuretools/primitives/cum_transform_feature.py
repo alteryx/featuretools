@@ -88,7 +88,7 @@ class CumSum(CumFeature):
     """
     Calculates the sum of previous values of an instance for each value in a time-dependent entity.
     """
-    name = "CumSum"
+    name = "cum_sum"
     rolling_func_name = "sum"
     default_value = 0
     agg_feature = Sum
@@ -100,7 +100,7 @@ class CumMean(CumFeature):
     """
     Calculates the mean of previous values of an instance for each value in a time-dependent entity.
     """
-    name = "CumMean"
+    name = "cum_mean"
     rolling_func_name = "mean"
     default_value = 0
     agg_feature = Mean
@@ -112,7 +112,7 @@ class CumCount(CumFeature):
     """
     Calculates the number of previous values of an instance for each value in a time-dependent entity.
     """
-    name = "CumCount"
+    name = "cum_count"
     rolling_func_name = "count"
     default_value = 0
     agg_feature = Count
@@ -123,7 +123,7 @@ class CumMax(CumFeature):
     """
     Calculates the max of previous values of an instance for each value in a time-dependent entity.
     """
-    name = "CumMax"
+    name = "cum_max"
     rolling_func_name = "max"
     default_value = 0
     agg_feature = Max
@@ -135,7 +135,7 @@ class CumMin(CumFeature):
     """
     Calculates the min of previous values of an instance for each value in a time-dependent entity.
     """
-    name = "CumMin"
+    name = "cum_min"
     rolling_func_name = "min"
     default_value = 0
     agg_feature = Min

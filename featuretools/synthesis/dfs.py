@@ -60,30 +60,30 @@ def dfs(entities=None,
         instance_ids (list): List of instances on which to calculate features. Only
             used if cutoff_time is a single datetime.
 
-        agg_primitives (list[AggregationPrimitive], optional): List of Aggregation
+        agg_primitives (list[str or AggregationPrimitive], optional): List of Aggregation
             Feature types to apply.
 
-                Default:[:class:`Sum <.primitives.Sum>`, \
-                         :class:`Std <.primitives.Std>`, \
-                         :class:`Max <.primitives.Max>`, \
-                         :class:`Skew <.primitives.Skew>`, \
-                         :class:`Min <.primitives.Min>`, \
-                         :class:`Mean <.primitives.Mean>`, \
-                         :class:`Count <.primitives.Count>`, \
-                         :class:`PercentTrue <.primitives.PercentTrue>`, \
-                         :class:`NUniqe <.primitives.NUnique>`, \
-                         :class:`Mode <.primitives.Mode>`]
+                Default: ["sum", \
+                          "std", \
+                          "max", \
+                          "skew", \
+                          "min", \
+                          "mean", \
+                          "count", \
+                          "percent_true", \
+                          "n_unique", \
+                          "mode"}
 
-        trans_primitives (list[TransformPrimitive], optional):
+        trans_primitives (list[str or TransformPrimitive], optional):
             List of Transform Feature functions to apply.
 
-                Default:[:class:`Day <.primitives.Day>`, \
-                         :class:`Year <.primitives.Year>`, \
-                         :class:`Month <.primitives.Month>`, \
-                         :class:`Weekday <.primitives.Weekday>`, \
-                         :class:`Haversine <.primitives.Haversine>`, \
-                         :class:`NumWords <.primitives.NumWords>`, \
-                         :class:`NumCharacters <.primitives.NumCharacters>`]
+                Default: ["day", \
+                          "year", \
+                          "month", \
+                          "weekday", \
+                          "haversine", \
+                          "num_words", \
+                          "num_characters"]
 
         allowed_paths (list[list[str]]): Allowed entity paths on which to make
             features.
@@ -105,8 +105,12 @@ def dfs(entities=None,
         drop_exact (list[str], optional): Drop features that
             exactly match these strings in name.
 
-        where_primitives (list[AggregationPrimitive], optional):
-            List of Aggregation Feature types to apply with where clauses.
+        where_primitives (list[str or PrimitiveBase], optional):
+            List of Primitives names (or types) to apply with where clauses.
+
+                Default:
+
+                    ["count"]
 
         max_features (int, optional) : Cap the number of generated features to
                 this number. If -1, no limit.
