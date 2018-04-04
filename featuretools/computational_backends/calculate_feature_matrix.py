@@ -250,6 +250,12 @@ def calculate_chunk(features, chunk, approximate, entityset, training_window,
                     no_unapproximated_aggs, cutoff_df_time_var, target_time,
                     pass_columns):
     feature_matrix = []
+    if no_unapproximated_aggs and approximate is not None:
+        if isinstance(chunk[target_time].iloc[0], _numeric_types):
+            chunk_time = np.inf
+        else:
+            chunk_time = datetime.now()
+
     for _, group in chunk.groupby(cutoff_df_time_var):
         # if approximating, calculate the approximate features
         if approximate is not None:
@@ -277,10 +283,7 @@ def calculate_chunk(features, chunk, approximate, entityset, training_window,
 
         # if all aggregations have been approximated, can calculate all together
         if no_unapproximated_aggs and approximate is not None:
-            if isinstance(group[target_time].iloc[0], _numeric_types):
-                grouped = [[np.inf, group]]
-            else:
-                grouped = [[datetime.now(), group]]
+            grouped = [[chunk_time, group]]
         else:
             # if approximated features, set cutoff_time to unbinned time
             if precalculated_features is not None:
