@@ -466,6 +466,56 @@ class TestVariableHandling(object):
                 for x, y in zip(df[column], df_3[column]):
                     assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
 
+    def test_set_time_type_on_init(self):
+        # create cards entity
+        cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
+        transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                                        "card_id": [1, 2, 1, 3, 4, 5],
+                                        "transaction_time": [10, 12, 13, 20, 21, 20],
+                                        "fraud": [True, False, False, False, True, True]})
+        entities = {
+            "cards": (cards_df, "id"),
+            "transactions": (transactions_df, "id", "transaction_time")
+        }
+        relationships = [("cards", "id", "transactions", "card_id")]
+        entityset = EntitySet("fraud", entities, relationships)
+        # assert time_type is set
+        assert entityset.time_type == "numeric"
+
+    def test_sets_time_when_adding_entity(self):
+        transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                                        "card_id": [1, 2, 1, 3, 4, 5],
+                                        "transaction_time": [10, 12, 13, 20, 21, 20],
+                                        "fraud": [True, False, False, False, True, True]})
+        accounts_df = pd.DataFrame({"id": [3, 4, 5],
+                                    "signup_date": [datetime(2002, 5, 1),
+                                                    datetime(2006, 3, 20),
+                                                    datetime(2011, 11, 11)]})
+        # create empty entityset
+        entityset = EntitySet("fraud")
+        # assert it's not set
+        assert getattr(entityset, "time_type", None) is None
+        # add entity
+        entityset.entity_from_dataframe("transactions",
+                                        transactions_df,
+                                        index="id",
+                                        time_index="transaction_time")
+        # assert time_type is set
+        assert entityset.time_type == "numeric"
+        # add another entity
+        entityset.normalize_entity("transactions",
+                                   "cards",
+                                   "card_id",
+                                   make_time_index=True)
+        # assert time_type unchanged
+        assert entityset.time_type == "numeric"
+        # add wrong time type entity
+        with pytest.raises(TypeError):
+            entityset.entity_from_dataframe("accounts",
+                                            accounts_df,
+                                            index="id",
+                                            time_index="signup_date")
+
 
 class TestRelatedInstances(object):
     def test_related_instances_backward(self, entityset):
