@@ -180,11 +180,11 @@ class DeepFeatureSynthesis(object):
         agg_prim_dict = ftypes.get_aggregation_primitives()
         for a in agg_primitives:
             if isinstance(a, basestring):
-                if a not in agg_prim_dict:
+                if a.lower() not in agg_prim_dict:
                     raise ValueError("Unknown aggregation primitive {}. ".format(a),
                                      "Call ft.primitives.list_primitives() to get",
                                      " a list of available primitives")
-                self.agg_primitives.append(agg_prim_dict[a])
+                self.agg_primitives.append(agg_prim_dict[a.lower()])
             else:
                 self.agg_primitives.append(a)
 
@@ -196,11 +196,11 @@ class DeepFeatureSynthesis(object):
         trans_prim_dict = ftypes.get_transform_primitives()
         for t in trans_primitives:
             if isinstance(t, basestring):
-                if t not in trans_prim_dict:
+                if t.lower() not in trans_prim_dict:
                     raise ValueError("Unknown transform primitive {}. ".format(t),
                                      "Call ft.primitives.list_primitives() to get",
                                      " a list of available primitives")
-                self.trans_primitives.append(trans_prim_dict[t])
+                self.trans_primitives.append(trans_prim_dict[t.lower()])
             else:
                 self.trans_primitives.append(t)
 
@@ -209,9 +209,9 @@ class DeepFeatureSynthesis(object):
         self.where_primitives = []
         for p in where_primitives:
             if isinstance(p, basestring):
-                prim_obj = agg_prim_dict.get(p, None)
+                prim_obj = agg_prim_dict.get(p.lower(), None)
                 if prim_obj is None:
-                    prim_obj = trans_prim_dict.get(p, None)
+                    prim_obj = trans_prim_dict.get(p.lower(), None)
                 if prim_obj is None:
                     raise ValueError("Unknown where primitive {}. ".format(p),
                                      "Call ft.primitives.list_primitives() to get",
@@ -324,7 +324,8 @@ class DeepFeatureSynthesis(object):
 
     def _filter_features(self, features):
         assert isinstance(self.drop_exact, list), "drop_exact must be a list"
-        assert isinstance(self.drop_contains, list), "drop_contains must be a list"
+        assert isinstance(self.drop_contains,
+                          list), "drop_contains must be a list"
         f_keep = []
         for f in features:
             keep = True
@@ -404,7 +405,8 @@ class DeepFeatureSynthesis(object):
         """
         Step 3 - Create Transform features
         """
-        self._build_transform_features(all_features, entity, max_depth=max_depth)
+        self._build_transform_features(
+            all_features, entity, max_depth=max_depth)
 
         """
         Step 4 - Recursively build features for each entity in a forward relationship
@@ -629,7 +631,8 @@ class DeepFeatureSynthesis(object):
             relationship_path = self.es.find_backward_path(parent_entity.id,
                                                            child_entity.id)
 
-            features = [f for f in features if not self._feature_in_relationship_path(relationship_path, f)]
+            features = [f for f in features if not self._feature_in_relationship_path(
+                relationship_path, f)]
             matching_inputs = match(input_types, features,
                                     commutative=agg_prim.commutative)
             wheres = list(self.where_clauses[child_entity.id])
