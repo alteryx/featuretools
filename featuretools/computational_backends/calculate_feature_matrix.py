@@ -109,12 +109,10 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
 
     if not isinstance(cutoff_time, pd.DataFrame):
         if cutoff_time is None:
-            cutoff_time = datetime.now()
-            # if integer time index, use max value as cutoff time instead
-            if target_entity.time_index:
-                target_time_index = target_entity.df[target_entity.time_index]
-                if _check_time_type(target_time_index.iloc[0]) == "numeric":
-                    cutoff_time = np.inf
+            if entityset.time_type == "numeric":
+                cutoff_time = np.inf
+            else:
+                cutoff_time = datetime.now()
 
         if instance_ids is None:
             index_var = target_entity.index
@@ -248,7 +246,7 @@ def calculate_chunk(features, chunk, approximate, entityset, training_window,
                     pass_columns):
     feature_matrix = []
     if no_unapproximated_aggs and approximate is not None:
-        if _check_time_type(chunk[target_time].iloc[0]) == "numeric":
+        if entityset.time_type == "numeric":
             chunk_time = np.inf
         else:
             chunk_time = datetime.now()
