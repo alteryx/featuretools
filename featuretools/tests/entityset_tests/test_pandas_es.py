@@ -526,6 +526,63 @@ class TestVariableHandling(object):
                                             index="id",
                                             time_index="signup_date")
 
+    def test_checks_time_type_setting_secondary_time_index(self, entityset):
+        # entityset is timestamp time type
+        assert entityset.time_type == "datetime"
+        # add secondary index that is timestamp type
+        new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote']}
+        entityset["customers"].set_secondary_time_index(new_2nd_ti)
+        assert entityset.time_type == "datetime"
+        # add secondary index that is numeric type
+        new_2nd_ti = {'age': ['age', 'loves_ice_cream']}
+        with pytest.raises(TypeError):
+            entityset["customers"].set_secondary_time_index(new_2nd_ti)
+        # add secondary index that is non-time type
+        new_2nd_ti = {'favorite_quote': ['favorite_quote', 'loves_ice_cream']}
+        with pytest.raises(TypeError):
+            entityset["customers"].set_secondary_time_index(new_2nd_ti)
+        # add mismatched pair of secondary time indexes
+        new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
+                      'age': ['age', 'loves_ice_cream']}
+        with pytest.raises(TypeError):
+            entityset["customers"].set_secondary_time_index(new_2nd_ti)
+
+        # create entityset with numeric time type
+        cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
+        transactions_df = pd.DataFrame({
+            "id": [1, 2, 3, 4, 5, 6],
+            "card_id": [1, 2, 1, 3, 4, 5],
+            "transaction_time": [10, 12, 13, 20, 21, 20],
+            "fraud_decision_time": [11, 14, 15, 21, 22, 21],
+            "transaction_city": ["City A"] * 6,
+            "transaction_date": [datetime(1989, 2, i) for i in range(6)],
+            "fraud": [True, False, False, False, True, True]
+        })
+        entities = {
+            "cards": (cards_df, "id"),
+            "transactions": (transactions_df, "id", "transaction_time")
+        }
+        relationships = [("cards", "id", "transactions", "card_id")]
+        card_es = EntitySet("fraud", entities, relationships)
+        assert card_es.time_type == "numeric"
+        # add secondary index that is numeric time type
+        new_2nd_ti = {'fraud_decision_time': ['fraud_decision_time', 'fraud']}
+        card_es.set_secondary_time_index(new_2nd_ti)
+        assert card_es.time_type == "numeric"
+        # add secondary index that is timestamp type
+        new_2nd_ti = {'transaction_date': ['transaction_date', 'fraud']}
+        with pytest.raises(TypeError):
+            card_es.set_secondary_time_index(new_2nd_ti)
+        # add secondary index that is non-time type
+        new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud']}
+        with pytest.raises(TypeError):
+            card_es.set_secondary_time_index(new_2nd_ti)
+        # add mixed secondary time indexes
+        new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud'],
+                      'fraud_decision_time': ['fraud_decision_time', 'fraud']}
+        with pytest.raises(TypeError):
+            card_es.set_secondary_time_index(new_2nd_ti)
+
 
 class TestRelatedInstances(object):
     def test_related_instances_backward(self, entityset):
