@@ -555,7 +555,7 @@ class TestVariableHandling(object):
             "transaction_time": [10, 12, 13, 20, 21, 20],
             "fraud_decision_time": [11, 14, 15, 21, 22, 21],
             "transaction_city": ["City A"] * 6,
-            "transaction_date": [datetime(1989, 2, i) for i in range(6)],
+            "transaction_date": [datetime(1989, 2, i) for i in range(1, 7)],
             "fraud": [True, False, False, False, True, True]
         })
         entities = {
@@ -567,21 +567,21 @@ class TestVariableHandling(object):
         assert card_es.time_type == "numeric"
         # add secondary index that is numeric time type
         new_2nd_ti = {'fraud_decision_time': ['fraud_decision_time', 'fraud']}
-        card_es.set_secondary_time_index(new_2nd_ti)
+        card_es['transactions'].set_secondary_time_index(new_2nd_ti)
         assert card_es.time_type == "numeric"
         # add secondary index that is timestamp type
         new_2nd_ti = {'transaction_date': ['transaction_date', 'fraud']}
         with pytest.raises(TypeError):
-            card_es.set_secondary_time_index(new_2nd_ti)
+            card_es['transactions'].set_secondary_time_index(new_2nd_ti)
         # add secondary index that is non-time type
         new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud']}
         with pytest.raises(TypeError):
-            card_es.set_secondary_time_index(new_2nd_ti)
+            card_es['transactions'].set_secondary_time_index(new_2nd_ti)
         # add mixed secondary time indexes
         new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud'],
                       'fraud_decision_time': ['fraud_decision_time', 'fraud']}
         with pytest.raises(TypeError):
-            card_es.set_secondary_time_index(new_2nd_ti)
+            card_es['transactions'].set_secondary_time_index(new_2nd_ti)
 
 
 class TestRelatedInstances(object):

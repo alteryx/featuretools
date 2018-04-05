@@ -564,6 +564,23 @@ class Entity(BaseEntity):
 
         super(Entity, self).set_index(variable_id)
 
+    def set_secondary_time_index(self, secondary_time_index):
+        if secondary_time_index is not None:
+            for time_index in secondary_time_index:
+                time_type = _check_time_type(self.df[time_index].iloc[0])
+                if time_type == "unknown":
+                    raise TypeError("%s time index not recognized as numeric or"
+                                    " datetime" % (self.id))
+
+                if self.entityset.time_type is None:
+                    self.entityset.time_type = time_type
+                elif self.entityset.time_type != time_type:
+                    raise TypeError("%s time index is %s type which differs from"
+                                    " other entityset time indexes" %
+                                    (self.id, time_type))
+
+        super(Entity, self).set_secondary_time_index(secondary_time_index)
+
     def set_last_time_index(self, last_time_index):
         self.last_time_index = last_time_index
 
