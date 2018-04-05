@@ -221,8 +221,7 @@ class AvgTimeBetween(AggregationPrimitive):
 
     def get_function(self):
         def pd_avg_time_between(x):
-            """
-            Assumes time scales are closer to order
+            """Assumes time scales are closer to order
             of seconds than to nanoseconds
             if times are much closer to nanoseconds
             we could get some floating point errors
@@ -280,8 +279,7 @@ class Skew(AggregationPrimitive):
 
 
 class Std(AggregationPrimitive):
-    """
-    Finds the standard deviation of a numeric feature ignoring null values.
+    """Finds the standard deviation of a numeric feature ignoring null values.
     """
     name = "std"
     input_types = [Numeric]
@@ -438,8 +436,7 @@ def convert_timedelta_to_floats(x):
 
 
 def find_dividend_by_unit(time):
-    """
-    Finds whether time best corresponds to a value in
+    """Finds whether time best corresponds to a value in
     days, hours, minutes, or seconds
     """
     for dividend in [86400, 3600, 60]:

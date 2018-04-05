@@ -341,8 +341,7 @@ class Weekday(DatetimeUnitBasePrimitive):
 
 
 class NumCharacters(TransformPrimitive):
-    """
-    Return the characters in a given string.
+    """Return the characters in a given string.
     """
     name = 'characters'
     input_types = [Text]
@@ -353,8 +352,7 @@ class NumCharacters(TransformPrimitive):
 
 
 class NumWords(TransformPrimitive):
-    """
-    Returns the words in a given string by counting the spaces.
+    """Returns the words in a given string by counting the spaces.
     """
     name = 'numwords'
     input_types = [Text]
@@ -418,8 +416,7 @@ TimeSince = make_trans_primitive(function=pd_time_since,
 
 
 class DaysSince(TransformPrimitive):
-    """
-    For each value of the base feature, compute the number of days between it
+    """For each value of the base feature, compute the number of days between it
     and a datetime
     """
     name = "days_since"
@@ -436,8 +433,7 @@ class DaysSince(TransformPrimitive):
 
 
 class IsIn(TransformPrimitive):
-    """
-    For each value of the base feature, checks whether it is in a list that is
+    """For each value of the base feature, checks whether it is in a list that is
     provided.
     """
     name = "isin"
@@ -461,8 +457,7 @@ class IsIn(TransformPrimitive):
 
 
 class Diff(TransformPrimitive):
-    """
-    For each value of the base feature, compute the difference between it and
+    """For each value of the base feature, compute the difference between it and
     the previous value.
 
     If it is a Datetime feature, compute the difference in seconds
@@ -503,8 +498,7 @@ class Diff(TransformPrimitive):
 
 
 class Not(TransformPrimitive):
-    """
-    For each value of the base feature, negates the boolean value.
+    """For each value of the base feature, negates the boolean value.
     """
     name = "not"
     input_types = [Boolean]
@@ -521,8 +515,7 @@ class Not(TransformPrimitive):
 
 
 class Percentile(TransformPrimitive):
-    """
-    For each value of the base feature, determines the percentile in relation
+    """For each value of the base feature, determines the percentile in relation
     to the rest of the feature.
     """
     name = 'percentile'
@@ -541,8 +534,7 @@ def pd_time_unit(time_unit):
 
 
 class Latitude(TransformPrimitive):
-    """
-    Returns the first value of the tuple base feature. For
+    """Returns the first value of the tuple base feature. For
     use with the LatLong variable type.
     """
     name = 'latitude'
@@ -554,8 +546,7 @@ class Latitude(TransformPrimitive):
 
 
 class Longitude(TransformPrimitive):
-    """
-    Returns the second value on the tuple base feature. For
+    """Returns the second value on the tuple base feature. For
     use with the LatLong variable type.
     """
     name = 'longitude'
@@ -567,8 +558,7 @@ class Longitude(TransformPrimitive):
 
 
 class Haversine(TransformPrimitive):
-    """
-    Calculate the approximate haversine distance in miles between
+    """Calculate the approximate haversine distance in miles between
     two LatLong variable types.
     """
     name = 'haversine'

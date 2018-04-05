@@ -47,7 +47,8 @@ class CumFeature(TransformPrimitive):
         td_entity_id = None
         if isinstance(use_previous, basestring):
             td_entity_id = base_feature.entity.id
-        self.use_previous = _check_timedelta(use_previous, entity_id=td_entity_id)
+        self.use_previous = _check_timedelta(
+            use_previous, entity_id=td_entity_id)
 
         group_feature = self._check_feature(group_feature)
         self.group_feature = group_feature
@@ -85,8 +86,7 @@ class CumFeature(TransformPrimitive):
 
 
 class CumSum(CumFeature):
-    """
-    Calculates the sum of previous values of an instance for each value in a time-dependent entity.
+    """Calculates the sum of previous values of an instance for each value in a time-dependent entity.
     """
     name = "cum_sum"
     rolling_func_name = "sum"
@@ -97,8 +97,7 @@ class CumSum(CumFeature):
 
 
 class CumMean(CumFeature):
-    """
-    Calculates the mean of previous values of an instance for each value in a time-dependent entity.
+    """Calculates the mean of previous values of an instance for each value in a time-dependent entity.
     """
     name = "cum_mean"
     rolling_func_name = "mean"
@@ -109,8 +108,7 @@ class CumMean(CumFeature):
 
 
 class CumCount(CumFeature):
-    """
-    Calculates the number of previous values of an instance for each value in a time-dependent entity.
+    """Calculates the number of previous values of an instance for each value in a time-dependent entity.
     """
     name = "cum_count"
     rolling_func_name = "count"
@@ -120,8 +118,7 @@ class CumCount(CumFeature):
 
 
 class CumMax(CumFeature):
-    """
-    Calculates the max of previous values of an instance for each value in a time-dependent entity.
+    """Calculates the max of previous values of an instance for each value in a time-dependent entity.
     """
     name = "cum_max"
     rolling_func_name = "max"
@@ -132,8 +129,7 @@ class CumMax(CumFeature):
 
 
 class CumMin(CumFeature):
-    """
-    Calculates the min of previous values of an instance for each value in a time-dependent entity.
+    """Calculates the min of previous values of an instance for each value in a time-dependent entity.
     """
     name = "cum_min"
     rolling_func_name = "min"
@@ -173,7 +169,8 @@ def pd_rolling_outer(rolling_func, f):
                 kwargs = {'window': timedelta,
                           'min_periods': 1}
                 if absolute:
-                    to_roll = to_roll[[bf_name, time_index]].sort_values(time_index, kind='mergesort')
+                    to_roll = to_roll[[bf_name, time_index]].sort_values(
+                        time_index, kind='mergesort')
                     kwargs['on'] = time_index
                 else:
                     to_roll = to_roll[bf_name]
@@ -216,7 +213,8 @@ def pd_rolling_outer(rolling_func, f):
                 if absolute:
                     output = pd.Series(f.default_value, index=group.index)
                     # mergesort is stable
-                    to_roll = to_roll[[bf_name, time_index]].sort_values(time_index, kind='mergesort')
+                    to_roll = to_roll[[bf_name, time_index]].sort_values(
+                        time_index, kind='mergesort')
                     kwargs['on'] = time_index
                 else:
                     output = pd.Series(np.nan, index=group.index)
