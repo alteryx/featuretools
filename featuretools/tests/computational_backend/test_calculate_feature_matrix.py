@@ -761,7 +761,7 @@ def test_verbose_cutoff_time_chunks(entityset):
 
 
 def test_integer_time_index(int_es):
-    times = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 10, 11, 12, 13, 14, 15]
+    times = list(range(8, 18)) + list(range(19, 26))
     labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
     cutoff_df = pd.DataFrame({'time': times, 'instance_id': range(17)})
     property_feature = IdentityFeature(int_es['log']['value']) > 10
@@ -788,7 +788,7 @@ def test_integer_time_index_datetime_cutoffs(int_es):
 
 
 def test_integer_time_index_passes_extra_columns(int_es):
-    times = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 10, 11, 12, 15, 14, 13]
+    times = list(range(8, 18)) + list(range(19, 23)) + [25, 24, 23]
     labels = [False] * 3 + [True] * 2 + [False] * 9 + [False] * 2 + [True]
     instances = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 15, 14]
     cutoff_df = pd.DataFrame({'time': times,
@@ -805,7 +805,7 @@ def test_integer_time_index_passes_extra_columns(int_es):
 
 
 def test_integer_time_index_mixed_cutoff(int_es):
-    times_dt = [0, 1, 2, 3, 4, 5, datetime(2011, 1, 1), 7, 8, 9, 9, 10, 11, 12, 15, 14, 13]
+    times_dt = list(range(8, 17)) + [datetime(2011, 1, 1), 19, 20, 21, 22, 25, 24, 23]
     labels = [False] * 3 + [True] * 2 + [False] * 9 + [False] * 2 + [True]
     instances = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 15, 14]
     cutoff_df = pd.DataFrame({'time': times_dt,
@@ -818,19 +818,21 @@ def test_integer_time_index_mixed_cutoff(int_es):
         calculate_feature_matrix([property_feature],
                                  cutoff_time=cutoff_df)
 
-    times_str = [0, 1, 2, 3, 4, 5, "foobar", 7, 8, 9, 9, 10, 11, 12, 15, 14, 13]
+    times_str = list(range(8, 17)) + ["foobar", 19, 20, 21, 22, 25, 24, 23]
     cutoff_df['time'] = times_str
     with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
                                  cutoff_time=cutoff_df)
 
-    times_date_str = [0, 1, 2, 3, 4, 5, '2018-04-02 18:50:45.453216', 7, 8, 9, 9, 10, 11, 12, 15, 14, 13]
+    times_date_str = list(range(8, 17)) + ['2018-04-02', 19, 20, 21, 22, 25, 24, 23]
     cutoff_df['time'] = times_date_str
     with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
                                  cutoff_time=cutoff_df)
 
+    [19, 20, 21, 22]
     times_int_str = [0, 1, 2, 3, 4, 5, '6', 7, 8, 9, 9, 10, 11, 12, 15, 14, 13]
+    times_int_str = list(range(8, 17)) + ['17', 19, 20, 21, 22, 25, 24, 23]
     cutoff_df['time'] = times_int_str
     with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
@@ -840,7 +842,7 @@ def test_integer_time_index_mixed_cutoff(int_es):
 def test_datetime_index_mixed_cutoff(entityset):
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
                  [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
-                 [5] +
+                 [17] +
                  [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
                  [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
                  [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
@@ -867,7 +869,7 @@ def test_datetime_index_mixed_cutoff(entityset):
         calculate_feature_matrix([property_feature],
                                  cutoff_time=cutoff_df)
 
-    times[9] = '6'
+    times[9] = '17'
     cutoff_df['time'] = times
     with pytest.raises(ValueError):
         calculate_feature_matrix([property_feature],
