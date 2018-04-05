@@ -13,7 +13,7 @@ from .base_entity import BaseEntity
 from .timedelta import Timedelta
 
 from featuretools import variable_types as vtypes
-from featuretools.utils.wrangle import _check_timedelta
+from featuretools.utils.wrangle import _check_time_type, _check_timedelta
 
 logger = logging.getLogger('featuretools.entityset')
 
@@ -516,6 +516,19 @@ class Entity(BaseEntity):
 
     def set_time_index(self, variable_id, already_sorted=False):
         if variable_id is not None:
+            # check time type
+            time_type = _check_time_type(self.df[variable_id].iloc[0])
+            if time_type == "unknown":
+                raise TypeError("%s time index not recognized as numeric or"
+                                " datetime" % (self.id))
+
+            if self.entityset.time_type is None:
+                self.entityset.time_type = time_type
+            elif self.entityset.time_type != time_type:
+                raise TypeError("%s time index is %s type which differs from"
+                                " other entityset time indexes" %
+                                (self.id, time_type))
+
             # use stable sort
             if not already_sorted:
                 # sort by time variable, then by index

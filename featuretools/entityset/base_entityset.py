@@ -52,6 +52,7 @@ class BaseEntitySet(FTBase):
         self.entity_stores = {}
         self.relationships = []
         self._verbose = verbose
+        self.time_type = None
 
     def __eq__(self, other, deep=False):
         if not deep:
