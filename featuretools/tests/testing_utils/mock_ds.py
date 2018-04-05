@@ -47,10 +47,10 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                           datetime(1993, 4, 20)]
     }
     if with_integer_time_index:
-        customer_times['signup_date'] = range(3)
-        customer_times['upgrade_date'] = range(3)
-        customer_times['cancel_date'] = range(3)
-        customer_times['date_of_birth'] = range(3)
+        customer_times['signup_date'] = [6, 7, 4]
+        customer_times['upgrade_date'] = [18, 26, 5]
+        customer_times['cancel_date'] = [27, 28, 29]
+        customer_times['date_of_birth'] = [2, 1, 3]
 
     customer_df = pd.DataFrame({
         'id': [0, 1, 2],
@@ -85,7 +85,7 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                  [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
                  [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
     if with_integer_time_index:
-        times = list(range(9)) + [9] + list(range(9, 16))
+        times = list(range(8, 18)) + list(range(19, 26))
 
     values = list([i * 5 for i in range(5)] +
                   [i * 1 for i in range(4)] +
@@ -263,6 +263,9 @@ def make_variable_types(with_integer_time_index=False):
     if with_integer_time_index:
         log_variable_types['datetime'] = variable_types.Numeric
         customer_variable_types['signup_date'] = variable_types.Numeric
+        customer_variable_types['upgrade_date'] = variable_types.Numeric
+        customer_variable_types['cancel_date'] = variable_types.Numeric
+        customer_variable_types['date_of_birth'] = variable_types.Numeric
 
     return {
         'customers': customer_variable_types,
