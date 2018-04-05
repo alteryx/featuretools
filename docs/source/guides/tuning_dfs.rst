@@ -19,12 +19,12 @@ By using seed features, we can include domain specific knowledge in feature engi
 
 .. ipython:: python
 
-    expensive_purchase = ft.Feature(es["transactions"]["amount"]) > 125
+    ExpensivePurchase = ft.Feature(es["transactions"]["amount"]) > 125
 
     feature_matrix, feature_defs = ft.dfs(entityset=es,
                                           target_entity="customers",
                                           agg_primitives=["percent_true"],
-                                          seed_features=[expensive_purchase])
+                                          seed_features=[ExpensivePurchase])
     feature_matrix[['PERCENT_TRUE(transactions.amount > 125)']]
 
 We can now see that ``PERCENT_TRUE`` was automatically applied to this boolean variable.

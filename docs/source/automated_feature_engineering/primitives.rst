@@ -175,7 +175,7 @@ Since WordCount is a transform primitive, we need to add it to the list of trans
     feature_matrix, features = ft.dfs(entityset=es,
                                       target_entity="sessions",
                                       agg_primitives=["sum", "mean", "std"],
-                                      trans_primitives=["word_count"])
+                                      trans_primitives=[WordCount])
 
     feature_matrix[["customers.WORD_COUNT(favorite_quote)", "STD(log.WORD_COUNT(comments))", "SUM(log.WORD_COUNT(comments))", "MEAN(log.WORD_COUNT(comments))"]]
 
