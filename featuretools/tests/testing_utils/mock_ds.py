@@ -35,6 +35,23 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                                       'toothpaste', 'brown bag', 'coke zero',
                                       'taco clock'],
                                'rating': [3.5, 4.0, 4.5, 1.5, 5.0, 5.0]})
+    customer_times = {
+        'signup_date': [datetime(2011, 4, 8), datetime(2011, 4, 9),
+                        datetime(2011, 4, 6)],
+        # some point after signup date
+        'upgrade_date': [datetime(2011, 4, 10), datetime(2011, 4, 11),
+                         datetime(2011, 4, 7)],
+        'cancel_date': [datetime(2011, 6, 8), datetime(2011, 10, 9),
+                        datetime(2012, 1, 6)],
+        'date_of_birth': [datetime(1993, 3, 8), datetime(1926, 8, 2),
+                          datetime(1993, 4, 20)]
+    }
+    if with_integer_time_index:
+        customer_times['signup_date'] = range(3)
+        customer_times['upgrade_date'] = range(3)
+        customer_times['cancel_date'] = range(3)
+        customer_times['date_of_birth'] = range(3)
+
     customer_df = pd.DataFrame({
         'id': [0, 1, 2],
         'age': [33, 25, 56],
@@ -46,16 +63,12 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                            'Capitalism deprives us all of self-determination',
                            'All members of the working classes must seize the '
                            'means of production.'],
-        'signup_date': [datetime(2011, 4, 8), datetime(2011, 4, 9),
-                        datetime(2011, 4, 6)],
+        'signup_date': customer_times['signup_date'],
         # some point after signup date
-        'upgrade_date': [datetime(2011, 4, 10), datetime(2011, 4, 11),
-                         datetime(2011, 4, 7)],
-        'cancel_date': [datetime(2011, 6, 8), datetime(2011, 10, 9),
-                        datetime(2012, 1, 6)],
+        'upgrade_date': customer_times['upgrade_date'],
+        'cancel_date': customer_times['cancel_date'],
         'cancel_reason': ["reason_1", "reason_2", "reason_1"],
-        'date_of_birth': [datetime(1993, 3, 8), datetime(1926, 8, 2),
-                          datetime(1993, 4, 20)],
+        'date_of_birth': customer_times['date_of_birth'],
         'engagement_level': [1, 3, 2]
     })
 
@@ -249,6 +262,7 @@ def make_variable_types(with_integer_time_index=False):
     }
     if with_integer_time_index:
         log_variable_types['datetime'] = variable_types.Numeric
+        customer_variable_types['signup_date'] = variable_types.Numeric
 
     return {
         'customers': customer_variable_types,
