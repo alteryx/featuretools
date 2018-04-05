@@ -530,7 +530,8 @@ class TestVariableHandling(object):
         # entityset is timestamp time type
         assert entityset.time_type == "datetime"
         # add secondary index that is timestamp type
-        new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote']}
+        new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
+                      'cancel_date': ['cancel_date', 'cancel_reason']}
         entityset["customers"].set_secondary_time_index(new_2nd_ti)
         assert entityset.time_type == "datetime"
         # add secondary index that is numeric type
