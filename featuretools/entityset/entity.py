@@ -518,7 +518,7 @@ class Entity(BaseEntity):
         if variable_id is not None:
             # check time type
             time_type = _check_time_type(self.df[variable_id].iloc[0])
-            if time_type == "unknown":
+            if time_type is None:
                 raise TypeError("%s time index not recognized as numeric or"
                                 " datetime" % (self.id))
 
@@ -568,7 +568,7 @@ class Entity(BaseEntity):
         if secondary_time_index is not None:
             for time_index in secondary_time_index:
                 time_type = _check_time_type(self.df[time_index].iloc[0])
-                if time_type == "unknown":
+                if time_type is None:
                     raise TypeError("%s time index not recognized as numeric or"
                                     " datetime" % (self.id))
                 if self.entityset.time_type != time_type:

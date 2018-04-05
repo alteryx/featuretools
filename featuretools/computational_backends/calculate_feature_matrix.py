@@ -23,6 +23,7 @@ from featuretools.primitives import (
 )
 from featuretools.utils.gen_utils import make_tqdm_iterator
 from featuretools.utils.wrangle import _check_time_type, _check_timedelta
+from featuretools.variable_types import NumericTimeIndex
 
 logger = logging.getLogger('featuretools.computational_backend')
 
@@ -109,7 +110,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
 
     if not isinstance(cutoff_time, pd.DataFrame):
         if cutoff_time is None:
-            if entityset.time_type == "numeric":
+            if entityset.time_type == NumericTimeIndex:
                 cutoff_time = np.inf
             else:
                 cutoff_time = datetime.now()
@@ -142,7 +143,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
             cutoff_time.rename(columns={not_instance_id[0]: "time"}, inplace=True)
         pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
 
-    if _check_time_type(cutoff_time['time'].iloc[0]) == "unknown":
+    if _check_time_type(cutoff_time['time'].iloc[0]) is None:
         raise ValueError("cutoff_time time values must be datetime or numeric")
 
     backend = PandasBackend(entityset, features)
@@ -246,7 +247,7 @@ def calculate_chunk(features, chunk, approximate, entityset, training_window,
                     pass_columns):
     feature_matrix = []
     if no_unapproximated_aggs and approximate is not None:
-        if entityset.time_type == "numeric":
+        if entityset.time_type == NumericTimeIndex:
             chunk_time = np.inf
         else:
             chunk_time = datetime.now()

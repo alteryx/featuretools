@@ -480,7 +480,7 @@ class TestVariableHandling(object):
         relationships = [("cards", "id", "transactions", "card_id")]
         entityset = EntitySet("fraud", entities, relationships)
         # assert time_type is set
-        assert entityset.time_type == "numeric"
+        assert entityset.time_type == variable_types.NumericTimeIndex
 
     def test_sets_time_when_adding_entity(self):
         transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
@@ -505,14 +505,14 @@ class TestVariableHandling(object):
                                         index="id",
                                         time_index="transaction_time")
         # assert time_type is set
-        assert entityset.time_type == "numeric"
+        assert entityset.time_type == variable_types.NumericTimeIndex
         # add another entity
         entityset.normalize_entity("transactions",
                                    "cards",
                                    "card_id",
                                    make_time_index=True)
         # assert time_type unchanged
-        assert entityset.time_type == "numeric"
+        assert entityset.time_type == variable_types.NumericTimeIndex
         # add wrong time type entity
         with pytest.raises(TypeError):
             entityset.entity_from_dataframe("accounts",
@@ -528,12 +528,12 @@ class TestVariableHandling(object):
 
     def test_checks_time_type_setting_secondary_time_index(self, entityset):
         # entityset is timestamp time type
-        assert entityset.time_type == "datetime"
+        assert entityset.time_type == variable_types.DatetimeTimeIndex
         # add secondary index that is timestamp type
         new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
                       'cancel_date': ['cancel_date', 'cancel_reason']}
         entityset["customers"].set_secondary_time_index(new_2nd_ti)
-        assert entityset.time_type == "datetime"
+        assert entityset.time_type == variable_types.DatetimeTimeIndex
         # add secondary index that is numeric type
         new_2nd_ti = {'age': ['age', 'loves_ice_cream']}
         with pytest.raises(TypeError):
@@ -565,11 +565,11 @@ class TestVariableHandling(object):
         }
         relationships = [("cards", "id", "transactions", "card_id")]
         card_es = EntitySet("fraud", entities, relationships)
-        assert card_es.time_type == "numeric"
+        assert card_es.time_type == variable_types.NumericTimeIndex
         # add secondary index that is numeric time type
         new_2nd_ti = {'fraud_decision_time': ['fraud_decision_time', 'fraud']}
         card_es['transactions'].set_secondary_time_index(new_2nd_ti)
-        assert card_es.time_type == "numeric"
+        assert card_es.time_type == variable_types.NumericTimeIndex
         # add secondary index that is timestamp type
         new_2nd_ti = {'transaction_date': ['transaction_date', 'fraud']}
         with pytest.raises(TypeError):
