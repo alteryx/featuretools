@@ -1,6 +1,8 @@
-import pandas as pd
-from featuretools.utils import make_temporal_cutoffs
 from itertools import chain
+
+import pandas as pd
+
+from featuretools.utils import make_temporal_cutoffs
 
 
 def test_make_temporal_cutoffs():
