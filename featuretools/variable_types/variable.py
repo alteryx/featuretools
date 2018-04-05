@@ -292,7 +292,7 @@ class TimeIndex(Variable):
 
 
 class NumericTimeIndex(TimeIndex, Numeric):
-    """Represents time index of entity that is a datetime"""
+    """Represents time index of entity that is numeric"""
     _dtype_repr = "numeric_time_index"
 
 
