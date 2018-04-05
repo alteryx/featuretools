@@ -491,6 +491,10 @@ class TestVariableHandling(object):
                                     "signup_date": [datetime(2002, 5, 1),
                                                     datetime(2006, 3, 20),
                                                     datetime(2011, 11, 11)]})
+        accounts_df_string = pd.DataFrame({"id": [3, 4, 5],
+                                           "signup_date": ["May 1 2002",
+                                                           "March 20 2006",
+                                                           "November 11 2011"]})
         # create empty entityset
         entityset = EntitySet("fraud")
         # assert it's not set
@@ -513,6 +517,12 @@ class TestVariableHandling(object):
         with pytest.raises(TypeError):
             entityset.entity_from_dataframe("accounts",
                                             accounts_df,
+                                            index="id",
+                                            time_index="signup_date")
+        # add non time type as time index
+        with pytest.raises(TypeError):
+            entityset.entity_from_dataframe("accounts",
+                                            accounts_df_string,
                                             index="id",
                                             time_index="signup_date")
 
