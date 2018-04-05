@@ -1,6 +1,7 @@
 import logging
 from builtins import filter, object, str
 from collections import defaultdict
+
 from past.builtins import basestring
 
 from .dfs_filters import LimitModeUniques, TraverseUp
@@ -658,11 +659,8 @@ class DeepFeatureSynthesis(object):
                     continue
 
                 # limits the aggregation feature by the given allowed feature types.
-                try:
-                    if not any([issubclass(agg_prim, feature_type) for feature_type in self.where_primitives]):
-                        continue
-                except:
-                    import pdb; pdb.set_trace()
+                if not any([issubclass(agg_prim, feature_type) for feature_type in self.where_primitives]):
+                    continue
 
                 for where in wheres:
                     # limits the where feats so they are different than base feats
