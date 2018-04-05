@@ -1,6 +1,7 @@
 import logging
 from builtins import filter, object, str
 from collections import defaultdict
+from past.builtins import basestring
 
 from .dfs_filters import LimitModeUniques, TraverseUp
 
@@ -177,7 +178,7 @@ class DeepFeatureSynthesis(object):
         self.agg_primitives = []
         agg_prim_dict = ftypes.get_aggregation_primitives()
         for a in agg_primitives:
-            if isinstance(a, str):
+            if isinstance(a, basestring):
                 if a not in agg_prim_dict:
                     raise ValueError("Unknown aggregation primitive {}. ".format(a),
                                      "Call ft.primitives.list_primitives() to get",
@@ -193,7 +194,7 @@ class DeepFeatureSynthesis(object):
         self.trans_primitives = []
         trans_prim_dict = ftypes.get_transform_primitives()
         for t in trans_primitives:
-            if isinstance(t, str):
+            if isinstance(t, basestring):
                 if t not in trans_prim_dict:
                     raise ValueError("Unknown transform primitive {}. ".format(t),
                                      "Call ft.primitives.list_primitives() to get",
@@ -206,7 +207,7 @@ class DeepFeatureSynthesis(object):
             where_primitives = [ftypes.Count]
         self.where_primitives = []
         for p in where_primitives:
-            if isinstance(p, str):
+            if isinstance(p, basestring):
                 prim_obj = agg_prim_dict.get(p, None)
                 if prim_obj is None:
                     prim_obj = trans_prim_dict.get(p, None)
@@ -657,8 +658,11 @@ class DeepFeatureSynthesis(object):
                     continue
 
                 # limits the aggregation feature by the given allowed feature types.
-                if not any([issubclass(agg_prim, feature_type) for feature_type in self.where_primitives]):
-                    continue
+                try:
+                    if not any([issubclass(agg_prim, feature_type) for feature_type in self.where_primitives]):
+                        continue
+                except:
+                    import pdb; pdb.set_trace()
 
                 for where in wheres:
                     # limits the where feats so they are different than base feats
