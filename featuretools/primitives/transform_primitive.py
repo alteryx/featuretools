@@ -532,7 +532,7 @@ def pd_time_unit(time_unit):
 
 
 class Latitude(TransformPrimitive):
-    """Returns the first value of the tuple base feature. 
+    """Returns the first value of the tuple base feature.
        For use with the LatLong variable type.
     """
     name = 'latitude'
@@ -544,7 +544,7 @@ class Latitude(TransformPrimitive):
 
 
 class Longitude(TransformPrimitive):
-    """Returns the second value on the tuple base feature. 
+    """Returns the second value on the tuple base feature.
        For use with the LatLong variable type.
     """
     name = 'longitude'

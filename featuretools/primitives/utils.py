@@ -72,7 +72,7 @@ def list_primitives():
                            'description': [prim.__doc__.split("\n")[0] for prim in agg_primitives.values()]})
     agg_df['type'] = 'aggregation'
 
-    return pd.concat([agg_df, transform_df], ignore_index=True)[['name', 'type', 'description']].style.set_properties(**{'text-align': 'left'})
+    return pd.concat([agg_df, transform_df], ignore_index=True)[['name', 'type', 'description']]
 
 
 def ensure_compatible_dtype(left, right):
