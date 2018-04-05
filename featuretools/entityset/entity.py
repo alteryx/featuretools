@@ -571,10 +571,7 @@ class Entity(BaseEntity):
                 if time_type == "unknown":
                     raise TypeError("%s time index not recognized as numeric or"
                                     " datetime" % (self.id))
-
-                if self.entityset.time_type is None:
-                    self.entityset.time_type = time_type
-                elif self.entityset.time_type != time_type:
+                if self.entityset.time_type != time_type:
                     raise TypeError("%s time index is %s type which differs from"
                                     " other entityset time indexes" %
                                     (self.id, time_type))
