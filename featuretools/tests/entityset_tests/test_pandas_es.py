@@ -492,9 +492,9 @@ class TestVariableHandling(object):
                                                     datetime(2006, 3, 20),
                                                     datetime(2011, 11, 11)]})
         accounts_df_string = pd.DataFrame({"id": [3, 4, 5],
-                                           "signup_date": ["May 1 2002",
-                                                           "March 20 2006",
-                                                           "November 11 2011"]})
+                                           "signup_date": ["element",
+                                                           "exporting",
+                                                           "editable"]})
         # create empty entityset
         entityset = EntitySet("fraud")
         # assert it's not set
