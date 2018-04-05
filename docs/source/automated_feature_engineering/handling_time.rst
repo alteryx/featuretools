@@ -155,7 +155,6 @@ Then passing in ``window_size='3d'`` and ``num_windows=2`` produces the followin
                                                 num_windows=2)
     temporal_cutoffs
 
-    import featuretools as ft
     entityset = ft.demo.load_retail()
     feature_tensor, feature_defs = ft.dfs(entityset=entityset,
                                           target_entity='customers',
