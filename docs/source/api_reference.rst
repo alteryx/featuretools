@@ -323,6 +323,7 @@ Variable types
     Id
     TimeIndex
     DatetimeTimeIndex
+    NumericTimeIndex
     Datetime
     Numeric
     Categorical

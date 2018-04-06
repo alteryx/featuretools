@@ -18,7 +18,7 @@ def entities():
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                                     "card_id": [1, 2, 1, 3, 4, 5],
                                     "transaction_time": [10, 12, 13, 20, 21, 20],
-                                    "fraud": [True, False, True, False, True, True]})
+                                    "fraud": [True, False, False, False, True, True]})
     entities = {
         "cards": (cards_df, "id"),
         "transactions": (transactions_df, "id", "transaction_time")
@@ -80,17 +80,19 @@ def test_approximate_features(entities, relationships):
                                    relationships=relationships,
                                    target_entity="transactions",
                                    cutoff_time=cutoff_times_df,
-                                   approximate=5)
+                                   approximate=5,
+                                   cutoff_time_in_index=True)
+    direct_agg_feat_name = 'cards.PERCENT_TRUE(transactions.fraud)'
     assert len(feature_matrix.index) == 6
     assert len(feature_matrix.columns) == len(features)
-    feature_matrix_2, features_2 = dfs(entities=entities,
-                                       relationships=relationships,
-                                       target_entity="transactions",
-                                       cutoff_time=cutoff_times_df)
-    assert len(features) == len(features_2)
-    assert (feature_matrix.columns == feature_matrix_2.columns).all()
-    assert ((feature_matrix[column] == feature_matrix_2[column]).all()
-            for column in feature_matrix.columns)
+    truth_index = pd.MultiIndex.from_arrays([[1, 3, 1, 5, 3, 6],
+                                             [11, 16, 16, 26, 17, 22]],
+                                            names=('id', 'time'))
+    truth_values = pd.Series(data=[1.0, 0.5, 0.5, 1.0, 0.5, 1.0],
+                             index=truth_index)
+    truth_values.sort_index(level='time', kind='mergesort', inplace=True)
+
+    assert (feature_matrix[direct_agg_feat_name] == truth_values).all()
 
 
 def test_all_variables(entities, relationships):

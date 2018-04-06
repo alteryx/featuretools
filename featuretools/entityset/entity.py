@@ -13,7 +13,7 @@ from .base_entity import BaseEntity
 from .timedelta import Timedelta
 
 from featuretools import variable_types as vtypes
-from featuretools.utils.wrangle import _check_timedelta
+from featuretools.utils.wrangle import _check_time_type, _check_timedelta
 
 logger = logging.getLogger('featuretools.entityset')
 
@@ -516,6 +516,19 @@ class Entity(BaseEntity):
 
     def set_time_index(self, variable_id, already_sorted=False):
         if variable_id is not None:
+            # check time type
+            time_type = _check_time_type(self.df[variable_id].iloc[0])
+            if time_type is None:
+                raise TypeError("%s time index not recognized as numeric or"
+                                " datetime" % (self.id))
+
+            if self.entityset.time_type is None:
+                self.entityset.time_type = time_type
+            elif self.entityset.time_type != time_type:
+                raise TypeError("%s time index is %s type which differs from"
+                                " other entityset time indexes" %
+                                (self.id, time_type))
+
             # use stable sort
             if not already_sorted:
                 # sort by time variable, then by index
@@ -550,6 +563,20 @@ class Entity(BaseEntity):
         self.convert_variable_type(variable_id, vtypes.Index, convert_data=False)
 
         super(Entity, self).set_index(variable_id)
+
+    def set_secondary_time_index(self, secondary_time_index):
+        if secondary_time_index is not None:
+            for time_index in secondary_time_index:
+                time_type = _check_time_type(self.df[time_index].iloc[0])
+                if time_type is None:
+                    raise TypeError("%s time index not recognized as numeric or"
+                                    " datetime" % (self.id))
+                if self.entityset.time_type != time_type:
+                    raise TypeError("%s time index is %s type which differs from"
+                                    " other entityset time indexes" %
+                                    (self.id, time_type))
+
+        super(Entity, self).set_secondary_time_index(secondary_time_index)
 
     def set_last_time_index(self, last_time_index):
         self.last_time_index = last_time_index
@@ -591,25 +618,19 @@ class Entity(BaseEntity):
         """
         if self.time_index:
             if time_last is not None and not df.empty:
-                # TODO: make sure this try/except is a good idea
-                try:
-                    df.iloc[0][self.time_index] <= time_last
-                except TypeError:
-                    pass
-                else:
-                    df = df[df[self.time_index] <= time_last]
-                    if training_window is not None:
-                        mask = df[self.time_index] >= time_last - training_window
-                        if self.last_time_index is not None:
-                            lti_slice = self.last_time_index.reindex(df.index)
-                            lti_mask = lti_slice >= time_last - training_window
-                            mask = mask | lti_mask
-                        else:
-                            logger.warning(
-                                "Using training_window but last_time_index is "
-                                "not set on entity %s" % (self.id)
-                            )
-                        df = df[mask]
+                df = df[df[self.time_index] <= time_last]
+                if training_window is not None:
+                    mask = df[self.time_index] >= time_last - training_window
+                    if self.last_time_index is not None:
+                        lti_slice = self.last_time_index.reindex(df.index)
+                        lti_mask = lti_slice >= time_last - training_window
+                        mask = mask | lti_mask
+                    else:
+                        logger.warning(
+                            "Using training_window but last_time_index is "
+                            "not set on entity %s" % (self.id)
+                        )
+                    df = df[mask]
 
         for secondary_time_index in self.secondary_time_index:
                 # should we use ignore time last here?
