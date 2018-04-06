@@ -63,27 +63,12 @@ def dfs(entities=None,
         agg_primitives (list[str or AggregationPrimitive], optional): List of Aggregation
             Feature types to apply.
 
-                Default: ["sum", \
-                          "std", \
-                          "max", \
-                          "skew", \
-                          "min", \
-                          "mean", \
-                          "count", \
-                          "percent_true", \
-                          "n_unique", \
-                          "mode"}
+                Default: ["sum", "std", "max", "skew", "min", "mean", "count", "percent_true", "n_unique", "mode"]
 
         trans_primitives (list[str or TransformPrimitive], optional):
             List of Transform Feature functions to apply.
 
-                Default: ["day", \
-                          "year", \
-                          "month", \
-                          "weekday", \
-                          "haversine", \
-                          "num_words", \
-                          "num_characters"]
+                Default: ["day", "year", "month", "weekday", "haversine", "num_words", "num_characters"]
 
         allowed_paths (list[list[str]]): Allowed entity paths on which to make
             features.

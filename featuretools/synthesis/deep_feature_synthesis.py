@@ -41,27 +41,12 @@ class DeepFeatureSynthesis(object):
             agg_primitives (list[str or :class:`.primitives.AggregationPrimitive`], optional):
                 list of Aggregation Feature types to apply.
 
-                Default: ["sum", \
-                          "std", \
-                          "max", \
-                          "skew", \
-                          "min", \
-                          "mean", \
-                          "count", \
-                          "percent_true", \
-                          "n_unique", \
-                          "mode"}
+                Default: ["sum", "std", "max", "skew", "min", "mean", "count", "percent_true", "n_unique", "mode"]
 
             trans_primitives (list[str or :class:`.primitives.TransformPrimitive`], optional):
                 list of Transform primitives to use.
 
-                Default: ["day", \
-                          "year", \
-                          "month", \
-                          "weekday", \
-                          "haversine", \
-                          "num_words", \
-                          "num_characters"]
+                Default: ["day", "year", "month", "weekday", "haversine", "num_words", "num_characters"]
 
             where_primitives (list[str or :class:`.primitives.PrimitiveBase`], optional):
                 only add where clauses to these types of Primitives
@@ -210,8 +195,6 @@ class DeepFeatureSynthesis(object):
         for p in where_primitives:
             if isinstance(p, basestring):
                 prim_obj = agg_prim_dict.get(p.lower(), None)
-                if prim_obj is None:
-                    prim_obj = trans_prim_dict.get(p.lower(), None)
                 if prim_obj is None:
                     raise ValueError("Unknown where primitive {}. ".format(p),
                                      "Call ft.primitives.list_primitives() to get",
