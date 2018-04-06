@@ -423,7 +423,7 @@ def test_where_primitives(es):
         max_depth=3,
     )
     dfs_unconstrained = DeepFeatureSynthesis(filters=[], **kwargs)
-    dfs_constrained = DeepFeatureSynthesis(where_primitives=['last', 'absolute'], **kwargs)
+    dfs_constrained = DeepFeatureSynthesis(where_primitives=['last'], **kwargs)
     features_unconstrained = dfs_unconstrained.build_features()
     features = dfs_constrained.build_features()
 
