@@ -10,6 +10,8 @@ from collections import defaultdict
 from datetime import datetime
 from functools import wraps
 
+import cloudpickle
+import featuretools as ft
 import numpy as np
 import pandas as pd
 from distributed import Client, LocalCluster
@@ -206,23 +208,24 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
             chunks.append(chunk)
 
     feature_matrix = []
-    backend = PandasBackend(entityset, features)
 
     if njobs != 1 or dask_kwargs is not None:
-        feature_matrix = parallel_calculate_chunks(chunks,
-                                                   features,
-                                                   approximate,
-                                                   training_window,
-                                                   verbose,
-                                                   save_progress,
-                                                   backend,
-                                                   njobs,
-                                                   no_unapproximated_aggs,
-                                                   cutoff_df_time_var,
-                                                   target_time,
-                                                   pass_columns,
-                                                   dask_kwargs or {})
+        feature_matrix = parallel_calculate_chunks(chunks=chunks,
+                                                   features=features,
+                                                   approximate=approximate,
+                                                   training_window=training_window,
+                                                   verbose=verbose,
+                                                   save_progress=save_progress,
+                                                   entityset=entityset,
+                                                   njobs=njobs,
+                                                   no_unapproximated_aggs=no_unapproximated_aggs,
+                                                   cutoff_df_time_var=cutoff_df_time_var,
+                                                   target_time=target_time,
+                                                   pass_columns=pass_columns,
+                                                   dask_kwargs=dask_kwargs or {})
     else:
+        backend = PandasBackend(entityset, features)
+
         # if verbose, create progess bar
         if verbose:
             pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
@@ -631,7 +634,7 @@ def get_next_chunk(cutoff_time, time_variable, num_per_chunk):
 
 
 def parallel_calculate_chunks(chunks, features, approximate, training_window,
-                              verbose, save_progress, backend, njobs,
+                              verbose, save_progress, entityset, njobs,
                               no_unapproximated_aggs, cutoff_df_time_var,
                               target_time, pass_columns, dask_kwargs=None):
     # TODO: support additional dask configuration
@@ -640,29 +643,77 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
     else:
         cluster = LocalCluster(n_workers=njobs)
     client = Client(cluster)
-    scattered_data = client.scatter({'features': features,
-                                     'backend': backend},
-                                    broadcast=True)
-    chunk_futures = client.map(calculate_chunk,
-                               chunks,
-                               features=scattered_data['features'],
-                               approximate=approximate,
-                               training_window=training_window,
-                               profile=False,
-                               verbose=False,
-                               save_progress=save_progress,
-                               backend=scattered_data['backend'],
-                               no_unapproximated_aggs=no_unapproximated_aggs,
-                               cutoff_df_time_var=cutoff_df_time_var,
-                               target_time=target_time,
-                               pass_columns=pass_columns)
+
+    # scatter the entityset
+    # denote future with leading underscore
+    _es = client.scatter(entityset, broadcast=True)
+
+    # save features to a tempfile and scatter it
+    ft._pickling = True
+    try:
+        pickled_feats = cloudpickle.dumps(features)
+    except Exception:
+        ft._pickling = False
+        raise
+    ft._pickling = False
+    _saved_features = client.scatter(pickled_feats, broadcast=True)
+
+    # map chunks
+    _chunks = client.map(dask_calculate_chunk,
+                         chunks,
+                         saved_features=_saved_features,
+                         entityset=_es,
+                         approximate=approximate,
+                         training_window=training_window,
+                         profile=False,
+                         verbose=False,
+                         save_progress=save_progress,
+                         no_unapproximated_aggs=no_unapproximated_aggs,
+                         cutoff_df_time_var=cutoff_df_time_var,
+                         target_time=target_time,
+                         pass_columns=pass_columns)
 
     # TODO: verbose
-    feature_matrix = client.gather(chunk_futures)
+    feature_matrix = client.gather(_chunks)
 
     # only close cluster if create within function
     # TODO: check if LocalCluster will clean itself up
     if 'cluster' not in dask_kwargs:
         cluster.close()
     client.close()
+    return feature_matrix
+
+
+def dask_calculate_chunk(chunk, saved_features, entityset,
+                         approximate, training_window, profile, verbose,
+                         save_progress, no_unapproximated_aggs,
+                         cutoff_df_time_var, target_time, pass_columns):
+    # load features
+    ft._pickling = True
+    ft._current_es = entityset
+    try:
+        features = cloudpickle.loads(saved_features)
+    except Exception:
+        ft._current_es = None
+        ft._pickling = False
+        raise
+    ft._current_es = None
+    ft._pickling = False
+
+    # create backend
+    backend = PandasBackend(entityset, features)
+
+    # calcualte chunk
+    feature_matrix = calculate_chunk(chunk=chunk,
+                                     features=features,
+                                     approximate=approximate,
+                                     training_window=training_window,
+                                     profile=profile,
+                                     verbose=verbose,
+                                     save_progress=save_progress,
+                                     backend=backend,
+                                     no_unapproximated_aggs=no_unapproximated_aggs,
+                                     cutoff_df_time_var=cutoff_df_time_var,
+                                     target_time=target_time,
+                                     pass_columns=pass_columns)
     return feature_matrix
