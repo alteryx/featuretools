@@ -677,8 +677,41 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
                          target_time=target_time,
                          pass_columns=pass_columns)
 
-    # TODO: verbose
-    feature_matrix = client.gather(_chunks)
+    # TODO: wait for chunks to return
+    feature_matrix = []
+    while len(_chunks) > 0:
+        time.sleep(5)
+        finished_futures = []
+        for future in _chunks:
+            # TODO: handled errored / failed
+            if future.status == 'finished':
+                finished_futures.append(future)
+
+        # gather finished futures
+        if len(finished_futures) > 0:
+            feature_matrix += client.gather(finished_futures)
+            for future in finished_futures:
+                _chunks.pop(_chunks.index(future))
+
+        # if worker has failed, retransmit entityset
+        needs_es = []
+        needs_features = []
+        for worker, keys in client.has_what().items():
+            if _es.key not in keys or _saved_features.key not in keys:
+                if "://" in worker:
+                    (host, port) = worker.split("://")[1].split(":")
+                else:
+                    (host, port) = worker.split(":")
+                if _es.key not in keys:
+                    needs_es.append((host, port))
+                if _saved_features.key not in keys:
+                    needs_features.append((host, port))
+        if len(needs_es) > 0:
+            print "Retransmitting entityset"
+            client.scatter(entityset, workers=needs_es)
+        if len(needs_features) > 0:
+            print "Retransmitting features"
+            client.scatter(features, workers=needs_features)
 
     # only close cluster if create within function
     # TODO: check if LocalCluster will clean itself up
