@@ -5,6 +5,7 @@ import logging
 import os
 import shutil
 import warnings
+import time
 from builtins import zip
 from collections import defaultdict
 from datetime import datetime
@@ -646,6 +647,7 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
 
     # scatter the entityset
     # denote future with leading underscore
+    start = time.time()
     _es = client.scatter(entityset, broadcast=True)
 
     # save features to a tempfile and scatter it
@@ -657,7 +659,9 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
         raise
     ft._pickling = False
     _saved_features = client.scatter(pickled_feats, broadcast=True)
-
+    end = time.time()
+    scatter_time = end-start
+    print(scatter_time)
     # map chunks
     _chunks = client.map(dask_calculate_chunk,
                          chunks,
