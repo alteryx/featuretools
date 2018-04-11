@@ -26,12 +26,13 @@ DFS achieves the same feature by stacking two primitives ``"time_since_previous"
     feature_defs = ft.dfs(entityset=es,
                           target_entity="customers",
                           agg_primitives=["mean"],
-                          trans_primitives=["time_since_previous"])
+                          trans_primitives=["time_since_previous"],
+                          features_only=True)
     feature_defs
 
-.. .. note::
+.. note::
 
-..     When ``dfs`` is called with ``features_only=True``, only feature definitions are returned as output. By default this parameter is set to ``False``. This parameter is used quickly inspect the feature definitions before the spending time calculating the feature matrix.
+    When ``dfs`` is called with ``features_only=True``, only feature definitions are returned as output. By default this parameter is set to ``False``. This parameter is used quickly inspect the feature definitions before the spending time calculating the feature matrix.
 
 
 A second advantage of primitives is that they can be used to quickly enumerate many interesting features in a parameterized way. This is used by Deep Feature Synthesis to get several different ways of summarizing the time since the previous event.
@@ -66,7 +67,11 @@ In the example above, we use two types of primitives.
 
 .. Built in Primitives
 .. *******************
-For a DataFrame that lists and describes each built-in primitive in Featuretools, call ``ft.list_primitives()``. The following is a listing by type:
+For a DataFrame that lists and describes each built-in primitive in Featuretools, call ``ft.list_primitives()``.
+
+.. ipython:: python
+
+    ft.list_primitives().head(5)
 
 .. ======================       ==================================================
 ..  Primitive type              Primitives
