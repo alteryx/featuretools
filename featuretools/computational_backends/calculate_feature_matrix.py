@@ -4,22 +4,22 @@ import gc
 import logging
 import os
 import shutil
-import warnings
 import time
+import warnings
 from builtins import zip
 from collections import defaultdict
 from datetime import datetime
 from functools import wraps
 
 import cloudpickle
-import featuretools as ft
 import numpy as np
 import pandas as pd
-from distributed import Client, LocalCluster
+from distributed import Client, LocalCluster, as_completed
 from pandas.tseries.frequencies import to_offset
 
 from .pandas_backend import PandasBackend
 
+import featuretools as ft
 from featuretools.primitives import (
     AggregationPrimitive,
     DirectFeature,
@@ -660,7 +660,7 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
     ft._pickling = False
     _saved_features = client.scatter(pickled_feats, broadcast=True)
     end = time.time()
-    scatter_time = end-start
+    scatter_time = end - start
     print(scatter_time)
     # map chunks
     _chunks = client.map(dask_calculate_chunk,
@@ -677,22 +677,20 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
                          target_time=target_time,
                          pass_columns=pass_columns)
 
-    # TODO: wait for chunks to return
     feature_matrix = []
-    while len(_chunks) > 0:
-        time.sleep(5)
-        finished_futures = []
-        for future in _chunks:
-            # TODO: handled errored / failed
-            if future.status == 'finished':
-                finished_futures.append(future)
-
-        # gather finished futures
-        if len(finished_futures) > 0:
-            feature_matrix += client.gather(finished_futures)
-            for future in finished_futures:
-                _chunks.pop(_chunks.index(future))
-
+    # TODO: handle errored / failed
+    iterator = as_completed(_chunks, with_results=True).batches()
+    if verbose:
+        pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
+                       "Progress: {l_bar}{bar}| "
+                       "Calculated: {n}/{total} chunks")
+        iterator = make_tqdm_iterator(iterable=iterator,
+                                      total=len(_chunks),
+                                      bar_format=pbar_string)
+    for batch in iterator:
+        for future, result in batch:
+            # gather finished futures
+            feature_matrix.append(result)
         # if worker has failed, retransmit entityset
         needs_es = []
         needs_features = []
