@@ -47,7 +47,7 @@ def get_aggregation_primitives():
                           featuretools.primitives.AggregationPrimitive):
                 if attribute.name:
                     aggregation_primitives.add(attribute)
-    return list(aggregation_primitives)
+    return {prim.name: prim for prim in aggregation_primitives}
 
 
 def get_transform_primitives():
@@ -59,7 +59,20 @@ def get_transform_primitives():
                           featuretools.primitives.TransformPrimitive):
                 if attribute.name:
                     transform_primitives.add(attribute)
-    return list(transform_primitives)
+    return {prim.name: prim for prim in transform_primitives}
+
+
+def list_primitives():
+    transform_primitives = get_transform_primitives()
+    agg_primitives = get_aggregation_primitives()
+    transform_df = pd.DataFrame({'name': list(transform_primitives.keys()),
+                                 'description': [prim.__doc__.split("\n")[0] for prim in transform_primitives.values()]})
+    transform_df['type'] = 'transform'
+    agg_df = pd.DataFrame({'name': list(agg_primitives.keys()),
+                           'description': [prim.__doc__.split("\n")[0] for prim in agg_primitives.values()]})
+    agg_df['type'] = 'aggregation'
+
+    return pd.concat([agg_df, transform_df], ignore_index=True)[['name', 'type', 'description']]
 
 
 def ensure_compatible_dtype(left, right):

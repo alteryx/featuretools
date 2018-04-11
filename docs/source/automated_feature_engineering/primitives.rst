@@ -12,7 +12,7 @@ The space of potential functions that humans use to create a feature is expansiv
 
 A primitive only constrains the input and output data types. This means they can be used to transfer calculations known in one domain to another. Consider a feature which is often calculated by data scientists for transactional or event logs data: `average time between events`. This feature is incredibly valuable in predicting fraudulent behavior or future customer engagement.
 
-DFS achieves the same feature by stacking two primitives ``TimeSincePrevious`` and ``Mean``
+DFS achieves the same feature by stacking two primitives ``"time_since_previous"`` and ``"mean"``
 
 .. ipython:: python
     :suppress:
@@ -23,17 +23,16 @@ DFS achieves the same feature by stacking two primitives ``TimeSincePrevious`` a
 
 .. ipython:: python
 
-    from featuretools.primitives import TimeSincePrevious, Mean
-
     feature_defs = ft.dfs(entityset=es,
                           target_entity="customers",
-                          agg_primitives=[Mean],
-                          trans_primitives=[TimeSincePrevious])
+                          agg_primitives=["mean"],
+                          trans_primitives=["time_since_previous"],
+                          features_only=True)
     feature_defs
 
-.. .. note::
+.. note::
 
-..     When ``dfs`` is called with ``features_only=True``, only feature definitions are returned as output. By default this parameter is set to ``False``. This parameter is used quickly inspect the feature definitions before the spending time calculating the feature matrix.
+    When ``dfs`` is called with ``features_only=True``, only feature definitions are returned as output. By default this parameter is set to ``False``. This parameter is used quickly inspect the feature definitions before the spending time calculating the feature matrix.
 
 
 A second advantage of primitives is that they can be used to quickly enumerate many interesting features in a parameterized way. This is used by Deep Feature Synthesis to get several different ways of summarizing the time since the previous event.
@@ -41,12 +40,10 @@ A second advantage of primitives is that they can be used to quickly enumerate m
 
 .. ipython:: python
 
-    from featuretools.primitives import Mean, Max, Min, Std, Skew
-
     feature_matrix, feature_defs = ft.dfs(entityset=es,
                                           target_entity="customers",
-                                          agg_primitives=[Mean, Max, Min, Std, Skew],
-                                          trans_primitives=[TimeSincePrevious])
+                                          agg_primitives=["mean", "max", "min", "std", "skew"],
+                                          trans_primitives=["time_since_previous"])
 
     feature_matrix[["MEAN(sessions.time_since_previous_by_customer_id)",
                     "MAX(sessions.time_since_previous_by_customer_id)",
@@ -61,25 +58,31 @@ Aggregation vs Transform Primitive
 
 In the example above, we use two types of primitives.
 
-**Aggregation primitives:** These primitives take related instances as an input and output a single value. They are applied across a parent-child relationship in an entity set. E.g: ``Count``, ``Sum``, ``AvgTimeBetween``.
+**Aggregation primitives:** These primitives take related instances as an input and output a single value. They are applied across a parent-child relationship in an entity set. E.g: ``"count"``, ``"sum"``, ``"avg_time_between"``.
 
-**Transform primitives:** These primitives take one or more variables from an entity as an input and output a new variable for that entity. They are applied to a single entity. E.g: ``Hour``, ``TimeSincePrevious``, ``Absolute``.
+**Transform primitives:** These primitives take one or more variables from an entity as an input and output a new variable for that entity. They are applied to a single entity. E.g: ``"hour"``, ``"time_since_previous"``, ``"absolute"``.
 
 
 
 
 .. Built in Primitives
 .. *******************
+For a DataFrame that lists and describes each built-in primitive in Featuretools, call ``ft.list_primitives()``.
 
-.. ======================    ==================================================
-..  Primitive type           Primitives
-.. ======================    ==================================================
-..  Aggregation              Min, Max, Count, Sum, Std, Mean, Median, Mode,
-..  Datetime transform       Minute, Second, Weekday, Weekend, Hour, Day, Week, Month, Year
-..  Cumulative transform     CumCount, CumSum, CumMean, CumMax, CumMin, Diff
-..  Combine                  isin, AND, OR, NOT
-..  Transform                TimeSince, Absolute
-.. ======================    ==================================================
+.. ipython:: python
+
+    ft.list_primitives().head(5)
+
+.. ======================       ==================================================
+..  Primitive type              Primitives
+.. ======================       ==================================================
+..  Aggregation                 min, max, count, sum, std, mean, median, mode,
+..  Datetime transform          minute, second, weekday, weekend, hour, day, week, month, year
+..  Cumulative transform        cum_count, cum_sum, cum_mean, cum_max, cum_min, diff
+..  Combine                     is_in, and, or, not
+..  Transform                   time_since, absolute, percentile
+..  Uses Full Entity Transform  percentile
+.. ===========================  ==================================================
 
 
 
@@ -168,7 +171,6 @@ Next, we need to create a custom primitive from the ``word_count`` function.
     :suppress:
 
     from featuretools.tests.testing_utils import make_ecommerce_entityset
-    from featuretools.primitives import Mean, Std, Sum
     es = make_ecommerce_entityset()
 
 Since WordCount is a transform primitive, we need to add it to the list of transform primitives DFS can use when generating features.
@@ -177,7 +179,7 @@ Since WordCount is a transform primitive, we need to add it to the list of trans
 
     feature_matrix, features = ft.dfs(entityset=es,
                                       target_entity="sessions",
-                                      agg_primitives=[Sum, Mean, Std],
+                                      agg_primitives=["sum", "mean", "std"],
                                       trans_primitives=[WordCount])
 
     feature_matrix[["customers.WORD_COUNT(favorite_quote)", "STD(log.WORD_COUNT(comments))", "SUM(log.WORD_COUNT(comments))", "MEAN(log.WORD_COUNT(comments))"]]
@@ -191,7 +193,6 @@ If a primitive requires multiple features as input, ``input_types`` has multiple
 .. ipython:: python
 
     from featuretools.variable_types import Datetime, Timedelta, Variable
-    from featuretools.primitives import Feature, Equals
     import pandas as pd
 
     def mean_sunday(numeric, datetime):

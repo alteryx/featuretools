@@ -19,13 +19,11 @@ By using seed features, we can include domain specific knowledge in feature engi
 
 .. ipython:: python
 
-    from featuretools.primitives import PercentTrue
-
     expensive_purchase = ft.Feature(es["transactions"]["amount"]) > 125
 
     feature_matrix, feature_defs = ft.dfs(entityset=es,
                                           target_entity="customers",
-                                          agg_primitives=[PercentTrue],
+                                          agg_primitives=["percent_true"],
                                           seed_features=[expensive_purchase])
     feature_matrix[['PERCENT_TRUE(transactions.amount > 125)']]
 
@@ -52,12 +50,10 @@ We then specify the aggregation primitive to make where clauses for using ``wher
 
 .. ipython:: python
 
-    from featuretools.primitives import Count, AvgTimeBetween
-
     feature_matrix, feature_defs = ft.dfs(entityset=es,
                                           target_entity="customers",
-                                          agg_primitives=[Count, AvgTimeBetween],
-                                          where_primitives=[Count, AvgTimeBetween],
+                                          agg_primitives=["count", "avg_time_between"],
+                                          where_primitives=["count", "avg_time_between"],
                                           trans_primitives=[])
     feature_matrix
 
@@ -77,11 +73,9 @@ Machine learning algorithms typically expect all numeric data. When Deep Feature
 
 .. ipython:: python
 
-    from featuretools.primitives import Mode
-
     feature_matrix, feature_defs = ft.dfs(entityset=es,
                                           target_entity="customers",
-                                          agg_primitives=[Mode],
+                                          agg_primitives=["mode"],
                                           max_depth=1)
 
     feature_matrix
