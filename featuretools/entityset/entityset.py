@@ -678,6 +678,12 @@ class EntitySet(BaseEntitySet):
         #         transfer_types[v_id] = variable_types[v_id]
 
         transfer_types[index] = vtypes.Categorical
+        if make_secondary_time_index:
+            old_ti_name = list(make_secondary_time_index.keys())[0]
+            ti_cols = list(make_secondary_time_index.values())[0]
+            ti_cols = [c if c != old_ti_name else secondary_time_index for c in ti_cols]
+            make_secondary_time_index = {secondary_time_index: ti_cols}
+
         self._import_from_dataframe(new_entity_id, new_entity_df,
                                     index,
                                     time_index=new_entity_time_index,
@@ -691,15 +697,7 @@ class EntitySet(BaseEntitySet):
         self.delete_entity_variables(base_entity_id, additional_variables)
 
         new_entity = self.entity_stores[new_entity_id]
-        if make_secondary_time_index:
-            old_ti_name = list(make_secondary_time_index.keys())[0]
-            ti_cols = list(make_secondary_time_index.values())[0]
-            ti_cols = [c if c != old_ti_name else secondary_time_index for c in ti_cols]
-            new_dict = {secondary_time_index: ti_cols}
-            new_entity.secondary_time_index = new_dict
-
         base_entity.convert_variable_type(base_entity_index, vtypes.Id, convert_data=False)
-
         self.add_relationship(Relationship(new_entity[index], base_entity[base_entity_index]))
 
         return self

@@ -2,6 +2,15 @@
 
 Changelog
 ---------
+**v0.1.20** Apr 13, 2018
+    * Primitives as strings in DFS parameters (:pr:`129`)
+    * Integer time index bugfixes (:pr:`128`)
+    * Add make_temporal_cutoffs utility function (:pr:`126`)
+    * Show all entities, switch shape display to row/col (:pr:`124`)
+    * Improved chunking when calculating feature matrices  (:pr:`121`)
+    * fixed num characters nan fix (:pr:`118`)
+    * modify ignore_variables docstring (:pr:`117`)
+
 **v0.1.19** Mar 21, 2018
     * More descriptive DFS progress bar (:pr:`69`)
     * Convert text variable to string before NumWords (:pr:`106`)

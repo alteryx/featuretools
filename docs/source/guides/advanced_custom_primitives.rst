@@ -7,7 +7,7 @@ Functions With Additonal Arguments
     :suppress:
 
     import featuretools as ft
-    from featuretools.primitives import make_trans_primitive, Sum, Mean, Std
+    from featuretools.primitives import make_trans_primitive
     from featuretools.variable_types import Text, Numeric
 
 One caveat with the make\_primitive functions is that the required arguments of ``function`` must be input features.  Here we create a function for ``StringCount``, a primitive which counts the number of occurrences of a string in a ``Text`` input.  Since ``string`` is not a feature, it needs to be a keyword argument to ``string_count``.
@@ -55,6 +55,6 @@ Since ``string`` is a non-feature input Deep Feature Synthesis cannot automatica
 
     feature_matrix, features = ft.dfs(entityset=es,
                                       target_entity="sessions",
-                                      agg_primitives=[Sum, Mean, Std],
+                                      agg_primitives=["sum", "mean", "std"],
                                       seed_features=[count_the_feat])
     feature_matrix[['STD(log.STRING_COUNT(comments, "the"))', 'SUM(log.STRING_COUNT(comments, "the"))', 'MEAN(log.STRING_COUNT(comments, "the"))']]

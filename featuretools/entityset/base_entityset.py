@@ -52,6 +52,7 @@ class BaseEntitySet(FTBase):
         self.entity_stores = {}
         self.relationships = []
         self._verbose = verbose
+        self.time_type = None
 
     def __eq__(self, other, deep=False):
         if not deep:
@@ -129,27 +130,22 @@ class BaseEntitySet(FTBase):
         fmat = self.id
         repr_out = u"Entityset: {}\n".format(fmat)
         repr_out += u"  Entities:"
-        for e in self.entities[:5]:
+        for e in self.entities:
             if e.df.shape:
-                repr_out += u"\n    {} (shape = [{}, {}])".format(e.id, e.df.shape[0], e.df.shape[1])
+                repr_out += u"\n    {} [Rows: {}, Columns: {}]".format(
+                    e.id, e.df.shape[0], e.df.shape[1])
             else:
-                repr_out += u"\n    {} (shape = [None, None])".format(e.id)
-        if len(self.entities) > 5:
-            num_left = len(self.entities) - 5
-            repr_out += u"\n    ...And {} more".format(num_left)
+                repr_out += u"\n    {} [Rows: None, Columns: None]".format(
+                    e.id)
         repr_out += "\n  Relationships:"
 
         if len(self.relationships) == 0:
             repr_out += "\n    No relationships"
 
-        for r in self.relationships[:5]:
+        for r in self.relationships:
             repr_out += u"\n    %s.%s -> %s.%s" % \
                 (r._child_entity_id, r._child_variable_id,
                  r._parent_entity_id, r._parent_variable_id)
-
-        if len(self.relationships) > 5:
-            num_left = len(self.relationships) - 5
-            repr_out += u"\n    ...and {} more".format(num_left)
 
         return repr_out
 
@@ -181,7 +177,8 @@ class BaseEntitySet(FTBase):
                 relationship to be added.
         """
         if relationship in self.relationships:
-            logger.warning("Not adding duplicate relationship: %s", relationship)
+            logger.warning(
+                "Not adding duplicate relationship: %s", relationship)
             return self
 
         # _operations?
@@ -286,7 +283,8 @@ class BaseEntitySet(FTBase):
             return []
 
         for r in self.get_forward_relationships(start_entity_id):
-            new_path = self.find_forward_path(r.parent_entity.id, goal_entity_id)
+            new_path = self.find_forward_path(
+                r.parent_entity.id, goal_entity_id)
             if new_path is not None:
                 return [r] + new_path
 

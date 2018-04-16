@@ -2,6 +2,8 @@ import logging
 from builtins import filter, object, str
 from collections import defaultdict
 
+from past.builtins import basestring
+
 from .dfs_filters import LimitModeUniques, TraverseUp
 
 import featuretools.primitives.api as ftypes
@@ -36,38 +38,22 @@ class DeepFeatureSynthesis(object):
 
                     [:class:`synthesis.dfs_filters.TraverseUp`]
 
-            agg_primitives (list[:class:`.primitives.AggregationPrimitive`], optional):
+            agg_primitives (list[str or :class:`.primitives.AggregationPrimitive`], optional):
                 list of Aggregation Feature types to apply.
 
-                Default:[:class:`Sum <.primitives.Sum>`, \
-                         :class:`Std <.primitives.Std>`, \
-                         :class:`Max <.primitives.Max>`, \
-                         :class:`Skew <.primitives.Skew>`, \
-                         :class:`Min <.primitives.Min>`, \
-                         :class:`Mean <.primitives.Mean>`, \
-                         :class:`Count <.primitives.Count>`, \
-                         :class:`PercentTrue <.primitives.PercentTrue>`, \
-                         :class:`NUniqe <.primitives.NUnique>`, \
-                         :class:`Mode <.primitives.Mode>`]
+                Default: ["sum", "std", "max", "skew", "min", "mean", "count", "percent_true", "n_unique", "mode"]
 
-            trans_primitives (list[:class:`.primitives.TransformPrimitive`], optional):
-                list of Transform Feature functions to apply.
+            trans_primitives (list[str or :class:`.primitives.TransformPrimitive`], optional):
+                list of Transform primitives to use.
 
-                    Default:[:class:`Day <.primitives.Day>`, \
-                             :class:`Year <.primitives.Year>`, \
-                             :class:`Month <.primitives.Month>`, \
-                            :class:`Weekday <.primitives.Weekday>`, \
-                             :class:`Haversine <.primitives.Haversine>`, \
-                             :class:`NumWords <.primitives.NumWords>`, \
-                             :class:`NumCharacters <.primitives.NumCharacters>`]
+                Default: ["day", "year", "month", "weekday", "haversine", "num_words", "num_characters"]
 
-            where_primitives (list[:class:`.primitives.AggregationPrimitive`], optional):
-                only add where clauses to these types of Aggregation
-                Features.
+            where_primitives (list[str or :class:`.primitives.PrimitiveBase`], optional):
+                only add where clauses to these types of Primitives
 
                 Default:
 
-                    [:class:`Count <.primitives.Count>`]
+                    ["count"]
 
             max_depth (int, optional) : maximum allowed depth of features.
                 Default: 2. If -1, no limit.
@@ -155,10 +141,6 @@ class DeepFeatureSynthesis(object):
         self.target_entity_id = target_entity_id
         self.es = entityset
 
-        self.where_primitives = where_primitives
-        if where_primitives is None:
-            self.where_primitives = [ftypes.Count]
-
         if filters is None:
             filters = [TraverseUp(),
                        LimitModeUniques()]
@@ -179,13 +161,48 @@ class DeepFeatureSynthesis(object):
             agg_primitives = [ftypes.Sum, ftypes.Std, ftypes.Max, ftypes.Skew,
                               ftypes.Min, ftypes.Mean, ftypes.Count,
                               ftypes.PercentTrue, ftypes.NUnique, ftypes.Mode]
-        self.agg_primitives = agg_primitives
+        self.agg_primitives = []
+        agg_prim_dict = ftypes.get_aggregation_primitives()
+        for a in agg_primitives:
+            if isinstance(a, basestring):
+                if a.lower() not in agg_prim_dict:
+                    raise ValueError("Unknown aggregation primitive {}. ".format(a),
+                                     "Call ft.primitives.list_primitives() to get",
+                                     " a list of available primitives")
+                self.agg_primitives.append(agg_prim_dict[a.lower()])
+            else:
+                self.agg_primitives.append(a)
 
         if trans_primitives is None:
             trans_primitives = [ftypes.Day, ftypes.Year, ftypes.Month,
                                 ftypes.Weekday, ftypes.Haversine,
                                 ftypes.NumWords, ftypes.NumCharacters]  # ftypes.TimeSince
-        self.trans_primitives = trans_primitives
+        self.trans_primitives = []
+        trans_prim_dict = ftypes.get_transform_primitives()
+        for t in trans_primitives:
+            if isinstance(t, basestring):
+                if t.lower() not in trans_prim_dict:
+                    raise ValueError("Unknown transform primitive {}. ".format(t),
+                                     "Call ft.primitives.list_primitives() to get",
+                                     " a list of available primitives")
+                self.trans_primitives.append(trans_prim_dict[t.lower()])
+            else:
+                self.trans_primitives.append(t)
+
+        if where_primitives is None:
+            where_primitives = [ftypes.Count]
+        self.where_primitives = []
+        for p in where_primitives:
+            if isinstance(p, basestring):
+                prim_obj = agg_prim_dict.get(p.lower(), None)
+                if prim_obj is None:
+                    raise ValueError("Unknown where primitive {}. ".format(p),
+                                     "Call ft.primitives.list_primitives() to get",
+                                     " a list of available primitives")
+
+                self.where_primitives.append(prim_obj)
+            else:
+                self.where_primitives.append(p)
 
         self.seed_features = seed_features or []
         self.drop_exact = drop_exact or []
@@ -290,7 +307,8 @@ class DeepFeatureSynthesis(object):
 
     def _filter_features(self, features):
         assert isinstance(self.drop_exact, list), "drop_exact must be a list"
-        assert isinstance(self.drop_contains, list), "drop_contains must be a list"
+        assert isinstance(self.drop_contains,
+                          list), "drop_contains must be a list"
         f_keep = []
         for f in features:
             keep = True
@@ -370,7 +388,8 @@ class DeepFeatureSynthesis(object):
         """
         Step 3 - Create Transform features
         """
-        self._build_transform_features(all_features, entity, max_depth=max_depth)
+        self._build_transform_features(
+            all_features, entity, max_depth=max_depth)
 
         """
         Step 4 - Recursively build features for each entity in a forward relationship
@@ -595,7 +614,8 @@ class DeepFeatureSynthesis(object):
             relationship_path = self.es.find_backward_path(parent_entity.id,
                                                            child_entity.id)
 
-            features = [f for f in features if not self._feature_in_relationship_path(relationship_path, f)]
+            features = [f for f in features if not self._feature_in_relationship_path(
+                relationship_path, f)]
             matching_inputs = match(input_types, features,
                                     commutative=agg_prim.commutative)
             wheres = list(self.where_clauses[child_entity.id])

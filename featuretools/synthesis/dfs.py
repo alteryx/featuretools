@@ -28,6 +28,7 @@ def dfs(entities=None,
         features_only=False,
         training_window=None,
         approximate=None,
+        chunk_size=None,
         verbose=False):
     '''Calculates a feature matrix and features given a dictionary of entities
     and a list of relationships.
@@ -59,30 +60,15 @@ def dfs(entities=None,
         instance_ids (list): List of instances on which to calculate features. Only
             used if cutoff_time is a single datetime.
 
-        agg_primitives (list[AggregationPrimitive], optional): List of Aggregation
+        agg_primitives (list[str or AggregationPrimitive], optional): List of Aggregation
             Feature types to apply.
 
-                Default:[:class:`Sum <.primitives.Sum>`, \
-                         :class:`Std <.primitives.Std>`, \
-                         :class:`Max <.primitives.Max>`, \
-                         :class:`Skew <.primitives.Skew>`, \
-                         :class:`Min <.primitives.Min>`, \
-                         :class:`Mean <.primitives.Mean>`, \
-                         :class:`Count <.primitives.Count>`, \
-                         :class:`PercentTrue <.primitives.PercentTrue>`, \
-                         :class:`NUniqe <.primitives.NUnique>`, \
-                         :class:`Mode <.primitives.Mode>`]
+                Default: ["sum", "std", "max", "skew", "min", "mean", "count", "percent_true", "n_unique", "mode"]
 
-        trans_primitives (list[TransformPrimitive], optional):
+        trans_primitives (list[str or TransformPrimitive], optional):
             List of Transform Feature functions to apply.
 
-                Default:[:class:`Day <.primitives.Day>`, \
-                         :class:`Year <.primitives.Year>`, \
-                         :class:`Month <.primitives.Month>`, \
-                         :class:`Weekday <.primitives.Weekday>`, \
-                         :class:`Haversine <.primitives.Haversine>`, \
-                         :class:`NumWords <.primitives.NumWords>`, \
-                         :class:`NumCharacters <.primitives.NumCharacters>`]
+                Default: ["day", "year", "month", "weekday", "haversine", "num_words", "num_characters"]
 
         allowed_paths (list[list[str]]): Allowed entity paths on which to make
             features.
@@ -104,8 +90,12 @@ def dfs(entities=None,
         drop_exact (list[str], optional): Drop features that
             exactly match these strings in name.
 
-        where_primitives (list[AggregationPrimitive], optional):
-            List of Aggregation Feature types to apply with where clauses.
+        where_primitives (list[str or PrimitiveBase], optional):
+            List of Primitives names (or types) to apply with where clauses.
+
+                Default:
+
+                    ["count"]
 
         max_features (int, optional) : Cap the number of generated features to
                 this number. If -1, no limit.
@@ -130,6 +120,12 @@ def dfs(entities=None,
 
         save_progress (str, optional): Path to save intermediate computational results.
 
+        chunk_size (int or float or None or "cutoff time", optionsal): Number
+            of rows of output feature matrix to calculate at time. If passed an
+            integer greater than 0, will try to use that many rows per chunk.
+            If passed a float value between 0 and 1 sets the chunk size to that
+            percentage of all instances. If passed the string "cutoff time",
+            rows are split per cutoff time.
 
     Examples:
         .. code-block:: python
@@ -180,6 +176,7 @@ def dfs(entities=None,
                                                   approximate=approximate,
                                                   cutoff_time_in_index=cutoff_time_in_index,
                                                   save_progress=save_progress,
+                                                  chunk_size=chunk_size,
                                                   verbose=verbose)
     else:
         feature_matrix = calculate_feature_matrix(features,
@@ -189,5 +186,6 @@ def dfs(entities=None,
                                                   approximate=approximate,
                                                   cutoff_time_in_index=cutoff_time_in_index,
                                                   save_progress=save_progress,
+                                                  chunk_size=chunk_size,
                                                   verbose=verbose)
     return feature_matrix, features
