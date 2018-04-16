@@ -37,6 +37,16 @@ Timedelta
 
     Timedelta
 
+Time utils
+~~~~~~~~~~
+.. currentmodule:: featuretools
+
+.. autosummary::
+    :toctree: generated/
+
+    make_temporal_cutoffs
+
+
 Feature Primitives
 ~~~~~~~~~~~~~~~~~~
 
@@ -170,7 +180,7 @@ Location Transform Primitives
 *****************************
 .. autosummary::
    :toctree generated/
-   
+
    Latitude
    Longitude
    Haversine
@@ -313,6 +323,7 @@ Variable types
     Id
     TimeIndex
     DatetimeTimeIndex
+    NumericTimeIndex
     Datetime
     Numeric
     Categorical

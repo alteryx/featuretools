@@ -93,14 +93,12 @@ class BaseEntity(FTBase):
     def __repr__(self):
         repr_out = "Entity: {}\n".format(self.name)
         repr_out += "  Variables:"
-        for v in self.variables[:5]:
+        for v in self.variables:
             repr_out += "\n    {} (dtype: {})".format(v.id, v.dtype)
-        if len(self.variables) > 5:
-            num_left = len(self.variables) - 5
-            repr_out += "\n    ...And {} more".format(num_left)
 
         shape = self.get_shape()
-        repr_out += u"\n  Shape:\n    ({}, {})".format(shape[0], shape[1])
+        repr_out += u"\n  Shape:\n    (Rows: {}, Columns: {})".format(
+            shape[0], shape[1])
         return repr_out
 
     @property

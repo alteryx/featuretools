@@ -25,7 +25,7 @@ from featuretools.variable_types import (
 
 
 class Count(AggregationPrimitive):
-    """Counts the number of non null values"""
+    """Counts the number of non null values."""
     name = "count"
     input_types = [[Index], [Variable]]
     return_type = Numeric
@@ -56,7 +56,7 @@ class Count(AggregationPrimitive):
 
 
 class Sum(AggregationPrimitive):
-    """Counts the number of elements of a numeric or boolean feature"""
+    """Counts the number of elements of a numeric or boolean feature."""
     name = "sum"
     input_types = [Numeric]
     return_type = Numeric
@@ -71,7 +71,7 @@ class Sum(AggregationPrimitive):
 
 
 class Mean(AggregationPrimitive):
-    """Computes the average value of a numeric feature"""
+    """Computes the average value of a numeric feature."""
     name = "mean"
     input_types = [Numeric]
     return_type = Numeric
@@ -82,7 +82,7 @@ class Mean(AggregationPrimitive):
 
 
 class Mode(AggregationPrimitive):
-    """Finds the most common element in a categorical feature"""
+    """Finds the most common element in a categorical feature."""
     name = "mode"
     input_types = [Discrete]
     return_type = None
@@ -117,7 +117,7 @@ Min = make_agg_primitive(
 
 
 class Max(AggregationPrimitive):
-    """Finds the maximum non-null value of a numeric feature"""
+    """Finds the maximum non-null value of a numeric feature."""
     name = "max"
     input_types = [Numeric]
     return_type = None
@@ -129,7 +129,7 @@ class Max(AggregationPrimitive):
 
 
 class NUnique(AggregationPrimitive):
-    """Returns the number of unique categorical variables"""
+    """Returns the number of unique categorical variables."""
     name = "num_unique"
     # todo can we use discrete in input_types instead?
     input_types = [Discrete]
@@ -142,7 +142,7 @@ class NUnique(AggregationPrimitive):
 
 
 class NumTrue(AggregationPrimitive):
-    """Finds the number of 'True' values in a boolean"""
+    """Finds the number of 'True' values in a boolean."""
     name = "num_true"
     input_types = [Boolean]
     return_type = Numeric
@@ -157,7 +157,7 @@ class NumTrue(AggregationPrimitive):
 
 
 class PercentTrue(AggregationPrimitive):
-    """Finds the percent of 'True' values in a boolean feature"""
+    """Finds the percent of 'True' values in a boolean feature."""
     name = "percent_true"
     input_types = [Boolean]
     return_type = Numeric
@@ -174,7 +174,7 @@ class PercentTrue(AggregationPrimitive):
 
 
 class NMostCommon(AggregationPrimitive):
-    """Finds the N most common elements in a categorical feature"""
+    """Finds the N most common elements in a categorical feature."""
     name = "n_most_common"
     input_types = [Discrete]
     return_type = Discrete
@@ -204,8 +204,7 @@ class NMostCommon(AggregationPrimitive):
 
 
 class AvgTimeBetween(AggregationPrimitive):
-    """Computes the average time between consecutive events
-    using the time index of the entity.
+    """Computes the average time between consecutive events.
 
     Note: equivalent to Mean(Diff(time_index)), but more performant
     """
@@ -221,8 +220,7 @@ class AvgTimeBetween(AggregationPrimitive):
 
     def get_function(self):
         def pd_avg_time_between(x):
-            """
-            Assumes time scales are closer to order
+            """Assumes time scales are closer to order
             of seconds than to nanoseconds
             if times are much closer to nanoseconds
             we could get some floating point errors
@@ -251,7 +249,7 @@ class AvgTimeBetween(AggregationPrimitive):
 
 
 class Median(AggregationPrimitive):
-    """Finds the median value of any feature with well-ordered values"""
+    """Finds the median value of any feature with well-ordered values."""
     name = "median"
     input_types = [Numeric]
     return_type = None
@@ -280,8 +278,7 @@ class Skew(AggregationPrimitive):
 
 
 class Std(AggregationPrimitive):
-    """
-    Finds the standard deviation of a numeric feature ignoring null values.
+    """Finds the standard deviation of a numeric feature ignoring null values.
     """
     name = "std"
     input_types = [Numeric]
@@ -294,7 +291,7 @@ class Std(AggregationPrimitive):
 
 
 class Last(AggregationPrimitive):
-    """Returns the last value"""
+    """Returns the last value."""
     name = "last"
     input_types = [Variable]
     return_type = None
@@ -308,7 +305,7 @@ class Last(AggregationPrimitive):
 
 
 class Any(AggregationPrimitive):
-    """Test if any value is 'True'"""
+    """Test if any value is 'True'."""
     name = "any"
     input_types = [Boolean]
     return_type = Boolean
@@ -319,7 +316,7 @@ class Any(AggregationPrimitive):
 
 
 class All(AggregationPrimitive):
-    """Test if all values are 'True'"""
+    """Test if all values are 'True'."""
     name = "all"
     input_types = [Boolean]
     return_type = Boolean
@@ -330,7 +327,7 @@ class All(AggregationPrimitive):
 
 
 class TimeSinceLast(AggregationPrimitive):
-    """Time since last related instance"""
+    """Time since last related instance."""
     name = "time_since_last"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
@@ -346,7 +343,7 @@ class TimeSinceLast(AggregationPrimitive):
 
 
 class Trend(AggregationPrimitive):
-    """Calculates the slope of the linear trend of variable overtime"""
+    """Calculates the slope of the linear trend of variable overtime."""
     name = "trend"
     input_types = [Numeric, DatetimeTimeIndex]
     return_type = Numeric
@@ -438,9 +435,8 @@ def convert_timedelta_to_floats(x):
 
 
 def find_dividend_by_unit(time):
-    """
-    Finds whether time best corresponds to a value in
-    days, hours, minutes, or seconds
+    """Finds whether time best corresponds to a value in
+    days, hours, minutes, or seconds.
     """
     for dividend in [86400, 3600, 60]:
         div = time / dividend

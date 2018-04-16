@@ -9,5 +9,6 @@ from .transform_primitive import *
 from .utils import (
     apply_dual_op_from_feat,
     get_aggregation_primitives,
-    get_transform_primitives
+    get_transform_primitives,
+    list_primitives
 )

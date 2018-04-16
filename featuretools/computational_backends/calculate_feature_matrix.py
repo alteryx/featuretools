@@ -26,7 +26,8 @@ from featuretools.primitives import (
     PrimitiveBase
 )
 from featuretools.utils.gen_utils import make_tqdm_iterator
-from featuretools.utils.wrangle import _check_timedelta
+from featuretools.utils.wrangle import _check_time_type, _check_timedelta
+from featuretools.variable_types import NumericTimeIndex
 
 logger = logging.getLogger('featuretools.computational_backend')
 
@@ -122,7 +123,10 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
 
     if not isinstance(cutoff_time, pd.DataFrame):
         if cutoff_time is None:
-            cutoff_time = datetime.now()
+            if entityset.time_type == NumericTimeIndex:
+                cutoff_time = np.inf
+            else:
+                cutoff_time = datetime.now()
 
         if instance_ids is None:
             index_var = target_entity.index
@@ -151,6 +155,9 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
             not_instance_id = [c for c in cutoff_time.columns if c != "instance_id"]
             cutoff_time.rename(columns={not_instance_id[0]: "time"}, inplace=True)
         pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
+
+    if _check_time_type(cutoff_time['time'].iloc[0]) is None:
+        raise ValueError("cutoff_time time values must be datetime or numeric")
 
     backend = PandasBackend(entityset, features)
 
@@ -266,6 +273,12 @@ def calculate_chunk(chunk, features, approximate, training_window,
                     no_unapproximated_aggs, cutoff_df_time_var, target_time,
                     pass_columns):
     feature_matrix = []
+    if no_unapproximated_aggs and approximate is not None:
+        if entityset.time_type == NumericTimeIndex:
+            chunk_time = np.inf
+        else:
+            chunk_time = datetime.now()
+
     for _, group in chunk.groupby(cutoff_df_time_var):
         # if approximating, calculate the approximate features
         if approximate is not None:
@@ -293,7 +306,7 @@ def calculate_chunk(chunk, features, approximate, training_window,
 
         # if all aggregations have been approximated, can calculate all together
         if no_unapproximated_aggs and approximate is not None:
-            grouped = [[datetime.now(), group]]
+            grouped = [[chunk_time, group]]
         else:
             # if approximated features, set cutoff_time to unbinned time
             if precalculated_features is not None:
@@ -332,7 +345,7 @@ def calculate_chunk(chunk, features, approximate, training_window,
             else:
                 # all rows have same cutoff time. set time and add passed columns
                 num_rows = _feature_matrix.shape[0]
-                time_index = pd.DatetimeIndex([time_last] * num_rows, name='time')
+                time_index = pd.Index([time_last] * num_rows, name='time')
                 _feature_matrix.set_index(time_index, append=True, inplace=True)
                 if len(pass_columns) > 0:
                     pass_through = group[['instance_id', cutoff_df_time_var] + pass_columns]

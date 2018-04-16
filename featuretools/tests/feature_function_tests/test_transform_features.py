@@ -1025,7 +1025,7 @@ def test_init_and_name(es):
         [GreaterThan(Feature(es["products"]["rating"], es["log"]), 2.5)]
     # Add Timedelta feature
     features.append(pd.Timestamp.now() - Feature(log['datetime']))
-    for transform_prim in get_transform_primitives():
+    for transform_prim in get_transform_primitives().values():
         if issubclass(transform_prim, Compare):
             continue
         # use the input_types matching function from DFS

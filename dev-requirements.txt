@@ -1,9 +1,8 @@
 -r test-requirements.txt
 Sphinx==1.6.4
 sphinx_rtd_theme==0.2.4
-nbsphinx==0.2.14
+nbsphinx==0.3.2
 jupyter==1.0.0
-rst2pdf==0.93
 pytest-cov===2.5.1
 codecov==2.0.9
 flake8==3.4.1

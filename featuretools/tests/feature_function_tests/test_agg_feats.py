@@ -236,7 +236,7 @@ def test_init_and_name(es):
     log = es['log']
 
     features = [Feature(v) for v in log.variables]
-    for agg_prim in get_aggregation_primitives():
+    for agg_prim in get_aggregation_primitives().values():
 
         input_types = agg_prim.input_types
         if type(input_types[0]) != list:

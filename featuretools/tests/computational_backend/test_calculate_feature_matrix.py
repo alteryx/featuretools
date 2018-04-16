@@ -34,6 +34,11 @@ def entityset():
     return make_ecommerce_entityset()
 
 
+@pytest.fixture
+def int_es():
+    return make_ecommerce_entityset(with_integer_time_index=True)
+
+
 # TODO test mean ignores nan values
 def test_calc_feature_matrix(entityset):
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
@@ -62,6 +67,10 @@ def test_calc_feature_matrix(entityset):
     with pytest.raises(AssertionError):
         feature_matrix = calculate_feature_matrix([1, 2, 3], instance_ids=range(17),
                                                   cutoff_time=times)
+    with pytest.raises(TypeError):
+        calculate_feature_matrix([property_feature],
+                                 instance_ids=range(17),
+                                 cutoff_time=17)
 
 
 def test_cfm_approximate_correct_ordering():
@@ -771,3 +780,128 @@ def test_njobs(entityset):
                                               approximate='1 hour')
 
     assert (feature_matrix == labels).values.all()
+
+
+def test_integer_time_index(int_es):
+    times = list(range(8, 18)) + list(range(19, 26))
+    labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
+    cutoff_df = pd.DataFrame({'time': times, 'instance_id': range(17)})
+    property_feature = IdentityFeature(int_es['log']['value']) > 10
+
+    feature_matrix = calculate_feature_matrix([property_feature],
+                                              cutoff_time=cutoff_df,
+                                              cutoff_time_in_index=True)
+
+    time_level_vals = feature_matrix.index.get_level_values(1).values
+    sorted_df = cutoff_df.sort_values(['time', 'instance_id'], kind='mergesort')
+    assert (time_level_vals == sorted_df['time'].values).all()
+    assert (feature_matrix == labels).values.all()
+
+
+def test_integer_time_index_datetime_cutoffs(int_es):
+    times = [datetime.now()] * 17
+    cutoff_df = pd.DataFrame({'time': times, 'instance_id': range(17)})
+    property_feature = IdentityFeature(int_es['log']['value']) > 10
+
+    with pytest.raises(TypeError):
+        calculate_feature_matrix([property_feature],
+                                 cutoff_time=cutoff_df,
+                                 cutoff_time_in_index=True)
+
+
+def test_integer_time_index_passes_extra_columns(int_es):
+    times = list(range(8, 18)) + list(range(19, 23)) + [25, 24, 23]
+    labels = [False] * 3 + [True] * 2 + [False] * 9 + [False] * 2 + [True]
+    instances = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 15, 14]
+    cutoff_df = pd.DataFrame({'time': times,
+                              'instance_id': instances,
+                              'labels': labels})
+    cutoff_df = cutoff_df[['time', 'instance_id', 'labels']]
+    property_feature = IdentityFeature(int_es['log']['value']) > 10
+
+    fm = calculate_feature_matrix([property_feature],
+                                  cutoff_time=cutoff_df,
+                                  cutoff_time_in_index=True)
+
+    assert (fm[property_feature.get_name()] == fm['labels']).all()
+
+
+def test_integer_time_index_mixed_cutoff(int_es):
+    times_dt = list(range(8, 17)) + [datetime(2011, 1, 1), 19, 20, 21, 22, 25, 24, 23]
+    labels = [False] * 3 + [True] * 2 + [False] * 9 + [False] * 2 + [True]
+    instances = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 15, 14]
+    cutoff_df = pd.DataFrame({'time': times_dt,
+                              'instance_id': instances,
+                              'labels': labels})
+    cutoff_df = cutoff_df[['time', 'instance_id', 'labels']]
+    property_feature = IdentityFeature(int_es['log']['value']) > 10
+
+    with pytest.raises(TypeError):
+        calculate_feature_matrix([property_feature],
+                                 cutoff_time=cutoff_df)
+
+    times_str = list(range(8, 17)) + ["foobar", 19, 20, 21, 22, 25, 24, 23]
+    cutoff_df['time'] = times_str
+    with pytest.raises(TypeError):
+        calculate_feature_matrix([property_feature],
+                                 cutoff_time=cutoff_df)
+
+    times_date_str = list(range(8, 17)) + ['2018-04-02', 19, 20, 21, 22, 25, 24, 23]
+    cutoff_df['time'] = times_date_str
+    with pytest.raises(TypeError):
+        calculate_feature_matrix([property_feature],
+                                 cutoff_time=cutoff_df)
+
+    [19, 20, 21, 22]
+    times_int_str = [0, 1, 2, 3, 4, 5, '6', 7, 8, 9, 9, 10, 11, 12, 15, 14, 13]
+    times_int_str = list(range(8, 17)) + ['17', 19, 20, 21, 22, 25, 24, 23]
+    cutoff_df['time'] = times_int_str
+    with pytest.raises(TypeError):
+        calculate_feature_matrix([property_feature],
+                                 cutoff_time=cutoff_df)
+
+
+def test_datetime_index_mixed_cutoff(entityset):
+    times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
+                 [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
+                 [17] +
+                 [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
+                 [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
+                 [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
+    labels = [False] * 3 + [True] * 2 + [False] * 9 + [False] * 2 + [True]
+    instances = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 16, 15, 14]
+    cutoff_df = pd.DataFrame({'time': times,
+                              'instance_id': instances,
+                              'labels': labels})
+    cutoff_df = cutoff_df[['time', 'instance_id', 'labels']]
+    property_feature = IdentityFeature(entityset['log']['value']) > 10
+
+    with pytest.raises(TypeError):
+        calculate_feature_matrix([property_feature],
+                                 cutoff_time=cutoff_df)
+
+    times[9] = "foobar"
+    cutoff_df['time'] = times
+    with pytest.raises(ValueError):
+        calculate_feature_matrix([property_feature],
+                                 cutoff_time=cutoff_df)
+
+    cutoff_df['time'].iloc[9] = '2018-04-02 18:50:45.453216'
+    with pytest.raises(TypeError):
+        calculate_feature_matrix([property_feature],
+                                 cutoff_time=cutoff_df)
+
+    times[9] = '17'
+    cutoff_df['time'] = times
+    with pytest.raises(ValueError):
+        calculate_feature_matrix([property_feature],
+                                 cutoff_time=cutoff_df)
+
+
+def test_string_time_values_in_cutoff_time(entityset):
+    times = ['2011-04-09 10:31:27', '2011-04-09 10:30:18']
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 0]})
+    agg_feature = Sum(entityset['log']['value'], entityset['customers'])
+
+    with pytest.raises(ValueError):
+        calculate_feature_matrix([agg_feature], cutoff_time=cutoff_time)
