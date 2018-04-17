@@ -662,7 +662,12 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
     # scatter the entityset
     # denote future with leading underscore
     start = time.time()
-    _es = client.scatter(entityset, broadcast=True)
+    if entityset.id in client.list_datasets():
+        print("Using entityset persisted on the cluster as dataset %s" % (entityset.id))
+        _es = client.get_dataset(entityset.id)
+    else:
+        _es = client.scatter({entityset.id: entityset})[entityset.id]
+        client.publish_dataset(**{entityset.id: _es})
 
     # save features to a tempfile and scatter it
     ft._pickling = True
@@ -672,7 +677,7 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
         ft._pickling = False
         raise
     ft._pickling = False
-    _saved_features = client.scatter(pickled_feats, broadcast=True)
+    _saved_features = client.scatter(pickled_feats)
     end = time.time()
     scatter_time = end - start
     print(scatter_time)
@@ -705,25 +710,6 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
         for future, result in batch:
             # gather finished futures
             feature_matrix.append(result)
-        # if worker has failed, retransmit entityset
-        needs_es = []
-        needs_features = []
-        for worker, keys in client.has_what().items():
-            if _es.key not in keys or _saved_features.key not in keys:
-                if "://" in worker:
-                    (host, port) = worker.split("://")[1].split(":")
-                else:
-                    (host, port) = worker.split(":")
-                if _es.key not in keys:
-                    needs_es.append((host, port))
-                if _saved_features.key not in keys:
-                    needs_features.append((host, port))
-        if len(needs_es) > 0:
-            print "Retransmitting entityset"
-            client.scatter(entityset, workers=needs_es)
-        if len(needs_features) > 0:
-            print "Retransmitting features"
-            client.scatter(features, workers=needs_features)
 
     # only close cluster if create within function
     # TODO: check if LocalCluster will clean itself up
