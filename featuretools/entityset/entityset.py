@@ -6,6 +6,7 @@ from collections import defaultdict
 
 import numpy as np
 import pandas as pd
+from dask.base import tokenize
 
 from .base_entityset import BaseEntitySet
 from .entity import Entity
@@ -84,6 +85,22 @@ class EntitySet(BaseEntitySet):
 
     def __sizeof__(self):
         return sum([entity.__sizeof__() for entity in self.entities])
+
+    def __dask_tokenize__(self):
+        out = (EntitySet,
+               tuple(tokenize(e) for e in sorted(self.entities,
+                                                 key=lambda x: repr(x))),
+               tuple(tokenize(r) for r in sorted(self.relationships,
+                                                 key=lambda x: repr(x))),
+               self.time_type)
+        return out
+
+    @staticmethod
+    def __dask_optimize__(dsk, keys, **kwargs):
+        return dsk
+
+    def __dask_graph__(self):
+        return self._dsk
 
     def normalize(self, normalizer):
         return super(EntitySet, self).normalize(normalizer=normalizer, remove_entityset=False)

@@ -8,6 +8,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+from dask.base import tokenize
 
 from .base_entity import BaseEntity
 from .timedelta import Timedelta
@@ -70,6 +71,10 @@ class Entity(BaseEntity):
 
     def __sizeof__(self):
         return self.df.__sizeof__()
+
+    def __dask_tokenize__(self):
+        return (Entity, tokenize(self.df), self.encoding, self.indexed_by, self._verbose,
+                self.created_index, self.last_time_index)
 
     def attempt_cast_index_to_int(self, index_var):
         dtype_name = self.df[index_var].dtype.name
