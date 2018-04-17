@@ -273,6 +273,7 @@ def calculate_chunk(chunk, features, approximate, training_window,
                     no_unapproximated_aggs, cutoff_df_time_var, target_time,
                     pass_columns):
     feature_matrix = []
+    entityset = backend.entityset
     if no_unapproximated_aggs and approximate is not None:
         if entityset.time_type == NumericTimeIndex:
             chunk_time = np.inf
