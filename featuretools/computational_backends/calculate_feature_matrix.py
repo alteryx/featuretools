@@ -678,9 +678,11 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
         raise
     ft._pickling = False
     _saved_features = client.scatter(pickled_feats)
+    client.replicate([_es, _saved_features])
     end = time.time()
     scatter_time = end - start
     print(scatter_time)
+
     # map chunks
     _chunks = client.map(dask_calculate_chunk,
                          chunks,
