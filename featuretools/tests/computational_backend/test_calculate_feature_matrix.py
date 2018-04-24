@@ -52,6 +52,7 @@ def test_calc_feature_matrix(entityset):
     property_feature = IdentityFeature(entityset['log']['value']) > 10
 
     feature_matrix = calculate_feature_matrix([property_feature],
+                                              entityset,
                                               instance_ids=range(17),
                                               cutoff_time=times,
                                               verbose=True)
@@ -59,16 +60,17 @@ def test_calc_feature_matrix(entityset):
     assert (feature_matrix == labels).values.all()
 
     with pytest.raises(AssertionError):
-        feature_matrix = calculate_feature_matrix('features', instance_ids=range(17),
+        feature_matrix = calculate_feature_matrix('features', entityset, instance_ids=range(17),
                                                   cutoff_time=times)
     with pytest.raises(AssertionError):
-        feature_matrix = calculate_feature_matrix([], instance_ids=range(17),
+        feature_matrix = calculate_feature_matrix([], entityset, instance_ids=range(17),
                                                   cutoff_time=times)
     with pytest.raises(AssertionError):
-        feature_matrix = calculate_feature_matrix([1, 2, 3], instance_ids=range(17),
+        feature_matrix = calculate_feature_matrix([1, 2, 3], entityset, instance_ids=range(17),
                                                   cutoff_time=times)
     with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
+                                 entityset,
                                  instance_ids=range(17),
                                  cutoff_time=17)
 
@@ -103,11 +105,13 @@ def test_cfm_approximate_correct_ordering():
                                           'time': df['flight_time']})
     time_feature = IdentityFeature(es['trips']['flight_time'])
     feature_matrix = calculate_feature_matrix(flight_features + [property_feature, time_feature],
+                                              es,
                                               cutoff_time_in_index=True,
                                               cutoff_time=cutoff_time)
     feature_matrix.index.names = ['instance', 'time']
     assert(np.all(feature_matrix.reset_index('time').reset_index()[['instance', 'time']].values == feature_matrix[['trip_id', 'flight_time']].values))
     feature_matrix_2 = calculate_feature_matrix(flight_features + [property_feature, time_feature],
+                                                es,
                                                 cutoff_time=cutoff_time,
                                                 cutoff_time_in_index=True,
                                                 approximate=Timedelta(2, 'd'))
@@ -127,6 +131,7 @@ def test_cfm_no_cutoff_time_index(entityset):
     agg_feat4 = Sum(agg_feat, es['customers'])
     dfeat = DirectFeature(agg_feat4, es['sessions'])
     feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
+                                              entityset,
                                               instance_ids=[0, 2],
                                               cutoff_time_in_index=False,
                                               approximate=Timedelta(12, 's'),
@@ -137,6 +142,7 @@ def test_cfm_no_cutoff_time_index(entityset):
     assert feature_matrix[dfeat.get_name()].tolist() == [10, 10]
     assert feature_matrix[agg_feat.get_name()].tolist() == [5, 1]
     feature_matrix_2 = calculate_feature_matrix([dfeat, agg_feat],
+                                                entityset,
                                                 instance_ids=[0, 2],
                                                 cutoff_time_in_index=False,
                                                 approximate=Timedelta(10, 's'),
@@ -163,6 +169,7 @@ def test_saveprogress(entityset):
         for file_path in os.listdir(save_progress):
             os.remove(os.path.join(save_progress, file_path))
     fm_save = calculate_feature_matrix([property_feature],
+                                        entityset,
                                        instance_ids=range(17),
                                        cutoff_time=times,
                                        save_progress=save_progress)
@@ -177,6 +184,7 @@ def test_saveprogress(entityset):
     merged_df = pd.concat(list_df)
     merged_df.set_index(pd.DatetimeIndex(times, append=True, inplace=True))
     fm_no_save = calculate_feature_matrix([property_feature],
+                                            entityset,
                                           instance_ids=range(17),
                                           cutoff_time=times)
     assert np.all((merged_df.sort_index().values) == (fm_save.sort_index().values))
@@ -187,7 +195,8 @@ def test_saveprogress(entityset):
 
 def test_cutoff_time_correctly(entityset):
     property_feature = Count(entityset['log']['id'], entityset['customers'])
-    feature_matrix = calculate_feature_matrix([property_feature], instance_ids=[0, 1, 2],
+    feature_matrix = calculate_feature_matrix([property_feature],
+                                                entityset,instance_ids=[0, 1, 2],
                                               cutoff_time=[datetime(2011, 4, 10), datetime(2011, 4, 11),
                                                            datetime(2011, 4, 7)])
     labels = [0, 10, 5]
@@ -227,6 +236,7 @@ def test_training_window(entityset):
 
     # for now, warns if last_time_index not present
     feature_matrix = calculate_feature_matrix([property_feature, dagg],
+                                                entityset,
                                               instance_ids=[0, 1, 2],
                                               cutoff_time=[datetime(2011, 4, 9, 12, 31),
                                                            datetime(2011, 4, 10, 11),
@@ -237,6 +247,7 @@ def test_training_window(entityset):
 
     with pytest.raises(AssertionError):
         feature_matrix = calculate_feature_matrix([property_feature],
+                                                    entityset,
                                                   instance_ids=[0, 1, 2],
                                                   cutoff_time=[datetime(2011, 4, 9, 12, 31),
                                                                datetime(2011, 4, 10, 11),
@@ -244,6 +255,7 @@ def test_training_window(entityset):
                                                   training_window=Timedelta(2, 'observations', entity='log'))
 
     feature_matrix = calculate_feature_matrix([property_feature, dagg],
+                                                entityset,
                                               instance_ids=[0, 1, 2, 4],
                                               cutoff_time=[datetime(2011, 4, 9, 12, 31),
                                                            datetime(2011, 4, 10, 11),
@@ -283,6 +295,7 @@ def test_training_window_recent_time_index(entityset):
 
     feature_matrix = calculate_feature_matrix(
         [property_feature, dagg],
+        entityset,
         instance_ids=[0, 1, 2, 3],
         cutoff_time=[datetime(2011, 4, 9, 12, 31),
                      datetime(2011, 4, 10, 11),
@@ -304,6 +317,7 @@ def test_approximate_multiple_instances_per_cutoff_time(entityset):
     dfeat = DirectFeature(agg_feat2, es['sessions'])
 
     feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
+                                                entityset,
                                               instance_ids=[0, 2],
                                               approximate=Timedelta(1, 'week'),
                                               cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
@@ -321,6 +335,7 @@ def test_approximate_dfeat_of_agg_on_target(entityset):
     dfeat = DirectFeature(agg_feat2, es['sessions'])
 
     feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
+                                                entityset,
                                               instance_ids=[0, 2],
                                               approximate=Timedelta(10, 's'),
                                               cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
@@ -337,6 +352,7 @@ def test_approximate_dfeat_of_need_all_values(entityset):
     dfeat = DirectFeature(agg_feat2, es['sessions'])
 
     feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
+                                                entityset,
                                               instance_ids=[0, 2],
                                               approximate=Timedelta(10, 's'),
                                               cutoff_time_in_index=True,
@@ -378,6 +394,7 @@ def test_uses_full_entity_feat_of_approximate(entityset):
 
     feature_matrix_only_dfeat2 = calculate_feature_matrix(
         [dfeat2],
+        entityset,
         instance_ids=[0, 2],
         approximate=Timedelta(10, 's'),
         cutoff_time_in_index=True,
@@ -387,6 +404,7 @@ def test_uses_full_entity_feat_of_approximate(entityset):
 
     feature_matrix_approx = calculate_feature_matrix(
         [p, dfeat, dfeat2, agg_feat],
+        entityset,
         instance_ids=[0, 2],
         approximate=Timedelta(10, 's'),
         cutoff_time_in_index=True,
@@ -396,6 +414,7 @@ def test_uses_full_entity_feat_of_approximate(entityset):
 
     feature_matrix_small_approx = calculate_feature_matrix(
         [p, dfeat, dfeat2, agg_feat],
+        entityset,
         instance_ids=[0, 2],
         approximate=Timedelta(10, 'ms'),
         cutoff_time_in_index=True,
@@ -404,6 +423,7 @@ def test_uses_full_entity_feat_of_approximate(entityset):
 
     feature_matrix_no_approx = calculate_feature_matrix(
         [p, dfeat, dfeat2, agg_feat],
+        entityset,
         instance_ids=[0, 2],
         cutoff_time_in_index=True,
         cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
@@ -422,6 +442,7 @@ def test_approximate_dfeat_of_dfeat_of_agg_on_target(entityset):
     dfeat = DirectFeature(agg_feat2, es['log'])
 
     feature_matrix = calculate_feature_matrix([dfeat],
+                                                entityset,
                                               instance_ids=[0, 2],
                                               approximate=Timedelta(10, 's'),
                                               cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
@@ -437,6 +458,7 @@ def test_empty_path_approximate_full(entityset):
     dfeat = DirectFeature(agg_feat2, es['sessions'])
 
     feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
+                                              es,
                                               instance_ids=[0, 2],
                                               approximate=Timedelta(10, 's'),
                                               cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
@@ -455,6 +477,7 @@ def test_empty_path_approximate_partial(entityset):
     dfeat = DirectFeature(agg_feat2, es['sessions'])
 
     feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
+                                              es,
                                               instance_ids=[0, 2],
                                               approximate=Timedelta(10, 's'),
                                               cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
@@ -475,6 +498,7 @@ def test_approx_base_feature_is_also_first_class_feature(entityset):
     sess_to_cust = DirectFeature(customer_agg_feat, es['sessions'])
 
     feature_matrix = calculate_feature_matrix([sess_to_cust, agg_feat],
+                                                entityset,
                                               instance_ids=[0, 2],
                                               approximate=Timedelta(10, 's'),
                                               cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
@@ -496,6 +520,7 @@ def test_approximate_time_split_returns_the_same_result(entityset):
                               'instance_id': [0, 0]})
 
     feature_matrix_at_once = calculate_feature_matrix([dfeat, agg_feat],
+                                                        entityset,
                                                       approximate=Timedelta(10, 's'),
                                                       cutoff_time=cutoff_df)
     divided_matrices = []
@@ -506,6 +531,7 @@ def test_approximate_time_split_returns_the_same_result(entityset):
     separate_cutoff[1].index = [1]
     for ct in separate_cutoff:
         fm = calculate_feature_matrix([dfeat, agg_feat],
+                                        entityset,
                                       approximate=Timedelta(10, 's'),
                                       cutoff_time=ct)
         divided_matrices.append(fm)
@@ -528,6 +554,7 @@ def test_approximate_returns_correct_empty_default_values(entityset):
                               'instance_id': [0, 0]})
 
     fm = calculate_feature_matrix([dfeat],
+                                    entityset,
                                   approximate=Timedelta(10, 's'),
                                   cutoff_time=cutoff_df)
     assert fm[dfeat.get_name()].tolist() == [0, 10]
@@ -545,6 +572,7 @@ def test_approximate_returns_correct_empty_default_values(entityset):
     # agg_feat4 = Sum(dfeat3, es['sessions'])
 
     # feature_matrix = calculate_feature_matrix([dfeat2, agg_feat4],
+    #   entityset,
     #                                          instance_ids=[0, 2],
     #                                          approximate=Timedelta(10, 's'),
     #                                          cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
@@ -562,9 +590,11 @@ def test_approximate_child_aggs_handled_correctly(entityset):
                               'instance_id': [0, 0]})
 
     fm = calculate_feature_matrix([dfeat],
+                                   entityset,
                                   approximate=Timedelta(10, 's'),
                                   cutoff_time=cutoff_df)
     fm_2 = calculate_feature_matrix([dfeat, agg_feat_2],
+                                    entityset,
                                     approximate=Timedelta(10, 's'),
                                     cutoff_time=cutoff_df)
     assert fm[dfeat.get_name()].tolist() == [2, 3]
@@ -584,14 +614,14 @@ def test_cutoff_time_naming(entityset):
     cutoff_df_index_name_time_name = cutoff_df.rename(columns={"instance_id": "id", "time": "cutoff_time"})
     cutoff_df_wrong_index_name = cutoff_df.rename(columns={"instance_id": "wrong_id"})
 
-    fm1 = calculate_feature_matrix([dfeat], cutoff_time=cutoff_df)
+    fm1 = calculate_feature_matrix([dfeat], entityset, cutoff_time=cutoff_df)
     for test_cutoff in [cutoff_df_index_name, cutoff_df_time_name, cutoff_df_index_name_time_name]:
-        fm2 = calculate_feature_matrix([dfeat], cutoff_time=test_cutoff)
+        fm2 = calculate_feature_matrix([dfeat], entityset, cutoff_time=test_cutoff)
 
         assert all((fm1 == fm2.values).values)
 
     with pytest.raises(AttributeError):
-        calculate_feature_matrix([dfeat], cutoff_time=cutoff_df_wrong_index_name)
+        calculate_feature_matrix([dfeat], entityset, cutoff_time=cutoff_df_wrong_index_name)
 
 
 def test_cutoff_time_extra_columns(entityset):
@@ -606,7 +636,7 @@ def test_cutoff_time_extra_columns(entityset):
                               'instance_id': [0, 1, 0],
                               'label': [True, True, False]},
                              columns=['time', 'instance_id', 'label'])
-    fm = calculate_feature_matrix([dfeat], cutoff_time=cutoff_df)
+    fm = calculate_feature_matrix([dfeat], entityset, cutoff_time=cutoff_df)
     # check column was added to end of matrix
     assert 'label' == fm.columns[-1]
     # check column was sorted by time labelike the rest of the feature matrix
@@ -614,6 +644,7 @@ def test_cutoff_time_extra_columns(entityset):
     assert (fm['label'] == true_series).all()
 
     fm_2 = calculate_feature_matrix([dfeat],
+                                    entityset,
                                     cutoff_time=cutoff_df,
                                     approximate="2 days")
     # check column was added to end of matrix
@@ -636,7 +667,8 @@ def test_cfm_returns_original_time_indexes(entityset):
     sorted_df = cutoff_df.sort_values(['time', 'instance_id'], kind='mergesort')
 
     # no approximate
-    fm = calculate_feature_matrix([dfeat], cutoff_time=cutoff_df,
+    fm = calculate_feature_matrix([dfeat],
+                                  entityset, cutoff_time=cutoff_df,
                                   cutoff_time_in_index=True)
     instance_level_vals = fm.index.get_level_values(0).values
     time_level_vals = fm.index.get_level_values(1).values
@@ -644,7 +676,7 @@ def test_cfm_returns_original_time_indexes(entityset):
     assert (time_level_vals == sorted_df['time'].values).all()
 
     # approximate, in different windows, no unapproximated aggs
-    fm2 = calculate_feature_matrix([dfeat], cutoff_time=cutoff_df,
+    fm2 = calculate_feature_matrix([dfeat], entityset, cutoff_time=cutoff_df,
                                    cutoff_time_in_index=True, approximate="1 m")
     instance_level_vals = fm2.index.get_level_values(0).values
     time_level_vals = fm2.index.get_level_values(1).values
@@ -652,7 +684,7 @@ def test_cfm_returns_original_time_indexes(entityset):
     assert (time_level_vals == sorted_df['time'].values).all()
 
     # approximate, in different windows, unapproximated aggs
-    fm2 = calculate_feature_matrix([dfeat, agg_feat_2], cutoff_time=cutoff_df,
+    fm2 = calculate_feature_matrix([dfeat, agg_feat_2], entityset, cutoff_time=cutoff_df,
                                    cutoff_time_in_index=True, approximate="1 m")
     instance_level_vals = fm2.index.get_level_values(0).values
     time_level_vals = fm2.index.get_level_values(1).values
@@ -660,7 +692,7 @@ def test_cfm_returns_original_time_indexes(entityset):
     assert (time_level_vals == sorted_df['time'].values).all()
 
     # approximate, in same window, no unapproximated aggs
-    fm3 = calculate_feature_matrix([dfeat], cutoff_time=cutoff_df,
+    fm3 = calculate_feature_matrix([dfeat], entityset, cutoff_time=cutoff_df,
                                    cutoff_time_in_index=True, approximate="2 d")
     instance_level_vals = fm3.index.get_level_values(0).values
     time_level_vals = fm3.index.get_level_values(1).values
@@ -668,7 +700,7 @@ def test_cfm_returns_original_time_indexes(entityset):
     assert (time_level_vals == sorted_df['time'].values).all()
 
     # approximate, in same window, unapproximated aggs
-    fm3 = calculate_feature_matrix([dfeat, agg_feat_2], cutoff_time=cutoff_df,
+    fm3 = calculate_feature_matrix([dfeat, agg_feat_2], entityset, cutoff_time=cutoff_df,
                                    cutoff_time_in_index=True, approximate="2 d")
     instance_level_vals = fm3.index.get_level_values(0).values
     time_level_vals = fm3.index.get_level_values(1).values
@@ -752,6 +784,7 @@ def test_verbose_cutoff_time_chunks(entityset):
     property_feature = IdentityFeature(entityset['log']['value']) > 10
 
     feature_matrix = calculate_feature_matrix([property_feature],
+                                              entityset,
                                               instance_ids=range(17),
                                               cutoff_time=times,
                                               chunk_size="cutoff time",
@@ -767,6 +800,7 @@ def test_integer_time_index(int_es):
     property_feature = IdentityFeature(int_es['log']['value']) > 10
 
     feature_matrix = calculate_feature_matrix([property_feature],
+                                              int_es,
                                               cutoff_time=cutoff_df,
                                               cutoff_time_in_index=True)
 
@@ -783,6 +817,7 @@ def test_integer_time_index_datetime_cutoffs(int_es):
 
     with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
+                                 int_es,
                                  cutoff_time=cutoff_df,
                                  cutoff_time_in_index=True)
 
@@ -798,6 +833,7 @@ def test_integer_time_index_passes_extra_columns(int_es):
     property_feature = IdentityFeature(int_es['log']['value']) > 10
 
     fm = calculate_feature_matrix([property_feature],
+                                  int_es,
                                   cutoff_time=cutoff_df,
                                   cutoff_time_in_index=True)
 
@@ -816,18 +852,21 @@ def test_integer_time_index_mixed_cutoff(int_es):
 
     with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
+                                 int_es,
                                  cutoff_time=cutoff_df)
 
     times_str = list(range(8, 17)) + ["foobar", 19, 20, 21, 22, 25, 24, 23]
     cutoff_df['time'] = times_str
     with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
+                                 int_es,
                                  cutoff_time=cutoff_df)
 
     times_date_str = list(range(8, 17)) + ['2018-04-02', 19, 20, 21, 22, 25, 24, 23]
     cutoff_df['time'] = times_date_str
     with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
+                                 int_es,
                                  cutoff_time=cutoff_df)
 
     [19, 20, 21, 22]
@@ -836,6 +875,7 @@ def test_integer_time_index_mixed_cutoff(int_es):
     cutoff_df['time'] = times_int_str
     with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
+                                 int_es,
                                  cutoff_time=cutoff_df)
 
 
@@ -856,23 +896,27 @@ def test_datetime_index_mixed_cutoff(entityset):
 
     with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
+                                 entityset,
                                  cutoff_time=cutoff_df)
 
     times[9] = "foobar"
     cutoff_df['time'] = times
     with pytest.raises(ValueError):
         calculate_feature_matrix([property_feature],
+                                 entityset,
                                  cutoff_time=cutoff_df)
 
     cutoff_df['time'].iloc[9] = '2018-04-02 18:50:45.453216'
     with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
+                                 entityset,
                                  cutoff_time=cutoff_df)
 
     times[9] = '17'
     cutoff_df['time'] = times
     with pytest.raises(ValueError):
         calculate_feature_matrix([property_feature],
+                                 entityset,
                                  cutoff_time=cutoff_df)
 
 
@@ -882,4 +926,4 @@ def test_string_time_values_in_cutoff_time(entityset):
     agg_feature = Sum(entityset['log']['value'], entityset['customers'])
 
     with pytest.raises(ValueError):
-        calculate_feature_matrix([agg_feature], cutoff_time=cutoff_time)
+        calculate_feature_matrix([agg_feature], entityset, cutoff_time=cutoff_time)

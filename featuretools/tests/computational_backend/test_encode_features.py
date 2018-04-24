@@ -19,7 +19,7 @@ def test_encodes_features(entityset):
     f3 = IdentityFeature(entityset["log"]["value"])
 
     features = [f1, f2, f3]
-    feature_matrix = calculate_feature_matrix(features, instance_ids=[0, 1, 2, 3, 4, 5])
+    feature_matrix = calculate_feature_matrix(features, entityset, instance_ids=[0, 1, 2, 3, 4, 5])
 
     feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features)
     assert len(features_encoded) == 6
@@ -36,7 +36,7 @@ def test_inplace_encodes_features(entityset):
     f1 = IdentityFeature(entityset["log"]["product_id"])
 
     features = [f1]
-    feature_matrix = calculate_feature_matrix(features, instance_ids=[0, 1, 2, 3, 4, 5])
+    feature_matrix = calculate_feature_matrix(features, entityset, instance_ids=[0, 1, 2, 3, 4, 5])
 
     feature_matrix_shape = feature_matrix.shape
     feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features)
@@ -53,7 +53,7 @@ def test_to_encode_features(entityset):
     f2 = IdentityFeature(entityset["log"]["value"])
 
     features = [f1, f2]
-    feature_matrix = calculate_feature_matrix(features, instance_ids=[0, 1, 2, 3, 4, 5])
+    feature_matrix = calculate_feature_matrix(features, entityset, instance_ids=[0, 1, 2, 3, 4, 5])
 
     feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features)
     feature_matrix_encoded_shape = feature_matrix_encoded.shape
@@ -77,7 +77,7 @@ def test_encode_features_handles_pass_columns(entityset):
                                 'time': entityset['log'].df['datetime'][0:6],
                                 'label': [i % 2 for i in range(6)]},
                                columns=["instance_id", "time", "label"])
-    feature_matrix = calculate_feature_matrix(features, cutoff_time)
+    feature_matrix = calculate_feature_matrix(features, entityset, cutoff_time)
 
     assert 'label' in feature_matrix.columns
 
@@ -106,7 +106,7 @@ def test_encode_features_catches_features_mismatch(entityset):
                                 'time': entityset['log'].df['datetime'][0:6],
                                 'label': [i % 2 for i in range(6)]},
                                columns=["instance_id", "time", "label"])
-    feature_matrix = calculate_feature_matrix(features, cutoff_time)
+    feature_matrix = calculate_feature_matrix(features, entityset, cutoff_time)
 
     assert 'label' in feature_matrix.columns
 

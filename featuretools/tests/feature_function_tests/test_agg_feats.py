@@ -253,12 +253,12 @@ def test_init_and_name(es):
 
                 # try to get name and calculate
                 instance.get_name()
-                instance.head()
 
 
 def test_time_since_last(es):
     f = TimeSinceLast(es["log"]["datetime"], es["customers"])
     fm = calculate_feature_matrix([f],
+                                  entityset=es,
                                   instance_ids=[0, 1, 2],
                                   cutoff_time=datetime(2015, 6, 8))
 
@@ -270,6 +270,7 @@ def test_time_since_last(es):
 def test_median(es):
     f = Median(es["log"]["value_many_nans"], es["customers"])
     fm = calculate_feature_matrix([f],
+                                  entityset=es,
                                   instance_ids=[0, 1, 2],
                                   cutoff_time=datetime(2015, 6, 8))
 
@@ -289,6 +290,7 @@ def test_time_since_last_custom(es):
                                        uses_calc_time=True)
     f = TimeSinceLast(es["log"]["datetime"], es["customers"])
     fm = calculate_feature_matrix([f],
+                                  entityset=es,
                                   instance_ids=[0, 1, 2],
                                   cutoff_time=datetime(2015, 6, 8))
 
@@ -315,6 +317,7 @@ def test_custom_primitive_time_as_arg(es):
     assert TimeSinceLast.name == "time_since_last"
     f = TimeSinceLast(es["log"]["datetime"], es["customers"])
     fm = calculate_feature_matrix([f],
+                                  entityset=es,
                                   instance_ids=[0, 1, 2],
                                   cutoff_time=datetime(2015, 6, 8))
 

@@ -1043,7 +1043,6 @@ def test_init_and_name(es):
 
             # try to get name and calculate
             instance.get_name()
-            instance.head()
 
 
 def test_percentile(es):

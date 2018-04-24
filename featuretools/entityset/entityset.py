@@ -81,9 +81,21 @@ class EntitySet(BaseEntitySet):
             child_variable = self[relationship[2]][relationship[3]]
             self.add_relationship(Relationship(parent_variable,
                                                child_variable))
+        self._metadata = None
 
     @property
     def metadata(self):
+        if self._metadata is None:
+            self._metadata = self._gen_metadata()
+        else:
+            new_metadata = self._gen_metadata()
+            # Don't want to keep making new copies of metadata
+            # Only make a new one if something was changed
+            if self._metadata != new_metadata:
+                self._metadata = new_metadata
+        return self._metadata
+
+    def _gen_metadata(self):
         new_entityset = object.__new__(EntitySet)
         new_entityset_dict = {}
         for k, v in self.__dict__.items():
@@ -100,6 +112,8 @@ class EntitySet(BaseEntitySet):
         new_entityset.__dict__ = copy.deepcopy(new_entityset_dict)
         for e in new_entityset.entity_stores.values():
             e.entityset = new_entityset
+            for v in e.variables:
+                v.entity = new_entityset[v.entity_id]
         for r in new_entityset.relationships:
             r.entityset = new_entityset
         return new_entityset
@@ -108,13 +122,15 @@ class EntitySet(BaseEntitySet):
     def entity_metadata(cls, e):
         new_dict = {}
         for k, v in e.__dict__.items():
-            if k not in ["data", "entityset"]:
+            if k not in ["data", "entityset", "variables"]:
                 new_dict[k] = v
         new_dict["data"] = {
             "df": e.df[0:0],
             "last_time_index": None,
             "indexed_by": {}
         }
+        new_dict["variables"] = [cls.variable_metadata(v)
+                                 for v in e.variables]
         new_dict = copy.deepcopy(new_dict)
         new_entity = object.__new__(Entity)
         new_entity.__dict__ = new_dict
@@ -130,6 +146,17 @@ class EntitySet(BaseEntitySet):
         new_r = object.__new__(Relationship)
         new_r.__dict__ = new_dict
         return new_r
+
+    @classmethod
+    def variable_metadata(cls, var):
+        new_dict = {}
+        for k, v in var.__dict__.items():
+            if k != "entity":
+                new_dict[k] = v
+        new_dict = copy.deepcopy(new_dict)
+        new_v = object.__new__(type(var))
+        new_v.__dict__ = new_dict
+        return new_v
 
 
     @property
@@ -267,7 +294,6 @@ class EntitySet(BaseEntitySet):
                 # If we've already seen this child, this is a diamond graph and
                 # we don't know what to do
                 if child_eid in eframes:
-                    import pdb; pdb.set_trace()
                     raise RuntimeError('Diamond graph detected!')
 
                 # Add this child's children to the queue
