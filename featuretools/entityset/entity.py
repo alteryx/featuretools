@@ -57,16 +57,41 @@ class Entity(BaseEntity):
 
         """
         assert len(df.columns) == len(set(df.columns)), "Duplicate column names"
-        self.df = df
+        self.data = {"df": df,
+                     "last_time_index": last_time_index,
+                     "indexed_by": {}
+                     }
         self.encoding = encoding
-        self.indexed_by = {}
         self._verbose = verbose
         self.created_index = created_index
         self.convert_variable_types(variable_types)
         self.attempt_cast_index_to_int(index)
-        self.last_time_index = last_time_index
         super(Entity, self).__init__(id, entityset, variable_types, name, index,
                                      time_index, secondary_time_index, relationships, already_sorted)
+
+    @property
+    def df(self):
+        return self.data["df"]
+
+    @df.setter
+    def df(self, _df):
+        self.data["df"] = _df
+
+    @property
+    def last_time_index(self):
+        return self.data["last_time_index"]
+
+    @last_time_index.setter
+    def last_time_index(self, lti):
+        self.data["last_time_index"] = lti
+
+    @property
+    def indexed_by(self):
+        return self.data["indexed_by"]
+
+    @indexed_by.setter
+    def indexed_by(self, idx):
+        self.data["indexed_by"] = idx
 
     def attempt_cast_index_to_int(self, index_var):
         dtype_name = self.df[index_var].dtype.name
@@ -577,9 +602,6 @@ class Entity(BaseEntity):
                                     (self.id, time_type))
 
         super(Entity, self).set_secondary_time_index(secondary_time_index)
-
-    def set_last_time_index(self, last_time_index):
-        self.last_time_index = last_time_index
 
     def _vals_to_series(self, instance_vals, variable_id):
         """

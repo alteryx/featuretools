@@ -906,7 +906,7 @@ class EntitySet(BaseEntitySet):
         queue = self.entities[:]
 
         for entity in self.entities:
-            entity.set_last_time_index(None)
+            entity.last_time_index = None
 
         while len(explored) < len(self.entities):
             entity = queue.pop(0)
@@ -917,7 +917,7 @@ class EntitySet(BaseEntitySet):
                 else:
                     lti = entity.df[entity.index].copy()
                     lti[:] = None
-                entity.set_last_time_index(lti)
+                entity.last_time_index = lti
 
             if entity.id in children:
                 child_entities = children[entity.id]
