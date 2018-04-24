@@ -69,25 +69,25 @@ class Entity(BaseEntity):
         super(Entity, self).__init__(id, entityset, variable_types, name, index,
                                      time_index, secondary_time_index, relationships, already_sorted)
 
-    @property
-    def metadata(self):
-        new_dict = {}
-        for k, v in self.__dict__.items():
-            if k != "data":
-                new_dict[k] = v
-        new_dict["data"] = {
-            "df": self.df[0:0],
-            "last_time_index": None,
-            "indexed_by": {}
-        }
-        new_dict = copy.deepcopy(new_dict)
-        new_entity = object.__new__(Entity)
-        new_entity.__dict__ = new_dict
-        return new_entity
+    # @property
+    # def metadata(self):
+        # new_dict = {}
+        # for k, v in self.__dict__.items():
+            # if k != "data":
+                # new_dict[k] = v
+        # new_dict["data"] = {
+            # "df": self.df[0:0],
+            # "last_time_index": None,
+            # "indexed_by": {}
+        # }
+        # new_dict = copy.deepcopy(new_dict)
+        # new_entity = object.__new__(Entity)
+        # new_entity.__dict__ = new_dict
+        # return new_entity
 
     @property
     def is_metadata(self):
-        return self.df.empty
+        return self.entityset.is_metadata
 
 
     @property

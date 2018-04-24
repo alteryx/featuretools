@@ -111,12 +111,12 @@ class BaseEntity(FTBase):
             if not isinstance(other, self.__class__):
                 return False
             if not self.is_metadata:
-                self_to_compare = self.metadata
+                self_to_compare = self.entityset.metadata[self.id]
             if not other.is_metadata:
-                other = other.metadata
-            return Entity.compare_entities(self_to_compare, other)
+                other = other.entityset.metadata[self.id]
+            return BaseEntity.compare_entities(self_to_compare, other)
         else:
-            return Entity.compare_entities(self, other)
+            return BaseEntity.compare_entities(self, other)
 
     @classmethod
     def compare_entities(cls, e1, e2):
@@ -152,11 +152,33 @@ class BaseEntity(FTBase):
             return False
         elif e1.last_time_index is not None and e2.last_time_index is None:
             return False
-        elif not e1.last_time_index.equals(e2.last_time_index):
-            return False
+        elif not e1.last_time_index is not None and e2.last_time_index is not None:
+            if not e1.last_time_index.equals(e2.last_time_index):
+                return False
 
-        if not e1.df.equals(e2.df):
+        if e1.df.empty and not e2.df.empty:
             return False
+        elif not e1.df.empty and e2.df.empty:
+            return False
+        elif not e1.df.empty and not e2.df.empty:
+            for c in e1.df:
+                normal_compare = True
+                if e1.df[c].dtype == object:
+                    dropped = e1.df[c].dropna()
+                    if not dropped.empty:
+                        if isinstance(dropped.iloc[0], tuple):
+                            dropped2 = e2.df[c].dropna()
+                            normal_compare = False
+                            for i in range(len(dropped.iloc[0])):
+                                try:
+                                    equal = dropped.apply(lambda x: x[i]).equals(
+                                        dropped2.apply(lambda x: x[i]))
+                                except IndexError:
+                                    raise IndexError("If column data are tuples, they must all be the same length")
+                                if not equal:
+                                    return False
+                if normal_compare and not e1.df[c].equals(e2.df[c]):
+                    return False
         return True
 
     def __hash__(self):

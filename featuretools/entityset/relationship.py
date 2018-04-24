@@ -18,9 +18,9 @@ class Relationship(FTBase):
                 child entity.  Must be a Discrete Variable
 
         """
-        self.parent_entity = child_variable.entity.metadata
+
+        self.entityset = child_variable.entityset
         self._parent_entity_id = parent_variable.entity.id
-        self.child_entity = child_variable.entity.metadata
         self._child_entity_id = child_variable.entity.id
         self._parent_variable_id = parent_variable.id
         self._child_variable_id = child_variable.id
@@ -42,6 +42,16 @@ class Relationship(FTBase):
             self._child_entity_id == other._child_entity_id and \
             self._parent_variable_id == other._parent_variable_id and \
             self._child_variable_id == other._child_variable_id
+
+    @property
+    def parent_entity(self):
+        """Parent entity object"""
+        return self.entityset[self._parent_entity_id]
+
+    @property
+    def child_entity(self):
+        """Child entity object"""
+        return self.entityset[self._child_entity_id]
 
     @property
     def parent_variable(self):

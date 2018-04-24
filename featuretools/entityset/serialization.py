@@ -3,6 +3,9 @@ import os
 import shutil
 from tempfile import mkdtemp
 
+import numpy as np
+import uuid
+
 from pandas import Timestamp, read_csv
 from pandas.io.pickle import read_pickle as pd_read_pickle
 from pandas.io.pickle import to_pickle as pd_to_pickle
@@ -41,15 +44,29 @@ def to_pickle(entityset, path):
         entity_path = os.path.join(temp_dir, e_id)
         filename = e_id + '.csv'
         os.mkdir(entity_path)
-        entity_store.df.to_csv(os.path.join(entity_path, filename),
-                               index=False,
-                               encoding=entity_store.encoding,
-                               compression='gzip')
+        df = entity_store.df.copy(deep=False)
+        datatypes = {'dtype': {}, 'parse_dates': [], 'to_join': {}}
+        for c in df:
+            if df[c].dtype == object:
+                dropped = df[c].dropna()
+                if not dropped.empty and isinstance(dropped.iloc[0], tuple):
+                    datatypes['to_join'][c] = []
+                    # Assume all tuples are of same length
+                    for i in range(len(dropped.iloc[0])):
+                        new_name = str(uuid.uuid1())
+                        df[new_name] = np.nan
+                        df.loc[dropped.index, new_name] = dropped.apply(lambda x: x[i])
+                        datatypes['to_join'][c].append(new_name)
+                    del df[c]
+        df.to_csv(os.path.join(entity_path, filename),
+                  index=False,
+                  encoding=entity_store.encoding,
+                  compression='gzip')
         entity_sizes[e_id] = \
             os.stat(os.path.join(entity_path, filename)).st_size
-        datatypes = {'dtype': {}, 'parse_dates': []}
         for column in entity_store.df.columns:
-            if entity_store.get_column_type(column) in _datetime_types:
+            coltype = entity_store.get_column_type(column)
+            if coltype in _datetime_types:
                 datatypes['parse_dates'].append(column)
             else:
                 datatypes['dtype'][column] = entity_store.df[column].dtype
@@ -101,6 +118,10 @@ def read_pickle(path):
                                    parse_dates=datatypes['parse_dates'],
                                    encoding=entity_store.encoding,
                                    compression='gzip')
+        for c, to_join in datatypes['to_join'].items():
+            entity_store_df[c] = entity_store_df[to_join].apply(tuple, axis=1)
+            entity_store_df.drop(to_join, axis=1, inplace=True)
+
         entity_store_df.set_index(entity_store_df[entity_store.index],
                                   drop=False, inplace=True)
         setattr(entity_store, 'df', entity_store_df)

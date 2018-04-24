@@ -686,12 +686,12 @@ class DeepFeatureSynthesis(object):
             return False
 
         for relationship in relationship_path:
-            if relationship.child_entity == feature.entity and \
-               relationship.child_variable == feature.variable:
+            if relationship.child_entity.id == feature.entity.id and \
+               relationship.child_variable.id == feature.variable.id:
                 return True
 
-            if relationship.parent_entity == feature.entity and \
-               relationship.parent_variable == feature.variable:
+            if relationship.parent_entity.id == feature.entity.id and \
+               relationship.parent_variable.id == feature.variable.id:
                 return True
 
         return False

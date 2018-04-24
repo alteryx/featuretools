@@ -73,7 +73,8 @@ class Variable(FTBase):
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and \
-            self.__dict__ == other.__dict__
+            self.id == other.id and \
+            self.entity_id == other.entity_id
 
     def __repr__(self):
         return "<Variable: {} (dtype = {}, count = {})>".format(self.name, self.dtype, self.count)

@@ -82,17 +82,55 @@ class EntitySet(BaseEntitySet):
             self.add_relationship(Relationship(parent_variable,
                                                child_variable))
 
+    @property
     def metadata(self):
         new_entityset = object.__new__(EntitySet)
         new_entityset_dict = {}
         for k, v in self.__dict__.items():
-            if k != "entity_stores":
+            if k not in ["entity_stores", "relationships"]:
                 new_entityset_dict[k] = v
-            else:
-                new_entityset_dict[k] = {
-                    k: e.metadata for k, e in v.items()}
+        new_entityset_dict["entity_stores"] = {}
+        for eid, e in self.entity_stores.items():
+            metadata_e = self.entity_metadata(e)
+            new_entityset_dict['entity_stores'][eid] = metadata_e
+        new_entityset_dict["relationships"] = []
+        for r in self.relationships:
+            metadata_r = self.relationship_metadata(r)
+            new_entityset_dict['relationships'].append(metadata_r)
         new_entityset.__dict__ = copy.deepcopy(new_entityset_dict)
-        return new_entityset_dict
+        for e in new_entityset.entity_stores.values():
+            e.entityset = new_entityset
+        for r in new_entityset.relationships:
+            r.entityset = new_entityset
+        return new_entityset
+
+    @classmethod
+    def entity_metadata(cls, e):
+        new_dict = {}
+        for k, v in e.__dict__.items():
+            if k not in ["data", "entityset"]:
+                new_dict[k] = v
+        new_dict["data"] = {
+            "df": e.df[0:0],
+            "last_time_index": None,
+            "indexed_by": {}
+        }
+        new_dict = copy.deepcopy(new_dict)
+        new_entity = object.__new__(Entity)
+        new_entity.__dict__ = new_dict
+        return new_entity
+
+    @classmethod
+    def relationship_metadata(cls, r):
+        new_dict = {}
+        for k, v in r.__dict__.items():
+            if k != "entityset":
+                new_dict[k] = v
+        new_dict = copy.deepcopy(new_dict)
+        new_r = object.__new__(Relationship)
+        new_r.__dict__ = new_dict
+        return new_r
+
 
     @property
     def is_metadata(self):
@@ -229,6 +267,7 @@ class EntitySet(BaseEntitySet):
                 # If we've already seen this child, this is a diamond graph and
                 # we don't know what to do
                 if child_eid in eframes:
+                    import pdb; pdb.set_trace()
                     raise RuntimeError('Diamond graph detected!')
 
                 # Add this child's children to the queue
@@ -874,6 +913,14 @@ class EntitySet(BaseEntitySet):
             else:
                 columns = [entity.index]
             combined_df.drop_duplicates(columns, inplace=True)
+
+            # TODO: should this go inside of update_data?
+            # or should we call set_time_index()?
+            to_sort = [entity.index]
+            if entity.time_index:
+                to_sort = [entity.time_index, entity.index]
+            combined_df.sort_values(to_sort, inplace=True)
+
             combined_es[entity.id].update_data(combined_df)
 
         for r in combined_es.relationships:

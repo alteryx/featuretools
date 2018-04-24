@@ -63,9 +63,9 @@ class BaseEntitySet(FTBase):
                 self_to_compare = self.metadata
             if not other.is_metadata:
                 other = other.metadata
-            return EntitySet.compare_entitysets(self_to_compare, other)
+            return BaseEntitySet.compare_entitysets(self_to_compare, other)
         else:
-            return EntitySet.compare_entitysets(self, other)
+            return BaseEntitySet.compare_entitysets(self, other)
 
     @classmethod
     def compare_entitysets(cls, es1, es2):
@@ -74,7 +74,7 @@ class BaseEntitySet(FTBase):
         for eid, e in es1.entity_stores.items():
             if eid not in es2.entity_stores:
                 return False
-            if not Entity.compare_entities(e, other[eid]):
+            if not e.compare_entities(e, es2[eid]):
                 return False
         for r in es2.relationships:
             if r not in es2.relationships:
