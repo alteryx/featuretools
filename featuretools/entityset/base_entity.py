@@ -106,38 +106,58 @@ class BaseEntity(FTBase):
         return self.get_shape()
 
     def __eq__(self, other, deep=False):
+        self_to_compare = self
         if not deep:
-            if isinstance(other, self.__class__):
-                return self.id == other.id
+            if not isinstance(other, self.__class__):
+                return False
+            if not self.is_metadata:
+                self_to_compare = self.metadata
+            if not other.is_metadata:
+                other = other.metadata
+            return Entity.compare_entities(self_to_compare, other)
+        else:
+            return Entity.compare_entities(self, other)
+
+    @classmethod
+    def compare_entities(cls, e1, e2):
+        if e1.index != e2.index:
+            return False
+        if e1.time_index != e2.time_index:
+            return False
+        if e1.secondary_time_index != e2.secondary_time_index:
+            return False
+        if len(e1.variables) != len(e2.variables):
+            return False
+        for v in e1.variables:
+            if v not in e2.variables:
+                return False
+        if e1.indexed_by is None and e2.indexed_by is not None:
+            return False
+        elif e1.indexed_by is not None and e2.indexed_by is None:
             return False
         else:
-            if self.index != other.index:
-                return False
-            if self.time_index != other.time_index:
-                return False
-            if self.secondary_time_index != other.secondary_time_index:
-                return False
-            if len(self.variables) != len(other.variables):
-                return False
-            for v in self.variables:
-                if v not in other.variables:
+            for v, index_map in e1.indexed_by.items():
+                if v not in e2.indexed_by:
                     return False
-            if self.indexed_by is None and other.indexed_by is not None:
-                return False
-            else:
-                for v, index_map in self.indexed_by.items():
-                    if v not in other.indexed_by:
+                for i, related in index_map.items():
+                    if i not in e2.indexed_by[v]:
                         return False
-                    for i, related in index_map.items():
-                        if i not in other.indexed_by[v]:
-                            return False
-                        # indexed_by maps instances of two entities together by lists
-                        # We want to check that all the elements of the lists of instances
-                        # for each relationship are the same in both entities being
-                        # checked for equality, but don't care about the order.
-                        if not set(related) == set(other.indexed_by[v][i]):
-                            return False
-            return True
+                    # indexed_by maps instances of two entities together by lists
+                    # We want to check that all the elements of the lists of instances
+                    # for each relationship are the same in both entities being
+                    # checked for equality, but don't care about the order.
+                    if not set(related) == set(e2.indexed_by[v][i]):
+                        return False
+        if e1.last_time_index is None and e2.last_time_index is not None:
+            return False
+        elif e1.last_time_index is not None and e2.last_time_index is None:
+            return False
+        elif not e1.last_time_index.equals(e2.last_time_index):
+            return False
+
+        if not e1.df.equals(e2.df):
+            return False
+        return True
 
     def __hash__(self):
         return id(self.id)

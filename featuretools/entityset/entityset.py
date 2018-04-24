@@ -82,6 +82,22 @@ class EntitySet(BaseEntitySet):
             self.add_relationship(Relationship(parent_variable,
                                                child_variable))
 
+    def metadata(self):
+        new_entityset = object.__new__(EntitySet)
+        new_entityset_dict = {}
+        for k, v in self.__dict__.items():
+            if k != "entity_stores":
+                new_entityset_dict[k] = v
+            else:
+                new_entityset_dict[k] = {
+                    k: e.metadata for k, e in v.items()}
+        new_entityset.__dict__ = copy.deepcopy(new_entityset_dict)
+        return new_entityset_dict
+
+    @property
+    def is_metadata(self):
+        return all(e.df.empty for e in self.entity_stores.values())
+
     def normalize(self, normalizer):
         return super(EntitySet, self).normalize(normalizer=normalizer, remove_entityset=False)
 
