@@ -199,6 +199,7 @@ class TimeSincePrevious(TransformPrimitive):
         def pd_diff(base_array, group_array):
             bf_name = 'base_feature'
             groupby = 'groupby'
+            # TODO: move into different PR
             grouped_df = pd.DataFrame.from_dict({bf_name: base_array,
                                                  groupby: group_array})
             grouped_df = grouped_df.groupby(groupby).diff()

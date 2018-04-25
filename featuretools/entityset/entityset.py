@@ -84,6 +84,7 @@ class EntitySet(BaseEntitySet):
         self._metadata = None
 
     @property
+    # TODO add comment about memory
     def metadata(self):
         if self._metadata is None:
             self._metadata = self._gen_metadata()
@@ -118,6 +119,7 @@ class EntitySet(BaseEntitySet):
             r.entityset = new_entityset
         return new_entityset
 
+    # TODO make these private
     @classmethod
     def entity_metadata(cls, e):
         new_dict = {}
@@ -198,6 +200,7 @@ class EntitySet(BaseEntitySet):
         self.entity_stores = full_entities
         return sampled
 
+    # TODO: delete, also from Entity
     def head(self, entity_id=None, n=10, variable_id=None, cutoff_time=None):
         if entity_id is None:
             old_data = {}

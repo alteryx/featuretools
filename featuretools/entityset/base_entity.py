@@ -106,6 +106,7 @@ class BaseEntity(FTBase):
         return self.get_shape()
 
     def __eq__(self, other, deep=False):
+        # TODO move compare entities to __eq__, and if deep then check dataframes
         self_to_compare = self
         if not deep:
             if not isinstance(other, self.__class__):

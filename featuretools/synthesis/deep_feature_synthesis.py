@@ -509,6 +509,7 @@ class DeepFeatureSynthesis(object):
                       if isinstance(f, IdentityFeature)]
 
         for feat in identities:
+            # TODO: add comment
             if entity[feat.variable.id].interesting_values is None:
                 continue
 
