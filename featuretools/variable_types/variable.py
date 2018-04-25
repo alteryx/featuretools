@@ -51,22 +51,6 @@ class Variable(FTBase):
         self._statistics = {stat: None for stat in self._setter_stats}
         self._interesting_values = None
 
-    def __getstate__(self):
-        if hasattr(ft, '_pickling') and ft._pickling:
-            if ft._head_es is None:
-                ft._pickling = False
-                ft._head_es = self.entityset.head(n=10)
-                ft._pickling = True
-            head_entity = ft._head_es[self.entity_id]
-            return {k: v if k != 'entity' else head_entity
-                    for (k, v) in self.__dict__.items()}
-        return self.__dict__
-
-    def __setstate__(self, d):
-        # if hasattr(ft, '_pickling') and ft._pickling:
-            # d['entity'] = ft._current_es[d['entity_id']]
-        self.__dict__ = d
-
     @property
     def entityset(self):
         return self.entity.entityset

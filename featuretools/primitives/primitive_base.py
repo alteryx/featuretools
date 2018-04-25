@@ -134,8 +134,6 @@ class PrimitiveBase(FTBase):
             return IdentityFeature(feature)
         elif isinstance(feature, PrimitiveBase):
             return feature
-        if feature is None:
-            pdb.set_trace()
         raise Exception("Not a feature")
 
     def __repr__(self):

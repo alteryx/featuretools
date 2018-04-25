@@ -509,10 +509,10 @@ class DeepFeatureSynthesis(object):
                       if isinstance(f, IdentityFeature)]
 
         for feat in identities:
-            if feat.variable.interesting_values is None:
+            if entity[feat.variable.id].interesting_values is None:
                 continue
 
-            for val in feat.variable.interesting_values:
+            for val in entity[feat.variable.id].interesting_values:
                 self.where_clauses[entity.id].add(Equals(feat, val))
 
     def _build_transform_features(self, all_features, entity, max_depth=0):
