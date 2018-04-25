@@ -4,7 +4,6 @@ from builtins import object
 
 from past.builtins import basestring
 
-import featuretools as ft
 from featuretools.core.base import FTBase
 
 COMMON_STATISTICS = ["count"]
