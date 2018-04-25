@@ -169,41 +169,6 @@ class Entity(BaseEntity):
 
         return False
 
-    def head(self, n=10, cutoff_time=None):
-        """See first n instance in entity
-
-        Args:
-            n (int) : Number of instances to return.
-            cutoff_time (pd.Timestamp,pd.DataFrame) : Timestamp(s) to restrict rows.
-
-        Returns:
-            :class:`pd.DataFrame` : A Pandas DataFrame.
-
-        """
-
-        if cutoff_time is None:
-            valid_data = self.df
-
-        elif isinstance(cutoff_time, pd.Timestamp) or \
-                isinstance(cutoff_time, datetime):
-            valid_data = self.df[self.df[self.time_index] < cutoff_time]
-
-        elif isinstance(cutoff_time, pd.DataFrame):
-
-            instance_ids, time = list(cutoff_time)
-
-            # TODO filtering the top n during "isin" would be more efficient
-            valid_data = self.df[
-                self.df[self.index].isin(cutoff_time[instance_ids])]
-            valid_data = valid_data[
-                valid_data[self.time_index] < cutoff_time[time]]
-
-        else:
-            raise ValueError(
-                'cutoff_time must be None, a Datetime, a pd.Timestamp, or a pd.DataFrame')
-
-        return valid_data.head(n)
-
     def get_column_type(self, column_id):
         """ get type of column in underlying data structure """
         return self.df[column_id].dtype.name

@@ -55,29 +55,15 @@ class BaseEntitySet(FTBase):
         self.time_type = None
 
     def __eq__(self, other, deep=False):
-        self_to_compare = self
-        if not deep:
-            if not isinstance(other, type(self)):
-                return False
-            if not self.is_metadata:
-                self_to_compare = self.metadata
-            if not other.is_metadata:
-                other = other.metadata
-            return BaseEntitySet.compare_entitysets(self_to_compare, other)
-        else:
-            return BaseEntitySet.compare_entitysets(self, other)
-
-    @classmethod
-    def compare_entitysets(cls, es1, es2):
-        if len(es1.entity_stores) != len(es2.entity_stores):
+        if len(self.entity_stores) != len(other.entity_stores):
             return False
-        for eid, e in es1.entity_stores.items():
-            if eid not in es2.entity_stores:
+        for eid, e in self.entity_stores.items():
+            if eid not in other.entity_stores:
                 return False
-            if not e.compare_entities(e, es2[eid]):
+            if not e.__eq__(other[eid], deep=deep):
                 return False
-        for r in es2.relationships:
-            if r not in es2.relationships:
+        for r in other.relationships:
+            if r not in other.relationships:
                 return False
         return True
 

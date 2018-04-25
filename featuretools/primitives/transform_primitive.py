@@ -199,19 +199,10 @@ class TimeSincePrevious(TransformPrimitive):
         def pd_diff(base_array, group_array):
             bf_name = 'base_feature'
             groupby = 'groupby'
-            # TODO: move into different PR
             grouped_df = pd.DataFrame.from_dict({bf_name: base_array,
                                                  groupby: group_array})
             grouped_df = grouped_df.groupby(groupby).diff()
-            nonnull = grouped_df[bf_name].notnull()
-            res = grouped_df.loc[nonnull, bf_name].apply(lambda x:
-                                                         x.total_seconds())
-            grouped_df[bf_name] = np.nan
-            grouped_df[bf_name] = grouped_df[bf_name].astype(float)
-            grouped_df.loc[nonnull, bf_name] = pd.to_numeric(res)
-            return grouped_df[bf_name]
-            # return grouped_df[bf_name].apply(lambda x:
-                                             # x.total_seconds())
+            return grouped_df[bf_name].apply(lambda x: x.total_seconds())
         return pd_diff
 
 

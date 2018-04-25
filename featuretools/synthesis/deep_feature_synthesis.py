@@ -509,7 +509,10 @@ class DeepFeatureSynthesis(object):
                       if isinstance(f, IdentityFeature)]
 
         for feat in identities:
-            # TODO: add comment
+            # Get interesting_values from the EntitySet that was passed, which
+            # is assumed to be the most recent version of the EntitySet.
+            # Features can contain a stale EntitySet reference without
+            # interesting_values
             if entity[feat.variable.id].interesting_values is None:
                 continue
 

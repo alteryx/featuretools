@@ -89,11 +89,15 @@ class EntitySet(BaseEntitySet):
         if self._metadata is None:
             self._metadata = self._gen_metadata()
         else:
+            old_metadata = self._metadata
+            self._metadata = None
             new_metadata = self._gen_metadata()
             # Don't want to keep making new copies of metadata
             # Only make a new one if something was changed
-            if self._metadata != new_metadata:
+            if old_metadata != new_metadata:
                 self._metadata = new_metadata
+            else:
+                self._metadata = old_metadata
         return self._metadata
 
     def _gen_metadata(self):
@@ -104,11 +108,11 @@ class EntitySet(BaseEntitySet):
                 new_entityset_dict[k] = v
         new_entityset_dict["entity_stores"] = {}
         for eid, e in self.entity_stores.items():
-            metadata_e = self.entity_metadata(e)
+            metadata_e = self._entity_metadata(e)
             new_entityset_dict['entity_stores'][eid] = metadata_e
         new_entityset_dict["relationships"] = []
         for r in self.relationships:
-            metadata_r = self.relationship_metadata(r)
+            metadata_r = self._relationship_metadata(r)
             new_entityset_dict['relationships'].append(metadata_r)
         new_entityset.__dict__ = copy.deepcopy(new_entityset_dict)
         for e in new_entityset.entity_stores.values():
@@ -121,7 +125,7 @@ class EntitySet(BaseEntitySet):
 
     # TODO make these private
     @classmethod
-    def entity_metadata(cls, e):
+    def _entity_metadata(cls, e):
         new_dict = {}
         for k, v in e.__dict__.items():
             if k not in ["data", "entityset", "variables"]:
@@ -131,7 +135,7 @@ class EntitySet(BaseEntitySet):
             "last_time_index": None,
             "indexed_by": {}
         }
-        new_dict["variables"] = [cls.variable_metadata(v)
+        new_dict["variables"] = [cls._variable_metadata(v)
                                  for v in e.variables]
         new_dict = copy.deepcopy(new_dict)
         new_entity = object.__new__(Entity)
@@ -139,7 +143,7 @@ class EntitySet(BaseEntitySet):
         return new_entity
 
     @classmethod
-    def relationship_metadata(cls, r):
+    def _relationship_metadata(cls, r):
         new_dict = {}
         for k, v in r.__dict__.items():
             if k != "entityset":
@@ -150,7 +154,7 @@ class EntitySet(BaseEntitySet):
         return new_r
 
     @classmethod
-    def variable_metadata(cls, var):
+    def _variable_metadata(cls, var):
         new_dict = {}
         for k, v in var.__dict__.items():
             if k != "entity":
@@ -199,31 +203,6 @@ class EntitySet(BaseEntitySet):
             entity.entityset = sampled
         self.entity_stores = full_entities
         return sampled
-
-    # TODO: delete, also from Entity
-    def head(self, entity_id=None, n=10, variable_id=None, cutoff_time=None):
-        if entity_id is None:
-            old_data = {}
-            old_indexes = {}
-            for eid, e in self.entity_stores.items():
-                old_data[eid] = e.df
-                old_indexes[eid] = e.indexed_by
-                e.df = e.df.head(n)
-                # TODO: deal with indexes
-                e.indexed_by = None
-            head_es = copy.deepcopy(self)
-            for eid, e in self.entity_stores.items():
-                e.df = old_data[eid]
-                e.indexed_by = old_indexes[eid]
-            return head_es
-
-        else:
-            if variable_id is None:
-                return self.entity_stores[entity_id].head(
-                    n, cutoff_time=cutoff_time)
-            else:
-                return self.entity_stores[entity_id].head(
-                    n, cutoff_time=cutoff_time)[variable_id]
 
     def get_instance_data(self, entity_id, instance_ids):
         return self.entity_stores[entity_id].query_by_values(instance_ids)

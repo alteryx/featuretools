@@ -153,22 +153,6 @@ class Variable(FTBase):
         else:
             raise ValueError("Unrecognized variable dtype: {}".format(dtype))
 
-    def head(self, n=10, cutoff_time=None):
-        """See first n instance in variable
-
-        Args:
-            n (int) : Number of instances to return.
-            cutoff_time (pd.Timestamp,pd.DataFrame) : Timestamp(s) to restrict rows.
-
-        Returns:
-            :class:`pd.DataFrame` : Pandas DataFrame
-
-        """
-        series = self.entityset.head(entity_id=self.entity_id,
-                                     n=n, variable_id=self.id,
-                                     cutoff_time=cutoff_time)
-        return series.to_frame()
-
     @property
     def series(self):
         return self.entity.df[self.id]
