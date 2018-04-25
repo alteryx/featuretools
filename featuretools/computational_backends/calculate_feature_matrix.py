@@ -28,7 +28,7 @@ from featuretools.variable_types import NumericTimeIndex
 logger = logging.getLogger('featuretools.computational_backend')
 
 
-def calculate_feature_matrix(features, entityset, cutoff_time=None, instance_ids=None,
+def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instance_ids=None,
                              entities=None, relationships=None,
                              cutoff_time_in_index=False,
                              training_window=None, approximate=None,
@@ -40,7 +40,8 @@ def calculate_feature_matrix(features, entityset, cutoff_time=None, instance_ids
     Args:
         features (list[PrimitiveBase]): Feature definitions to be calculated.
 
-        entityset (EntitySet): An already initialized entityset.
+        entityset (EntitySet): An already initialized entityset. Required if `entities` and `relationships`
+            not provided
 
         cutoff_time (pd.DataFrame or Datetime): Specifies at which time to calculate
             the features for each instance.  Can either be a DataFrame with

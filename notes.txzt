@@ -1,0 +1,21 @@
+perception for manipulation or grasping
+
+way to get pointclouds (like from sensors/images):
+ - lasers (lidar or velodyne), give set of points
+ - stereo matching between 2 or more image frames (like for stuff with texture)
+    * bundle adjustment
+    * stereo matching
+    * structure from motion
+
+end of the day, you get a pointcloud. but that doesn't tell you if its a strawberry
+fusing segmenter/semantic classifier
+can naively paint labels on point cloud, or some way of inroporating that strawberries have a particular shape
+join semantic & geometric estimation (semantic SLAM, semantic structure from motion)
+
+DL segmenter that gives semantic segments over 3D image, fuse with geometric information
+
+Occlusions: still challenging
+Illumination: shade/shadow still challenging
+
+Robotic arm planning (RRT)
+Active sensing/active planning/active perception
