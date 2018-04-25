@@ -41,11 +41,11 @@ Now, we can use :meth:`featuretools.save_features` to save a list features.
 Calculating Feature Matrix for New Data
 ***************************************
 
-We can use :meth:`featuretools.load_features` to read in a list of saved features for our new entity set.
+We can use :meth:`featuretools.load_features` to read in a list of saved features to calculate for our new entity set.
 
 .. ipython:: python
 
-    saved_features = ft.load_features('feature_definitions', es_test)
+    saved_features = ft.load_features('feature_definitions')
 
 .. ipython:: python
     :suppress:
