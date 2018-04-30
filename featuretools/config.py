@@ -71,7 +71,7 @@ def get_featuretools_dir():
 
 
 ftdir = get_featuretools_dir()
-ft_config_path = os.path.join(ftdir, 'config_yaml.txt')
+ft_config_path = os.path.join(ftdir, 'config.yaml')
 csv_save_location = os.path.join(ftdir, 'csv_files')
 
 
