@@ -7,7 +7,7 @@ from warnings import warn
 import yaml
 
 dirname = os.path.dirname(__file__)
-default_path = os.path.join(dirname, 'config_yaml.txt')
+default_path = os.path.join(dirname, 'config.yaml')
 
 
 def _writable_dir(path):
