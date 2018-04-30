@@ -22,7 +22,7 @@ def get_featuretools_dir():
     '''Get the Featuretools directory for this platform and user.
 
     Uses os.path.expanduser('~') and checks for writability .
-    Then adds .ipython to the end of the path.
+    Then adds .featuretools to the end of the path.
 
     Modified from IPython source:
 
