@@ -501,8 +501,12 @@ class Entity(BaseEntity):
         elif new_type == vtypes.Datetime:
             format = kwargs.get("format", None)
             # TODO: if float convert to int?
-            df[column_id] = pd.to_datetime(df[column_id], format=format,
-                                           infer_datetime_format=True)
+            try:
+                df[column_id] = pd.to_datetime(df[column_id], format=format,
+                                               infer_datetime_format=True)
+            except:
+                raise Exception("Cannot convert column %s to %s" %
+                                (column_id, new_type))
         elif new_type == vtypes.Boolean:
             map_dict = {kwargs.get("true_val", True): True,
                         kwargs.get("false_val", False): False,
