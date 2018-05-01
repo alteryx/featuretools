@@ -1,6 +1,7 @@
 import copy
 import os
 import shutil
+import tempfile
 from builtins import range
 from datetime import datetime
 from itertools import combinations
@@ -156,12 +157,7 @@ def test_saveprogress(entityset):
                  [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
                  [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
     property_feature = IdentityFeature(entityset['log']['value']) > 10
-    save_progress = os.path.join(os.path.expanduser('~'), 'ft_temp')
-    if not os.path.exists(save_progress):
-        os.makedirs(save_progress)
-    if len(os.listdir(save_progress)) > 0:
-        for file_path in os.listdir(save_progress):
-            os.remove(os.path.join(save_progress, file_path))
+    save_progress = tempfile.mkdtemp()
     fm_save = calculate_feature_matrix([property_feature],
                                        instance_ids=range(17),
                                        cutoff_time=times,
