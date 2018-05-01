@@ -68,3 +68,8 @@ def test_is_index_column(es):
 
 def test_get_sample(es):
     assert es['customers'].get_sample(3).shape[0] == 3
+
+
+def test_attempt_cast_index_to_int(es):
+    es['customers'].df['id'] = es['customers'].df['id'].astype(np.int32)
+    es['customers'].attempt_cast_index_to_int('id')
