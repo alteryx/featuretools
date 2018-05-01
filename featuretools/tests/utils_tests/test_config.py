@@ -1,7 +1,7 @@
 import os
 import tempfile
 import warnings
-from stat import S_IREAD
+import stat
 
 from featuretools.config import get_featuretools_dir
 
@@ -26,10 +26,14 @@ def test_featuretools_dir_normal():
 
 def test_featuretools_dir_from_os_env_not_writable():
     env = os.environ
-    desired_ftdir = os.path.expanduser('~/new_dir')
-    os.makedirs(desired_ftdir)
+    #desired_ftdir = os.path.expanduser('~/new_dir')
+    desired_ftdir = tempfile.mkdtemp()
+    #os.makedirs(desired_ftdir)
     env['FEATURETOOLS_DIR'] = desired_ftdir
-    os.chmod(desired_ftdir, S_IREAD)
+    try:
+        os.chflags(desired_ftdir, stat.SF_IMMUTABLE)
+    except PermissionError:
+        os.chmod(desired_ftdir, stat.S_IREAD)
     assert not os.access(desired_ftdir, os.W_OK)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")

@@ -1,12 +1,11 @@
 version: 2
 jobs:
   build:
-    working_directory: /home/tox/featuretools
+    working_directory: ~/featuretools
     docker:
         - image: painless/tox
     steps:
       - checkout
-      - run: chown -R tox:tox /home/tox/featuretools
       - run: pyenv local 2.7.13 3.5.2 3.6.0
       - run: make installdeps
-      - run: make lint && gosu tox tox && codecov
+      - run: make lint && tox && codecov
