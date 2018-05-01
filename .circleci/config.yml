@@ -8,4 +8,5 @@ jobs:
       - checkout
       - run: pyenv local 2.7.13 3.5.2 3.6.0
       - run: make installdeps
+      - run: su - tox
       - run: make lint && tox && codecov
