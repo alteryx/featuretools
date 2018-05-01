@@ -1,7 +1,7 @@
 import os
+import stat
 import tempfile
 import warnings
-import stat
 
 from featuretools.config import get_featuretools_dir
 
@@ -26,9 +26,9 @@ def test_featuretools_dir_normal():
 
 def test_featuretools_dir_from_os_env_not_writable():
     env = os.environ
-    #desired_ftdir = os.path.expanduser('~/new_dir')
+    # desired_ftdir = os.path.expanduser('~/new_dir')
     desired_ftdir = tempfile.mkdtemp()
-    #os.makedirs(desired_ftdir)
+    # os.makedirs(desired_ftdir)
     env['FEATURETOOLS_DIR'] = desired_ftdir
     try:
         os.chflags(desired_ftdir, stat.SF_IMMUTABLE)
