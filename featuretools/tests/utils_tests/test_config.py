@@ -26,10 +26,11 @@ def test_featuretools_dir_normal():
 
 def test_featuretools_dir_from_os_env_not_writable():
     env = os.environ
-    desired_ftdir = tempfile.mkdtemp()
+    desired_ftdir = os.path.expanduser('~/new_dir')
+    os.makedirs(desired_ftdir)
     env['FEATURETOOLS_DIR'] = desired_ftdir
     os.chmod(desired_ftdir, S_IREAD)
-    assert os.access(desired_ftdir, os.W_OK)
+    assert not os.access(desired_ftdir, os.W_OK)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         ftdir = get_featuretools_dir()
