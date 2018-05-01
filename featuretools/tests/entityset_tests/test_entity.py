@@ -62,7 +62,6 @@ def test_num_instances(es):
 
 
 def test_is_index_column(es):
-    assert es['customers'].is_index_column('id')
     assert es['cohorts'].is_index_column('cohort')
 
 
@@ -70,6 +69,7 @@ def test_get_sample(es):
     assert es['customers'].get_sample(3).shape[0] == 3
 
 
-def test_attempt_cast_index_to_int(es):
-    es['customers'].df['id'] = es['customers'].df['id'].astype(np.int32)
-    es['customers'].attempt_cast_index_to_int('id')
+def test_get_sliced_instance_ids(es):
+    realvals = [1, 2, 3]
+    for i, x in enumerate(es['log'].get_sliced_instance_ids(1, 4)):
+        assert x == realvals[i]
