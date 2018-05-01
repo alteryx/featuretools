@@ -1,7 +1,7 @@
 import logging
 import os
-import tempfile
 import sys
+import tempfile
 from warnings import warn
 
 import yaml

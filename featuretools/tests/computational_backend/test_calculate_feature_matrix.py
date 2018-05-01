@@ -1,11 +1,11 @@
 import copy
 import os
 import shutil
+import tempfile
 from builtins import range
 from datetime import datetime
 from itertools import combinations
 from random import randint
-import tempfile
 
 import numpy as np
 import pandas as pd

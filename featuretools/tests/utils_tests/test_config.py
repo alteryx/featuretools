@@ -1,7 +1,7 @@
 import os
 import tempfile
-from stat import S_IREAD
 import warnings
+from stat import S_IREAD
 
 from featuretools.config import get_featuretools_dir
 
