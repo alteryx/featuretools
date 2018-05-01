@@ -33,7 +33,7 @@ def test_featuretools_dir_from_os_env_not_writable():
     env['FEATURETOOLS_DIR'] = desired_ftdir
     try:
         # os.chflags(desired_ftdir, stat.SF_IMMUTABLE)
-        subprocess.call(["chattr", stat.SF_IMMUTABLE, desired_ftdir])
+        subprocess.call(["chattr", str(stat.SF_IMMUTABLE), desired_ftdir])
     except OSError:
         os.chmod(desired_ftdir, stat.S_IREAD)
     assert not os.access(desired_ftdir, os.W_OK)
