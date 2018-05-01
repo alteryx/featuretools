@@ -1,5 +1,5 @@
-import pytest
 import numpy as np
+import pytest
 
 from ..testing_utils import make_ecommerce_entityset
 
