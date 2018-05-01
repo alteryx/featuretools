@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import pytest
 
 from ..testing_utils import make_ecommerce_entityset
@@ -74,13 +73,6 @@ def test_get_sliced_instance_ids(es):
     realvals = [1, 2, 3]
     for i, x in enumerate(es['log'].get_sliced_instance_ids(1, 4)):
         assert x == realvals[i]
-
-
-def test_entity_head(es):
-
-    ct = pd.Timestamp('1990-01-01')
-    assert es.entities[1].head(n=1).shape[0] == 1
-    assert es.entities[1].head(n=1, cutoff_time=ct).shape[0] == 0
 
 
 def test_eq(es):
