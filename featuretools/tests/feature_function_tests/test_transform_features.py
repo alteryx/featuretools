@@ -726,7 +726,6 @@ def test_text_primitives(es):
 
 
 def test_overrides(es):
-    # P TODO:
     value = Feature(es['log']['value'])
     value2 = Feature(es['log']['value_2'])
 
@@ -816,7 +815,6 @@ def test_overrides(es):
 
 
 def test_override_boolean(es):
-    # P TODO:
     count = Count(es['log']['value'], es['sessions'])
     count_lo = GreaterThan(count, 1)
     count_hi = LessThan(count, 10)
@@ -854,7 +852,6 @@ def test_override_cmp_from_variable(es):
 
 
 def test_override_cmp(es):
-    # P TODO:
     count = Count(es['log']['value'], es['sessions'])
     _sum = Sum(es['log']['value'], es['sessions'])
     gt_lo = count > 1
