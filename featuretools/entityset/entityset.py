@@ -131,7 +131,7 @@ class EntitySet(BaseEntitySet):
             if k not in ["data", "entityset", "variables"]:
                 new_dict[k] = v
         new_dict["data"] = {
-            "df": e.df[0:0],
+            "df": e.df.head(0),
             "last_time_index": None,
             "indexed_by": {}
         }
