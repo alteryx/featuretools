@@ -805,6 +805,7 @@ def test_njobs(entityset):
     property_feature = IdentityFeature(entityset['log']['value']) > 10
 
     feature_matrix = calculate_feature_matrix([property_feature],
+                                              entityset=entityset,
                                               instance_ids=range(17),
                                               cutoff_time=times,
                                               verbose=True,
