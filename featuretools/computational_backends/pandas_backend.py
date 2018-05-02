@@ -12,7 +12,6 @@ import numpy as np
 import pandas as pd
 from future import standard_library
 
-# featuretools
 from .base_backend import ComputationalBackend
 from .feature_tree import FeatureTree
 
@@ -25,7 +24,6 @@ from featuretools.primitives import (
     IdentityFeature,
     TransformPrimitive
 )
-# progress bar
 from featuretools.utils.gen_utils import make_tqdm_iterator
 
 standard_library.install_aliases()
@@ -55,17 +53,17 @@ class PandasBackend(ComputationalBackend):
         generate and return a mapping of instance -> feature values.
 
         Args:
-            instance_ids (list): list of instance id to build features for
+            instance_ids (list): List of instance id for which to build features.
 
-            time_last (pd.Timestamp): last allowed time. Data from exactly this
-                time not allowed
+            time_last (pd.Timestamp): Last allowed time. Data from exactly this
+                time not allowed.
 
-            training_window (:class:Timedelta, optional): Data older than
-                time_last by more than this will be ignored
+            training_window (Timedelta, optional): Data older than
+                time_last by more than this will be ignored.
 
-            profile (boolean): enable profiler if True
+            profile (bool): Enable profiler if True.
 
-            verbose (boolean): print output progress if True
+            verbose (bool): Print output progress if True.
 
         Returns:
             pd.DataFrame : Pandas DataFrame of calculated feature values.
@@ -95,13 +93,27 @@ class PandasBackend(ComputationalBackend):
             ordered_entities = FeatureTree(self.entityset, self.features, ignored=ignored).ordered_entities
         else:
             ordered_entities = self.feature_tree.ordered_entities
+
+        necessary_columns = self.feature_tree.necessary_columns
         eframes_by_filter = \
             self.entityset.get_pandas_data_slice(filter_entity_ids=ordered_entities,
                                                  index_eid=self.target_eid,
                                                  instances=instance_ids,
+                                                 entity_columns=necessary_columns,
                                                  time_last=time_last,
                                                  training_window=training_window,
                                                  verbose=verbose)
+        large_eframes_by_filter = None
+        if any([f.uses_full_entity for f in self.feature_tree.all_features]):
+            large_necessary_columns = self.feature_tree.necessary_columns_for_all_values_features
+            large_eframes_by_filter = \
+                self.entityset.get_pandas_data_slice(filter_entity_ids=ordered_entities,
+                                                     index_eid=self.target_eid,
+                                                     instances=None,
+                                                     entity_columns=large_necessary_columns,
+                                                     time_last=time_last,
+                                                     training_window=training_window,
+                                                     verbose=verbose)
 
         # Handle an empty time slice by returning a dataframe with defaults
         if eframes_by_filter is None:
@@ -140,6 +152,9 @@ class PandasBackend(ComputationalBackend):
 
         for filter_eid in ordered_entities:
             entity_frames = eframes_by_filter[filter_eid]
+            large_entity_frames = None
+            if large_eframes_by_filter is not None:
+                large_entity_frames = large_eframes_by_filter[filter_eid]
 
             # update the current set of entity frames with the computed features
             # from previously finished entities
@@ -151,15 +166,57 @@ class PandasBackend(ComputationalBackend):
                 if not self.entityset.find_backward_path(start_entity_id=filter_eid,
                                                          goal_entity_id=eid):
                     entity_frames[eid] = eframes_by_filter[eid][eid]
+                    # TODO: look this over again
+                    # precalculated features will only be placed in entity_frames,
+                    # and it's possible that that they are the only features computed
+                    # for an entity. In this case, the entity won't be present in
+                    # large_eframes_by_filter. The relevant lines that this case passes
+                    # through are 136-143
+                    if (large_eframes_by_filter is not None and
+                            eid in large_eframes_by_filter and eid in large_eframes_by_filter[eid]):
+                        large_entity_frames[eid] = large_eframes_by_filter[eid][eid]
 
             if filter_eid in self.feature_tree.ordered_feature_groups:
                 for group in self.feature_tree.ordered_feature_groups[filter_eid]:
                     if verbose:
-
                         pbar.set_postfix({'running': 0})
 
-                    handler = self._feature_type_handler(group[0])
-                    handler(group, entity_frames)
+                    test_feature = group[0]
+                    entity_id = test_feature.entity.id
+
+                    input_frames_type = self.feature_tree.input_frames_type(test_feature)
+
+                    input_frames = large_entity_frames
+                    if input_frames_type == "subset_entity_frames":
+                        input_frames = entity_frames
+
+                    handler = self._feature_type_handler(test_feature)
+                    result_frame = handler(group, input_frames)
+
+                    output_frames_type = self.feature_tree.output_frames_type(test_feature)
+                    if output_frames_type in ['full_and_subset_entity_frames', 'subset_entity_frames']:
+                        index = entity_frames[entity_id].index
+                        # If result_frame came from a uses_full_entity feature,
+                        # and the input was large_entity_frames,
+                        # then it's possible it doesn't contain some of the features
+                        # in the output entity_frames
+                        # We thus need to concatenate the existing frame with the result frame,
+                        # making sure not to duplicate any columns
+                        _result_frame = result_frame.reindex(index)
+                        cols_to_keep = [c for c in _result_frame.columns
+                                        if c not in entity_frames[entity_id].columns]
+                        entity_frames[entity_id] = pd.concat([entity_frames[entity_id],
+                                                              _result_frame[cols_to_keep]],
+                                                             axis=1)
+
+                    if output_frames_type in ['full_and_subset_entity_frames', 'full_entity_frames']:
+                        index = large_entity_frames[entity_id].index
+                        _result_frame = result_frame.reindex(index)
+                        cols_to_keep = [c for c in _result_frame.columns
+                                        if c not in large_entity_frames[entity_id].columns]
+                        large_entity_frames[entity_id] = pd.concat([large_entity_frames[entity_id],
+                                                                    _result_frame[cols_to_keep]],
+                                                                   axis=1)
 
                     if verbose:
                         pbar.update(1)
@@ -224,7 +281,9 @@ class PandasBackend(ComputationalBackend):
 
     def _calculate_identity_features(self, features, entity_frames):
         entity_id = features[0].entity.id
-        assert entity_id in entity_frames and features[0].get_name() in entity_frames[entity_id].columns
+        assert (entity_id in entity_frames and
+                features[0].get_name() in entity_frames[entity_id].columns)
+        return entity_frames[entity_id]
 
     def _calculate_transform_features(self, features, entity_frames):
         entity_id = features[0].entity.id
@@ -254,8 +313,7 @@ class PandasBackend(ComputationalBackend):
             if isinstance(values, pd.Series):
                 values = values.values
             frame[f.get_name()] = list(values)
-
-        entity_frames[entity_id] = frame
+        return frame
 
     def _calculate_direct_features(self, features, entity_frames):
         entity_id = features[0].entity.id
@@ -288,7 +346,8 @@ class PandasBackend(ComputationalBackend):
         # merge the identity feature from the parent entity into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
         if index_as_feature is not None:
-            merge_df.set_index(index_as_feature.get_name(), inplace=True, drop=False)
+            merge_df.set_index(index_as_feature.get_name(), inplace=True,
+                               drop=False)
         else:
             merge_df.set_index(merge_var, inplace=True)
 
@@ -296,7 +355,7 @@ class PandasBackend(ComputationalBackend):
                           left_on=merge_var, right_index=True,
                           how='left')
 
-        entity_frames[entity_id] = new_df
+        return new_df
 
     def _calculate_agg_features(self, features, entity_frames):
         test_feature = features[0]
@@ -317,7 +376,7 @@ class PandasBackend(ComputationalBackend):
         features = [f for f in features if f.get_name()
                     not in frame.columns]
         if not len(features):
-            return
+            return frame
 
         # handle where clause for all functions below
         if where is not None:
@@ -366,15 +425,17 @@ class PandasBackend(ComputationalBackend):
                                                 child_entity.id, groupby_var,
                                                 base_frame[groupby_var].dtype))
                 else:
-                    no_instances = check_no_related_instances(frame_as_obj.values, base_frame_as_obj.values)
+                    no_instances = check_no_related_instances(
+                        frame_as_obj.values, base_frame_as_obj.values)
             else:
-                no_instances = check_no_related_instances(frame[index_var].values, base_frame[groupby_var].values)
+                no_instances = check_no_related_instances(
+                    frame[index_var].values, base_frame[groupby_var].values)
 
         if base_frame.empty or no_instances:
             for f in features:
                 set_default_column(entity_frames[entity.id], f)
 
-            return
+            return frame
 
         def wrap_func_with_name(func, name):
             def inner(x):
@@ -398,7 +459,8 @@ class PandasBackend(ComputationalBackend):
                 func = wrap_func_with_name(func, random_id)
                 funcname = random_id
                 to_agg[variable_id].append(func)
-                agg_rename[u"{}-{}".format(variable_id, funcname)] = f.get_name()
+                agg_rename[u"{}-{}".format(variable_id, funcname)] = \
+                    f.get_name()
 
                 continue
 
@@ -458,11 +520,12 @@ class PandasBackend(ComputationalBackend):
         # convert boolean dtypes to floats as appropriate
         # pandas behavior: https://github.com/pydata/pandas/issues/3752
         for f in features:
-            if (not f.expanding and f.variable_type == variable_types.Numeric and
+            if (not f.expanding and
+                    f.variable_type == variable_types.Numeric and
                     frame[f.get_name()].dtype.name in ['object', 'bool']):
                 frame[f.get_name()] = frame[f.get_name()].astype(float)
 
-        entity_frames[entity.id] = frame
+        return frame
 
 
 def _can_agg(feature):
@@ -510,6 +573,6 @@ def check_no_related_instances(array1, array2):
 def set_default_column(frame, f):
     default = f.default_value
     if hasattr(default, '__iter__'):
-        l = frame.shape[0]
-        default = [f.default_value] * l
+        length = frame.shape[0]
+        default = [f.default_value] * length
     frame[f.get_name()] = default

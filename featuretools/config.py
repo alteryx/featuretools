@@ -2,6 +2,9 @@ from __future__ import print_function
 import logging
 import os
 import sys
+import tempfile
+from warnings import warn
+
 import yaml
 
 
@@ -10,9 +13,72 @@ def eprint(*args, **kwargs):
 
 
 dirname = os.path.dirname(__file__)
-default_path = os.path.join(dirname, 'config_yaml.txt')
-ft_config_path = os.path.join(os.path.expanduser('~'), '.featuretools', 'config_yaml.txt')
-csv_save_location = os.path.join(os.path.expanduser('~'), '.featuretools', 'csv_files')
+default_path = os.path.join(dirname, 'config.yaml')
+
+
+def _writable_dir(path):
+    """Whether `path` is a directory, to which the user has write access.
+    Taken from IPython source:
+    https://github.com/ipython/ipython/blob/master/IPython/paths.py (`_writable_dir()`)
+    """
+    return os.path.isdir(path) and os.access(path, os.W_OK)
+
+
+def get_featuretools_dir():
+    '''Get the Featuretools directory for this platform and user.
+
+    Uses os.path.expanduser('~') and checks for writability .
+    Then adds .featuretools to the end of the path.
+
+    Modified from IPython source:
+
+    https://github.com/ipython/ipython/blob/master/IPython/paths.py (`get_home_dir()`)
+    And
+    https://github.com/ipython/ipython/blob/master/IPython/utils/path.py (`get_ipython_dir()`)
+    '''
+    env = os.environ
+    ftdir_def = '.featuretools'
+
+    ftdir = env.get('FEATURETOOLS_DIR', None)
+    if ftdir is None:
+        home_dir = os.path.expanduser('~')
+        # Next line will make things work even when /home/ is a symlink to
+        # /usr/home as it is on FreeBSD, for example
+        home_dir = os.path.realpath(home_dir)
+        if not _writable_dir(home_dir) and os.name == 'nt':
+            # expanduser failed, use the registry to get the 'My Documents' folder.
+            try:
+                import winreg as wreg  # Py 3
+            except ImportError:
+                import _winreg as wreg  # Py 2
+            key = wreg.OpenKey(
+                wreg.HKEY_CURRENT_USER,
+                "Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
+            )
+            home_dir = wreg.QueryValueEx(key, 'Personal')[0]
+            key.Close()
+
+        ftdir = os.path.join(home_dir, ftdir_def)
+    ftdir = os.path.normpath(os.path.expanduser(ftdir))
+
+    if os.path.exists(ftdir) and not _writable_dir(ftdir):
+        # ftdir exists, but is not writable
+        warn("Featuretools dir '{0}' is not a writable location,"
+             " using a temp directory.".format(ftdir))
+        ftdir = tempfile.mkdtemp()
+    elif not os.path.exists(ftdir):
+        parent = os.path.dirname(ftdir)
+        if not _writable_dir(parent):
+            # ftdir does not exist and parent isn't writable
+            warn("Featuretools dir parent '{0}' is not a writable location,"
+                 " using a temp directory.".format(parent))
+            ftdir = tempfile.mkdtemp()
+    return ftdir
+
+
+ftdir = get_featuretools_dir()
+ft_config_path = os.path.join(ftdir, 'config.yaml')
+csv_save_location = os.path.join(ftdir, 'csv_files')
 
 
 def ensure_config_file(destination=ft_config_path):

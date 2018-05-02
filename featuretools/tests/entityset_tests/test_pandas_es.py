@@ -25,26 +25,25 @@ def entity(entityset):
 class TestQueryFuncs(object):
 
     def test_query_by_id(self, entityset):
-        df = entityset.query_entity_by_values(entity_id='log',
-                                              instance_vals=[0])
+        df = entityset['log'].query_by_values(instance_vals=[0])
         assert df['id'].values[0] == 0
 
     def test_query_by_id_with_sort(self, entityset):
-        df = entityset.query_entity_by_values(entity_id='log',
-                                              instance_vals=[2, 1, 3],
-                                              return_sorted=True)
+        df = entityset['log'].query_by_values(
+            instance_vals=[2, 1, 3],
+            return_sorted=True)
         assert df['id'].values.tolist() == [2, 1, 3]
 
     def test_query_by_id_with_time(self, entityset):
-        df = entityset.query_entity_by_values(
-            entity_id='log', instance_vals=[0, 1, 2, 3, 4],
+        df = entityset['log'].query_by_values(
+            instance_vals=[0, 1, 2, 3, 4],
             time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
 
         assert df['id'].get_values().tolist() == [0, 1, 2]
 
     def test_query_by_variable_with_time(self, entityset):
-        df = entityset.query_entity_by_values(
-            entity_id='log', instance_vals=[0, 1, 2], variable_id='session_id',
+        df = entityset['log'].query_by_values(
+            instance_vals=[0, 1, 2], variable_id='session_id',
             time_last=datetime(2011, 4, 9, 10, 50, 0))
 
         true_values = [
@@ -52,17 +51,26 @@ class TestQueryFuncs(object):
         assert df['id'].get_values().tolist() == list(range(10))
         assert df['value'].get_values().tolist() == true_values
 
+    def test_query_by_variable_with_training_window(self, entityset):
+        df = entityset['log'].query_by_values(
+            instance_vals=[0, 1, 2], variable_id='session_id',
+            time_last=datetime(2011, 4, 9, 10, 50, 0),
+            training_window='15m')
+
+        assert df['id'].get_values().tolist() == [9]
+        assert df['value'].get_values().tolist() == [0]
+
     def test_query_by_indexed_variable(self, entityset):
-        df = entityset.query_entity_by_values(
-            entity_id='log', instance_vals=['taco clock'],
+        df = entityset['log'].query_by_values(
+            instance_vals=['taco clock'],
             variable_id='product_id')
 
         assert df['id'].get_values().tolist() == [15, 16]
 
     def test_query_by_non_unique_sort_raises(self, entityset):
         with pytest.raises(ValueError):
-            entityset.query_entity_by_values(
-                entity_id='log', instance_vals=[0, 2, 1],
+            entityset['log'].query_by_values(
+                instance_vals=[0, 2, 1],
                 variable_id='session_id', return_sorted=True)
 
 
@@ -313,25 +321,6 @@ class TestVariableHandling(object):
         assert set(entityset.get_column_data(
             'test_entity', 'id')) == set(df['id'])
 
-    # Tests functionality of from_csv. To be removed
-    # def test_time_index_components(self, entityset):
-    #     df = pd.DataFrame({'id': [0, 1],
-    #                        'date': ['4/9/2015', '4/10/2015'],
-    #                        'time': ['8:30', '13:30']})
-    #     filename = save_to_csv('test_entity', df)
-
-    #     entityset.entity_from_csv('test_entity', filename, index='id',
-    #                               time_index='datetime',
-    #                               time_index_components=['date', 'time'])
-    #     assert entityset.entity_stores['test_entity'].time_index == 'datetime'
-    #     new_df = entityset.get_dataframe('test_entity')
-    #     assert new_df.shape == (2, 2)
-    #     assert len(new_df.columns) == 2
-    #     assert 'id' in new_df.columns
-    #     assert 'datetime' in new_df.columns
-    #     assert new_df['datetime'][0] == datetime(2015, 4, 9, 8, 30, 0)
-    #     assert new_df['datetime'][1] == datetime(2015, 4, 10, 13, 30, 0)
-
     def test_combine_variables(self, entityset):
         # basic case
         entityset.combine_variables('log', 'comment+product_id',
@@ -453,6 +442,12 @@ class TestVariableHandling(object):
             for entity, rows in emap.items():
                 df = es[entity].df
                 es[entity].update_data(df.loc[rows[i]])
+            for r in entityset.relationships:
+                es.index_data(r)
+
+        # make sure internal indexes work before concat
+        regions = entityset_1['customers'].query_by_values(['United States'], variable_id='region_id')
+        assert regions.index.isin(entityset_1['customers'].df.index).all()
 
         assert entityset_1.__eq__(entityset_2)
         assert not entityset_1.__eq__(entityset_2, deep=True)
@@ -470,6 +465,124 @@ class TestVariableHandling(object):
             for column in df:
                 for x, y in zip(df[column], df_3[column]):
                     assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+
+    def test_set_time_type_on_init(self):
+        # create cards entity
+        cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
+        transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                                        "card_id": [1, 2, 1, 3, 4, 5],
+                                        "transaction_time": [10, 12, 13, 20, 21, 20],
+                                        "fraud": [True, False, False, False, True, True]})
+        entities = {
+            "cards": (cards_df, "id"),
+            "transactions": (transactions_df, "id", "transaction_time")
+        }
+        relationships = [("cards", "id", "transactions", "card_id")]
+        entityset = EntitySet("fraud", entities, relationships)
+        # assert time_type is set
+        assert entityset.time_type == variable_types.NumericTimeIndex
+
+    def test_sets_time_when_adding_entity(self):
+        transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                                        "card_id": [1, 2, 1, 3, 4, 5],
+                                        "transaction_time": [10, 12, 13, 20, 21, 20],
+                                        "fraud": [True, False, False, False, True, True]})
+        accounts_df = pd.DataFrame({"id": [3, 4, 5],
+                                    "signup_date": [datetime(2002, 5, 1),
+                                                    datetime(2006, 3, 20),
+                                                    datetime(2011, 11, 11)]})
+        accounts_df_string = pd.DataFrame({"id": [3, 4, 5],
+                                           "signup_date": ["element",
+                                                           "exporting",
+                                                           "editable"]})
+        # create empty entityset
+        entityset = EntitySet("fraud")
+        # assert it's not set
+        assert getattr(entityset, "time_type", None) is None
+        # add entity
+        entityset.entity_from_dataframe("transactions",
+                                        transactions_df,
+                                        index="id",
+                                        time_index="transaction_time")
+        # assert time_type is set
+        assert entityset.time_type == variable_types.NumericTimeIndex
+        # add another entity
+        entityset.normalize_entity("transactions",
+                                   "cards",
+                                   "card_id",
+                                   make_time_index=True)
+        # assert time_type unchanged
+        assert entityset.time_type == variable_types.NumericTimeIndex
+        # add wrong time type entity
+        with pytest.raises(TypeError):
+            entityset.entity_from_dataframe("accounts",
+                                            accounts_df,
+                                            index="id",
+                                            time_index="signup_date")
+        # add non time type as time index
+        with pytest.raises(TypeError):
+            entityset.entity_from_dataframe("accounts",
+                                            accounts_df_string,
+                                            index="id",
+                                            time_index="signup_date")
+
+    def test_checks_time_type_setting_secondary_time_index(self, entityset):
+        # entityset is timestamp time type
+        assert entityset.time_type == variable_types.DatetimeTimeIndex
+        # add secondary index that is timestamp type
+        new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
+                      'cancel_date': ['cancel_date', 'cancel_reason']}
+        entityset["customers"].set_secondary_time_index(new_2nd_ti)
+        assert entityset.time_type == variable_types.DatetimeTimeIndex
+        # add secondary index that is numeric type
+        new_2nd_ti = {'age': ['age', 'loves_ice_cream']}
+        with pytest.raises(TypeError):
+            entityset["customers"].set_secondary_time_index(new_2nd_ti)
+        # add secondary index that is non-time type
+        new_2nd_ti = {'favorite_quote': ['favorite_quote', 'loves_ice_cream']}
+        with pytest.raises(TypeError):
+            entityset["customers"].set_secondary_time_index(new_2nd_ti)
+        # add mismatched pair of secondary time indexes
+        new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
+                      'age': ['age', 'loves_ice_cream']}
+        with pytest.raises(TypeError):
+            entityset["customers"].set_secondary_time_index(new_2nd_ti)
+
+        # create entityset with numeric time type
+        cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
+        transactions_df = pd.DataFrame({
+            "id": [1, 2, 3, 4, 5, 6],
+            "card_id": [1, 2, 1, 3, 4, 5],
+            "transaction_time": [10, 12, 13, 20, 21, 20],
+            "fraud_decision_time": [11, 14, 15, 21, 22, 21],
+            "transaction_city": ["City A"] * 6,
+            "transaction_date": [datetime(1989, 2, i) for i in range(1, 7)],
+            "fraud": [True, False, False, False, True, True]
+        })
+        entities = {
+            "cards": (cards_df, "id"),
+            "transactions": (transactions_df, "id", "transaction_time")
+        }
+        relationships = [("cards", "id", "transactions", "card_id")]
+        card_es = EntitySet("fraud", entities, relationships)
+        assert card_es.time_type == variable_types.NumericTimeIndex
+        # add secondary index that is numeric time type
+        new_2nd_ti = {'fraud_decision_time': ['fraud_decision_time', 'fraud']}
+        card_es['transactions'].set_secondary_time_index(new_2nd_ti)
+        assert card_es.time_type == variable_types.NumericTimeIndex
+        # add secondary index that is timestamp type
+        new_2nd_ti = {'transaction_date': ['transaction_date', 'fraud']}
+        with pytest.raises(TypeError):
+            card_es['transactions'].set_secondary_time_index(new_2nd_ti)
+        # add secondary index that is non-time type
+        new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud']}
+        with pytest.raises(TypeError):
+            card_es['transactions'].set_secondary_time_index(new_2nd_ti)
+        # add mixed secondary time indexes
+        new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud'],
+                      'fraud_decision_time': ['fraud_decision_time', 'fraud']}
+        with pytest.raises(TypeError):
+            card_es['transactions'].set_secondary_time_index(new_2nd_ti)
 
 
 class TestRelatedInstances(object):
@@ -511,6 +624,14 @@ class TestRelatedInstances(object):
 
         for p in entityset.get_column_data('products', 'id').values:
             assert p in result['id'].values
+
+    def test_related_instances_all_cutoff_time_same_entity(self, entityset):
+        # test querying across the entityset
+        result = entityset._related_instances(
+            start_entity_id='log', final_entity_id='log',
+            instance_ids=None, time_last=pd.Timestamp('2011/04/09 10:30:31'))
+
+        assert result['id'].values.tolist() == list(range(5))
 
     def test_related_instances_link_vars(self, entityset):
         # test adding link variables on the fly during _related_instances

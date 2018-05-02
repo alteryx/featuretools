@@ -4,16 +4,17 @@ from builtins import str
 import pandas as pd
 
 import featuretools as ft
+import featuretools.variable_types as vtypes
 from featuretools.config import config as ft_config
 
 
-def load_retail(id='demo_retail_data', nrows=None):
+def load_retail(id='demo_retail_data', nrows=None, use_cache=True):
     '''
-    Returns the retail entityset example
+    Returns the retail entityset example.
 
     Args:
-        id (str):  id to assign to EntitySet
-        nrows (int):  number of rows to load of item_purchases
+        id (str):  Id to assign to EntitySet.
+        nrows (int):  Number of rows to load of item_purchases
             entity. If None, load all.
 
     Examples:
@@ -29,10 +30,10 @@ def load_retail(id='demo_retail_data', nrows=None):
             Out[3]:
             Entityset: demo_retail_data
               Entities:
-                invoices (shape = [25900, 3])
-                items (shape = [4070, 3])
+                orders (shape = [25900, 3])
+                products (shape = [4070, 3])
                 customers (shape = [4373, 3])
-                item_purchases (shape = [541909, 6])
+                order_products (shape = [541909, 6])
 
         Load in subset of data
 
@@ -45,10 +46,10 @@ def load_retail(id='demo_retail_data', nrows=None):
             Out[3]:
             Entityset: demo_retail_data
               Entities:
-                invoices (shape = [66, 3])
-                items (shape = [590, 3])
+                orders (shape = [66, 3])
+                products (shape = [590, 3])
                 customers (shape = [49, 3])
-                item_purchases (shape = [1000, 6])
+                order_products (shape = [1000, 6])
 
     '''
     demo_save_path = make_retail_pathname(nrows)
@@ -56,37 +57,46 @@ def load_retail(id='demo_retail_data', nrows=None):
     es = ft.EntitySet(id)
     csv_s3 = "s3://featuretools-static/uk_online_retail.csv"
 
-    if not os.path.isfile(demo_save_path):
+    if not use_cache or not os.path.isfile(demo_save_path):
         df = pd.read_csv(csv_s3,
                          nrows=nrows,
                          parse_dates=["InvoiceDate"])
-        df.to_csv(demo_save_path)
+        df.to_csv(demo_save_path, index_label='order_product_id')
 
     df = pd.read_csv(demo_save_path,
                      nrows=nrows,
                      parse_dates=["InvoiceDate"])
 
-    df.rename(columns={"Unnamed: 0": 'item_purchase_id'}, inplace=True)
-
-    es.entity_from_dataframe("item_purchases",
+    df.rename(columns={'InvoiceNo': 'order_id',
+                       'StockCode': 'product_id',
+                       'Description': 'description',
+                       'Quantity': 'quantity',
+                       'InvoiceDate': 'order_date',
+                       'UnitPrice': 'price',
+                       'CustomerID': 'customer_id',
+                       'Country': 'country'},
+              inplace=True)
+    es.entity_from_dataframe("order_products",
                              dataframe=df,
-                             index="item_purchase_id",
-                             time_index="InvoiceDate")
+                             index="order_product_id",
+                             variable_types={'description': vtypes.Text})
 
-    es.normalize_entity(new_entity_id="items",
-                        base_entity_id="item_purchases",
-                        index="StockCode",
-                        additional_variables=["Description"])
+    es.normalize_entity(new_entity_id="products",
+                        base_entity_id="order_products",
+                        index="product_id",
+                        additional_variables=["description"])
 
-    es.normalize_entity(new_entity_id="invoices",
-                        base_entity_id="item_purchases",
-                        index="InvoiceNo",
-                        additional_variables=["CustomerID", "Country"])
+    es.normalize_entity(new_entity_id="orders",
+                        base_entity_id="order_products",
+                        index="order_id",
+                        additional_variables=[
+                            "customer_id", "country", "order_date"],
+                        make_time_index="order_date")
 
     es.normalize_entity(new_entity_id="customers",
-                        base_entity_id="invoices",
-                        index="CustomerID",
-                        additional_variables=["Country"])
+                        base_entity_id="orders",
+                        index="customer_id",
+                        additional_variables=["country"])
     es.add_last_time_indexes()
 
     return es

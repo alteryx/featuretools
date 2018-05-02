@@ -213,3 +213,17 @@ def _check_time_against_time(time1, time2):
         return isinstance(time2, (pd.Timedelta))
     else:
         return False
+
+
+def _check_time_type(time):
+    '''
+    Checks if `time` is an instance of common int, float, or datetime types.
+    Returns "numeric", "datetime", or "unknown" based on results
+    '''
+    time_type = None
+    if isinstance(time, (int, np.int16, np.int32, np.int64, float, np.float16,
+                         np.float32, np.float64)):
+        time_type = variable_types.NumericTimeIndex
+    elif isinstance(time, (datetime, np.datetime64)):
+        time_type = variable_types.DatetimeTimeIndex
+    return time_type

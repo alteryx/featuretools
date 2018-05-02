@@ -7,6 +7,7 @@ from ..testing_utils import make_ecommerce_entityset
 from featuretools import Timedelta
 from featuretools.computational_backends import PandasBackend
 from featuretools.primitives import (
+    Absolute,
     Add,
     And,
     Compare,
@@ -52,7 +53,9 @@ from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
 
-@pytest.fixture(scope='module')
+# some tests change the entityset values, so we have to create it fresh
+# for each test (rather than setting scope='module')
+@pytest.fixture
 def es():
     return make_ecommerce_entityset()
 
@@ -1022,7 +1025,7 @@ def test_init_and_name(es):
         [GreaterThan(Feature(es["products"]["rating"], es["log"]), 2.5)]
     # Add Timedelta feature
     features.append(pd.Timestamp.now() - Feature(log['datetime']))
-    for transform_prim in get_transform_primitives():
+    for transform_prim in get_transform_primitives().values():
         if issubclass(transform_prim, Compare):
             continue
         # use the input_types matching function from DFS
@@ -1046,11 +1049,131 @@ def test_init_and_name(es):
 def test_percentile(es):
     v = Feature(es['log']['value'])
     p = Percentile(v)
-    pandas_backend = PandasBackend(es, [v, p])
-    df = pandas_backend.calculate_all_features(range(17), None)
-    true = df[v.get_name()].rank(pct=True)
+    pandas_backend = PandasBackend(es, [p])
+    df = pandas_backend.calculate_all_features(range(10, 17), None)
+    true = es['log'].df[v.get_name()].rank(pct=True)
+    true = true.loc[range(10, 17)]
     for t, a in zip(true.values, df[p.get_name()].values):
         assert (pd.isnull(t) and pd.isnull(a)) or t == a
+
+
+def test_dependent_percentile(es):
+    v = Feature(es['log']['value'])
+    p = Percentile(v)
+    p2 = Percentile(p - 1)
+    pandas_backend = PandasBackend(es, [p, p2])
+    df = pandas_backend.calculate_all_features(range(10, 17), None)
+    true = es['log'].df[v.get_name()].rank(pct=True)
+    true = true.loc[range(10, 17)]
+    for t, a in zip(true.values, df[p.get_name()].values):
+        assert (pd.isnull(t) and pd.isnull(a)) or t == a
+
+
+def test_agg_percentile(es):
+    v = Feature(es['log']['value'])
+    p = Percentile(v)
+    agg = Sum(p, es['sessions'])
+    pandas_backend = PandasBackend(es, [agg])
+    df = pandas_backend.calculate_all_features([0, 1], None)
+
+    log_vals = es['log'].df[[v.get_name(), 'session_id']]
+    log_vals['percentile'] = log_vals[v.get_name()].rank(pct=True)
+    true_p = log_vals.groupby('session_id')['percentile'].sum()[[0, 1]]
+    for t, a in zip(true_p.values, df[agg.get_name()].values):
+        assert (pd.isnull(t) and pd.isnull(a)) or t == a
+
+
+def test_percentile_agg_percentile(es):
+    v = Feature(es['log']['value'])
+    p = Percentile(v)
+    agg = Sum(p, es['sessions'])
+    pagg = Percentile(agg)
+    pandas_backend = PandasBackend(es, [pagg])
+    df = pandas_backend.calculate_all_features([0, 1], None)
+
+    log_vals = es['log'].df[[v.get_name(), 'session_id']]
+    log_vals['percentile'] = log_vals[v.get_name()].rank(pct=True)
+    true_p = log_vals.groupby('session_id')['percentile'].sum().fillna(0)
+    true_p = true_p.rank(pct=True)[[0, 1]]
+
+    for t, a in zip(true_p.values, df[pagg.get_name()].values):
+        assert (pd.isnull(t) and pd.isnull(a)) or t == a
+
+
+def test_percentile_agg(es):
+    v = Feature(es['log']['value'])
+    agg = Sum(v, es['sessions'])
+    pagg = Percentile(agg)
+    pandas_backend = PandasBackend(es, [pagg])
+    df = pandas_backend.calculate_all_features([0, 1], None)
+
+    log_vals = es['log'].df[[v.get_name(), 'session_id']]
+    true_p = log_vals.groupby('session_id')[v.get_name()].sum().fillna(0)
+    true_p = true_p.rank(pct=True)[[0, 1]]
+
+    for t, a in zip(true_p.values, df[pagg.get_name()].values):
+        assert (pd.isnull(t) and pd.isnull(a)) or t == a
+
+
+def test_direct_percentile(es):
+    v = Feature(es['customers']['age'])
+    p = Percentile(v)
+    d = Feature(p, es['sessions'])
+    pandas_backend = PandasBackend(es, [d])
+    df = pandas_backend.calculate_all_features([0, 1], None)
+
+    cust_vals = es['customers'].df[[v.get_name()]]
+    cust_vals['percentile'] = cust_vals[v.get_name()].rank(pct=True)
+    true_p = cust_vals['percentile'].loc[[0, 0]]
+    for t, a in zip(true_p.values, df[d.get_name()].values):
+        assert (pd.isnull(t) and pd.isnull(a)) or t == a
+
+
+def test_direct_agg_percentile(es):
+    v = Feature(es['log']['value'])
+    p = Percentile(v)
+    agg = Sum(p, es['customers'])
+    d = Feature(agg, es['sessions'])
+    pandas_backend = PandasBackend(es, [d])
+    df = pandas_backend.calculate_all_features([0, 1], None)
+
+    log_vals = es['log'].df[[v.get_name(), 'session_id']]
+    log_vals['percentile'] = log_vals[v.get_name()].rank(pct=True)
+    log_vals['customer_id'] = [0] * 10 + [1] * 5 + [2] * 2
+    true_p = log_vals.groupby('customer_id')['percentile'].sum().fillna(0)
+    true_p = true_p[[0, 0]]
+    for t, a in zip(true_p.values, df[d.get_name()].values):
+        assert (pd.isnull(t) and pd.isnull(a)) or round(t, 3) == round(a, 3)
+
+
+def test_percentile_with_cutoff(es):
+    v = Feature(es['log']['value'])
+    p = Percentile(v)
+    pandas_backend = PandasBackend(es, [p])
+    df = pandas_backend.calculate_all_features(
+        [2], pd.Timestamp('2011/04/09 10:30:13'))
+    assert df[p.get_name()].tolist()[0] == 1.0
+
+
+def test_two_kinds_of_dependents(es):
+    v = Feature(es['log']['value'])
+    product = Feature(es['log']['product_id'])
+    agg = Sum(v, es['customers'], where=product == 'coke zero')
+    p = Percentile(agg)
+    g = Absolute(agg)
+    agg2 = Sum(v, es['sessions'], where=product == 'coke zero')
+    # Adding this feature in tests line 218 in pandas_backend
+    # where we remove columns in result_frame that already exist
+    # in the output entity_frames in preparation for pd.concat
+    # In a prior version, this failed because we changed the result_frame
+    # variable itself, rather than making a new variable _result_frame.
+    # When len(output_frames) > 1, the second iteration won't have
+    # all the necessary columns because they were removed in the first
+    agg3 = Sum(agg2, es['customers'])
+    pandas_backend = PandasBackend(es, [p, g, agg3])
+    df = pandas_backend.calculate_all_features([0, 1], None)
+    assert df[p.get_name()].tolist() == [0.5, 1.0]
+    assert df[g.get_name()].tolist() == [15, 26]
 
 
 # P TODO: reimplement like

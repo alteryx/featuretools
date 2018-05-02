@@ -52,6 +52,7 @@ class BaseEntitySet(FTBase):
         self.entity_stores = {}
         self.relationships = []
         self._verbose = verbose
+        self.time_type = None
 
     def __eq__(self, other, deep=False):
         if not deep:
@@ -74,7 +75,7 @@ class BaseEntitySet(FTBase):
         """Get entity instance from entityset
 
         Args:
-            entity_id (str): id of entity
+            entity_id (str): Id of entity.
 
         Returns:
             :class:`.Entity` : Instance of entity. None if entity doesn't
@@ -94,7 +95,7 @@ class BaseEntitySet(FTBase):
         """Get entity instance from entityset
 
         Args:
-            entity_id (str) : id of entity
+            entity_id (str) : Id of entity.
 
         Returns:
             :class:`.Entity` : Instance of entity. None if entity doesn't exist.
@@ -126,30 +127,25 @@ class BaseEntitySet(FTBase):
         return entityset.get_dataframe(entity_id)
 
     def __repr__(self):
-        fmat = self.id
+        fmat = self.get_name()
         repr_out = u"Entityset: {}\n".format(fmat)
         repr_out += u"  Entities:"
-        for e in self.entities[:5]:
+        for e in self.entities:
             if e.df.shape:
-                repr_out += u"\n    {} (shape = [{}, {}])".format(e.id, e.df.shape[0], e.df.shape[1])
+                repr_out += u"\n    {} [Rows: {}, Columns: {}]".format(
+                    e.id, e.df.shape[0], e.df.shape[1])
             else:
-                repr_out += u"\n    {} (shape = [None, None])".format(e.id)
-        if len(self.entities) > 5:
-            num_left = len(self.entities) - 5
-            repr_out += u"\n    ...And {} more".format(num_left)
+                repr_out += u"\n    {} [Rows: None, Columns: None]".format(
+                    e.id)
         repr_out += "\n  Relationships:"
 
         if len(self.relationships) == 0:
             repr_out += "\n    No relationships"
 
-        for r in self.relationships[:5]:
+        for r in self.relationships:
             repr_out += u"\n    %s.%s -> %s.%s" % \
                 (r._child_entity_id, r._child_variable_id,
                  r._parent_entity_id, r._parent_variable_id)
-
-        if len(self.relationships) > 5:
-            num_left = len(self.relationships) - 5
-            repr_out += u"\n    ...and {} more".format(num_left)
 
         return repr_out
 
@@ -165,8 +161,8 @@ class BaseEntitySet(FTBase):
         """Add multiple new relationships to a entityset
 
         Args:
-            relationships (list[:class:`.Relationship`]) : list of new
-                relationships
+            relationships (list[Relationship]) : List of new
+                relationships.
         """
         new_self = self
         for r in relationships:
@@ -177,11 +173,12 @@ class BaseEntitySet(FTBase):
         """Add a new relationship between entities in the entityset
 
         Args:
-            relationship (:class:`.Relationship`) : instance of new
-                relationship to be added
+            relationship (Relationship) : Instance of new
+                relationship to be added.
         """
         if relationship in self.relationships:
-            logger.warning("Not adding duplicate relationship: %s", relationship)
+            logger.warning(
+                "Not adding duplicate relationship: %s", relationship)
             return self
 
         # _operations?
@@ -214,17 +211,17 @@ class BaseEntitySet(FTBase):
            between start_entity and goal_entity
 
         Args:
-            start_entity_id (str) : id of entity to start the search from
-            goal_entity_id  (str) : id of entity to find forward path to
+            start_entity_id (str) : Id of entity to start the search from.
+            goal_entity_id  (str) : Id of entity to find forward path to.
             include_num_forward (bool) : If True, return number of forward
                 relationships in path if the path ends on a forward
-                relationship, otherwise return 0
+                relationship, otherwise return 0.
 
         Returns:
             List of relationships that go from start entity to goal
-                entity. None is returned if no path exists
-            if include_forward_distance is True,
-                returns a tuple of (relationship_list, forward_distance)
+                entity. None is returned if no path exists.
+            If include_forward_distance is True,
+                returns a tuple of (relationship_list, forward_distance).
 
         See Also:
             :func:`BaseEntitySet.find_forward_path`
@@ -286,7 +283,8 @@ class BaseEntitySet(FTBase):
             return []
 
         for r in self.get_forward_relationships(start_entity_id):
-            new_path = self.find_forward_path(r.parent_entity.id, goal_entity_id)
+            new_path = self.find_forward_path(
+                r.parent_entity.id, goal_entity_id)
             if new_path is not None:
                 return [r] + new_path
 
@@ -296,8 +294,8 @@ class BaseEntitySet(FTBase):
         """Find a backward path between a start and goal entity
 
         Args:
-            start_entity_id (str) : id of entity to start the search from
-            goal_entity_id  (str) : if of entity to find backward path to
+            start_entity_id (str) : Id of entity to start the search from.
+            goal_entity_id  (str) : Id of entity to find backward path to.
 
         See Also:
             :func:`BaseEntitySet.find_forward_path`
@@ -316,12 +314,12 @@ class BaseEntitySet(FTBase):
         """Get entities that are in a forward relationship with entity
 
         Args:
-            entity_id (str) - id entity of entity to search from
-            deep (bool) - if True, recursively find forward entities
+            entity_id (str) - Id entity of entity to search from.
+            deep (bool) - if True, recursively find forward entities.
 
         Returns:
             Set of entity IDs in a forward relationship with the passed in
-            entity
+            entity.
         """
         parents = [r.parent_entity.id for r in
                    self.get_forward_relationships(entity_id)]
@@ -346,11 +344,11 @@ class BaseEntitySet(FTBase):
         """Get entities that are in a backward relationship with entity
 
         Args:
-            entity_id (str) - id entity of entity to search from
-            deep (bool) - if True, recursively find backward entities
+            entity_id (str) - Id entity of entity to search from.
+            deep (bool) - If True, recursively find backward entities.
 
         Returns:
-            Set of each :class:`.Entity` in a backward relationship
+            Set of each :class:`.Entity` in a backward relationship.
         """
         children = [r.child_entity.id for r in
                     self.get_backward_relationships(entity_id)]
@@ -368,10 +366,10 @@ class BaseEntitySet(FTBase):
         """Get relationships where entity "entity_id" is the child
 
         Args:
-            entity_id (str): id of entity to get relationships for
+            entity_id (str): Id of entity to get relationships for.
 
         Returns:
-            list[:class:`.Relationship`]: List of forward relationships
+            list[:class:`.Relationship`]: List of forward relationships.
         """
         return [r for r in self.relationships if r.child_entity.id == entity_id]
 
@@ -380,7 +378,7 @@ class BaseEntitySet(FTBase):
         get relationships where entity "entity_id" is the parent.
 
         Args:
-            entity_id (str): id of entity to get relationships for
+            entity_id (str): Id of entity to get relationships for.
 
         Returns:
             list[:class:`.Relationship`]: list of backward relationships
@@ -391,8 +389,8 @@ class BaseEntitySet(FTBase):
         """Get relationship, if any, between eid_1 and eid_2
 
         Args:
-            eid_1 (str): id of first entity to get relationships for
-            eid_2 (str): id of second entity to get relationships for
+            eid_1 (str): Id of first entity to get relationships for.
+            eid_2 (str): Id of second entity to get relationships for.
 
         Returns:
             :class:`.Relationship`: Relationship or None

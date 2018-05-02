@@ -139,6 +139,15 @@ What's next?
 * Apply automated feature engineering with :doc:`automated_feature_engineering/afe`
 
 
+Get help
+--------
+The Featuretools community is happy to provide support to users of Featuretools. Project support can be found in four places depending on the type of question:
+
+1. For usage questions, use `Stack Overflow <https://stackoverflow.com/questions/tagged/featuretools>`_ with the ``featuretools`` tag.
+2. For bugs, issues, or feature requests start a `Github issue <https://github.com/featuretools/featuretools/issues>`_.
+3. For discussion regarding development on the core library, use `gitter <https://gitter.im/featuretools/featuretools>`_.
+4. For everything else, the core developers can be reached by email at help@featuretools.com.
+
 
 Table of contents
 -----------------
@@ -185,8 +194,10 @@ Table of contents
 **Guides**
 
 * :doc:`guides/tuning_dfs`
+* :doc:`guides/performance`
 * :doc:`guides/deployment`
 * :doc:`guides/exporting_feature_matrix`
+* :doc:`guides/advanced_custom_primitives`
 
 .. toctree::
    :maxdepth: 1
@@ -194,10 +205,10 @@ Table of contents
    :caption: Guides
 
    guides/tuning_dfs
+   guides/performance
    guides/deployment
    guides/exporting_feature_matrix
    guides/advanced_custom_primitives
-
 
 .. **Tutorials and Demos**
 
@@ -218,7 +229,6 @@ Table of contents
 **Resources and References**
 
 * :doc:`usage_tips/limitations`
-* :doc:`usage_tips/scaling`
 * :doc:`usage_tips/glossary`
 * :doc:`api_reference`
 * :doc:`changelog`
@@ -229,19 +239,11 @@ Table of contents
    :caption: Resources and References
 
    usage_tips/limitations
-   usage_tips/scaling
    usage_tips/glossary
    api_reference
    changelog
 
 
-Get help
---------
-The Featuretools community is happy to provide support to users of Featuretools.
-
-* For installation, usage, or trouble shooting please join on the `Gitter chat room <https://gitter.im/featuretools/featuretools>`_
-* For bugs or pull requests, please put them on `GitHub <https://github.com/featuretools/featuretools>`_.
-* For everything else, the core developers can be reached by email at help@featuretools.com.
 
 
 Other links

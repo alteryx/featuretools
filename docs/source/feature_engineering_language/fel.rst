@@ -43,14 +43,12 @@ While Deep Feature Synthesis can automatically combine primitives to create feat
 
 .. ipython:: python
 
-    from featuretools.primitives import Mean, Feature, PercentTrue
-
     expensive_purchase = Feature(es["transactions"]["amount"]) > 20
     expensive_purchase = expensive_purchase.rename("expensive_purchase")
 
     features = ft.dfs(entityset=es,
                       target_entity="customers",
-                      agg_primitives=[PercentTrue],
+                      agg_primitives=["percent_true"],
                       seed_features=[expensive_purchase],
                       features_only=True)
     features

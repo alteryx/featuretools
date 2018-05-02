@@ -14,21 +14,6 @@ def es():
     return make_ecommerce_entityset()
 
 
-@pytest.fixture
-def glob_es():
-    return make_ecommerce_entityset(split_by_time=True)
-
-
-@pytest.fixture
-def gzip_es():
-    return make_ecommerce_entityset(compressed=True)
-
-
-@pytest.fixture
-def gzip_glob_es():
-    return make_ecommerce_entityset(split_by_time=True, compressed=True)
-
-
 def test_cannot_readd_relationships_that_already_exists(es):
     before_len = len(es.relationships)
     es.add_relationship(es.relationships[0])
@@ -135,23 +120,6 @@ def test_add_parent_not_index_varible(es):
     with pytest.raises(AttributeError):
         es.add_relationship(Relationship(es['regions']['language'],
                                          es['customers']['region_id']))
-
-# def test_glob_entityset(es, glob_es):
-#     df_1 = es.entity_stores['log'].df
-#     df_2 = glob_es.entity_stores['log'].df
-#     assert df_1.equals(df_2)
-
-
-# def test_gzip_entityset(es, gzip_es):
-#     df_1 = es.entity_stores['log'].df
-#     df_2 = gzip_es.entity_stores['log'].df
-#     assert df_1.equals(df_2)
-
-
-# def test_gzip_glob_entityset(es, gzip_glob_es):
-#     df_1 = es.entity_stores['log'].df
-#     df_2 = gzip_glob_es.entity_stores['log'].df
-#     assert df_1.equals(df_2)
 
 
 def test_serialization(es):

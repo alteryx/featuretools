@@ -1,7 +1,8 @@
 import logging
-import sys
 from builtins import filter, object, str
 from collections import defaultdict
+
+from past.builtins import basestring
 
 from .dfs_filters import LimitModeUniques, TraverseUp
 
@@ -17,7 +18,6 @@ from featuretools.primitives.api import (
     IdentityFeature,
     TimeSince
 )
-from featuretools.utils.gen_utils import make_tqdm_iterator
 from featuretools.variable_types import Boolean, Categorical, Numeric, Ordinal
 
 logger = logging.getLogger('featuretools')
@@ -27,48 +27,33 @@ class DeepFeatureSynthesis(object):
     """Automatically produce features for a target entity in an Entityset.
 
         Args:
-            target_entity_id (str): id of entity to build features for
+            target_entity_id (str): Id of entity for which to build features.
 
-            entityset (:class:`.EntitySet`): Entityset to build features for
+            entityset (EntitySet): Entityset for which to build features.
 
-            filters (list[:class:`.DFSFilterBase`], optional) : list of dfs filters
+            filters (list[DFSFilterBase], optional) : List of dfs filters
                 to apply.
 
                 Default:
 
                     [:class:`synthesis.dfs_filters.TraverseUp`]
 
-            agg_primitives (list[:class:`.primitives.AggregationPrimitive`], optional):
+            agg_primitives (list[str or :class:`.primitives.AggregationPrimitive`], optional):
                 list of Aggregation Feature types to apply.
 
-                Default:[:class:`Sum <.primitives.Sum>`, \
-                         :class:`Std <.primitives.Std>`, \
-                         :class:`Max <.primitives.Max>`, \
-                         :class:`Skew <.primitives.Skew>`, \
-                         :class:`Min <.primitives.Min>`, \
-                         :class:`Mean <.primitives.Mean>`, \
-                         :class:`Count <.primitives.Count>`, \
-                         :class:`PercentTrue <.primitives.PercentTrue>`, \
-                         :class:`NUniqe <.primitives.NUnique>`, \
-                         :class:`Mode <.primitives.Mode>`]
+                Default: ["sum", "std", "max", "skew", "min", "mean", "count", "percent_true", "n_unique", "mode"]
 
-            trans_primitives (list[:class:`.primitives.TransformPrimitive`], optional):
-                list of Transform Feature functions to apply.
+            trans_primitives (list[str or :class:`.primitives.TransformPrimitive`], optional):
+                list of Transform primitives to use.
 
-                    Default:[:class:`Day <.primitives.Day>`, \
-                             :class:`Year <.primitives.Year>`, \
-                             :class:`Month <.primitives.Month>`, \
-                             :class:`Haversine <.primitives.Haversine>`,\
-                             :class:`NumWords <.primitives.NumWords>`,\
-                             :class:`NumCharacters <.primitives.NumCharacters>`]
+                Default: ["day", "year", "month", "weekday", "haversine", "num_words", "num_characters"]
 
-            where_primitives (list[:class:`.primitives.AggregationPrimitive`], optional):
-                only add where clauses to these types of Aggregation
-                Features.
+            where_primitives (list[str or :class:`.primitives.PrimitiveBase`], optional):
+                only add where clauses to these types of Primitives
 
                 Default:
 
-                    [:class:`Count <.primitives.Count>`]
+                    ["count"]
 
             max_depth (int, optional) : maximum allowed depth of features.
                 Default: 2. If -1, no limit.
@@ -83,20 +68,20 @@ class DeepFeatureSynthesis(object):
                 features for. If None, use all paths.
 
             ignore_entities (list[str], optional): List of entities to
-                blacklist when creating features. If None, use all entities
+                blacklist when creating features. If None, use all entities.
 
-            ignore_variables (dict[str : str], optional): List of specific
+            ignore_variables (dict[str -> list[str]], optional): List of specific
                 variables within each entity to blacklist when creating features.
-                If None, use all variables
+                If None, use all variables.
 
             seed_features (list[:class:`.PrimitiveBase`], optional): List of manually
                 defined features to use.
 
-            drop_contains (list[str], optional): drop features
-                that contains these strings in name
+            drop_contains (list[str], optional): Drop features
+                that contains these strings in name.
 
-            drop_exact (list[str], optional): drop features that
-                exactly match these strings in name
+            drop_exact (list[str], optional): Drop features that
+                exactly match these strings in name.
 
             where_stacking_limit (int, optional): Cap the depth of the where features.
                 Default: 1
@@ -156,10 +141,6 @@ class DeepFeatureSynthesis(object):
         self.target_entity_id = target_entity_id
         self.es = entityset
 
-        self.where_primitives = where_primitives
-        if where_primitives is None:
-            self.where_primitives = [ftypes.Count]
-
         if filters is None:
             filters = [TraverseUp(),
                        LimitModeUniques()]
@@ -180,13 +161,48 @@ class DeepFeatureSynthesis(object):
             agg_primitives = [ftypes.Sum, ftypes.Std, ftypes.Max, ftypes.Skew,
                               ftypes.Min, ftypes.Mean, ftypes.Count,
                               ftypes.PercentTrue, ftypes.NUnique, ftypes.Mode]
-        self.agg_primitives = agg_primitives
+        self.agg_primitives = []
+        agg_prim_dict = ftypes.get_aggregation_primitives()
+        for a in agg_primitives:
+            if isinstance(a, basestring):
+                if a.lower() not in agg_prim_dict:
+                    raise ValueError("Unknown aggregation primitive {}. ".format(a),
+                                     "Call ft.primitives.list_primitives() to get",
+                                     " a list of available primitives")
+                self.agg_primitives.append(agg_prim_dict[a.lower()])
+            else:
+                self.agg_primitives.append(a)
 
         if trans_primitives is None:
             trans_primitives = [ftypes.Day, ftypes.Year, ftypes.Month,
                                 ftypes.Weekday, ftypes.Haversine,
                                 ftypes.NumWords, ftypes.NumCharacters]  # ftypes.TimeSince
-        self.trans_primitives = trans_primitives
+        self.trans_primitives = []
+        trans_prim_dict = ftypes.get_transform_primitives()
+        for t in trans_primitives:
+            if isinstance(t, basestring):
+                if t.lower() not in trans_prim_dict:
+                    raise ValueError("Unknown transform primitive {}. ".format(t),
+                                     "Call ft.primitives.list_primitives() to get",
+                                     " a list of available primitives")
+                self.trans_primitives.append(trans_prim_dict[t.lower()])
+            else:
+                self.trans_primitives.append(t)
+
+        if where_primitives is None:
+            where_primitives = [ftypes.Count]
+        self.where_primitives = []
+        for p in where_primitives:
+            if isinstance(p, basestring):
+                prim_obj = agg_prim_dict.get(p.lower(), None)
+                if prim_obj is None:
+                    raise ValueError("Unknown where primitive {}. ".format(p),
+                                     "Call ft.primitives.list_primitives() to get",
+                                     " a list of available primitives")
+
+                self.where_primitives.append(prim_obj)
+            else:
+                self.where_primitives.append(p)
 
         self.seed_features = seed_features or []
         self.drop_exact = drop_exact or []
@@ -198,21 +214,18 @@ class DeepFeatureSynthesis(object):
             entity using Deep Feature Synthesis algorithm
 
         Args:
-            variable_types (list[:class:`variable_types.Variable`] or str,
-                optional): Types of variables to return. If None, default to
+            variable_types (list[Variable] or str, optional): Types of
+                variables to return. If None, default to
                 Numeric, Categorical, Ordinal, and Boolean. If given as
                 the string 'all', use all available variable types.
 
             verbose (bool, optional): If True, print progress.
 
         Returns:
-            list[:class:`.primitives.BaseFeature`]: returns a list of
+            list[BaseFeature]: Returns a list of
                 features for target entity, sorted by feature depth
-                (shallow first)
+                (shallow first).
         """
-        self.verbose = verbose
-        if verbose:
-            self.pbar = make_tqdm_iterator(desc="Building features")
         all_features = {}
         for e in self.es.entities:
             if e not in self.ignore_entities:
@@ -288,15 +301,14 @@ class DeepFeatureSynthesis(object):
             new_features = new_features[:self.max_features]
 
         if verbose:
-            self.pbar.update(0)
-            sys.stdout.flush()
-            self.pbar.close()
-            self.verbose = None
+            print("Built {} features".format(len(new_features)))
+            verbose = None
         return new_features
 
     def _filter_features(self, features):
         assert isinstance(self.drop_exact, list), "drop_exact must be a list"
-        assert isinstance(self.drop_contains, list), "drop_contains must be a list"
+        assert isinstance(self.drop_contains,
+                          list), "drop_contains must be a list"
         f_keep = []
         for f in features:
             keep = True
@@ -318,12 +330,12 @@ class DeepFeatureSynthesis(object):
         create features for the provided entity
 
         Args:
-            entity (:class:`.Entity`): entity to create features for
-            entity_path (list[str]): list of entity ids
-            all_features (dict[:class:`.Entity`.id:dict->[str->:class:`BaseFeature`]]):
+            entity (Entity): Entity for which to create features.
+            entity_path (list[str]): List of entity ids.
+            all_features (dict[Entity.id -> dict[str -> BaseFeature]]):
                 Dict containing a dict for each entity. Each nested dict
-                has features as values with their ids as keys
-            max_depth (int) : maximum allowed depth of features
+                has features as values with their ids as keys.
+            max_depth (int) : Maximum allowed depth of features.
         """
         if max_depth is not None and max_depth < 0:
             return
@@ -376,7 +388,8 @@ class DeepFeatureSynthesis(object):
         """
         Step 3 - Create Transform features
         """
-        self._build_transform_features(all_features, entity, max_depth=max_depth)
+        self._build_transform_features(
+            all_features, entity, max_depth=max_depth)
 
         """
         Step 4 - Recursively build features for each entity in a forward relationship
@@ -438,14 +451,14 @@ class DeepFeatureSynthesis(object):
 
         Args:
             new_feature (:class:`.PrimitiveBase`): New feature being
-                checked
-            all_features (dict[:class:`.Entity`.id:dict->[str->:class:`BaseFeature`]]):
+                checked.
+            all_features (dict[Entity.id -> dict[str -> BaseFeature]]):
                 Dict containing a dict for each entity. Each nested dict
-                has features as values with their ids as keys
+                has features as values with their ids as keys.
 
         Returns:
-            dict{:class:`.PrimitiveBase`: {featureid: feature}: Dict of
-                features with any new features
+            dict[PrimitiveBase -> dict[featureid -> feature]]: Dict of
+                features with any new features.
 
         Raises:
             Exception: Attempted to add a single feature multiple times
@@ -462,19 +475,16 @@ class DeepFeatureSynthesis(object):
             raise Exception("DFS runtime error: tried to add feature %s"
                             " more than once" % (new_feature.get_name()))
 
-        # update the dict
-        if self.verbose:
-            self.pbar.update(1)
         all_features[entity_id][new_feature.hash()] = new_feature
 
     def _add_identity_features(self, all_features, entity):
         """converts all variables from the given entity into features
 
         Args:
-            all_features (dict[:class:`.Entity`.id:dict->[str->:class:`BaseFeature`]]):
+            all_features (dict[Entity.id -> dict[str -> BaseFeature]]):
                 Dict containing a dict for each entity. Each nested dict
-                has features as values with their ids as keys
-            entity (:class:`.Entity`): entity to calculate features for
+                has features as values with their ids as keys.
+            entity (Entity): Entity to calculate features for.
         """
         variables = entity.variables
         ignore_variables = self.ignore_variables[entity.id]
@@ -490,10 +500,10 @@ class DeepFeatureSynthesis(object):
             each one, based on some heuristics
 
         Args:
-            all_features (dict[:class:`.Entity`.id:dict->[str->:class:`BaseFeature`]]):
+            all_features (dict[Entity.id -> dict[str -> BaseFeature]]):
                 Dict containing a dict for each entity. Each nested dict
-                has features as values with their ids as keys
-            entity (:class:`.Entity`): entity to calculate features for
+                has features as values with their ids as keys.
+          entity (Entity): Entity to calculate features for.
         """
         identities = [f for _, f in all_features[entity.id].items()
                       if isinstance(f, IdentityFeature)]
@@ -512,7 +522,8 @@ class DeepFeatureSynthesis(object):
             all_features (dict[:class:`.Entity`.id:dict->[str->:class:`BaseFeature`]]):
                 Dict containing a dict for each entity. Each nested dict
                 has features as values with their ids as keys
-            entity (:class:`.Entity`): entity to calculate features for
+
+          entity (Entity): Entity to calculate features for.
         """
         if max_depth is not None and max_depth < 0:
             return
@@ -603,7 +614,8 @@ class DeepFeatureSynthesis(object):
             relationship_path = self.es.find_backward_path(parent_entity.id,
                                                            child_entity.id)
 
-            features = [f for f in features if not self._feature_in_relationship_path(relationship_path, f)]
+            features = [f for f in features if not self._feature_in_relationship_path(
+                relationship_path, f)]
             matching_inputs = match(input_types, features,
                                     commutative=agg_prim.commutative)
             wheres = list(self.where_clauses[child_entity.id])

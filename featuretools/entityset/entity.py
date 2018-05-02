@@ -13,7 +13,7 @@ from .base_entity import BaseEntity
 from .timedelta import Timedelta
 
 from featuretools import variable_types as vtypes
-from featuretools.utils.wrangle import _check_timedelta
+from featuretools.utils.wrangle import _check_time_type, _check_timedelta
 
 logger = logging.getLogger('featuretools.entityset')
 
@@ -35,27 +35,25 @@ class Entity(BaseEntity):
         """ Create Entity
 
         Args:
-            id (str): id of Entity
+            id (str): Id of Entity.
             df (pd.DataFrame): Dataframe providing the data for the
-                entity
-            entityset (:class:`.EntitySet`): entityset for this Entity
-            variable_types (dict[str->dict[str->type]]) : Optional mapping of
-                entity_id -> variable_types dict with which to initialize an
+                entity.
+            entityset (EntitySet): Entityset for this Entity.
+            variable_types (dict[str -> dict[str -> type]]) : Optional mapping of
+                entity_id to variable_types dict with which to initialize an
                 entity's store.
-                An entity's variable_types dict maps string variable ids to types (:class:`.Variable`)
-            name (str): name of entity
-            index (str): name of id column in the dataframe
-            time_index (str): name of time column in the dataframe
-            secondary_time_index (dict[str->str]): dictionary mapping columns
-                in the dataframe to the time index column they are associated with
-            last_time_index (pd.Series): time index of the last event for each
-                instance across all child entities
-            encoding (Optional(str)) : If None, will use 'ascii'. Another option is 'utf-8',
-                or any encoding supported by pandas. Passed into underlying
-                pandas.read_csv() and pandas.to_csv() calls, so see Pandas documentation
-                for more information
+                An entity's variable_types dict maps string variable ids to types (:class:`.Variable`).
+            name (str): Name of entity.
+            index (str): Name of id column in the dataframe.
+            time_index (str): Name of time column in the dataframe.
+            secondary_time_index (dict[str -> str]): Dictionary mapping columns
+                in the dataframe to the time index column they are associated with.
+            last_time_index (pd.Series): Time index of the last event for each
+                instance across all child entities.
+            encoding (str, optional)) : If None, will use 'ascii'. Another option is 'utf-8',
+                or any encoding supported by pandas.
             relationships (list): List of known relationships to other entities,
-                used for inferring variable types
+                used for inferring variable types.
 
         """
         assert len(df.columns) == len(set(df.columns)), "Duplicate column names"
@@ -129,11 +127,11 @@ class Entity(BaseEntity):
         """See first n instance in entity
 
         Args:
-            n (int) : number of instances to return
-            cutoff_time (pd.Timestamp,pd.DataFrame) : Timestamp(s) to restrict rows
+            n (int) : Number of instances to return.
+            cutoff_time (pd.Timestamp,pd.DataFrame) : Timestamp(s) to restrict rows.
 
         Returns:
-            :class:`pd.DataFrame` : Pandas DataFrame
+            :class:`pd.DataFrame` : A Pandas DataFrame.
 
         """
 
@@ -230,19 +228,19 @@ class Entity(BaseEntity):
 
         Args:
             instance_vals (pd.Dataframe, pd.Series, list[str] or str) :
-                Instance(s) to match
+                Instance(s) to match.
             variable_id (str) : Variable to query on. If None, query on index.
             columns (list[str]) : Columns to return. Return all columns if None.
             time_last (pd.TimeStamp) : Query data up to and including this
                 time. Only applies if entity has a time index.
-            training_window (dict[str-> :class:`Timedelta`] or :class:`Timedelta`, optional):
+            training_window (dict[str -> Timedelta] or Timedelta, optional):
                 Data older than time_last by more than this will be ignored
             return_sorted (bool) : Return instances in the same order as
                 the instance_vals are passed.
-            start (int) : If provided, only return instances equal to or after this index
-            end (int) : If provided, only return instances before this index
-            random_seed (int) : Provided to the shuffling procedure
-            shuffle (bool) : If True, values will be shuffled before returning
+            start (int) : If provided, only return instances equal to or after this index.
+            end (int) : If provided, only return instances before this index.
+            random_seed (int) : Provided to the shuffling procedure.
+            shuffle (bool) : If True, values will be shuffled before returning.
 
         Returns:
             pd.DataFrame : instances that match constraints
@@ -330,11 +328,11 @@ class Entity(BaseEntity):
 
         Args:
             ignore (list[str]): Names of variables (columns) for which to skip
-                inference
-            link_vars (list[str]): Name of linked variables to other entities
+                inference.
+            link_vars (list[str]): Name of linked variables to other entities.
         Returns:
-            list[:class:`.Variable`]: A list of variables describing the
-                contents of the dataframe
+            list[Variable]: A list of variables describing the
+                contents of the dataframe.
         """
         # TODO: set pk and pk types here
         ignore = ignore or []
@@ -424,8 +422,8 @@ class Entity(BaseEntity):
             generate "where" clauses
 
         Args:
-            max_values (int) : maximum number of values per variable to add
-            verbose (bool) : If True, print summary of interesting values found
+            max_values (int) : Maximum number of values per variable to add.
+            verbose (bool) : If True, print summary of interesting values found.
 
         Returns:
             None
@@ -518,6 +516,19 @@ class Entity(BaseEntity):
 
     def set_time_index(self, variable_id, already_sorted=False):
         if variable_id is not None:
+            # check time type
+            time_type = _check_time_type(self.df[variable_id].iloc[0])
+            if time_type is None:
+                raise TypeError("%s time index not recognized as numeric or"
+                                " datetime" % (self.id))
+
+            if self.entityset.time_type is None:
+                self.entityset.time_type = time_type
+            elif self.entityset.time_type != time_type:
+                raise TypeError("%s time index is %s type which differs from"
+                                " other entityset time indexes" %
+                                (self.id, time_type))
+
             # use stable sort
             if not already_sorted:
                 # sort by time variable, then by index
@@ -542,8 +553,8 @@ class Entity(BaseEntity):
     def set_index(self, variable_id, unique=True):
         """
         Args:
-            variable_id (string) : name of an existing variable to set as index
-            unique (bool) : whether to assert that the index is unique
+            variable_id (string) : Name of an existing variable to set as index.
+            unique (bool) : Whether to assert that the index is unique.
         """
         self.df = self.df.set_index(self.df[variable_id], drop=False)
         if unique:
@@ -553,8 +564,22 @@ class Entity(BaseEntity):
 
         super(Entity, self).set_index(variable_id)
 
+    def set_secondary_time_index(self, secondary_time_index):
+        if secondary_time_index is not None:
+            for time_index in secondary_time_index:
+                time_type = _check_time_type(self.df[time_index].iloc[0])
+                if time_type is None:
+                    raise TypeError("%s time index not recognized as numeric or"
+                                    " datetime" % (self.id))
+                if self.entityset.time_type != time_type:
+                    raise TypeError("%s time index is %s type which differs from"
+                                    " other entityset time indexes" %
+                                    (self.id, time_type))
+
+        super(Entity, self).set_secondary_time_index(secondary_time_index)
+
     def set_last_time_index(self, last_time_index):
-            self.last_time_index = last_time_index
+        self.last_time_index = last_time_index
 
     def _vals_to_series(self, instance_vals, variable_id):
         """
@@ -593,25 +618,19 @@ class Entity(BaseEntity):
         """
         if self.time_index:
             if time_last is not None and not df.empty:
-                # TODO: make sure this try/except is a good idea
-                try:
-                    df.iloc[0][self.time_index] <= time_last
-                except TypeError:
-                    pass
-                else:
-                    df = df[df[self.time_index] <= time_last]
-                    if training_window is not None:
-                        mask = df[self.time_index] >= time_last - training_window
-                        if self.last_time_index is not None:
-                            lti_slice = self.last_time_index.reindex(df.index)
-                            lti_mask = lti_slice >= time_last - training_window
-                            mask = mask | lti_mask
-                        else:
-                            logger.warning(
-                                "Using training_window but last_time_index is "
-                                "not set on entity %s" % (self.id)
-                            )
-                        df = df[mask]
+                df = df[df[self.time_index] <= time_last]
+                if training_window is not None:
+                    mask = df[self.time_index] >= time_last - training_window
+                    if self.last_time_index is not None:
+                        lti_slice = self.last_time_index.reindex(df.index)
+                        lti_mask = lti_slice >= time_last - training_window
+                        mask = mask | lti_mask
+                    else:
+                        logger.warning(
+                            "Using training_window but last_time_index is "
+                            "not set on entity %s" % (self.id)
+                        )
+                    df = df[mask]
 
         for secondary_time_index in self.secondary_time_index:
                 # should we use ignore time last here?

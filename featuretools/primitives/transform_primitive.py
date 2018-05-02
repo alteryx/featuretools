@@ -33,7 +33,7 @@ FEATURE_DATASETS = os.path.join(os.path.join(current_path, '..'),
 
 class TransformPrimitive(PrimitiveBase):
     """Feature for entity that is a based off one or more other features
-        in that entity"""
+        in that entity."""
     rolling_function = False
 
     def __init__(self, *base_features):
@@ -65,25 +65,27 @@ def make_trans_primitive(function, input_types, return_type, name=None,
     '''Returns a new transform primitive class
 
     Args:
-        function (function): function that takes in an array  and applies some
-            transformation to it.
+        function (function): Function that takes in an array and applies some
+            transformation to it, returning an array.
 
-        input_types (list[:class:`.Variable`]): variable types of the inputs
+        input_types (list[Variable]): Variable types of the inputs.
 
-        return_type (:class:`.Variable`): variable type of return
+        return_type (Variable): Variable type of return.
 
-        name (string): name of new primitive class to be generated
+        name (str): Name of the primitive. If no name is provided, the name
+            of `function` will be used.
 
-        description (string): description of primitive
+        description (str): Description of primitive.
 
-        cls_attributes (dict): custom attributes to be added to class
+        cls_attributes (dict[str -> anytype]): Custom attributes to be added to
+            class. Key is attribute name, value is the attribute value.
 
-        uses_calc_time (bool): if True, the cutoff time the feature is being
+        uses_calc_time (bool): If True, the cutoff time the feature is being
             calculated at will be passed to the function as the keyword
             argument 'time'.
 
         commutative (bool): If True, will only make one feature per unique set
-            of base features
+            of base features.
 
     Example:
         .. ipython :: python
@@ -102,9 +104,9 @@ def make_trans_primitive(function, input_types, return_type, name=None,
                                          str(self.kwargs['list_of_outputs']))
 
             IsIn = make_trans_primitive(
-                pd_is_in,
-                [Variable],
-                Boolean,
+                function=pd_is_in,
+                input_types=[Variable],
+                return_type=Boolean,
                 name="is_in",
                 description="For each value of the base feature, checks "
                 "whether it is in a list that provided.",
@@ -150,7 +152,7 @@ def make_trans_primitive(function, input_types, return_type, name=None,
 
 
 class IsNull(TransformPrimitive):
-    """For each value of base feature, return 'True' if value is null"""
+    """For each value of base feature, return 'True' if value is null."""
     name = "is_null"
     input_types = [Variable]
     return_type = Boolean
@@ -160,7 +162,7 @@ class IsNull(TransformPrimitive):
 
 
 class Absolute(TransformPrimitive):
-    """Absolute value of base feature"""
+    """Absolute value of base feature."""
     name = "absolute"
     input_types = [Numeric]
     return_type = Numeric
@@ -170,8 +172,7 @@ class Absolute(TransformPrimitive):
 
 
 class TimeSincePrevious(TransformPrimitive):
-    """Compute the time since the previous instance for each instance in a
-     time indexed entity"""
+    """Compute the time since the previous instance."""
     name = "time_since_previous"
     input_types = [DatetimeTimeIndex, Id]
     return_type = Numeric
@@ -180,9 +181,9 @@ class TimeSincePrevious(TransformPrimitive):
         """Summary
 
         Args:
-            base_feature (:class:`PrimitiveBase`): base feature
-            group_feature (None, optional): variable or feature to group
-                rows by before calculating diff
+            base_feature (PrimitiveBase): Base feature.
+            group_feature (None, optional): Variable or feature to group
+                rows by before calculating diff.
 
         """
         group_feature = self._check_feature(group_feature)
@@ -219,7 +220,7 @@ class DatetimeUnitBasePrimitive(TransformPrimitive):
 
 class TimedeltaUnitBasePrimitive(TransformPrimitive):
     """Transform Timedelta features into number of time units
-     (seconds/days/etc) they encompass"""
+     (seconds/days/etc) they encompass."""
     name = None
     input_types = [Timedelta]
     return_type = Numeric
@@ -229,22 +230,22 @@ class TimedeltaUnitBasePrimitive(TransformPrimitive):
 
 
 class Day(DatetimeUnitBasePrimitive):
-    """Transform a Datetime feature into the day"""
+    """Transform a Datetime feature into the day."""
     name = "day"
 
 
 class Days(TimedeltaUnitBasePrimitive):
-    """Transform a Timedelta feature into the number of days"""
+    """Transform a Timedelta feature into the number of days."""
     name = "days"
 
 
 class Hour(DatetimeUnitBasePrimitive):
-    """Transform a Datetime feature into the hour"""
+    """Transform a Datetime feature into the hour."""
     name = "hour"
 
 
 class Hours(TimedeltaUnitBasePrimitive):
-    """Transform a Timedelta feature into the number of hours"""
+    """Transform a Timedelta feature into the number of hours."""
     name = "hours"
 
     def get_function(self):
@@ -254,22 +255,22 @@ class Hours(TimedeltaUnitBasePrimitive):
 
 
 class Second(DatetimeUnitBasePrimitive):
-    """Transform a Datetime feature into the second"""
+    """Transform a Datetime feature into the second."""
     name = "second"
 
 
 class Seconds(TimedeltaUnitBasePrimitive):
-    """Transform a Timedelta feature into the number of seconds"""
+    """Transform a Timedelta feature into the number of seconds."""
     name = "seconds"
 
 
 class Minute(DatetimeUnitBasePrimitive):
-    """Transform a Datetime feature into the minute"""
+    """Transform a Datetime feature into the minute."""
     name = "minute"
 
 
 class Minutes(TimedeltaUnitBasePrimitive):
-    """Transform a Timedelta feature into the number of minutes"""
+    """Transform a Timedelta feature into the number of minutes."""
     name = "minutes"
 
     def get_function(self):
@@ -279,12 +280,12 @@ class Minutes(TimedeltaUnitBasePrimitive):
 
 
 class Week(DatetimeUnitBasePrimitive):
-    """Transform a Datetime feature into the week"""
+    """Transform a Datetime feature into the week."""
     name = "week"
 
 
 class Weeks(TimedeltaUnitBasePrimitive):
-    """Transform a Timedelta feature into the number of weeks"""
+    """Transform a Timedelta feature into the number of weeks."""
     name = "weeks"
 
     def get_function(self):
@@ -294,12 +295,12 @@ class Weeks(TimedeltaUnitBasePrimitive):
 
 
 class Month(DatetimeUnitBasePrimitive):
-    """Transform a Datetime feature into the month"""
+    """Transform a Datetime feature into the month."""
     name = "month"
 
 
 class Months(TimedeltaUnitBasePrimitive):
-    """Transform a Timedelta feature into the number of months"""
+    """Transform a Timedelta feature into the number of months."""
     name = "months"
 
     def get_function(self):
@@ -309,12 +310,12 @@ class Months(TimedeltaUnitBasePrimitive):
 
 
 class Year(DatetimeUnitBasePrimitive):
-    """Transform a Datetime feature into the year"""
+    """Transform a Datetime feature into the year."""
     name = "year"
 
 
 class Years(TimedeltaUnitBasePrimitive):
-    """Transform a Timedelta feature into the number of years"""
+    """Transform a Timedelta feature into the number of years."""
     name = "years"
 
     def get_function(self):
@@ -324,7 +325,7 @@ class Years(TimedeltaUnitBasePrimitive):
 
 
 class Weekend(TransformPrimitive):
-    """Transform Datetime feature into the boolean of Weekend"""
+    """Transform Datetime feature into the boolean of Weekend."""
     name = "is_weekend"
     input_types = [Datetime]
     return_type = Boolean
@@ -334,32 +335,32 @@ class Weekend(TransformPrimitive):
 
 
 class Weekday(DatetimeUnitBasePrimitive):
-    """Transform Datetime feature into the boolean of Weekday"""
+    """Transform Datetime feature into the boolean of Weekday."""
     name = "weekday"
 
 
 class NumCharacters(TransformPrimitive):
-    """
-    Return the characters in a given string.
+    """Return the characters in a given string.
     """
     name = 'characters'
     input_types = [Text]
     return_type = Numeric
 
     def get_function(self):
-        return lambda array: pd.Series(array).str.len()
+        return lambda array: pd.Series(array).fillna('').str.len()
 
 
 class NumWords(TransformPrimitive):
-    """
-    Returns the words in a given string by counting the spaces.
+    """Returns the words in a given string by counting the spaces.
     """
     name = 'numwords'
     input_types = [Text]
     return_type = Numeric
 
     def get_function(self):
-        return lambda array: pd.Series([x.count(" ") + 1 for x in array])
+        def word_counter(array):
+            return pd.Series(array).fillna('').str.count(' ') + 1
+        return word_counter
 
 
 # class Like(TransformPrimitive):
@@ -389,31 +390,17 @@ def pd_time_since(array, time):
     return (time - pd.DatetimeIndex(array)).values
 
 
-class TimeSince(TransformPrimitive):
-    """
-    For each value of the base feature, compute the timedelta between it and
-    a datetime
-    """
-    name = "time_since"
-    input_types = [[DatetimeTimeIndex], [Datetime]]
-    return_type = Timedelta
-    uses_calc_time = True
-
-    def get_function(self):
-        return pd_time_since
-
-
-# TimeSince = make_trans_primitive(function=pd_time_since,
-                                 # input_types=[[DatetimeTimeIndex], [Datetime]],
-                                 # return_type=Timedelta,
-                                 # uses_calc_time=True,
-                                 # name="time_since")
+TimeSince = make_trans_primitive(function=pd_time_since,
+                                 input_types=[[DatetimeTimeIndex], [Datetime]],
+                                 return_type=Timedelta,
+                                 uses_calc_time=True,
+                                 description="Calculates time since the cutoff time.",
+                                 name="time_since")
 
 
 class DaysSince(TransformPrimitive):
-    """
-    For each value of the base feature, compute the number of days between it
-    and a datetime
+    """For each value of the base feature, compute the number of days between it
+    and a datetime.
     """
     name = "days_since"
     input_types = [DatetimeTimeIndex]
@@ -429,9 +416,7 @@ class DaysSince(TransformPrimitive):
 
 
 class IsIn(TransformPrimitive):
-    """
-    For each value of the base feature, checks whether it is in a list that is
-    provided.
+    """For each value of the base feature, checks whether it is in a provided list.
     """
     name = "isin"
     input_types = [Variable]
@@ -454,11 +439,9 @@ class IsIn(TransformPrimitive):
 
 
 class Diff(TransformPrimitive):
-    """
-    For each value of the base feature, compute the difference between it and
-    the previous value.
+    """Compute the difference between the value of a base feature and the previous value.
 
-    If it is a Datetime feature, compute the difference in seconds
+    If it is a Datetime feature, compute the difference in seconds.
     """
     name = "diff"
     input_types = [Numeric, Id]
@@ -468,9 +451,9 @@ class Diff(TransformPrimitive):
         """Summary
 
         Args:
-            base_feature (:class:`PrimitiveBase`): base feature
-            group_feature (:class:`PrimitiveBase`): variable or feature to
-                group rows by before calculating diff
+            base_feature (PrimitiveBase): Base feature.
+            group_feature (PrimitiveBase): Variable or feature to
+                group rows by before calculating diff.
 
         """
         self.group_feature = self._check_feature(group_feature)
@@ -496,8 +479,7 @@ class Diff(TransformPrimitive):
 
 
 class Not(TransformPrimitive):
-    """
-    For each value of the base feature, negates the boolean value.
+    """For each value of the base feature, negates the boolean value.
     """
     name = "not"
     input_types = [Boolean]
@@ -514,11 +496,11 @@ class Not(TransformPrimitive):
 
 
 class Percentile(TransformPrimitive):
-    """
-    For each value of the base feature, determines the percentile in relation
+    """For each value of the base feature, determines the percentile in relation
     to the rest of the feature.
     """
     name = 'percentile'
+    uses_full_entity = True
     input_types = [Numeric]
     return_type = Numeric
 
@@ -533,9 +515,8 @@ def pd_time_unit(time_unit):
 
 
 class Latitude(TransformPrimitive):
-    """
-    Returns the first value of the tuple base feature. For
-    use with the LatLong variable type.
+    """Returns the first value of the tuple base feature.
+       For use with the LatLong variable type.
     """
     name = 'latitude'
     input_types = [LatLong]
@@ -546,9 +527,8 @@ class Latitude(TransformPrimitive):
 
 
 class Longitude(TransformPrimitive):
-    """
-    Returns the second value on the tuple base feature. For
-    use with the LatLong variable type.
+    """Returns the second value on the tuple base feature.
+       For use with the LatLong variable type.
     """
     name = 'longitude'
     input_types = [LatLong]
@@ -559,9 +539,7 @@ class Longitude(TransformPrimitive):
 
 
 class Haversine(TransformPrimitive):
-    """
-    Calculate the approximate haversine distance in miles between
-    two LatLong variable types.
+    """Calculate the approximate haversine distance in miles between two LatLong variable types.
     """
     name = 'haversine'
     input_types = [LatLong, LatLong]
@@ -574,10 +552,12 @@ class Haversine(TransformPrimitive):
             lon_1s = np.array([x[1] for x in latlong1])
             lat_2s = np.array([x[0] for x in latlong2])
             lon_2s = np.array([x[1] for x in latlong2])
-            lon1, lat1, lon2, lat2 = map(np.radians, [lon_1s, lat_1s, lon_2s, lat_2s])
+            lon1, lat1, lon2, lat2 = map(
+                np.radians, [lon_1s, lat_1s, lon_2s, lat_2s])
             dlon = lon2 - lon1
             dlat = lat2 - lat1
-            a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.0)**2
+            a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * \
+                np.cos(lat2) * np.sin(dlon / 2.0)**2
             mi = 3950 * 2 * np.arcsin(np.sqrt(a))
             return mi
         return haversine

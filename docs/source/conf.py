@@ -37,7 +37,6 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.githubpages',
     'nbsphinx',
-    'rst2pdf.pdfbuilder',
     'IPython.sphinxext.ipython_console_highlighting',
     'IPython.sphinxext.ipython_directive',
     'sphinx.ext.extlinks'
@@ -70,8 +69,6 @@ master_doc = 'index'
 project = u'Featuretools'
 copyright = u'2017, Feature Labs. BSD License'
 author = u'Feature Labs, Inc.'
-pdf_documents = [('index', u'featuretools', project, author), ]
-pdf_use_index = False
 latex_documents = [
     (master_doc, 'featuretools.tex', u'test Documentation',
      u'test', 'manual'),

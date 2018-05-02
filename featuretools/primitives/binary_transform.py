@@ -173,7 +173,7 @@ class ArithmeticFeature(BinaryFeature):
 
 
 class Add(ArithmeticFeature):
-    """Creates a transform feature that adds two features"""
+    """Creates a transform feature that adds two features."""
     operator = ArithmeticFeature._ADD
     commutative = True
     input_types = [[Numeric, Numeric],
@@ -190,7 +190,7 @@ class Add(ArithmeticFeature):
 
 
 class Subtract(ArithmeticFeature):
-    """Creates a transform feature that subtracts two features"""
+    """Creates a transform feature that subtracts two features."""
     operator = ArithmeticFeature._SUB
     input_types = [[Numeric, Numeric],
                    [Numeric],
@@ -206,23 +206,23 @@ class Subtract(ArithmeticFeature):
 
 
 class Multiply(ArithmeticFeature):
-    """Creates a transform feature that multplies two features"""
+    """Creates a transform feature that multplies two features."""
     operator = ArithmeticFeature._MUL
     commutative = True
 
 
 class Divide(ArithmeticFeature):
-    """Creates a transform feature that divides two features"""
+    """Creates a transform feature that divides two features."""
     operator = ArithmeticFeature._DIV
 
 
 class Mod(ArithmeticFeature):
-    """Creates a transform feature that divides two features"""
+    """Creates a transform feature that divides two features."""
     operator = ArithmeticFeature._MOD
 
 
 class Negate(Subtract):
-    """Creates a transform feature that negates a feature"""
+    """Creates a transform feature that negates a feature."""
     input_types = [Numeric]
 
     def __init__(self, f):
@@ -233,8 +233,8 @@ class Negate(Subtract):
 
 
 class Compare(BinaryFeature):
-    """Compares two features using provided operator
-        returns a boolean value"""
+    """Compares two features using provided operator.
+        Returns a boolean value"""
     EQ = '='
     NE = '!='
     LT = '<'
@@ -281,39 +281,39 @@ class Compare(BinaryFeature):
 
 
 class Equals(Compare):
-    """For each value, determine if it is equal to another value"""
+    """For each value, determine if it is equal to another value."""
     commutative = True
     operator = '='
 
 
 class NotEquals(Compare):
-    """For each value, determine if it is not equal to another value"""
+    """For each value, determine if it is not equal to another value."""
     commutative = True
     operator = '!='
 
 
 class GreaterThan(Compare):
-    """For each value, determine if it is greater than another value"""
+    """For each value, determine if it is greater than another value."""
     operator = '>'
 
 
 class GreaterThanEqualTo(Compare):
-    """For each value, determine if it is greater than or equal to another value"""
+    """For each value, determine if it is greater than or equal to another value."""
     operator = '>='
 
 
 class LessThan(Compare):
-    """"For each value, determine if it is less than another value"""
+    """"For each value, determine if it is less than another value."""
     operator = '<'
 
 
 class LessThanEqualTo(Compare):
-    """"For each value, determien if it is less than or equal to another value"""
+    """"For each value, determien if it is less than or equal to another value."""
     operator = '<='
 
 
 class And(TransformPrimitive):
-    """For two boolean values, determine if both values are 'True'"""
+    """For two boolean values, determine if both values are 'True'."""
     name = "and"
     input_types = [Boolean, Boolean]
     return_type = Boolean
@@ -324,7 +324,7 @@ class And(TransformPrimitive):
 
 
 class Or(TransformPrimitive):
-    """For two boolean values, determine if one value is 'True'"""
+    """For two boolean values, determine if one value is 'True'."""
     name = "or"
     input_types = [Boolean, Boolean]
     return_type = Boolean

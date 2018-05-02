@@ -1,7 +1,6 @@
 import os
 from builtins import str
 
-import dask.dataframe as dd
 import pandas as pd
 
 import featuretools as ft
@@ -11,11 +10,17 @@ from featuretools.config import config as ft_config
 def load_flight(entity_id='flight_dataset', nrows=None, force=False):
     '''
     Returns the flight dataset. Publishes the dataset if it has not been
-    published before.
+    published before. This function requires Dask, which is not a requirement
+    of Featuretools.
 
     Args:
-        entity_id (str):  id of retail dataset on scheduler
+        entity_id (str):  Id of retail dataset on scheduler.
     '''
+    try:
+        import dask.dataframe as dd
+    except:
+        raise ImportError('Dask is a requirement of load_flight. Please make sure you have the latest version installed.')
+
     demo_save_path = make_flight_pathname(nrows)
 
     es = ft.EntitySet(entity_id)
@@ -45,7 +50,8 @@ def load_flight(entity_id='flight_dataset', nrows=None, force=False):
                              dataframe=df,
                              time_index='FL_DATE')
 
-    es.combine_variables("trips", "flight_id", ["UNIQUE_CARRIER", "TAIL_NUM", "FL_NUM"])
+    es.combine_variables("trips", "flight_id", [
+                         "UNIQUE_CARRIER", "TAIL_NUM", "FL_NUM"])
 
     es.normalize_entity(base_entity_id="trips",
                         new_entity_id="flights",
