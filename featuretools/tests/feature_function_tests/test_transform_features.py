@@ -4,12 +4,11 @@ import pytest
 
 from ..testing_utils import make_ecommerce_entityset
 
-from featuretools import Feature, Timedelta
+from featuretools import Timedelta
 from featuretools.computational_backends import PandasBackend
 from featuretools.primitives import (
     Absolute,
     Add,
-    And,
     Compare,
     Count,
     CumCount,
@@ -42,7 +41,6 @@ from featuretools.primitives import (
     NotEquals,
     NumCharacters,
     NumWords,
-    Or,
     Percentile,
     Subtract,
     Sum,
@@ -749,8 +747,6 @@ def test_arithmetic_ord(es):
 def test_overrides(es):
     # P TODO:
     value = Feature(es['log']['value'])
-    import pdb
-    pdb.set_trace()
     value2 = Feature(es['log']['value_2'])
 
     feats = [Add, Subtract, Multiply, Divide]
