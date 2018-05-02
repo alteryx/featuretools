@@ -656,7 +656,7 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
     if 'cluster' in dask_kwargs:
         cluster = dask_kwargs['cluster']
     else:
-        cluster = LocalCluster(n_workers=njobs)
+        cluster = LocalCluster(n_workers=min(len(chunks), njobs))
     client = Client(cluster)
 
     # scatter the entityset
