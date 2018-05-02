@@ -725,25 +725,6 @@ def test_text_primitives(es):
         assert v == char_counts[i]
 
 
-def test_arithmetic_ord(es):
-    # P TODO:
-    hour = Hour(es['log']['datetime'])
-    day = Day(es['log']['datetime'])
-    to_test = [(Add, [19, 19, 19, 19]),
-               (Subtract, [-1, -1, -1, -1])]
-
-    features = []
-    features.append(Add(day, hour))
-    features.append(Subtract(day, hour))
-
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(instance_ids=[0, 3, 5, 7],
-                                               time_last=None)
-    for i, test in enumerate(to_test):
-        v = df[features[i].get_name()].values.tolist()
-        assert v == test[1]
-
-
 def test_overrides(es):
     # P TODO:
     value = Feature(es['log']['value'])

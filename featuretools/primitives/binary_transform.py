@@ -11,7 +11,6 @@ from featuretools.variable_types import (
     Boolean,
     Datetime,
     Numeric,
-    Ordinal,
     Timedelta,
     TimeIndex,
     Variable
@@ -187,7 +186,6 @@ class Add(ArithmeticFeature):
                    [Timedelta, Timedelta],
                    [Datetime, Timedelta],
                    [Timedelta, Datetime],
-                   [Ordinal, Ordinal],
                    ]
 
 
@@ -204,7 +202,6 @@ class Subtract(ArithmeticFeature):
                    [Timedelta, Timedelta],
                    [Datetime, Timedelta],
                    [Timedelta, Datetime],
-                   [Ordinal, Ordinal],
                    ]
 
 
