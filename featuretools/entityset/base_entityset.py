@@ -127,7 +127,7 @@ class BaseEntitySet(FTBase):
         return entityset.get_dataframe(entity_id)
 
     def __repr__(self):
-        fmat = self.id
+        fmat = self.get_name()
         repr_out = u"Entityset: {}\n".format(fmat)
         repr_out += u"  Entities:"
         for e in self.entities:
