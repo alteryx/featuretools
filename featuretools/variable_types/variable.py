@@ -4,7 +4,6 @@ from builtins import object
 
 from past.builtins import basestring
 
-import featuretools as ft
 from featuretools.core.base import FTBase
 
 COMMON_STATISTICS = ["count"]
@@ -51,23 +50,14 @@ class Variable(FTBase):
         self._statistics = {stat: None for stat in self._setter_stats}
         self._interesting_values = None
 
-    def __getstate__(self):
-        if hasattr(ft, '_pickling') and ft._pickling:
-            return {k: v for (k, v) in self.__dict__.items() if k != 'entity'}
-        return self.__dict__
-
-    def __setstate__(self, d):
-        if hasattr(ft, '_pickling') and ft._pickling:
-            d['entity'] = ft._current_es[d['entity_id']]
-        self.__dict__ = d
-
     @property
     def entityset(self):
         return self.entity.entityset
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and \
-            self.__dict__ == other.__dict__
+            self.id == other.id and \
+            self.entity_id == other.entity_id
 
     def __repr__(self):
         return "<Variable: {} (dtype = {}, count = {})>".format(self.name, self.dtype, self.count)
@@ -161,22 +151,6 @@ class Variable(FTBase):
             return Text
         else:
             raise ValueError("Unrecognized variable dtype: {}".format(dtype))
-
-    def head(self, n=10, cutoff_time=None):
-        """See first n instance in variable
-
-        Args:
-            n (int) : Number of instances to return.
-            cutoff_time (pd.Timestamp,pd.DataFrame) : Timestamp(s) to restrict rows.
-
-        Returns:
-            :class:`pd.DataFrame` : Pandas DataFrame
-
-        """
-        series = self.entityset.head(entity_id=self.entity_id,
-                                     n=n, variable_id=self.id,
-                                     cutoff_time=cutoff_time)
-        return series.to_frame()
 
     @property
     def series(self):

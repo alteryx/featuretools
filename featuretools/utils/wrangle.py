@@ -227,3 +227,30 @@ def _check_time_type(time):
     elif isinstance(time, (datetime, np.datetime64)):
         time_type = variable_types.DatetimeTimeIndex
     return time_type
+
+
+def _dataframes_equal(df1, df2):
+    if df1.empty and not df2.empty:
+        return False
+    elif not df1.empty and df2.empty:
+        return False
+    elif not df1.empty and not df2.empty:
+        for c in df1:
+            normal_compare = True
+            if df1[c].dtype == object:
+                dropped = df1[c].dropna()
+                if not dropped.empty:
+                    if isinstance(dropped.iloc[0], tuple):
+                        dropped2 = df2[c].dropna()
+                        normal_compare = False
+                        for i in range(len(dropped.iloc[0])):
+                            try:
+                                equal = dropped.apply(lambda x: x[i]).equals(
+                                    dropped2.apply(lambda x: x[i]))
+                            except IndexError:
+                                raise IndexError("If column data are tuples, they must all be the same length")
+                            if not equal:
+                                return False
+            if normal_compare and not df1[c].equals(df2[c]):
+                return False
+    return True

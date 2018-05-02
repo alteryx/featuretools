@@ -32,8 +32,8 @@ from featuretools.variable_types import NumericTimeIndex
 logger = logging.getLogger('featuretools.computational_backend')
 
 
-def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
-                             entities=None, relationships=None, entityset=None,
+def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instance_ids=None,
+                             entities=None, relationships=None,
                              cutoff_time_in_index=False,
                              training_window=None, approximate=None,
                              save_progress=None, verbose=False,
@@ -43,6 +43,9 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
 
     Args:
         features (list[PrimitiveBase]): Feature definitions to be calculated.
+
+        entityset (EntitySet): An already initialized entityset. Required if `entities` and `relationships`
+            not provided
 
         cutoff_time (pd.DataFrame or Datetime): Specifies at which time to calculate
             the features for each instance.  Can either be a DataFrame with
@@ -61,9 +64,6 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
         relationships (list[(str, str, str, str)]): list of relationships
             between entities. List items are a tuple with the format
             (parent entity id, parent variable, child entity id, child variable).
-
-        entityset (EntitySet): An already initialized entityset. Required if
-            entities and relationships are not defined.
 
         cutoff_time_in_index (bool): If True, return a DataFrame with a MultiIndex
             where the second index is the cutoff time (first is instance id).
@@ -113,12 +113,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
         if entities is not None and relationships is not None:
             entityset = EntitySet("entityset", entities, relationships)
 
-    if entityset is not None:
-        for f in features:
-            f.entityset = entityset
-
-    entityset = features[0].entityset
-    target_entity = features[0].entity
+    target_entity = entityset[features[0].entity.id]
     pass_columns = []
 
     if not isinstance(cutoff_time, pd.DataFrame):
@@ -490,6 +485,7 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
 
         cutoff_time_to_pass.drop_duplicates(inplace=True)
         approx_fm = calculate_feature_matrix(approx_features,
+                                             entityset,
                                              cutoff_time=cutoff_time_to_pass,
                                              training_window=training_window,
                                              approximate=None,
@@ -670,13 +666,7 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
         client.publish_dataset(**{entityset.id: _es})
 
     # save features to a tempfile and scatter it
-    ft._pickling = True
-    try:
-        pickled_feats = cloudpickle.dumps(features)
-    except Exception:
-        ft._pickling = False
-        raise
-    ft._pickling = False
+    pickled_feats = cloudpickle.dumps(features)
     _saved_features = client.scatter(pickled_feats)
     client.replicate([_es, _saved_features])
     end = time.time()
@@ -726,16 +716,7 @@ def dask_calculate_chunk(chunk, saved_features, entityset,
                          save_progress, no_unapproximated_aggs,
                          cutoff_df_time_var, target_time, pass_columns):
     # load features
-    ft._pickling = True
-    ft._current_es = entityset
-    try:
-        features = cloudpickle.loads(saved_features)
-    except Exception:
-        ft._current_es = None
-        ft._pickling = False
-        raise
-    ft._current_es = None
-    ft._pickling = False
+    features = cloudpickle.loads(saved_features)
 
     # create backend
     backend = PandasBackend(entityset, features)

@@ -18,6 +18,7 @@ class Relationship(FTBase):
                 child entity.  Must be a Discrete Variable
 
         """
+
         self.entityset = child_variable.entityset
         self._parent_entity_id = parent_variable.entity.id
         self._child_entity_id = child_variable.entity.id
