@@ -649,65 +649,70 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
                               no_unapproximated_aggs, cutoff_df_time_var,
                               target_time, pass_columns, dask_kwargs=None):
     # TODO: support additional dask configuration
-    if 'cluster' in dask_kwargs:
-        cluster = dask_kwargs['cluster']
-    else:
-        cluster = LocalCluster(n_workers=min(len(chunks), njobs))
-    client = Client(cluster)
+    client = None
+    cluster = None
+    try:
+        if 'cluster' in dask_kwargs:
+            cluster = dask_kwargs['cluster']
+        else:
+            cluster = LocalCluster(n_workers=min(len(chunks), njobs))
 
-    # scatter the entityset
-    # denote future with leading underscore
-    start = time.time()
-    if entityset.id in client.list_datasets():
-        print("Using entityset persisted on the cluster as dataset %s" % (entityset.id))
-        _es = client.get_dataset(entityset.id)
-    else:
-        _es = client.scatter({entityset.id: entityset})[entityset.id]
-        client.publish_dataset(**{entityset.id: _es})
+        client = Client(cluster)
+        # scatter the entityset
+        # denote future with leading underscore
+        start = time.time()
+        if entityset.id in client.list_datasets():
+            print("Using entityset persisted on the cluster as dataset %s" % (entityset.id))
+            _es = client.get_dataset(entityset.id)
+        else:
+            _es = client.scatter({entityset.id: entityset})[entityset.id]
+            client.publish_dataset(**{entityset.id: _es})
 
-    # save features to a tempfile and scatter it
-    pickled_feats = cloudpickle.dumps(features)
-    _saved_features = client.scatter(pickled_feats)
-    client.replicate([_es, _saved_features])
-    end = time.time()
-    scatter_time = end - start
-    print(scatter_time)
+        # save features to a tempfile and scatter it
+        pickled_feats = cloudpickle.dumps(features)
+        _saved_features = client.scatter(pickled_feats)
+        client.replicate([_es, _saved_features])
+        end = time.time()
+        scatter_time = end - start
+        print(scatter_time)
 
-    # map chunks
-    _chunks = client.map(dask_calculate_chunk,
-                         chunks,
-                         saved_features=_saved_features,
-                         entityset=_es,
-                         approximate=approximate,
-                         training_window=training_window,
-                         profile=False,
-                         verbose=False,
-                         save_progress=save_progress,
-                         no_unapproximated_aggs=no_unapproximated_aggs,
-                         cutoff_df_time_var=cutoff_df_time_var,
-                         target_time=target_time,
-                         pass_columns=pass_columns)
+        # map chunks
+        _chunks = client.map(dask_calculate_chunk,
+                             chunks,
+                             saved_features=_saved_features,
+                             entityset=_es,
+                             approximate=approximate,
+                             training_window=training_window,
+                             profile=False,
+                             verbose=False,
+                             save_progress=save_progress,
+                             no_unapproximated_aggs=no_unapproximated_aggs,
+                             cutoff_df_time_var=cutoff_df_time_var,
+                             target_time=target_time,
+                             pass_columns=pass_columns)
 
-    feature_matrix = []
-    # TODO: handle errored / failed
-    iterator = as_completed(_chunks, with_results=True).batches()
-    if verbose:
-        pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
-                       "Progress: {l_bar}{bar}| "
-                       "Calculated: {n}/{total} chunks")
-        iterator = make_tqdm_iterator(iterable=iterator,
-                                      total=len(_chunks),
-                                      bar_format=pbar_string)
-    for batch in iterator:
-        for future, result in batch:
-            # gather finished futures
-            feature_matrix.append(result)
+        feature_matrix = []
+        # TODO: handle errored / failed
+        iterator = as_completed(_chunks, with_results=True).batches()
+        if verbose:
+            pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
+                           "Progress: {l_bar}{bar}| "
+                           "Calculated: {n}/{total} chunks")
+            iterator = make_tqdm_iterator(iterable=iterator,
+                                          total=len(_chunks),
+                                          bar_format=pbar_string)
+        for batch in iterator:
+            for future, result in batch:
+                # gather finished futures
+                feature_matrix.append(result)
+    except Exception as e:
+        raise e
+    finally:
+        if isinstance(cluster, LocalCluster):
+            cluster.close()
+        if client is not None:
+            client.close()
 
-    # only close cluster if create within function
-    # TODO: check if LocalCluster will clean itself up
-    if 'cluster' not in dask_kwargs:
-        cluster.close()
-    client.close()
     return feature_matrix
 
 
