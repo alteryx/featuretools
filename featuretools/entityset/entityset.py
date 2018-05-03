@@ -86,6 +86,14 @@ class EntitySet(BaseEntitySet):
     @property
     # TODO add comment about memory
     def metadata(self):
+        '''
+        Defined as a property because an EntitySet's metadata
+        is used in many places, for instance, for each feature in a feature list.
+        To prevent using copying the full metadata object to each feature,
+        we generate a new metadata object and check if it's the same as the existing one,
+        and if it is return the existing one. Thus, all features in the feature list
+        would reference the same object, rather than copies. This saves a lot of memory
+        '''
         if self._metadata is None:
             self._metadata = self._gen_metadata()
         else:
