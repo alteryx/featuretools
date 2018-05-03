@@ -202,8 +202,7 @@ class TimeSincePrevious(TransformPrimitive):
             grouped_df = pd.DataFrame.from_dict({bf_name: base_array,
                                                  groupby: group_array})
             grouped_df = grouped_df.groupby(groupby).diff()
-            return grouped_df[bf_name].apply(lambda x:
-                                             x.total_seconds())
+            return grouped_df[bf_name].apply(lambda x: x.total_seconds())
         return pd_diff
 
 

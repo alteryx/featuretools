@@ -68,7 +68,7 @@ class PrimitiveBase(FTBase):
                 self.__class__, base_features))
 
         self.entity_id = entity.id
-        self.entityset = entity.entityset
+        self.entityset = entity.entityset.metadata
 
         # P TODO: where should this logic go?
         # not all primitives support use previous so doesn't make sense to have
@@ -89,29 +89,6 @@ class PrimitiveBase(FTBase):
         assert self._check_input_types(), ("Provided inputs don't match input "
                                            "type requirements")
         super(PrimitiveBase, self).__init__(**kwargs)
-
-    def __getstate__(self):
-        if hasattr(ft, '_pickling') and ft._pickling:
-            from featuretools.entityset import EntitySet, Entity
-            pickled = {}
-            for k, v in self.__dict__.items():
-                if isinstance(v, Entity):
-                    pickled[k] = "entity:{}".format(v.id)
-                elif isinstance(v, EntitySet):
-                    pickled[k] = "entityset"
-                else:
-                    pickled[k] = v
-            return pickled
-        return self.__dict__
-
-    def __setstate__(self, d):
-        self.__dict__ = d
-        if hasattr(ft, '_pickling') and ft._pickling:
-            for k, v in d.items():
-                if isinstance(v, basestring) and v.startswith('entity:'):
-                    self.__dict__[k] = ft._current_es[v.replace('entity:', '')]
-                elif isinstance(v, basestring) and v == 'entityset':
-                    self.__dict__[k] = ft._current_es
 
     @property
     def entity(self):
@@ -152,31 +129,11 @@ class PrimitiveBase(FTBase):
         d['entityset'] = normed
         return d
 
-    def head(self, n=10, cutoff_time=None):
-        """See values for feature
-
-        Args:
-            n (int) : number of instances to return
-
-        Returns:
-            :class:`pd.DataFrame` : Pandas DataFrame
-        """
-        from featuretools import calculate_feature_matrix
-        cfm = calculate_feature_matrix([self], cutoff_time=cutoff_time).head(n)
-        return cfm
-
-    def sample(self, n=10, cutoff_time=None):
-        from featuretools import calculate_feature_matrix
-        cfm = calculate_feature_matrix([self], cutoff_time=cutoff_time)
-        return cfm.sample(n)
-
     def _check_feature(self, feature):
         if isinstance(feature, Variable):
             return IdentityFeature(feature)
         elif isinstance(feature, PrimitiveBase):
             return feature
-        if feature is None:
-            pdb.set_trace()
         raise Exception("Not a feature")
 
     def __repr__(self):
@@ -486,7 +443,8 @@ class IdentityFeature(PrimitiveBase):
     def __init__(self, variable):
         # TODO: perhaps we can change the attributes of this class to
         # just entityset reference to original variable object
-        self.variable = variable
+        entity_id = variable.entity_id
+        self.variable = variable.entityset.metadata[entity_id][variable.id]
         self.return_type = type(variable)
         self.base_feature = None
         super(IdentityFeature, self).__init__(variable.entity, [])
