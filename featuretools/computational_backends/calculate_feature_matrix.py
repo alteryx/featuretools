@@ -655,7 +655,14 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
         if 'cluster' in dask_kwargs:
             cluster = dask_kwargs['cluster']
         else:
-            cluster = LocalCluster(n_workers=min(len(chunks), njobs))
+            if njobs < 0:
+                # consider limited core access case
+                import multiprocessing
+                cpus = multiprocessing.cpu_count()
+                njobs = max(cpus + 1 + njobs, 1)
+
+            workers = min(njobs, len(chunks))
+            cluster = LocalCluster(n_workers=workers)
 
         client = Client(cluster)
         # scatter the entityset

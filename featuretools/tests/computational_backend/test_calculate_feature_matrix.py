@@ -815,6 +815,17 @@ def test_njobs(entityset):
 
     assert (feature_matrix == labels).values.all()
 
+    feature_matrix = calculate_feature_matrix([property_feature],
+                                              entityset=entityset,
+                                              instance_ids=range(17),
+                                              cutoff_time=times,
+                                              verbose=True,
+                                              chunk_size=.13,
+                                              njobs=-1,
+                                              approximate='1 hour')
+
+    assert (feature_matrix == labels).values.all()
+
 
 def test_integer_time_index(int_es):
     times = list(range(8, 18)) + list(range(19, 26))
