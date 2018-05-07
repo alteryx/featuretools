@@ -270,7 +270,8 @@ class Compare(BinaryFeature):
     }
 
     name = "compare"
-    input_types = [[Variable], [Variable, Variable]]
+    input_types = [[Variable, Variable],
+                   [Variable]]
     return_type = Boolean
 
     def invert(self):
