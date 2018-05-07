@@ -58,14 +58,15 @@ def load_retail(id='demo_retail_data', nrows=None, use_cache=True):
     csv_s3 = "https://s3.amazonaws.com/featurelabs-static/online-retail-logs.csv"
 
     if not use_cache or not os.path.isfile(demo_save_path):
+
         df = pd.read_csv(csv_s3,
                          nrows=nrows,
-                         parse_dates=["InvoiceDate"])
+                         parse_dates=["order_date"])
         df.to_csv(demo_save_path, index_label='order_product_id')
 
     df = pd.read_csv(demo_save_path,
                      nrows=nrows,
-                     parse_dates=["InvoiceDate"])
+                     parse_dates=["order_date"])
 
     es.entity_from_dataframe("order_products",
                              dataframe=df,
