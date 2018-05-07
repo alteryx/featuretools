@@ -55,7 +55,7 @@ def load_retail(id='demo_retail_data', nrows=None, use_cache=True):
     demo_save_path = make_retail_pathname(nrows)
 
     es = ft.EntitySet(id)
-    csv_s3 = "s3://featuretools-static/uk_online_retail.csv"
+    csv_s3 = "https://s3.amazonaws.com/featurelabs-static/online-retail-logs.csv"
 
     if not use_cache or not os.path.isfile(demo_save_path):
         df = pd.read_csv(csv_s3,
@@ -67,15 +67,6 @@ def load_retail(id='demo_retail_data', nrows=None, use_cache=True):
                      nrows=nrows,
                      parse_dates=["InvoiceDate"])
 
-    df.rename(columns={'InvoiceNo': 'order_id',
-                       'StockCode': 'product_id',
-                       'Description': 'description',
-                       'Quantity': 'quantity',
-                       'InvoiceDate': 'order_date',
-                       'UnitPrice': 'price',
-                       'CustomerID': 'customer_id',
-                       'Country': 'country'},
-              inplace=True)
     es.entity_from_dataframe("order_products",
                              dataframe=df,
                              index="order_product_id",
