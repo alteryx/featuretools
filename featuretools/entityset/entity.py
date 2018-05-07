@@ -1,19 +1,20 @@
+
 from __future__ import division, print_function
 
 import copy
 import logging
 import time
 from builtins import range
+from past.builtins import basestring
 from datetime import datetime
 
 import numpy as np
 import pandas as pd
 
-from .base_entity import BaseEntity
 from .timedelta import Timedelta
 
 from featuretools import variable_types as vtypes
-from featuretools.utils.wrangle import _check_time_type, _check_timedelta
+from featuretools.utils.wrangle import _check_time_type, _check_timedelta, _dataframes_equal
 
 logger = logging.getLogger('featuretools.entityset')
 
@@ -22,10 +23,19 @@ _categorical_types = [vtypes.PandasTypes._categorical]
 _datetime_types = vtypes.PandasTypes._pandas_datetimes
 
 
-class Entity(BaseEntity):
+class Entity(object):
+    """Represents an entity in a Entityset, and stores relevant metadata and data
+
+    An Entity is analogous to a table in a relational database
+
+    See Also:
+        :class:`.Relationship`, :class:`.Variable`, :class:`.EntitySet`
+
     """
-    Stores all actual data for an entity
-    """
+    id = None
+    variables = None
+    time_index = None
+    index = None
     indexed_by = None
 
     def __init__(self, id, df, entityset, variable_types=None, name=None,
@@ -56,6 +66,7 @@ class Entity(BaseEntity):
                 used for inferring variable types.
 
         """
+        assert isinstance(id, basestring), "Entity id must be a string"
         assert len(df.columns) == len(set(df.columns)), "Duplicate column names"
         self.data = {"df": df,
                      "last_time_index": last_time_index,
@@ -66,29 +77,113 @@ class Entity(BaseEntity):
         self.created_index = created_index
         self.convert_variable_types(variable_types)
         self.attempt_cast_index_to_int(index)
-        super(Entity, self).__init__(id, entityset, variable_types, name, index,
-                                     time_index, secondary_time_index, relationships, already_sorted)
+        self.id = id
+        self.name = name
+        self.entityset = entityset
+        self.indexed_by = {}
+        variable_types = variable_types or {}
+        self.index = index
+        self.secondary_time_index = secondary_time_index or {}
+        # make sure time index is actually in the columns
+        for ti, cols in self.secondary_time_index.items():
+            if ti not in cols:
+                cols.append(ti)
 
-    # @property
-    # def metadata(self):
-        # new_dict = {}
-        # for k, v in self.__dict__.items():
-            # if k != "data":
-                # new_dict[k] = v
-        # new_dict["data"] = {
-            # "df": self.df[0:0],
-            # "last_time_index": None,
-            # "indexed_by": {}
-        # }
-        # new_dict = copy.deepcopy(new_dict)
-        # new_entity = object.__new__(Entity)
-        # new_entity.__dict__ = new_dict
-        # return new_entity
+        link_vars = [v.id for rel in relationships for v in [rel.parent_variable, rel.child_variable]
+                     if v.entity.id == self.id]
+
+        inferred_variable_types = self.infer_variable_types(ignore=list(variable_types.keys()),
+                                                            link_vars=link_vars)
+        for var_id, desired_type in variable_types.items():
+            if isinstance(desired_type, tuple):
+                desired_type = desired_type[0]
+            inferred_variable_types.update({var_id: desired_type})
+
+        self.variables = []
+        for v in inferred_variable_types:
+            # TODO document how vtype can be tuple
+            vtype = inferred_variable_types[v]
+            if isinstance(vtype, tuple):
+                # vtype is (ft.Variable, dict_of_kwargs)
+                v = vtype[0](v, self, **vtype[1])
+            else:
+                v = inferred_variable_types[v](v, self)
+            self.variables += [v]
+
+        # do one last conversion of data once we've inferred
+        self.convert_variable_types(inferred_variable_types)
+
+        self.set_index(index)
+        self.set_time_index(time_index, already_sorted)
+        self.set_secondary_time_index(secondary_time_index)
+
+        # todo check the logic of this. can index not be in variable types?
+        if self.index is not None and self.index not in inferred_variable_types:
+            self.add_variable(self.index, vtypes.Index)
+
+        self.add_all_variable_statistics()
+
+    def __repr__(self):
+        repr_out = "Entity: {}\n".format(self.name)
+        repr_out += "  Variables:"
+        for v in self.variables:
+            repr_out += "\n    {} (dtype: {})".format(v.id, v.dtype)
+
+        shape = self.get_shape()
+        repr_out += u"\n  Shape:\n    (Rows: {}, Columns: {})".format(
+            shape[0], shape[1])
+        return repr_out
+
+    @property
+    def shape(self):
+        return self.get_shape()
+
+    def __eq__(self, other, deep=False):
+        if self.index != other.index:
+            return False
+        if self.time_index != other.time_index:
+            return False
+        if self.secondary_time_index != other.secondary_time_index:
+            return False
+        if len(self.variables) != len(other.variables):
+            return False
+        for v in self.variables:
+            if v not in other.variables:
+                return False
+        if deep:
+            if self.indexed_by is None and other.indexed_by is not None:
+                return False
+            elif self.indexed_by is not None and other.indexed_by is None:
+                return False
+            else:
+                for v, index_map in self.indexed_by.items():
+                    if v not in other.indexed_by:
+                        return False
+                    for i, related in index_map.items():
+                        if i not in other.indexed_by[v]:
+                            return False
+                        # indexed_by maps instances of two entities together by lists
+                        # We want to check that all the elements of the lists of instances
+                        # for each relationship are the same in both entities being
+                        # checked for equality, but don't care about the order.
+                        if not set(related) == set(other.indexed_by[v][i]):
+                            return False
+            if self.last_time_index is None and other.last_time_index is not None:
+                return False
+            elif self.last_time_index is not None and other.last_time_index is None:
+                return False
+            elif self.last_time_index is not None and other.last_time_index is not None:
+                if not self.last_time_index.equals(other.last_time_index):
+                    return False
+
+            if not _dataframes_equal(self.df, other.df):
+                return False
+
+        return True
 
     @property
     def is_metadata(self):
         return self.entityset.is_metadata
-
 
     @property
     def df(self):
@@ -114,44 +209,41 @@ class Entity(BaseEntity):
     def indexed_by(self, idx):
         self.data["indexed_by"] = idx
 
-    def attempt_cast_index_to_int(self, index_var):
-        dtype_name = self.df[index_var].dtype.name
-        if (dtype_name.find('int') == -1 and
-                dtype_name.find('object') > -1 or dtype_name.find('categ') > -1):
-            if isinstance(self.df[index_var].iloc[0], (int, np.int32, np.int64)):
-                try:
-                    self.df[index_var] = self.df[index_var].astype(int)
-                except ValueError:
-                    pass
+    def __hash__(self):
+        return id(self.id)
 
-    def convert_variable_types(self, variable_types):
-        for var_id, desired_type in variable_types.items():
-            type_args = {}
-            if isinstance(desired_type, tuple):
-                # grab args before assigning type
-                type_args = desired_type[1]
-                desired_type = desired_type[0]
+    def __getitem__(self, variable_id):
+        return self._get_variable(variable_id)
 
-            if var_id not in self.df.columns:
-                raise LookupError("Variable ID %s not in DataFrame" % (var_id))
-            current_type = self.get_column_type(var_id)
+    def _get_variable(self, variable_id):
+        """Get variable instance
 
-            if issubclass(desired_type, vtypes.Numeric) and \
-                    current_type not in _numeric_types:
-                self.entityset_convert_variable_type(var_id, desired_type, **type_args)
+        Args:
+            variable_id (str) : Id of variable to get.
 
-            if issubclass(desired_type, vtypes.Discrete) and \
-                    current_type not in _categorical_types:
-                self.entityset_convert_variable_type(var_id, desired_type, **type_args)
+        Returns:
+            :class:`.Variable` : Instance of variable.
 
-            if issubclass(desired_type, vtypes.Datetime) and \
-                    current_type not in _datetime_types:
-                self.entityset_convert_variable_type(var_id, desired_type, **type_args)
+        Raises:
+            RuntimeError : if no variable exist with provided id
+        """
+        for v in self.variables:
+            if v.id == variable_id:
+                return v
 
-    def normalize(self, normalizer):
-        d = {k: v for k, v in self.__dict__.items()
-             if k not in ['df', 'indexed_by', 'entityset']}
-        return normalizer(d)
+        raise KeyError("Variable: %s not found in entity" % (variable_id))
+
+    def show_instance(self, instance_ids):
+        """See row corresponding to instance id
+
+        Args:
+            instance_ids (object, list[object]) : Instance id or list of instance ids.
+
+        Returns:
+            :class:`pd.DataFrame` : Pandas DataFrame
+
+        """
+        return self.entityset.get_instance_data(self.id, instance_ids=instance_ids)
 
     @property
     def num_instances(self):
@@ -159,6 +251,10 @@ class Entity(BaseEntity):
 
     def get_shape(self):
         return self.df.shape
+
+    @property
+    def variable_types(self):
+        return {v.id: type(v) for v in self.variables}
 
     def is_index_column(self, varname):
         if varname == self.index:
@@ -197,6 +293,140 @@ class Entity(BaseEntity):
 
     def get_column_nunique(self, column_id):
         return self.get_column_stat(column_id, 'nunique')
+
+    def add_variable(self, new_id, type):
+        """Add variable to entity
+
+        Args:
+            new_id (str) : Id of variable to be added.
+            type (Variable) : Class of variable.
+        """
+        if new_id in [v.id for v in self.variables]:
+            logger.warning("Not adding duplicate variable: %s", new_id)
+            return
+        new_v = type(new_id, entity=self)
+        self.variables.append(new_v)
+        self.variable_types[new_id] = type
+        self.add_variable_statistics(new_id)
+
+    def get_variable_types(self):
+        return self.variable_types
+
+    def add_all_variable_statistics(self):
+        for var_id in self.variable_types.keys():
+            self.add_variable_statistics(var_id)
+
+    def add_variable_statistics(self, var_id):
+        vartype = self.variable_types[var_id]
+        stats = vartype._setter_stats
+        for stat in stats:
+            try:
+                value = self.get_column_stat(var_id, stat)
+                setattr(self._get_variable(var_id), stat, value)
+            except TypeError as e:
+                print(e)
+
+        stats = vartype._computed_stats
+        for stat in stats:
+            try:
+                setattr(self._get_variable(var_id), stat, value)
+            except TypeError as e:
+                print(e)
+
+    def _remove_variable_statistic(self, v, entityset, statistic):
+        try:
+            value = getattr(v, statistic)
+        except AttributeError:
+            pass
+        else:
+            if value is not None:
+                setattr(v, statistic, None)
+
+    def delete_variable(self, variable_id):
+        v = self._get_variable(variable_id)
+        self.variables.remove(v)
+
+    def convert_variable_types(self, variable_types):
+        for var_id, desired_type in variable_types.items():
+            type_args = {}
+            if isinstance(desired_type, tuple):
+                # grab args before assigning type
+                type_args = desired_type[1]
+                desired_type = desired_type[0]
+
+            if var_id not in self.df.columns:
+                raise LookupError("Variable ID %s not in DataFrame" % (var_id))
+            current_type = self.get_column_type(var_id)
+
+            if issubclass(desired_type, vtypes.Numeric) and \
+                    current_type not in _numeric_types:
+                self.entityset_convert_variable_type(var_id, desired_type, **type_args)
+
+            if issubclass(desired_type, vtypes.Discrete) and \
+                    current_type not in _categorical_types:
+                self.entityset_convert_variable_type(var_id, desired_type, **type_args)
+
+            if issubclass(desired_type, vtypes.Datetime) and \
+                    current_type not in _datetime_types:
+                self.entityset_convert_variable_type(var_id, desired_type, **type_args)
+
+    def convert_variable_type(self, variable_id, new_type,
+                              convert_data=True,
+                              **kwargs):
+        """Convert variable in dataframe to different type
+
+        Args:
+            variable_id (str) : Id of variable to convert.
+            new_type (subclass of `Variable`) : Type of variable to convert to.
+            entityset (:class:`.BaseEntitySet`) : EntitySet associated with this entity.
+            convert_data (bool) : If True, convert underlying data in the EntitySet.
+
+        Raises:
+            RuntimeError : Raises if it cannot convert the underlying data
+
+        Examples:
+            >>> es["customer"].convert_variable_type("education_level", vtypes.Categorical, EntitySet)
+                True
+        """
+        if convert_data:
+            # first, convert the underlying data (or at least try to)
+            self.entityset_convert_variable_type(
+                variable_id, new_type, **kwargs)
+
+        # replace the old variable with the new one, maintaining order
+        variable = self._get_variable(variable_id)
+        new_variable = new_type.create_from(variable)
+        self.variables[self.variables.index(variable)] = new_variable
+
+        self.add_variable_statistics(new_variable.id)
+
+    def has_time_index(self):
+        """Returns True if there is a time_index, otherwise False"""
+        return self.time_index is not None
+
+    def is_child_of(self, entity_id):
+        '''
+        Returns True if self is a child of entity_id
+        '''
+        rels = self.entityset.get_backward_relationships(entity_id)
+        return self.id in [r.child_entity.id for r in rels]
+
+    def is_parent_of(self, entity_id):
+        '''
+        Returns True if self is a parent of entity_id
+        '''
+        rels = self.entityset.get_backward_relationships(self.id)
+        return entity_id in [r.child_entity.id for r in rels]
+
+    def attempt_cast_index_to_int(self, index_var):
+        dtype_name = self.df[index_var].dtype.name
+        if (dtype_name.find('int') == -1 and
+                dtype_name.find('object') > -1 or dtype_name.find('categ') > -1):
+            if isinstance(self.df[index_var].iloc[0], (int, np.int32, np.int64)):
+                try:
+                    self.df[index_var] = self.df[index_var].astype(int)
+                except ValueError:
+                    pass
 
     def get_all_instances(self):
         instance_df = self.query_by_values(None,
@@ -559,7 +789,7 @@ class Entity(BaseEntity):
                                     kind="mergesort",
                                     inplace=True)
 
-        super(Entity, self).set_time_index(variable_id)
+        self.time_index = variable_id
 
     def set_index(self, variable_id, unique=True):
         """
@@ -572,8 +802,7 @@ class Entity(BaseEntity):
             assert self.df.index.is_unique, "Index is not unique on dataframe (Entity {})".format(self.id)
 
         self.convert_variable_type(variable_id, vtypes.Index, convert_data=False)
-
-        super(Entity, self).set_index(variable_id)
+        self.index = variable_id
 
     def set_secondary_time_index(self, secondary_time_index):
         if secondary_time_index is not None:
@@ -587,7 +816,7 @@ class Entity(BaseEntity):
                                     " other entityset time indexes" %
                                     (self.id, time_type))
 
-        super(Entity, self).set_secondary_time_index(secondary_time_index)
+        self.secondary_time_index = secondary_time_index or {}
 
     def _vals_to_series(self, instance_vals, variable_id):
         """
