@@ -82,9 +82,6 @@ class EntitySet(BaseEntitySet):
             self.add_relationship(Relationship(parent_variable,
                                                child_variable))
 
-    def normalize(self, normalizer):
-        return super(EntitySet, self).normalize(normalizer=normalizer, remove_entityset=False)
-
     @property
     def entity_names(self):
         """

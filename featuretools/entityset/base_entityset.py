@@ -2,7 +2,6 @@ import logging
 from builtins import object
 
 from featuretools import variable_types as vtypes
-from featuretools.core.base import FTBase
 
 logger = logging.getLogger('featuretools.entityset')
 
@@ -37,7 +36,7 @@ class BFSNode(object):
         return path, num_forward
 
 
-class BaseEntitySet(FTBase):
+class BaseEntitySet(object):
     """
     Stores all actual data for a entityset
     """

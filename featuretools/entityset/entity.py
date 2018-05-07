@@ -102,11 +102,6 @@ class Entity(BaseEntity):
                     current_type not in _datetime_types:
                 self.entityset_convert_variable_type(var_id, desired_type, **type_args)
 
-    def normalize(self, normalizer):
-        d = {k: v for k, v in self.__dict__.items()
-             if k not in ['df', 'indexed_by', 'entityset']}
-        return normalizer(d)
-
     @property
     def num_instances(self):
         return self.df.shape[0]

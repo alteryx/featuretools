@@ -5,7 +5,6 @@ from builtins import object
 from past.builtins import basestring
 
 import featuretools as ft
-from featuretools.core.base import FTBase
 
 COMMON_STATISTICS = ["count"]
 NUMERIC_STATISTICS = ["mean", "max", "min", "std"]
@@ -23,7 +22,7 @@ ALL_STATISTICS = list(set(COMMON_STATISTICS +
                           BOOLEAN_STATISTICS))
 
 
-class Variable(FTBase):
+class Variable(object):
     """Represent a variable in an entity
 
     A Variable is analogous to a column in table in a relational database
@@ -105,14 +104,6 @@ class Variable(FTBase):
             self._statistics[attr] = value
         else:
             return super(Variable, self).__setattr__(attr, value)
-
-    def normalize(self, normalizer, remove_entityset=True):
-        if remove_entityset:
-            entity = self.entity
-            self.entity = entity.id
-        d = super(Variable, self).normalize(normalizer, remove_entityset=remove_entityset)
-        self.entity = entity
-        return d
 
     @property
     def name(self):
