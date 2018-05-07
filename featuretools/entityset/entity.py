@@ -1,4 +1,3 @@
-
 from __future__ import division, print_function
 
 import copy
@@ -75,7 +74,7 @@ class Entity(object):
         self.encoding = encoding
         self._verbose = verbose
         self.created_index = created_index
-        self.convert_variable_types(variable_types)
+        self.convert_all_variable_data(variable_types)
         self.attempt_cast_index_to_int(index)
         self.id = id
         self.name = name
@@ -83,6 +82,7 @@ class Entity(object):
         self.indexed_by = {}
         variable_types = variable_types or {}
         self.index = index
+        self.time_index = time_index
         self.secondary_time_index = secondary_time_index or {}
         # make sure time index is actually in the columns
         for ti, cols in self.secondary_time_index.items():
@@ -111,17 +111,13 @@ class Entity(object):
             self.variables += [v]
 
         # do one last conversion of data once we've inferred
-        self.convert_variable_types(inferred_variable_types)
-
-        self.set_index(index)
-        self.set_time_index(time_index, already_sorted)
-        self.set_secondary_time_index(secondary_time_index)
+        self.convert_all_variable_data(inferred_variable_types)
 
         # todo check the logic of this. can index not be in variable types?
         if self.index is not None and self.index not in inferred_variable_types:
             self.add_variable(self.index, vtypes.Index)
 
-        self.add_all_variable_statistics()
+        self.update_data(self.df, already_sorted=already_sorted)
 
     def __repr__(self):
         repr_out = "Entity: {}\n".format(self.name)
@@ -129,14 +125,14 @@ class Entity(object):
         for v in self.variables:
             repr_out += "\n    {} (dtype: {})".format(v.id, v.dtype)
 
-        shape = self.get_shape()
+        shape = self.shape
         repr_out += u"\n  Shape:\n    (Rows: {}, Columns: {})".format(
             shape[0], shape[1])
         return repr_out
 
     @property
     def shape(self):
-        return self.get_shape()
+        return self.df.shape
 
     def __eq__(self, other, deep=False):
         if self.index != other.index:
@@ -233,84 +229,9 @@ class Entity(object):
 
         raise KeyError("Variable: %s not found in entity" % (variable_id))
 
-    def show_instance(self, instance_ids):
-        """See row corresponding to instance id
-
-        Args:
-            instance_ids (object, list[object]) : Instance id or list of instance ids.
-
-        Returns:
-            :class:`pd.DataFrame` : Pandas DataFrame
-
-        """
-        return self.entityset.get_instance_data(self.id, instance_ids=instance_ids)
-
-    @property
-    def num_instances(self):
-        return self.df.shape[0]
-
-    def get_shape(self):
-        return self.df.shape
-
     @property
     def variable_types(self):
         return {v.id: type(v) for v in self.variables}
-
-    def is_index_column(self, varname):
-        if varname == self.index:
-            return True
-
-        elif varname.lower() == 'id':
-            return True
-
-        return False
-
-    def get_column_type(self, column_id):
-        """ get type of column in underlying data structure """
-        return self.df[column_id].dtype.name
-
-    def get_column_stat(self, column_id, stat):
-        """ maximum value """
-        if column_id not in self.df.columns:
-            raise AttributeError(u"%s not in entity" % (column_id))
-        s = getattr(self.df[column_id], stat)()
-        return s
-
-    def get_column_max(self, column_id):
-        return self.get_column_stat(column_id, 'max')
-
-    def get_column_min(self, column_id):
-        return self.get_column_stat(column_id, 'min')
-
-    def get_column_std(self, column_id):
-        return self.get_column_stat(column_id, 'std')
-
-    def get_column_count(self, column_id):
-        return self.get_column_stat(column_id, 'count')
-
-    def get_column_mean(self, column_id):
-        return self.get_column_stat(column_id, 'mean')
-
-    def get_column_nunique(self, column_id):
-        return self.get_column_stat(column_id, 'nunique')
-
-    def add_variable(self, new_id, type):
-        """Add variable to entity
-
-        Args:
-            new_id (str) : Id of variable to be added.
-            type (Variable) : Class of variable.
-        """
-        if new_id in [v.id for v in self.variables]:
-            logger.warning("Not adding duplicate variable: %s", new_id)
-            return
-        new_v = type(new_id, entity=self)
-        self.variables.append(new_v)
-        self.variable_types[new_id] = type
-        self.add_variable_statistics(new_id)
-
-    def get_variable_types(self):
-        return self.variable_types
 
     def add_all_variable_statistics(self):
         for var_id in self.variable_types.keys():
@@ -321,7 +242,7 @@ class Entity(object):
         stats = vartype._setter_stats
         for stat in stats:
             try:
-                value = self.get_column_stat(var_id, stat)
+                value = getattr(self.df[var_id], stat)()
                 setattr(self._get_variable(var_id), stat, value)
             except TypeError as e:
                 print(e)
@@ -341,34 +262,6 @@ class Entity(object):
         else:
             if value is not None:
                 setattr(v, statistic, None)
-
-    def delete_variable(self, variable_id):
-        v = self._get_variable(variable_id)
-        self.variables.remove(v)
-
-    def convert_variable_types(self, variable_types):
-        for var_id, desired_type in variable_types.items():
-            type_args = {}
-            if isinstance(desired_type, tuple):
-                # grab args before assigning type
-                type_args = desired_type[1]
-                desired_type = desired_type[0]
-
-            if var_id not in self.df.columns:
-                raise LookupError("Variable ID %s not in DataFrame" % (var_id))
-            current_type = self.get_column_type(var_id)
-
-            if issubclass(desired_type, vtypes.Numeric) and \
-                    current_type not in _numeric_types:
-                self.entityset_convert_variable_type(var_id, desired_type, **type_args)
-
-            if issubclass(desired_type, vtypes.Discrete) and \
-                    current_type not in _categorical_types:
-                self.entityset_convert_variable_type(var_id, desired_type, **type_args)
-
-            if issubclass(desired_type, vtypes.Datetime) and \
-                    current_type not in _datetime_types:
-                self.entityset_convert_variable_type(var_id, desired_type, **type_args)
 
     def convert_variable_type(self, variable_id, new_type,
                               convert_data=True,
@@ -390,7 +283,7 @@ class Entity(object):
         """
         if convert_data:
             # first, convert the underlying data (or at least try to)
-            self.entityset_convert_variable_type(
+            self.convert_variable_data(
                 variable_id, new_type, **kwargs)
 
         # replace the old variable with the new one, maintaining order
@@ -400,9 +293,54 @@ class Entity(object):
 
         self.add_variable_statistics(new_variable.id)
 
-    def has_time_index(self):
-        """Returns True if there is a time_index, otherwise False"""
-        return self.time_index is not None
+    def convert_all_variable_data(self, variable_types):
+        for var_id, desired_type in variable_types.items():
+            type_args = {}
+            if isinstance(desired_type, tuple):
+                # grab args before assigning type
+                type_args = desired_type[1]
+                desired_type = desired_type[0]
+
+            if var_id not in self.df.columns:
+                raise LookupError("Variable ID %s not in DataFrame" % (var_id))
+            current_type = self.df[var_id].dtype.name
+
+            if issubclass(desired_type, vtypes.Numeric) and \
+                    current_type not in _numeric_types:
+                self.convert_variable_data(var_id, desired_type, **type_args)
+
+            if issubclass(desired_type, vtypes.Discrete) and \
+                    current_type not in _categorical_types:
+                self.convert_variable_data(var_id, desired_type, **type_args)
+
+            if issubclass(desired_type, vtypes.Datetime) and \
+                    current_type not in _datetime_types:
+                self.convert_variable_data(var_id, desired_type, **type_args)
+
+    def convert_variable_data(self, column_id, new_type, **kwargs):
+        """
+        Convert variable in data set to different type
+        """
+        df = self.df
+        if df[column_id].empty:
+            return
+        if new_type == vtypes.Numeric:
+            df[column_id] = pd.to_numeric(df[column_id], errors='coerce')
+        elif new_type == vtypes.Datetime:
+            format = kwargs.get("format", None)
+            # TODO: if float convert to int?
+            df[column_id] = pd.to_datetime(df[column_id], format=format,
+                                           infer_datetime_format=True)
+        elif new_type == vtypes.Boolean:
+            map_dict = {kwargs.get("true_val", True): True,
+                        kwargs.get("false_val", False): False,
+                        True: True,
+                        False: False}
+            # TODO: what happens to nans?
+            df[column_id] = df[column_id].map(map_dict).astype(np.bool)
+        elif not issubclass(new_type, vtypes.Discrete):
+            raise Exception("Cannot convert column %s to %s" %
+                            (column_id, new_type))
 
     def is_child_of(self, entity_id):
         '''
@@ -429,37 +367,7 @@ class Entity(object):
                     pass
 
     def get_all_instances(self):
-        instance_df = self.query_by_values(None,
-                                           columns=[self.index])
-
-        return instance_df[self.index].values
-
-    def get_top_n_instances(self, top_n):
-        instance_df = self.query_by_values(None,
-                                           columns=[self.index])
-
-        return instance_df[self.index].values[:top_n]
-
-    def sample_instances(self, n, random_seed=None):
-        instance_df = self.query_by_values(None,
-                                           columns=[self.index])
-
-        n = min(instance_df.shape[0], n)
-        return instance_df[self.index].sample(n, random_state=random_seed).values
-
-    def get_sliced_instance_ids(self, start, end, random_seed=None, shuffle=False):
-        instance_df = self.query_by_values(None,
-                                           columns=[self.index],
-                                           start=start,
-                                           end=end,
-                                           random_seed=random_seed,
-                                           shuffle=shuffle)
-
-        return instance_df[self.index].values
-
-    def get_column_data(self, column_id):
-        """ get data from column in specified form """
-        return self.df[column_id]
+        return self.df[self.index]
 
     def query_by_values(self, instance_vals, variable_id=None, columns=None,
                         time_last=None, training_window=None,
@@ -587,7 +495,7 @@ class Entity(object):
         for variable in df.columns:
             if variable in ignore:
                 continue
-            elif self.is_index_column(variable):
+            elif variable == self.index or variable.lower() == 'id':
                 inferred_type = vtypes.Index
 
             elif variable in vids_to_assume_datetime:
@@ -639,11 +547,14 @@ class Entity(object):
 
         return inferred_types
 
-    def update_data(self, df):
+    def update_data(self, df, already_sorted=False):
         self.df = df
+        self.set_index(self.index)
+        self.set_time_index(self.time_index, already_sorted=already_sorted)
+        self.set_secondary_time_index(self.secondary_time_index)
         self.add_all_variable_statistics()
 
-    def get_sample(self, n):
+    def sample(self, n):
         df = self.df
         n = min(n, len(df))
         sampled = df.sample(n)
@@ -713,47 +624,38 @@ class Entity(object):
                         else:
                             break
 
-    def add_column(self, column_id, column_data, type=None):
-        """
-        Add variable to entity's dataframe
-        """
-        existing_columns = list(self.df.columns)
-        self.df[column_id] = column_data
-        if type is None:
-            type = self.infer_variable_types(ignore=existing_columns)[column_id]
-        self.variable_types[column_id] = type
+    def add_variable(self, new_id, type=None, data=None):
+        """Add variable to entity
 
-    def delete_column(self, column_id):
+        Args:
+            new_id (str) : Id of variable to be added.
+            type (Variable) : Class of variable.
+            data (pd.Series) : Variable's data to be placed in entity's dataframe
         """
-        Remove variable from entity's dataframe
-        """
-        self.df.drop(column_id, axis=1, inplace=True)
-        del self.variable_types[column_id]
-
-    def entityset_convert_variable_type(self, column_id, new_type, **kwargs):
-        """
-        Convert variable in data set to different type
-        """
-        df = self.df
-        if df[column_id].empty:
+        if new_id in [v.id for v in self.variables]:
+            logger.warning("Not adding duplicate variable: %s", new_id)
             return
-        if new_type == vtypes.Numeric:
-            df[column_id] = pd.to_numeric(df[column_id], errors='coerce')
-        elif new_type == vtypes.Datetime:
-            format = kwargs.get("format", None)
-            # TODO: if float convert to int?
-            df[column_id] = pd.to_datetime(df[column_id], format=format,
-                                           infer_datetime_format=True)
-        elif new_type == vtypes.Boolean:
-            map_dict = {kwargs.get("true_val", True): True,
-                        kwargs.get("false_val", False): False,
-                        True: True,
-                        False: False}
-            # TODO: what happens to nans?
-            df[column_id] = df[column_id].map(map_dict).astype(np.bool)
-        elif not issubclass(new_type, vtypes.Discrete):
-            raise Exception("Cannot convert column %s to %s" %
-                            (column_id, new_type))
+        if data is not None:
+            self.df[new_id] = data
+
+        if type is None:
+            assert data in self.df.columns, "Must provide data to infer type"
+            existing_columns = [c for c in self.df.columns if c.id != new_id]
+            type = self.infer_variable_types(ignore=existing_columns)[new_id]
+
+        new_v = type(new_id, entity=self)
+        self.variables.append(new_v)
+        self.variable_types[new_id] = type
+        self.add_variable_statistics(new_id)
+
+    def delete_variable(self, variable_id):
+        """
+        Remove variable from entity's dataframe and from
+        self.variables
+        """
+        self.df.drop(variable_id, axis=1, inplace=True)
+        v = self._get_variable(variable_id)
+        self.variables.remove(v)
 
     def set_time_index(self, variable_id, already_sorted=False):
         if variable_id is not None:

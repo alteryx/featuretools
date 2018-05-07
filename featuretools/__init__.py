@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 # flake8: noqa
 from . import config
-from .core import *
 from . import variable_types
 from .entityset.api import *
 from . import primitives

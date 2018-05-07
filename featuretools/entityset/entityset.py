@@ -156,25 +156,13 @@ class EntitySet(object):
             >>> my_entityset[entity_id]
             <Entity: id>
         """
-        return self._get_entity(entity_id)
+        if entity_id in self.entity_stores:
+            return self.entity_stores[entity_id]
+        raise KeyError('Entity %s does not exist in %s' % (entity_id, self.id))
 
     @property
     def entities(self):
         return list(self.entity_stores.values())
-
-    def _get_entity(self, entity_id):
-        """Get entity instance from entityset
-
-        Args:
-            entity_id (str) : Id of entity.
-
-        Returns:
-            :class:`.Entity` : Instance of entity. None if entity doesn't exist.
-        """
-        if entity_id in self.entity_stores:
-            return self.entity_stores[entity_id]
-
-        raise KeyError('Entity %s does not exist in %s' % (entity_id, self.id))
 
     @property
     def metadata(self):
@@ -200,69 +188,6 @@ class EntitySet(object):
                 self._metadata = old_metadata
         return self._metadata
 
-    def _gen_metadata(self):
-        new_entityset = object.__new__(EntitySet)
-        new_entityset_dict = {}
-        for k, v in self.__dict__.items():
-            if k not in ["entity_stores", "relationships"]:
-                new_entityset_dict[k] = v
-        new_entityset_dict["entity_stores"] = {}
-        for eid, e in self.entity_stores.items():
-            metadata_e = self._entity_metadata(e)
-            new_entityset_dict['entity_stores'][eid] = metadata_e
-        new_entityset_dict["relationships"] = []
-        for r in self.relationships:
-            metadata_r = self._relationship_metadata(r)
-            new_entityset_dict['relationships'].append(metadata_r)
-        new_entityset.__dict__ = copy.deepcopy(new_entityset_dict)
-        for e in new_entityset.entity_stores.values():
-            e.entityset = new_entityset
-            for v in e.variables:
-                v.entity = new_entityset[v.entity_id]
-        for r in new_entityset.relationships:
-            r.entityset = new_entityset
-        return new_entityset
-
-    @classmethod
-    def _entity_metadata(cls, e):
-        new_dict = {}
-        for k, v in e.__dict__.items():
-            if k not in ["data", "entityset", "variables"]:
-                new_dict[k] = v
-        new_dict["data"] = {
-            "df": e.df.head(0),
-            "last_time_index": None,
-            "indexed_by": {}
-        }
-        new_dict["variables"] = [cls._variable_metadata(v)
-                                 for v in e.variables]
-        new_dict = copy.deepcopy(new_dict)
-        new_entity = object.__new__(Entity)
-        new_entity.__dict__ = new_dict
-        return new_entity
-
-    @classmethod
-    def _relationship_metadata(cls, r):
-        new_dict = {}
-        for k, v in r.__dict__.items():
-            if k != "entityset":
-                new_dict[k] = v
-        new_dict = copy.deepcopy(new_dict)
-        new_r = object.__new__(Relationship)
-        new_r.__dict__ = new_dict
-        return new_r
-
-    @classmethod
-    def _variable_metadata(cls, var):
-        new_dict = {}
-        for k, v in var.__dict__.items():
-            if k != "entity":
-                new_dict[k] = v
-        new_dict = copy.deepcopy(new_dict)
-        new_v = object.__new__(type(var))
-        new_v.__dict__ = new_dict
-        return new_v
-
     @property
     def is_metadata(self):
         return all(e.df.empty for e in self.entity_stores.values())
@@ -281,26 +206,13 @@ class EntitySet(object):
     @classmethod
     def read_pickle(cls, path):
         return read_pickle(path)
+
     ###########################################################################
     #   Public getter/setter methods  #########################################
     ###########################################################################
 
-    def get_name(self):
-        """Returns name of entityset
-
-        If name is None, return the id
-
-        Returns:
-            str : name of the entityset
-        """
-        name = self.name
-        if name is None:
-            name = self.id
-        return name
-
     def __repr__(self):
-        fmat = self.get_name()
-        repr_out = u"Entityset: {}\n".format(fmat)
+        repr_out = u"Entityset: {}\n".format(self.id)
         repr_out += u"  Entities:"
         for e in self.entities:
             if e.df.shape:
@@ -321,14 +233,6 @@ class EntitySet(object):
 
         return repr_out
 
-    def delete_entity_variables(self, entity_id, variables, **kwargs):
-        entity = self._get_entity(entity_id)
-        for v in variables:
-            entity.delete_variable(v)
-
-    def make_index_variable_name(self, entity_id):
-        return entity_id + "_id"
-
     def add_relationships(self, relationships):
         """Add multiple new relationships to a entityset
 
@@ -336,10 +240,7 @@ class EntitySet(object):
             relationships (list[Relationship]) : List of new
                 relationships.
         """
-        new_self = self
-        for r in relationships:
-            new_self = new_self.add_relationship(r)
-        return new_self
+        return [self.add_relationship(r) for r in relationships][-1]
 
     def add_relationship(self, relationship):
         """Add a new relationship between entities in the entityset
@@ -373,44 +274,6 @@ class EntitySet(object):
         self.index_data(relationship)
         return self
 
-    ###########################################################################
-    #  Public API methods  ###################################################
-    ###########################################################################
-
-    def get_sample(self, n):
-        full_entities = {}
-        for eid, entity in self.entity_stores.items():
-            full_entities[eid] = self.entity_stores[eid]
-            self.entity_stores[eid] = entity.get_sample(n)
-        sampled = copy.copy(self)
-        for entity in sampled.entity_stores.values():
-            entity.entityset = sampled
-        self.entity_stores = full_entities
-        return sampled
-
-    def get_instance_data(self, entity_id, instance_ids):
-        return self.entity_stores[entity_id].query_by_values(instance_ids)
-
-    def num_instances(self, entity_id):
-        entity = self.entity_stores[entity_id]
-        return entity.num_instances
-
-    def get_all_instances(self, entity_id):
-        entity = self.entity_stores[entity_id]
-        return entity.get_all_instances()
-
-    def get_top_n_instances(self, entity_id, top_n=10):
-        entity = self.entity_stores[entity_id]
-        return entity.get_top_n_instances(top_n)
-
-    def sample_instances(self, entity_id, n=10):
-        entity = self.entity_stores[entity_id]
-        return entity.sample_instances(n)
-
-    def get_sliced_instance_ids(self, entity_id, start, end, random_seed=None, shuffle=False):
-        entity = self.entity_stores[entity_id]
-        return entity.get_sliced_instance_ids(start, end, random_seed=random_seed, shuffle=shuffle)
-
     def get_pandas_data_slice(self, filter_entity_ids, index_eid,
                               instances, entity_columns=None,
                               time_last=None, training_window=None,
@@ -430,11 +293,11 @@ class EntitySet(object):
         # gather frames for each child, for each parent
         for filter_eid in iterator:
             # get the instances of the top-level entity linked by our instances
-            toplevel_slice = self._related_instances(start_entity_id=index_eid,
-                                                     final_entity_id=filter_eid,
-                                                     instance_ids=instances,
-                                                     time_last=time_last,
-                                                     training_window=training_window)
+            toplevel_slice = self.related_instances(start_entity_id=index_eid,
+                                                    final_entity_id=filter_eid,
+                                                    instance_ids=instances,
+                                                    time_last=time_last,
+                                                    training_window=training_window)
 
             eframes = {filter_eid: toplevel_slice}
 
@@ -490,7 +353,6 @@ class EntitySet(object):
 
         return eframes_by_filter
 
-    # Read-only entityset-level methods
     ###########################################################################
     #   Relationship access/helper methods  ###################################
     ###########################################################################
@@ -712,95 +574,6 @@ class EntitySet(object):
                 prev_entity = r.parent_variable.entity.id
         return rels
 
-    # Read-only entity-level methods
-
-    def get_dataframe(self, entity_id):
-        """
-        Get the data for a specified entity as a pandas dataframe.
-        """
-        return self.entity_stores[entity_id].df
-
-    def get_column_names(self, entity_id):
-        """
-        Return a list of the columns on the underlying data store
-        """
-        return self.entity_stores[entity_id].df.columns
-
-    def get_index(self, entity_id):
-        """
-        Get name of the primary key ID column for this entity
-        """
-        return self.entity_stores[entity_id].index
-
-    def get_time_index(self, entity_id):
-        """
-        Get name of the time index column for this entity
-        """
-        return self.entity_stores[entity_id].time_index
-
-    def get_secondary_time_index(self, entity_id):
-        """
-        Get names and associated variables of the secondary time index columns for this entity
-        """
-        return self.entity_stores[entity_id].secondary_time_index
-
-    # Read-only variable-level methods
-
-    def get_column_type(self, entity_id, column_id):
-        """ get type of column in underlying data structure """
-        return self.entity_stores[entity_id].get_column_type(column_id)
-
-    def get_column_stat(self, eid, column_id, stat):
-        return self.entity_stores[eid].get_column_stat(column_id, stat)
-
-    def get_column_max(self, eid, column_id):
-        return self.get_column_stat(eid, column_id, 'max')
-
-    def get_column_min(self, eid, column_id):
-        return self.get_column_stat(eid, column_id, 'min')
-
-    def get_column_std(self, eid, column_id):
-        return self.get_column_stat(eid, column_id, 'std')
-
-    def get_column_count(self, eid, column_id):
-        return self.get_column_stat(eid, column_id, 'count')
-
-    def get_column_mean(self, eid, column_id):
-        return self.get_column_stat(eid, column_id, 'mean')
-
-    def get_column_nunique(self, eid, column_id):
-        return self.get_column_stat(eid, column_id, 'nunique')
-
-    def get_column_data(self, entity_id, column_id):
-        """ get data from column in specified form """
-        return self.entity_stores[entity_id].get_column_data(column_id)
-
-    def get_variable_types(self, entity_id):
-        return self.entity_stores[entity_id].get_variable_types()
-
-    # Read-write variable-level methods
-
-    def add_column(self, entity_id, column_id, column_data, type=None):
-        """
-        Add variable to entity's dataframe
-        """
-        self.entity_stores[entity_id].add_column(column_id, column_data, type=type)
-
-    def delete_column(self, entity_id, column_id):
-        """
-        Remove variable from entity's dataframe
-        """
-        self.entity_stores[entity_id].delete_column(column_id)
-
-    def store_convert_variable_type(self, entity_id, column_id, new_type, **kwargs):
-        """
-        Convert variable in data set to different type
-        """
-        # _operations?
-        self.entity_stores[entity_id].convert_variable_type(column_id, new_type, **kwargs)
-
-    # Read-write entity-level methods
-
     ###########################################################################
     #  Entity creation methods  ##############################################
     ###########################################################################
@@ -872,9 +645,6 @@ class EntitySet(object):
 
         """
 
-        # If time index components are passed, combine them into a single column
-        # TODO look into handling secondary_time_index here
-        # _operations?
         return self._import_from_dataframe(entity_id, dataframe.copy(), index=index,
                                            make_index=make_index,
                                            time_index=time_index,
@@ -882,6 +652,519 @@ class EntitySet(object):
                                            variable_types=variable_types,
                                            encoding=encoding,
                                            already_sorted=already_sorted)
+
+    def normalize_entity(self, base_entity_id, new_entity_id, index,
+                         additional_variables=None, copy_variables=None,
+                         convert_links_to_integers=False,
+                         make_time_index=None,
+                         make_secondary_time_index=None,
+                         new_entity_time_index=None,
+                         new_entity_secondary_time_index=None,
+                         time_index_reduce='first',
+                         variable_types=None):
+        """Utility to normalize an entity_store
+
+        Args:
+            base_entity_id (str) : Entity id from which to split.
+
+            new_entity_id (str): Id of the new entity.
+
+            index (str): Variable in old entity
+                that will become index of new entity. Relationship
+                will be created across this variable.
+
+            additional_variables (list[str]):
+                List of variable ids to remove from
+                base_entity and move to new entity.
+
+            copy_variables (list[str]): List of
+                variable ids to copy from old entity
+                and move to new entity.
+
+            convert_links_to_integers (bool) : If True,
+                convert the linking variable between the two
+                entities to an integer. Old variable will be kept only
+                in the new normalized entity, and the new variable will have
+                the old variable's name plus "_id".
+
+            make_time_index (bool or str, optional): Create time index for new entity based
+                on time index in base_entity, optionally specifying which variable in base_entity
+                to use for time_index. If specified as True without a specific variable,
+                uses the primary time index. Defaults to True if base entity has a time index.
+
+            make_secondary_time_index (dict[str -> list[str]], optional): Create a secondary time index
+                from key. Values of dictionary
+                are the variables to associate with the secondary time index. Only one
+                secondary time index is allowed. If None, only associate the time index.
+
+            new_entity_time_index (str, optional): Rename new entity time index.
+
+            new_entity_secondary_time_index (str, optional): Rename new entity secondary time index.
+
+            time_index_reduce (str): If making a time_index, choose either
+                the 'first' time or the 'last' time from the associated children instances.
+                If creating a secondary time index, then the primary time index always reduces
+                using 'first', and secondary using 'last'.
+
+            variable_types (dict[str -> Variable]): A dictionary of variable types for the new entity.
+                Keys are variable ids and values are variable types.
+
+        """
+        base_entity = self.entity_stores[base_entity_id]
+        # variable_types = base_entity.variable_types
+        additional_variables = additional_variables or []
+        copy_variables = copy_variables or []
+        for v in additional_variables + copy_variables:
+            if v == index:
+                raise ValueError("Not copying {} as both index and variable".format(v))
+                break
+        new_index = index
+
+        if convert_links_to_integers:
+            new_index = make_index_variable_name(new_entity_id)
+
+        transfer_types = {}
+        transfer_types[new_index] = type(base_entity[index])
+        for v in additional_variables + copy_variables:
+            transfer_types[v] = type(base_entity[v])
+
+        # create and add new entity
+        new_entity_df = self[base_entity_id].df
+
+        if make_time_index is None and base_entity.time_index is not None:
+            make_time_index = True
+
+        if isinstance(make_time_index, str):
+            base_time_index = make_time_index
+            new_entity_time_index = base_entity[make_time_index].id
+        elif make_time_index:
+            base_time_index = base_entity.time_index
+            if new_entity_time_index is None:
+                new_entity_time_index = "%s_%s_time" % (time_index_reduce, base_entity.id)
+
+            assert base_entity.time_index is not None, \
+                "Base entity doesn't have time_index defined"
+
+            if base_time_index not in [v for v in additional_variables]:
+                copy_variables.append(base_time_index)
+
+            transfer_types[new_entity_time_index] = type(base_entity[base_entity.time_index])
+
+            new_entity_df.sort_values([base_time_index, base_entity.index], kind="mergesort", inplace=True)
+        else:
+            new_entity_time_index = None
+
+        selected_variables = [index] +\
+            [v for v in additional_variables] +\
+            [v for v in copy_variables]
+
+        new_entity_df2 = new_entity_df. \
+            drop_duplicates(index, keep=time_index_reduce)[selected_variables]
+
+        if make_time_index:
+            new_entity_df2.rename(columns={base_time_index: new_entity_time_index}, inplace=True)
+        if make_secondary_time_index:
+            time_index_reduce = 'first'
+
+            assert len(make_secondary_time_index) == 1, "Can only provide 1 secondary time index"
+            secondary_time_index = list(make_secondary_time_index.keys())[0]
+
+            secondary_variables = [index, secondary_time_index] + list(make_secondary_time_index.values())[0]
+            secondary_df = new_entity_df. \
+                drop_duplicates(index, keep='last')[secondary_variables]
+            if new_entity_secondary_time_index:
+                secondary_df.rename(columns={secondary_time_index: new_entity_secondary_time_index},
+                                    inplace=True)
+                secondary_time_index = new_entity_secondary_time_index
+            else:
+                new_entity_secondary_time_index = secondary_time_index
+            secondary_df.set_index(index, inplace=True)
+            new_entity_df = new_entity_df2.join(secondary_df, on=index)
+        else:
+            new_entity_df = new_entity_df2
+
+        base_entity_index = index
+        if convert_links_to_integers:
+            old_entity_df = self[base_entity_id].df
+            link_variable_id = make_index_variable_name(new_entity_id)
+            new_entity_df[link_variable_id] = np.arange(0, new_entity_df.shape[0])
+            just_index = old_entity_df[[index]]
+            id_as_int = just_index.merge(new_entity_df,
+                                         left_on=index,
+                                         right_on=index,
+                                         how='left')[link_variable_id]
+
+            old_entity_df.loc[:, index] = id_as_int.values
+
+            base_entity.update_data(old_entity_df)
+            index = link_variable_id
+
+        transfer_types[index] = vtypes.Categorical
+        if make_secondary_time_index:
+            old_ti_name = list(make_secondary_time_index.keys())[0]
+            ti_cols = list(make_secondary_time_index.values())[0]
+            ti_cols = [c if c != old_ti_name else secondary_time_index for c in ti_cols]
+            make_secondary_time_index = {secondary_time_index: ti_cols}
+
+        self._import_from_dataframe(new_entity_id, new_entity_df,
+                                    index,
+                                    time_index=new_entity_time_index,
+                                    secondary_time_index=make_secondary_time_index,
+                                    last_time_index=None,
+                                    variable_types=transfer_types,
+                                    encoding=base_entity.encoding)
+
+        for v in additional_variables:
+            self.entity_stores[base_entity_id].delete_variable(v)
+
+        new_entity = self.entity_stores[new_entity_id]
+        base_entity.convert_variable_type(base_entity_index, vtypes.Id, convert_data=False)
+        self.add_relationship(Relationship(new_entity[index], base_entity[base_entity_index]))
+
+        return self
+
+    ###########################################################################
+    #  Data wrangling methods  ###############################################
+    ###########################################################################
+
+    def combine_variables(self, entity_id, new_id, to_combine,
+                          drop=False, hashed=False, **kwargs):
+        """Combines two variable into variable new_id
+
+        Args:
+            entity_id (str): Id of Entity to be modified.
+            new_id (str): Id of new variable being created.
+            to_combine (list[Variable] or list[str]): List of
+                variables to combine.
+            drop (bool, optional): If True, variables that are combined are
+                dropped from the entity.
+            hashed (bool, optional): If True, combination variables values are
+                hashed, resulting in an integer column dtype. Otherwise, values
+                are just concatenated.
+
+        Note:
+            Underlying data for variable must be of type str.
+
+        """
+        # _operations?
+        entity = self[entity_id]
+        to_combine = _check_variable_list(to_combine, entity)
+
+        df = self[entity.id].df
+
+        new_data = None
+        for v in to_combine:
+            if new_data is None:
+                new_data = df[v.id].map(lambda x: (str(x) if isinstance(x, (int, float)) else x).encode('utf-8'))
+                continue
+            new_data += "_".encode('utf-8')
+            new_data += df[v.id].map(lambda x: (str(x) if isinstance(x, (int, float)) else x).encode('utf-8'))
+
+        if hashed:
+            new_data = new_data.map(hash)
+
+        # first add to entityset
+        entity.add_variable(new_id, type=vtypes.Categorical, data=new_data)
+
+        if drop:
+            [entity.delete_variable(v.id) for v in to_combine]
+
+    def concat(self, other, inplace=False):
+        '''Combine entityset with another to create a new entityset with the
+        combined data of both entitysets.
+        '''
+        assert_string = "Entitysets must have the same entities, relationships"\
+            ", and variable_ids"
+        assert (self.__eq__(other) and
+                self.relationships == other.relationships), assert_string
+
+        for entity in self.entities:
+            assert entity.id in other.entity_stores, assert_string
+            assert (len(self[entity.id].variables) ==
+                    len(other[entity.id].variables)), assert_string
+            other_variable_ids = [o_variable.id for o_variable in
+                                  other[entity.id].variables]
+            assert (all([variable.id in other_variable_ids
+                         for variable in self[entity.id].variables])), assert_string
+
+        if inplace:
+            combined_es = self
+        else:
+            combined_es = copy.deepcopy(self)
+        for entity in self.entities:
+            self_df = entity.df
+            other_df = other[entity.id].df
+            combined_df = pd.concat([self_df, other_df])
+            if entity.created_index == entity.index:
+                columns = [col for col in combined_df.columns if
+                           col != entity.index or col != entity.time_index]
+            else:
+                columns = [entity.index]
+            combined_df.drop_duplicates(columns, inplace=True)
+            combined_es[entity.id].update_data(combined_df)
+
+        for r in combined_es.relationships:
+            combined_es.index_data(r)
+        return combined_es
+
+    ###########################################################################
+    #  Indexing methods  ###############################################
+    ###########################################################################
+
+    def index_data(self, r):
+        """
+        If necessary, generate an index on the data which links instances of
+        parent entities to collections of child instances which link to them.
+        """
+        parent_entity = self.entity_stores[r.parent_variable.entity.id]
+        child_entity = self.entity_stores[r.child_variable.entity.id]
+        child_entity.index_by_parent(parent_entity=parent_entity)
+
+    def add_last_time_indexes(self):
+        """
+        Calculates the last time index values for each entity (the last time
+        an instance or children of that instance were observed).  Used when
+        calculating features using training windows
+        """
+        # Generate graph of entities to find leaf entities
+        children = defaultdict(list)  # parent --> child mapping
+        child_vars = defaultdict(dict)
+        for r in self.relationships:
+            children[r.parent_entity.id].append(r.child_entity)
+            child_vars[r.parent_entity.id][r.child_entity.id] = r.child_variable
+
+        explored = set([])
+        queue = self.entities[:]
+
+        for entity in self.entities:
+            entity.last_time_index = None
+
+        while len(explored) < len(self.entities):
+            entity = queue.pop(0)
+
+            if entity.last_time_index is None:
+                if entity.time_index is not None:
+                    lti = entity.df[entity.time_index].copy()
+                else:
+                    lti = entity.df[entity.index].copy()
+                    lti[:] = None
+                entity.last_time_index = lti
+
+            if entity.id in children:
+                child_entities = children[entity.id]
+
+                # if all children not explored, skip for now
+                if not set([e.id for e in child_entities]).issubset(explored):
+                    queue.append(entity)
+                    continue
+
+                # updated last time from all children
+                for child_e in child_entities:
+                    if child_e.last_time_index is None:
+                        continue
+
+                    link_var = child_vars[entity.id][child_e.id].id
+                    lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
+                                           entity.index: child_e.df[link_var]})
+                    # sort by time and keep only the most recent
+                    lti_df.sort_values(['last_time', entity.index],
+                                       kind="mergesort",
+                                       inplace=True)
+                    lti_df.drop_duplicates(entity.index,
+                                           keep='last',
+                                           inplace=True)
+
+                    lti_df.set_index(entity.index, inplace=True)
+                    lti_df = lti_df.reindex(entity.last_time_index.index)
+                    lti_df['last_time_old'] = entity.last_time_index
+                    lti_df = lti_df.apply(lambda x: x.dropna().max(), axis=1)
+                    entity.last_time_index = lti_df
+                    entity.last_time_index.name = 'last_time'
+
+            explored.add(entity.id)
+
+    ###########################################################################
+    #  Other ###############################################
+    ###########################################################################
+
+    def add_interesting_values(self, max_values=5, verbose=False):
+        """Find interesting values for categorical variables, to be used to generate "where" clauses
+
+        Args:
+            max_values (int) : Maximum number of values per variable to add.
+            verbose (bool) : If True, print summary of interesting values found.
+
+        Returns:
+            None
+
+        """
+        for entity in self.entities:
+            entity.add_interesting_values(max_values=max_values, verbose=verbose)
+
+    def related_instances(self, start_entity_id, final_entity_id,
+                          instance_ids=None, time_last=None, add_link=False,
+                          training_window=None):
+        """
+        Filter out all but relevant information from dataframes along path
+        from start_entity_id to final_entity_id,
+        exclude data if it does not lie within  and time_last
+
+        Args:
+            start_entity_id (str) : Id of start entity.
+            final_entity_id (str) : Id of final entity.
+            instance_ids (list[str]) : List of start entity instance ids from
+                which to find related instances in final entity.
+            time_last (pd.TimeStamp) :  Latest allowed time.
+            add_link (bool) : If True, add a link variable from the first
+                entity in the path to the last. Assumes the path is made up of
+                only backwards relationships.
+
+        Returns:
+            pd.DataFrame : Dataframe of related instances on the final_entity_id
+        """
+        # Load the filtered dataframe for the first entity
+        training_window_is_dict = isinstance(training_window, dict)
+        window = training_window
+        start_estore = self.entity_stores[start_entity_id]
+        # This check might be brittle
+        if instance_ids is not None and not hasattr(instance_ids, '__iter__'):
+            instance_ids = [instance_ids]
+
+        if training_window_is_dict:
+            window = training_window.get(start_estore.id)
+        df = start_estore.query_by_values(instance_vals=instance_ids,
+                                          time_last=time_last,
+                                          training_window=window)
+        # if we're querying on a path that's not actually a path, just return
+        # the relevant slice of the entityset
+        if start_entity_id == final_entity_id:
+            return df
+
+        # get relationship path from start to end entity
+        path = self.find_path(start_entity_id, final_entity_id)
+        if path is None or len(path) == 0:
+            return pd.DataFrame()
+
+        if add_link:
+            assert 'forward' not in self.path_relationships(path,
+                                                            start_entity_id)
+            rvar = path[0].get_entity_variable(start_entity_id)
+            link_map = {i: i for i in df[rvar]}
+
+        prev_entity_id = start_entity_id
+
+        # Walk down the path of entities and take related instances at each step
+        for i, r in enumerate(path):
+            new_entity_id = r.get_other_entity(prev_entity_id)
+            rvar_old = r.get_entity_variable(prev_entity_id)
+            rvar_new = r.get_entity_variable(new_entity_id)
+            all_ids = df[rvar_old]
+
+            # filter the next entity by the values found in the previous
+            # entity's relationship column
+            entity_store = self.entity_stores[new_entity_id]
+            if training_window_is_dict:
+                window = training_window.get(entity_store.id)
+            df = entity_store.query_by_values(all_ids,
+                                              variable_id=rvar_new,
+                                              time_last=time_last,
+                                              training_window=window)
+
+            # group the rows in the new dataframe by the instances of the first
+            # dataframe, and add a new column linking the two.
+            if add_link:
+                new_link_map = {}
+                for parent_ix, gdf in df.groupby(rvar_new):
+                    for child_ix in gdf.index:
+                        new_link_map[child_ix] = link_map[parent_ix]
+                link_map = new_link_map
+
+                child_link_var = \
+                    Relationship._get_link_variable_name(path[:i + 1])
+                if child_link_var not in df.columns:
+                    df = df.join(pd.Series(link_map, name=child_link_var))
+
+            prev_entity_id = new_entity_id
+
+        return df
+
+    def gen_relationship_var(self, child_eid, parent_eid):
+        path = self.find_path(parent_eid, child_eid)
+        r = path.pop(0)
+        child_link_name = r.child_variable.id
+        for r in path:
+            parent_entity = r.parent_entity
+            parent_link_name = child_link_name
+            child_link_name = '%s.%s' % (parent_entity.id,
+                                         parent_link_name)
+        return child_link_name
+
+    ###########################################################################
+    #  Private methods  ######################################################
+    ###########################################################################
+
+    def _gen_metadata(self):
+        new_entityset = object.__new__(EntitySet)
+        new_entityset_dict = {}
+        for k, v in self.__dict__.items():
+            if k not in ["entity_stores", "relationships"]:
+                new_entityset_dict[k] = v
+        new_entityset_dict["entity_stores"] = {}
+        for eid, e in self.entity_stores.items():
+            metadata_e = self._entity_metadata(e)
+            new_entityset_dict['entity_stores'][eid] = metadata_e
+        new_entityset_dict["relationships"] = []
+        for r in self.relationships:
+            metadata_r = self._relationship_metadata(r)
+            new_entityset_dict['relationships'].append(metadata_r)
+        new_entityset.__dict__ = copy.deepcopy(new_entityset_dict)
+        for e in new_entityset.entity_stores.values():
+            e.entityset = new_entityset
+            for v in e.variables:
+                v.entity = new_entityset[v.entity_id]
+        for r in new_entityset.relationships:
+            r.entityset = new_entityset
+        return new_entityset
+
+    @classmethod
+    def _entity_metadata(cls, e):
+        new_dict = {}
+        for k, v in e.__dict__.items():
+            if k not in ["data", "entityset", "variables"]:
+                new_dict[k] = v
+        new_dict["data"] = {
+            "df": e.df.head(0),
+            "last_time_index": None,
+            "indexed_by": {}
+        }
+        new_dict["variables"] = [cls._variable_metadata(v)
+                                 for v in e.variables]
+        new_dict = copy.deepcopy(new_dict)
+        new_entity = object.__new__(Entity)
+        new_entity.__dict__ = new_dict
+        return new_entity
+
+    @classmethod
+    def _relationship_metadata(cls, r):
+        new_dict = {}
+        for k, v in r.__dict__.items():
+            if k != "entityset":
+                new_dict[k] = v
+        new_dict = copy.deepcopy(new_dict)
+        new_r = object.__new__(Relationship)
+        new_r.__dict__ = new_dict
+        return new_r
+
+    @classmethod
+    def _variable_metadata(cls, var):
+        new_dict = {}
+        for k, v in var.__dict__.items():
+            if k != "entity":
+                new_dict[k] = v
+        new_dict = copy.deepcopy(new_dict)
+        new_v = object.__new__(type(var))
+        new_v.__dict__ = new_dict
+        return new_v
 
     def _import_from_dataframe(self,
                                entity_id,
@@ -968,8 +1251,9 @@ class EntitySet(object):
         if df.index.dtype.name.find('category') > -1:
             df.index = df.index.astype(object)
 
-        self.add_entity(entity_id,
+        entity = Entity(entity_id,
                         df,
+                        self,
                         variable_types=variable_types,
                         index=index,
                         time_index=time_index,
@@ -979,566 +1263,8 @@ class EntitySet(object):
                         relationships=current_relationships,
                         already_sorted=already_sorted,
                         created_index=created_index)
-        return self
-
-    def add_entity(self,
-                   entity_id,
-                   df,
-                   **kwargs):
-        entity = Entity(entity_id,
-                        df,
-                        self,
-                        verbose=self._verbose,
-                        **kwargs)
-
-        # TODO DFS: think about if we need both list and dictionary
         self.entity_stores[entity.id] = entity
-        return entity
-
-    def normalize_entity(self, base_entity_id, new_entity_id, index,
-                         additional_variables=None, copy_variables=None,
-                         convert_links_to_integers=False,
-                         make_time_index=None,
-                         make_secondary_time_index=None,
-                         new_entity_time_index=None,
-                         new_entity_secondary_time_index=None,
-                         time_index_reduce='first',
-                         variable_types=None):
-        """Utility to normalize an entity_store
-
-        Args:
-            base_entity_id (str) : Entity id from which to split.
-
-            new_entity_id (str): Id of the new entity.
-
-            index (str): Variable in old entity
-                that will become index of new entity. Relationship
-                will be created across this variable.
-
-            additional_variables (list[str]):
-                List of variable ids to remove from
-                base_entity and move to new entity.
-
-            copy_variables (list[str]): List of
-                variable ids to copy from old entity
-                and move to new entity.
-
-            convert_links_to_integers (bool) : If True,
-                convert the linking variable between the two
-                entities to an integer. Old variable will be kept only
-                in the new normalized entity, and the new variable will have
-                the old variable's name plus "_id".
-
-            make_time_index (bool or str, optional): Create time index for new entity based
-                on time index in base_entity, optionally specifying which variable in base_entity
-                to use for time_index. If specified as True without a specific variable,
-                uses the primary time index. Defaults to True if base entity has a time index.
-
-            make_secondary_time_index (dict[str -> list[str]], optional): Create a secondary time index
-                from key. Values of dictionary
-                are the variables to associate with the secondary time index. Only one
-                secondary time index is allowed. If None, only associate the time index.
-
-            new_entity_time_index (str, optional): Rename new entity time index.
-
-            new_entity_secondary_time_index (str, optional): Rename new entity secondary time index.
-
-            time_index_reduce (str): If making a time_index, choose either
-                the 'first' time or the 'last' time from the associated children instances.
-                If creating a secondary time index, then the primary time index always reduces
-                using 'first', and secondary using 'last'.
-
-            variable_types (dict[str -> Variable]): A dictionary of variable types for the new entity.
-                Keys are variable ids and values are variable types.
-
-        """
-        base_entity = self.entity_stores[base_entity_id]
-        # variable_types = base_entity.variable_types
-        additional_variables = additional_variables or []
-        copy_variables = copy_variables or []
-        for v in additional_variables + copy_variables:
-            if v == index:
-                raise ValueError("Not copying {} as both index and variable".format(v))
-                break
-        new_index = index
-
-        if convert_links_to_integers:
-            new_index = self.make_index_variable_name(new_entity_id)
-
-        transfer_types = {}
-        transfer_types[new_index] = type(base_entity[index])
-        for v in additional_variables + copy_variables:
-            transfer_types[v] = type(base_entity[v])
-
-        # create and add new entity
-        new_entity_df = self.get_dataframe(base_entity_id)
-
-        if make_time_index is None and base_entity.has_time_index():
-            make_time_index = True
-
-        if isinstance(make_time_index, str):
-            base_time_index = make_time_index
-            new_entity_time_index = base_entity[make_time_index].id
-        elif make_time_index:
-            base_time_index = base_entity.time_index
-            if new_entity_time_index is None:
-                new_entity_time_index = "%s_%s_time" % (time_index_reduce, base_entity.id)
-
-            assert base_entity.has_time_index(), \
-                "Base entity doesn't have time_index defined"
-
-            if base_time_index not in [v for v in additional_variables]:
-                copy_variables.append(base_time_index)
-
-            transfer_types[new_entity_time_index] = type(base_entity[base_entity.time_index])
-
-            new_entity_df.sort_values([base_time_index, base_entity.index], kind="mergesort", inplace=True)
-        else:
-            new_entity_time_index = None
-
-        selected_variables = [index] +\
-            [v for v in additional_variables] +\
-            [v for v in copy_variables]
-
-        new_entity_df2 = new_entity_df. \
-            drop_duplicates(index, keep=time_index_reduce)[selected_variables]
-
-        if make_time_index:
-            new_entity_df2.rename(columns={base_time_index: new_entity_time_index}, inplace=True)
-        if make_secondary_time_index:
-            time_index_reduce = 'first'
-
-            assert len(make_secondary_time_index) == 1, "Can only provide 1 secondary time index"
-            secondary_time_index = list(make_secondary_time_index.keys())[0]
-
-            secondary_variables = [index, secondary_time_index] + list(make_secondary_time_index.values())[0]
-            secondary_df = new_entity_df. \
-                drop_duplicates(index, keep='last')[secondary_variables]
-            if new_entity_secondary_time_index:
-                secondary_df.rename(columns={secondary_time_index: new_entity_secondary_time_index},
-                                    inplace=True)
-                secondary_time_index = new_entity_secondary_time_index
-            else:
-                new_entity_secondary_time_index = secondary_time_index
-            secondary_df.set_index(index, inplace=True)
-            new_entity_df = new_entity_df2.join(secondary_df, on=index)
-        else:
-            new_entity_df = new_entity_df2
-
-        base_entity_index = index
-        if convert_links_to_integers:
-            old_entity_df = self.get_dataframe(base_entity_id)
-            link_variable_id = self.make_index_variable_name(new_entity_id)
-            new_entity_df[link_variable_id] = np.arange(0, new_entity_df.shape[0])
-            just_index = old_entity_df[[index]]
-            id_as_int = just_index.merge(new_entity_df,
-                                         left_on=index,
-                                         right_on=index,
-                                         how='left')[link_variable_id]
-
-            old_entity_df.loc[:, index] = id_as_int.values
-
-            base_entity.update_data(old_entity_df)
-            index = link_variable_id
-
-        # TODO dfs: do i need this?
-        # for v_id in selected_variables:
-        #     if v_id in variable_types and v_id not in transfer_types:
-        #         transfer_types[v_id] = variable_types[v_id]
-
-        transfer_types[index] = vtypes.Categorical
-        if make_secondary_time_index:
-            old_ti_name = list(make_secondary_time_index.keys())[0]
-            ti_cols = list(make_secondary_time_index.values())[0]
-            ti_cols = [c if c != old_ti_name else secondary_time_index for c in ti_cols]
-            make_secondary_time_index = {secondary_time_index: ti_cols}
-
-        self._import_from_dataframe(new_entity_id, new_entity_df,
-                                    index,
-                                    time_index=new_entity_time_index,
-                                    secondary_time_index=make_secondary_time_index,
-                                    last_time_index=None,
-                                    variable_types=transfer_types,
-                                    encoding=base_entity.encoding)
-
-        for v in additional_variables:
-            self.delete_column(base_entity_id, v)
-        self.delete_entity_variables(base_entity_id, additional_variables)
-
-        new_entity = self.entity_stores[new_entity_id]
-        base_entity.convert_variable_type(base_entity_index, vtypes.Id, convert_data=False)
-        self.add_relationship(Relationship(new_entity[index], base_entity[base_entity_index]))
-
         return self
-
-    ###########################################################################
-    #  Data wrangling methods  ###############################################
-    ###########################################################################
-
-    # TODO dfs: where is this used? it doesn't seem tested either
-    def add_parent_time_index(self, entity_id, parent_entity_id,
-                              parent_time_index_variable=None,
-                              child_time_index_variable=None,
-                              include_secondary_time_index=False,
-                              secondary_time_index_variables=[]):
-        entity = self.entity_stores[entity_id]
-
-        parent_entity = self.entity_stores[parent_entity_id]
-        if parent_time_index_variable is None:
-            parent_time_index_variable = parent_entity.time_index
-            assert parent_time_index_variable is not None, ("If parent does not have a time index, ",
-                                                            "you must specify which variable to use")
-        msg = ("parent time index variable must be ",
-               "a Datetime, Numeric, or Ordinal")
-        assert isinstance(parent_entity[parent_time_index_variable], (vtypes.Numeric, vtypes.Ordinal, vtypes.Datetime)), msg
-
-        self._add_parent_variable_to_df(entity_id, parent_entity_id,
-                                        parent_time_index_variable,
-                                        child_time_index_variable)
-        entity.set_time_index(child_time_index_variable)
-        if include_secondary_time_index:
-            msg = "Parent entity has no secondary time index"
-            assert len(parent_entity.secondary_time_index), msg
-            parent_sec_ti_id = list(parent_entity.secondary_time_index.keys())[0]
-            parent_sec_ti_vars = list(parent_entity.secondary_time_index.values())[0]
-            if isinstance(secondary_time_index_variables, list):
-                parent_sec_ti_vars = [v for v in parent_sec_ti_vars
-                                      if v in secondary_time_index_variables]
-            # TODO: arg to name child vars
-            for v in [parent_sec_ti_id] + parent_sec_ti_vars:
-                self._add_parent_variable_to_df(entity_id, parent_entity_id,
-                                                v)
-            new_secondary_time_index = {parent_sec_ti_id: parent_sec_ti_vars}
-            entity.set_secondary_time_index(new_secondary_time_index)
-
-    def _add_parent_variable_to_df(self, child_entity_id, parent_entity_id,
-                                   parent_variable_id, child_variable_id=None):
-        entity = self.entity_stores[child_entity_id]
-        parent_entity = self.entity_stores[parent_entity_id]
-
-        if child_variable_id is None:
-            child_variable_id = parent_variable_id
-
-        path = self.find_forward_path(child_entity_id, parent_entity_id)
-        assert len(path) > 0, "must be a parent entity"
-        if len(path) > 1:
-            raise NotImplementedError("adding time index from a grandparent not yet supported")
-        rel = path[0]
-
-        child_data = entity.df
-        # get columns of parent that we need and rename in prep for merge
-        parent_data = self.entity_stores[parent_entity_id].df[[rel.parent_variable.id, parent_variable_id]]
-        col_map = {parent_variable_id: child_variable_id}
-        parent_data.rename(columns=col_map, inplace=True)
-
-        # add parent time
-        # use right index to avoid parent join key in merged dataframe
-        parent_data.set_index(rel.parent_variable.id, inplace=True)
-        new_child_data = child_data.merge(parent_data,
-                                          left_on=rel.child_variable.id,
-                                          right_index=True,
-                                          how='left')
-
-        # TODO: look in to using update_data method of Entity
-        entity.df = new_child_data
-
-        parent_type = type(parent_entity[parent_variable_id])
-        entity.add_variable(child_variable_id, parent_type)
-        entity.add_variable_statistics(child_variable_id)
-
-    # todo dfs: this isn't united tested, and hasn't be manually verified to work
-    def combine_variables(self, entity_id, new_id, to_combine,
-                          drop=False, hashed=False, **kwargs):
-        """Combines two variable into variable new_id
-
-        Args:
-            entity_id (str): Id of Entity to be modified.
-            new_id (str): Id of new variable being created.
-            to_combine (list[Variable] or list[str]): List of
-                variables to combine.
-            drop (bool, optional): If True, variables that are combined are
-                dropped from the entity.
-            hashed (bool, optional): If True, combination variables values are
-                hashed, resulting in an integer column dtype. Otherwise, values
-                are just concatenated.
-
-        Note:
-            Underlying data for variable must be of type str.
-
-        """
-        # _operations?
-        entity = self._get_entity(entity_id)
-        to_combine = _check_variable_list(to_combine, entity)
-
-        df = self.get_dataframe(entity.id)
-
-        new_data = None
-        for v in to_combine:
-            if new_data is None:
-                new_data = df[v.id].map(lambda x: (str(x) if isinstance(x, (int, float)) else x).encode('utf-8'))
-                continue
-            new_data += "_".encode('utf-8')
-            new_data += df[v.id].map(lambda x: (str(x) if isinstance(x, (int, float)) else x).encode('utf-8'))
-
-        if hashed:
-            new_data = new_data.map(hash)
-
-        # first add to entityset
-        self.add_column(entity.id, new_id, new_data, type=vtypes.Categorical)
-
-        # TODO dfs: add column vs add variable?
-        entity.add_variable(new_id, vtypes.Categorical)
-
-        entity.add_variable_statistics(new_id)
-
-        if drop:
-            [self.delete_column(entity.id, v.id) for v in to_combine]
-            [entity.delete_variable(v.id) for v in to_combine]
-
-    def concat(self, other, inplace=False):
-        '''Combine entityset with another to create a new entityset with the
-        combined data of both entitysets.
-        '''
-        assert_string = "Entitysets must have the same entities, relationships"\
-            ", and variable_ids"
-        assert (self.__eq__(other) and
-                self.relationships == other.relationships), assert_string
-
-        for entity in self.entities:
-            assert entity.id in other.entity_stores, assert_string
-            assert (len(self[entity.id].variables) ==
-                    len(other[entity.id].variables)), assert_string
-            other_variable_ids = [o_variable.id for o_variable in
-                                  other[entity.id].variables]
-            assert (all([variable.id in other_variable_ids
-                         for variable in self[entity.id].variables])), assert_string
-
-        if inplace:
-            combined_es = self
-        else:
-            combined_es = copy.deepcopy(self)
-        for entity in self.entities:
-            self_df = entity.df
-            other_df = other[entity.id].df
-            combined_df = pd.concat([self_df, other_df])
-            if entity.created_index == entity.index:
-                columns = [col for col in combined_df.columns if
-                           col != entity.index or col != entity.time_index]
-            else:
-                columns = [entity.index]
-            combined_df.drop_duplicates(columns, inplace=True)
-
-            # TODO: should this go inside of update_data?
-            # or should we call set_time_index()?
-            to_sort = [entity.index]
-            if entity.time_index:
-                to_sort = [entity.time_index, entity.index]
-            combined_df.sort_values(to_sort, inplace=True)
-
-            combined_es[entity.id].update_data(combined_df)
-
-        for r in combined_es.relationships:
-            combined_es.index_data(r)
-        return combined_es
-
-    # TODO DFS: is this used anywhere?
-    # def filter_entityset_by_entity(self, entity_id):
-    #     """ Filter out instances of all entities that aren't connected to
-    #     entity_id """
-    #     for e in self.entities:
-    #         if e.id == entity_id:
-    #             continue
-
-    #         df = self._related_instances(entity_id, e.id, self)
-    #         self.entity_stores[e.id].update_data(df)
-    #         e.update_variable_statistics_all(self)
-
-    ###########################################################################
-    #  Indexing methods  ###############################################
-    ###########################################################################
-
-    def index_data(self, r):
-        """
-        If necessary, generate an index on the data which links instances of
-        parent entities to collections of child instances which link to them.
-        """
-        parent_entity = self.entity_stores[r.parent_variable.entity.id]
-        child_entity = self.entity_stores[r.child_variable.entity.id]
-        child_entity.index_by_parent(parent_entity=parent_entity)
-
-    def add_last_time_indexes(self):
-        """
-        Calculates the last time index values for each entity (the last time
-        an instance or children of that instance were observed).  Used when
-        calculating features using training windows
-        """
-        # Generate graph of entities to find leaf entities
-        children = defaultdict(list)  # parent --> child mapping
-        child_vars = defaultdict(dict)
-        for r in self.relationships:
-            children[r.parent_entity.id].append(r.child_entity)
-            child_vars[r.parent_entity.id][r.child_entity.id] = r.child_variable
-
-        explored = set([])
-        queue = self.entities[:]
-
-        for entity in self.entities:
-            entity.last_time_index = None
-
-        while len(explored) < len(self.entities):
-            entity = queue.pop(0)
-
-            if entity.last_time_index is None:
-                if entity.has_time_index():
-                    lti = entity.df[entity.time_index].copy()
-                else:
-                    lti = entity.df[entity.index].copy()
-                    lti[:] = None
-                entity.last_time_index = lti
-
-            if entity.id in children:
-                child_entities = children[entity.id]
-
-                # if all children not explored, skip for now
-                if not set([e.id for e in child_entities]).issubset(explored):
-                    queue.append(entity)
-                    continue
-
-                # updated last time from all children
-                for child_e in child_entities:
-                    if child_e.last_time_index is None:
-                        continue
-
-                    link_var = child_vars[entity.id][child_e.id].id
-                    lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
-                                           entity.index: child_e.df[link_var]})
-                    # sort by time and keep only the most recent
-                    lti_df.sort_values(['last_time', entity.index],
-                                       kind="mergesort",
-                                       inplace=True)
-                    lti_df.drop_duplicates(entity.index,
-                                           keep='last',
-                                           inplace=True)
-
-                    lti_df.set_index(entity.index, inplace=True)
-                    lti_df = lti_df.reindex(entity.last_time_index.index)
-                    lti_df['last_time_old'] = entity.last_time_index
-                    lti_df = lti_df.apply(lambda x: x.dropna().max(), axis=1)
-                    entity.last_time_index = lti_df
-                    entity.last_time_index.name = 'last_time'
-
-            explored.add(entity.id)
-
-    ###########################################################################
-    #  Other ###############################################
-    ###########################################################################
-
-    def add_interesting_values(self, max_values=5, verbose=False):
-        """Find interesting values for categorical variables, to be used to generate "where" clauses
-
-        Args:
-            max_values (int) : Maximum number of values per variable to add.
-            verbose (bool) : If True, print summary of interesting values found.
-
-        Returns:
-            None
-
-        """
-        # _operations?
-        for entity in self.entities:
-            entity.add_interesting_values(max_values=max_values, verbose=verbose)
-
-    ###########################################################################
-    #  Private methods  ######################################################
-    ###########################################################################
-
-    # TODO: public?
-    def _related_instances(self, start_entity_id, final_entity_id,
-                           instance_ids=None, time_last=None, add_link=False,
-                           training_window=None):
-        """
-        Filter out all but relevant information from dataframes along path
-        from start_entity_id to final_entity_id,
-        exclude data if it does not lie within  and time_last
-
-        Args:
-            start_entity_id (str) : Id of start entity.
-            final_entity_id (str) : Id of final entity.
-            instance_ids (list[str]) : List of start entity instance ids from
-                which to find related instances in final entity.
-            time_last (pd.TimeStamp) :  Latest allowed time.
-            add_link (bool) : If True, add a link variable from the first
-                entity in the path to the last. Assumes the path is made up of
-                only backwards relationships.
-
-        Returns:
-            pd.DataFrame : Dataframe of related instances on the final_entity_id
-        """
-        # Load the filtered dataframe for the first entity
-        training_window_is_dict = isinstance(training_window, dict)
-        window = training_window
-        start_estore = self.entity_stores[start_entity_id]
-        # This check might be brittle
-        if instance_ids is not None and not hasattr(instance_ids, '__iter__'):
-            instance_ids = [instance_ids]
-
-        if training_window_is_dict:
-            window = training_window.get(start_estore.id)
-        df = start_estore.query_by_values(instance_vals=instance_ids,
-                                          time_last=time_last,
-                                          training_window=window)
-        # if we're querying on a path that's not actually a path, just return
-        # the relevant slice of the entityset
-        if start_entity_id == final_entity_id:
-            return df
-
-        # get relationship path from start to end entity
-        path = self.find_path(start_entity_id, final_entity_id)
-        if path is None or len(path) == 0:
-            return pd.DataFrame()
-
-        if add_link:
-            assert 'forward' not in self.path_relationships(path,
-                                                            start_entity_id)
-            rvar = path[0].get_entity_variable(start_entity_id)
-            link_map = {i: i for i in df[rvar]}
-
-        prev_entity_id = start_entity_id
-
-        # Walk down the path of entities and take related instances at each step
-        for i, r in enumerate(path):
-            new_entity_id = r.get_other_entity(prev_entity_id)
-            rvar_old = r.get_entity_variable(prev_entity_id)
-            rvar_new = r.get_entity_variable(new_entity_id)
-            all_ids = df[rvar_old]
-
-            # filter the next entity by the values found in the previous
-            # entity's relationship column
-            entity_store = self.entity_stores[new_entity_id]
-            if training_window_is_dict:
-                window = training_window.get(entity_store.id)
-            df = entity_store.query_by_values(all_ids,
-                                              variable_id=rvar_new,
-                                              time_last=time_last,
-                                              training_window=window)
-
-            # group the rows in the new dataframe by the instances of the first
-            # dataframe, and add a new column linking the two.
-            if add_link:
-                new_link_map = {}
-                for parent_ix, gdf in df.groupby(rvar_new):
-                    for child_ix in gdf.index:
-                        new_link_map[child_ix] = link_map[parent_ix]
-                link_map = new_link_map
-
-                child_link_var = \
-                    Relationship._get_link_variable_name(path[:i + 1])
-                if child_link_var not in df.columns:
-                    df = df.join(pd.Series(link_map, name=child_link_var))
-
-            prev_entity_id = new_entity_id
-
-        return df
 
     def _add_multigenerational_link_vars(self, frames, start_entity_id,
                                          end_entity_id=None, path=None):
@@ -1616,13 +1342,6 @@ class EntitySet(object):
                                                        right=child_df,
                                                        on=r.child_variable.id)
 
-    def gen_relationship_var(self, child_eid, parent_eid):
-        path = self.find_path(parent_eid, child_eid)
-        r = path.pop(0)
-        child_link_name = r.child_variable.id
-        for r in path:
-            parent_entity = r.parent_entity
-            parent_link_name = child_link_name
-            child_link_name = '%s.%s' % (parent_entity.id,
-                                         parent_link_name)
-        return child_link_name
+
+def make_index_variable_name(entity_id):
+    return entity_id + "_id"
