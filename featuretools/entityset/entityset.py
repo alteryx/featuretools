@@ -907,6 +907,41 @@ class EntitySet(object):
             combined_es.index_data(r)
         return combined_es
 
+    def add_parent_time_index(self, entity_id, parent_entity_id,
+                              parent_time_index_variable=None,
+                              child_time_index_variable=None,
+                              include_secondary_time_index=False,
+                              secondary_time_index_variables=[]):
+        entity = self.entity_stores[entity_id]
+
+        parent_entity = self.entity_stores[parent_entity_id]
+        if parent_time_index_variable is None:
+            parent_time_index_variable = parent_entity.time_index
+            assert parent_time_index_variable is not None, ("If parent does not have a time index, ",
+                                                            "you must specify which variable to use")
+        msg = ("parent time index variable must be ",
+               "a Datetime, Numeric, or Ordinal")
+        assert isinstance(parent_entity[parent_time_index_variable], (vtypes.Numeric, vtypes.Ordinal, vtypes.Datetime)), msg
+
+        self._add_parent_variable_to_df(entity_id, parent_entity_id,
+                                        parent_time_index_variable,
+                                        child_time_index_variable)
+        entity.set_time_index(child_time_index_variable)
+        if include_secondary_time_index:
+            msg = "Parent entity has no secondary time index"
+            assert len(parent_entity.secondary_time_index), msg
+            parent_sec_ti_id = list(parent_entity.secondary_time_index.keys())[0]
+            parent_sec_ti_vars = list(parent_entity.secondary_time_index.values())[0]
+            if isinstance(secondary_time_index_variables, list):
+                parent_sec_ti_vars = [v for v in parent_sec_ti_vars
+                                      if v in secondary_time_index_variables]
+            # TODO: arg to name child vars
+            for v in [parent_sec_ti_id] + parent_sec_ti_vars:
+                self._add_parent_variable_to_df(entity_id, parent_entity_id,
+                                                v)
+            new_secondary_time_index = {parent_sec_ti_id: parent_sec_ti_vars}
+            entity.set_secondary_time_index(new_secondary_time_index)
+
     ###########################################################################
     #  Indexing methods  ###############################################
     ###########################################################################
@@ -1341,6 +1376,38 @@ class EntitySet(object):
                     frames[child_entity.id] = pd.merge(left=merge_df,
                                                        right=child_df,
                                                        on=r.child_variable.id)
+
+    def _add_parent_variable_to_df(self, child_entity_id, parent_entity_id,
+                                   parent_variable_id, child_variable_id=None):
+        entity = self.entity_stores[child_entity_id]
+        parent_entity = self.entity_stores[parent_entity_id]
+
+        if child_variable_id is None:
+            child_variable_id = parent_variable_id
+
+        path = self.find_forward_path(child_entity_id, parent_entity_id)
+        assert len(path) > 0, "must be a parent entity"
+        if len(path) > 1:
+            raise NotImplementedError("adding time index from a grandparent not yet supported")
+        rel = path[0]
+
+        child_data = entity.df
+        # get columns of parent that we need and rename in prep for merge
+        parent_data = self.entity_stores[parent_entity_id].df[[rel.parent_variable.id, parent_variable_id]]
+        col_map = {parent_variable_id: child_variable_id}
+        parent_data.rename(columns=col_map, inplace=True)
+
+        # add parent time
+        # use right index to avoid parent join key in merged dataframe
+        parent_data.set_index(rel.parent_variable.id, inplace=True)
+        new_child_data = child_data.merge(parent_data,
+                                          left_on=rel.child_variable.id,
+                                          right_index=True,
+                                          how='left')[child_variable_id]
+        parent_type = type(parent_entity[parent_variable_id])
+        entity.add_variable(child_variable_id,
+                            type=parent_type,
+                            data=new_child_data)
 
 
 def make_index_variable_name(entity_id):

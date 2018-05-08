@@ -65,11 +65,11 @@ def to_pickle(entityset, path):
         entity_sizes[e_id] = \
             os.stat(os.path.join(entity_path, filename)).st_size
         for column in entity_store.df.columns:
-            coltype = entity_store.get_column_type(column)
-            if coltype in _datetime_types:
+            coltype = entity_store.df[column].dtype
+            if coltype.name in _datetime_types:
                 datatypes['parse_dates'].append(column)
             else:
-                datatypes['dtype'][column] = entity_store.df[column].dtype
+                datatypes['dtype'][column] = coltype
         pd_to_pickle(datatypes, os.path.join(entity_path, 'datatypes.p'))
 
         entity_store_dframes[e_id] = entity_store.df
