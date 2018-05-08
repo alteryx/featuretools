@@ -165,7 +165,7 @@ def test_saveprogress(entityset):
     property_feature = IdentityFeature(entityset['log']['value']) > 10
     save_progress = tempfile.mkdtemp()
     fm_save = calculate_feature_matrix([property_feature],
-                                        entityset,
+                                       entityset,
                                        instance_ids=range(17),
                                        cutoff_time=times,
                                        save_progress=save_progress)
@@ -180,7 +180,7 @@ def test_saveprogress(entityset):
     merged_df = pd.concat(list_df)
     merged_df.set_index(pd.DatetimeIndex(times, append=True, inplace=True))
     fm_no_save = calculate_feature_matrix([property_feature],
-                                            entityset,
+                                          entityset,
                                           instance_ids=range(17),
                                           cutoff_time=times)
     assert np.all((merged_df.sort_index().values) == (fm_save.sort_index().values))
@@ -192,7 +192,7 @@ def test_saveprogress(entityset):
 def test_cutoff_time_correctly(entityset):
     property_feature = Count(entityset['log']['id'], entityset['customers'])
     feature_matrix = calculate_feature_matrix([property_feature],
-                                                entityset,instance_ids=[0, 1, 2],
+                                              entityset, instance_ids=[0, 1, 2],
                                               cutoff_time=[datetime(2011, 4, 10), datetime(2011, 4, 11),
                                                            datetime(2011, 4, 7)])
     labels = [0, 10, 5]
@@ -232,7 +232,7 @@ def test_training_window(entityset):
 
     # for now, warns if last_time_index not present
     feature_matrix = calculate_feature_matrix([property_feature, dagg],
-                                                entityset,
+                                              entityset,
                                               instance_ids=[0, 1, 2],
                                               cutoff_time=[datetime(2011, 4, 9, 12, 31),
                                                            datetime(2011, 4, 10, 11),
@@ -243,7 +243,7 @@ def test_training_window(entityset):
 
     with pytest.raises(AssertionError):
         feature_matrix = calculate_feature_matrix([property_feature],
-                                                    entityset,
+                                                  entityset,
                                                   instance_ids=[0, 1, 2],
                                                   cutoff_time=[datetime(2011, 4, 9, 12, 31),
                                                                datetime(2011, 4, 10, 11),
@@ -251,7 +251,7 @@ def test_training_window(entityset):
                                                   training_window=Timedelta(2, 'observations', entity='log'))
 
     feature_matrix = calculate_feature_matrix([property_feature, dagg],
-                                                entityset,
+                                              entityset,
                                               instance_ids=[0, 1, 2, 4],
                                               cutoff_time=[datetime(2011, 4, 9, 12, 31),
                                                            datetime(2011, 4, 10, 11),
@@ -313,7 +313,7 @@ def test_approximate_multiple_instances_per_cutoff_time(entityset):
     dfeat = DirectFeature(agg_feat2, es['sessions'])
 
     feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
-                                                entityset,
+                                              entityset,
                                               instance_ids=[0, 2],
                                               approximate=Timedelta(1, 'week'),
                                               cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
@@ -331,7 +331,7 @@ def test_approximate_dfeat_of_agg_on_target(entityset):
     dfeat = DirectFeature(agg_feat2, es['sessions'])
 
     feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
-                                                entityset,
+                                              entityset,
                                               instance_ids=[0, 2],
                                               approximate=Timedelta(10, 's'),
                                               cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
@@ -348,7 +348,7 @@ def test_approximate_dfeat_of_need_all_values(entityset):
     dfeat = DirectFeature(agg_feat2, es['sessions'])
 
     feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
-                                                entityset,
+                                              entityset,
                                               instance_ids=[0, 2],
                                               approximate=Timedelta(10, 's'),
                                               cutoff_time_in_index=True,
@@ -438,7 +438,7 @@ def test_approximate_dfeat_of_dfeat_of_agg_on_target(entityset):
     dfeat = DirectFeature(agg_feat2, es['log'])
 
     feature_matrix = calculate_feature_matrix([dfeat],
-                                                entityset,
+                                              entityset,
                                               instance_ids=[0, 2],
                                               approximate=Timedelta(10, 's'),
                                               cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
@@ -494,7 +494,7 @@ def test_approx_base_feature_is_also_first_class_feature(entityset):
     sess_to_cust = DirectFeature(customer_agg_feat, es['sessions'])
 
     feature_matrix = calculate_feature_matrix([sess_to_cust, agg_feat],
-                                                entityset,
+                                              entityset,
                                               instance_ids=[0, 2],
                                               approximate=Timedelta(10, 's'),
                                               cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
@@ -516,7 +516,7 @@ def test_approximate_time_split_returns_the_same_result(entityset):
                               'instance_id': [0, 0]})
 
     feature_matrix_at_once = calculate_feature_matrix([dfeat, agg_feat],
-                                                        entityset,
+                                                      entityset,
                                                       approximate=Timedelta(10, 's'),
                                                       cutoff_time=cutoff_df)
     divided_matrices = []
@@ -527,7 +527,7 @@ def test_approximate_time_split_returns_the_same_result(entityset):
     separate_cutoff[1].index = [1]
     for ct in separate_cutoff:
         fm = calculate_feature_matrix([dfeat, agg_feat],
-                                        entityset,
+                                      entityset,
                                       approximate=Timedelta(10, 's'),
                                       cutoff_time=ct)
         divided_matrices.append(fm)
@@ -550,7 +550,7 @@ def test_approximate_returns_correct_empty_default_values(entityset):
                               'instance_id': [0, 0]})
 
     fm = calculate_feature_matrix([dfeat],
-                                    entityset,
+                                  entityset,
                                   approximate=Timedelta(10, 's'),
                                   cutoff_time=cutoff_df)
     assert fm[dfeat.get_name()].tolist() == [0, 10]
@@ -586,7 +586,7 @@ def test_approximate_child_aggs_handled_correctly(entityset):
                               'instance_id': [0, 0]})
 
     fm = calculate_feature_matrix([dfeat],
-                                   entityset,
+                                  entityset,
                                   approximate=Timedelta(10, 's'),
                                   cutoff_time=cutoff_df)
     fm_2 = calculate_feature_matrix([dfeat, agg_feat_2],

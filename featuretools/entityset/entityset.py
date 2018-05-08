@@ -172,7 +172,6 @@ class EntitySet(BaseEntitySet):
         new_v.__dict__ = new_dict
         return new_v
 
-
     @property
     def is_metadata(self):
         return all(e.df.empty for e in self.entity_stores.values())
