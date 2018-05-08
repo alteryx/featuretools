@@ -175,6 +175,7 @@ class ArithmeticFeature(BinaryFeature):
 class Add(ArithmeticFeature):
     """Creates a transform feature that adds two features."""
     operator = ArithmeticFeature._ADD
+    name = 'add'
     commutative = True
     input_types = [[Numeric, Numeric],
                    [Numeric],
@@ -192,6 +193,7 @@ class Add(ArithmeticFeature):
 class Subtract(ArithmeticFeature):
     """Creates a transform feature that subtracts two features."""
     operator = ArithmeticFeature._SUB
+    name = 'subtract'
     input_types = [[Numeric, Numeric],
                    [Numeric],
                    [TimeIndex],
@@ -208,22 +210,26 @@ class Subtract(ArithmeticFeature):
 class Multiply(ArithmeticFeature):
     """Creates a transform feature that multplies two features."""
     operator = ArithmeticFeature._MUL
+    name = 'multiply'
     commutative = True
 
 
 class Divide(ArithmeticFeature):
     """Creates a transform feature that divides two features."""
     operator = ArithmeticFeature._DIV
+    name = 'divide'
 
 
 class Mod(ArithmeticFeature):
     """Creates a transform feature that divides two features."""
     operator = ArithmeticFeature._MOD
+    name = 'mod'
 
 
 class Negate(Subtract):
     """Creates a transform feature that negates a feature."""
     input_types = [Numeric]
+    name = 'negate'
 
     def __init__(self, f):
         super(Negate, self).__init__(0, f)
