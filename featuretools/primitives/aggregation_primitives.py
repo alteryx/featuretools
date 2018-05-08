@@ -51,7 +51,7 @@ class Count(AggregationPrimitive):
         where_str = self._where_str()
         use_prev_str = self._use_prev_str()
 
-        return u"COUNT(%s%s%s)" % (self.child_entity.name,
+        return u"COUNT(%s%s%s)" % (self.child_entity.id,
                                    where_str, use_prev_str)
 
 

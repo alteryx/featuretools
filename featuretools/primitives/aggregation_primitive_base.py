@@ -70,7 +70,7 @@ class AggregationPrimitive(PrimitiveBase):
         base_features_str = self._base_feature_str()
 
         return u"%s(%s.%s%s%s)" % (self.name.upper(),
-                                   self.child_entity.name,
+                                   self.child_entity.id,
                                    base_features_str,
                                    where_str, use_prev_str)
 
