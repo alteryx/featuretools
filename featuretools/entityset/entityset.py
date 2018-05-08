@@ -177,9 +177,6 @@ class EntitySet(BaseEntitySet):
     def is_metadata(self):
         return all(e.df.empty for e in self.entity_stores.values())
 
-    def normalize(self, normalizer):
-        return super(EntitySet, self).normalize(normalizer=normalizer, remove_entityset=False)
-
     @property
     def entity_names(self):
         """

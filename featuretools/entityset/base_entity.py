@@ -7,13 +7,11 @@ import pandas as pd
 from past.builtins import basestring
 
 from featuretools import variable_types as vtypes
-from featuretools.core.base import FTBase
-from featuretools.utils.wrangle import _dataframes_equal
 
 logger = logging.getLogger('featuretools.entityset')
 
 
-class BaseEntity(FTBase):
+class BaseEntity(object):
     """Represents an entity in a Entityset, and stores relevant metadata
 
     An Entity is analogous to a table in a relational database
