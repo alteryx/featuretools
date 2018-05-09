@@ -135,7 +135,7 @@ class ArithmeticFeature(BinaryFeature):
     operator = None
 
     @property
-    def variable_type(self):
+    def return_type(self):
         dt_types = (Datetime, TimeIndex)
         td = Timedelta
         # TODO: separate this into a function
@@ -275,8 +275,7 @@ class Compare(BinaryFeature):
         GE: "__lt__"
     }
 
-    name = "compare"
-    input_types = [[Variable], [Variable, Variable]]
+    input_types = [[Variable, Variable], [Variable]]
     return_type = Boolean
 
     def invert(self):

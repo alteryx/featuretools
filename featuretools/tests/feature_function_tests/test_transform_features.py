@@ -981,13 +981,10 @@ def test_init_and_name(es):
     # Add Timedelta feature
     features.append(pd.Timestamp.now() - Feature(log['datetime']))
     for transform_prim in get_transform_primitives().values():
-        if issubclass(transform_prim, Compare):
-            continue
         # use the input_types matching function from DFS
         input_types = transform_prim.input_types
         if type(input_types[0]) == list:
-            matching_inputs = [g for s in input_types
-                               for g in match(s, features)]
+            matching_inputs = match(input_types[0], features)
         else:
             matching_inputs = match(input_types, features)
         if len(matching_inputs) == 0:
