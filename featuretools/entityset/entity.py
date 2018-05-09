@@ -4,16 +4,20 @@ import copy
 import logging
 import time
 from builtins import range
-from past.builtins import basestring
 from datetime import datetime
 
 import numpy as np
 import pandas as pd
+from past.builtins import basestring
 
 from .timedelta import Timedelta
 
 from featuretools import variable_types as vtypes
-from featuretools.utils.wrangle import _check_time_type, _check_timedelta, _dataframes_equal
+from featuretools.utils.wrangle import (
+    _check_time_type,
+    _check_timedelta,
+    _dataframes_equal
+)
 
 logger = logging.getLogger('featuretools.entityset')
 

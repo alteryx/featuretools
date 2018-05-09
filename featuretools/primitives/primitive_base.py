@@ -2,13 +2,10 @@ from __future__ import absolute_import
 
 import copy
 import logging
-import pdb
 from builtins import zip
 
 from numpy import nan
-from past.builtins import basestring
 
-import featuretools as ft
 from featuretools.entityset import Entity, EntitySet
 from featuretools.utils.wrangle import (
     _check_time_against_column,

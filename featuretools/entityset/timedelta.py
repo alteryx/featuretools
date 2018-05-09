@@ -191,7 +191,7 @@ class Timedelta(object):
 
         time_index = entityset.entity_stores[self.entity].time_index
         data = entityset.related_instances(parent_entity, self.entity,
-                                            [instance_id])[time_index]
+                                           [instance_id])[time_index]
         self.inclusive = inclusive
 
         # return copy with this info set

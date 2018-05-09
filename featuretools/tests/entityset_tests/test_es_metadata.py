@@ -116,5 +116,3 @@ def test_add_parent_not_index_variable(es):
     with pytest.raises(AttributeError):
         es.add_relationship(Relationship(es['regions']['language'],
                                          es['customers']['region_id']))
-
-

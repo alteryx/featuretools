@@ -29,11 +29,13 @@ def test_query_by_id(entityset):
     df = entityset['log'].query_by_values(instance_vals=[0])
     assert df['id'].values[0] == 0
 
+
 def test_query_by_id_with_sort(entityset):
     df = entityset['log'].query_by_values(
         instance_vals=[2, 1, 3],
         return_sorted=True)
     assert df['id'].values.tolist() == [2, 1, 3]
+
 
 def test_query_by_id_with_time(entityset):
     df = entityset['log'].query_by_values(
@@ -41,6 +43,7 @@ def test_query_by_id_with_time(entityset):
         time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
 
     assert df['id'].get_values().tolist() == [0, 1, 2]
+
 
 def test_query_by_variable_with_time(entityset):
     df = entityset['log'].query_by_values(
@@ -52,6 +55,7 @@ def test_query_by_variable_with_time(entityset):
     assert df['id'].get_values().tolist() == list(range(10))
     assert df['value'].get_values().tolist() == true_values
 
+
 def test_query_by_variable_with_training_window(entityset):
     df = entityset['log'].query_by_values(
         instance_vals=[0, 1, 2], variable_id='session_id',
@@ -61,6 +65,7 @@ def test_query_by_variable_with_training_window(entityset):
     assert df['id'].get_values().tolist() == [9]
     assert df['value'].get_values().tolist() == [0]
 
+
 def test_query_by_indexed_variable(entityset):
     df = entityset['log'].query_by_values(
         instance_vals=['taco clock'],
@@ -68,11 +73,13 @@ def test_query_by_indexed_variable(entityset):
 
     assert df['id'].get_values().tolist() == [15, 16]
 
+
 def test_query_by_non_unique_sort_raises(entityset):
     with pytest.raises(ValueError):
         entityset['log'].query_by_values(
             instance_vals=[0, 2, 1],
             variable_id='session_id', return_sorted=True)
+
 
 def test_check_variables_and_dataframe():
     # matches
@@ -83,6 +90,7 @@ def test_check_variables_and_dataframe():
     entityset.entity_from_dataframe('test_entity', df, index='id',
                                     variable_types=vtypes)
     assert entityset.entity_stores['test_entity'].variable_types['category'] == variable_types.Categorical
+
 
 def test_make_index_variable_ordering():
     df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
@@ -97,6 +105,7 @@ def test_make_index_variable_ordering():
                                     dataframe=df)
     assert entityset.entity_stores['test_entity'].df.columns[0] == 'id1'
 
+
 def test_extra_variable_type():
     # more variables
     df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
@@ -110,6 +119,7 @@ def test_extra_variable_type():
                                         index='id',
                                         variable_types=vtypes, dataframe=df)
 
+
 def test_unknown_index():
     # more variables
     df = pd.DataFrame({'category': ['a', 'b', 'a']})
@@ -121,6 +131,7 @@ def test_unknown_index():
                                     variable_types=vtypes, dataframe=df)
     assert entityset['test_entity'].index == 'id'
     assert entityset['test_entity'].df['id'].tolist() == list(range(3))
+
 
 def test_bad_index_variables():
     # more variables
@@ -135,6 +146,7 @@ def test_bad_index_variables():
                                         variable_types=vtypes,
                                         dataframe=df,
                                         time_index='time')
+
 
 def test_converts_variable_types_on_init():
     df = pd.DataFrame({'id': [0, 1, 2],
@@ -158,6 +170,7 @@ def test_converts_variable_types_on_init():
     # this is infer from pandas dtype
     e = entityset["test_entity"]
     assert isinstance(e['category_int'], variable_types.Categorical)
+
 
 def test_converts_variable_type_after_init():
     df = pd.DataFrame({'id': [0, 1, 2],
@@ -187,6 +200,7 @@ def test_converts_variable_type_after_init():
     assert isinstance(e['ints'], variable_types.Boolean)
     assert df['ints'].dtype.name == 'bool'
 
+
 def test_converts_datetime():
     # string converts to datetime correctly
     # This test fails without defining vtypes.  Entityset
@@ -204,6 +218,7 @@ def test_converts_datetime():
     pd_col = entityset['test_entity'].df['time']
     # assert type(es['test_entity']['time']) == variable_types.Datetime
     assert type(pd_col[0]) == pd.Timestamp
+
 
 def test_handles_datetime_format():
     # check if we load according to the format string
@@ -229,6 +244,7 @@ def test_handles_datetime_format():
     # with formatting we correctly get jan2
     assert (col_format == actual).all()
 
+
 def test_handles_datetime_mismatch():
     # can't convert arbitrary strings
     df = pd.DataFrame({'id': [0, 1, 2], 'time': ['a', 'b', 'tomorrow']})
@@ -239,6 +255,7 @@ def test_handles_datetime_mismatch():
         entityset = EntitySet(id='test')
         entityset.entity_from_dataframe('test_entity', df, 'id',
                                         time_index='time', variable_types=vtypes)
+
 
 def test_calculates_statistics_on_init():
     df = pd.DataFrame({'id': [0, 1, 2],
@@ -288,6 +305,7 @@ def test_calculates_statistics_on_init():
     # assert e['boolean_with_nan'].num_true == 1
     # assert e['boolean_with_nan'].num_false == 1
 
+
 def test_column_funcs(entityset):
     # Note: to convert the time column directly either the variable type
     # or convert_date_columns must be specifie
@@ -313,6 +331,7 @@ def test_column_funcs(entityset):
     assert entityset['test_entity']['category'].nunique == 2
     assert entityset['test_entity'].df['time'].dtype == df['time'].dtype
     assert set(entityset['test_entity'].df['id']) == set(df['id'])
+
 
 def test_combine_variables(entityset):
     # basic case
@@ -348,6 +367,7 @@ def test_combine_variables(entityset):
     assert entityset['log'].df['hashed_comment_product'].dtype == 'int64'
     assert 'comment+product_id' in entityset['log'].df
 
+
 def test_add_parent_time_index(entityset):
     entityset = copy.deepcopy(entityset)
     entityset.add_parent_time_index(entity_id='sessions',
@@ -379,6 +399,7 @@ def test_add_parent_time_index(entityset):
     for t, x in zip(true_cancel_reasons, sessions.df['cancel_reason']):
         assert t == x
 
+
 def test_sort_time_id():
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                                     "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s")[::-1]})
@@ -387,6 +408,7 @@ def test_sort_time_id():
         transactions_df, "id", "transaction_time")})
     times = es["t"].df.transaction_time.tolist()
     assert times == sorted(transactions_df.transaction_time.tolist())
+
 
 def test_already_sorted_parameter():
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
@@ -409,6 +431,7 @@ def test_already_sorted_parameter():
                              already_sorted=True)
     times = es["t"].df.transaction_time.tolist()
     assert times == transactions_df.transaction_time.tolist()
+
 
 def test_concat_entitysets(entityset):
     df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
@@ -459,6 +482,7 @@ def test_concat_entitysets(entityset):
             for x, y in zip(df[column], df_3[column]):
                 assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
 
+
 def test_set_time_type_on_init():
     # create cards entity
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
@@ -474,6 +498,7 @@ def test_set_time_type_on_init():
     entityset = EntitySet("fraud", entities, relationships)
     # assert time_type is set
     assert entityset.time_type == variable_types.NumericTimeIndex
+
 
 def test_sets_time_when_adding_entity():
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
@@ -518,6 +543,7 @@ def test_sets_time_when_adding_entity():
                                         accounts_df_string,
                                         index="id",
                                         time_index="signup_date")
+
 
 def test_checks_time_type_setting_secondary_time_index(entityset):
     # entityset is timestamp time type
@@ -593,6 +619,7 @@ def test_related_instances_backward(entityset):
 
     assert len(result['id'].values) == 0
 
+
 def test_related_instances_forward(entityset):
     result = entityset.related_instances(
         start_entity_id='log', final_entity_id='regions',
@@ -601,12 +628,14 @@ def test_related_instances_forward(entityset):
     assert len(result['id'].values) == 1
     assert result['id'].values[0] == 'United States'
 
+
 def test_related_instances_mixed_path(entityset):
     result = entityset.related_instances(
         start_entity_id='customers', final_entity_id='products',
         instance_ids=[1])
     related = ["Haribo sugar-free gummy bears", "coke zero"]
     assert set(related) == set(result['id'].values)
+
 
 def test_related_instances_all(entityset):
     # test querying across the entityset
@@ -617,6 +646,7 @@ def test_related_instances_all(entityset):
     for p in entityset['products'].df['id'].values:
         assert p in result['id'].values
 
+
 def test_related_instances_all_cutoff_time_same_entity(entityset):
     # test querying across the entityset
     result = entityset.related_instances(
@@ -624,6 +654,7 @@ def test_related_instances_all_cutoff_time_same_entity(entityset):
         instance_ids=None, time_last=pd.Timestamp('2011/04/09 10:30:31'))
 
     assert result['id'].values.tolist() == list(range(5))
+
 
 def test_related_instances_link_vars(entityset):
     # test adding link variables on the fly during _related_instances
@@ -636,6 +667,7 @@ def test_related_instances_link_vars(entityset):
     assert 'sessions.customer_id' in frame.columns
     for val in frame['sessions.customer_id']:
         assert val == 1
+
 
 def test_get_pandas_slice(entityset):
     filter_eids = ['products', 'regions', 'customers']
@@ -657,6 +689,7 @@ def test_get_pandas_slice(entityset):
         list(range(10)) + list(range(11, 15)))
     assert set(result['regions']['log']['id'].values) == set(range(17))
 
+
 def test_get_pandas_slice_times(entityset):
     # todo these test used to use time first time last. i remvoed and it
     # still passes,but we should double check this okay
@@ -676,6 +709,7 @@ def test_get_pandas_slice_times(entityset):
         # the instance ids should be the same for all filters
         for i in range(7):
             assert i in result[eid]['log']['id'].values
+
 
 def test_get_pandas_slice_times_include(entityset):
     # todo these test used to use time first time last. i remvoed and it
@@ -697,6 +731,7 @@ def test_get_pandas_slice_times_include(entityset):
         for i in range(7):
             assert i in result[eid]['log']['id'].values
 
+
 def test_get_pandas_slice_secondary_index(entityset):
     filter_eids = ['products', 'regions', 'customers']
     # this date is before the cancel date of customers 1 and 2
@@ -713,6 +748,7 @@ def test_get_pandas_slice_secondary_index(entityset):
         nulls = customers_df.iloc[all_instances][col].isnull() == [
             False, True, True]
         assert nulls.all(), "Some instance has data it shouldn't for column %s" % col
+
 
 def test_add_link_vars(entityset):
     eframes = {e_id: entityset[e_id].df
@@ -738,6 +774,7 @@ def test_normalize_entity(entityset):
     assert 'device_name' not in entityset['sessions'].df.columns
     assert 'device_type' in entityset['device_types'].df.columns
 
+
 def test_normalize_entity_copies_variable_types(entityset):
     entityset['log'].convert_variable_type(
         'value', variable_types.Ordinal, convert_data=False)
@@ -759,6 +796,7 @@ def test_normalize_entity_copies_variable_types(entityset):
     assert entityset['values_2'].variable_types['priority_level'] == variable_types.Ordinal
     assert entityset['values_2'].variable_types['value'] == variable_types.Ordinal
 
+
 def test_make_time_index_keeps_original_sorting():
     trips = {
         'trip_id': [999 - i for i in range(1000)],
@@ -779,6 +817,7 @@ def test_make_time_index_keeps_original_sorting():
                         make_time_index=True)
     assert (es['trips'].df['trip_id'] == order).all()
 
+
 def test_normalize_entity_new_time_index(entityset):
     entityset.normalize_entity('log', 'values', 'value',
                                make_time_index=True,
@@ -789,6 +828,7 @@ def test_normalize_entity_new_time_index(entityset):
     assert entityset['values'].time_index == 'value_time'
     assert 'value_time' in entityset['values'].df.columns
     assert len(entityset['values'].df.columns) == 3
+
 
 def test_secondary_time_index(entityset):
     es = entityset

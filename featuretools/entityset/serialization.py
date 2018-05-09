@@ -1,11 +1,10 @@
 import logging
 import os
 import shutil
+import uuid
 from tempfile import mkdtemp
 
 import numpy as np
-import uuid
-
 from pandas import Timestamp, read_csv
 from pandas.io.pickle import read_pickle as pd_read_pickle
 from pandas.io.pickle import to_pickle as pd_to_pickle

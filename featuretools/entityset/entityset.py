@@ -1,7 +1,7 @@
 import copy
 import itertools
 import logging
-from builtins import range, zip, object
+from builtins import object, range, zip
 from collections import defaultdict
 
 import numpy as np
