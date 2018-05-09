@@ -142,6 +142,9 @@ class EntitySet(object):
                 return False
         return True
 
+    def __ne__(self, other, deep=False):
+        return not self.__eq__(other, deep=deep)
+
     def __getitem__(self, entity_id):
         """Get entity instance from entityset
 
@@ -182,9 +185,10 @@ class EntitySet(object):
             new_metadata = self._gen_metadata()
             # Don't want to keep making new copies of metadata
             # Only make a new one if something was changed
-            if old_metadata != new_metadata:
+            if not old_metadata.__eq__(new_metadata):
                 self._metadata = new_metadata
             else:
+                del new_metadata
                 self._metadata = old_metadata
         return self._metadata
 

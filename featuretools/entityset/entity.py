@@ -319,6 +319,7 @@ class Entity(object):
 
             if issubclass(desired_type, vtypes.Datetime) and \
                     current_type not in _datetime_types:
+<<<<<<< HEAD
                 self.convert_variable_data(var_id, desired_type, **type_args)
 
     def convert_variable_data(self, column_id, new_type, **kwargs):
@@ -331,6 +332,42 @@ class Entity(object):
         if new_type == vtypes.Numeric:
             orig_nonnull = df[column_id].dropna().shape[0]
             df[column_id] = pd.to_numeric(df[column_id], errors='coerce')
+=======
+                self.entityset_convert_variable_type(var_id, desired_type, **type_args)
+
+    @property
+    def num_instances(self):
+        return self.df.shape[0]
+
+    def get_shape(self):
+        return self.df.shape
+
+    def is_index_column(self, varname):
+        if varname == self.index:
+            return True
+
+        elif varname.lower() == 'id':
+            return True
+
+        return False
+
+    def get_column_type(self, column_id):
+        """ get type of column in underlying data structure """
+        return self.df[column_id].dtype.name
+
+    def get_column_stat(self, column_id, stat):
+        """ maximum value """
+        if column_id not in self.df.columns:
+            raise AttributeError(u"%s not in entity" % (column_id))
+        s = getattr(self.df[column_id], stat)()
+        return s
+
+    def get_column_max(self, column_id):
+        return self.get_column_stat(column_id, 'max')
+
+    def get_column_min(self, column_id):
+        return self.get_column_stat(column_id, 'min')
+>>>>>>> fl-no-entityset
 
             # This will convert strings to nans
             # If column contained all strings, then we should
