@@ -509,10 +509,14 @@ class DeepFeatureSynthesis(object):
                       if isinstance(f, IdentityFeature)]
 
         for feat in identities:
-            if feat.variable.interesting_values is None:
+            # Get interesting_values from the EntitySet that was passed, which
+            # is assumed to be the most recent version of the EntitySet.
+            # Features can contain a stale EntitySet reference without
+            # interesting_values
+            if entity[feat.variable.id].interesting_values is None:
                 continue
 
-            for val in feat.variable.interesting_values:
+            for val in entity[feat.variable.id].interesting_values:
                 self.where_clauses[entity.id].add(Equals(feat, val))
 
     def _build_transform_features(self, all_features, entity, max_depth=0):
@@ -686,12 +690,12 @@ class DeepFeatureSynthesis(object):
             return False
 
         for relationship in relationship_path:
-            if relationship.child_entity == feature.entity and \
-               relationship.child_variable == feature.variable:
+            if relationship.child_entity.id == feature.entity.id and \
+               relationship.child_variable.id == feature.variable.id:
                 return True
 
-            if relationship.parent_entity == feature.entity and \
-               relationship.parent_variable == feature.variable:
+            if relationship.parent_entity.id == feature.entity.id and \
+               relationship.parent_variable.id == feature.variable.id:
                 return True
 
         return False
