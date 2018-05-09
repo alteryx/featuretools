@@ -326,7 +326,7 @@ class Years(TimedeltaUnitBasePrimitive):
 
 class Weekend(TransformPrimitive):
     """Transform Datetime feature into the boolean of Weekend."""
-    name = "is_weekend"
+    name = "weekend"
     input_types = [Datetime]
     return_type = Boolean
 
