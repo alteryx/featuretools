@@ -729,7 +729,6 @@ class Entity(object):
                     raise TypeError("%s time index is %s type which differs from"
                                     " other entityset time indexes" %
                                     (self.id, time_type))
-
         self.secondary_time_index = secondary_time_index or {}
 
     def _vals_to_series(self, instance_vals, variable_id):

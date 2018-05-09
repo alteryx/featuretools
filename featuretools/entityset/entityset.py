@@ -908,6 +908,14 @@ class EntitySet(object):
             else:
                 columns = [entity.index]
             combined_df.drop_duplicates(columns, inplace=True)
+
+            # TODO: should this go inside of update_data?
+            # or should we call set_time_index()?
+            to_sort = [entity.index]
+            if entity.time_index:
+                to_sort = [entity.time_index, entity.index]
+            combined_df.sort_values(to_sort, inplace=True)
+
             combined_es[entity.id].update_data(combined_df)
 
         for r in combined_es.relationships:
