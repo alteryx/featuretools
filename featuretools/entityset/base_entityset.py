@@ -66,6 +66,9 @@ class BaseEntitySet(object):
                 return False
         return True
 
+    def __ne__(self, other, deep=False):
+        return not self.__eq__(other, deep=deep)
+
     def __getitem__(self, entity_id):
         """Get entity instance from entityset
 

@@ -84,7 +84,6 @@ class EntitySet(BaseEntitySet):
         self._metadata = None
 
     @property
-    # TODO add comment about memory
     def metadata(self):
         '''
         Defined as a property because an EntitySet's metadata
@@ -102,9 +101,10 @@ class EntitySet(BaseEntitySet):
             new_metadata = self._gen_metadata()
             # Don't want to keep making new copies of metadata
             # Only make a new one if something was changed
-            if old_metadata != new_metadata:
+            if not old_metadata.__eq__(new_metadata):
                 self._metadata = new_metadata
             else:
+                del new_metadata
                 self._metadata = old_metadata
         return self._metadata
 
