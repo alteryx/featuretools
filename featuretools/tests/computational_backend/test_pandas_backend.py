@@ -185,32 +185,32 @@ def test_make_agg_feat_where_different_identity_feat(entityset, backend):
         name = feat.get_name()
         instances = df[name]
         v0, v1, v2, v3 = instances[0:4]
-        if where_cmp == '<':
+        if where_cmp == LessThan:
             assert (v0 == 5)
             assert (v1 == 4)
             assert (v2 == 1)
             assert (v3 == 1)
-        elif where_cmp == '>':
+        elif where_cmp == GreaterThan:
             assert (v0 == 0)
             assert (v1 == 0)
             assert (v2 == 0)
             assert (v3 == 0)
-        elif where_cmp == '<=':
+        elif where_cmp == LessThanEqualTo:
             assert (v0 == 5)
             assert (v1 == 4)
             assert (v2 == 1)
             assert (v3 == 2)
-        elif where_cmp == '>=':
+        elif where_cmp == GreaterThanEqualTo:
             assert (v0 == 0)
             assert (v1 == 0)
             assert (v2 == 0)
             assert (v3 == 1)
-        elif where_cmp == '=':
+        elif where_cmp == Equals:
             assert (v0 == 0)
             assert (v1 == 0)
             assert (v2 == 0)
             assert (v3 == 1)
-        elif where_cmp == '!=':
+        elif where_cmp == NotEquals:
             assert (v0 == 5)
             assert (v1 == 4)
             assert (v2 == 1)
