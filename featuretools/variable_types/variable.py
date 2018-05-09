@@ -119,29 +119,6 @@ class Variable(object):
     def interesting_values(self, interesting_values):
         self._interesting_values = interesting_values
 
-    @classmethod
-    def class_from_dtype(cls, dtype):
-        if dtype == "generic_type":
-            return Variable
-        elif dtype == "discrete":
-            return Discrete
-        elif dtype == "boolean":
-            return Boolean
-        elif dtype == "categorical":
-            return Categorical
-        elif dtype == "ordinal":
-            return Ordinal
-        elif dtype == "numeric":
-            return Numeric
-        elif dtype == "datetime":
-            return Datetime
-        elif dtype == "timedelta":
-            return Timedelta
-        elif dtype == "text":
-            return Text
-        else:
-            raise ValueError("Unrecognized variable dtype: {}".format(dtype))
-
     @property
     def series(self):
         return self.entity.df[self.id]
