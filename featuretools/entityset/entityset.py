@@ -85,8 +85,7 @@ class EntitySet(BaseEntitySet):
 
     @property
     def metadata(self):
-        '''
-        Defined as a property because an EntitySet's metadata
+        '''Defined as a property because an EntitySet's metadata
         is used in many places, for instance, for each feature in a feature list.
         To prevent using copying the full metadata object to each feature,
         we generate a new metadata object and check if it's the same as the existing one,
@@ -131,7 +130,6 @@ class EntitySet(BaseEntitySet):
             r.entityset = new_entityset
         return new_entityset
 
-    # TODO make these private
     @classmethod
     def _entity_metadata(cls, e):
         new_dict = {}
@@ -174,6 +172,10 @@ class EntitySet(BaseEntitySet):
 
     @property
     def is_metadata(self):
+        '''Returns True if all of the Entity's contain no data (empty DataFrames).
+        In general, EntitySets with no data are created by accessing the EntitySet.metadata property,
+        which returns a copy of the current EntitySet with all data removed.
+        '''
         return all(e.df.empty for e in self.entity_stores.values())
 
     @property
