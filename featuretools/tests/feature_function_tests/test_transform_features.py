@@ -9,7 +9,6 @@ from featuretools.computational_backends import PandasBackend
 from featuretools.primitives import (
     Absolute,
     Add,
-    Compare,
     Count,
     CumCount,
     CumMax,
