@@ -657,7 +657,6 @@ class Entity(object):
 
         new_v = type(new_id, entity=self)
         self.variables.append(new_v)
-        self.variable_types[new_id] = type
         self.add_variable_statistics(new_id)
 
     def delete_variable(self, variable_id):
