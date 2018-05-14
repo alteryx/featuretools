@@ -89,7 +89,7 @@ def test_check_variables_and_dataframe():
     entityset = EntitySet(id='test')
     entityset.entity_from_dataframe('test_entity', df, index='id',
                                     variable_types=vtypes)
-    assert entityset.entity_stores['test_entity'].variable_types['category'] == variable_types.Categorical
+    assert entityset.entity_dict['test_entity'].variable_types['category'] == variable_types.Categorical
 
 
 def test_make_index_variable_ordering():
@@ -103,7 +103,7 @@ def test_make_index_variable_ordering():
                                     make_index=True,
                                     variable_types=vtypes,
                                     dataframe=df)
-    assert entityset.entity_stores['test_entity'].df.columns[0] == 'id1'
+    assert entityset.entity_dict['test_entity'].df.columns[0] == 'id1'
 
 
 def test_extra_variable_type():

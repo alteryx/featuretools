@@ -39,7 +39,7 @@ def to_pickle(entityset, path):
 
     temp_dir = mkdtemp()
 
-    for e_id, entity_store in entityset.entity_stores.items():
+    for e_id, entity_store in entityset.entity_dict.items():
         entity_path = os.path.join(temp_dir, e_id)
         filename = e_id + '.csv'
         os.mkdir(entity_path)
@@ -85,7 +85,7 @@ def to_pickle(entityset, path):
         f.write(timestamp)
     pd_to_pickle(entityset, os.path.join(temp_dir, 'entityset.p'))
 
-    for e_id, entity_store in entityset.entity_stores.items():
+    for e_id, entity_store in entityset.entity_dict.items():
         setattr(entity_store, 'df', entity_store_dframes[e_id])
         setattr(entity_store, 'indexed_by', entity_store_index_bys[e_id])
 
@@ -105,7 +105,7 @@ def read_pickle(path):
     """
     entityset_path = os.path.abspath(os.path.expanduser(path))
     entityset = pd_read_pickle(os.path.join(entityset_path, 'entityset.p'))
-    for e_id, entity_store in entityset.entity_stores.items():
+    for e_id, entity_store in entityset.entity_dict.items():
         entity_path = os.path.join(entityset_path, e_id)
 
         datatypes = pd_read_pickle(os.path.join(entity_path, 'datatypes.p'))

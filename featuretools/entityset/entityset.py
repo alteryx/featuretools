@@ -55,7 +55,7 @@ class EntitySet(object):
 
     Attributes:
         id
-        entity_stores
+        entity_dict
         relationships
         time_type
         last_saved
@@ -100,7 +100,7 @@ class EntitySet(object):
         """
         self.id = id
         self.last_saved = None
-        self.entity_stores = {}
+        self.entity_dict = {}
         self.relationships = []
         self._verbose = verbose
         self.time_type = None
@@ -130,10 +130,10 @@ class EntitySet(object):
         self._metadata = None
 
     def __eq__(self, other, deep=False):
-        if len(self.entity_stores) != len(other.entity_stores):
+        if len(self.entity_dict) != len(other.entity_dict):
             return False
-        for eid, e in self.entity_stores.items():
-            if eid not in other.entity_stores:
+        for eid, e in self.entity_dict.items():
+            if eid not in other.entity_dict:
                 return False
             if not e.__eq__(other[eid], deep=deep):
                 return False
@@ -159,13 +159,13 @@ class EntitySet(object):
             >>> my_entityset[entity_id]
             <Entity: id>
         """
-        if entity_id in self.entity_stores:
-            return self.entity_stores[entity_id]
+        if entity_id in self.entity_dict:
+            return self.entity_dict[entity_id]
         raise KeyError('Entity %s does not exist in %s' % (entity_id, self.id))
 
     @property
     def entities(self):
-        return list(self.entity_stores.values())
+        return list(self.entity_dict.values())
 
     @property
     def metadata(self):
@@ -197,7 +197,7 @@ class EntitySet(object):
         In general, EntitySets with no data are created by accessing the EntitySet.metadata property,
         which returns a copy of the current EntitySet with all data removed.
         '''
-        return all(e.df.empty for e in self.entity_stores.values())
+        return all(e.df.empty for e in self.entity_dict.values())
 
     @property
     def entity_names(self):
@@ -339,7 +339,7 @@ class EntitySet(object):
                 # instances we want
                 instance_vals = eframes[parent_eid][r.parent_variable.id]
                 eframes[child_eid] =\
-                    self.entity_stores[child_eid].query_by_values(
+                    self.entity_dict[child_eid].query_by_values(
                         instance_vals,
                         variable_id=r.child_variable.id,
                         columns=child_columns,
@@ -717,7 +717,7 @@ class EntitySet(object):
                 Keys are variable ids and values are variable types.
 
         """
-        base_entity = self.entity_stores[base_entity_id]
+        base_entity = self.entity_dict[base_entity_id]
         # variable_types = base_entity.variable_types
         additional_variables = additional_variables or []
         copy_variables = copy_variables or []
@@ -822,9 +822,9 @@ class EntitySet(object):
                                     encoding=base_entity.encoding)
 
         for v in additional_variables:
-            self.entity_stores[base_entity_id].delete_variable(v)
+            self.entity_dict[base_entity_id].delete_variable(v)
 
-        new_entity = self.entity_stores[new_entity_id]
+        new_entity = self.entity_dict[new_entity_id]
         base_entity.convert_variable_type(base_entity_index, vtypes.Id, convert_data=False)
         self.add_relationship(Relationship(new_entity[index], base_entity[base_entity_index]))
 
@@ -886,7 +886,7 @@ class EntitySet(object):
                 self.relationships == other.relationships), assert_string
 
         for entity in self.entities:
-            assert entity.id in other.entity_stores, assert_string
+            assert entity.id in other.entity_dict, assert_string
             assert (len(self[entity.id].variables) ==
                     len(other[entity.id].variables)), assert_string
             other_variable_ids = [o_variable.id for o_variable in
@@ -927,9 +927,9 @@ class EntitySet(object):
                               child_time_index_variable=None,
                               include_secondary_time_index=False,
                               secondary_time_index_variables=[]):
-        entity = self.entity_stores[entity_id]
+        entity = self.entity_dict[entity_id]
 
-        parent_entity = self.entity_stores[parent_entity_id]
+        parent_entity = self.entity_dict[parent_entity_id]
         if parent_time_index_variable is None:
             parent_time_index_variable = parent_entity.time_index
             assert parent_time_index_variable is not None, ("If parent does not have a time index, ",
@@ -966,8 +966,8 @@ class EntitySet(object):
         If necessary, generate an index on the data which links instances of
         parent entities to collections of child instances which link to them.
         """
-        parent_entity = self.entity_stores[r.parent_variable.entity.id]
-        child_entity = self.entity_stores[r.child_variable.entity.id]
+        parent_entity = self.entity_dict[r.parent_variable.entity.id]
+        child_entity = self.entity_dict[r.child_variable.entity.id]
         child_entity.index_by_parent(parent_entity=parent_entity)
 
     def add_last_time_indexes(self):
@@ -1075,7 +1075,7 @@ class EntitySet(object):
         # Load the filtered dataframe for the first entity
         training_window_is_dict = isinstance(training_window, dict)
         window = training_window
-        start_estore = self.entity_stores[start_entity_id]
+        start_estore = self.entity_dict[start_entity_id]
         # This check might be brittle
         if instance_ids is not None and not hasattr(instance_ids, '__iter__'):
             instance_ids = [instance_ids]
@@ -1112,7 +1112,7 @@ class EntitySet(object):
 
             # filter the next entity by the values found in the previous
             # entity's relationship column
-            entity_store = self.entity_stores[new_entity_id]
+            entity_store = self.entity_dict[new_entity_id]
             if training_window_is_dict:
                 window = training_window.get(entity_store.id)
             df = entity_store.query_by_values(all_ids,
@@ -1157,18 +1157,18 @@ class EntitySet(object):
         new_entityset = object.__new__(EntitySet)
         new_entityset_dict = {}
         for k, v in self.__dict__.items():
-            if k not in ["entity_stores", "relationships"]:
+            if k not in ["entity_dict", "relationships"]:
                 new_entityset_dict[k] = v
-        new_entityset_dict["entity_stores"] = {}
-        for eid, e in self.entity_stores.items():
+        new_entityset_dict["entity_dict"] = {}
+        for eid, e in self.entity_dict.items():
             metadata_e = self._entity_metadata(e)
-            new_entityset_dict['entity_stores'][eid] = metadata_e
+            new_entityset_dict['entity_dict'][eid] = metadata_e
         new_entityset_dict["relationships"] = []
         for r in self.relationships:
             metadata_r = self._relationship_metadata(r)
             new_entityset_dict['relationships'].append(metadata_r)
         new_entityset.__dict__ = copy.deepcopy(new_entityset_dict)
-        for e in new_entityset.entity_stores.values():
+        for e in new_entityset.entity_dict.values():
             e.entityset = new_entityset
             for v in e.variables:
                 v.entity = new_entityset[v.entity_id]
@@ -1313,7 +1313,7 @@ class EntitySet(object):
                         relationships=current_relationships,
                         already_sorted=already_sorted,
                         created_index=created_index)
-        self.entity_stores[entity.id] = entity
+        self.entity_dict[entity.id] = entity
         return self
 
     def _add_multigenerational_link_vars(self, frames, start_entity_id,
@@ -1394,8 +1394,8 @@ class EntitySet(object):
 
     def _add_parent_variable_to_df(self, child_entity_id, parent_entity_id,
                                    parent_variable_id, child_variable_id=None):
-        entity = self.entity_stores[child_entity_id]
-        parent_entity = self.entity_stores[parent_entity_id]
+        entity = self.entity_dict[child_entity_id]
+        parent_entity = self.entity_dict[parent_entity_id]
 
         if child_variable_id is None:
             child_variable_id = parent_variable_id
@@ -1408,7 +1408,7 @@ class EntitySet(object):
 
         child_data = entity.df
         # get columns of parent that we need and rename in prep for merge
-        parent_data = self.entity_stores[parent_entity_id].df[[rel.parent_variable.id, parent_variable_id]]
+        parent_data = self.entity_dict[parent_entity_id].df[[rel.parent_variable.id, parent_variable_id]]
         col_map = {parent_variable_id: child_variable_id}
         parent_data.rename(columns=col_map, inplace=True)
 
