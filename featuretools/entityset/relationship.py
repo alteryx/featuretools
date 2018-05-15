@@ -1,7 +1,4 @@
-from featuretools.core.base import FTBase
-
-
-class Relationship(FTBase):
+class Relationship(object):
     """Class to represent an relationship between entities
 
     See Also:
@@ -18,6 +15,7 @@ class Relationship(FTBase):
                 child entity.  Must be a Discrete Variable
 
         """
+
         self.entityset = child_variable.entityset
         self._parent_entity_id = parent_variable.entity.id
         self._child_entity_id = child_variable.entity.id

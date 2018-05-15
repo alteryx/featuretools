@@ -2,7 +2,6 @@ import logging
 from builtins import object
 
 from featuretools import variable_types as vtypes
-from featuretools.core.base import FTBase
 
 logger = logging.getLogger('featuretools.entityset')
 
@@ -37,7 +36,7 @@ class BFSNode(object):
         return path, num_forward
 
 
-class BaseEntitySet(FTBase):
+class BaseEntitySet(object):
     """
     Stores all actual data for a entityset
     """
@@ -55,21 +54,20 @@ class BaseEntitySet(FTBase):
         self.time_type = None
 
     def __eq__(self, other, deep=False):
-        if not deep:
-            if isinstance(other, type(self)):
-                return self.id == other.id
-            return False
         if len(self.entity_stores) != len(other.entity_stores):
             return False
         for eid, e in self.entity_stores.items():
             if eid not in other.entity_stores:
                 return False
-            if not e.__eq__(other[eid], deep=True):
+            if not e.__eq__(other[eid], deep=deep):
                 return False
-        for r in self.relationships:
+        for r in other.relationships:
             if r not in other.relationships:
                 return False
         return True
+
+    def __ne__(self, other, deep=False):
+        return not self.__eq__(other, deep=deep)
 
     def __getitem__(self, entity_id):
         """Get entity instance from entityset
@@ -127,7 +125,7 @@ class BaseEntitySet(FTBase):
         return entityset.get_dataframe(entity_id)
 
     def __repr__(self):
-        fmat = self.id
+        fmat = self.get_name()
         repr_out = u"Entityset: {}\n".format(fmat)
         repr_out += u"  Entities:"
         for e in self.entities:
@@ -184,7 +182,6 @@ class BaseEntitySet(FTBase):
         # _operations?
 
         # this is a new pair of entities
-        self.relationships.append(relationship)
         child_e = relationship.child_entity
         child_v = relationship.child_variable.id
         parent_e = relationship.parent_entity
@@ -198,6 +195,7 @@ class BaseEntitySet(FTBase):
                                            new_type=vtypes.Index,
                                            convert_data=False)
 
+        self.relationships.append(relationship)
         self.index_data(relationship)
         return self
 

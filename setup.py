@@ -15,9 +15,9 @@ class build_ext(_build_ext):
 
 setup(
     name='featuretools',
-    version='0.1.19',
+    version='0.1.20',
     packages=find_packages(),
-    package_data={'featuretools': ['config_yaml.txt']},
+    package_data={'featuretools': ['config.yaml']},
     description='a framework for automated feature engineering',
     url='http://featuretools.com',
     license='BSD 3-clause',

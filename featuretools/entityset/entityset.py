@@ -81,9 +81,102 @@ class EntitySet(BaseEntitySet):
             child_variable = self[relationship[2]][relationship[3]]
             self.add_relationship(Relationship(parent_variable,
                                                child_variable))
+        self._metadata = None
 
-    def normalize(self, normalizer):
-        return super(EntitySet, self).normalize(normalizer=normalizer, remove_entityset=False)
+    @property
+    def metadata(self):
+        '''Defined as a property because an EntitySet's metadata
+        is used in many places, for instance, for each feature in a feature list.
+        To prevent using copying the full metadata object to each feature,
+        we generate a new metadata object and check if it's the same as the existing one,
+        and if it is return the existing one. Thus, all features in the feature list
+        would reference the same object, rather than copies. This saves a lot of memory
+        '''
+        if self._metadata is None:
+            self._metadata = self._gen_metadata()
+        else:
+            old_metadata = self._metadata
+            self._metadata = None
+            new_metadata = self._gen_metadata()
+            # Don't want to keep making new copies of metadata
+            # Only make a new one if something was changed
+            if not old_metadata.__eq__(new_metadata):
+                self._metadata = new_metadata
+            else:
+                del new_metadata
+                self._metadata = old_metadata
+        return self._metadata
+
+    def _gen_metadata(self):
+        new_entityset = object.__new__(EntitySet)
+        new_entityset_dict = {}
+        for k, v in self.__dict__.items():
+            if k not in ["entity_stores", "relationships"]:
+                new_entityset_dict[k] = v
+        new_entityset_dict["entity_stores"] = {}
+        for eid, e in self.entity_stores.items():
+            metadata_e = self._entity_metadata(e)
+            new_entityset_dict['entity_stores'][eid] = metadata_e
+        new_entityset_dict["relationships"] = []
+        for r in self.relationships:
+            metadata_r = self._relationship_metadata(r)
+            new_entityset_dict['relationships'].append(metadata_r)
+        new_entityset.__dict__ = copy.deepcopy(new_entityset_dict)
+        for e in new_entityset.entity_stores.values():
+            e.entityset = new_entityset
+            for v in e.variables:
+                v.entity = new_entityset[v.entity_id]
+        for r in new_entityset.relationships:
+            r.entityset = new_entityset
+        return new_entityset
+
+    @classmethod
+    def _entity_metadata(cls, e):
+        new_dict = {}
+        for k, v in e.__dict__.items():
+            if k not in ["data", "entityset", "variables"]:
+                new_dict[k] = v
+        new_dict["data"] = {
+            "df": e.df.head(0),
+            "last_time_index": None,
+            "indexed_by": {}
+        }
+        new_dict["variables"] = [cls._variable_metadata(v)
+                                 for v in e.variables]
+        new_dict = copy.deepcopy(new_dict)
+        new_entity = object.__new__(Entity)
+        new_entity.__dict__ = new_dict
+        return new_entity
+
+    @classmethod
+    def _relationship_metadata(cls, r):
+        new_dict = {}
+        for k, v in r.__dict__.items():
+            if k != "entityset":
+                new_dict[k] = v
+        new_dict = copy.deepcopy(new_dict)
+        new_r = object.__new__(Relationship)
+        new_r.__dict__ = new_dict
+        return new_r
+
+    @classmethod
+    def _variable_metadata(cls, var):
+        new_dict = {}
+        for k, v in var.__dict__.items():
+            if k != "entity":
+                new_dict[k] = v
+        new_dict = copy.deepcopy(new_dict)
+        new_v = object.__new__(type(var))
+        new_v.__dict__ = new_dict
+        return new_v
+
+    @property
+    def is_metadata(self):
+        '''Returns True if all of the Entity's contain no data (empty DataFrames).
+        In general, EntitySets with no data are created by accessing the EntitySet.metadata property,
+        which returns a copy of the current EntitySet with all data removed.
+        '''
+        return all(e.df.empty for e in self.entity_stores.values())
 
     @property
     def entity_names(self):
@@ -116,14 +209,6 @@ class EntitySet(BaseEntitySet):
             entity.entityset = sampled
         self.entity_stores = full_entities
         return sampled
-
-    def head(self, entity_id, n=10, variable_id=None, cutoff_time=None):
-        if variable_id is None:
-            return self.entity_stores[entity_id].head(
-                n, cutoff_time=cutoff_time)
-        else:
-            return self.entity_stores[entity_id].head(
-                n, cutoff_time=cutoff_time)[variable_id]
 
     def get_instance_data(self, entity_id, instance_ids):
         return self.entity_stores[entity_id].query_by_values(instance_ids)
@@ -842,6 +927,14 @@ class EntitySet(BaseEntitySet):
             else:
                 columns = [entity.index]
             combined_df.drop_duplicates(columns, inplace=True)
+
+            # TODO: should this go inside of update_data?
+            # or should we call set_time_index()?
+            to_sort = [entity.index]
+            if entity.time_index:
+                to_sort = [entity.time_index, entity.index]
+            combined_df.sort_values(to_sort, inplace=True)
+
             combined_es[entity.id].update_data(combined_df)
 
         for r in combined_es.relationships:
@@ -890,7 +983,7 @@ class EntitySet(BaseEntitySet):
         queue = self.entities[:]
 
         for entity in self.entities:
-            entity.set_last_time_index(None)
+            entity.last_time_index = None
 
         while len(explored) < len(self.entities):
             entity = queue.pop(0)
@@ -901,7 +994,7 @@ class EntitySet(BaseEntitySet):
                 else:
                     lti = entity.df[entity.index].copy()
                     lti[:] = None
-                entity.set_last_time_index(lti)
+                entity.last_time_index = lti
 
             if entity.id in children:
                 child_entities = children[entity.id]

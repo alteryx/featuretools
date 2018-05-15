@@ -57,16 +57,45 @@ class Entity(BaseEntity):
 
         """
         assert len(df.columns) == len(set(df.columns)), "Duplicate column names"
-        self.df = df
+        self.data = {"df": df,
+                     "last_time_index": last_time_index,
+                     "indexed_by": {}
+                     }
         self.encoding = encoding
-        self.indexed_by = {}
         self._verbose = verbose
         self.created_index = created_index
         self.convert_variable_types(variable_types)
         self.attempt_cast_index_to_int(index)
-        self.last_time_index = last_time_index
         super(Entity, self).__init__(id, entityset, variable_types, name, index,
                                      time_index, secondary_time_index, relationships, already_sorted)
+
+    @property
+    def is_metadata(self):
+        return self.entityset.is_metadata
+
+    @property
+    def df(self):
+        return self.data["df"]
+
+    @df.setter
+    def df(self, _df):
+        self.data["df"] = _df
+
+    @property
+    def last_time_index(self):
+        return self.data["last_time_index"]
+
+    @last_time_index.setter
+    def last_time_index(self, lti):
+        self.data["last_time_index"] = lti
+
+    @property
+    def indexed_by(self):
+        return self.data["indexed_by"]
+
+    @indexed_by.setter
+    def indexed_by(self, idx):
+        self.data["indexed_by"] = idx
 
     def attempt_cast_index_to_int(self, index_var):
         dtype_name = self.df[index_var].dtype.name
@@ -102,11 +131,6 @@ class Entity(BaseEntity):
                     current_type not in _datetime_types:
                 self.entityset_convert_variable_type(var_id, desired_type, **type_args)
 
-    def normalize(self, normalizer):
-        d = {k: v for k, v in self.__dict__.items()
-             if k not in ['df', 'indexed_by', 'entityset']}
-        return normalizer(d)
-
     @property
     def num_instances(self):
         return self.df.shape[0]
@@ -122,41 +146,6 @@ class Entity(BaseEntity):
             return True
 
         return False
-
-    def head(self, n=10, cutoff_time=None):
-        """See first n instance in entity
-
-        Args:
-            n (int) : Number of instances to return.
-            cutoff_time (pd.Timestamp,pd.DataFrame) : Timestamp(s) to restrict rows.
-
-        Returns:
-            :class:`pd.DataFrame` : A Pandas DataFrame.
-
-        """
-
-        if cutoff_time is None:
-            valid_data = self.df
-
-        elif isinstance(cutoff_time, pd.Timestamp) or \
-                isinstance(cutoff_time, datetime):
-            valid_data = self.df[self.df[self.time_index] < cutoff_time]
-
-        elif isinstance(cutoff_time, pd.DataFrame):
-
-            instance_ids, time = list(cutoff_time)
-
-            # TODO filtering the top n during "isin" would be more efficient
-            valid_data = self.df[
-                self.df[self.index].isin(cutoff_time[instance_ids])]
-            valid_data = valid_data[
-                valid_data[self.time_index] < cutoff_time[time]]
-
-        else:
-            raise ValueError(
-                'cutoff_time must be None, a Datetime, a pd.Timestamp, or a pd.DataFrame')
-
-        return valid_data.head(n)
 
     def get_column_type(self, column_id):
         """ get type of column in underlying data structure """
@@ -577,9 +566,6 @@ class Entity(BaseEntity):
                                     (self.id, time_type))
 
         super(Entity, self).set_secondary_time_index(secondary_time_index)
-
-    def set_last_time_index(self, last_time_index):
-        self.last_time_index = last_time_index
 
     def _vals_to_series(self, instance_vals, variable_id):
         """

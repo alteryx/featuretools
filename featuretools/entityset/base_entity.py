@@ -1,18 +1,16 @@
 from __future__ import print_function
 
 import logging
-from builtins import map
 
-import pandas as pd
 from past.builtins import basestring
 
 from featuretools import variable_types as vtypes
-from featuretools.core.base import FTBase
+from featuretools.utils.wrangle import _dataframes_equal
 
 logger = logging.getLogger('featuretools.entityset')
 
 
-class BaseEntity(FTBase):
+class BaseEntity(object):
     """Represents an entity in a Entityset, and stores relevant metadata
 
     An Entity is analogous to a table in a relational database
@@ -106,23 +104,21 @@ class BaseEntity(FTBase):
         return self.get_shape()
 
     def __eq__(self, other, deep=False):
-        if not deep:
-            if isinstance(other, self.__class__):
-                return self.id == other.id
+        if self.index != other.index:
             return False
-        else:
-            if self.index != other.index:
+        if self.time_index != other.time_index:
+            return False
+        if self.secondary_time_index != other.secondary_time_index:
+            return False
+        if len(self.variables) != len(other.variables):
+            return False
+        for v in self.variables:
+            if v not in other.variables:
                 return False
-            if self.time_index != other.time_index:
-                return False
-            if self.secondary_time_index != other.secondary_time_index:
-                return False
-            if len(self.variables) != len(other.variables):
-                return False
-            for v in self.variables:
-                if v not in other.variables:
-                    return False
+        if deep:
             if self.indexed_by is None and other.indexed_by is not None:
+                return False
+            elif self.indexed_by is not None and other.indexed_by is None:
                 return False
             else:
                 for v, index_map in self.indexed_by.items():
@@ -137,7 +133,18 @@ class BaseEntity(FTBase):
                         # checked for equality, but don't care about the order.
                         if not set(related) == set(other.indexed_by[v][i]):
                             return False
-            return True
+            if self.last_time_index is None and other.last_time_index is not None:
+                return False
+            elif self.last_time_index is not None and other.last_time_index is None:
+                return False
+            elif self.last_time_index is not None and other.last_time_index is not None:
+                if not self.last_time_index.equals(other.last_time_index):
+                    return False
+
+            if not _dataframes_equal(self.df, other.df):
+                return False
+
+        return True
 
     def __hash__(self):
         return id(self.id)
@@ -177,30 +184,6 @@ class BaseEntity(FTBase):
 
     def get_shape():
         raise NotImplementedError()
-
-    def head(self, n=10, cutoff_time=None):
-        """See first n instance in entity
-
-        Args:
-            n (int) : Number of instances to return.
-
-        Returns:
-            :class:`pd.DataFrame` : Pandas DataFrame
-
-
-        """
-        if cutoff_time is None:
-            df = self.entityset.head(self.id, n=n)
-        else:
-            from featuretools.computational_backends.calculate_feature_matrix import calculate_feature_matrix
-            from featuretools.features import Feature
-
-            row = list(map(Feature, self.variables))
-            instance_ids = self.entityset.get_top_n_instances(self.id, n)
-            cutoff_time = pd.DataFrame({'instance_id': instance_ids})
-            cutoff_time['time'] = cutoff_time
-            df = calculate_feature_matrix(row, cutoff_time=cutoff_time)
-        return df
 
     @property
     def variable_types(self):
