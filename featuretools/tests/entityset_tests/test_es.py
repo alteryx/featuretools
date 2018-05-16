@@ -454,12 +454,11 @@ def test_concat_entitysets(entityset):
         'test_entity': [[0, 1], [0, 2]],
     }
 
+    entityset.add_last_time_indexes()
     for i, es in enumerate([entityset_1, entityset_2]):
         for entity, rows in emap.items():
             df = es[entity].df
-            es[entity].update_data(df.loc[rows[i]])
-        for r in entityset.relationships:
-            es.index_data(r)
+            es[entity].update_data(df=df.loc[rows[i]])
 
     # make sure internal indexes work before concat
     regions = entityset_1['customers'].query_by_values(['United States'], variable_id='region_id')
@@ -474,6 +473,7 @@ def test_concat_entitysets(entityset):
 
     assert old_entityset_1.__eq__(entityset_1, deep=True)
     assert old_entityset_2.__eq__(entityset_2, deep=True)
+
     assert entityset_3.__eq__(entityset, deep=True)
     for entity in entityset.entities:
         df = entityset[entity.id].df.sort_index()

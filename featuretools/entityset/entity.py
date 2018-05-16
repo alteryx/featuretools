@@ -121,10 +121,13 @@ class Entity(object):
         if self.index is not None and self.index not in inferred_variable_types:
             self.add_variable(self.index, vtypes.Index)
 
-        self.update_data(self.df, already_sorted=already_sorted)
+        self.update_data(df=self.df,
+                         already_sorted=already_sorted,
+                         recalculate_last_time_indexes=False,
+                         reindex=False)
 
     def __repr__(self):
-        repr_out = "Entity: {}\n".format(self.name)
+        repr_out = "Entity: {}\n".format(self.id)
         repr_out += "  Variables:"
         for v in self.variables:
             repr_out += "\n    {} (dtype: {})".format(v.id, v.dtype)
@@ -208,6 +211,10 @@ class Entity(object):
     @indexed_by.setter
     def indexed_by(self, idx):
         self.data["indexed_by"] = idx
+
+    @property
+    def parents(self):
+        return [p.parent_entity.id for p in self.entityset.get_forward_relationships(self.id)]
 
     def __hash__(self):
         return id(self.id)
@@ -448,6 +455,10 @@ class Entity(object):
                                      shuffle=shuffle,
                                      random_seed=random_seed)
 
+    def index_data(self):
+        for p in self.parents:
+            self.index_by_parent(self.entityset[p])
+
     def index_by_parent(self, parent_entity):
         """
         Cache the instances of this entity grouped by the parent entity.
@@ -461,9 +472,9 @@ class Entity(object):
             if self._verbose:
                 print('Re-indexing %s by %s' % (self.id, parent_entity.id))
 
-        self.index_by_variable(relation_var_id)
+        self._index_by_variable(relation_var_id)
 
-    def index_by_variable(self, variable_id):
+    def _index_by_variable(self, variable_id):
         """
         Cache the instances of this entity grouped by a variable.
         This allows filtering to happen much more quickly later.
@@ -559,11 +570,19 @@ class Entity(object):
 
         return inferred_types
 
-    def update_data(self, df, already_sorted=False):
-        self.df = df
+    def update_data(self, df=None, data=None, already_sorted=False,
+                    reindex=True, recalculate_last_time_indexes=True):
+        if data is not None:
+            self.data = data
+        elif df is not None:
+            self.df = df
         self.set_index(self.index)
         self.set_time_index(self.time_index, already_sorted=already_sorted)
         self.set_secondary_time_index(self.secondary_time_index)
+        if reindex:
+            self.index_data()
+        if recalculate_last_time_indexes:
+            self.entityset.add_last_time_indexes(updated_entities=[self.id])
         self.add_all_variable_statistics()
 
     def sample(self, n):

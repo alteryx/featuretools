@@ -916,10 +916,9 @@ class EntitySet(object):
                 to_sort = [entity.time_index, entity.index]
             combined_df.sort_values(to_sort, inplace=True)
 
-            combined_es[entity.id].update_data(combined_df)
-
-        for r in combined_es.relationships:
-            combined_es.index_data(r)
+            combined_es[entity.id].update_data(df=combined_df,
+                                               reindex=True,
+                                               recalculate_last_time_indexes=True)
         return combined_es
 
     def add_parent_time_index(self, entity_id, parent_entity_id,
@@ -970,11 +969,14 @@ class EntitySet(object):
         child_entity = self.entity_dict[r.child_variable.entity.id]
         child_entity.index_by_parent(parent_entity=parent_entity)
 
-    def add_last_time_indexes(self):
+    def add_last_time_indexes(self, updated_entities=None):
         """
         Calculates the last time index values for each entity (the last time
         an instance or children of that instance were observed).  Used when
         calculating features using training windows
+        Args:
+          * updated_entities (list[str]): List of entity ids to update last_time_index for
+                (will update all parents of those entities as well)
         """
         # Generate graph of entities to find leaf entities
         children = defaultdict(list)  # parent --> child mapping
@@ -983,13 +985,34 @@ class EntitySet(object):
             children[r.parent_entity.id].append(r.child_entity)
             child_vars[r.parent_entity.id][r.child_entity.id] = r.child_variable
 
-        explored = set([])
-        queue = self.entities[:]
+        updated_entities = updated_entities or []
+        if updated_entities:
+            # find parents of updated_entities
+            parent_queue = updated_entities[:]
+            parents = set()
+            while len(parent_queue):
+                e = parent_queue.pop(0)
+                if e in parents:
+                    continue
+                parents.add(e)
+                for parent_id in self[e].parents:
+                    parent_queue.append(parent_id)
+            queue = [self[p] for p in parents]
+            to_explore = parents
+        else:
+            to_explore = set([e.id for e in self.entities[:]])
+            queue = self.entities[:]
 
-        for entity in self.entities:
-            entity.last_time_index = None
+        explored = set()
 
-        while len(explored) < len(self.entities):
+        for e in queue:
+            e.last_time_index = None
+
+        # We will explore children of entities on the queue,
+        # which may not be in the to_explore set. Therefore,
+        # we check whether all elements of to_explore are in
+        # explored, rather than just comparing length
+        while not to_explore.issubset(explored):
             entity = queue.pop(0)
 
             if entity.last_time_index is None:
@@ -1005,6 +1028,14 @@ class EntitySet(object):
 
                 # if all children not explored, skip for now
                 if not set([e.id for e in child_entities]).issubset(explored):
+                    # Now there is a possibility that a child entity
+                    # was not explicitly provided in updated_entities,
+                    # and never made it onto the queue. If updated_entities
+                    # is None then we just load all entities onto the queue
+                    # so we didn't need this logic
+                    for e in child_entities:
+                        if e.id not in explored and e.id not in [q.id for q in queue]:
+                            queue.append(e)
                     queue.append(entity)
                     continue
 
@@ -1012,7 +1043,6 @@ class EntitySet(object):
                 for child_e in child_entities:
                     if child_e.last_time_index is None:
                         continue
-
                     link_var = child_vars[entity.id][child_e.id].id
                     lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
                                            entity.index: child_e.df[link_var]})

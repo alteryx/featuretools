@@ -48,3 +48,16 @@ def test_eq(es):
 
     es['log'].indexed_by = None
     assert not es['log'].__eq__(es['customers'], deep=True)
+
+
+def test_parents(es):
+    assert es['log'].parents == ['sessions', 'products']
+    assert es['sessions'].parents == ['customers']
+    assert es['customers'].parents == ['regions', 'cohorts']
+    assert es['regions'].parents == []
+    assert es['stores'].parents == ['regions']
+
+
+def test_update_data(es):
+    # TODO: write test for this method, since it has new functionality
+    pass
