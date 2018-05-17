@@ -1,1 +1,3 @@
-{}
+{
+  "featuretools/tests/entityset_tests/test_last_time_index.py::TestLastTimeIndex::()": true
+}
