@@ -51,11 +51,11 @@ def test_eq(es):
 
 
 def test_parents(es):
-    assert es['log'].parents == ['sessions', 'products']
-    assert es['sessions'].parents == ['customers']
-    assert es['customers'].parents == ['regions', 'cohorts']
-    assert es['regions'].parents == []
-    assert es['stores'].parents == ['regions']
+    assert set(es['log'].parents) == set(['sessions', 'products'])
+    assert set(es['sessions'].parents) == set(['customers'])
+    assert set(es['customers'].parents) == set(['regions', 'cohorts'])
+    assert set(es['regions'].parents) == set()
+    assert set(es['stores'].parents) == set(['regions'])
 
 
 def test_update_data(es):

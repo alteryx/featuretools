@@ -148,6 +148,8 @@ def deserialize(path):
                     read_pickle = True
                 else:
                     raise ImportError("Must install fastparquet to save EntitySet to parquet files. See https://github.com/dask/fastparquet")
+        else:
+            read_pickle = True
         if read_pickle:
             if 'data.p' not in os.listdir(entity_path):
                 raise OSError("Could not find entity data file in {}".format(entity_path))

@@ -136,8 +136,6 @@ class EntitySet(object):
             if eid not in other.entity_dict:
                 return False
             if not e.__eq__(other[eid], deep=deep):
-                import pdb; pdb.set_trace()
-                e.__eq__(other[eid], deep=deep)
                 return False
         for r in other.relationships:
             if r not in other.relationships:

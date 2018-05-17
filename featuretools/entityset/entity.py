@@ -120,6 +120,12 @@ class Entity(object):
         if self.index is not None and self.index not in inferred_variable_types:
             self.add_variable(self.index, vtypes.Index)
 
+        # make sure index is at the beginning
+        index_variable = [v for v in self.variables
+                          if v.id == self.index][0]
+        self.variables = [index_variable] + [v for v in self.variables
+                                             if v.id != self.index]
+
         self.update_data(df=self.df,
                          already_sorted=already_sorted,
                          recalculate_last_time_indexes=False,

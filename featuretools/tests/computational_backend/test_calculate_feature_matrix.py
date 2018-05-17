@@ -267,7 +267,7 @@ def test_training_window_recent_time_index(entityset):
         'age': [73],
         'region_id': ['United States'],
         'cohort': [1],
-        'cohort_name': ["Late Adopters"],
+        'cancel_reason': ["I am finally awake!!"],
         'loves_ice_cream': [True],
         'favorite_quote': ["Who is John Galt?"],
         'signup_date': [datetime(2011, 4, 10)],
