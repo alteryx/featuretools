@@ -9,3 +9,4 @@ flake8==3.4.1
 isort==4.2.15
 matplotlib==2.1.1
 tox==2.9.1
+fastparquet>=0.1.5

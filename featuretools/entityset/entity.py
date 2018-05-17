@@ -41,7 +41,7 @@ class Entity(object):
     index = None
     indexed_by = None
 
-    def __init__(self, id, df, entityset, variable_types=None, name=None,
+    def __init__(self, id, df, entityset, variable_types=None,
                  index=None, time_index=None, secondary_time_index=None,
                  last_time_index=None, encoding=None, relationships=None,
                  already_sorted=False, created_index=None, verbose=False):
@@ -56,7 +56,6 @@ class Entity(object):
                 entity_id to variable_types dict with which to initialize an
                 entity's store.
                 An entity's variable_types dict maps string variable ids to types (:class:`.Variable`).
-            name (str): Name of entity.
             index (str): Name of id column in the dataframe.
             time_index (str): Name of time column in the dataframe.
             secondary_time_index (dict[str -> str]): Dictionary mapping columns
@@ -81,7 +80,6 @@ class Entity(object):
         self.convert_all_variable_data(variable_types)
         self.attempt_cast_index_to_int(index)
         self.id = id
-        self.name = name
         self.entityset = entityset
         self.indexed_by = {}
         variable_types = variable_types or {}
@@ -93,6 +91,7 @@ class Entity(object):
             if ti not in cols:
                 cols.append(ti)
 
+        relationships = relationships or []
         link_vars = [v.id for rel in relationships for v in [rel.parent_variable, rel.child_variable]
                      if v.entity.id == self.id]
 
@@ -243,6 +242,57 @@ class Entity(object):
     @property
     def variable_types(self):
         return {v.id: type(v) for v in self.variables}
+
+    def create_metadata_json(self):
+        metadata = {}
+        for k, v in self.__dict__.items():
+            if k == 'variables':
+                metadata[k] = [v.create_metadata_json()
+                               for v in v]
+            elif k not in ['data', 'entityset']:
+                metadata[k] = v
+        return metadata
+
+    @classmethod
+    def from_metadata(cls, entityset, metadata):
+        to_init = copy.copy(metadata)
+        to_init['entityset'] = entityset
+        variable_types = {}
+        defaults = []
+        columns = []
+        variable_names = {}
+        for elt in dir(vtypes):
+            try:
+                cls = getattr(vtypes, elt)
+                if issubclass(cls, vtypes.Variable):
+                    variable_names[cls._dtype_repr] = cls
+            except TypeError:
+                pass
+        for var_metadata in metadata['variables']:
+            if var_metadata['_dtype_repr']:
+                vtype = variable_names.get(var_metadata['_dtype_repr'], vtypes.Variable)
+                variable_types[var_metadata['id']] = vtype
+                defaults.append(vtypes.DEFAULT_DTYPE_VALUES[vtype._default_pandas_dtype])
+            else:
+                defaults.append(vtypes.DEFAULT_DTYPE_VALUES[object])
+            columns.append(var_metadata['id'])
+        to_init['variable_types'] = variable_types
+        to_init['df'] = pd.DataFrame({c: [d]
+                                      for c, d in zip(columns, defaults)})
+        to_init['verbose'] = to_init['_verbose']
+        del to_init['_verbose']
+        del to_init['variables']
+        to_join = to_init.get('to_join', None)
+        if to_join is not None:
+            del to_init['to_join']
+        entity = Entity(**to_init)
+        entity.to_join = to_join
+        variables = []
+        for var_metadata in metadata['variables']:
+            vtype = variable_types.get(var_metadata['id'], vtypes.Variable)
+            variables.append(vtype.from_metadata(entity, var_metadata))
+        entity.variables = variables
+        return entity
 
     def add_all_variable_statistics(self):
         for var_id in self.variable_types.keys():
@@ -572,10 +622,23 @@ class Entity(object):
 
     def update_data(self, df=None, data=None, already_sorted=False,
                     reindex=True, recalculate_last_time_indexes=True):
+        to_check = None
+        if df is not None:
+            to_check = df
+        elif data is not None:
+            to_check = data['df']
+
+        if to_check is not None and len(to_check.columns) != len(self.variables):
+            raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(to_check.columns),
+                                                                                          len(self.variables)))
+        for v in self.variables:
+            if v.id not in to_check.columns:
+                raise ValueError("Updated dataframe is missing new {} column".format(v.id))
         if data is not None:
             self.data = data
         elif df is not None:
             self.df = df
+        self.df = self.df[[v.id for v in self.variables]]
         self.set_index(self.index)
         self.set_time_index(self.time_index, already_sorted=already_sorted)
         self.set_secondary_time_index(self.secondary_time_index)

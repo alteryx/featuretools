@@ -2,6 +2,8 @@ from __future__ import division
 
 from builtins import object
 
+import numpy as np
+import pandas as pd
 from past.builtins import basestring
 
 COMMON_STATISTICS = ["count"]
@@ -37,6 +39,7 @@ class Variable(object):
     _dtype_repr = None
     _setter_stats = COMMON_STATISTICS
     _computed_stats = []
+    _default_pandas_dtype = object
 
     def __init__(self, id, entity, name=None):
         assert isinstance(id, basestring), "Variable id must be a string"
@@ -90,7 +93,10 @@ class Variable(object):
 
     def __setattr__(self, attr, value):
         if attr in self._setter_stats or attr in self._computed_stats:
-            self._statistics[attr] = value
+            if isinstance(value, int) or np.issubdtype(value, np.integer):
+                self._statistics[attr] = int(value)
+            elif isinstance(value, float) or np.issubdtype(value, np.floating):
+                self._statistics[attr] = float(value)
         else:
             return super(Variable, self).__setattr__(attr, value)
 
@@ -122,6 +128,22 @@ class Variable(object):
     @property
     def series(self):
         return self.entity.df[self.id]
+
+    def create_metadata_json(self):
+        metadata = {}
+        for k, v in self.__dict__.items():
+            if k == 'entity':
+                metadata[k] = v.id
+            else:
+                metadata[k] = v
+        metadata['_dtype_repr'] = self._dtype_repr
+        return metadata
+
+    @classmethod
+    def from_metadata(cls, entity, metadata):
+        return cls(id=metadata['id'],
+                   entity=entity,
+                   name=metadata['_name'])
 
 
 class Unknown(Variable):
@@ -162,6 +184,7 @@ class Boolean(Variable):
     _dtype_repr = "boolean"
     _setter_stats = Variable._setter_stats + BOOLEAN_STATISTICS
     _computed_stats = BOOLEAN_COMPUTED_STATISTICS
+    _default_pandas_dtype = bool
 
     def __setattr__(self, attr, value):
         if attr in self._computed_stats:
@@ -181,11 +204,13 @@ class Categorical(Discrete):
 class Id(Categorical):
     """Represents variables that identify another entity"""
     _dtype_repr = "id"
+    _default_pandas_dtype = int
 
 
 class Ordinal(Discrete):
     """Represents variables that take on an ordered discrete value"""
     _dtype_repr = "ordinal"
+    _default_pandas_dtype = int
 
 
 class Numeric(Variable):
@@ -199,6 +224,7 @@ class Numeric(Variable):
     """
     _dtype_repr = "numeric"
     _setter_stats = Variable._setter_stats + NUMERIC_STATISTICS
+    _default_pandas_dtype = float
 
     def __init__(self, id, entity, name=None):
         super(Numeric, self).__init__(id, entity, name)
@@ -218,6 +244,7 @@ class Datetime(Variable):
     """Represents variables that are points in time"""
     _dtype_repr = "datetime"
     _setter_stats = Variable._setter_stats + DATETIME_STATISTICS
+    _default_pandas_dtype = np.datetime64
 
     def __init__(self, id, entity, format=None, name=None):
         self.format = format
@@ -230,22 +257,26 @@ class Datetime(Variable):
 class TimeIndex(Variable):
     """Represents time index of entity"""
     _dtype_repr = "time_index"
+    _default_pandas_dtype = np.datetime64
 
 
 class NumericTimeIndex(TimeIndex, Numeric):
     """Represents time index of entity that is numeric"""
     _dtype_repr = "numeric_time_index"
+    _default_pandas_dtype = float
 
 
 class DatetimeTimeIndex(TimeIndex, Datetime):
     """Represents time index of entity that is a datetime"""
     _dtype_repr = "datetime_time_index"
+    _default_pandas_dtype = np.datetime64
 
 
 class Timedelta(Variable):
     """Represents variables that are timedeltas"""
     _dtype_repr = "timedelta"
     _setter_stats = Variable._setter_stats + TIMEDELTA_STATISTICS
+    _default_pandas_dtype = np.timedelta64
 
     def __init__(self, id, entity, name=None):
         super(Timedelta, self).__init__(id, entity, name)
@@ -254,6 +285,7 @@ class Timedelta(Variable):
 class Text(Variable):
     """Represents variables that are arbitary strings"""
     _dtype_repr = "text"
+    _default_pandas_dtype = str
 
 
 class PandasTypes(object):
@@ -276,3 +308,14 @@ class LatLong(Variable):
 ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
                       Categorical, Text, Ordinal,
                       Boolean, LatLong]
+
+
+DEFAULT_DTYPE_VALUES = {
+    np.datetime64: pd.Timestamp.now(),
+    int: 0,
+    float: 0.1,
+    np.timedelta64: pd.Timedelta('1d'),
+    object: 'object',
+    bool: True,
+    str: 'test'
+}

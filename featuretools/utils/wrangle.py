@@ -221,11 +221,10 @@ def _check_time_type(time):
     Returns "numeric", "datetime", or "unknown" based on results
     '''
     time_type = None
-    if isinstance(time, (int, np.int16, np.int32, np.int64, float, np.float16,
-                         np.float32, np.float64)):
-        time_type = variable_types.NumericTimeIndex
-    elif isinstance(time, (datetime, np.datetime64)):
+    if isinstance(time, (datetime, np.datetime64)):
         time_type = variable_types.DatetimeTimeIndex
+    elif isinstance(time, (int, float)) or np.issubdtype(time, (np.integer, np.floating)):
+        time_type = variable_types.NumericTimeIndex
     return time_type
 
 
@@ -251,6 +250,11 @@ def _dataframes_equal(df1, df2):
                                 raise IndexError("If column data are tuples, they must all be the same length")
                             if not equal:
                                 return False
-            if normal_compare and not df1[c].equals(df2[c]):
-                return False
+            if normal_compare:
+                # handle nan equality correctly
+                # This way is much faster than df1.equals(df2)
+                result = df1[c] == df2[c]
+                result[pd.isnull(df1[c]) == pd.isnull(df2)[c]] = True
+                if not result.all():
+                    return False
     return True

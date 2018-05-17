@@ -9,7 +9,7 @@ import pandas as pd
 
 from .entity import Entity
 from .relationship import Relationship
-from .serialization import read_pickle, to_pickle
+from .serialization import deserialize, serialize
 
 import featuretools.variable_types.variable as vtypes
 from featuretools.utils.gen_utils import make_tqdm_iterator
@@ -136,6 +136,8 @@ class EntitySet(object):
             if eid not in other.entity_dict:
                 return False
             if not e.__eq__(other[eid], deep=deep):
+                import pdb; pdb.set_trace()
+                e.__eq__(other[eid], deep=deep)
                 return False
         for r in other.relationships:
             if r not in other.relationships:
@@ -207,12 +209,63 @@ class EntitySet(object):
         return [e.id for e in self.entities]
 
     def to_pickle(self, path):
-        to_pickle(self, path)
+        serialize(self, path, to_parquet=False)
+        return self
+
+    def to_parquet(self, path):
+        serialize(self, path, to_parquet=True)
         return self
 
     @classmethod
     def read_pickle(cls, path):
-        return read_pickle(path)
+        return deserialize(path)
+
+    @classmethod
+    def read_parquet(cls, path):
+        return deserialize(path)
+
+    def create_metadata_json(self):
+        metadata = {}
+        for k, v in self.__dict__.items():
+            if k == 'relationships':
+                metadata[k] = [r.create_metadata_json()
+                               for r in v]
+            elif k == 'entity_dict':
+                metadata[k] = {eid: e.create_metadata_json()
+                               for eid, e in v.items()}
+            elif k == 'time_type':
+                if v:
+                    metadata[k] = v._dtype_repr or "generic_type"
+                else:
+                    metadata[k] = v
+            else:
+                metadata[k] = v
+        return metadata
+
+    @classmethod
+    def from_metadata(cls, metadata):
+        es = EntitySet(metadata['id'])
+        for k, v in metadata.items():
+            if k in ['relationships', 'entity_dict']:
+                continue
+            elif k == 'time_type':
+                if v:
+                    specified_types = [var for var in
+                                       vtypes.ALL_VARIABLE_TYPES
+                                       if var._dtype_repr == v]
+                    if not len(specified_types):
+                        es.time_type = None
+                    else:
+                        es.time_type = specified_types[0]
+                else:
+                    es.time_type = v
+            else:
+                setattr(es, k, v)
+        es.entity_dict = {eid: Entity.from_metadata(es, em)
+                          for eid, em in metadata['entity_dict'].items()}
+        es.relationships = [Relationship.from_metadata(es, r)
+                            for r in metadata['relationships']]
+        return es
 
     ###########################################################################
     #   Public getter/setter methods  #########################################

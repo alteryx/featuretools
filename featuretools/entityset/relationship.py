@@ -60,6 +60,19 @@ class Relationship(object):
         """Instance of variable in child entity"""
         return self.child_entity[self._child_variable_id]
 
+    def create_metadata_json(self):
+        return {
+            'parent_entity': self._parent_entity_id,
+            'child_entity': self._child_entity_id,
+            'parent_variable': self._parent_variable_id,
+            'child_variable': self._child_variable_id,
+        }
+
+    @classmethod
+    def from_metadata(cls, entityset, metadata):
+        return Relationship(entityset[metadata['parent_entity']][metadata['parent_variable']],
+                            entityset[metadata['child_entity']][metadata['child_variable']])
+
     def get_entity_variable(self, entity_id):
         if self._child_entity_id == entity_id:
             return self._child_variable_id
