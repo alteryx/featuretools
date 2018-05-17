@@ -10,6 +10,7 @@ import pytest
 
 from ..testing_utils import make_ecommerce_entityset
 
+import featuretools as ft
 from featuretools import variable_types
 from featuretools.entityset import EntitySet
 from featuretools.tests import integration_data
@@ -853,7 +854,9 @@ def test_to_pickle(entityset):
         shutil.rmtree(path)
     entityset.to_pickle(path)
     new_es = EntitySet.read_pickle(path)
+    new_es2 = ft.read_pickle(path)
     assert entityset.__eq__(new_es, deep=True)
+    assert entityset.__eq__(new_es2, deep=True)
     shutil.rmtree(path)
 
 
@@ -864,5 +867,7 @@ def test_to_parquet(entityset):
         shutil.rmtree(path)
     entityset.to_parquet(path)
     new_es = EntitySet.read_parquet(path)
+    new_es2 = ft.read_parquet(path)
     assert entityset.__eq__(new_es, deep=True)
+    assert entityset.__eq__(new_es2, deep=True)
     shutil.rmtree(path)

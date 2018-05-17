@@ -121,9 +121,28 @@ def serialize(entityset, path, to_parquet=False):
         raise
 
 
-def deserialize(path):
+def read_pickle(path):
+    """Read an EntitySet from disk. Assumes EntitySet has been saved using
+    :meth:`.to_parquet()` or :meth:`.to_pickle()`.
+
+    Args:
+        path (str): Path of directory where entityset is stored
     """
-    Read an EntitySet from disk. Assumes EntitySet has been saved using
+    return deserialize(path)
+
+
+def read_parquet(path):
+    """Read an EntitySet from disk. Assumes EntitySet has been saved using
+    :meth:`.to_parquet()` or :meth:`.to_pickle()`.
+
+    Args:
+        path (str): Path of directory where entityset is stored
+    """
+    return deserialize(path)
+
+
+def deserialize(path):
+    """Read an EntitySet from disk. Assumes EntitySet has been saved using
     :meth:`.to_parquet()` or :meth:`.to_pickle()`.
 
     Args:
