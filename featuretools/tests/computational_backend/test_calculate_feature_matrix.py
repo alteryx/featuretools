@@ -175,7 +175,7 @@ def test_saveprogress(entityset):
         df = pd.read_csv(file_, index_col="id", header=0)
         list_df.append(df)
     merged_df = pd.concat(list_df)
-    merged_df.set_index(pd.DatetimeIndex(times, append=True, inplace=True))
+    merged_df.set_index(pd.DatetimeIndex(times), inplace=True, append=True)
     fm_no_save = calculate_feature_matrix([property_feature],
                                           entityset,
                                           instance_ids=range(17),
