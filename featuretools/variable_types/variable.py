@@ -93,9 +93,9 @@ class Variable(object):
 
     def __setattr__(self, attr, value):
         if attr in self._setter_stats or attr in self._computed_stats:
-            if isinstance(value, int) or np.issubdtype(value, np.integer):
+            if isinstance(value, (int, np.integer)):
                 self._statistics[attr] = int(value)
-            elif isinstance(value, float) or np.issubdtype(value, np.floating):
+            elif isinstance(value, (float, np.floating)):
                 self._statistics[attr] = float(value)
         else:
             return super(Variable, self).__setattr__(attr, value)
