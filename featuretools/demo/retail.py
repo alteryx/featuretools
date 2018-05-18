@@ -95,5 +95,5 @@ def load_retail(id='demo_retail_data', nrows=None, use_cache=True):
 
 
 def make_retail_pathname(nrows):
-    file_name = 'uk_online_retail_' + str(nrows) + '.csv'
+    file_name = 'online_retail_logs_' + str(nrows) + '.csv'
     return os.path.join(ft_config['csv_save_location'], file_name)

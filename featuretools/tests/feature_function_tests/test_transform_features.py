@@ -974,6 +974,7 @@ def test_isnull_feat(es):
 
 
 def test_init_and_name(es):
+    from featuretools import calculate_feature_matrix
     log = es['log']
     features = [Feature(v) for v in log.variables] +\
         [GreaterThan(Feature(es["products"]["rating"], es["log"]), 2.5)]
@@ -994,6 +995,7 @@ def test_init_and_name(es):
 
             # try to get name and calculate
             instance.get_name()
+            calculate_feature_matrix([instance], entityset=es).head(5)
 
 
 def test_percentile(es):
