@@ -1,9 +1,0 @@
-[
-  "featuretools/tests/entityset_tests/test_entity.py::test_enforces_variable_id_is_str",
-  "featuretools/tests/entityset_tests/test_entity.py::test_get_all_instances",
-  "featuretools/tests/entityset_tests/test_entity.py::test_is_index_column",
-  "featuretools/tests/entityset_tests/test_entity.py::test_sample",
-  "featuretools/tests/entityset_tests/test_entity.py::test_eq",
-  "featuretools/tests/entityset_tests/test_entity.py::test_parents",
-  "featuretools/tests/entityset_tests/test_entity.py::test_update_data"
-]

@@ -175,7 +175,7 @@ def test_saveprogress(entityset):
         df = pd.read_csv(file_, index_col="id", header=0)
         list_df.append(df)
     merged_df = pd.concat(list_df)
-    merged_df.set_index(pd.DatetimeIndex(times, append=True, inplace=True))
+    merged_df.set_index(pd.DatetimeIndex(times), append=True, inplace=True)
     fm_no_save = calculate_feature_matrix([property_feature],
                                           entityset,
                                           instance_ids=range(17),
@@ -278,7 +278,7 @@ def test_training_window_recent_time_index(entityset):
     }
     df = pd.DataFrame(row)
     df.index = range(3, 4)
-    df = entityset['customers'].df.append(df)
+    df = entityset['customers'].df.append(df, sort=False)
     entityset['customers'].update_data(df=df,
                                        recalculate_last_time_indexes=False)
     entityset.add_last_time_indexes()
@@ -901,6 +901,9 @@ def test_datetime_index_mixed_cutoff(entityset):
                                  cutoff_time=cutoff_df)
 
     cutoff_df['time'].iloc[9] = '2018-04-02 18:50:45.453216'
+    calculate_feature_matrix([property_feature],
+                             entityset,
+                             cutoff_time=cutoff_df)
     with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
                                  entityset,
