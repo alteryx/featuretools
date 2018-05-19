@@ -450,7 +450,7 @@ def test_topn(entityset, backend):
     pandas_backend = backend([topn])
 
     df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2],
-                                               time_last=None)
+                                                   time_last=None)
 
     true_results = [
         ['toothpaste', 'coke zero'],

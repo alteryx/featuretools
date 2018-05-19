@@ -145,8 +145,6 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     elif cutoff_time['instance_id'].dtype.name.find('int') > -1 and target_entity.df[target_entity.index].dtype == np.dtype('O'):
         cutoff_time['instance_id'] = cutoff_time['instance_id'].astype(object)
 
-    if cutoff_time['time'].iloc[9] == '2018-04-02 18:50:45.453216':
-        import pdb; pdb.set_trace()
     backend = PandasBackend(entityset, features)
 
     # Get dictionary of features to approximate
@@ -232,6 +230,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     if verbose:
         iterator.close()
     feature_matrix = pd.concat(feature_matrix)
+
     feature_matrix.sort_index(level='time', kind='mergesort', inplace=True)
     if not cutoff_time_in_index:
         feature_matrix.reset_index(level='time', drop=True, inplace=True)
@@ -292,8 +291,6 @@ def calculate_chunk(features, chunk, approximate, entityset, training_window,
             # sort group by instance id
             ids = group['instance_id'].sort_values().values
             time_last = group[cutoff_df_time_var].iloc[0]
-            if isinstance(time_last, str):
-                import pdb; pdb.set_trace()
             if no_unapproximated_aggs and approximate is not None:
                 window = None
             else:
@@ -435,8 +432,10 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
             rvar = entityset.gen_relationship_var(target_entity.id, approx_entity_id)
             parent_instance_frame = frames[approx_entity_id][target_entity.id]
             cutoffs_with_approx_e_ids[rvar] = \
-                cutoffs_with_approx_e_ids.merge(parent_instance_frame[[target_index_var, rvar]],
-                                                on=target_index_var, how='left')[rvar].values
+                cutoffs_with_approx_e_ids.merge(parent_instance_frame[[rvar]],
+                                                left_on=target_index_var,
+                                                right_index=True,
+                                                how='left')[rvar].values
             new_approx_entity_index_var = rvar
 
             # Select only columns we care about

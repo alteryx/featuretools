@@ -281,7 +281,7 @@ def test_training_window_recent_time_index(entityset):
     }
     df = pd.DataFrame(row)
     df.index = range(3, 4)
-    df = entityset['customers'].df.append(df)
+    df = entityset['customers'].df.append(df, sort=False)
     entityset['customers'].update_data(df)
     entityset.add_last_time_indexes()
 
@@ -903,7 +903,6 @@ def test_datetime_index_mixed_cutoff(entityset):
                                  cutoff_time=cutoff_df)
 
     cutoff_df['time'].iloc[9] = '2018-04-02 18:50:45.453216'
-    import pdb; pdb.set_trace()
     calculate_feature_matrix([property_feature],
                              entityset,
                              cutoff_time=cutoff_df)
