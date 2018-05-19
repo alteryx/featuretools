@@ -774,9 +774,10 @@ class Entity(object):
             # use stable sort
             if not already_sorted:
                 # sort by time variable, then by index
-                self.df.sort_values([variable_id, self.index],
-                                    kind="mergesort",
-                                    inplace=True)
+                self.df = (self.df.set_index(variable_id, append=True)
+                               .sort_index(level=[variable_id, self.index],
+                                           kind="mergesort")
+                               .reset_index(variable_id, drop=False))
 
             t = vtypes.TimeIndex
             if col_is_datetime(self.df[variable_id]):
@@ -785,10 +786,9 @@ class Entity(object):
         else:
             # todo add test for this
             if not already_sorted:
-                # sort by time variable, then by index
-                self.df.sort_values([self.index],
-                                    kind="mergesort",
-                                    inplace=True)
+                # sort by index
+                self.df.sort_index(kind="mergesort",
+                                   inplace=True)
 
         self.time_index = variable_id
 
