@@ -532,8 +532,8 @@ class Entity(BaseEntity):
         else:
             # todo add test for this
             if not already_sorted:
-                # sort by time variable, then by index
-                self.df.sort_values([self.index],
+                # sort by index
+                self.df.sort_values(self.index,
                                     kind="mergesort",
                                     inplace=True)
 
