@@ -248,9 +248,14 @@ class PandasBackend(ComputationalBackend):
         missing_ids = [i for i in instance_ids if i not in
                        df[target_entity.index]]
         if missing_ids:
-            df = df.append(self.generate_default_df(instance_ids=missing_ids,
-                                                    extra_columns=df.columns),
-                           sort=True)
+            default_df = self.generate_default_df(instance_ids=missing_ids,
+                                                  extra_columns=df.columns)
+            # pandas added sort parameter in 0.23.0
+            try:
+                df = df.append(default_df, sort=True)
+            except:
+                df = df.append(default_df)
+
         df.index.name = self.entityset[self.target_eid].index
         return df[[feat.get_name() for feat in self.features]]
 
