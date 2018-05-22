@@ -933,11 +933,12 @@ class EntitySet(BaseEntitySet):
 
             # TODO: should this go inside of update_data?
             # or should we call set_time_index()?
-            combined_df.sort_index(inplace=True)
             if entity.time_index:
                 combined_df = (combined_df.set_index(entity.time_index, append=True)
                                           .sort_index(level=[entity.time_index, entity.index])
                                           .reset_index(entity.time_index, drop=False))
+            else:
+                combined_df.sort_index(inplace=True)
 
             combined_es[entity.id].update_data(combined_df)
 
