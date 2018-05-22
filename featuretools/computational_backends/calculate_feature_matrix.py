@@ -23,7 +23,7 @@ from featuretools.primitives import (
 )
 from featuretools.utils.gen_utils import make_tqdm_iterator
 from featuretools.utils.wrangle import _check_time_type, _check_timedelta
-from featuretools.variable_types import NumericTimeIndex
+from featuretools.variable_types import DatetimeTimeIndex, NumericTimeIndex
 
 logger = logging.getLogger('featuretools.computational_backend')
 
@@ -118,9 +118,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             cutoff_time = [cutoff_time] * len(instance_ids)
 
         map_args = [(id, time) for id, time in zip(instance_ids, cutoff_time)]
-        df_args = pd.DataFrame(map_args, columns=['instance_id', 'time'])
-        to_calc = df_args.values
-        cutoff_time = pd.DataFrame(to_calc, columns=['instance_id', 'time'])
+        cutoff_time = pd.DataFrame(map_args, columns=['instance_id', 'time'])
     else:
         cutoff_time = cutoff_time.copy()
 
@@ -142,7 +140,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                     cutoff_time['time'] = pd.to_numeric(cutoff_time['time'])
                 except (ValueError, TypeError):
                     raise TypeError("cutoff_time times must be a numeric")
-            else:
+            elif entityset.time_type == DatetimeTimeIndex:
                 try:
                     cutoff_time['time'] = pd.to_datetime(cutoff_time['time'])
                 except (ValueError, TypeError):
@@ -151,10 +149,6 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     if _check_time_type(cutoff_time['time'].iloc[0]) is None:
         raise ValueError("cutoff_time time values must be datetime or numeric")
-    if cutoff_time['instance_id'].dtype == np.dtype('O') and target_entity.df[target_entity.index].dtype.name.find('int') > -1:
-        cutoff_time['instance_id'] = pd.to_numeric(cutoff_time['instance_id'])
-    elif cutoff_time['instance_id'].dtype.name.find('int') > -1 and target_entity.df[target_entity.index].dtype == np.dtype('O'):
-        cutoff_time['instance_id'] = cutoff_time['instance_id'].astype(object)
 
     backend = PandasBackend(entityset, features)
 
