@@ -2,14 +2,10 @@ from __future__ import absolute_import
 
 import copy
 import logging
-import pdb
 from builtins import zip
 
 from numpy import nan
-from past.builtins import basestring
 
-import featuretools as ft
-from featuretools.core.base import FTBase
 from featuretools.entityset import Entity, EntitySet
 from featuretools.utils.wrangle import (
     _check_time_against_column,
@@ -20,7 +16,7 @@ from featuretools.variable_types import Variable
 logger = logging.getLogger('featuretools')
 
 
-class PrimitiveBase(FTBase):
+class PrimitiveBase(object):
     """Base class for all features."""
     #: (str): Name of backend function used to compute this feature
     name = None
@@ -111,23 +107,6 @@ class PrimitiveBase(FTBase):
     def base_hashes(self):
         """Hashes of the base features"""
         return [f.hash() for f in self.base_features]
-
-    def normalize(self, normalizer, normalized_base_features={}):
-        normed = normalizer(self.entityset)
-        d = copy.copy(self.__dict__)
-        d['entityset'] = self.entityset.id
-        base_features = d.pop('base_features')
-        new_base_features = []
-        for f in base_features:
-            if f.hash() not in normalized_base_features:
-                normalized_base_features[f.hash()] = f.normalize(
-                    normalizer, normalized_base_features)
-            f = normalized_base_features[f.hash()]
-            new_base_features.append(f)
-        d = {k: normalizer(v) for k, v in d.items()}
-        d['base_features'] = new_base_features
-        d['entityset'] = normed
-        return d
 
     def _check_feature(self, feature):
         if isinstance(feature, Variable):

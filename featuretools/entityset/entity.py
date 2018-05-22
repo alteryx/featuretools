@@ -77,26 +77,9 @@ class Entity(BaseEntity):
         return (Entity, tokenize(self.df), self.encoding, self.indexed_by, self._verbose,
                 self.created_index, self.last_time_index)
 
-    # @property
-    # def metadata(self):
-        # new_dict = {}
-        # for k, v in self.__dict__.items():
-            # if k != "data":
-                # new_dict[k] = v
-        # new_dict["data"] = {
-            # "df": self.df[0:0],
-            # "last_time_index": None,
-            # "indexed_by": {}
-        # }
-        # new_dict = copy.deepcopy(new_dict)
-        # new_entity = object.__new__(Entity)
-        # new_entity.__dict__ = new_dict
-        # return new_entity
-
     @property
     def is_metadata(self):
         return self.entityset.is_metadata
-
 
     @property
     def df(self):
@@ -155,11 +138,6 @@ class Entity(BaseEntity):
             if issubclass(desired_type, vtypes.Datetime) and \
                     current_type not in _datetime_types:
                 self.entityset_convert_variable_type(var_id, desired_type, **type_args)
-
-    def normalize(self, normalizer):
-        d = {k: v for k, v in self.__dict__.items()
-             if k not in ['df', 'indexed_by', 'entityset']}
-        return normalizer(d)
 
     @property
     def num_instances(self):

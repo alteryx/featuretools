@@ -1,7 +1,5 @@
 import cloudpickle
 
-import featuretools as ft
-
 
 def save_features(features, filepath):
     """Saves the features list to a specificed filepath.

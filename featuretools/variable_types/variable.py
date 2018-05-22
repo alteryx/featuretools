@@ -4,8 +4,6 @@ from builtins import object
 
 from past.builtins import basestring
 
-from featuretools.core.base import FTBase
-
 COMMON_STATISTICS = ["count"]
 NUMERIC_STATISTICS = ["mean", "max", "min", "std"]
 DISCRETE_STATISTICS = ["nunique"]
@@ -22,7 +20,7 @@ ALL_STATISTICS = list(set(COMMON_STATISTICS +
                           BOOLEAN_STATISTICS))
 
 
-class Variable(FTBase):
+class Variable(object):
     """Represent a variable in an entity
 
     A Variable is analogous to a column in table in a relational database
@@ -96,14 +94,6 @@ class Variable(FTBase):
         else:
             return super(Variable, self).__setattr__(attr, value)
 
-    def normalize(self, normalizer, remove_entityset=True):
-        if remove_entityset:
-            entity = self.entity
-            self.entity = entity.id
-        d = super(Variable, self).normalize(normalizer, remove_entityset=remove_entityset)
-        self.entity = entity
-        return d
-
     @property
     def name(self):
         return self._name if self._name is not None else self.id
@@ -128,29 +118,6 @@ class Variable(FTBase):
     @interesting_values.setter
     def interesting_values(self, interesting_values):
         self._interesting_values = interesting_values
-
-    @classmethod
-    def class_from_dtype(cls, dtype):
-        if dtype == "generic_type":
-            return Variable
-        elif dtype == "discrete":
-            return Discrete
-        elif dtype == "boolean":
-            return Boolean
-        elif dtype == "categorical":
-            return Categorical
-        elif dtype == "ordinal":
-            return Ordinal
-        elif dtype == "numeric":
-            return Numeric
-        elif dtype == "datetime":
-            return Datetime
-        elif dtype == "timedelta":
-            return Timedelta
-        elif dtype == "text":
-            return Text
-        else:
-            raise ValueError("Unrecognized variable dtype: {}".format(dtype))
 
     @property
     def series(self):

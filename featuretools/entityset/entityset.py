@@ -84,9 +84,34 @@ class EntitySet(BaseEntitySet):
                                                child_variable))
         self._metadata = None
 
+    def __sizeof__(self):
+        return sum([entity.__sizeof__() for entity in self.entities])
+
+    def __dask_tokenize__(self):
+        out = (EntitySet,
+               tuple(tokenize(e) for e in sorted(self.entities,
+                                                 key=lambda x: repr(x))),
+               tuple(tokenize(r) for r in sorted(self.relationships,
+                                                 key=lambda x: repr(x))),
+               self.time_type)
+        return out
+
+    @staticmethod
+    def __dask_optimize__(dsk, keys, **kwargs):
+        return dsk
+
+    def __dask_graph__(self):
+        return self._dsk
+
     @property
-    # TODO add comment about memory
     def metadata(self):
+        '''Defined as a property because an EntitySet's metadata
+        is used in many places, for instance, for each feature in a feature list.
+        To prevent using copying the full metadata object to each feature,
+        we generate a new metadata object and check if it's the same as the existing one,
+        and if it is return the existing one. Thus, all features in the feature list
+        would reference the same object, rather than copies. This saves a lot of memory
+        '''
         if self._metadata is None:
             self._metadata = self._gen_metadata()
         else:
@@ -95,9 +120,10 @@ class EntitySet(BaseEntitySet):
             new_metadata = self._gen_metadata()
             # Don't want to keep making new copies of metadata
             # Only make a new one if something was changed
-            if old_metadata != new_metadata:
+            if not old_metadata.__eq__(new_metadata):
                 self._metadata = new_metadata
             else:
+                del new_metadata
                 self._metadata = old_metadata
         return self._metadata
 
@@ -124,7 +150,6 @@ class EntitySet(BaseEntitySet):
             r.entityset = new_entityset
         return new_entityset
 
-    # TODO make these private
     @classmethod
     def _entity_metadata(cls, e):
         new_dict = {}
@@ -165,32 +190,13 @@ class EntitySet(BaseEntitySet):
         new_v.__dict__ = new_dict
         return new_v
 
-
     @property
     def is_metadata(self):
+        '''Returns True if all of the Entity's contain no data (empty DataFrames).
+        In general, EntitySets with no data are created by accessing the EntitySet.metadata property,
+        which returns a copy of the current EntitySet with all data removed.
+        '''
         return all(e.df.empty for e in self.entity_stores.values())
-
-    def __sizeof__(self):
-        return sum([entity.__sizeof__() for entity in self.entities])
-
-    def __dask_tokenize__(self):
-        out = (EntitySet,
-               tuple(tokenize(e) for e in sorted(self.entities,
-                                                 key=lambda x: repr(x))),
-               tuple(tokenize(r) for r in sorted(self.relationships,
-                                                 key=lambda x: repr(x))),
-               self.time_type)
-        return out
-
-    @staticmethod
-    def __dask_optimize__(dsk, keys, **kwargs):
-        return dsk
-
-    def __dask_graph__(self):
-        return self._dsk
-
-    def normalize(self, normalizer):
-        return super(EntitySet, self).normalize(normalizer=normalizer, remove_entityset=False)
 
     @property
     def entity_names(self):

@@ -8,11 +8,10 @@ import pandas as pd
 from dateutil.relativedelta import relativedelta
 from past.builtins import basestring
 
-from featuretools.core.base import FTBase
 from featuretools.exceptions import NotEnoughData
 
 
-class Timedelta(FTBase):
+class Timedelta(object):
     """Represents differences in time.
 
     Timedeltas can be defined in multiple units. Supported units:

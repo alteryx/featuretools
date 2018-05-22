@@ -9,8 +9,6 @@ from featuretools.computational_backends import PandasBackend
 from featuretools.primitives import (
     Absolute,
     Add,
-    And,
-    Compare,
     Count,
     CumCount,
     CumMax,
@@ -42,7 +40,6 @@ from featuretools.primitives import (
     NotEquals,
     NumCharacters,
     NumWords,
-    Or,
     Percentile,
     Subtract,
     Sum,
@@ -727,88 +724,51 @@ def test_text_primitives(es):
         assert v == char_counts[i]
 
 
-def test_arithmetic(es):
-    # P TODO:
-    return
-    hour = Hour(es['log']['datetime'])
-    day = Day(es['log']['datetime'])
-
-    to_test = [(Add, [19, 19, 19, 19]),
-               (Subtract, [-1, -1, -1, -1]),
-               (Multiply, [90, 90, 90, 90]),
-               (Divide, [.9, .9, .9, .9])]
-
-    features = []
-    features.append(day + hour)
-    features.append(day - hour)
-    features.append(day * hour)
-    features.append(day / hour)
-
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(instance_ids=[0, 3, 5, 7],
-                                               time_last=None)
-    for i, test in enumerate(to_test):
-        v = df[features[i].get_name()].values.tolist()
-        assert v == test[1]
-
-
 def test_overrides(es):
-    # P TODO:
-    return
-    hour = Hour(es['log']['datetime'])
-    day = Day(es['log']['datetime'])
+    value = Feature(es['log']['value'])
+    value2 = Feature(es['log']['value_2'])
 
-    feats = [Add, Subtract, Multiply, Divide,
-             Mod, And, Or]
+    feats = [Add, Subtract, Multiply, Divide]
     compare_ops = [GreaterThan, LessThan, Equals, NotEquals,
                    GreaterThanEqualTo, LessThanEqualTo]
-    assert Negate(hour).hash() == (-hour).hash()
+    assert Negate(value).hash() == (-value).hash()
 
-    compares = [(hour, hour),
-                (hour, day),
-                (day, 2)]
+    compares = [(value, value),
+                (value, value2),
+                (value2, 2)]
     overrides = [
-        hour + hour,
-        hour - hour,
-        hour * hour,
-        hour / hour,
-        hour % hour,
-        hour & hour,
-        hour | hour,
-        hour > hour,
-        hour < hour,
-        hour == hour,
-        hour != hour,
-        hour >= hour,
-        hour <= hour,
+        value + value,
+        value - value,
+        value * value,
+        value / value,
+        value > value,
+        value < value,
+        value == value,
+        value != value,
+        value >= value,
+        value <= value,
 
-        hour + day,
-        hour - day,
-        hour * day,
-        hour / day,
-        hour % day,
-        hour & day,
-        hour | day,
-        hour > day,
-        hour < day,
-        hour == day,
-        hour != day,
-        hour >= day,
-        hour <= day,
+        value + value2,
+        value - value2,
+        value * value2,
+        value / value2,
+        value > value2,
+        value < value2,
+        value == value2,
+        value != value2,
+        value >= value2,
+        value <= value2,
 
-        day + 2,
-        day - 2,
-        day * 2,
-        day / 2,
-        day % 2,
-        day & 2,
-        day | 2,
-        day > 2,
-        day < 2,
-        day == 2,
-        day != 2,
-        day >= 2,
-        day <= 2,
+        value2 + 2,
+        value2 - 2,
+        value2 * 2,
+        value2 / 2,
+        value2 > 2,
+        value2 < 2,
+        value2 == 2,
+        value2 != 2,
+        value2 >= 2,
+        value2 <= 2,
     ]
 
     i = 0
@@ -826,38 +786,34 @@ def test_overrides(es):
             i += 1
 
     our_reverse_overrides = [
-        2 + day,
-        2 - day,
-        2 * day,
-        2 / day,
-        2 & day,
-        2 | day]
+        2 + value2,
+        2 - value2,
+        2 * value2,
+        2 / value2]
     i = 0
     for feat in feats:
         if feat != Mod:
-            f = feat(2, day)
+            f = feat(2, value2)
             o = our_reverse_overrides[i]
             assert o.hash() == f.hash()
             i += 1
 
     python_reverse_overrides = [
-        2 < day,
-        2 > day,
-        2 == day,
-        2 != day,
-        2 <= day,
-        2 >= day]
+        2 < value2,
+        2 > value2,
+        2 == value2,
+        2 != value2,
+        2 <= value2,
+        2 >= value2]
     i = 0
     for compare_op in compare_ops:
-        f = compare_op(day, 2)
+        f = compare_op(value2, 2)
         o = python_reverse_overrides[i]
         assert o.hash() == f.hash()
         i += 1
 
 
 def test_override_boolean(es):
-    # P TODO:
-    return
     count = Count(es['log']['value'], es['sessions'])
     count_lo = GreaterThan(count, 1)
     count_hi = LessThan(count, 10)
@@ -895,8 +851,6 @@ def test_override_cmp_from_variable(es):
 
 
 def test_override_cmp(es):
-    # P TODO:
-    return
     count = Count(es['log']['value'], es['sessions'])
     _sum = Sum(es['log']['value'], es['sessions'])
     gt_lo = count > 1
@@ -1020,19 +974,17 @@ def test_isnull_feat(es):
 
 
 def test_init_and_name(es):
+    from featuretools import calculate_feature_matrix
     log = es['log']
     features = [Feature(v) for v in log.variables] +\
         [GreaterThan(Feature(es["products"]["rating"], es["log"]), 2.5)]
     # Add Timedelta feature
     features.append(pd.Timestamp.now() - Feature(log['datetime']))
     for transform_prim in get_transform_primitives().values():
-        if issubclass(transform_prim, Compare):
-            continue
         # use the input_types matching function from DFS
         input_types = transform_prim.input_types
         if type(input_types[0]) == list:
-            matching_inputs = [g for s in input_types
-                               for g in match(s, features)]
+            matching_inputs = match(input_types[0], features)
         else:
             matching_inputs = match(input_types, features)
         if len(matching_inputs) == 0:
@@ -1043,6 +995,7 @@ def test_init_and_name(es):
 
             # try to get name and calculate
             instance.get_name()
+            calculate_feature_matrix([instance], entityset=es).head(5)
 
 
 def test_percentile(es):

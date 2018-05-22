@@ -1,7 +1,4 @@
-from featuretools.core.base import FTBase
-
-
-class Relationship(FTBase):
+class Relationship(object):
     """Class to represent an relationship between entities
 
     See Also:
