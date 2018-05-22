@@ -75,7 +75,7 @@ def extra_session_df(entityset):
                   'device_type': 0,
                   'id': 6}
     row = pd.DataFrame(row_values, index=pd.Index([6], name='id'))
-    df = entityset['sessions'].df.append(row).sort_index()
+    df = entityset['sessions'].df.append(row, sort=False).sort_index()
     return df
 
 
