@@ -251,6 +251,7 @@ class PandasBackend(ComputationalBackend):
             df = df.append(self.generate_default_df(instance_ids=missing_ids,
                                                     extra_columns=df.columns),
                            sort=True)
+        df.index.name = self.entityset[self.target_eid].index
         return df[[feat.get_name() for feat in self.features]]
 
     def generate_default_df(self, instance_ids, extra_columns=None):

@@ -281,7 +281,7 @@ def test_training_window_recent_time_index(entityset):
     }
     df = pd.DataFrame(row)
     df.index = range(3, 4)
-    df = entityset['customers'].df.append(df, sort=True)
+    df = entityset['customers'].df.append(df, sort=False)
     entityset['customers'].update_data(df)
     entityset.add_last_time_indexes()
 

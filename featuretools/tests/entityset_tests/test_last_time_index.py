@@ -308,7 +308,7 @@ class TestLastTimeIndex(object):
         # the current last time index.
         log.df['datetime'][5] = pd.Timestamp("2011-4-09 10:40:01")
         log.df = (log.df.set_index('datetime', append=True)
-                     .sort_index(level=["datetime", "id"], kind="mergesort")
+                     .sort_index(level=[1, 0], kind="mergesort")
                      .reset_index('datetime', drop=False))
         log.update_data(log.df)
         entityset.add_last_time_indexes()
