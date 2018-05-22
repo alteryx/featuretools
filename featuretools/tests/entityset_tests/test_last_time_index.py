@@ -113,10 +113,9 @@ class TestLastTimeIndex(object):
                       'value_time': pd.Timestamp("2011-04-10 11:10:02"),
                       'values_id': 11}
         # make sure index doesn't have same name as column to suppress pandas warning
-        row = pd.DataFrame(row_values, index=pd.Index([11], name='values_id_index'))
+        row = pd.DataFrame(row_values, index=pd.Index([11]))
         df = values.df.append(row, sort=True)
         df = df.sort_values(['value_time', 'values_id'], kind='mergesort')
-        df.index.name = 'values_id'
         values.update_data(df)
         values_es.add_last_time_indexes()
         # lti value should default to instance's time index
