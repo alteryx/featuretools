@@ -135,16 +135,13 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             not_instance_id = [c for c in cutoff_time.columns if c != "instance_id"]
             cutoff_time.rename(columns={not_instance_id[0]: "time"}, inplace=True)
         if cutoff_time['time'].dtype == object:
-            if entityset.time_type == NumericTimeIndex:
-                try:
-                    cutoff_time['time'] = pd.to_numeric(cutoff_time['time'])
-                except (ValueError, TypeError):
-                    raise TypeError("cutoff_time times must be a numeric")
-            elif entityset.time_type == DatetimeTimeIndex:
-                try:
-                    cutoff_time['time'] = pd.to_datetime(cutoff_time['time'])
-                except (ValueError, TypeError):
-                    raise TypeError("cutoff_time times must be datetime type")
+            if (entityset.time_type == NumericTimeIndex and
+                    cutoff_time['time'].dtype.name.find('int') == -1 and
+                    cutoff_time['time'].dtype.name.find('float') == -1):
+                raise TypeError("cutoff_time times must be numeric: try casting via pd.to_numeric(cutoff_time['time'])")
+            elif (entityset.time_type == DatetimeTimeIndex and
+                  cutoff_time['time'].dtype.name.find('time') == -1):
+                raise TypeError("cutoff_time times must be datetime type: try casting via pd.to_datetime(cutoff_time['time'])")
         pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
 
     if _check_time_type(cutoff_time['time'].iloc[0]) is None:
