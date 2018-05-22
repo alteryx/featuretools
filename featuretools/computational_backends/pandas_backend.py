@@ -249,7 +249,9 @@ class PandasBackend(ComputationalBackend):
                        df[target_entity.index]]
         if missing_ids:
             df = df.append(self.generate_default_df(instance_ids=missing_ids,
-                                                    extra_columns=df.columns))
+                                                    extra_columns=df.columns),
+                           sort=True)
+        df.index.name = self.entityset[self.target_eid].index
         return df[[feat.get_name() for feat in self.features]]
 
     def generate_default_df(self, instance_ids, extra_columns=None):
@@ -478,7 +480,8 @@ class PandasBackend(ComputationalBackend):
 
             to_merge.reset_index(1, drop=True, inplace=True)
             frame = pd.merge(left=frame, right=to_merge,
-                             left_on=index_var, right_index=True, how='left')
+                             left_index=True,
+                             right_index=True, how='left')
 
         # Apply the aggregate functions to generate a new dataframe, and merge
         # it with the existing one
@@ -501,7 +504,7 @@ class PandasBackend(ComputationalBackend):
             variables = list(agg_rename.values())
             to_merge = to_merge[variables]
             frame = pd.merge(left=frame, right=to_merge,
-                             left_on=index_var, right_index=True, how='left')
+                             left_on=frame[index_var], right_index=True, how='left')
 
         # Handle default values
         # 1. handle non scalar default values

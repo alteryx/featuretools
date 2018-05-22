@@ -532,10 +532,9 @@ class Entity(BaseEntity):
         else:
             # todo add test for this
             if not already_sorted:
-                # sort by time variable, then by index
-                self.df.sort_values([self.index],
-                                    kind="mergesort",
-                                    inplace=True)
+                # sort by index
+                self.df.sort_index(kind="mergesort",
+                                   inplace=True)
 
         super(Entity, self).set_time_index(variable_id)
 
@@ -546,6 +545,7 @@ class Entity(BaseEntity):
             unique (bool) : Whether to assert that the index is unique.
         """
         self.df = self.df.set_index(self.df[variable_id], drop=False)
+        self.df.index.name = None
         if unique:
             assert self.df.index.is_unique, "Index is not unique on dataframe (Entity {})".format(self.id)
 

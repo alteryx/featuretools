@@ -122,3 +122,5 @@ ENV/
 # pickle files
 *.p
 *.pickle
+
+.pytest_cache
