@@ -136,6 +136,17 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             # take the first column that isn't instance_id and assume it is time
             not_instance_id = [c for c in cutoff_time.columns if c != "instance_id"]
             cutoff_time.rename(columns={not_instance_id[0]: "time"}, inplace=True)
+        if cutoff_time['time'].dtype == object:
+            if entityset.time_type == NumericTimeIndex:
+                try:
+                    cutoff_time['time'] = pd.to_numeric(cutoff_time['time'])
+                except (ValueError, TypeError):
+                    raise TypeError("cutoff_time times must be a numeric")
+            else:
+                try:
+                    cutoff_time['time'] = pd.to_datetime(cutoff_time['time'])
+                except (ValueError, TypeError):
+                    raise TypeError("cutoff_time times must be datetime type")
         pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
 
     if _check_time_type(cutoff_time['time'].iloc[0]) is None:

@@ -1,7 +1,7 @@
-customer_id,device_name,device_type,id
-0,PC,0,0
-0,Mobile,1,1
-0,Mobile,1,2
-1,PC,0,3
-1,PC,0,4
-2,Mobile,1,5
+id,customer_id,device_type,device_name
+0,0,0,PC
+1,0,1,Mobile
+2,0,1,Mobile
+3,1,0,PC
+4,1,0,PC
+5,2,1,Mobile

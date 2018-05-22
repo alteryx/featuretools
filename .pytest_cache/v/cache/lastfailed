@@ -1,5 +1,1 @@
-{
-  "featuretools/tests/computational_backend/test_calculate_feature_matrix.py::test_datetime_index_mixed_cutoff": true, 
-  "featuretools/tests/demo_tests/test_demo_data.py::test_load_retail_diff": true, 
-  "featuretools/tests/demo_tests/test_demo_data.py::test_load_retail_save": true
-}
+{}
