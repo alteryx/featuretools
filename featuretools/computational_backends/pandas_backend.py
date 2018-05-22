@@ -250,7 +250,7 @@ class PandasBackend(ComputationalBackend):
         if missing_ids:
             df = df.append(self.generate_default_df(instance_ids=missing_ids,
                                                     extra_columns=df.columns),
-                           sort=False)
+                           sort=True)
         return df[[feat.get_name() for feat in self.features]]
 
     def generate_default_df(self, instance_ids, extra_columns=None):

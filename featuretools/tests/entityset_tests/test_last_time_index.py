@@ -75,7 +75,7 @@ def extra_session_df(entityset):
                   'device_type': 0,
                   'id': 6}
     row = pd.DataFrame(row_values, index=pd.Index([6], name='id'))
-    df = entityset['sessions'].df.append(row, sort=False).sort_index()
+    df = entityset['sessions'].df.append(row, sort=True).sort_index()
     return df
 
 
@@ -114,7 +114,7 @@ class TestLastTimeIndex(object):
                       'values_id': 11}
         # make sure index doesn't have same name as column to suppress pandas warning
         row = pd.DataFrame(row_values, index=pd.Index([11], name='values_id_index'))
-        df = values.df.append(row, sort=False)
+        df = values.df.append(row, sort=True)
         df = df.sort_values(['value_time', 'values_id'], kind='mergesort')
         df.index.name = 'values_id'
         values.update_data(df)
