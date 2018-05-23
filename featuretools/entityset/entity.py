@@ -108,10 +108,10 @@ class Entity(object):
             vtype = inferred_variable_types[v]
             if isinstance(vtype, tuple):
                 # vtype is (ft.Variable, dict_of_kwargs)
-                v = vtype[0](v, self, **vtype[1])
+                _v = vtype[0](v, self, **vtype[1])
             else:
-                v = inferred_variable_types[v](v, self)
-            self.variables += [v]
+                _v = inferred_variable_types[v](v, self)
+            self.variables += [_v]
 
         # do one last conversion of data once we've inferred
         self.convert_all_variable_data(inferred_variable_types)
