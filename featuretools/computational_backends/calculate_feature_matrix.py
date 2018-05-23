@@ -23,7 +23,7 @@ from featuretools.primitives import (
 )
 from featuretools.utils.gen_utils import make_tqdm_iterator
 from featuretools.utils.wrangle import _check_time_type, _check_timedelta
-from featuretools.variable_types import NumericTimeIndex
+from featuretools.variable_types import DatetimeTimeIndex, NumericTimeIndex
 
 logger = logging.getLogger('featuretools.computational_backend')
 
@@ -118,9 +118,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             cutoff_time = [cutoff_time] * len(instance_ids)
 
         map_args = [(id, time) for id, time in zip(instance_ids, cutoff_time)]
-        df_args = pd.DataFrame(map_args, columns=['instance_id', 'time'])
-        to_calc = df_args.values
-        cutoff_time = pd.DataFrame(to_calc, columns=['instance_id', 'time'])
+        cutoff_time = pd.DataFrame(map_args, columns=['instance_id', 'time'])
     else:
         cutoff_time = cutoff_time.copy()
 
@@ -136,6 +134,14 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             # take the first column that isn't instance_id and assume it is time
             not_instance_id = [c for c in cutoff_time.columns if c != "instance_id"]
             cutoff_time.rename(columns={not_instance_id[0]: "time"}, inplace=True)
+        if cutoff_time['time'].dtype == object:
+            if (entityset.time_type == NumericTimeIndex and
+                    cutoff_time['time'].dtype.name.find('int') == -1 and
+                    cutoff_time['time'].dtype.name.find('float') == -1):
+                raise TypeError("cutoff_time times must be numeric: try casting via pd.to_numeric(cutoff_time['time'])")
+            elif (entityset.time_type == DatetimeTimeIndex and
+                  cutoff_time['time'].dtype.name.find('time') == -1):
+                raise TypeError("cutoff_time times must be datetime type: try casting via pd.to_datetime(cutoff_time['time'])")
         pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
 
     if _check_time_type(cutoff_time['time'].iloc[0]) is None:

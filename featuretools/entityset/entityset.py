@@ -757,10 +757,9 @@ class EntitySet(object):
 
             transfer_types[new_entity_time_index] = type(base_entity[base_entity.time_index])
 
-            new_entity_df = (new_entity_df.set_index(base_time_index, append=True)
-                                          .sort_index(level=[base_time_index, base_entity.index],
-                                                      kind="mergesort")
-                                          .reset_index(base_time_index, drop=False))
+            new_entity_df.sort_values([base_time_index, base_entity.index],
+                                      kind="mergesort",
+                                      inplace=True)
         else:
             new_entity_time_index = None
 
@@ -912,14 +911,10 @@ class EntitySet(object):
                 columns = [entity.index]
             combined_df.drop_duplicates(columns, inplace=True)
 
-            # TODO: should this go inside of update_data?
-            # or should we call set_time_index()?
-            combined_df.sort_index(inplace=True)
             if entity.time_index:
-                combined_df = (combined_df.set_index(entity.time_index, append=True)
-                                          .sort_index(level=[entity.time_index, entity.index])
-                                          .reset_index(entity.time_index, drop=False))
-
+                combined_df.sort_values([entity.time_index, entity.index], inplace=True)
+            else:
+                combined_df.sort_index(inplace=True)
             combined_es[entity.id].update_data(df=combined_df,
                                                reindex=True,
                                                recalculate_last_time_indexes=True)
@@ -1051,15 +1046,8 @@ class EntitySet(object):
                     lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
                                            entity.index: child_e.df[link_var]})
                     # sort by time and keep only the most recent
-
-                    if entity.index in lti_df.index.names:
-                        lti_df = (lti_df.set_index('last_time', append=True)
-                                        .sort_index(level=['last_time', entity.index],
-                                                    kind="mergesort")
-                                        .reset_index('last_time', drop=False))
-                    else:
-                        lti_df.sort_values(['last_time', entity.index],
-                                           kind="mergesort", inplace=True)
+                    lti_df.sort_values(['last_time', entity.index],
+                                       kind="mergesort", inplace=True)
                     lti_df.drop_duplicates(entity.index,
                                            keep='last',
                                            inplace=True)
