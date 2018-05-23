@@ -867,6 +867,7 @@ def test_integer_time_index_mixed_cutoff(int_es):
     times_int_str = [0, 1, 2, 3, 4, 5, '6', 7, 8, 9, 9, 10, 11, 12, 15, 14, 13]
     times_int_str = list(range(8, 17)) + ['17', 19, 20, 21, 22, 25, 24, 23]
     cutoff_df['time'] = times_int_str
+    # calculate_feature_matrix should convert time column to ints successfully here
     with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
                                  int_es,
@@ -895,15 +896,12 @@ def test_datetime_index_mixed_cutoff(entityset):
 
     times[9] = "foobar"
     cutoff_df['time'] = times
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
                                  entityset,
                                  cutoff_time=cutoff_df)
 
     cutoff_df['time'].iloc[9] = '2018-04-02 18:50:45.453216'
-    calculate_feature_matrix([property_feature],
-                             entityset,
-                             cutoff_time=cutoff_df)
     with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
                                  entityset,
@@ -911,7 +909,7 @@ def test_datetime_index_mixed_cutoff(entityset):
 
     times[9] = '17'
     cutoff_df['time'] = times
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
                                  entityset,
                                  cutoff_time=cutoff_df)
@@ -922,5 +920,5 @@ def test_string_time_values_in_cutoff_time(entityset):
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 0]})
     agg_feature = Sum(entityset['log']['value'], entityset['customers'])
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         calculate_feature_matrix([agg_feature], entityset, cutoff_time=cutoff_time)

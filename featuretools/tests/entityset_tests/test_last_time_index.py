@@ -75,7 +75,7 @@ def extra_session_df(entityset):
                   'device_type': 0,
                   'id': 6}
     row = pd.DataFrame(row_values, index=pd.Index([6], name='id'))
-    df = entityset['sessions'].df.append(row).sort_index()
+    df = entityset['sessions'].df.append(row, sort=True).sort_index()
     return df
 
 
@@ -113,8 +113,8 @@ class TestLastTimeIndex(object):
                       'value_time': pd.Timestamp("2011-04-10 11:10:02"),
                       'values_id': 11}
         # make sure index doesn't have same name as column to suppress pandas warning
-        row = pd.DataFrame(row_values, index=pd.Index([11], name='values_id_index'))
-        df = values.df.append(row, sort=False)
+        row = pd.DataFrame(row_values, index=pd.Index([11]))
+        df = values.df.append(row, sort=True)
         df = df.sort_values(['value_time', 'values_id'], kind='mergesort')
         df.index.name = 'values_id'
         values.update_data(df)
@@ -308,7 +308,7 @@ class TestLastTimeIndex(object):
         # the current last time index.
         log.df['datetime'][5] = pd.Timestamp("2011-4-09 10:40:01")
         log.df = (log.df.set_index('datetime', append=True)
-                     .sort_index(level=["datetime", "id"], kind="mergesort")
+                     .sort_index(level=[1, 0], kind="mergesort")
                      .reset_index('datetime', drop=False))
         log.update_data(log.df)
         entityset.add_last_time_indexes()

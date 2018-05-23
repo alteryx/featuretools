@@ -774,10 +774,7 @@ class Entity(object):
             # use stable sort
             if not already_sorted:
                 # sort by time variable, then by index
-                self.df = (self.df.set_index(variable_id, append=True)
-                               .sort_index(level=[variable_id, self.index],
-                                           kind="mergesort")
-                               .reset_index(variable_id, drop=False))
+                self.df.sort_values([variable_id, self.index], inplace=True)
 
             t = vtypes.TimeIndex
             if col_is_datetime(self.df[variable_id]):
@@ -799,6 +796,7 @@ class Entity(object):
             unique (bool) : Whether to assert that the index is unique.
         """
         self.df = self.df.set_index(self.df[variable_id], drop=False)
+        self.df.index.name = None
         if unique:
             assert self.df.index.is_unique, "Index is not unique on dataframe (Entity {})".format(self.id)
 
