@@ -58,7 +58,6 @@ def test_parents(es):
     assert es['stores'].parents == ['regions']
 
 
-
 def test_update_data(es):
     # TODO: write test for this method, since it has new functionality
     pass
