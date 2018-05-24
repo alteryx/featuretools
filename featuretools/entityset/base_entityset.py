@@ -201,7 +201,7 @@ class BaseEntitySet(object):
         if ((is_object_dtype(parent_e.df[parent_v]) or
                 is_string_dtype(parent_e.df[parent_v])) and
                 is_numeric_dtype(child_e.df[child_v])):
-            parent_e.df[parent_v] = pd.to_numeric(self[parent_e.id].df[parent_v])
+            parent_e.df[parent_v] = pd.to_numeric(parent_e.df[parent_v])
         if ((is_object_dtype(child_e.df[child_v]) or
                 is_string_dtype(child_e.df[child_v])) and
                 is_numeric_dtype(parent_e.df[parent_v])):

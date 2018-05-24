@@ -23,12 +23,11 @@ def test_cannot_readd_relationships_that_already_exists(es):
 
 def test_add_relationships_convert_type(es):
     for r in es.relationships:
-        try:
-            assert type(r.parent_variable) == variable_types.Index
-            assert type(r.child_variable) == variable_types.Id
-        except Exception:
-            assert type(r.parent_variable) == variable_types.Index
-            assert type(r.child_variable) == variable_types.Id
+        parent_e = es[r.parent_entity.id]
+        child_e = es[r.child_entity.id]
+        assert type(r.parent_variable) == variable_types.Index
+        assert type(r.child_variable) == variable_types.Id
+        assert parent_e.df[r.parent_variable.id].dtype == child_e.df[r.child_variable.id].dtype
 
 
 def test_get_forward_entities(es):
