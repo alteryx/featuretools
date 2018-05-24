@@ -31,7 +31,7 @@ def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transaction
     transactions_df["session_id"] = choice(sessions_df["session_id"], n_transactions)
     transactions_df = transactions_df.sort_values("session_id").reset_index(drop=True)
     transactions_df["transaction_time"] = pd.date_range('1/1/2014', periods=n_transactions, freq='65s')  # todo make these less regular
-    transactions_df["product_id"] = pd.Categorical(choice(products_df["product_id"], n_transactions))
+    transactions_df["product_id"] = choice(products_df["product_id"], n_transactions)
     transactions_df["amount"] = random.randint(500, 15000, n_transactions) / 100
 
     # calculate and merge in session start
