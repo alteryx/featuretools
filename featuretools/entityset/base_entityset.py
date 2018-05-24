@@ -1,6 +1,9 @@
 import logging
 from builtins import object
 
+import pandas as pd
+from pandas.api.types import is_numeric_dtype, is_object_dtype, is_string_dtype
+
 from featuretools import variable_types as vtypes
 
 logger = logging.getLogger('featuretools.entityset')
@@ -186,15 +189,23 @@ class BaseEntitySet(object):
         child_v = relationship.child_variable.id
         parent_e = relationship.parent_entity
         parent_v = relationship.parent_variable.id
-        if not isinstance(self[child_e.id][child_v], vtypes.Discrete):
+        if not isinstance(child_e[child_v], vtypes.Discrete):
             child_e.convert_variable_type(variable_id=child_v,
                                           new_type=vtypes.Id,
                                           convert_data=False)
-        if not isinstance(self[parent_e.id][parent_v], vtypes.Discrete):
+
+        if not isinstance(parent_e[parent_v], vtypes.Discrete):
             parent_e.convert_variable_type(variable_id=parent_v,
                                            new_type=vtypes.Index,
                                            convert_data=False)
-
+        if ((is_object_dtype(parent_e.df[parent_v]) or
+                is_string_dtype(parent_e.df[parent_v])) and
+                is_numeric_dtype(child_e.df[child_v])):
+            parent_e.df[parent_v] = pd.to_numeric(parent_e.df[parent_v])
+        if ((is_object_dtype(child_e.df[child_v]) or
+                is_string_dtype(child_e.df[child_v])) and
+                is_numeric_dtype(parent_e.df[parent_v])):
+            child_e.df[child_v] = pd.to_numeric(child_e.df[child_v])
         self.relationships.append(relationship)
         self.index_data(relationship)
         return self
