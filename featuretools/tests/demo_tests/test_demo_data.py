@@ -1,7 +1,6 @@
 import os
 
-from featuretools import dfs
-from featuretools.demo import load_mock_customer, load_retail
+from featuretools.demo import load_retail
 from featuretools.demo.retail import make_retail_pathname
 
 
