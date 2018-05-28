@@ -97,7 +97,8 @@ Aggregation features are used to create features for a :term:`parent entity` by 
 
     from featuretools.primitives import Count
     total_events = Count(es["transactions"]["id"], es["customers"])
-    total_events.head()
+    fm = ft.calculate_feature_matrix([total_events], es)
+    fm.head()
 
 .. note::
 
@@ -110,7 +111,8 @@ Often times, we only want to aggregate using a certain amount of previous data. 
     total_events_last_30_days = Count(es["transactions"]["id"],
                                       parent_entity=es["customers"],
                                       use_previous="30 days")
-    total_events_last_30_days.head()
+    fm = ft.calculate_feature_matrix([total_events_last_30_days], es)
+    fm.head()
 
 Unlike with cumulative transform features, the ``use_previous`` parameter here is evaluated relative to instances of the parent entity, not the child entity. The above feature translates roughly to the following: "For each customer, count the events which occurred in the 30 days preceding the customer's timestamp."
 
@@ -125,7 +127,8 @@ When defining aggregation or cumulative transform features, we can provide a ``w
     afternoon_events = Count(es["transactions"]["id"],
                          parent_entity=es["customers"],
                          where=is_afternoon).rename("afternoon_events")
-    afternoon_events.head()
+    fm = ft.calculate_feature_matrix([afternoon_events], es)
+    fm.head()
 
 The where argument can be any previously-defined boolean feature. Only instances for which the where feature is True are included in the final calculation.
 
@@ -143,7 +146,8 @@ Say we want to calculate the number of events per customer in the past 30 days. 
     total_events = CumCount(base_feature=es["transactions"]["id"],
                             group_feature=es["transactions"]["session_id"],
                             use_previous="1 hour")
-    total_events.head()
+    fm = ft.calculate_feature_matrix([total_events], es)
+    fm.head()
 
 
 Because they use previous data, cumulative transform features can only be defined on entities that have a time index. Find the list of available cumulative transform features :ref:`here <api_ref.cumulative_features>`.
@@ -162,7 +166,8 @@ For instance, we can aggregate direct features on a child entity from a differen
     from featuretools.primitives import Mode
     brand = Feature(es["products"]["brand"], es["transactions"])
     favorite_brand = Mode(brand, parent_entity=es["customers"])
-    favorite_brand.head()
+    fm = ft.calculate_feature_matrix([favorite_brand], es)
+    fm.head()
 
 
 .. Sliding Window Aggregation Features

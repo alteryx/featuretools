@@ -190,7 +190,6 @@ Feature methods
 .. autosummary::
     :toctree: generated/
 
-    PrimitiveBase.head
     PrimitiveBase.rename
     PrimitiveBase.get_depth
 
@@ -295,7 +294,6 @@ Entity methods
 .. autosummary::
     :toctree: generated/
 
-    Entity.head
     Entity.show_instance
     Entity.is_child_of
     Entity.is_parent_of
