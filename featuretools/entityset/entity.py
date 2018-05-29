@@ -65,7 +65,6 @@ class Entity(BaseEntity):
         self._verbose = verbose
         self.created_index = created_index
         self.convert_variable_types(variable_types)
-        self.attempt_cast_index_to_int(index)
         super(Entity, self).__init__(id, entityset, variable_types, name, index,
                                      time_index, secondary_time_index, relationships, already_sorted)
 
