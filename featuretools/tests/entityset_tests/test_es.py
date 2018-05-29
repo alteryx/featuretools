@@ -53,12 +53,12 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
                              time_index='datetime',
                              encoding='utf-8')
     with pytest.raises(ValueError) as e:
-        es.add_relationship(Relationship(es['regions']['id'], es['log2']['session_id']))
+        mismatch = Relationship(es['regions']['id'], es['log2']['session_id'])
+        es.add_relationship(mismatch)
 
     assert e.value.message == "Unable to add relationship because id in "\
                               "regions is Pandas dtype object and session_id "\
                               "in log2 is Pandas dtype int64."
-    assert False
 
 
 def test_get_forward_entities(es):
