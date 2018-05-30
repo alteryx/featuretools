@@ -96,13 +96,6 @@ class EntitySet(BaseEntitySet):
                self.time_type)
         return out
 
-    @staticmethod
-    def __dask_optimize__(dsk, keys, **kwargs):
-        return dsk
-
-    def __dask_graph__(self):
-        return self._dsk
-
     @property
     def metadata(self):
         '''Defined as a property because an EntitySet's metadata
