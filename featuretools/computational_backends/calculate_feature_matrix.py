@@ -18,8 +18,6 @@ from distributed import Client, LocalCluster, as_completed
 from pandas.tseries.frequencies import to_offset
 
 from .pandas_backend import PandasBackend
-
-import featuretools as ft
 from featuretools.primitives import (
     AggregationPrimitive,
     DirectFeature,
@@ -669,7 +667,7 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
         # denote future with leading underscore
         start = time.time()
         if entityset.id in client.list_datasets():
-            print("Using entityset persisted on the cluster as dataset %s" % (entityset.id))
+            print("Using EntitySet persisted on the cluster as dataset %s" % (entityset.id))
             _es = client.get_dataset(entityset.id)
         else:
             _es = client.scatter({entityset.id: entityset})[entityset.id]
@@ -681,7 +679,8 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
         client.replicate([_es, _saved_features])
         end = time.time()
         scatter_time = end - start
-        print(scatter_time)
+        scatter_string = "EntitySet scattered to workers in {:.3f} seconds"
+        print(scatter_string.format(scatter_time))
 
         # map chunks
         _chunks = client.map(dask_calculate_chunk,
