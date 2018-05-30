@@ -716,16 +716,18 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
         # TODO: handle errored / failed
         iterator = as_completed(_chunks, with_results=True).batches()
         if verbose:
-            pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
-                           "Progress: {l_bar}{bar}| "
-                           "Calculated: {n}/{total} chunks")
-            iterator = make_tqdm_iterator(iterable=iterator,
-                                          total=len(_chunks),
-                                          bar_format=pbar_string)
+            pbar_str = ("Elapsed: {elapsed} | Remaining: {remaining} | "
+                        "Progress: {l_bar}{bar}| "
+                        "Calculated: {n}/{total} chunks")
+            pbar = make_tqdm_iterator(total=len(_chunks), bar_format=pbar_str)
         for batch in iterator:
             for future, result in batch:
                 # gather finished futures
                 feature_matrix.append(result)
+                if verbose:
+                    pbar.update()
+        if verbose:
+            pbar.close()
     except Exception as e:
         raise e
     finally:
