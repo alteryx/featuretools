@@ -329,6 +329,9 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
             secondary = time_index['secondary']
 
         df = pd.read_csv(filenames[entity], encoding='utf-8')
+        if entity == 'sessions':
+            # This should be changed back when converted to an EntitySet
+            df['customer_id'] = pd.Categorical(df['customer_id'])
         if entity is 'log':
             df['latlong'] = df['latlong'].apply(latlong_unstringify)
             df['latlong2'] = df['latlong2'].apply(latlong_unstringify)

@@ -20,7 +20,7 @@ def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transaction
     customers_df["zip_code"] = choice(["60091", "02139"], n_customers,)
     customers_df["join_date"] = pd.date_range('1/1/2008', periods=n_customers, freq='50d')  # todo make these less regular
 
-    products_df = pd.DataFrame({"product_id": range(1, n_products + 1)})
+    products_df = pd.DataFrame({"product_id": pd.Categorical(range(1, n_products + 1))})
     products_df["brand"] = choice(["A", "B", "C"], n_products)
 
     sessions_df = pd.DataFrame({"session_id": range(1, n_sessions + 1)})

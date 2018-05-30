@@ -582,10 +582,17 @@ class EntitySet(BaseEntitySet):
         df = dataframe
         for c in df.columns:
             if df[c].dtype.name.find('category') > -1:
-                df[c] = df[c].astype(object)
+                try:
+                    df[c] = df[c].astype(int)
+                except ValueError:
+                    df[c] = df[c].astype(object)
                 if c not in variable_types:
                     variable_types[c] = vtypes.Categorical
         if df.index.dtype.name.find('category') > -1:
+            try:
+                df[c] = df[c].astype(int)
+            except ValueError:
+                df[c] = df[c].astype(object)
             df.index = df.index.astype(object)
 
         self.add_entity(entity_id,
@@ -948,12 +955,10 @@ class EntitySet(BaseEntitySet):
                 columns = [entity.index]
             combined_df.drop_duplicates(columns, inplace=True)
 
-            # TODO: should this go inside of update_data?
-            # or should we call set_time_index()?
-            to_sort = [entity.index]
             if entity.time_index:
-                to_sort = [entity.time_index, entity.index]
-            combined_df.sort_values(to_sort, inplace=True)
+                combined_df.sort_values([entity.time_index, entity.index], inplace=True)
+            else:
+                combined_df.sort_index(inplace=True)
 
             combined_es[entity.id].update_data(combined_df)
 
@@ -1033,9 +1038,9 @@ class EntitySet(BaseEntitySet):
                     lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
                                            entity.index: child_e.df[link_var]})
                     # sort by time and keep only the most recent
+
                     lti_df.sort_values(['last_time', entity.index],
-                                       kind="mergesort",
-                                       inplace=True)
+                                       kind="mergesort", inplace=True)
                     lti_df.drop_duplicates(entity.index,
                                            keep='last',
                                            inplace=True)
