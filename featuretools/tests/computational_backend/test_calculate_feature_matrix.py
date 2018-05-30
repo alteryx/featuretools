@@ -312,7 +312,7 @@ def test_approximate_multiple_instances_per_cutoff_time(entityset):
     agg_feat2 = Sum(agg_feat, es['customers'])
     dfeat = DirectFeature(agg_feat2, es['sessions'])
 
-    feature_matrix = calculate_feature_matrix([dfeat, agg_feat]
+    feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
                                               entityset,
                                               instance_ids=[0, 2],
                                               approximate=Timedelta(1, 'week'),

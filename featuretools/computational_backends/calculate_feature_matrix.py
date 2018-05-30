@@ -668,8 +668,14 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
                 cpus = multiprocessing.cpu_count()
                 njobs = max(cpus + 1 + njobs, 1)
 
+            diagnostics_port = None
+            if 'diagnostics_port' in dask_kwargs:
+                diagnostics_port = dask_kwargs['diagnostics_port']
+
             workers = min(njobs, len(chunks))
-            cluster = LocalCluster(n_workers=workers)
+            cluster = LocalCluster(n_workers=workers,
+                                   threads_per_worker=1,
+                                   diagnostics_port=diagnostics_port)
 
         client = Client(cluster)
         # scatter the entityset
