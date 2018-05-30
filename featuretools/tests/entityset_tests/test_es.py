@@ -56,9 +56,9 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
         mismatch = Relationship(es['regions']['id'], es['log2']['session_id'])
         es.add_relationship(mismatch)
 
-    assert e.value.message == "Unable to add relationship because id in "\
-                              "regions is Pandas dtype object and session_id "\
-                              "in log2 is Pandas dtype int64."
+    assert e.value.__str__() == "Unable to add relationship because id in "\
+                                "regions is Pandas dtype object and "\
+                                "session_id in log2 is Pandas dtype int64."
 
 
 def test_get_forward_entities(es):
