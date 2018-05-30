@@ -65,7 +65,6 @@ class Entity(BaseEntity):
         self._verbose = verbose
         self.created_index = created_index
         self.convert_variable_types(variable_types)
-        self.attempt_cast_index_to_int(index)
         super(Entity, self).__init__(id, entityset, variable_types, name, index,
                                      time_index, secondary_time_index, relationships, already_sorted)
 
@@ -96,16 +95,6 @@ class Entity(BaseEntity):
     @indexed_by.setter
     def indexed_by(self, idx):
         self.data["indexed_by"] = idx
-
-    def attempt_cast_index_to_int(self, index_var):
-        dtype_name = self.df[index_var].dtype.name
-        if (dtype_name.find('int') == -1 and
-                dtype_name.find('object') > -1 or dtype_name.find('categ') > -1):
-            if isinstance(self.df[index_var].iloc[0], (int, np.int32, np.int64)):
-                try:
-                    self.df[index_var] = self.df[index_var].astype(int)
-                except ValueError:
-                    pass
 
     def convert_variable_types(self, variable_types):
         for var_id, desired_type in variable_types.items():

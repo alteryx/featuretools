@@ -562,10 +562,17 @@ class EntitySet(BaseEntitySet):
         df = dataframe
         for c in df.columns:
             if df[c].dtype.name.find('category') > -1:
-                df[c] = df[c].astype(object)
+                try:
+                    df[c] = df[c].astype(int)
+                except ValueError:
+                    df[c] = df[c].astype(object)
                 if c not in variable_types:
                     variable_types[c] = vtypes.Categorical
         if df.index.dtype.name.find('category') > -1:
+            try:
+                df[c] = df[c].astype(int)
+            except ValueError:
+                df[c] = df[c].astype(object)
             df.index = df.index.astype(object)
 
         self.add_entity(entity_id,
