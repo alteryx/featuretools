@@ -357,6 +357,8 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
          Relationship(es['sessions']['id'], es['log']['session_id']),
          Relationship(es['products']['id'], es['log']['product_id'])])
 
+    es.add_last_time_indexes()
+
     return es
 
 
