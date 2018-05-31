@@ -6,6 +6,7 @@ from collections import defaultdict
 
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_dtype_equal
 
 from .entity import Entity
 from .relationship import Relationship
@@ -268,14 +269,23 @@ class EntitySet(object):
         child_v = relationship.child_variable.id
         parent_e = relationship.parent_entity
         parent_v = relationship.parent_variable.id
-        if not isinstance(self[child_e.id][child_v], vtypes.Discrete):
+        if not isinstance(child_e[child_v], vtypes.Discrete):
             child_e.convert_variable_type(variable_id=child_v,
                                           new_type=vtypes.Id,
                                           convert_data=False)
-        if not isinstance(self[parent_e.id][parent_v], vtypes.Discrete):
+
+        if not isinstance(parent_e[parent_v], vtypes.Discrete):
             parent_e.convert_variable_type(variable_id=parent_v,
                                            new_type=vtypes.Index,
                                            convert_data=False)
+
+        parent_dtype = parent_e.df[parent_v].dtype
+        child_dtype = child_e.df[child_v].dtype
+        msg = "Unable to add relationship because {} in {} is Pandas dtype {}"\
+            " and {} in {} is Pandas dtype {}."
+        if not is_dtype_equal(parent_dtype, child_dtype):
+            raise ValueError(msg.format(parent_v, parent_e.id, parent_dtype,
+                                        child_v, child_e.id, child_dtype))
 
         self.relationships.append(relationship)
         self.index_data(relationship)
@@ -1323,10 +1333,17 @@ class EntitySet(object):
         df = dataframe
         for c in df.columns:
             if df[c].dtype.name.find('category') > -1:
-                df[c] = df[c].astype(object)
+                try:
+                    df[c] = df[c].astype(int)
+                except ValueError:
+                    df[c] = df[c].astype(object)
                 if c not in variable_types:
                     variable_types[c] = vtypes.Categorical
         if df.index.dtype.name.find('category') > -1:
+            try:
+                df[c] = df[c].astype(int)
+            except ValueError:
+                df[c] = df[c].astype(object)
             df.index = df.index.astype(object)
 
         entity = Entity(entity_id,

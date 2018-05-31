@@ -11,7 +11,7 @@ import pytest
 from ..testing_utils import make_ecommerce_entityset
 
 from featuretools import variable_types
-from featuretools.entityset import EntitySet
+from featuretools.entityset import EntitySet, Relationship
 from featuretools.tests import integration_data
 
 
@@ -20,9 +20,51 @@ def entityset():
     return make_ecommerce_entityset()
 
 
-@pytest.fixture
-def entity(entityset):
-    return entityset['log']
+def test_cannot_readd_relationships_that_already_exists(entityset):
+    before_len = len(entityset.relationships)
+    entityset.add_relationship(entityset.relationships[0])
+    after_len = len(entityset.relationships)
+    assert before_len == after_len
+
+
+def test_add_relationships_convert_type(entityset):
+    for r in entityset.relationships:
+        parent_e = entityset[r.parent_entity.id]
+        child_e = entityset[r.child_entity.id]
+        assert type(r.parent_variable) == variable_types.Index
+        assert type(r.child_variable) == variable_types.Id
+        assert parent_e.df[r.parent_variable.id].dtype == child_e.df[r.child_variable.id].dtype
+
+
+def test_add_relationship_errors_on_dtype_mismatch(entityset):
+    log_2_df = entityset['log'].df.copy()
+    log_variable_types = {
+        'id': variable_types.Categorical,
+        'session_id': variable_types.Id,
+        'product_id': variable_types.Id,
+        'datetime': variable_types.Datetime,
+        'value': variable_types.Numeric,
+        'value_2': variable_types.Numeric,
+        'latlong': variable_types.LatLong,
+        'latlong2': variable_types.LatLong,
+        'value_many_nans': variable_types.Numeric,
+        'priority_level': variable_types.Ordinal,
+        'purchased': variable_types.Boolean,
+        'comments': variable_types.Text
+    }
+    entityset.entity_from_dataframe(entity_id='log2',
+                                    dataframe=log_2_df,
+                                    index='id',
+                                    variable_types=log_variable_types,
+                                    time_index='datetime',
+                                    encoding='utf-8')
+    with pytest.raises(ValueError) as e:
+        mismatch = Relationship(entityset['regions']['id'], entityset['log2']['session_id'])
+        entityset.add_relationship(mismatch)
+
+    assert e.value.__str__() == "Unable to add relationship because id in "\
+                                "regions is Pandas dtype object and "\
+                                "session_id in log2 is Pandas dtype int64."
 
 
 def test_query_by_id(entityset):
@@ -216,7 +258,7 @@ def test_converts_datetime():
                                      time_index="time", variable_types=vtypes,
                                      dataframe=df)
     pd_col = entityset['test_entity'].df['time']
-    # assert type(es['test_entity']['time']) == variable_types.Datetime
+    # assert type(entityset['test_entity']['time']) == variable_types.Datetime
     assert type(pd_col[0]) == pd.Timestamp
 
 
@@ -831,18 +873,17 @@ def test_normalize_entity_new_time_index(entityset):
 
 
 def test_secondary_time_index(entityset):
-    es = entityset
-    es.normalize_entity('log', 'values', 'value',
-                        make_time_index=True,
-                        make_secondary_time_index={
-                            'datetime': ['comments']},
-                        new_entity_time_index="value_time",
-                        new_entity_secondary_time_index='second_ti',
-                        convert_links_to_integers=True)
+    entityset.normalize_entity('log', 'values', 'value',
+                               make_time_index=True,
+                               make_secondary_time_index={
+                                   'datetime': ['comments']},
+                               new_entity_time_index="value_time",
+                               new_entity_secondary_time_index='second_ti',
+                               convert_links_to_integers=True)
 
-    assert (isinstance(es['values'].df['second_ti'], pd.Series))
-    assert (es['values']['second_ti']._dtype_repr == 'datetime')
-    assert (es['values'].secondary_time_index == {
+    assert (isinstance(entityset['values'].df['second_ti'], pd.Series))
+    assert (entityset['values']['second_ti']._dtype_repr == 'datetime')
+    assert (entityset['values'].secondary_time_index == {
             'second_ti': ['comments', 'second_ti']})
 
 

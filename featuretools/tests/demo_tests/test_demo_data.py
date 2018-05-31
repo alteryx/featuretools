@@ -1,7 +1,8 @@
 import os
 
-from featuretools.demo import load_retail
+from featuretools.demo import load_mock_customer, load_retail
 from featuretools.demo.retail import make_retail_pathname
+from featuretools.synthesis import dfs
 
 
 def test_load_retail_save():
@@ -24,3 +25,10 @@ def test_load_retail_diff():
     assert es_second['order_products'].df.shape[0] == nrows_second
     os.remove(make_retail_pathname(nrows))
     os.remove(make_retail_pathname(nrows_second))
+
+
+def test_mock_customer():
+    es = load_mock_customer(return_entityset=True)
+    fm, fl = dfs(entityset=es, target_entity="customers", max_depth=3)
+    for feature in fl:
+        assert feature.get_name() in fm.columns

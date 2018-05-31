@@ -79,7 +79,6 @@ class Entity(object):
         self._verbose = verbose
         self.created_index = created_index
         self.convert_all_variable_data(variable_types)
-        self.attempt_cast_index_to_int(index)
         self.id = id
         self.name = name
         self.entityset = entityset
@@ -375,16 +374,6 @@ class Entity(object):
         rels = self.entityset.get_backward_relationships(self.id)
         return entity_id in [r.child_entity.id for r in rels]
 
-    def attempt_cast_index_to_int(self, index_var):
-        dtype_name = self.df[index_var].dtype.name
-        if (dtype_name.find('int') == -1 and
-                dtype_name.find('object') > -1 or dtype_name.find('categ') > -1):
-            if isinstance(self.df[index_var].iloc[0], (int, np.int32, np.int64)):
-                try:
-                    self.df[index_var] = self.df[index_var].astype(int)
-                except ValueError:
-                    pass
-
     def get_all_instances(self):
         return self.df[self.index]
 
@@ -425,7 +414,7 @@ class Entity(object):
             df = self.df
 
         elif variable_id is None or variable_id == self.index:
-            df = self.df.loc[instance_vals]
+            df = self.df.reindex(instance_vals)
             df.dropna(subset=[self.index], inplace=True)
 
         elif variable_id in self.indexed_by:
