@@ -58,6 +58,9 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
         mismatch = Relationship(es[u'régions']['id'], es['log2']['session_id'])
         es.add_relationship(mismatch)
 
+    e
+
+
 def test_get_forward_entities(es):
     entities = es.get_forward_entities('log')
     assert entities == set(['sessions', 'products'])
