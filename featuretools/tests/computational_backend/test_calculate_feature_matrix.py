@@ -811,6 +811,17 @@ def test_njobs(entityset):
 
     assert (feature_matrix == labels).values.all()
 
+
+def test_negative_njobs(entityset):
+    times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
+                 [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
+                 [datetime(2011, 4, 9, 10, 40, 0)] +
+                 [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
+                 [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
+                 [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
+    labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
+
+    property_feature = IdentityFeature(entityset['log']['value']) > 10
     feature_matrix = calculate_feature_matrix([property_feature],
                                               entityset=entityset,
                                               instance_ids=range(17),
