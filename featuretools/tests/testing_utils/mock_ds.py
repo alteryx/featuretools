@@ -131,7 +131,7 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
         ['I loved it'] * 4 + taco_clock_reviews()
     })
     filenames = {}
-    for entity, df in [('regions', region_df),
+    for entity, df in [(u'les r\u00e9gions', region_df),
                        ('stores', store_df),
                        ('products', product_df),
                        ('customers', customer_df),
@@ -273,7 +273,7 @@ def make_variable_types(with_integer_time_index=False):
         'log': log_variable_types,
         'products': product_variable_types,
         'stores': store_variable_types,
-        'regions': region_variable_types
+        u'les r\u00e9gions': region_variable_types
     }
 
 
@@ -301,7 +301,7 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
                                          split_by_time=split_by_time, compressed=compressed)
         entities = filenames.keys()
     else:
-        entities = ['regions', 'stores', 'products',
+        entities = [u'les r\u00e9gions', 'stores', 'products',
                     'customers', 'sessions', 'log']
         filenames = {e: entity_filename(e, base_path, file_location=file_location,
                                         glob=(split_by_time and e == 'log'),
@@ -351,8 +351,8 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
                         new_entity_time_index='cohort_end')
 
     es.add_relationships(
-        [Relationship(es['regions']['id'], es['customers']['region_id']),
-         Relationship(es['regions']['id'], es['stores']['region_id']),
+        [Relationship(es[u'les r\u00e9gions']['id'], es['customers']['region_id']),
+         Relationship(es[u'les r\u00e9gions']['id'], es['stores']['region_id']),
          Relationship(es['customers']['id'], es['sessions']['customer_id']),
          Relationship(es['sessions']['id'], es['log']['session_id']),
          Relationship(es['products']['id'], es['log']['product_id'])])

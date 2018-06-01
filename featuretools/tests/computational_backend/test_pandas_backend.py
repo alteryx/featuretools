@@ -358,7 +358,7 @@ def test_make_dfeat_of_agg_feat_on_self(entityset, backend):
     We're trying to calculate a DFeat from C to R on an agg_feat of R on C.
     """
     customer_count_feat = Count(entityset['customers']['id'],
-                                parent_entity=entityset['regions'])
+                                parent_entity=entityset[u'les r\u00e9gions'])
 
     num_customers_feat = DirectFeature(customer_count_feat,
                                        child_entity=entityset['customers'])
@@ -385,7 +385,7 @@ def test_make_dfeat_of_agg_feat_through_parent(entityset, backend):
     store_id_feat = IdentityFeature(entityset['stores']['id'])
 
     store_count_feat = Count(store_id_feat,
-                             parent_entity=entityset['regions'])
+                             parent_entity=entityset[u'les r\u00e9gions'])
 
     num_stores_feat = DirectFeature(store_count_feat,
                                     child_entity=entityset['customers'])
@@ -435,7 +435,7 @@ def test_deep_agg_feat_chain(entityset, backend):
                                 parent_entity=entityset['customers'])
 
     region_avg_feat = Mean(customer_count_feat,
-                           parent_entity=entityset['regions'])
+                           parent_entity=entityset[u'les r\u00e9gions'])
 
     pandas_backend = backend([region_avg_feat])
     df = pandas_backend.calculate_all_features(instance_ids=['United States'],
