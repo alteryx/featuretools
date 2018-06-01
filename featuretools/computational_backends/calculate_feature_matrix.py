@@ -682,12 +682,13 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
         # scatter the entityset
         # denote future with leading underscore
         start = time.time()
-        if entityset.id in client.list_datasets():
-            print("Using EntitySet persisted on the cluster as dataset %s" % (entityset.id))
-            _es = client.get_dataset(entityset.id)
+        es_token = "EntitySet-{}".format(tokenize(entityset))
+        if es_token in client.list_datasets():
+            print("Using EntitySet persisted on the cluster as dataset %s" % (es_token))
+            _es = client.get_dataset(es_token)
         else:
-            _es = client.scatter({entityset.id: entityset})[entityset.id]
-            client.publish_dataset(**{entityset.id: _es})
+            _es = client.scatter([entityset])[0]
+            client.publish_dataset(**{_es.key: _es})
 
         # save features to a tempfile and scatter it
         pickled_feats = cloudpickle.dumps(features)
