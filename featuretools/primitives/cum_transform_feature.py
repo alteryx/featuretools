@@ -78,7 +78,7 @@ class CumFeature(TransformPrimitive):
         base_features_str = u"%s by %s" % \
             (self.base_features[0].get_name(), self.group_feature.get_name())
 
-        return "%s(%s%s%s)" % (self.name.upper(), base_features_str,
+        return u"%s(%s%s%s)" % (self.name.upper(), base_features_str,
                                where_str, use_prev_str)
 
     def get_function(self):

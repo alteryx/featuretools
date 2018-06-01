@@ -204,8 +204,8 @@ class BaseEntitySet(object):
 
         parent_dtype = parent_e.df[parent_v].dtype
         child_dtype = child_e.df[child_v].dtype
-        msg = "Unable to add relationship because {} in {} is Pandas dtype {}"\
-            " and {} in {} is Pandas dtype {}."
+        msg = u"Unable to add relationship because {} in {} is Pandas dtype {}"\
+            u" and {} in {} is Pandas dtype {}."
         if not is_dtype_equal(parent_dtype, child_dtype):
             raise ValueError(msg.format(parent_v, parent_e.name, parent_dtype,
                                         child_v, child_e.name, child_dtype))
