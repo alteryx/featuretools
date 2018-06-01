@@ -146,10 +146,6 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     if _check_time_type(cutoff_time['time'].iloc[0]) is None:
         raise ValueError("cutoff_time time values must be datetime or numeric")
-    if cutoff_time['instance_id'].dtype == np.dtype('O') and target_entity.df[target_entity.index].dtype.name.find('int') > -1:
-        cutoff_time['instance_id'] = pd.to_numeric(cutoff_time['instance_id'])
-    elif cutoff_time['instance_id'].dtype.name.find('int') > -1 and target_entity.df[target_entity.index].dtype == np.dtype('O'):
-        cutoff_time['instance_id'] = cutoff_time['instance_id'].astype(object)
 
     backend = PandasBackend(entityset, features)
 
