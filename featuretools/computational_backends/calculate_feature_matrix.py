@@ -14,7 +14,6 @@ from functools import wraps
 import cloudpickle
 import numpy as np
 import pandas as pd
-from distributed import Client, LocalCluster, as_completed
 from pandas.tseries.frequencies import to_offset
 
 from .pandas_backend import PandasBackend
@@ -655,7 +654,9 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
                               verbose, save_progress, entityset, njobs,
                               no_unapproximated_aggs, cutoff_df_time_var,
                               target_time, pass_columns, dask_kwargs=None):
-    # TODO: support additional dask configuration
+    from distributed import Client, LocalCluster, as_completed
+    from dask.base import tokenize
+
     client = None
     cluster = None
     try:
