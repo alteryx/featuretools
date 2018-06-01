@@ -72,10 +72,6 @@ class Entity(BaseEntity):
     def __sizeof__(self):
         return self.df.__sizeof__()
 
-    def __dask_tokenize__(self):
-        return (Entity, tokenize(self.df), self.encoding, self.indexed_by, self._verbose,
-                self.created_index, self.last_time_index)
-
     @property
     def is_metadata(self):
         return self.entityset.is_metadata

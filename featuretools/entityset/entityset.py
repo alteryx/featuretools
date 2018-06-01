@@ -88,13 +88,7 @@ class EntitySet(BaseEntitySet):
         return sum([entity.__sizeof__() for entity in self.entities])
 
     def __dask_tokenize__(self):
-        out = (EntitySet,
-               tuple(tokenize(e) for e in sorted(self.entities,
-                                                 key=lambda x: repr(x))),
-               tuple(tokenize(r) for r in sorted(self.relationships,
-                                                 key=lambda x: repr(x))),
-               self.time_type)
-        return out
+        return (EntitySet, self.metadata)
 
     @property
     def metadata(self):
