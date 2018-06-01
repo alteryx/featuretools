@@ -140,12 +140,15 @@ class BaseEntitySet(object):
         repr_out += "\n  Relationships:"
 
         if len(self.relationships) == 0:
-            repr_out += "\n    No relationships"
+            repr_out += u"\n    No relationships"
 
         for r in self.relationships:
             repr_out += u"\n    %s.%s -> %s.%s" % \
                 (r._child_entity_id, r._child_variable_id,
                  r._parent_entity_id, r._parent_variable_id)
+
+        if type(repr_out) != str:
+            repr_out = repr_out.encode("utf-8")
 
         return repr_out
 
