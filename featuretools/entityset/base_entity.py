@@ -98,6 +98,7 @@ class BaseEntity(object):
         repr_out += u"\n  Shape:\n    (Rows: {}, Columns: {})".format(
             shape[0], shape[1])
 
+        # encode for python 2
         if type(repr_out) != str:
             repr_out = repr_out.encode("utf-8")
 

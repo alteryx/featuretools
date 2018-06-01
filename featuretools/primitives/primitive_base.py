@@ -117,8 +117,11 @@ class PrimitiveBase(object):
 
     def __repr__(self):
         ret = "<Feature: %s>" % (self.get_name())
+
+        # encode for python 2
         if type(ret) != str:
             ret = ret.encode("utf-8")
+
         return ret
 
     def hash(self):

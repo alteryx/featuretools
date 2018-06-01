@@ -59,8 +59,11 @@ class Variable(object):
 
     def __repr__(self):
         ret = u"<Variable: {} (dtype = {}, count = {})>".format(self.name, self.dtype, self.count)
+
+        # encode for python 2
         if type(ret) != str:
             ret = ret.encode("utf-8")
+
         return ret
 
     @classmethod
@@ -228,8 +231,11 @@ class Datetime(Variable):
 
     def __repr__(self):
         ret = u"<Variable: {} (dtype: {}, format: {})>".format(self.name, self.dtype, self.format)
+
+        # encode for python 2
         if type(ret) != str:
             ret = ret.encode("utf-8")
+
         return ret
 
 
