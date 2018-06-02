@@ -118,11 +118,11 @@ def test_makes_count(es):
     features = dfs.build_features()
     assert feature_with_name(features, 'device_type')
     assert feature_with_name(features, 'customer_id')
-    assert feature_with_name(features, 'customers.région_id')
+    assert feature_with_name(features, u'customers.région_id')
     assert feature_with_name(features, 'customers.age')
     assert feature_with_name(features, 'COUNT(log)')
     assert feature_with_name(features, 'customers.COUNT(sessions)')
-    assert feature_with_name(features, 'customers.régions.language')
+    assert feature_with_name(features, u'customers.régions.language')
     assert feature_with_name(features, 'customers.COUNT(log)')
 
 
