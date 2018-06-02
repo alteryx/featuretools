@@ -54,11 +54,10 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
                              variable_types=log_variable_types,
                              time_index='datetime',
                              encoding='utf-8')
-    with pytest.raises(ValueError) as e:
+
+    with pytest.raises(ValueError):
         mismatch = Relationship(es[u'régions']['id'], es['log2']['session_id'])
         es.add_relationship(mismatch)
-
-    e
 
 
 def test_get_forward_entities(es):

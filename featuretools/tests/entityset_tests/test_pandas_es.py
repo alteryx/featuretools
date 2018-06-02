@@ -726,14 +726,14 @@ class TestRelatedInstances(object):
 
     def test_add_link_vars(self, entityset):
         eframes = {e_id: entityset.get_dataframe(e_id)
-                   for e_id in ["log", "sessions", "customers", "régions"]}
+                   for e_id in ["log", "sessions", "customers", u"régions"]}
 
         entityset._add_multigenerational_link_vars(frames=eframes,
                                                    start_entity_id=u'régions',
                                                    end_entity_id='log')
 
         assert 'sessions.customer_id' in eframes['log'].columns
-        assert 'sessions.customers.région_id' in eframes['log'].columns
+        assert u'sessions.customers.région_id' in eframes['log'].columns
 
 
 class TestNormalizeEntity(object):
