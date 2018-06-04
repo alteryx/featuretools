@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import shutil
 
@@ -52,13 +54,10 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
                              variable_types=log_variable_types,
                              time_index='datetime',
                              encoding='utf-8')
-    with pytest.raises(ValueError) as e:
-        mismatch = Relationship(es['regions']['id'], es['log2']['session_id'])
-        es.add_relationship(mismatch)
 
-    assert e.value.__str__() == "Unable to add relationship because id in "\
-                                "regions is Pandas dtype object and "\
-                                "session_id in log2 is Pandas dtype int64."
+    with pytest.raises(ValueError):
+        mismatch = Relationship(es[u'régions']['id'], es['log2']['session_id'])
+        es.add_relationship(mismatch)
 
 
 def test_get_forward_entities(es):
@@ -73,7 +72,7 @@ def test_get_backward_entities(es):
 
 def test_get_forward_entities_deep(es):
     entities = es.get_forward_entities('log', 'deep')
-    assert entities == set(['sessions', 'customers', 'products', 'regions', 'cohorts'])
+    assert entities == set(['sessions', 'customers', 'products', u'régions', 'cohorts'])
 
 
 def test_get_backward_entities_deep(es):
@@ -148,8 +147,8 @@ def test_raise_key_error_missing_entity(es):
 
 def test_add_parent_not_index_varible(es):
     with pytest.raises(AttributeError):
-        es.add_relationship(Relationship(es['regions']['language'],
-                                         es['customers']['region_id']))
+        es.add_relationship(Relationship(es[u'régions']['language'],
+                                         es['customers'][u'région_id']))
 
 
 def test_serialization(es):

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import copy
 import os
 
@@ -200,7 +202,7 @@ def test_handles_cumsum_entity_groupby(es):
                                    trans_primitives=[CumMean])
 
     features = dfs_obj.build_features()
-    assert (feature_with_name(features, 'customers.CUM_MEAN(age by region_id)'))
+    assert (feature_with_name(features, u'customers.CUM_MEAN(age by région_id)'))
 
 
 def test_only_makes_supplied_trans_feat(es):
