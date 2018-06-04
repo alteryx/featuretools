@@ -9,39 +9,6 @@ from featuretools import variable_types
 from featuretools.entityset.timedelta import Timedelta
 
 
-def flatten_2d(array):
-    """
-    Converts numpy array to a 2-dimensional matrix.
-    If an array has any list-like elements, they will be expanded into their own columns
-
-    Example:
-    x = np.array([[np.array([1,2]), 2],
-                  [np.array([3,4]), 4]])
-    flattened = flatten_2d(x)
-    flattened
-    >>> np.array([[1, 2, 2],
-                  [3, 4, 4]])
-    """
-    nonscalars = {c: len(v)
-                  for c, v in enumerate(array[0, :])
-                  if not np.isscalar(v)}
-    new_width = array.shape[1] + sum([v - 1 for v in nonscalars.values()])
-    new_matrix = np.zeros((array.shape[0], new_width))
-    i = 0
-    c = 0
-    while i < new_width:
-        if c in nonscalars:
-            c_len = nonscalars[c]
-            values = np.concatenate(array[:, c]).reshape(array.shape[0], c_len)
-            new_matrix[:, i: i + c_len] = values
-            i += c_len
-        else:
-            new_matrix[:, i] = array[:, c]
-            i += 1
-        c += 1
-    return new_matrix
-
-
 def _check_timedelta(td, entity_id=None, related_entity_id=None):
     """
     Convert strings to Timedelta objects
@@ -186,35 +153,6 @@ def _check_time_against_column(time, time_column):
         return False
 
 
-def _check_time_against_time(time1, time2):
-    '''
-    Check to make sure that time1 is compatible with time2,
-    where time1 could be a timestamp, timedelta, number, or None,
-    and time2 could be a number or Timedelta. Compatibility means that
-    arithmetic can be performed between time1 and time2.
-
-    If time1 is None, then we don't care if arithmetic can be performed
-    (presumably it won't ever be performed)
-    '''
-    if time1 is None:
-        return True
-    elif isinstance(time1, (int, float)):
-        return isinstance(time2, (int, float))
-    elif isinstance(time1, Timedelta):
-        if isinstance(time2, (pd.Timestamp, datetime)):
-            return True
-        elif time1.unit == Timedelta._Observations:
-            return True
-        elif time1.unit == Timedelta._generic_unit:
-            return True
-        else:
-            return False
-    elif isinstance(time1, (pd.Timestamp, datetime)):
-        return isinstance(time2, (pd.Timedelta))
-    else:
-        return False
-
-
 def _check_time_type(time):
     '''
     Checks if `time` is an instance of common int, float, or datetime types.
@@ -227,3 +165,30 @@ def _check_time_type(time):
     elif isinstance(time, (datetime, np.datetime64)):
         time_type = variable_types.DatetimeTimeIndex
     return time_type
+
+
+def _dataframes_equal(df1, df2):
+    if df1.empty and not df2.empty:
+        return False
+    elif not df1.empty and df2.empty:
+        return False
+    elif not df1.empty and not df2.empty:
+        for c in df1:
+            normal_compare = True
+            if df1[c].dtype == object:
+                dropped = df1[c].dropna()
+                if not dropped.empty:
+                    if isinstance(dropped.iloc[0], tuple):
+                        dropped2 = df2[c].dropna()
+                        normal_compare = False
+                        for i in range(len(dropped.iloc[0])):
+                            try:
+                                equal = dropped.apply(lambda x: x[i]).equals(
+                                    dropped2.apply(lambda x: x[i]))
+                            except IndexError:
+                                raise IndexError("If column data are tuples, they must all be the same length")
+                            if not equal:
+                                return False
+            if normal_compare and not df1[c].equals(df2[c]):
+                return False
+    return True

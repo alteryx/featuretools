@@ -23,13 +23,13 @@ from featuretools.primitives import (
 )
 from featuretools.utils.gen_utils import make_tqdm_iterator
 from featuretools.utils.wrangle import _check_time_type, _check_timedelta
-from featuretools.variable_types import NumericTimeIndex
+from featuretools.variable_types import DatetimeTimeIndex, NumericTimeIndex
 
 logger = logging.getLogger('featuretools.computational_backend')
 
 
-def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
-                             entities=None, relationships=None, entityset=None,
+def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instance_ids=None,
+                             entities=None, relationships=None,
                              cutoff_time_in_index=False,
                              training_window=None, approximate=None,
                              save_progress=None, verbose=False,
@@ -39,6 +39,9 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
 
     Args:
         features (list[PrimitiveBase]): Feature definitions to be calculated.
+
+        entityset (EntitySet): An already initialized entityset. Required if `entities` and `relationships`
+            not provided
 
         cutoff_time (pd.DataFrame or Datetime): Specifies at which time to calculate
             the features for each instance.  Can either be a DataFrame with
@@ -57,9 +60,6 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
         relationships (list[(str, str, str, str)]): list of relationships
             between entities. List items are a tuple with the format
             (parent entity id, parent variable, child entity id, child variable).
-
-        entityset (EntitySet): An already initialized entityset. Required if
-            entities and relationships are not defined.
 
         cutoff_time_in_index (bool): If True, return a DataFrame with a MultiIndex
             where the second index is the cutoff time (first is instance id).
@@ -100,12 +100,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
         if entities is not None and relationships is not None:
             entityset = EntitySet("entityset", entities, relationships)
 
-    if entityset is not None:
-        for f in features:
-            f.entityset = entityset
-
-    entityset = features[0].entityset
-    target_entity = features[0].entity
+    target_entity = entityset[features[0].entity.id]
     pass_columns = []
 
     if not isinstance(cutoff_time, pd.DataFrame):
@@ -123,9 +118,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
             cutoff_time = [cutoff_time] * len(instance_ids)
 
         map_args = [(id, time) for id, time in zip(instance_ids, cutoff_time)]
-        df_args = pd.DataFrame(map_args, columns=['instance_id', 'time'])
-        to_calc = df_args.values
-        cutoff_time = pd.DataFrame(to_calc, columns=['instance_id', 'time'])
+        cutoff_time = pd.DataFrame(map_args, columns=['instance_id', 'time'])
     else:
         cutoff_time = cutoff_time.copy()
 
@@ -141,6 +134,14 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
             # take the first column that isn't instance_id and assume it is time
             not_instance_id = [c for c in cutoff_time.columns if c != "instance_id"]
             cutoff_time.rename(columns={not_instance_id[0]: "time"}, inplace=True)
+        if cutoff_time['time'].dtype == object:
+            if (entityset.time_type == NumericTimeIndex and
+                    cutoff_time['time'].dtype.name.find('int') == -1 and
+                    cutoff_time['time'].dtype.name.find('float') == -1):
+                raise TypeError("cutoff_time times must be numeric: try casting via pd.to_numeric(cutoff_time['time'])")
+            elif (entityset.time_type == DatetimeTimeIndex and
+                  cutoff_time['time'].dtype.name.find('time') == -1):
+                raise TypeError("cutoff_time times must be datetime type: try casting via pd.to_datetime(cutoff_time['time'])")
         pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
 
     if _check_time_type(cutoff_time['time'].iloc[0]) is None:
@@ -231,6 +232,7 @@ def calculate_feature_matrix(features, cutoff_time=None, instance_ids=None,
     if verbose:
         iterator.close()
     feature_matrix = pd.concat(feature_matrix)
+
     feature_matrix.sort_index(level='time', kind='mergesort', inplace=True)
     if not cutoff_time_in_index:
         feature_matrix.reset_index(level='time', drop=True, inplace=True)
@@ -432,8 +434,10 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
             rvar = entityset.gen_relationship_var(target_entity.id, approx_entity_id)
             parent_instance_frame = frames[approx_entity_id][target_entity.id]
             cutoffs_with_approx_e_ids[rvar] = \
-                cutoffs_with_approx_e_ids.merge(parent_instance_frame[[target_index_var, rvar]],
-                                                on=target_index_var, how='left')[rvar].values
+                cutoffs_with_approx_e_ids.merge(parent_instance_frame[[rvar]],
+                                                left_on=target_index_var,
+                                                right_index=True,
+                                                how='left')[rvar].values
             new_approx_entity_index_var = rvar
 
             # Select only columns we care about
@@ -462,6 +466,7 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
 
         cutoff_time_to_pass.drop_duplicates(inplace=True)
         approx_fm = calculate_feature_matrix(approx_features,
+                                             entityset,
                                              cutoff_time=cutoff_time_to_pass,
                                              training_window=training_window,
                                              approximate=None,

@@ -2,14 +2,10 @@ from __future__ import absolute_import
 
 import copy
 import logging
-import pdb
 from builtins import zip
 
 from numpy import nan
-from past.builtins import basestring
 
-import featuretools as ft
-from featuretools.core.base import FTBase
 from featuretools.entityset import Entity, EntitySet
 from featuretools.utils.wrangle import (
     _check_time_against_column,
@@ -20,7 +16,7 @@ from featuretools.variable_types import Variable
 logger = logging.getLogger('featuretools')
 
 
-class PrimitiveBase(FTBase):
+class PrimitiveBase(object):
     """Base class for all features."""
     #: (str): Name of backend function used to compute this feature
     name = None
@@ -68,7 +64,7 @@ class PrimitiveBase(FTBase):
                 self.__class__, base_features))
 
         self.entity_id = entity.id
-        self.entityset = entity.entityset
+        self.entityset = entity.entityset.metadata
 
         # P TODO: where should this logic go?
         # not all primitives support use previous so doesn't make sense to have
@@ -89,29 +85,6 @@ class PrimitiveBase(FTBase):
         assert self._check_input_types(), ("Provided inputs don't match input "
                                            "type requirements")
         super(PrimitiveBase, self).__init__(**kwargs)
-
-    def __getstate__(self):
-        if hasattr(ft, '_pickling') and ft._pickling:
-            from featuretools.entityset import EntitySet, Entity
-            pickled = {}
-            for k, v in self.__dict__.items():
-                if isinstance(v, Entity):
-                    pickled[k] = "entity:{}".format(v.id)
-                elif isinstance(v, EntitySet):
-                    pickled[k] = "entityset"
-                else:
-                    pickled[k] = v
-            return pickled
-        return self.__dict__
-
-    def __setstate__(self, d):
-        self.__dict__ = d
-        if hasattr(ft, '_pickling') and ft._pickling:
-            for k, v in d.items():
-                if isinstance(v, basestring) and v.startswith('entity:'):
-                    self.__dict__[k] = ft._current_es[v.replace('entity:', '')]
-                elif isinstance(v, basestring) and v == 'entityset':
-                    self.__dict__[k] = ft._current_es
 
     @property
     def entity(self):
@@ -135,52 +108,21 @@ class PrimitiveBase(FTBase):
         """Hashes of the base features"""
         return [f.hash() for f in self.base_features]
 
-    def normalize(self, normalizer, normalized_base_features={}):
-        normed = normalizer(self.entityset)
-        d = copy.copy(self.__dict__)
-        d['entityset'] = self.entityset.id
-        base_features = d.pop('base_features')
-        new_base_features = []
-        for f in base_features:
-            if f.hash() not in normalized_base_features:
-                normalized_base_features[f.hash()] = f.normalize(
-                    normalizer, normalized_base_features)
-            f = normalized_base_features[f.hash()]
-            new_base_features.append(f)
-        d = {k: normalizer(v) for k, v in d.items()}
-        d['base_features'] = new_base_features
-        d['entityset'] = normed
-        return d
-
-    def head(self, n=10, cutoff_time=None):
-        """See values for feature
-
-        Args:
-            n (int) : number of instances to return
-
-        Returns:
-            :class:`pd.DataFrame` : Pandas DataFrame
-        """
-        from featuretools import calculate_feature_matrix
-        cfm = calculate_feature_matrix([self], cutoff_time=cutoff_time).head(n)
-        return cfm
-
-    def sample(self, n=10, cutoff_time=None):
-        from featuretools import calculate_feature_matrix
-        cfm = calculate_feature_matrix([self], cutoff_time=cutoff_time)
-        return cfm.sample(n)
-
     def _check_feature(self, feature):
         if isinstance(feature, Variable):
             return IdentityFeature(feature)
         elif isinstance(feature, PrimitiveBase):
             return feature
-        if feature is None:
-            pdb.set_trace()
         raise Exception("Not a feature")
 
     def __repr__(self):
-        return "<Feature: %s>" % (self.get_name())
+        ret = "<Feature: %s>" % (self.get_name())
+
+        # encode for python 2
+        if type(ret) != str:
+            ret = ret.encode("utf-8")
+
+        return ret
 
     def hash(self):
         return hash(self.get_name() + self.entity.id)
@@ -486,7 +428,8 @@ class IdentityFeature(PrimitiveBase):
     def __init__(self, variable):
         # TODO: perhaps we can change the attributes of this class to
         # just entityset reference to original variable object
-        self.variable = variable
+        entity_id = variable.entity_id
+        self.variable = variable.entityset.metadata[entity_id][variable.id]
         self.return_type = type(variable)
         self.base_feature = None
         super(IdentityFeature, self).__init__(variable.entity, [])

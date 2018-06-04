@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from datetime import datetime
 
 import pytest
@@ -185,32 +187,32 @@ def test_make_agg_feat_where_different_identity_feat(entityset, backend):
         name = feat.get_name()
         instances = df[name]
         v0, v1, v2, v3 = instances[0:4]
-        if where_cmp == '<':
+        if where_cmp == LessThan:
             assert (v0 == 5)
             assert (v1 == 4)
             assert (v2 == 1)
             assert (v3 == 1)
-        elif where_cmp == '>':
+        elif where_cmp == GreaterThan:
             assert (v0 == 0)
             assert (v1 == 0)
             assert (v2 == 0)
             assert (v3 == 0)
-        elif where_cmp == '<=':
+        elif where_cmp == LessThanEqualTo:
             assert (v0 == 5)
             assert (v1 == 4)
             assert (v2 == 1)
             assert (v3 == 2)
-        elif where_cmp == '>=':
+        elif where_cmp == GreaterThanEqualTo:
             assert (v0 == 0)
             assert (v1 == 0)
             assert (v2 == 0)
             assert (v3 == 1)
-        elif where_cmp == '=':
+        elif where_cmp == Equals:
             assert (v0 == 0)
             assert (v1 == 0)
             assert (v2 == 0)
             assert (v3 == 1)
-        elif where_cmp == '!=':
+        elif where_cmp == NotEquals:
             assert (v0 == 5)
             assert (v1 == 4)
             assert (v2 == 1)
@@ -358,7 +360,7 @@ def test_make_dfeat_of_agg_feat_on_self(entityset, backend):
     We're trying to calculate a DFeat from C to R on an agg_feat of R on C.
     """
     customer_count_feat = Count(entityset['customers']['id'],
-                                parent_entity=entityset['regions'])
+                                parent_entity=entityset[u'régions'])
 
     num_customers_feat = DirectFeature(customer_count_feat,
                                        child_entity=entityset['customers'])
@@ -385,7 +387,7 @@ def test_make_dfeat_of_agg_feat_through_parent(entityset, backend):
     store_id_feat = IdentityFeature(entityset['stores']['id'])
 
     store_count_feat = Count(store_id_feat,
-                             parent_entity=entityset['regions'])
+                             parent_entity=entityset[u'régions'])
 
     num_stores_feat = DirectFeature(store_count_feat,
                                     child_entity=entityset['customers'])
@@ -435,7 +437,7 @@ def test_deep_agg_feat_chain(entityset, backend):
                                 parent_entity=entityset['customers'])
 
     region_avg_feat = Mean(customer_count_feat,
-                           parent_entity=entityset['regions'])
+                           parent_entity=entityset[u'régions'])
 
     pandas_backend = backend([region_avg_feat])
     df = pandas_backend.calculate_all_features(instance_ids=['United States'],

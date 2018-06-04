@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import copy
 import os
 
@@ -200,7 +202,7 @@ def test_handles_cumsum_entity_groupby(es):
                                    trans_primitives=[CumMean])
 
     features = dfs_obj.build_features()
-    assert (feature_with_name(features, 'customers.CUM_MEAN(age by region_id)'))
+    assert (feature_with_name(features, u'customers.CUM_MEAN(age by région_id)'))
 
 
 def test_only_makes_supplied_trans_feat(es):
@@ -613,16 +615,16 @@ def test_pickle_features(es):
     es_filepath = os.path.join(dir_path, 'test_entityset')
 
     # pickle entityset
-    save_obj_pickle(features_no_pickle[0].entityset, es_filepath)
+    save_obj_pickle(es, es_filepath)
 
     ft.save_features(features_no_pickle, filepath)
-    features_pickle = ft.load_features(filepath, es)
+    features_pickle = ft.load_features(filepath)
     for feat_1, feat_2 in zip(features_no_pickle, features_pickle):
         assert feat_1.hash() == feat_2.hash()
         assert feat_1.entityset == feat_2.entityset
 
     # file is smaller than entityset in memory
-    assert os.path.getsize(filepath) < getsize(feat_1.entityset)
+    assert os.path.getsize(filepath) < getsize(es)
 
     # file is smaller than entityset pickled
     assert os.path.getsize(filepath) < os.path.getsize(es_filepath)
@@ -651,16 +653,16 @@ def test_pickle_features_with_custom_primitive(es):
     es_filepath = os.path.join(dir_path, 'test_entityset')
 
     # pickle entityset
-    save_obj_pickle(features_no_pickle[0].entityset, es_filepath)
+    save_obj_pickle(es, es_filepath)
 
     ft.save_features(features_no_pickle, filepath)
-    features_pickle = ft.load_features(filepath, es)
+    features_pickle = ft.load_features(filepath)
     for feat_1, feat_2 in zip(features_no_pickle, features_pickle):
         assert feat_1.hash() == feat_2.hash()
         assert feat_1.entityset == feat_2.entityset
 
     # file is smaller than entityset in memory
-    assert os.path.getsize(filepath) < getsize(feat_1.entityset)
+    assert os.path.getsize(filepath) < getsize(es)
 
     # file is smaller than entityset pickled
     assert os.path.getsize(filepath) < os.path.getsize(es_filepath)

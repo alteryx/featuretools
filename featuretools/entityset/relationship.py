@@ -1,7 +1,4 @@
-from featuretools.core.base import FTBase
-
-
-class Relationship(FTBase):
+class Relationship(object):
     """Class to represent an relationship between entities
 
     See Also:
@@ -18,6 +15,7 @@ class Relationship(FTBase):
                 child entity.  Must be a Discrete Variable
 
         """
+
         self.entityset = child_variable.entityset
         self._parent_entity_id = parent_variable.entity.id
         self._child_entity_id = child_variable.entity.id
@@ -29,9 +27,15 @@ class Relationship(FTBase):
             raise AttributeError("Parent variable '%s' is not the index of entity %s" % (parent_variable, parent_variable.entity))
 
     def __repr__(self):
-        return "<Relationship: %s.%s -> %s.%s>" % \
+        ret = u"<Relationship: %s.%s -> %s.%s>" % \
             (self._child_entity_id, self._child_variable_id,
              self._parent_entity_id, self._parent_variable_id)
+
+        # encode for python 2
+        if type(ret) != str:
+            ret = ret.encode("utf-8")
+
+        return ret
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):

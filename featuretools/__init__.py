@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 # flake8: noqa
 from . import config
-from .core import *
 from . import variable_types
 from .entityset.api import *
 from . import primitives
@@ -13,4 +12,4 @@ from .utils.pickle_utils import *
 from .utils.time_utils import *
 import featuretools.demo
 
-__version__ = '0.1.20.d3m.2018.4.18'
+__version__ = '0.1.21.d3m.2018.4.18'

@@ -171,6 +171,7 @@ def dfs(entities=None,
 
     if isinstance(cutoff_time, pd.DataFrame):
         feature_matrix = calculate_feature_matrix(features,
+                                                  entityset=entityset,
                                                   cutoff_time=cutoff_time,
                                                   training_window=training_window,
                                                   approximate=approximate,
@@ -180,6 +181,7 @@ def dfs(entities=None,
                                                   verbose=verbose)
     else:
         feature_matrix = calculate_feature_matrix(features,
+                                                  entityset=entityset,
                                                   cutoff_time=cutoff_time,
                                                   instance_ids=instance_ids,
                                                   training_window=training_window,

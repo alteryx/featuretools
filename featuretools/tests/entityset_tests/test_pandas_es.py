@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import copy
 from builtins import range
 from datetime import datetime
@@ -446,7 +448,7 @@ class TestVariableHandling(object):
                 es.index_data(r)
 
         # make sure internal indexes work before concat
-        regions = entityset_1['customers'].query_by_values(['United States'], variable_id='region_id')
+        regions = entityset_1['customers'].query_by_values(['United States'], variable_id=u'région_id')
         assert regions.index.isin(entityset_1['customers'].df.index).all()
 
         assert entityset_1.__eq__(entityset_2)
@@ -588,7 +590,7 @@ class TestVariableHandling(object):
 class TestRelatedInstances(object):
     def test_related_instances_backward(self, entityset):
         result = entityset._related_instances(
-            start_entity_id='regions', final_entity_id='log',
+            start_entity_id=u'régions', final_entity_id='log',
             instance_ids=['United States'])
 
         col = entityset.get_column_data('log', 'id').values
@@ -596,14 +598,14 @@ class TestRelatedInstances(object):
         assert set(result['id'].values) == set(col)
 
         result = entityset._related_instances(
-            start_entity_id='regions', final_entity_id='log',
+            start_entity_id=u'régions', final_entity_id='log',
             instance_ids=['Mexico'])
 
         assert len(result['id'].values) == 0
 
     def test_related_instances_forward(self, entityset):
         result = entityset._related_instances(
-            start_entity_id='log', final_entity_id='regions',
+            start_entity_id='log', final_entity_id=u'régions',
             instance_ids=[0, 1])
 
         assert len(result['id'].values) == 1
@@ -646,7 +648,7 @@ class TestRelatedInstances(object):
             assert val == 1
 
     def test_get_pandas_slice(self, entityset):
-        filter_eids = ['products', 'regions', 'customers']
+        filter_eids = ['products', u'régions', 'customers']
         result = entityset.get_pandas_data_slice(filter_entity_ids=filter_eids,
                                                  index_eid='customers',
                                                  instances=[0])
@@ -656,19 +658,19 @@ class TestRelatedInstances(object):
         assert set(result['products'].keys()), set(['products', 'log'])
         assert set(result['customers'].keys()) == set(
             ['customers', 'sessions', 'log'])
-        assert set(result['regions'].keys()) == set(
-            ['regions', 'stores', 'customers', 'sessions', 'log'])
+        assert set(result[u'régions'].keys()) == set(
+            [u'régions', 'stores', 'customers', 'sessions', 'log'])
 
         # make sure different subsets of the log are included in each filtering
         assert set(result['customers']['log']['id'].values) == set(range(10))
         assert set(result['products']['log']['id'].values) == set(
             list(range(10)) + list(range(11, 15)))
-        assert set(result['regions']['log']['id'].values) == set(range(17))
+        assert set(result[u'régions']['log']['id'].values) == set(range(17))
 
     def test_get_pandas_slice_times(self, entityset):
         # todo these test used to use time first time last. i remvoed and it
         # still passes,but we should double check this okay
-        filter_eids = ['products', 'regions', 'customers']
+        filter_eids = ['products', u'régions', 'customers']
         start = np.datetime64(datetime(2011, 4, 1))
         end = np.datetime64(datetime(2011, 4, 9, 10, 31, 10))
         result = entityset.get_pandas_data_slice(filter_entity_ids=filter_eids,
@@ -688,7 +690,7 @@ class TestRelatedInstances(object):
     def test_get_pandas_slice_times_include(self, entityset):
         # todo these test used to use time first time last. i remvoed and it
         # still passes,but we should double check this okay
-        filter_eids = ['products', 'regions', 'customers']
+        filter_eids = ['products', u'régions', 'customers']
         start = np.datetime64(datetime(2011, 4, 1))
         end = np.datetime64(datetime(2011, 4, 9, 10, 31, 10))
         result = entityset.get_pandas_data_slice(filter_entity_ids=filter_eids,
@@ -706,7 +708,7 @@ class TestRelatedInstances(object):
                 assert i in result[eid]['log']['id'].values
 
     def test_get_pandas_slice_secondary_index(self, entityset):
-        filter_eids = ['products', 'regions', 'customers']
+        filter_eids = ['products', u'régions', 'customers']
         # this date is before the cancel date of customers 1 and 2
         end = np.datetime64(datetime(2011, 10, 1))
         all_instances = [0, 1, 2]
@@ -724,14 +726,14 @@ class TestRelatedInstances(object):
 
     def test_add_link_vars(self, entityset):
         eframes = {e_id: entityset.get_dataframe(e_id)
-                   for e_id in ["log", "sessions", "customers", "regions"]}
+                   for e_id in ["log", "sessions", "customers", u"régions"]}
 
         entityset._add_multigenerational_link_vars(frames=eframes,
-                                                   start_entity_id='regions',
+                                                   start_entity_id=u'régions',
                                                    end_entity_id='log')
 
         assert 'sessions.customer_id' in eframes['log'].columns
-        assert 'sessions.customers.region_id' in eframes['log'].columns
+        assert u'sessions.customers.région_id' in eframes['log'].columns
 
 
 class TestNormalizeEntity(object):
@@ -814,31 +816,3 @@ class TestNormalizeEntity(object):
         assert (es['values']['second_ti']._dtype_repr == 'datetime')
         assert (es['values'].secondary_time_index == {
                 'second_ti': ['comments', 'second_ti']})
-
-
-def test_head_of_entity(entityset):
-
-    entity = entityset['log']
-    assert(isinstance(entityset.head('log', 3), pd.DataFrame))
-    assert(isinstance(entity.head(3), pd.DataFrame))
-    assert(isinstance(entity['product_id'].head(3), pd.DataFrame))
-
-    num_columns = 12
-    assert(entity.head(n=5).shape == (5, num_columns))
-
-    timestamp1 = pd.to_datetime("2011-04-09 10:30:10")
-    timestamp2 = pd.to_datetime("2011-04-09 10:30:18")
-    datetime1 = datetime(2011, 4, 9, 10, 30, 18)
-
-    assert(entity.head(5, cutoff_time=timestamp1).shape == (2, num_columns))
-    assert(entity.head(5, cutoff_time=timestamp2).shape == (3, num_columns))
-    assert(entity.head(5, cutoff_time=datetime1).shape == (3, num_columns))
-
-    time_list = [timestamp2] * 3 + [timestamp1] * 2
-    cutoff_times = pd.DataFrame(list(zip(range(5), time_list)))
-
-    assert(entityset.head('log', 5, cutoff_time=cutoff_times).shape ==
-           (3, num_columns))
-    assert(entity.head(5, cutoff_time=cutoff_times).shape == (3, num_columns))
-    assert(entity['product_id'].head(
-        5, cutoff_time=cutoff_times).shape == (3, 1))

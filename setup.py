@@ -15,7 +15,7 @@ class build_ext(_build_ext):
 
 setup(
     name='featuretools',
-    version='0.1.20.d3m.2018.4.18',
+    version='0.1.21.d3m.2018.4.18',
     packages=find_packages(),
     package_data={'featuretools': ['config.yaml']},
     description='a framework for automated feature engineering',

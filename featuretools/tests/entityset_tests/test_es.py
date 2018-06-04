@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import shutil
 
@@ -23,12 +25,39 @@ def test_cannot_readd_relationships_that_already_exists(es):
 
 def test_add_relationships_convert_type(es):
     for r in es.relationships:
-        try:
-            assert type(r.parent_variable) == variable_types.Index
-            assert type(r.child_variable) == variable_types.Id
-        except Exception:
-            assert type(r.parent_variable) == variable_types.Index
-            assert type(r.child_variable) == variable_types.Id
+        parent_e = es[r.parent_entity.id]
+        child_e = es[r.child_entity.id]
+        assert type(r.parent_variable) == variable_types.Index
+        assert type(r.child_variable) == variable_types.Id
+        assert parent_e.df[r.parent_variable.id].dtype == child_e.df[r.child_variable.id].dtype
+
+
+def test_add_relationship_errors_on_dtype_mismatch(es):
+    log_2_df = es['log'].df.copy()
+    log_variable_types = {
+        'id': variable_types.Categorical,
+        'session_id': variable_types.Id,
+        'product_id': variable_types.Id,
+        'datetime': variable_types.Datetime,
+        'value': variable_types.Numeric,
+        'value_2': variable_types.Numeric,
+        'latlong': variable_types.LatLong,
+        'latlong2': variable_types.LatLong,
+        'value_many_nans': variable_types.Numeric,
+        'priority_level': variable_types.Ordinal,
+        'purchased': variable_types.Boolean,
+        'comments': variable_types.Text
+    }
+    es.entity_from_dataframe(entity_id='log2',
+                             dataframe=log_2_df,
+                             index='id',
+                             variable_types=log_variable_types,
+                             time_index='datetime',
+                             encoding='utf-8')
+
+    with pytest.raises(ValueError):
+        mismatch = Relationship(es[u'régions']['id'], es['log2']['session_id'])
+        es.add_relationship(mismatch)
 
 
 def test_get_forward_entities(es):
@@ -43,7 +72,7 @@ def test_get_backward_entities(es):
 
 def test_get_forward_entities_deep(es):
     entities = es.get_forward_entities('log', 'deep')
-    assert entities == set(['sessions', 'customers', 'products', 'regions', 'cohorts'])
+    assert entities == set(['sessions', 'customers', 'products', u'régions', 'cohorts'])
 
 
 def test_get_backward_entities_deep(es):
@@ -118,8 +147,8 @@ def test_raise_key_error_missing_entity(es):
 
 def test_add_parent_not_index_varible(es):
     with pytest.raises(AttributeError):
-        es.add_relationship(Relationship(es['regions']['language'],
-                                         es['customers']['region_id']))
+        es.add_relationship(Relationship(es[u'régions']['language'],
+                                         es['customers'][u'région_id']))
 
 
 def test_serialization(es):
