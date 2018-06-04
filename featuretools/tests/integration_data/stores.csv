@@ -1,7 +1,7 @@
-id,num_square_feet,région_id
-0,30000.0,United States
-1,36000.0,United States
-2,42000.0,United States
-3,48000.0,Mexico
-4,54000.0,Mexico
+id,région_id,num_square_feet
+0,United States,30000.0
+1,United States,36000.0
+2,United States,42000.0
+3,Mexico,48000.0
+4,Mexico,54000.0
 5,,

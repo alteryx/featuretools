@@ -1,111 +1,0 @@
-Sending build context to Docker daemon  12.29kB
-Step 1/6 : FROM continuumio/miniconda3
- ---> bfb745918f77
-Step 2/6 : RUN apt-get update
- ---> Running in bf0786094ff2
-Get:1 http://security.debian.org stretch/updates InRelease [94.3 kB]
-Ign:2 http://deb.debian.org/debian stretch InRelease
-Get:3 http://deb.debian.org/debian stretch-updates InRelease [91.0 kB]
-Get:4 http://deb.debian.org/debian stretch Release [118 kB]
-Get:5 http://security.debian.org stretch/updates/main amd64 Packages [441 kB]
-Get:6 http://deb.debian.org/debian stretch Release.gpg [2434 B]
-Get:7 http://deb.debian.org/debian stretch-updates/main amd64 Packages [12.1 kB]
-Get:8 http://deb.debian.org/debian stretch/main amd64 Packages [9530 kB]
-Fetched 10.3 MB in 2s (5111 kB/s)
-Reading package lists...
-Removing intermediate container bf0786094ff2
- ---> 4294df2f653d
-Step 3/6 : RUN yes | conda install anaconda-client conda-build
- ---> Running in 9b9d1f21e5f2
-Solving environment: ...working... done
-
-## Package Plan ##
-
-  environment location: /opt/conda
-
-  added / updated specs: 
-    - anaconda-client
-    - conda-build
-
-
-The following packages will be downloaded:
-
-    package                    |            build
-    ---------------------------|-----------------
-    nbformat-4.4.0             |   py36h31c9010_0         137 KB
-    pytz-2018.4                |           py36_0         212 KB
-    filelock-3.0.4             |           py36_0          12 KB
-    psutil-5.4.5               |   py36h14c3975_0         303 KB
-    conda-build-3.10.6         |           py36_0         432 KB
-    traitlets-4.3.2            |   py36h674d592_0         131 KB
-    ca-certificates-2018.03.07 |                0         124 KB
-    clyent-1.2.2               |   py36h7e57e65_1          18 KB
-    python-dateutil-2.7.3      |           py36_0         260 KB
-    patchelf-0.9               |       hf79760b_2          69 KB
-    ipython_genutils-0.2.0     |   py36hb52b0d5_0          39 KB
-    glob2-0.6                  |   py36he249c77_0          17 KB
-    jinja2-2.10                |   py36ha16c418_0         184 KB
-    certifi-2018.4.16          |           py36_0         142 KB
-    anaconda-client-1.6.14     |           py36_0         134 KB
-    jsonschema-2.6.0           |   py36h006f8b5_0          62 KB
-    conda-4.5.4                |           py36_0         1.0 MB
-    markupsafe-1.0             |   py36hd9260cd_1          24 KB
-    decorator-4.3.0            |           py36_0          15 KB
-    openssl-1.0.2o             |       h20670df_0         3.4 MB
-    pkginfo-1.4.2              |           py36_1          39 KB
-    pyyaml-3.12                |   py36hafb9ca4_1         159 KB
-    jupyter_core-4.4.0         |   py36h7c827e3_0          61 KB
-    beautifulsoup4-4.6.0       |   py36h49b8c8c_1         133 KB
-    conda-verify-2.0.0         |   py36h98955d8_0          20 KB
-    ------------------------------------------------------------
-                                           Total:         7.1 MB
-
-The following NEW packages will be INSTALLED:
-
-    anaconda-client:  1.6.14-py36_0        
-    beautifulsoup4:   4.6.0-py36h49b8c8c_1 
-    clyent:           1.2.2-py36h7e57e65_1 
-    conda-build:      3.10.6-py36_0        
-    conda-verify:     2.0.0-py36h98955d8_0 
-    decorator:        4.3.0-py36_0         
-    filelock:         3.0.4-py36_0         
-    glob2:            0.6-py36he249c77_0   
-    ipython_genutils: 0.2.0-py36hb52b0d5_0 
-    jinja2:           2.10-py36ha16c418_0  
-    jsonschema:       2.6.0-py36h006f8b5_0 
-    jupyter_core:     4.4.0-py36h7c827e3_0 
-    markupsafe:       1.0-py36hd9260cd_1   
-    nbformat:         4.4.0-py36h31c9010_0 
-    patchelf:         0.9-hf79760b_2       
-    pkginfo:          1.4.2-py36_1         
-    psutil:           5.4.5-py36h14c3975_0 
-    python-dateutil:  2.7.3-py36_0         
-    pytz:             2018.4-py36_0        
-    pyyaml:           3.12-py36hafb9ca4_1  
-    traitlets:        4.3.2-py36h674d592_0 
-
-The following packages will be UPDATED:
-
-    ca-certificates:  2017.08.26-h1d4fec5_0 --> 2018.03.07-0     
-    certifi:          2018.1.18-py36_0      --> 2018.4.16-py36_0 
-    conda:            4.4.10-py36_0         --> 4.5.4-py36_0     
-    openssl:          1.0.2n-hb7f436b_0     --> 1.0.2o-h20670df_0
-
-Proceed ([y]/n)? 
-[91mnbformat 4.4.0:            |   0% [0m[91mnbformat 4.4.0: #######6   |  77% [0m[91mnbformat 4.4.0: ########## | 100% [0m[91m
-pytz 2018.4:            |   0% [0m[91mpytz 2018.4: #######5   |  75% [0m[91mpytz 2018.4: #########7 |  98% [0m[91mpytz 2018.4: ########## | 100% [0m[91m
-filelock 3.0.4:            |   0% [0m[91mfilelock 3.0.4: ########## | 100% [0m[91m
-psutil 5.4.5:            |   0% [0m[91mpsutil 5.4.5: #######5   |  75% [0m[91mpsutil 5.4.5: ########## | 100% [0m[91m
-conda-build 3.10.6:            |   0% [0m[91mconda-build 3.10.6: #######5   |  75% [0m[91mconda-build 3.10.6: ########## | 100% [0m[91m
-traitlets 4.3.2:            |   0% [0m[91mtraitlets 4.3.2: #########4 |  95% [0m[91mtraitlets 4.3.2: ########## | 100% [0m[91m
-ca-certificates 2018.03.07:            |   0% [0m[91mca-certificates 2018.03.07: ########## | 100% [0m[91m
-clyent 1.2.2:            |   0% [0m[91mclyent 1.2.2: ########## | 100% [0m[91m
-python-dateutil 2.7.3:            |   0% [0m[91mpython-dateutil 2.7.3: #######5   |  75% [0m[91mpython-dateutil 2.7.3: ########## | 100% [0m[91m
-patchelf 0.9:            |   0% [0m[91mpatchelf 0.9: ########## | 100% [0m[91m
-ipython_genutils 0.2.0:            |   0% [0m[91mipython_genutils 0.2.0: ########## | 100% [0m[91m
-glob2 0.6:            |   0% [0m[91mglob2 0.6: ########## | 100% [0m[91m
-jinja2 2.10:            |   0% [0m[91mjinja2 2.10: #########4 |  94% [0m[91mjinja2 2.10: ########## | 100% [0m[91m
-certifi 2018.4.16:            |   0% [0m[91mcertifi 2018.4.16: ########## | 100% [0m[91m
-anaconda-client 1.6.14:            |   0% [0m[91manaconda-client 1.6.14: #########3 |  94% [0m[91manaconda-client 1.6.14: ########## | 100% [0m[91m
-jsonschema 2.6.0:            |   0% [0m[91mjsonschema 2.6.0: ########## | 100% [0m[91m
-conda 4.5.4:            |   0% [0m
