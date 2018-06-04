@@ -1,5 +1,5 @@
-comments,datetime,id,latlong,latlong2,priority_level,product_id,purchased,session_id,value,value_2,value_many_nans
-"
+id,session_id,product_id,datetime,value,value_2,latlong,latlong2,value_many_nans,priority_level,purchased,comments
+0,0,coke zero,8,0.0,0.0,"(0, 0)","(0, 0)",,0,True,"
 When it comes to Coca-Cola products, people tend to be die-hard fans. Many of us know someone who can't go a day without a Diet Coke (or two or three). And while Diet Coke has been a leading sugar-free soft drink since it was first released in 1982, it came to light that young adult males shied away from this beverage — identifying diet cola as a woman's drink. The company's answer to that predicament came in 2005 - in the form of a shiny black can - with the release of Coca-Cola Zero.
 
 While Diet Coke was created with its own flavor profile and not as a sugar-free version of the original, Coca-Cola Zero aims to taste just like the ""real Coke flavor."" Despite their polar opposite advertising campaigns, the contents and nutritional information of the two sugar-free colas is nearly identical. With that information in hand we at HuffPost Taste needed to know: Which of these two artificially-sweetened Coca-Cola beverages actually tastes better? And can you even tell the difference between them?
@@ -40,10 +40,10 @@ Coca-Cola Zero: ""Has more of a sharply sweet aftertaste I associate with diet s
 Overall comments: ""That was a lot more difficult than I though it would be."" ""Both equally palatable."" A few people said Diet Coke tasted much better ... unbeknownst to them, they were actually referring to Coca-Cola Zero.
 
 IN SUMMARY: It is a real toss up. There is not one artificially-sweetened Coca-Cola beverage that outshines the other. So how do people choose between one or the other? It is either a matter of personal taste, or maybe the marketing campaigns will influence their choice.
-",8,0,"(0, 0)","(0, 0)",0,coke zero,True,0,0.0,0.0,
-I loved it,9,1,"(5, 2)","(2, -5)",0,coke zero,True,0,5.0,2.0,
-I loved it,10,2,"(10, 4)","(4, -10)",1,coke zero,True,0,10.0,4.0,
 "
+1,0,coke zero,9,5.0,2.0,"(5, 2)","(2, -5)",,0,True,I loved it
+2,0,coke zero,10,10.0,4.0,"(10, 4)","(4, -10)",,1,True,I loved it
+3,0,car,11,15.0,6.0,"(15, 6)","(6, -15)",,1,True,"
 The full-size pickup truck and the V-8 engine were supposed to be inseparable, like the internet and cat videos. You can’t have one without the other—or so we thought.
 
 In America’s most popular vehicle, the Ford F-150, two turbocharged six-cylinder engines marketed under the EcoBoost name have dethroned the naturally aspirated V-8. Ford’s new 2.7-liter twin-turbo V-6 is the popular choice, while the 3.5-liter twin-turbo V-6 is the top performer. The larger six allows for greater hauling capacity, accelerates the truck more quickly, and swills less gas in EPA testing than the V-8 alternative. It’s enough to make even old-school truck buyers acknowledge that there actually is a replacement for displacement.
@@ -63,8 +63,8 @@ For the most part, though, the equipment in this particular Lariat lives up to t
 Middle-Child Syndrome
 
 In the F-150, Ford has a trifecta of engines (the fourth, a naturally aspirated 3.5-liter V-6, is best left to the fleet operators). The 2.7-liter twin-turbo V-6 delivers remarkable performance at an affordable price. The 3.5-liter twin-turbo V-6 is the workhorse, with power, torque, and hauling capability to spare. Compared with those two logical options, the middle-child 5.0-liter V-8 is the right-brain choice. Its strongest selling points may be its silky power delivery and the familiar V-8 rumble. That’s a flimsy argument when it comes to rationalizing a $50,000-plus purchase, though, so perhaps it’s no surprise that today’s boosted six-cylinders are now the engines of choice in the F-150.
-",11,3,"(15, 6)","(6, -15)",1,car,True,0,15.0,6.0,
 "
+4,0,car,12,20.0,8.0,"(20, 8)","(8, -20)",,1,True,"
 THE GOOD
 The Tesla Model S 90D's electric drivetrain is substantially more efficient than any internal combustion engine, and gives the car smooth and quick acceleration. All-wheel drive comes courtesy of a smart dual motor system. The new Autopilot feature eases the stress of stop-and-go traffic and long road trips.
 
@@ -129,8 +129,8 @@ The 2016 Tesla Model S 90D adds features to keep it competitive against the inte
 Lengthy charging times mean longer trips are either out of the question or require more planning than with an internal combustion car. And while the infotainment system responds quickly to touch inputs and offers useful screens, it hasn't changed much in four years. Most notably, Tesla hasn't added any music apps beyond the ones it launched with. Along with new, useful apps, it would be nice to have some themes or other aesthetic changes to the infotainment interface.
 
 The Model S 90D's base price of $88,000 puts it out of reach of the average buyer, and the model I drove was optioned up to around $95,000. Against its Audi, BMW and Mercedes-Benz competition, however, it makes a compelling argument, especially for its uncomplicated nature.
-",12,4,"(20, 8)","(8, -20)",1,car,True,0,20.0,8.0,
 "
+5,1,toothpaste,13,0.0,0.0,"(0, 0)","(0, 0)",0.0,1,True,"
 Toothpaste can do more harm than good
 
 The next time a patient innocently asks me, “What’s the best toothpaste to use?” I’m going to unleash a whole Chunky Soup can of “You Want The Truth? You CAN’T HANDLE THE TRUTH!!!” Gosh, that’s such an overused movie quote. Sorry about that, but still.
@@ -221,13 +221,13 @@ But now I’m tired of talking about toothpaste.
 Next topic?
 
 I’m bringing pyorrhea back.
-    ",13,5,"(0, 0)","(0, 0)",1,toothpaste,True,1,0.0,0.0,0.0
-"
+    "
+6,1,toothpaste,14,1.0,1.0,"(1, 1)","(1, -1)",1.0,1,True,"
 I’ve been a user of Colgate Total Whitening Toothpaste for many years because I’ve always tried to maintain a healthy smile (I’m a receptionist so I need a white smile). But because I drink coffee at least twice a day (sometimes more!) and a lot of herbal teas, I’ve found that using just this toothpaste alone doesn’t really get my teeth white...
 
 The best way to get white teeth is to really try some professional products specifically for tooth whitening. I’ve tried a few products, like Crest White Strips and found that the strips are really not as good as the trays. Although the Crest White Strips are easy to use, they really DO NOT cover your teeth perfectly like some other professional dental whitening kits. This Product did cover my teeth well however because of their custom heat trays, and whitening my teeth A LOT. I would say if you really want white teeth, use the Colgate Toothpaste and least 2 times a day, along side a professional Gel product like Shine Whitening.
-    ",14,6,"(1, 1)","(1, -1)",1,toothpaste,True,1,1.0,1.0,1.0
-"
+    "
+7,1,toothpaste,15,2.0,2.0,"(2, 2)","(2, -2)",2.0,0,True,"
 The first feature is the price, and it is right.
 
 Next, I consider whether it will be neat to use. It is. Sometimes when I buy those new hard plastic containers, they actually get messy. Also I cannot get all the toothpaste out. It is easy to get the paste out of Colgate Total Whitening Paste without spraying it all over the cabinet.
@@ -239,11 +239,11 @@ Whitening is important. This one is supposed ot whiten. After spending money to 
 Avoiding all kinds of oral pathology is a major consideration. This toothpaste claims that it can help fight cavities, gingivitis, plaque, tartar, and bad breath.
 
 I hope this product stays on the market a long time and does not change.
-    ",15,7,"(2, 2)","(2, -2)",0,toothpaste,True,1,2.0,2.0,2.0
-"
+    "
+8,1,brown bag,16,3.0,3.0,"(3, 3)","(3, -3)",3.0,0,True,"
 These bags looked exactly like I'd hoped, however, the handles broke off of almost every single bag as soon as items were placed in them! I used these as gift bags for out-of-town guests at my wedding, so imagine my embarassment as the handles broke off as I was handing them out. I would not recommend purchaing these bags unless you plan to fill them with nothing but paper! Anything heavier will cause the handles to snap right off.
-",16,8,"(3, 3)","(3, -3)",0,brown bag,True,1,3.0,3.0,3.0
 "
+9,2,brown bag,17,0.0,0.0,"(0, 0)","(0, 0)",0.0,0,True,"
 I purchased these in August 2014 from Big Blue Supplies. I have no problem with the seller, these arrived new condition, fine shape.
 
 I do have a slight problem with the bags. In case someone might want to know, the handles on these bags are set inside against the top. Then a piece of Kraft type packing tape is placed over the handles to hold them in place. On some of the bags, the tape is already starting to peel off. I would be really hesitant about using these bags unless I reinforced the current tape with a different adhesive.
@@ -257,8 +257,8 @@ Even the dollar store bags I normally purchase do not have that stamped on the b
 I do not think I would purchase again for all the reasons stated above.
 
 Another thing for those still wanting to purchase, the ones I received were: 12 3/4 inches high not including handle, 10 1/4 inches wide and a 5 1/4 inch depth.
-",17,9,"(0, 0)","(0, 0)",0,brown bag,True,2,0.0,0.0,0.0
 "
+10,3,Haribo sugar-free gummy bears,19,0.0,0.0,"(0, 0)","(0, 0)",,0,True,"
 The place: BMO Harris Bradley Center
 The event: Bucks VS Spurs
 The snack: Satan's Diarrhea Hate Bears made by Haribo
@@ -285,14 +285,14 @@ Not a word was said, but a diaper was thrown over the stall. I catch it, line my
 
 My son asks me, ""Daddy, why are we leaving early?""
 ""Well son, I need to change my diaper""
-",19,10,"(0, 0)","(0, 0)",0,Haribo sugar-free gummy bears,True,3,0.0,0.0,
-I loved it,20,11,"(5, 2)","(2, -5)",0,coke zero,False,3,5.0,2.0,
-I loved it,21,12,"(0, 0)","(0, 0)",0,coke zero,False,4,0.0,0.0,0.0
-I loved it,22,13,"(7, 3)","(3, -7)",2,coke zero,False,4,7.0,3.0,3.0
-I loved it,23,14,"(14, 6)","(6, -14)",2,coke zero,False,4,14.0,6.0,6.0
 "
+11,3,coke zero,20,5.0,2.0,"(5, 2)","(2, -5)",,0,False,I loved it
+12,4,coke zero,21,0.0,0.0,"(0, 0)","(0, 0)",0.0,0,False,I loved it
+13,4,coke zero,22,7.0,3.0,"(7, 3)","(3, -7)",3.0,2,False,I loved it
+14,4,coke zero,23,14.0,6.0,"(14, 6)","(6, -14)",6.0,2,False,I loved it
+15,5,taco clock,24,,,"(nan, nan)","(nan, nan)",,1,True,"
 This timer does what it is supposed to do. Setup is elementary. Replacing the old one (after 12 years) was relatively easy. It has performed flawlessly since. I'm delighted I could find an esoteric product like this at Amazon. Their service, and the customer reviews, are just excellent.
-",24,15,"(nan, nan)","(nan, nan)",1,taco clock,True,5,,,
 "
+16,5,taco clock,25,,,"(nan, nan)","(nan, nan)",,1,False,"
 Funny, cute clock. A little spendy for how light the clock is, but its hard to find a taco clock.
-",25,16,"(nan, nan)","(nan, nan)",1,taco clock,False,5,,,
+"

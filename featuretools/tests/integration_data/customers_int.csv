@@ -1,4 +1,4 @@
-age,cancel_date,cancel_reason,cohort,cohort_name,date_of_birth,engagement_level,favorite_quote,id,loves_ice_cream,région_id,signup_date,upgrade_date
-33,27,reason_1,0,Early Adopters,2,1,The proletariat have nothing to lose but their chains,0,True,United States,6,18
-25,28,reason_2,1,Late Adopters,1,3,Capitalism deprives us all of self-determination,1,False,United States,7,26
-56,29,reason_1,0,Early Adopters,3,2,All members of the working classes must seize the means of production.,2,True,United States,4,5
+id,age,région_id,cohort,cohort_name,loves_ice_cream,favorite_quote,signup_date,upgrade_date,cancel_date,cancel_reason,date_of_birth,engagement_level
+0,33,United States,0,Early Adopters,True,The proletariat have nothing to lose but their chains,6,18,27,reason_1,2,1
+1,25,United States,1,Late Adopters,False,Capitalism deprives us all of self-determination,7,26,28,reason_2,1,3
+2,56,United States,0,Early Adopters,True,All members of the working classes must seize the means of production.,4,5,29,reason_1,3,2
