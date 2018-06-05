@@ -10,6 +10,7 @@ from builtins import zip
 from collections import defaultdict
 from datetime import datetime
 from functools import wraps
+from sys import version_info
 
 import cloudpickle
 import numpy as np
@@ -663,17 +664,12 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
         if 'cluster' in dask_kwargs:
             cluster = dask_kwargs['cluster']
         else:
-            if njobs < 0:
-                # consider limited core access case
-                import multiprocessing
-                cpus = multiprocessing.cpu_count()
-                njobs = max(cpus + 1 + njobs, 1)
-
             diagnostics_port = None
             if 'diagnostics_port' in dask_kwargs:
                 diagnostics_port = dask_kwargs['diagnostics_port']
 
-            workers = min(njobs, len(chunks))
+            workers = njobs_to_workers(njobs)
+            workers = min(workers, len(chunks))
             cluster = LocalCluster(n_workers=workers,
                                    threads_per_worker=1,
                                    diagnostics_port=diagnostics_port)
@@ -765,3 +761,19 @@ def dask_calculate_chunk(chunk, saved_features, entityset,
                                      target_time=target_time,
                                      pass_columns=pass_columns)
     return feature_matrix
+
+
+def njobs_to_workers(njobs):
+    if version_info.major == 2:
+        import multiprocessing
+        cpus = multiprocessing.cpu_count()
+    else:
+        cpus = len(os.sched_getaffinity(0))
+
+    if njobs < 0:
+        workers = max(cpus + 1 + njobs, 1)
+    else:
+        workers = min(njobs, cpus)
+
+    assert workers > 0, "Need at least one worker"
+    return workers
