@@ -730,8 +730,8 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
                     pbar.update()
         if verbose:
             pbar.close()
-    except Exception as e:
-        raise e
+    except Exception:
+        raise
     finally:
         if isinstance(cluster, LocalCluster):
             cluster.close()
