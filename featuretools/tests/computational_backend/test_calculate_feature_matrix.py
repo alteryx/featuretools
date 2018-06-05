@@ -12,6 +12,7 @@ from random import randint
 import numpy as np
 import pandas as pd
 import pytest
+from distributed.utils_test import cluster
 
 from ..testing_utils import make_ecommerce_entityset
 
@@ -791,7 +792,7 @@ def test_verbose_cutoff_time_chunks(entityset):
     assert (feature_matrix == labels).values.all()
 
 
-def test_njobs(entityset):
+def test_dask_kwargs(entityset):
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
                  [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
                  [datetime(2011, 4, 9, 10, 40, 0)] +
@@ -802,14 +803,16 @@ def test_njobs(entityset):
 
     property_feature = IdentityFeature(entityset['log']['value']) > 10
 
-    feature_matrix = calculate_feature_matrix([property_feature],
-                                              entityset=entityset,
-                                              instance_ids=range(17),
-                                              cutoff_time=times,
-                                              verbose=True,
-                                              chunk_size=.13,
-                                              njobs=2,
-                                              approximate='1 hour')
+    with cluster() as (scheduler, [a, b]):
+        dkwargs = {'cluster': scheduler['address']}
+        feature_matrix = calculate_feature_matrix([property_feature],
+                                                  entityset=entityset,
+                                                  instance_ids=range(17),
+                                                  cutoff_time=times,
+                                                  verbose=True,
+                                                  chunk_size=.13,
+                                                  dask_kwargs=dkwargs,
+                                                  approximate='1 hour')
 
     assert (feature_matrix == labels).values.all()
 
