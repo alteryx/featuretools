@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from datetime import datetime
 
 import numpy as np
@@ -61,7 +63,7 @@ def parent_class():
 
 @pytest.fixture
 def parent_entity(es):
-    return es['regions']
+    return es[u'régions']
 
 
 @pytest.fixture
@@ -98,7 +100,7 @@ def test_get_depth(es):
                          parent_entity=es['customers'])
     num_logs_greater_than_5 = sum_count_logs > 5
     count_customers = Count(customer_id_feat,
-                            parent_entity=es['regions'],
+                            parent_entity=es[u'régions'],
                             where=num_logs_greater_than_5)
     num_customers_region = Feature(count_customers, es["customers"])
 
@@ -116,11 +118,11 @@ def test_makes_count(es):
     features = dfs.build_features()
     assert feature_with_name(features, 'device_type')
     assert feature_with_name(features, 'customer_id')
-    assert feature_with_name(features, 'customers.region_id')
+    assert feature_with_name(features, u'customers.région_id')
     assert feature_with_name(features, 'customers.age')
     assert feature_with_name(features, 'COUNT(log)')
     assert feature_with_name(features, 'customers.COUNT(sessions)')
-    assert feature_with_name(features, 'customers.regions.language')
+    assert feature_with_name(features, u'customers.régions.language')
     assert feature_with_name(features, 'customers.COUNT(log)')
 
 
@@ -154,7 +156,7 @@ def test_check_input_types(es, child, parent):
     mean = parent
     assert mean._check_input_types()
     boolean = child > 3
-    mean = make_parent_instance(Mean, es['regions'],
+    mean = make_parent_instance(Mean, es[u'régions'],
                                 child, where=boolean)
     assert mean._check_input_types()
 
