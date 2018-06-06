@@ -46,13 +46,6 @@ class Relationship(object):
             self._parent_variable_id == other._parent_variable_id and \
             self._child_variable_id == other._child_variable_id
 
-    def __dask_tokenize__(self):
-        return (Relationship,
-                self._parent_entity_id,
-                self._child_entity_id,
-                self._parent_variable_id,
-                self._child_variable_id)
-
     @property
     def parent_entity(self):
         """Parent entity object"""

@@ -8,7 +8,6 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
-from dask.base import tokenize
 
 from .base_entity import BaseEntity
 from .timedelta import Timedelta

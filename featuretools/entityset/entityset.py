@@ -3,10 +3,10 @@ import itertools
 import logging
 from builtins import range, zip
 from collections import defaultdict
+from hashlib import md5
 
 import numpy as np
 import pandas as pd
-from dask.base import tokenize
 
 from .base_entityset import BaseEntitySet
 from .entity import Entity
@@ -88,7 +88,18 @@ class EntitySet(BaseEntitySet):
         return sum([entity.__sizeof__() for entity in self.entities])
 
     def __dask_tokenize__(self):
-        return (EntitySet, self.metadata)
+        entities = []
+        sorted_entities = sorted(self.entities, key=lambda x: x.id)
+        for e in sorted_entities:
+            variables = sorted(e.variables, key=lambda x: x.id)
+            index = e.index,
+            time_index = e.time_index,
+            secondary_time_index = sorted(e.secondary_time_index.items(),
+                                          key=lambda x: x[0])
+            entities.append((e.id, variables, index, time_index,
+                             secondary_time_index))
+        relationships = str(self.relationships)
+        return (EntitySet, md5(str(entities) + relationships).hexdigest())
 
     @property
     def metadata(self):
