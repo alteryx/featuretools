@@ -18,6 +18,7 @@ import pandas as pd
 from pandas.tseries.frequencies import to_offset
 
 from .pandas_backend import PandasBackend
+
 from featuretools.primitives import (
     AggregationPrimitive,
     DirectFeature,

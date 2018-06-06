@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+from distributed.utils_test import cluster
 
 from ..testing_utils import make_ecommerce_entityset
 
@@ -131,11 +132,13 @@ def test_njobs(entities, relationships):
                                    target_entity="transactions",
                                    cutoff_time=cutoff_times_df)
 
-    feature_matrix_2, features_2 = dfs(entities=entities,
-                                       relationships=relationships,
-                                       target_entity="transactions",
-                                       cutoff_time=cutoff_times_df,
-                                       njobs=2)
+    with cluster() as (scheduler, [a, b]):
+        dask_kwargs = {'cluster': scheduler['address']}
+        feature_matrix_2, features_2 = dfs(entities=entities,
+                                           relationships=relationships,
+                                           target_entity="transactions",
+                                           cutoff_time=cutoff_times_df,
+                                           dask_kwargs=dask_kwargs)
     assert features == features_2
     for column in feature_matrix:
         for x, y in zip(feature_matrix[column], feature_matrix_2[column]):
