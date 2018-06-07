@@ -1,11 +1,8 @@
 import re
-
-from datetime import date
-from datetime import datetime
+from datetime import date, datetime
 
 import numpy as np
 import pandas as pd
-
 from past.builtins import basestring
 
 from featuretools import variable_types
