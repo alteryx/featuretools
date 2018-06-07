@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import pytest
 
 from ..testing_utils import make_ecommerce_entityset
@@ -39,7 +40,7 @@ def test_get_backward_entities(es):
 
 def test_get_forward_entities_deep(es):
     entities = es.get_forward_entities('log', 'deep')
-    assert entities == set(['sessions', 'customers', 'products', 'régions', 'cohorts'])
+    assert entities == set(['sessions', 'customers', 'products', u'régions', 'cohorts'])
 
 
 def test_get_backward_entities_deep(es):
@@ -114,5 +115,5 @@ def test_raise_key_error_missing_entity(es):
 
 def test_add_parent_not_index_variable(es):
     with pytest.raises(AttributeError):
-        es.add_relationship(Relationship(es['régions']['language'],
-                                         es['customers']['région_id']))
+        es.add_relationship(Relationship(es[u'régions']['language'],
+                                         es['customers'][u'région_id']))
