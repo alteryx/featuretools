@@ -58,7 +58,7 @@ After we load the features back in, we can calculate the feature matrix.
 
 .. ipython:: python
 
-    feature_matrix = ft.calculate_feature_matrix(saved_features)
+    feature_matrix = ft.calculate_feature_matrix(saved_features, es_test)
     feature_matrix
 
 As you can see above, we have the exact same features as before, but calculated on using our test data.

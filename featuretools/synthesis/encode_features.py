@@ -40,7 +40,7 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
 
                 features = [f1, f2, f3]
                 ids = [0, 1, 2, 3, 4, 5]
-                feature_matrix = ft.calculate_feature_matrix(features,
+                feature_matrix = ft.calculate_feature_matrix(features, es,
                                                              instance_ids=ids)
 
                 fm_encoded, f_encoded = ft.encode_features(feature_matrix,

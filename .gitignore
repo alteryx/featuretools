@@ -5,7 +5,8 @@ data/
 output.csv
 htmlcov/
 .idea/
-integration_data/*
+featuretools/tests/integration_data/*.csv
+featuretools/tests/integration_data/*.gzip
 featuretools/tests/integration_data/customers.gzip
 featuretools/tests/integration_data/log-0.gzip
 featuretools/tests/integration_data/log-1.gzip
@@ -122,3 +123,5 @@ ENV/
 # pickle files
 *.p
 *.pickle
+
+.pytest_cache

@@ -2,6 +2,20 @@
 
 Changelog
 ---------
+**v0.1.21** May 30, 2018
+    * Support Pandas 0.23.0 (:pr:`153`, :pr:`154`, :pr:`155`, :pr:`159`)
+    * No EntitySet required in loading/saving features (:pr:`141`)
+    * Use s3 demo csv with better column names (:pr:`139`)
+    * more reasonable start parameter (:pr:`149`)
+    * add issue template (:pr:`133`)
+    * Improve tests (:pr:`136`, :pr:`137`, :pr:`144`, :pr:`147`)
+    * Remove unused functions (:pr:`140`, :pr:`143`, :pr:`146`)
+    * Update documentation after recent changes / removals (:pr:`157`)
+    * Rename demo retail csv file (:pr:`148`)
+    * Add names for binary (:pr:`142`)
+    * EntitySet repr to use get_name rather than id (:pr:`134`)
+    * Ensure config dir is writable (:pr:`135`)
+
 **v0.1.20** Apr 13, 2018
     * Primitives as strings in DFS parameters (:pr:`129`)
     * Integer time index bugfixes (:pr:`128`)

@@ -62,12 +62,8 @@ In the example above, we use two types of primitives.
 
 **Transform primitives:** These primitives take one or more variables from an entity as an input and output a new variable for that entity. They are applied to a single entity. E.g: ``"hour"``, ``"time_since_previous"``, ``"absolute"``.
 
-
-
-
-.. Built in Primitives
-.. *******************
 For a DataFrame that lists and describes each built-in primitive in Featuretools, call ``ft.list_primitives()``.
+
 
 .. ipython:: python
 

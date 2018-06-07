@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import copy
 import os
 import shutil
@@ -178,7 +180,7 @@ def test_saveprogress(entityset):
         df = pd.read_csv(file_, index_col="id", header=0)
         list_df.append(df)
     merged_df = pd.concat(list_df)
-    merged_df.set_index(pd.DatetimeIndex(times, append=True, inplace=True))
+    merged_df.set_index(pd.DatetimeIndex(times), append=True, inplace=True)
     fm_no_save = calculate_feature_matrix([property_feature],
                                           entityset,
                                           instance_ids=range(17),
@@ -223,7 +225,7 @@ def test_cutoff_time_binning(entityset):
 
 def test_training_window(entityset):
     property_feature = Count(entityset['log']['id'], entityset['customers'])
-    top_level_agg = Count(entityset['customers']['id'], entityset['regions'])
+    top_level_agg = Count(entityset['customers']['id'], entityset[u'régions'])
 
     # make sure features that have a direct to a higher level agg
     # so we have multiple "filter eids" in get_pandas_data_slice,
@@ -268,7 +270,7 @@ def test_training_window_recent_time_index(entityset):
     row = {
         'id': [3],
         'age': [73],
-        'region_id': ['United States'],
+        u'région_id': ['United States'],
         'cohort': [1],
         'cohort_name': ["Late Adopters"],
         'loves_ice_cream': [True],
@@ -281,12 +283,12 @@ def test_training_window_recent_time_index(entityset):
     }
     df = pd.DataFrame(row)
     df.index = range(3, 4)
-    df = entityset['customers'].df.append(df)
+    df = entityset['customers'].df.append(df, sort=False)
     entityset['customers'].update_data(df)
     entityset.add_last_time_indexes()
 
     property_feature = Count(entityset['log']['id'], entityset['customers'])
-    top_level_agg = Count(entityset['customers']['id'], entityset['regions'])
+    top_level_agg = Count(entityset['customers']['id'], entityset[u'régions'])
     dagg = DirectFeature(top_level_agg, entityset['customers'])
 
     feature_matrix = calculate_feature_matrix(
@@ -558,7 +560,7 @@ def test_approximate_returns_correct_empty_default_values(entityset):
 
 # def test_approximate_deep_recurse(entityset):
     # es = entityset
-    # agg_feat = Count(es['customers']['id'], es['regions'])
+    # agg_feat = Count(es['customers']['id'], es[u'régions'])
     # dfeat1 = DirectFeature(agg_feat, es['sessions'])
     # agg_feat2 = Sum(dfeat1, es['customers'])
     # dfeat2 = DirectFeature(agg_feat2, es['sessions'])
@@ -578,7 +580,7 @@ def test_approximate_returns_correct_empty_default_values(entityset):
 
 def test_approximate_child_aggs_handled_correctly(entityset):
     es = entityset
-    agg_feat = Count(es['customers']['id'], es['regions'])
+    agg_feat = Count(es['customers']['id'], es[u'régions'])
     dfeat = DirectFeature(agg_feat, es['customers'])
     agg_feat_2 = Count(es['log']['value'], es['customers'])
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-08 10:30:00'),
@@ -600,7 +602,7 @@ def test_approximate_child_aggs_handled_correctly(entityset):
 def test_cutoff_time_naming(entityset):
     es = entityset
 
-    agg_feat = Count(es['customers']['id'], es['regions'])
+    agg_feat = Count(es['customers']['id'], es[u'régions'])
     dfeat = DirectFeature(agg_feat, es['customers'])
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-08 10:30:00'),
                                        pd.Timestamp('2011-04-09 10:30:06')],
@@ -623,7 +625,7 @@ def test_cutoff_time_naming(entityset):
 def test_cutoff_time_extra_columns(entityset):
     es = entityset
 
-    agg_feat = Count(es['customers']['id'], es['regions'])
+    agg_feat = Count(es['customers']['id'], es[u'régions'])
     dfeat = DirectFeature(agg_feat, es['customers'])
 
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),
@@ -653,7 +655,7 @@ def test_cutoff_time_extra_columns(entityset):
 def test_cfm_returns_original_time_indexes(entityset):
     es = entityset
 
-    agg_feat = Count(es['customers']['id'], es['regions'])
+    agg_feat = Count(es['customers']['id'], es[u'régions'])
     dfeat = DirectFeature(agg_feat, es['customers'])
     agg_feat_2 = Count(es['sessions']['id'], es['customers'])
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),
@@ -869,6 +871,7 @@ def test_integer_time_index_mixed_cutoff(int_es):
     times_int_str = [0, 1, 2, 3, 4, 5, '6', 7, 8, 9, 9, 10, 11, 12, 15, 14, 13]
     times_int_str = list(range(8, 17)) + ['17', 19, 20, 21, 22, 25, 24, 23]
     cutoff_df['time'] = times_int_str
+    # calculate_feature_matrix should convert time column to ints successfully here
     with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
                                  int_es,
@@ -897,7 +900,7 @@ def test_datetime_index_mixed_cutoff(entityset):
 
     times[9] = "foobar"
     cutoff_df['time'] = times
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
                                  entityset,
                                  cutoff_time=cutoff_df)
@@ -910,7 +913,7 @@ def test_datetime_index_mixed_cutoff(entityset):
 
     times[9] = '17'
     cutoff_df['time'] = times
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
                                  entityset,
                                  cutoff_time=cutoff_df)
@@ -921,5 +924,5 @@ def test_string_time_values_in_cutoff_time(entityset):
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 0]})
     agg_feature = Sum(entityset['log']['value'], entityset['customers'])
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         calculate_feature_matrix([agg_feature], entityset, cutoff_time=cutoff_time)

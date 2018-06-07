@@ -131,8 +131,8 @@ If we look at the dataframes, can see what the ``normalize_entity`` did to the a
 
 .. ipython:: python
 
-    es["sessions"].head(5)
-    es["transactions"].head(5)
+    es["sessions"].df.head(5)
+    es["transactions"].df.head(5)
 
 
 To finish preparing this dataset, create a "customers" entity using the same method call.

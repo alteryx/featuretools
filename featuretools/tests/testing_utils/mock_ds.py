@@ -28,7 +28,7 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                               'language': ['en', 'sp']})
 
     store_df = pd.DataFrame({'id': range(6),
-                             'region_id': ['United States'] * 3 + ['Mexico'] * 2 + [np.nan],
+                             u'région_id': ['United States'] * 3 + ['Mexico'] * 2 + [np.nan],
                              'num_square_feet': list(range(30000, 60000, 6000)) + [np.nan]})
 
     product_df = pd.DataFrame({'id': ['Haribo sugar-free gummy bears', 'car',
@@ -55,7 +55,7 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
     customer_df = pd.DataFrame({
         'id': [0, 1, 2],
         'age': [33, 25, 56],
-        'region_id': ['United States'] * 3,
+        u'région_id': ['United States'] * 3,
         'cohort': [0, 1, 0],
         'cohort_name': ['Early Adopters', 'Late Adopters', 'Early Adopters'],
         'loves_ice_cream': [True, False, True],
@@ -131,7 +131,7 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
         ['I loved it'] * 4 + taco_clock_reviews()
     })
     filenames = {}
-    for entity, df in [('regions', region_df),
+    for entity, df in [(u'régions', region_df),
                        ('stores', store_df),
                        ('products', product_df),
                        ('customers', customer_df),
@@ -218,7 +218,7 @@ def make_variable_types(with_integer_time_index=False):
 
     store_variable_types = {
         'id': variable_types.Categorical,
-        'region_id': variable_types.Id
+        u'région_id': variable_types.Id
     }
 
     product_variable_types = {
@@ -229,7 +229,7 @@ def make_variable_types(with_integer_time_index=False):
     customer_variable_types = {
         'id': variable_types.Categorical,
         'age': variable_types.Numeric,
-        'region_id': variable_types.Id,
+        u'région_id': variable_types.Id,
         'loves_ice_cream': variable_types.Boolean,
         'favorite_quote': variable_types.Text,
         'date_of_birth': variable_types.Datetime,
@@ -273,7 +273,7 @@ def make_variable_types(with_integer_time_index=False):
         'log': log_variable_types,
         'products': product_variable_types,
         'stores': store_variable_types,
-        'regions': region_variable_types
+        u'régions': region_variable_types
     }
 
 
@@ -301,7 +301,7 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
                                          split_by_time=split_by_time, compressed=compressed)
         entities = filenames.keys()
     else:
-        entities = ['regions', 'stores', 'products',
+        entities = [u'régions', 'stores', 'products',
                     'customers', 'sessions', 'log']
         filenames = {e: entity_filename(e, base_path, file_location=file_location,
                                         glob=(split_by_time and e == 'log'),
@@ -329,6 +329,9 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
             secondary = time_index['secondary']
 
         df = pd.read_csv(filenames[entity], encoding='utf-8')
+        if entity == 'sessions':
+            # This should be changed back when converted to an EntitySet
+            df['customer_id'] = pd.Categorical(df['customer_id'])
         if entity is 'log':
             df['latlong'] = df['latlong'].apply(latlong_unstringify)
             df['latlong2'] = df['latlong2'].apply(latlong_unstringify)
@@ -348,8 +351,8 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
                         new_entity_time_index='cohort_end')
 
     es.add_relationships(
-        [Relationship(es['regions']['id'], es['customers']['region_id']),
-         Relationship(es['regions']['id'], es['stores']['region_id']),
+        [Relationship(es[u'régions']['id'], es['customers'][u'région_id']),
+         Relationship(es[u'régions']['id'], es['stores'][u'région_id']),
          Relationship(es['customers']['id'], es['sessions']['customer_id']),
          Relationship(es['sessions']['id'], es['log']['session_id']),
          Relationship(es['products']['id'], es['log']['product_id'])])

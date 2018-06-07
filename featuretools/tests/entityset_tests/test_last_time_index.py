@@ -75,7 +75,7 @@ def extra_session_df(entityset):
                   'device_type': 0,
                   'id': 6}
     row = pd.DataFrame(row_values, index=pd.Index([6], name='id'))
-    df = entityset['sessions'].df.append(row).sort_index()
+    df = entityset['sessions'].df.append(row, sort=True).sort_index()
     return df
 
 
@@ -112,8 +112,9 @@ class TestLastTimeIndex(object):
         row_values = {'value': 6.0,
                       'value_time': pd.Timestamp("2011-04-10 11:10:02"),
                       'values_id': 11}
-        row = pd.DataFrame(row_values, index=pd.Index([11], name='values_id'))
-        df = values.df.append(row)
+        # make sure index doesn't have same name as column to suppress pandas warning
+        row = pd.DataFrame(row_values, index=pd.Index([11]))
+        df = values.df.append(row, sort=True)
         df = df.sort_values(['value_time', 'values_id'], kind='mergesort')
         values.update_data(df)
         values_es.add_last_time_indexes()
@@ -305,7 +306,9 @@ class TestLastTimeIndex(object):
         # last time index. This event should be from a different session than
         # the current last time index.
         log.df['datetime'][5] = pd.Timestamp("2011-4-09 10:40:01")
-        log.df.sort_values(["datetime", "id"], inplace=True, kind="mergesort")
+        log.df = (log.df.set_index('datetime', append=True)
+                     .sort_index(level=[1, 0], kind="mergesort")
+                     .reset_index('datetime', drop=False))
         log.update_data(log.df)
         entityset.add_last_time_indexes()
 

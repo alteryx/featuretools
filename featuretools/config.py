@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import logging
 import os
 import sys
@@ -5,6 +7,11 @@ import tempfile
 from warnings import warn
 
 import yaml
+
+
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
 
 dirname = os.path.dirname(__file__)
 default_path = os.path.join(dirname, 'config.yaml')
@@ -83,22 +90,34 @@ def ensure_config_file(destination=ft_config_path):
                 os.mkdir(os.path.dirname(destination))
             except OSError:
                 pass
-        shutil.copy(default_path, destination)
+        try:
+            shutil.copy(default_path, destination)
+        except OSError:
+            eprint("Unable to copy config file. Check file permissions")
 
 
 def load_config_file(path=ft_config_path):
     if not os.path.exists(path):
         path = default_path
-    with open(path) as f:
-        text = f.read()
-        config_dict = yaml.load(text)
-        return config_dict
+    try:
+        with open(path) as f:
+            text = f.read()
+            config_dict = yaml.load(text)
+            return config_dict
+    except OSError:
+        eprint("Unable to load config file. Check file permissions")
+        return {'logging': {'featuretools': 'info',
+                            'featuretools.entityset': 'info',
+                            'featuretools.computation_backend': 'info'}}
 
 
 def ensure_data_folders():
     for dest in [csv_save_location]:
         if not os.path.exists(dest):
-            os.makedirs(dest)
+            try:
+                os.makedirs(dest)
+            except OSError:
+                eprint("Unable to make folder {}. Check file permissions".format(dest))
 
 
 ensure_config_file()
