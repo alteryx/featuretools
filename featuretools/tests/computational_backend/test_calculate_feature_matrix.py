@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import copy
 import os
 import shutil
@@ -220,7 +222,7 @@ def test_cutoff_time_binning(entityset):
 
 def test_training_window(entityset):
     property_feature = Count(entityset['log']['id'], entityset['customers'])
-    top_level_agg = Count(entityset['customers']['id'], entityset['regions'])
+    top_level_agg = Count(entityset['customers']['id'], entityset[u'régions'])
 
     # make sure features that have a direct to a higher level agg
     # so we have multiple "filter eids" in get_pandas_data_slice,
@@ -265,7 +267,7 @@ def test_training_window_recent_time_index(entityset):
     row = {
         'id': [3],
         'age': [73],
-        'region_id': ['United States'],
+        u'région_id': ['United States'],
         'cohort': [1],
         'cohort_name': ["Late Adopters"],
         'loves_ice_cream': [True],
@@ -284,7 +286,7 @@ def test_training_window_recent_time_index(entityset):
     entityset.add_last_time_indexes()
 
     property_feature = Count(entityset['log']['id'], entityset['customers'])
-    top_level_agg = Count(entityset['customers']['id'], entityset['regions'])
+    top_level_agg = Count(entityset['customers']['id'], entityset[u'régions'])
     dagg = DirectFeature(top_level_agg, entityset['customers'])
 
     feature_matrix = calculate_feature_matrix(
@@ -556,7 +558,7 @@ def test_approximate_returns_correct_empty_default_values(entityset):
 
 # def test_approximate_deep_recurse(entityset):
     # es = entityset
-    # agg_feat = Count(es['customers']['id'], es['regions'])
+    # agg_feat = Count(es['customers']['id'], es[u'régions'])
     # dfeat1 = DirectFeature(agg_feat, es['sessions'])
     # agg_feat2 = Sum(dfeat1, es['customers'])
     # dfeat2 = DirectFeature(agg_feat2, es['sessions'])
@@ -576,7 +578,7 @@ def test_approximate_returns_correct_empty_default_values(entityset):
 
 def test_approximate_child_aggs_handled_correctly(entityset):
     es = entityset
-    agg_feat = Count(es['customers']['id'], es['regions'])
+    agg_feat = Count(es['customers']['id'], es[u'régions'])
     dfeat = DirectFeature(agg_feat, es['customers'])
     agg_feat_2 = Count(es['log']['value'], es['customers'])
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-08 10:30:00'),
@@ -598,7 +600,7 @@ def test_approximate_child_aggs_handled_correctly(entityset):
 def test_cutoff_time_naming(entityset):
     es = entityset
 
-    agg_feat = Count(es['customers']['id'], es['regions'])
+    agg_feat = Count(es['customers']['id'], es[u'régions'])
     dfeat = DirectFeature(agg_feat, es['customers'])
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-08 10:30:00'),
                                        pd.Timestamp('2011-04-09 10:30:06')],
@@ -621,7 +623,7 @@ def test_cutoff_time_naming(entityset):
 def test_cutoff_time_extra_columns(entityset):
     es = entityset
 
-    agg_feat = Count(es['customers']['id'], es['regions'])
+    agg_feat = Count(es['customers']['id'], es[u'régions'])
     dfeat = DirectFeature(agg_feat, es['customers'])
 
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),
@@ -651,7 +653,7 @@ def test_cutoff_time_extra_columns(entityset):
 def test_cfm_returns_original_time_indexes(entityset):
     es = entityset
 
-    agg_feat = Count(es['customers']['id'], es['regions'])
+    agg_feat = Count(es['customers']['id'], es[u'régions'])
     dfeat = DirectFeature(agg_feat, es['customers'])
     agg_feat_2 = Count(es['sessions']['id'], es['customers'])
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),

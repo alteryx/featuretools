@@ -126,14 +126,19 @@ class Entity(object):
                          reindex=False)
 
     def __repr__(self):
-        repr_out = "Entity: {}\n".format(self.id)
-        repr_out += "  Variables:"
+        repr_out = u"Entity: {}\n".format(self.id)
+        repr_out += u"  Variables:"
         for v in self.variables:
-            repr_out += "\n    {} (dtype: {})".format(v.id, v.dtype)
+            repr_out += u"\n    {} (dtype: {})".format(v.id, v.dtype)
 
         shape = self.shape
         repr_out += u"\n  Shape:\n    (Rows: {}, Columns: {})".format(
             shape[0], shape[1])
+
+        # encode for python 2
+        if type(repr_out) != str:
+            repr_out = repr_out.encode("utf-8")
+
         return repr_out
 
     @property

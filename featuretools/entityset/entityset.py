@@ -14,7 +14,6 @@ from .serialization import read_pickle, to_pickle
 
 import featuretools.variable_types.variable as vtypes
 from featuretools.utils.gen_utils import make_tqdm_iterator
-from featuretools.utils.wrangle import _check_variable_list
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
@@ -217,12 +216,16 @@ class EntitySet(object):
         repr_out += "\n  Relationships:"
 
         if len(self.relationships) == 0:
-            repr_out += "\n    No relationships"
+            repr_out += u"\n    No relationships"
 
         for r in self.relationships:
             repr_out += u"\n    %s.%s -> %s.%s" % \
                 (r._child_entity_id, r._child_variable_id,
                  r._parent_entity_id, r._parent_variable_id)
+
+        # encode for python 2
+        if type(repr_out) != str:
+            repr_out = repr_out.encode("utf-8")
 
         return repr_out
 
@@ -266,8 +269,8 @@ class EntitySet(object):
 
         parent_dtype = parent_e.df[parent_v].dtype
         child_dtype = child_e.df[child_v].dtype
-        msg = "Unable to add relationship because {} in {} is Pandas dtype {}"\
-            " and {} in {} is Pandas dtype {}."
+        msg = u"Unable to add relationship because {} in {} is Pandas dtype {}"\
+            u" and {} in {} is Pandas dtype {}."
         if not is_dtype_equal(parent_dtype, child_dtype):
             raise ValueError(msg.format(parent_v, parent_e.id, parent_dtype,
                                         child_v, child_e.id, child_dtype))
