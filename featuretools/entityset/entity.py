@@ -379,9 +379,6 @@ class Entity(object):
         rels = self.entityset.get_backward_relationships(self.id)
         return entity_id in [r.child_entity.id for r in rels]
 
-    def get_all_instances(self):
-        return self.df[self.index]
-
     def query_by_values(self, instance_vals, variable_id=None, columns=None,
                         time_last=None, training_window=None,
                         return_sorted=False, start=None, end=None,
@@ -578,20 +575,6 @@ class Entity(object):
         if recalculate_last_time_indexes:
             self.entityset.add_last_time_indexes(updated_entities=[self.id])
         self.add_all_variable_statistics()
-
-    def sample(self, n):
-        df = self.df
-        n = min(n, len(df))
-        sampled = df.sample(n)
-        self.df = sampled
-        indexed_by = self.indexed_by
-        self.indexed_by = {}
-        copied = copy.copy(self)
-        self.df = df
-        self.indexed_by = indexed_by
-        for variable in copied.variables:
-            variable.entity = copied
-        return copied
 
     def add_interesting_values(self, max_values=5, verbose=False):
         """
