@@ -4,6 +4,7 @@ import logging
 from builtins import range, zip
 from collections import defaultdict
 from hashlib import md5
+from sys import version_info
 
 import numpy as np
 import pandas as pd
@@ -98,8 +99,11 @@ class EntitySet(BaseEntitySet):
                                           key=lambda x: x[0])
             entities.append((e.id, variables, index, time_index,
                              secondary_time_index))
-        relationships = str(self.relationships)
-        return (EntitySet, md5(str(entities) + relationships).hexdigest())
+
+        data = str(self.relationships) + str(entities)
+        if version_info.major == 2:
+            data = unicode(data, encoding='utf-8')
+        return (EntitySet, md5(data.encode('utf-8')).hexdigest())
 
     @property
     def metadata(self):
