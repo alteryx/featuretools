@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import pytest
 
 from ..testing_utils import make_ecommerce_entityset
