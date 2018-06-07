@@ -74,6 +74,11 @@ def test_calc_feature_matrix(entityset):
                                  entityset,
                                  instance_ids=range(17),
                                  cutoff_time=17)
+    with pytest.raises(TypeError):
+        calculate_feature_matrix([property_feature],
+                                 entityset,
+                                 instance_ids=range(17),
+                                 cutoff_time=times)
 
 
 def test_cfm_approximate_correct_ordering():
