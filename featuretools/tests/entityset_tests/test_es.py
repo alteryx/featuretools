@@ -448,7 +448,7 @@ def test_concat_entitysets(entityset):
             es[entity].update_data(df=df.loc[rows[i]])
 
     # make sure internal indexes work before concat
-    regions = entityset_1['customers'].query_by_values(['United States'], variable_id='région_id')
+    regions = entityset_1['customers'].query_by_values(['United States'], variable_id=u'région_id')
     assert regions.index.isin(entityset_1['customers'].df.index).all()
 
     assert entityset_1.__eq__(entityset_2)
@@ -593,7 +593,7 @@ def test_checks_time_type_setting_secondary_time_index(entityset):
 
 def test_related_instances_backward(entityset):
     result = entityset.related_instances(
-        start_entity_id='régions', final_entity_id='log',
+        start_entity_id=u'régions', final_entity_id='log',
         instance_ids=['United States'])
 
     col = entityset['log'].df['id'].values
@@ -601,7 +601,7 @@ def test_related_instances_backward(entityset):
     assert set(result['id'].values) == set(col)
 
     result = entityset.related_instances(
-        start_entity_id='régions', final_entity_id='log',
+        start_entity_id=u'régions', final_entity_id='log',
         instance_ids=['Mexico'])
 
     assert len(result['id'].values) == 0
@@ -609,7 +609,7 @@ def test_related_instances_backward(entityset):
 
 def test_related_instances_forward(entityset):
     result = entityset.related_instances(
-        start_entity_id='log', final_entity_id='régions',
+        start_entity_id='log', final_entity_id=u'régions',
         instance_ids=[0, 1])
 
     assert len(result['id'].values) == 1
@@ -657,7 +657,7 @@ def test_related_instances_link_vars(entityset):
 
 
 def test_get_pandas_slice(entityset):
-    filter_eids = ['products', 'régions', 'customers']
+    filter_eids = ['products', u'régions', 'customers']
     result = entityset.get_pandas_data_slice(filter_entity_ids=filter_eids,
                                              index_eid='customers',
                                              instances=[0])
@@ -667,20 +667,20 @@ def test_get_pandas_slice(entityset):
     assert set(result['products'].keys()), set(['products', 'log'])
     assert set(result['customers'].keys()) == set(
         ['customers', 'sessions', 'log'])
-    assert set(result['régions'].keys()) == set(
-        ['régions', 'stores', 'customers', 'sessions', 'log'])
+    assert set(result[u'régions'].keys()) == set(
+        [u'régions', 'stores', 'customers', 'sessions', 'log'])
 
     # make sure different subsets of the log are included in each filtering
     assert set(result['customers']['log']['id'].values) == set(range(10))
     assert set(result['products']['log']['id'].values) == set(
         list(range(10)) + list(range(11, 15)))
-    assert set(result['régions']['log']['id'].values) == set(range(17))
+    assert set(result[u'régions']['log']['id'].values) == set(range(17))
 
 
 def test_get_pandas_slice_times(entityset):
     # todo these test used to use time first time last. i remvoed and it
     # still passes,but we should double check this okay
-    filter_eids = ['products', 'régions', 'customers']
+    filter_eids = ['products', u'régions', 'customers']
     start = np.datetime64(datetime(2011, 4, 1))
     end = np.datetime64(datetime(2011, 4, 9, 10, 31, 10))
     result = entityset.get_pandas_data_slice(filter_entity_ids=filter_eids,
@@ -701,7 +701,7 @@ def test_get_pandas_slice_times(entityset):
 def test_get_pandas_slice_times_include(entityset):
     # todo these test used to use time first time last. i remvoed and it
     # still passes,but we should double check this okay
-    filter_eids = ['products', 'régions', 'customers']
+    filter_eids = ['products', u'régions', 'customers']
     start = np.datetime64(datetime(2011, 4, 1))
     end = np.datetime64(datetime(2011, 4, 9, 10, 31, 10))
     result = entityset.get_pandas_data_slice(filter_entity_ids=filter_eids,
@@ -720,7 +720,7 @@ def test_get_pandas_slice_times_include(entityset):
 
 
 def test_get_pandas_slice_secondary_index(entityset):
-    filter_eids = ['products', 'régions', 'customers']
+    filter_eids = ['products', u'régions', 'customers']
     # this date is before the cancel date of customers 1 and 2
     end = np.datetime64(datetime(2011, 10, 1))
     all_instances = [0, 1, 2]
@@ -739,14 +739,14 @@ def test_get_pandas_slice_secondary_index(entityset):
 
 def test_add_link_vars(entityset):
     eframes = {e_id: entityset[e_id].df
-               for e_id in ["log", "sessions", "customers", "régions"]}
+               for e_id in ["log", "sessions", "customers", u"régions"]}
 
     entityset._add_multigenerational_link_vars(frames=eframes,
-                                               start_entity_id='régions',
+                                               start_entity_id=u'régions',
                                                end_entity_id='log')
 
     assert 'sessions.customer_id' in eframes['log'].columns
-    assert 'sessions.customers.région_id' in eframes['log'].columns
+    assert u'sessions.customers.région_id' in eframes['log'].columns
 
 
 def test_normalize_entity(entityset):

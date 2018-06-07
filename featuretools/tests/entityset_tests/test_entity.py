@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import pytest
 
 from ..testing_utils import make_ecommerce_entityset
@@ -43,9 +45,9 @@ def test_eq(es):
 def test_parents(es):
     assert set(es['log'].parents) == set(['sessions', 'products'])
     assert es['sessions'].parents == ['customers']
-    assert set(es['customers'].parents) == set(['régions', 'cohorts'])
-    assert es['régions'].parents == []
-    assert es['stores'].parents == ['régions']
+    assert set(es['customers'].parents) == set([u'régions', 'cohorts'])
+    assert es[u'régions'].parents == []
+    assert es['stores'].parents == [u'régions']
 
 
 def test_update_data(es):
