@@ -125,9 +125,6 @@ def test_cfm_approximate_correct_ordering():
     assert(np.all(feature_matrix_2.reset_index('time').reset_index()[['instance', 'time']].values == feature_matrix_2[['trip_id', 'flight_time']].values))
     for column in feature_matrix:
         for x, y in zip(feature_matrix[column], feature_matrix_2[column]):
-            if not ((pd.isnull(x) and pd.isnull(y)) or (x == y)):
-                import pdb
-                pdb.set_trace()
             assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
 
 
@@ -287,7 +284,8 @@ def test_training_window_recent_time_index(entityset):
     df = pd.DataFrame(row)
     df.index = range(3, 4)
     df = entityset['customers'].df.append(df, sort=False)
-    entityset['customers'].update_data(df)
+    entityset['customers'].update_data(df=df,
+                                       recalculate_last_time_indexes=False)
     entityset.add_last_time_indexes()
 
     property_feature = Count(entityset['log']['id'], entityset['customers'])
@@ -304,7 +302,7 @@ def test_training_window_recent_time_index(entityset):
         training_window='2 hours'
     )
     prop_values = [5, 5, 1, 0]
-    dagg_values = [3, 2, 1, 2]
+    dagg_values = [3, 2, 1, 3]
     feature_matrix.sort_index(inplace=True)
     assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
     assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
