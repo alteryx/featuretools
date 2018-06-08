@@ -66,7 +66,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             DataFrame will be sorted by (time, instance_id).
 
         training_window (Timedelta, optional):
-            Window or windows defining how much older than the cutoff time data
+            Window defining how much older than the cutoff time data
             can be to be included when calculating the feature. If None, all older data is used.
 
         approximate (Timedelta or str): Frequency to group instances with similar
@@ -396,8 +396,8 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
 
         entityset (:class:`.EntitySet`): An already initialized entityset.
 
-        training_window (:class:`Timedelta`, optional):
-            Window or windows defining how much older than the cutoff time data
+        training_window (`Timedelta`, optional):
+            Window defining how much older than the cutoff time data
             can be to be included when calculating the feature. If None, all older data is used.
 
         profile (bool, optional): Enables profiling if True
