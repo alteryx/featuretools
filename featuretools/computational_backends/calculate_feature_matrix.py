@@ -65,11 +65,9 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             where the second index is the cutoff time (first is instance id).
             DataFrame will be sorted by (time, instance_id).
 
-        training_window (dict[str -> Timedelta] or Timedelta, optional):
+        training_window (Timedelta, optional):
             Window or windows defining how much older than the cutoff time data
-            can be to be included when calculating the feature.  To specify
-            which entities to apply windows to, use a dictionary mapping entity
-            id -> Timedelta. If None, all older data is used.
+            can be to be included when calculating the feature. If None, all older data is used.
 
         approximate (Timedelta or str): Frequency to group instances with similar
             cutoff times by for features with costly calculations. For example,
@@ -398,11 +396,9 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
 
         entityset (:class:`.EntitySet`): An already initialized entityset.
 
-        training_window (dict[str-> :class:`Timedelta`] or :class:`Timedelta`, optional):
+        training_window (:class:`Timedelta`, optional):
             Window or windows defining how much older than the cutoff time data
-            can be to be included when calculating the feature.  To specify
-            which entities to apply windows to, use a dictionary mapping entity
-            id -> Timedelta. If None, all older data is used.
+            can be to be included when calculating the feature. If None, all older data is used.
 
         profile (bool, optional): Enables profiling if True
 
