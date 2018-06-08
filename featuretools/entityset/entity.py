@@ -392,7 +392,7 @@ class Entity(object):
             columns (list[str]) : Columns to return. Return all columns if None.
             time_last (pd.TimeStamp) : Query data up to and including this
                 time. Only applies if entity has a time index.
-            training_window (dict[str -> Timedelta] or Timedelta, optional):
+            training_window (Timedelta, optional):
                 Data older than time_last by more than this will be ignored
             return_sorted (bool) : Return instances in the same order as
                 the instance_vals are passed.
