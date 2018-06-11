@@ -36,7 +36,7 @@ class AggregationPrimitive(PrimitiveBase):
             assert self.where.entity.id == self.child_entity.id, msg
 
         if use_previous:
-            assert self.child_entity.has_time_index(), (
+            assert self.child_entity.time_index is not None, (
                 "Applying function that requires time index to entity that "
                 "doesn't have one")
 
@@ -70,7 +70,7 @@ class AggregationPrimitive(PrimitiveBase):
         base_features_str = self._base_feature_str()
 
         return u"%s(%s.%s%s%s)" % (self.name.upper(),
-                                   self.child_entity.name,
+                                   self.child_entity.id,
                                    base_features_str,
                                    where_str, use_prev_str)
 
@@ -180,7 +180,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
                 assert self.where.entity.id == self.child_entity.id, msg
 
             if use_previous:
-                assert self.child_entity.has_time_index(), (
+                assert self.child_entity.time_index is not None, (
                     "Applying function that requires time index to entity that"
                     " doesn't have one")
 

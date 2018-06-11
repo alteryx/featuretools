@@ -53,32 +53,35 @@ def test_calc_feature_matrix(entityset):
                  [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
                  [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
                  [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
+    instances = range(17)
+    cutoff_time = pd.DataFrame({'time': times, entityset['log'].index: instances})
     labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
 
     property_feature = IdentityFeature(entityset['log']['value']) > 10
 
     feature_matrix = calculate_feature_matrix([property_feature],
                                               entityset,
-                                              instance_ids=range(17),
-                                              cutoff_time=times,
+                                              cutoff_time=cutoff_time,
                                               verbose=True)
 
     assert (feature_matrix == labels).values.all()
 
     with pytest.raises(AssertionError):
-        feature_matrix = calculate_feature_matrix('features', entityset, instance_ids=range(17),
-                                                  cutoff_time=times)
+        feature_matrix = calculate_feature_matrix('features', entityset, cutoff_time=cutoff_time)
     with pytest.raises(AssertionError):
-        feature_matrix = calculate_feature_matrix([], entityset, instance_ids=range(17),
-                                                  cutoff_time=times)
+        feature_matrix = calculate_feature_matrix([], entityset, cutoff_time=cutoff_time)
     with pytest.raises(AssertionError):
-        feature_matrix = calculate_feature_matrix([1, 2, 3], entityset, instance_ids=range(17),
-                                                  cutoff_time=times)
+        feature_matrix = calculate_feature_matrix([1, 2, 3], entityset, cutoff_time=cutoff_time)
     with pytest.raises(TypeError):
         calculate_feature_matrix([property_feature],
                                  entityset,
                                  instance_ids=range(17),
                                  cutoff_time=17)
+    with pytest.raises(TypeError):
+        calculate_feature_matrix([property_feature],
+                                 entityset,
+                                 instance_ids=range(17),
+                                 cutoff_time=times)
 
 
 def test_cfm_approximate_correct_ordering():
@@ -125,9 +128,6 @@ def test_cfm_approximate_correct_ordering():
     assert(np.all(feature_matrix_2.reset_index('time').reset_index()[['instance', 'time']].values == feature_matrix_2[['trip_id', 'flight_time']].values))
     for column in feature_matrix:
         for x, y in zip(feature_matrix[column], feature_matrix_2[column]):
-            if not ((pd.isnull(x) and pd.isnull(y)) or (x == y)):
-                import pdb
-                pdb.set_trace()
             assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
 
 
@@ -136,24 +136,29 @@ def test_cfm_no_cutoff_time_index(entityset):
     agg_feat = Count(es['log']['id'], es['sessions'])
     agg_feat4 = Sum(agg_feat, es['customers'])
     dfeat = DirectFeature(agg_feat4, es['sessions'])
+    cutoff_time = pd.DataFrame({
+        'time': [datetime(2013, 4, 9, 10, 31, 19), datetime(2013, 4, 9, 11, 0, 0)],
+        'instance_id': [0, 2]
+    })
     feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
                                               entityset,
-                                              instance_ids=[0, 2],
                                               cutoff_time_in_index=False,
                                               approximate=Timedelta(12, 's'),
-                                              cutoff_time=[datetime(2013, 4, 9, 10, 31, 19),
-                                                           datetime(2013, 4, 9, 11, 0, 0)])
+                                              cutoff_time=cutoff_time)
     assert feature_matrix.index.name == 'id'
     assert feature_matrix.index.values.tolist() == [0, 2]
     assert feature_matrix[dfeat.get_name()].tolist() == [10, 10]
     assert feature_matrix[agg_feat.get_name()].tolist() == [5, 1]
+
+    cutoff_time = pd.DataFrame({
+        'time': [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)],
+        'instance_id': [0, 2]
+    })
     feature_matrix_2 = calculate_feature_matrix([dfeat, agg_feat],
                                                 entityset,
-                                                instance_ids=[0, 2],
                                                 cutoff_time_in_index=False,
                                                 approximate=Timedelta(10, 's'),
-                                                cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
-                                                             datetime(2011, 4, 9, 11, 0, 0)])
+                                                cutoff_time=cutoff_time)
     assert feature_matrix_2.index.name == 'id'
     assert feature_matrix_2.index.tolist() == [0, 2]
     assert feature_matrix_2[dfeat.get_name()].tolist() == [7, 10]
@@ -167,12 +172,12 @@ def test_saveprogress(entityset):
                  [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
                  [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
                  [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
     property_feature = IdentityFeature(entityset['log']['value']) > 10
     save_progress = tempfile.mkdtemp()
     fm_save = calculate_feature_matrix([property_feature],
                                        entityset,
-                                       instance_ids=range(17),
-                                       cutoff_time=times,
+                                       cutoff_time=cutoff_time,
                                        save_progress=save_progress)
     _, _, files = next(os.walk(save_progress))
     files = [os.path.join(save_progress, file) for file in files]
@@ -186,8 +191,7 @@ def test_saveprogress(entityset):
     merged_df.set_index(pd.DatetimeIndex(times), append=True, inplace=True)
     fm_no_save = calculate_feature_matrix([property_feature],
                                           entityset,
-                                          instance_ids=range(17),
-                                          cutoff_time=times)
+                                          cutoff_time=cutoff_time)
     assert np.all((merged_df.sort_index().values) == (fm_save.sort_index().values))
     assert np.all((fm_no_save.sort_index().values) == (fm_save.sort_index().values))
     assert np.all((fm_no_save.sort_index().values) == (merged_df.sort_index().values))
@@ -196,10 +200,11 @@ def test_saveprogress(entityset):
 
 def test_cutoff_time_correctly(entityset):
     property_feature = Count(entityset['log']['id'], entityset['customers'])
+    times = [datetime(2011, 4, 10), datetime(2011, 4, 11), datetime(2011, 4, 7)]
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 1, 2]})
     feature_matrix = calculate_feature_matrix([property_feature],
-                                              entityset, instance_ids=[0, 1, 2],
-                                              cutoff_time=[datetime(2011, 4, 10), datetime(2011, 4, 11),
-                                                           datetime(2011, 4, 7)])
+                                              entityset,
+                                              cutoff_time=cutoff_time)
     labels = [0, 10, 5]
     assert (feature_matrix == labels).values.all()
 
@@ -236,12 +241,13 @@ def test_training_window(entityset):
     dagg = DirectFeature(top_level_agg, entityset['customers'])
 
     # for now, warns if last_time_index not present
+    times = [datetime(2011, 4, 9, 12, 31),
+             datetime(2011, 4, 10, 11),
+             datetime(2011, 4, 10, 13, 10, 1)]
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 1, 2]})
     feature_matrix = calculate_feature_matrix([property_feature, dagg],
                                               entityset,
-                                              instance_ids=[0, 1, 2],
-                                              cutoff_time=[datetime(2011, 4, 9, 12, 31),
-                                                           datetime(2011, 4, 10, 11),
-                                                           datetime(2011, 4, 10, 13, 10, 1)],
+                                              cutoff_time=cutoff_time,
                                               training_window='2 hours')
 
     entityset.add_last_time_indexes()
@@ -249,18 +255,12 @@ def test_training_window(entityset):
     with pytest.raises(AssertionError):
         feature_matrix = calculate_feature_matrix([property_feature],
                                                   entityset,
-                                                  instance_ids=[0, 1, 2],
-                                                  cutoff_time=[datetime(2011, 4, 9, 12, 31),
-                                                               datetime(2011, 4, 10, 11),
-                                                               datetime(2011, 4, 10, 13, 10, 1)],
+                                                  cutoff_time=cutoff_time,
                                                   training_window=Timedelta(2, 'observations', entity='log'))
 
     feature_matrix = calculate_feature_matrix([property_feature, dagg],
                                               entityset,
-                                              instance_ids=[0, 1, 2, 4],
-                                              cutoff_time=[datetime(2011, 4, 9, 12, 31),
-                                                           datetime(2011, 4, 10, 11),
-                                                           datetime(2011, 4, 10, 13, 10, 1)],
+                                              cutoff_time=cutoff_time,
                                               training_window='2 hours')
     prop_values = [5, 5, 1]
     dagg_values = [3, 2, 1]
@@ -287,25 +287,25 @@ def test_training_window_recent_time_index(entityset):
     df = pd.DataFrame(row)
     df.index = range(3, 4)
     df = entityset['customers'].df.append(df, sort=False)
-    entityset['customers'].update_data(df)
+    entityset['customers'].update_data(df=df,
+                                       recalculate_last_time_indexes=False)
     entityset.add_last_time_indexes()
 
     property_feature = Count(entityset['log']['id'], entityset['customers'])
     top_level_agg = Count(entityset['customers']['id'], entityset[u'régions'])
     dagg = DirectFeature(top_level_agg, entityset['customers'])
-
+    instance_ids = [0, 1, 2, 3]
+    times = [datetime(2011, 4, 9, 12, 31), datetime(2011, 4, 10, 11),
+             datetime(2011, 4, 10, 13, 10, 1), datetime(2011, 4, 10, 1, 59, 59)]
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': instance_ids})
     feature_matrix = calculate_feature_matrix(
         [property_feature, dagg],
         entityset,
-        instance_ids=[0, 1, 2, 3],
-        cutoff_time=[datetime(2011, 4, 9, 12, 31),
-                     datetime(2011, 4, 10, 11),
-                     datetime(2011, 4, 10, 13, 10, 1),
-                     datetime(2011, 4, 10, 1, 59, 59)],
+        cutoff_time=cutoff_time,
         training_window='2 hours'
     )
     prop_values = [5, 5, 1, 0]
-    dagg_values = [3, 2, 1, 2]
+    dagg_values = [3, 2, 1, 3]
     feature_matrix.sort_index(inplace=True)
     assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
     assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
@@ -316,13 +316,12 @@ def test_approximate_multiple_instances_per_cutoff_time(entityset):
     agg_feat = Count(es['log']['id'], es['sessions'])
     agg_feat2 = Sum(agg_feat, es['customers'])
     dfeat = DirectFeature(agg_feat2, es['sessions'])
-
+    times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 2]})
     feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
                                               entityset,
-                                              instance_ids=[0, 2],
                                               approximate=Timedelta(1, 'week'),
-                                              cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
-                                                           datetime(2011, 4, 9, 11, 0, 0)],
+                                              cutoff_time=cutoff_time,
                                               chunk_size="cutoff time")
     assert feature_matrix.shape[0] == 2
     assert feature_matrix[dfeat.get_name()].dropna().shape[0] == 0
@@ -334,13 +333,13 @@ def test_approximate_dfeat_of_agg_on_target(entityset):
     agg_feat = Count(es['log']['id'], es['sessions'])
     agg_feat2 = Sum(agg_feat, es['customers'])
     dfeat = DirectFeature(agg_feat2, es['sessions'])
-
+    times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 2]})
     feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
                                               entityset,
                                               instance_ids=[0, 2],
                                               approximate=Timedelta(10, 's'),
-                                              cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
-                                                           datetime(2011, 4, 9, 11, 0, 0)])
+                                              cutoff_time=cutoff_time)
     assert feature_matrix[dfeat.get_name()].tolist() == [7, 10]
     assert feature_matrix[agg_feat.get_name()].tolist() == [5, 1]
 
@@ -351,14 +350,13 @@ def test_approximate_dfeat_of_need_all_values(entityset):
     agg_feat = Sum(p, es['sessions'])
     agg_feat2 = Sum(agg_feat, es['customers'])
     dfeat = DirectFeature(agg_feat2, es['sessions'])
-
+    times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 2]})
     feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
                                               entityset,
-                                              instance_ids=[0, 2],
                                               approximate=Timedelta(10, 's'),
                                               cutoff_time_in_index=True,
-                                              cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
-                                                           datetime(2011, 4, 9, 11, 0, 0)])
+                                              cutoff_time=cutoff_time)
     log_df = es['log'].df
     instances = [0, 2]
     cutoffs = [pd.Timestamp('2011-04-09 10:31:19'), pd.Timestamp('2011-04-09 11:00:00')]
@@ -389,46 +387,39 @@ def test_uses_full_entity_feat_of_approximate(entityset):
     dfeat = DirectFeature(agg_feat2, es['sessions'])
     dfeat2 = DirectFeature(agg_feat3, es['sessions'])
     p = Percentile(dfeat)
-
+    times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 2]})
     # only dfeat2 should be approximated
     # because Percentile needs all values
 
     feature_matrix_only_dfeat2 = calculate_feature_matrix(
         [dfeat2],
         entityset,
-        instance_ids=[0, 2],
         approximate=Timedelta(10, 's'),
         cutoff_time_in_index=True,
-        cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
-                     datetime(2011, 4, 9, 11, 0, 0)])
+        cutoff_time=cutoff_time)
     assert feature_matrix_only_dfeat2[dfeat2.get_name()].tolist() == [1, 0]
 
     feature_matrix_approx = calculate_feature_matrix(
         [p, dfeat, dfeat2, agg_feat],
         entityset,
-        instance_ids=[0, 2],
         approximate=Timedelta(10, 's'),
         cutoff_time_in_index=True,
-        cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
-                     datetime(2011, 4, 9, 11, 0, 0)])
+        cutoff_time=cutoff_time)
     assert feature_matrix_only_dfeat2[dfeat2.get_name()].tolist() == feature_matrix_approx[dfeat2.get_name()].tolist()
 
     feature_matrix_small_approx = calculate_feature_matrix(
         [p, dfeat, dfeat2, agg_feat],
         entityset,
-        instance_ids=[0, 2],
         approximate=Timedelta(10, 'ms'),
         cutoff_time_in_index=True,
-        cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
-                     datetime(2011, 4, 9, 11, 0, 0)])
+        cutoff_time=cutoff_time)
 
     feature_matrix_no_approx = calculate_feature_matrix(
         [p, dfeat, dfeat2, agg_feat],
         entityset,
-        instance_ids=[0, 2],
         cutoff_time_in_index=True,
-        cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
-                     datetime(2011, 4, 9, 11, 0, 0)])
+        cutoff_time=cutoff_time)
     for f in [p, dfeat, agg_feat]:
         for fm1, fm2 in combinations([feature_matrix_approx,
                                       feature_matrix_small_approx,
@@ -441,13 +432,12 @@ def test_approximate_dfeat_of_dfeat_of_agg_on_target(entityset):
     agg_feat = Count(es['log']['id'], es['sessions'])
     agg_feat2 = Sum(agg_feat, es['customers'])
     dfeat = DirectFeature(agg_feat2, es['log'])
-
+    times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 2]})
     feature_matrix = calculate_feature_matrix([dfeat],
                                               entityset,
-                                              instance_ids=[0, 2],
                                               approximate=Timedelta(10, 's'),
-                                              cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
-                                                           datetime(2011, 4, 9, 11, 0, 0)])
+                                              cutoff_time=cutoff_time)
     assert feature_matrix[dfeat.get_name()].tolist() == [7, 10]
 
 
@@ -457,13 +447,12 @@ def test_empty_path_approximate_full(entityset):
     agg_feat = Count(es['log']['id'], es['sessions'])
     agg_feat2 = Sum(agg_feat, es['customers'])
     dfeat = DirectFeature(agg_feat2, es['sessions'])
-
+    times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 2]})
     feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
                                               es,
-                                              instance_ids=[0, 2],
                                               approximate=Timedelta(10, 's'),
-                                              cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
-                                                           datetime(2011, 4, 9, 11, 0, 0)])
+                                              cutoff_time=cutoff_time)
     vals1 = feature_matrix[dfeat.get_name()].tolist()
     assert np.isnan(vals1[0])
     assert np.isnan(vals1[1])
@@ -476,13 +465,12 @@ def test_empty_path_approximate_partial(entityset):
     agg_feat = Count(es['log']['id'], es['sessions'])
     agg_feat2 = Sum(agg_feat, es['customers'])
     dfeat = DirectFeature(agg_feat2, es['sessions'])
-
+    times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 2]})
     feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
                                               es,
-                                              instance_ids=[0, 2],
                                               approximate=Timedelta(10, 's'),
-                                              cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
-                                                           datetime(2011, 4, 9, 11, 0, 0)])
+                                              cutoff_time=cutoff_time)
     vals1 = feature_matrix[dfeat.get_name()].tolist()
     assert vals1[0] == 7
     assert np.isnan(vals1[1])
@@ -497,13 +485,12 @@ def test_approx_base_feature_is_also_first_class_feature(entityset):
     customer_agg_feat = Sum(agg_feat, es['customers'])
     # This is to be approximated
     sess_to_cust = DirectFeature(customer_agg_feat, es['sessions'])
-
+    times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 2]})
     feature_matrix = calculate_feature_matrix([sess_to_cust, agg_feat],
                                               entityset,
-                                              instance_ids=[0, 2],
                                               approximate=Timedelta(10, 's'),
-                                              cutoff_time=[datetime(2011, 4, 9, 10, 31, 19),
-                                                           datetime(2011, 4, 9, 11, 0, 0)])
+                                              cutoff_time=cutoff_time)
     vals1 = feature_matrix[sess_to_cust.get_name()].tolist()
     assert vals1 == [8.5, 7]
     vals2 = feature_matrix[agg_feat.get_name()].tolist()
@@ -781,13 +768,12 @@ def test_verbose_cutoff_time_chunks(entityset):
                  [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
                  [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
     labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
-
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
     property_feature = IdentityFeature(entityset['log']['value']) > 10
 
     feature_matrix = calculate_feature_matrix([property_feature],
                                               entityset,
-                                              instance_ids=range(17),
-                                              cutoff_time=times,
+                                              cutoff_time=cutoff_time,
                                               chunk_size="cutoff time",
                                               verbose=True)
 
@@ -802,15 +788,14 @@ def test_dask_kwargs(entityset):
                  [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
                  [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
     labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
-
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
     property_feature = IdentityFeature(entityset['log']['value']) > 10
 
     with cluster() as (scheduler, [a, b]):
         dkwargs = {'cluster': scheduler['address']}
         feature_matrix = calculate_feature_matrix([property_feature],
                                                   entityset=entityset,
-                                                  instance_ids=range(17),
-                                                  cutoff_time=times,
+                                                  cutoff_time=cutoff_time,
                                                   verbose=True,
                                                   chunk_size=.13,
                                                   dask_kwargs=dkwargs,
