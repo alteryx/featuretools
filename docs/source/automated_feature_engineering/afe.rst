@@ -4,7 +4,7 @@
 Deep Feature Synthesis
 ======================
 
-Deep Feature Synthesis (DFS) is an automated method for performing feature engineering on relational and transactional data.
+Deep Feature Synthesis (DFS) is an automated method for performing feature engineering on relational and temporal data.
 
 
 Input Data

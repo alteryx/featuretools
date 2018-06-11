@@ -116,6 +116,7 @@ class TestLastTimeIndex(object):
         row = pd.DataFrame(row_values, index=pd.Index([11]))
         df = values.df.append(row, sort=True)
         df = df.sort_values(['value_time', 'values_id'], kind='mergesort')
+        df.index.name = 'values_id'
         values.update_data(df)
         values_es.add_last_time_indexes()
         # lti value should default to instance's time index

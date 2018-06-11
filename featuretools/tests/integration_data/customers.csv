@@ -1,4 +1,0 @@
-id,age,région_id,cohort,cohort_name,loves_ice_cream,favorite_quote,signup_date,upgrade_date,cancel_date,cancel_reason,date_of_birth,engagement_level
-0,33,United States,0,Early Adopters,True,The proletariat have nothing to lose but their chains,2011-04-08,2011-04-10,2011-06-08,reason_1,1993-03-08,1
-1,25,United States,1,Late Adopters,False,Capitalism deprives us all of self-determination,2011-04-09,2011-04-11,2011-10-09,reason_2,1926-08-02,3
-2,56,United States,0,Early Adopters,True,All members of the working classes must seize the means of production.,2011-04-06,2011-04-07,2012-01-06,reason_1,1993-04-20,2

@@ -26,7 +26,7 @@ def test_timedelta_equality():
 
 
 def test_delta_with_observations(es):
-    df = es._related_instances('customers', 'log', 0)
+    df = es.related_instances('customers', 'log', 0)
     all_times = df['datetime'].sort_values().tolist()
 
     # 4 observation delta
@@ -66,7 +66,7 @@ def test_delta_with_observations(es):
 
 
 def test_delta_with_time_unit_matches_pandas(es):
-    df = es._related_instances('customers', 'log', 0)
+    df = es.related_instances('customers', 'log', 0)
     all_times = df['datetime'].sort_values().tolist()
 
     # 4 observation delta
@@ -148,7 +148,7 @@ def test_feature_takes_timedelta_string(es):
 
 
 def test_deltas_week(es):
-    df = es._related_instances('customers', 'log', 0)
+    df = es.related_instances('customers', 'log', 0)
     all_times = df['datetime'].sort_values().tolist()
     delta_week = Timedelta(1, "w")
     delta_days = Timedelta(7, "d")
