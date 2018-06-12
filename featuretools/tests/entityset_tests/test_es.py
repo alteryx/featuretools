@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import copy
 import os
 import shutil
@@ -12,7 +14,7 @@ from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
 from featuretools import variable_types
-from featuretools.entityset import EntitySet
+from featuretools.entityset import EntitySet, Relationship
 from featuretools.tests import integration_data
 
 
@@ -21,9 +23,51 @@ def entityset():
     return make_ecommerce_entityset()
 
 
-@pytest.fixture
-def entity(entityset):
-    return entityset['log']
+def test_cannot_readd_relationships_that_already_exists(entityset):
+    before_len = len(entityset.relationships)
+    entityset.add_relationship(entityset.relationships[0])
+    after_len = len(entityset.relationships)
+    assert before_len == after_len
+
+
+def test_add_relationships_convert_type(entityset):
+    for r in entityset.relationships:
+        parent_e = entityset[r.parent_entity.id]
+        child_e = entityset[r.child_entity.id]
+        assert type(r.parent_variable) == variable_types.Index
+        assert type(r.child_variable) == variable_types.Id
+        assert parent_e.df[r.parent_variable.id].dtype == child_e.df[r.child_variable.id].dtype
+
+
+def test_add_relationship_errors_on_dtype_mismatch(entityset):
+    log_2_df = entityset['log'].df.copy()
+    log_variable_types = {
+        'id': variable_types.Categorical,
+        'session_id': variable_types.Id,
+        'product_id': variable_types.Id,
+        'datetime': variable_types.Datetime,
+        'value': variable_types.Numeric,
+        'value_2': variable_types.Numeric,
+        'latlong': variable_types.LatLong,
+        'latlong2': variable_types.LatLong,
+        'value_many_nans': variable_types.Numeric,
+        'priority_level': variable_types.Ordinal,
+        'purchased': variable_types.Boolean,
+        'comments': variable_types.Text
+    }
+    entityset.entity_from_dataframe(entity_id='log2',
+                                    dataframe=log_2_df,
+                                    index='id',
+                                    variable_types=log_variable_types,
+                                    time_index='datetime',
+                                    encoding='utf-8')
+    with pytest.raises(ValueError):
+        mismatch = Relationship(entityset[u'régions']['id'], entityset['log2']['session_id'])
+        entityset.add_relationship(mismatch)
+
+    with pytest.raises(ValueError):
+        mismatch = Relationship(entityset[u'régions']['id'], entityset['log2']['session_id'])
+        entityset.add_relationship(mismatch)
 
 
 def test_query_by_id(entityset):
@@ -44,6 +88,11 @@ def test_query_by_id_with_time(entityset):
         time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
 
     assert df['id'].get_values().tolist() == [0, 1, 2]
+
+
+def test_get_forward_entities_deep(entityset):
+    entities = entityset.get_forward_entities('log', 'deep')
+    assert entities == set(['sessions', 'customers', 'products', u'régions', 'cohorts'])
 
 
 def test_query_by_variable_with_time(entityset):
@@ -119,6 +168,12 @@ def test_extra_variable_type():
         entityset.entity_from_dataframe(entity_id='test_entity',
                                         index='id',
                                         variable_types=vtypes, dataframe=df)
+
+
+def test_add_parent_not_index_varible(entityset):
+    with pytest.raises(AttributeError):
+        entityset.add_relationship(Relationship(entityset[u'régions']['language'],
+                                                entityset['customers'][u'région_id']))
 
 
 def test_unknown_index():
@@ -217,7 +272,7 @@ def test_converts_datetime():
                                      time_index="time", variable_types=vtypes,
                                      dataframe=df)
     pd_col = entityset['test_entity'].df['time']
-    # assert type(es['test_entity']['time']) == variable_types.Datetime
+    # assert type(entityset['test_entity']['time']) == variable_types.Datetime
     assert type(pd_col[0]) == pd.Timestamp
 
 
@@ -334,73 +389,6 @@ def test_column_funcs(entityset):
     assert set(entityset['test_entity'].df['id']) == set(df['id'])
 
 
-def test_combine_variables(entityset):
-    # basic case
-    entityset.combine_variables('log', 'comment+product_id',
-                                ['comments', 'product_id'])
-
-    assert entityset['log']['comment+product_id'].dtype == 'categorical'
-    assert 'comment+product_id' in entityset['log'].df
-
-    # one variable to combine
-    entityset.combine_variables('log', 'comment+',
-                                ['comments'])
-
-    assert entityset['log']['comment+'].dtype == 'categorical'
-    assert 'comment+' in entityset['log'].df
-
-    # drop columns
-    entityset.combine_variables('log', 'new_priority_level',
-                                ['priority_level'],
-                                drop=True)
-
-    assert entityset['log']['new_priority_level'].dtype == 'categorical'
-    assert 'new_priority_level' in entityset['log'].df
-    assert 'priority_level' not in entityset['log'].df
-    assert 'priority_level' not in entityset['log'].variables
-
-    # hashed
-    entityset.combine_variables('log', 'hashed_comment_product',
-                                ['comments', 'product_id'],
-                                hashed=True)
-
-    assert entityset['log']['comment+product_id'].dtype == 'categorical'
-    assert entityset['log'].df['hashed_comment_product'].dtype == 'int64'
-    assert 'comment+product_id' in entityset['log'].df
-
-
-def test_add_parent_time_index(entityset):
-    entityset = copy.deepcopy(entityset)
-    entityset.add_parent_time_index(entity_id='sessions',
-                                    parent_entity_id='customers',
-                                    parent_time_index_variable=None,
-                                    child_time_index_variable='session_date',
-                                    include_secondary_time_index=True,
-                                    secondary_time_index_variables=['cancel_reason'])
-    sessions = entityset['sessions']
-    assert sessions.time_index == 'session_date'
-    assert sessions.secondary_time_index == {
-        'cancel_date': ['cancel_reason']}
-    true_session_dates = ([datetime(2011, 4, 6)] +
-                          [datetime(2011, 4, 8)] * 3 +
-                          [datetime(2011, 4, 9)] * 2)
-    for t, x in zip(true_session_dates, sessions.df['session_date']):
-        assert t == x.to_pydatetime()
-
-    true_cancel_dates = ([datetime(2012, 1, 6)] +
-                         [datetime(2011, 6, 8)] * 3 +
-                         [datetime(2011, 10, 9)] * 2)
-
-    for t, x in zip(true_cancel_dates, sessions.df['cancel_date']):
-        assert t == x.to_pydatetime()
-    true_cancel_reasons = (['reason_1'] +
-                           ['reason_1'] * 3 +
-                           ['reason_2'] * 2)
-
-    for t, x in zip(true_cancel_reasons, sessions.df['cancel_reason']):
-        assert t == x
-
-
 def test_sort_time_id():
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                                     "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s")[::-1]})
@@ -443,7 +431,6 @@ def test_concat_entitysets(entityset):
                                     make_index=True,
                                     variable_types=vtypes,
                                     dataframe=df)
-    import copy
     assert entityset.__eq__(entityset)
     entityset_1 = copy.deepcopy(entityset)
     entityset_2 = copy.deepcopy(entityset)
@@ -462,7 +449,7 @@ def test_concat_entitysets(entityset):
             es[entity].update_data(df=df.loc[rows[i]])
 
     # make sure internal indexes work before concat
-    regions = entityset_1['customers'].query_by_values(['United States'], variable_id='region_id')
+    regions = entityset_1['customers'].query_by_values(['United States'], variable_id=u'région_id')
     assert regions.index.isin(entityset_1['customers'].df.index).all()
 
     assert entityset_1.__eq__(entityset_2)
@@ -607,7 +594,7 @@ def test_checks_time_type_setting_secondary_time_index(entityset):
 
 def test_related_instances_backward(entityset):
     result = entityset.related_instances(
-        start_entity_id='regions', final_entity_id='log',
+        start_entity_id=u'régions', final_entity_id='log',
         instance_ids=['United States'])
 
     col = entityset['log'].df['id'].values
@@ -615,7 +602,7 @@ def test_related_instances_backward(entityset):
     assert set(result['id'].values) == set(col)
 
     result = entityset.related_instances(
-        start_entity_id='regions', final_entity_id='log',
+        start_entity_id=u'régions', final_entity_id='log',
         instance_ids=['Mexico'])
 
     assert len(result['id'].values) == 0
@@ -623,7 +610,7 @@ def test_related_instances_backward(entityset):
 
 def test_related_instances_forward(entityset):
     result = entityset.related_instances(
-        start_entity_id='log', final_entity_id='regions',
+        start_entity_id='log', final_entity_id=u'régions',
         instance_ids=[0, 1])
 
     assert len(result['id'].values) == 1
@@ -671,7 +658,7 @@ def test_related_instances_link_vars(entityset):
 
 
 def test_get_pandas_slice(entityset):
-    filter_eids = ['products', 'regions', 'customers']
+    filter_eids = ['products', u'régions', 'customers']
     result = entityset.get_pandas_data_slice(filter_entity_ids=filter_eids,
                                              index_eid='customers',
                                              instances=[0])
@@ -681,20 +668,20 @@ def test_get_pandas_slice(entityset):
     assert set(result['products'].keys()), set(['products', 'log'])
     assert set(result['customers'].keys()) == set(
         ['customers', 'sessions', 'log'])
-    assert set(result['regions'].keys()) == set(
-        ['regions', 'stores', 'customers', 'sessions', 'log'])
+    assert set(result[u'régions'].keys()) == set(
+        [u'régions', 'stores', 'customers', 'sessions', 'log'])
 
     # make sure different subsets of the log are included in each filtering
     assert set(result['customers']['log']['id'].values) == set(range(10))
     assert set(result['products']['log']['id'].values) == set(
         list(range(10)) + list(range(11, 15)))
-    assert set(result['regions']['log']['id'].values) == set(range(17))
+    assert set(result[u'régions']['log']['id'].values) == set(range(17))
 
 
 def test_get_pandas_slice_times(entityset):
     # todo these test used to use time first time last. i remvoed and it
     # still passes,but we should double check this okay
-    filter_eids = ['products', 'regions', 'customers']
+    filter_eids = ['products', u'régions', 'customers']
     start = np.datetime64(datetime(2011, 4, 1))
     end = np.datetime64(datetime(2011, 4, 9, 10, 31, 10))
     result = entityset.get_pandas_data_slice(filter_entity_ids=filter_eids,
@@ -715,7 +702,7 @@ def test_get_pandas_slice_times(entityset):
 def test_get_pandas_slice_times_include(entityset):
     # todo these test used to use time first time last. i remvoed and it
     # still passes,but we should double check this okay
-    filter_eids = ['products', 'regions', 'customers']
+    filter_eids = ['products', u'régions', 'customers']
     start = np.datetime64(datetime(2011, 4, 1))
     end = np.datetime64(datetime(2011, 4, 9, 10, 31, 10))
     result = entityset.get_pandas_data_slice(filter_entity_ids=filter_eids,
@@ -734,7 +721,7 @@ def test_get_pandas_slice_times_include(entityset):
 
 
 def test_get_pandas_slice_secondary_index(entityset):
-    filter_eids = ['products', 'regions', 'customers']
+    filter_eids = ['products', u'régions', 'customers']
     # this date is before the cancel date of customers 1 and 2
     end = np.datetime64(datetime(2011, 10, 1))
     all_instances = [0, 1, 2]
@@ -753,14 +740,14 @@ def test_get_pandas_slice_secondary_index(entityset):
 
 def test_add_link_vars(entityset):
     eframes = {e_id: entityset[e_id].df
-               for e_id in ["log", "sessions", "customers", "regions"]}
+               for e_id in ["log", "sessions", "customers", u"régions"]}
 
     entityset._add_multigenerational_link_vars(frames=eframes,
-                                               start_entity_id='regions',
+                                               start_entity_id=u'régions',
                                                end_entity_id='log')
 
     assert 'sessions.customer_id' in eframes['log'].columns
-    assert 'sessions.customers.region_id' in eframes['log'].columns
+    assert u'sessions.customers.région_id' in eframes['log'].columns
 
 
 def test_normalize_entity(entityset):
@@ -832,18 +819,17 @@ def test_normalize_entity_new_time_index(entityset):
 
 
 def test_secondary_time_index(entityset):
-    es = entityset
-    es.normalize_entity('log', 'values', 'value',
-                        make_time_index=True,
-                        make_secondary_time_index={
-                            'datetime': ['comments']},
-                        new_entity_time_index="value_time",
-                        new_entity_secondary_time_index='second_ti',
-                        convert_links_to_integers=True)
+    entityset.normalize_entity('log', 'values', 'value',
+                               make_time_index=True,
+                               make_secondary_time_index={
+                                   'datetime': ['comments']},
+                               new_entity_time_index="value_time",
+                               new_entity_secondary_time_index='second_ti',
+                               convert_links_to_integers=True)
 
-    assert (isinstance(es['values'].df['second_ti'], pd.Series))
-    assert (es['values']['second_ti']._dtype_repr == 'datetime')
-    assert (es['values'].secondary_time_index == {
+    assert (isinstance(entityset['values'].df['second_ti'], pd.Series))
+    assert (entityset['values']['second_ti']._dtype_repr == 'datetime')
+    assert (entityset['values'].secondary_time_index == {
             'second_ti': ['comments', 'second_ti']})
 
 

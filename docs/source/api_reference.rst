@@ -190,7 +190,6 @@ Feature methods
 .. autosummary::
     :toctree: generated/
 
-    PrimitiveBase.head
     PrimitiveBase.rename
     PrimitiveBase.get_depth
 
@@ -244,7 +243,6 @@ EntitySet attributes
 
     EntitySet.id
     EntitySet.name
-    EntitySet.entity_names
     EntitySet.entities
     EntitySet.relationships
 
@@ -256,7 +254,6 @@ EntitySet load and prepare data
     EntitySet.entity_from_dataframe
     EntitySet.add_relationship
     EntitySet.normalize_entity
-    EntitySet.combine_variables
     EntitySet.add_interesting_values
 
 EntitySet serialization
@@ -284,7 +281,6 @@ Entity attributes
 .. autosummary::
     :toctree: generated/
 
-    Entity.name
     Entity.variables
     Entity.index
     Entity.time_index
@@ -295,12 +291,9 @@ Entity methods
 .. autosummary::
     :toctree: generated/
 
-    Entity.head
-    Entity.show_instance
     Entity.is_child_of
     Entity.is_parent_of
     Entity.convert_variable_type
-    Entity.has_time_index
     Entity.add_interesting_values
 
 Relationship attributes

@@ -148,7 +148,6 @@ def deserialize(path):
     Args:
         path (str): Path of directory where entityset is stored
     """
-
     from featuretools import EntitySet
     entityset_path = os.path.abspath(os.path.expanduser(path))
     with open(os.path.join(entityset_path, 'metadata.json')) as f:

@@ -78,7 +78,6 @@ class Entity(object):
         self._verbose = verbose
         self.created_index = created_index
         self.convert_all_variable_data(variable_types)
-        self.attempt_cast_index_to_int(index)
         self.id = id
         self.entityset = entityset
         self.indexed_by = {}
@@ -91,7 +90,6 @@ class Entity(object):
             if ti not in cols:
                 cols.append(ti)
 
-        relationships = relationships or []
         link_vars = [v.id for rel in relationships for v in [rel.parent_variable, rel.child_variable]
                      if v.entity.id == self.id]
 
@@ -120,26 +118,25 @@ class Entity(object):
         if self.index is not None and self.index not in inferred_variable_types:
             self.add_variable(self.index, vtypes.Index)
 
-        # make sure index is at the beginning
-        index_variable = [v for v in self.variables
-                          if v.id == self.index][0]
-        self.variables = [index_variable] + [v for v in self.variables
-                                             if v.id != self.index]
-
         self.update_data(df=self.df,
                          already_sorted=already_sorted,
                          recalculate_last_time_indexes=False,
                          reindex=False)
 
     def __repr__(self):
-        repr_out = "Entity: {}\n".format(self.id)
-        repr_out += "  Variables:"
+        repr_out = u"Entity: {}\n".format(self.id)
+        repr_out += u"  Variables:"
         for v in self.variables:
-            repr_out += "\n    {} (dtype: {})".format(v.id, v.dtype)
+            repr_out += u"\n    {} (dtype: {})".format(v.id, v.dtype)
 
         shape = self.shape
         repr_out += u"\n  Shape:\n    (Rows: {}, Columns: {})".format(
             shape[0], shape[1])
+
+        # encode for python 2
+        if type(repr_out) != str:
+            repr_out = repr_out.encode("utf-8")
+
         return repr_out
 
     @property
@@ -431,19 +428,6 @@ class Entity(object):
         rels = self.entityset.get_backward_relationships(self.id)
         return entity_id in [r.child_entity.id for r in rels]
 
-    def attempt_cast_index_to_int(self, index_var):
-        dtype_name = self.df[index_var].dtype.name
-        if (dtype_name.find('int') == -1 and
-                dtype_name.find('object') > -1 or dtype_name.find('categ') > -1):
-            if isinstance(self.df[index_var].iloc[0], (int, np.int32, np.int64)):
-                try:
-                    self.df[index_var] = self.df[index_var].astype(int)
-                except ValueError:
-                    pass
-
-    def get_all_instances(self):
-        return self.df[self.index]
-
     def query_by_values(self, instance_vals, variable_id=None, columns=None,
                         time_last=None, training_window=None,
                         return_sorted=False, start=None, end=None,
@@ -457,7 +441,7 @@ class Entity(object):
             columns (list[str]) : Columns to return. Return all columns if None.
             time_last (pd.TimeStamp) : Query data up to and including this
                 time. Only applies if entity has a time index.
-            training_window (dict[str -> Timedelta] or Timedelta, optional):
+            training_window (Timedelta, optional):
                 Data older than time_last by more than this will be ignored
             return_sorted (bool) : Return instances in the same order as
                 the instance_vals are passed.
@@ -481,7 +465,7 @@ class Entity(object):
             df = self.df
 
         elif variable_id is None or variable_id == self.index:
-            df = self.df.loc[instance_vals]
+            df = self.df.reindex(instance_vals)
             df.dropna(subset=[self.index], inplace=True)
 
         elif variable_id in self.indexed_by:
@@ -653,20 +637,6 @@ class Entity(object):
         if recalculate_last_time_indexes:
             self.entityset.add_last_time_indexes(updated_entities=[self.id])
         self.add_all_variable_statistics()
-
-    def sample(self, n):
-        df = self.df
-        n = min(n, len(df))
-        sampled = df.sample(n)
-        self.df = sampled
-        indexed_by = self.indexed_by
-        self.indexed_by = {}
-        copied = copy.copy(self)
-        self.df = df
-        self.indexed_by = indexed_by
-        for variable in copied.variables:
-            variable.entity = copied
-        return copied
 
     def add_interesting_values(self, max_values=5, verbose=False):
         """

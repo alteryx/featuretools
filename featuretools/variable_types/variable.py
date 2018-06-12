@@ -61,7 +61,13 @@ class Variable(object):
             self.entity_id == other.entity_id
 
     def __repr__(self):
-        return "<Variable: {} (dtype = {}, count = {})>".format(self.name, self.dtype, self.count)
+        ret = u"<Variable: {} (dtype = {}, count = {})>".format(self.name, self.dtype, self.count)
+
+        # encode for python 2
+        if type(ret) != str:
+            ret = ret.encode("utf-8")
+
+        return ret
 
     @classmethod
     def create_from(cls, variable, keep_stats=False):
@@ -251,7 +257,13 @@ class Datetime(Variable):
         super(Datetime, self).__init__(id, entity, name)
 
     def __repr__(self):
-        return "<Variable: {} (dtype: {}, format: {})>".format(self.name, self.dtype, self.format)
+        ret = u"<Variable: {} (dtype: {}, format: {})>".format(self.name, self.dtype, self.format)
+
+        # encode for python 2
+        if type(ret) != str:
+            ret = ret.encode("utf-8")
+
+        return ret
 
 
 class TimeIndex(Variable):

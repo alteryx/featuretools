@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -104,7 +106,7 @@ def test_diff(es):
 
 
 def test_diff_single_value(es):
-    diff = Diff(es['stores']['num_square_feet'], es['stores']['region_id'])
+    diff = Diff(es['stores']['num_square_feet'], es['stores'][u'région_id'])
     pandas_backend = PandasBackend(es, [diff])
     df = pandas_backend.calculate_all_features(instance_ids=[5],
                                                time_last=None)
@@ -346,9 +348,9 @@ def test_arithmetic_of_agg(es):
     customer_id_feat = es['customers']['id']
     store_id_feat = es['stores']['id']
     count_customer = Count(customer_id_feat,
-                           parent_entity=es['regions'])
+                           parent_entity=es[u'régions'])
     count_stores = Count(store_id_feat,
-                         parent_entity=es['regions'])
+                         parent_entity=es[u'régions'])
     to_test = [(Add, [6, 2]),
                (Subtract, [0, -2]),
                (Multiply, [9, 0]),

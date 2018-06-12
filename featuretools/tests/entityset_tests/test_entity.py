@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import pytest
 
 from ..testing_utils import make_ecommerce_entityset
@@ -16,18 +18,8 @@ def test_enforces_variable_id_is_str(es):
         variable_types.Categorical(1, es["customers"])
 
 
-def test_get_all_instances(es):
-    realvals = [2, 0, 1]
-    for i, x in enumerate(es['customers'].get_all_instances()):
-        assert x == realvals[i]
-
-
 def test_is_index_column(es):
     assert es['cohorts'].index == 'cohort'
-
-
-def test_sample(es):
-    assert es['customers'].sample(3).shape[0] == 3
 
 
 def test_eq(es):
@@ -52,10 +44,10 @@ def test_eq(es):
 
 def test_parents(es):
     assert set(es['log'].parents) == set(['sessions', 'products'])
-    assert set(es['sessions'].parents) == set(['customers'])
-    assert set(es['customers'].parents) == set(['regions', 'cohorts'])
-    assert set(es['regions'].parents) == set()
-    assert set(es['stores'].parents) == set(['regions'])
+    assert es['sessions'].parents == ['customers']
+    assert set(es['customers'].parents) == set([u'régions', 'cohorts'])
+    assert es[u'régions'].parents == []
+    assert es['stores'].parents == [u'régions']
 
 
 def test_update_data(es):
