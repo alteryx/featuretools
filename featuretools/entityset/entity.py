@@ -90,6 +90,7 @@ class Entity(object):
             if ti not in cols:
                 cols.append(ti)
 
+        relationships = relationships or []
         link_vars = [v.id for rel in relationships for v in [rel.parent_variable, rel.child_variable]
                      if v.entity.id == self.id]
 
