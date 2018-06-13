@@ -38,30 +38,33 @@ def parquet_compatible(df):
                         df.loc[dropped.index, new_name] = dropped.apply(lambda x: x[i])
                         to_join[c].append(new_name)
                     del df[c]
+    if sys.version_info <= (3, 0):
+        from past.builtins import unicode
+        df.columns = [unicode(c) for c in df.columns]
     return df, to_join
 
 
 def write_parquet_entity_data(entity_path, entity):
-    try:
-        from fastparquet import write
-    except ImportError:
-        raise ImportError("Must install fastparquet to save EntitySet to parquet files. See https://github.com/dask/fastparquet")
     entity_size = 0
-    if sys.version_info <= (3, 0):
-        try:
-            [str(c) for c in entity.df.columns]
-        except UnicodeEncodeError:
-            msg = ("dataframe of entity \"{}\" contains non-ascii column names, ".format(entity.id),
-                   "which are not supported by fastparquet in Python 2.7. ",
-                   "Either switch to Python 3 or write entity again with ascii column names")
-            raise ValueError(''.join(msg))
     df, to_join = parquet_compatible(entity.df)
     df_filename = os.path.join(entity_path, 'df.parq')
-    write(df_filename, df)
+    saved = False
+    for compression in ['snappy', 'gzip', None]:
+        try:
+            df.to_parquet(df_filename, compression=compression)
+        except ImportError:
+            continue
+        else:
+            saved = True
+            break
+    if not saved:
+        raise ImportError("Must install pyarrow or fastparquet to save EntitySet to parquet files. ",
+                          "See https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.to_parquet.html")
     entity_size += os.stat(df_filename).st_size
     if entity.last_time_index:
         lti_filename = os.path.join(entity_path, 'lti.parq')
-        write(lti_filename, entity.last_time_index)
+        entity.last_time_index.to_parquet(lti_filename,
+                                          compression=compression)
         entity_size += os.stat(lti_filename).st_size
     index_path = os.path.join(entity_path, 'indexes')
     os.makedirs(index_path)
@@ -73,7 +76,8 @@ def write_parquet_entity_data(entity_path, entity):
             series_name = u"is_str"
             if isinstance(instance, int):
                 series_name = u"is_int"
-            write(var_index_filename, pd.Series(index).to_frame(series_name))
+            pd.Series(index).to_frame(series_name).to_parquet(var_index_filename,
+                                                              compression=compression)
             entity_size += os.stat(var_index_filename).st_size
     return entity_size, to_join
 
@@ -170,13 +174,16 @@ def deserialize(path):
         read_pickle = False
         if 'df.parq' in os.listdir(entity_path):
             try:
-                from fastparquet import ParquetFile
+                import pyarrow
             except ImportError:
-                if 'data.p' in os.listdir(entity_path):
-                    warnings.warn("Found both parquet file and pickle file in {}, reading pickle file".format(entity_path))
-                    read_pickle = True
-                else:
-                    raise ImportError("Must install fastparquet to save EntitySet to parquet files. See https://github.com/dask/fastparquet")
+                try:
+                    import fastparquet
+                except ImportError:
+                    if 'data.p' in os.listdir(entity_path):
+                        warnings.warn("Found both parquet file and pickle file in {}, reading pickle file".format(entity_path))
+                        read_pickle = True
+                    else:
+                        raise ImportError("Must install fastparquet to save EntitySet to parquet files. See https://github.com/dask/fastparquet")
         else:
             read_pickle = True
         if read_pickle:
@@ -185,16 +192,7 @@ def deserialize(path):
             data = pd_read_pickle(os.path.join(entity_path, 'data.p'))
         else:
             df_filename = os.path.join(entity_path, 'df.parq')
-            pf = ParquetFile(df_filename)
-            df = pf.to_pandas()
-            try:
-                df = pf.to_pandas()
-            except UnicodeEncodeError:
-                msg = ("Saved dataframe of entity \"{}\" contains non-ascii column names, ".format(entity.id),
-                       "which are not supported by fastparquet in Python 2.7. ",
-                       "Either switch to Python 3 or write entity again with ascii column names")
-                raise ValueError(''.join(msg))
-
+            df = pd.read_parquet(df_filename)
             df.index = df[entity.index]
             if getattr(entity, u'to_join', None) is not None:
                 for cname, to_join_names in entity.to_join.items():
@@ -204,8 +202,7 @@ def deserialize(path):
             lti_filename = os.path.join(entity_path, 'lti.parq')
             lti = None
             if os.path.exists(lti_filename):
-                pf = ParquetFile(lti_filename)
-                lti = pf.to_pandas()
+                lti = pd.read_parquet(lti_filename)
             index_path = os.path.join(entity_path, 'indexes')
             indexed_by = {}
             for var_id in os.listdir(index_path):
@@ -214,8 +211,7 @@ def deserialize(path):
                 for basename in os.listdir(full_var_path):
                     filename = os.path.join(full_var_path, basename)
                     instance = basename.split('.parq')[0]
-                    pf = ParquetFile(filename)
-                    instance_df = pf.to_pandas()
+                    instance_df = pd.read_parquet(filename)
                     series = instance_df.iloc[:, 0]
                     if series.name == u"is_int":
                         instance = int(instance)
