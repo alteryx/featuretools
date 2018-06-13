@@ -52,7 +52,7 @@ def write_parquet_entity_data(entity_path, entity):
     for compression in ['snappy', 'gzip', None]:
         try:
             df.to_parquet(df_filename, compression=compression)
-        except ImportError:
+        except (ImportError, RuntimeError):
             continue
         else:
             saved = True
