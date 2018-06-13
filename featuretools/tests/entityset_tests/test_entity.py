@@ -22,6 +22,11 @@ def test_is_index_column(es):
     assert es['cohorts'].index == 'cohort'
 
 
+def test_index_at_beginning(es):
+    for e in es.entity_dict.values():
+        assert e.index == e.variables[0].id
+
+
 def test_eq(es):
 
     es['log'].id = 'customers'
