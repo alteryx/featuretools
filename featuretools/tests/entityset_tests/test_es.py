@@ -3,6 +3,7 @@
 import copy
 import os
 import shutil
+import sys
 from builtins import range
 from datetime import datetime
 
@@ -851,6 +852,17 @@ def test_to_parquet(entityset):
     path = os.path.join(dirname, 'test_entityset.p')
     if os.path.exists(path):
         shutil.rmtree(path)
+    if sys.version_info <= (3, 0):
+        # fastparquet doesn't work with unicode column names in python 2.7
+        for eid in ['customers', 'stores']:
+            entityset[eid].df.columns = [c.replace(u'é', 'e')
+                                         for c in entityset[eid].df.columns]
+            v = entityset[eid][u'région_id']
+            v.id = 'region_id'
+        for r in entityset.relationships:
+            r._child_variable_id = r._child_variable_id.replace(u'é', 'e')
+            r._parent_variable_id = r._parent_variable_id.replace(u'é', 'e')
+
     entityset.to_parquet(path)
     new_es = EntitySet.read_parquet(path)
     new_es2 = ft.read_parquet(path)

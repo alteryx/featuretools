@@ -1,7 +1,10 @@
+# -*- coding: utf-8 -*-
+
 import json
 import logging
 import os
 import shutil
+import sys
 import uuid
 import warnings
 from tempfile import mkdtemp
@@ -44,6 +47,14 @@ def write_parquet_entity_data(entity_path, entity):
     except ImportError:
         raise ImportError("Must install fastparquet to save EntitySet to parquet files. See https://github.com/dask/fastparquet")
     entity_size = 0
+    if sys.version_info <= (3, 0):
+        try:
+            [str(c) for c in entity.df.columns]
+        except UnicodeEncodeError:
+            msg = ("dataframe of entity \"{}\" contains non-ascii column names, ".format(entity.id),
+                   "which are not supported by fastparquet in Python 2.7. ",
+                   "Either switch to Python 3 or write entity again with ascii column names")
+            raise ValueError(''.join(msg))
     df, to_join = parquet_compatible(entity.df)
     df_filename = os.path.join(entity_path, 'df.parq')
     write(df_filename, df)
@@ -59,9 +70,9 @@ def write_parquet_entity_data(entity_path, entity):
         os.makedirs(var_path)
         for instance, index in mapping_dict.items():
             var_index_filename = os.path.join(var_path, '{}.parq'.format(instance))
-            series_name = "is_str"
+            series_name = u"is_str"
             if isinstance(instance, int):
-                series_name = "is_int"
+                series_name = u"is_int"
             write(var_index_filename, pd.Series(index).to_frame(series_name))
             entity_size += os.stat(var_index_filename).st_size
     return entity_size, to_join
@@ -93,7 +104,7 @@ def serialize(entityset, path, to_parquet=False):
             os.makedirs(entity_path)
             if to_parquet:
                 entity_size, to_join = write_parquet_entity_data(entity_path, entity)
-                new_metadata[e_id] = {'to_join': to_join}
+                new_metadata[e_id] = {u'to_join': to_join}
                 entity_sizes[e_id] = entity_size
             else:
                 filename = os.path.join(entity_path, 'data.p')
@@ -107,7 +118,7 @@ def serialize(entityset, path, to_parquet=False):
         json_dict = entityset.create_metadata_json()
         for eid, m in new_metadata.items():
             if m:
-                json_dict['entity_dict'][eid].update(m)
+                json_dict[u'entity_dict'][eid].update(m)
         with open(os.path.join(temp_dir, 'metadata.json'), 'w') as f:
             json.dump(json_dict, f)
 
@@ -176,8 +187,16 @@ def deserialize(path):
             df_filename = os.path.join(entity_path, 'df.parq')
             pf = ParquetFile(df_filename)
             df = pf.to_pandas()
+            try:
+                df = pf.to_pandas()
+            except UnicodeEncodeError:
+                msg = ("Saved dataframe of entity \"{}\" contains non-ascii column names, ".format(entity.id),
+                       "which are not supported by fastparquet in Python 2.7. ",
+                       "Either switch to Python 3 or write entity again with ascii column names")
+                raise ValueError(''.join(msg))
+
             df.index = df[entity.index]
-            if getattr(entity, 'to_join', None) is not None:
+            if getattr(entity, u'to_join', None) is not None:
                 for cname, to_join_names in entity.to_join.items():
                     df[cname] = df[to_join_names].apply(tuple, axis=1)
                     df.drop(to_join_names, axis=1, inplace=True)
@@ -198,13 +217,13 @@ def deserialize(path):
                     pf = ParquetFile(filename)
                     instance_df = pf.to_pandas()
                     series = instance_df.iloc[:, 0]
-                    if series.name == "is_int":
+                    if series.name == u"is_int":
                         instance = int(instance)
                     indexed_by[var_id][instance] = series.values
 
-            data = {'df': df,
-                    'last_time_index': lti,
-                    'indexed_by': indexed_by}
+            data = {u'df': df,
+                    u'last_time_index': lti,
+                    u'indexed_by': indexed_by}
         # TODO: can do checks against metadata
         entity.update_data(data=data,
                            already_sorted=True,
