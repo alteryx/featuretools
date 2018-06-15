@@ -3,7 +3,6 @@
 import copy
 import os
 import shutil
-import sys
 from builtins import range
 from datetime import datetime
 
