@@ -803,8 +803,7 @@ class EntitySet(object):
 
             old_entity_df.loc[:, index] = id_as_int.values
 
-            base_entity.update_data(old_entity_df,
-                                    recalculate_last_time_indexes=False)
+            base_entity.update_data(old_entity_df)
             index = link_variable_id
 
         transfer_types[index] = vtypes.Categorical
