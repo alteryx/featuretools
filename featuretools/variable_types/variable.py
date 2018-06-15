@@ -41,15 +41,20 @@ class Variable(object):
     _computed_stats = []
     _default_pandas_dtype = object
 
-    def __init__(self, id, entity, name=None):
+    def __init__(self, id, entity, name=None, statistics=None):
         assert isinstance(id, basestring), "Variable id must be a string"
         self.id = id
         self._name = name
         self.entity_id = entity.id
         assert entity.entityset is not None, "Entity must contain reference to EntitySet"
         self.entity = entity
-        self._statistics = {stat: None for stat in self._setter_stats}
         self._interesting_values = None
+
+        if statistics is not None:
+            self._statistics = {stat: val for stat, val in statistics.items()
+                                if stat in self._setter_stats}
+        else:
+            self._statistics = {stat: None for stat in self._setter_stats}
 
     @property
     def entityset(self):
@@ -81,13 +86,14 @@ class Variable(object):
             :class:`.Variable` : new variable
 
         """
-        v = cls(id=variable.id, name=variable.name, entity=variable.entity)
-
+        statistics = None
         if keep_stats:
-            for stat in cls._setter_stats:
-                value = variable._statistics.get(stat)
-                if value is not None:
-                    v._statistics[stat] = value
+            statistics = variable._statistics
+        v = cls(id=variable.id,
+                name=variable.name,
+                entity=variable.entity,
+                statistics=statistics)
+
         return v
 
     def __getattr__(self, attr):
@@ -135,7 +141,7 @@ class Variable(object):
     def series(self):
         return self.entity.df[self.id]
 
-    def create_metadata_json(self):
+    def create_metadata_dict(self):
         metadata = {}
         for k, v in self.__dict__.items():
             if k == 'entity':
@@ -149,7 +155,8 @@ class Variable(object):
     def from_metadata(cls, entity, metadata):
         return cls(id=metadata['id'],
                    entity=entity,
-                   name=metadata['_name'])
+                   name=metadata['_name'],
+                   statistics=metadata['_statistics'])
 
 
 class Unknown(Variable):
@@ -161,8 +168,8 @@ class Discrete(Variable):
     _dtype_repr = "discrete"
     _setter_stats = Variable._setter_stats + DISCRETE_STATISTICS
 
-    def __init__(self, id, entity, name=None):
-        super(Discrete, self).__init__(id, entity, name)
+    def __init__(self, id, entity, name=None, statistics=None):
+        super(Discrete, self).__init__(id, entity, name, statistics)
         self._interesting_values = []
 
     @property
@@ -232,9 +239,6 @@ class Numeric(Variable):
     _setter_stats = Variable._setter_stats + NUMERIC_STATISTICS
     _default_pandas_dtype = float
 
-    def __init__(self, id, entity, name=None):
-        super(Numeric, self).__init__(id, entity, name)
-
 
 class Index(Variable):
     """Represents variables that uniquely identify an instance of an entity
@@ -252,9 +256,9 @@ class Datetime(Variable):
     _setter_stats = Variable._setter_stats + DATETIME_STATISTICS
     _default_pandas_dtype = np.datetime64
 
-    def __init__(self, id, entity, format=None, name=None):
+    def __init__(self, id, entity, format=None, name=None, statistics=None):
         self.format = format
-        super(Datetime, self).__init__(id, entity, name)
+        super(Datetime, self).__init__(id, entity, name, statistics)
 
     def __repr__(self):
         ret = u"<Variable: {} (dtype: {}, format: {})>".format(self.name, self.dtype, self.format)
@@ -289,9 +293,6 @@ class Timedelta(Variable):
     _dtype_repr = "timedelta"
     _setter_stats = Variable._setter_stats + TIMEDELTA_STATISTICS
     _default_pandas_dtype = np.timedelta64
-
-    def __init__(self, id, entity, name=None):
-        super(Timedelta, self).__init__(id, entity, name)
 
 
 class Text(Variable):

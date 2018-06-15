@@ -2,14 +2,17 @@ from __future__ import division, print_function
 
 import copy
 import logging
+import os
 import time
 from builtins import range
 from datetime import datetime
 
 import numpy as np
 import pandas as pd
+from pandas.io.pickle import read_pickle as pd_read_pickle
 from past.builtins import basestring
 
+from .serialization import _parquet_available
 from .timedelta import Timedelta
 
 from featuretools import variable_types as vtypes
@@ -252,18 +255,23 @@ class Entity(object):
     def variable_types(self):
         return {v.id: type(v) for v in self.variables}
 
-    def create_metadata_json(self):
+    def create_metadata_dict(self):
+        # TODO: figure out why/if signup_date is saved as TimeIndex instead of NumericTimeIndex
         metadata = {}
         for k, v in self.__dict__.items():
             if k == 'variables':
-                metadata[k] = [v.create_metadata_json()
+                metadata[k] = [v.create_metadata_dict()
                                for v in v]
             elif k not in ['data', 'entityset']:
                 metadata[k] = v
         return metadata
 
     @classmethod
-    def from_metadata(cls, entityset, metadata):
+    def from_metadata(cls,
+                      entityset,
+                      metadata,
+                      root=None,
+                      load_data=False):
         to_init = copy.copy(metadata)
         to_init['entityset'] = entityset
         variable_types = {}
@@ -291,17 +299,62 @@ class Entity(object):
         to_init['verbose'] = to_init['_verbose']
         del to_init['_verbose']
         del to_init['variables']
-        to_join = to_init.get('to_join', None)
-        if to_join is not None:
-            del to_init['to_join']
+        if 'data_files' in to_init:
+            del to_init['data_files']
         entity = Entity(**to_init)
-        entity.to_join = to_join
         variables = []
         for var_metadata in metadata['variables']:
             vtype = variable_types.get(var_metadata['id'], vtypes.Variable)
             variables.append(vtype.from_metadata(entity, var_metadata))
         entity.variables = variables
+
+        if load_data:
+            data = entity._load_data_from_path(root,
+                                               metadata['data_files'])
+            entity.update_data(data=data,
+                               already_sorted=True,
+                               reindex=False,
+                               recalculate_last_time_indexes=False)
         return entity
+
+    def _load_data_from_path(self, root, path_dict):
+        if path_dict['filetype'] == 'pickle':
+            return pd_read_pickle(os.path.join(root, path_dict['data_filename']))
+        elif path_dict['filetype'] == 'parquet':
+            if not _parquet_available():
+                raise ImportError("Must install fastparquet or pyarrow to load EntitySet from parquet files.")
+
+            df = pd.read_parquet(os.path.join(root, path_dict['df_filename']))
+            df.index = df[self.index]
+            to_join = path_dict.get('to_join', None)
+            if to_join is not None:
+                for cname, to_join_names in to_join.items():
+                    df[cname] = df[to_join_names].apply(tuple, axis=1)
+                    df.drop(to_join_names, axis=1, inplace=True)
+            df = df[[v.id for v in self.variables]]
+            rel_lti_filename = path_dict.get('lti_filename', None)
+            lti = None
+            if rel_lti_filename:
+                lti_filename = os.path.join(root, rel_lti_filename)
+                if os.path.exists(lti_filename):
+                    lti = pd.read_parquet(lti_filename)
+
+            indexed_by = {}
+            for var_id, var_paths in path_dict['indexes'].items():
+                indexed_by[var_id] = {}
+                for instance_info_dict in var_paths:
+                    instance = instance_info_dict['instance']
+                    rel_var_filename = instance_info_dict['filename']
+                    var_filename = os.path.join(root, rel_var_filename)
+                    if os.path.exists(var_filename):
+                        instance_df = pd.read_parquet(var_filename)
+                        series = instance_df.iloc[:, 0]
+                        indexed_by[var_id][instance] = series.values
+            return {u'df': df,
+                    u'last_time_index': lti,
+                    u'indexed_by': indexed_by}
+        else:
+            raise ValueError("Unknown entityset data filetype: {}".format(path_dict['filetype']))
 
     def add_all_variable_statistics(self):
         for var_id in self.variable_types.keys():
@@ -752,7 +805,7 @@ class Entity(object):
                 # sort by time variable, then by index
                 self.df.sort_values([variable_id, self.index], inplace=True)
 
-            t = vtypes.TimeIndex
+            t = vtypes.NumericTimeIndex
             if col_is_datetime(self.df[variable_id]):
                 t = vtypes.DatetimeTimeIndex
             self.convert_variable_type(variable_id, t, convert_data=False)
@@ -880,6 +933,7 @@ def col_is_datetime(col):
     if (col.dtype.name.find('datetime') > -1 or
             (len(col) and isinstance(col.iloc[0], datetime))):
         return True
+
 
     # TODO: not sure this is ideal behavior.
     # it converts int columns that have dtype=object to datetimes starting from 1970

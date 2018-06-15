@@ -1,28 +1,24 @@
 # -*- coding: utf-8 -*-
 
-import json
-import logging
 import os
-import shutil
 import sys
 import uuid
-import warnings
-from tempfile import mkdtemp
 
 import numpy as np
 import pandas as pd
-from pandas import Timestamp
-from pandas.io.pickle import read_pickle as pd_read_pickle
-from pandas.io.pickle import to_pickle as pd_to_pickle
-
-from featuretools import variable_types as vtypes
-
-logger = logging.getLogger('featuretools.entityset')
-
-_datetime_types = vtypes.PandasTypes._pandas_datetimes
 
 
-def parquet_compatible(df):
+def read_parquet(path):
+    from featuretools.entityset.entityset import EntitySet
+    return EntitySet.read_parquet(path)
+
+
+def read_pickle(path):
+    from featuretools.entityset.entityset import EntitySet
+    return EntitySet.read_pickle(path)
+
+
+def _parquet_compatible(df):
     df = df.reset_index(drop=True)
     to_join = {}
     if not df.empty:
@@ -44,10 +40,16 @@ def parquet_compatible(df):
     return df, to_join
 
 
-def write_parquet_entity_data(entity_path, entity):
+def _write_parquet_entity_data(root, entity, metadata):
+    entity_path = os.path.join(root, entity.id)
+    os.makedirs(entity_path)
     entity_size = 0
-    df, to_join = parquet_compatible(entity.df)
-    df_filename = os.path.join(entity_path, 'df.parq')
+    df, to_join = _parquet_compatible(entity.df)
+    data_files = {}
+
+    rel_df_filename = os.path.join(entity.id, 'df.parq')
+    data_files['df_filename'] = rel_df_filename
+    df_filename = os.path.join(root, rel_df_filename)
     saved = False
     for compression in ['snappy', 'gzip', None]:
         try:
@@ -62,168 +64,42 @@ def write_parquet_entity_data(entity_path, entity):
                           "See https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.to_parquet.html")
     entity_size += os.stat(df_filename).st_size
     if entity.last_time_index:
-        lti_filename = os.path.join(entity_path, 'lti.parq')
+        rel_lti_filename = os.path.join(entity.id, 'lti.parq')
+        lti_filename = os.path.join(root, rel_lti_filename)
         entity.last_time_index.to_parquet(lti_filename,
                                           compression=compression)
         entity_size += os.stat(lti_filename).st_size
-    index_path = os.path.join(entity_path, 'indexes')
+        data_files[u'lti_filename'] = rel_lti_filename
+    rel_index_path = os.path.join(entity.id, 'indexes')
+    index_path = os.path.join(root, rel_index_path)
     os.makedirs(index_path)
+    data_files['indexes'] = {}
     for var_id, mapping_dict in entity.indexed_by.items():
-        var_path = os.path.join(index_path, var_id)
+        rel_var_path = os.path.join(rel_index_path, var_id)
+        var_path = os.path.join(root, rel_var_path)
         os.makedirs(var_path)
+        data_files['indexes'][var_id] = []
         for instance, index in mapping_dict.items():
-            var_index_filename = os.path.join(var_path, '{}.parq'.format(instance))
-            series_name = u"is_str"
-            if isinstance(instance, int):
-                series_name = u"is_int"
-            pd.Series(index).to_frame(series_name).to_parquet(var_index_filename,
-                                                              compression=compression)
+            rel_var_index_filename = os.path.join(rel_var_path, '{}.parq'.format(instance))
+            var_index_filename = os.path.join(root, rel_var_index_filename)
+            pd.Series(index).to_frame(str(instance)).to_parquet(var_index_filename,
+                                                                compression=compression)
             entity_size += os.stat(var_index_filename).st_size
-    return entity_size, to_join
+            data_files['indexes'][var_id].append({'instance': instance,
+                                                  'filename': rel_var_index_filename})
+    data_files[u'to_join'] = to_join
+    data_files[u'filetype'] = 'parquet'
+    data_files[u'size'] = entity_size
+    metadata['entity_dict'][entity.id][u'data_files'] = data_files
+    return metadata
 
 
-def serialize(entityset, path, to_parquet=False):
-    """Save the entityset at the given path.
-
-    Args:
-        entityset (:class:`featuretools.BaseEntitySet`) : EntitySet to save
-        path (str): pathname of a directory to save the entityset
-             (includes files for each entity's data, as well as a metadata
-              json file)
-        to_parquet (bool): if True, write parquet files instead of Python pickle files for the data
-    """
-
-    entityset_path = os.path.abspath(os.path.expanduser(path))
+def _parquet_available():
     try:
-        os.makedirs(entityset_path)
-    except OSError:
-        pass
-
-    entity_sizes = {}
-    temp_dir = mkdtemp()
-    new_metadata = {}
-    try:
-        for e_id, entity in entityset.entity_dict.items():
-            entity_path = os.path.join(temp_dir, e_id)
-            os.makedirs(entity_path)
-            if to_parquet:
-                entity_size, to_join = write_parquet_entity_data(entity_path, entity)
-                new_metadata[e_id] = {u'to_join': to_join}
-                entity_sizes[e_id] = entity_size
-            else:
-                filename = os.path.join(entity_path, 'data.p')
-                pd_to_pickle(entity.data, filename)
-                entity_sizes[e_id] = os.stat(filename).st_size
-
-        entityset.entity_sizes = entity_sizes
-        timestamp = Timestamp.now().isoformat()
-        with open(os.path.join(temp_dir, 'save_time.txt'), 'w') as f:
-            f.write(timestamp)
-        json_dict = entityset.create_metadata_json()
-        for eid, m in new_metadata.items():
-            if m:
-                json_dict[u'entity_dict'][eid].update(m)
-        with open(os.path.join(temp_dir, 'metadata.json'), 'w') as f:
-            json.dump(json_dict, f)
-
-        # can use a lock here if need be
-        if os.path.exists(entityset_path):
-            shutil.rmtree(entityset_path)
-        shutil.move(temp_dir, entityset_path)
-    except:
-        # make sure to clean up
-        shutil.rmtree(temp_dir)
-        raise
-
-
-def read_pickle(path):
-    """Read an EntitySet from disk. Assumes EntitySet has been saved using
-    :meth:`.to_parquet()` or :meth:`.to_pickle()`.
-
-    Args:
-        path (str): Path of directory where entityset is stored
-    """
-    return deserialize(path)
-
-
-def read_parquet(path):
-    """Read an EntitySet from disk. Assumes EntitySet has been saved using
-    :meth:`.to_parquet()` or :meth:`.to_pickle()`.
-
-    Args:
-        path (str): Path of directory where entityset is stored
-    """
-    return deserialize(path)
-
-
-def deserialize(path):
-    """Read an EntitySet from disk. Assumes EntitySet has been saved using
-    :meth:`.to_parquet()` or :meth:`.to_pickle()`.
-
-    Args:
-        path (str): Path of directory where entityset is stored
-    """
-    from featuretools import EntitySet
-    entityset_path = os.path.abspath(os.path.expanduser(path))
-    with open(os.path.join(entityset_path, 'metadata.json')) as f:
-        metadata = json.load(f)
-    entityset = EntitySet.from_metadata(metadata)
-
-    for e_id, entity in entityset.entity_dict.items():
-        entity_path = os.path.join(entityset_path, e_id)
-        read_pickle = False
-        if 'df.parq' in os.listdir(entity_path):
-            try:
-                import pyarrow
-            except ImportError:
-                try:
-                    import fastparquet
-                except ImportError:
-                    if 'data.p' in os.listdir(entity_path):
-                        warnings.warn("Found both parquet file and pickle file in {}, reading pickle file".format(entity_path))
-                        read_pickle = True
-                    else:
-                        raise ImportError("Must install fastparquet to save EntitySet to parquet files. See https://github.com/dask/fastparquet")
-        else:
-            read_pickle = True
-        if read_pickle:
-            if 'data.p' not in os.listdir(entity_path):
-                raise OSError("Could not find entity data file in {}".format(entity_path))
-            data = pd_read_pickle(os.path.join(entity_path, 'data.p'))
-        else:
-            df_filename = os.path.join(entity_path, 'df.parq')
-            df = pd.read_parquet(df_filename)
-            df.index = df[entity.index]
-            if getattr(entity, u'to_join', None) is not None:
-                for cname, to_join_names in entity.to_join.items():
-                    df[cname] = df[to_join_names].apply(tuple, axis=1)
-                    df.drop(to_join_names, axis=1, inplace=True)
-            df = df[[v.id for v in entity.variables]]
-            lti_filename = os.path.join(entity_path, 'lti.parq')
-            lti = None
-            if os.path.exists(lti_filename):
-                lti = pd.read_parquet(lti_filename)
-            index_path = os.path.join(entity_path, 'indexes')
-            indexed_by = {}
-            for var_id in os.listdir(index_path):
-                full_var_path = os.path.join(index_path, var_id)
-                indexed_by[var_id] = {}
-                for basename in os.listdir(full_var_path):
-                    filename = os.path.join(full_var_path, basename)
-                    instance = basename.split('.parq')[0]
-                    instance_df = pd.read_parquet(filename)
-                    series = instance_df.iloc[:, 0]
-                    if series.name == u"is_int":
-                        instance = int(instance)
-                    indexed_by[var_id][instance] = series.values
-
-            data = {u'df': df,
-                    u'last_time_index': lti,
-                    u'indexed_by': indexed_by}
-        # TODO: can do checks against metadata
-        entity.update_data(data=data,
-                           already_sorted=True,
-                           reindex=False,
-                           recalculate_last_time_indexes=False)
-    assert entityset is not None, "EntitySet not loaded properly"
-    return entityset
+        import pyarrow
+    except ImportError:
+        try:
+            import fastparquet
+        except:
+            return False
+    return True

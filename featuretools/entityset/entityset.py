@@ -1,16 +1,22 @@
 import copy
 import itertools
+import json
 import logging
+import os
+import shutil
 from builtins import object, range, zip
 from collections import defaultdict
+from tempfile import mkdtemp
 
 import numpy as np
 import pandas as pd
+from pandas import Timestamp
 from pandas.api.types import is_dtype_equal
+from pandas.io.pickle import to_pickle as pd_to_pickle
 
 from .entity import Entity
 from .relationship import Relationship
-from .serialization import deserialize, serialize
+from .serialization import _write_parquet_entity_data
 
 import featuretools.variable_types.variable as vtypes
 from featuretools.utils.gen_utils import make_tqdm_iterator
@@ -172,10 +178,11 @@ class EntitySet(object):
         and if it is return the existing one. Thus, all features in the feature list
         would reference the same object, rather than copies. This saves a lot of memory
         '''
+        new_metadata = self.from_metadata(self.create_metadata_dict(),
+                                          load_data=False)
         if self._metadata is None:
-            self._metadata = self._gen_metadata()
+            self._metadata = new_metadata
         else:
-            new_metadata = self._gen_metadata()
             # Don't want to keep making new copies of metadata
             # Only make a new one if something was changed
             if not self._metadata.__eq__(new_metadata):
@@ -191,29 +198,78 @@ class EntitySet(object):
         return all(e.df.empty for e in self.entity_dict.values())
 
     def to_pickle(self, path):
-        serialize(self, path, to_parquet=False)
+        self.serialize(path, to_parquet=False)
         return self
 
     def to_parquet(self, path):
-        serialize(self, path, to_parquet=True)
+        self.serialize(path, to_parquet=True)
         return self
+
+    def serialize(self, path, to_parquet=False):
+        metadata = self.create_metadata_dict()
+        entityset_path = os.path.abspath(os.path.expanduser(path))
+        try:
+            os.makedirs(entityset_path)
+        except OSError:
+            pass
+
+        temp_dir = mkdtemp()
+        try:
+            for e_id, entity in self.entity_dict.items():
+                if to_parquet:
+                    metadata = _write_parquet_entity_data(temp_dir,
+                                                          entity,
+                                                          metadata)
+                else:
+                    rel_filename = os.path.join(e_id, 'data.p')
+                    filename = os.path.join(temp_dir, rel_filename)
+                    os.makedirs(os.path.join(temp_dir, e_id))
+                    pd_to_pickle(entity.data, filename)
+                    metadata['entity_dict'][e_id]['data_files'] = {
+                        'data_filename': rel_filename,
+                        'filetype': 'pickle',
+                        'size': os.stat(filename).st_size
+                    }
+
+            timestamp = Timestamp.now().isoformat()
+            with open(os.path.join(temp_dir, 'save_time.txt'), 'w') as f:
+                f.write(timestamp)
+            with open(os.path.join(temp_dir, 'metadata.json'), 'w') as f:
+                json.dump(metadata, f)
+
+            # can use a lock here if need be
+            if os.path.exists(entityset_path):
+                shutil.rmtree(entityset_path)
+            shutil.move(temp_dir, entityset_path)
+        except:
+            # make sure to clean up
+            shutil.rmtree(temp_dir)
+            raise
 
     @classmethod
     def read_pickle(cls, path):
-        return deserialize(path)
+        entityset_path = os.path.abspath(os.path.expanduser(path))
+        with open(os.path.join(entityset_path, 'metadata.json')) as f:
+            metadata = json.load(f)
+        return cls.from_metadata(metadata, root=entityset_path,
+                                 load_data=True)
 
     @classmethod
     def read_parquet(cls, path):
-        return deserialize(path)
+        entityset_path = os.path.abspath(os.path.expanduser(path))
+        with open(os.path.join(entityset_path, 'metadata.json')) as f:
+            metadata = json.load(f)
+        return cls.from_metadata(metadata, root=entityset_path,
+                                 load_data=True)
 
-    def create_metadata_json(self):
+    def create_metadata_dict(self):
         metadata = {}
         for k, v in self.__dict__.items():
             if k == 'relationships':
-                metadata[k] = [r.create_metadata_json()
+                metadata[k] = [r.create_metadata_dict()
                                for r in v]
             elif k == 'entity_dict':
-                metadata[k] = {eid: e.create_metadata_json()
+                metadata[k] = {eid: e.create_metadata_dict()
                                for eid, e in v.items()}
             elif k == 'time_type':
                 if v:
@@ -225,7 +281,7 @@ class EntitySet(object):
         return metadata
 
     @classmethod
-    def from_metadata(cls, metadata):
+    def from_metadata(cls, metadata, root=None, load_data=False):
         es = EntitySet(metadata['id'])
         for k, v in metadata.items():
             if k in ['relationships', 'entity_dict']:
@@ -240,10 +296,12 @@ class EntitySet(object):
                     else:
                         es.time_type = specified_types[0]
                 else:
-                    es.time_type = v
+                    es.time_type = None
             else:
                 setattr(es, k, v)
-        es.entity_dict = {eid: Entity.from_metadata(es, em)
+        es.entity_dict = {eid: Entity.from_metadata(es, em,
+                                                    root=root,
+                                                    load_data=load_data)
                           for eid, em in metadata['entity_dict'].items()}
         es.relationships = [Relationship.from_metadata(es, r)
                             for r in metadata['relationships']]
@@ -1151,69 +1209,6 @@ class EntitySet(object):
     ###########################################################################
     #  Private methods  ######################################################
     ###########################################################################
-
-    def _gen_metadata(self):
-        new_entityset = object.__new__(EntitySet)
-        new_entityset_dict = {}
-        for k, v in self.__dict__.items():
-            if k not in ["entity_dict", "relationships"]:
-                new_entityset_dict[k] = v
-        new_entityset_dict["entity_dict"] = {}
-        for eid, e in self.entity_dict.items():
-            metadata_e = self._entity_metadata(e)
-            new_entityset_dict['entity_dict'][eid] = metadata_e
-        new_entityset_dict["relationships"] = []
-        for r in self.relationships:
-            metadata_r = self._relationship_metadata(r)
-            new_entityset_dict['relationships'].append(metadata_r)
-        new_entityset.__dict__ = copy.deepcopy(new_entityset_dict)
-        for e in new_entityset.entity_dict.values():
-            e.entityset = new_entityset
-            for v in e.variables:
-                v.entity = new_entityset[v.entity_id]
-        for r in new_entityset.relationships:
-            r.entityset = new_entityset
-        return new_entityset
-
-    @classmethod
-    def _entity_metadata(cls, e):
-        new_dict = {}
-        for k, v in e.__dict__.items():
-            if k not in ["data", "entityset", "variables"]:
-                new_dict[k] = v
-        new_dict["data"] = {
-            "df": e.df.head(0),
-            "last_time_index": None,
-            "indexed_by": {}
-        }
-        new_dict["variables"] = [cls._variable_metadata(v)
-                                 for v in e.variables]
-        new_dict = copy.deepcopy(new_dict)
-        new_entity = object.__new__(Entity)
-        new_entity.__dict__ = new_dict
-        return new_entity
-
-    @classmethod
-    def _relationship_metadata(cls, r):
-        new_dict = {}
-        for k, v in r.__dict__.items():
-            if k != "entityset":
-                new_dict[k] = v
-        new_dict = copy.deepcopy(new_dict)
-        new_r = object.__new__(Relationship)
-        new_r.__dict__ = new_dict
-        return new_r
-
-    @classmethod
-    def _variable_metadata(cls, var):
-        new_dict = {}
-        for k, v in var.__dict__.items():
-            if k != "entity":
-                new_dict[k] = v
-        new_dict = copy.deepcopy(new_dict)
-        new_v = object.__new__(type(var))
-        new_v.__dict__ = new_dict
-        return new_v
 
     def _import_from_dataframe(self,
                                entity_id,
