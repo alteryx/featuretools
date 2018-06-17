@@ -189,7 +189,7 @@ class Entity(object):
         return True
 
     def __sizeof__(self):
-        return self.df.__sizeof__()
+        return self.df.__sizeof__() + self.last_time_index.__sizeof__()
 
     @property
     def is_metadata(self):
