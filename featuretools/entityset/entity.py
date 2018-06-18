@@ -12,7 +12,6 @@ import pandas as pd
 from pandas.io.pickle import read_pickle as pd_read_pickle
 from past.builtins import basestring
 
-from .serialization import _parquet_available
 from .timedelta import Timedelta
 
 from featuretools import variable_types as vtypes
@@ -256,22 +255,24 @@ class Entity(object):
         return {v.id: type(v) for v in self.variables}
 
     def create_metadata_dict(self):
-        # TODO: figure out why/if signup_date is saved as TimeIndex instead of NumericTimeIndex
-        metadata = {}
-        for k, v in self.__dict__.items():
-            if k == 'variables':
-                metadata[k] = [v.create_metadata_dict()
-                               for v in v]
-            elif k not in ['data', 'entityset']:
-                metadata[k] = v
-        return metadata
+        return {
+            'id': self.id,
+            'variables': [v.create_metadata_dict()
+                          for v in self.variables],
+            'index': self.index,
+            'encoding': self.encoding,
+            'created_index': self.created_index,
+            'time_index': self.time_index,
+            'secondary_time_index': self.secondary_time_index,
+        }
 
     @classmethod
     def from_metadata(cls,
                       entityset,
                       metadata,
                       root=None,
-                      load_data=False):
+                      load_data=False,
+                      verbose=False):
         to_init = copy.copy(metadata)
         to_init['entityset'] = entityset
         variable_types = {}
@@ -296,8 +297,7 @@ class Entity(object):
         to_init['variable_types'] = variable_types
         to_init['df'] = pd.DataFrame({c: [d]
                                       for c, d in zip(columns, defaults)})
-        to_init['verbose'] = to_init['_verbose']
-        del to_init['_verbose']
+        to_init['verbose'] = verbose
         del to_init['variables']
         if 'data_files' in to_init:
             del to_init['data_files']
@@ -321,9 +321,6 @@ class Entity(object):
         if path_dict['filetype'] == 'pickle':
             return pd_read_pickle(os.path.join(root, path_dict['data_filename']))
         elif path_dict['filetype'] == 'parquet':
-            if not _parquet_available():
-                raise ImportError("Must install fastparquet or pyarrow to load EntitySet from parquet files.")
-
             df = pd.read_parquet(os.path.join(root, path_dict['df_filename']))
             df.index = df[self.index]
             to_join = path_dict.get('to_join', None)
@@ -933,7 +930,6 @@ def col_is_datetime(col):
     if (col.dtype.name.find('datetime') > -1 or
             (len(col) and isinstance(col.iloc[0], datetime))):
         return True
-
 
     # TODO: not sure this is ideal behavior.
     # it converts int columns that have dtype=object to datetimes starting from 1970

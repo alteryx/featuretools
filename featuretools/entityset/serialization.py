@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import json
 import os
 import sys
 import uuid
@@ -9,13 +10,20 @@ import pandas as pd
 
 
 def read_parquet(path):
-    from featuretools.entityset.entityset import EntitySet
-    return EntitySet.read_parquet(path)
+    return read_entityset(path)
 
 
 def read_pickle(path):
+    return read_entityset(path)
+
+
+def read_entityset(path):
     from featuretools.entityset.entityset import EntitySet
-    return EntitySet.read_pickle(path)
+    entityset_path = os.path.abspath(os.path.expanduser(path))
+    with open(os.path.join(entityset_path, 'metadata.json')) as f:
+        metadata = json.load(f)
+    return EntitySet.from_metadata(metadata, root=entityset_path,
+                                   load_data=True)
 
 
 def _parquet_compatible(df):
@@ -92,14 +100,3 @@ def _write_parquet_entity_data(root, entity, metadata):
     data_files[u'size'] = entity_size
     metadata['entity_dict'][entity.id][u'data_files'] = data_files
     return metadata
-
-
-def _parquet_available():
-    try:
-        import pyarrow
-    except ImportError:
-        try:
-            import fastparquet
-        except:
-            return False
-    return True

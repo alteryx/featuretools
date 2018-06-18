@@ -16,7 +16,7 @@ from pandas.io.pickle import to_pickle as pd_to_pickle
 
 from .entity import Entity
 from .relationship import Relationship
-from .serialization import _write_parquet_entity_data
+from .serialization import read_parquet, read_pickle, _write_parquet_entity_data
 
 import featuretools.variable_types.variable as vtypes
 from featuretools.utils.gen_utils import make_tqdm_iterator
@@ -171,8 +171,8 @@ class EntitySet(object):
 
     @property
     def metadata(self):
-        '''Defined as a property because an EntitySet's metadata
-        is used in many places, for instance, for each feature in a feature list.
+        '''An EntitySet's metadata is used in many places, for instance,
+        for each feature in a feature list.
         To prevent using copying the full metadata object to each feature,
         we generate a new metadata object and check if it's the same as the existing one,
         and if it is return the existing one. Thus, all features in the feature list
@@ -248,37 +248,24 @@ class EntitySet(object):
 
     @classmethod
     def read_pickle(cls, path):
-        entityset_path = os.path.abspath(os.path.expanduser(path))
-        with open(os.path.join(entityset_path, 'metadata.json')) as f:
-            metadata = json.load(f)
-        return cls.from_metadata(metadata, root=entityset_path,
-                                 load_data=True)
+        return read_pickle(path)
 
     @classmethod
     def read_parquet(cls, path):
-        entityset_path = os.path.abspath(os.path.expanduser(path))
-        with open(os.path.join(entityset_path, 'metadata.json')) as f:
-            metadata = json.load(f)
-        return cls.from_metadata(metadata, root=entityset_path,
-                                 load_data=True)
+        return read_parquet(path)
 
     def create_metadata_dict(self):
-        metadata = {}
-        for k, v in self.__dict__.items():
-            if k == 'relationships':
-                metadata[k] = [r.create_metadata_dict()
-                               for r in v]
-            elif k == 'entity_dict':
-                metadata[k] = {eid: e.create_metadata_dict()
-                               for eid, e in v.items()}
-            elif k == 'time_type':
-                if v:
-                    metadata[k] = v._dtype_repr or "generic_type"
-                else:
-                    metadata[k] = v
-            else:
-                metadata[k] = v
-        return metadata
+        time_type = self.time_type
+        if time_type is not None:
+            time_type = time_type._dtype_repr or "generic_type"
+        return {
+            'id': self.id,
+            'relationships': [r.create_metadata_dict()
+                              for r in self.relationships],
+            'entity_dict': {eid: e.create_metadata_dict()
+                            for eid, e in self.entity_dict.items()},
+            'time_type': time_type
+        }
 
     @classmethod
     def from_metadata(cls, metadata, root=None, load_data=False):

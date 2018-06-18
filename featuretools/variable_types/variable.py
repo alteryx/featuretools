@@ -142,21 +142,24 @@ class Variable(object):
         return self.entity.df[self.id]
 
     def create_metadata_dict(self):
-        metadata = {}
-        for k, v in self.__dict__.items():
-            if k == 'entity':
-                metadata[k] = v.id
-            else:
-                metadata[k] = v
-        metadata['_dtype_repr'] = self._dtype_repr
-        return metadata
+        return {
+            '_dtype_repr': self._dtype_repr,
+            'entity': self.entity.id,
+            'id': self.id,
+            '_name': self.name,
+            '_statistics': self._statistics,
+            '_interesting_values': self._interesting_values
+        }
 
     @classmethod
     def from_metadata(cls, entity, metadata):
-        return cls(id=metadata['id'],
-                   entity=entity,
-                   name=metadata['_name'],
-                   statistics=metadata['_statistics'])
+        v = cls(id=metadata['id'],
+                entity=entity,
+                name=metadata['_name'],
+                statistics=metadata.get('_statistics', None))
+        if metadata['_interesting_values']:
+            v.interesting_values = metadata['_interesting_values']
+        return v
 
 
 class Unknown(Variable):
