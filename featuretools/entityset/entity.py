@@ -577,7 +577,7 @@ class Entity(object):
 
         if data or df is not None:
             # Make sure column ordering matches variable ordering
-            df = df[[v.id for v in self.variables]]
+            self.df = self.df[[v.id for v in self.variables]]
 
         self.set_index(self.index)
         self.set_time_index(self.time_index, already_sorted=already_sorted)
