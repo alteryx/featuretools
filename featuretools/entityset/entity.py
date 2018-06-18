@@ -572,7 +572,7 @@ class Entity(object):
         self.set_secondary_time_index(self.secondary_time_index)
         if reindex:
             self.index_data()
-        if recalculate_last_time_indexes:
+        if recalculate_last_time_indexes and self.last_time_index is not None:
             self.entityset.add_last_time_indexes(updated_entities=[self.id])
         self.add_all_variable_statistics()
 

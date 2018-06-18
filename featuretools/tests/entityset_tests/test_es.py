@@ -430,6 +430,8 @@ def test_concat_entitysets(entityset):
                                     make_index=True,
                                     variable_types=vtypes,
                                     dataframe=df)
+    entityset.add_last_time_indexes()
+
     assert entityset.__eq__(entityset)
     entityset_1 = copy.deepcopy(entityset)
     entityset_2 = copy.deepcopy(entityset)
@@ -441,11 +443,20 @@ def test_concat_entitysets(entityset):
         'test_entity': [[0, 1], [0, 2]],
     }
 
-    entityset.add_last_time_indexes()
+    assert entityset.__eq__(entityset_1, deep=True)
+    assert entityset.__eq__(entityset_2, deep=True)
+
     for i, es in enumerate([entityset_1, entityset_2]):
         for entity, rows in emap.items():
             df = es[entity].df
             es[entity].update_data(df=df.loc[rows[i]])
+
+    assert 10 not in entityset_1['log'].last_time_index.index
+    assert 10 in entityset_2['log'].last_time_index.index
+    assert 9 in entityset_1['log'].last_time_index.index
+    assert 9 not in entityset_2['log'].last_time_index.index
+    assert not entityset.__eq__(entityset_1, deep=True)
+    assert not entityset.__eq__(entityset_2, deep=True)
 
     # make sure internal indexes work before concat
     regions = entityset_1['customers'].query_by_values(['United States'], variable_id=u'région_id')
@@ -468,6 +479,30 @@ def test_concat_entitysets(entityset):
         for column in df:
             for x, y in zip(df[column], df_3[column]):
                 assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+        orig_lti = entityset[entity.id].last_time_index.sort_index()
+        new_lti = entityset_3[entity.id].last_time_index.sort_index()
+        for x, y in zip(orig_lti, new_lti):
+            assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+
+    entityset_1['stores'].last_time_index = None
+    entityset_1['test_entity'].last_time_index = None
+    entityset_2['test_entity'].last_time_index = None
+    entityset_4 = entityset_1.concat(entityset_2)
+    assert not entityset_4.__eq__(entityset, deep=True)
+    for entity in entityset.entities:
+        df = entityset[entity.id].df.sort_index()
+        df_4 = entityset_4[entity.id].df.sort_index()
+        for column in df:
+            for x, y in zip(df[column], df_4[column]):
+                assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+
+        if entity.id != 'test_entity':
+            orig_lti = entityset[entity.id].last_time_index.sort_index()
+            new_lti = entityset_4[entity.id].last_time_index.sort_index()
+            for x, y in zip(orig_lti, new_lti):
+                assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+        else:
+            assert entityset_4[entity.id].last_time_index is None
 
 
 def test_set_time_type_on_init():
