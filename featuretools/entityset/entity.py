@@ -569,13 +569,16 @@ class Entity(object):
 
     def update_data(self, df=None, data=None, already_sorted=False,
                     reindex=True, recalculate_last_time_indexes=True):
-        # Make sure column ordering matches variable ordering
-        df = df[[v.id for v in self.variables]]
 
         if data is not None:
             self.data = data
         elif df is not None:
             self.df = df
+
+        if data or df is not None:
+            # Make sure column ordering matches variable ordering
+            df = df[[v.id for v in self.variables]]
+
         self.set_index(self.index)
         self.set_time_index(self.time_index, already_sorted=already_sorted)
         self.set_secondary_time_index(self.secondary_time_index)
