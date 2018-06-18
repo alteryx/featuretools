@@ -29,7 +29,7 @@ def read_entityset(path):
                                    load_data=True)
 
 
-def serialize_entityset(entityset, path, to_parquet=False):
+def write_entityset(entityset, path, to_parquet=False):
     metadata = entityset.create_metadata_dict()
     entityset_path = os.path.abspath(os.path.expanduser(path))
     try:

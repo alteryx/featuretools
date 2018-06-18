@@ -10,7 +10,7 @@ from pandas.api.types import is_dtype_equal
 
 from .entity import Entity
 from .relationship import Relationship
-from .serialization import read_parquet, read_pickle, serialize_entityset
+from .serialization import read_parquet, read_pickle, write_entityset
 
 import featuretools.variable_types.variable as vtypes
 from featuretools.utils.gen_utils import make_tqdm_iterator
@@ -192,11 +192,11 @@ class EntitySet(object):
         return all(e.df.empty for e in self.entity_dict.values())
 
     def to_pickle(self, path):
-        serialize_entityset(self, path, to_parquet=False)
+        write_entityset(self, path, to_parquet=False)
         return self
 
     def to_parquet(self, path):
-        serialize_entityset(self, path, to_parquet=True)
+        write_entityset(self, path, to_parquet=True)
         return self
 
     @classmethod
