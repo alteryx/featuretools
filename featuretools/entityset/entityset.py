@@ -878,6 +878,8 @@ class EntitySet(object):
             combined_es = self
         else:
             combined_es = copy.deepcopy(self)
+
+        has_last_time_index = []
         for entity in self.entities:
             self_df = entity.df
             other_df = other[entity.id].df
@@ -893,9 +895,14 @@ class EntitySet(object):
                 combined_df.sort_values([entity.time_index, entity.index], inplace=True)
             else:
                 combined_df.sort_index(inplace=True)
+            if (entity.last_time_index is not None or
+                    other[entity.id].last_time_index is not None):
+                has_last_time_index.append(entity.id)
             combined_es[entity.id].update_data(df=combined_df,
                                                reindex=True,
-                                               recalculate_last_time_indexes=True)
+                                               recalculate_last_time_indexes=False)
+
+        combined_es.add_last_time_indexes(updated_entities=has_last_time_index)
         return combined_es
 
     ###########################################################################
