@@ -1,22 +1,16 @@
 import copy
 import itertools
-import json
 import logging
-import os
-import shutil
 from builtins import object, range, zip
 from collections import defaultdict
-from tempfile import mkdtemp
 
 import numpy as np
 import pandas as pd
-from pandas import Timestamp
 from pandas.api.types import is_dtype_equal
-from pandas.io.pickle import to_pickle as pd_to_pickle
 
 from .entity import Entity
 from .relationship import Relationship
-from .serialization import read_parquet, read_pickle, _write_parquet_entity_data
+from .serialization import read_parquet, read_pickle, serialize_entityset
 
 import featuretools.variable_types.variable as vtypes
 from featuretools.utils.gen_utils import make_tqdm_iterator
@@ -198,53 +192,12 @@ class EntitySet(object):
         return all(e.df.empty for e in self.entity_dict.values())
 
     def to_pickle(self, path):
-        self.serialize(path, to_parquet=False)
+        serialize_entityset(self, path, to_parquet=False)
         return self
 
     def to_parquet(self, path):
-        self.serialize(path, to_parquet=True)
+        serialize_entityset(self, path, to_parquet=True)
         return self
-
-    def serialize(self, path, to_parquet=False):
-        metadata = self.create_metadata_dict()
-        entityset_path = os.path.abspath(os.path.expanduser(path))
-        try:
-            os.makedirs(entityset_path)
-        except OSError:
-            pass
-
-        temp_dir = mkdtemp()
-        try:
-            for e_id, entity in self.entity_dict.items():
-                if to_parquet:
-                    metadata = _write_parquet_entity_data(temp_dir,
-                                                          entity,
-                                                          metadata)
-                else:
-                    rel_filename = os.path.join(e_id, 'data.p')
-                    filename = os.path.join(temp_dir, rel_filename)
-                    os.makedirs(os.path.join(temp_dir, e_id))
-                    pd_to_pickle(entity.data, filename)
-                    metadata['entity_dict'][e_id]['data_files'] = {
-                        'data_filename': rel_filename,
-                        'filetype': 'pickle',
-                        'size': os.stat(filename).st_size
-                    }
-
-            timestamp = Timestamp.now().isoformat()
-            with open(os.path.join(temp_dir, 'save_time.txt'), 'w') as f:
-                f.write(timestamp)
-            with open(os.path.join(temp_dir, 'metadata.json'), 'w') as f:
-                json.dump(metadata, f)
-
-            # can use a lock here if need be
-            if os.path.exists(entityset_path):
-                shutil.rmtree(entityset_path)
-            shutil.move(temp_dir, entityset_path)
-        except:
-            # make sure to clean up
-            shutil.rmtree(temp_dir)
-            raise
 
     @classmethod
     def read_pickle(cls, path):

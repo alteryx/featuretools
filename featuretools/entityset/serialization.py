@@ -2,11 +2,14 @@
 
 import json
 import os
+import shutil
 import sys
 import uuid
+from tempfile import mkdtemp
 
 import numpy as np
 import pandas as pd
+from pandas.io.pickle import to_pickle as pd_to_pickle
 
 
 def read_parquet(path):
@@ -24,6 +27,48 @@ def read_entityset(path):
         metadata = json.load(f)
     return EntitySet.from_metadata(metadata, root=entityset_path,
                                    load_data=True)
+
+
+def serialize_entityset(entityset, path, to_parquet=False):
+    metadata = entityset.create_metadata_dict()
+    entityset_path = os.path.abspath(os.path.expanduser(path))
+    try:
+        os.makedirs(entityset_path)
+    except OSError:
+        pass
+
+    temp_dir = mkdtemp()
+    try:
+        for e_id, entity in entityset.entity_dict.items():
+            if to_parquet:
+                metadata = _write_parquet_entity_data(temp_dir,
+                                                      entity,
+                                                      metadata)
+            else:
+                rel_filename = os.path.join(e_id, 'data.p')
+                filename = os.path.join(temp_dir, rel_filename)
+                os.makedirs(os.path.join(temp_dir, e_id))
+                pd_to_pickle(entity.data, filename)
+                metadata['entity_dict'][e_id]['data_files'] = {
+                    'data_filename': rel_filename,
+                    'filetype': 'pickle',
+                    'size': os.stat(filename).st_size
+                }
+
+        timestamp = pd.Timestamp.now().isoformat()
+        with open(os.path.join(temp_dir, 'save_time.txt'), 'w') as f:
+            f.write(timestamp)
+        with open(os.path.join(temp_dir, 'metadata.json'), 'w') as f:
+            json.dump(metadata, f)
+
+        # can use a lock here if need be
+        if os.path.exists(entityset_path):
+            shutil.rmtree(entityset_path)
+        shutil.move(temp_dir, entityset_path)
+    except:
+        # make sure to clean up
+        shutil.rmtree(temp_dir)
+        raise
 
 
 def _parquet_compatible(df):
