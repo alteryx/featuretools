@@ -430,6 +430,8 @@ def test_concat_entitysets(entityset):
                                     make_index=True,
                                     variable_types=vtypes,
                                     dataframe=df)
+    entityset.add_last_time_indexes()
+
     assert entityset.__eq__(entityset)
     entityset_1 = copy.deepcopy(entityset)
     entityset_2 = copy.deepcopy(entityset)
@@ -441,10 +443,9 @@ def test_concat_entitysets(entityset):
         'test_entity': [[0, 1], [0, 2]],
     }
 
-    entityset.add_last_time_indexes()
-    assert 10 in entityset['log'].last_time_index.index
-    assert entityset_1['log'].last_time_index is None
-    assert entityset_2['log'].last_time_index is None
+    assert entityset.__eq__(entityset_1, deep=True)
+    assert entityset.__eq__(entityset_2, deep=True)
+
     for i, es in enumerate([entityset_1, entityset_2]):
         for entity, rows in emap.items():
             df = es[entity].df
@@ -454,6 +455,8 @@ def test_concat_entitysets(entityset):
     assert 10 in entityset_2['log'].last_time_index.index
     assert 9 in entityset_1['log'].last_time_index.index
     assert 9 not in entityset_2['log'].last_time_index.index
+    assert not entityset.__eq__(entityset_1, deep=True)
+    assert not entityset.__eq__(entityset_2, deep=True)
 
     # make sure internal indexes work before concat
     regions = entityset_1['customers'].query_by_values(['United States'], variable_id=u'région_id')
