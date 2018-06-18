@@ -33,11 +33,17 @@ def test_reorders_index():
                              index='id')
     assert es['test'].variables[0].id == 'id'
     assert es['test'].variables[0].id == es['test'].index
+    assert [v.id for v in es['test'].variables] == list(es['test'].df.columns)
 
 
 def test_index_at_beginning(es):
     for e in es.entity_dict.values():
         assert e.index == e.variables[0].id
+
+
+def test_variable_ordering_matches_column_ordering(es):
+    for e in es.entity_dict.values():
+        assert [v.id for v in e.variables] == list(e.df.columns)
 
 
 def test_eq(es):

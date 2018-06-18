@@ -125,6 +125,7 @@ class Entity(object):
                           if v.id == self.index][0]
         self.variables = [index_variable] + [v for v in self.variables
                                              if v.id != self.index]
+
         self.update_data(df=self.df,
                          already_sorted=already_sorted,
                          recalculate_last_time_indexes=False,
@@ -568,6 +569,9 @@ class Entity(object):
 
     def update_data(self, df=None, data=None, already_sorted=False,
                     reindex=True, recalculate_last_time_indexes=True):
+        # Make sure column ordering matches variable ordering
+        df = df[[v.id for v in self.variables]]
+
         if data is not None:
             self.data = data
         elif df is not None:
