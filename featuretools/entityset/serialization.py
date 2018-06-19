@@ -9,7 +9,10 @@ from tempfile import mkdtemp
 
 import numpy as np
 import pandas as pd
-from pandas.io.pickle import to_pickle as pd_to_pickle
+from pandas.io.pickle import (to_pickle as pd_to_pickle,
+                              read_pickle as pd_read_pickle)
+
+import featuretools.variable_types.variable as vtypes
 
 
 def read_parquet(path):
@@ -27,6 +30,44 @@ def read_entityset(path):
         metadata = json.load(f)
     return EntitySet.from_metadata(metadata, root=entityset_path,
                                    load_data=True)
+
+
+def load_entity_data(metadata, dummy=True, root=None):
+    variable_types = {}
+    defaults = []
+    columns = []
+    variable_names = {}
+    for elt in dir(vtypes):
+        try:
+            cls = getattr(vtypes, elt)
+            if issubclass(cls, vtypes.Variable):
+                variable_names[cls._dtype_repr] = cls
+        except TypeError:
+            pass
+    for vid, vmetadata in metadata['variables'].items():
+        if vmetadata['dtype_repr']:
+            vtype = variable_names.get(vmetadata['dtype_repr'], vtypes.Variable)
+            variable_types[vid] = vtype
+            defaults.append(vtypes.DEFAULT_DTYPE_VALUES[vtype._default_pandas_dtype])
+        else:
+            defaults.append(vtypes.DEFAULT_DTYPE_VALUES[object])
+        columns.append(vid)
+    df = pd.DataFrame({c: [d] for c, d in zip(columns, defaults)})
+    if not dummy:
+        if metadata['data_files']['filetype'] == 'pickle':
+            df = pd_read_pickle(os.path.join(root, metadata['data_filename']))
+        elif metadata['data_files']['filetype'] == 'parquet':
+            df = pd.read_parquet(os.path.join(root,
+                                              metadata['data_files']['df_filename']))
+            df.index = df[metadata['index']]
+            to_join = metadata['data_files'].get('to_join', None)
+            if to_join is not None:
+                for cname, to_join_names in to_join.items():
+                    df[cname] = df[to_join_names].apply(tuple, axis=1)
+                    df.drop(to_join_names, axis=1, inplace=True)
+        else:
+            raise ValueError("Unknown entityset data filetype: {}".format(metadata['data_files']['filetype']))
+    return df, variable_types
 
 
 def write_entityset(entityset, path, to_parquet=False):

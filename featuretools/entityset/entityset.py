@@ -10,7 +10,10 @@ from pandas.api.types import is_dtype_equal
 
 from .entity import Entity
 from .relationship import Relationship
-from .serialization import read_parquet, read_pickle, write_entityset
+from .serialization import (load_entity_data,
+                            read_parquet,
+                            read_pickle,
+                            write_entityset)
 
 import featuretools.variable_types.variable as vtypes
 from featuretools.utils.gen_utils import make_tqdm_iterator
@@ -208,43 +211,55 @@ class EntitySet(object):
         return read_parquet(path)
 
     def create_metadata_dict(self):
-        time_type = self.time_type
-        if time_type is not None:
-            time_type = time_type._dtype_repr or "generic_type"
         return {
             'id': self.id,
-            'relationships': [r.create_metadata_dict()
-                              for r in self.relationships],
-            'entity_dict': {eid: e.create_metadata_dict()
-                            for eid, e in self.entity_dict.items()},
-            'time_type': time_type
+            'relationships': [{
+                'parent_entity': r.parent_entity.id,
+                'parent_variable': r.parent_variable.id,
+                'child_entity': r.child_entity.id,
+                'child_variable': r.child_variable.id,
+            } for r in self.relationships],
+            'entity_dict': {eid: {
+                'index': e.index,
+                'time_index': e.time_index,
+                'secondary_time_index': e.secondary_time_index,
+                'encoding': e.encoding,
+                'variables': {
+                    v.id: v.create_metadata_dict()
+                    for v in e.variables
+                },
+                'has_last_time_index': e.last_time_index is not None
+            } for eid, e in self.entity_dict.items()},
         }
 
     @classmethod
     def from_metadata(cls, metadata, root=None, load_data=False):
         es = EntitySet(metadata['id'])
-        for k, v in metadata.items():
-            if k in ['relationships', 'entity_dict']:
-                continue
-            elif k == 'time_type':
-                if v:
-                    specified_types = [var for var in
-                                       vtypes.ALL_VARIABLE_TYPES
-                                       if var._dtype_repr == v]
-                    if not len(specified_types):
-                        es.time_type = None
-                    else:
-                        es.time_type = specified_types[0]
-                else:
-                    es.time_type = None
-            else:
-                setattr(es, k, v)
-        es.entity_dict = {eid: Entity.from_metadata(es, em,
-                                                    root=root,
-                                                    load_data=load_data)
-                          for eid, em in metadata['entity_dict'].items()}
-        es.relationships = [Relationship.from_metadata(es, r)
-                            for r in metadata['relationships']]
+        set_last_time_indexes = False
+        add_interesting_values = False
+        for eid, entity in metadata['entity_dict'].items():
+            df, variable_types = load_entity_data(entity, dummy=not load_data)
+            if any(v['interesting_values'] is not None and len(v['interesting_values'])
+                   for v in entity['variables'].values()):
+                add_interesting_values = True
+            es.entity_from_dataframe(eid,
+                                     df,
+                                     index=entity['index'],
+                                     time_index=entity['time_index'],
+                                     secondary_time_index=entity['secondary_time_index'],
+                                     encoding=entity['encoding'],
+                                     variable_types=variable_types)
+            if entity['has_last_time_index']:
+                set_last_time_indexes = True
+        for rel in metadata['relationships']:
+            es.add_relationship(Relationship(
+                es[rel['parent_entity']][rel['parent_variable']],
+                es[rel['child_entity']][rel['child_variable']],
+            ))
+        if set_last_time_indexes:
+            es.add_last_time_indexes()
+        if add_interesting_values:
+            es.add_interesting_values()
         return es
 
     ###########################################################################

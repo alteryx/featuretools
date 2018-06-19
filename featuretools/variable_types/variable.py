@@ -143,23 +143,13 @@ class Variable(object):
 
     def create_metadata_dict(self):
         return {
-            '_dtype_repr': self._dtype_repr,
+            'dtype_repr': self._dtype_repr,
             'entity': self.entity.id,
             'id': self.id,
-            '_name': self.name,
-            '_statistics': self._statistics,
-            '_interesting_values': self._interesting_values
+            'name': self.name,
+            'statistics': self._statistics,
+            'interesting_values': self._interesting_values
         }
-
-    @classmethod
-    def from_metadata(cls, entity, metadata):
-        v = cls(id=metadata['id'],
-                entity=entity,
-                name=metadata['_name'],
-                statistics=metadata.get('_statistics', None))
-        if metadata['_interesting_values']:
-            v.interesting_values = metadata['_interesting_values']
-        return v
 
 
 class Unknown(Variable):
@@ -251,6 +241,7 @@ class Index(Variable):
     """
     _dtype_repr = "index"
     _setter_stats = Variable._setter_stats
+    _default_pandas_dtype = int
 
 
 class Datetime(Variable):
