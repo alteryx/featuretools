@@ -195,7 +195,7 @@ class Entity(object):
         return True
 
     def __sizeof__(self):
-        return self.df.__sizeof__() + self.last_time_index.__sizeof__()
+        return sum([value.__sizeof__() for value in self.data.values()])
 
     @property
     def is_metadata(self):

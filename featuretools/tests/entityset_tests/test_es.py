@@ -879,9 +879,10 @@ def test_serialization(entityset):
 
 
 def test_sizeof(entityset):
-    total_df_size = 0
+    total_size = 0
     for entity in entityset.entities:
-        total_df_size += entity.df.__sizeof__()
-        total_df_size += entity.last_time_index.__sizeof__()
+        total_size += entity.df.__sizeof__()
+        total_size += entity.last_time_index.__sizeof__()
+        total_size += entity.indexed_by.__sizeof__()
 
-    assert entityset.__sizeof__() == total_df_size
+    assert entityset.__sizeof__() == total_size
