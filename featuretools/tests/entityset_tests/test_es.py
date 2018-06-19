@@ -312,53 +312,6 @@ def test_handles_datetime_mismatch():
                                         time_index='time', variable_types=vtypes)
 
 
-def test_calculates_statistics_on_init():
-    df = pd.DataFrame({'id': [0, 1, 2],
-                       'time': [datetime(2011, 4, 9, 10, 31, 3 * i)
-                                for i in range(3)],
-                       'category': ['a', 'b', 'a'],
-                       'number': [4, 5, 6],
-                       'boolean': [True, False, True],
-                       'boolean_with_nan': [True, False, np.nan]})
-    vtypes = {'id': variable_types.Categorical,
-              'time': variable_types.Datetime,
-              'category': variable_types.Categorical,
-              'number': variable_types.Numeric,
-              'boolean': variable_types.Boolean,
-              'boolean_with_nan': variable_types.Boolean}
-    entityset = EntitySet(id='test')
-    entityset.entity_from_dataframe('stats_test_entity', df, 'id',
-                                    variable_types=vtypes)
-    e = entityset["stats_test_entity"]
-    # numerics don't have nunique or percent_unique defined
-    for v in ['time', 'category', 'number']:
-        assert e[v].count == 3
-
-    for v in ['time', 'number']:
-        with pytest.raises(AttributeError):
-            e[v].nunique
-        with pytest.raises(AttributeError):
-            e[v].percent_unique
-
-    # 'id' column automatically parsed as id
-    assert e['id'].count == 3
-
-    # categoricals have nunique and percent_unique defined
-    assert e['category'].nunique == 2
-    assert e['category'].percent_unique == 2. / 3
-
-    # booleans have count and number of true/false labels defined
-    assert e['boolean'].count == 3
-    # assert e['boolean'].num_true == 3
-    assert e['boolean'].num_true == 2
-    assert e['boolean'].num_false == 1
-
-    # TODO: the below fails, but shouldn't
-    # boolean with nan have count and number of true/false labels defined
-    # assert e['boolean_with_nan'].count == 2
-
-    # assert e['boolean_with_nan'].num_true == 1
-    # assert e['boolean_with_nan'].num_false == 1
 
 
 def test_column_funcs(entityset):
@@ -378,12 +331,6 @@ def test_column_funcs(entityset):
     assert entityset['test_entity'].time_index == 'time'
     assert set([v.id for v in entityset['test_entity'].variables]) == set(df.columns)
 
-    assert entityset['test_entity']['number'].max == 6
-    assert entityset['test_entity']['number'].min == 4
-    assert entityset['test_entity']['number'].std == 1
-    assert entityset['test_entity']['number'].count == 3
-    assert entityset['test_entity']['number'].mean == 5
-    assert entityset['test_entity']['category'].nunique == 2
     assert entityset['test_entity'].df['time'].dtype == df['time'].dtype
     assert set(entityset['test_entity'].df['id']) == set(df['id'])
 
