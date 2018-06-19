@@ -13,7 +13,7 @@ def load_flight(use_cache=True,
                 demo=True,
                 only_return_data=False,
                 month_filter=[1, 2],
-                filterer={'dest_city': ['Boston, MA'], 'origin_city': ['Boston, MA']}):
+                categorical_filter={'dest_city': ['Boston, MA'], 'origin_city': ['Boston, MA']}):
     """ Download, clean, and filter flight data from 2017.
         Input:
             month_filter (list[int]): Only use data from these months. Default is [1, 2].
@@ -122,9 +122,6 @@ def clean_data(data):
     clean_data = clean_data.dropna(
         axis='rows', subset=['CRSDepTime', 'CRSArrTime'])
 
-    # Rename columns to underscore
-    # Code via SO https://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-snake-case
-
     clean_data = clean_data.rename(
         columns={col: convert(col) for col in clean_data})
     clean_data = clean_data.rename(columns={'crs_arr_time': 'scheduled_arr_time',
@@ -160,5 +157,7 @@ def filter_data(clean_data,
 
 
 def convert(name):
+    # Rename columns to underscore
+    # Code via SO https://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-snake-case
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
