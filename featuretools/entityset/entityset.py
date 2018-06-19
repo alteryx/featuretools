@@ -238,7 +238,8 @@ class EntitySet(object):
         set_last_time_indexes = False
         add_interesting_values = False
         for eid, entity in metadata['entity_dict'].items():
-            df, variable_types = load_entity_data(entity, dummy=not load_data)
+            df, variable_types = load_entity_data(entity, root=root,
+                                                  dummy=not load_data)
             if any(v['interesting_values'] is not None and len(v['interesting_values'])
                    for v in entity['variables'].values()):
                 add_interesting_values = True
