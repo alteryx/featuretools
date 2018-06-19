@@ -29,7 +29,7 @@ def dfs(entities=None,
         training_window=None,
         approximate=None,
         chunk_size=None,
-        njobs=1,
+        n_jobs=1,
         dask_kwargs=None,
         verbose=False):
     '''Calculates a feature matrix and features given a dictionary of entities
@@ -120,7 +120,7 @@ def dfs(entities=None,
 
         save_progress (str, optional): Path to save intermediate computational results.
 
-        njobs (int, optional): number of parallel threads to use when
+        n_jobs (int, optional): number of parallel processes to use when
             calculating feature matrix
 
         chunk_size (int or float or None or "cutoff time", optionsal): Number
@@ -131,7 +131,7 @@ def dfs(entities=None,
             rows are split per cutoff time.
 
         dask_kwargs (dict, optional): Dictionary of keyword arguments to be
-            passed when creating the dask client and scheduler. Even if njobs
+            passed when creating the dask client and scheduler. Even if n_jobs
             is not set, using `dask_kwargs` will enable multiprocessing.
             Valid options:
                 * 'cluster' -> str or dask.LocalCluster
@@ -187,7 +187,7 @@ def dfs(entities=None,
                                                   cutoff_time_in_index=cutoff_time_in_index,
                                                   save_progress=save_progress,
                                                   chunk_size=chunk_size,
-                                                  njobs=njobs,
+                                                  n_jobs=n_jobs,
                                                   dask_kwargs=dask_kwargs,
                                                   verbose=verbose)
     else:
@@ -200,7 +200,7 @@ def dfs(entities=None,
                                                   cutoff_time_in_index=cutoff_time_in_index,
                                                   save_progress=save_progress,
                                                   chunk_size=chunk_size,
-                                                  njobs=njobs,
+                                                  n_jobs=n_jobs,
                                                   dask_kwargs=dask_kwargs,
                                                   verbose=verbose)
     return feature_matrix, features

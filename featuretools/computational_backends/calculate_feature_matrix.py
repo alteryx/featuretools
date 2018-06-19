@@ -36,7 +36,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                              cutoff_time_in_index=False,
                              training_window=None, approximate=None,
                              save_progress=None, verbose=False,
-                             chunk_size=None, njobs=1, dask_kwargs=None,
+                             chunk_size=None, n_jobs=1, dask_kwargs=None,
                              profile=False):
     """Calculates a matrix for a given set of instance ids and calculation times.
 
@@ -89,11 +89,11 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             percentage of all instances. If passed the string "cutoff time",
             rows are split per cutoff time.
 
-        njobs (int, optional): number of parallel threads to use when
+        n_jobs (int, optional): number of parallel processes to use when
             calculating feature matrix
 
         dask_kwargs (dict, optional): Dictionary of keyword arguments to be
-            passed when creating the dask client and scheduler. Even if njobs
+            passed when creating the dask client and scheduler. Even if n_jobs
             is not set, using `dask_kwargs` will enable multiprocessing.
             Valid options:
                 * 'cluster' -> str or dask.LocalCluster
@@ -216,7 +216,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     feature_matrix = []
 
-    if njobs != 1 or dask_kwargs is not None:
+    if n_jobs != 1 or dask_kwargs is not None:
         feature_matrix = parallel_calculate_chunks(chunks=chunks,
                                                    features=features,
                                                    approximate=approximate,
@@ -224,7 +224,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                                    verbose=verbose,
                                                    save_progress=save_progress,
                                                    entityset=entityset,
-                                                   njobs=njobs,
+                                                   n_jobs=n_jobs,
                                                    no_unapproximated_aggs=no_unapproximated_aggs,
                                                    cutoff_df_time_var=cutoff_df_time_var,
                                                    target_time=target_time,
@@ -650,7 +650,7 @@ def get_next_chunk(cutoff_time, time_variable, num_per_chunk):
 
 
 def parallel_calculate_chunks(chunks, features, approximate, training_window,
-                              verbose, save_progress, entityset, njobs,
+                              verbose, save_progress, entityset, n_jobs,
                               no_unapproximated_aggs, cutoff_df_time_var,
                               target_time, pass_columns, dask_kwargs=None):
     from distributed import Client, LocalCluster, as_completed
@@ -667,7 +667,7 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
                 diagnostics_port = dask_kwargs['diagnostics_port']
                 del dask_kwargs['diagnostics_port']
 
-            workers = njobs_to_workers(njobs)
+            workers = n_jobs_to_workers(n_jobs)
             workers = min(workers, len(chunks))
             cluster = LocalCluster(n_workers=workers,
                                    threads_per_worker=1,
@@ -763,17 +763,17 @@ def dask_calculate_chunk(chunk, saved_features, entityset,
     return feature_matrix
 
 
-def njobs_to_workers(njobs):
+def n_jobs_to_workers(n_jobs):
     if version_info.major == 2:
         import multiprocessing
         cpus = multiprocessing.cpu_count()
     else:
         cpus = len(os.sched_getaffinity(0))
 
-    if njobs < 0:
-        workers = max(cpus + 1 + njobs, 1)
+    if n_jobs < 0:
+        workers = max(cpus + 1 + n_jobs, 1)
     else:
-        workers = min(njobs, cpus)
+        workers = min(n_jobs, cpus)
 
     assert workers > 0, "Need at least one worker"
     return workers

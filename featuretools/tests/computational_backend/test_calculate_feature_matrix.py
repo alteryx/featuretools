@@ -22,7 +22,7 @@ from featuretools.computational_backends.calculate_feature_matrix import (
     bin_cutoff_times,
     calc_num_per_chunk,
     get_next_chunk,
-    njobs_to_workers
+    n_jobs_to_workers
 )
 from featuretools.primitives import (
     AggregationPrimitive,
@@ -853,25 +853,25 @@ def test_parallel_failure_raises_correct_error(entityset):
                                  cutoff_time=cutoff_time,
                                  verbose=True,
                                  chunk_size=.13,
-                                 njobs=0,
+                                 n_jobs=0,
                                  approximate='1 hour')
 
 
-def test_njobs(entityset):
+def test_n_jobs(entityset):
     if version_info.major == 2:
         import multiprocessing
         cpus = multiprocessing.cpu_count()
     else:
         cpus = len(os.sched_getaffinity(0))
 
-    assert njobs_to_workers(1) == 1
-    assert njobs_to_workers(-1) == cpus
-    assert njobs_to_workers(cpus) == cpus
-    assert njobs_to_workers((cpus + 1) * -1) == 1
+    assert n_jobs_to_workers(1) == 1
+    assert n_jobs_to_workers(-1) == cpus
+    assert n_jobs_to_workers(cpus) == cpus
+    assert n_jobs_to_workers((cpus + 1) * -1) == 1
     if cpus > 1:
-        assert njobs_to_workers(-2) == cpus - 1
+        assert n_jobs_to_workers(-2) == cpus - 1
     with pytest.raises(AssertionError):
-        njobs_to_workers(0)
+        n_jobs_to_workers(0)
 
 
 def test_integer_time_index(int_es):

@@ -124,7 +124,7 @@ def test_features_only(entities, relationships):
     assert len(features) > 0
 
 
-def test_njobs(entities, relationships):
+def test_dask_kwargs(entities, relationships):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
                                     "time": [10, 12, 15]})
     feature_matrix, features = dfs(entities=entities,
