@@ -246,10 +246,11 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             _feature_matrix = calculate_chunk(chunk, features, approximate,
                                               training_window,
                                               profile, verbose,
-                                              save_progress, backend,
+                                              save_progress,
                                               no_unapproximated_aggs,
                                               cutoff_df_time_var,
-                                              target_time, pass_columns)
+                                              target_time, pass_columns,
+                                              backend=backend)
             feature_matrix.append(_feature_matrix)
             # Do a manual garbage collection in case objects from calculate_chunk
             # weren't collected automatically
@@ -269,9 +270,19 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
 
 def calculate_chunk(chunk, features, approximate, training_window,
-                    profile, verbose, save_progress, backend,
+                    profile, verbose, save_progress,
                     no_unapproximated_aggs, cutoff_df_time_var, target_time,
-                    pass_columns):
+                    pass_columns, backend=None, entityset=None):
+    if isinstance(features, str):
+        features = cloudpickle.loads(features)
+
+    assert entityset is not None or backend is not None, "Must provide either"\
+        " entityset or backend to calculate_chunk"
+    if entityset is None:
+        entityset = backend.entityset
+    if backend is None:
+        backend = PandasBackend(entityset, features)
+
     feature_matrix = []
     entityset = backend.entityset
     if no_unapproximated_aggs and approximate is not None:
@@ -697,9 +708,9 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
 
         # map chunks
         # TODO: consider handling task submission dask kwargs
-        _chunks = client.map(dask_calculate_chunk,
+        _chunks = client.map(calculate_chunk,
                              chunks,
-                             saved_features=_saved_features,
+                             features=_saved_features,
                              entityset=_es,
                              approximate=approximate,
                              training_window=training_window,
@@ -734,32 +745,6 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
         if client is not None:
             client.close()
 
-    return feature_matrix
-
-
-def dask_calculate_chunk(chunk, saved_features, entityset,
-                         approximate, training_window, profile, verbose,
-                         save_progress, no_unapproximated_aggs,
-                         cutoff_df_time_var, target_time, pass_columns):
-    # load features
-    features = cloudpickle.loads(saved_features)
-
-    # create backend
-    backend = PandasBackend(entityset, features)
-
-    # calcualte chunk
-    feature_matrix = calculate_chunk(chunk=chunk,
-                                     features=features,
-                                     approximate=approximate,
-                                     training_window=training_window,
-                                     profile=profile,
-                                     verbose=verbose,
-                                     save_progress=save_progress,
-                                     backend=backend,
-                                     no_unapproximated_aggs=no_unapproximated_aggs,
-                                     cutoff_df_time_var=cutoff_df_time_var,
-                                     target_time=target_time,
-                                     pass_columns=pass_columns)
     return feature_matrix
 
 
