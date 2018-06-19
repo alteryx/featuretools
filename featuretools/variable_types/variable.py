@@ -4,21 +4,6 @@ from builtins import object
 
 from past.builtins import basestring
 
-COMMON_STATISTICS = ["count"]
-NUMERIC_STATISTICS = ["mean", "max", "min", "std"]
-DISCRETE_STATISTICS = ["nunique"]
-DATETIME_STATISTICS = ["max", "min"]
-TIMEDELTA_STATISTICS = ["mean", "max", "min", "std"]
-BOOLEAN_STATISTICS = ["sum"]
-BOOLEAN_COMPUTED_STATISTICS = ["num_true", "num_false"]  # sum and count being calculated already
-
-ALL_STATISTICS = list(set(COMMON_STATISTICS +
-                          NUMERIC_STATISTICS +
-                          DISCRETE_STATISTICS +
-                          DATETIME_STATISTICS +
-                          TIMEDELTA_STATISTICS +
-                          BOOLEAN_STATISTICS))
-
 
 class Variable(object):
     """Represent a variable in an entity
@@ -35,8 +20,6 @@ class Variable(object):
         :class:`.Entity`, :class:`.Relationship`, :class:`.BaseEntitySet`
     """
     _dtype_repr = None
-    _setter_stats = COMMON_STATISTICS
-    _computed_stats = []
 
     def __init__(self, id, entity, name=None):
         assert isinstance(id, basestring), "Variable id must be a string"
@@ -45,7 +28,6 @@ class Variable(object):
         self.entity_id = entity.id
         assert entity.entityset is not None, "Entity must contain reference to EntitySet"
         self.entity = entity
-        self._statistics = {stat: None for stat in self._setter_stats}
         self._interesting_values = None
 
     @property
@@ -67,38 +49,19 @@ class Variable(object):
         return ret
 
     @classmethod
-    def create_from(cls, variable, keep_stats=False):
+    def create_from(cls, variable):
         """Create new variable this type from existing
 
         Args:
             variable (Variable) : Existing variable to create from.
-            keep_stats (bool) : If False, statistics stored on the original variable are lost.
 
         Returns:
             :class:`.Variable` : new variable
 
         """
         v = cls(id=variable.id, name=variable.name, entity=variable.entity)
-
-        if keep_stats:
-            for stat in cls._setter_stats:
-                value = variable._statistics.get(stat)
-                if value is not None:
-                    v._statistics[stat] = value
         return v
 
-    def __getattr__(self, attr):
-        if attr in self._setter_stats or attr in self._computed_stats:
-            return self._statistics.get(attr)
-        else:
-            raise AttributeError("--%r object has no attribute %r" % (
-                                 type(self).__name__, attr))
-
-    def __setattr__(self, attr, value):
-        if attr in self._setter_stats or attr in self._computed_stats:
-            self._statistics[attr] = value
-        else:
-            return super(Variable, self).__setattr__(attr, value)
 
     @property
     def name(self):
@@ -108,10 +71,6 @@ class Variable(object):
     def dtype(self):
         return self._dtype_repr \
             if self._dtype_repr is not None else "generic_type"
-
-    @property
-    def description(self):
-        return self._statistics
 
     @name.setter
     def name(self, name):
@@ -137,7 +96,6 @@ class Unknown(Variable):
 class Discrete(Variable):
     """Superclass representing variables that take on discrete values"""
     _dtype_repr = "discrete"
-    _setter_stats = Variable._setter_stats + DISCRETE_STATISTICS
 
     def __init__(self, id, entity, name=None):
         super(Discrete, self).__init__(id, entity, name)
@@ -166,17 +124,6 @@ class Discrete(Variable):
 class Boolean(Variable):
     """Represents variables that take on one of two values"""
     _dtype_repr = "boolean"
-    _setter_stats = Variable._setter_stats + BOOLEAN_STATISTICS
-    _computed_stats = BOOLEAN_COMPUTED_STATISTICS
-
-    def __setattr__(self, attr, value):
-        if attr in self._computed_stats:
-            if attr == 'num_true':
-                self._statistics['num_true'] = self._statistics['sum']
-            elif attr == 'num_false':
-                self._statistics['num_false'] = self._statistics['count'] - self._statistics['sum']
-        else:
-            return super(Boolean, self).__setattr__(attr, value)
 
 
 class Categorical(Discrete):
@@ -204,7 +151,6 @@ class Numeric(Variable):
         mean (float)
     """
     _dtype_repr = "numeric"
-    _setter_stats = Variable._setter_stats + NUMERIC_STATISTICS
 
     def __init__(self, id, entity, name=None):
         super(Numeric, self).__init__(id, entity, name)
@@ -217,13 +163,11 @@ class Index(Variable):
         count (int)
     """
     _dtype_repr = "index"
-    _setter_stats = Variable._setter_stats
 
 
 class Datetime(Variable):
     """Represents variables that are points in time"""
     _dtype_repr = "datetime"
-    _setter_stats = Variable._setter_stats + DATETIME_STATISTICS
 
     def __init__(self, id, entity, format=None, name=None):
         self.format = format
@@ -257,7 +201,6 @@ class DatetimeTimeIndex(TimeIndex, Datetime):
 class Timedelta(Variable):
     """Represents variables that are timedeltas"""
     _dtype_repr = "timedelta"
-    _setter_stats = Variable._setter_stats + TIMEDELTA_STATISTICS
 
     def __init__(self, id, entity, name=None):
         super(Timedelta, self).__init__(id, entity, name)

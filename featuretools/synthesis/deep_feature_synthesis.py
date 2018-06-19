@@ -4,7 +4,6 @@ from collections import defaultdict
 
 from past.builtins import basestring
 
-from .dfs_filters import LimitModeUniques, TraverseUp
 
 import featuretools.primitives.api as ftypes
 from featuretools import variable_types
@@ -30,13 +29,6 @@ class DeepFeatureSynthesis(object):
             target_entity_id (str): Id of entity for which to build features.
 
             entityset (EntitySet): Entityset for which to build features.
-
-            filters (list[DFSFilterBase], optional) : List of dfs filters
-                to apply.
-
-                Default:
-
-                    [:class:`synthesis.dfs_filters.TraverseUp`]
 
             agg_primitives (list[str or :class:`.primitives.AggregationPrimitive`], optional):
                 list of Aggregation Feature types to apply.
@@ -90,7 +82,6 @@ class DeepFeatureSynthesis(object):
     def __init__(self,
                  target_entity_id,
                  entityset,
-                 filters=None,
                  agg_primitives=None,
                  trans_primitives=None,
                  where_primitives=None,
@@ -141,21 +132,6 @@ class DeepFeatureSynthesis(object):
         self.target_entity_id = target_entity_id
         self.es = entityset
 
-        if filters is None:
-            filters = [TraverseUp(),
-                       LimitModeUniques()]
-
-        self.post_instance_filters = []
-        self.traversal_filters = []
-
-        for f in filters:
-            if f.filter_type == 'post_instance':
-                self.post_instance_filters.append(f)
-            elif f.filter_type == 'traversal':
-                self.traversal_filters.append(f)
-            else:
-                raise NotImplementedError("Unknown filter type {}"
-                                          .format(f.filter_type))
 
         if agg_primitives is None:
             agg_primitives = [ftypes.Sum, ftypes.Std, ftypes.Max, ftypes.Skew,
@@ -347,10 +323,7 @@ class DeepFeatureSynthesis(object):
 
         backward_entities = self.es.get_backward_entities(entity.id)
         backward_entities = [b_id for b_id in backward_entities
-                             if self._apply_traversal_filters(entity, self.es[b_id],
-                                                              entity_path,
-                                                              forward=False) and
-                             b_id not in self.ignore_entities]
+                             if b_id not in self.ignore_entities]
         for b_entity_id in backward_entities:
             # if in path, we've alrady built features
             if b_entity_id in entity_path:
@@ -395,12 +368,8 @@ class DeepFeatureSynthesis(object):
         Step 4 - Recursively build features for each entity in a forward relationship
         """
         forward_entities = self.es.get_forward_entities(entity.id)
-        # filter entities in path and using traversal filters
         forward_entities = [f_id for f_id in forward_entities
-                            if self._apply_traversal_filters(entity,
-                                                             self.es[f_id],
-                                                             entity_path) and
-                            f_id not in self.ignore_entities]
+                            if f_id not in self.ignore_entities]
 
         for f_entity_id in forward_entities:
             # if in path, we've already built features
@@ -435,16 +404,6 @@ class DeepFeatureSynthesis(object):
                                          relationship=r,
                                          max_depth=max_depth)
 
-    def _apply_traversal_filters(self, parent_entity, child_entity,
-                                 entity_path, forward=True):
-        for f in self.traversal_filters:
-            if not f.is_valid(entity=parent_entity,
-                              child_entity=child_entity,
-                              target_entity_id=self.target_entity_id,
-                              entity_path=entity_path, forward=forward):
-                return False
-
-        return True
 
     def _handle_new_feature(self, new_feature, all_features):
         """Adds new feature to the dict

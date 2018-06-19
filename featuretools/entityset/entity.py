@@ -254,35 +254,6 @@ class Entity(object):
     def variable_types(self):
         return {v.id: type(v) for v in self.variables}
 
-    def add_all_variable_statistics(self):
-        for var_id in self.variable_types.keys():
-            self.add_variable_statistics(var_id)
-
-    def add_variable_statistics(self, var_id):
-        vartype = self.variable_types[var_id]
-        stats = vartype._setter_stats
-        for stat in stats:
-            try:
-                value = getattr(self.df[var_id], stat)()
-                setattr(self._get_variable(var_id), stat, value)
-            except TypeError as e:
-                print(e)
-
-        stats = vartype._computed_stats
-        for stat in stats:
-            try:
-                setattr(self._get_variable(var_id), stat, value)
-            except TypeError as e:
-                print(e)
-
-    def _remove_variable_statistic(self, v, entityset, statistic):
-        try:
-            value = getattr(v, statistic)
-        except AttributeError:
-            pass
-        else:
-            if value is not None:
-                setattr(v, statistic, None)
 
     def convert_variable_type(self, variable_id, new_type,
                               convert_data=True,
@@ -312,7 +283,6 @@ class Entity(object):
         new_variable = new_type.create_from(variable)
         self.variables[self.variables.index(variable)] = new_variable
 
-        self.add_variable_statistics(new_variable.id)
 
     def convert_all_variable_data(self, variable_types):
         for var_id, desired_type in variable_types.items():
@@ -586,7 +556,6 @@ class Entity(object):
             self.index_data()
         if recalculate_last_time_indexes and self.last_time_index is not None:
             self.entityset.add_last_time_indexes(updated_entities=[self.id])
-        self.add_all_variable_statistics()
 
     def add_interesting_values(self, max_values=5, verbose=False):
         """
@@ -665,7 +634,6 @@ class Entity(object):
 
         new_v = type(new_id, entity=self)
         self.variables.append(new_v)
-        self.add_variable_statistics(new_id)
 
     def delete_variable(self, variable_id):
         """
