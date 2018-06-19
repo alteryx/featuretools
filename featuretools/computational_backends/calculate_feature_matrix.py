@@ -273,7 +273,7 @@ def calculate_chunk(chunk, features, approximate, training_window,
                     profile, verbose, save_progress,
                     no_unapproximated_aggs, cutoff_df_time_var, target_time,
                     pass_columns, backend=None, entityset=None):
-    if isinstance(features, str):
+    if not isinstance(features, list):
         features = cloudpickle.loads(features)
 
     assert entityset is not None or backend is not None, "Must provide either"\
