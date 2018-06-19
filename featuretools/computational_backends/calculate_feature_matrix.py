@@ -696,6 +696,7 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
         print(scatter_string.format(scatter_time))
 
         # map chunks
+        # TODO: consider handling task submission dask kwargs
         _chunks = client.map(dask_calculate_chunk,
                              chunks,
                              saved_features=_saved_features,
@@ -711,7 +712,6 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
                              pass_columns=pass_columns)
 
         feature_matrix = []
-        # TODO: handle errored / failed
         iterator = as_completed(_chunks, with_results=True).batches()
         if verbose:
             pbar_str = ("Elapsed: {elapsed} | Remaining: {remaining} | "
