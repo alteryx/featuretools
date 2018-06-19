@@ -312,8 +312,6 @@ def test_handles_datetime_mismatch():
                                         time_index='time', variable_types=vtypes)
 
 
-
-
 def test_column_funcs(entityset):
     # Note: to convert the time column directly either the variable type
     # or convert_date_columns must be specifie

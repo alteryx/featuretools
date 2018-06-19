@@ -254,7 +254,6 @@ class Entity(object):
     def variable_types(self):
         return {v.id: type(v) for v in self.variables}
 
-
     def convert_variable_type(self, variable_id, new_type,
                               convert_data=True,
                               **kwargs):
@@ -282,7 +281,6 @@ class Entity(object):
         variable = self._get_variable(variable_id)
         new_variable = new_type.create_from(variable)
         self.variables[self.variables.index(variable)] = new_variable
-
 
     def convert_all_variable_data(self, variable_types):
         for var_id, desired_type in variable_types.items():

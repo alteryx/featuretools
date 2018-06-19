@@ -62,7 +62,6 @@ class Variable(object):
         v = cls(id=variable.id, name=variable.name, entity=variable.entity)
         return v
 
-
     @property
     def name(self):
         return self._name if self._name is not None else self.id

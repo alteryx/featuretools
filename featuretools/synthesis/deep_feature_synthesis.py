@@ -4,7 +4,6 @@ from collections import defaultdict
 
 from past.builtins import basestring
 
-
 import featuretools.primitives.api as ftypes
 from featuretools import variable_types
 from featuretools.primitives.api import (
@@ -131,7 +130,6 @@ class DeepFeatureSynthesis(object):
                 self.ignore_variables[eid] = set(vars)
         self.target_entity_id = target_entity_id
         self.es = entityset
-
 
         if agg_primitives is None:
             agg_primitives = [ftypes.Sum, ftypes.Std, ftypes.Max, ftypes.Skew,
@@ -403,7 +401,6 @@ class DeepFeatureSynthesis(object):
                                          child_entity=r.child_entity,
                                          relationship=r,
                                          max_depth=max_depth)
-
 
     def _handle_new_feature(self, new_feature, all_features):
         """Adds new feature to the dict
