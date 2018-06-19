@@ -27,5 +27,6 @@ def test_tokenize_entityset():
                                  'cohort_end': [pd.Timestamp('2011-04-08 12:00:00')]},
                            columns=['cohort', 'cohort_name', 'cohort_end'],
                            index=[2])
-    dupe['cohorts'].update_data(cohorts_df.append(new_row, ignore_index=True))
-    assert tokenize(es) != tokenize(dupe)
+    more_cohorts = cohorts_df.append(new_row, ignore_index=True, sort=True)
+    dupe['cohorts'].update_data(more_cohorts)
+    assert tokenize(es) == tokenize(dupe)

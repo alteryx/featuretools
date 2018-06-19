@@ -3,9 +3,8 @@ import itertools
 import logging
 from builtins import object, range, zip
 from collections import defaultdict
-from hashlib import md5
-from sys import version_info
 
+import cloudpickle
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_dtype_equal
@@ -131,21 +130,7 @@ class EntitySet(object):
         return sum([entity.__sizeof__() for entity in self.entities])
 
     def __dask_tokenize__(self):
-        entities = []
-        sorted_entities = sorted(self.entities, key=lambda x: x.id)
-        for e in sorted_entities:
-            variables = sorted(e.variables, key=lambda x: x.id)
-            index = e.index,
-            time_index = e.time_index,
-            secondary_time_index = sorted(e.secondary_time_index.items(),
-                                          key=lambda x: x[0])
-            entities.append((e.id, variables, index, time_index,
-                             secondary_time_index))
-
-        data = str(self.relationships) + str(entities)
-        if version_info.major == 2:
-            data = unicode(data, encoding='utf-8')
-        return (EntitySet, md5(data.encode('utf-8')).hexdigest())
+        return (EntitySet, cloudpickle.dumps(self.metadata))
 
     def __eq__(self, other, deep=False):
         if len(self.entity_dict) != len(other.entity_dict):
