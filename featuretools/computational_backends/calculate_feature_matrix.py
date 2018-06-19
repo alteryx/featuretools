@@ -723,15 +723,15 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
                              pass_columns=pass_columns)
 
         feature_matrix = []
-        iterator = as_completed(_chunks, with_results=True).batches()
+        iterator = as_completed(_chunks).batches()
         if verbose:
             pbar_str = ("Elapsed: {elapsed} | Remaining: {remaining} | "
                         "Progress: {l_bar}{bar}| "
                         "Calculated: {n}/{total} chunks")
             pbar = make_tqdm_iterator(total=len(_chunks), bar_format=pbar_str)
         for batch in iterator:
-            for future, result in batch:
-                # gather finished futures
+            results = client.gather(batch)
+            for result in results:
                 feature_matrix.append(result)
                 if verbose:
                     pbar.update()
