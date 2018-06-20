@@ -10,8 +10,7 @@ from pandas.api.types import is_dtype_equal, is_numeric_dtype
 
 from .entity import Entity
 from .relationship import Relationship
-from .serialization import (load_entity_data,
-                            write_entityset)
+from .serialization import load_entity_data, write_entityset
 
 import featuretools.variable_types.variable as vtypes
 from featuretools.utils.gen_utils import make_tqdm_iterator
@@ -245,13 +244,10 @@ class EntitySet(object):
                 if v['interesting_values'] and len(v['interesting_values']):
                     es[eid][vid].interesting_values = v['interesting_values']
         for rel in metadata['relationships']:
-            try:
-                es.add_relationship(Relationship(
-                    es[rel['parent_entity']][rel['parent_variable']],
-                    es[rel['child_entity']][rel['child_variable']],
-                ))
-            except:
-                import pdb; pdb.set_trace()
+            es.add_relationship(Relationship(
+                es[rel['parent_entity']][rel['parent_variable']],
+                es[rel['child_entity']][rel['child_variable']],
+            ))
         if set_last_time_indexes:
             es.add_last_time_indexes()
         return es
