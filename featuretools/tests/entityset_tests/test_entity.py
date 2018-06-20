@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import pandas as pd
 import pytest
 
 from ..testing_utils import make_ecommerce_entityset
 
+import featuretools as ft
 from featuretools import variable_types
 
 
@@ -20,6 +22,28 @@ def test_enforces_variable_id_is_str(es):
 
 def test_is_index_column(es):
     assert es['cohorts'].index == 'cohort'
+
+
+def test_reorders_index():
+    es = ft.EntitySet('test')
+    df = pd.DataFrame({'id': [1, 2, 3], 'other': [4, 5, 6]})
+    df.columns = ['other', 'id']
+    es.entity_from_dataframe('test',
+                             df,
+                             index='id')
+    assert es['test'].variables[0].id == 'id'
+    assert es['test'].variables[0].id == es['test'].index
+    assert [v.id for v in es['test'].variables] == list(es['test'].df.columns)
+
+
+def test_index_at_beginning(es):
+    for e in es.entity_dict.values():
+        assert e.index == e.variables[0].id
+
+
+def test_variable_ordering_matches_column_ordering(es):
+    for e in es.entity_dict.values():
+        assert [v.id for v in e.variables] == list(e.df.columns)
 
 
 def test_eq(es):
