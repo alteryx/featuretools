@@ -565,25 +565,19 @@ class Entity(object):
 
         return inferred_types
 
-    def update_data(self, df=None, data=None, already_sorted=False,
+    def update_data(self, df, already_sorted=False,
                     reindex=True, recalculate_last_time_indexes=True):
-        to_check = None
-        if df is not None:
-            to_check = df
-        elif data is not None:
-            to_check = data['df']
-
-        if to_check is not None and len(to_check.columns) != len(self.variables):
-            raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(to_check.columns),
+        '''Update entity's internal dataframe, making sure data is sorted
+        and reference indexes to other entities are consistent
+        '''
+        if len(df.columns) != len(self.variables):
+            raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(df.columns),
                                                                                           len(self.variables)))
         for v in self.variables:
-            if v.id not in to_check.columns:
+            if v.id not in df.columns:
                 raise ValueError("Updated dataframe is missing new {} column".format(v.id))
-        if data is not None:
-            self.data = data
-        elif df is not None:
-            self.df = df
-        self.df = self.df[[v.id for v in self.variables]]
+
+        self.df = df[[v.id for v in self.variables]]
         self.set_index(self.index)
         self.set_time_index(self.time_index, already_sorted=already_sorted)
         self.set_secondary_time_index(self.secondary_time_index)
