@@ -214,8 +214,6 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         for chunk in iterator:
             chunks.append(chunk)
 
-    feature_matrix = []
-
     if n_jobs != 1 or dask_kwargs is not None:
         feature_matrix = parallel_calculate_chunks(chunks=chunks,
                                                    features=features,
@@ -231,32 +229,19 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                                    pass_columns=pass_columns,
                                                    dask_kwargs=dask_kwargs or {})
     else:
-        backend = PandasBackend(entityset, features)
+        feature_matrix = linear_calculate_chunks(chunks=chunks,
+                                                 features=features,
+                                                 approximate=approximate,
+                                                 training_window=training_window,
+                                                 profile=profile,
+                                                 verbose=verbose,
+                                                 save_progress=save_progress,
+                                                 entityset=entityset,
+                                                 no_unapproximated_aggs=no_unapproximated_aggs,
+                                                 cutoff_df_time_var=cutoff_df_time_var,
+                                                 target_time=target_time,
+                                                 pass_columns=pass_columns)
 
-        # if verbose, create progess bar
-        if verbose:
-            pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
-                           "Progress: {l_bar}{bar}| "
-                           "Calculated: {n}/{total} chunks")
-            chunks = make_tqdm_iterator(iterable=chunks,
-                                        total=len(chunks),
-                                        bar_format=pbar_string)
-
-        for chunk in chunks:
-            _feature_matrix = calculate_chunk(chunk, features, approximate,
-                                              training_window,
-                                              profile, verbose,
-                                              save_progress,
-                                              no_unapproximated_aggs,
-                                              cutoff_df_time_var,
-                                              target_time, pass_columns,
-                                              backend=backend)
-            feature_matrix.append(_feature_matrix)
-            # Do a manual garbage collection in case objects from calculate_chunk
-            # weren't collected automatically
-            gc.collect()
-        if verbose:
-            chunks.close()
     feature_matrix = pd.concat(feature_matrix)
 
     feature_matrix.sort_index(level='time', kind='mergesort', inplace=True)
@@ -658,6 +643,40 @@ def get_next_chunk(cutoff_time, time_variable, num_per_chunk):
     # after iterating through every group, yield any remaining partial chunks
     for chunk in chunks:
         yield cutoff_time.loc[chunk]
+
+
+def linear_calculate_chunks(chunks, features, approximate, training_window,
+                            profile, verbose, save_progress, entityset,
+                            no_unapproximated_aggs, cutoff_df_time_var,
+                            target_time, pass_columns):
+    backend = PandasBackend(entityset, features)
+    feature_matrix = []
+
+    # if verbose, create progess bar
+    if verbose:
+        pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
+                       "Progress: {l_bar}{bar}| "
+                       "Calculated: {n}/{total} chunks")
+        chunks = make_tqdm_iterator(iterable=chunks,
+                                    total=len(chunks),
+                                    bar_format=pbar_string)
+
+    for chunk in chunks:
+        _feature_matrix = calculate_chunk(chunk, features, approximate,
+                                          training_window,
+                                          profile, verbose,
+                                          save_progress,
+                                          no_unapproximated_aggs,
+                                          cutoff_df_time_var,
+                                          target_time, pass_columns,
+                                          backend=backend)
+        feature_matrix.append(_feature_matrix)
+        # Do a manual garbage collection in case objects from calculate_chunk
+        # weren't collected automatically
+        gc.collect()
+    if verbose:
+        chunks.close()
+    return feature_matrix
 
 
 def parallel_calculate_chunks(chunks, features, approximate, training_window,
