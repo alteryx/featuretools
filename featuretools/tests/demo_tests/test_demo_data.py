@@ -1,7 +1,8 @@
 import os
 
-from featuretools.demo import load_mock_customer, load_retail
+from featuretools.demo import load_mock_customer, load_retail, load_flight
 from featuretools.demo.retail import make_retail_pathname
+from featuretools.demo.flight import make_flight_pathname
 from featuretools.synthesis import dfs
 
 
@@ -32,3 +33,12 @@ def test_mock_customer():
     fm, fl = dfs(entityset=es, target_entity="customers", max_depth=3)
     for feature in fl:
         assert feature.get_name() in fm.columns
+
+
+def test_load_flight():
+    demo_path, _ = make_flight_pathname(demo=True)
+    load_flight(month_filter=[1],
+                categorical_filter={'dest': ['Syracuse, NY']},
+                only_return_data=False)
+    assert os.path.isfile(demo_path)
+    os.remove(demo_path)

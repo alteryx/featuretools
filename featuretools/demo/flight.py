@@ -26,14 +26,7 @@ def load_flight(use_cache=True,
 
 
     """
-    if demo:
-        filename = 'flight_dataset_sample.csv'
-        csv_s3 = 'https://s3.amazonaws.com/featuretools-static/bots_flight_data_2017/data_2017_jan_feb.csv.zip'
-    else:
-        filename = 'flight_dataset_full.csv'
-        csv_s3 = 'https://s3.amazonaws.com/featuretools-static/bots_flight_data_2017/data_all_2017.csv.zip'
-
-    demo_save_path = os.path.join(ft_config['csv_save_location'], filename)
+    demo_save_path, csv_s3 = make_flight_pathname(demo=demo)
 
     if not use_cache or not os.path.isfile(demo_save_path):
         print('Downloading data from s3...')
@@ -194,3 +187,14 @@ def convert(name):
     # Code via SO https://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-snake-case
     s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+
+def make_flight_pathname(demo=True):
+    if demo:
+        filename = 'flight_dataset_sample.csv'
+        csv_s3 = 'https://s3.amazonaws.com/featuretools-static/bots_flight_data_2017/data_2017_jan_feb.csv.zip'
+    else:
+        filename = 'flight_dataset_full.csv'
+        csv_s3 = 'https://s3.amazonaws.com/featuretools-static/bots_flight_data_2017/data_all_2017.csv.zip'
+
+    return os.path.join(ft_config['csv_save_location'], filename), csv_s3
