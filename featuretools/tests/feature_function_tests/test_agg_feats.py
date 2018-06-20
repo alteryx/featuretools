@@ -111,7 +111,6 @@ def test_get_depth(es):
 def test_makes_count(es):
     dfs = DeepFeatureSynthesis(target_entity_id='sessions',
                                entityset=es,
-                               filters=[],
                                agg_primitives=[Count],
                                trans_primitives=[])
 
@@ -393,7 +392,6 @@ def test_custom_primitive_default_kwargs(es):
 def test_makes_numtrue(es):
     dfs = DeepFeatureSynthesis(target_entity_id='sessions',
                                entityset=es,
-                               filters=[],
                                agg_primitives=[NumTrue],
                                trans_primitives=[])
     features = dfs.build_features()

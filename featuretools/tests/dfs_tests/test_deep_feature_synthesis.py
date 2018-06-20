@@ -63,7 +63,6 @@ def relationships():
 def test_makes_agg_features_from_str(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=['last'],
                                    trans_primitives=[])
 
@@ -74,7 +73,6 @@ def test_makes_agg_features_from_str(es):
 def test_makes_agg_features_from_mixed_str(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Count, 'last'],
                                    trans_primitives=[])
 
@@ -86,7 +84,6 @@ def test_makes_agg_features_from_mixed_str(es):
 def test_makes_agg_features(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last],
                                    trans_primitives=[])
 
@@ -98,7 +95,6 @@ def test_only_makes_supplied_agg_feat(es):
     kwargs = dict(
         target_entity_id='customers',
         entityset=es,
-        filters=[],
         max_depth=3,
     )
     dfs_obj = DeepFeatureSynthesis(agg_primitives=[Last], **kwargs)
@@ -120,7 +116,6 @@ def test_only_makes_supplied_agg_feat(es):
 def test_ignores_entities(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last],
                                    trans_primitives=[],
                                    ignore_entities=['log'])
@@ -135,7 +130,6 @@ def test_ignores_entities(es):
 def test_ignores_variables(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last],
                                    trans_primitives=[],
                                    ignore_variables={'log': ['value']})
@@ -152,7 +146,6 @@ def test_ignores_variables(es):
 def test_makes_dfeatures(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[],
                                    trans_primitives=[])
 
@@ -163,7 +156,6 @@ def test_makes_dfeatures(es):
 def test_makes_trans_feat(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[],
                                    trans_primitives=[Hour])
 
@@ -174,7 +166,6 @@ def test_makes_trans_feat(es):
 def test_handles_diff_entity_groupby(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[],
                                    trans_primitives=[Diff])
 
@@ -186,7 +177,6 @@ def test_handles_diff_entity_groupby(es):
 def test_handles_time_since_previous_entity_groupby(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[],
                                    trans_primitives=[TimeSincePrevious])
 
@@ -197,7 +187,6 @@ def test_handles_time_since_previous_entity_groupby(es):
 def test_handles_cumsum_entity_groupby(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[],
                                    trans_primitives=[CumMean])
 
@@ -208,7 +197,6 @@ def test_handles_cumsum_entity_groupby(es):
 def test_only_makes_supplied_trans_feat(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[],
                                    trans_primitives=[Hour])
 
@@ -225,7 +213,6 @@ def test_only_makes_supplied_trans_feat(es):
 def test_makes_dfeatures_of_agg_primitives(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last],
                                    trans_primitives=[])
     features = dfs_obj.build_features()
@@ -236,7 +223,6 @@ def test_makes_dfeatures_of_agg_primitives(es):
 def test_makes_agg_features_of_trans_primitives(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last],
                                    trans_primitives=[Hour])
 
@@ -249,7 +235,6 @@ def test_makes_agg_features_with_where(es):
 
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Count],
                                    trans_primitives=[])
 
@@ -262,7 +247,6 @@ def test_abides_by_max_depth_param(es):
     for i in [1, 2, 3]:
         dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                        entityset=es,
-                                       filters=[],
                                        agg_primitives=[Last],
                                        trans_primitives=[],
                                        max_depth=i)
@@ -276,7 +260,6 @@ def test_abides_by_max_depth_param(es):
 def test_drop_contains(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last],
                                    trans_primitives=[],
                                    max_depth=1,
@@ -287,7 +270,6 @@ def test_drop_contains(es):
     partial_name = to_drop.get_name()[:5]
     dfs_drop = DeepFeatureSynthesis(target_entity_id='sessions',
                                     entityset=es,
-                                    filters=[],
                                     agg_primitives=[Last],
                                     trans_primitives=[],
                                     max_depth=1,
@@ -300,7 +282,6 @@ def test_drop_contains(es):
 def test_drop_exact(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last],
                                    trans_primitives=[],
                                    max_depth=1,
@@ -311,7 +292,6 @@ def test_drop_exact(es):
     name = to_drop.get_name()
     dfs_drop = DeepFeatureSynthesis(target_entity_id='sessions',
                                     entityset=es,
-                                    filters=[],
                                     agg_primitives=[Last],
                                     trans_primitives=[],
                                     max_depth=1,
@@ -327,7 +307,6 @@ def test_seed_features(es):
     session_agg = Last(seed_feature_log, es['sessions'])
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last],
                                    trans_primitives=[],
                                    max_depth=2,
@@ -350,7 +329,6 @@ def test_dfs_builds_on_seed_features_more_than_max_depth(es):
                                       es['sessions'])
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last, Count],
                                    trans_primitives=[],
                                    max_depth=1,
@@ -368,7 +346,6 @@ def test_allowed_paths(es):
     kwargs = dict(
         target_entity_id='customers',
         entityset=es,
-        filters=[],
         agg_primitives=[Last],
         trans_primitives=[],
         max_depth=2,
@@ -397,7 +374,6 @@ def test_max_features(es):
     kwargs = dict(
         target_entity_id='customers',
         entityset=es,
-        filters=[],
         agg_primitives=[Last],
         trans_primitives=[],
         max_depth=2,
@@ -424,7 +400,7 @@ def test_where_primitives(es):
         trans_primitives=[Absolute],
         max_depth=3,
     )
-    dfs_unconstrained = DeepFeatureSynthesis(filters=[], **kwargs)
+    dfs_unconstrained = DeepFeatureSynthesis(**kwargs)
     dfs_constrained = DeepFeatureSynthesis(where_primitives=['last'], **kwargs)
     features_unconstrained = dfs_unconstrained.build_features()
     features = dfs_constrained.build_features()
@@ -539,7 +515,7 @@ def test_where_different_base_feats(es):
         where_primitives=[Last, Count],
         max_depth=3,
     )
-    dfs_unconstrained = DeepFeatureSynthesis(filters=[], **kwargs)
+    dfs_unconstrained = DeepFeatureSynthesis(**kwargs)
     features = dfs_unconstrained.build_features()
     where_feats = [f.hash() for f in features
                    if f.where is not None]
@@ -554,7 +530,6 @@ def test_dfeats_where(es):
 
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Count],
                                    trans_primitives=[])
 
@@ -603,7 +578,6 @@ def test_max_hlevel(es):
 def test_pickle_features(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last, Mean],
                                    trans_primitives=[],
                                    max_features=20)
@@ -641,7 +615,6 @@ def test_pickle_features_with_custom_primitive(es):
         description="Calculate means ignoring nan values")
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last, Mean, NewMean],
                                    trans_primitives=[],
                                    max_features=20)
@@ -673,7 +646,6 @@ def test_pickle_features_with_custom_primitive(es):
 def test_commutative(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Sum],
                                    trans_primitives=[Add],
                                    max_depth=3)
