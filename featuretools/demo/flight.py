@@ -1,5 +1,8 @@
 import os
 import re
+import boto3
+import botocore
+from botocore.handlers import disable_signing
 from builtins import str
 
 import pandas as pd
@@ -12,6 +15,7 @@ import featuretools.variable_types as vtypes
 def load_flight(use_cache=True,
                 demo=True,
                 only_return_data=False,
+                nrows=None,
                 month_filter=[1, 2],
                 categorical_filter={'dest_city': ['Boston, MA'], 'origin_city': ['Boston, MA']}):
     """ Download, clean, and filter flight data from 2017.
@@ -20,22 +24,29 @@ def load_flight(use_cache=True,
             filterer (dict[str->str]): Use only specified categorical values.
                 Default is {'dest_city': ['Boston, MA'], 'origin_city': ['Boston, MA']}
                 which returns all flights in OR out of Boston. To skip, set to None.
+            nrows (int): Passed to nrows in pd.read_csv.
             use_cache (bool): Use previously downloaded csv if possible.
             demo (bool): Use only two months of data. If false, use whole year.
             only_return_data (bool): Exit the function early and return a dataframe.
 
 
     """
-    demo_save_path, csv_s3 = make_flight_pathname(demo=demo)
+    demo_save_path, key = make_flight_pathname(demo=demo)
 
     if not use_cache or not os.path.isfile(demo_save_path):
         print('Downloading data from s3...')
-        pd.read_csv(csv_s3).to_csv(demo_save_path, index=False)
+        bucket_name = 'featuretools-static'
+        key = key
+
+        s3 = boto3.resource('s3')
+        s3.meta.client.meta.events.register('choose-signer.s3.*', disable_signing)
+        s3.Bucket(bucket_name).download_file(key, demo_save_path)
 
     print('Cleaning and Filtering data...')
     pd.options.display.max_columns = 200
     iter_csv = pd.read_csv(demo_save_path,
                            iterator=True,
+                           nrows=nrows,
                            chunksize=10000)
     partial_df_list = []
     for chunk in iter_csv:
@@ -191,10 +202,10 @@ def convert(name):
 
 def make_flight_pathname(demo=True):
     if demo:
-        filename = 'flight_dataset_sample.csv'
-        csv_s3 = 'https://s3.amazonaws.com/featuretools-static/bots_flight_data_2017/data_2017_jan_feb.csv.zip'
+        filename = 'flight_dataset_sample.csv.zip'
+        key = 'bots_flight_data_2017/data_2017_jan_feb.csv.zip'
     else:
-        filename = 'flight_dataset_full.csv'
-        csv_s3 = 'https://s3.amazonaws.com/featuretools-static/bots_flight_data_2017/data_all_2017.csv.zip'
+        filename = 'flight_dataset_full.csv.zip'
+        key = 'bots_flight_data_2017/data_all_2017.csv.zip'
 
-    return os.path.join(ft_config['csv_save_location'], filename), csv_s3
+    return os.path.join(ft_config['csv_save_location'], filename), key

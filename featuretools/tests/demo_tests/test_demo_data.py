@@ -37,8 +37,12 @@ def test_mock_customer():
 
 def test_load_flight():
     demo_path, _ = make_flight_pathname(demo=True)
-    load_flight(month_filter=[1],
-                categorical_filter={'dest': ['Syracuse, NY']},
-                only_return_data=False)
+    es = load_flight(month_filter=[1],
+                     categorical_filter={'origin_city': ['Charlotte, NC']},
+                     only_return_data=False, nrows=1000)
+
     assert os.path.isfile(demo_path)
-    os.remove(demo_path)
+    entity_names = ['airports', 'flights', 'trip_logs', 'airlines']
+    realvals = [(11, 3), (13, 9), (103, 22), (1, 1)]
+    for i, name in enumerate(entity_names):
+        assert es[name].shape == realvals[i]
