@@ -1,7 +1,6 @@
 import os
 import re
 import boto3
-import botocore
 from botocore.handlers import disable_signing
 from builtins import str
 
@@ -16,8 +15,8 @@ def load_flight(use_cache=True,
                 demo=True,
                 only_return_data=False,
                 nrows=None,
-                month_filter=[1, 2],
-                categorical_filter={'dest_city': ['Boston, MA'], 'origin_city': ['Boston, MA']}):
+                month_filter=None,
+                categorical_filter=None):
     """ Download, clean, and filter flight data from 2017.
         Input:
             month_filter (list[int]): Only use data from these months. Default is [1, 2].
@@ -31,6 +30,11 @@ def load_flight(use_cache=True,
 
 
     """
+    if month_filter is None:
+        month_filter = [1, 2]
+    if categorical_filter is None:
+        categorical_filter = {'origin_city': ['Boston, MA'],
+                              'dest_city': ['Boston, MA']}
     demo_save_path, key = make_flight_pathname(demo=demo)
 
     if not use_cache or not os.path.isfile(demo_save_path):
@@ -176,9 +180,9 @@ def _reconstruct_times(clean_data):
 
 
 def filter_data(clean_data,
-                month_filter=[1, 2],
-                categorical_filter={'origin_city': ['Boston, MA']}):
-    if month_filter != []:
+                month_filter=None,
+                categorical_filter=None):
+    if month_filter is not None:
         tmp = False
         for month in month_filter:
             tmp = tmp | (clean_data['scheduled_dep_time'].apply(lambda x: x.month) == month)
