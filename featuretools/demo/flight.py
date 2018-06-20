@@ -7,6 +7,7 @@ import pandas as pd
 from featuretools.config import config as ft_config
 import featuretools as ft
 import featuretools.variable_types as vtypes
+from tqdm import tqdm
 
 
 def load_flight(use_cache=True,
@@ -43,11 +44,17 @@ def load_flight(use_cache=True,
     pd.options.display.max_columns = 200
     iter_csv = pd.read_csv(demo_save_path,
                            iterator=True,
-                           chunksize=1000)
+                           chunksize=5000)
     print('Cleaning and Filtering data...')
-    data = pd.concat([filter_data(clean_data(chunk),
-                                  month_filter=month_filter,
-                                  categorical_filter=filterer) for chunk in iter_csv])
+    df_list = []
+    for chunk in iter_csv:
+        df = filter_data(clean_data(chunk),
+                         month_filter=month_filter,
+                         categorical_filter=categorical_filter)
+        df_list.append(df)
+
+    data = pd.concat(df_list)
+
     if only_return_data:
         return data
 
@@ -99,22 +106,37 @@ def clean_data(data):
                       'NASDelay', 'SecurityDelay', 'LateAircraftDelay', 'Cancelled', 'Diverted',
                       'TaxiIn', 'TaxiOut', 'AirTime']
 
-    # Fix times
+    # Time fixing section
     clean_data = data[main_info + labely_columns]
 
-    clean_data['CRSDepTime'] = data['CRSDepTime'].apply(lambda x: str(x)) + data['FlightDate'].astype(str)
+    # Combine strings like 0130 (1:30 AM) with dates (2017-01-01)
+    clean_data[:, 'CRSDepTime'] = clean_data['CRSDepTime'].apply(lambda x: str(x)) + clean_data['FlightDate'].astype(str)
 
+    # Parse combined string as a date
     clean_data.loc[:, 'CRSDepTime'] = pd.to_datetime(
         clean_data['CRSDepTime'], format='%H%M%Y-%m-%d', errors='coerce')
 
+    # We reconstruct these times from the original data by adding delays
+    # to a known time. This gets us date information (compared to %H%M)
+
+    # Departure time is scheduled + dep delay
     clean_data.loc[:, 'DepTime'] = clean_data['CRSDepTime'] + \
         pd.to_timedelta(clean_data['DepDelay'], unit='m')
+
+    # Arrival time is dep time + taxiing and air time
     clean_data.loc[:, 'ArrTime'] = clean_data['DepTime'] + pd.to_timedelta(
         clean_data['TaxiOut'] + clean_data['AirTime'] + clean_data['TaxiIn'], unit='m')
+
+    # Scheduled arrival is actual arrival minus arrival delay
     clean_data.loc[:, 'CRSArrTime'] = clean_data['CRSDepTime'] + \
         pd.to_timedelta(clean_data['CRSElapsedTime'], unit='m')
+
+    # Create a time index 6 months prior (representing when the flight
+    # data was first written down). A byproduct is that relative times
+    # are consistent with reality, but some exact dates are now made up.
     clean_data.loc[:, 'time_index'] = clean_data['DepTime'] - \
         pd.Timedelta('120d')
+
     # Fix labels: a null entry for a delay means no delay
     for col in labely_columns:
         clean_data.loc[:, col] = clean_data[col].fillna(0)
@@ -122,14 +144,20 @@ def clean_data(data):
     clean_data = clean_data.dropna(
         axis='rows', subset=['CRSDepTime', 'CRSArrTime'])
 
+    # Make column names snake case
     clean_data = clean_data.rename(
         columns={col: convert(col) for col in clean_data})
+
+    # Chance crs -> "scheduled" and other minor clarifications
     clean_data = clean_data.rename(columns={'crs_arr_time': 'scheduled_arr_time',
                                             'crs_dep_time': 'scheduled_dep_time',
                                             'crs_elapsed_time': 'scheduled_elapsed_time',
                                             'nas_delay': 'national_airspace_delay',
                                             'origin_city_name': 'origin_city',
                                             'dest_city_name': 'dest_city'})
+
+    # Make a flight id. Define a flight as a combination of:
+    # 1. carrier 2. flight number 3. origin airport 4. dest airport
     clean_data.loc[:, 'flight_id'] = clean_data['carrier'] + '-' + \
         clean_data['flight_num'].apply(lambda x: str(x)) + ':' + clean_data['origin'] + '->' + clean_data['dest']
 
@@ -140,14 +168,12 @@ def filter_data(clean_data,
                 month_filter=[1, 2],
                 categorical_filter={'origin_city': ['Boston, MA']}):
     if month_filter != []:
-        tmp = clean_data['origin']
         tmp = False
         for month in month_filter:
             tmp = tmp | (clean_data['scheduled_dep_time'].apply(lambda x: x.month) == month)
         clean_data = clean_data[tmp]
 
     if categorical_filter is not None:
-        tmp = clean_data['origin']
         tmp = False
         for key, values in categorical_filter.items():
             tmp = tmp | clean_data[key].isin(values)
