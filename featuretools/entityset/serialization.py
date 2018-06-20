@@ -28,14 +28,15 @@ def read_entityset(path, load_data=True):
         metadata = json.load(f)
     if not load_data:
         data_root = None
-    return EntitySet.from_metadata(metadata, data_root=data_root),
+    return EntitySet.from_metadata(metadata, data_root=data_root)
 
 
 def load_entity_data(metadata, root):
     '''Load an entity's data from disk.
     '''
     if metadata['data_files']['filetype'] == 'pickle':
-        df = pd_read_pickle(os.path.join(root, metadata['data_filename']))
+        data = pd_read_pickle(os.path.join(root, metadata['data_files']['data_filename']))
+        df = data['df']
     elif metadata['data_files']['filetype'] == 'parquet':
         df = pd.read_parquet(os.path.join(root,
                                           metadata['data_files']['df_filename']),
@@ -52,7 +53,7 @@ def load_entity_data(metadata, root):
 
 
 def write_entityset(entityset, path, serialization_method='pickle',
-                    engine='auto', compression='snappy'):
+                    engine='auto', compression='gzip'):
     '''Write entityset to disk, location specified by `path`.
 
         Args:
@@ -142,7 +143,7 @@ def _write_pickle_entity_data(root, entity, metadata):
 
 
 def _write_parquet_entity_data(root, entity, metadata,
-                               engine='auto', compression='snappy'):
+                               engine='auto', compression='gzip'):
     '''Write an Entity's data to the binary parquet format, using pd.DataFrame.to_parquet.
 
     You can choose different parquet backends, and have the option of compression.

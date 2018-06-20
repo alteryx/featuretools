@@ -680,7 +680,12 @@ class Entity(object):
     def set_time_index(self, variable_id, already_sorted=False):
         if variable_id is not None:
             # check time type
-            time_type = _check_time_type(self.df[variable_id].iloc[0])
+            if self.df.empty:
+                time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
+            else:
+                time_to_check = self.df[variable_id].iloc[0]
+
+            time_type = _check_time_type(time_to_check)
             if time_type is None:
                 raise TypeError("%s time index not recognized as numeric or"
                                 " datetime" % (self.id))
@@ -727,7 +732,11 @@ class Entity(object):
     def set_secondary_time_index(self, secondary_time_index):
         if secondary_time_index is not None:
             for time_index in secondary_time_index:
-                time_type = _check_time_type(self.df[time_index].iloc[0])
+                if self.df.empty:
+                    time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[time_index]._default_pandas_dtype]
+                else:
+                    time_to_check = self.df[time_index].iloc[0]
+                time_type = _check_time_type(time_to_check)
                 if time_type is None:
                     raise TypeError("%s time index not recognized as numeric or"
                                     " datetime" % (self.id))

@@ -874,10 +874,8 @@ def test_to_pickle(entityset):
     if os.path.exists(path):
         shutil.rmtree(path)
     entityset.to_pickle(path)
-    new_es = EntitySet.read_pickle(path)
-    new_es2 = ft.read_pickle(path)
+    new_es = ft.read_pickle(path)
     assert entityset.__eq__(new_es, deep=True)
-    assert entityset.__eq__(new_es2, deep=True)
     shutil.rmtree(path)
 
 
@@ -887,9 +885,7 @@ def test_to_parquet(entityset):
     if os.path.exists(path):
         shutil.rmtree(path)
     entityset.to_parquet(path)
-    new_es = EntitySet.read_parquet(path)
-    new_es2 = ft.read_parquet(path)
+    new_es = ft.read_parquet(path)
     entityset.__eq__(new_es, deep=True)
     assert entityset.__eq__(new_es, deep=True)
-    assert entityset.__eq__(new_es2, deep=True)
     shutil.rmtree(path)

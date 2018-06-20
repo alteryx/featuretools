@@ -176,7 +176,7 @@ class EntitySet(object):
         would reference the same object, rather than copies. This saves a lot of memory
         '''
         new_metadata = self.from_metadata(self.create_metadata_dict(),
-                                          load_data=False)
+                                          data_root=None)
         if self._metadata is None:
             self._metadata = new_metadata
         else:
