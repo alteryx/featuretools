@@ -7,7 +7,6 @@ import pandas as pd
 from featuretools.config import config as ft_config
 import featuretools as ft
 import featuretools.variable_types as vtypes
-from tqdm import tqdm
 
 
 def load_flight(use_cache=True,
@@ -29,51 +28,50 @@ def load_flight(use_cache=True,
     """
     if demo:
         filename = 'flight_dataset_sample.csv'
-        demo_save_path = os.path.join(ft_config['csv_save_location'], filename)
         csv_s3 = 'https://s3.amazonaws.com/featuretools-static/bots_flight_data_2017/data_2017_jan_feb.csv.zip'
     else:
         filename = 'flight_dataset_full.csv'
-        demo_save_path = os.path.join(ft_config['csv_save_location'], filename)
         csv_s3 = 'https://s3.amazonaws.com/featuretools-static/bots_flight_data_2017/data_all_2017.csv.zip'
+
+    demo_save_path = os.path.join(ft_config['csv_save_location'], filename)
 
     if not use_cache or not os.path.isfile(demo_save_path):
         print('Downloading data from s3...')
-        df = pd.read_csv(csv_s3)
-        df.to_csv(demo_save_path, index=False)
+        pd.read_csv(csv_s3).to_csv(demo_save_path, index=False)
 
+    print('Cleaning and Filtering data...')
     pd.options.display.max_columns = 200
     iter_csv = pd.read_csv(demo_save_path,
                            iterator=True,
-                           chunksize=5000)
-    print('Cleaning and Filtering data...')
-    df_list = []
+                           chunksize=10000)
+    partial_df_list = []
     for chunk in iter_csv:
-        df = filter_data(clean_data(chunk),
+        df = filter_data(_clean_data(chunk),
                          month_filter=month_filter,
                          categorical_filter=categorical_filter)
-        df_list.append(df)
-
-    data = pd.concat(df_list)
+        partial_df_list.append(df)
+    data = pd.concat(partial_df_list)
 
     if only_return_data:
         return data
 
+    print('Making EntitySet...')
     es = make_es(data)
 
     return es
 
 
 def make_es(data):
-    print('Making EntitySet...')
     es = ft.EntitySet('Flight Data')
+    labely_columns = ['arr_delay', 'dep_delay', 'carrier_delay', 'weather_delay',
+                      'national_airspace_delay', 'security_delay',
+                      'late_aircraft_delay', 'cancelled', 'diverted',
+                      'taxi_in', 'taxi_out', 'air_time']
 
     variable_types = {'flight_num': vtypes.Categorical,
                       'distance_group': vtypes.Ordinal,
                       'cancelled': vtypes.Boolean,
                       'diverted': vtypes.Boolean}
-    labely_columns = ['ArrDelay', 'DepDelay', 'CarrierDelay', 'WeatherDelay',
-                      'NASDelay', 'SecurityDelay', 'LateAircraftDelay', 'Cancelled', 'Diverted',
-                      'TaxiIn', 'TaxiOut', 'AirTime']
 
     es.entity_from_dataframe('trip_logs',
                              data,
@@ -87,6 +85,7 @@ def make_es(data):
                         additional_variables=['origin', 'origin_city', 'origin_state',
                                               'dest', 'dest_city', 'dest_state',
                                               'distance_group', 'carrier', 'flight_num'])
+
     es.normalize_entity('flights', 'airlines', 'carrier',
                         make_time_index=False)
 
@@ -96,57 +95,11 @@ def make_es(data):
     return es
 
 
-def clean_data(data):
-    # Split columns by when we can know them
-    main_info = ['FlightDate', 'Carrier', 'FlightNum', 'Origin',
-                 'OriginCityName', 'OriginState', 'Dest', 'DestCityName',
-                 'DestState', 'Distance', 'DistanceGroup', 'CRSDepTime', 'CRSElapsedTime']
-
-    labely_columns = ['ArrDelay', 'DepDelay', 'CarrierDelay', 'WeatherDelay',
-                      'NASDelay', 'SecurityDelay', 'LateAircraftDelay', 'Cancelled', 'Diverted',
-                      'TaxiIn', 'TaxiOut', 'AirTime']
-
-    # Time fixing section
-    clean_data = data[main_info + labely_columns]
-
-    # Combine strings like 0130 (1:30 AM) with dates (2017-01-01)
-    clean_data[:, 'CRSDepTime'] = clean_data['CRSDepTime'].apply(lambda x: str(x)) + clean_data['FlightDate'].astype(str)
-
-    # Parse combined string as a date
-    clean_data.loc[:, 'CRSDepTime'] = pd.to_datetime(
-        clean_data['CRSDepTime'], format='%H%M%Y-%m-%d', errors='coerce')
-
-    # We reconstruct these times from the original data by adding delays
-    # to a known time. This gets us date information (compared to %H%M)
-
-    # Departure time is scheduled + dep delay
-    clean_data.loc[:, 'DepTime'] = clean_data['CRSDepTime'] + \
-        pd.to_timedelta(clean_data['DepDelay'], unit='m')
-
-    # Arrival time is dep time + taxiing and air time
-    clean_data.loc[:, 'ArrTime'] = clean_data['DepTime'] + pd.to_timedelta(
-        clean_data['TaxiOut'] + clean_data['AirTime'] + clean_data['TaxiIn'], unit='m')
-
-    # Scheduled arrival is actual arrival minus arrival delay
-    clean_data.loc[:, 'CRSArrTime'] = clean_data['CRSDepTime'] + \
-        pd.to_timedelta(clean_data['CRSElapsedTime'], unit='m')
-
-    # Create a time index 6 months prior (representing when the flight
-    # data was first written down). A byproduct is that relative times
-    # are consistent with reality, but some exact dates are now made up.
-    clean_data.loc[:, 'time_index'] = clean_data['DepTime'] - \
-        pd.Timedelta('120d')
-
-    # Fix labels: a null entry for a delay means no delay
-    for col in labely_columns:
-        clean_data.loc[:, col] = clean_data[col].fillna(0)
-
-    clean_data = clean_data.dropna(
-        axis='rows', subset=['CRSDepTime', 'CRSArrTime'])
+def _clean_data(data):
 
     # Make column names snake case
-    clean_data = clean_data.rename(
-        columns={col: convert(col) for col in clean_data})
+    clean_data = data.rename(
+        columns={col: convert(col) for col in data})
 
     # Chance crs -> "scheduled" and other minor clarifications
     clean_data = clean_data.rename(columns={'crs_arr_time': 'scheduled_arr_time',
@@ -156,11 +109,65 @@ def clean_data(data):
                                             'origin_city_name': 'origin_city',
                                             'dest_city_name': 'dest_city'})
 
+    # Combine strings like 0130 (1:30 AM) with dates (2017-01-01)
+    clean_data['scheduled_dep_time'] = clean_data['scheduled_dep_time'].apply(lambda x: str(x)) + clean_data['flight_date'].astype(str)
+
+    # Parse combined string as a date
+    clean_data.loc[:, 'scheduled_dep_time'] = pd.to_datetime(
+        clean_data['scheduled_dep_time'], format='%H%M%Y-%m-%d', errors='coerce')
+
+    clean_data['scheduled_elapsed_time'] = pd.to_timedelta(clean_data['scheduled_elapsed_time'], unit='m')
+
+    clean_data = _reconstruct_times(clean_data)
+
+    # Create a time index 6 months before scheduled_dep
+    clean_data.loc[:, 'time_index'] = clean_data['scheduled_dep_time'] - \
+        pd.Timedelta('120d')
+
+    # A null entry for a delay means no delay
+    clean_data = _fill_labels(clean_data)
+
+    # Nulls for scheduled values are too problematic. Remove them.
+    clean_data = clean_data.dropna(
+        axis='rows', subset=['scheduled_dep_time', 'scheduled_arr_time'])
+
     # Make a flight id. Define a flight as a combination of:
     # 1. carrier 2. flight number 3. origin airport 4. dest airport
     clean_data.loc[:, 'flight_id'] = clean_data['carrier'] + '-' + \
         clean_data['flight_num'].apply(lambda x: str(x)) + ':' + clean_data['origin'] + '->' + clean_data['dest']
 
+    return clean_data
+
+
+def _fill_labels(clean_data):
+    labely_columns = ['arr_delay', 'dep_delay', 'carrier_delay', 'weather_delay',
+                      'national_airspace_delay', 'security_delay',
+                      'late_aircraft_delay', 'cancelled', 'diverted',
+                      'taxi_in', 'taxi_out', 'air_time']
+    for col in labely_columns:
+        clean_data.loc[:, col] = clean_data[col].fillna(0)
+
+    return clean_data
+
+
+def _reconstruct_times(clean_data):
+    """ Reconstruct departure_time, scheduled_dep_time,
+        arrival_time and scheduled_arr_time by adding known delays
+        to known times. We do:
+            - dep_time is scheduled_dep + dep_delay
+            - arr_time is dep_time + taxiing and air_time
+            - scheduled arrival is scheduled_dep + scheduled_elapsed
+    """
+    clean_data.loc[:, 'dep_time'] = clean_data['scheduled_dep_time'] + \
+        pd.to_timedelta(clean_data['dep_delay'], unit='m')
+
+    clean_data.loc[:, 'arr_time'] = clean_data['dep_time'] + \
+        pd.to_timedelta(clean_data['taxi_out'] +
+                        clean_data['air_time'] +
+                        clean_data['taxi_in'], unit='m')
+
+    clean_data.loc[:, 'scheduled_arr_time'] = clean_data['scheduled_dep_time'] + \
+        clean_data['scheduled_elapsed_time']
     return clean_data
 
 
