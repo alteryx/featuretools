@@ -312,7 +312,7 @@ def test_handles_datetime_mismatch():
                                         time_index='time', variable_types=vtypes)
 
 
-def test_column_funcs(entityset):
+def test_entity_init(entityset):
     # Note: to convert the time column directly either the variable type
     # or convert_date_columns must be specifie
     df = pd.DataFrame({'id': [0, 1, 2],
