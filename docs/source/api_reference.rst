@@ -261,8 +261,10 @@ EntitySet serialization
 .. autosummary::
     :toctree: generated/
 
+    ft.read_pickle
+    ft.read_parquet
     EntitySet.to_pickle
-    EntitySet.read_pickle
+    EntitySet.to_parquet
 
 EntitySet query methods
 -----------------------

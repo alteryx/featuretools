@@ -10,8 +10,8 @@ from pandas.api.types import is_dtype_equal
 
 from .entity import Entity
 from .relationship import Relationship
-from .serialization import (load_entity_data,
-                            write_entityset)
+from .serialization import load_entity_data
+from .serialization import write_entityset
 
 import featuretools.variable_types.variable as vtypes
 from featuretools.utils.gen_utils import make_tqdm_iterator
