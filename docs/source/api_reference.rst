@@ -258,11 +258,17 @@ EntitySet load and prepare data
 
 EntitySet serialization
 -------------------------------
+.. currentmodule:: featuretools
 .. autosummary::
     :toctree: generated/
 
-    ft.read_pickle
-    ft.read_parquet
+    read_pickle
+    read_parquet
+
+.. currentmodule:: featuretools.entityset
+.. autosummary::
+    :toctree: generated/
+
     EntitySet.to_pickle
     EntitySet.to_parquet
 

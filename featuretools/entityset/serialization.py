@@ -14,10 +14,16 @@ from pandas.io.pickle import to_pickle as pd_to_pickle
 
 
 def read_parquet(path, load_data=True):
+    '''Load an EntitySet from a path on disk, assuming
+    the EntitySet was saved in the parquet format.
+    '''
     return read_entityset(path, load_data=load_data)
 
 
 def read_pickle(path, load_data=True):
+    '''Load an EntitySet from a path on disk, assuming
+    the EntitySet was saved in the pickle format.
+    '''
     return read_entityset(path, load_data=load_data)
 
 
@@ -59,7 +65,6 @@ def write_entityset(entityset, path, serialization_method='pickle',
         Args:
             * entityset: entityset to write to disk
             * path (str): location on disk to write to (will be created as a directory)
-            * path
             * serialization_method (str, optional): Possible serialization methods are:
               - 'pickle'
               - 'parquet'

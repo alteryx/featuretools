@@ -194,10 +194,24 @@ class EntitySet(object):
         return all(e.df.empty for e in self.entity_dict.values())
 
     def to_pickle(self, path):
+        '''Write entityset to disk in the pickle format, location specified by `path`.
+
+            Args:
+                * entityset: entityset to write to disk
+                * path (str): location on disk to write to (will be created as a directory)
+        '''
+
         write_entityset(self, path, serialization_method='pickle')
         return self
 
     def to_parquet(self, path):
+        '''Write entityset to disk in the parquet format, location specified by `path`.
+
+            Args:
+                * entityset: entityset to write to disk
+                * path (str): location on disk to write to (will be created as a directory)
+        '''
+
         write_entityset(self, path, serialization_method='parquet')
         return self
 
