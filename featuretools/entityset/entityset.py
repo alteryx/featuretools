@@ -6,7 +6,7 @@ from collections import defaultdict
 
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_dtype_equal
+from pandas.api.types import is_dtype_equal, is_numeric_dtype
 
 from .entity import Entity
 from .relationship import Relationship
@@ -245,10 +245,13 @@ class EntitySet(object):
                 if v['interesting_values'] and len(v['interesting_values']):
                     es[eid][vid].interesting_values = v['interesting_values']
         for rel in metadata['relationships']:
-            es.add_relationship(Relationship(
-                es[rel['parent_entity']][rel['parent_variable']],
-                es[rel['child_entity']][rel['child_variable']],
-            ))
+            try:
+                es.add_relationship(Relationship(
+                    es[rel['parent_entity']][rel['parent_variable']],
+                    es[rel['child_entity']][rel['child_variable']],
+                ))
+            except:
+                import pdb; pdb.set_trace()
         if set_last_time_indexes:
             es.add_last_time_indexes()
         return es
@@ -320,6 +323,13 @@ class EntitySet(object):
             parent_e.convert_variable_type(variable_id=parent_v,
                                            new_type=vtypes.Index,
                                            convert_data=False)
+        # Empty dataframes (as a result of accessing Entity.metadata)
+        # default to object dtypes for discrete variables, but
+        # indexes/ids default to ints. In this case, we convert
+        # the empty column's type to int
+        if (child_e.df.empty and child_e.df[child_v].dtype == object and
+                is_numeric_dtype(parent_e.df[parent_v])):
+            child_e.df[child_v] = pd.Series(name=child_v, dtype=np.int64)
 
         parent_dtype = parent_e.df[parent_v].dtype
         child_dtype = child_e.df[child_v].dtype
