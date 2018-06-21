@@ -38,7 +38,11 @@ The 'cluster' value can either be the actual cluster object or a string of the a
 
 Using the distributed dashboard
 -------------------------------
-Dask.distributed has a web-based diagnostics dashboard that can be used to analyze the state of the workers and task. An in-depth description of the web interface can be found `here <https://distributed.readthedocs.io/en/latest/web.html>`_. The dashboard requires an additional python package, bokeh, to work. Once bokeh is installed, the web interface will be launched by default when a LocalCluster is created. The cluster created by featuretools when using ``n_jobs`` does not enable the web interface automatically. To do so, the port to launch the main web interface on must be specified in ``dask_kwargs``::
+Dask.distributed has a web-based diagnostics dashboard that can be used to analyze the state of the workers and tasks. It can also be useful for tracking memory use or visualizing task run-times. An in-depth description of the web interface can be found `here <https://distributed.readthedocs.io/en/latest/web.html>`_.
+
+.. image:: /images/dashboard.png
+
+The dashboard requires an additional python package, bokeh, to work. Once bokeh is installed, the web interface will be launched by default when a LocalCluster is created. The cluster created by featuretools when using ``n_jobs`` does not enable the web interface automatically. To do so, the port to launch the main web interface on must be specified in ``dask_kwargs``::
 
     fm = ft.calculate_feature_matrix(features=features,
                                      entityset=entityset,
