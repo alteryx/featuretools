@@ -95,8 +95,16 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         dask_kwargs (dict, optional): Dictionary of keyword arguments to be
             passed when creating the dask client and scheduler. Even if n_jobs
             is not set, using `dask_kwargs` will enable multiprocessing.
-            Valid options:
-                * 'cluster' -> str or dask.LocalCluster
+            Main parameters:
+
+            cluster (str or dask.distributed.LocalCluster):
+                cluster or address of cluster to send tasks to. If unspecified,
+                a cluster will be created.
+            diagnostics port (int):
+                port number to use for web dashboard.  If left unspecified, web
+                interface will not be enabled.
+
+            Valid keyword arguments for LocalCluster will also be accepted.
 
         save_progress (str, optional): path to save intermediate computational results.
     """
