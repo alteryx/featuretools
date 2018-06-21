@@ -759,7 +759,7 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
     except Exception:
         raise
     finally:
-        if 'cluster' not in dask_kwargs:
+        if 'cluster' not in dask_kwargs and cluster is not None:
             cluster.close()
         if client is not None:
             client.close()
