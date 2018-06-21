@@ -711,6 +711,15 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
                                    threads_per_worker=1,
                                    diagnostics_port=diagnostics_port,
                                    **dask_kwargs)
+            # if cluster has bokeh port, notify user if unxepected port number
+            if diagnostics_port is not None:
+                if hasattr(cluster, 'scheduler') and cluster.scheduler:
+                    info = cluster.scheduler.identity()
+                    if 'bokeh' in info['services']:
+                        actual_port = info['services']['bokeh']
+                        if actual_port != diagnostics_port:
+                            msg = "Dashboard started on port {}"
+                            print msg.format(actual_port)
 
         client = Client(cluster)
         # scatter the entityset
