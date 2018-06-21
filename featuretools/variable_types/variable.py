@@ -40,7 +40,7 @@ class Variable(object):
             self.entity_id == other.entity_id
 
     def __repr__(self):
-        ret = u"<Variable: {} (dtype = {}, count = {})>".format(self.name, self.dtype, self.count)
+        ret = u"<Variable: {} (dtype = {})>".format(self.name, self.dtype)
 
         # encode for python 2
         if type(ret) != str:
