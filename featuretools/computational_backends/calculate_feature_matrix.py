@@ -716,10 +716,8 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
                 if hasattr(cluster, 'scheduler') and cluster.scheduler:
                     info = cluster.scheduler.identity()
                     if 'bokeh' in info['services']:
-                        actual_port = info['services']['bokeh']
-                        if actual_port != diagnostics_port:
-                            msg = "Dashboard started on port {}"
-                            print msg.format(actual_port)
+                        msg = "Dashboard started on port {}"
+                        print(msg.format(info['services']['bokeh']))
 
         client = Client(cluster)
         # scatter the entityset
