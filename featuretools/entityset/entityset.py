@@ -4,6 +4,7 @@ import logging
 from builtins import object, range, zip
 from collections import defaultdict
 
+import cloudpickle
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_dtype_equal
@@ -124,6 +125,12 @@ class EntitySet(object):
             self.add_relationship(Relationship(parent_variable,
                                                child_variable))
         self._metadata = None
+
+    def __sizeof__(self):
+        return sum([entity.__sizeof__() for entity in self.entities])
+
+    def __dask_tokenize__(self):
+        return (EntitySet, cloudpickle.dumps(self.metadata))
 
     def __eq__(self, other, deep=False):
         if len(self.entity_dict) != len(other.entity_dict):

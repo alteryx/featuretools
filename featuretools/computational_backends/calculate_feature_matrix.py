@@ -4,12 +4,15 @@ import gc
 import logging
 import os
 import shutil
+import time
 import warnings
 from builtins import zip
 from collections import defaultdict
 from datetime import datetime
 from functools import wraps
+from sys import version_info
 
+import cloudpickle
 import numpy as np
 import pandas as pd
 from pandas.tseries.frequencies import to_offset
@@ -33,7 +36,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                              cutoff_time_in_index=False,
                              training_window=None, approximate=None,
                              save_progress=None, verbose=False,
-                             chunk_size=None,
+                             chunk_size=None, n_jobs=1, dask_kwargs=None,
                              profile=False):
     """Calculates a matrix for a given set of instance ids and calculation times.
 
@@ -85,6 +88,23 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             a float value between 0 and 1 sets the chunk size to that
             percentage of all instances. If passed the string "cutoff time",
             rows are split per cutoff time.
+
+        n_jobs (int, optional): number of parallel processes to use when
+            calculating feature matrix
+
+        dask_kwargs (dict, optional): Dictionary of keyword arguments to be
+            passed when creating the dask client and scheduler. Even if n_jobs
+            is not set, using `dask_kwargs` will enable multiprocessing.
+            Main parameters:
+
+            cluster (str or dask.distributed.LocalCluster):
+                cluster or address of cluster to send tasks to. If unspecified,
+                a cluster will be created.
+            diagnostics port (int):
+                port number to use for web dashboard.  If left unspecified, web
+                interface will not be enabled.
+
+            Valid keyword arguments for LocalCluster will also be accepted.
 
         save_progress (str, optional): path to save intermediate computational results.
     """
@@ -194,42 +214,42 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                   time_variable=cutoff_df_time_var,
                                   num_per_chunk=num_per_chunk)
 
-    # if verbose, create progess bar
-    if verbose:
-        chunks = []
-        if num_per_chunk == "cutoff time":
-            for _, group in iterator:
-                chunks.append(group)
-        else:
-            for chunk in iterator:
-                chunks.append(chunk)
+    chunks = []
+    if num_per_chunk == "cutoff time":
+        for _, group in iterator:
+            chunks.append(group)
+    else:
+        for chunk in iterator:
+            chunks.append(chunk)
 
-        pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
-                       "Progress: {l_bar}{bar}| "
-                       "Calculated: {n}/{total} chunks")
-        iterator = make_tqdm_iterator(iterable=chunks,
-                                      total=len(chunks),
-                                      bar_format=pbar_string)
-    feature_matrix = []
-    backend = PandasBackend(entityset, features)
+    if n_jobs != 1 or dask_kwargs is not None:
+        feature_matrix = parallel_calculate_chunks(chunks=chunks,
+                                                   features=features,
+                                                   approximate=approximate,
+                                                   training_window=training_window,
+                                                   verbose=verbose,
+                                                   save_progress=save_progress,
+                                                   entityset=entityset,
+                                                   n_jobs=n_jobs,
+                                                   no_unapproximated_aggs=no_unapproximated_aggs,
+                                                   cutoff_df_time_var=cutoff_df_time_var,
+                                                   target_time=target_time,
+                                                   pass_columns=pass_columns,
+                                                   dask_kwargs=dask_kwargs or {})
+    else:
+        feature_matrix = linear_calculate_chunks(chunks=chunks,
+                                                 features=features,
+                                                 approximate=approximate,
+                                                 training_window=training_window,
+                                                 profile=profile,
+                                                 verbose=verbose,
+                                                 save_progress=save_progress,
+                                                 entityset=entityset,
+                                                 no_unapproximated_aggs=no_unapproximated_aggs,
+                                                 cutoff_df_time_var=cutoff_df_time_var,
+                                                 target_time=target_time,
+                                                 pass_columns=pass_columns)
 
-    for chunk in iterator:
-        # if not using chunks, pull out the group dataframe
-        if isinstance(chunk, tuple):
-            chunk = chunk[1]
-        _feature_matrix = calculate_chunk(features, chunk, approximate,
-                                          entityset, training_window,
-                                          profile, verbose,
-                                          save_progress, backend,
-                                          no_unapproximated_aggs,
-                                          cutoff_df_time_var,
-                                          target_time, pass_columns)
-        feature_matrix.append(_feature_matrix)
-        # Do a manual garbage collection in case objects from calculate_chunk
-        # weren't collected automatically
-        gc.collect()
-    if verbose:
-        iterator.close()
     feature_matrix = pd.concat(feature_matrix)
 
     feature_matrix.sort_index(level='time', kind='mergesort', inplace=True)
@@ -242,11 +262,22 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     return feature_matrix
 
 
-def calculate_chunk(features, chunk, approximate, entityset, training_window,
-                    profile, verbose, save_progress, backend,
+def calculate_chunk(chunk, features, approximate, training_window,
+                    profile, verbose, save_progress,
                     no_unapproximated_aggs, cutoff_df_time_var, target_time,
-                    pass_columns):
+                    pass_columns, backend=None, entityset=None):
+    if not isinstance(features, list):
+        features = cloudpickle.loads(features)
+
+    assert entityset is not None or backend is not None, "Must provide either"\
+        " entityset or backend to calculate_chunk"
+    if entityset is None:
+        entityset = backend.entityset
+    if backend is None:
+        backend = PandasBackend(entityset, features)
+
     feature_matrix = []
+    entityset = backend.entityset
     if no_unapproximated_aggs and approximate is not None:
         if entityset.time_type == NumericTimeIndex:
             chunk_time = np.inf
@@ -260,7 +291,7 @@ def calculate_chunk(features, chunk, approximate, entityset, training_window,
                 features,
                 group,
                 window=approximate,
-                entityset=entityset,
+                entityset=backend.entityset,
                 backend=backend,
                 training_window=training_window,
                 profile=profile
@@ -620,3 +651,148 @@ def get_next_chunk(cutoff_time, time_variable, num_per_chunk):
     # after iterating through every group, yield any remaining partial chunks
     for chunk in chunks:
         yield cutoff_time.loc[chunk]
+
+
+def linear_calculate_chunks(chunks, features, approximate, training_window,
+                            profile, verbose, save_progress, entityset,
+                            no_unapproximated_aggs, cutoff_df_time_var,
+                            target_time, pass_columns):
+    backend = PandasBackend(entityset, features)
+    feature_matrix = []
+
+    # if verbose, create progess bar
+    if verbose:
+        pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
+                       "Progress: {l_bar}{bar}| "
+                       "Calculated: {n}/{total} chunks")
+        chunks = make_tqdm_iterator(iterable=chunks,
+                                    total=len(chunks),
+                                    bar_format=pbar_string)
+
+    for chunk in chunks:
+        _feature_matrix = calculate_chunk(chunk, features, approximate,
+                                          training_window,
+                                          profile, verbose,
+                                          save_progress,
+                                          no_unapproximated_aggs,
+                                          cutoff_df_time_var,
+                                          target_time, pass_columns,
+                                          backend=backend)
+        feature_matrix.append(_feature_matrix)
+        # Do a manual garbage collection in case objects from calculate_chunk
+        # weren't collected automatically
+        gc.collect()
+    if verbose:
+        chunks.close()
+    return feature_matrix
+
+
+def parallel_calculate_chunks(chunks, features, approximate, training_window,
+                              verbose, save_progress, entityset, n_jobs,
+                              no_unapproximated_aggs, cutoff_df_time_var,
+                              target_time, pass_columns, dask_kwargs=None):
+    from distributed import Client, LocalCluster, as_completed
+    from dask.base import tokenize
+
+    client = None
+    cluster = None
+    try:
+        if 'cluster' in dask_kwargs:
+            cluster = dask_kwargs['cluster']
+        else:
+            diagnostics_port = None
+            if 'diagnostics_port' in dask_kwargs:
+                diagnostics_port = dask_kwargs['diagnostics_port']
+                del dask_kwargs['diagnostics_port']
+
+            workers = n_jobs_to_workers(n_jobs)
+            workers = min(workers, len(chunks))
+            cluster = LocalCluster(n_workers=workers,
+                                   threads_per_worker=1,
+                                   diagnostics_port=diagnostics_port,
+                                   **dask_kwargs)
+            # if cluster has bokeh port, notify user if unxepected port number
+            if diagnostics_port is not None:
+                if hasattr(cluster, 'scheduler') and cluster.scheduler:
+                    info = cluster.scheduler.identity()
+                    if 'bokeh' in info['services']:
+                        msg = "Dashboard started on port {}"
+                        print(msg.format(info['services']['bokeh']))
+
+        client = Client(cluster)
+        # scatter the entityset
+        # denote future with leading underscore
+        start = time.time()
+        es_token = "EntitySet-{}".format(tokenize(entityset))
+        if es_token in client.list_datasets():
+            print("Using EntitySet persisted on the cluster as dataset %s" % (es_token))
+            _es = client.get_dataset(es_token)
+        else:
+            _es = client.scatter([entityset])[0]
+            client.publish_dataset(**{_es.key: _es})
+
+        # save features to a tempfile and scatter it
+        pickled_feats = cloudpickle.dumps(features)
+        _saved_features = client.scatter(pickled_feats)
+        client.replicate([_es, _saved_features])
+        end = time.time()
+        scatter_time = end - start
+        scatter_string = "EntitySet scattered to workers in {:.3f} seconds"
+        print(scatter_string.format(scatter_time))
+
+        # map chunks
+        # TODO: consider handling task submission dask kwargs
+        _chunks = client.map(calculate_chunk,
+                             chunks,
+                             features=_saved_features,
+                             entityset=_es,
+                             approximate=approximate,
+                             training_window=training_window,
+                             profile=False,
+                             verbose=False,
+                             save_progress=save_progress,
+                             no_unapproximated_aggs=no_unapproximated_aggs,
+                             cutoff_df_time_var=cutoff_df_time_var,
+                             target_time=target_time,
+                             pass_columns=pass_columns)
+
+        feature_matrix = []
+        iterator = as_completed(_chunks).batches()
+        if verbose:
+            pbar_str = ("Elapsed: {elapsed} | Remaining: {remaining} | "
+                        "Progress: {l_bar}{bar}| "
+                        "Calculated: {n}/{total} chunks")
+            pbar = make_tqdm_iterator(total=len(_chunks), bar_format=pbar_str)
+        for batch in iterator:
+            results = client.gather(batch)
+            for result in results:
+                feature_matrix.append(result)
+                if verbose:
+                    pbar.update()
+        if verbose:
+            pbar.close()
+    except Exception:
+        raise
+    finally:
+        if 'cluster' not in dask_kwargs and cluster is not None:
+            cluster.close()
+        if client is not None:
+            client.close()
+
+    return feature_matrix
+
+
+def n_jobs_to_workers(n_jobs):
+    if version_info.major == 2:
+        import multiprocessing
+        cpus = multiprocessing.cpu_count()
+    else:
+        cpus = len(os.sched_getaffinity(0))
+
+    if n_jobs < 0:
+        workers = max(cpus + 1 + n_jobs, 1)
+    else:
+        workers = min(n_jobs, cpus)
+
+    assert workers > 0, "Need at least one worker"
+    return workers

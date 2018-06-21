@@ -194,6 +194,9 @@ class Entity(object):
 
         return True
 
+    def __sizeof__(self):
+        return sum([value.__sizeof__() for value in self.data.values()])
+
     @property
     def is_metadata(self):
         return self.entityset.is_metadata

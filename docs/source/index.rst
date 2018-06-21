@@ -195,6 +195,7 @@ Table of contents
 
 * :doc:`guides/tuning_dfs`
 * :doc:`guides/performance`
+* :doc:`guides/parallel`
 * :doc:`guides/deployment`
 * :doc:`guides/exporting_feature_matrix`
 * :doc:`guides/advanced_custom_primitives`
@@ -206,6 +207,7 @@ Table of contents
 
    guides/tuning_dfs
    guides/performance
+   guides/parallel
    guides/deployment
    guides/exporting_feature_matrix
    guides/advanced_custom_primitives

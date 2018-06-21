@@ -821,3 +821,13 @@ def test_serialization(entityset):
     new_es = EntitySet.read_pickle(path)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
+
+
+def test_sizeof(entityset):
+    total_size = 0
+    for entity in entityset.entities:
+        total_size += entity.df.__sizeof__()
+        total_size += entity.last_time_index.__sizeof__()
+        total_size += entity.indexed_by.__sizeof__()
+
+    assert entityset.__sizeof__() == total_size
