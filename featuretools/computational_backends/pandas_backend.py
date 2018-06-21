@@ -44,6 +44,9 @@ class PandasBackend(ComputationalBackend):
         self.features = features
         self.feature_tree = FeatureTree(entityset, features)
 
+    def __sizeof__(self):
+        return self.entityset.__sizeof__()
+
     def calculate_all_features(self, instance_ids, time_last,
                                training_window=None, profile=False,
                                precalculated_features=None, ignored=None,

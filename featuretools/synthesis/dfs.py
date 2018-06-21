@@ -29,6 +29,8 @@ def dfs(entities=None,
         training_window=None,
         approximate=None,
         chunk_size=None,
+        n_jobs=1,
+        dask_kwargs=None,
         verbose=False):
     '''Calculates a feature matrix and features given a dictionary of entities
     and a list of relationships.
@@ -118,12 +120,29 @@ def dfs(entities=None,
 
         save_progress (str, optional): Path to save intermediate computational results.
 
+        n_jobs (int, optional): number of parallel processes to use when
+            calculating feature matrix
+
         chunk_size (int or float or None or "cutoff time", optionsal): Number
             of rows of output feature matrix to calculate at time. If passed an
             integer greater than 0, will try to use that many rows per chunk.
             If passed a float value between 0 and 1 sets the chunk size to that
             percentage of all instances. If passed the string "cutoff time",
             rows are split per cutoff time.
+
+        dask_kwargs (dict, optional): Dictionary of keyword arguments to be
+            passed when creating the dask client and scheduler. Even if n_jobs
+            is not set, using `dask_kwargs` will enable multiprocessing.
+            Main parameters:
+
+            cluster (str or dask.distributed.LocalCluster):
+                cluster or address of cluster to send tasks to. If unspecified,
+                a cluster will be created.
+            diagnostics port (int):
+                port number to use for web dashboard.  If left unspecified, web
+                interface will not be enabled.
+
+            Valid keyword arguments for LocalCluster will also be accepted.
 
     Examples:
         .. code-block:: python
@@ -176,6 +195,8 @@ def dfs(entities=None,
                                                   cutoff_time_in_index=cutoff_time_in_index,
                                                   save_progress=save_progress,
                                                   chunk_size=chunk_size,
+                                                  n_jobs=n_jobs,
+                                                  dask_kwargs=dask_kwargs,
                                                   verbose=verbose)
     else:
         feature_matrix = calculate_feature_matrix(features,
@@ -187,5 +208,7 @@ def dfs(entities=None,
                                                   cutoff_time_in_index=cutoff_time_in_index,
                                                   save_progress=save_progress,
                                                   chunk_size=chunk_size,
+                                                  n_jobs=n_jobs,
+                                                  dask_kwargs=dask_kwargs,
                                                   verbose=verbose)
     return feature_matrix, features
