@@ -1,11 +1,12 @@
 import os
 import re
 import boto3
+from tqdm import tqdm
 from botocore.handlers import disable_signing
 from builtins import str
 
 import pandas as pd
-
+import math
 from featuretools.config import config as ft_config
 import featuretools as ft
 import featuretools.variable_types as vtypes
@@ -13,10 +14,11 @@ import featuretools.variable_types as vtypes
 
 def load_flight(use_cache=True,
                 demo=True,
-                only_return_data=False,
+                return_single_table=False,
                 nrows=None,
                 month_filter=None,
-                categorical_filter=None):
+                categorical_filter=None,
+                verbose=False):
     """ Download, clean, and filter flight data from 2017.
         Input:
             month_filter (list[int]): Only use data from these months. Default is [1, 2].
@@ -26,16 +28,11 @@ def load_flight(use_cache=True,
             nrows (int): Passed to nrows in pd.read_csv.
             use_cache (bool): Use previously downloaded csv if possible.
             demo (bool): Use only two months of data. If false, use whole year.
-            only_return_data (bool): Exit the function early and return a dataframe.
+            return_single_table (bool): Exit the function early and return a dataframe.
 
 
     """
-    if month_filter is None:
-        month_filter = [1, 2]
-    if categorical_filter is None:
-        categorical_filter = {'origin_city': ['Boston, MA'],
-                              'dest_city': ['Boston, MA']}
-    demo_save_path, key = make_flight_pathname(demo=demo)
+    demo_save_path, key, csv_length = make_flight_pathname(demo=demo)
 
     if not use_cache or not os.path.isfile(demo_save_path):
         print('Downloading data from s3...')
@@ -46,12 +43,15 @@ def load_flight(use_cache=True,
         s3.meta.client.meta.events.register('choose-signer.s3.*', disable_signing)
         s3.Bucket(bucket_name).download_file(key, demo_save_path)
 
-    print('Cleaning and Filtering data...')
+    chunksize = math.ceil(csv_length / 99)
     pd.options.display.max_columns = 200
     iter_csv = pd.read_csv(demo_save_path,
                            iterator=True,
                            nrows=nrows,
-                           chunksize=10000)
+                           chunksize=chunksize)
+    if verbose:
+        iter_csv = tqdm(iter_csv, total=100)
+
     partial_df_list = []
     for chunk in iter_csv:
         df = filter_data(_clean_data(chunk),
@@ -60,7 +60,7 @@ def load_flight(use_cache=True,
         partial_df_list.append(df)
     data = pd.concat(partial_df_list)
 
-    if only_return_data:
+    if return_single_table:
         return data
 
     print('Making EntitySet...')
@@ -208,8 +208,11 @@ def make_flight_pathname(demo=True):
     if demo:
         filename = 'flight_dataset_sample.csv.zip'
         key = 'bots_flight_data_2017/data_2017_jan_feb.csv.zip'
+        rows = 860457.0
     else:
         filename = 'flight_dataset_full.csv.zip'
         key = 'bots_flight_data_2017/data_all_2017.csv.zip'
+        rows = 5162742.0
+    filepath = os.path.join(ft_config['csv_save_location'], filename)
 
-    return os.path.join(ft_config['csv_save_location'], filename), key
+    return filepath, key, rows
