@@ -2,6 +2,8 @@ from __future__ import division
 
 from builtins import object
 
+import numpy as np
+import pandas as pd
 from past.builtins import basestring
 
 
@@ -20,6 +22,7 @@ class Variable(object):
         :class:`.Entity`, :class:`.Relationship`, :class:`.BaseEntitySet`
     """
     _dtype_repr = None
+    _default_pandas_dtype = object
 
     def __init__(self, id, entity, name=None):
         assert isinstance(id, basestring), "Variable id must be a string"
@@ -87,6 +90,15 @@ class Variable(object):
     def series(self):
         return self.entity.df[self.id]
 
+    def create_metadata_dict(self):
+        return {
+            'dtype_repr': self._dtype_repr,
+            'entity': self.entity.id,
+            'id': self.id,
+            'name': self.name,
+            'interesting_values': self._interesting_values
+        }
+
 
 class Unknown(Variable):
     pass
@@ -123,6 +135,7 @@ class Discrete(Variable):
 class Boolean(Variable):
     """Represents variables that take on one of two values"""
     _dtype_repr = "boolean"
+    _default_pandas_dtype = bool
 
 
 class Categorical(Discrete):
@@ -133,11 +146,13 @@ class Categorical(Discrete):
 class Id(Categorical):
     """Represents variables that identify another entity"""
     _dtype_repr = "id"
+    _default_pandas_dtype = int
 
 
 class Ordinal(Discrete):
     """Represents variables that take on an ordered discrete value"""
     _dtype_repr = "ordinal"
+    _default_pandas_dtype = int
 
 
 class Numeric(Variable):
@@ -150,9 +165,7 @@ class Numeric(Variable):
         mean (float)
     """
     _dtype_repr = "numeric"
-
-    def __init__(self, id, entity, name=None):
-        super(Numeric, self).__init__(id, entity, name)
+    _default_pandas_dtype = float
 
 
 class Index(Variable):
@@ -162,11 +175,13 @@ class Index(Variable):
         count (int)
     """
     _dtype_repr = "index"
+    _default_pandas_dtype = int
 
 
 class Datetime(Variable):
     """Represents variables that are points in time"""
     _dtype_repr = "datetime"
+    _default_pandas_dtype = np.datetime64
 
     def __init__(self, id, entity, format=None, name=None):
         self.format = format
@@ -185,29 +200,31 @@ class Datetime(Variable):
 class TimeIndex(Variable):
     """Represents time index of entity"""
     _dtype_repr = "time_index"
+    _default_pandas_dtype = np.datetime64
 
 
 class NumericTimeIndex(TimeIndex, Numeric):
     """Represents time index of entity that is numeric"""
     _dtype_repr = "numeric_time_index"
+    _default_pandas_dtype = float
 
 
 class DatetimeTimeIndex(TimeIndex, Datetime):
     """Represents time index of entity that is a datetime"""
     _dtype_repr = "datetime_time_index"
+    _default_pandas_dtype = np.datetime64
 
 
 class Timedelta(Variable):
     """Represents variables that are timedeltas"""
     _dtype_repr = "timedelta"
-
-    def __init__(self, id, entity, name=None):
-        super(Timedelta, self).__init__(id, entity, name)
+    _default_pandas_dtype = np.timedelta64
 
 
 class Text(Variable):
     """Represents variables that are arbitary strings"""
     _dtype_repr = "text"
+    _default_pandas_dtype = str
 
 
 class PandasTypes(object):
@@ -230,3 +247,14 @@ class LatLong(Variable):
 ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
                       Categorical, Text, Ordinal,
                       Boolean, LatLong]
+
+
+DEFAULT_DTYPE_VALUES = {
+    np.datetime64: pd.Timestamp.now(),
+    int: 0,
+    float: 0.1,
+    np.timedelta64: pd.Timedelta('1d'),
+    object: 'object',
+    bool: True,
+    str: 'test'
+}

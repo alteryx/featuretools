@@ -138,7 +138,7 @@ def test_count_null_and_make_agg_primitive(es):
     def count_generate_name(self):
         where_str = self._where_str()
         use_prev_str = self._use_prev_str()
-        return u"COUNT(%s%s%s)" % (self.child_entity.name,
+        return u"COUNT(%s%s%s)" % (self.child_entity.id,
                                    where_str,
                                    use_prev_str)
 

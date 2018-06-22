@@ -41,7 +41,7 @@ class Entity(object):
     index = None
     indexed_by = None
 
-    def __init__(self, id, df, entityset, variable_types=None, name=None,
+    def __init__(self, id, df, entityset, variable_types=None,
                  index=None, time_index=None, secondary_time_index=None,
                  last_time_index=None, encoding=None, relationships=None,
                  already_sorted=False, created_index=None, verbose=False):
@@ -56,7 +56,6 @@ class Entity(object):
                 entity_id to variable_types dict with which to initialize an
                 entity's store.
                 An entity's variable_types dict maps string variable ids to types (:class:`.Variable`).
-            name (str): Name of entity.
             index (str): Name of id column in the dataframe.
             time_index (str): Name of time column in the dataframe.
             secondary_time_index (dict[str -> str]): Dictionary mapping columns
@@ -80,7 +79,6 @@ class Entity(object):
         self.created_index = created_index
         self.convert_all_variable_data(variable_types)
         self.id = id
-        self.name = name
         self.entityset = entityset
         self.indexed_by = {}
         variable_types = variable_types or {}
@@ -92,6 +90,7 @@ class Entity(object):
             if ti not in cols:
                 cols.append(ti)
 
+        relationships = relationships or []
         link_vars = [v.id for rel in relationships for v in [rel.parent_variable, rel.child_variable]
                      if v.entity.id == self.id]
 
@@ -125,7 +124,6 @@ class Entity(object):
                           if v.id == self.index][0]
         self.variables = [index_variable] + [v for v in self.variables
                                              if v.id != self.index]
-
         self.update_data(df=self.df,
                          already_sorted=already_sorted,
                          recalculate_last_time_indexes=False,
@@ -538,18 +536,21 @@ class Entity(object):
 
         return inferred_types
 
-    def update_data(self, df=None, data=None, already_sorted=False,
+    def update_data(self, df, already_sorted=False,
                     reindex=True, recalculate_last_time_indexes=True):
+        '''Update entity's internal dataframe, optionaly making sure data is sorted,
+        reference indexes to other entities are consistent, and last_time_indexes
+        are consistent.
+        '''
+        if len(df.columns) != len(self.variables):
+            raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(df.columns),
+                                                                                          len(self.variables)))
+        for v in self.variables:
+            if v.id not in df.columns:
+                raise ValueError("Updated dataframe is missing new {} column".format(v.id))
 
-        if data is not None:
-            self.data = data
-        elif df is not None:
-            self.df = df
-
-        if data or df is not None:
-            # Make sure column ordering matches variable ordering
-            self.df = self.df[[v.id for v in self.variables]]
-
+        # Make sure column ordering matches variable ordering
+        self.df = df[[v.id for v in self.variables]]
         self.set_index(self.index)
         self.set_time_index(self.time_index, already_sorted=already_sorted)
         self.set_secondary_time_index(self.secondary_time_index)
@@ -648,7 +649,12 @@ class Entity(object):
     def set_time_index(self, variable_id, already_sorted=False):
         if variable_id is not None:
             # check time type
-            time_type = _check_time_type(self.df[variable_id].iloc[0])
+            if self.df.empty:
+                time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
+            else:
+                time_to_check = self.df[variable_id].iloc[0]
+
+            time_type = _check_time_type(time_to_check)
             if time_type is None:
                 raise TypeError("%s time index not recognized as numeric or"
                                 " datetime" % (self.id))
@@ -665,7 +671,7 @@ class Entity(object):
                 # sort by time variable, then by index
                 self.df.sort_values([variable_id, self.index], inplace=True)
 
-            t = vtypes.TimeIndex
+            t = vtypes.NumericTimeIndex
             if col_is_datetime(self.df[variable_id]):
                 t = vtypes.DatetimeTimeIndex
             self.convert_variable_type(variable_id, t, convert_data=False)
@@ -695,7 +701,11 @@ class Entity(object):
     def set_secondary_time_index(self, secondary_time_index):
         if secondary_time_index is not None:
             for time_index in secondary_time_index:
-                time_type = _check_time_type(self.df[time_index].iloc[0])
+                if self.df.empty:
+                    time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[time_index]._default_pandas_dtype]
+                else:
+                    time_to_check = self.df[time_index].iloc[0]
+                time_type = _check_time_type(time_to_check)
                 if time_type is None:
                     raise TypeError("%s time index not recognized as numeric or"
                                     " datetime" % (self.id))

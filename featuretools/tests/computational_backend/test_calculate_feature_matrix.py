@@ -188,7 +188,7 @@ def test_saveprogress(entityset):
         df = pd.read_csv(file_, index_col="id", header=0)
         list_df.append(df)
     merged_df = pd.concat(list_df)
-    merged_df.set_index(pd.DatetimeIndex(times), append=True, inplace=True)
+    merged_df.set_index(pd.DatetimeIndex(times), inplace=True, append=True)
     fm_no_save = calculate_feature_matrix([property_feature],
                                           entityset,
                                           cutoff_time=cutoff_time)
@@ -275,7 +275,7 @@ def test_training_window_recent_time_index(entityset):
         'age': [73],
         u'région_id': ['United States'],
         'cohort': [1],
-        'cohort_name': ["Late Adopters"],
+        'cancel_reason': ["I am finally awake!!"],
         'loves_ice_cream': [True],
         'favorite_quote': ["Who is John Galt?"],
         'signup_date': [datetime(2011, 4, 10)],

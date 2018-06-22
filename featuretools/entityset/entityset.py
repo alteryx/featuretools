@@ -7,11 +7,11 @@ from collections import defaultdict
 import cloudpickle
 import numpy as np
 import pandas as pd
-from pandas.api.types import is_dtype_equal
+from pandas.api.types import is_dtype_equal, is_numeric_dtype
 
 from .entity import Entity
 from .relationship import Relationship
-from .serialization import read_pickle, to_pickle
+from .serialization import load_entity_data, write_entityset
 
 import featuretools.variable_types.variable as vtypes
 from featuretools.utils.gen_utils import make_tqdm_iterator
@@ -172,22 +172,24 @@ class EntitySet(object):
 
     @property
     def metadata(self):
-        '''Defined as a property because an EntitySet's metadata
-        is used in many places, for instance, for each feature in a feature list.
+        '''Version of this EntitySet with all data replaced with empty DataFrames.
+
+        An EntitySet's metadata is used in many places, for instance,
+        for each feature in a feature list.
         To prevent using copying the full metadata object to each feature,
         we generate a new metadata object and check if it's the same as the existing one,
         and if it is return the existing one. Thus, all features in the feature list
         would reference the same object, rather than copies. This saves a lot of memory
         '''
+        new_metadata = self.from_metadata(self.create_metadata_dict(),
+                                          data_root=None)
         if self._metadata is None:
-            self._metadata = self._gen_metadata()
+            self._metadata = new_metadata
         else:
-            new_metadata = self._gen_metadata()
             # Don't want to keep making new copies of metadata
             # Only make a new one if something was changed
-            if not self._metadata.__eq__(new_metadata):
+            if self._metadata != new_metadata:
                 self._metadata = new_metadata
-
         return self._metadata
 
     @property
@@ -199,12 +201,77 @@ class EntitySet(object):
         return all(e.df.empty for e in self.entity_dict.values())
 
     def to_pickle(self, path):
-        to_pickle(self, path)
+        '''Write entityset to disk in the pickle format, location specified by `path`.
+
+            Args:
+                * entityset: entityset to write to disk
+                * path (str): location on disk to write to (will be created as a directory)
+        '''
+
+        write_entityset(self, path, serialization_method='pickle')
         return self
 
+    def to_parquet(self, path):
+        '''Write entityset to disk in the parquet format, location specified by `path`.
+
+            Args:
+                * entityset: entityset to write to disk
+                * path (str): location on disk to write to (will be created as a directory)
+        '''
+
+        write_entityset(self, path, serialization_method='parquet')
+        return self
+
+    def create_metadata_dict(self):
+        return {
+            'id': self.id,
+            'relationships': [{
+                'parent_entity': r.parent_entity.id,
+                'parent_variable': r.parent_variable.id,
+                'child_entity': r.child_entity.id,
+                'child_variable': r.child_variable.id,
+            } for r in self.relationships],
+            'entity_dict': {eid: {
+                'index': e.index,
+                'time_index': e.time_index,
+                'secondary_time_index': e.secondary_time_index,
+                'encoding': e.encoding,
+                'variables': {
+                    v.id: v.create_metadata_dict()
+                    for v in e.variables
+                },
+                'has_last_time_index': e.last_time_index is not None
+            } for eid, e in self.entity_dict.items()},
+        }
+
     @classmethod
-    def read_pickle(cls, path):
-        return read_pickle(path)
+    def from_metadata(cls, metadata, data_root=None):
+        es = EntitySet(metadata['id'])
+        set_last_time_indexes = False
+        for eid, entity in metadata['entity_dict'].items():
+            df, variable_types = cls._load_dummy_entity_data_and_variable_types(entity)
+            if data_root is not None:
+                df = load_entity_data(entity, data_root)
+            es.entity_from_dataframe(eid,
+                                     df,
+                                     index=entity['index'],
+                                     time_index=entity['time_index'],
+                                     secondary_time_index=entity['secondary_time_index'],
+                                     encoding=entity['encoding'],
+                                     variable_types=variable_types)
+            if entity['has_last_time_index']:
+                set_last_time_indexes = True
+            for vid, v in entity['variables'].items():
+                if v['interesting_values'] and len(v['interesting_values']):
+                    es[eid][vid].interesting_values = v['interesting_values']
+        for rel in metadata['relationships']:
+            es.add_relationship(Relationship(
+                es[rel['parent_entity']][rel['parent_variable']],
+                es[rel['child_entity']][rel['child_variable']],
+            ))
+        if set_last_time_indexes:
+            es.add_last_time_indexes()
+        return es
 
     ###########################################################################
     #   Public getter/setter methods  #########################################
@@ -273,6 +340,13 @@ class EntitySet(object):
             parent_e.convert_variable_type(variable_id=parent_v,
                                            new_type=vtypes.Index,
                                            convert_data=False)
+        # Empty dataframes (as a result of accessing Entity.metadata)
+        # default to object dtypes for discrete variables, but
+        # indexes/ids default to ints. In this case, we convert
+        # the empty column's type to int
+        if (child_e.df.empty and child_e.df[child_v].dtype == object and
+                is_numeric_dtype(parent_e.df[parent_v])):
+            child_e.df[child_v] = pd.Series(name=child_v, dtype=np.int64)
 
         parent_dtype = parent_e.df[parent_v].dtype
         child_dtype = child_e.df[child_v].dtype
@@ -1116,69 +1190,6 @@ class EntitySet(object):
     #  Private methods  ######################################################
     ###########################################################################
 
-    def _gen_metadata(self):
-        new_entityset = object.__new__(EntitySet)
-        new_entityset_dict = {}
-        for k, v in self.__dict__.items():
-            if k not in ["entity_dict", "relationships"]:
-                new_entityset_dict[k] = v
-        new_entityset_dict["entity_dict"] = {}
-        for eid, e in self.entity_dict.items():
-            metadata_e = self._entity_metadata(e)
-            new_entityset_dict['entity_dict'][eid] = metadata_e
-        new_entityset_dict["relationships"] = []
-        for r in self.relationships:
-            metadata_r = self._relationship_metadata(r)
-            new_entityset_dict['relationships'].append(metadata_r)
-        new_entityset.__dict__ = copy.deepcopy(new_entityset_dict)
-        for e in new_entityset.entity_dict.values():
-            e.entityset = new_entityset
-            for v in e.variables:
-                v.entity = new_entityset[v.entity_id]
-        for r in new_entityset.relationships:
-            r.entityset = new_entityset
-        return new_entityset
-
-    @classmethod
-    def _entity_metadata(cls, e):
-        new_dict = {}
-        for k, v in e.__dict__.items():
-            if k not in ["data", "entityset", "variables"]:
-                new_dict[k] = v
-        new_dict["data"] = {
-            "df": e.df.head(0),
-            "last_time_index": None,
-            "indexed_by": {}
-        }
-        new_dict["variables"] = [cls._variable_metadata(v)
-                                 for v in e.variables]
-        new_dict = copy.deepcopy(new_dict)
-        new_entity = object.__new__(Entity)
-        new_entity.__dict__ = new_dict
-        return new_entity
-
-    @classmethod
-    def _relationship_metadata(cls, r):
-        new_dict = {}
-        for k, v in r.__dict__.items():
-            if k != "entityset":
-                new_dict[k] = v
-        new_dict = copy.deepcopy(new_dict)
-        new_r = object.__new__(Relationship)
-        new_r.__dict__ = new_dict
-        return new_r
-
-    @classmethod
-    def _variable_metadata(cls, var):
-        new_dict = {}
-        for k, v in var.__dict__.items():
-            if k != "entity":
-                new_dict[k] = v
-        new_dict = copy.deepcopy(new_dict)
-        new_v = object.__new__(type(var))
-        new_v.__dict__ = new_dict
-        return new_v
-
     def _import_from_dataframe(self,
                                entity_id,
                                dataframe,
@@ -1361,6 +1372,30 @@ class EntitySet(object):
                     frames[child_entity.id] = pd.merge(left=merge_df,
                                                        right=child_df,
                                                        on=r.child_variable.id)
+
+    @classmethod
+    def _load_dummy_entity_data_and_variable_types(cls, metadata):
+        variable_types = {}
+        defaults = []
+        columns = []
+        variable_names = {}
+        for elt in dir(vtypes):
+            try:
+                cls = getattr(vtypes, elt)
+                if issubclass(cls, vtypes.Variable):
+                    variable_names[cls._dtype_repr] = cls
+            except TypeError:
+                pass
+        for vid, vmetadata in metadata['variables'].items():
+            if vmetadata['dtype_repr']:
+                vtype = variable_names.get(vmetadata['dtype_repr'], vtypes.Variable)
+                variable_types[vid] = vtype
+                defaults.append(vtypes.DEFAULT_DTYPE_VALUES[vtype._default_pandas_dtype])
+            else:
+                defaults.append(vtypes.DEFAULT_DTYPE_VALUES[object])
+            columns.append(vid)
+        df = pd.DataFrame({c: [d] for c, d in zip(columns, defaults)}).head(0)
+        return df, variable_types
 
 
 def make_index_variable_name(entity_id):
