@@ -91,7 +91,7 @@ The returned feature matrix is now all numeric. Additionally, we get a new set o
 
 .. ipython:: python
 
-  print features_enc
+  print(features_enc)
 
 These features can be used to calculate the same encoded values on new data. For more information on feature engineering in production, read :doc:`/guides/deployment`.
 
