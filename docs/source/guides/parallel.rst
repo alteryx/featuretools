@@ -1,7 +1,7 @@
 .. _parallel:
 
-Computing feature values in parallel
-====================================
+Parallel Feature Computation
+============================
 Featuretools can optionally compute features on multiple cores. The simplest way to control the amount of parallelism is to specify the ``n_jobs`` parameter::
 
     fm = ft.calculate_feature_matrix(features=features,
@@ -22,18 +22,18 @@ Behind the scenes, Featuretools uses `dask's <http://dask.pydata.org/>`_ distrib
 
     cluster = LocalCluster()
     fm_1 = ft.calculate_feature_matrix(features=features_1,
-                                     entityset=entityset,
-                                     cutoff_time=cutoff_time,
-                                     dask_kwargs={'cluster': cluster},
-                                     verbose=True)
+                                       entityset=entityset,
+                                       cutoff_time=cutoff_time,
+                                       dask_kwargs={'cluster': cluster},
+                                       verbose=True)
 
 The 'cluster' value can either be the actual cluster object or a string of the address the cluster's scheduler can be reached at. The call below would also work. This second feature matrix calculation will not need to resend the entityset data to the workers because it has already been saved on the cluster.::
 
     fm_2 = ft.calculate_feature_matrix(features=features_2,
-                                     entityset=entityset,
-                                     cutoff_time=cutoff_time,
-                                     dask_kwargs={'cluster': cluster.scheduler.address},
-                                     verbose=True)
+                                       entityset=entityset,
+                                       cutoff_time=cutoff_time,
+                                       dask_kwargs={'cluster': cluster.scheduler.address},
+                                       verbose=True)
 
 
 Using the distributed dashboard
