@@ -10,11 +10,11 @@ from builtins import zip
 from collections import defaultdict
 from datetime import datetime
 from functools import wraps
-from sys import version_info
 
 import cloudpickle
 import numpy as np
 import pandas as pd
+import psutil
 from pandas.tseries.frequencies import to_offset
 
 from .pandas_backend import PandasBackend
@@ -783,11 +783,10 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
 
 
 def n_jobs_to_workers(n_jobs):
-    if version_info.major == 2:
-        import multiprocessing
-        cpus = multiprocessing.cpu_count()
-    else:
-        cpus = len(os.sched_getaffinity(0))
+    try:
+        cpus = len(psutil.Process().cpu_affinity())
+    except AttributeError:
+        cpus = psutil.cpu_count()
 
     if n_jobs < 0:
         workers = max(cpus + 1 + n_jobs, 1)

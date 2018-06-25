@@ -10,3 +10,4 @@ future>=0.16.0
 pympler>=0.5
 dask>=0.17.5
 distributed>=1.21.8
+psutil
