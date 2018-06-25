@@ -783,11 +783,8 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
 
 
 def n_jobs_to_workers(n_jobs):
-    if version_info.major == 2:
-        import multiprocessing
-        cpus = multiprocessing.cpu_count()
-    else:
-        cpus = len(os.sched_getaffinity(0))
+    import psutil
+    cpus = len(psutil.Process().cpu_affinity())
 
     if n_jobs < 0:
         workers = max(cpus + 1 + n_jobs, 1)
