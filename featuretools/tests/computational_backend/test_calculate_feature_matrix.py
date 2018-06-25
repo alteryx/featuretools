@@ -18,7 +18,7 @@ from distributed.utils_test import cluster
 from ..testing_utils import make_ecommerce_entityset
 
 from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
-from featuretools.computational_backends.calculate_feature_matrix import (
+from featuretools.computational_backends.utils import (
     bin_cutoff_times,
     calc_num_per_chunk,
     get_next_chunk,
