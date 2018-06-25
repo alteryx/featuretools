@@ -10,11 +10,11 @@ from builtins import zip
 from collections import defaultdict
 from datetime import datetime
 from functools import wraps
-from sys import version_info
 
 import cloudpickle
 import numpy as np
 import pandas as pd
+import psutil
 from pandas.tseries.frequencies import to_offset
 
 from .pandas_backend import PandasBackend
@@ -783,7 +783,6 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
 
 
 def n_jobs_to_workers(n_jobs):
-    import psutil
     try:
         cpus = len(psutil.Process().cpu_affinity())
     except AttributeError:

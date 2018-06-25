@@ -8,10 +8,10 @@ from builtins import range
 from datetime import datetime
 from itertools import combinations
 from random import randint
-from sys import version_info
 
 import numpy as np
 import pandas as pd
+import psutil
 import pytest
 from distributed.utils_test import cluster
 
@@ -858,11 +858,10 @@ def test_parallel_failure_raises_correct_error(entityset):
 
 
 def test_n_jobs(entityset):
-    if version_info.major == 2:
-        import multiprocessing
-        cpus = multiprocessing.cpu_count()
-    else:
-        cpus = len(os.sched_getaffinity(0))
+    try:
+        cpus = len(psutil.Process().cpu_affinity())
+    except AttributeError:
+        cpus = psutil.cpu_count()
 
     assert n_jobs_to_workers(1) == 1
     assert n_jobs_to_workers(-1) == cpus
