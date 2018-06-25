@@ -184,9 +184,7 @@ def filter_data(clean_data,
                 month_filter=None,
                 categorical_filter=None):
     if month_filter is not None:
-        tmp = False
-        for month in month_filter:
-            tmp = tmp | (clean_data['scheduled_dep_time'].apply(lambda x: x.month) == month)
+        tmp = clean_data['scheduled_dep_time'].dt.month.isin(month_filter)
         clean_data = clean_data[tmp]
 
     if categorical_filter is not None:
@@ -209,11 +207,11 @@ def make_flight_pathname(demo=True):
     if demo:
         filename = 'flight_dataset_sample.csv.zip'
         key = 'bots_flight_data_2017/data_2017_jan_feb.csv.zip'
-        rows = 860457.0
+        rows = 860457
     else:
         filename = 'flight_dataset_full.csv.zip'
         key = 'bots_flight_data_2017/data_all_2017.csv.zip'
-        rows = 5162742.0
+        rows = 5162742
     filepath = os.path.join(ft_config['csv_save_location'], filename)
 
     return filepath, key, rows
