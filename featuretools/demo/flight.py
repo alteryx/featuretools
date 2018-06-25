@@ -12,25 +12,25 @@ import featuretools as ft
 import featuretools.variable_types as vtypes
 
 
-def load_flight(use_cache=True,
+def load_flight(month_filter=None,
+                categorical_filter=None,
+                nrows=None,
+                use_cache=True,
                 demo=True,
                 return_single_table=False,
-                nrows=None,
-                month_filter=None,
-                categorical_filter=None,
                 verbose=False):
     """ Download, clean, and filter flight data from 2017.
         Input:
-            month_filter (list[int]): Only use data from these months. Default is [1, 2].
-            filterer (dict[str->str]): Use only specified categorical values.
-                Default is {'dest_city': ['Boston, MA'], 'origin_city': ['Boston, MA']}
+            month_filter (list[int]): Only use data from these months (example is [1, 2]).
+                To skip, set to None.
+            categorical_filter (dict[str->str]): Use only specified categorical values.
+                Example is {'dest_city': ['Boston, MA'], 'origin_city': ['Boston, MA']}
                 which returns all flights in OR out of Boston. To skip, set to None.
-            nrows (int): Passed to nrows in pd.read_csv.
+            nrows (int): Passed to nrows in pd.read_csv. Used before filtering.
             use_cache (bool): Use previously downloaded csv if possible.
-            demo (bool): Use only two months of data. If false, use whole year.
+            demo (bool): Use only two months of data. If False, use the whole year.
             return_single_table (bool): Exit the function early and return a dataframe.
-
-
+            verbose (bool): Show a progress bar while loading the data.
     """
     demo_save_path, key, csv_length = make_flight_pathname(demo=demo)
 
