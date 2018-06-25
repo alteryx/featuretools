@@ -784,7 +784,10 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
 
 def n_jobs_to_workers(n_jobs):
     import psutil
-    cpus = len(psutil.Process().cpu_affinity())
+    try:
+        cpus = len(psutil.Process().cpu_affinity())
+    except AttributeError:
+        cpus = psutil.cpu_count()
 
     if n_jobs < 0:
         workers = max(cpus + 1 + n_jobs, 1)
