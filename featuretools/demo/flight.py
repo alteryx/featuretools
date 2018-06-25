@@ -1,15 +1,16 @@
+import math
 import os
 import re
-import boto3
-from tqdm import tqdm
-from botocore.handlers import disable_signing
 from builtins import str
 
+import boto3
 import pandas as pd
-import math
-from featuretools.config import config as ft_config
+from botocore.handlers import disable_signing
+from tqdm import tqdm
+
 import featuretools as ft
 import featuretools.variable_types as vtypes
+from featuretools.config import config as ft_config
 
 
 def load_flight(month_filter=None,

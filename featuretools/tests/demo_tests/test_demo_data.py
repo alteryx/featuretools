@@ -1,8 +1,8 @@
 import os
 
-from featuretools.demo import load_mock_customer, load_retail, load_flight
-from featuretools.demo.retail import make_retail_pathname
+from featuretools.demo import load_flight, load_mock_customer, load_retail
 from featuretools.demo.flight import make_flight_pathname
+from featuretools.demo.retail import make_retail_pathname
 from featuretools.synthesis import dfs
 
 
@@ -36,10 +36,10 @@ def test_mock_customer():
 
 
 def test_load_flight():
-    demo_path, _ = make_flight_pathname(demo=True)
+    demo_path, _, _ = make_flight_pathname(demo=True)
     es = load_flight(month_filter=[1],
                      categorical_filter={'origin_city': ['Charlotte, NC']},
-                     only_return_data=False, nrows=1000)
+                     return_single_table=False, nrows=1000)
 
     assert os.path.isfile(demo_path)
     entity_names = ['airports', 'flights', 'trip_logs', 'airlines']
