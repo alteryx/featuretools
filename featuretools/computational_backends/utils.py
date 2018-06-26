@@ -188,6 +188,8 @@ def n_jobs_to_workers(n_jobs):
     except AttributeError:
         cpus = psutil.cpu_count()
 
+    # Taken from sklearn parallel_backends code
+    # https://github.com/scikit-learn/scikit-learn/blob/27bbdb570bac062c71b3bb21b0876fd78adc9f7e/sklearn/externals/joblib/_parallel_backends.py#L120
     if n_jobs < 0:
         workers = max(cpus + 1 + n_jobs, 1)
     else:
