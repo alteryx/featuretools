@@ -211,7 +211,7 @@ def create_client_and_cluster(n_jobs, num_tasks, dask_kwargs):
             del dask_kwargs['diagnostics_port']
 
         workers = n_jobs_to_workers(n_jobs)
-        workers = min(workers, len(num_tasks))
+        workers = min(workers, num_tasks)
         cluster = LocalCluster(n_workers=workers,
                                threads_per_worker=1,
                                diagnostics_port=diagnostics_port,
