@@ -19,14 +19,12 @@ from .utils import (
     calc_num_per_chunk,
     create_client_and_cluster,
     gather_approximate_features,
-    get_next_chunk,
     gen_empty_approx_features_df,
+    get_next_chunk,
     save_csv_decorator
 )
-from featuretools.primitives import (
-    AggregationPrimitive,
-    PrimitiveBase
-)
+
+from featuretools.primitives import AggregationPrimitive, PrimitiveBase
 from featuretools.utils.gen_utils import make_tqdm_iterator
 from featuretools.utils.wrangle import _check_time_type
 from featuretools.variable_types import DatetimeTimeIndex, NumericTimeIndex
