@@ -18,9 +18,10 @@ from distributed.utils_test import cluster
 from ..testing_utils import make_ecommerce_entityset
 
 from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
-from featuretools.computational_backends.calculate_feature_matrix import (
+from featuretools.computational_backends.utils import (
     bin_cutoff_times,
     calc_num_per_chunk,
+    create_client_and_cluster,
     get_next_chunk,
     n_jobs_to_workers
 )
@@ -835,6 +836,32 @@ def test_dask_persisted_entityset(entityset, capsys):
         captured = capsys.readouterr()
         assert "Using EntitySet persisted on the cluster as dataset " in captured[0]
         assert (feature_matrix == labels).values.all()
+
+
+def test_create_client_and_cluster(entityset, monkeypatch):
+    def test_cluster(n_workers=1,
+                     threads_per_worker=1,
+                     diagnostics_port=8787,
+                     **dask_kwarg):
+        return (n_workers, threads_per_worker, diagnostics_port)
+    monkeypatch.setitem(create_client_and_cluster.__globals__, 'LocalCluster', test_cluster)
+    monkeypatch.setitem(create_client_and_cluster.__globals__, 'Client', lambda x: x)
+
+    # cluster in dask_kwargs case
+    client, cluster = create_client_and_cluster(n_jobs=2,
+                                                num_tasks=3,
+                                                dask_kwargs={'cluster': 'tcp://127.0.0.1:54321'})
+    assert cluster == 'tcp://127.0.0.1:54321'
+    # jobs < tasks case
+    client, cluster = create_client_and_cluster(n_jobs=2,
+                                                num_tasks=3,
+                                                dask_kwargs={})
+    assert cluster == (2, 1, None)
+    # jobs > tasks case
+    client, cluster = create_client_and_cluster(n_jobs=10,
+                                                num_tasks=3,
+                                                dask_kwargs={'diagnostics_port': 8789})
+    assert cluster == (3, 1, 8789)
 
 
 def test_parallel_failure_raises_correct_error(entityset):
