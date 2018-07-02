@@ -2,6 +2,11 @@
 
 Changelog
 ---------
+**v0.2.1** July 2, 2018
+    * Cpu count fix (:pr:`176`)
+    * Update flight (:pr:`175`)
+    * Move feature matrix calculation helper functions to separate file (:pr:`177`)
+
 **v0.2.0** June 22, 2018
     * Multiprocessing (:pr:`170`)
     * Handle unicode encoding in repr throughout Featuretools (:pr:`161`)
