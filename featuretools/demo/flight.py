@@ -75,7 +75,7 @@ def make_es(data):
     labely_columns = ['arr_delay', 'dep_delay', 'carrier_delay', 'weather_delay',
                       'national_airspace_delay', 'security_delay',
                       'late_aircraft_delay', 'cancelled', 'diverted',
-                      'taxi_in', 'taxi_out', 'air_time']
+                      'taxi_in', 'taxi_out', 'air_time', 'dep_time']
 
     variable_types = {'flight_num': vtypes.Categorical,
                       'distance_group': vtypes.Ordinal,
