@@ -20,19 +20,48 @@ def load_flight(month_filter=None,
                 demo=True,
                 return_single_table=False,
                 verbose=False):
-    """ Download, clean, and filter flight data from 2017.
-        Input:
-            month_filter (list[int]): Only use data from these months (example is [1, 2]).
-                To skip, set to None.
-            categorical_filter (dict[str->str]): Use only specified categorical values.
-                Example is {'dest_city': ['Boston, MA'], 'origin_city': ['Boston, MA']}
-                which returns all flights in OR out of Boston. To skip, set to None.
-            nrows (int): Passed to nrows in pd.read_csv. Used before filtering.
-            use_cache (bool): Use previously downloaded csv if possible.
-            demo (bool): Use only two months of data. If False, use the whole year.
-            return_single_table (bool): Exit the function early and return a dataframe.
-            verbose (bool): Show a progress bar while loading the data.
-    """
+    '''
+    Download, clean, and filter flight data from 2017.
+
+    Args:
+
+        month_filter (list[int]): Only use data from these months (example is ``[1, 2]``).
+            To skip, set to None.
+        categorical_filter (dict[str->str]): Use only specified categorical values.
+            Example is ``{'dest_city': ['Boston, MA'], 'origin_city': ['Boston, MA']}``
+            which returns all flights in OR out of Boston. To skip, set to None.
+        nrows (int): Passed to nrows in ``pd.read_csv``. Used before filtering.
+        use_cache (bool): Use previously downloaded csv if possible.
+        demo (bool): Use only two months of data. If False, use the whole year.
+        return_single_table (bool): Exit the function early and return a dataframe.
+        verbose (bool): Show a progress bar while loading the data.
+
+    Examples:
+
+        .. ipython::
+            :verbatim:
+
+            In [1]: import featuretools as ft
+
+            In [2]: es = ft.demo.load_flight(verbose=True,
+               ...:                          month_filter=[1],
+               ...:                          categorical_filter={'origin_city':['Boston, MA']})
+            100%|xxxxxxxxxxxxxxxxxxxxxxxxx| 100/100 [01:16<00:00,  1.31it/s]
+
+            In [3]: es
+            Out[3]:
+            Entityset: Flight Data
+              Entities:
+                airports [Rows: 55, Columns: 3]
+                flights [Rows: 613, Columns: 9]
+                trip_logs [Rows: 9456, Columns: 22]
+                airlines [Rows: 10, Columns: 1]
+              Relationships:
+                trip_logs.flight_id -> flights.flight_id
+                flights.carrier -> airlines.carrier
+                flights.dest -> airports.dest
+    '''
+
     demo_save_path, key, csv_length = make_flight_pathname(demo=demo)
 
     if not use_cache or not os.path.isfile(demo_save_path):
@@ -64,7 +93,6 @@ def load_flight(month_filter=None,
     if return_single_table:
         return data
 
-    print('Making EntitySet...')
     es = make_es(data)
 
     return es
@@ -75,7 +103,7 @@ def make_es(data):
     labely_columns = ['arr_delay', 'dep_delay', 'carrier_delay', 'weather_delay',
                       'national_airspace_delay', 'security_delay',
                       'late_aircraft_delay', 'cancelled', 'diverted',
-                      'taxi_in', 'taxi_out', 'air_time']
+                      'taxi_in', 'taxi_out', 'air_time', 'dep_time']
 
     variable_types = {'flight_num': vtypes.Categorical,
                       'distance_group': vtypes.Ordinal,
