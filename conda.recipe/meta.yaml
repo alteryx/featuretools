@@ -26,6 +26,7 @@ requirements:
 
   run:
     - python
+    - msgpack-python
     {% for req in data.get('install_requires') %}
     - {{ req|replace('\n', '') }}
     {% endfor %}
