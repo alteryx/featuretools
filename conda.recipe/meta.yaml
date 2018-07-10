@@ -8,6 +8,7 @@ build:
     number: {{ environ.get('GIT_DESCRIBE_NUMBER', 0) }}
     {% if GIT_DESCRIBE_NUMBER|int == 0 %}string: np{{ CONDA_NPY }}py{{ CONDA_PY }}_0
     {% else %}string: np{{ CONDA_NPY }}py{{ CONDA_PY }}_{{ GIT_BUILD_STR }}{% endif %}
+    script: python -m pip install --no-deps --ignore-installed .
 
 source:
     path: ../
@@ -19,17 +20,14 @@ requirements:
     {% for req in data.get('setup_requires') %}
     - {{ req|replace('\n', '') }}
     {% endfor %}
-    {% for req in data.get('install_requires') %}
-    - {{ req|replace('\n', '') }}
-    {% endfor %}
-
 
   run:
-    - python
+    - python {{ python }}
     - msgpack-python
     {% for req in data.get('install_requires') %}
     - {{ req|replace('\n', '') }}
     {% endfor %}
+
 test:
   imports:
     - featuretools
