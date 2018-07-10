@@ -100,6 +100,7 @@ Min = make_agg_primitive(
     [Numeric],
     None,
     name="min",
+    class_name="Min",
     stack_on_self=False,
     description="Finds the minimum non-null value of a numeric feature.")
 

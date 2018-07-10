@@ -76,7 +76,7 @@ class AggregationPrimitive(PrimitiveBase):
 
 
 def make_agg_primitive(function, input_types, return_type, name=None,
-                       stack_on_self=True, stack_on=None,
+                       class_name=None, stack_on_self=True, stack_on=None,
                        stack_on_exclude=None, base_of=None,
                        base_of_exclude=None, description='A custom primitive',
                        cls_attributes=None, uses_calc_time=False,
@@ -143,7 +143,9 @@ def make_agg_primitive(function, input_types, return_type, name=None,
     if cls_attributes is not None:
         cls.update(cls_attributes)
     name = name or function.__name__
-    new_class = type(name, (AggregationPrimitive,), cls)
+    if class_name is None:
+        class_name = name
+    new_class = type(class_name, (AggregationPrimitive,), cls)
     new_class.name = name
     new_class.input_types = input_types
     new_class.return_type = return_type
