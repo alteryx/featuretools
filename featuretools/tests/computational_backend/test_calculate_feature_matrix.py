@@ -11,15 +11,19 @@ from random import randint
 
 import numpy as np
 import pandas as pd
+import psutil
 import pytest
+from distributed.utils_test import cluster
 
 from ..testing_utils import make_ecommerce_entityset
 
 from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
-from featuretools.computational_backends.calculate_feature_matrix import (
+from featuretools.computational_backends.utils import (
     bin_cutoff_times,
     calc_num_per_chunk,
-    get_next_chunk
+    create_client_and_cluster,
+    get_next_chunk,
+    n_jobs_to_workers
 )
 from featuretools.primitives import (
     AggregationPrimitive,
@@ -185,7 +189,7 @@ def test_saveprogress(entityset):
         df = pd.read_csv(file_, index_col="id", header=0)
         list_df.append(df)
     merged_df = pd.concat(list_df)
-    merged_df.set_index(pd.DatetimeIndex(times), append=True, inplace=True)
+    merged_df.set_index(pd.DatetimeIndex(times), inplace=True, append=True)
     fm_no_save = calculate_feature_matrix([property_feature],
                                           entityset,
                                           cutoff_time=cutoff_time)
@@ -272,7 +276,7 @@ def test_training_window_recent_time_index(entityset):
         'age': [73],
         u'région_id': ['United States'],
         'cohort': [1],
-        'cohort_name': ["Late Adopters"],
+        'cancel_reason': ["I am finally awake!!"],
         'loves_ice_cream': [True],
         'favorite_quote': ["Who is John Galt?"],
         'signup_date': [datetime(2011, 4, 10)],
@@ -775,6 +779,125 @@ def test_verbose_cutoff_time_chunks(entityset):
                                               verbose=True)
 
     assert (feature_matrix == labels).values.all()
+
+
+def test_dask_kwargs(entityset):
+    times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
+                 [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
+                 [datetime(2011, 4, 9, 10, 40, 0)] +
+                 [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
+                 [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
+                 [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
+    labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
+    property_feature = IdentityFeature(entityset['log']['value']) > 10
+
+    with cluster() as (scheduler, [a, b]):
+        dkwargs = {'cluster': scheduler['address']}
+        feature_matrix = calculate_feature_matrix([property_feature],
+                                                  entityset=entityset,
+                                                  cutoff_time=cutoff_time,
+                                                  verbose=True,
+                                                  chunk_size=.13,
+                                                  dask_kwargs=dkwargs,
+                                                  approximate='1 hour')
+
+    assert (feature_matrix == labels).values.all()
+
+
+def test_dask_persisted_entityset(entityset, capsys):
+    times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
+                 [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
+                 [datetime(2011, 4, 9, 10, 40, 0)] +
+                 [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
+                 [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
+                 [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
+    labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
+    property_feature = IdentityFeature(entityset['log']['value']) > 10
+
+    with cluster() as (scheduler, [a, b]):
+        dkwargs = {'cluster': scheduler['address']}
+        feature_matrix = calculate_feature_matrix([property_feature],
+                                                  entityset=entityset,
+                                                  cutoff_time=cutoff_time,
+                                                  verbose=True,
+                                                  chunk_size=.13,
+                                                  dask_kwargs=dkwargs,
+                                                  approximate='1 hour')
+        assert (feature_matrix == labels).values.all()
+        feature_matrix = calculate_feature_matrix([property_feature],
+                                                  entityset=entityset,
+                                                  cutoff_time=cutoff_time,
+                                                  verbose=True,
+                                                  chunk_size=.13,
+                                                  dask_kwargs=dkwargs,
+                                                  approximate='1 hour')
+        captured = capsys.readouterr()
+        assert "Using EntitySet persisted on the cluster as dataset " in captured[0]
+        assert (feature_matrix == labels).values.all()
+
+
+def test_create_client_and_cluster(entityset, monkeypatch):
+    def test_cluster(n_workers=1,
+                     threads_per_worker=1,
+                     diagnostics_port=8787,
+                     **dask_kwarg):
+        return (n_workers, threads_per_worker, diagnostics_port)
+    monkeypatch.setitem(create_client_and_cluster.__globals__, 'LocalCluster', test_cluster)
+    monkeypatch.setitem(create_client_and_cluster.__globals__, 'Client', lambda x: x)
+
+    # cluster in dask_kwargs case
+    client, cluster = create_client_and_cluster(n_jobs=2,
+                                                num_tasks=3,
+                                                dask_kwargs={'cluster': 'tcp://127.0.0.1:54321'})
+    assert cluster == 'tcp://127.0.0.1:54321'
+    # jobs < tasks case
+    client, cluster = create_client_and_cluster(n_jobs=2,
+                                                num_tasks=3,
+                                                dask_kwargs={})
+    assert cluster == (2, 1, None)
+    # jobs > tasks case
+    client, cluster = create_client_and_cluster(n_jobs=10,
+                                                num_tasks=3,
+                                                dask_kwargs={'diagnostics_port': 8789})
+    assert cluster == (3, 1, 8789)
+
+
+def test_parallel_failure_raises_correct_error(entityset):
+    times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
+                 [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
+                 [datetime(2011, 4, 9, 10, 40, 0)] +
+                 [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
+                 [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
+                 [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
+    property_feature = IdentityFeature(entityset['log']['value']) > 10
+
+    with pytest.raises(AssertionError):
+        calculate_feature_matrix([property_feature],
+                                 entityset=entityset,
+                                 cutoff_time=cutoff_time,
+                                 verbose=True,
+                                 chunk_size=.13,
+                                 n_jobs=0,
+                                 approximate='1 hour')
+
+
+def test_n_jobs(entityset):
+    try:
+        cpus = len(psutil.Process().cpu_affinity())
+    except AttributeError:
+        cpus = psutil.cpu_count()
+
+    assert n_jobs_to_workers(1) == 1
+    assert n_jobs_to_workers(-1) == cpus
+    assert n_jobs_to_workers(cpus) == cpus
+    assert n_jobs_to_workers((cpus + 1) * -1) == 1
+    if cpus > 1:
+        assert n_jobs_to_workers(-2) == cpus - 1
+    with pytest.raises(AssertionError):
+        n_jobs_to_workers(0)
 
 
 def test_integer_time_index(int_es):

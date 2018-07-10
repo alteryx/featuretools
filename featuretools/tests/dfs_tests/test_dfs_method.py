@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+from distributed.utils_test import cluster
 
 from ..testing_utils import make_ecommerce_entityset
 
@@ -121,3 +122,24 @@ def test_features_only(entities, relationships):
                    target_entity="transactions",
                    features_only=True)
     assert len(features) > 0
+
+
+def test_dask_kwargs(entities, relationships):
+    cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
+                                    "time": [10, 12, 15]})
+    feature_matrix, features = dfs(entities=entities,
+                                   relationships=relationships,
+                                   target_entity="transactions",
+                                   cutoff_time=cutoff_times_df)
+
+    with cluster() as (scheduler, [a, b]):
+        dask_kwargs = {'cluster': scheduler['address']}
+        feature_matrix_2, features_2 = dfs(entities=entities,
+                                           relationships=relationships,
+                                           target_entity="transactions",
+                                           cutoff_time=cutoff_times_df,
+                                           dask_kwargs=dask_kwargs)
+    assert features == features_2
+    for column in feature_matrix:
+        for x, y in zip(feature_matrix[column], feature_matrix_2[column]):
+            assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))

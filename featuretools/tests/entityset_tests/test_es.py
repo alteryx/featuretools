@@ -12,6 +12,7 @@ import pytest
 
 from ..testing_utils import make_ecommerce_entityset
 
+import featuretools as ft
 from featuretools import variable_types
 from featuretools.entityset import EntitySet, Relationship
 from featuretools.tests import integration_data
@@ -312,56 +313,7 @@ def test_handles_datetime_mismatch():
                                         time_index='time', variable_types=vtypes)
 
 
-def test_calculates_statistics_on_init():
-    df = pd.DataFrame({'id': [0, 1, 2],
-                       'time': [datetime(2011, 4, 9, 10, 31, 3 * i)
-                                for i in range(3)],
-                       'category': ['a', 'b', 'a'],
-                       'number': [4, 5, 6],
-                       'boolean': [True, False, True],
-                       'boolean_with_nan': [True, False, np.nan]})
-    vtypes = {'id': variable_types.Categorical,
-              'time': variable_types.Datetime,
-              'category': variable_types.Categorical,
-              'number': variable_types.Numeric,
-              'boolean': variable_types.Boolean,
-              'boolean_with_nan': variable_types.Boolean}
-    entityset = EntitySet(id='test')
-    entityset.entity_from_dataframe('stats_test_entity', df, 'id',
-                                    variable_types=vtypes)
-    e = entityset["stats_test_entity"]
-    # numerics don't have nunique or percent_unique defined
-    for v in ['time', 'category', 'number']:
-        assert e[v].count == 3
-
-    for v in ['time', 'number']:
-        with pytest.raises(AttributeError):
-            e[v].nunique
-        with pytest.raises(AttributeError):
-            e[v].percent_unique
-
-    # 'id' column automatically parsed as id
-    assert e['id'].count == 3
-
-    # categoricals have nunique and percent_unique defined
-    assert e['category'].nunique == 2
-    assert e['category'].percent_unique == 2. / 3
-
-    # booleans have count and number of true/false labels defined
-    assert e['boolean'].count == 3
-    # assert e['boolean'].num_true == 3
-    assert e['boolean'].num_true == 2
-    assert e['boolean'].num_false == 1
-
-    # TODO: the below fails, but shouldn't
-    # boolean with nan have count and number of true/false labels defined
-    # assert e['boolean_with_nan'].count == 2
-
-    # assert e['boolean_with_nan'].num_true == 1
-    # assert e['boolean_with_nan'].num_false == 1
-
-
-def test_column_funcs(entityset):
+def test_entity_init(entityset):
     # Note: to convert the time column directly either the variable type
     # or convert_date_columns must be specifie
     df = pd.DataFrame({'id': [0, 1, 2],
@@ -378,12 +330,6 @@ def test_column_funcs(entityset):
     assert entityset['test_entity'].time_index == 'time'
     assert set([v.id for v in entityset['test_entity'].variables]) == set(df.columns)
 
-    assert entityset['test_entity']['number'].max == 6
-    assert entityset['test_entity']['number'].min == 4
-    assert entityset['test_entity']['number'].std == 1
-    assert entityset['test_entity']['number'].count == 3
-    assert entityset['test_entity']['number'].mean == 5
-    assert entityset['test_entity']['category'].nunique == 2
     assert entityset['test_entity'].df['time'].dtype == df['time'].dtype
     assert set(entityset['test_entity'].df['id']) == set(df['id'])
 
@@ -430,6 +376,8 @@ def test_concat_entitysets(entityset):
                                     make_index=True,
                                     variable_types=vtypes,
                                     dataframe=df)
+    entityset.add_last_time_indexes()
+
     assert entityset.__eq__(entityset)
     entityset_1 = copy.deepcopy(entityset)
     entityset_2 = copy.deepcopy(entityset)
@@ -441,11 +389,20 @@ def test_concat_entitysets(entityset):
         'test_entity': [[0, 1], [0, 2]],
     }
 
-    entityset.add_last_time_indexes()
+    assert entityset.__eq__(entityset_1, deep=True)
+    assert entityset.__eq__(entityset_2, deep=True)
+
     for i, es in enumerate([entityset_1, entityset_2]):
         for entity, rows in emap.items():
             df = es[entity].df
             es[entity].update_data(df=df.loc[rows[i]])
+
+    assert 10 not in entityset_1['log'].last_time_index.index
+    assert 10 in entityset_2['log'].last_time_index.index
+    assert 9 in entityset_1['log'].last_time_index.index
+    assert 9 not in entityset_2['log'].last_time_index.index
+    assert not entityset.__eq__(entityset_1, deep=True)
+    assert not entityset.__eq__(entityset_2, deep=True)
 
     # make sure internal indexes work before concat
     regions = entityset_1['customers'].query_by_values(['United States'], variable_id=u'région_id')
@@ -468,6 +425,30 @@ def test_concat_entitysets(entityset):
         for column in df:
             for x, y in zip(df[column], df_3[column]):
                 assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+        orig_lti = entityset[entity.id].last_time_index.sort_index()
+        new_lti = entityset_3[entity.id].last_time_index.sort_index()
+        for x, y in zip(orig_lti, new_lti):
+            assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+
+    entityset_1['stores'].last_time_index = None
+    entityset_1['test_entity'].last_time_index = None
+    entityset_2['test_entity'].last_time_index = None
+    entityset_4 = entityset_1.concat(entityset_2)
+    assert not entityset_4.__eq__(entityset, deep=True)
+    for entity in entityset.entities:
+        df = entityset[entity.id].df.sort_index()
+        df_4 = entityset_4[entity.id].df.sort_index()
+        for column in df:
+            for x, y in zip(df[column], df_4[column]):
+                assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+
+        if entity.id != 'test_entity':
+            orig_lti = entityset[entity.id].last_time_index.sort_index()
+            new_lti = entityset_4[entity.id].last_time_index.sort_index()
+            for x, y in zip(orig_lti, new_lti):
+                assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+        else:
+            assert entityset_4[entity.id].last_time_index is None
 
 
 def test_set_time_type_on_init():
@@ -832,12 +813,34 @@ def test_secondary_time_index(entityset):
             'second_ti': ['comments', 'second_ti']})
 
 
-def test_serialization(entityset):
+def test_to_pickle(entityset):
     dirname = os.path.dirname(integration_data.__file__)
     path = os.path.join(dirname, 'test_entityset.p')
     if os.path.exists(path):
         shutil.rmtree(path)
     entityset.to_pickle(path)
-    new_es = EntitySet.read_pickle(path)
+    new_es = ft.read_pickle(path)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
+
+
+def test_to_parquet(entityset):
+    dirname = os.path.dirname(integration_data.__file__)
+    path = os.path.join(dirname, 'test_entityset.p')
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    entityset.to_parquet(path)
+    new_es = ft.read_parquet(path)
+    entityset.__eq__(new_es, deep=True)
+    assert entityset.__eq__(new_es, deep=True)
+    shutil.rmtree(path)
+
+
+def test_sizeof(entityset):
+    total_size = 0
+    for entity in entityset.entities:
+        total_size += entity.df.__sizeof__()
+        total_size += entity.last_time_index.__sizeof__()
+        total_size += entity.indexed_by.__sizeof__()
+
+    assert entityset.__sizeof__() == total_size

@@ -41,7 +41,7 @@ class Entity(object):
     index = None
     indexed_by = None
 
-    def __init__(self, id, df, entityset, variable_types=None, name=None,
+    def __init__(self, id, df, entityset, variable_types=None,
                  index=None, time_index=None, secondary_time_index=None,
                  last_time_index=None, encoding=None, relationships=None,
                  already_sorted=False, created_index=None, verbose=False):
@@ -56,7 +56,6 @@ class Entity(object):
                 entity_id to variable_types dict with which to initialize an
                 entity's store.
                 An entity's variable_types dict maps string variable ids to types (:class:`.Variable`).
-            name (str): Name of entity.
             index (str): Name of id column in the dataframe.
             time_index (str): Name of time column in the dataframe.
             secondary_time_index (dict[str -> str]): Dictionary mapping columns
@@ -80,7 +79,6 @@ class Entity(object):
         self.created_index = created_index
         self.convert_all_variable_data(variable_types)
         self.id = id
-        self.name = name
         self.entityset = entityset
         self.indexed_by = {}
         variable_types = variable_types or {}
@@ -92,6 +90,7 @@ class Entity(object):
             if ti not in cols:
                 cols.append(ti)
 
+        relationships = relationships or []
         link_vars = [v.id for rel in relationships for v in [rel.parent_variable, rel.child_variable]
                      if v.entity.id == self.id]
 
@@ -120,6 +119,11 @@ class Entity(object):
         if self.index is not None and self.index not in inferred_variable_types:
             self.add_variable(self.index, vtypes.Index)
 
+        # make sure index is at the beginning
+        index_variable = [v for v in self.variables
+                          if v.id == self.index][0]
+        self.variables = [index_variable] + [v for v in self.variables
+                                             if v.id != self.index]
         self.update_data(df=self.df,
                          already_sorted=already_sorted,
                          recalculate_last_time_indexes=False,
@@ -188,6 +192,9 @@ class Entity(object):
 
         return True
 
+    def __sizeof__(self):
+        return sum([value.__sizeof__() for value in self.data.values()])
+
     @property
     def is_metadata(self):
         return self.entityset.is_metadata
@@ -248,36 +255,6 @@ class Entity(object):
     def variable_types(self):
         return {v.id: type(v) for v in self.variables}
 
-    def add_all_variable_statistics(self):
-        for var_id in self.variable_types.keys():
-            self.add_variable_statistics(var_id)
-
-    def add_variable_statistics(self, var_id):
-        vartype = self.variable_types[var_id]
-        stats = vartype._setter_stats
-        for stat in stats:
-            try:
-                value = getattr(self.df[var_id], stat)()
-                setattr(self._get_variable(var_id), stat, value)
-            except TypeError as e:
-                print(e)
-
-        stats = vartype._computed_stats
-        for stat in stats:
-            try:
-                setattr(self._get_variable(var_id), stat, value)
-            except TypeError as e:
-                print(e)
-
-    def _remove_variable_statistic(self, v, entityset, statistic):
-        try:
-            value = getattr(v, statistic)
-        except AttributeError:
-            pass
-        else:
-            if value is not None:
-                setattr(v, statistic, None)
-
     def convert_variable_type(self, variable_id, new_type,
                               convert_data=True,
                               **kwargs):
@@ -305,8 +282,6 @@ class Entity(object):
         variable = self._get_variable(variable_id)
         new_variable = new_type.create_from(variable)
         self.variables[self.variables.index(variable)] = new_variable
-
-        self.add_variable_statistics(new_variable.id)
 
     def convert_all_variable_data(self, variable_types):
         for var_id, desired_type in variable_types.items():
@@ -561,20 +536,28 @@ class Entity(object):
 
         return inferred_types
 
-    def update_data(self, df=None, data=None, already_sorted=False,
+    def update_data(self, df, already_sorted=False,
                     reindex=True, recalculate_last_time_indexes=True):
-        if data is not None:
-            self.data = data
-        elif df is not None:
-            self.df = df
+        '''Update entity's internal dataframe, optionaly making sure data is sorted,
+        reference indexes to other entities are consistent, and last_time_indexes
+        are consistent.
+        '''
+        if len(df.columns) != len(self.variables):
+            raise ValueError("Updated dataframe contains {} columns, expecting {}".format(len(df.columns),
+                                                                                          len(self.variables)))
+        for v in self.variables:
+            if v.id not in df.columns:
+                raise ValueError("Updated dataframe is missing new {} column".format(v.id))
+
+        # Make sure column ordering matches variable ordering
+        self.df = df[[v.id for v in self.variables]]
         self.set_index(self.index)
         self.set_time_index(self.time_index, already_sorted=already_sorted)
         self.set_secondary_time_index(self.secondary_time_index)
         if reindex:
             self.index_data()
-        if recalculate_last_time_indexes:
+        if recalculate_last_time_indexes and self.last_time_index is not None:
             self.entityset.add_last_time_indexes(updated_entities=[self.id])
-        self.add_all_variable_statistics()
 
     def add_interesting_values(self, max_values=5, verbose=False):
         """
@@ -653,7 +636,6 @@ class Entity(object):
 
         new_v = type(new_id, entity=self)
         self.variables.append(new_v)
-        self.add_variable_statistics(new_id)
 
     def delete_variable(self, variable_id):
         """
@@ -667,7 +649,12 @@ class Entity(object):
     def set_time_index(self, variable_id, already_sorted=False):
         if variable_id is not None:
             # check time type
-            time_type = _check_time_type(self.df[variable_id].iloc[0])
+            if self.df.empty:
+                time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
+            else:
+                time_to_check = self.df[variable_id].iloc[0]
+
+            time_type = _check_time_type(time_to_check)
             if time_type is None:
                 raise TypeError("%s time index not recognized as numeric or"
                                 " datetime" % (self.id))
@@ -684,7 +671,7 @@ class Entity(object):
                 # sort by time variable, then by index
                 self.df.sort_values([variable_id, self.index], inplace=True)
 
-            t = vtypes.TimeIndex
+            t = vtypes.NumericTimeIndex
             if col_is_datetime(self.df[variable_id]):
                 t = vtypes.DatetimeTimeIndex
             self.convert_variable_type(variable_id, t, convert_data=False)
@@ -714,7 +701,11 @@ class Entity(object):
     def set_secondary_time_index(self, secondary_time_index):
         if secondary_time_index is not None:
             for time_index in secondary_time_index:
-                time_type = _check_time_type(self.df[time_index].iloc[0])
+                if self.df.empty:
+                    time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[time_index]._default_pandas_dtype]
+                else:
+                    time_to_check = self.df[time_index].iloc[0]
+                time_type = _check_time_type(time_to_check)
                 if time_type is None:
                     raise TypeError("%s time index not recognized as numeric or"
                                     " datetime" % (self.id))

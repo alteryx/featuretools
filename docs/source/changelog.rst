@@ -2,6 +2,24 @@
 
 Changelog
 ---------
+**v0.2.1** July 2, 2018
+    * Cpu count fix (:pr:`176`)
+    * Update flight (:pr:`175`)
+    * Move feature matrix calculation helper functions to separate file (:pr:`177`)
+
+**v0.2.0** June 22, 2018
+    * Multiprocessing (:pr:`170`)
+    * Handle unicode encoding in repr throughout Featuretools (:pr:`161`)
+    * Clean up EntitySet class (:pr:`145`)
+    * Add support for building and uploading conda package (:pr:`167`)
+    * Parquet serialization (:pr:`152`)
+    * Remove variable stats (:pr:`171`)
+    * Make sure index variable comes first (:pr:`168`)
+    * No last time index update on normalize (:pr:`169`)
+    * Remove list of times as on option for `cutoff_time` in `calculate_feature_matrix` (:pr:`165`)
+    * Config does error checking to see if it can write to disk (:pr:`162`)
+
+
 **v0.1.21** May 30, 2018
     * Support Pandas 0.23.0 (:pr:`153`, :pr:`154`, :pr:`155`, :pr:`159`)
     * No EntitySet required in loading/saving features (:pr:`141`)
