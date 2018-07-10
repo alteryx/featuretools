@@ -95,6 +95,9 @@ def make_agg_primitive(function, input_types, return_type, name=None,
         name (str): Name of the function.  If no name is provided, the name
             of `function` will be used.
 
+        class_name (str): Name of the class to be created.  If no class_name is provided,
+            `name` will be used. This is typically the name but in upper camel case instead of snake case
+
         stack_on_self (bool): Whether this primitive can be in input_types of self.
 
         stack_on (list[PrimitiveBase]): Whitelist of primitives that
@@ -133,6 +136,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
 
             TimeSinceLast = make_agg_primitive(
                 function=time_since_last,
+                class_name=TimeSinceLast,
                 input_types=[DatetimeTimeIndex],
                 return_type=Numeric,
                 description="Time since last related instance",

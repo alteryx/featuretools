@@ -59,7 +59,7 @@ class TransformPrimitive(PrimitiveBase):
 
 
 def make_trans_primitive(function, input_types, return_type, name=None,
-                         description='A custom transform primitive',
+                         class_name=None, description='A custom transform primitive',
                          cls_attributes=None, uses_calc_time=False,
                          commutative=False):
     '''Returns a new transform primitive class
@@ -74,6 +74,9 @@ def make_trans_primitive(function, input_types, return_type, name=None,
 
         name (str): Name of the primitive. If no name is provided, the name
             of `function` will be used.
+
+        class_name (str): Name of the class to be created.  If no class_name is provided,
+            `name` will be used. This is typically the name but in upper camel case instead of snake case
 
         description (str): Description of primitive.
 
@@ -108,6 +111,7 @@ def make_trans_primitive(function, input_types, return_type, name=None,
                 input_types=[Variable],
                 return_type=Boolean,
                 name="is_in",
+                class_name="IsIn",
                 description="For each value of the base feature, checks "
                 "whether it is in a list that provided.",
                 cls_attributes={"generate_name": isin_generate_name})
@@ -119,7 +123,9 @@ def make_trans_primitive(function, input_types, return_type, name=None,
 
     # creates the new class and set name and types
     name = name or function.__name__
-    new_class = type(name, (TransformPrimitive,), cls)
+    if class_name is None:
+        class_name = name
+    new_class = type(class_name, (TransformPrimitive,), cls)
     new_class.name = name
     new_class.input_types = input_types
     new_class.return_type = return_type
@@ -411,7 +417,8 @@ TimeSince = make_trans_primitive(function=pd_time_since,
                                  return_type=Timedelta,
                                  uses_calc_time=True,
                                  description="Calculates time since the cutoff time.",
-                                 name="time_since")
+                                 name="time_since",
+                                 class_name="TimeSince")
 
 
 class DaysSince(TransformPrimitive):
