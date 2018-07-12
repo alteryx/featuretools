@@ -852,16 +852,22 @@ def test_create_client_and_cluster(entityset, monkeypatch):
                                                 num_tasks=3,
                                                 dask_kwargs={'cluster': 'tcp://127.0.0.1:54321'})
     assert cluster == 'tcp://127.0.0.1:54321'
+
+    try:
+        cpus = len(psutil.Process().cpu_affinity())
+    except AttributeError:
+        cpus = psutil.cpu_count()
+
     # jobs < tasks case
     client, cluster = create_client_and_cluster(n_jobs=2,
                                                 num_tasks=3,
                                                 dask_kwargs={})
-    assert cluster == (2, 1, None)
+    assert cluster == (min(cpus, 2), 1, None)
     # jobs > tasks case
     client, cluster = create_client_and_cluster(n_jobs=10,
                                                 num_tasks=3,
                                                 dask_kwargs={'diagnostics_port': 8789})
-    assert cluster == (3, 1, 8789)
+    assert cluster == (min(cpus, 3), 1, 8789)
 
 
 def test_parallel_failure_raises_correct_error(entityset):
