@@ -120,6 +120,10 @@ class DeepFeatureSynthesis(object):
         if ignore_entities is None:
             self.ignore_entities = set()
         else:
+
+            if not isinstance(ignore_entities, list):
+                raise TypeError('ignore_entities must be a list')
+
             assert target_entity_id not in ignore_entities,\
                 "Can't ignore target_entity!"
             self.ignore_entities = set(ignore_entities)
