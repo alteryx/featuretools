@@ -114,6 +114,13 @@ def test_only_makes_supplied_agg_feat(es):
 
 
 def test_ignores_entities(es):
+    with pytest.raises(TypeError):
+        DeepFeatureSynthesis(target_entity_id='sessions',
+                             entityset=es,
+                             agg_primitives=[Last],
+                             trans_primitives=[],
+                             ignore_entities='log')
+
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
                                    agg_primitives=[Last],
