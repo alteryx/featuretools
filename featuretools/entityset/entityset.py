@@ -800,6 +800,10 @@ class EntitySet(object):
         # variable_types = base_entity.variable_types
         additional_variables = additional_variables or []
         copy_variables = copy_variables or []
+
+        if not isinstance(additional_variables, list) and isinstance(copy_variables, list):
+            raise TypeError("Variables must be passed in as list")
+
         for v in additional_variables + copy_variables:
             if v == index:
                 raise ValueError("Not copying {} as both index and variable".format(v))
