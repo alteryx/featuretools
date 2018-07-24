@@ -802,11 +802,11 @@ class EntitySet(object):
         copy_variables = copy_variables or []
 
         if not isinstance(additional_variables, list):
-            raise TypeError("'additional_variables' must be a list, but received type {}"\
+            raise TypeError("'additional_variables' must be a list, but received type {}"
                             .format(type(additional_variables)))
 
         if not isinstance(copy_variables, list):
-            raise TypeError("'copy_variables' must be a list, but received type {}"\
+            raise TypeError("'copy_variables' must be a list, but received type {}"
                             .format(type(copy_variables)))
 
         for v in additional_variables + copy_variables:
