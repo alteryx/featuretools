@@ -801,8 +801,13 @@ class EntitySet(object):
         additional_variables = additional_variables or []
         copy_variables = copy_variables or []
 
-        if not (isinstance(additional_variables, list) and isinstance(copy_variables, list)):
-            raise TypeError("Variables must be passed in as list")
+        if not isinstance(additional_variables, list):
+            raise TypeError("'additional_variables' must be a list, but received type {}"\
+                            .format(type(additional_variables)))
+
+        if not isinstance(copy_variables, list):
+            raise TypeError("'copy_variables' must be a list, but received type {}"\
+                            .format(type(copy_variables)))
 
         for v in additional_variables + copy_variables:
             if v == index:
