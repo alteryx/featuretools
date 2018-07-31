@@ -90,6 +90,8 @@ The training window in DFS limits the amount of past data that can be used while
 .. ipython:: python
 
     es_customer = ft.demo.load_mock_customer(return_entityset=True)
+    cutoff_times = pd.DataFrame({"customer_id": [1, 2, 3, 4, 5],
+                                 "time": pd.date_range('2014-01-01 01:41:50', periods=5, freq='25min')})
     window_fm, window_features = ft.dfs(entityset=es_customer,
                                         target_entity="customers",
                                         cutoff_time=cutoff_times,
