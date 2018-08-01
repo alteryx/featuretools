@@ -140,7 +140,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         map_args = [(id, time) for id, time in zip(instance_ids, cutoff_time)]
         cutoff_time = pd.DataFrame(map_args, columns=['instance_id', 'time'])
     else:
-        cutoff_time = cutoff_time.copy()
+        cutoff_time = cutoff_time.reset_index(drop=True)
 
         # handle how columns are names in cutoff_time
         if "instance_id" not in cutoff_time.columns:
