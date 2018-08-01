@@ -731,6 +731,14 @@ def test_add_link_vars(entityset):
 
 
 def test_normalize_entity(entityset):
+    with pytest.raises(TypeError):
+        entityset.normalize_entity('sessions', 'device_types', 'device_type',
+                                   additional_variables='log')
+
+    with pytest.raises(TypeError):
+        entityset.normalize_entity('sessions', 'device_types', 'device_type',
+                                   copy_variables='log')
+
     entityset.normalize_entity('sessions', 'device_types', 'device_type',
                                additional_variables=['device_name'],
                                make_time_index=False)
