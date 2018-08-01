@@ -824,7 +824,7 @@ class EntitySet(object):
             transfer_types[v] = type(base_entity[v])
 
         # create and add new entity
-        new_entity_df = self[base_entity_id].df
+        new_entity_df = self[base_entity_id].df.copy()
 
         if make_time_index is None and base_entity.time_index is not None:
             make_time_index = True
@@ -1268,31 +1268,14 @@ class EntitySet(object):
         current_relationships = [r for r in self.relationships
                                  if r.parent_entity.id == entity_id or
                                  r.child_entity.id == entity_id]
-        # "category" dtype generates a lot of errors because pandas treats it
-        # differently in merges. In particular, if there are no matching
-        # instances on a dataframe to join, the new joined dataframe turns out
-        # to be empty if the column we're joining on is a category
-        # When its any other dtype, we get the same number of rows as the
-        # original dataframe but filled in with nans
 
-        df = dataframe
-        for c in df.columns:
-            if df[c].dtype.name.find('category') > -1:
-                try:
-                    df[c] = df[c].astype(int)
-                except ValueError:
-                    df[c] = df[c].astype(object)
+        for c in dataframe.columns:
+            if dataframe[c].dtype.name.find('category') > -1:
                 if c not in variable_types:
                     variable_types[c] = vtypes.Categorical
-        if df.index.dtype.name.find('category') > -1:
-            try:
-                df[c] = df[c].astype(int)
-            except ValueError:
-                df[c] = df[c].astype(object)
-            df.index = df.index.astype(object)
 
         entity = Entity(entity_id,
-                        df,
+                        dataframe,
                         self,
                         variable_types=variable_types,
                         index=index,

@@ -188,7 +188,7 @@ def pd_rolling_outer(rolling_func, f):
                         }
             if rolling_func in ["count", "sum", "max", "min"]:
                 cumfunc = cumfuncs[rolling_func]
-                grouped = df.groupby(groupby, sort=False)[bf_name]
+                grouped = df.groupby(groupby, sort=False, observed=True)[bf_name]
                 applied = getattr(grouped, cumfunc)()
                 # TODO: to produce same functionality as the rolling cases already
                 # implemented, we add 1
@@ -254,7 +254,7 @@ def pd_rolling_outer(rolling_func, f):
         new_index_name = str(uuid.uuid1())
         new_index = pd.RangeIndex(len(df), name=new_index_name)
         df.set_index(new_index, append=True, inplace=True)
-        grouped = df.groupby(groupby).apply(apply_rolling)
+        grouped = df.groupby(groupby, observed=True).apply(apply_rolling)
         original_index = pd.Series(np.nan, index=df.index)
         if isinstance(grouped, pd.DataFrame):
             if grouped.shape[0] == 0 or grouped.empty:
