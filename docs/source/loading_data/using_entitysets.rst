@@ -7,24 +7,16 @@ Representing Data with EntitySets
 An ``EntitySet`` is a collection of entities and the relationships between them. They are useful for preparing raw, structured datasets for feature engineering. While many functions in Featuretools  take ``entities`` and ``relationships`` as separate arguments, it is recommended to create an ``EntitySet``, so you can more easily manipulate your data as needed.
 
 
-.. ipython:: python
-    :suppress:
-
-    import featuretools as ft
-    import pandas as pd
-
-    data = ft.demo.load_mock_customer()
-    products_df = data["products"]
-    transactions_df = data["transactions"].merge(data["sessions"]).merge(data["customers"])
-    transactions_df.drop("session_start", axis=1, inplace=True)
-    transactions_df.drop("join_date", axis=1, inplace=True)
-
 The Raw Data
 ~~~~~~~~~~~~
 
-Below we have a two tables of data (represented as Pandas DataFrames) related to customer transactions. The first is a list of all transactions
+Below we have a two tables of data (represented as Pandas DataFrames) related to customer transactions. The first is a merge of transactions, sessions, and customers in the same way you might see it in a log file:
 
 .. ipython:: python
+
+    import featuretools as ft
+    data = ft.demo.load_mock_customer()
+    transactions_df = data["transactions"].merge(data["sessions"]).merge(data["customers"])
 
     transactions_df.sample(10)
 
@@ -32,6 +24,7 @@ And the second dataframe is a list of products involved in those transactions.
 
 .. ipython:: python
 
+    products_df = data["products"]
     products_df
 
 
