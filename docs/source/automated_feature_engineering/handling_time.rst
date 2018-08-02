@@ -112,6 +112,30 @@ For example, a customer’s session has multiple transactions which can happen a
 Featuretools can automatically add last time indexes to every :class:`Entity` in an :class:`Entityset` by running ``EntitySet.add_last_time_indexes()``. If a ``last_time_index`` has been set, Featuretools will check to see if the ``last_time_index`` is after the start of the training window. That, combined with the cutoff time, allows DFS to discover which data is relevant for a given training window.
 
 
+.. _approximate:
+
+Approximating features by rounding cutoff time
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If there are a large number of unique cutoff times relative to the number of instances for which we are calculating features, this overhead can outweigh the time needed to calculate the features. Therefore, by reducing the number of unique cutoff times, we minimize the overhead from searching for and extracting data for feature calculations.
+
+One way to decrease the number of unique cutoff times is to round cutoff times to an nearby earlier point in time. An earlier cutoff time is always valid for predictive modeling — it just means we’re not using some of the data we could potentially use while calculating that feature. In that way, we gain computational speed by losing some information.
+
+To understand when approximation is useful, consider calculating features for a model to predict fraudulent credit card transactions. In this case, an important feature might be, "the average transaction amount for this card in the past". While this value can change every time there is a new transaction, updating it less frequently might not impact accuracy.
+
+.. note::
+
+    The bank BBVA used approximation when building a predictive model for credit card fraud using Featuretools. For more details, see the "Real-time deployment considerations" section of the `white paper <https://arxiv.org/pdf/1710.07709.pdf>`_ describing the work.
+
+The frequency of approximation is controlled using the ``approximate`` parameter to ``dfs`` or ``calculate_feature_matrix``. For example, the following code would approximate aggregation features at 1 day intervals::
+
+    fm = ft.calculate_feature_matrix(entityset=entityset
+                                     features=feature_list,
+                                     cutoff_time=cutoff_times,
+                                     approximate="1 day")
+
+In this computation, features that can be approximated will be calculated at 1 day intervals, while features that cannot be approximated (e.g "is the current transaction > $50") will be calculated at the exact cutoff time.
+
 Flattening a Feature Tensor with make_temporal_cutoffs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
