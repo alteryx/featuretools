@@ -843,6 +843,18 @@ def test_to_parquet(entityset):
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
 
+def test_to_parquet_with_lti():
+    entityset = ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
+    dirname = os.path.dirname(integration_data.__file__)
+    path = os.path.join(dirname, 'test_entityset.p')
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    entityset.to_parquet(path)
+    new_es = ft.read_parquet(path)
+    entityset.__eq__(new_es, deep=True)
+    assert entityset.__eq__(new_es, deep=True)
+    shutil.rmtree(path)
+
 
 def test_sizeof(entityset):
     total_size = 0

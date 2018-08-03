@@ -38,8 +38,7 @@ def read_entityset(path, load_data=True):
 
 
 def load_entity_data(metadata, root):
-    '''Load an entity's data from disk.
-    '''
+    '''Load an entity's data from disk.'''
     if metadata['data_files']['filetype'] == 'pickle':
         data = pd_read_pickle(os.path.join(root, metadata['data_files']['data_filename']))
         df = data['df']
@@ -167,10 +166,10 @@ def _write_parquet_entity_data(root, entity, metadata,
     df.to_parquet(df_filename, engine=engine, compression=compression)
 
     entity_size += os.stat(df_filename).st_size
-    if entity.last_time_index:
+    if entity.last_time_index is not None:
         rel_lti_filename = os.path.join(entity.id, 'lti.parq')
         lti_filename = os.path.join(root, rel_lti_filename)
-        entity.last_time_index.to_parquet(lti_filename,
+        entity.last_time_index.to_frame().to_parquet(lti_filename,
                                           engine=engine,
                                           compression=compression)
         entity_size += os.stat(lti_filename).st_size
