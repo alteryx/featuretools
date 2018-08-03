@@ -839,7 +839,6 @@ def test_to_parquet(entityset):
         shutil.rmtree(path)
     entityset.to_parquet(path)
     new_es = ft.read_parquet(path)
-    entityset.__eq__(new_es, deep=True)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
 
@@ -851,7 +850,6 @@ def test_to_parquet_with_lti():
         shutil.rmtree(path)
     entityset.to_parquet(path)
     new_es = ft.read_parquet(path)
-    entityset.__eq__(new_es, deep=True)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
 
