@@ -176,6 +176,7 @@ def test_saveprogress(entityset):
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
     property_feature = IdentityFeature(entityset['log']['value']) > 10
     save_progress = tempfile.mkdtemp()
+    property_feature.default_value
     fm_save = calculate_feature_matrix([property_feature],
                                        entityset,
                                        cutoff_time=cutoff_time,

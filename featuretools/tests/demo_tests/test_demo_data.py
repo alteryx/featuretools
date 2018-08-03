@@ -8,7 +8,7 @@ from featuretools.synthesis import dfs
 
 def test_load_retail_save():
     nrows = 10
-    load_retail(nrows=nrows)
+    load_retail(nrows=nrows, return_single_table=True)
     assert os.path.isfile(make_retail_pathname(nrows))
     assert os.path.getsize(make_retail_pathname(nrows)) < 45580670
     os.remove(make_retail_pathname(nrows))

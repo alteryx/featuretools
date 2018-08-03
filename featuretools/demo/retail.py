@@ -12,11 +12,6 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False, us
     '''
     Returns the retail entityset example which is a modified version of
     the data found `here <https://archive.ics.uci.edu/ml/datasets/online+retail>`_.
-    In version 2 of our CSV, we have
-
-    1. updated the column names,
-    2. dropped null and duplicate rows and,
-    3. added descriptive columns like a boolean "cancelled" and a numeric "total" which is ``quantity`` times ``unit_price``.
 
     Args:
         id (str):  Id to assign to EntitySet.
@@ -64,7 +59,7 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False, us
     demo_save_path = make_retail_pathname(nrows)
 
     es = ft.EntitySet(id)
-    csv_s3 = "https://s3.amazonaws.com/featuretools-static/online-retail-logs-v2.csv"
+    csv_s3 = "https://s3.amazonaws.com/featuretools-static/online-retail-logs-2018-08-03.csv"
 
     if not use_cache or not os.path.isfile(demo_save_path):
 
