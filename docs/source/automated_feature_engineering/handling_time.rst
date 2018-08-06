@@ -108,6 +108,19 @@ We can see that that the counts for the same feature are lower when we shorten t
     window_fm[["COUNT(transactions)"]]
 
 
+Setting a Last Time Index
+-------------------------
+The training window in DFS limits the amount of past data that can be used while calculating a particular feature vector. A row in the entityset is filtered out if the value of its time index is either before or after the training window. This works for entities where an instance occurs at a single point in time. However, sometimes an instance can happen at many points in time.
+
+For example, a customer’s session has multiple transactions which can happen at different points in time. If we are trying to count the number of sessions a user had in a given time period, we often want to count all sessions that had *any* transaction during the training window. To accomplish this, we need to not only know when a session starts, but when it ends. The last time that an instance appears in the data is stored as the ``last_time_index`` of an :class:`Entity`. We can compare the time index and the last time index of the ``sessions`` entity above:
+
+.. ipython:: python
+
+    es['sessions'].df['session_start'].head()
+    es['sessions'].last_time_index.head()
+
+Featuretools can automatically add last time indexes to every :class:`Entity` in an :class:`Entityset` by running ``EntitySet.add_last_time_indexes()``. If a ``last_time_index`` has been set, Featuretools will check to see if the ``last_time_index`` is after the start of the training window. That, combined with the cutoff time, allows DFS to discover which data is relevant for a given training window.
+
 .. Using Timedeltas
 .. ----------------
 .. To represent timespans, we can use the :class:`.Timedelta` class. Timedelta provides a simple human readable format to define lengths of time in absolute and relative units. For example we can define a timespan 7 days, or of three log events:

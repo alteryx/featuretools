@@ -166,6 +166,23 @@ def test_cfm_no_cutoff_time_index(entityset):
     assert feature_matrix_2[agg_feat.get_name()].tolist() == [5, 1]
 
 
+def test_cfm_duplicated_index_in_cutoff_time(entityset):
+    times = [pd.datetime(2011, 4, 1), pd.datetime(2011, 5, 1),
+             pd.datetime(2011, 4, 1), pd.datetime(2011, 5, 1)]
+
+    instances = [1, 1, 2, 2]
+    property_feature = IdentityFeature(entityset['log']['value']) > 10
+    cutoff_time = pd.DataFrame({'id': instances, 'time': times},
+                               index=[1, 1, 1, 1])
+
+    feature_matrix = calculate_feature_matrix([property_feature],
+                                              entityset,
+                                              cutoff_time=cutoff_time,
+                                              chunk_size=1)
+
+    assert (feature_matrix.shape[0] == cutoff_time.shape[0])
+
+
 def test_saveprogress(entityset):
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
                  [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
