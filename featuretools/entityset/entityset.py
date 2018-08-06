@@ -747,7 +747,7 @@ class EntitySet(object):
                          new_entity_time_index=None,
                          new_entity_secondary_time_index=None,
                          time_index_reduce='first'):
-        """Utility to normalize an entity_store
+        """Create a new entity and relationship from unique values of an existing variable.
 
         Args:
             base_entity_id (str) : Entity id from which to split.
