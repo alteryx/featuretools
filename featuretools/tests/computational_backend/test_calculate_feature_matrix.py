@@ -855,19 +855,21 @@ def test_dask_persisted_entityset(entityset, capsys):
         assert (feature_matrix == labels).values.all()
 
 
-def test_create_client_and_cluster(entityset, monkeypatch):
+def test_create_client_and_cluster(entityset, monkeypatch, capsys):
     def test_cluster(n_workers=1,
                      threads_per_worker=1,
                      diagnostics_port=8787,
                      **dask_kwarg):
         return (n_workers, threads_per_worker, diagnostics_port)
+
     monkeypatch.setitem(create_client_and_cluster.__globals__, 'LocalCluster', test_cluster)
     monkeypatch.setitem(create_client_and_cluster.__globals__, 'Client', lambda x: x)
 
     # cluster in dask_kwargs case
     client, cluster = create_client_and_cluster(n_jobs=2,
                                                 num_tasks=3,
-                                                dask_kwargs={'cluster': 'tcp://127.0.0.1:54321'})
+                                                dask_kwargs={'cluster': 'tcp://127.0.0.1:54321'},
+                                                entityset_size=1)
     assert cluster == 'tcp://127.0.0.1:54321'
 
     try:
@@ -878,13 +880,31 @@ def test_create_client_and_cluster(entityset, monkeypatch):
     # jobs < tasks case
     client, cluster = create_client_and_cluster(n_jobs=2,
                                                 num_tasks=3,
-                                                dask_kwargs={})
+                                                dask_kwargs={},
+                                                entityset_size=1)
     assert cluster == (min(cpus, 2), 1, None)
     # jobs > tasks case
     client, cluster = create_client_and_cluster(n_jobs=10,
                                                 num_tasks=3,
-                                                dask_kwargs={'diagnostics_port': 8789})
+                                                dask_kwargs={'diagnostics_port': 8789},
+                                                entityset_size=1)
     assert cluster == (min(cpus, 3), 1, 8789)
+
+    total_memory = psutil.virtual_memory().total
+    # errors if not enough memory for each worker to store the entityset
+    with pytest.raises(ValueError):
+        create_client_and_cluster(n_jobs=5,
+                                  num_tasks=5,
+                                  dask_kwargs={},
+                                  entityset_size=total_memory * 2)
+
+    # does not error even if worker memory is less than 2x entityset size
+    create_client_and_cluster(n_jobs=1,
+                              num_tasks=5,
+                              dask_kwargs={},
+                              entityset_size=total_memory * .75)
+
+    # assert "Worker memory is between 1 to 2 times the memory" in captured
 
 
 def test_parallel_failure_raises_correct_error(entityset):
