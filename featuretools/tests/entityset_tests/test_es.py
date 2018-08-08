@@ -751,6 +751,12 @@ def test_normalize_entity(entityset):
     assert 'device_type' in entityset['device_types'].df.columns
 
 
+def test_normalize_time_index_from_none(entityset):
+    entityset['customers'].time_index = None
+    entityset.normalize_entity('customers', 'birthdays', 'date_of_birth', make_time_index='date_of_birth')
+    assert entityset['birthdays'].time_index == 'date_of_birth'
+
+
 def test_normalize_entity_copies_variable_types(entityset):
     entityset['log'].convert_variable_type(
         'value', variable_types.Ordinal, convert_data=False)
