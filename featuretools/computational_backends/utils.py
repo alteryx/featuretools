@@ -247,7 +247,7 @@ def create_client_and_cluster(n_jobs, num_tasks, dask_kwargs, entityset_size):
     client = Client(cluster)
 
     # TODO: check every worker?
-    memory_limit = cluster.workers
+    memory_limit = list(client.scheduler_info()['workers'].values())[0]['memory']
     if memory_limit < entityset_size:
         raise ValueError("Insufficient memory to use this many workers")
     elif memory_limit < 2 * entityset_size:

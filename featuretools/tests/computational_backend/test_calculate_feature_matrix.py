@@ -862,8 +862,17 @@ def test_create_client_and_cluster(entityset, monkeypatch, capsys):
                      **dask_kwarg):
         return (n_workers, threads_per_worker, diagnostics_port)
 
+    total_memory = psutil.virtual_memory().total
+
+    class TestClient():
+        def __init__(self, cluster):
+            self.cluster = cluster
+
+        def scheduler_info(self):
+            return {'workers': {'worker 1': {'memory': total_memory}}}
+
     monkeypatch.setitem(create_client_and_cluster.__globals__, 'LocalCluster', test_cluster)
-    monkeypatch.setitem(create_client_and_cluster.__globals__, 'Client', lambda x: x)
+    monkeypatch.setitem(create_client_and_cluster.__globals__, 'Client', TestClient)
 
     # cluster in dask_kwargs case
     client, cluster = create_client_and_cluster(n_jobs=2,
@@ -890,10 +899,9 @@ def test_create_client_and_cluster(entityset, monkeypatch, capsys):
                                                 entityset_size=1)
     assert cluster == (min(cpus, 3), 1, 8789)
 
-    total_memory = psutil.virtual_memory().total
     # errors if not enough memory for each worker to store the entityset
     with pytest.raises(ValueError):
-        create_client_and_cluster(n_jobs=5,
+        create_client_and_cluster(n_jobs=1,
                                   num_tasks=5,
                                   dask_kwargs={},
                                   entityset_size=total_memory * 2)
