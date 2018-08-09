@@ -7,9 +7,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import skew
 
-from .aggregation_primitive_base import (
-    AggregationPrimitive,
-)
+from .aggregation_primitive_base import AggregationPrimitive
 
 from featuretools.variable_types import (
     Boolean,
