@@ -233,12 +233,12 @@ def convert(name):
 
 def make_flight_pathname(demo=True):
     if demo:
-        filename = 'flight_dataset_sample.csv.zip'
-        key = 'bots_flight_data_2017/data_2017_jan_feb.csv.zip'
+        filename = 'data_2017_jan_feb.csv.zip'
+        key = 'bots_flight_data_2017/' + filename
         rows = 860457
     else:
-        filename = 'flight_dataset_full.csv.zip'
-        key = 'bots_flight_data_2017/data_all_2017.csv.zip'
+        filename = 'data_all_2017.csv.zip'
+        key = 'bots_flight_data_2017/' + filename
         rows = 5162742
     filepath = os.path.join(ft_config['csv_save_location'], filename)
 
