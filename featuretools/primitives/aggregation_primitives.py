@@ -9,7 +9,6 @@ from scipy.stats import skew
 
 from .aggregation_primitive_base import (
     AggregationPrimitive,
-    make_agg_primitive
 )
 
 from featuretools.variable_types import (
@@ -107,7 +106,7 @@ class Mode(AggregationPrimitive):
 class Min(AggregationPrimitive):
     """Finds the minimum non-null value of a numeric feature."""
     name = "min"
-    input_types =  [Numeric]
+    input_types = [Numeric]
     return_type = None
     # max_stack_depth = 1
     stack_on_self = False
