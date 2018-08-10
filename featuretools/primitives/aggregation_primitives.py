@@ -7,7 +7,10 @@ import numpy as np
 import pandas as pd
 from scipy.stats import skew
 
-from .aggregation_primitive_base import AggregationPrimitive
+from .aggregation_primitive_base import (
+    AggregationPrimitive,
+    make_agg_primitive
+)
 
 from featuretools.variable_types import (
     Boolean,
@@ -92,25 +95,15 @@ class Mode(AggregationPrimitive):
         return pd_mode
 
 
-# Min = make_agg_primitive(
-#     np.min,
-#     [Numeric],
-#     None,
-#     name="min",
-#     stack_on_self=False,
-#     description="Finds the minimum non-null value of a numeric feature.")
+Min = make_agg_primitive(
+    np.min,
+    [Numeric],
+    None,
+    name="min",
+    stack_on_self=False,
+    description="Finds the minimum non-null value of a numeric feature.")
 
-
-class Min(AggregationPrimitive):
-    """Finds the minimum non-null value of a numeric feature."""
-    name = "min"
-    input_types = [Numeric]
-    return_type = None
-    # max_stack_depth = 1
-    stack_on_self = False
-
-    def get_function(self):
-        return np.min
+Min.__name__ = 'Min'
 
 
 class Max(AggregationPrimitive):
