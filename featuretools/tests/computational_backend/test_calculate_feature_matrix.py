@@ -912,8 +912,6 @@ def test_create_client_and_cluster(entityset, monkeypatch, capsys):
                               dask_kwargs={},
                               entityset_size=total_memory * .75)
 
-    # assert "Worker memory is between 1 to 2 times the memory" in captured
-
 
 def test_parallel_failure_raises_correct_error(entityset):
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
