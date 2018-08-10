@@ -13,7 +13,6 @@ from pandas.tseries.frequencies import to_offset
 from featuretools.primitives import AggregationPrimitive, DirectFeature
 from featuretools.utils.wrangle import _check_timedelta
 
-
 logger = logging.getLogger('featuretools.computational_backend')
 
 
