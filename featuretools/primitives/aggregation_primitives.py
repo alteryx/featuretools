@@ -103,17 +103,7 @@ Min = make_agg_primitive(
     stack_on_self=False,
     description="Finds the minimum non-null value of a numeric feature.")
 
-
-# class Min(AggregationPrimitive):
-#     """Finds the minimum non-null value of a numeric feature."""
-#     name = "min"
-#     input_types =  [Numeric]
-#     return_type = None
-#     # max_stack_depth = 1
-#     stack_on_self = False
-
-#     def get_function(self):
-#         return np.min
+Min.__name__ = 'Min'
 
 
 class Max(AggregationPrimitive):

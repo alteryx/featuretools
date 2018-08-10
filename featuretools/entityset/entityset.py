@@ -746,9 +746,8 @@ class EntitySet(object):
                          make_secondary_time_index=None,
                          new_entity_time_index=None,
                          new_entity_secondary_time_index=None,
-                         time_index_reduce='first',
-                         variable_types=None):
-        """Utility to normalize an entity_store
+                         time_index_reduce='first'):
+        """Create a new entity and relationship from unique values of an existing variable.
 
         Args:
             base_entity_id (str) : Entity id from which to split.
@@ -792,12 +791,8 @@ class EntitySet(object):
                 If creating a secondary time index, then the primary time index always reduces
                 using 'first', and secondary using 'last'.
 
-            variable_types (dict[str -> Variable]): A dictionary of variable types for the new entity.
-                Keys are variable ids and values are variable types.
-
         """
         base_entity = self.entity_dict[base_entity_id]
-        # variable_types = base_entity.variable_types
         additional_variables = additional_variables or []
         copy_variables = copy_variables or []
 
