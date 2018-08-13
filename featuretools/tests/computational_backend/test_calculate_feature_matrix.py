@@ -302,9 +302,20 @@ def test_training_window_recent_time_index(entityset):
         'date_of_birth': [datetime(1938, 2, 1)],
         'engagement_level': [2],
     }
-    df = pd.DataFrame(row)
-    df.index = range(3, 4)
-    df = entityset['customers'].df.append(df, sort=False)
+    to_add_df = pd.DataFrame(row)
+    to_add_df.index = range(3, 4)
+
+    # have to convert category to int in order to concat
+    old_df = entityset['customers'].df
+    old_df.index = old_df.index.astype("int")
+    old_df["id"] = old_df["id"].astype(int)
+
+    df = pd.concat([old_df, to_add_df])
+
+    # convert back after
+    df.index = df.index.astype("category")
+    df["id"] = df["id"].astype("category")
+
     entityset['customers'].update_data(df=df,
                                        recalculate_last_time_indexes=False)
     entityset.add_last_time_indexes()
@@ -479,7 +490,7 @@ def test_empty_path_approximate_full(entityset):
 
 def test_empty_path_approximate_partial(entityset):
     es = copy.deepcopy(entityset)
-    es['sessions'].df['customer_id'] = [0, 0, np.nan, 1, 1, 2]
+    es['sessions'].df['customer_id'] = pd.Categorical([0, 0, np.nan, 1, 1, 2])
     agg_feat = Count(es['log']['id'], es['sessions'])
     agg_feat2 = Sum(agg_feat, es['customers'])
     dfeat = DirectFeature(agg_feat2, es['sessions'])

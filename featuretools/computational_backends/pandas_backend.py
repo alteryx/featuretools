@@ -413,7 +413,7 @@ class PandasBackend(ComputationalBackend):
                 def last_n(df):
                     return df.iloc[-n:]
 
-                base_frame = base_frame.groupby(groupby_var).apply(last_n)
+                base_frame = base_frame.groupby(groupby_var, observed=True, sort=False).apply(last_n)
 
         if not base_frame.empty:
             if groupby_var not in base_frame:
@@ -484,7 +484,7 @@ class PandasBackend(ComputationalBackend):
             # to silence pandas warning about ambiguity we explicitly pass
             # the column (in actuality grouping by both index and group would
             # work)
-            to_merge = base_frame.groupby(base_frame[groupby_var]).apply(wrap)
+            to_merge = base_frame.groupby(base_frame[groupby_var], observed=True, sort=False).apply(wrap)
 
             to_merge.reset_index(1, drop=True, inplace=True)
             frame = pd.merge(left=frame, right=to_merge,
@@ -500,8 +500,7 @@ class PandasBackend(ComputationalBackend):
             # to silence pandas warning about ambiguity we explicitly pass
             # the column (in actuality grouping by both index and group would
             # work)
-
-            to_merge = base_frame.groupby(base_frame[groupby_var]).agg(to_agg)
+            to_merge = base_frame.groupby(base_frame[groupby_var], observed=True, sort=False).agg(to_agg)
             # we apply multiple functions to each column, creating
             # a multiindex as the column
             # rename the columns to a concatenation of the two indexes
@@ -511,8 +510,7 @@ class PandasBackend(ComputationalBackend):
             to_merge = to_merge.rename(columns=agg_rename)
             variables = list(agg_rename.values())
             to_merge = to_merge[variables]
-            frame = pd.merge(left=frame, right=to_merge,
-                             left_on=frame[index_var], right_index=True, how='left')
+            frame = pd.merge(left=frame, right=to_merge, left_index=True, right_index=True, how='left')
 
         # Handle default values
         # 1. handle non scalar default values

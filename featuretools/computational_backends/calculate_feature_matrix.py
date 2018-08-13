@@ -169,6 +169,12 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     backend = PandasBackend(entityset, features)
 
+    # make sure dtype of instance_id in cutoff time
+    # is same as column it references
+    target_entity = features[0].entity
+    dtype = entityset[target_entity.id].df[target_entity.index].dtype
+    cutoff_time["instance_id"] = cutoff_time["instance_id"].astype(dtype)
+
     # Get dictionary of features to approximate
     if approximate is not None:
         to_approximate, all_approx_feature_set = gather_approximate_features(features, backend)
