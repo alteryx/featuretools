@@ -1,3 +1,4 @@
+import logging
 import os
 import warnings
 from collections import defaultdict
@@ -11,6 +12,8 @@ from pandas.tseries.frequencies import to_offset
 
 from featuretools.primitives import AggregationPrimitive, DirectFeature
 from featuretools.utils.wrangle import _check_timedelta
+
+logger = logging.getLogger('featuretools.computational_backend')
 
 
 def bin_cutoff_times(cuttoff_time, bin_size):
@@ -197,11 +200,13 @@ def n_jobs_to_workers(n_jobs):
     return workers
 
 
-def create_client_and_cluster(n_jobs, num_tasks, dask_kwargs):
+def create_client_and_cluster(n_jobs, num_tasks, dask_kwargs, entityset_size):
     cluster = None
     if 'cluster' in dask_kwargs:
         cluster = dask_kwargs['cluster']
     else:
+        # diagnostics_port sets the default port to launch bokeh web interface
+        # if it is set to None web interface will not be launched
         diagnostics_port = None
         if 'diagnostics_port' in dask_kwargs:
             diagnostics_port = dask_kwargs['diagnostics_port']
@@ -209,10 +214,27 @@ def create_client_and_cluster(n_jobs, num_tasks, dask_kwargs):
 
         workers = n_jobs_to_workers(n_jobs)
         workers = min(workers, num_tasks)
+
+        # Distributed default memory_limit for worker is 'auto'. It calculates worker
+        # memory limit as total virtual memory divided by the number
+        # of cores available to the workers (alwasy 1 for featuretools setup).
+        # This means reducing the number of workers does not increase the memory
+        # limit for other workers.  Featuretools default is to calculate memory limit
+        # as total virtual memory divided by number of workers. To use distributed
+        # default memory limit, set dask_kwargs['memory_limit']='auto'
+        if 'memory_limit' in dask_kwargs:
+            memory_limit = dask_kwargs['memory_limit']
+            del dask_kwargs['memory_limit']
+        else:
+            total_memory = psutil.virtual_memory().total
+            memory_limit = int(total_memory / float(workers))
+
         cluster = LocalCluster(n_workers=workers,
                                threads_per_worker=1,
                                diagnostics_port=diagnostics_port,
+                               memory_limit=memory_limit,
                                **dask_kwargs)
+
         # if cluster has bokeh port, notify user if unxepected port number
         if diagnostics_port is not None:
             if hasattr(cluster, 'scheduler') and cluster.scheduler:
@@ -222,4 +244,18 @@ def create_client_and_cluster(n_jobs, num_tasks, dask_kwargs):
                     print(msg.format(info['services']['bokeh']))
 
     client = Client(cluster)
+
+    warned_of_memory = False
+    for worker in list(client.scheduler_info()['workers'].values()):
+        worker_limit = worker['memory']
+        if worker_limit < entityset_size:
+            raise ValueError("Insufficient memory to use this many workers")
+        elif worker_limit < 2 * entityset_size and not warned_of_memory:
+            logger.warn("Worker memory is between 1 to 2 times the memory"
+                        " size of the EntitySet. If errors occur that do"
+                        " not occur with n_jobs equals 1, this may be the "
+                        "cause.  See https://docs.featuretools.com/guides/parallel.html"
+                        " for more information.")
+            warned_of_memory = True
+
     return client, cluster

@@ -533,7 +533,8 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
     try:
         client, cluster = create_client_and_cluster(n_jobs=n_jobs,
                                                     num_tasks=len(chunks),
-                                                    dask_kwargs=dask_kwargs)
+                                                    dask_kwargs=dask_kwargs,
+                                                    entityset_size=entityset.__sizeof__())
         # scatter the entityset
         # denote future with leading underscore
         start = time.time()
