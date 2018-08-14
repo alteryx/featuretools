@@ -188,7 +188,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
             self.kwargs = copy.deepcopy(self.default_kwargs)
             self.kwargs.update(kwargs)
             self.partial = functools.partial(function, **self.kwargs)
-            self.partial.__name__ = function.__name__
+            self.partial.__name__ = name
             super(AggregationPrimitive, self).__init__(parent_entity,
                                                        self.base_features)
         new_class.__init__ = new_class_init

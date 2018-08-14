@@ -140,7 +140,7 @@ def make_trans_primitive(function, input_types, return_type, name=None,
                 "More than one entity for base features"
             self.kwargs.update(kwargs)
             self.partial = functools.partial(function, **self.kwargs)
-            self.partial.__name__ = function.__name__
+            self.partial.__name__ = name
 
             super(TransformPrimitive, self).__init__(
                 self.base_features[0].entity, self.base_features)
