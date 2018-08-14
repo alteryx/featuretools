@@ -57,9 +57,8 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False, us
 
     '''
     es = ft.EntitySet(id)
-    csv_name = "online-retail-logs-2018-08-03"
-    csv_s3 = "https://s3.amazonaws.com/featuretools-static/" + csv_name + ".csv"
-    demo_save_path = make_retail_pathname(nrows, csv_name)
+    csv_s3 = "https://s3.amazonaws.com/featuretools-static/" + RETAIL_CSV + ".csv"
+    demo_save_path = make_retail_pathname(nrows, RETAIL_CSV)
 
     if not use_cache or not os.path.isfile(demo_save_path):
 
@@ -102,3 +101,6 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False, us
 def make_retail_pathname(nrows, csv_name):
     file_name = csv_name + '_' + str(nrows) + '.csv'
     return os.path.join(ft_config['csv_save_location'], file_name)
+
+
+RETAIL_CSV = "online-retail-logs-2018-08-03"

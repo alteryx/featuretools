@@ -2,18 +2,17 @@ import os
 
 from featuretools.demo import load_flight, load_mock_customer, load_retail
 from featuretools.demo.flight import make_flight_pathname
-from featuretools.demo.retail import make_retail_pathname
+from featuretools.demo.retail import make_retail_pathname, RETAIL_CSV
 from featuretools.synthesis import dfs
 
 
 def test_load_retail_save():
     nrows = 10
-    current_csv_name = "online-retail-logs-2018-08-03"
 
     load_retail(nrows=nrows, return_single_table=True)
-    assert os.path.isfile(make_retail_pathname(nrows, current_csv_name))
-    assert os.path.getsize(make_retail_pathname(nrows, current_csv_name)) < 45580670
-    os.remove(make_retail_pathname(nrows, current_csv_name))
+    assert os.path.isfile(make_retail_pathname(nrows, RETAIL_CSV))
+    assert os.path.getsize(make_retail_pathname(nrows, RETAIL_CSV)) < 45580670
+    os.remove(make_retail_pathname(nrows, RETAIL_CSV))
 
 
 def test_load_retail_diff():
@@ -24,6 +23,9 @@ def test_load_retail_diff():
     nrows_second = 11
     es_second = load_retail(nrows=nrows_second)
     assert es_second['order_products'].df.shape[0] == nrows_second
+
+    os.remove(make_retail_pathname(nrows, RETAIL_CSV))
+    os.remove(make_retail_pathname(nrows_second, RETAIL_CSV))
 
 
 def test_mock_customer():
