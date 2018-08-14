@@ -2,7 +2,7 @@ import os
 
 from featuretools.demo import load_flight, load_mock_customer, load_retail
 from featuretools.demo.flight import make_flight_pathname
-from featuretools.demo.retail import make_retail_pathname, RETAIL_CSV
+from featuretools.demo.retail import RETAIL_CSV, make_retail_pathname
 from featuretools.synthesis import dfs
 
 
