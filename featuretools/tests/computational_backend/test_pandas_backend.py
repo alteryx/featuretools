@@ -472,3 +472,15 @@ def test_direct_squared(entityset, backend):
                                                time_last=None)
     for i, row in df.iterrows():
         assert (row[0] * row[0]) == row[1]
+
+
+def test_agg_empty_child(entityset, backend):
+    customer_count_feat = Count(entityset['log']['id'],
+                                parent_entity=entityset['customers'])
+    pandas_backend = backend([customer_count_feat])
+
+    # time last before the customer had any events, so child frame is empty
+    df = pandas_backend.calculate_all_features(instance_ids=[0],
+                                               time_last=datetime(2011, 4, 8))
+
+    assert df["COUNT(log)"].iloc[0] == 0
