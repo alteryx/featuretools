@@ -493,7 +493,7 @@ class PandasBackend(ComputationalBackend):
             # rename columns to the correct feature names
             to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns.ravel()]
 
-            frame = pd.merge(left=frame, right=to_merge[agg_rename.values()],
+            frame = pd.merge(left=frame, right=to_merge[list(agg_rename.values())],
                              left_index=True, right_index=True, how='left')
 
         # Handle default values
