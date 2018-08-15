@@ -349,7 +349,6 @@ class Entity(object):
         Returns:
             pd.DataFrame : instances that match constraints
         """
-        # import pdb; pdb.set_trace()
         instance_vals = self._vals_to_series(instance_vals, variable_id)
 
         training_window = _check_timedelta(training_window)
@@ -366,16 +365,7 @@ class Entity(object):
             df.dropna(subset=[self.index], inplace=True)
 
         else:
-            def temp():
-                # filter by "row.variable_id IN instance_vals"
-                # import pdb; pdb.set_trace()
-                # mask = self.df[variable_id].isin(instance_vals)
-                # df = self.df[mask]
-
-                df = self.df.merge(instance_vals.to_frame(), how="inner", copy=False)
-                return df
-
-            df = temp()
+            df = self.df.merge(instance_vals.to_frame(), how="inner", copy=False)
 
         sortby = variable_id if (return_sorted and not shuffle) else None
         return self._filter_and_sort(df=df,
