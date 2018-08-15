@@ -365,7 +365,7 @@ class Entity(object):
             df.dropna(subset=[self.index], inplace=True)
 
         else:
-            df = self.df.merge(instance_vals.to_frame(), how="inner", copy=False)
+            df = self.df[self.df[variable_id].isin(instance_vals)]
 
         sortby = variable_id if (return_sorted and not shuffle) else None
         return self._filter_and_sort(df=df,
