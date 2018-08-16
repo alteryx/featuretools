@@ -2,7 +2,6 @@ from __future__ import division, print_function
 
 import copy
 import logging
-import time
 from builtins import range
 from datetime import datetime
 
@@ -39,7 +38,6 @@ class Entity(object):
     variables = None
     time_index = None
     index = None
-    indexed_by = None
 
     def __init__(self, id, df, entityset, variable_types=None,
                  index=None, time_index=None, secondary_time_index=None,
@@ -72,7 +70,6 @@ class Entity(object):
         assert len(df.columns) == len(set(df.columns)), "Duplicate column names"
         self.data = {"df": df,
                      "last_time_index": last_time_index,
-                     "indexed_by": {}
                      }
         self.encoding = encoding
         self._verbose = verbose
@@ -80,7 +77,6 @@ class Entity(object):
         self.convert_all_variable_data(variable_types)
         self.id = id
         self.entityset = entityset
-        self.indexed_by = {}
         variable_types = variable_types or {}
         self.index = index
         self.time_index = time_index
@@ -126,8 +122,7 @@ class Entity(object):
                                              if v.id != self.index]
         self.update_data(df=self.df,
                          already_sorted=already_sorted,
-                         recalculate_last_time_indexes=False,
-                         reindex=False)
+                         recalculate_last_time_indexes=False)
 
     def __repr__(self):
         repr_out = u"Entity: {}\n".format(self.id)
@@ -162,23 +157,6 @@ class Entity(object):
             if v not in other.variables:
                 return False
         if deep:
-            if self.indexed_by is None and other.indexed_by is not None:
-                return False
-            elif self.indexed_by is not None and other.indexed_by is None:
-                return False
-            else:
-                for v, index_map in self.indexed_by.items():
-                    if v not in other.indexed_by:
-                        return False
-                    for i, related in index_map.items():
-                        if i not in other.indexed_by[v]:
-                            return False
-                        # indexed_by maps instances of two entities together by lists
-                        # We want to check that all the elements of the lists of instances
-                        # for each relationship are the same in both entities being
-                        # checked for equality, but don't care about the order.
-                        if not set(related) == set(other.indexed_by[v][i]):
-                            return False
             if self.last_time_index is None and other.last_time_index is not None:
                 return False
             elif self.last_time_index is not None and other.last_time_index is None:
@@ -214,14 +192,6 @@ class Entity(object):
     @last_time_index.setter
     def last_time_index(self, lti):
         self.data["last_time_index"] = lti
-
-    @property
-    def indexed_by(self):
-        return self.data["indexed_by"]
-
-    @indexed_by.setter
-    def indexed_by(self, idx):
-        self.data["indexed_by"] = idx
 
     @property
     def parents(self):
@@ -394,21 +364,8 @@ class Entity(object):
             df = self.df.reindex(instance_vals)
             df.dropna(subset=[self.index], inplace=True)
 
-        elif variable_id in self.indexed_by:
-            # some variables are indexed ahead of time
-            index = self.indexed_by[variable_id]
-
-            # generate pd.Series of all values from the index. Indexing
-            # is much faster on this type.
-            to_append = [pd.Series(index[v]) for v in instance_vals
-                         if v in index]
-            my_id_vals = pd.Series([]).append(to_append)
-            df = self.df.loc[my_id_vals]
-
         else:
-            # filter by "row.variable_id IN instance_vals"
-            mask = self.df[variable_id].isin(instance_vals)
-            df = self.df[mask]
+            df = self.df[self.df[variable_id].isin(instance_vals)]
 
         sortby = variable_id if (return_sorted and not shuffle) else None
         return self._filter_and_sort(df=df,
@@ -420,46 +377,6 @@ class Entity(object):
                                      end=end,
                                      shuffle=shuffle,
                                      random_seed=random_seed)
-
-    def index_data(self):
-        for p in self.parents:
-            self.index_by_parent(self.entityset[p])
-
-    def index_by_parent(self, parent_entity):
-        """
-        Cache the instances of this entity grouped by the parent entity.
-        """
-        r = parent_entity.entityset.get_relationship(self.id,
-                                                     parent_entity.id)
-        relation_var_id = r.child_variable.id
-        if relation_var_id not in self.indexed_by:
-            self.indexed_by[relation_var_id] = {}
-        else:
-            if self._verbose:
-                print('Re-indexing %s by %s' % (self.id, parent_entity.id))
-
-        self._index_by_variable(relation_var_id)
-
-    def _index_by_variable(self, variable_id):
-        """
-        Cache the instances of this entity grouped by a variable.
-        This allows filtering to happen much more quickly later.
-        """
-        ts = time.time()
-        gb = self.df.groupby(self.df[variable_id])
-        index = self.indexed_by[variable_id]
-
-        if self._verbose:
-            print("Indexing '%s' in %d groups by variable '%s'" %
-                  (self.id, len(gb.groups), variable_id))
-
-        # index by each parent instance separately
-        for i in gb.groups:
-            index[i] = np.array(gb.groups[i])
-
-        if self._verbose:
-            print("...%d child instances took %.2f seconds" %
-                  (len(self.df.index), time.time() - ts))
 
     def infer_variable_types(self, ignore=None, link_vars=None):
         """Extracts the variables from a dataframe
@@ -537,7 +454,7 @@ class Entity(object):
         return inferred_types
 
     def update_data(self, df, already_sorted=False,
-                    reindex=True, recalculate_last_time_indexes=True):
+                    recalculate_last_time_indexes=True):
         '''Update entity's internal dataframe, optionaly making sure data is sorted,
         reference indexes to other entities are consistent, and last_time_indexes
         are consistent.
@@ -554,8 +471,6 @@ class Entity(object):
         self.set_index(self.index)
         self.set_time_index(self.time_index, already_sorted=already_sorted)
         self.set_secondary_time_index(self.secondary_time_index)
-        if reindex:
-            self.index_data()
         if recalculate_last_time_indexes and self.last_time_index is not None:
             self.entityset.add_last_time_indexes(updated_entities=[self.id])
 

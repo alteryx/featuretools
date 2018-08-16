@@ -167,24 +167,6 @@ def _write_parquet_entity_data(root, entity, metadata,
 
     entity_size += os.stat(df_filename).st_size
 
-    rel_index_path = os.path.join(entity.id, 'indexes')
-    index_path = os.path.join(root, rel_index_path)
-    os.makedirs(index_path)
-    data_files['indexes'] = {}
-    for var_id, mapping_dict in entity.indexed_by.items():
-        rel_var_path = os.path.join(rel_index_path, var_id)
-        var_path = os.path.join(root, rel_var_path)
-        os.makedirs(var_path)
-        data_files['indexes'][var_id] = []
-        for instance, index in mapping_dict.items():
-            rel_var_index_filename = os.path.join(rel_var_path, '{}.parq'.format(instance))
-            var_index_filename = os.path.join(root, rel_var_index_filename)
-            pd.Series(index).to_frame(str(instance)).to_parquet(var_index_filename,
-                                                                engine=engine,
-                                                                compression=compression)
-            entity_size += os.stat(var_index_filename).st_size
-            data_files['indexes'][var_id].append({'instance': instance,
-                                                  'filename': rel_var_index_filename})
     data_files[u'to_join'] = to_join
     data_files[u'filetype'] = 'parquet'
     data_files[u'engine'] = engine
