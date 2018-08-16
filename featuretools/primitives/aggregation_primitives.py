@@ -26,7 +26,7 @@ from featuretools.variable_types import (
 class Count(AggregationPrimitive):
     """Counts the number of non null values."""
     name = "count"
-    input_types = [[Index], [Variable]]
+    input_types = [[Index]]
     return_type = Numeric
     stack_on_self = False
     default_value = 0
@@ -53,7 +53,6 @@ class Sum(AggregationPrimitive):
     stack_on_self = False
     stack_on_exclude = [Count]
 
-    # todo: handle count nulls
     def get_function(self):
         return np.sum
 
@@ -64,7 +63,6 @@ class Mean(AggregationPrimitive):
     input_types = [Numeric]
     return_type = Numeric
 
-    # p todo: handle nulls
     def get_function(self):
         return np.mean
 
