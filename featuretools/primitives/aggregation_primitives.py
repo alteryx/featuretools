@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
-from scipy.stats import skew
 
 from .aggregation_primitive_base import (
     AggregationPrimitive,
@@ -36,7 +35,7 @@ class Count(AggregationPrimitive):
         super(Count, self).__init__(id_feature, parent_entity, **kwargs)
 
     def get_function(self):
-        return np.count_nonzero
+        return 'count'
 
     def generate_name(self):
         where_str = self._where_str()
@@ -113,10 +112,7 @@ class NUnique(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self):
-        def nunique(x):
-            return x.nunique()
-
-        return nunique
+        return 'nunique'
 
 
 class NumTrue(AggregationPrimitive):
@@ -129,9 +125,7 @@ class NumTrue(AggregationPrimitive):
     stack_on_exclude = []
 
     def get_function(self):
-        def num_true(x):
-            return np.nan_to_num(x.values).sum()
-        return num_true
+        return np.sum
 
 
 class PercentTrue(AggregationPrimitive):
@@ -249,7 +243,7 @@ class Skew(AggregationPrimitive):
     # max_stack_depth = 1
 
     def get_function(self):
-        return skew
+        return 'skew'
 
 
 class Std(AggregationPrimitive):

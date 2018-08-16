@@ -3,7 +3,6 @@ import logging
 import os
 import pstats
 import sys
-import uuid
 import warnings
 from datetime import datetime
 
@@ -409,12 +408,6 @@ class PandasBackend(ComputationalBackend):
 
                 base_frame = base_frame.groupby(groupby_var, observed=True, sort=False).apply(last_n)
 
-        def wrap_func_with_name(func, name):
-            def inner(x):
-                return func(x)
-            inner.__name__ = name
-            return inner
-
         to_agg = {}
         agg_rename = {}
         to_apply = set()
@@ -425,14 +418,17 @@ class PandasBackend(ComputationalBackend):
                 variable_id = f.base_features[0].get_name()
                 if variable_id not in to_agg:
                     to_agg[variable_id] = []
+
                 func = f.get_function()
+
+                funcname = func
+                if callable(func):
+                    funcname = func.__name__
+
                 # make sure function names are unique
-                random_id = str(uuid.uuid1())
-                func = wrap_func_with_name(func, random_id)
-                funcname = random_id
                 to_agg[variable_id].append(func)
-                agg_rename[u"{}-{}".format(variable_id, funcname)] = \
-                    f.get_name()
+                # this is used below to rename columns that pandas names for us
+                agg_rename[u"{}-{}".format(variable_id, funcname)] = f.get_name()
 
                 continue
 
@@ -455,24 +451,18 @@ class PandasBackend(ComputationalBackend):
 
         # Apply the aggregate functions to generate a new dataframe, and merge
         # it with the existing one
-        # Do the [variables] accessor on to_merge because the agg call returns
-        # a dataframe with columns that contain the dataframes we want
         if len(to_agg):
             # groupby_var can be both the name of the index and a column,
             # to silence pandas warning about ambiguity we explicitly pass
             # the column (in actuality grouping by both index and group would
             # work)
-            to_merge = base_frame.groupby(base_frame[groupby_var], observed=True, sort=False).agg(to_agg)
-            # we apply multiple functions to each column, creating
-            # a multiindex as the column
-            # rename the columns to a concatenation of the two indexes
-            to_merge.columns = [u"{}-{}".format(n1, n2)
-                                for n1, n2 in to_merge.columns.ravel()]
-            # to enable a rename
-            to_merge = to_merge.rename(columns=agg_rename)
-            variables = list(agg_rename.values())
-            to_merge = to_merge[variables]
-            frame = pd.merge(left=frame, right=to_merge, left_index=True, right_index=True, how='left')
+            to_merge = base_frame.groupby(base_frame[groupby_var],
+                                          observed=True, sort=False).agg(to_agg)
+            # rename columns to the correct feature names
+            to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns.ravel()]
+
+            frame = pd.merge(left=frame, right=to_merge[list(agg_rename.values())],
+                             left_index=True, right_index=True, how='left')
 
         # Handle default values
         # 1. handle non scalar default values

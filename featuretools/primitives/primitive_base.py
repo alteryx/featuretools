@@ -56,6 +56,8 @@ class PrimitiveBase(object):
     #   (and will receive these values as input, regardless of specified instance ids)
     uses_full_entity = False
 
+    pandas_func_str = None
+
     def __init__(self, entity, base_features, **kwargs):
         assert all(isinstance(f, PrimitiveBase) for f in base_features), \
             "All base features must be features"

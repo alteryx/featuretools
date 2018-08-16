@@ -1348,7 +1348,7 @@ class EntitySet(object):
                     # print 'adding link var %s to entity %s' % (child_link_name,
                     #                                            child_entity.id)
 
-                    # create an intermeidate dataframe which shares a column
+                    # create an intermediate dataframe which shares a column
                     # with the child dataframe and has a column with the
                     # original parent's id.
                     col_map = {r.parent_variable.id: r.child_variable.id,
