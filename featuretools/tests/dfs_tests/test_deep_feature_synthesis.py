@@ -80,6 +80,7 @@ def test_makes_agg_features_from_mixed_str(es):
     assert (feature_with_name(features, 'LAST(log.value)'))
     assert (feature_with_name(features, 'COUNT(log)'))
 
+
 def test_case_insensitive(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
