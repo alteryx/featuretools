@@ -64,7 +64,6 @@ class Mean(AggregationPrimitive):
     name = "mean"
     input_types = [Numeric]
     return_type = Numeric
-    stack_on_self = False
 
     # p todo: handle nulls
     def get_function(self):
