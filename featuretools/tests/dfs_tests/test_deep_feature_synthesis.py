@@ -23,6 +23,7 @@ from featuretools.primitives import (
     IdentityFeature,
     Last,
     Mean,
+    Mode,
     Sum,
     TimeSincePrevious,
     TransformPrimitive,
@@ -343,7 +344,7 @@ def test_dfs_builds_on_seed_features_more_than_max_depth(es):
 
     # Depth of this feat is 2 relative to session_agg, the seed feature,
     # which is greater than max_depth so it shouldn't be built
-    session_agg_trans = DirectFeature(Sum(session_agg, es['customers']),
+    session_agg_trans = DirectFeature(Mode(session_agg, es['customers']),
                                       es['sessions'])
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
