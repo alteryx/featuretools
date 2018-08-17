@@ -31,6 +31,7 @@ from featuretools.primitives import (
     DirectFeature,
     IdentityFeature,
     Min,
+    Max,
     Percentile,
     Sum
 )
@@ -412,7 +413,7 @@ def test_uses_full_entity_feat_of_approximate(entityset):
     es = entityset
     agg_feat = Sum(es['log']['value'], es['sessions'])
     agg_feat2 = Sum(agg_feat, es['customers'])
-    agg_feat3 = Min(agg_feat, es['customers'])
+    agg_feat3 = Max(agg_feat, es['customers'])
     dfeat = DirectFeature(agg_feat2, es['sessions'])
     dfeat2 = DirectFeature(agg_feat3, es['sessions'])
     p = Percentile(dfeat)
@@ -427,7 +428,7 @@ def test_uses_full_entity_feat_of_approximate(entityset):
         approximate=Timedelta(10, 's'),
         cutoff_time_in_index=True,
         cutoff_time=cutoff_time)
-    assert feature_matrix_only_dfeat2[dfeat2.get_name()].tolist() == [1, 0]
+    assert feature_matrix_only_dfeat2[dfeat2.get_name()].tolist() == [50, 50]
 
     feature_matrix_approx = calculate_feature_matrix(
         [p, dfeat, dfeat2, agg_feat],
