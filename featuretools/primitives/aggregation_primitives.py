@@ -138,7 +138,9 @@ class PercentTrue(AggregationPrimitive):
     default_value = 0
 
     def get_function(self):
-        return np.mean
+        def percent_true(s):
+            return s.fillna(0).mean()
+        return percent_true
 
 
 class NMostCommon(AggregationPrimitive):
