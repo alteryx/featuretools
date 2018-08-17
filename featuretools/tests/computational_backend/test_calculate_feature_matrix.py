@@ -601,7 +601,7 @@ def test_approximate_child_aggs_handled_correctly(entityset):
     es = entityset
     agg_feat = Count(es['customers']['id'], es[u'régions'])
     dfeat = DirectFeature(agg_feat, es['customers'])
-    agg_feat_2 = Count(es['log']['value'], es['customers'])
+    agg_feat_2 = Sum(es['log']['value'], es['customers'])
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-08 10:30:00'),
                                        pd.Timestamp('2011-04-09 10:30:06')],
                               'instance_id': [0, 0]})
@@ -615,7 +615,7 @@ def test_approximate_child_aggs_handled_correctly(entityset):
                                     approximate=Timedelta(10, 's'),
                                     cutoff_time=cutoff_df)
     assert fm[dfeat.get_name()].tolist() == [2, 3]
-    assert fm_2[agg_feat_2.get_name()].tolist() == [0, 2]
+    assert fm_2[agg_feat_2.get_name()].tolist() == [0, 5]
 
 
 def test_cutoff_time_naming(entityset):
