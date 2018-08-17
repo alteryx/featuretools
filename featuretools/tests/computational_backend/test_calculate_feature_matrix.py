@@ -30,8 +30,8 @@ from featuretools.primitives import (
     Count,
     DirectFeature,
     IdentityFeature,
-    Min,
     Max,
+    Min,
     Percentile,
     Sum
 )
