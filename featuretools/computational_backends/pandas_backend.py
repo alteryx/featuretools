@@ -249,11 +249,7 @@ class PandasBackend(ComputationalBackend):
         if missing_ids:
             default_df = self.generate_default_df(instance_ids=missing_ids,
                                                   extra_columns=df.columns)
-            # pandas added sort parameter in 0.23.0
-            try:
-                df = df.append(default_df, sort=True)
-            except:
-                df = df.append(default_df)
+            df = df.append(default_df, sort=True)
 
         df.index.name = self.entityset[self.target_eid].index
         return df[[feat.get_name() for feat in self.features]]
