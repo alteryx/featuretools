@@ -421,9 +421,13 @@ class PandasBackend(ComputationalBackend):
                     to_agg[variable_id] = []
 
                 func = f.get_function()
+                funcname = func
+                if callable(func):
+                    funcname = func.__name__
+
                 to_agg[variable_id].append(func)
                 # this is used below to rename columns that pandas names for us
-                agg_rename[u"{}-{}".format(variable_id, func.__name__)] = f.get_name()
+                agg_rename[u"{}-{}".format(variable_id, funcname)] = f.get_name()
                 continue
 
             to_apply.add(f)
