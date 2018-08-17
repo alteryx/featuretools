@@ -354,7 +354,6 @@ def test_approximate_multiple_instances_per_cutoff_time(entityset):
                                               cutoff_time=cutoff_time,
                                               chunk_size="cutoff time")
     assert feature_matrix.shape[0] == 2
-    assert feature_matrix[dfeat.get_name()].dropna().shape[0] == 0
     assert feature_matrix[agg_feat.get_name()].tolist() == [5, 1]
 
 
