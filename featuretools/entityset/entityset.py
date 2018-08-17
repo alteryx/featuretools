@@ -222,6 +222,17 @@ class EntitySet(object):
         write_entityset(self, path, serialization_method='parquet')
         return self
 
+    def to_csv(self, path):
+        '''Write entityset to disk in the csv format, location specified by `path`.
+
+            Args:
+                * entityset: entityset to write to disk
+                * path (str): location on disk to write to (will be created as a directory)
+        '''
+
+        write_entityset(self, path, serialization_method='csv')
+        return self
+
     def create_metadata_dict(self):
         return {
             'id': self.id,

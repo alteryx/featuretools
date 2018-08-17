@@ -26,6 +26,12 @@ def read_pickle(path, load_data=True):
     '''
     return read_entityset(path, load_data=load_data)
 
+def read_csv(path, load_data=True):
+    '''Load an EntitySet from a path on disk, assuming
+    the EntitySet was saved in the pickle format.
+    '''
+    return read_entityset(path, load_data=load_data)
+
 
 def read_entityset(path, load_data=True):
     from featuretools.entityset.entityset import EntitySet
@@ -46,6 +52,14 @@ def load_entity_data(metadata, root):
         df = pd.read_parquet(os.path.join(root,
                                           metadata['data_files']['df_filename']),
                              engine=metadata['data_files']['engine'])
+        df.index = df[metadata['index']]
+        to_join = metadata['data_files'].get('to_join', None)
+        if to_join is not None:
+            for cname, to_join_names in to_join.items():
+                df[cname] = df[to_join_names].apply(tuple, axis=1)
+                df.drop(to_join_names, axis=1, inplace=True)
+    elif metadata['data_files']['filetype'] == 'csv':
+        df = pd.read_csv(os.path.join(root, metadata['data_files']['df_filename']))
         df.index = df[metadata['index']]
         to_join = metadata['data_files'].get('to_join', None)
         if to_join is not None:
@@ -86,6 +100,11 @@ def write_entityset(entityset, path, serialization_method='pickle',
                                                       entity,
                                                       metadata,
                                                       engine=engine,
+                                                      compression=compression)
+            if serialization_method == 'csv':
+                metadata = _write_csv_entity_data(temp_dir,
+                                                      entity,
+                                                      metadata,
                                                       compression=compression)
             elif serialization_method == 'pickle':
                 metadata = _write_pickle_entity_data(temp_dir,
@@ -170,6 +189,33 @@ def _write_parquet_entity_data(root, entity, metadata,
     data_files[u'to_join'] = to_join
     data_files[u'filetype'] = 'parquet'
     data_files[u'engine'] = engine
+    data_files[u'size'] = entity_size
+    metadata['entity_dict'][entity.id][u'data_files'] = data_files
+    return metadata
+
+
+def _write_csv_entity_data(root, entity, metadata, compression='gzip'):
+    '''Write an Entity's data to the binary parquet format, using pd.DataFrame.to_parquet.
+
+    You can choose different parquet backends, and have the option of compression.
+    See the Pandas [documentation](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.to_parquet.html)
+    for more details on engines and compression types.
+    '''
+    entity_path = os.path.join(root, entity.id)
+    os.makedirs(entity_path)
+    entity_size = 0
+    df, to_join = _parquet_compatible(entity.df)
+    data_files = {}
+
+    rel_df_filename = os.path.join(entity.id, 'df.csv')
+    data_files['df_filename'] = rel_df_filename
+    df_filename = os.path.join(root, rel_df_filename)
+    df.to_csv(df_filename, compression=compression, index=None)
+
+    entity_size += os.stat(df_filename).st_size
+
+    data_files[u'to_join'] = to_join
+    data_files[u'filetype'] = 'csv'
     data_files[u'size'] = entity_size
     metadata['entity_dict'][entity.id][u'data_files'] = data_files
     return metadata
