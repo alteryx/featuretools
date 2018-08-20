@@ -8,20 +8,7 @@
     import featuretools as ft
     import pandas as pd
 
-    data = ft.demo.load_mock_customer()
-
-    entities = {
-           "customers" : (data["customers"], "id"), # time index is optional
-           "sessions" : (data["sessions"], "id", "session_start"),
-           "products" : (data["products"], "id"),
-           "transactions" : (data["transactions"], "id", "transaction_time")
-    }
-    relationships = [("sessions", "id", "transactions", "session_id"),
-                     ("products", "id", "transactions", "product_id"),
-                     ("customers", "id", "sessions", "customer_id")]
-    es = ft.EntitySet("session_data", entities, relationships)
-    es
-
+    es = ft.demo.load_mock_customer(return_entityset=True)
 
 Feature types
 ==============
@@ -96,7 +83,7 @@ Aggregation features are used to create features for a :term:`parent entity` by 
 .. ipython:: python
 
     from featuretools.primitives import Count
-    total_events = Count(es["transactions"]["id"], es["customers"])
+    total_events = Count(es["transactions"]["transaction_id"], es["customers"])
     fm = ft.calculate_feature_matrix([total_events], es)
     fm.head()
 
@@ -108,7 +95,7 @@ Often times, we only want to aggregate using a certain amount of previous data. 
 
 .. ipython:: python
 
-    total_events_last_30_days = Count(es["transactions"]["id"],
+    total_events_last_30_days = Count(es["transactions"]["transaction_id"],
                                       parent_entity=es["customers"],
                                       use_previous="30 days")
     fm = ft.calculate_feature_matrix([total_events_last_30_days], es)
@@ -124,7 +111,7 @@ When defining aggregation or cumulative transform features, we can provide a ``w
 
 .. ipython:: python
 
-    afternoon_events = Count(es["transactions"]["id"],
+    afternoon_events = Count(es["transactions"]["transaction_id"],
                          parent_entity=es["customers"],
                          where=is_afternoon).rename("afternoon_events")
     fm = ft.calculate_feature_matrix([afternoon_events], es)
@@ -143,7 +130,7 @@ Say we want to calculate the number of events per customer in the past 30 days. 
 .. ipython:: python
 
     from featuretools.primitives import CumCount
-    total_events = CumCount(base_feature=es["transactions"]["id"],
+    total_events = CumCount(base_feature=es["transactions"]["transaction_id"],
                             group_feature=es["transactions"]["session_id"],
                             use_previous="1 hour")
     fm = ft.calculate_feature_matrix([total_events], es)
