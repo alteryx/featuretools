@@ -11,13 +11,11 @@ Changelog
     * Make primitive lookup case insensitive  (:pr:`213`)
     * Use capital name (:pr:`211`)
     * Set class name for Min (:pr:`206`)
-    * Remove `variable_types` from normalize entity (:pr:`205`)
-    * Improve documentation (:pr:`181`, :pr:`200`)
+    * Remove ``variable_types`` from normalize entity (:pr:`205`)
     * Handle parquet serialization with last time index (:pr:`204`)
     * Reset index of cutoff times in calculate feature matrix (:pr:`198`)
     * Check argument types for .normalize_entity (:pr:`195`)
     * Type checking ignore entities.  (:pr:`193`)
-    * Handle case where test creates lower number of workers due to small number of cores (:pr:`189`)
 
 **v0.2.1** July 2, 2018
     * Cpu count fix (:pr:`176`)
