@@ -803,13 +803,12 @@ def test_make_time_index_keeps_original_sorting():
 def test_normalize_entity_new_time_index(entityset):
     entityset.normalize_entity('log', 'values', 'value',
                                make_time_index=True,
-                               new_entity_time_index="value_time",
-                               convert_links_to_integers=True)
+                               new_entity_time_index="value_time")
 
     assert entityset['log'].is_child_of('values')
     assert entityset['values'].time_index == 'value_time'
     assert 'value_time' in entityset['values'].df.columns
-    assert len(entityset['values'].df.columns) == 3
+    assert len(entityset['values'].df.columns) == 2
 
 
 def test_secondary_time_index(entityset):
@@ -818,8 +817,7 @@ def test_secondary_time_index(entityset):
                                make_secondary_time_index={
                                    'datetime': ['comments']},
                                new_entity_time_index="value_time",
-                               new_entity_secondary_time_index='second_ti',
-                               convert_links_to_integers=True)
+                               new_entity_secondary_time_index='second_ti')
 
     assert (isinstance(entityset['values'].df['second_ti'], pd.Series))
     assert (entityset['values']['second_ti']._dtype_repr == 'datetime')
