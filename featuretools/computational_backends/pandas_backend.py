@@ -1,5 +1,4 @@
 import cProfile
-import io
 import logging
 import os
 import pstats
@@ -235,15 +234,12 @@ class PandasBackend(ComputationalBackend):
         # debugging
         if profile:
             pr.disable()
-            s = io.StringIO()
-            ps = pstats.Stats(pr, stream=s).sort_stats("cumulative", "tottime")
-            ps.print_stats()
             prof_folder_path = os.path.join(ROOT_DIR, 'prof')
             if not os.path.exists(prof_folder_path):
                 os.mkdir(prof_folder_path)
             with open(os.path.join(prof_folder_path, 'inst-%s.log' %
                                    list(instance_ids)[0]), 'w') as f:
-                f.write(s.getvalue())
+                pstats.Stats(pr, stream=f).strip_dirs().sort_stats("cumulative", "tottime").print_stats()
 
         df = eframes_by_filter[self.target_eid][self.target_eid]
 
@@ -253,11 +249,7 @@ class PandasBackend(ComputationalBackend):
         if missing_ids:
             default_df = self.generate_default_df(instance_ids=missing_ids,
                                                   extra_columns=df.columns)
-            # pandas added sort parameter in 0.23.0
-            try:
-                df = df.append(default_df, sort=True)
-            except:
-                df = df.append(default_df)
+            df = df.append(default_df, sort=True)
 
         df.index.name = self.entityset[self.target_eid].index
         return df[[feat.get_name() for feat in self.features]]
@@ -369,15 +361,11 @@ class PandasBackend(ComputationalBackend):
 
     def _calculate_agg_features(self, features, entity_frames):
         test_feature = features[0]
-        use_previous = test_feature.use_previous
-        base_features = test_feature.base_features
-        where = test_feature.where
         entity = test_feature.entity
-        child_entity = base_features[0].entity
+        child_entity = test_feature.base_features[0].entity
 
         assert entity.id in entity_frames and child_entity.id in entity_frames
 
-        index_var = entity.index
         frame = entity_frames[entity.id]
         base_frame = entity_frames[child_entity.id]
         # Sometimes approximate features get computed in a previous filter frame
@@ -389,6 +377,7 @@ class PandasBackend(ComputationalBackend):
             return frame
 
         # handle where clause for all functions below
+        where = test_feature.where
         if where is not None:
             base_frame = base_frame[base_frame[where.get_name()]]
 
@@ -399,6 +388,7 @@ class PandasBackend(ComputationalBackend):
 
         # if the use_previous property exists on this feature, include only the
         # instances from the child entity included in that Timedelta
+        use_previous = test_feature.use_previous
         if use_previous and not base_frame.empty:
             # Filter by use_previous values
             time_last = self.time_last
@@ -414,38 +404,6 @@ class PandasBackend(ComputationalBackend):
                     return df.iloc[-n:]
 
                 base_frame = base_frame.groupby(groupby_var, observed=True, sort=False).apply(last_n)
-
-        if not base_frame.empty:
-            if groupby_var not in base_frame:
-                # This occured sometimes. I think it might have to do with category
-                # but not sure. TODO: look into when this occurs
-                no_instances = True
-            # if the foreign key column in the child (base_frame) that links to
-            # frame is an integer and the id column in the parent is an object or
-            # category dtype, the .isin() call errors.
-            elif (frame[index_var].dtype != base_frame[groupby_var].dtype or
-                    frame[index_var].dtype.name.find('category') > -1):
-                try:
-                    frame_as_obj = frame[index_var].astype(object)
-                    base_frame_as_obj = base_frame[groupby_var].astype(object)
-                except ValueError:
-                    msg = u"Could not join {}.{} (dtype={}) with {}.{} (dtype={})"
-                    raise ValueError(msg.format(entity.id, index_var,
-                                                frame[index_var].dtype,
-                                                child_entity.id, groupby_var,
-                                                base_frame[groupby_var].dtype))
-                else:
-                    no_instances = check_no_related_instances(
-                        frame_as_obj.values, base_frame_as_obj.values)
-            else:
-                no_instances = check_no_related_instances(
-                    frame[index_var].values, base_frame[groupby_var].values)
-
-        if base_frame.empty or no_instances:
-            for f in features:
-                set_default_column(entity_frames[entity.id], f)
-
-            return frame
 
         def wrap_func_with_name(func, name):
             def inner(x):
@@ -565,18 +523,6 @@ def agg_wrapper(feats, time_last):
 
         return pd.DataFrame(d)
     return wrap
-
-
-def check_no_related_instances(array1, array2):
-    some_instances = False
-    set_frame = set(array1)
-    set_base_frame = set(array2)
-    for s in set_frame:
-        for b in set_base_frame:
-            if s == b:
-                some_instances = True
-                break
-    return not some_instances
 
 
 def set_default_column(frame, f):

@@ -14,4 +14,4 @@ class MockClient():
         self.cluster = cluster
 
     def scheduler_info(self):
-        return {'workers': {'worker 1': {'memory': virtual_memory().total}}}
+        return {'workers': {'worker 1': {'memory_limit': virtual_memory().total}}}
