@@ -84,7 +84,7 @@ When an entire dataset is not required to calculate the features for a given set
 
 An example of this approach can be seen in the `Predict Next Purchase demo notebook <https://github.com/featuretools/predict_next_purchase>`_. In this example, we partition data by customer and only load a fixed number of customers into memory at any given time. We implement this easily using `Dask <https://dask.pydata.org/>`_, which could also be used to scale the computation to a cluster of computers. A framework like `Spark <https://spark.apache.org/>`_ could be used similarly.
 
-An additional example of partitioning data to distribute on multiple cores or a cluster using Dask can be seen in the `Featuretools on Dask notebook <https://github.com/Featuretools/Automated-Manual-Comparison/blob/master/Loan%20Repayment/notebooks/Featuretools%20on%20Dask.ipynb>`_. Dask allows us to easily scale to multiple cores on a single computer or multiple machines on a cluster. 
+An additional example of partitioning data to distribute on multiple cores or a cluster using Dask can be seen in the `Featuretools on Dask notebook <https://github.com/Featuretools/Automated-Manual-Comparison/blob/master/Loan%20Repayment/notebooks/Featuretools%20on%20Dask.ipynb>`_. This approach is detailed in the `Parallelizing Feature Engineering with Dask blog post <https://towardsdatascience.com/parallelizing-feature-engineering-with-dask-3db88aec33b7>`_. Dask allows us to easily scale to multiple cores on a single computer or multiple machines on a cluster. 
 
 Feature Labs
 ------------
