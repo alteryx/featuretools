@@ -355,9 +355,7 @@ class Entity(object):
         return entity_id in [r.child_entity.id for r in rels]
 
     def query_by_values(self, instance_vals, variable_id=None, columns=None,
-                        time_last=None, training_window=None,
-                        return_sorted=False, start=None, end=None,
-                        random_seed=None, shuffle=False):
+                        time_last=None, training_window=None):
         """Query instances that have variable with given value
 
         Args:
@@ -369,12 +367,6 @@ class Entity(object):
                 time. Only applies if entity has a time index.
             training_window (Timedelta, optional):
                 Data older than time_last by more than this will be ignored
-            return_sorted (bool) : Return instances in the same order as
-                the instance_vals are passed.
-            start (int) : If provided, only return instances equal to or after this index.
-            end (int) : If provided, only return instances before this index.
-            random_seed (int) : Provided to the shuffling procedure.
-            shuffle (bool) : If True, values will be shuffled before returning.
 
         Returns:
             pd.DataFrame : instances that match constraints
@@ -410,16 +402,10 @@ class Entity(object):
             mask = self.df[variable_id].isin(instance_vals)
             df = self.df[mask]
 
-        sortby = variable_id if (return_sorted and not shuffle) else None
         return self._filter_and_sort(df=df,
                                      time_last=time_last,
                                      training_window=training_window,
-                                     columns=columns,
-                                     sortby=sortby,
-                                     start=start,
-                                     end=end,
-                                     shuffle=shuffle,
-                                     random_seed=random_seed)
+                                     columns=columns)
 
     def index_data(self):
         for p in self.parents:
@@ -742,9 +728,7 @@ class Entity(object):
 
     def _filter_and_sort(self, df, time_last=None,
                          training_window=None,
-                         columns=None, sortby=None,
-                         start=None, end=None,
-                         shuffle=False, random_seed=None):
+                         columns=None):
         """
         Filter a dataframe for all instances before time_last.
         If this entity does not have a time index, return the original
@@ -775,26 +759,6 @@ class Entity(object):
 
         if columns is not None:
             df = df[columns]
-
-        if sortby is not None:
-            cat_vals = df[sortby]
-            df_sort = df[[sortby]].copy()
-            df_sort[sortby] = df_sort[sortby].astype("category")
-            df_sort[sortby].cat.set_categories(cat_vals, inplace=True)
-            df_sort.sort_values(sortby, inplace=True)
-
-            # TODO: consider also using .loc[df_sort.index]
-            df = df.reindex(df_sort.index, copy=False)
-
-        if shuffle:
-            df = df.sample(frac=1, random_state=random_seed)
-
-        if start is not None and end is None:
-            df = df.iloc[start:df.shape[0]]
-        elif start is not None:
-            df = df.iloc[start:end]
-        elif end is not None:
-            df = df.iloc[0:end]
 
         return df.copy()
 
