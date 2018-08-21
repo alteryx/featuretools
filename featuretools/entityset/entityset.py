@@ -740,7 +740,6 @@ class EntitySet(object):
 
     def normalize_entity(self, base_entity_id, new_entity_id, index,
                          additional_variables=None, copy_variables=None,
-                         convert_links_to_integers=False,
                          make_time_index=None,
                          make_secondary_time_index=None,
                          new_entity_time_index=None,
@@ -764,12 +763,6 @@ class EntitySet(object):
             copy_variables (list[str]): List of
                 variable ids to copy from old entity
                 and move to new entity.
-
-            convert_links_to_integers (bool) : If True,
-                convert the linking variable between the two
-                entities to an integer. Old variable will be kept only
-                in the new normalized entity, and the new variable will have
-                the old variable's name plus "_id".
 
             make_time_index (bool or str, optional): Create time index for new entity based
                 on time index in base_entity, optionally specifying which variable in base_entity
@@ -808,9 +801,6 @@ class EntitySet(object):
                 raise ValueError("Not copying {} as both index and variable".format(v))
                 break
         new_index = index
-
-        if convert_links_to_integers:
-            new_index = make_index_variable_name(new_entity_id)
 
         transfer_types = {}
         transfer_types[new_index] = type(base_entity[index])
@@ -875,20 +865,6 @@ class EntitySet(object):
             new_entity_df = new_entity_df2
 
         base_entity_index = index
-        if convert_links_to_integers:
-            old_entity_df = self[base_entity_id].df
-            link_variable_id = make_index_variable_name(new_entity_id)
-            new_entity_df[link_variable_id] = np.arange(0, new_entity_df.shape[0])
-            just_index = old_entity_df[[index]]
-            id_as_int = just_index.merge(new_entity_df,
-                                         left_on=index,
-                                         right_on=index,
-                                         how='left')[link_variable_id]
-
-            old_entity_df.loc[:, index] = id_as_int.values
-
-            base_entity.update_data(old_entity_df)
-            index = link_variable_id
 
         transfer_types[index] = vtypes.Categorical
         if make_secondary_time_index:

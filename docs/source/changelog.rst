@@ -2,6 +2,21 @@
 
 Changelog
 ---------
+**v0.2.2** Aug 20, 2018
+    * Remove unnecessary check no related instances call and refactor (:pr:`209`)
+    * Improve memory usage through support for pandas categorical types (:pr:`196`)
+    * Bump minimum pandas version from 0.20.3 to 0.23.0 (:pr:`216`)
+    * Better parallel memory warnings (:pr:`208`, :pr:`214`)
+    * Update demo datasets (:pr:`187`, :pr:`201`, :pr:`207`)
+    * Make primitive lookup case insensitive  (:pr:`213`)
+    * Use capital name (:pr:`211`)
+    * Set class name for Min (:pr:`206`)
+    * Remove ``variable_types`` from normalize entity (:pr:`205`)
+    * Handle parquet serialization with last time index (:pr:`204`)
+    * Reset index of cutoff times in calculate feature matrix (:pr:`198`)
+    * Check argument types for .normalize_entity (:pr:`195`)
+    * Type checking ignore entities.  (:pr:`193`)
+
 **v0.2.1** July 2, 2018
     * Cpu count fix (:pr:`176`)
     * Update flight (:pr:`175`)
