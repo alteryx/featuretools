@@ -1057,7 +1057,7 @@ class EntitySet(object):
             entity.add_interesting_values(max_values=max_values, verbose=verbose)
 
     def related_instances(self, start_entity_id, final_entity_id,
-                          instance_ids=None, time_last=None, add_link=False,
+                          instance_ids=None, time_last=None,
                           training_window=None):
         """
         Filter out all but relevant information from dataframes along path
@@ -1070,9 +1070,6 @@ class EntitySet(object):
             instance_ids (list[str]) : List of start entity instance ids from
                 which to find related instances in final entity.
             time_last (pd.TimeStamp) :  Latest allowed time.
-            add_link (bool) : If True, add a link variable from the first
-                entity in the path to the last. Assumes the path is made up of
-                only backwards relationships.
 
         Returns:
             pd.DataFrame : Dataframe of related instances on the final_entity_id
@@ -1100,12 +1097,6 @@ class EntitySet(object):
         if path is None or len(path) == 0:
             return pd.DataFrame()
 
-        if add_link:
-            assert 'forward' not in self.path_relationships(path,
-                                                            start_entity_id)
-            rvar = path[0].get_entity_variable(start_entity_id)
-            link_map = {i: i for i in df[rvar]}
-
         prev_entity_id = start_entity_id
 
         # Walk down the path of entities and take related instances at each step
@@ -1124,20 +1115,6 @@ class EntitySet(object):
                                               variable_id=rvar_new,
                                               time_last=time_last,
                                               training_window=window)
-
-            # group the rows in the new dataframe by the instances of the first
-            # dataframe, and add a new column linking the two.
-            if add_link:
-                new_link_map = {}
-                for parent_ix, gdf in df.groupby(rvar_new):
-                    for child_ix in gdf.index:
-                        new_link_map[child_ix] = link_map[parent_ix]
-                link_map = new_link_map
-
-                child_link_var = \
-                    Relationship._get_link_variable_name(path[:i + 1])
-                if child_link_var not in df.columns:
-                    df = df.join(pd.Series(link_map, name=child_link_var))
 
             prev_entity_id = new_entity_id
 
