@@ -372,7 +372,6 @@ class Entity(object):
                 df[variable_id] = df[variable_id].astype('category',
                     categories=self.df[variable_id].cat.categories)
 
-
         sortby = variable_id if (return_sorted and not shuffle) else None
         return self._filter_and_sort(df=df,
                                      time_last=time_last,
