@@ -368,9 +368,10 @@ class Entity(object):
         else:
             df = self.df.merge(instance_vals.to_frame(), how="inner").set_index(self.index, drop=False)
 
+            # ensure filtered df has same categories as original
             if pdtypes.is_categorical_dtype(self.df[variable_id]):
-                df[variable_id] = df[variable_id].astype('category',
-                    categories=self.df[variable_id].cat.categories)
+                categories = pd.api.types.CategoricalDtype(categories=self.df[variable_id].cat.categories)
+                df[variable_id] = df[variable_id].astype(categories)
 
         sortby = variable_id if (return_sorted and not shuffle) else None
         return self._filter_and_sort(df=df,
