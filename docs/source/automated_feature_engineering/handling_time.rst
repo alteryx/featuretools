@@ -1,4 +1,5 @@
 .. _handling-time:
+
 .. currentmodule:: featuretools
 
 Handling Time
@@ -19,23 +20,66 @@ Some of the most powerful functionality in Featuretools is the ability to do all
 
 Representing time in an EntitySet
 ----------------------------------------------------------
-The :func:`Flights <demo.load_flight>` entityset gives a good example of why users need to specify the differences between different datetime columns.
+Let's look at how time works in the :func:`Mock Customer <demo.load_mock_customer>` entityset.
 
 .. ipython:: python
 
     import featuretools as ft
-    es = ft.demo.load_flight(nrows=100)
-    es
+    es_mc = ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
+    es_mc['transactions'].df.head()
+
+The ``transactions`` entity has one row for every transaction and a ``transaction_time`` for every row. The **time index** is the first time information from the row can be used. Most people would make the reasonable choice to set the ``transaction_time`` as the time index for the ``transactions`` entity. However, finding the time index is not always obvious. Let's look at the ``customers`` entity:
+
+.. ipython:: python
+
+    es_mc['customers'].df
+
+Here we have two time columns ``join_date`` and ``date_of_birth``. While either column would be useful for making features, the ``join_date`` is the date when we learn that the customer exists, so it should be used as the time index. Specifically: *the time index is the first time anything from a row can be known to the dataset owner*. Rows are treated as non-existant prior to the time index. 
+
+.. _cutoff_time:
+
+Running DFS with a cutoff time dataframe
+-----------------------------------------
+
+A **cutoff_time** dataframe is a concise way of passing complicated instructions to :func:`Deep Feature Synthesis <dfs>` (DFS). Each row contains a reference id, a time and optionally a label. For every unique id-time pair, we will create a row of the feature matrix.
+
+Let's do a short example. We can make features for customers ``1``, ``2`` and ``3``. We can set the cutoff time any time after the time index, emulating how you'd make a prediction at that point in time. In this case, we're making predictions for all three customers at the same time, 12/1/2014.
+
+.. ipython:: python
+
+    ct = pd.DataFrame({'customer_id': [1, 2, 3], 
+                       'time': pd.to_datetime(['2014-1-2', 
+                                               '2014-1-2',
+                                               '2014-1-2']),
+                       'label': [True, True, False]})
+    fm, features = ft.dfs(entityset=es_mc, 
+                          target_entity='customers', 
+                          cutoff_time=ct, 
+                          cutoff_time_in_index=True)
+    fm
+
+We made 74 features for the three customers using only data whose time index was before December 1st 2014. When the cutoff times are changed, the row will be made as if we don't know anything after that point in time. 
+
+
+Making features from your labels
+-------------------------------------------------------
+The :func:`Flights <demo.load_flight>` entityset gives a more pressing example of why users need to specify the differences between different datetime columns. By paying attention to those time columns, we can make powerful features using historical delays.
+
+.. ipython:: python
+
+    import featuretools as ft
+    es_flight = ft.demo.load_flight(nrows=100)
+    es_flight
 
 An individual trip is recorded in the ``trip_logs`` entity, and has many times associated to it.
 
 .. ipython:: python
 
-    es['trip_logs'].df.head(3)
+    es_flight['trip_logs'].df.head(3)
 
 We have arrival and departure times, scheduled arrival and departure times and a mysterious ``time index``.
 
-For every :class:`Entity <Entity>` we make in a time-based problem, we should tell Featuretools when it is allowed to use the data from a certain row. The **time index** column should provide that information. Specifically: *the values of the time index are the first time anything from a row can be known*. Rows are treated as non-existent prior to the ``time index``.
+For every :class:`Entity <Entity>` we make in a time-based problem, we should tell Featuretools when it is allowed to use the data from a certain row. The time index column should provide that information. 
 
 Let's look at the example. For the existing columns, it would be problematic for the ``scheduled_dep_time``, to be the time index. For one, sometimes the actual departure time is *before* it, so it is not always the earliest time in our dataframe. However, there's a reality-based reason we would want an earlier time: flights are scheduled far in advance! We know many things about a trip six months or more before it takes off; the trip distance, carrier, flight number and even when a flight is supposed to leave and land are always known before we buy a ticket. The point of the time index construct is to reflect the reality that those can be known much before the scheduled departure time.
 
@@ -43,7 +87,7 @@ However, not all columns can be known six months in advance. If we were able to 
 
 .. ipython:: python
 
-    es['trip_logs']
+    es_flight['trip_logs']
 
 + These columns can be known at the ``time_index`` months before the flight: ``trip_log_id``, ``flight_date``, ``scheduled_dep_time``, ``scheduled_elapsed_time``, ``distance``, ``scheduled_arr_time``, ``time_index``, ``flight_id``
 
@@ -51,12 +95,6 @@ However, not all columns can be known six months in advance. If we were able to 
 
 An Entity can have a third, hidden, time index called the ``last_time_index``. More details for that can be found in the `other temporal workflows <#training-window-and-the-last-time-index>`_ section.
 
-.. _cutoff-time:
-
-Running DFS with a cutoff time dataframe
------------------------------------------
-
-A **cutoff_time** dataframe is a concise way of passing complicated instructions to :func:`Deep Feature Synthesis <dfs>` (DFS). Each row contains a reference id, a time and optionally a label. For every unique id-time pair, we will create a row of the feature matrix.
 
 Let's do a short example. Trip ``14`` is a flight from CLT to PHX on Janulary 31 2017 and trip ``92`` is a flight from PIT to DFW on January 1. We can set any cutoff time before the flight is scheduled to depart, emulating how we would make the prediction at that point in time. We set two cutoff times for trip ``14``, one which is more than a month before the flight and another which is only 5 days before. For trip ``92``, we'll only set one cutoff time three days before it is scheduled to leave.
 
@@ -64,22 +102,22 @@ These instructions say to build two rows for trip ``14`` using data from differe
 
 .. ipython:: python
 
-    ct = pd.DataFrame({'trip_log_id': [14, 14, 92], 
-                       'time': pd.to_datetime(['2016-12-28', 
+    ct_flight = pd.DataFrame({'trip_log_id': [14, 14, 92], 
+                              'time': pd.to_datetime(['2016-12-28', 
                                                       '2017-1-25',
                                                       '2016-12-28']),
-                       'label': [True, True, False]})
-    fm, features = ft.dfs(entityset=es, 
+                              'label': [True, True, False]})
+    fm, features = ft.dfs(entityset=es_flight, 
                           target_entity='trip_logs', 
-                          cutoff_time=ct, 
+                          cutoff_time=ct_flight, 
                           cutoff_time_in_index=True)
     fm[['label', 'flight_id', 'flights.MAX(trip_logs.arr_delay)', 'MONTH(scheduled_dep_time)', 'DAY(scheduled_dep_time)']]
 
 There is a lot to unpack from this output. Here are some highlights:
 
-1. One row was made for every id-time pair in ``ct``. The id and cutoff time were returned as the index of the feature matrix.
+1. Even though one id showed up twice, one row was made for every id-time pair in ``ct_flight``. The id and cutoff time were returned as the index of the feature matrix.
 2. The output, and label, were sorted by the passed in ``time`` column. Because of the sorting, it's often helpful to pass in a label with the cutoff time dataframe so that it will remain sorted in the same way as the feature matrix as it was here. Any additional columns past the ``id`` and ``cutoff_time`` will not be used for making features.
-3. The column ``flights.MAX(trip_logs.arr_delay)`` is not always defined. It can only have real values when there are historical flights to aggregate because we've excluded the arrival delay of this particular flight from use!
+3. The column ``flights.MAX(trip_logs.arr_delay)`` is not always defined. It can only have real values when there are historical flights to aggregate. Since we excluded the arrival delay of this particular flight, there are no values to use!
 
 Notice that for trip ``14``, there wasn't historical data when we made the feature a month in advance, but there were flights from Charlotte to Phoenix before January 25 whose delay could be validly used. These are powerful features that are often excluded in manual processes because of how hard they are to make.
 
@@ -93,14 +131,11 @@ The training window in DFS limits the amount of past data that can be used while
 
 .. ipython:: python
 
-    es_customer = ft.demo.load_mock_customer(return_entityset=True)
-    cutoff_times = pd.DataFrame({"customer_id": [1, 2, 3, 4, 5],
-                                 "time": pd.date_range('2014-01-01 01:41:50', periods=5, freq='25min')})
-    window_fm, window_features = ft.dfs(entityset=es_customer,
+    window_fm, window_features = ft.dfs(entityset=es_mc,
                                         target_entity="customers",
-                                        cutoff_time=cutoff_times,
+                                        cutoff_time=ct,
                                         cutoff_time_in_index=True,
-                                        training_window="1 hour")
+                                        training_window="2 hours")
     window_fm.head()
 
 This works well for :class:`entities <Entity>` where an instance occurs at a single point in time. However, sometimes an instance can happen at many points in time.
@@ -109,8 +144,8 @@ For example, suppose a customer’s session has multiple transactions which can 
 
 .. ipython:: python
 
-    es_customer['sessions'].df['session_start'].head()
-    es_customer['sessions'].last_time_index.head()
+    es_mc['sessions'].df['session_start'].head()
+    es_mc['sessions'].last_time_index.head()
 
 It is possible to automatically add last time indexes to every entity in an :class:`EntitySet` by running :func:`EntitySet.add_last_time_indexes`. If a ``last_time_index`` has been set, Featuretools will check to see if the ``last_time_index`` is after the start of the training window. That, combined with the cutoff time, allows Deep Feature Synthesis to discover which data is relevant for a given training window.
 
@@ -131,10 +166,10 @@ To understand when approximation is useful, consider calculating features for a 
 
 The frequency of approximation is controlled using the ``approximate`` parameter to DFS or :func:`calculate_feature_matrix`. For example, the following code would approximate aggregation features at 1 day intervals::
 
-    fm = ft.calculate_feature_matrix(entityset=es
+    fm = ft.calculate_feature_matrix(entityset=es_mc
                                      features=feature_list,
-                                     cutoff_time=cutoff_times,
-                                     approximate="1 day")
+                                     cutoff_time=ct,
+                                     approximate="1 hour")
 
 In this computation, features that can be approximated will be calculated at 1 day intervals, while features that cannot be approximated (e.g "is the current transaction > $50") will be calculated at the exact cutoff time.
 
