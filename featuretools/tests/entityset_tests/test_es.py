@@ -624,19 +624,6 @@ def test_related_instances_all_cutoff_time_same_entity(entityset):
     assert result['id'].values.tolist() == list(range(5))
 
 
-# def test_related_instances_link_vars(entityset):
-#     # test adding link variables on the fly during _related_instances
-#     frame = entityset.related_instances(
-#         start_entity_id='customers', final_entity_id='log',
-#         instance_ids=[1], add_link=True)
-
-#     # If we need the forward customer relationship to have it
-#     # then we can add those too
-#     assert 'sessions.customer_id' in frame.columns
-#     for val in frame['sessions.customer_id']:
-#         assert val == 1
-
-
 def test_get_pandas_slice(entityset):
     filter_eids = ['products', u'régions', 'customers']
     result = entityset.get_pandas_data_slice(filter_entity_ids=filter_eids,
