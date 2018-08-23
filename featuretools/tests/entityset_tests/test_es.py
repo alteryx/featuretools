@@ -27,7 +27,7 @@ def test_operations_invalidate_metadata(entityset):
     new_es = ft.EntitySet(id="test")
     # test metadata gets created on access
     assert new_es._metadata is None
-    assert new_es.metadata is not None # generated after access
+    assert new_es.metadata is not None  # generated after access
     assert new_es._metadata is not None
 
     new_es.entity_from_dataframe("customers",
