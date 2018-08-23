@@ -27,7 +27,8 @@ def test_operations_invalidate_metadata(entityset):
     new_es = ft.EntitySet(id="test")
     # test metadata gets created on access
     assert new_es._metadata is None
-    assert new_es.metadata is not None
+    assert new_es.metadata is not None # generated after access
+    assert new_es._metadata is not None
 
     new_es.entity_from_dataframe("customers",
                                  entityset["customers"].df,
@@ -37,24 +38,29 @@ def test_operations_invalidate_metadata(entityset):
                                  index=entityset["sessions"].index)
     assert new_es._metadata is None
     assert new_es.metadata is not None
+    assert new_es._metadata is not None
 
     r = ft.Relationship(new_es["customers"]["id"],
                         new_es["sessions"]["customer_id"])
     new_es = new_es.add_relationship(r)
     assert new_es._metadata is None
     assert new_es.metadata is not None
+    assert new_es._metadata is not None
 
     new_es = new_es.normalize_entity("customers", "cohort", "cohort")
     assert new_es._metadata is None
     assert new_es.metadata is not None
+    assert new_es._metadata is not None
 
     new_es.add_last_time_indexes()
     assert new_es._metadata is None
     assert new_es.metadata is not None
+    assert new_es._metadata is not None
 
     new_es.add_interesting_values()
     assert new_es._metadata is None
     assert new_es.metadata is not None
+    assert new_es._metadata is not None
 
 
 def test_cannot_readd_relationships_that_already_exists(entityset):
