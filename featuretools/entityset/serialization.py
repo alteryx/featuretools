@@ -26,6 +26,7 @@ def read_pickle(path, load_data=True):
     '''
     return read_entityset(path, load_data=load_data)
 
+
 def read_csv(path, load_data=True):
     '''Load an EntitySet from a path on disk, assuming
     the EntitySet was saved in the pickle format.
@@ -101,11 +102,11 @@ def write_entityset(entityset, path, serialization_method='pickle',
                                                       metadata,
                                                       engine=engine,
                                                       compression=compression)
-            if serialization_method == 'csv':
+            elif serialization_method == 'csv':
                 metadata = _write_csv_entity_data(temp_dir,
-                                                      entity,
-                                                      metadata,
-                                                      compression=compression)
+                                                  entity,
+                                                  metadata,
+                                                  compression=compression)
             elif serialization_method == 'pickle':
                 metadata = _write_pickle_entity_data(temp_dir,
                                                      entity,
