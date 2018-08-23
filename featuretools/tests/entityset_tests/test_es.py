@@ -75,13 +75,6 @@ def test_query_by_id(entityset):
     assert df['id'].values[0] == 0
 
 
-def test_query_by_id_with_sort(entityset):
-    df = entityset['log'].query_by_values(
-        instance_vals=[2, 1, 3],
-        return_sorted=True)
-    assert df['id'].values.tolist() == [2, 1, 3]
-
-
 def test_query_by_id_with_time(entityset):
     df = entityset['log'].query_by_values(
         instance_vals=[0, 1, 2, 3, 4],
@@ -122,13 +115,6 @@ def test_query_by_indexed_variable(entityset):
         variable_id='product_id')
 
     assert df['id'].get_values().tolist() == [15, 16]
-
-
-def test_query_by_non_unique_sort_raises(entityset):
-    with pytest.raises(ValueError):
-        entityset['log'].query_by_values(
-            instance_vals=[0, 2, 1],
-            variable_id='session_id', return_sorted=True)
 
 
 def test_check_variables_and_dataframe():
