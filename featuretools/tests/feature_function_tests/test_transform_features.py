@@ -1126,7 +1126,7 @@ def test_two_kinds_of_dependents(es):
     agg3 = Sum(agg2, es['customers'])
     pandas_backend = PandasBackend(es, [p, g, agg3])
     df = pandas_backend.calculate_all_features([0, 1], None)
-    assert df[p.get_name()].tolist() == [2./3, 1.0]
+    assert df[p.get_name()].tolist() == [2. / 3, 1.0]
     assert df[g.get_name()].tolist() == [15, 26]
 
 
