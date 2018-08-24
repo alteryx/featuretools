@@ -124,7 +124,7 @@ class EntitySet(object):
             child_variable = self[relationship[2]][relationship[3]]
             self.add_relationship(Relationship(parent_variable,
                                                child_variable))
-        self._metadata = None
+        self.reset_metadata()
 
     def __sizeof__(self):
         return sum([entity.__sizeof__() for entity in self.entities])
@@ -181,16 +181,14 @@ class EntitySet(object):
         and if it is return the existing one. Thus, all features in the feature list
         would reference the same object, rather than copies. This saves a lot of memory
         '''
-        new_metadata = self.from_metadata(self.create_metadata_dict(),
-                                          data_root=None)
         if self._metadata is None:
-            self._metadata = new_metadata
-        else:
-            # Don't want to keep making new copies of metadata
-            # Only make a new one if something was changed
-            if self._metadata != new_metadata:
-                self._metadata = new_metadata
+            self._metadata = self.from_metadata(self.create_metadata_dict(),
+                                                data_root=None)
+
         return self._metadata
+
+    def reset_metadata(self):
+        self._metadata = None
 
     @property
     def is_metadata(self):
@@ -358,6 +356,7 @@ class EntitySet(object):
 
         self.relationships.append(relationship)
         self.index_data(relationship)
+        self.reset_metadata()
         return self
 
     def get_pandas_data_slice(self, filter_entity_ids, index_eid,
@@ -888,7 +887,7 @@ class EntitySet(object):
         new_entity = self.entity_dict[new_entity_id]
         base_entity.convert_variable_type(base_entity_index, vtypes.Id, convert_data=False)
         self.add_relationship(Relationship(new_entity[index], base_entity[base_entity_index]))
-
+        self.reset_metadata()
         return self
 
     ###########################################################################
@@ -942,6 +941,7 @@ class EntitySet(object):
                                                recalculate_last_time_indexes=False)
 
         combined_es.add_last_time_indexes(updated_entities=has_last_time_index)
+        self.reset_metadata()
         return combined_es
 
     ###########################################################################
@@ -1049,6 +1049,7 @@ class EntitySet(object):
                     entity.last_time_index.name = 'last_time'
 
             explored.add(entity.id)
+        self.reset_metadata()
 
     ###########################################################################
     #  Other ###############################################
@@ -1067,6 +1068,7 @@ class EntitySet(object):
         """
         for entity in self.entities:
             entity.add_interesting_values(max_values=max_values, verbose=verbose)
+        self.reset_metadata()
 
     def related_instances(self, start_entity_id, final_entity_id,
                           instance_ids=None, time_last=None, add_link=False,
@@ -1258,6 +1260,7 @@ class EntitySet(object):
                         already_sorted=already_sorted,
                         created_index=created_index)
         self.entity_dict[entity.id] = entity
+        self.reset_metadata()
         return self
 
     def _add_multigenerational_link_vars(self, frames, start_entity_id,
