@@ -62,9 +62,6 @@ def test_eq(es):
         'cancel_date': ['cancel_reason', 'cancel_date']}
     assert not es['customers'].__eq__(es['log'], deep=True)
 
-    es['log'].indexed_by = None
-    assert not es['log'].__eq__(es['customers'], deep=True)
-
 
 def test_parents(es):
     assert set(es['log'].parents) == set(['sessions', 'products'])

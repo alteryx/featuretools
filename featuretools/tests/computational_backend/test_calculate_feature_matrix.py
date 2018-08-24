@@ -30,6 +30,7 @@ from featuretools.primitives import (
     Count,
     DirectFeature,
     IdentityFeature,
+    Max,
     Min,
     Percentile,
     Sum
@@ -353,7 +354,6 @@ def test_approximate_multiple_instances_per_cutoff_time(entityset):
                                               cutoff_time=cutoff_time,
                                               chunk_size="cutoff time")
     assert feature_matrix.shape[0] == 2
-    assert feature_matrix[dfeat.get_name()].dropna().shape[0] == 0
     assert feature_matrix[agg_feat.get_name()].tolist() == [5, 1]
 
 
@@ -412,7 +412,7 @@ def test_uses_full_entity_feat_of_approximate(entityset):
     es = entityset
     agg_feat = Sum(es['log']['value'], es['sessions'])
     agg_feat2 = Sum(agg_feat, es['customers'])
-    agg_feat3 = Min(agg_feat, es['customers'])
+    agg_feat3 = Max(agg_feat, es['customers'])
     dfeat = DirectFeature(agg_feat2, es['sessions'])
     dfeat2 = DirectFeature(agg_feat3, es['sessions'])
     p = Percentile(dfeat)
@@ -427,7 +427,7 @@ def test_uses_full_entity_feat_of_approximate(entityset):
         approximate=Timedelta(10, 's'),
         cutoff_time_in_index=True,
         cutoff_time=cutoff_time)
-    assert feature_matrix_only_dfeat2[dfeat2.get_name()].tolist() == [1, 0]
+    assert feature_matrix_only_dfeat2[dfeat2.get_name()].tolist() == [50, 50]
 
     feature_matrix_approx = calculate_feature_matrix(
         [p, dfeat, dfeat2, agg_feat],
@@ -601,7 +601,7 @@ def test_approximate_child_aggs_handled_correctly(entityset):
     es = entityset
     agg_feat = Count(es['customers']['id'], es[u'régions'])
     dfeat = DirectFeature(agg_feat, es['customers'])
-    agg_feat_2 = Count(es['log']['value'], es['customers'])
+    agg_feat_2 = Sum(es['log']['value'], es['customers'])
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-08 10:30:00'),
                                        pd.Timestamp('2011-04-09 10:30:06')],
                               'instance_id': [0, 0]})
@@ -615,7 +615,7 @@ def test_approximate_child_aggs_handled_correctly(entityset):
                                     approximate=Timedelta(10, 's'),
                                     cutoff_time=cutoff_df)
     assert fm[dfeat.get_name()].tolist() == [2, 3]
-    assert fm_2[agg_feat_2.get_name()].tolist() == [0, 2]
+    assert fm_2[agg_feat_2.get_name()].tolist() == [0, 5]
 
 
 def test_cutoff_time_naming(entityset):

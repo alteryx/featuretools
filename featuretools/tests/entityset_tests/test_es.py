@@ -897,6 +897,5 @@ def test_sizeof(entityset):
     for entity in entityset.entities:
         total_size += entity.df.__sizeof__()
         total_size += entity.last_time_index.__sizeof__()
-        total_size += entity.indexed_by.__sizeof__()
 
     assert entityset.__sizeof__() == total_size

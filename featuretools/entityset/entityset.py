@@ -355,7 +355,6 @@ class EntitySet(object):
                                         child_v, child_e.id, child_dtype))
 
         self.relationships.append(relationship)
-        self.index_data(relationship)
         self.reset_metadata()
         return self
 
@@ -937,7 +936,6 @@ class EntitySet(object):
                     other[entity.id].last_time_index is not None):
                 has_last_time_index.append(entity.id)
             combined_es[entity.id].update_data(df=combined_df,
-                                               reindex=True,
                                                recalculate_last_time_indexes=False)
 
         combined_es.add_last_time_indexes(updated_entities=has_last_time_index)
@@ -947,16 +945,6 @@ class EntitySet(object):
     ###########################################################################
     #  Indexing methods  ###############################################
     ###########################################################################
-
-    def index_data(self, r):
-        """
-        If necessary, generate an index on the data which links instances of
-        parent entities to collections of child instances which link to them.
-        """
-        parent_entity = self.entity_dict[r.parent_variable.entity.id]
-        child_entity = self.entity_dict[r.child_variable.entity.id]
-        child_entity.index_by_parent(parent_entity=parent_entity)
-
     def add_last_time_indexes(self, updated_entities=None):
         """
         Calculates the last time index values for each entity (the last time
@@ -1327,7 +1315,7 @@ class EntitySet(object):
                     # print 'adding link var %s to entity %s' % (child_link_name,
                     #                                            child_entity.id)
 
-                    # create an intermeidate dataframe which shares a column
+                    # create an intermediate dataframe which shares a column
                     # with the child dataframe and has a column with the
                     # original parent's id.
                     col_map = {r.parent_variable.id: r.child_variable.id,

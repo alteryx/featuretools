@@ -816,7 +816,7 @@ def test_overrides(es):
 
 
 def test_override_boolean(es):
-    count = Count(es['log']['value'], es['sessions'])
+    count = Count(es['log']['id'], es['sessions'])
     count_lo = GreaterThan(count, 1)
     count_hi = LessThan(count, 10)
 
@@ -853,7 +853,7 @@ def test_override_cmp_from_variable(es):
 
 
 def test_override_cmp(es):
-    count = Count(es['log']['value'], es['sessions'])
+    count = Count(es['log']['id'], es['sessions'])
     _sum = Sum(es['log']['value'], es['sessions'])
     gt_lo = count > 1
     gt_other = count > _sum
@@ -1126,7 +1126,7 @@ def test_two_kinds_of_dependents(es):
     agg3 = Sum(agg2, es['customers'])
     pandas_backend = PandasBackend(es, [p, g, agg3])
     df = pandas_backend.calculate_all_features([0, 1], None)
-    assert df[p.get_name()].tolist() == [0.5, 1.0]
+    assert df[p.get_name()].tolist() == [2. / 3, 1.0]
     assert df[g.get_name()].tolist() == [15, 26]
 
 
