@@ -353,6 +353,9 @@ class Entity(object):
         if instance_vals is None:
             df = self.df
 
+        elif instance_vals.shape[0] == 0:
+            df = self.df.head(0)
+
         elif variable_id is None or variable_id == self.index:
             df = self.df.reindex(instance_vals)
             df.dropna(subset=[self.index], inplace=True)
@@ -360,7 +363,7 @@ class Entity(object):
         else:
             df = self.df.merge(instance_vals.to_frame(),
                                how="inner", left_on=variable_id,
-                               right_index=True).set_index(self.index, drop=False)
+                               right_on=variable_id).set_index(self.index, drop=False)
 
             # ensure filtered df has same categories as original
             if pdtypes.is_categorical_dtype(self.df[variable_id]):
