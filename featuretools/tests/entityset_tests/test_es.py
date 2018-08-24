@@ -63,6 +63,13 @@ def test_operations_invalidate_metadata(entityset):
     assert new_es._metadata is not None
 
 
+def test_reset_metadata(entityset):
+    assert entityset.metadata is not None
+    assert entityset._metadata is not None
+    entityset.reset_metadata()
+    assert entityset._metadata is None
+
+
 def test_cannot_readd_relationships_that_already_exists(entityset):
     before_len = len(entityset.relationships)
     entityset.add_relationship(entityset.relationships[0])
