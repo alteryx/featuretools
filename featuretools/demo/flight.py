@@ -245,5 +245,5 @@ def make_flight_pathname(demo=True):
     return filepath, key, rows
 
 
-BIG_FLIGHT_CSV = 'data_2017_jan_feb.csv.zip'
-SMALL_FLIGHT_CSV = 'data_all_2017.csv.zip'
+SMALL_FLIGHT_CSV = 'data_2017_jan_feb.csv.zip'
+BIG_FLIGHT_CSV = 'data_all_2017.csv.zip'
