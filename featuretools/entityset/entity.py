@@ -358,7 +358,9 @@ class Entity(object):
             df.dropna(subset=[self.index], inplace=True)
 
         else:
-            df = self.df.merge(instance_vals.to_frame(), how="inner").set_index(self.index, drop=False)
+            df = self.df.merge(instance_vals.to_frame(),
+                               how="inner", left_on=variable_id,
+                               right_index=True).set_index(self.index, drop=False)
 
             # ensure filtered df has same categories as original
             if pdtypes.is_categorical_dtype(self.df[variable_id]):
