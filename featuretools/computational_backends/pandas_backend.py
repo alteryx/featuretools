@@ -466,7 +466,6 @@ class PandasBackend(ComputationalBackend):
             frame = pd.merge(left=frame, right=to_merge,
                              left_index=True, right_index=True, how='left')
 
-
         # Handle default values
         # 1. handle non scalar default values
         iterfeats = [f for f in features
