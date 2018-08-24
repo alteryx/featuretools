@@ -7,6 +7,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+import pandas.api.types as pdtypes
 from past.builtins import basestring
 
 from .timedelta import Timedelta
@@ -352,12 +353,22 @@ class Entity(object):
         if instance_vals is None:
             df = self.df
 
+        elif instance_vals.shape[0] == 0:
+            df = self.df.head(0)
+
         elif variable_id is None or variable_id == self.index:
             df = self.df.reindex(instance_vals)
             df.dropna(subset=[self.index], inplace=True)
 
         else:
-            df = self.df[self.df[variable_id].isin(instance_vals)]
+            df = self.df.merge(instance_vals.to_frame(),
+                               how="inner", left_on=variable_id,
+                               right_on=variable_id).set_index(self.index, drop=False)
+
+            # ensure filtered df has same categories as original
+            if pdtypes.is_categorical_dtype(self.df[variable_id]):
+                categories = pd.api.types.CategoricalDtype(categories=self.df[variable_id].cat.categories)
+                df[variable_id] = df[variable_id].astype(categories)
 
         return self._filter_and_sort(df=df,
                                      time_last=time_last,
