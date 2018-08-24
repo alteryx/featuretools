@@ -459,6 +459,7 @@ class Entity(object):
         self.set_secondary_time_index(self.secondary_time_index)
         if recalculate_last_time_indexes and self.last_time_index is not None:
             self.entityset.add_last_time_indexes(updated_entities=[self.id])
+        self.entityset.reset_metadata()
 
     def add_interesting_values(self, max_values=5, verbose=False):
         """
@@ -515,6 +516,8 @@ class Entity(object):
                             # total_count -= counts[idx]
                         else:
                             break
+
+        self.entityset.reset_metadata()
 
     def add_variable(self, new_id, type=None, data=None):
         """Add variable to entity
