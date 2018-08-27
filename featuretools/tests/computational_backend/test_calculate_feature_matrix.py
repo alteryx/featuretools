@@ -17,6 +17,7 @@ from distributed.utils_test import cluster
 
 from ..testing_utils import MockClient, make_ecommerce_entityset, mock_cluster
 
+import featuretools as ft
 from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
 from featuretools.computational_backends.utils import (
     bin_cutoff_times,
@@ -1114,3 +1115,19 @@ def test_string_time_values_in_cutoff_time(entityset):
 
     with pytest.raises(TypeError):
         calculate_feature_matrix([agg_feature], entityset, cutoff_time=cutoff_time)
+
+
+def test_no_data_for_cutoff_time():
+    es = ft.demo.load_mock_customer(return_entityset=True)
+    cutoff_times = pd.DataFrame({"customer_id": [4],
+                                 "time": pd.Timestamp('2014-01-01 02:26:50')})
+
+    trans_per_session = Count(es["transactions"]["transaction_id"], es["sessions"])
+    trans_per_customer = Count(es["transactions"]["transaction_id"], es["customers"])
+    features = [trans_per_customer, Max(trans_per_session, es["customers"])]
+
+    fm = ft.calculate_feature_matrix(features, entityset=es, cutoff_time=cutoff_times)
+
+    # due to default values for each primitive
+    # count will be 0, but max will nan
+    np.testing.assert_array_equal(fm.values, [[0, np.nan]])
