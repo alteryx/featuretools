@@ -8,6 +8,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+import pandas.api.types as pdtypes
 from future import standard_library
 
 from .base_backend import ComputationalBackend
@@ -454,8 +455,15 @@ class PandasBackend(ComputationalBackend):
                                           observed=True, sort=False).agg(to_agg)
             # rename columns to the correct feature names
             to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns.ravel()]
+            to_merge = to_merge[list(agg_rename.values())]
 
-            frame = pd.merge(left=frame, right=to_merge[list(agg_rename.values())],
+            # workaround for pandas bug where categories are in the wrong order
+            # see: https://github.com/pandas-dev/pandas/issues/22501
+            if pdtypes.is_categorical_dtype(frame.index):
+                categories = pdtypes.CategoricalDtype(categories=frame.index.categories)
+                to_merge.index = to_merge.index.astype(object).astype(categories)
+
+            frame = pd.merge(left=frame, right=to_merge,
                              left_index=True, right_index=True, how='left')
 
         # Handle default values

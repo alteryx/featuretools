@@ -1020,11 +1020,14 @@ class EntitySet(object):
                     if child_e.last_time_index is None:
                         continue
                     link_var = child_vars[entity.id][child_e.id].id
+
                     lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
                                            entity.index: child_e.df[link_var]})
+
                     # sort by time and keep only the most recent
                     lti_df.sort_values(['last_time', entity.index],
                                        kind="mergesort", inplace=True)
+
                     lti_df.drop_duplicates(entity.index,
                                            keep='last',
                                            inplace=True)
@@ -1245,7 +1248,6 @@ class EntitySet(object):
         """
 
         # caller can pass either a path or a start/end entity pair
-
         assert start_entity_id is not None
         if path is None:
             assert end_entity_id is not None
@@ -1300,9 +1302,9 @@ class EntitySet(object):
                     merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
 
                     # merge the dataframe, adding the link variable to the child
-                    frames[child_entity.id] = pd.merge(left=merge_df,
-                                                       right=child_df,
-                                                       on=r.child_variable.id)
+                    frames[child_entity.id] = merge_df.merge(child_df,
+                                                             left_index=True,
+                                                             right_on=r.child_variable.id)
 
     @classmethod
     def _load_dummy_entity_data_and_variable_types(cls, metadata):
