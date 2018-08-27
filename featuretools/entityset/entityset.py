@@ -1299,11 +1299,11 @@ class EntitySet(object):
                     # original parent's id.
                     col_map = {r.parent_variable.id: r.child_variable.id,
                                parent_link_name: child_link_name}
-                    merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
+                    merge_df = parent_df[list(col_map.keys())].rename(columns=col_map).reset_index(drop=True)
 
                     # merge the dataframe, adding the link variable to the child
                     frames[child_entity.id] = merge_df.merge(child_df,
-                                                             left_index=True,
+                                                             left_on=r.child_variable.id,
                                                              right_on=r.child_variable.id)
 
     @classmethod
