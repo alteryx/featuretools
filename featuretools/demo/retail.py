@@ -103,4 +103,4 @@ def make_retail_pathname(nrows, csv_name):
     return os.path.join(ft_config['csv_save_location'], file_name)
 
 
-RETAIL_CSV = "online-retail-logs-2018-08-03"
+RETAIL_CSV = "online-retail-logs-2018-08-23"
