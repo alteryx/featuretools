@@ -1,6 +1,5 @@
 from __future__ import division, print_function
 
-import copy
 import logging
 from builtins import range
 from datetime import datetime
@@ -351,7 +350,7 @@ class Entity(object):
                 "training window must be an absolute Timedelta"
 
         if instance_vals is None:
-            df = self.df
+            df = self.df.copy()
 
         elif instance_vals.shape[0] == 0:
             df = self.df.head(0)
@@ -361,19 +360,25 @@ class Entity(object):
             df.dropna(subset=[self.index], inplace=True)
 
         else:
-            df = self.df.merge(instance_vals.to_frame(),
-                               how="inner", left_on=variable_id,
-                               right_on=variable_id).set_index(self.index, drop=False)
+            df = self.df.merge(instance_vals.to_frame(variable_id),
+                               how="inner", on=variable_id)
+            df = df.set_index(self.index, drop=False)
 
             # ensure filtered df has same categories as original
+            # workaround for issue below
+            # github.com/pandas-dev/pandas/issues/22501#issuecomment-415982538
             if pdtypes.is_categorical_dtype(self.df[variable_id]):
                 categories = pd.api.types.CategoricalDtype(categories=self.df[variable_id].cat.categories)
                 df[variable_id] = df[variable_id].astype(categories)
 
-        return self._filter_and_sort(df=df,
-                                     time_last=time_last,
-                                     training_window=training_window,
-                                     columns=columns)
+        df = self._handle_time(df=df,
+                               time_last=time_last,
+                               training_window=training_window)
+
+        if columns is not None:
+            df = df[columns]
+
+        return df
 
     def infer_variable_types(self, ignore=None, link_vars=None):
         """Extracts the variables from a dataframe
@@ -648,16 +653,19 @@ class Entity(object):
         elif type(instance_vals) == pd.Series:
             out_vals = instance_vals.rename(variable_id)
         else:
-            out_vals = pd.Series(instance_vals, name=variable_id)
+            out_vals = pd.Series(instance_vals)
 
-        # we've had weird problem with pandas read-only errors
-        out_vals = copy.deepcopy(out_vals)
         # no duplicates or NaN values
-        return pd.Series(out_vals).drop_duplicates().dropna()
+        out_vals = out_vals.drop_duplicates().dropna()
 
-    def _filter_and_sort(self, df, time_last=None,
-                         training_window=None,
-                         columns=None):
+        # want index to have no name for the merge in query_by_values
+        out_vals.index.name = None
+
+        return out_vals
+
+    def _handle_time(self, df, time_last=None,
+                     training_window=None,
+                     columns=None):
         """
         Filter a dataframe for all instances before time_last.
         If this entity does not have a time index, return the original
@@ -686,10 +694,7 @@ class Entity(object):
                 second_time_index_columns = self.secondary_time_index[secondary_time_index]
                 df.loc[mask, second_time_index_columns] = np.nan
 
-        if columns is not None:
-            df = df[columns]
-
-        return df.copy()
+        return df
 
 
 def col_is_datetime(col):
