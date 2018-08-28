@@ -6,6 +6,8 @@ Changelog
     * Improve performance of all feature calculations (:pr:`224`)
     * Update agg primitives to use more efficient functions (:pr:`215`)
     * Optimize metadata calculation (:pr:`229`)
+    * More robust handling when no data at a cutoff time (:pr:`234`)
+    * Workaround categorical merge (:pr:`231`)
     * Switch which CSV is associated with which variable (:pr:`228`)
     * Remove unused kwargs from query_by_values, filter_and_sort (:pr:`225`)
     * Remove convert_links_to_integers (:pr:`219`)
