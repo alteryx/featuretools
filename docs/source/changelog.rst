@@ -2,7 +2,7 @@
 
 Changelog
 ---------
-**v0.3.0** Aug 24, 2018
+**v0.3.0** Aug 27, 2018
     * Improve performance of all feature calculations (:pr:`224`)
     * Update agg primitives to use more efficient functions (:pr:`215`)
     * Optimize metadata calculation (:pr:`229`)
