@@ -88,11 +88,11 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False, us
     es.normalize_entity(new_entity_id="orders",
                         base_entity_id="order_products",
                         index="order_id",
-                        additional_variables=["customer_id", "country", "cancelled"])
+                        additional_variables=["customer_name", "country", "cancelled"])
 
     es.normalize_entity(new_entity_id="customers",
                         base_entity_id="orders",
-                        index="customer_id")
+                        index="customer_name")
     es.add_last_time_indexes()
 
     return es
@@ -103,4 +103,4 @@ def make_retail_pathname(nrows, csv_name):
     return os.path.join(ft_config['csv_save_location'], file_name)
 
 
-RETAIL_CSV = "online-retail-logs-2018-08-23"
+RETAIL_CSV = "online-retail-logs-2018-08-28"
