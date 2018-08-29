@@ -681,3 +681,34 @@ def test_commutative(es):
 
     assert num_add_feats == 3
     assert num_add_as_base_feat == 9
+
+
+def test_transform_consistency():
+    # Create dataframe
+    df = pd.DataFrame({'a': [14, 12, 10], 'b': [False, False, True],
+                       'b1': [True, True, False], 'b12': [4, 5, 6],
+                       'P': [10, 15, 12]})
+    es = ft.EntitySet(id='test')
+    # Add dataframe to entityset
+    es.entity_from_dataframe(entity_id='first', dataframe=df,
+                             index='index',
+                             make_index=True)
+
+    # Generate features
+    feature_defs = ft.dfs(entityset=es, target_entity='first',
+                          trans_primitives=['and', 'add', 'or'],
+                          features_only=True)
+
+    # Check for correct ordering of features
+    assert (feature_with_name(feature_defs, 'a'))
+    assert (feature_with_name(feature_defs, 'b'))
+    assert (feature_with_name(feature_defs, 'b1'))
+    assert (feature_with_name(feature_defs, 'b12'))
+    assert (feature_with_name(feature_defs, 'P'))
+    assert (feature_with_name(feature_defs, 'AND(b, b1)'))
+    assert (feature_with_name(feature_defs, 'a + P'))
+    assert (feature_with_name(feature_defs, 'b12 + P'))
+    assert (feature_with_name(feature_defs, 'a + b12'))
+    assert (feature_with_name(feature_defs, 'OR(b, b1)'))
+    assert (feature_with_name(feature_defs, 'OR(AND(b, b1), b)'))
+    assert (feature_with_name(feature_defs, 'OR(AND(b, b1), b1)'))

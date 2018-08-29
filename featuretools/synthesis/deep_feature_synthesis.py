@@ -749,4 +749,7 @@ def match(input_types, features, replace=False, commutative=False):
                 new_match = tuple(new_match)
             matching_inputs.add(new_match)
 
+    if commutative:
+        return set([tuple(sorted(s, key=lambda x: x.get_name().lower())) for s in matching_inputs])
+
     return set([tuple(s) for s in matching_inputs])
