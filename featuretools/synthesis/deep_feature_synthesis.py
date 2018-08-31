@@ -690,6 +690,9 @@ def check_stacking(primitive, input_types):
             if type(f) in primitive.stack_on_exclude:
                 return False
 
+    if primitive.expanding:
+        return False
+
     for f in input_types:
         if f.base_of_exclude is not None:
             if primitive in f.base_of_exclude:
