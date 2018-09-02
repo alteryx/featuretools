@@ -83,6 +83,25 @@ The Featuretools community is happy to provide support to users of Featuretools.
 3. For discussion regarding development on the core library, use [gitter](https://gitter.im/featuretools/featuretools).
 4. For everything else, the core developers can be reached by email at help@featuretools.com.
 
+## Citing Featuretools
+
+If you use Featuretools, please consider citing the following paper:
+
+James Max Kanter, Kalyan Veeramachaneni. [Deep feature synthesis: Towards automating data science endeavors.](https://dai.lids.mit.edu/wp-content/uploads/2017/10/DSAA_DSM_2015.pdf) *IEEE DSAA 2015*.
+
+BibTeX entry:
+
+```bibtex
+@inproceedings{kanter2015deep,
+  author    = {James Max Kanter and Kalyan Veeramachaneni},
+  title     = {Deep feature synthesis: Towards automating data science endeavors},
+  booktitle = {2015 {IEEE} International Conference on Data Science and Advanced Analytics, DSAA 2015, Paris, France, October 19-21, 2015},
+  pages     = {1--10},
+  year      = {2015},
+  organization={IEEE}
+}
+```
+
 
 ## Feature Labs
 
