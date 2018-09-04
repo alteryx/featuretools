@@ -218,6 +218,7 @@ def test_stack_on_self(es, test_primitive, parent_entity):
 
 
 def test_stack_expanding(es, test_primitive, parent_entity):
+    test_primitive.input_types = [Discrete]
     expanding_primitive = NMostCommon(es['sessions']['device_type'], parent_entity)
     assert not (check_stacking(test_primitive, [expanding_primitive]))
 
