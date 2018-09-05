@@ -68,7 +68,23 @@ With the columns we have, it would be problematic for the ``scheduled_dep_time``
 
 However, it's possible to know many things about a trip six months or more before it takes off; the trip distance, carrier, flight number and even when a flight is supposed to leave and land are always known before we buy a ticket. Our time index construct exists to reflect the reality that those can be known much before the scheduled departure time.
 
-That being said, not all columns can be known at our time index six months in advance. If we were able to know the real arrival time of the plane before we booked, we would have great success in predicting delays! For this purpose, it's possible to set a ``secondary_time_index`` which can mark specific columns as not available until a later date. The ``secondary_time_index`` of this entity is set to the arrival time. 
+That being said, not all columns can be known at our time index six months in advance. If we were able to know the real arrival time of the plane before we booked, we would have great success in predicting delays! 
+
+.. image:: ../images/flight_ti_1.png
+   :width: 400 px
+   :alt: flight time index diagram
+   :align: center
+
+In this diagram of a row, we have set the ``time_index`` to the time the flight was scheduled. However, any information about what happens to the flight after it departs is **invalid** for use at that time. If we were to use any of that information prior to when the flight lands, we would be leaking labels. 
+
+While one option would be to remove that data from the entityset, a better option would be to use that data somehow. To that end, it's possible to set a ``secondary_time_index`` which can mark specific columns as available at a later date. The ``secondary_time_index`` of this row is set to the arrival time. 
+
+.. image:: ../images/flight_ti_2.png
+   :width: 400 px
+   :alt: flight secondary time index diagram
+   :align: center
+
+By setting a ``secondary_time_index``, we can still use the delay information from a row, but only when they would become known. It's possible to know everything about how a trip went after it has arrived, so we can happily use that information at any time after the flight lands.
 
 .. hint::
 
@@ -85,7 +101,7 @@ As an exercise, take a minute to think about which of the twenty two columns her
 
 + These only be known at the ``secondary_time_index``, after the flight has completed: ``dep_delay``, ``taxi_out``, ``taxi_in``, ``arr_delay``, ``air_time``, ``carrier_delay``, ``weather_delay``, ``national_airspace_delay``, ``security_delay``, ``late_aircraft_delay``, ``dep_time``, ``arr_time``, ``cancelled``, ``diverted``
 
-An Entity can have a third, hidden, time index called the ``last_time_index``. More details for that can be found in the `other temporal workflows <#training-window-and-the-last-time-index>`_ section.
+An entity can have a third, hidden, time index called the ``last_time_index``. More details for that can be found in the `other temporal workflows <#training-window-and-the-last-time-index>`_ section.
 
 
 .. _cutoff-time:
@@ -97,7 +113,14 @@ For a given :class:`EntitySet <EntitySet>`, it's possible to provide time indice
 
 A **cutoff_time** dataframe is a concise way of passing complicated instructions to :func:`Deep Feature Synthesis <dfs>` (DFS). Each row contains a reference id, a time and optionally, a label. For every unique id-time pair, we will create a row of the feature matrix.
 
-Let's do a short example. We want to predict whether customers ``1``, ``2`` and ``3`` will spend $500 after 4:00am on 12/1/2014 by the end of the day. The ``time`` column emulates the way a human would make a historical prediction, it is an instruction to not use any future information constructing that row even if we have it in our entityset. In this case, we're making predictions for all three customers at the same time, 4:00am on 12/1/2014 so we set that as the second column. We have also checked that ``1`` and ``2`` will spend $500 while customer ``3`` will not, so we include those labels as a third column.
+Let's do a short example. We want to predict whether customers ``1``, ``2`` and ``3`` will spend $500 after ``04:00`` on January 1 by the end of the day. The ``time`` column emulates the way a human would make a historical prediction, it is an instruction to not use any future information constructing that row even if we have it in our entityset. In this case, we're making predictions for all three customers at the same time, ``2014-1-1 04:00`` so we set that as the second column. We have also checked that ``1`` and ``2`` will spend $500 while customer ``3`` will not, so we include those labels as a third column.
+
+.. image:: ../images/retail_ct.png
+   :width: 400 px
+   :alt: retail cutoff time diagram
+   :align: center
+
+We will use all of the information between the ``time_index`` of rows ``1``, ``2`` and ``3`` and the prediction time ``04:00 2014-1-1`` to make predictions about what will happen for the rest of the day.
 
 .. ipython:: python
 
@@ -119,7 +142,14 @@ Flight Predictions
 ~~~~~~~~~~~~~~~~~~~
 Let's make features at some varying times in the flight example. Trip ``14`` is a flight from CLT to PHX on Janulary 31 2017 and trip ``92`` is a flight from PIT to DFW on January 1. We can set any cutoff time before the flight is scheduled to depart, emulating how we would make the prediction at that point in time. 
 
-We set two cutoff times for trip ``14`` at two different times: one which is more than a month before the flight and another which is only 5 days before. For trip ``92``, we'll only set one cutoff time three days before it is scheduled to leave. Our cutoff time dataframe looks like this:
+We set two cutoff times for trip ``14`` at two different times: one which is more than a month before the flight and another which is only 5 days before. For trip ``92``, we'll only set one cutoff time three days before it is scheduled to leave. 
+
+.. image:: ../images/flight_ct.png
+   :width: 500 px
+   :alt: flight cutoff time diagram
+   :align: center
+
+Our cutoff time dataframe looks like this:
 
 .. ipython:: python
     
