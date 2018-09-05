@@ -5,7 +5,7 @@
 Handling Time
 =============
 
-Time is a naturally relevant factor in many data science questions. Consider the following questions:
+Time is a naturally relevant factor in many data science problems. Consider the following questions:
 
 1. How much revenue will I bring in next month?
 2. What is the expected delay on my next flight?
@@ -13,20 +13,18 @@ Time is a naturally relevant factor in many data science questions. Consider the
 
 A good way to estimate how effective you are at predicting revenue would be to see how you would have done predicting it last month or the month before. You would similarly be interested in checking if you were able to predict the delay on your previous flight, or how good you are historically at detecting customers who would upgrade.
 
-However, it would be immensely tricky to make features by hand for those predictions using only past data. For every row, you would need to find out the **prediction time** and then **cut off** any data in your dataset that happens after that time. Then, you could use the remaining valid data to make any features you like.
+However, it is immensely tricky to make a feature matrix by hand for those predictions. To create historical predictions you need to set a **time** to make a prediction for every row and then **cut off** any data in your dataset that happens after that time. Then, you can use the remaining valid data to make any features you like.
 
-Some of the most powerful functionality in Featuretools is the ability to accurately and precisely handle time. To make the most of that functionality, it is necessary to understand how provided times will be used.
+Some of the most powerful functionality in Featuretools is the ability to accurately and precisely handle time. To make the most of that functionality, it is necessary to understand how :ref:`provided times <representing-time>` will be used.
 
 Outline
 ---------
-This page is made of two long but important sections:
+This page is the answer to the question *why should I pay attention to datetimes in my data?* There are two interconnected parts to that answer:
 
 1. What are the implications of setting a :ref:`time index <representing-time>`?
 2. How does Featuretools take in :ref:`predictions <cutoff-time>`?
 
-The first section shows how to handle the complexities that can come up when assigning times to your data and the second shows how to use those times to make features.
-
-In a way, the two sections are an answer to the same fundamental question: *why should I pay attention to datetimes in my data?* Because of that, be warned that your understanding of one section will be limited by your understanding of the other.
+The first section shows how to handle the complexities that can come up when assigning times to your data and the second shows how to use those times to make rows of a feature matrix. While time can be a sticking point for our users, we have found that it's often a useful construct in utilizing data from the real world.
 
 .. _representing-time:
 
@@ -169,7 +167,7 @@ The training window in DFS limits the amount of past data that can be used while
 
 This works well for :class:`entities <Entity>` where an instance occurs at a single point in time. However, sometimes an instance can happen at many points in time.
 
-For example, suppose a customer’s session has multiple transactions which can happen at different points in time. If we are trying to count the number of sessions a user had in a given time period, we often want to count all sessions that had *any* transaction during the training window. To accomplish this, we need to not only know when a session starts, but when it ends. The last time that an instance appears in the data is stored as the ``last_time_index`` of an entity. We can compare the time index and the last time index of ``sessions``: 
+For example, suppose a customer’s session has multiple transactions which can happen at different points in time. If we are trying to count the number of sessions a user had in a given time period, we often want to count all sessions that were active during the training window. To accomplish this, we need to not only know when a session starts, but when it ends. The last time that an instance appears in the data is stored as the ``last_time_index`` of an entity. We can compare the time index and the last time index of ``sessions``: 
 
 .. ipython:: python
 
