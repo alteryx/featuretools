@@ -32,7 +32,7 @@ class DeepFeatureSynthesis(object):
             agg_primitives (list[str or :class:`.primitives.AggregationPrimitive`], optional):
                 list of Aggregation Feature types to apply.
 
-                Default: ["sum", "std", "max", "skew", "min", "mean", "count", "percent_true", "n_unique", "mode"]
+                Default: ["sum", "std", "max", "skew", "min", "mean", "count", "percent_true", "num_unique", "mode"]
 
             trans_primitives (list[str or :class:`.primitives.TransformPrimitive`], optional):
                 list of Transform primitives to use.
