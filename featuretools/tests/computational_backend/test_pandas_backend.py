@@ -4,7 +4,6 @@ from datetime import datetime
 
 import numpy as np
 import pytest
-from numpy.testing import assert_almost_equal
 
 from ..testing_utils import make_ecommerce_entityset
 
@@ -477,7 +476,7 @@ def test_trend(entityset, backend):
 
     true_results = [-0.812730, 4.870378, np.nan]
 
-    assert_almost_equal(df[trend.get_name()].values.tolist(), true_results, decimal=5)
+    np.testing.assert_almost_equal(df[trend.get_name()].values.tolist(), true_results, decimal=5)
 
 
 def test_direct_squared(entityset, backend):
