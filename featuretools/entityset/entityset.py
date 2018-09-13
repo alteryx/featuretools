@@ -1211,6 +1211,8 @@ class EntitySet(object):
                                  r.child_entity.id == entity_id]
 
         for c in dataframe.columns:
+            if not isinstance(c, str):
+                raise ValueError("All column names must be strings. (Column has name {})".format(c))
             if dataframe[c].dtype.name.find('category') > -1:
                 if c not in variable_types:
                     variable_types[c] = vtypes.Categorical

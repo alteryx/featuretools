@@ -366,6 +366,16 @@ def test_entity_init(entityset):
     assert entityset['test_entity'].df['time'].dtype == df['time'].dtype
     assert set(entityset['test_entity'].df['id']) == set(df['id'])
 
+def test_nonstr_column_names():
+    df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 3: ['a', 'b', 'c']})
+    es = ft.EntitySet(id='Failure')
+
+    with pytest.raises(ValueError) as excinfo:
+        es.entity_from_dataframe(entity_id='str_cols',
+                             dataframe=df,
+                             index='index')
+    assert 'All column names must be strings. (Column has name 3)' in str(excinfo)
+
 
 def test_sort_time_id():
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
