@@ -17,7 +17,6 @@ setup(
     name='featuretools',
     version='0.3.0',
     packages=find_packages(),
-    package_data={'featuretools': ['config.yaml']},
     description='a framework for automated feature engineering',
     url='http://featuretools.com',
     license='BSD 3-clause',
