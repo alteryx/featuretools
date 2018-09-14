@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 
 from featuretools.config import initialize_logging
 

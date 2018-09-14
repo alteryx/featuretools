@@ -83,4 +83,5 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
 
     return es
 
+
 RETAIL_CSV = "online-retail-logs-2018-08-28"

@@ -42,4 +42,5 @@ def initialize_logging():
             logger.addHandler(out_handler)
         logger.propagate = False
 
+
 initialize_logging()
