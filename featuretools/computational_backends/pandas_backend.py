@@ -378,8 +378,8 @@ class PandasBackend(ComputationalBackend):
 
         # handle where clause for all functions below
         where = test_feature.where
-        if where is not None:
-            base_frame = base_frame[base_frame[where.get_name()]]
+        if where is not None and not base_frame.empty:
+            base_frame = base_frame.loc[base_frame[where.get_name()]]
 
         relationship_path = self.entityset.find_backward_path(entity.id,
                                                               child_entity.id)
