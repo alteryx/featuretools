@@ -1,22 +1,17 @@
 import math
-import os
 import re
 from builtins import str
 
-import boto3
 import pandas as pd
-from botocore.handlers import disable_signing
 from tqdm import tqdm
 
 import featuretools as ft
 import featuretools.variable_types as vtypes
-from featuretools.config import config as ft_config
 
 
 def load_flight(month_filter=None,
                 categorical_filter=None,
                 nrows=None,
-                use_cache=True,
                 demo=True,
                 return_single_table=False,
                 verbose=False):
@@ -31,7 +26,6 @@ def load_flight(month_filter=None,
             Example is ``{'dest_city': ['Boston, MA'], 'origin_city': ['Boston, MA']}``
             which returns all flights in OR out of Boston. To skip, set to None.
         nrows (int): Passed to nrows in ``pd.read_csv``. Used before filtering.
-        use_cache (bool): Use previously downloaded csv if possible.
         demo (bool): Use only two months of data. If False, use the whole year.
         return_single_table (bool): Exit the function early and return a dataframe.
         verbose (bool): Show a progress bar while loading the data.
@@ -62,20 +56,15 @@ def load_flight(month_filter=None,
                 flights.dest -> airports.dest
     '''
 
-    demo_save_path, key, csv_length = make_flight_pathname(demo=demo)
+    key, csv_length = make_flight_pathname(demo=demo)
 
-    if not use_cache or not os.path.isfile(demo_save_path):
-        print('Downloading data from s3...')
-        bucket_name = 'featuretools-static'
-        key = key
-
-        s3 = boto3.resource('s3')
-        s3.meta.client.meta.events.register('choose-signer.s3.*', disable_signing)
-        s3.Bucket(bucket_name).download_file(key, demo_save_path)
+    print('Downloading data from s3...')
+    bucket_name = 'featuretools-static'
+    s3_url = "https://s3.amazonaws.com/{}/{}".format(bucket_name, key)
 
     chunksize = math.ceil(csv_length / 99)
     pd.options.display.max_columns = 200
-    iter_csv = pd.read_csv(demo_save_path,
+    iter_csv = pd.read_csv(s3_url,
                            iterator=True,
                            nrows=nrows,
                            chunksize=chunksize)
@@ -240,9 +229,8 @@ def make_flight_pathname(demo=True):
         filename = BIG_FLIGHT_CSV
         key = 'bots_flight_data_2017/' + filename
         rows = 5162742
-    filepath = os.path.join(ft_config['csv_save_location'], filename)
 
-    return filepath, key, rows
+    return key, rows
 
 
 SMALL_FLIGHT_CSV = 'data_2017_jan_feb.csv.zip'

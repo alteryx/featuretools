@@ -1,5 +1,4 @@
 include *.txt
-include featuretools/config.yaml
 include LICENSE
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
