@@ -502,4 +502,9 @@ def test_where_clause_empty_dataframe():
 
     where = ft.Feature(es["child"]["value"]) == 1
     count = Count(es["child"]['id'], es["parent"], where=where)
+
+    # cutoff time before all rows
     ft.calculate_feature_matrix(entityset=es, features=[count], cutoff_time=pd.Timestamp("12/31/2017"))
+
+    # cutoff time after all rows, but where clause filters all rows
+    ft.calculate_feature_matrix(entityset=es, features=[count], cutoff_time=pd.Timestamp("1/4/2018"))
