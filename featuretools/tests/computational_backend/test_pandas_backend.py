@@ -2,10 +2,12 @@
 
 from datetime import datetime
 
+import pandas as pd
 import pytest
 
 from ..testing_utils import make_ecommerce_entityset
 
+import featuretools as ft
 from featuretools import Timedelta
 from featuretools.computational_backends.pandas_backend import PandasBackend
 from featuretools.primitives import (
@@ -484,3 +486,25 @@ def test_agg_empty_child(entityset, backend):
                                                time_last=datetime(2011, 4, 8))
 
     assert df["COUNT(log)"].iloc[0] == 0
+
+
+def test_where_clause_empty_dataframe():
+    parent_df = pd.DataFrame({"id": [1]})
+    child_df = pd.DataFrame({"id": [1, 2, 3],
+                             "parent_id": [1, 1, 1],
+                             "time_index": pd.date_range(start='1/1/2018', periods=3),
+                             "value": [10, 5, 2]})
+
+    es = ft.EntitySet(id="blah")
+    es.entity_from_dataframe(entity_id="parent", dataframe=parent_df, index="id")
+    es.entity_from_dataframe(entity_id="child", dataframe=child_df, index="id", time_index="time_index")
+    es.add_relationship(ft.Relationship(es["parent"]["id"], es["child"]["parent_id"]))
+
+    where = ft.Feature(es["child"]["value"]) == 1
+    count = Count(es["child"]['id'], es["parent"], where=where)
+
+    # cutoff time before all rows
+    ft.calculate_feature_matrix(entityset=es, features=[count], cutoff_time=pd.Timestamp("12/31/2017"))
+
+    # cutoff time after all rows, but where clause filters all rows
+    ft.calculate_feature_matrix(entityset=es, features=[count], cutoff_time=pd.Timestamp("1/4/2018"))
