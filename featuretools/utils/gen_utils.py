@@ -77,3 +77,14 @@ def make_tqdm_iterator(**kwargs):
     else:
         iterator = tqdm(**options)
     return iterator
+
+
+def is_string(test_value):
+    """Checks for string in Python2 and Python3
+       Via Stack Overflow: https://stackoverflow.com/a/22679982/9458191
+    """
+    try:
+        basestring
+    except NameError:
+        basestring = str
+    return isinstance(test_value, basestring)

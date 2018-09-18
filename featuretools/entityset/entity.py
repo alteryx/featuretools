@@ -7,11 +7,11 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
-from past.builtins import basestring
 
 from .timedelta import Timedelta
 
 from featuretools import variable_types as vtypes
+from featuretools.utils import is_string
 from featuretools.utils.wrangle import (
     _check_time_type,
     _check_timedelta,
@@ -66,7 +66,7 @@ class Entity(object):
                 used for inferring variable types.
 
         """
-        assert isinstance(id, basestring), "Entity id must be a string"
+        assert is_string(id), "Entity id must be a string"
         assert len(df.columns) == len(set(df.columns)), "Duplicate column names"
         self.data = {"df": df,
                      "last_time_index": last_time_index,

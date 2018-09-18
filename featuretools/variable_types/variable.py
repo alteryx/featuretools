@@ -4,7 +4,8 @@ from builtins import object
 
 import numpy as np
 import pandas as pd
-from past.builtins import basestring
+
+from featuretools.utils import is_string
 
 
 class Variable(object):
@@ -25,7 +26,7 @@ class Variable(object):
     _default_pandas_dtype = object
 
     def __init__(self, id, entity, name=None):
-        assert isinstance(id, basestring), "Variable id must be a string"
+        assert is_string(id), "Variable id must be a string"
         self.id = id
         self._name = name
         self.entity_id = entity.id
