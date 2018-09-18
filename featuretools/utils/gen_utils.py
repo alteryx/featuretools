@@ -84,7 +84,7 @@ def is_string(test_value):
        Via Stack Overflow: https://stackoverflow.com/a/22679982/9458191
     """
     try:
-        from builtins import basestring
-    except ImportError:
-        basestring = str
-    return isinstance(test_value, basestring)
+        python_string = basestring
+    except NameError:
+        python_string = str
+    return isinstance(test_value, python_string)
