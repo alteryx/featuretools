@@ -1,6 +1,5 @@
 import sys
 from builtins import object
-
 from pympler.asizeof import asizeof as getsize  # noqa
 from tqdm import tqdm
 
@@ -84,7 +83,7 @@ def is_string(test_value):
        Via Stack Overflow: https://stackoverflow.com/a/22679982/9458191
     """
     try:
-        basestring
-    except NameError:
+        from builtins import basestring
+    except ImportError:
         basestring = str
     return isinstance(test_value, basestring)
