@@ -12,6 +12,7 @@ from featuretools import Timedelta
 from featuretools.computational_backends.pandas_backend import PandasBackend
 from featuretools.primitives import (
     And,
+    Trend,
     Count,
     DirectFeature,
     Equals,
@@ -488,7 +489,7 @@ def test_agg_empty_child(entityset, backend):
     assert df["COUNT(log)"].iloc[0] == 0
 
 
-def test_where_clause_empty_dataframe():
+def test_empty_child_dataframe():
     parent_df = pd.DataFrame({"id": [1]})
     child_df = pd.DataFrame({"id": [1, 2, 3],
                              "parent_id": [1, 1, 1],
@@ -500,11 +501,19 @@ def test_where_clause_empty_dataframe():
     es.entity_from_dataframe(entity_id="child", dataframe=child_df, index="id", time_index="time_index")
     es.add_relationship(ft.Relationship(es["parent"]["id"], es["child"]["parent_id"]))
 
+
+    # create regular agg
+    count = Count(es["child"]['id'], es["parent"])
+
+    # create a feature  with where
     where = ft.Feature(es["child"]["value"]) == 1
-    count = Count(es["child"]['id'], es["parent"], where=where)
+    count_where = Count(es["child"]['id'], es["parent"], where=where)
+
+    # create a aggregation feature that requires multiple arguments
+    trend = Trend([es["child"]['value'], es["child"]['time_index']], es["parent"])
 
     # cutoff time before all rows
-    ft.calculate_feature_matrix(entityset=es, features=[count], cutoff_time=pd.Timestamp("12/31/2017"))
+    ft.calculate_feature_matrix(entityset=es, features=[count, count_where, trend], cutoff_time=pd.Timestamp("12/31/2017"))
 
     # cutoff time after all rows, but where clause filters all rows
-    ft.calculate_feature_matrix(entityset=es, features=[count], cutoff_time=pd.Timestamp("1/4/2018"))
+    ft.calculate_feature_matrix(entityset=es, features=[count, count_where, trend], cutoff_time=pd.Timestamp("1/4/2018"))

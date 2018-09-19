@@ -376,95 +376,97 @@ class PandasBackend(ComputationalBackend):
         if not len(features):
             return frame
 
-        # handle where clause for all functions below
-        where = test_feature.where
-        if where is not None and not base_frame.empty:
-            base_frame = base_frame.loc[base_frame[where.get_name()]]
+        # when no child data, just add all the features to frame with nan
+        if base_frame.empty:
+            for f in features:
+                frame[f.get_name()] = np.nan
+        else:
+            where = test_feature.where
+            if where is not None:
+                base_frame = base_frame.loc[base_frame[where.get_name()]]
 
-        relationship_path = self.entityset.find_backward_path(entity.id,
-                                                              child_entity.id)
+            relationship_path = self.entityset.find_backward_path(entity.id,
+                                                                  child_entity.id)
 
-        groupby_var = Relationship._get_link_variable_name(relationship_path)
+            groupby_var = Relationship._get_link_variable_name(relationship_path)
 
-        # if the use_previous property exists on this feature, include only the
-        # instances from the child entity included in that Timedelta
-        use_previous = test_feature.use_previous
-        if use_previous and not base_frame.empty:
-            # Filter by use_previous values
-            time_last = self.time_last
-            if use_previous.is_absolute():
-                time_first = time_last - use_previous
-                ti = child_entity.time_index
-                if ti is not None:
-                    base_frame = base_frame[base_frame[ti] >= time_first]
-            else:
-                n = use_previous.value
+            # if the use_previous property exists on this feature, include only the
+            # instances from the child entity included in that Timedelta
+            use_previous = test_feature.use_previous
+            if use_previous and not base_frame.empty:
+                # Filter by use_previous values
+                time_last = self.time_last
+                if use_previous.is_absolute():
+                    time_first = time_last - use_previous
+                    ti = child_entity.time_index
+                    if ti is not None:
+                        base_frame = base_frame[base_frame[ti] >= time_first]
+                else:
+                    n = use_previous.value
 
-                def last_n(df):
-                    return df.iloc[-n:]
+                    def last_n(df):
+                        return df.iloc[-n:]
 
-                base_frame = base_frame.groupby(groupby_var, observed=True, sort=False).apply(last_n)
+                    base_frame = base_frame.groupby(groupby_var, observed=True, sort=False).apply(last_n)
 
-        to_agg = {}
-        agg_rename = {}
-        to_apply = set()
-        # apply multivariable and time-dependent features as we find them, and
-        # save aggregable features for later
-        for f in features:
-            if _can_agg(f):
-                variable_id = f.base_features[0].get_name()
+            to_agg = {}
+            agg_rename = {}
+            to_apply = set()
+            # apply multivariable and time-dependent features as we find them, and
+            # save aggregable features for later
+            for f in features:
+                if _can_agg(f):
+                    variable_id = f.base_features[0].get_name()
 
-                if variable_id not in to_agg:
-                    to_agg[variable_id] = []
+                    if variable_id not in to_agg:
+                        to_agg[variable_id] = []
 
-                func = f.get_function()
-                funcname = func
-                if callable(func):
-                    funcname = func.__name__
+                    func = f.get_function()
+                    funcname = func
+                    if callable(func):
+                        funcname = func.__name__
 
-                to_agg[variable_id].append(func)
-                # this is used below to rename columns that pandas names for us
-                agg_rename[u"{}-{}".format(variable_id, funcname)] = f.get_name()
-                continue
+                    to_agg[variable_id].append(func)
+                    # this is used below to rename columns that pandas names for us
+                    agg_rename[u"{}-{}".format(variable_id, funcname)] = f.get_name()
+                    continue
 
-            to_apply.add(f)
+                to_apply.add(f)
 
-        # Apply the non-aggregable functions generate a new dataframe, and merge
-        # it with the existing one
-        if len(to_apply):
-            wrap = agg_wrapper(to_apply, self.time_last)
-            # groupby_var can be both the name of the index and a column,
-            # to silence pandas warning about ambiguity we explicitly pass
-            # the column (in actuality grouping by both index and group would
-            # work)
-            to_merge = base_frame.groupby(base_frame[groupby_var], observed=True, sort=False).apply(wrap)
+            # Apply the non-aggregable functions generate a new dataframe, and merge
+            # it with the existing one
+            if len(to_apply):
+                wrap = agg_wrapper(to_apply, self.time_last)
+                # groupby_var can be both the name of the index and a column,
+                # to silence pandas warning about ambiguity we explicitly pass
+                # the column (in actuality grouping by both index and group would
+                # work)
+                to_merge = base_frame.groupby(base_frame[groupby_var], observed=True, sort=False).apply(wrap)
+                frame = pd.merge(left=frame, right=to_merge,
+                                 left_index=True,
+                                 right_index=True, how='left')
 
-            to_merge.reset_index(1, drop=True, inplace=True)
-            frame = pd.merge(left=frame, right=to_merge,
-                             left_index=True,
-                             right_index=True, how='left')
+            # Apply the aggregate functions to generate a new dataframe, and merge
+            # it with the existing one
+            if len(to_agg):
+                # groupby_var can be both the name of the index and a column,
+                # to silence pandas warning about ambiguity we explicitly pass
+                # the column (in actuality grouping by both index and group would
+                # work)
+                to_merge = base_frame.groupby(base_frame[groupby_var],
+                                              observed=True, sort=False).agg(to_agg)
+                # rename columns to the correct feature names
+                to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns.ravel()]
+                to_merge = to_merge[list(agg_rename.values())]
 
-        # Apply the aggregate functions to generate a new dataframe, and merge
-        # it with the existing one
-        if len(to_agg):
-            # groupby_var can be both the name of the index and a column,
-            # to silence pandas warning about ambiguity we explicitly pass
-            # the column (in actuality grouping by both index and group would
-            # work)
-            to_merge = base_frame.groupby(base_frame[groupby_var],
-                                          observed=True, sort=False).agg(to_agg)
-            # rename columns to the correct feature names
-            to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns.ravel()]
-            to_merge = to_merge[list(agg_rename.values())]
+                # workaround for pandas bug where categories are in the wrong order
+                # see: https://github.com/pandas-dev/pandas/issues/22501
+                if pdtypes.is_categorical_dtype(frame.index):
+                    categories = pdtypes.CategoricalDtype(categories=frame.index.categories)
+                    to_merge.index = to_merge.index.astype(object).astype(categories)
 
-            # workaround for pandas bug where categories are in the wrong order
-            # see: https://github.com/pandas-dev/pandas/issues/22501
-            if pdtypes.is_categorical_dtype(frame.index):
-                categories = pdtypes.CategoricalDtype(categories=frame.index.categories)
-                to_merge.index = to_merge.index.astype(object).astype(categories)
-
-            frame = pd.merge(left=frame, right=to_merge,
-                             left_index=True, right_index=True, how='left')
+                frame = pd.merge(left=frame, right=to_merge,
+                                 left_index=True, right_index=True, how='left')
 
         # Handle default values
         # 1. handle non scalar default values
@@ -513,11 +515,11 @@ def agg_wrapper(feats, time_last):
             args = [df[v] for v in variable_ids]
 
             if f.uses_calc_time:
-                d[f.get_name()] = [func(*args, time=time_last)]
+                d[f.get_name()] = func(*args, time=time_last)
             else:
-                d[f.get_name()] = [func(*args)]
+                d[f.get_name()] = func(*args)
 
-        return pd.DataFrame(d)
+        return pd.Series(d)
     return wrap
 
 
