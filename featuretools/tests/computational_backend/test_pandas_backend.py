@@ -2,6 +2,7 @@
 
 from datetime import datetime
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -25,7 +26,8 @@ from featuretools.primitives import (
     Mode,
     NMostCommon,
     NotEquals,
-    Sum
+    Sum,
+    Trend
 )
 
 
@@ -464,6 +466,19 @@ def test_topn(entityset, backend):
     assert (topn.get_name() in df.columns)
     for i, values in enumerate(df[topn.get_name()].values):
         assert set(true_results[i]) == set(values)
+
+
+def test_trend(entityset, backend):
+    trend = Trend([entityset['log']['value'], entityset['log']['datetime']],
+                  entityset['customers'])
+    pandas_backend = backend([trend])
+
+    df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2],
+                                               time_last=None)
+
+    true_results = [-0.812730, 4.870378, np.nan]
+
+    np.testing.assert_almost_equal(df[trend.get_name()].values.tolist(), true_results, decimal=5)
 
 
 def test_direct_squared(entityset, backend):

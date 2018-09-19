@@ -438,8 +438,6 @@ class PandasBackend(ComputationalBackend):
             # the column (in actuality grouping by both index and group would
             # work)
             to_merge = base_frame.groupby(base_frame[groupby_var], observed=True, sort=False).apply(wrap)
-
-            to_merge.reset_index(1, drop=True, inplace=True)
             frame = pd.merge(left=frame, right=to_merge,
                              left_index=True,
                              right_index=True, how='left')
@@ -513,11 +511,11 @@ def agg_wrapper(feats, time_last):
             args = [df[v] for v in variable_ids]
 
             if f.uses_calc_time:
-                d[f.get_name()] = [func(*args, time=time_last)]
+                d[f.get_name()] = func(*args, time=time_last)
             else:
-                d[f.get_name()] = [func(*args)]
+                d[f.get_name()] = func(*args)
 
-        return pd.DataFrame(d)
+        return pd.Series(d)
     return wrap
 
 
