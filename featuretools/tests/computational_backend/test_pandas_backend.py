@@ -13,7 +13,6 @@ from featuretools import Timedelta
 from featuretools.computational_backends.pandas_backend import PandasBackend
 from featuretools.primitives import (
     And,
-    Trend,
     Count,
     DirectFeature,
     Equals,
@@ -516,15 +515,14 @@ def test_empty_child_dataframe():
     es.entity_from_dataframe(entity_id="child", dataframe=child_df, index="id", time_index="time_index")
     es.add_relationship(ft.Relationship(es["parent"]["id"], es["child"]["parent_id"]))
 
-
     # create regular agg
     count = Count(es["child"]['id'], es["parent"])
 
-    # create a feature  with where
+    # create a agg with where
     where = ft.Feature(es["child"]["value"]) == 1
     count_where = Count(es["child"]['id'], es["parent"], where=where)
 
-    # create a aggregation feature that requires multiple arguments
+    # create agg feature that requires multiple arguments
     trend = Trend([es["child"]['value'], es["child"]['time_index']], es["parent"])
 
     # cutoff time before all rows
