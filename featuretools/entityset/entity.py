@@ -550,8 +550,8 @@ class Entity(object):
             self.df[new_id] = data
 
         if type is None:
-            assert data in self.df.columns, "Must provide data to infer type"
-            existing_columns = [c for c in self.df.columns if c.id != new_id]
+            assert new_id in self.df.columns, "Must provide data to infer type"
+            existing_columns = [c for c in self.df.columns if c != new_id]
             type = self.infer_variable_types(ignore=existing_columns)[new_id]
 
         new_v = type(new_id, entity=self)
