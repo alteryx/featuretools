@@ -111,10 +111,6 @@ class Entity(object):
         # do one last conversion of data once we've inferred
         self.convert_all_variable_data(inferred_variable_types)
 
-        # todo check the logic of this. can index not be in variable types?
-        if self.index is not None and self.index not in inferred_variable_types:
-            self.add_variable(self.index, vtypes.Index)
-
         # make sure index is at the beginning
         index_variable = [v for v in self.variables
                           if v.id == self.index][0]
@@ -534,28 +530,6 @@ class Entity(object):
                             break
 
         self.entityset.reset_metadata()
-
-    def add_variable(self, new_id, type=None, data=None):
-        """Add variable to entity
-
-        Args:
-            new_id (str) : Id of variable to be added.
-            type (Variable) : Class of variable.
-            data (pd.Series) : Variable's data to be placed in entity's dataframe
-        """
-        if new_id in [v.id for v in self.variables]:
-            logger.warning("Not adding duplicate variable: %s", new_id)
-            return
-        if data is not None:
-            self.df[new_id] = data
-
-        if type is None:
-            assert new_id in self.df.columns, "Must provide data to infer type"
-            existing_columns = [c for c in self.df.columns if c != new_id]
-            type = self.infer_variable_types(ignore=existing_columns)[new_id]
-
-        new_v = type(new_id, entity=self)
-        self.variables.append(new_v)
 
     def delete_variable(self, variable_id):
         """

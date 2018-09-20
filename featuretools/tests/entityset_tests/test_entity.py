@@ -82,16 +82,3 @@ def test_update_data(es):
     with pytest.raises(ValueError) as excinfo:
         es['customers'].update_data(df)
     assert 'Updated dataframe contains 13 columns, expecting 12' in str(excinfo)
-
-
-def test_add_variable(es):
-
-    es['customers'].add_variable('age')
-    assert es['customers'].shape[1] == 12
-
-    with pytest.raises(AssertionError) as excinfo:
-        es['customers'].add_variable('new')
-    assert 'Must provide data to infer type' in str(excinfo)
-
-    es['customers'].add_variable('new', data=[1, 2, 3])
-    assert es['customers'].variable_types['new'] == variable_types.Numeric
