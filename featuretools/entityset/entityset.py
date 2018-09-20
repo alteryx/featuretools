@@ -14,7 +14,7 @@ from .relationship import Relationship
 from .serialization import load_entity_data, write_entityset
 
 import featuretools.variable_types.variable as vtypes
-from featuretools.utils.gen_utils import make_tqdm_iterator, is_string
+from featuretools.utils.gen_utils import is_string, make_tqdm_iterator
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
