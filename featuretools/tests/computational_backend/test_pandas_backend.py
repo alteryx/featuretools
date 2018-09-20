@@ -519,18 +519,20 @@ def test_empty_child_dataframe():
     # create regular agg
     count = Count(es["child"]['id'], es["parent"])
 
-    # create a agg with where
-    where = ft.Feature(es["child"]["value"]) == 1
-    count_where = Count(es["child"]['id'], es["parent"], where=where)
-
     # create agg feature that requires multiple arguments
     trend = Trend([es["child"]['value'], es["child"]['time_index']], es["parent"])
 
+    # create aggs with where
+    where = ft.Feature(es["child"]["value"]) == 1
+    count_where = Count(es["child"]['id'], es["parent"], where=where)
+    trend_where = Trend([es["child"]['value'], es["child"]['time_index']], es["parent"], where=where)
+
     # cutoff time before all rows
-    fm = ft.calculate_feature_matrix(entityset=es, features=[count, count_where, trend], cutoff_time=pd.Timestamp("12/31/2017"))
-    names = [count.get_name(), count_where.get_name(), trend.get_name()]
-    assert_array_equal(fm[names], [[0, 0, np.nan]])
+    fm = ft.calculate_feature_matrix(entityset=es, features=[count, count_where, trend, trend_where], cutoff_time=pd.Timestamp("12/31/2017"))
+    names = [count.get_name(), count_where.get_name(), trend.get_name(), trend_where.get_name()]
+    assert_array_equal(fm[names], [[0, 0, np.nan, np.nan]])
 
     # cutoff time after all rows, but where clause filters all rows
-    fm2 = ft.calculate_feature_matrix(entityset=es, features=[count_where], cutoff_time=pd.Timestamp("1/4/2018"))
-    assert_array_equal(fm2[[count_where.get_name()]], [[0]])
+    fm2 = ft.calculate_feature_matrix(entityset=es, features=[count_where, trend_where], cutoff_time=pd.Timestamp("1/4/2018"))
+    names = [count_where.get_name(), trend_where.get_name()]
+    assert_array_equal(fm2[names], [[0, np.nan]])

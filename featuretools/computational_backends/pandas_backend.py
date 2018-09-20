@@ -376,15 +376,16 @@ class PandasBackend(ComputationalBackend):
         if not len(features):
             return frame
 
+        # handle where
+        where = test_feature.where
+        if where is not None:
+            base_frame = base_frame.loc[base_frame[where.get_name()]]
+
         # when no child data, just add all the features to frame with nan
         if base_frame.empty:
             for f in features:
                 frame[f.get_name()] = np.nan
         else:
-            where = test_feature.where
-            if where is not None:
-                base_frame = base_frame.loc[base_frame[where.get_name()]]
-
             relationship_path = self.entityset.find_backward_path(entity.id,
                                                                   child_entity.id)
 
