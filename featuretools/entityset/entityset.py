@@ -14,7 +14,7 @@ from .relationship import Relationship
 from .serialization import load_entity_data, write_entityset
 
 import featuretools.variable_types.variable as vtypes
-from featuretools.utils.gen_utils import make_tqdm_iterator
+from featuretools.utils.gen_utils import is_string, make_tqdm_iterator
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
@@ -1211,6 +1211,9 @@ class EntitySet(object):
                                  r.child_entity.id == entity_id]
 
         for c in dataframe.columns:
+            if not is_string(c):
+                raise ValueError("All column names must be strings (Column {} is not a string)".format(c))
+
             if dataframe[c].dtype.name.find('category') > -1:
                 if c not in variable_types:
                     variable_types[c] = vtypes.Categorical
