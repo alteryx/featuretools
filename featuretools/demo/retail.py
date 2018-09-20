@@ -63,6 +63,7 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
     es.entity_from_dataframe("order_products",
                              dataframe=df,
                              index="order_product_id",
+                             make_index=True,
                              time_index="order_date",
                              variable_types={'description': vtypes.Text})
 
