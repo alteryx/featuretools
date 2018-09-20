@@ -378,7 +378,7 @@ class PandasBackend(ComputationalBackend):
 
         # handle where
         where = test_feature.where
-        if where is not None:
+        if where is not None and not base_frame.empty:
             base_frame = base_frame.loc[base_frame[where.get_name()]]
 
         # when no child data, just add all the features to frame with nan
