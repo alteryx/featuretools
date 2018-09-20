@@ -375,7 +375,7 @@ def test_nonstr_column_names():
         es.entity_from_dataframe(entity_id='str_cols',
                                  dataframe=df,
                                  index='index')
-    assert 'All column names must be strings. (Column has name 3)' in str(excinfo)
+    assert 'All column names must be strings (Column 3 is not a string)' in str(excinfo)
 
 
 def test_sort_time_id():

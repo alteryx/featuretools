@@ -1212,7 +1212,7 @@ class EntitySet(object):
 
         for c in dataframe.columns:
             if not is_string(c):
-                raise ValueError("All column names must be strings. (Column has name {})".format(c))
+                raise ValueError("All column names must be strings (Column {} is not a string)".format(c))
 
             if dataframe[c].dtype.name.find('category') > -1:
                 if c not in variable_types:
