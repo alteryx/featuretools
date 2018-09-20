@@ -5,6 +5,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pytest
+from numpy.testing import assert_array_equal
 
 from ..testing_utils import make_ecommerce_entityset
 
@@ -526,7 +527,10 @@ def test_empty_child_dataframe():
     trend = Trend([es["child"]['value'], es["child"]['time_index']], es["parent"])
 
     # cutoff time before all rows
-    ft.calculate_feature_matrix(entityset=es, features=[count, count_where, trend], cutoff_time=pd.Timestamp("12/31/2017"))
+    fm = ft.calculate_feature_matrix(entityset=es, features=[count, count_where, trend], cutoff_time=pd.Timestamp("12/31/2017"))
+    names = [count.get_name(), count_where.get_name(), trend.get_name()]
+    assert_array_equal(fm[names], [[0, 0, np.nan]])
 
     # cutoff time after all rows, but where clause filters all rows
-    ft.calculate_feature_matrix(entityset=es, features=[count, count_where, trend], cutoff_time=pd.Timestamp("1/4/2018"))
+    fm2 = ft.calculate_feature_matrix(entityset=es, features=[count_where], cutoff_time=pd.Timestamp("1/4/2018"))
+    assert_array_equal(fm2[[count_where.get_name()]], [[0]])
