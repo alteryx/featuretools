@@ -5,6 +5,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pytest
+from numpy.testing import assert_array_equal
 
 from ..testing_utils import make_ecommerce_entityset
 
@@ -503,7 +504,7 @@ def test_agg_empty_child(entityset, backend):
     assert df["COUNT(log)"].iloc[0] == 0
 
 
-def test_where_clause_empty_dataframe():
+def test_empty_child_dataframe():
     parent_df = pd.DataFrame({"id": [1]})
     child_df = pd.DataFrame({"id": [1, 2, 3],
                              "parent_id": [1, 1, 1],
@@ -515,11 +516,23 @@ def test_where_clause_empty_dataframe():
     es.entity_from_dataframe(entity_id="child", dataframe=child_df, index="id", time_index="time_index")
     es.add_relationship(ft.Relationship(es["parent"]["id"], es["child"]["parent_id"]))
 
+    # create regular agg
+    count = Count(es["child"]['id'], es["parent"])
+
+    # create agg feature that requires multiple arguments
+    trend = Trend([es["child"]['value'], es["child"]['time_index']], es["parent"])
+
+    # create aggs with where
     where = ft.Feature(es["child"]["value"]) == 1
-    count = Count(es["child"]['id'], es["parent"], where=where)
+    count_where = Count(es["child"]['id'], es["parent"], where=where)
+    trend_where = Trend([es["child"]['value'], es["child"]['time_index']], es["parent"], where=where)
 
     # cutoff time before all rows
-    ft.calculate_feature_matrix(entityset=es, features=[count], cutoff_time=pd.Timestamp("12/31/2017"))
+    fm = ft.calculate_feature_matrix(entityset=es, features=[count, count_where, trend, trend_where], cutoff_time=pd.Timestamp("12/31/2017"))
+    names = [count.get_name(), count_where.get_name(), trend.get_name(), trend_where.get_name()]
+    assert_array_equal(fm[names], [[0, 0, np.nan, np.nan]])
 
     # cutoff time after all rows, but where clause filters all rows
-    ft.calculate_feature_matrix(entityset=es, features=[count], cutoff_time=pd.Timestamp("1/4/2018"))
+    fm2 = ft.calculate_feature_matrix(entityset=es, features=[count_where, trend_where], cutoff_time=pd.Timestamp("1/4/2018"))
+    names = [count_where.get_name(), trend_where.get_name()]
+    assert_array_equal(fm2[names], [[0, np.nan]])
