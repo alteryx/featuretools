@@ -1,11 +1,11 @@
 from inspect import getargspec, isclass
 
 import pandas as pd
-from past.builtins import basestring
 
 from .primitive_base import PrimitiveBase
 
 import featuretools.primitives
+from featuretools.utils import is_string
 
 
 def apply_dual_op_from_feat(f, array_1, array_2=None):
@@ -87,10 +87,10 @@ def ensure_compatible_dtype(left, right):
         elif right.dtype != object and left.dtype == object:
             right = right.astype(object)
     elif isinstance(left, pd.Series):
-        if left.dtype != object and isinstance(right, basestring):
+        if left.dtype != object and is_string(right):
             left = left.astype(object)
     elif isinstance(right, pd.Series):
-        if right.dtype != object and isinstance(left, basestring):
+        if right.dtype != object and is_string(left):
             right = right.astype(object)
     return left, right
 

@@ -2,8 +2,6 @@ import logging
 from builtins import filter, object, str
 from collections import defaultdict
 
-from past.builtins import basestring
-
 import featuretools.primitives.api as ftypes
 from featuretools import variable_types
 from featuretools.primitives.api import (
@@ -16,6 +14,7 @@ from featuretools.primitives.api import (
     IdentityFeature,
     TimeSince
 )
+from featuretools.utils import is_string
 from featuretools.variable_types import Boolean, Categorical, Numeric, Ordinal
 
 logger = logging.getLogger('featuretools')
@@ -140,7 +139,7 @@ class DeepFeatureSynthesis(object):
         self.agg_primitives = []
         agg_prim_dict = ftypes.get_aggregation_primitives()
         for a in agg_primitives:
-            if isinstance(a, basestring):
+            if is_string(a):
                 if a.lower() not in agg_prim_dict:
                     raise ValueError("Unknown aggregation primitive {}. ".format(a),
                                      "Call ft.primitives.list_primitives() to get",
@@ -156,7 +155,7 @@ class DeepFeatureSynthesis(object):
         self.trans_primitives = []
         trans_prim_dict = ftypes.get_transform_primitives()
         for t in trans_primitives:
-            if isinstance(t, basestring):
+            if is_string(t):
                 if t.lower() not in trans_prim_dict:
                     raise ValueError("Unknown transform primitive {}. ".format(t),
                                      "Call ft.primitives.list_primitives() to get",
@@ -169,7 +168,7 @@ class DeepFeatureSynthesis(object):
             where_primitives = [ftypes.Count]
         self.where_primitives = []
         for p in where_primitives:
-            if isinstance(p, basestring):
+            if is_string(p):
                 prim_obj = agg_prim_dict.get(p.lower(), None)
                 if prim_obj is None:
                     raise ValueError("Unknown where primitive {}. ".format(p),
