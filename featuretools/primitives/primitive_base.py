@@ -100,8 +100,7 @@ class PrimitiveBase(object):
         while return_type is None:
             feature = feature.base_features[0]
             return_type = feature.return_type
-
-            if isinstance(return_type, DatetimeTimeIndex):
+            if return_type == DatetimeTimeIndex:
                 return_type = Datetime
 
         return return_type

@@ -2,8 +2,9 @@ import pytest
 
 from ..testing_utils import make_ecommerce_entityset
 
-from featuretools.primitives import Feature, IdentityFeature, Last, Sum
+from featuretools.primitives import Feature, IdentityFeature, Last, Mode, Sum
 from featuretools.utils.gen_utils import getsize
+from featuretools.variable_types import Datetime
 
 
 @pytest.fixture(scope='module')
@@ -79,3 +80,19 @@ def test_squared(es):
     squared = feature * feature
     assert len(squared.base_features) == 1
     assert squared.base_features[0].hash() == feature.hash()
+
+
+def test_return_type_inference(es):
+    mode = Mode(es["log"]["priority_level"], es["customers"])
+    assert mode.variable_type == es["log"]["priority_level"].__class__
+
+
+def test_return_type_inference_direct_feature(es):
+    mode = Mode(es["log"]["priority_level"], es["customers"])
+    mode_session = Feature(mode, es["sessions"])
+    assert mode_session.variable_type == es["log"]["priority_level"].__class__
+
+
+def test_return_type_inference_time_index(es):
+    last = Last(es["log"]["datetime"], es["customers"])
+    assert last.variable_type == Datetime
