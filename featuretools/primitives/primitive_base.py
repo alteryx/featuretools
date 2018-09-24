@@ -11,7 +11,7 @@ from featuretools.utils.wrangle import (
     _check_time_against_column,
     _check_timedelta
 )
-from featuretools.variable_types import Variable, Datetime, DatetimeTimeIndex
+from featuretools.variable_types import Datetime, DatetimeTimeIndex, Variable
 
 logger = logging.getLogger('featuretools')
 
@@ -103,7 +103,6 @@ class PrimitiveBase(object):
 
             if isinstance(return_type, DatetimeTimeIndex):
                 return_type = Datetime
-
 
         return return_type
 
