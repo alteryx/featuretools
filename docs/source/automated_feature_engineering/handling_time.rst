@@ -5,7 +5,7 @@
 Handling Time
 =============
 
-Time is a naturally relevant factor in many data science problems. Consider the following questions:
+Time is a naturally relevant factor in many predictive modeling problems. Consider the following questions:
 
 1. How much revenue will I bring in next month?
 2. What is the expected delay on my next flight?
@@ -24,7 +24,7 @@ This page is the answer to the question *why should I pay attention to datetimes
 1. What are the implications of setting a :ref:`time index <representing-time>`?
 2. How does Featuretools take in :ref:`predictions <cutoff-time>`?
 
-The first section shows how to handle the complexities that can come up when assigning times to your data and the second shows how to use those times to make rows of a feature matrix. While time can be a sticking point for our users, we have found that it's often a useful construct in utilizing data from the real world.
+The first section shows explains how to handle the complexities that can come up when assigning times to your data and the second shows how to use those times to make rows of a feature matrix. While time can be a sticking point for our users, we have found that it's often a useful construct in utilizing data from the real world.
 
 .. _representing-time:
 
@@ -33,39 +33,47 @@ Introduction to the Time Index
 We'll start with the :func:`Mock Customer <demo.load_mock_customer>` entityset.
 
 .. ipython:: python
+    :suppress:
+
+    pd.options.display.max_columns = 200
+
+.. ipython:: python
 
     import featuretools as ft
     es_mc = ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
     es_mc['transactions'].df.head()
 
-The ``transactions`` entity has one row for every transaction and a ``transaction_time`` for every row. The user has an option to set a **time index** for any entity they create, representing the first time information from the row can be used. In this example, most people would make the reasonable choice to set the ``transaction_time`` as the time index for the ``transactions`` entity. The choice is not always straightforward. Consider the ``customers`` entity:
+The ``transactions`` entity has one row for every transaction and a ``transaction_time`` for every row. The user has an option to set a **time index** for any entity they create, representing the first time information from the row can be used. In this example, most people would make the reasonable choice to set the ``transaction_time`` as the time index for the ``transactions`` entity. Not every time is a time index, so the choice is not always straightforward. Consider the ``customers`` entity:
 
 .. ipython:: python
 
     es_mc['customers'].df
 
-Here we have two time columns ``join_date`` and ``date_of_birth``. While either column might be useful for making features, the ``join_date`` should be used as the time index. It represents when the data owner learns about the existence of a given customer. Generically: *the time index is defined as the first time anything from a row can be known to the dataset owner*. Rows are treated as non-existent prior to the time index. 
+Here we have two time columns ``join_date`` and ``date_of_birth``. While either column might be useful for making features, the ``join_date`` should be used as the time index. It represents when the data owner learns about the existence of a given customer. Generically: *the time index is the first time anything from a row can be known to the dataset owner*. Rows are treated as non-existent prior to the time index. 
 
 .. important::
 
-    The **time index** is defined as first time anything from a row can be known to the dataset owner.
+    The **time index** is defined as the first time information from a row can be used. It represents the first time anything from a row can be known to the dataset owner.
 
-In databases, information tends to be written after an event has passed. This can be problematic on the machine learning side: it's often necessary to ignore entire columns to avoid leaking labels. If you're interested in learning more, the :ref:`advanced time index <flight-ti>` section below explores how time can used with a dataset from the US Department of Transportation on domestic flights. Before we get there, we're going to show how to make predictions using these time indices.
+In databases, information tends to be written after an event has passed. This can be problematic on the machine learning side -- it's often necessary to ignore entire columns to avoid leaking labels. If you're interested in how to safely use those columns, the :ref:`advanced time index <flight-ti>` section below explores how time can used with a dataset from the US Department of Transportation. Before we get there, we're going to show how to make predictions using these time indices.
 
 .. _cutoff-time:
 
 Introduction to Cutoff Times
 --------------------------------------------
 
-For a given :class:`EntitySet <EntitySet>`, it's possible to provide time indices and secondary time that are correct. There is a real time when a row first becomes valid for use and the time index should reflect that reality. In contrast, **there is no "correct" way to make predictions**. There are many valid questions that can be asked at many valid times and the differences between them are philosophical rather than mechanical.
+For a given :class:`EntitySet <EntitySet>`, it's possible to provide time indices and secondary time that are *correct*. There is a real time when a row first becomes valid for use and the time index should reflect that reality. In contrast, **there is no "correct" way to make predictions**. There are many valid questions that can be asked at many valid times and the differences between them are philosophical rather than mechanical.
 
 A **cutoff_time** dataframe is a concise way of passing complicated instructions to :func:`Deep Feature Synthesis <dfs>` (DFS). Each row contains a reference id, a time and optionally, a label. For every unique id-time pair, we will create a row of the feature matrix.
 
+Let's do a short example. We want to predict whether customers ``1``, ``2`` and ``3`` will spend $500 after ``04:00`` on January 1 by the end of the day. The ``time`` column emulates the way a human would make a historical prediction. It is an instruction to not use any future information constructing that row even if we have it in our entityset.
+
 .. important::
 
-     A **cutoff_time** dataframe is a concise way of passing complicated instructions to Deep Feature Synthesis.
+     A **cutoff_time** dataframe is a concise way of passing complicated instructions to Deep Feature Synthesis. For every id-time pair passed in, DFS creates a row of the feature matrix for that id at that time.
 
-Let's do a short example. We want to predict whether customers ``1``, ``2`` and ``3`` will spend $500 after ``04:00`` on January 1 by the end of the day. The ``time`` column emulates the way a human would make a historical prediction, it is an instruction to not use any future information constructing that row even if we have it in our entityset. In this case, we're making predictions for all three customers at the same time, ``2014-1-1 04:00`` so we set that as the second column. We have also checked that ``1`` and ``2`` will spend $500 while customer ``3`` will not, so we include those labels as a third column.
+
+In this case, we're making predictions for all three customers at the same time, ``2014-1-1 04:00`` so we set that as the second column. We have also checked that ``1`` and ``2`` will spend $500 while customer ``3`` will not, so we include those labels as a third column.
 
 .. image:: ../images/retail_ct.png
    :width: 400 px
@@ -106,11 +114,11 @@ The :func:`Flights <demo.load_flight>` entityset is a prototypical example of a 
 .. ipython:: python
 
 
-For every trip we have arrival and departure times, scheduled arrival and departure times and a mysterious ``time index``. 
+For every trip we have many times; there are the real arrival and departure times and scheduled arrival and departure times.
 
 With the columns we have, it would be problematic for the ``scheduled_dep_time``, to be the time index: flights are scheduled far in advance!  If the time index were set to the scheduled departure time, we wouldn't be able to know anything about the flight at all until it was boarded. 
 
-However, it's possible to know many things about a trip six months or more before it takes off; the trip distance, carrier, flight number and even when a flight is supposed to leave and land are always known before we buy a ticket. Our time index construct exists to reflect the reality that those can be known much before the scheduled departure time.
+However, it's possible to know many things about a trip six months or more before it takes off; the trip distance, carrier, flight number and even when a flight is supposed to leave and land are always known before we buy a ticket. Our ``time_index`` exists to reflect the reality that those can be known much before the scheduled departure time.
 
 That being said, not all columns can be known at our time index six months in advance. If we were able to know the real arrival time of the plane before we booked, we would have great success in predicting delays! 
 
@@ -196,7 +204,7 @@ Other Temporal Workflows
 Training Window and the Last Time Index
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The training window in DFS limits the amount of past data that can be used while calculating a particular feature vector. In the same way that a cutoff time filters out data which appears after it, a training window will filter out data that appears too much earlier. Here's an example of a one hour training window:
+The training window in DFS limits the amount of past data that can be used while calculating a particular feature vector. In the same way that a cutoff time filters out data which appears after it, a training window will filter out data that appears too much earlier. Here's an example of a two hour training window:
 
 .. ipython:: python
 
