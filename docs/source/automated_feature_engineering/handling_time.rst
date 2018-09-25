@@ -43,7 +43,7 @@ We'll start with the :func:`Mock Customer <demo.load_mock_customer>` entityset.
     es_mc = ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
     es_mc['transactions'].df.head()
 
-The ``transactions`` entity has one row for every transaction and a ``transaction_time`` for every row. The user has an option to set a **time index** for any entity they create, representing the first time information from the row can be used. In this example, most people would make the reasonable choice to set the ``transaction_time`` as the time index for the ``transactions`` entity. Not every time is a time index, so the choice is not always straightforward. Consider the ``customers`` entity:
+The ``transactions`` entity has one row for every transaction and a ``transaction_time`` for every row. The user has an option to set a **time index** for any entity they create, representing the first time information from the row can be used. In this example, most people would make the reasonable choice to set the ``transaction_time`` as the time index for the ``transactions`` entity. Not every datetime column is a time index, so the choice is not always straightforward. Consider the ``customers`` entity:
 
 .. ipython:: python
 
@@ -100,7 +100,7 @@ We made 74 features for the three customers using only data whose time index was
 
 .. _flight-ti:
 
-Advanced Time Usage
+Advanced Scenarios
 -------------------------
 The :func:`Flights <demo.load_flight>` entityset is a prototypical example of a dataset where an individual row can happen over time. Each trip is recorded in a ``trip_logs`` entity, and has many times associated to it.
 
@@ -114,7 +114,7 @@ The :func:`Flights <demo.load_flight>` entityset is a prototypical example of a 
 .. ipython:: python
 
 
-For every trip we have many times; there are the real arrival and departure times and scheduled arrival and departure times.
+For every trip we have real arrival and departure times and scheduled arrival and departure times.
 
 With the columns we have, it would be problematic for the ``scheduled_dep_time``, to be the time index: flights are scheduled far in advance!  If the time index were set to the scheduled departure time, we wouldn't be able to know anything about the flight at all until it was boarded. 
 
@@ -143,7 +143,7 @@ By setting a ``secondary_time_index``, we can still use the delay information fr
     It's often a good idea to use a secondary time index if your entityset has inline labels. If you know when the label would be valid for use, it's possible to automatically create very predictive features using historical labels.
 
 
-As an exercise, take a minute to think about which of the twenty two columns here can be known at each time index.
+As an exercise, take a minute to think about which of the twenty two columns here can be known at each time index. Which can be known 6 months in advance and which would be better to only learn after the flight lands?
 
 .. ipython:: python
 
@@ -198,7 +198,7 @@ There is a lot to unpack from this output:
 
 Notice that for trip ``14``, there wasn't historical data when we made the feature a month in advance, but there were flights from Charlotte to Phoenix before January 25 whose delay could be validly used. These are powerful features that are often excluded in manual processes because of how hard they are to make.
 
-Other Temporal Workflows
+Other Settings
 -------------------------
 
 Training Window and the Last Time Index
