@@ -5,9 +5,17 @@ import featuretools.variable_types as vtypes
 
 
 def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
-    '''
-    Returns the retail entityset example which is a modified version of
-    the data found `here <https://archive.ics.uci.edu/ml/datasets/online+retail>`_.
+    '''Returns the retail entityset example.
+    The original dataset can be found `here <https://archive.ics.uci.edu/ml/datasets/online+retail>`_.
+
+    We have also made some modifications to the data. We
+    changed the column names, converted the ``customer_id``
+    to a unique fake ``customer_name``, dropped duplicates,
+    added columns for ``total`` and ``cancelled`` and
+    converted amounts from GBP to USD. You can download the
+    modified CSV `from S3
+    <"https://s3.amazonaws.com/featuretools-static/online-retail-logs-2018-08-28.csv">`_.
+
 
     Args:
         id (str):  Id to assign to EntitySet.
@@ -49,7 +57,7 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
                 customers (shape = [50, 2])
                 order_products (shape = [1000, 7])
 
-    '''
+'''
     es = ft.EntitySet(id)
     csv_s3 = "https://s3.amazonaws.com/featuretools-static/" + RETAIL_CSV + ".csv"
 
