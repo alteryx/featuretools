@@ -4,12 +4,17 @@ from ..testing_utils import make_ecommerce_entityset
 
 from featuretools.primitives import Feature, IdentityFeature, Last, Mode, Sum
 from featuretools.utils.gen_utils import getsize
-from featuretools.variable_types import Datetime, Numeric, NumericTimeIndex
+from featuretools.variable_types import Datetime, Numeric
 
 
 @pytest.fixture(scope='module')
 def es():
     return make_ecommerce_entityset()
+
+
+@pytest.fixture(scope='module')
+def es_numeric():
+    return make_ecommerce_entityset(with_integer_time_index=True)
 
 
 def test_copy_features_does_not_copy_entityset(es):
@@ -93,10 +98,11 @@ def test_return_type_inference_direct_feature(es):
     assert mode_session.variable_type == es["log"]["priority_level"].__class__
 
 
-def test_return_type_inference_time_index(es):
+def test_return_type_inference_datetime_time_index(es):
     last = Last(es["log"]["datetime"], es["customers"])
     assert last.variable_type == Datetime
 
-    nti = NumericTimeIndex("datetime", es["log"])  # create a numeric time index variable
-    last = Last(nti, es["customers"])
+
+def test_return_type_inference_numeric_time_index(es_numeric):
+    last = Last(es_numeric["log"]["datetime"], es_numeric["customers"])
     assert last.variable_type == Numeric
