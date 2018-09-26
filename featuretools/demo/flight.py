@@ -17,6 +17,7 @@ def load_flight(month_filter=None,
                 verbose=False):
     '''
     Download, clean, and filter flight data from 2017.
+    The original dataset can be found `here <https://www.transtats.bts.gov/DL_SelectFields.asp?DB_Short_Name=On-Time&Table_ID=236>`_.
 
     Args:
 
