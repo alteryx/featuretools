@@ -4,7 +4,7 @@ from ..testing_utils import make_ecommerce_entityset
 
 from featuretools.primitives import Feature, IdentityFeature, Last, Mode, Sum
 from featuretools.utils.gen_utils import getsize
-from featuretools.variable_types import Datetime
+from featuretools.variable_types import Datetime, Numeric, NumericTimeIndex
 
 
 @pytest.fixture(scope='module')
@@ -96,3 +96,7 @@ def test_return_type_inference_direct_feature(es):
 def test_return_type_inference_time_index(es):
     last = Last(es["log"]["datetime"], es["customers"])
     assert last.variable_type == Datetime
+
+    nti = NumericTimeIndex("datetime", es["log"])  # create a numeric time index variable
+    last = Last(nti, es["customers"])
+    assert last.variable_type == Numeric
