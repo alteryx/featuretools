@@ -83,7 +83,7 @@ class Mode(AggregationPrimitive):
 Min = make_agg_primitive(
     np.min,
     [Numeric],
-    None,
+    Numeric,
     name="Min",
     stack_on_self=False,
     description="Finds the minimum non-null value of a numeric feature.")
@@ -93,7 +93,7 @@ class Max(AggregationPrimitive):
     """Finds the maximum non-null value of a numeric feature."""
     name = "max"
     input_types = [Numeric]
-    return_type = None
+    return_type = Numeric
     # max_stack_depth = 1
     stack_on_self = False
 
@@ -222,7 +222,7 @@ class Median(AggregationPrimitive):
     """Finds the median value of any feature with well-ordered values."""
     name = "median"
     input_types = [Numeric]
-    return_type = None
+    return_type = Numeric
     # max_stack_depth = 2
 
     def get_function(self):

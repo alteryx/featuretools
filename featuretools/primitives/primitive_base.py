@@ -11,7 +11,13 @@ from featuretools.utils.wrangle import (
     _check_time_against_column,
     _check_timedelta
 )
-from featuretools.variable_types import Variable
+from featuretools.variable_types import (
+    Datetime,
+    DatetimeTimeIndex,
+    Numeric,
+    NumericTimeIndex,
+    Variable
+)
 
 logger = logging.getLogger('featuretools')
 
@@ -100,6 +106,13 @@ class PrimitiveBase(object):
         while return_type is None:
             feature = feature.base_features[0]
             return_type = feature.return_type
+
+            # only the original time index should exist
+            # so make this feature's return type just a Datetime
+            if return_type == DatetimeTimeIndex:
+                return_type = Datetime
+            elif return_type == NumericTimeIndex:
+                return_type = Numeric
 
         return return_type
 
