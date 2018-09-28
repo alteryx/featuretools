@@ -2,6 +2,25 @@
 
 Changelog
 ---------
+**v0.3.1** Sept 28, 2018
+    * Handling time rewrite (:pr:`245`)
+    * Update deep_feature_synthesis.py (:pr:`249`)
+    * Handling return type when creating features from DatetimeTimeIndex (:pr:`266`)
+    * Update retail.py (:pr:`259`)
+    * Improve Consistency of Transform Primitives (:pr:`236`)
+    * Update demo docstrings (:pr:`268`)
+    * Handle non-string column names (:pr:`255`)
+    * Clean up merging of aggregation primitives (:pr:`250`)
+    * Add tests for Entity methods (:pr:`262`)
+    * Handle no child data when calculating aggregation features with multiple arguments (:pr:`264`)
+    * Add `is_string` utils function (:pr:`260`)
+    * Update python versions to match docker container (:pr:`261`)
+    * Handle where clause when no child data (:pr:`258`)
+    * No longer cache demo csvs, remove config file (:pr:`257`)
+    * Avoid stacking "expanding" primitives (:pr:`238`)
+    * Use randomly generated names in retail csv (:pr:`233`)
+    * Update README.md (:pr:`243`)
+
 **v0.3.0** Aug 27, 2018
     * Improve performance of all feature calculations (:pr:`224`)
     * Update agg primitives to use more efficient functions (:pr:`215`)
