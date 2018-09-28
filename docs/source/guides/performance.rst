@@ -13,27 +13,8 @@ Each row in a feature matrix created by Featuretools is calculated at a specific
 
     Featuretools is very precise in how it deals with time. For more information, see :doc:`/automated_feature_engineering/handling_time`.
 
-If there are a large number of unique cutoff times relative to the number of instances for which we are calculating features, this overhead can outweigh the time needed to calculate the features. Therefore, by reducing the number of unique cutoff times, we minimize the overhead from searching for and extracting data for feature calculations.
+If you have many unique cutoff times, it is often worthwhile to figure out how to have fewer. This can be done manually by figuring out which unique times are necessary for your prediction problem or automatically using :ref:`approximate <approximate>`.
 
-
-Approximating features by rounding cutoff time
-----------------------------------------------
-One way to decrease the number of unique cutoff times is to round cutoff times to an nearby earlier point in time. An earlier cutoff time is always valid for predictive modeling — it just means we’re not using some of the data we could potentially use while calculating that feature. In that way, we gain computational speed by losing some information.
-
-To understand when approximation is useful, consider calculating features for a model to predict fraudulent credit card transactions. In this case, an important feature might be, "the average transaction amount for this card in the past". While this value can change every time there is a new transaction, updating it less frequently might not impact accuracy.
-
-.. note::
-
-    The bank BBVA used approximation when building a predictive model for credit card fraud using Featuretools. For more details, see the "Real-time deployment considerations" section of the `white paper <https://arxiv.org/pdf/1710.07709.pdf>`_ describing the work.
-
-The frequency of approximation is controlled using the ``approximate`` parameter to ``dfs`` or ``calculate_feature_matrix``. For example, the following code would approximate aggregation features at 1 day intervals::
-
-    fm = ft.calculate_feature_matrix(entityset=entityset
-                                     features=feature_list,
-                                     cutoff_time=cutoff_times,
-                                     approximate="1 day")
-
-In this computation, features that can be approximated will be calculated at 1 day intervals, while features that cannot be approximated (e.g "is the current transaction > $50") will be calculated at the exact cutoff time.
 
 Adjust chunk size when calculating feature matrix
 -------------------------------------------------

@@ -225,6 +225,7 @@ def test_cutoff_time_correctly(entityset):
     feature_matrix = calculate_feature_matrix([property_feature],
                                               entityset,
                                               cutoff_time=cutoff_time)
+
     labels = [0, 10, 5]
     assert (feature_matrix == labels).values.all()
 
@@ -1118,9 +1119,9 @@ def test_string_time_values_in_cutoff_time(entityset):
 
 
 def test_no_data_for_cutoff_time():
-    es = ft.demo.load_mock_customer(return_entityset=True)
+    es = ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
     cutoff_times = pd.DataFrame({"customer_id": [4],
-                                 "time": pd.Timestamp('2014-01-01 02:26:50')})
+                                 "time": pd.Timestamp('2011-04-08 20:08:13')})
 
     trans_per_session = Count(es["transactions"]["transaction_id"], es["sessions"])
     trans_per_customer = Count(es["transactions"]["transaction_id"], es["customers"])
