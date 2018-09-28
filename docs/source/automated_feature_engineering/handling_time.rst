@@ -62,9 +62,9 @@ In databases, information tends to be written after an event has passed. This ca
 Introduction to Cutoff Times
 --------------------------------------------
 
-For a given :class:`EntitySet <EntitySet>`, it's possible to provide time indices and secondary time that are *correct*. There is a real time when a row first becomes valid for use and the time index should reflect that reality. In contrast, **there is no "correct" way to make predictions**. There are many valid questions that can be asked at many valid times and the differences between them are philosophical rather than mechanical.
+For a given :class:`EntitySet <EntitySet>`, there are many possible questions that you might want to ask. Trying to predict customer purchases an hour in advance is mechanically different from trying to predict purchases a day in advance. Often, it's desirable to test multiple questions and explore which one you want to use in production. Featuretools makes that process easier by use of cutoff times.
 
-A **cutoff_time** dataframe is a concise way of passing complicated instructions to :func:`Deep Feature Synthesis <dfs>` (DFS). Each row contains a reference id, a time and optionally, a label. For every unique id-time pair, we will create a row of the feature matrix.
+A **cutoff_time** dataframe is a concise way of passing complicated instructions to :func:`Deep Feature Synthesis <dfs>` (DFS). Each row contains a instance id, a time and optionally, a label. For every unique id-time pair, we will create a row of the feature matrix.
 
 Let's do a short example. We want to predict whether customers ``1``, ``2`` and ``3`` will spend $500 after ``04:00`` on January 1 by the end of the day. The ``time`` column emulates the way a human would make a historical prediction. It is an instruction to not use any future information constructing that row even if we have it in our entityset.
 
