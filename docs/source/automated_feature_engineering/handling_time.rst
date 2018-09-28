@@ -84,11 +84,12 @@ We will use all of the information between the ``time_index`` of rows ``1``, ``2
 
 .. ipython:: python
 
-    ct = pd.DataFrame({'customer_id': [1, 2, 3], 
-                       'time': pd.to_datetime(['2014-1-1 04:00', 
-                                               '2014-1-1 04:00',
-                                               '2014-1-1 04:00']),
-                       'label': [True, True, False]})
+    ct = pd.DataFrame()
+    ct['customer_id'] = [1, 2, 3]
+    ct['time'] = pd.to_datetime(['2014-1-1 04:00', 
+                                 '2014-1-1 04:00',
+                                 '2014-1-1 04:00'])
+    ct['label'] = [True, True, False]
     ct
     fm, features = ft.dfs(entityset=es_mc, 
                           target_entity='customers', 
@@ -172,12 +173,13 @@ We set two cutoff times for trip ``14`` at two different times: one which is mor
 Our cutoff time dataframe looks like this:
 
 .. ipython:: python
-    
-    ct_flight = pd.DataFrame({'trip_log_id': [14, 14, 92], 
-                              'time': pd.to_datetime(['2016-12-28', 
-                                                      '2017-1-25',
-                                                      '2016-12-28']),
-                              'label': [True, True, False]})
+
+    ct_flight = pd.DataFrame()
+    ct_flight['trip_log_id'] = [14, 14, 92]
+    ct_flight['time'] = pd.to_datetime(['2016-12-28', 
+                                        '2017-1-25',
+                                        '2016-12-28'])
+    ct_flight['label'] = [True, True, False]
     ct_flight
 
 These instructions say to build two rows for trip ``14`` using data from different times and one row for trip ``92``. Here's how DFS handles those instructions:
