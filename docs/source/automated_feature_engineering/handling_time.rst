@@ -62,7 +62,7 @@ In databases, information tends to be written after an event has passed. This ca
 Introduction to Cutoff Times
 --------------------------------------------
 
-For a given :class:`EntitySet <EntitySet>`, there are many possible questions that you might want to ask. Trying to predict customer purchases an hour in advance is mechanically different from trying to predict purchases a day in advance. Often, it's desirable to test multiple questions and explore which one you want to use in production. Featuretools makes that process easier by use of cutoff times.
+For a given :class:`EntitySet <EntitySet>`, there are many possible prediction problems that you might want to solve. Trying to predict customer purchases an hour in advance uses different data than trying to predict purchases a day in advance. Often, it's desirable to test multiple questions and explore which one you want to use. Featuretools makes that process easier through cutoff times.
 
 A **cutoff_time** dataframe is a concise way of passing complicated instructions to :func:`Deep Feature Synthesis <dfs>` (DFS). Each row contains a instance id, a time and optionally, a label. For every unique id-time pair, we will create a row of the feature matrix.
 
