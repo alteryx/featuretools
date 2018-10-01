@@ -14,7 +14,7 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
     added columns for ``total`` and ``cancelled`` and
     converted amounts from GBP to USD. You can download the
     modified CSV `from S3
-    <"https://s3.amazonaws.com/featuretools-static/online-retail-logs-2018-08-28.csv.zip">`_.
+    <"https://s3.amazonaws.com/featuretools-static/online-retail-logs-2018-08-28.csv.gz">`_.
 
 
     Args:
@@ -59,7 +59,7 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
 
 '''
     es = ft.EntitySet(id)
-    csv_s3 = "https://s3.amazonaws.com/featuretools-static/" + RETAIL_CSV + ".csv.zip"
+    csv_s3 = "https://s3.amazonaws.com/featuretools-static/" + RETAIL_CSV + ".csv.gz"
 
     df = pd.read_csv(csv_s3,
                      nrows=nrows,
