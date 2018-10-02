@@ -67,7 +67,7 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
                          nrows=nrows,
                          parse_dates=["order_date"])
     # Fall back to uncompressed
-    except Exception as e:
+    except Exception:
         df = pd.read_csv(csv_s3,
                          nrows=nrows,
                          parse_dates=["order_date"])
