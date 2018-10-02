@@ -12,8 +12,7 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
     changed the column names, converted the ``customer_id``
     to a unique fake ``customer_name``, dropped duplicates,
     added columns for ``total`` and ``cancelled`` and
-    converted amounts from GBP to USD. You can download the
-    modified CSV `from S3 in gz compressed (7 MB) 
+    converted amounts from GBP to USD. You can download the modified CSV `from S3 in gz compressed (7 MB)
     <"https://s3.amazonaws.com/featuretools-static/online-retail-logs-2018-08-28.csv.gz">`_
     or `uncompressed (43 MB)
     <"https://s3.amazonaws.com/featuretools-static/online-retail-logs-2018-08-28.csv">`_ formats.
@@ -61,14 +60,14 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
 '''
     es = ft.EntitySet(id)
     csv_s3_gz = "https://s3.amazonaws.com/featuretools-static/" + RETAIL_CSV + ".csv.gz"
-    csv_s3 = "https://s3.amazonaws.com/featuretools-static/" + RETAIL_CSV + ".csv"  
+    csv_s3 = "https://s3.amazonaws.com/featuretools-static/" + RETAIL_CSV + ".csv"
     # Try to read in gz compressed file
     try:
         df = pd.read_csv(csv_s3_gz,
                          nrows=nrows,
                          parse_dates=["order_date"])
     # Fall back to uncompressed
-    except:
+    except Exception as e:
         df = pd.read_csv(csv_s3,
                          nrows=nrows,
                          parse_dates=["order_date"])
