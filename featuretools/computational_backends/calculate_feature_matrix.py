@@ -141,7 +141,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         cutoff_time = pd.DataFrame(map_args, columns=['instance_id', 'time'])
     else:
         cutoff_time = cutoff_time.reset_index(drop=True)
-
+        assert (cutoff_time.duplicated().sum() == 0), \
+            "Duplicated rows in cutoff time dataframe."
         # handle how columns are names in cutoff_time
         if "instance_id" not in cutoff_time.columns:
             if target_entity.index not in cutoff_time.columns:
