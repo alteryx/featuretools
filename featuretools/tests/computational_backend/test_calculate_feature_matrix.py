@@ -85,6 +85,13 @@ def test_calc_feature_matrix(entityset):
                                  entityset,
                                  instance_ids=range(17),
                                  cutoff_time=times)
+    cutoff_times_dup = pd.DataFrame({'time': [pd.datetime(2018, 3, 1),
+                                              pd.datetime(2018, 3, 1)],
+                                    entityset['log'].index: [1, 1]})
+    with pytest.raises(AssertionError):
+        feature_matrix = calculate_feature_matrix([property_feature],
+                                                  entityset=entityset,
+                                                  cutoff_time=cutoff_times_dup)
 
 
 def test_cfm_approximate_correct_ordering():
