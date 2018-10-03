@@ -3,4 +3,4 @@ mock==2.0.0
 pytest-xdist==1.23.2
 pytest-cov==2.6.0
 pyarrow>=0.10.0; python_version != '3.7'
-fastparquet>=0.10.0; python_version == '3.7'
+fastparquet>=0.1.6; python_version == '3.7'
