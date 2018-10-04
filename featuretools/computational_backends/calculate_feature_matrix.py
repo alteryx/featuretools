@@ -141,8 +141,6 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         cutoff_time = pd.DataFrame(map_args, columns=['instance_id', 'time'])
     else:
         cutoff_time = cutoff_time.reset_index(drop=True)
-        assert (cutoff_time.duplicated().sum() == 0), \
-            "Duplicated rows in cutoff time dataframe."
         # handle how columns are names in cutoff_time
         if "instance_id" not in cutoff_time.columns:
             if target_entity.index not in cutoff_time.columns:
@@ -163,6 +161,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             elif (entityset.time_type == DatetimeTimeIndex and
                   cutoff_time['time'].dtype.name.find('time') == -1):
                 raise TypeError("cutoff_time times must be datetime type: try casting via pd.to_datetime(cutoff_time['time'])")
+        assert (cutoff_time[['instance_id', 'time']].duplicated().sum() == 0), \
+            "Duplicated rows in cutoff time dataframe."
         pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
 
     if _check_time_type(cutoff_time['time'].iloc[0]) is None:
