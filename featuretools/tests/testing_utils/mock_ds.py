@@ -34,6 +34,8 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
     product_df = pd.DataFrame({'id': ['Haribo sugar-free gummy bears', 'car',
                                       'toothpaste', 'brown bag', 'coke zero',
                                       'taco clock'],
+                               'department': ["food", "electronics", "food",
+                                              "food", "food", "electronics"],
                                'rating': [3.5, 4.0, 4.5, 1.5, 5.0, 5.0]})
     customer_times = {
         'signup_date': [datetime(2011, 4, 8), datetime(2011, 4, 9),
@@ -224,6 +226,7 @@ def make_variable_types(with_integer_time_index=False):
     product_variable_types = {
         'id': variable_types.Categorical,
         'rating': variable_types.Numeric,
+        'department': variable_types.Categorical,
     }
 
     customer_variable_types = {

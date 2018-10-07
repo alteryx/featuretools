@@ -255,11 +255,16 @@ def test_makes_agg_features_with_where(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
                                    agg_primitives=[Count],
+                                   where_primitives=[Count],
                                    trans_primitives=[])
 
     features = dfs_obj.build_features()
     assert (feature_with_name(features,
                               'COUNT(log WHERE priority_level = 0)'))
+
+    # make sure they are made using direct features too
+    assert (feature_with_name(features,
+                              'COUNT(log WHERE products.department = food)'))
 
 
 def test_abides_by_max_depth_param(es):
@@ -544,6 +549,7 @@ def test_where_different_base_feats(es):
         assert hashed not in where_feats
 
 
+# TODO: not clear what this tests
 def test_dfeats_where(es):
     es.add_interesting_values()
 
