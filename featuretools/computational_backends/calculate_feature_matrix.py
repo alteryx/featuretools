@@ -544,10 +544,13 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
                                                     entityset_size=entityset.__sizeof__())
         # scatter the entityset
         # denote future with leading underscore
-        start = time.time()
+        if verbose:
+            start = time.time()
         es_token = "EntitySet-{}".format(tokenize(entityset))
         if es_token in client.list_datasets():
-            print("Using EntitySet persisted on the cluster as dataset %s" % (es_token))
+            if verbose:
+                msg = "Using EntitySet persisted on the cluster as dataset {}"
+                print(msg.format(es_token))
             _es = client.get_dataset(es_token)
         else:
             _es = client.scatter([entityset])[0]
@@ -557,10 +560,11 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
         pickled_feats = cloudpickle.dumps(features)
         _saved_features = client.scatter(pickled_feats)
         client.replicate([_es, _saved_features])
-        end = time.time()
-        scatter_time = end - start
-        scatter_string = "EntitySet scattered to workers in {:.3f} seconds"
-        print(scatter_string.format(scatter_time))
+        if verbose:
+            end = time.time()
+            scatter_time = end - start
+            scatter_string = "EntitySet scattered to workers in {:.3f} seconds"
+            print(scatter_string.format(scatter_time))
 
         # map chunks
         # TODO: consider handling task submission dask kwargs
