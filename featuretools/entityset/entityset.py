@@ -1206,10 +1206,6 @@ class EntitySet(object):
             for c in parse_date_cols:
                 variable_types[c] = vtypes.Datetime
 
-        current_relationships = [r for r in self.relationships
-                                 if r.parent_entity.id == entity_id or
-                                 r.child_entity.id == entity_id]
-
         for c in dataframe.columns:
             if not is_string(c):
                 raise ValueError("All column names must be strings (Column {} is not a string)".format(c))
@@ -1227,7 +1223,6 @@ class EntitySet(object):
                         secondary_time_index=secondary_time_index,
                         last_time_index=last_time_index,
                         encoding=encoding,
-                        relationships=current_relationships,
                         already_sorted=already_sorted,
                         created_index=created_index)
         self.entity_dict[entity.id] = entity
