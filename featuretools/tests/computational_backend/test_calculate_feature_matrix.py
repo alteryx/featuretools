@@ -320,7 +320,7 @@ def test_training_window_recent_time_index(entityset):
     old_df.index = old_df.index.astype("int")
     old_df["id"] = old_df["id"].astype(int)
 
-    df = pd.concat([old_df, to_add_df])
+    df = pd.concat([old_df, to_add_df], sort=True)
 
     # convert back after
     df.index = df.index.astype("category")
