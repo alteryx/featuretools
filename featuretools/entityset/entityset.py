@@ -1200,8 +1200,9 @@ class EntitySet(object):
         elif index is None:
             index = dataframe.columns[0]
 
-        elif time_index is not None and time_index not in dataframe.columns:
+        if time_index is not None and time_index not in dataframe.columns:
             raise LookupError('Time index not found in dataframe')
+
         if parse_date_cols is not None:
             for c in parse_date_cols:
                 variable_types[c] = vtypes.Datetime
