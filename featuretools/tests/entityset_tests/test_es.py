@@ -222,17 +222,25 @@ def test_unknown_index():
     assert entityset['test_entity'].df['id'].tolist() == list(range(3))
 
 
-def test_bad_index_variables():
+def test_doesnt_remake_index():
     # more variables
     df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
-    vtypes = {'id': variable_types.Categorical,
-              'category': variable_types.Categorical}
 
-    with pytest.raises(LookupError):
+    with pytest.raises(RuntimeError, match="Cannot make index: index variable already present"):
         entityset = EntitySet(id='test')
         entityset.entity_from_dataframe(entity_id='test_entity',
                                         index='id',
-                                        variable_types=vtypes,
+                                        make_index=True,
+                                        dataframe=df)
+
+
+def test_bad_time_index_variable():
+    df = pd.DataFrame({'category': ['a', 'b', 'a']})
+
+    with pytest.raises(LookupError, match="Time index not found in dataframe"):
+        entityset = EntitySet(id='test')
+        entityset.entity_from_dataframe(entity_id='test_entity',
+                                        index="id",
                                         dataframe=df,
                                         time_index='time')
 
