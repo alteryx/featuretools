@@ -63,7 +63,6 @@ def test_eq(es):
     assert not es['customers'].__eq__(es['log'], deep=True)
 
 
-
 def test_update_data(es):
     df = es['customers'].df.copy()
     df['new'] = [1, 2, 3]
