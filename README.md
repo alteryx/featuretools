@@ -14,7 +14,7 @@
 [![Anaconda-Server Badge](https://anaconda.org/featuretools/featuretools/badges/version.svg)](https://anaconda.org/featuretools/featuretools)
 [![Python version](https://img.shields.io/badge/python-2.7%20%7C%203.4%20%7C%203.5%20%7C%203.6%20%7C%203.7-blue.svg)](https://badge.fury.io/py/featuretools)
 [![Gitter](https://img.shields.io/gitter/room/nwjs/nw.js.svg)](https://gitter.im/featuretools/featuretools)
-[![StackOverflow](http://img.shields.io/badge/stackoverflow-featuretools-blue.svg)](https://stackoverflow.com/questions/tagged/featuretools)
+[![StackOverflow](http://img.shields.io/badge/questions-stackoverflow-blue.svg)](https://stackoverflow.com/questions/tagged/featuretools)
 [![License](https://img.shields.io/badge/license-BSD--3-brightgreen.svg)](https://github.com/Featuretools/featuretools/blob/master/LICENSE)
 
 [Featuretools](https://www.featuretools.com) is a python library for automated feature engineering. See the [documentation](https://docs.featuretools.com) for more information.
