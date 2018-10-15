@@ -34,6 +34,9 @@ The 'cluster' value can either be the actual cluster object or a string of the a
                                        dask_kwargs={'cluster': cluster.scheduler.address},
                                        verbose=True)
 
+.. note::
+
+    When using a persistent cluster, Featuretools publishes a copy of the ``EntitySet`` to the cluster the first time it calculates a feature matrix. Based on the ``EntitySet``'s metadata the cluster will reuse it for successive computations. This means if two ``EntitySets`` have the same metadata but different row values (e.g. new data is added to the ``EntitySet``), Featuretools won’t recopy the second ``EntitySet`` in later calls. A simple way to avoid this scenario is to use a unique ``EntitySet`` id.
 
 Using the distributed dashboard
 -------------------------------
@@ -52,4 +55,4 @@ The dashboard requires an additional python package, bokeh, to work. Once bokeh 
 
 Parallel Computation by Partioning Data
 ---------------------------------------
-As an alternative to Featuretool's parallelization, the data can be partitioned and the feature calculations run on multiple cores or a cluster using Dask or Apache Spark with PySpark. This approach may be necessary with a large `Entityset` because the current parallel implementation sends the entire `EntitySet` to each worker which may exhaust the worker memory. For more information on partitioning the data and using Dask or Spark, see :doc:`/guides/performance`. Dask and Spark allow Featuretools to scale to multiple cores on a single machine or multiple machines on a cluster.
+As an alternative to Featuretool's parallelization, the data can be partitioned and the feature calculations run on multiple cores or a cluster using Dask or Apache Spark with PySpark. This approach may be necessary with a large ``EntitySet`` because the current parallel implementation sends the entire ``EntitySet`` to each worker which may exhaust the worker memory. For more information on partitioning the data and using Dask or Spark, see :doc:`/guides/performance`. Dask and Spark allow Featuretools to scale to multiple cores on a single machine or multiple machines on a cluster.
