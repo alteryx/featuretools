@@ -7,6 +7,7 @@ from .primitive_base import PrimitiveBase
 import featuretools.primitives
 from featuretools.utils import is_string
 
+# python 3.7 deprecated getargspec, import allows backwards compability
 try:
     from inspect import getfullargspec as getargspec
 except ImportError:
