@@ -13,9 +13,6 @@ except ImportError:
     from inspect import getargspec
 
 
-
-
-
 def apply_dual_op_from_feat(f, array_1, array_2=None):
     left = f.left
     right = f.right
