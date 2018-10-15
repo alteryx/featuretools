@@ -122,11 +122,8 @@ def test_encode_unknown_features():
     es.entity_from_dataframe(entity_id='a', dataframe=df, index='index', make_index=True)
     features, feature_defs = dfs(entityset=es, target_entity='a')
 
-    # Test to make sure caught
-    with pytest.raises(AssertionError):
-        features_enc, feature_defs_enc = encode_features(features, feature_defs,
-                                                         include_unknown=True)
     # Specify unknown token for replacement
     features_enc, feature_defs_enc = encode_features(features, feature_defs,
-                                                     include_unknown=True, unknown_token='un')
-    assert 'category = un' in list(features_enc.columns)
+                                                     include_unknown=True)
+    assert list(features_enc.columns) == ['category = unknown', 'category = e', 'category = d',
+                                          'category = c', 'category = b', 'category is unknown']

@@ -5,8 +5,7 @@ from featuretools.variable_types.variable import Discrete
 
 
 def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
-                    to_encode=None, inplace=False, verbose=False,
-                    unknown_token='unknown'):
+                    to_encode=None, inplace=False, verbose=False):
     """Encode categorical features
 
         Args:
@@ -113,10 +112,7 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
             X[add.get_name()] = (X[f.get_name()] == label).astype(int)
 
         if include_unknown:
-            assert(unknown_token not in list(X[f.get_name()].unique())), \
-                f""""%s" category in categorical "%s". This will cause duplicated columns.
-                        Please supply different unknown_token""" % (unknown_token, f.get_name())
-            unknown = f.isin(unique).NOT().rename(f.get_name() + " = %s" % unknown_token)
+            unknown = f.isin(unique).NOT().rename(f.get_name() + " is unknown")
             encoded.append(unknown)
             X[unknown.get_name()] = (~X[f.get_name()].isin(unique)).astype(int)
 
