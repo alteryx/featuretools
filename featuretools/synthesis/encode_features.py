@@ -5,20 +5,23 @@ from featuretools.variable_types.variable import Discrete
 
 
 def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
-                    to_encode=None, inplace=False, verbose=False):
+                    to_encode=None, inplace=False, verbose=False,
+                    unknown_token='unknown'):
     """Encode categorical features
 
         Args:
             feature_matrix (pd.DataFrame): Dataframe of features.
             features (list[PrimitiveBase]): Feature definitions in feature_matrix.
             top_n (pd.DataFrame): Number of top values to include.
-            include_unknown (pd.DataFrame): Add feature encoding an unkwown class.
+            include_unknown (pd.DataFrame): Add feature encoding an unknown class.
                 defaults to True
             to_encode (list[str]): List of feature names to encode.
                 features not in this list are unencoded in the output matrix
                 defaults to encode all necessary features.
             inplace (bool): Encode feature_matrix in place. Defaults to False.
             verbose (str): Print progress info.
+            unknown_token (str): token used to replace unknown class in categorical column.
+               defaults to 'unknown'. Must be changed in 'unknown' is one of the classes.
 
         Returns:
             (pd.Dataframe, list) : encoded feature_matrix, encoded features
@@ -110,7 +113,10 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
             X[add.get_name()] = (X[f.get_name()] == label).astype(int)
 
         if include_unknown:
-            unknown = f.isin(unique).NOT().rename(f.get_name() + " = unknown")
+            assert(unknown_token not in list(X[f.get_name()].unique())), \
+                f""""%s" category in categorical "%s". This will cause duplicated columns.
+                        Please supply different unknown_token""" % (unknown_token, f.get_name())
+            unknown = f.isin(unique).NOT().rename(f.get_name() + " = %s" % unknown_token)
             encoded.append(unknown)
             X[unknown.get_name()] = (~X[f.get_name()].isin(unique)).astype(int)
 
