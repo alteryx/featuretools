@@ -1,8 +1,8 @@
 from inspect import isclass
 try:
-    from inspect import getargspec as getargspec
-except ImportError:
     from inspect import getfullargspec as getargspec
+except ImportError:
+    from inspect import getargspec
 
 import pandas as pd
 
