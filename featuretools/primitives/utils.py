@@ -1,4 +1,8 @@
-from inspect import getfullargspec, isclass
+from inspect import isclass
+try:
+    from inspect import getargspec as getargspec
+except ImportError:
+    from inspect import getfullargspec as getargspec
 
 import pandas as pd
 
@@ -97,7 +101,7 @@ def ensure_compatible_dtype(left, right):
 
 def inspect_function_args(new_class, function, uses_calc_time):
     # inspect function to see if there are keyword arguments
-    argspec = getfullargspec(function)
+    argspec = getargspec(function)
     kwargs = {}
     if argspec.defaults is not None:
         lowest_kwargs_position = len(argspec.args) - len(argspec.defaults)
