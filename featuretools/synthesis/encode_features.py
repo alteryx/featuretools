@@ -19,8 +19,6 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
                 defaults to encode all necessary features.
             inplace (bool): Encode feature_matrix in place. Defaults to False.
             verbose (str): Print progress info.
-            unknown_token (str): token used to replace unknown class in categorical column.
-               defaults to 'unknown'. Must be changed in 'unknown' is one of the classes.
 
         Returns:
             (pd.Dataframe, list) : encoded feature_matrix, encoded features
