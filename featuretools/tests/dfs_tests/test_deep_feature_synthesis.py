@@ -549,7 +549,6 @@ def test_where_different_base_feats(es):
         assert hashed not in where_feats
 
 
-# TODO: not clear what this tests
 def test_dfeats_where(es):
     es.add_interesting_values()
 
@@ -559,12 +558,13 @@ def test_dfeats_where(es):
                                    trans_primitives=[])
 
     features = dfs_obj.build_features()
-    assert not (feature_with_name(
-        features, 'COUNT(sessions WHERE device_name = Mobile)'))
-    assert not (feature_with_name(features,
-                                  'COUNT(sessions WHERE device_name = PC)'))
-    assert not (feature_with_name(features,
-                                  'COUNT(sessions WHERE device_type = 0)'))
+
+    # test to make sure we build direct features of agg features with where clause
+    assert (feature_with_name(
+        features, 'customers.COUNT(log WHERE priority_level = 0)'))
+
+    assert (feature_with_name(
+        features, 'COUNT(log WHERE products.department = electronics)'))
 
 
 def test_max_hlevel(es):
