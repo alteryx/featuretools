@@ -1,7 +1,7 @@
 from __future__ import print_function
-from builtins import input
-from builtins import str
+
 import sys
+from builtins import input, str
 from subprocess import call
 
 from conf import release
