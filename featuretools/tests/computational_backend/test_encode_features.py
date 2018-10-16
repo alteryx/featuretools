@@ -3,7 +3,7 @@ import pytest
 
 from ..testing_utils import make_ecommerce_entityset
 
-from featuretools import calculate_feature_matrix
+from featuretools import EntitySet, calculate_feature_matrix, dfs
 from featuretools.primitives import IdentityFeature
 from featuretools.synthesis import encode_features
 
@@ -112,3 +112,18 @@ def test_encode_features_catches_features_mismatch(entityset):
 
     with pytest.raises(AssertionError):
         encode_features(feature_matrix, [f1, f3])
+
+
+def test_encode_unknown_features():
+    # Dataframe with categorical column with "unknown" string
+    df = pd.DataFrame({'category': ['unknown', 'b', 'c', 'd', 'e']})
+
+    es = EntitySet('test')
+    es.entity_from_dataframe(entity_id='a', dataframe=df, index='index', make_index=True)
+    features, feature_defs = dfs(entityset=es, target_entity='a')
+
+    # Specify unknown token for replacement
+    features_enc, feature_defs_enc = encode_features(features, feature_defs,
+                                                     include_unknown=True)
+    assert list(features_enc.columns) == ['category = unknown', 'category = e', 'category = d',
+                                          'category = c', 'category = b', 'category is unknown']
