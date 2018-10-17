@@ -1,4 +1,4 @@
-from inspect import getargspec, isclass
+from inspect import isclass
 
 import pandas as pd
 
@@ -6,6 +6,13 @@ from .primitive_base import PrimitiveBase
 
 import featuretools.primitives
 from featuretools.utils import is_string
+
+try:
+    # python 3.7 deprecated getargspec
+    from inspect import getfullargspec as getargspec
+except ImportError:
+    # python 2.7 - 3.6 backwards compatibility import
+    from inspect import getargspec
 
 
 def apply_dual_op_from_feat(f, array_1, array_2=None):

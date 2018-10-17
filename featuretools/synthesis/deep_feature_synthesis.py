@@ -403,6 +403,9 @@ class DeepFeatureSynthesis(object):
                                          relationship=r,
                                          max_depth=max_depth)
 
+        # now that all  features are added, build where clauses
+        self._build_where_clauses(all_features, entity)
+
     def _handle_new_feature(self, new_feature, all_features):
         """Adds new feature to the dict
 
@@ -462,18 +465,19 @@ class DeepFeatureSynthesis(object):
                 has features as values with their ids as keys.
           entity (Entity): Entity to calculate features for.
         """
-        identities = [f for _, f in all_features[entity.id].items()
-                      if isinstance(f, IdentityFeature)]
+        features = [f for f in all_features[entity.id].values()
+                    if getattr(f, "variable", None)]
 
-        for feat in identities:
+        for feat in features:
             # Get interesting_values from the EntitySet that was passed, which
             # is assumed to be the most recent version of the EntitySet.
             # Features can contain a stale EntitySet reference without
             # interesting_values
-            if entity[feat.variable.id].interesting_values is None:
+            variable = self.es[feat.variable.entity.id][feat.variable.id]
+            if variable.interesting_values is None:
                 continue
 
-            for val in entity[feat.variable.id].interesting_values:
+            for val in variable.interesting_values:
                 self.where_clauses[entity.id].add(Equals(feat, val))
 
     def _build_transform_features(self, all_features, entity, max_depth=0):
@@ -516,9 +520,6 @@ class DeepFeatureSynthesis(object):
 
                 self._handle_new_feature(all_features=all_features,
                                          new_feature=new_f)
-
-        # now that all transform features are added, build where clauses
-        self._build_where_clauses(all_features, entity)
 
     def _build_forward_features(self, all_features, parent_entity,
                                 child_entity, relationship, max_depth=0):

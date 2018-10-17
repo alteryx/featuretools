@@ -15,6 +15,8 @@ def test_direct_from_identity(es):
     device = es['sessions']['device_type']
     d = DirectFeature(base_feature=device, child_entity=es['log'])
 
+    assert d.variable == device
+
     pandas_backend = PandasBackend(es, [d])
     df = pandas_backend.calculate_all_features(instance_ids=[0, 5],
                                                time_last=None)
@@ -24,8 +26,12 @@ def test_direct_from_identity(es):
 
 def test_direct_from_variable(es):
     # should be same behavior as test_direct_from_identity
-    d = DirectFeature(base_feature=es['sessions']['device_type'],
+    device = es['sessions']['device_type']
+    d = DirectFeature(base_feature=device,
                       child_entity=es['log'])
+
+    assert d.variable == device
+
     pandas_backend = PandasBackend(es, [d])
     df = pandas_backend.calculate_all_features(instance_ids=[0, 5],
                                                time_last=None)
