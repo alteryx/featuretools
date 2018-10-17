@@ -41,7 +41,7 @@ class Entity(object):
 
     def __init__(self, id, df, entityset, variable_types=None,
                  index=None, time_index=None, secondary_time_index=None,
-                 last_time_index=None, encoding=None, relationships=None,
+                 last_time_index=None, encoding=None,
                  already_sorted=False, created_index=None, verbose=False):
         """ Create Entity
 
@@ -62,8 +62,6 @@ class Entity(object):
                 instance across all child entities.
             encoding (str, optional)) : If None, will use 'ascii'. Another option is 'utf-8',
                 or any encoding supported by pandas.
-            relationships (list): List of known relationships to other entities,
-                used for inferring variable types.
 
         """
         assert is_string(id), "Entity id must be a string"
@@ -86,7 +84,10 @@ class Entity(object):
             if ti not in cols:
                 cols.append(ti)
 
-        relationships = relationships or []
+        relationships = [r for r in entityset.relationships
+                         if r.parent_entity.id == id or
+                         r.child_entity.id == id]
+
         link_vars = [v.id for rel in relationships for v in [rel.parent_variable, rel.child_variable]
                      if v.entity.id == self.id]
 
