@@ -972,8 +972,7 @@ class EntitySet(object):
                     continue
                 parents.add(e)
 
-                entity_parents = [p.parent_entity.id for p in self.get_forward_relationships(e)]
-                for parent_id in entity_parents:
+                for parent_id in self.get_forward_entities(e):
                     parent_queue.append(parent_id)
 
             queue = [self[p] for p in parents]
@@ -1203,8 +1202,9 @@ class EntitySet(object):
         elif index is None:
             index = dataframe.columns[0]
 
-        elif time_index is not None and time_index not in dataframe.columns:
+        if time_index is not None and time_index not in dataframe.columns:
             raise LookupError('Time index not found in dataframe')
+
         if parse_date_cols is not None:
             for c in parse_date_cols:
                 variable_types[c] = vtypes.Datetime
