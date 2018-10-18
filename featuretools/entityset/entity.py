@@ -190,10 +190,6 @@ class Entity(object):
     def last_time_index(self, lti):
         self.data["last_time_index"] = lti
 
-    @property
-    def parents(self):
-        return [p.parent_entity.id for p in self.entityset.get_forward_relationships(self.id)]
-
     def __hash__(self):
         return id(self.id)
 

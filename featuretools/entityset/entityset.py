@@ -971,8 +971,10 @@ class EntitySet(object):
                 if e in parents:
                     continue
                 parents.add(e)
-                for parent_id in self[e].parents:
+
+                for parent_id in self.get_forward_entities(e):
                     parent_queue.append(parent_id)
+
             queue = [self[p] for p in parents]
             to_explore = parents
         else:
