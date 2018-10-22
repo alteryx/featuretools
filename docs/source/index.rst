@@ -141,12 +141,8 @@ What's next?
 
 Get help
 --------
-The Featuretools community is happy to provide support to users of Featuretools. Project support can be found in four places depending on the type of question:
 
-1. For usage questions, use `Stack Overflow <https://stackoverflow.com/questions/tagged/featuretools>`_ with the ``featuretools`` tag.
-2. For bugs, issues, or feature requests start a `Github issue <https://github.com/featuretools/featuretools/issues>`_.
-3. For discussion regarding development on the core library, use `gitter <https://gitter.im/featuretools/featuretools>`_.
-4. For everything else, the core developers can be reached by email at help@featuretools.com.
+:doc:`loading_data/get_help`
 
 
 Table of contents
@@ -159,6 +155,7 @@ Table of contents
 * :doc:`automated_feature_engineering/afe`
 * :doc:`automated_feature_engineering/primitives`
 * :doc:`automated_feature_engineering/handling_time`
+* :doc:`get_help`
 
 
 .. toctree::
@@ -172,6 +169,7 @@ Table of contents
    automated_feature_engineering/afe
    automated_feature_engineering/primitives
    automated_feature_engineering/handling_time
+   get_help
 
 
 .. **Feature Engineering Language**
