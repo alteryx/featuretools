@@ -324,3 +324,7 @@ extlinks = {
     'issue': ('https://github.com/featuretools/featuretools/issues/%s', 'GH#'),
     'pr': ('https://github.com/featuretools/featuretools/pull/%s', 'GH#')
 }
+
+
+def setup(app):
+    app.add_stylesheet("_static/style.css")

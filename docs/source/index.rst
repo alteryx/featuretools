@@ -139,10 +139,10 @@ What's next?
 * Apply automated feature engineering with :doc:`automated_feature_engineering/afe`
 
 
-Get help
+Get Help
 --------
 
-:doc:`loading_data/get_help`
+* Learn how to talk to the :doc:`community <community>`
 
 
 Table of contents
@@ -155,7 +155,7 @@ Table of contents
 * :doc:`automated_feature_engineering/afe`
 * :doc:`automated_feature_engineering/primitives`
 * :doc:`automated_feature_engineering/handling_time`
-* :doc:`get_help`
+* :doc:`community`
 
 
 .. toctree::
@@ -169,7 +169,7 @@ Table of contents
    automated_feature_engineering/afe
    automated_feature_engineering/primitives
    automated_feature_engineering/handling_time
-   get_help
+   community
 
 
 .. **Feature Engineering Language**
