@@ -137,12 +137,9 @@ What's next?
 
 * Learn about :doc:`loading_data/using_entitysets`
 * Apply automated feature engineering with :doc:`automated_feature_engineering/afe`
+* Can't find what you're looking for? Ask for :doc:`help`
 
 
-Get Help
---------
-
-* Learn how to talk to the :doc:`community <community>`
 
 
 Table of contents
@@ -155,7 +152,6 @@ Table of contents
 * :doc:`automated_feature_engineering/afe`
 * :doc:`automated_feature_engineering/primitives`
 * :doc:`automated_feature_engineering/handling_time`
-* :doc:`community`
 
 
 .. toctree::
@@ -169,7 +165,6 @@ Table of contents
    automated_feature_engineering/afe
    automated_feature_engineering/primitives
    automated_feature_engineering/handling_time
-   community
 
 
 .. **Feature Engineering Language**
@@ -228,6 +223,7 @@ Table of contents
 
 **Resources and References**
 
+* :doc:`help`
 * :doc:`usage_tips/limitations`
 * :doc:`usage_tips/glossary`
 * :doc:`api_reference`
@@ -238,11 +234,11 @@ Table of contents
    :hidden:
    :caption: Resources and References
 
+   help
    usage_tips/limitations
    usage_tips/glossary
    api_reference
    changelog
-
 
 
 
