@@ -5,7 +5,7 @@ jobs:
     docker:
         - image: themattrix/tox
     steps:
-      - run: apt-update && apt-get install pandoc -y
+      - run: apt update && apt install pandoc -y
       - checkout
       - run: pyenv local 2.7.15 3.5.6 3.6.6 3.7.0
       - run: make installdeps
