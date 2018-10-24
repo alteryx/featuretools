@@ -156,7 +156,6 @@ Table of contents
 
 .. toctree::
    :maxdepth: 1
-   :hidden:
    :caption: Getting Started
 
    self
@@ -195,7 +194,6 @@ Table of contents
 
 .. toctree::
    :maxdepth: 1
-   :hidden:
    :caption: Guides
 
    guides/tuning_dfs
@@ -231,7 +229,6 @@ Table of contents
 
 .. toctree::
    :maxdepth: 1
-   :hidden:
    :caption: Resources and References
 
    help
@@ -241,6 +238,14 @@ Table of contents
    changelog
 
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Hide from Table of Contents
+   :hidden:
+
+   feature_engineering_language/feature-types
+   guides/chunking
+   guides/save_progress_example
 
 Other links
 ------------
