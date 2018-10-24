@@ -67,7 +67,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Featuretools'
-copyright = u'2017, Feature Labs. BSD License'
+copyright = u'2018, Feature Labs. BSD License'
 author = u'Feature Labs, Inc.'
 latex_documents = [
     (master_doc, 'featuretools.tex', u'test Documentation',
@@ -324,3 +324,7 @@ extlinks = {
     'issue': ('https://github.com/featuretools/featuretools/issues/%s', 'GH#'),
     'pr': ('https://github.com/featuretools/featuretools/pull/%s', 'GH#')
 }
+
+
+def setup(app):
+    app.add_stylesheet("style.css")
