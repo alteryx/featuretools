@@ -137,16 +137,9 @@ What's next?
 
 * Learn about :doc:`loading_data/using_entitysets`
 * Apply automated feature engineering with :doc:`automated_feature_engineering/afe`
+* Can't find what you're looking for? Ask for :doc:`help`
 
 
-Get help
---------
-The Featuretools community is happy to provide support to users of Featuretools. Project support can be found in four places depending on the type of question:
-
-1. For usage questions, use `Stack Overflow <https://stackoverflow.com/questions/tagged/featuretools>`_ with the ``featuretools`` tag.
-2. For bugs, issues, or feature requests start a `Github issue <https://github.com/featuretools/featuretools/issues>`_.
-3. For discussion regarding development on the core library, use `gitter <https://gitter.im/featuretools/featuretools>`_.
-4. For everything else, the core developers can be reached by email at help@featuretools.com.
 
 
 Table of contents
@@ -230,6 +223,7 @@ Table of contents
 
 **Resources and References**
 
+* :doc:`help`
 * :doc:`usage_tips/limitations`
 * :doc:`usage_tips/glossary`
 * :doc:`api_reference`
@@ -240,11 +234,11 @@ Table of contents
    :hidden:
    :caption: Resources and References
 
+   help
    usage_tips/limitations
    usage_tips/glossary
    api_reference
    changelog
-
 
 
 
