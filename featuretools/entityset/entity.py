@@ -303,19 +303,6 @@ class Entity(object):
             raise Exception("Cannot convert column %s to %s" %
                             (column_id, new_type))
 
-    def is_child_of(self, entity_id):
-        '''
-        Returns True if self is a child of entity_id
-        '''
-        rels = self.entityset.get_backward_relationships(entity_id)
-        return self.id in [r.child_entity.id for r in rels]
-
-    def is_parent_of(self, entity_id):
-        '''
-        Returns True if self is a parent of entity_id
-        '''
-        rels = self.entityset.get_backward_relationships(self.id)
-        return entity_id in [r.child_entity.id for r in rels]
 
     def query_by_values(self, instance_vals, variable_id=None, columns=None,
                         time_last=None, training_window=None):
