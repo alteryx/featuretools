@@ -15,7 +15,6 @@ from .base_backend import ComputationalBackend
 from .feature_tree import FeatureTree
 
 from featuretools import variable_types
-from featuretools.entityset.relationship import Relationship
 from featuretools.exceptions import UnknownFeature
 from featuretools.primitives import (
     AggregationPrimitive,
@@ -389,7 +388,7 @@ class PandasBackend(ComputationalBackend):
             relationship_path = self.entityset.find_backward_path(entity.id,
                                                                   child_entity.id)
 
-            groupby_var = Relationship._get_link_variable_name(relationship_path)
+            groupby_var = get_groupby_variable(relationship_path)
 
             # if the use_previous property exists on this feature, include only the
             # instances from the child entity included in that Timedelta
@@ -530,3 +529,13 @@ def set_default_column(frame, f):
         length = frame.shape[0]
         default = [f.default_value] * length
     frame[f.get_name()] = default
+
+
+def get_groupby_variable(path):
+    r = path[0]
+    child_link_name = r.child_variable.id
+    for r in path[1:]:
+        parent_link_name = child_link_name
+        child_link_name = '%s.%s' % (r.parent_variable.entity.id,
+                                     parent_link_name)
+    return child_link_name

@@ -1108,9 +1108,15 @@ class EntitySet(object):
 
         # Walk down the path of entities and take related instances at each step
         for i, r in enumerate(path):
-            new_entity_id = r.get_other_entity(prev_entity_id)
-            rvar_old = r.get_entity_variable(prev_entity_id)
-            rvar_new = r.get_entity_variable(new_entity_id)
+            if r.child_entity.id == prev_entity_id:
+                new_entity_id = r.parent_entity.id
+                rvar_old = r.child_variable.id
+                rvar_new = r.parent_variable.id
+            else:
+                new_entity_id = r.child_entity.id
+                rvar_old = r.parent_variable.id
+                rvar_new = r.child_variable.id
+
             all_ids = df[rvar_old]
 
             # filter the next entity by the values found in the previous
