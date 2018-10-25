@@ -1312,6 +1312,3 @@ class EntitySet(object):
         df = pd.DataFrame({c: [d] for c, d in zip(columns, defaults)}).head(0)
         return df, variable_types
 
-
-def make_index_variable_name(entity_id):
-    return entity_id + "_id"
