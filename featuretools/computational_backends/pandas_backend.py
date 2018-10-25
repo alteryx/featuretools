@@ -22,7 +22,10 @@ from featuretools.primitives import (
     IdentityFeature,
     TransformPrimitive
 )
-from featuretools.utils.gen_utils import make_tqdm_iterator
+from featuretools.utils.gen_utils import (
+    get_relationship_variable_id,
+    make_tqdm_iterator
+)
 
 standard_library.install_aliases()
 warnings.simplefilter('ignore', np.RankWarning)
@@ -388,7 +391,7 @@ class PandasBackend(ComputationalBackend):
             relationship_path = self.entityset.find_backward_path(entity.id,
                                                                   child_entity.id)
 
-            groupby_var = get_groupby_variable(relationship_path)
+            groupby_var = get_relationship_variable_id(relationship_path)
 
             # if the use_previous property exists on this feature, include only the
             # instances from the child entity included in that Timedelta
@@ -529,13 +532,3 @@ def set_default_column(frame, f):
         length = frame.shape[0]
         default = [f.default_value] * length
     frame[f.get_name()] = default
-
-
-def get_groupby_variable(path):
-    r = path[0]
-    child_link_name = r.child_variable.id
-    for r in path[1:]:
-        parent_link_name = child_link_name
-        child_link_name = '%s.%s' % (r.parent_variable.entity.id,
-                                     parent_link_name)
-    return child_link_name

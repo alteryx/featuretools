@@ -1133,17 +1133,6 @@ class EntitySet(object):
 
         return df
 
-    def gen_relationship_var(self, child_eid, parent_eid):
-        path = self.find_path(parent_eid, child_eid)
-        r = path.pop(0)
-        child_link_name = r.child_variable.id
-        for r in path:
-            parent_entity = r.parent_entity
-            parent_link_name = child_link_name
-            child_link_name = '%s.%s' % (parent_entity.id,
-                                         parent_link_name)
-        return child_link_name
-
     ###########################################################################
     #  Private methods  ######################################################
     ###########################################################################
