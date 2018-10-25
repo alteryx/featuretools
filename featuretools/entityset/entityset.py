@@ -1311,4 +1311,3 @@ class EntitySet(object):
             columns.append(vid)
         df = pd.DataFrame({c: [d] for c, d in zip(columns, defaults)}).head(0)
         return df, variable_types
-

@@ -303,7 +303,6 @@ class Entity(object):
             raise Exception("Cannot convert column %s to %s" %
                             (column_id, new_type))
 
-
     def query_by_values(self, instance_vals, variable_id=None, columns=None,
                         time_last=None, training_window=None):
         """Query instances that have variable with given value
