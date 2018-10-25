@@ -621,22 +621,6 @@ class EntitySet(object):
         """
         return [r for r in self.relationships if r.parent_entity.id == entity_id]
 
-    def get_relationship(self, eid_1, eid_2):
-        """Get relationship, if any, between eid_1 and eid_2
-
-        Args:
-            eid_1 (str): Id of first entity to get relationships for.
-            eid_2 (str): Id of second entity to get relationships for.
-
-        Returns:
-            :class:`.Relationship`: Relationship or None
-        """
-        for r in self.relationships:
-            if r.child_entity.id == eid_1 and r.parent_entity.id == eid_2 or \
-                    r.parent_entity.id == eid_1 and r.child_entity.id == eid_2:
-                return r
-        return None
-
     def _is_backward_relationship(self, rel, prev_ent):
         if prev_ent == rel.parent_entity.id:
             return True
