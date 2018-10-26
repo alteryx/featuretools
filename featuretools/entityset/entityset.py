@@ -621,22 +621,6 @@ class EntitySet(object):
         """
         return [r for r in self.relationships if r.parent_entity.id == entity_id]
 
-    def get_relationship(self, eid_1, eid_2):
-        """Get relationship, if any, between eid_1 and eid_2
-
-        Args:
-            eid_1 (str): Id of first entity to get relationships for.
-            eid_2 (str): Id of second entity to get relationships for.
-
-        Returns:
-            :class:`.Relationship`: Relationship or None
-        """
-        for r in self.relationships:
-            if r.child_entity.id == eid_1 and r.parent_entity.id == eid_2 or \
-                    r.parent_entity.id == eid_1 and r.child_entity.id == eid_2:
-                return r
-        return None
-
     def _is_backward_relationship(self, rel, prev_ent):
         if prev_ent == rel.parent_entity.id:
             return True
@@ -1082,15 +1066,12 @@ class EntitySet(object):
             pd.DataFrame : Dataframe of related instances on the final_entity_id
         """
         # Load the filtered dataframe for the first entity
-        training_window_is_dict = isinstance(training_window, dict)
         window = training_window
         start_estore = self.entity_dict[start_entity_id]
         # This check might be brittle
         if instance_ids is not None and not hasattr(instance_ids, '__iter__'):
             instance_ids = [instance_ids]
 
-        if training_window_is_dict:
-            window = training_window.get(start_estore.id)
         df = start_estore.query_by_values(instance_vals=instance_ids,
                                           time_last=time_last,
                                           training_window=window)
@@ -1108,16 +1089,20 @@ class EntitySet(object):
 
         # Walk down the path of entities and take related instances at each step
         for i, r in enumerate(path):
-            new_entity_id = r.get_other_entity(prev_entity_id)
-            rvar_old = r.get_entity_variable(prev_entity_id)
-            rvar_new = r.get_entity_variable(new_entity_id)
+            if r.child_entity.id == prev_entity_id:
+                new_entity_id = r.parent_entity.id
+                rvar_old = r.child_variable.id
+                rvar_new = r.parent_variable.id
+            else:
+                new_entity_id = r.child_entity.id
+                rvar_old = r.parent_variable.id
+                rvar_new = r.child_variable.id
+
             all_ids = df[rvar_old]
 
             # filter the next entity by the values found in the previous
             # entity's relationship column
             entity_store = self.entity_dict[new_entity_id]
-            if training_window_is_dict:
-                window = training_window.get(entity_store.id)
             df = entity_store.query_by_values(all_ids,
                                               variable_id=rvar_new,
                                               time_last=time_last,
@@ -1126,17 +1111,6 @@ class EntitySet(object):
             prev_entity_id = new_entity_id
 
         return df
-
-    def gen_relationship_var(self, child_eid, parent_eid):
-        path = self.find_path(parent_eid, child_eid)
-        r = path.pop(0)
-        child_link_name = r.child_variable.id
-        for r in path:
-            parent_entity = r.parent_entity
-            parent_link_name = child_link_name
-            child_link_name = '%s.%s' % (parent_entity.id,
-                                         parent_link_name)
-        return child_link_name
 
     ###########################################################################
     #  Private methods  ######################################################
@@ -1332,7 +1306,3 @@ class EntitySet(object):
             columns.append(vid)
         df = pd.DataFrame({c: [d] for c, d in zip(columns, defaults)}).head(0)
         return df, variable_types
-
-
-def make_index_variable_name(entity_id):
-    return entity_id + "_id"
