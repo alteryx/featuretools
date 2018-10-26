@@ -1066,15 +1066,12 @@ class EntitySet(object):
             pd.DataFrame : Dataframe of related instances on the final_entity_id
         """
         # Load the filtered dataframe for the first entity
-        training_window_is_dict = isinstance(training_window, dict)
         window = training_window
         start_estore = self.entity_dict[start_entity_id]
         # This check might be brittle
         if instance_ids is not None and not hasattr(instance_ids, '__iter__'):
             instance_ids = [instance_ids]
 
-        if training_window_is_dict:
-            window = training_window.get(start_estore.id)
         df = start_estore.query_by_values(instance_vals=instance_ids,
                                           time_last=time_last,
                                           training_window=window)
@@ -1106,8 +1103,6 @@ class EntitySet(object):
             # filter the next entity by the values found in the previous
             # entity's relationship column
             entity_store = self.entity_dict[new_entity_id]
-            if training_window_is_dict:
-                window = training_window.get(entity_store.id)
             df = entity_store.query_by_values(all_ids,
                                               variable_id=rvar_new,
                                               time_last=time_last,
