@@ -20,36 +20,6 @@ pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
 
 
-class BFSNode(object):
-
-    def __init__(self, entity_id, parent, relationship):
-        self.entity_id = entity_id
-        self.parent = parent
-        self.relationship = relationship
-
-    def build_path(self):
-        path = []
-        cur_node = self
-        num_forward = 0
-        i = 0
-        last_forward = False
-        while cur_node.parent is not None:
-            path.append(cur_node.relationship)
-            if cur_node.relationship.parent_entity.id == cur_node.entity_id:
-                num_forward += 1
-                if i == 0:
-                    last_forward = True
-            cur_node = cur_node.parent
-            i += 1
-        path.reverse()
-
-        # if path ends on a forward relationship, return number of
-        # forward relationships, otherwise 0
-        if len(path) == 0 or not last_forward:
-            num_forward = 0
-        return path, num_forward
-
-
 class EntitySet(object):
     """
     Stores all actual data for a entityset
@@ -469,31 +439,52 @@ class EntitySet(object):
             else:
                 return []
 
-        # BFS so we get shortest path
-        start_node = BFSNode(start_entity_id, None, None)
-        queue = [start_node]
-        nodes = {}
+        # Search for bath using BFS to get the shortest path.
+        # Start by initializing the queue with all relationships from start entity
+        queue = [[r] for r in self.get_forward_relationships(start_entity_id)] + \
+                [[r] for r in self.get_backward_relationships(start_entity_id)]
+        visited = set([start_entity_id])
 
         while len(queue) > 0:
-            current_node = queue.pop(0)
-            if current_node.entity_id == goal_entity_id:
-                path, num_forward = current_node.build_path()
+            # get first path from queue
+            current_path = queue.pop(0)
+
+            # last entity in path will be which ever one we haven't visited
+            if current_path[-1].parent_entity.id not in visited:
+                next_entity_id = current_path[-1].parent_entity.id
+            elif current_path[-1].child_entity.id not in visited:
+                next_entity_id = current_path[-1].child_entity.id
+            else:
+                # if we've visited both, we don't need to explore this path further
+                continue
+
+            # we've found a path to goal
+            if next_entity_id == goal_entity_id:
                 if include_num_forward:
-                    return path, num_forward
+                    # count the number of forward relationships along this path
+                    # starting from beginning
+                    check_entity = start_entity_id
+                    num_forward = 0
+                    for r in current_path:
+                        # if the current entity we're checking is a child, that means the
+                        # relationship is a forward and the next entity to check is the parent
+                        if r.child_entity.id == check_entity:
+                            num_forward += 1
+                            check_entity = r.parent_entity.id
+                        else:
+                            check_entity = r.child_entity.id
+
+                    return current_path, num_forward
                 else:
-                    return path
+                    return current_path
 
-            for r in self.get_forward_relationships(current_node.entity_id):
-                if r.parent_entity.id not in nodes:
-                    parent_node = BFSNode(r.parent_entity.id, current_node, r)
-                    nodes[r.parent_entity.id] = parent_node
-                    queue.append(parent_node)
+            next_relationships = self.get_forward_relationships(next_entity_id)
+            next_relationships += self.get_backward_relationships(next_entity_id)
 
-            for r in self.get_backward_relationships(current_node.entity_id):
-                if r.child_entity.id not in nodes:
-                    child_node = BFSNode(r.child_entity.id, current_node, r)
-                    nodes[r.child_entity.id] = child_node
-                    queue.append(child_node)
+            for r in next_relationships:
+                queue.append(current_path + [r])
+
+            visited.add(next_entity_id)
 
         raise ValueError(("No path from {} to {}! Check that all entities "
                           .format(start_entity_id, goal_entity_id)),
