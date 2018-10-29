@@ -9,6 +9,7 @@ from ..testing_utils import make_ecommerce_entityset
 from featuretools import Timedelta
 from featuretools.computational_backends import PandasBackend
 from featuretools.primitives import (
+    Absolute,
     Add,
     Count,
     CumCount,
