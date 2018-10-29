@@ -7,7 +7,11 @@ jobs:
     steps:
       - checkout
       - run: pyenv local 2.7.15
+<<<<<<< HEAD
       - run: make installdeps && make lint
+=======
+      - run: make installdeps lint
+>>>>>>> master
       - run: tox -e py27
 
   "python-3.5":
@@ -17,7 +21,11 @@ jobs:
     steps:
       - checkout
       - run: pyenv local 3.5.6
+<<<<<<< HEAD
       - run: make installdeps && make lint
+=======
+      - run: make installdeps lint
+>>>>>>> master
       - run: tox -e py35
 
   "python-3.6":
@@ -27,8 +35,13 @@ jobs:
     steps:
       - checkout
       - run: pyenv local 3.6.6
+<<<<<<< HEAD
       - run: make installdeps && make lint
       - run: tox -e py36
+=======
+      - run: make installdeps lint
+      - run: tox -e clean,py36 && codecov
+>>>>>>> master
 
   "python-3.7":
     working_directory: ~/featuretools
@@ -37,8 +50,13 @@ jobs:
     steps:
       - checkout
       - run: pyenv local 3.7.0
+<<<<<<< HEAD
       - run: make installdeps && make lint
       - run: tox -e clean,py37 && codecov
+=======
+      - run: make installdeps lint
+      - run: tox -e py37
+>>>>>>> master
 
 workflows:
   version: 2
