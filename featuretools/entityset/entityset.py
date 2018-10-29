@@ -439,7 +439,7 @@ class EntitySet(object):
             else:
                 return []
 
-        # Search for bath using BFS to get the shortest path.
+        # Search for path using BFS to get the shortest path.
         # Start by initializing the queue with all relationships from start entity
         queue = [[r] for r in self.get_forward_relationships(start_entity_id)] + \
                 [[r] for r in self.get_backward_relationships(start_entity_id)]
