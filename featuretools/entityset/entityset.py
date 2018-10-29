@@ -486,9 +486,8 @@ class EntitySet(object):
 
             visited.add(next_entity_id)
 
-        raise ValueError(("No path from {} to {}! Check that all entities "
-                          .format(start_entity_id, goal_entity_id)),
-                         "are connected by relationships")
+        raise ValueError(("No path from {} to {}. Check that all entities are \
+            connected by relationships".format(start_entity_id, goal_entity_id)))
 
     def find_forward_path(self, start_entity_id, goal_entity_id):
         """Find a forward path between a start and goal entity
