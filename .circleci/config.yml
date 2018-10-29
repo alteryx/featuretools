@@ -9,7 +9,7 @@ jobs:
       - run: pyenv local 2.7.15
       - run: make installdeps
       - run: make lint
-      - run: tox && codecov
+      - run: tox -e py27
 
   "python-3.5":
     working_directory: ~/featuretools
@@ -20,7 +20,7 @@ jobs:
       - run: pyenv local 3.5.6
       - run: make installdeps
       - run: make lint
-      - run: tox && codecov
+      - run: tox -e py35
 
 
   "python-3.6":
@@ -32,7 +32,7 @@ jobs:
       - run: pyenv local 3.6.6
       - run: make installdeps
       - run: make lint
-      - run: tox && codecov
+      - run: tox -e py36
 
   "python-3.7":
     working_directory: ~/featuretools
@@ -43,11 +43,11 @@ jobs:
       - run: pyenv local 3.7.0
       - run: make installdeps
       - run: make lint
-      - run: tox && codecov
+      - run: tox -e clean,py37 && codecov
 
 workflows:
   version: 2
-  build:
+  test_all_python_versions:
     jobs:
       - "python-2.7"
       - "python-3.5"
