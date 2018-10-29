@@ -28,7 +28,7 @@ jobs:
       - checkout
       - run: pyenv local 3.6.6
       - run: make installdeps lint
-      - run: tox -e py36
+      - run: tox -e clean,py36 && codecov
 
   "python-3.7":
     working_directory: ~/featuretools
@@ -38,7 +38,7 @@ jobs:
       - checkout
       - run: pyenv local 3.7.0
       - run: make installdeps lint
-      - run: tox -e clean,py37 && codecov
+      - run: tox -e py37
 
 workflows:
   version: 2
