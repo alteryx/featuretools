@@ -120,9 +120,7 @@ def test_find_path_same_entity(es):
     assert len(path) == 0
 
 
-def test_find_path_no_path_found():
-    # don't use fixture because we modify the relationships
-    es = make_ecommerce_entityset()
+def test_find_path_no_path_found(es):
     es.relationships = []
     error_text = "No path from products to customers. Check that all entities are connected by relationships"
     with pytest.raises(ValueError, match=error_text):
