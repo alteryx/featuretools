@@ -426,12 +426,12 @@ class EntitySet(object):
         Returns:
             List of relationships that go from start entity to goal
                 entity. None is returned if no path exists.
-            If include_forward_distance is True,
+            If include_num_forward is True,
                 returns a tuple of (relationship_list, forward_distance).
 
         See Also:
-            :func:`BaseEntitySet.find_forward_path`
-            :func:`BaseEntitySet.find_backward_path`
+            :func:`EntitySet.find_forward_path`
+            :func:`EntitySet.find_backward_path`
         """
         if start_entity_id == goal_entity_id:
             if include_num_forward:
