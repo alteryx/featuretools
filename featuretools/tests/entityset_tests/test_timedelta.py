@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 from toolz import merge
@@ -5,6 +6,7 @@ from toolz import merge
 from ..testing_utils import make_ecommerce_entityset
 
 from featuretools.entityset import Timedelta
+from featuretools.entityset.timedelta import add_td
 from featuretools.exceptions import NotEnoughData
 from featuretools.primitives import Count  # , SlidingMean
 from featuretools.utils.wrangle import _check_timedelta
@@ -154,3 +156,18 @@ def test_deltas_week(es):
     delta_days = Timedelta(7, "d")
 
     assert all_times[0] + delta_days == all_times[0] + delta_week
+
+
+def test_deltas_year():
+    start_list = pd.to_datetime(['2014-01-01', '2016-01-01'])
+    start_array = np.array(start_list)
+    new_time_1 = add_td(start_list, 2, 'Y')
+    new_time_2 = add_td(start_array, 2, 'Y')
+    values = [2016, 2018]
+    for i, value in enumerate(values):
+        assert new_time_1.dt.year.values[i] == value
+        assert np.datetime_as_string(new_time_2[i])[:4] == str(value)
+
+    with pytest.raises(ValueError) as excinfo:
+        add_td(start_list, 2, 'M')
+    assert 'Invalid Unit' in str(excinfo)

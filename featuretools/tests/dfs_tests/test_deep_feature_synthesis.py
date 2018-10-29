@@ -255,11 +255,16 @@ def test_makes_agg_features_with_where(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
                                    agg_primitives=[Count],
+                                   where_primitives=[Count],
                                    trans_primitives=[])
 
     features = dfs_obj.build_features()
     assert (feature_with_name(features,
                               'COUNT(log WHERE priority_level = 0)'))
+
+    # make sure they are made using direct features too
+    assert (feature_with_name(features,
+                              'COUNT(log WHERE products.department = food)'))
 
 
 def test_abides_by_max_depth_param(es):
@@ -553,12 +558,13 @@ def test_dfeats_where(es):
                                    trans_primitives=[])
 
     features = dfs_obj.build_features()
-    assert not (feature_with_name(
-        features, 'COUNT(sessions WHERE device_name = Mobile)'))
-    assert not (feature_with_name(features,
-                                  'COUNT(sessions WHERE device_name = PC)'))
-    assert not (feature_with_name(features,
-                                  'COUNT(sessions WHERE device_type = 0)'))
+
+    # test to make sure we build direct features of agg features with where clause
+    assert (feature_with_name(
+        features, 'customers.COUNT(log WHERE priority_level = 0)'))
+
+    assert (feature_with_name(
+        features, 'COUNT(log WHERE products.department = electronics)'))
 
 
 def test_max_hlevel(es):
@@ -681,3 +687,35 @@ def test_commutative(es):
 
     assert num_add_feats == 3
     assert num_add_as_base_feat == 9
+
+
+def test_transform_consistency():
+    # Create dataframe
+    df = pd.DataFrame({'a': [14, 12, 10], 'b': [False, False, True],
+                       'b1': [True, True, False], 'b12': [4, 5, 6],
+                       'P': [10, 15, 12]})
+    es = ft.EntitySet(id='test')
+    # Add dataframe to entityset
+    es.entity_from_dataframe(entity_id='first', dataframe=df,
+                             index='index',
+                             make_index=True)
+
+    # Generate features
+    feature_defs = ft.dfs(entityset=es, target_entity='first',
+                          trans_primitives=['and', 'add', 'or'],
+                          features_only=True)
+
+    # Check for correct ordering of features
+    assert feature_with_name(feature_defs, 'a')
+    assert feature_with_name(feature_defs, 'b')
+    assert feature_with_name(feature_defs, 'b1')
+    assert feature_with_name(feature_defs, 'b12')
+    assert feature_with_name(feature_defs, 'P')
+    assert feature_with_name(feature_defs, 'AND(b, b1)')
+    assert not feature_with_name(feature_defs, 'AND(b1, b)')  # make sure it doesn't exist the other way
+    assert feature_with_name(feature_defs, 'a + P')
+    assert feature_with_name(feature_defs, 'b12 + P')
+    assert feature_with_name(feature_defs, 'a + b12')
+    assert feature_with_name(feature_defs, 'OR(b, b1)')
+    assert feature_with_name(feature_defs, 'OR(AND(b, b1), b)')
+    assert feature_with_name(feature_defs, 'OR(AND(b, b1), b1)')

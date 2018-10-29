@@ -3,10 +3,10 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
-from past.builtins import basestring
 
 from featuretools import variable_types
 from featuretools.entityset.timedelta import Timedelta
+from featuretools.utils import is_string
 
 
 def _check_timedelta(td, entity_id=None, related_entity_id=None):
@@ -51,7 +51,7 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
         if td.entity is not None and related_entity_id is not None and td.entity == related_entity_id:
             raise ValueError("Timedelta entity {} same as passed related entity {}".format(td.entity, related_entity_id))
         return td
-    elif not isinstance(td, (basestring, tuple, int, float)):
+    elif not (is_string(td) or isinstance(td, (tuple, int, float))):
         raise ValueError("Unable to parse timedelta: {}".format(td))
 
     # TODO: allow observations from an entity in string
@@ -86,45 +86,6 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
                 raise ValueError("Unable to parse value {} from ".format(value) +
                                  "timedelta string: {}".format(td))
     return Timedelta(value, unit, entity=entity_id)
-
-
-def _check_variable_list(variables, entity, ignore_unknown=False):
-    """Ensures a list of of values representing variables is
-        a list of variable instances"""
-    if len(variables) == 0:
-        return []
-
-    if ignore_unknown:
-        return [_v for _v in [_check_variable(v, entity, ignore_unknown=ignore_unknown) for v in variables]
-                if _v]
-    else:
-        return [_check_variable(v, entity, ignore_unknown=False) for v in variables]
-
-    raise Exception("Couldn't handle list of variables")
-
-
-def _check_variable(variable, entity, ignore_unknown=False):
-    """Ensures a value representing a variable is
-        a variable instance"""
-    if not isinstance(variable, variable_types.Variable):
-        if ignore_unknown and variable not in entity.variables:
-            return None
-        else:
-            return entity[variable]
-    else:
-        if ignore_unknown and variable.id not in entity:
-            return None
-        else:
-            return variable
-
-
-def _check_entity(entity, entityset):
-    """Ensures a value representing an entity is
-        an entity instance"""
-    from featuretools.entityset.base_entity import BaseEntity
-    if isinstance(entity, BaseEntity):
-        return entity
-    return entityset[entity]
 
 
 def _check_time_against_column(time, time_column):

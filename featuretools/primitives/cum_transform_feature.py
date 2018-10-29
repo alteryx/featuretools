@@ -3,13 +3,13 @@ from builtins import str
 
 import numpy as np
 import pandas as pd
-from past.builtins import basestring
 
 from .aggregation_primitives import Count, Max, Mean, Min, Sum
 from .primitive_base import IdentityFeature, PrimitiveBase
 from .transform_primitive import TransformPrimitive
 from .utils import apply_dual_op_from_feat
 
+from featuretools.utils import is_string
 from featuretools.utils.wrangle import _check_timedelta
 from featuretools.variable_types import Id, Index, Numeric, TimeIndex
 from featuretools.variable_types.variable import Discrete
@@ -45,7 +45,7 @@ class CumFeature(TransformPrimitive):
         base_feature = self._check_feature(base_feature)
 
         td_entity_id = None
-        if isinstance(use_previous, basestring):
+        if is_string(use_previous):
             td_entity_id = base_feature.entity.id
         self.use_previous = _check_timedelta(
             use_previous, entity_id=td_entity_id)

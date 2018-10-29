@@ -11,6 +11,8 @@
 [![Circle CI](https://circleci.com/gh/Featuretools/featuretools.svg?maxAge=2592000&style=shield)](https://circleci.com/gh/Featuretools/featuretools)
 [![Coverage Status](https://codecov.io/gh/Featuretools/featuretools/branch/master/graph/badge.svg)](https://codecov.io/gh/Featuretools/featuretools)
 [![PyPI version](https://badge.fury.io/py/featuretools.svg?maxAge=2592000)](https://badge.fury.io/py/featuretools)
+[![Anaconda-Server Badge](https://anaconda.org/featuretools/featuretools/badges/version.svg)](https://anaconda.org/featuretools/featuretools)
+[![StackOverflow](http://img.shields.io/badge/questions-on_stackoverflow-blue.svg)](https://stackoverflow.com/questions/tagged/featuretools)
 
 [Featuretools](https://www.featuretools.com) is a python library for automated feature engineering. See the [documentation](https://docs.featuretools.com) for more information.
 
@@ -19,7 +21,11 @@
 ## Installation
 Install with pip
 
-	pip install featuretools
+	python -m pip install featuretools
+	
+or from the Featuretools channel on [conda](https://anaconda.org/Featuretools/featuretools):
+
+	conda install -c featuretools featuretools
 
 ## Example
 Below is an example of using Deep Feature Synthesis (DFS) to perform automated feature engineering. In this example, we apply DFS to a multi-table dataset consisting of timestamped customer transactions.
@@ -77,6 +83,25 @@ The Featuretools community is happy to provide support to users of Featuretools.
 2. For bugs, issues, or feature requests start a [Github issue](https://github.com/featuretools/featuretools/issues).
 3. For discussion regarding development on the core library, use [gitter](https://gitter.im/featuretools/featuretools).
 4. For everything else, the core developers can be reached by email at help@featuretools.com.
+
+## Citing Featuretools
+
+If you use Featuretools, please consider citing the following paper:
+
+James Max Kanter, Kalyan Veeramachaneni. [Deep feature synthesis: Towards automating data science endeavors.](https://dai.lids.mit.edu/wp-content/uploads/2017/10/DSAA_DSM_2015.pdf) *IEEE DSAA 2015*.
+
+BibTeX entry:
+
+```bibtex
+@inproceedings{kanter2015deep,
+  author    = {James Max Kanter and Kalyan Veeramachaneni},
+  title     = {Deep feature synthesis: Towards automating data science endeavors},
+  booktitle = {2015 {IEEE} International Conference on Data Science and Advanced Analytics, DSAA 2015, Paris, France, October 19-21, 2015},
+  pages     = {1--10},
+  year      = {2015},
+  organization={IEEE}
+}
+```
 
 
 ## Feature Labs

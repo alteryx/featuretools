@@ -12,7 +12,6 @@ Featuretools can optionally compute features on multiple cores. The simplest way
 
 The above command will start 2 processes to compute chunks of the feature matrix in parallel. Each process receives its own copy of the entity set, so memory use will be proportional to the number of parallel processes. Because the entity set has to be copied to each process, there is overhead to perform this operation before calculation can begin. To avoid this overhead on successive calls to ``calculate_feature_matrix``, read the section below on using a persistent cluster.
 
-
 Using persistent cluster
 ------------------------
 Behind the scenes, Featuretools uses `dask's <http://dask.pydata.org/>`_ distributed scheduler to implement multiprocessing. When you only specify the ``n_jobs`` parameter, a cluster will be created for that specific feature matrix calculation and destroyed once calculations have finished. A drawback of this is that each time a feature matrix is calculated, the entity set has to be transmitted to the workers again. To avoid this, we would like to reuse the same cluster between calls. The way to do this is by creating a cluster first and telling featuretools to use it with the ``dask_kwargs`` parameter::
@@ -35,6 +34,9 @@ The 'cluster' value can either be the actual cluster object or a string of the a
                                        dask_kwargs={'cluster': cluster.scheduler.address},
                                        verbose=True)
 
+.. note::
+
+    When using a persistent cluster, Featuretools publishes a copy of the ``EntitySet`` to the cluster the first time it calculates a feature matrix. Based on the ``EntitySet``'s metadata the cluster will reuse it for successive computations. This means if two ``EntitySets`` have the same metadata but different row values (e.g. new data is added to the ``EntitySet``), Featuretools won’t recopy the second ``EntitySet`` in later calls. A simple way to avoid this scenario is to use a unique ``EntitySet`` id.
 
 Using the distributed dashboard
 -------------------------------
@@ -50,3 +52,7 @@ The dashboard requires an additional python package, bokeh, to work. Once bokeh 
                                      n_jobs=2,
                                      dask_kwargs={'diagnostics_port': 8787}
                                      verbose=True)
+
+Parallel Computation by Partioning Data
+---------------------------------------
+As an alternative to Featuretool's parallelization, the data can be partitioned and the feature calculations run on multiple cores or a cluster using Dask or Apache Spark with PySpark. This approach may be necessary with a large ``EntitySet`` because the current parallel implementation sends the entire ``EntitySet`` to each worker which may exhaust the worker memory. For more information on partitioning the data and using Dask or Spark, see :doc:`/guides/performance`. Dask and Spark allow Featuretools to scale to multiple cores on a single machine or multiple machines on a cluster.

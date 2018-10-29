@@ -15,6 +15,7 @@ from featuretools.primitives import (
     Feature,
     Mean,
     Median,
+    NMostCommon,
     NumTrue,
     Sum,
     TimeSinceLast,
@@ -29,6 +30,7 @@ from featuretools.synthesis.deep_feature_synthesis import (
 from featuretools.variable_types import (
     Datetime,
     DatetimeTimeIndex,
+    Discrete,
     Index,
     Numeric,
     Variable
@@ -213,6 +215,12 @@ def test_stack_on_self(es, test_primitive, parent_entity):
     test_primitive.stack_on = None
     test_primitive.stack_on_self = False
     assert not (check_stacking(test_primitive, [child]))
+
+
+def test_stack_expanding(es, test_primitive, parent_entity):
+    test_primitive.input_types = [Discrete]
+    expanding_primitive = NMostCommon(es['sessions']['device_type'], parent_entity)
+    assert not (check_stacking(test_primitive, [expanding_primitive]))
 
 
 # P TODO: this functionality is currently missing

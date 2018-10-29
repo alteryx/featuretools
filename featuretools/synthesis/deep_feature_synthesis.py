@@ -2,8 +2,6 @@ import logging
 from builtins import filter, object, str
 from collections import defaultdict
 
-from past.builtins import basestring
-
 import featuretools.primitives.api as ftypes
 from featuretools import variable_types
 from featuretools.primitives.api import (
@@ -16,6 +14,7 @@ from featuretools.primitives.api import (
     IdentityFeature,
     TimeSince
 )
+from featuretools.utils import is_string
 from featuretools.variable_types import Boolean, Categorical, Numeric, Ordinal
 
 logger = logging.getLogger('featuretools')
@@ -32,7 +31,7 @@ class DeepFeatureSynthesis(object):
             agg_primitives (list[str or :class:`.primitives.AggregationPrimitive`], optional):
                 list of Aggregation Feature types to apply.
 
-                Default: ["sum", "std", "max", "skew", "min", "mean", "count", "percent_true", "n_unique", "mode"]
+                Default: ["sum", "std", "max", "skew", "min", "mean", "count", "percent_true", "num_unique", "mode"]
 
             trans_primitives (list[str or :class:`.primitives.TransformPrimitive`], optional):
                 list of Transform primitives to use.
@@ -140,7 +139,7 @@ class DeepFeatureSynthesis(object):
         self.agg_primitives = []
         agg_prim_dict = ftypes.get_aggregation_primitives()
         for a in agg_primitives:
-            if isinstance(a, basestring):
+            if is_string(a):
                 if a.lower() not in agg_prim_dict:
                     raise ValueError("Unknown aggregation primitive {}. ".format(a),
                                      "Call ft.primitives.list_primitives() to get",
@@ -156,7 +155,7 @@ class DeepFeatureSynthesis(object):
         self.trans_primitives = []
         trans_prim_dict = ftypes.get_transform_primitives()
         for t in trans_primitives:
-            if isinstance(t, basestring):
+            if is_string(t):
                 if t.lower() not in trans_prim_dict:
                     raise ValueError("Unknown transform primitive {}. ".format(t),
                                      "Call ft.primitives.list_primitives() to get",
@@ -169,7 +168,7 @@ class DeepFeatureSynthesis(object):
             where_primitives = [ftypes.Count]
         self.where_primitives = []
         for p in where_primitives:
-            if isinstance(p, basestring):
+            if is_string(p):
                 prim_obj = agg_prim_dict.get(p.lower(), None)
                 if prim_obj is None:
                     raise ValueError("Unknown where primitive {}. ".format(p),
@@ -404,6 +403,9 @@ class DeepFeatureSynthesis(object):
                                          relationship=r,
                                          max_depth=max_depth)
 
+        # now that all  features are added, build where clauses
+        self._build_where_clauses(all_features, entity)
+
     def _handle_new_feature(self, new_feature, all_features):
         """Adds new feature to the dict
 
@@ -463,18 +465,19 @@ class DeepFeatureSynthesis(object):
                 has features as values with their ids as keys.
           entity (Entity): Entity to calculate features for.
         """
-        identities = [f for _, f in all_features[entity.id].items()
-                      if isinstance(f, IdentityFeature)]
+        features = [f for f in all_features[entity.id].values()
+                    if getattr(f, "variable", None)]
 
-        for feat in identities:
+        for feat in features:
             # Get interesting_values from the EntitySet that was passed, which
             # is assumed to be the most recent version of the EntitySet.
             # Features can contain a stale EntitySet reference without
             # interesting_values
-            if entity[feat.variable.id].interesting_values is None:
+            variable = self.es[feat.variable.entity.id][feat.variable.id]
+            if variable.interesting_values is None:
                 continue
 
-            for val in entity[feat.variable.id].interesting_values:
+            for val in variable.interesting_values:
                 self.where_clauses[entity.id].add(Equals(feat, val))
 
     def _build_transform_features(self, all_features, entity, max_depth=0):
@@ -517,9 +520,6 @@ class DeepFeatureSynthesis(object):
 
                 self._handle_new_feature(all_features=all_features,
                                          new_feature=new_f)
-
-        # now that all transform features are added, build where clauses
-        self._build_where_clauses(all_features, entity)
 
     def _build_forward_features(self, all_features, parent_entity,
                                 child_entity, relationship, max_depth=0):
@@ -691,6 +691,10 @@ def check_stacking(primitive, input_types):
                 return False
 
     for f in input_types:
+        if f.expanding:
+            return False
+
+    for f in input_types:
         if f.base_of_exclude is not None:
             if primitive in f.base_of_exclude:
                 return False
@@ -748,5 +752,8 @@ def match(input_types, features, replace=False, commutative=False):
             else:
                 new_match = tuple(new_match)
             matching_inputs.add(new_match)
+
+    if commutative:
+        return set([tuple(sorted(s, key=lambda x: x.get_name().lower())) for s in matching_inputs])
 
     return set([tuple(s) for s in matching_inputs])

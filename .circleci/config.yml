@@ -1,11 +1,50 @@
 version: 2
 jobs:
-  build:
+  "python-2.7":
     working_directory: ~/featuretools
     docker:
-        - image: painless/tox
+        - image: themattrix/tox
     steps:
       - checkout
-      - run: pyenv local 2.7.13 3.5.2 3.6.0
-      - run: make installdeps
-      - run: tox && make lint && codecov
+      - run: pyenv local 2.7.15
+      - run: make installdeps lint
+      - run: tox -e py27
+
+  "python-3.5":
+    working_directory: ~/featuretools
+    docker:
+        - image: themattrix/tox
+    steps:
+      - checkout
+      - run: pyenv local 3.5.6
+      - run: make installdeps lint
+      - run: tox -e py35
+
+  "python-3.6":
+    working_directory: ~/featuretools
+    docker:
+        - image: themattrix/tox
+    steps:
+      - checkout
+      - run: pyenv local 3.6.6
+      - run: make installdeps lint
+      - run: tox -e clean,py36 && codecov
+
+  "python-3.7":
+    working_directory: ~/featuretools
+    docker:
+        - image: themattrix/tox
+    steps:
+      - checkout
+      - run: pyenv local 3.7.0
+      - run: make installdeps lint
+      - run: tox -e py37
+
+workflows:
+  version: 2
+  test_all_python_versions:
+    jobs:
+      - "python-2.7"
+      - "python-3.5"
+      - "python-3.6"
+      - "python-3.7"

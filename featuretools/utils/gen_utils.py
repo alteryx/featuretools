@@ -1,5 +1,4 @@
 import sys
-from builtins import object
 
 from pympler.asizeof import asizeof as getsize  # noqa
 from tqdm import tqdm
@@ -31,25 +30,6 @@ def session_type():
     return "ipython"
 
 
-class RedirectStdStreams(object):
-
-    def __init__(self, stdout=None, stderr=None):
-        self._stdout = stdout or sys.stdout
-        self._stderr = stderr or sys.stderr
-
-    def __enter__(self):
-        self.old_stdout, self.old_stderr = sys.stdout, sys.stderr
-        self.old_stdout.flush()
-        self.old_stderr.flush()
-        sys.stdout, sys.stderr = self._stdout, self._stderr
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self._stdout.flush()
-        self._stderr.flush()
-        sys.stdout = self.old_stdout
-        sys.stderr = self.old_stderr
-
-
 def make_tqdm_iterator(**kwargs):
     options = {
         "file": sys.stdout,
@@ -77,3 +57,24 @@ def make_tqdm_iterator(**kwargs):
     else:
         iterator = tqdm(**options)
     return iterator
+
+
+def is_string(test_value):
+    """Checks for string in Python2 and Python3
+       Via Stack Overflow: https://stackoverflow.com/a/22679982/9458191
+    """
+    try:
+        python_string = basestring
+    except NameError:
+        python_string = str
+    return isinstance(test_value, python_string)
+
+
+def get_relationship_variable_id(path):
+    r = path[0]
+    child_link_name = r.child_variable.id
+    for r in path[1:]:
+        parent_link_name = child_link_name
+        child_link_name = '%s.%s' % (r.parent_entity.id,
+                                     parent_link_name)
+    return child_link_name

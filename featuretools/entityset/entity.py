@@ -1,17 +1,17 @@
 from __future__ import division, print_function
 
-import copy
 import logging
 from builtins import range
 from datetime import datetime
 
 import numpy as np
 import pandas as pd
-from past.builtins import basestring
+import pandas.api.types as pdtypes
 
 from .timedelta import Timedelta
 
 from featuretools import variable_types as vtypes
+from featuretools.utils import is_string
 from featuretools.utils.wrangle import (
     _check_time_type,
     _check_timedelta,
@@ -41,7 +41,7 @@ class Entity(object):
 
     def __init__(self, id, df, entityset, variable_types=None,
                  index=None, time_index=None, secondary_time_index=None,
-                 last_time_index=None, encoding=None, relationships=None,
+                 last_time_index=None, encoding=None,
                  already_sorted=False, created_index=None, verbose=False):
         """ Create Entity
 
@@ -62,11 +62,9 @@ class Entity(object):
                 instance across all child entities.
             encoding (str, optional)) : If None, will use 'ascii'. Another option is 'utf-8',
                 or any encoding supported by pandas.
-            relationships (list): List of known relationships to other entities,
-                used for inferring variable types.
 
         """
-        assert isinstance(id, basestring), "Entity id must be a string"
+        assert is_string(id), "Entity id must be a string"
         assert len(df.columns) == len(set(df.columns)), "Duplicate column names"
         self.data = {"df": df,
                      "last_time_index": last_time_index,
@@ -86,7 +84,10 @@ class Entity(object):
             if ti not in cols:
                 cols.append(ti)
 
-        relationships = relationships or []
+        relationships = [r for r in entityset.relationships
+                         if r.parent_entity.id == id or
+                         r.child_entity.id == id]
+
         link_vars = [v.id for rel in relationships for v in [rel.parent_variable, rel.child_variable]
                      if v.entity.id == self.id]
 
@@ -110,10 +111,6 @@ class Entity(object):
 
         # do one last conversion of data once we've inferred
         self.convert_all_variable_data(inferred_variable_types)
-
-        # todo check the logic of this. can index not be in variable types?
-        if self.index is not None and self.index not in inferred_variable_types:
-            self.add_variable(self.index, vtypes.Index)
 
         # make sure index is at the beginning
         index_variable = [v for v in self.variables
@@ -192,10 +189,6 @@ class Entity(object):
     @last_time_index.setter
     def last_time_index(self, lti):
         self.data["last_time_index"] = lti
-
-    @property
-    def parents(self):
-        return [p.parent_entity.id for p in self.entityset.get_forward_relationships(self.id)]
 
     def __hash__(self):
         return id(self.id)
@@ -310,24 +303,8 @@ class Entity(object):
             raise Exception("Cannot convert column %s to %s" %
                             (column_id, new_type))
 
-    def is_child_of(self, entity_id):
-        '''
-        Returns True if self is a child of entity_id
-        '''
-        rels = self.entityset.get_backward_relationships(entity_id)
-        return self.id in [r.child_entity.id for r in rels]
-
-    def is_parent_of(self, entity_id):
-        '''
-        Returns True if self is a parent of entity_id
-        '''
-        rels = self.entityset.get_backward_relationships(self.id)
-        return entity_id in [r.child_entity.id for r in rels]
-
     def query_by_values(self, instance_vals, variable_id=None, columns=None,
-                        time_last=None, training_window=None,
-                        return_sorted=False, start=None, end=None,
-                        random_seed=None, shuffle=False):
+                        time_last=None, training_window=None):
         """Query instances that have variable with given value
 
         Args:
@@ -339,12 +316,6 @@ class Entity(object):
                 time. Only applies if entity has a time index.
             training_window (Timedelta, optional):
                 Data older than time_last by more than this will be ignored
-            return_sorted (bool) : Return instances in the same order as
-                the instance_vals are passed.
-            start (int) : If provided, only return instances equal to or after this index.
-            end (int) : If provided, only return instances before this index.
-            random_seed (int) : Provided to the shuffling procedure.
-            shuffle (bool) : If True, values will be shuffled before returning.
 
         Returns:
             pd.DataFrame : instances that match constraints
@@ -358,25 +329,35 @@ class Entity(object):
                 "training window must be an absolute Timedelta"
 
         if instance_vals is None:
-            df = self.df
+            df = self.df.copy()
+
+        elif instance_vals.shape[0] == 0:
+            df = self.df.head(0)
 
         elif variable_id is None or variable_id == self.index:
             df = self.df.reindex(instance_vals)
             df.dropna(subset=[self.index], inplace=True)
 
         else:
-            df = self.df[self.df[variable_id].isin(instance_vals)]
+            df = self.df.merge(instance_vals.to_frame(variable_id),
+                               how="inner", on=variable_id)
+            df = df.set_index(self.index, drop=False)
 
-        sortby = variable_id if (return_sorted and not shuffle) else None
-        return self._filter_and_sort(df=df,
-                                     time_last=time_last,
-                                     training_window=training_window,
-                                     columns=columns,
-                                     sortby=sortby,
-                                     start=start,
-                                     end=end,
-                                     shuffle=shuffle,
-                                     random_seed=random_seed)
+            # ensure filtered df has same categories as original
+            # workaround for issue below
+            # github.com/pandas-dev/pandas/issues/22501#issuecomment-415982538
+            if pdtypes.is_categorical_dtype(self.df[variable_id]):
+                categories = pd.api.types.CategoricalDtype(categories=self.df[variable_id].cat.categories)
+                df[variable_id] = df[variable_id].astype(categories)
+
+        df = self._handle_time(df=df,
+                               time_last=time_last,
+                               training_window=training_window)
+
+        if columns is not None:
+            df = df[columns]
+
+        return df
 
     def infer_variable_types(self, ignore=None, link_vars=None):
         """Extracts the variables from a dataframe
@@ -473,6 +454,7 @@ class Entity(object):
         self.set_secondary_time_index(self.secondary_time_index)
         if recalculate_last_time_indexes and self.last_time_index is not None:
             self.entityset.add_last_time_indexes(updated_entities=[self.id])
+        self.entityset.reset_metadata()
 
     def add_interesting_values(self, max_values=5, verbose=False):
         """
@@ -530,27 +512,7 @@ class Entity(object):
                         else:
                             break
 
-    def add_variable(self, new_id, type=None, data=None):
-        """Add variable to entity
-
-        Args:
-            new_id (str) : Id of variable to be added.
-            type (Variable) : Class of variable.
-            data (pd.Series) : Variable's data to be placed in entity's dataframe
-        """
-        if new_id in [v.id for v in self.variables]:
-            logger.warning("Not adding duplicate variable: %s", new_id)
-            return
-        if data is not None:
-            self.df[new_id] = data
-
-        if type is None:
-            assert data in self.df.columns, "Must provide data to infer type"
-            existing_columns = [c for c in self.df.columns if c.id != new_id]
-            type = self.infer_variable_types(ignore=existing_columns)[new_id]
-
-        new_v = type(new_id, entity=self)
-        self.variables.append(new_v)
+        self.entityset.reset_metadata()
 
     def delete_variable(self, variable_id):
         """
@@ -648,18 +610,19 @@ class Entity(object):
         elif type(instance_vals) == pd.Series:
             out_vals = instance_vals.rename(variable_id)
         else:
-            out_vals = pd.Series(instance_vals, name=variable_id)
+            out_vals = pd.Series(instance_vals)
 
-        # we've had weird problem with pandas read-only errors
-        out_vals = copy.deepcopy(out_vals)
         # no duplicates or NaN values
-        return pd.Series(out_vals).drop_duplicates().dropna()
+        out_vals = out_vals.drop_duplicates().dropna()
 
-    def _filter_and_sort(self, df, time_last=None,
-                         training_window=None,
-                         columns=None, sortby=None,
-                         start=None, end=None,
-                         shuffle=False, random_seed=None):
+        # want index to have no name for the merge in query_by_values
+        out_vals.index.name = None
+
+        return out_vals
+
+    def _handle_time(self, df, time_last=None,
+                     training_window=None,
+                     columns=None):
         """
         Filter a dataframe for all instances before time_last.
         If this entity does not have a time index, return the original
@@ -688,30 +651,7 @@ class Entity(object):
                 second_time_index_columns = self.secondary_time_index[secondary_time_index]
                 df.loc[mask, second_time_index_columns] = np.nan
 
-        if columns is not None:
-            df = df[columns]
-
-        if sortby is not None:
-            cat_vals = df[sortby]
-            df_sort = df[[sortby]].copy()
-            df_sort[sortby] = df_sort[sortby].astype("category")
-            df_sort[sortby].cat.set_categories(cat_vals, inplace=True)
-            df_sort.sort_values(sortby, inplace=True)
-
-            # TODO: consider also using .loc[df_sort.index]
-            df = df.reindex(df_sort.index, copy=False)
-
-        if shuffle:
-            df = df.sample(frac=1, random_state=random_seed)
-
-        if start is not None and end is None:
-            df = df.iloc[start:df.shape[0]]
-        elif start is not None:
-            df = df.iloc[start:end]
-        elif end is not None:
-            df = df.iloc[0:end]
-
-        return df.copy()
+        return df
 
 
 def col_is_datetime(col):

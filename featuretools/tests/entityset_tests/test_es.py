@@ -23,6 +23,53 @@ def entityset():
     return make_ecommerce_entityset()
 
 
+def test_operations_invalidate_metadata(entityset):
+    new_es = ft.EntitySet(id="test")
+    # test metadata gets created on access
+    assert new_es._metadata is None
+    assert new_es.metadata is not None  # generated after access
+    assert new_es._metadata is not None
+
+    new_es.entity_from_dataframe("customers",
+                                 entityset["customers"].df,
+                                 index=entityset["customers"].index)
+    new_es.entity_from_dataframe("sessions",
+                                 entityset["sessions"].df,
+                                 index=entityset["sessions"].index)
+    assert new_es._metadata is None
+    assert new_es.metadata is not None
+    assert new_es._metadata is not None
+
+    r = ft.Relationship(new_es["customers"]["id"],
+                        new_es["sessions"]["customer_id"])
+    new_es = new_es.add_relationship(r)
+    assert new_es._metadata is None
+    assert new_es.metadata is not None
+    assert new_es._metadata is not None
+
+    new_es = new_es.normalize_entity("customers", "cohort", "cohort")
+    assert new_es._metadata is None
+    assert new_es.metadata is not None
+    assert new_es._metadata is not None
+
+    new_es.add_last_time_indexes()
+    assert new_es._metadata is None
+    assert new_es.metadata is not None
+    assert new_es._metadata is not None
+
+    new_es.add_interesting_values()
+    assert new_es._metadata is None
+    assert new_es.metadata is not None
+    assert new_es._metadata is not None
+
+
+def test_reset_metadata(entityset):
+    assert entityset.metadata is not None
+    assert entityset._metadata is not None
+    entityset.reset_metadata()
+    assert entityset._metadata is None
+
+
 def test_cannot_readd_relationships_that_already_exists(entityset):
     before_len = len(entityset.relationships)
     entityset.add_relationship(entityset.relationships[0])
@@ -75,13 +122,6 @@ def test_query_by_id(entityset):
     assert df['id'].values[0] == 0
 
 
-def test_query_by_id_with_sort(entityset):
-    df = entityset['log'].query_by_values(
-        instance_vals=[2, 1, 3],
-        return_sorted=True)
-    assert df['id'].values.tolist() == [2, 1, 3]
-
-
 def test_query_by_id_with_time(entityset):
     df = entityset['log'].query_by_values(
         instance_vals=[0, 1, 2, 3, 4],
@@ -122,13 +162,6 @@ def test_query_by_indexed_variable(entityset):
         variable_id='product_id')
 
     assert df['id'].get_values().tolist() == [15, 16]
-
-
-def test_query_by_non_unique_sort_raises(entityset):
-    with pytest.raises(ValueError):
-        entityset['log'].query_by_values(
-            instance_vals=[0, 2, 1],
-            variable_id='session_id', return_sorted=True)
 
 
 def test_check_variables_and_dataframe():
@@ -189,17 +222,25 @@ def test_unknown_index():
     assert entityset['test_entity'].df['id'].tolist() == list(range(3))
 
 
-def test_bad_index_variables():
+def test_doesnt_remake_index():
     # more variables
     df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
-    vtypes = {'id': variable_types.Categorical,
-              'category': variable_types.Categorical}
 
-    with pytest.raises(LookupError):
+    with pytest.raises(RuntimeError, match="Cannot make index: index variable already present"):
         entityset = EntitySet(id='test')
         entityset.entity_from_dataframe(entity_id='test_entity',
                                         index='id',
-                                        variable_types=vtypes,
+                                        make_index=True,
+                                        dataframe=df)
+
+
+def test_bad_time_index_variable():
+    df = pd.DataFrame({'category': ['a', 'b', 'a']})
+
+    with pytest.raises(LookupError, match="Time index not found in dataframe"):
+        entityset = EntitySet(id='test')
+        entityset.entity_from_dataframe(entity_id='test_entity',
+                                        index="id",
                                         dataframe=df,
                                         time_index='time')
 
@@ -332,6 +373,17 @@ def test_entity_init(entityset):
 
     assert entityset['test_entity'].df['time'].dtype == df['time'].dtype
     assert set(entityset['test_entity'].df['id']) == set(df['id'])
+
+
+def test_nonstr_column_names():
+    df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 3: ['a', 'b', 'c']})
+    es = ft.EntitySet(id='Failure')
+
+    with pytest.raises(ValueError) as excinfo:
+        es.entity_from_dataframe(entity_id='str_cols',
+                                 dataframe=df,
+                                 index='index')
+    assert 'All column names must be strings (Column 3 is not a string)' in str(excinfo)
 
 
 def test_sort_time_id():
@@ -624,19 +676,6 @@ def test_related_instances_all_cutoff_time_same_entity(entityset):
     assert result['id'].values.tolist() == list(range(5))
 
 
-def test_related_instances_link_vars(entityset):
-    # test adding link variables on the fly during _related_instances
-    frame = entityset.related_instances(
-        start_entity_id='customers', final_entity_id='log',
-        instance_ids=[1], add_link=True)
-
-    # If we need the forward customer relationship to have it
-    # then we can add those too
-    assert 'sessions.customer_id' in frame.columns
-    for val in frame['sessions.customer_id']:
-        assert val == 1
-
-
 def test_get_pandas_slice(entityset):
     filter_eids = ['products', u'régions', 'customers']
     result = entityset.get_pandas_data_slice(filter_entity_ids=filter_eids,
@@ -803,13 +842,11 @@ def test_make_time_index_keeps_original_sorting():
 def test_normalize_entity_new_time_index(entityset):
     entityset.normalize_entity('log', 'values', 'value',
                                make_time_index=True,
-                               new_entity_time_index="value_time",
-                               convert_links_to_integers=True)
+                               new_entity_time_index="value_time")
 
-    assert entityset['log'].is_child_of('values')
     assert entityset['values'].time_index == 'value_time'
     assert 'value_time' in entityset['values'].df.columns
-    assert len(entityset['values'].df.columns) == 3
+    assert len(entityset['values'].df.columns) == 2
 
 
 def test_secondary_time_index(entityset):
@@ -818,8 +855,7 @@ def test_secondary_time_index(entityset):
                                make_secondary_time_index={
                                    'datetime': ['comments']},
                                new_entity_time_index="value_time",
-                               new_entity_secondary_time_index='second_ti',
-                               convert_links_to_integers=True)
+                               new_entity_secondary_time_index='second_ti')
 
     assert (isinstance(entityset['values'].df['second_ti'], pd.Series))
     assert (entityset['values']['second_ti']._dtype_repr == 'datetime')

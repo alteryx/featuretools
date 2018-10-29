@@ -1,5 +1,9 @@
 numpy>=1.13.3
+<<<<<<< HEAD
 pandas>=0.20.3
+=======
+pandas>=0.23.0
+>>>>>>> master
 s3fs>=0.1.2
 tqdm>=4.19.2
 toolz>=0.8.2
@@ -7,6 +11,6 @@ pyyaml>=3.12
 cloudpickle>=0.4.0
 future>=0.16.0
 pympler>=0.5
-dask>=0.17.5
-distributed>=1.21.8
+dask>=0.19.4
+distributed>=1.23.3
 psutil

@@ -24,3 +24,7 @@ div.footer{
 .field > .field-name{
     width: 100px;
 }
+
+.highlight{
+    background-color:#f7f7f7;
+}

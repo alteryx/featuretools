@@ -15,9 +15,8 @@ class build_ext(_build_ext):
 
 setup(
     name='featuretools',
-    version='0.2.1',
+    version='0.3.1',
     packages=find_packages(),
-    package_data={'featuretools': ['config.yaml']},
     description='a framework for automated feature engineering',
     url='http://featuretools.com',
     license='BSD 3-clause',
@@ -29,7 +28,8 @@ setup(
          'Programming Language :: Python :: 2.7',
          'Programming Language :: Python :: 3',
          'Programming Language :: Python :: 3.5',
-         'Programming Language :: Python :: 3.6'
+         'Programming Language :: Python :: 3.6',
+         'Programming Language :: Python :: 3.7'
     ],
     install_requires=open('requirements.txt').readlines(),
     setup_requires=open('setup-requirements.txt').readlines(),

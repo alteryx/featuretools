@@ -63,14 +63,14 @@ def test_eq(es):
     assert not es['customers'].__eq__(es['log'], deep=True)
 
 
-def test_parents(es):
-    assert set(es['log'].parents) == set(['sessions', 'products'])
-    assert es['sessions'].parents == ['customers']
-    assert set(es['customers'].parents) == set([u'régions', 'cohorts'])
-    assert es[u'régions'].parents == []
-    assert es['stores'].parents == [u'régions']
-
-
 def test_update_data(es):
-    # TODO: write test for this method, since it has new functionality
-    pass
+    df = es['customers'].df.copy()
+    df['new'] = [1, 2, 3]
+
+    with pytest.raises(ValueError) as excinfo:
+        es['customers'].update_data(df.drop(columns=['cohort']))
+    assert 'Updated dataframe is missing new cohort column' in str(excinfo)
+
+    with pytest.raises(ValueError) as excinfo:
+        es['customers'].update_data(df)
+    assert 'Updated dataframe contains 13 columns, expecting 12' in str(excinfo)

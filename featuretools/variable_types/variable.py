@@ -4,7 +4,8 @@ from builtins import object
 
 import numpy as np
 import pandas as pd
-from past.builtins import basestring
+
+from featuretools.utils import is_string
 
 
 class Variable(object):
@@ -25,7 +26,7 @@ class Variable(object):
     _default_pandas_dtype = object
 
     def __init__(self, id, entity, name=None):
-        assert isinstance(id, basestring), "Variable id must be a string"
+        assert is_string(id), "Variable id must be a string"
         self.id = id
         self._name = name
         self.entity_id = entity.id
@@ -111,14 +112,6 @@ class Discrete(Variable):
     def __init__(self, id, entity, name=None):
         super(Discrete, self).__init__(id, entity, name)
         self._interesting_values = []
-
-    @property
-    def percent_unique(self):
-        if self.nunique is None or self.count is None:
-            return None
-        if self.count > 0:
-            return self.nunique / self.count
-        return 0
 
     @property
     def interesting_values(self):

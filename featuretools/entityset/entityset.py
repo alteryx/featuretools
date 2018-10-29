@@ -14,7 +14,7 @@ from .relationship import Relationship
 from .serialization import load_entity_data, write_entityset
 
 import featuretools.variable_types.variable as vtypes
-from featuretools.utils.gen_utils import make_tqdm_iterator
+from featuretools.utils.gen_utils import is_string, make_tqdm_iterator
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
@@ -124,7 +124,7 @@ class EntitySet(object):
             child_variable = self[relationship[2]][relationship[3]]
             self.add_relationship(Relationship(parent_variable,
                                                child_variable))
-        self._metadata = None
+        self.reset_metadata()
 
     def __sizeof__(self):
         return sum([entity.__sizeof__() for entity in self.entities])
@@ -181,16 +181,14 @@ class EntitySet(object):
         and if it is return the existing one. Thus, all features in the feature list
         would reference the same object, rather than copies. This saves a lot of memory
         '''
-        new_metadata = self.from_metadata(self.create_metadata_dict(),
-                                          data_root=None)
         if self._metadata is None:
-            self._metadata = new_metadata
-        else:
-            # Don't want to keep making new copies of metadata
-            # Only make a new one if something was changed
-            if self._metadata != new_metadata:
-                self._metadata = new_metadata
+            self._metadata = self.from_metadata(self.create_metadata_dict(),
+                                                data_root=None)
+
         return self._metadata
+
+    def reset_metadata(self):
+        self._metadata = None
 
     @property
     def is_metadata(self):
@@ -368,6 +366,7 @@ class EntitySet(object):
                                         child_v, child_e.id, child_dtype))
 
         self.relationships.append(relationship)
+        self.reset_metadata()
         return self
 
     def get_pandas_data_slice(self, filter_entity_ids, index_eid,
@@ -633,22 +632,6 @@ class EntitySet(object):
         """
         return [r for r in self.relationships if r.parent_entity.id == entity_id]
 
-    def get_relationship(self, eid_1, eid_2):
-        """Get relationship, if any, between eid_1 and eid_2
-
-        Args:
-            eid_1 (str): Id of first entity to get relationships for.
-            eid_2 (str): Id of second entity to get relationships for.
-
-        Returns:
-            :class:`.Relationship`: Relationship or None
-        """
-        for r in self.relationships:
-            if r.child_entity.id == eid_1 and r.parent_entity.id == eid_2 or \
-                    r.parent_entity.id == eid_1 and r.child_entity.id == eid_2:
-                return r
-        return None
-
     def _is_backward_relationship(self, rel, prev_ent):
         if prev_ent == rel.parent_entity.id:
             return True
@@ -751,7 +734,6 @@ class EntitySet(object):
 
     def normalize_entity(self, base_entity_id, new_entity_id, index,
                          additional_variables=None, copy_variables=None,
-                         convert_links_to_integers=False,
                          make_time_index=None,
                          make_secondary_time_index=None,
                          new_entity_time_index=None,
@@ -775,12 +757,6 @@ class EntitySet(object):
             copy_variables (list[str]): List of
                 variable ids to copy from old entity
                 and move to new entity.
-
-            convert_links_to_integers (bool) : If True,
-                convert the linking variable between the two
-                entities to an integer. Old variable will be kept only
-                in the new normalized entity, and the new variable will have
-                the old variable's name plus "_id".
 
             make_time_index (bool or str, optional): Create time index for new entity based
                 on time index in base_entity, optionally specifying which variable in base_entity
@@ -819,9 +795,6 @@ class EntitySet(object):
                 raise ValueError("Not copying {} as both index and variable".format(v))
                 break
         new_index = index
-
-        if convert_links_to_integers:
-            new_index = make_index_variable_name(new_entity_id)
 
         transfer_types = {}
         transfer_types[new_index] = type(base_entity[index])
@@ -886,20 +859,6 @@ class EntitySet(object):
             new_entity_df = new_entity_df2
 
         base_entity_index = index
-        if convert_links_to_integers:
-            old_entity_df = self[base_entity_id].df
-            link_variable_id = make_index_variable_name(new_entity_id)
-            new_entity_df[link_variable_id] = np.arange(0, new_entity_df.shape[0])
-            just_index = old_entity_df[[index]]
-            id_as_int = just_index.merge(new_entity_df,
-                                         left_on=index,
-                                         right_on=index,
-                                         how='left')[link_variable_id]
-
-            old_entity_df.loc[:, index] = id_as_int.values
-
-            base_entity.update_data(old_entity_df)
-            index = link_variable_id
 
         transfer_types[index] = vtypes.Categorical
         if make_secondary_time_index:
@@ -922,7 +881,7 @@ class EntitySet(object):
         new_entity = self.entity_dict[new_entity_id]
         base_entity.convert_variable_type(base_entity_index, vtypes.Id, convert_data=False)
         self.add_relationship(Relationship(new_entity[index], base_entity[base_entity_index]))
-
+        self.reset_metadata()
         return self
 
     ###########################################################################
@@ -975,6 +934,7 @@ class EntitySet(object):
                                                recalculate_last_time_indexes=False)
 
         combined_es.add_last_time_indexes(updated_entities=has_last_time_index)
+        self.reset_metadata()
         return combined_es
 
     ###########################################################################
@@ -1006,8 +966,10 @@ class EntitySet(object):
                 if e in parents:
                     continue
                 parents.add(e)
-                for parent_id in self[e].parents:
+
+                for parent_id in self.get_forward_entities(e):
                     parent_queue.append(parent_id)
+
             queue = [self[p] for p in parents]
             to_explore = parents
         else:
@@ -1055,11 +1017,14 @@ class EntitySet(object):
                     if child_e.last_time_index is None:
                         continue
                     link_var = child_vars[entity.id][child_e.id].id
+
                     lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
                                            entity.index: child_e.df[link_var]})
+
                     # sort by time and keep only the most recent
                     lti_df.sort_values(['last_time', entity.index],
                                        kind="mergesort", inplace=True)
+
                     lti_df.drop_duplicates(entity.index,
                                            keep='last',
                                            inplace=True)
@@ -1072,6 +1037,7 @@ class EntitySet(object):
                     entity.last_time_index.name = 'last_time'
 
             explored.add(entity.id)
+        self.reset_metadata()
 
     ###########################################################################
     #  Other ###############################################
@@ -1090,9 +1056,10 @@ class EntitySet(object):
         """
         for entity in self.entities:
             entity.add_interesting_values(max_values=max_values, verbose=verbose)
+        self.reset_metadata()
 
     def related_instances(self, start_entity_id, final_entity_id,
-                          instance_ids=None, time_last=None, add_link=False,
+                          instance_ids=None, time_last=None,
                           training_window=None):
         """
         Filter out all but relevant information from dataframes along path
@@ -1105,23 +1072,17 @@ class EntitySet(object):
             instance_ids (list[str]) : List of start entity instance ids from
                 which to find related instances in final entity.
             time_last (pd.TimeStamp) :  Latest allowed time.
-            add_link (bool) : If True, add a link variable from the first
-                entity in the path to the last. Assumes the path is made up of
-                only backwards relationships.
 
         Returns:
             pd.DataFrame : Dataframe of related instances on the final_entity_id
         """
         # Load the filtered dataframe for the first entity
-        training_window_is_dict = isinstance(training_window, dict)
         window = training_window
         start_estore = self.entity_dict[start_entity_id]
         # This check might be brittle
         if instance_ids is not None and not hasattr(instance_ids, '__iter__'):
             instance_ids = [instance_ids]
 
-        if training_window_is_dict:
-            window = training_window.get(start_estore.id)
         df = start_estore.query_by_values(instance_vals=instance_ids,
                                           time_last=time_last,
                                           training_window=window)
@@ -1135,59 +1096,32 @@ class EntitySet(object):
         if path is None or len(path) == 0:
             return pd.DataFrame()
 
-        if add_link:
-            assert 'forward' not in self.path_relationships(path,
-                                                            start_entity_id)
-            rvar = path[0].get_entity_variable(start_entity_id)
-            link_map = {i: i for i in df[rvar]}
-
         prev_entity_id = start_entity_id
 
         # Walk down the path of entities and take related instances at each step
         for i, r in enumerate(path):
-            new_entity_id = r.get_other_entity(prev_entity_id)
-            rvar_old = r.get_entity_variable(prev_entity_id)
-            rvar_new = r.get_entity_variable(new_entity_id)
+            if r.child_entity.id == prev_entity_id:
+                new_entity_id = r.parent_entity.id
+                rvar_old = r.child_variable.id
+                rvar_new = r.parent_variable.id
+            else:
+                new_entity_id = r.child_entity.id
+                rvar_old = r.parent_variable.id
+                rvar_new = r.child_variable.id
+
             all_ids = df[rvar_old]
 
             # filter the next entity by the values found in the previous
             # entity's relationship column
             entity_store = self.entity_dict[new_entity_id]
-            if training_window_is_dict:
-                window = training_window.get(entity_store.id)
             df = entity_store.query_by_values(all_ids,
                                               variable_id=rvar_new,
                                               time_last=time_last,
                                               training_window=window)
 
-            # group the rows in the new dataframe by the instances of the first
-            # dataframe, and add a new column linking the two.
-            if add_link:
-                new_link_map = {}
-                for parent_ix, gdf in df.groupby(rvar_new):
-                    for child_ix in gdf.index:
-                        new_link_map[child_ix] = link_map[parent_ix]
-                link_map = new_link_map
-
-                child_link_var = \
-                    Relationship._get_link_variable_name(path[:i + 1])
-                if child_link_var not in df.columns:
-                    df = df.join(pd.Series(link_map, name=child_link_var))
-
             prev_entity_id = new_entity_id
 
         return df
-
-    def gen_relationship_var(self, child_eid, parent_eid):
-        path = self.find_path(parent_eid, child_eid)
-        r = path.pop(0)
-        child_link_name = r.child_variable.id
-        for r in path:
-            parent_entity = r.parent_entity
-            parent_link_name = child_link_name
-            child_link_name = '%s.%s' % (parent_entity.id,
-                                         parent_link_name)
-        return child_link_name
 
     ###########################################################################
     #  Private methods  ######################################################
@@ -1253,17 +1187,17 @@ class EntitySet(object):
         elif index is None:
             index = dataframe.columns[0]
 
-        elif time_index is not None and time_index not in dataframe.columns:
+        if time_index is not None and time_index not in dataframe.columns:
             raise LookupError('Time index not found in dataframe')
+
         if parse_date_cols is not None:
             for c in parse_date_cols:
                 variable_types[c] = vtypes.Datetime
 
-        current_relationships = [r for r in self.relationships
-                                 if r.parent_entity.id == entity_id or
-                                 r.child_entity.id == entity_id]
-
         for c in dataframe.columns:
+            if not is_string(c):
+                raise ValueError("All column names must be strings (Column {} is not a string)".format(c))
+
             if dataframe[c].dtype.name.find('category') > -1:
                 if c not in variable_types:
                     variable_types[c] = vtypes.Categorical
@@ -1277,10 +1211,10 @@ class EntitySet(object):
                         secondary_time_index=secondary_time_index,
                         last_time_index=last_time_index,
                         encoding=encoding,
-                        relationships=current_relationships,
                         already_sorted=already_sorted,
                         created_index=created_index)
         self.entity_dict[entity.id] = entity
+        self.reset_metadata()
         return self
 
     def _add_multigenerational_link_vars(self, frames, start_entity_id,
@@ -1300,7 +1234,6 @@ class EntitySet(object):
         """
 
         # caller can pass either a path or a start/end entity pair
-
         assert start_entity_id is not None
         if path is None:
             assert end_entity_id is not None
@@ -1354,10 +1287,12 @@ class EntitySet(object):
                                parent_link_name: child_link_name}
                     merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
 
+                    merge_df.index.name = None  # change index name for merge
+
                     # merge the dataframe, adding the link variable to the child
-                    frames[child_entity.id] = pd.merge(left=merge_df,
-                                                       right=child_df,
-                                                       on=r.child_variable.id)
+                    frames[child_entity.id] = merge_df.merge(child_df,
+                                                             left_on=r.child_variable.id,
+                                                             right_on=r.child_variable.id)
 
     @classmethod
     def _load_dummy_entity_data_and_variable_types(cls, metadata):
@@ -1382,7 +1317,3 @@ class EntitySet(object):
             columns.append(vid)
         df = pd.DataFrame({c: [d] for c, d in zip(columns, defaults)}).head(0)
         return df, variable_types
-
-
-def make_index_variable_name(entity_id):
-    return entity_id + "_id"
