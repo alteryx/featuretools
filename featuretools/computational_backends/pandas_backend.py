@@ -1,5 +1,4 @@
 import cProfile
-import logging
 import os
 import pstats
 import sys
@@ -9,7 +8,6 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
-from future import standard_library
 
 from .base_backend import ComputationalBackend
 from .feature_tree import FeatureTree
@@ -27,11 +25,8 @@ from featuretools.utils.gen_utils import (
     make_tqdm_iterator
 )
 
-standard_library.install_aliases()
 warnings.simplefilter('ignore', np.RankWarning)
 warnings.simplefilter("ignore", category=RuntimeWarning)
-logger = logging.getLogger('featuretools.computational_backend')
-ROOT_DIR = os.path.expanduser("~")
 
 
 class PandasBackend(ComputationalBackend):
@@ -236,6 +231,7 @@ class PandasBackend(ComputationalBackend):
         # debugging
         if profile:
             pr.disable()
+            ROOT_DIR = os.path.expanduser("~")
             prof_folder_path = os.path.join(ROOT_DIR, 'prof')
             if not os.path.exists(prof_folder_path):
                 os.mkdir(prof_folder_path)
