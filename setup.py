@@ -15,7 +15,7 @@ class build_ext(_build_ext):
 
 setup(
     name='featuretools',
-    version='0.3.1',
+    version='0.4.0',
     packages=find_packages(),
     description='a framework for automated feature engineering',
     url='http://featuretools.com',
