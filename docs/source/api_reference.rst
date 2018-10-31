@@ -299,8 +299,6 @@ Entity methods
 .. autosummary::
     :toctree: generated/
 
-    Entity.is_child_of
-    Entity.is_parent_of
     Entity.convert_variable_type
     Entity.add_interesting_values
 

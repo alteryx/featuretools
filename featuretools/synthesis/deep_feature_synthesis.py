@@ -263,10 +263,10 @@ class DeepFeatureSynthesis(object):
         new_features = list(filter(filt, new_features))
 
         # sanity check for duplicate features
-        l = [f.hash() for f in new_features]
-        assert len(set([f for f in l if l.count(f) > 1])) == 0, \
+        hashes = [f.hash() for f in new_features]
+        assert len(set([f for f in hashes if hashes.count(f) > 1])) == 0, \
             'Multiple features with same name' + \
-            str(set([f for f in l if l.count(f) > 1]))
+            str(set([f for f in hashes if hashes.count(f) > 1]))
 
         new_features.sort(key=lambda f: f.get_depth())
 

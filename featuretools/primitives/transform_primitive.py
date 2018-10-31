@@ -93,7 +93,6 @@ def make_trans_primitive(function, input_types, return_type, name=None,
             from featuretools.primitives import make_trans_primitive
             from featuretools.variable_types import Variable, Boolean
 
-
             def pd_is_in(array, list_of_outputs=None):
                 if list_of_outputs is None:
                     list_of_outputs = []
