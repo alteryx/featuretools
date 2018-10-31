@@ -112,9 +112,6 @@ The :func:`Flights <demo.load_flight>` entityset is a prototypical example of a 
     es_flight['trip_logs'].df.head(3)
 
 
-.. ipython:: python
-
-
 For every trip we have real arrival and departure times and scheduled arrival and departure times.
 
 With the columns we have, it would be problematic for the ``scheduled_dep_time``, to be the time index: flights are scheduled far in advance!  If the time index were set to the scheduled departure time, we wouldn't be able to know anything about the flight at all until it was boarded. 
