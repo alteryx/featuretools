@@ -20,36 +20,6 @@ pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
 
 
-class BFSNode(object):
-
-    def __init__(self, entity_id, parent, relationship):
-        self.entity_id = entity_id
-        self.parent = parent
-        self.relationship = relationship
-
-    def build_path(self):
-        path = []
-        cur_node = self
-        num_forward = 0
-        i = 0
-        last_forward = False
-        while cur_node.parent is not None:
-            path.append(cur_node.relationship)
-            if cur_node.relationship.parent_entity.id == cur_node.entity_id:
-                num_forward += 1
-                if i == 0:
-                    last_forward = True
-            cur_node = cur_node.parent
-            i += 1
-        path.reverse()
-
-        # if path ends on a forward relationship, return number of
-        # forward relationships, otherwise 0
-        if len(path) == 0 or not last_forward:
-            num_forward = 0
-        return path, num_forward
-
-
 class EntitySet(object):
     """
     Stores all actual data for a entityset
@@ -456,12 +426,12 @@ class EntitySet(object):
         Returns:
             List of relationships that go from start entity to goal
                 entity. None is returned if no path exists.
-            If include_forward_distance is True,
+            If include_num_forward is True,
                 returns a tuple of (relationship_list, forward_distance).
 
         See Also:
-            :func:`BaseEntitySet.find_forward_path`
-            :func:`BaseEntitySet.find_backward_path`
+            :func:`EntitySet.find_forward_path`
+            :func:`EntitySet.find_backward_path`
         """
         if start_entity_id == goal_entity_id:
             if include_num_forward:
@@ -469,35 +439,54 @@ class EntitySet(object):
             else:
                 return []
 
-        # BFS so we get shortest path
-        start_node = BFSNode(start_entity_id, None, None)
-        queue = [start_node]
-        nodes = {}
+        # Search for path using BFS to get the shortest path.
+        # Start by initializing the queue with all relationships from start entity
+        queue = [[r] for r in self.get_forward_relationships(start_entity_id)] + \
+                [[r] for r in self.get_backward_relationships(start_entity_id)]
+        visited = set([start_entity_id])
 
         while len(queue) > 0:
-            current_node = queue.pop(0)
-            if current_node.entity_id == goal_entity_id:
-                path, num_forward = current_node.build_path()
+            # get first path from queue
+            current_path = queue.pop(0)
+
+            # last entity in path will be which ever one we haven't visited
+            if current_path[-1].parent_entity.id not in visited:
+                next_entity_id = current_path[-1].parent_entity.id
+            elif current_path[-1].child_entity.id not in visited:
+                next_entity_id = current_path[-1].child_entity.id
+            else:
+                # if we've visited both, we don't need to explore this path further
+                continue
+
+            # we've found a path to goal
+            if next_entity_id == goal_entity_id:
                 if include_num_forward:
-                    return path, num_forward
+                    # count the number of forward relationships along this path
+                    # starting from beginning
+                    check_entity = start_entity_id
+                    num_forward = 0
+                    for r in current_path:
+                        # if the current entity we're checking is a child, that means the
+                        # relationship is a forward and the next entity to check is the parent
+                        if r.child_entity.id == check_entity:
+                            num_forward += 1
+                            check_entity = r.parent_entity.id
+                        else:
+                            check_entity = r.child_entity.id
+
+                    return current_path, num_forward
                 else:
-                    return path
+                    return current_path
 
-            for r in self.get_forward_relationships(current_node.entity_id):
-                if r.parent_entity.id not in nodes:
-                    parent_node = BFSNode(r.parent_entity.id, current_node, r)
-                    nodes[r.parent_entity.id] = parent_node
-                    queue.append(parent_node)
+            next_relationships = self.get_forward_relationships(next_entity_id)
+            next_relationships += self.get_backward_relationships(next_entity_id)
 
-            for r in self.get_backward_relationships(current_node.entity_id):
-                if r.child_entity.id not in nodes:
-                    child_node = BFSNode(r.child_entity.id, current_node, r)
-                    nodes[r.child_entity.id] = child_node
-                    queue.append(child_node)
+            for r in next_relationships:
+                queue.append(current_path + [r])
 
-        raise ValueError(("No path from {} to {}! Check that all entities "
-                          .format(start_entity_id, goal_entity_id)),
-                         "are connected by relationships")
+            visited.add(next_entity_id)
+        e = "No path from {} to {}. Check that all entities are connected by relationships".format(start_entity_id, goal_entity_id)
+        raise ValueError(e)
 
     def find_forward_path(self, start_entity_id, goal_entity_id):
         """Find a forward path between a start and goal entity
@@ -620,22 +609,6 @@ class EntitySet(object):
             list[:class:`.Relationship`]: list of backward relationships
         """
         return [r for r in self.relationships if r.parent_entity.id == entity_id]
-
-    def get_relationship(self, eid_1, eid_2):
-        """Get relationship, if any, between eid_1 and eid_2
-
-        Args:
-            eid_1 (str): Id of first entity to get relationships for.
-            eid_2 (str): Id of second entity to get relationships for.
-
-        Returns:
-            :class:`.Relationship`: Relationship or None
-        """
-        for r in self.relationships:
-            if r.child_entity.id == eid_1 and r.parent_entity.id == eid_2 or \
-                    r.parent_entity.id == eid_1 and r.child_entity.id == eid_2:
-                return r
-        return None
 
     def _is_backward_relationship(self, rel, prev_ent):
         if prev_ent == rel.parent_entity.id:
@@ -1082,15 +1055,12 @@ class EntitySet(object):
             pd.DataFrame : Dataframe of related instances on the final_entity_id
         """
         # Load the filtered dataframe for the first entity
-        training_window_is_dict = isinstance(training_window, dict)
         window = training_window
         start_estore = self.entity_dict[start_entity_id]
         # This check might be brittle
         if instance_ids is not None and not hasattr(instance_ids, '__iter__'):
             instance_ids = [instance_ids]
 
-        if training_window_is_dict:
-            window = training_window.get(start_estore.id)
         df = start_estore.query_by_values(instance_vals=instance_ids,
                                           time_last=time_last,
                                           training_window=window)
@@ -1108,16 +1078,20 @@ class EntitySet(object):
 
         # Walk down the path of entities and take related instances at each step
         for i, r in enumerate(path):
-            new_entity_id = r.get_other_entity(prev_entity_id)
-            rvar_old = r.get_entity_variable(prev_entity_id)
-            rvar_new = r.get_entity_variable(new_entity_id)
+            if r.child_entity.id == prev_entity_id:
+                new_entity_id = r.parent_entity.id
+                rvar_old = r.child_variable.id
+                rvar_new = r.parent_variable.id
+            else:
+                new_entity_id = r.child_entity.id
+                rvar_old = r.parent_variable.id
+                rvar_new = r.child_variable.id
+
             all_ids = df[rvar_old]
 
             # filter the next entity by the values found in the previous
             # entity's relationship column
             entity_store = self.entity_dict[new_entity_id]
-            if training_window_is_dict:
-                window = training_window.get(entity_store.id)
             df = entity_store.query_by_values(all_ids,
                                               variable_id=rvar_new,
                                               time_last=time_last,
@@ -1126,17 +1100,6 @@ class EntitySet(object):
             prev_entity_id = new_entity_id
 
         return df
-
-    def gen_relationship_var(self, child_eid, parent_eid):
-        path = self.find_path(parent_eid, child_eid)
-        r = path.pop(0)
-        child_link_name = r.child_variable.id
-        for r in path:
-            parent_entity = r.parent_entity
-            parent_link_name = child_link_name
-            child_link_name = '%s.%s' % (parent_entity.id,
-                                         parent_link_name)
-        return child_link_name
 
     ###########################################################################
     #  Private methods  ######################################################
@@ -1332,7 +1295,3 @@ class EntitySet(object):
             columns.append(vid)
         df = pd.DataFrame({c: [d] for c, d in zip(columns, defaults)}).head(0)
         return df, variable_types
-
-
-def make_index_variable_name(entity_id):
-    return entity_id + "_id"

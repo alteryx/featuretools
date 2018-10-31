@@ -844,7 +844,6 @@ def test_normalize_entity_new_time_index(entityset):
                                make_time_index=True,
                                new_entity_time_index="value_time")
 
-    assert entityset['log'].is_child_of('values')
     assert entityset['values'].time_index == 'value_time'
     assert 'value_time' in entityset['values'].df.columns
     assert len(entityset['values'].df.columns) == 2

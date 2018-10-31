@@ -1,9 +1,9 @@
 import pytest
+from pympler.asizeof import asizeof
 
 from ..testing_utils import make_ecommerce_entityset
 
 from featuretools.primitives import Feature, IdentityFeature, Last, Mode, Sum
-from featuretools.utils.gen_utils import getsize
 from featuretools.variable_types import Datetime, Numeric
 
 
@@ -27,9 +27,9 @@ def test_copy_features_does_not_copy_entityset(es):
                                  where=IdentityFeature(es['log']['value']) == 2,
                                  use_previous='4 days')
     features = [agg, agg_where, agg_use_previous, agg_use_previous_where]
-    in_memory_size = getsize(locals())
+    in_memory_size = asizeof(locals())
     copied = [f.copy() for f in features]
-    new_in_memory_size = getsize(locals())
+    new_in_memory_size = asizeof(locals())
     assert new_in_memory_size < 2 * in_memory_size
 
     for f, c in zip(features, copied):

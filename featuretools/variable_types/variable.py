@@ -114,14 +114,6 @@ class Discrete(Variable):
         self._interesting_values = []
 
     @property
-    def percent_unique(self):
-        if self.nunique is None or self.count is None:
-            return None
-        if self.count > 0:
-            return self.nunique / self.count
-        return 0
-
-    @property
     def interesting_values(self):
         return self._interesting_values
 

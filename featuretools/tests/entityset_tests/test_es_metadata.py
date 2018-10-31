@@ -108,6 +108,25 @@ def test_find_path(es):
     assert path[2].parent_entity.id == 'customers'
 
 
+def test_find_path_same_entity(es):
+    path, forward = es.find_path('products', 'products',
+                                 include_num_forward=True)
+    assert len(path) == 0
+    assert forward == 0
+
+    # also test include_num_forward==False
+    path = es.find_path('products', 'products',
+                        include_num_forward=False)
+    assert len(path) == 0
+
+
+def test_find_path_no_path_found(es):
+    es.relationships = []
+    error_text = "No path from products to customers. Check that all entities are connected by relationships"
+    with pytest.raises(ValueError, match=error_text):
+        es.find_path('products', 'customers')
+
+
 def test_raise_key_error_missing_entity(es):
     with pytest.raises(KeyError):
         es["this entity doesn't exist"]
