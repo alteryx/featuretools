@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from . import config
 from . import variable_types
 from .entityset.api import *
+from .import_adapters import *
 from . import primitives
 from .synthesis.api import *
 from .primitives import Feature, list_primitives
