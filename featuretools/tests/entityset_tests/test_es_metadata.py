@@ -128,11 +128,13 @@ def test_find_path_no_path_found(es):
 
 
 def test_raise_key_error_missing_entity(es):
-    with pytest.raises(KeyError):
+    error_text = "Entity this entity doesn't exist does not exist in ecommerce"
+    with pytest.raises(KeyError, match=error_text):
         es["this entity doesn't exist"]
 
 
 def test_add_parent_not_index_variable(es):
-    with pytest.raises(AttributeError):
+    error_text = "Parent variable.*is not the index of entity Entity.*"
+    with pytest.raises(AttributeError, match=error_text):
         es.add_relationship(Relationship(es[u'régions']['language'],
                                          es['customers'][u'région_id']))

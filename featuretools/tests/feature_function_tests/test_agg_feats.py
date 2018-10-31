@@ -309,7 +309,8 @@ def test_time_since_last_custom(es):
     # note: must round to nearest second
     assert all(fm[f.get_name()].round().values == correct)
 
-    with pytest.raises(ValueError):
+    error_text = "'time' is a restricted keyword.  Please use a different keyword."
+    with pytest.raises(ValueError, match=error_text):
         TimeSinceLast = make_agg_primitive(time_since_last,
                                            [DatetimeTimeIndex],
                                            Numeric,
@@ -336,7 +337,8 @@ def test_custom_primitive_time_as_arg(es):
     # note: must round to nearest second
     assert all(fm[f.get_name()].round().values == correct)
 
-    with pytest.raises(ValueError):
+    error_text = "'time' is a restricted keyword.  Please use a different keyword."
+    with pytest.raises(ValueError, match=error_text):
         make_agg_primitive(time_since_last,
                            [DatetimeTimeIndex],
                            Numeric,

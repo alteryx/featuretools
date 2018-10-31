@@ -16,7 +16,9 @@ def es():
 
 def test_enforces_variable_id_is_str(es):
     assert variable_types.Categorical("1", es["customers"])
-    with pytest.raises(AssertionError):
+
+    error_text = 'Variable id must be a string'
+    with pytest.raises(AssertionError, match=error_text):
         variable_types.Categorical(1, es["customers"])
 
 
@@ -67,10 +69,12 @@ def test_update_data(es):
     df = es['customers'].df.copy()
     df['new'] = [1, 2, 3]
 
-    with pytest.raises(ValueError) as excinfo:
+    error_text = 'Updated dataframe is missing new cohort column'
+    with pytest.raises(ValueError, match=error_text) as excinfo:
         es['customers'].update_data(df.drop(columns=['cohort']))
     assert 'Updated dataframe is missing new cohort column' in str(excinfo)
 
-    with pytest.raises(ValueError) as excinfo:
+    error_text = 'Updated dataframe contains 13 columns, expecting 12'
+    with pytest.raises(ValueError, match=error_text) as excinfo:
         es['customers'].update_data(df)
     assert 'Updated dataframe contains 13 columns, expecting 12' in str(excinfo)

@@ -126,7 +126,8 @@ def test_only_makes_supplied_agg_feat(es):
 
 
 def test_ignores_entities(es):
-    with pytest.raises(TypeError):
+    error_text = 'ignore_entities must be a list'
+    with pytest.raises(TypeError, match=error_text):
         DeepFeatureSynthesis(target_entity_id='sessions',
                              entityset=es,
                              agg_primitives=[Last],
