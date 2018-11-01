@@ -1,12 +1,16 @@
-import featuretools as ft
 import pandas as pd
 import sqlalchemy as sa
-from pdb import set_trace as bp
+
+import featuretools as ft
+
+# from pdb import set_trace as bp
+
 
 def entity_set_from_sql(id, connection):
     loader = EntitySetLoaderFromSQL(connection=connection, id=id)
     loader.load_all_tables()
     return loader.es
+
 
 def _find_pk_name(table):
         column_names = table.columns.keys()
@@ -14,6 +18,7 @@ def _find_pk_name(table):
             if table.columns[name].primary_key:
                 return name
         return None
+
 
 class EntitySetLoaderFromSQL:
     def __init__(self, id, connection):
@@ -35,7 +40,7 @@ class EntitySetLoaderFromSQL:
             dataframe=df,
             index=index_name
         )
-    
+
     def load_all_tables(self):
         for table_name in self.table_names:
             self.es = self._load_table(table_name)
