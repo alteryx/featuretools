@@ -1,6 +1,5 @@
 import sys
 
-from pympler.asizeof import asizeof as getsize  # noqa
 from tqdm import tqdm
 
 

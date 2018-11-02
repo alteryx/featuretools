@@ -382,7 +382,7 @@ def test_make_dfeat_of_agg_feat_through_parent(entityset, backend):
     The graph looks like this:
 
         R       C = Customers, the entity we're trying to predict on
-       / \      R = Regions, a parent of customers
+       / \\     R = Regions, a parent of customers
       S   C     S = Stores, a child of regions
           |
          etc.
@@ -411,7 +411,7 @@ def test_make_deep_agg_feat_of_dfeat_of_agg_feat(entityset, backend):
           C     C = Customers, the entity we're trying to predict on
           |     S = Sessions, a child of Customers
       P   S     L = Log, a child of both Sessions and Log
-       \ /      P = Products, a parent of Log which is not a descendent of customers
+       \\ /     P = Products, a parent of Log which is not a descendent of customers
         L
 
     We're trying to calculate a DFeat from L to P on an agg_feat of P on L, and

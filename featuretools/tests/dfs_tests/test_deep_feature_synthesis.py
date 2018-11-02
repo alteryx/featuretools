@@ -6,6 +6,7 @@ import os
 import numpy as np
 import pandas as pd
 import pytest
+from pympler.asizeof import asizeof
 
 from ..testing_utils import feature_with_name, make_ecommerce_entityset
 
@@ -30,7 +31,6 @@ from featuretools.primitives import (
     make_agg_primitive
 )
 from featuretools.synthesis import DeepFeatureSynthesis
-from featuretools.utils.gen_utils import getsize
 from featuretools.utils.pickle_utils import save_obj_pickle
 from featuretools.variable_types import Numeric
 
@@ -624,7 +624,7 @@ def test_pickle_features(es):
         assert feat_1.entityset == feat_2.entityset
 
     # file is smaller than entityset in memory
-    assert os.path.getsize(filepath) < getsize(es)
+    assert os.path.getsize(filepath) < asizeof(es)
 
     # file is smaller than entityset pickled
     assert os.path.getsize(filepath) < os.path.getsize(es_filepath)
@@ -661,7 +661,7 @@ def test_pickle_features_with_custom_primitive(es):
         assert feat_1.entityset == feat_2.entityset
 
     # file is smaller than entityset in memory
-    assert os.path.getsize(filepath) < getsize(es)
+    assert os.path.getsize(filepath) < asizeof(es)
 
     # file is smaller than entityset pickled
     assert os.path.getsize(filepath) < os.path.getsize(es_filepath)

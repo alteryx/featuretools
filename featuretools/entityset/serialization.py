@@ -105,7 +105,7 @@ def write_entityset(entityset, path, serialization_method='pickle',
         if os.path.exists(entityset_path):
             shutil.rmtree(entityset_path)
         shutil.move(temp_dir, entityset_path)
-    except:
+    except:  # noqa
         # make sure to clean up
         shutil.rmtree(temp_dir)
         raise
