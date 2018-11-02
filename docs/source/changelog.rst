@@ -2,6 +2,22 @@
 
 Changelog
 ---------
+**v0.4.0** Oct 31, 2018
+    * Remove ft.utils.gen_utils.getsize and make pympler a test requirement (:pr:`299`)
+    * Update requirements.txt (:pr:`298`)
+    * Refactor EntitySet.find_path(...) (:pr:`295`)
+    * Clean up unused methods (:pr:`293`)
+    * Remove unused parents property of Entity (:pr:`283`)
+    * Removed relationships parameter (:pr:`284`)
+    * Improve time index validation (:pr:`285`)
+    * Encode features with "unknown" class in categorical (:pr:`287`)
+    * Allow where clauses on direct features in Deep Feature Synthesis (:pr:`279`)
+    * Change to fullargsspec (:pr:`288`)
+    * Parallel verbose fixes (:pr:`282`)
+    * Update tests for python 3.7 (:pr:`277`)
+    * Check duplicate rows cutoff times (:pr:`276`)
+    * Load retail demo data using compressed file (:pr:`271`)
+
 **v0.3.1** Sept 28, 2018
     * Handling time rewrite (:pr:`245`)
     * Update deep_feature_synthesis.py (:pr:`249`)

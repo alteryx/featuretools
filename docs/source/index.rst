@@ -66,7 +66,7 @@ First, we specify a dictionary with all the entities in our dataset.
     }
 
 
-Second, we specify how the entities are related. When 2 two entities have a one-to-many relationship, we call the "one" enitity, the "parent entity". A relationship between a parent and child is defined like this:
+Second, we specify how the entities are related. When two entities have a one-to-many relationship, we call the "one" enitity, the "parent entity". A relationship between a parent and child is defined like this:
 
 .. code-block:: python
 

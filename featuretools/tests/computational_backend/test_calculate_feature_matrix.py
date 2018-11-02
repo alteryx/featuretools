@@ -69,26 +69,36 @@ def test_calc_feature_matrix(entityset):
 
     assert (feature_matrix == labels).values.all()
 
-    with pytest.raises(AssertionError):
+    error_text = 'features must be a non-empty list of features'
+    with pytest.raises(AssertionError, match=error_text):
         feature_matrix = calculate_feature_matrix('features', entityset, cutoff_time=cutoff_time)
-    with pytest.raises(AssertionError):
+
+    with pytest.raises(AssertionError, match=error_text):
         feature_matrix = calculate_feature_matrix([], entityset, cutoff_time=cutoff_time)
-    with pytest.raises(AssertionError):
+
+    with pytest.raises(AssertionError, match=error_text):
         feature_matrix = calculate_feature_matrix([1, 2, 3], entityset, cutoff_time=cutoff_time)
-    with pytest.raises(TypeError):
+
+    error_text = ".*type object 17"
+    with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([property_feature],
                                  entityset,
                                  instance_ids=range(17),
                                  cutoff_time=17)
-    with pytest.raises(TypeError):
+
+    error_text = 'cutoff_time must be a single value or DataFrame'
+    with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([property_feature],
                                  entityset,
                                  instance_ids=range(17),
                                  cutoff_time=times)
+
     cutoff_times_dup = pd.DataFrame({'time': [pd.datetime(2018, 3, 1),
                                               pd.datetime(2018, 3, 1)],
                                     entityset['log'].index: [1, 1]})
-    with pytest.raises(AssertionError):
+
+    error_text = 'Duplicated rows in cutoff time dataframe.'
+    with pytest.raises(AssertionError, match=error_text):
         feature_matrix = calculate_feature_matrix([property_feature],
                                                   entityset=entityset,
                                                   cutoff_time=cutoff_times_dup)
@@ -280,7 +290,8 @@ def test_training_window(entityset):
 
     entityset.add_last_time_indexes()
 
-    with pytest.raises(AssertionError):
+    error_text = 'training window must be an absolute Timedelta'
+    with pytest.raises(AssertionError, match=error_text):
         feature_matrix = calculate_feature_matrix([property_feature],
                                                   entityset,
                                                   cutoff_time=cutoff_time,
@@ -646,7 +657,8 @@ def test_cutoff_time_naming(entityset):
 
         assert all((fm1 == fm2.values).values)
 
-    with pytest.raises(AttributeError):
+    error_text = 'Name of the index variable in the target entity or "instance_id" must be present in cutoff_time'
+    with pytest.raises(AttributeError, match=error_text):
         calculate_feature_matrix([dfeat], entityset, cutoff_time=cutoff_df_wrong_index_name)
 
 
@@ -742,13 +754,15 @@ def test_calculating_number_per_chunk():
     singleton = pd.DataFrame({'time': [pd.Timestamp('2011-04-08 10:30:00')],
                               'instance_id': [0]})
     shape = cutoff_df.shape
-    with pytest.raises(ValueError):
+
+    error_text = "chunk_size must be None, a float between 0 and 1,a positive integer, or the string 'cutoff time'"
+    with pytest.raises(ValueError, match=error_text):
         calc_num_per_chunk(-1, shape)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=error_text):
         calc_num_per_chunk("test", shape)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=error_text):
         calc_num_per_chunk(2.5, shape)
 
     with pytest.warns(UserWarning):
@@ -939,7 +953,7 @@ class TestCreateClientAndCluster(object):
                             'Client',
                             MockClient)
         # errors if not enough memory for each worker to store the entityset
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=''):
             create_client_and_cluster(n_jobs=1,
                                       num_tasks=5,
                                       dask_kwargs={},
@@ -962,7 +976,8 @@ def test_parallel_failure_raises_correct_error(entityset):
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
     property_feature = IdentityFeature(entityset['log']['value']) > 10
 
-    with pytest.raises(AssertionError):
+    error_text = 'Need at least one worker'
+    with pytest.raises(AssertionError, match=error_text):
         calculate_feature_matrix([property_feature],
                                  entityset=entityset,
                                  cutoff_time=cutoff_time,
@@ -984,7 +999,9 @@ def test_n_jobs(entityset):
     assert n_jobs_to_workers((cpus + 1) * -1) == 1
     if cpus > 1:
         assert n_jobs_to_workers(-2) == cpus - 1
-    with pytest.raises(AssertionError):
+
+    error_text = 'Need at least one worker'
+    with pytest.raises(AssertionError, match=error_text):
         n_jobs_to_workers(0)
 
 
@@ -1010,7 +1027,8 @@ def test_integer_time_index_datetime_cutoffs(int_es):
     cutoff_df = pd.DataFrame({'time': times, 'instance_id': range(17)})
     property_feature = IdentityFeature(int_es['log']['value']) > 10
 
-    with pytest.raises(TypeError):
+    error_text = "Cannot compare type.*"
+    with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([property_feature],
                                  int_es,
                                  cutoff_time=cutoff_df,
@@ -1045,21 +1063,22 @@ def test_integer_time_index_mixed_cutoff(int_es):
     cutoff_df = cutoff_df[['time', 'instance_id', 'labels']]
     property_feature = IdentityFeature(int_es['log']['value']) > 10
 
-    with pytest.raises(TypeError):
+    error_text = 'cutoff_time times must be.*try casting via.*'
+    with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([property_feature],
                                  int_es,
                                  cutoff_time=cutoff_df)
 
     times_str = list(range(8, 17)) + ["foobar", 19, 20, 21, 22, 25, 24, 23]
     cutoff_df['time'] = times_str
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([property_feature],
                                  int_es,
                                  cutoff_time=cutoff_df)
 
     times_date_str = list(range(8, 17)) + ['2018-04-02', 19, 20, 21, 22, 25, 24, 23]
     cutoff_df['time'] = times_date_str
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([property_feature],
                                  int_es,
                                  cutoff_time=cutoff_df)
@@ -1069,7 +1088,7 @@ def test_integer_time_index_mixed_cutoff(int_es):
     times_int_str = list(range(8, 17)) + ['17', 19, 20, 21, 22, 25, 24, 23]
     cutoff_df['time'] = times_int_str
     # calculate_feature_matrix should convert time column to ints successfully here
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([property_feature],
                                  int_es,
                                  cutoff_time=cutoff_df)
@@ -1090,27 +1109,28 @@ def test_datetime_index_mixed_cutoff(entityset):
     cutoff_df = cutoff_df[['time', 'instance_id', 'labels']]
     property_feature = IdentityFeature(entityset['log']['value']) > 10
 
-    with pytest.raises(TypeError):
+    error_text = 'cutoff_time times must be.*try casting via.*'
+    with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([property_feature],
                                  entityset,
                                  cutoff_time=cutoff_df)
 
     times[9] = "foobar"
     cutoff_df['time'] = times
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([property_feature],
                                  entityset,
                                  cutoff_time=cutoff_df)
 
     cutoff_df['time'].iloc[9] = '2018-04-02 18:50:45.453216'
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([property_feature],
                                  entityset,
                                  cutoff_time=cutoff_df)
 
     times[9] = '17'
     cutoff_df['time'] = times
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([property_feature],
                                  entityset,
                                  cutoff_time=cutoff_df)
@@ -1121,7 +1141,8 @@ def test_string_time_values_in_cutoff_time(entityset):
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 0]})
     agg_feature = Sum(entityset['log']['value'], entityset['customers'])
 
-    with pytest.raises(TypeError):
+    error_text = 'cutoff_time times must be.*try casting via.*'
+    with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([agg_feature], entityset, cutoff_time=cutoff_time)
 
 

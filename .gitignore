@@ -125,3 +125,6 @@ ENV/
 *.pickle
 
 .pytest_cache
+
+#IDE
+.vscode
