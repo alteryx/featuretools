@@ -18,7 +18,8 @@ def es():
 
 
 def test_requires_entities_if_observations():
-    with pytest.raises(Exception):
+    error_txt = 'Must define entity to use o as unit'
+    with pytest.raises(Exception, match=error_txt):
         Timedelta(4, 'observations')
 
 
@@ -168,6 +169,7 @@ def test_deltas_year():
         assert new_time_1.dt.year.values[i] == value
         assert np.datetime_as_string(new_time_2[i])[:4] == str(value)
 
-    with pytest.raises(ValueError) as excinfo:
+    error_text = 'Invalid Unit'
+    with pytest.raises(ValueError, match=error_text) as excinfo:
         add_td(start_list, 2, 'M')
     assert 'Invalid Unit' in str(excinfo)
