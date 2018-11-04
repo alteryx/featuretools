@@ -25,7 +25,10 @@ from .utils import (
 )
 
 from featuretools.primitives import AggregationPrimitive, PrimitiveBase
-from featuretools.utils.gen_utils import make_tqdm_iterator
+from featuretools.utils.gen_utils import (
+    get_relationship_variable_id,
+    make_tqdm_iterator
+)
 from featuretools.utils.wrangle import _check_time_type
 from featuretools.variable_types import DatetimeTimeIndex, NumericTimeIndex
 
@@ -435,7 +438,8 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
                                                  cutoffs_with_approx_e_ids[target_instance_colname])
 
         if frames is not None:
-            rvar = entityset.gen_relationship_var(target_entity.id, approx_entity_id)
+            path = entityset.find_path(approx_entity_id, target_entity.id)
+            rvar = get_relationship_variable_id(path)
             parent_instance_frame = frames[approx_entity_id][target_entity.id]
             cutoffs_with_approx_e_ids[rvar] = \
                 cutoffs_with_approx_e_ids.merge(parent_instance_frame[[rvar]],

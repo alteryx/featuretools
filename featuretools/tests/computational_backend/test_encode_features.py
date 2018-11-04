@@ -110,7 +110,8 @@ def test_encode_features_catches_features_mismatch(entityset):
 
     assert 'label' in feature_matrix.columns
 
-    with pytest.raises(AssertionError):
+    error_text = 'Feature session_id not found in feature matrix'
+    with pytest.raises(AssertionError, match=error_text):
         encode_features(feature_matrix, [f1, f3])
 
 

@@ -15,7 +15,6 @@ from .base_backend import ComputationalBackend
 from .feature_tree import FeatureTree
 
 from featuretools import variable_types
-from featuretools.entityset.relationship import Relationship
 from featuretools.exceptions import UnknownFeature
 from featuretools.primitives import (
     AggregationPrimitive,
@@ -23,7 +22,10 @@ from featuretools.primitives import (
     IdentityFeature,
     TransformPrimitive
 )
-from featuretools.utils.gen_utils import make_tqdm_iterator
+from featuretools.utils.gen_utils import (
+    get_relationship_variable_id,
+    make_tqdm_iterator
+)
 
 standard_library.install_aliases()
 warnings.simplefilter('ignore', np.RankWarning)
@@ -389,7 +391,7 @@ class PandasBackend(ComputationalBackend):
             relationship_path = self.entityset.find_backward_path(entity.id,
                                                                   child_entity.id)
 
-            groupby_var = Relationship._get_link_variable_name(relationship_path)
+            groupby_var = get_relationship_variable_id(relationship_path)
 
             # if the use_previous property exists on this feature, include only the
             # instances from the child entity included in that Timedelta

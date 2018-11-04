@@ -108,12 +108,10 @@ def test_add_relationship_errors_on_dtype_mismatch(entityset):
                                     variable_types=log_variable_types,
                                     time_index='datetime',
                                     encoding='utf-8')
-    with pytest.raises(ValueError):
-        mismatch = Relationship(entityset[u'régions']['id'], entityset['log2']['session_id'])
-        entityset.add_relationship(mismatch)
 
-    with pytest.raises(ValueError):
-        mismatch = Relationship(entityset[u'régions']['id'], entityset['log2']['session_id'])
+    error_text = u'Unable to add relationship because id in customers is Pandas dtype category and session_id in log2 is Pandas dtype int64.'
+    with pytest.raises(ValueError, match=error_text):
+        mismatch = Relationship(entityset[u'customers']['id'], entityset['log2']['session_id'])
         entityset.add_relationship(mismatch)
 
 
@@ -196,7 +194,8 @@ def test_extra_variable_type():
               'category': variable_types.Categorical,
               'category2': variable_types.Categorical}
 
-    with pytest.raises(LookupError):
+    error_text = "Variable ID category2 not in DataFrame"
+    with pytest.raises(LookupError, match=error_text):
         entityset = EntitySet(id='test')
         entityset.entity_from_dataframe(entity_id='test_entity',
                                         index='id',
@@ -204,7 +203,8 @@ def test_extra_variable_type():
 
 
 def test_add_parent_not_index_varible(entityset):
-    with pytest.raises(AttributeError):
+    error_text = "Parent variable.*is not the index of entity Entity.*"
+    with pytest.raises(AttributeError, match=error_text):
         entityset.add_relationship(Relationship(entityset[u'régions']['language'],
                                                 entityset['customers'][u'région_id']))
 
@@ -226,7 +226,8 @@ def test_doesnt_remake_index():
     # more variables
     df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
 
-    with pytest.raises(RuntimeError, match="Cannot make index: index variable already present"):
+    error_text = "Cannot make index: index variable already present"
+    with pytest.raises(RuntimeError, match=error_text):
         entityset = EntitySet(id='test')
         entityset.entity_from_dataframe(entity_id='test_entity',
                                         index='id',
@@ -237,7 +238,8 @@ def test_doesnt_remake_index():
 def test_bad_time_index_variable():
     df = pd.DataFrame({'category': ['a', 'b', 'a']})
 
-    with pytest.raises(LookupError, match="Time index not found in dataframe"):
+    error_text = "Time index not found in dataframe"
+    with pytest.raises(LookupError, match=error_text):
         entityset = EntitySet(id='test')
         entityset.entity_from_dataframe(entity_id='test_entity',
                                         index="id",
@@ -348,7 +350,8 @@ def test_handles_datetime_mismatch():
     vtypes = {'id': variable_types.Categorical,
               'time': variable_types.Datetime}
 
-    with pytest.raises(ValueError):
+    error_text = "Given date string not likely a datetime."
+    with pytest.raises(ValueError, match=error_text):
         entityset = EntitySet(id='test')
         entityset.entity_from_dataframe('test_entity', df, 'id',
                                         time_index='time', variable_types=vtypes)
@@ -379,7 +382,8 @@ def test_nonstr_column_names():
     df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 3: ['a', 'b', 'c']})
     es = ft.EntitySet(id='Failure')
 
-    with pytest.raises(ValueError) as excinfo:
+    error_text = "All column names must be strings.*"
+    with pytest.raises(ValueError, match=error_text) as excinfo:
         es.entity_from_dataframe(entity_id='str_cols',
                                  dataframe=df,
                                  index='index')
@@ -552,13 +556,15 @@ def test_sets_time_when_adding_entity():
     # assert time_type unchanged
     assert entityset.time_type == variable_types.NumericTimeIndex
     # add wrong time type entity
-    with pytest.raises(TypeError):
+    error_text = "accounts time index is <class 'featuretools.variable_types.variable.DatetimeTimeIndex'> type which differs from other entityset time indexes"
+    with pytest.raises(TypeError, match=error_text):
         entityset.entity_from_dataframe("accounts",
                                         accounts_df,
                                         index="id",
                                         time_index="signup_date")
     # add non time type as time index
-    with pytest.raises(TypeError):
+    error_text = "Attempted to convert all string column signup_date to numeric"
+    with pytest.raises(TypeError, match=error_text):
         entityset.entity_from_dataframe("accounts",
                                         accounts_df_string,
                                         index="id",
@@ -575,16 +581,22 @@ def test_checks_time_type_setting_secondary_time_index(entityset):
     assert entityset.time_type == variable_types.DatetimeTimeIndex
     # add secondary index that is numeric type
     new_2nd_ti = {'age': ['age', 'loves_ice_cream']}
-    with pytest.raises(TypeError):
+
+    error_text = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> type which differs from other entityset time indexes"
+    with pytest.raises(TypeError, match=error_text):
         entityset["customers"].set_secondary_time_index(new_2nd_ti)
     # add secondary index that is non-time type
     new_2nd_ti = {'favorite_quote': ['favorite_quote', 'loves_ice_cream']}
-    with pytest.raises(TypeError):
+
+    error_text = "data type \"All members of the working classes must seize the means of production.\" not understood"
+    with pytest.raises(TypeError, match=error_text):
         entityset["customers"].set_secondary_time_index(new_2nd_ti)
     # add mismatched pair of secondary time indexes
     new_2nd_ti = {'upgrade_date': ['upgrade_date', 'favorite_quote'],
                   'age': ['age', 'loves_ice_cream']}
-    with pytest.raises(TypeError):
+
+    error_text = "customers time index is <class 'featuretools.variable_types.variable.NumericTimeIndex'> type which differs from other entityset time indexes"
+    with pytest.raises(TypeError, match=error_text):
         entityset["customers"].set_secondary_time_index(new_2nd_ti)
 
     # create entityset with numeric time type
@@ -611,16 +623,20 @@ def test_checks_time_type_setting_secondary_time_index(entityset):
     assert card_es.time_type == variable_types.NumericTimeIndex
     # add secondary index that is timestamp type
     new_2nd_ti = {'transaction_date': ['transaction_date', 'fraud']}
-    with pytest.raises(TypeError):
+
+    error_text = "transactions time index is <class 'featuretools.variable_types.variable.DatetimeTimeIndex'> type which differs from other entityset time indexes"
+    with pytest.raises(TypeError, match=error_text):
         card_es['transactions'].set_secondary_time_index(new_2nd_ti)
     # add secondary index that is non-time type
     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud']}
-    with pytest.raises(TypeError):
+
+    error_text = 'data type \"City A\" not understood'
+    with pytest.raises(TypeError, match=error_text):
         card_es['transactions'].set_secondary_time_index(new_2nd_ti)
     # add mixed secondary time indexes
     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud'],
                   'fraud_decision_time': ['fraud_decision_time', 'fraud']}
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=error_text):
         card_es['transactions'].set_secondary_time_index(new_2nd_ti)
 
 
@@ -770,11 +786,13 @@ def test_add_link_vars(entityset):
 
 
 def test_normalize_entity(entityset):
-    with pytest.raises(TypeError):
+    error_text = "'additional_variables' must be a list, but received type.*"
+    with pytest.raises(TypeError, match=error_text):
         entityset.normalize_entity('sessions', 'device_types', 'device_type',
                                    additional_variables='log')
 
-    with pytest.raises(TypeError):
+    error_text = "'copy_variables' must be a list, but received type.*"
+    with pytest.raises(TypeError, match=error_text):
         entityset.normalize_entity('sessions', 'device_types', 'device_type',
                                    copy_variables='log')
 
@@ -844,7 +862,6 @@ def test_normalize_entity_new_time_index(entityset):
                                make_time_index=True,
                                new_entity_time_index="value_time")
 
-    assert entityset['log'].is_child_of('values')
     assert entityset['values'].time_index == 'value_time'
     assert 'value_time' in entityset['values'].df.columns
     assert len(entityset['values'].df.columns) == 2

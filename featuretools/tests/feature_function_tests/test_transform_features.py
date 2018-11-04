@@ -249,7 +249,8 @@ def test_arithmetic_of_val(es):
 
 
 def test_arithmetic_two_vals_fails(es):
-    with pytest.raises(ValueError):
+    error_text = "one of.*must be an instance,of PrimitiveBase or Variable"
+    with pytest.raises(ValueError, match=error_text):
         Add(2, 2)
 
 
@@ -476,7 +477,7 @@ def test_cum_sum_use_previous_integer_time(int_es):
     es = int_es
 
     log_value_feat = es['log']['value']
-    with pytest.raises(AssertionError):
+    with pytest.raises(AssertionError, match=''):
         CumSum(log_value_feat, es['log']['session_id'],
                use_previous=Timedelta(3, 'm'))
 
@@ -1161,7 +1162,8 @@ def test_make_transform_restricts_time_keyword():
         description="This primitive should be accepted",
         uses_calc_time=True)
 
-    with pytest.raises(ValueError):
+    error_text = "'time' is a restricted keyword.  Please use a different keyword."
+    with pytest.raises(ValueError, match=error_text):
         make_trans_primitive(
             lambda x, time=False: x,
             [Datetime],
@@ -1179,7 +1181,8 @@ def test_make_transform_restricts_time_arg():
         description="This primitive should be accepted",
         uses_calc_time=True)
 
-    with pytest.raises(ValueError):
+    error_text = "'time' is a restricted keyword.  Please use a different keyword."
+    with pytest.raises(ValueError, match=error_text):
         make_trans_primitive(
             lambda time: time,
             [Datetime],

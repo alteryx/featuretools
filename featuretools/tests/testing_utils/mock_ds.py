@@ -16,11 +16,11 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
     """ Makes a entityset with the following shape:
 
           R         Regions
-         / \        .
+         / \\       .
         S   C       Stores, Customers
             |       .
             S   P   Sessions, Products
-             \ /    .
+             \\ /   .
               L     Log
     """
 
@@ -330,7 +330,6 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
         if time_index is not None:
             ti_name = time_index['name']
             secondary = time_index['secondary']
-
         df = pd.read_csv(filenames[entity], encoding='utf-8')
         if entity == "customers":
             df["id"] = pd.Categorical(df['id'])
