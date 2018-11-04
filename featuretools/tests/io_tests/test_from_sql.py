@@ -1,8 +1,10 @@
+# flake8: noqa: F811
 import pytest
 
 import featuretools as ft
 
-from ..testing_utils import sqlite, sqlite_composite_pk
+from ..testing_utils import sqlite, sqlite_composite_pk  # noqa: F401; pylint: disable=unused-variable
+
 
 def test_creates_entity_set(sqlite):
     es = ft.io.from_sql(id="widget_es", connection=sqlite)
