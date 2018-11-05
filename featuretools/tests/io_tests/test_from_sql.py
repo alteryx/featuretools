@@ -1,6 +1,4 @@
 # flake8: noqa: F811
-from unittest.mock import patch
-
 import pytest
 
 import featuretools as ft
