@@ -1,9 +1,6 @@
-# flake8: noqa: F811
 import pytest
 
 import featuretools as ft
-
-from ..testing_utils import sqlite, sqlite_composite_pk  # noqa: F401; pylint: disable=unused-variable
 
 
 def test_creates_entity_set(sqlite):
@@ -47,6 +44,7 @@ def test_passes_through_parameters(sqlite):
 def test_throws_an_error_without_connection_or_connection_string(sqlite):
     with pytest.raises(ValueError, match="connection or connection_string is required"):
         ft.io.from_sql(id="no_connection")
+
 
 def test_loads_only_specified_tables(sqlite):
     es = ft.io.from_sql(id="widget_limited_tables", connection=sqlite, tables=['widgets', 'factories'])

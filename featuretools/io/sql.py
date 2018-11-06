@@ -29,7 +29,7 @@ def _find_pk_name(table):
 
 
 class EntitySetLoaderFromSQL:
-    def __init__(self, id, connection=None, passthrough_args={}):
+    def __init__(self, id, connection, passthrough_args):
         self.connection = connection
         self.metadata = sa.MetaData(connection)
         self.metadata.reflect(bind=self.connection.engine)
