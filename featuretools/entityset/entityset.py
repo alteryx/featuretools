@@ -1149,21 +1149,22 @@ class EntitySet(object):
             assert not make_index, "Must specify an index name if make_index is True"
             logger.warning(("Using first column as index. ",
                             "To change this, specify the index parameter"))
+            index = dataframe.columns[0]
         else:
             if index not in variable_types:
                 variable_types[index] = vtypes.Index
 
         created_index = None
+
+        if make_index and index in dataframe.columns:
+            raise RuntimeError("Cannot make index: index variable already present")
+
         if make_index or index not in dataframe.columns:
             if not make_index:
                 logger.warning("index %s not found in dataframe, creating new integer column",
                                index)
-            if index in dataframe.columns:
-                raise RuntimeError("Cannot make index: index variable already present")
             dataframe.insert(0, index, range(0, len(dataframe)))
             created_index = index
-        elif index is None:
-            index = dataframe.columns[0]
 
         if time_index is not None and time_index not in dataframe.columns:
             raise LookupError('Time index not found in dataframe')
