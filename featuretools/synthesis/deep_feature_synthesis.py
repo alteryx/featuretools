@@ -83,9 +83,9 @@ class DeepFeatureSynthesis(object):
                  agg_primitives=None,
                  trans_primitives=None,
                  where_primitives=None,
-                 max_depth=None,
-                 max_hlevel=None,
-                 max_features=None,
+                 max_depth=2,
+                 max_hlevel=2,
+                 max_features=-1,
                  allowed_paths=None,
                  ignore_entities=None,
                  ignore_variables=None,
@@ -94,20 +94,15 @@ class DeepFeatureSynthesis(object):
                  drop_exact=None,
                  where_stacking_limit=1):
 
-        if max_depth is None:
-            max_depth = 2
-        elif max_depth == -1:
+        # need to change max_depth and max_hlevel to None because DFs terminates when  <0
+        if max_depth == -1:
             max_depth = None
         self.max_depth = max_depth
 
-        if max_hlevel is None:
-            max_hlevel = 2
-        elif max_hlevel == -1:
+        if max_hlevel == -1:
             max_hlevel = None
         self.max_hlevel = max_hlevel
 
-        if max_features is None:
-            max_features = -1
         self.max_features = max_features
 
         self.allowed_paths = allowed_paths
@@ -144,9 +139,9 @@ class DeepFeatureSynthesis(object):
                     raise ValueError("Unknown aggregation primitive {}. ".format(a),
                                      "Call ft.primitives.list_primitives() to get",
                                      " a list of available primitives")
-                self.agg_primitives.append(agg_prim_dict[a.lower()])
-            else:
-                self.agg_primitives.append(a)
+                a = agg_prim_dict[a.lower()]
+
+            self.agg_primitives.append(a)
 
         if trans_primitives is None:
             trans_primitives = [ftypes.Day, ftypes.Year, ftypes.Month,
@@ -160,9 +155,9 @@ class DeepFeatureSynthesis(object):
                     raise ValueError("Unknown transform primitive {}. ".format(t),
                                      "Call ft.primitives.list_primitives() to get",
                                      " a list of available primitives")
-                self.trans_primitives.append(trans_prim_dict[t.lower()])
-            else:
-                self.trans_primitives.append(t)
+                t = trans_prim_dict[t.lower()]
+
+            self.trans_primitives.append(t)
 
         if where_primitives is None:
             where_primitives = [ftypes.Count]
@@ -174,10 +169,9 @@ class DeepFeatureSynthesis(object):
                     raise ValueError("Unknown where primitive {}. ".format(p),
                                      "Call ft.primitives.list_primitives() to get",
                                      " a list of available primitives")
+                p = prim_obj
 
-                self.where_primitives.append(prim_obj)
-            else:
-                self.where_primitives.append(p)
+            self.where_primitives.append(p)
 
         self.seed_features = seed_features or []
         self.drop_exact = drop_exact or []
