@@ -209,6 +209,18 @@ def test_add_parent_not_index_varible(entityset):
                                                 entityset['customers'][u'région_id']))
 
 
+def test_none_index():
+    df = pd.DataFrame({'category': [1, 2, 3], 'category2': ['1', '2', '3']})
+    vtypes = {'category': variable_types.Categorical, 'category2': variable_types.Categorical}
+
+    entityset = EntitySet(id='test')
+    entityset.entity_from_dataframe(entity_id='test_entity',
+                                    dataframe=df,
+                                    variable_types=vtypes)
+    assert entityset['test_entity'].index == 'category'
+    assert isinstance(entityset['test_entity']['category'], variable_types.Index)
+
+
 def test_unknown_index():
     # more variables
     df = pd.DataFrame({'category': ['a', 'b', 'a']})
