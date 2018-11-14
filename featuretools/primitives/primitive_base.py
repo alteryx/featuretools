@@ -102,12 +102,14 @@ class PrimitiveBase(object):
     # P TODO: this should get refactored to return_type
     @property
     def variable_type(self):
+        from . import direct_feature
         feature = self
         return_type = self.return_type
 
         while return_type is None:
-            feature = feature.base_features[0]
-            return_type = feature.return_type
+            # get return type of first base feature
+            base_feature = feature.base_features[0]
+            return_type = base_feature.return_type
 
             # only the original time index should exist
             # so make this feature's return type just a Datetime
@@ -115,8 +117,13 @@ class PrimitiveBase(object):
                 return_type = Datetime
             elif return_type == NumericTimeIndex:
                 return_type = Numeric
-            elif return_type == Id:
+
+            # direct features should keep the Id return type, but all other features should get
+            # converted to Categorical
+            if not isinstance(feature, direct_feature.DirectFeature) and return_type == Id:
                 return_type = Categorical
+
+            feature = base_feature
 
         return return_type
 
