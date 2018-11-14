@@ -2,7 +2,7 @@ import cloudpickle
 
 
 def save_features(features, filepath):
-    """Saves the features list to a specificed filepath. 
+    """Saves the features list to a specificed filepath.
 
     Args:
         features (list[:class:`.PrimitiveBase`]): List of Feature definitions.
