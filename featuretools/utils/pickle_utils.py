@@ -2,13 +2,18 @@ import cloudpickle
 
 
 def save_features(features, filepath):
-    """Saves the features list to a specificed filepath.
+    """Saves the features list to a specificed filepath. 
 
     Args:
         features (list[:class:`.PrimitiveBase`]): List of Feature definitions.
 
         filepath (str): The location of where to save the pickled features list
              filepath. This must include the name of the file.
+             
+    Note:
+        Features saved in one version of Featuretools are not guaranteed to work in another.
+        After upgrading Featuretools, features may need to be generated again.
+        
     Example:
         .. ipython:: python
             :suppress:
