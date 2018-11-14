@@ -4,7 +4,7 @@ from pympler.asizeof import asizeof
 from ..testing_utils import make_ecommerce_entityset
 
 from featuretools.primitives import Feature, IdentityFeature, Last, Mode, Sum
-from featuretools.variable_types import Datetime, Numeric
+from featuretools.variable_types import Categorical, Datetime, Numeric
 
 
 @pytest.fixture(scope='module')
@@ -106,3 +106,8 @@ def test_return_type_inference_datetime_time_index(es):
 def test_return_type_inference_numeric_time_index(es_numeric):
     last = Last(es_numeric["log"]["datetime"], es_numeric["customers"])
     assert last.variable_type == Numeric
+
+
+def test_return_type_inference_id(es_numeric):
+    mode = Mode(es_numeric["log"]["session_id"], es_numeric["customers"])
+    assert mode.variable_type == Categorical

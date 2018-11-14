@@ -12,8 +12,10 @@ from featuretools.utils.wrangle import (
     _check_timedelta
 )
 from featuretools.variable_types import (
+    Categorical,
     Datetime,
     DatetimeTimeIndex,
+    Id,
     Numeric,
     NumericTimeIndex,
     Variable
@@ -113,6 +115,8 @@ class PrimitiveBase(object):
                 return_type = Datetime
             elif return_type == NumericTimeIndex:
                 return_type = Numeric
+            elif return_type == Id:
+                return_type = Categorical
 
         return return_type
 
