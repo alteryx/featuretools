@@ -268,9 +268,9 @@ def test_init_and_name(es):
 def test_time_since_last(es):
     f = TimeSinceLast(es["log"]["datetime"], es["customers"])
     fm = ft.calculate_feature_matrix([f],
-                                  entityset=es,
-                                  instance_ids=[0, 1, 2],
-                                  cutoff_time=datetime(2015, 6, 8))
+                                     entityset=es,
+                                     instance_ids=[0, 1, 2],
+                                     cutoff_time=datetime(2015, 6, 8))
 
     correct = [131376600, 131289600, 131287800]
     # note: must round to nearest second
@@ -280,9 +280,9 @@ def test_time_since_last(es):
 def test_median(es):
     f = Median(es["log"]["value_many_nans"], es["customers"])
     fm = ft.calculate_feature_matrix([f],
-                                  entityset=es,
-                                  instance_ids=[0, 1, 2],
-                                  cutoff_time=datetime(2015, 6, 8))
+                                     entityset=es,
+                                     instance_ids=[0, 1, 2],
+                                     cutoff_time=datetime(2015, 6, 8))
 
     correct = [1, 3, np.nan]
     np.testing.assert_equal(fm[f.get_name()].values, correct)
@@ -291,8 +291,9 @@ def test_median(es):
 def test_agg_same_method_name(es):
     """
         Pandas relies on the function name when calculating aggregations. This means if a two
-        primitives are  applied to the same column, pandas can't differentiate them. We have a
-        work around to this based on the name property that we test here.
+        primitives with the same function name are applied to the same column, pandas
+        can't differentiate them. We have a work around to this based on the name property
+        that we test here.
     """
 
     # test with normally defined functions
@@ -311,7 +312,8 @@ def test_agg_same_method_name(es):
     f_sum = Sum(es["log"]["value"], es["customers"])
     f_max = Max(es["log"]["value"], es["customers"])
 
-    fm = ft.calculate_feature_matrix([f_max], entityset=es)
+    fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
+    assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
 
     # test with lambdas
     Sum = make_agg_primitive(lambda x: x.sum(), input_types=[Numeric],
@@ -322,8 +324,7 @@ def test_agg_same_method_name(es):
     f_sum = Sum(es["log"]["value"], es["customers"])
     f_max = Max(es["log"]["value"], es["customers"])
     fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
-
-
+    assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
 
 
 def test_time_since_last_custom(es):
@@ -338,9 +339,9 @@ def test_time_since_last_custom(es):
                                        uses_calc_time=True)
     f = TimeSinceLast(es["log"]["datetime"], es["customers"])
     fm = ft.calculate_feature_matrix([f],
-                                  entityset=es,
-                                  instance_ids=[0, 1, 2],
-                                  cutoff_time=datetime(2015, 6, 8))
+                                     entityset=es,
+                                     instance_ids=[0, 1, 2],
+                                     cutoff_time=datetime(2015, 6, 8))
 
     correct = [131376600, 131289600, 131287800]
     # note: must round to nearest second
@@ -366,9 +367,9 @@ def test_custom_primitive_time_as_arg(es):
     assert TimeSinceLast.name == "time_since_last"
     f = TimeSinceLast(es["log"]["datetime"], es["customers"])
     fm = ft.calculate_feature_matrix([f],
-                                  entityset=es,
-                                  instance_ids=[0, 1, 2],
-                                  cutoff_time=datetime(2015, 6, 8))
+                                     entityset=es,
+                                     instance_ids=[0, 1, 2],
+                                     cutoff_time=datetime(2015, 6, 8))
 
     correct = [131376600, 131289600, 131287800]
     # note: must round to nearest second
