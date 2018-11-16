@@ -8,7 +8,7 @@ import pytest
 
 from ..testing_utils import feature_with_name, make_ecommerce_entityset
 
-from featuretools import calculate_feature_matrix, dfs
+import featuretools as ft
 from featuretools.primitives import (
     AggregationPrimitive,
     Count,
@@ -148,7 +148,7 @@ def test_count_null_and_make_agg_primitive(es):
                                name="count", stack_on_self=False,
                                cls_attributes={"generate_name": count_generate_name})
     count_null = Count(es['log']['value'], es['sessions'], count_null=True)
-    feature_matrix = calculate_feature_matrix([count_null], entityset=es)
+    feature_matrix = ft.calculate_feature_matrix([count_null], entityset=es)
     values = [5, 4, 1, 2, 3, 2]
     assert (values == feature_matrix[count_null.get_name()]).all()
 
@@ -241,7 +241,6 @@ def test_stack_expanding(es, test_primitive, parent_entity):
 #     assert grandparent.can_apply(parent_entity, 'customers')
 
 def test_init_and_name(es):
-    from featuretools import calculate_feature_matrix
     session = es['sessions']
     log = es['log']
 
@@ -263,12 +262,12 @@ def test_init_and_name(es):
 
                 # try to get name and calculate
                 instance.get_name()
-                calculate_feature_matrix([instance], entityset=es).head(5)
+                ft.calculate_feature_matrix([instance], entityset=es).head(5)
 
 
 def test_time_since_last(es):
     f = TimeSinceLast(es["log"]["datetime"], es["customers"])
-    fm = calculate_feature_matrix([f],
+    fm = ft.calculate_feature_matrix([f],
                                   entityset=es,
                                   instance_ids=[0, 1, 2],
                                   cutoff_time=datetime(2015, 6, 8))
@@ -280,7 +279,7 @@ def test_time_since_last(es):
 
 def test_median(es):
     f = Median(es["log"]["value_many_nans"], es["customers"])
-    fm = calculate_feature_matrix([f],
+    fm = ft.calculate_feature_matrix([f],
                                   entityset=es,
                                   instance_ids=[0, 1, 2],
                                   cutoff_time=datetime(2015, 6, 8))
@@ -300,7 +299,7 @@ def test_time_since_last_custom(es):
                                        name="time_since_last",
                                        uses_calc_time=True)
     f = TimeSinceLast(es["log"]["datetime"], es["customers"])
-    fm = calculate_feature_matrix([f],
+    fm = ft.calculate_feature_matrix([f],
                                   entityset=es,
                                   instance_ids=[0, 1, 2],
                                   cutoff_time=datetime(2015, 6, 8))
@@ -328,7 +327,7 @@ def test_custom_primitive_time_as_arg(es):
                                        uses_calc_time=True)
     assert TimeSinceLast.name == "time_since_last"
     f = TimeSinceLast(es["log"]["datetime"], es["customers"])
-    fm = calculate_feature_matrix([f],
+    fm = ft.calculate_feature_matrix([f],
                                   entityset=es,
                                   instance_ids=[0, 1, 2],
                                   cutoff_time=datetime(2015, 6, 8))
@@ -358,10 +357,10 @@ def test_custom_primitive_multiple_inputs(es):
                                     input_types=[Numeric, Datetime],
                                     return_type=Numeric)
 
-    fm, features = dfs(entityset=es,
-                       target_entity="sessions",
-                       agg_primitives=[MeanSunday],
-                       trans_primitives=[])
+    fm, features = ft.dfs(entityset=es,
+                          target_entity="sessions",
+                          agg_primitives=[MeanSunday],
+                          trans_primitives=[])
     mean_sunday_value = pd.Series([None, None, None, 2.5, 7, None])
     iterator = zip(fm["MEAN_SUNDAY(log.value, datetime)"], mean_sunday_value)
     for x, y in iterator:
@@ -369,11 +368,11 @@ def test_custom_primitive_multiple_inputs(es):
 
     es.add_interesting_values()
     mean_sunday_value_priority_0 = pd.Series([None, None, None, 2.5, 0, None])
-    fm, features = dfs(entityset=es,
-                       target_entity="sessions",
-                       agg_primitives=[MeanSunday],
-                       trans_primitives=[],
-                       where_primitives=[MeanSunday])
+    fm, features = ft.dfs(entityset=es,
+                          target_entity="sessions",
+                          agg_primitives=[MeanSunday],
+                          trans_primitives=[],
+                          where_primitives=[MeanSunday])
     where_feat = "MEAN_SUNDAY(log.value, datetime WHERE priority_level = 0)"
     for x, y in zip(fm[where_feat], mean_sunday_value_priority_0):
         assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
