@@ -288,6 +288,44 @@ def test_median(es):
     np.testing.assert_equal(fm[f.get_name()].values, correct)
 
 
+def test_agg_same_method_name(es):
+    """
+        Pandas relies on the function name when calculating aggregations. This means if a two
+        primitives are  applied to the same column, pandas can't differentiate them. We have a
+        work around to this based on the name property that we test here.
+    """
+
+    # test with normally defined functions
+    def custom_primitive(x):
+        return x.sum()
+
+    Sum = make_agg_primitive(custom_primitive, input_types=[Numeric],
+                             return_type=Numeric, name="sum")
+
+    def custom_primitive(x):
+        return x.max()
+
+    Max = make_agg_primitive(custom_primitive, input_types=[Numeric],
+                             return_type=Numeric, name="max")
+
+    f_sum = Sum(es["log"]["value"], es["customers"])
+    f_max = Max(es["log"]["value"], es["customers"])
+
+    fm = ft.calculate_feature_matrix([f_max], entityset=es)
+
+    # test with lambdas
+    Sum = make_agg_primitive(lambda x: x.sum(), input_types=[Numeric],
+                             return_type=Numeric, name="sum")
+    Max = make_agg_primitive(lambda x: x.max(), input_types=[Numeric],
+                             return_type=Numeric, name="max")
+
+    f_sum = Sum(es["log"]["value"], es["customers"])
+    f_max = Max(es["log"]["value"], es["customers"])
+    fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
+
+
+
+
 def test_time_since_last_custom(es):
     def time_since_last(values, time=None):
         time_since = time - values.iloc[0]
