@@ -429,7 +429,7 @@ class PandasBackend(ComputationalBackend):
                     if callable(func):
                         # make sure func has a unique name due to how pandas names aggregations
                         func.__name__ = f.name
-                        funcname = func.__name__
+                        funcname = f.name
 
                     to_agg[variable_id].append(func)
                     # this is used below to rename columns that pandas names for us
