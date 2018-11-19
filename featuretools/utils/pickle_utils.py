@@ -9,6 +9,11 @@ def save_features(features, filepath):
 
         filepath (str): The location of where to save the pickled features list
              filepath. This must include the name of the file.
+
+    Note:
+        Features saved in one version of Featuretools are not guaranteed to work in another.
+        After upgrading Featuretools, features may need to be generated again.
+
     Example:
         .. ipython:: python
             :suppress:
@@ -45,6 +50,10 @@ def load_features(filepath):
 
     Returns:
         features (list[:class:`.PrimitiveBase`]): Feature definitions list.
+
+    Note:
+        Features saved in one version of Featuretools are not guaranteed to work in another.
+        After upgrading Featuretools, features may need to be generated again.
 
     Example:
         .. ipython:: python
