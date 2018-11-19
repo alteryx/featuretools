@@ -10,6 +10,7 @@ from .computational_backends.api import *
 from . import tests
 from .utils.pickle_utils import *
 from .utils.time_utils import *
+from .wrappers import *
 import featuretools.demo
 
 __version__ = '0.4.0'
