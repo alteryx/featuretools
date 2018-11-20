@@ -934,3 +934,35 @@ def test_sizeof(entityset):
         total_size += entity.last_time_index.__sizeof__()
 
     assert entityset.__sizeof__() == total_size
+
+
+def test_construct_without_id():
+    assert ft.EntitySet().id is None
+
+
+def test_repr_without_id():
+    match = 'Entityset: None\n  Entities:\n  Relationships:\n    No relationships'
+    assert repr(ft.EntitySet()) == match
+
+
+def test_getitem_without_id():
+    error_text = 'Entity test does not exist'
+    with pytest.raises(KeyError, match=error_text):
+        ft.EntitySet()['test']
+
+
+def test_metadata_without_id():
+    es = ft.EntitySet()
+    assert es.create_metadata_dict().get('id') is None
+
+
+def test_to_pickle_id_none():
+    entityset = ft.EntitySet()
+    dirname = os.path.dirname(integration_data.__file__)
+    path = os.path.join(dirname, 'test_entityset.p')
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    entityset.to_pickle(path)
+    new_es = ft.read_pickle(path)
+    assert entityset.__eq__(new_es, deep=True)
+    shutil.rmtree(path)
