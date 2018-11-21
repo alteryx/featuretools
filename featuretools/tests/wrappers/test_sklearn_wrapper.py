@@ -2,7 +2,6 @@ import pickle
 
 import numpy as np
 import pytest
-
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.model_selection import GridSearchCV, cross_val_score
 from sklearn.pipeline import Pipeline
