@@ -8,6 +8,7 @@ from ..testing_utils import make_ecommerce_entityset
 
 from featuretools import Timedelta
 from featuretools.computational_backends import PandasBackend
+from featuretools.primitive_utils import Feature, make_trans_primitive, DirectFeature
 from featuretools.primitives import (
     Absolute,
     Add,
@@ -19,10 +20,8 @@ from featuretools.primitives import (
     CumSum,
     Day,
     Diff,
-    DirectFeature,
     Divide,
     Equals,
-    Feature,
     GreaterThan,
     GreaterThanEqualTo,
     Haversine,
@@ -45,8 +44,7 @@ from featuretools.primitives import (
     Percentile,
     Subtract,
     Sum,
-    get_transform_primitives,
-    make_trans_primitive
+    get_transform_primitives
 )
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable

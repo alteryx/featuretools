@@ -26,11 +26,9 @@ from featuretools.computational_backends.utils import (
     get_next_chunk,
     n_jobs_to_workers
 )
+from featuretools.primitive_utils import AggregationPrimitive, DirectFeature, IdentityFeature
 from featuretools.primitives import (
-    AggregationPrimitive,
     Count,
-    DirectFeature,
-    IdentityFeature,
     Max,
     Min,
     Percentile,

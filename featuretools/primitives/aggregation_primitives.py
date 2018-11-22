@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 
-from .aggregation_primitive_base import (
+from featuretools.primitive_utils.aggregation_primitive_base import (
     AggregationPrimitive,
     make_agg_primitive
 )

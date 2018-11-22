@@ -9,18 +9,21 @@ import pytest
 from ..testing_utils import feature_with_name, make_ecommerce_entityset
 
 import featuretools as ft
+from featuretools.primitive_utils import (
+    AggregationPrimitive,
+    Feature,
+    make_agg_primitive
+)
 from featuretools.primitives import (
     AggregationPrimitive,
     Count,
-    Feature,
     Mean,
     Median,
     NMostCommon,
     NumTrue,
     Sum,
     TimeSinceLast,
-    get_aggregation_primitives,
-    make_agg_primitive
+    get_aggregation_primitives
 )
 from featuretools.synthesis.deep_feature_synthesis import (
     DeepFeatureSynthesis,

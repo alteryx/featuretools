@@ -3,9 +3,9 @@ from builtins import str
 
 import numpy as np
 
-from .primitive_base import PrimitiveBase
-from .transform_primitive import TransformPrimitive
-from .utils import apply_dual_op_from_feat
+from featuretools.primitive_utils.primitive_base import PrimitiveBase
+from featuretools.primitive_utils.transform_primitive_base import TransformPrimitive
+from featuretools.primitive_utils.utils import apply_dual_op_from_feat
 
 from featuretools.variable_types import (
     Boolean,

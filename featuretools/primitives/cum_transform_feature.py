@@ -5,9 +5,9 @@ import numpy as np
 import pandas as pd
 
 from .aggregation_primitives import Count, Max, Mean, Min, Sum
-from .primitive_base import IdentityFeature, PrimitiveBase
-from .transform_primitive import TransformPrimitive
-from .utils import apply_dual_op_from_feat
+from featuretools.primitive_utils.primitive_base import IdentityFeature, PrimitiveBase
+from featuretools.primitive_utils.transform_primitive_base import TransformPrimitive
+from featuretools.primitive_utils.utils import apply_dual_op_from_feat
 
 from featuretools.utils import is_string
 from featuretools.utils.wrangle import _check_timedelta
