@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from sklearn.base import TransformerMixin
 
 from featuretools.computational_backends import calculate_feature_matrix
