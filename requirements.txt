@@ -9,3 +9,4 @@ future>=0.16.0
 dask>=0.19.4
 distributed>=1.23.3
 psutil>=5.4.8
+click>=7.0.0
