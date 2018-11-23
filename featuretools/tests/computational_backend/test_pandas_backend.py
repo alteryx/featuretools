@@ -12,6 +12,7 @@ from ..testing_utils import make_ecommerce_entityset
 import featuretools as ft
 from featuretools import Timedelta
 from featuretools.computational_backends.pandas_backend import PandasBackend
+from featuretools.primitive_utils import DirectFeature
 from featuretools.primitives import (
     And,
     Count,
@@ -29,7 +30,6 @@ from featuretools.primitives import (
     Sum,
     Trend
 )
-from featuretools.primitive_utils import DirectFeature
 
 
 @pytest.fixture(scope='module')

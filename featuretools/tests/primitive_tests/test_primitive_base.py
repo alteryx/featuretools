@@ -2,6 +2,7 @@ import pytest
 from pympler.asizeof import asizeof
 
 from ..testing_utils import make_ecommerce_entityset
+
 from featuretools.primitive_utils import Feature, IdentityFeature
 from featuretools.primitives import Last, Mode, Sum
 from featuretools.variable_types import Datetime, Numeric

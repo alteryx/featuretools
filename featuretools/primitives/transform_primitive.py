@@ -1,17 +1,15 @@
 from __future__ import division
 
-import copy
 import datetime
-import functools
-import os
 from builtins import str
 
 import numpy as np
 import pandas as pd
 
-from featuretools.primitive_utils.primitive_base import PrimitiveBase
-from featuretools.primitive_utils.transform_primitive_base import TransformPrimitive, make_trans_primitive
-
+from featuretools.primitive_utils.transform_primitive_base import (
+    TransformPrimitive,
+    make_trans_primitive
+)
 from featuretools.variable_types import (
     Boolean,
     Datetime,

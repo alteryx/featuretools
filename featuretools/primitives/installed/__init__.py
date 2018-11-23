@@ -1,4 +1,4 @@
-from featuretools.primitive_utils import PrimitiveBase, load_primitives_from_file, list_primitive_files, get_installation_dir
+from featuretools.primitive_utils import load_primitives_from_file, list_primitive_files, get_installation_dir
 
 
 # iterate over files in installed, import class that are right subclass

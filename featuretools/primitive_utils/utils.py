@@ -1,10 +1,7 @@
-from inspect import isclass
-
 import pandas as pd
 
 from .primitive_base import PrimitiveBase
 
-import featuretools.primitives
 from featuretools.utils import is_string
 
 try:

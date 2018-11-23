@@ -15,7 +15,6 @@ from featuretools.primitive_utils import (
     make_agg_primitive
 )
 from featuretools.primitives import (
-    AggregationPrimitive,
     Count,
     Mean,
     Median,

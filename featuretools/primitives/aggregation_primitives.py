@@ -10,7 +10,6 @@ from featuretools.primitive_utils.aggregation_primitive_base import (
     AggregationPrimitive,
     make_agg_primitive
 )
-
 from featuretools.variable_types import (
     Boolean,
     DatetimeTimeIndex,

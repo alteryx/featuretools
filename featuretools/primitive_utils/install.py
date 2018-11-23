@@ -1,12 +1,14 @@
-import os
 import importlib.util
-from inspect import isclass
-from .primitive_base import PrimitiveBase
-from builtins import input
-from tqdm import tqdm
-import featuretools
+import os
 import shutil
+from builtins import input
+from inspect import isclass
+
 from tqdm import tqdm
+
+from .primitive_base import PrimitiveBase
+
+import featuretools
 
 
 def install_primitives(directory, prompt=True):
@@ -36,6 +38,7 @@ def install_primitives(directory, prompt=True):
     installation_dir = get_installation_dir()
     for to_copy in tqdm(files_to_copy):
         shutil.copy2(to_copy, installation_dir)
+
 
 def get_installation_dir():
     "return the path to the installation directory with in featuretools"
@@ -69,6 +72,3 @@ def load_primitives_from_file(filepath):
             primitives[primitive_name] = primitive_class
 
     return primitives
-
-
-

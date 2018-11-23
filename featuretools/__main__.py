@@ -1,17 +1,21 @@
 import click
-from featuretools.primitive_utils import install_primitives
-import featuretools
 import pandas as pd
+
+import featuretools
+from featuretools.primitive_utils import install_primitives
+
 
 @click.group()
 def cli():
     pass
+
 
 @click.command()
 @click.option('--prompt', default=False, help='Confirm primitives before installing')
 @click.argument('directory')
 def install(prompt, directory):
     install_primitives(directory, prompt)
+
 
 @click.command()
 def list_primitives():

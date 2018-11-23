@@ -1,6 +1,9 @@
-import pandas as pd
-import featuretools
 from inspect import isclass
+
+import pandas as pd
+
+import featuretools
+
 
 def get_aggregation_primitives():
     aggregation_primitives = set([])

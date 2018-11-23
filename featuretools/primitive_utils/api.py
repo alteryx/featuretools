@@ -3,6 +3,16 @@ from .aggregation_primitive_base import (
     AggregationPrimitive,
     make_agg_primitive
 )
-from .primitive_base import PrimitiveBase, IdentityFeature, DirectFeature, Feature
+from .install import (
+    get_installation_dir,
+    install_primitives,
+    list_primitive_files,
+    load_primitives_from_file
+)
+from .primitive_base import (
+    DirectFeature,
+    Feature,
+    IdentityFeature,
+    PrimitiveBase
+)
 from .transform_primitive_base import TransformPrimitive, make_trans_primitive
-from .install import install_primitives, load_primitives_from_file, list_primitive_files, get_installation_dir

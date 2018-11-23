@@ -1,8 +1,14 @@
-import featuretools
-from featuretools.primitive_utils import install_primitives, PrimitiveBase, load_primitives_from_file, list_primitive_files, get_installation_dir
 import os
-import pytest
 import subprocess
+
+import pytest
+
+from featuretools.primitive_utils import (
+    PrimitiveBase,
+    get_installation_dir,
+    list_primitive_files,
+    load_primitives_from_file
+)
 
 
 @pytest.fixture(scope='module')
@@ -28,8 +34,8 @@ def test_install_primitives(primitives_to_install_dir):
 
     # due to how python modules are loaded/reloaded, do the installation
     # and check for installed primitives in subprocesses
-    subprocess.check_output(['featuretools',"install", primitives_to_install_dir])
-    result = str(subprocess.check_output(['featuretools',"list-primitives"]))
+    subprocess.check_output(['featuretools', "install", primitives_to_install_dir])
+    result = str(subprocess.check_output(['featuretools', "list-primitives"]))
 
     # make sure the custom primitives are there
     assert "custommax" in result
@@ -57,11 +63,8 @@ def test_load_primitives_from_file(primitives_to_install_dir):
     assert len(primitive_1) == 1
     assert issubclass(primitive_1["CustomSum"], PrimitiveBase)
 
-
     primitive_2_file = os.path.join(primitives_to_install_dir, "primitive_2.py")
     primitive_2 = load_primitives_from_file(primitive_2_file)
     assert len(primitive_2) == 2
     assert issubclass(primitive_2["CustomMean"], PrimitiveBase)
     assert issubclass(primitive_2["CustomMax"], PrimitiveBase)
-
-

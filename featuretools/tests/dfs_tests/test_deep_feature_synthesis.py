@@ -11,7 +11,14 @@ from pympler.asizeof import asizeof
 from ..testing_utils import feature_with_name, make_ecommerce_entityset
 
 import featuretools as ft
-from featuretools.primitive_utils import Feature, AggregationPrimitive, DirectFeature, TransformPrimitive, IdentityFeature, make_agg_primitive
+from featuretools.primitive_utils import (
+    AggregationPrimitive,
+    DirectFeature,
+    Feature,
+    IdentityFeature,
+    TransformPrimitive,
+    make_agg_primitive
+)
 from featuretools.primitives import (
     Absolute,
     Add,
@@ -23,7 +30,7 @@ from featuretools.primitives import (
     Mean,
     Mode,
     Sum,
-    TimeSincePrevious,
+    TimeSincePrevious
 )
 from featuretools.synthesis import DeepFeatureSynthesis
 from featuretools.utils.pickle_utils import save_obj_pickle
