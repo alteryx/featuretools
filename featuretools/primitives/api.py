@@ -8,3 +8,5 @@ from .utils import (
     get_transform_primitives,
     list_primitives
 )
+
+from .installed import *
