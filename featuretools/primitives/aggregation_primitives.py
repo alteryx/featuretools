@@ -355,39 +355,6 @@ class Trend(AggregationPrimitive):
         return pd_trend
 
 
-# # TODO: Not implemented yet
-# class ConseqPos(AggregationPrimitive):
-#     name = "conseq_pos"
-#     input_types =  [(variable_types.Numeric,),
-#                 (variable_types.Ordinal,)]
-#     return_type = variable_types.Numeric
-#     max_stack_depth = 1
-#     stack_on = []
-#     stack_on_exclude = []
-
-#     def get_function(self):
-#         raise NotImplementedError("This feature has not been implemented")
-
-
-# # TODO: Not implemented yet
-# class ConseqSame(AggregationPrimitive):
-#     name = "conseq_same"
-#     input_types =  [(variable_types.Categorical,),
-#                 (variable_types.Ordinal,),
-#                 (variable_types.Numeric,)]
-#     return_type = variable_types.Numeric
-#     max_stack_depth = 1
-#     stack_on = []
-#     stack_on_exclude = []
-
-#     def get_function(self):
-#         raise NotImplementedError("This feature has not been implemented")
-
-
-# # TODO: Not implemented yet
-# class TimeSinceLast(AggregationPrimitive):
-
-
 def convert_datetime_to_floats(x):
     first = int(x.iloc[0].value * 1e-9)
     x = pd.to_numeric(x).astype(np.float64).values

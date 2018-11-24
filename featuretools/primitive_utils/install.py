@@ -1,6 +1,7 @@
 import importlib.util
 import os
 import shutil
+import tarfile
 from builtins import input
 from inspect import isclass
 
@@ -11,8 +12,25 @@ from .primitive_base import PrimitiveBase
 import featuretools
 
 
-def install_primitives(directory, prompt=True):
+def install_primitives(directory_or_archive, prompt=True):
     """Install primitives from the provided directory"""
+    tmp_dir = get_installation_temp_dir()
+
+    # if archive, extract directory to temp folders
+    if not os.path.isdir(directory_or_archive):
+        if (directory_or_archive.endswith("tar.gz")):
+            tar = tarfile.open(directory_or_archive, mode='r:gz')
+            tar.extractall(tmp_dir)
+        elif (directory_or_archive.endswith("tar")):
+            tar = tarfile.open(directory_or_archive, "r:")
+            tar.extractall(tmp_dir)
+
+        # figure out the directory name from any file in archive
+        directory = os.path.dirname(tar.getnames()[0])
+
+        tar.close()
+    else:
+        directory = directory_or_archive
 
     # Iterate over all the files and determine how the primitives
     # to install
@@ -39,12 +57,22 @@ def install_primitives(directory, prompt=True):
     for to_copy in tqdm(files_to_copy):
         shutil.copy2(to_copy, installation_dir)
 
+    try:
+        shutil.rmtree(tmp_dir)
+    except FileNotFoundError:
+        pass
+
 
 def get_installation_dir():
     "return the path to the installation directory with in featuretools"
     featuretools_install_dir = os.path.dirname(featuretools.__file__)
     installation_dir = os.path.join(featuretools_install_dir, "primitives", "installed")
     return installation_dir
+
+
+def get_installation_temp_dir():
+    "return the path to the installation directory with in featuretools"
+    return os.path.join(get_installation_dir(), ".tmp/")
 
 
 def list_primitive_files(directory):
