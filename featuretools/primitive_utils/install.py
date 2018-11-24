@@ -1,4 +1,10 @@
-import importlib.util
+try:
+    # for python 3
+    import importlib.util
+except:
+    # for python 2
+    import imp
+
 import os
 import shutil
 import tarfile
@@ -26,7 +32,7 @@ def install_primitives(directory_or_archive, prompt=True):
             tar.extractall(tmp_dir)
 
         # figure out the directory name from any file in archive
-        directory = os.path.dirname(tar.getnames()[0])
+        directory = os.path.join(tmp_dir, os.path.dirname(tar.getnames()[0]))
 
         tar.close()
     else:
@@ -57,10 +63,8 @@ def install_primitives(directory_or_archive, prompt=True):
     for to_copy in tqdm(files_to_copy):
         shutil.copy2(to_copy, installation_dir)
 
-    try:
+    if os.path.exists(tmp_dir):
         shutil.rmtree(tmp_dir)
-    except FileNotFoundError:
-        pass
 
 
 def get_installation_dir():
@@ -88,13 +92,19 @@ def list_primitive_files(directory):
 
 def load_primitives_from_file(filepath):
     """load primitive objects in a file"""
-    # TODO: what is "module.name"?
-    spec = importlib.util.spec_from_file_location("module.name", filepath)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+
+    try:
+        # TODO: what is the first argument"?
+        # for python >3.5
+        spec = importlib.util.spec_from_file_location(filepath, filepath)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+    except:
+        # for python 2.7
+        module = imp.load_source(filepath, filepath)
 
     primitives = {}
-    for primitive_name in dir(module):
+    for primitive_name in vars(module):
         primitive_class = getattr(module, primitive_name)
         if isclass(primitive_class) and issubclass(primitive_class, PrimitiveBase):
             primitives[primitive_name] = primitive_class

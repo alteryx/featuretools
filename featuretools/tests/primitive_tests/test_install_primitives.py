@@ -32,11 +32,11 @@ def test_install_primitives(primitives_to_install_dir, primitives_to_install_arc
     # make sure primitive files aren't there e.g from a failed run
     try:
         os.unlink(primitive_1_file)
-    except:
+    except Exception:
         pass
     try:
         os.unlink(primitive_2_file)
-    except:
+    except Exception:
         pass
 
     # test install from directory and archive
