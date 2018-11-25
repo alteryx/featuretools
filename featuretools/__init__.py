@@ -5,7 +5,7 @@ from . import variable_types
 from .entityset.api import *
 from . import primitives
 from .synthesis.api import *
-from .primitive_utils import Feature
+from .primitive_utils import Feature, install_primitives
 from .primitives import  list_primitives
 from .computational_backends.api import *
 from . import tests
