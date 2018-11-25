@@ -1,68 +1,72 @@
-try:
-    # for python 3
-    import importlib.util
-except:
-    # for python 2
-    import imp
-
 import os
 import shutil
+import sys
 import tarfile
 from builtins import input
 from inspect import isclass
 
+from smart_open import smart_open
 from tqdm import tqdm
 
 from .primitive_base import PrimitiveBase
 
 import featuretools
 
+IS_PY2 = (sys.version_info[0] == 2)
+
+
+if IS_PY2:
+    import imp
+else:
+    import importlib.util
+
+if IS_PY2:
+    from six.moves.urllib.parse import urlparse
+else:
+    from urllib.parse import urlparse
+
 
 def install_primitives(directory_or_archive, prompt=True):
     """Install primitives from the provided directory"""
     tmp_dir = get_installation_temp_dir()
 
+    # if it isn't local, download it. if remote, it must be archive
+    if not (os.path.isdir(directory_or_archive) or os.path.isfile(directory_or_archive)):
+        directory_or_archive = download_archive(directory_or_archive)
+
     # if archive, extract directory to temp folders
-    if not os.path.isdir(directory_or_archive):
-        if (directory_or_archive.endswith("tar.gz")):
-            tar = tarfile.open(directory_or_archive, mode='r:gz')
-            tar.extractall(tmp_dir)
-        elif (directory_or_archive.endswith("tar")):
-            tar = tarfile.open(directory_or_archive, "r:")
-            tar.extractall(tmp_dir)
-
-        # figure out the directory name from any file in archive
-        directory = os.path.join(tmp_dir, os.path.dirname(tar.getnames()[0]))
-
-        tar.close()
+    if os.path.isfile(directory_or_archive):
+        directory = extract_archive(directory_or_archive)
     else:
         directory = directory_or_archive
 
-    # Iterate over all the files and determine how the primitives
-    # to install
+    # Iterate over all the files and determine the primitives to install
     files = list_primitive_files(directory)
     all_primitives = {}
     files_to_copy = []
     for filepath in files:
-        primitives = load_primitives_from_file(filepath)
-        # TODO: check if primitive is already installed. if it is, don't try to reinstall
-        if len(primitives):
-            all_primitives.update(primitives)
-            files_to_copy.append(filepath)
+        primitive_name, primitive_obj = load_primitive_from_file(filepath)
+        files_to_copy.append(filepath)
+        all_primitives[primitive_name] = primitive_obj
 
     # before installing, confirm with user
+    primitives_list = ", ".join(all_primitives.keys())
     if prompt:
-        resp = input("Install %d primitives? (Y/n)" % len(all_primitives))
-        if resp != "Y":
-            return
+        while True:
+            resp = input("Install primitives: %s? (Y/n) " % primitives_list)
+            if resp == "Y":
+                break
+            elif resp == "n":
+                return
     else:
-        print("Installing %d primitives" % len(all_primitives))
+        print("Installing primitives: %s" % primitives_list)
 
     # copy the files
     installation_dir = get_installation_dir()
     for to_copy in tqdm(files_to_copy):
         shutil.copy2(to_copy, installation_dir)
 
+    # clean up tmp dir
     if os.path.exists(tmp_dir):
         shutil.rmtree(tmp_dir)
 
@@ -75,8 +79,42 @@ def get_installation_dir():
 
 
 def get_installation_temp_dir():
-    "return the path to the installation directory with in featuretools"
+    """Returns the path to the installation directory with in featuretools.
+
+        If the directory, doesn't exist it is created
+    """
+    tmp_dir = os.path.join(get_installation_dir(), ".tmp/")
+    if not os.path.exists(tmp_dir):
+        os.makedirs(tmp_dir)
     return os.path.join(get_installation_dir(), ".tmp/")
+
+
+def download_archive(uri):
+    # determine where to save locally
+    filename = os.path.basename(urlparse(uri).path)
+    local_archive = os.path.join(get_installation_temp_dir(), filename)
+    with open(local_archive, 'wb') as f:
+        remote_archive = smart_open(uri, 'rb', ignore_extension=True)
+        f.write(remote_archive.read())
+
+    return local_archive
+
+
+def extract_archive(filepath):
+    if (filepath.endswith("tar.gz")):
+        tar = tarfile.open(filepath, mode='r:gz')
+    elif (filepath.endswith("tar")):
+        tar = tarfile.open(filepath, "r:")
+
+    tmp_dir = get_installation_temp_dir()
+    members = [m for m in tar.getmembers() if check_valid_primitive_path(m.path)]
+    tar.extractall(tmp_dir, members=members)
+    tar.close()
+
+    # figure out the directory name from any file in archive
+    directory = os.path.join(tmp_dir, os.path.dirname(members[0].path))
+
+    return directory
 
 
 def list_primitive_files(directory):
@@ -84,29 +122,45 @@ def list_primitive_files(directory):
     files = os.listdir(directory)
     keep = []
     for path in files:
-        if path[:2] == "__" or path[0] == "." or path[-3:] != ".py":
+        if not check_valid_primitive_path(path):
             continue
         keep.append(os.path.join(directory, path))
     return keep
 
 
-def load_primitives_from_file(filepath):
-    """load primitive objects in a file"""
+def check_valid_primitive_path(path):
+    if os.path.isdir(path):
+        return False
 
-    try:
+    filename = os.path.basename(path)
+
+    if filename[:2] == "__" or filename[0] == "." or filename[-3:] != ".py":
+        return False
+
+    return True
+
+
+def load_primitive_from_file(filepath):
+    """load primitive objects in a file"""
+    if IS_PY2:
+        # for python 2.7
+        module = imp.load_source(filepath, filepath)
+    else:
         # TODO: what is the first argument"?
         # for python >3.5
         spec = importlib.util.spec_from_file_location(filepath, filepath)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
-    except:
-        # for python 2.7
-        module = imp.load_source(filepath, filepath)
 
-    primitives = {}
+    primitives = []
     for primitive_name in vars(module):
         primitive_class = getattr(module, primitive_name)
         if isclass(primitive_class) and issubclass(primitive_class, PrimitiveBase):
-            primitives[primitive_name] = primitive_class
+            primitives.append((primitive_name, primitive_class))
 
-    return primitives
+    if len(primitives) == 0:
+        raise RuntimeError("No primitive defined in file")
+    elif len(primitives) > 1:
+        raise RuntimeError("More than one primitive defined in file")
+
+    return primitives[0]

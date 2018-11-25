@@ -6,8 +6,9 @@ import pytest
 from featuretools.primitive_utils import (
     PrimitiveBase,
     get_installation_dir,
+    install_primitives,
     list_primitive_files,
-    load_primitives_from_file
+    load_primitive_from_file
 )
 
 
@@ -26,25 +27,25 @@ def primitives_to_install_archive():
 
 def test_install_primitives(primitives_to_install_dir, primitives_to_install_archive):
     installation_dir = get_installation_dir()
-    primitive_1_file = os.path.join(installation_dir, "primitive_1.py")
-    primitive_2_file = os.path.join(installation_dir, "primitive_2.py")
+    custom_max_file = os.path.join(installation_dir, "custom_max.py")
+    custom_mean_file = os.path.join(installation_dir, "custom_mean.py")
+    custom_sum_file = os.path.join(installation_dir, "custom_sum.py")
 
     # make sure primitive files aren't there e.g from a failed run
-    try:
-        os.unlink(primitive_1_file)
-    except Exception:
-        pass
-    try:
-        os.unlink(primitive_2_file)
-    except Exception:
-        pass
+    for p in [custom_max_file, custom_mean_file, custom_sum_file]:
+        try:
+            os.unlink(p)
+        except Exception:
+            pass
 
     # test install from directory and archive
-    for install_path in [primitives_to_install_dir, primitives_to_install_archive]:
+    s3_archive = "s3://featuretools-static/primitives_to_install.tar.gz"
+    https_archive = "https://s3.amazonaws.com/featuretools-static/primitives_to_install.tar.gz"
+    for install_path in [primitives_to_install_dir, primitives_to_install_archive, s3_archive, https_archive]:
+        install_primitives(install_path, prompt=False)
 
-        # due to how python modules are loaded/reloaded, do the installation
-        # and check for installed primitives in subprocesses
-        subprocess.check_output(['featuretools', "install", install_path])
+        # due to how python modules are loaded/reloaded check for installed
+        # primitives in subprocesses
         result = str(subprocess.check_output(['featuretools', "list-primitives"]))
 
         # make sure the custom primitives are there
@@ -53,7 +54,7 @@ def test_install_primitives(primitives_to_install_dir, primitives_to_install_arc
         assert "customsum" in result
 
         files = list_primitive_files(installation_dir)
-        assert set(files) == {primitive_1_file, primitive_2_file}
+        assert set(files) == {custom_max_file, custom_mean_file, custom_sum_file}
 
         # then delete to clean up
         for f in files:
@@ -62,19 +63,27 @@ def test_install_primitives(primitives_to_install_dir, primitives_to_install_arc
 
 def test_list_primitive_files(primitives_to_install_dir):
     files = list_primitive_files(primitives_to_install_dir)
-    primitive_1_file = os.path.join(primitives_to_install_dir, "primitive_1.py")
-    primitive_2_file = os.path.join(primitives_to_install_dir, "primitive_2.py")
-    assert set(files) == {primitive_1_file, primitive_2_file}
+    custom_max_file = os.path.join(primitives_to_install_dir, "custom_max.py")
+    custom_mean_file = os.path.join(primitives_to_install_dir, "custom_mean.py")
+    custom_sum_file = os.path.join(primitives_to_install_dir, "custom_sum.py")
+    assert set(files) == {custom_max_file, custom_mean_file, custom_sum_file}
 
 
-def test_load_primitives_from_file(primitives_to_install_dir):
-    primitive_1_file = os.path.join(primitives_to_install_dir, "primitive_1.py")
-    primitive_1 = load_primitives_from_file(primitive_1_file)
-    assert len(primitive_1) == 1
-    assert issubclass(primitive_1["CustomSum"], PrimitiveBase)
+def test_load_primitive_from_file(primitives_to_install_dir):
+    primitve_file = os.path.join(primitives_to_install_dir, "custom_max.py")
+    primitive_name, primitive_obj = load_primitive_from_file(primitve_file)
+    assert issubclass(primitive_obj, PrimitiveBase)
 
-    primitive_2_file = os.path.join(primitives_to_install_dir, "primitive_2.py")
-    primitive_2 = load_primitives_from_file(primitive_2_file)
-    assert len(primitive_2) == 2
-    assert issubclass(primitive_2["CustomMean"], PrimitiveBase)
-    assert issubclass(primitive_2["CustomMax"], PrimitiveBase)
+
+def test_errors_more_than_one_primitive_in_file(primitives_to_install_dir):
+    primitive_file = os.path.join(primitives_to_install_dir, ".multiple_primitives.py")
+    error_text = 'More than one primitive defined in file'
+    with pytest.raises(RuntimeError, match=error_text):
+        load_primitive_from_file(primitive_file)
+
+
+def test_errors_no_primitive_in_file(primitives_to_install_dir):
+    primitive_file = os.path.join(primitives_to_install_dir, ".no_primitives.py")
+    error_text = 'No primitive defined in file'
+    with pytest.raises(RuntimeError, match=error_text):
+        load_primitive_from_file(primitive_file)

@@ -7,7 +7,7 @@ from .install import (
     get_installation_dir,
     install_primitives,
     list_primitive_files,
-    load_primitives_from_file
+    load_primitive_from_file
 )
 from .primitive_base import (
     DirectFeature,
