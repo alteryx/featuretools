@@ -3,6 +3,7 @@
 import pickle
 
 import numpy as np
+import pandas as pd
 import pytest
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.model_selection import GridSearchCV, cross_val_score
@@ -37,7 +38,7 @@ def pipeline(es):
         ('ft', DFSTransformer(entityset=es,
                               target_entity="customers",
                               max_features=2)),
-        ('et', ExtraTreesClassifier(n_estimators=100))
+        ('et', ExtraTreesClassifier())
     ])
     return pipeline
 
@@ -98,3 +99,17 @@ def test_sklearn_gridsearchcv(es, df, pipeline):
     grid.fit(df['customer_id'].values, df.target.values)
 
     assert len(grid.predict(df['customer_id'].values)) == 15
+
+
+def test_sklearn_cuttoff(pipeline):
+    # Using cuttof_time to filter data
+    ct = pd.DataFrame()
+    ct['customer_id'] = [1, 2, 3]
+    ct['time'] = pd.to_datetime(['2014-1-1 04:00',
+                                 '2014-1-1 04:00',
+                                 '2014-1-1 04:00'])
+    ct['label'] = [True, True, False]
+
+    results = pipeline.fit(ct, y=ct.label.values).predict(ct)
+
+    assert len(results) == 3

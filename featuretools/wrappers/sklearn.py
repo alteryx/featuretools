@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+import numpy as np
+import pandas as pd
 from sklearn.base import TransformerMixin
 
 from featuretools.computational_backends import calculate_feature_matrix
@@ -94,25 +97,44 @@ class DFSTransformer(TransformerMixin):
             profile (bool, optional): Enables profiling if True.
 
         Example:
+
             .. code-block:: python
+
+                import numpy as np
+                import pandas as pd
+                from sklearn.pipeline import Pipeline
                 import featuretools as ft
-                from sklearn.preprocessing import StandardScaler
+                from sklearn.ensemble import ExtraTreesClassifier
 
                 # Get examle data
                 es = ft.demo.load_mock_customer(return_entityset=True)
                 df = es['customers'].df
+                df['target'] = np.random.randint(1,3, df.shape[0])
 
                 # Build dataset
                 pipeline = Pipeline(steps=[
-                    ('ft', dfsTransfomer(entityset=es,
-                                         target_entity="customers",
-                                         max_features=2)),
-                    ('sc', StandardScaler()),
+                    ('ft', ft.DFSTransformer(entityset=es,
+                                          target_entity="customers",
+                                          max_features=2)),
+                    ('et', ExtraTreesClassifier())
                 ])
 
-                # Fit and transform
-                pipeline.fit(df['customer_id'].values).transform(df['customer_id'].values)
+                # Fit and predict
+                pipeline.fit(df['customer_id'].values, y=df.target.values) \
+                        .predict(df['customer_id'].values)
+
+
+                # Cuttof time
+                ct = pd.DataFrame()
+                ct['customer_id'] = [1, 2, 3]
+                ct['time'] = pd.to_datetime(['2014-1-1 04:00',
+                                             '2014-1-1 04:00',
+                                             '2014-1-1 04:00'])
+                ct['label'] = [True, True, False]
+
+                pipeline.fit(ct, y=ct.label.values).predict(ct)
         """
+        self.feature_defs = []
         self.entities = entities
         self.relationships = relationships
         self.entityset = entityset
@@ -131,62 +153,103 @@ class DFSTransformer(TransformerMixin):
         self.verbose = verbose
         self.profile = profile
 
-    def fit(self, instance_ids, y=None):
+    def fit(self, cuttof_time_ids, y=None):
         """Wrapper for DFS
 
             Calculates a feature matrix and features given a dictionary of
             entities and a list of relationships.
 
             Args:
-                instance_ids (list): List of instances to calculate features
-                    on.
+                cuttof_time_ids (list | DataFrame): Instances filtered to
+                    calculate features on.
 
             See Also:
                 :func:`synthesis.dfs`
         """
-        self.feature_defs = dfs(entities=self.entities,
-                                relationships=self.relationships,
-                                entityset=self.entityset,
-                                target_entity=self.target_entity,
-                                instance_ids=instance_ids,
-                                agg_primitives=self.agg_primitives,
-                                trans_primitives=self.trans_primitives,
-                                allowed_paths=self.allowed_paths,
-                                max_depth=self.max_depth,
-                                ignore_entities=self.ignore_entities,
-                                ignore_variables=self.ignore_variables,
-                                seed_features=self.seed_features,
-                                drop_contains=self.drop_contains,
-                                drop_exact=self.drop_exact,
-                                where_primitives=self.where_primitives,
-                                max_features=self.max_features,
-                                features_only=True,
-                                verbose=self.verbose)
+        if isinstance(cuttof_time_ids, list) or \
+           isinstance(cuttof_time_ids, np.ndarray):
+
+            self.feature_defs = dfs(entities=self.entities,
+                                    relationships=self.relationships,
+                                    entityset=self.entityset,
+                                    target_entity=self.target_entity,
+                                    instance_ids=cuttof_time_ids,
+                                    agg_primitives=self.agg_primitives,
+                                    trans_primitives=self.trans_primitives,
+                                    allowed_paths=self.allowed_paths,
+                                    max_depth=self.max_depth,
+                                    ignore_entities=self.ignore_entities,
+                                    ignore_variables=self.ignore_variables,
+                                    seed_features=self.seed_features,
+                                    drop_contains=self.drop_contains,
+                                    drop_exact=self.drop_exact,
+                                    where_primitives=self.where_primitives,
+                                    max_features=self.max_features,
+                                    features_only=True,
+                                    verbose=self.verbose)
+        elif isinstance(cuttof_time_ids, pd.DataFrame):
+            self.feature_defs = dfs(entities=self.entities,
+                                    relationships=self.relationships,
+                                    entityset=self.entityset,
+                                    target_entity=self.target_entity,
+                                    cutoff_time=cuttof_time_ids,
+                                    agg_primitives=self.agg_primitives,
+                                    trans_primitives=self.trans_primitives,
+                                    allowed_paths=self.allowed_paths,
+                                    max_depth=self.max_depth,
+                                    ignore_entities=self.ignore_entities,
+                                    ignore_variables=self.ignore_variables,
+                                    seed_features=self.seed_features,
+                                    drop_contains=self.drop_contains,
+                                    drop_exact=self.drop_exact,
+                                    where_primitives=self.where_primitives,
+                                    max_features=self.max_features,
+                                    features_only=True,
+                                    verbose=self.verbose)
+        else:
+            raise TypeError('instance_ids must be a list or pd.DataFrame')
+
         return self
 
-    def transform(self, instance_ids):
+    def transform(self, cuttof_time_ids):
         """Wrapper for calculate_feature_matix
 
             Calculates a matrix for a given set of instance ids and calculation
             times.
 
             Args:
-                instance_ids (list): List of instances to calculate features
-                    on.
+                cuttof_time_ids (list | DataFrame): Instances filtered to
+                    calculate features on.
 
             See Also:
                 :func:`computational_backends.calculate_feature_matrix`
         """
-        X_transformed = calculate_feature_matrix(
-            features=self.feature_defs,
-            entityset=self.entityset,
-            instance_ids=instance_ids,
-            entities=self.entities,
-            relationships=self.relationships,
-            verbose=self.verbose,
-            profile=self.profile)
+        if isinstance(cuttof_time_ids, list) or \
+           isinstance(cuttof_time_ids, np.ndarray):
 
-        return X_transformed.loc[instance_ids]
+            X_transformed = calculate_feature_matrix(
+                features=self.feature_defs,
+                entityset=self.entityset,
+                instance_ids=cuttof_time_ids,
+                entities=self.entities,
+                relationships=self.relationships,
+                verbose=self.verbose,
+                profile=self.profile)
+            X_transformed = X_transformed.loc[cuttof_time_ids]
+        elif isinstance(cuttof_time_ids, pd.DataFrame):
+            ct = cuttof_time_ids
+            X_transformed = calculate_feature_matrix(
+                features=self.feature_defs,
+                entityset=self.entityset,
+                cutoff_time=cuttof_time_ids,
+                entities=self.entities,
+                relationships=self.relationships,
+                verbose=self.verbose,
+                profile=self.profile)
+            X_transformed = X_transformed.loc[ct[ct.columns[0]]]
+        else:
+            raise TypeError('instance_ids must be a list or pd.DataFrame')
+        return X_transformed
 
     def get_params(self, deep=True):
         out = {
