@@ -5,8 +5,9 @@ import tarfile
 from builtins import input
 from inspect import isclass
 
-from smart_open import smart_open
 from tqdm import tqdm
+
+from smart_open import smart_open
 
 from .primitive_base import PrimitiveBase
 
