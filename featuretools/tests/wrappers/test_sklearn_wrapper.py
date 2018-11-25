@@ -58,7 +58,7 @@ def test_sklearn_transformer(es, df):
     assert X_train.shape[1] == 2
 
 
-def test_sklearn_estimator(es, df, pipeline):
+def test_sklearn_estimator(df, pipeline):
     # Using with estimator
     pipeline.fit(df['customer_id'].values, y=df.target.values) \
             .predict(df['customer_id'].values)
@@ -67,7 +67,7 @@ def test_sklearn_estimator(es, df, pipeline):
     assert isinstance(result, (float))
 
 
-def test_sklearn_estimator_pickle(es, df, pipeline):
+def test_sklearn_estimator_pickle(df, pipeline):
     # Pickling / Unpickling Pipeline
     s = pickle.dumps(pipeline)
     pipe_pickled = pickle.loads(s)
@@ -76,7 +76,7 @@ def test_sklearn_estimator_pickle(es, df, pipeline):
     assert isinstance(result, (float))
 
 
-def test_sklearn_cross_val_score(es, df, pipeline):
+def test_sklearn_cross_val_score(df, pipeline):
     # Using with cross_val_score
     results = cross_val_score(pipeline,
                               X=df['customer_id'].values,
@@ -88,7 +88,7 @@ def test_sklearn_cross_val_score(es, df, pipeline):
     assert isinstance(results[1], (float))
 
 
-def test_sklearn_gridsearchcv(es, df, pipeline):
+def test_sklearn_gridsearchcv(df, pipeline):
     # Using with GridSearchCV
     params = {
         'et__max_depth': [5, 10]
