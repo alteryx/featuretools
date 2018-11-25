@@ -144,11 +144,11 @@ def load_primitive_from_file(filepath):
     """load primitive objects in a file"""
     if IS_PY2:
         # for python 2.7
-        module = imp.load_source(filepath, filepath)
+        module = imp.load_source("installed_primitive", filepath)
     else:
         # TODO: what is the first argument"?
         # for python >3.5
-        spec = importlib.util.spec_from_file_location(filepath, filepath)
+        spec = importlib.util.spec_from_file_location("installed_primitive", filepath)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
 

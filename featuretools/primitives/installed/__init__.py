@@ -1,4 +1,5 @@
-from featuretools.primitive_utils import load_primitive_from_file, list_primitive_files, get_installation_dir
+# flake8: noqa
+from featuretools.primitive_utils import load_primitive_from_file, list_primitive_files, get_installation_dir, Feature
 
 
 # iterate over files in installed, import class that are right subclass
