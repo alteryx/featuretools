@@ -38,7 +38,7 @@ def pipeline(es):
         ('ft', DFSTransformer(entityset=es,
                               target_entity="customers",
                               max_features=2)),
-        ('et', ExtraTreesClassifier())
+        ('et', ExtraTreesClassifier(n_estimators=10))
     ])
     return pipeline
 
@@ -110,6 +110,6 @@ def test_sklearn_cuttoff(pipeline):
                                  '2014-1-1 04:00'])
     ct['label'] = [True, True, False]
 
-    results = pipeline.fit(ct, y=ct.label.values).predict(ct)
+    results = pipeline.fit(ct, y=ct.label).predict(ct)
 
     assert len(results) == 3
