@@ -19,6 +19,12 @@ def primitives_to_install_dir():
 
 
 @pytest.fixture(scope='module')
+def bad_primitives_files_dir():
+    this_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(this_dir, "bad_primitive_files")
+
+
+@pytest.fixture(scope='module')
 def primitives_to_install_archive():
     # command to make this file: tar -zcvf primitives_to_install.tar.gz primitives_to_install/*.py
     this_dir = os.path.dirname(os.path.abspath(__file__))
@@ -75,15 +81,15 @@ def test_load_primitive_from_file(primitives_to_install_dir):
     assert issubclass(primitive_obj, PrimitiveBase)
 
 
-def test_errors_more_than_one_primitive_in_file(primitives_to_install_dir):
-    primitive_file = os.path.join(primitives_to_install_dir, ".multiple_primitives.py")
+def test_errors_more_than_one_primitive_in_file(bad_primitives_files_dir):
+    primitive_file = os.path.join(bad_primitives_files_dir, "multiple_primitives.py")
     error_text = 'More than one primitive defined in file'
     with pytest.raises(RuntimeError, match=error_text):
         load_primitive_from_file(primitive_file)
 
 
-def test_errors_no_primitive_in_file(primitives_to_install_dir):
-    primitive_file = os.path.join(primitives_to_install_dir, ".no_primitives.py")
+def test_errors_no_primitive_in_file(bad_primitives_files_dir):
+    primitive_file = os.path.join(bad_primitives_files_dir, "no_primitives.py")
     error_text = 'No primitive defined in file'
     with pytest.raises(RuntimeError, match=error_text):
         load_primitive_from_file(primitive_file)
