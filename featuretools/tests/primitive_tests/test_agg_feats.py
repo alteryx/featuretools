@@ -43,38 +43,6 @@ def es():
 
 
 @pytest.fixture
-def child_entity(es):
-    return es['customers']
-
-
-@pytest.fixture
-def grandchild_entity(es):
-    return es['sessions']
-
-
-@pytest.fixture
-def child(es, child_entity):
-    return Count(es['sessions']['id'],
-                 parent_entity=child_entity)
-
-
-@pytest.fixture
-def parent_class():
-    return Mean
-
-
-@pytest.fixture
-def parent_entity(es):
-    return es[u'régions']
-
-
-@pytest.fixture
-def parent(parent_class, parent_entity, child):
-    return make_parent_instance(parent_class,
-                                parent_entity, child)
-
-
-@pytest.fixture
 def test_primitive():
     class TestAgg(AggregationPrimitive):
         name = "test"
@@ -86,11 +54,6 @@ def test_primitive():
             return None
 
     return TestAgg
-
-
-def make_parent_instance(parent_class, parent_entity, base_feature,
-                         where=None):
-    return parent_class(base_feature, parent_entity, where=where)
 
 
 def test_get_depth(es):
@@ -153,16 +116,18 @@ def test_count_null_and_make_agg_primitive(es):
     assert (values == feature_matrix[count_null.get_name()]).all()
 
 
-def test_check_input_types(es, child, parent):
-    mean = parent
+def test_check_input_types(es):
+    count = Count(es["sessions"]["id"], es["customers"])
+    mean = Mean(count, es[u"régions"])
     assert mean._check_input_types()
-    boolean = child > 3
-    mean = make_parent_instance(Mean, es[u'régions'],
-                                child, where=boolean)
+
+    boolean = count > 3
+    mean = Mean(count, es[u"régions"], where=boolean)
     assert mean._check_input_types()
 
 
-def test_base_of_and_stack_on_heuristic(es, test_primitive, child):
+def test_base_of_and_stack_on_heuristic(es, test_primitive):
+    child = Count(es["sessions"]["id"], es["customers"])
     test_primitive.stack_on = []
     child.base_of = []
     assert not (check_stacking(test_primitive, [child]))
@@ -200,9 +165,9 @@ def test_base_of_and_stack_on_heuristic(es, test_primitive, child):
     assert (check_stacking(test_primitive, [child]))
 
 
-def test_stack_on_self(es, test_primitive, parent_entity):
+def test_stack_on_self(es, test_primitive):
     # test stacks on self
-    child = test_primitive(es['log']['value'], parent_entity)
+    child = test_primitive(es['log']['value'], es[u'régions'])
     test_primitive.stack_on = []
     child.base_of = []
     test_primitive.stack_on_self = False
@@ -217,9 +182,9 @@ def test_stack_on_self(es, test_primitive, parent_entity):
     assert not (check_stacking(test_primitive, [child]))
 
 
-def test_stack_expanding(es, test_primitive, parent_entity):
+def test_stack_expanding(es, test_primitive):
     test_primitive.input_types = [Discrete]
-    expanding_primitive = NMostCommon(es['sessions']['device_type'], parent_entity)
+    expanding_primitive = NMostCommon(es['sessions']['device_type'], es[u'régions'])
     assert not (check_stacking(test_primitive, [expanding_primitive]))
 
 
