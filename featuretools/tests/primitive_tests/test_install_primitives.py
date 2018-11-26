@@ -5,11 +5,11 @@ import pytest
 
 from featuretools.primitives.base import PrimitiveBase
 from featuretools.primitives.install import (
+    get_featuretools_root,
     get_installation_dir,
     install_primitives,
     list_primitive_files,
-    load_primitive_from_file,
-    get_featuretools_root
+    load_primitive_from_file
 )
 
 
