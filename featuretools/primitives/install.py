@@ -142,13 +142,14 @@ def check_valid_primitive_path(path):
 
 def load_primitive_from_file(filepath):
     """load primitive objects in a file"""
+    module = os.path.basename(filepath)[:-3]
     if IS_PY2:
         # for python 2.7
-        module = imp.load_source("installed_primitive", filepath)
+        module = imp.load_source(module, filepath)
     else:
         # TODO: what is the first argument"?
         # for python >3.5
-        spec = importlib.util.spec_from_file_location("installed_primitive", filepath)
+        spec = importlib.util.spec_from_file_location(module, filepath)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
 
