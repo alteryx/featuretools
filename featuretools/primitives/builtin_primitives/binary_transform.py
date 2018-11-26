@@ -3,11 +3,11 @@ from builtins import str
 
 import numpy as np
 
-from featuretools.primitive_utils.primitive_base import PrimitiveBase
-from featuretools.primitive_utils.transform_primitive_base import (
+from ..primitive_utils.primitive_base import PrimitiveBase
+from ..primitive_utils.transform_primitive_base import (
     TransformPrimitive
 )
-from featuretools.primitive_utils.utils import apply_dual_op_from_feat
+from ..primitive_utils.utils import apply_dual_op_from_feat
 from featuretools.variable_types import (
     Boolean,
     Datetime,

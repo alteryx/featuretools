@@ -10,7 +10,7 @@ import psutil
 from distributed import Client, LocalCluster
 from pandas.tseries.frequencies import to_offset
 
-from featuretools.primitive_utils import AggregationPrimitive, DirectFeature
+from featuretools.primitives.primitive_utils import AggregationPrimitive, DirectFeature
 from featuretools.utils.wrangle import _check_timedelta
 
 logger = logging.getLogger('featuretools.computational_backend')

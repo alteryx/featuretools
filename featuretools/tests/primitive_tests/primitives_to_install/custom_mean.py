@@ -1,4 +1,4 @@
-from featuretools.primitive_utils import make_agg_primitive
+from featuretools.primitives.primitive_utils import make_agg_primitive
 from featuretools.variable_types import Numeric
 
 CustomMean = make_agg_primitive(lambda x: sum(x) / len(x),

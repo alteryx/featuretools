@@ -6,7 +6,7 @@ from builtins import str
 import numpy as np
 import pandas as pd
 
-from featuretools.primitive_utils.transform_primitive_base import (
+from ..primitive_utils.transform_primitive_base import (
     TransformPrimitive,
     make_trans_primitive
 )

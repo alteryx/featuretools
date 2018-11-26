@@ -8,7 +8,7 @@ from ..utils import gen_utils as utils
 
 from featuretools import variable_types
 from featuretools.exceptions import UnknownFeature
-from featuretools.primitive_utils import (
+from featuretools.primitives.primitive_utils import (
     AggregationPrimitive,
     DirectFeature,
     IdentityFeature,

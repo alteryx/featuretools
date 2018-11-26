@@ -4,7 +4,7 @@ from collections import defaultdict
 
 import featuretools.primitives.api as ftypes
 from featuretools import variable_types
-from featuretools.primitive_utils import AggregationPrimitive, DirectFeature
+from featuretools.primitives.primitive_utils import AggregationPrimitive, DirectFeature
 from featuretools.primitives.api import (
     BinaryFeature,
     Compare,
