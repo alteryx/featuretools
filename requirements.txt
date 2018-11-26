@@ -11,3 +11,4 @@ distributed>=1.23.3
 psutil>=5.4.8
 click>=7.0.0
 smart_open>=1.7.1
+s3fs>0.1.5

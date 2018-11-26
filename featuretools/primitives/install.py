@@ -5,6 +5,7 @@ import tarfile
 from builtins import input
 from inspect import isclass
 
+import s3fs
 from smart_open import smart_open
 from tqdm import tqdm
 
@@ -91,11 +92,20 @@ def get_installation_temp_dir():
 
 def download_archive(uri):
     # determine where to save locally
+    parsed = urlparse(uri)
     filename = os.path.basename(urlparse(uri).path)
     local_archive = os.path.join(get_installation_temp_dir(), filename)
+
     with open(local_archive, 'wb') as f:
-        remote_archive = smart_open(uri, 'rb', ignore_extension=True)
+        if parsed.scheme in ['s3', 's3n', 's3a']:
+            s3 = s3fs.S3FileSystem(anon=False)
+            remote_archive = s3.open(uri, 'rb')
+        else:
+            remote_archive = smart_open(uri, 'rb', ignore_extension=True)
+
         f.write(remote_archive.read())
+
+        remote_archive.close()
 
     return local_archive
 
