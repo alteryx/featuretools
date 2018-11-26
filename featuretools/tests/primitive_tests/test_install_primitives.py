@@ -7,7 +7,6 @@ from featuretools.primitives.base import PrimitiveBase
 from featuretools.primitives.install import (
     get_featuretools_root,
     get_installation_dir,
-    install_primitives,
     list_primitive_files,
     load_primitive_from_file
 )
@@ -55,7 +54,7 @@ def cleanup_installation():
 
 
 def do_installation(install_path):
-    install_primitives(install_path, prompt=False)
+    subprocess.check_output(['featuretools', "install", "--no-prompt", install_path])
 
     # due to how python modules are loaded/reloaded check for installed
     # primitives in subprocesses

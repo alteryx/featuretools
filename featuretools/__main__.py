@@ -18,7 +18,7 @@ def info():
 
 
 @click.command()
-@click.option('--prompt', default=True, help='Confirm primitives before installing')
+@click.option('--prompt/--no-prompt', default=True, help='Confirm primitives before installing')
 @click.argument('directory')
 def install(prompt, directory):
     install_primitives(directory, prompt)
