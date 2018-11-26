@@ -58,7 +58,9 @@ def do_installation(install_path):
 
     # due to how python modules are loaded/reloaded check for installed
     # primitives in subprocesses
+    print(str(subprocess.check_output(['featuretools', "info"])))
     result = str(subprocess.check_output(['featuretools', "list-primitives"]))
+    print(result)
 
     # make sure the custom primitives are there
     assert "custommax" in result

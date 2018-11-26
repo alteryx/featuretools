@@ -72,10 +72,13 @@ def install_primitives(directory_or_archive, prompt=True):
         shutil.rmtree(tmp_dir)
 
 
+def get_featuretools_root():
+    return os.path.dirname(featuretools.__file__)
+
+
 def get_installation_dir():
     "return the path to the installation directory with in featuretools"
-    featuretools_install_dir = os.path.dirname(featuretools.__file__)
-    installation_dir = os.path.join(featuretools_install_dir, "primitives", "installed")
+    installation_dir = os.path.join(get_featuretools_root(), "primitives", "installed")
     return installation_dir
 
 
