@@ -3,8 +3,8 @@ import subprocess
 
 import pytest
 
-from featuretools.primitives.primitive_utils import (
-    PrimitiveBase,
+from featuretools.primitives.base import PrimitiveBase
+from featuretools.primitives.install import (
     get_installation_dir,
     install_primitives,
     list_primitive_files,
@@ -47,7 +47,7 @@ def test_install_primitives(primitives_to_install_dir, primitives_to_install_arc
     # test install from directory and archive
     s3_archive = "s3://featuretools-static/primitives_to_install.tar.gz"
     https_archive = "https://s3.amazonaws.com/featuretools-static/primitives_to_install.tar.gz"
-    for install_path in [primitives_to_install_dir]:#, primitives_to_install_archive, s3_archive, https_archive]:
+    for install_path in [primitives_to_install_dir, primitives_to_install_archive, s3_archive, https_archive]:
         install_primitives(install_path, prompt=False)
 
         # due to how python modules are loaded/reloaded check for installed

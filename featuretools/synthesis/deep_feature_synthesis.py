@@ -4,7 +4,6 @@ from collections import defaultdict
 
 import featuretools.primitives.api as ftypes
 from featuretools import variable_types
-from featuretools.primitives.primitive_utils import AggregationPrimitive, DirectFeature
 from featuretools.primitives.api import (
     BinaryFeature,
     Compare,
@@ -13,6 +12,7 @@ from featuretools.primitives.api import (
     IdentityFeature,
     TimeSince
 )
+from featuretools.primitives.base import AggregationPrimitive, DirectFeature
 from featuretools.utils import is_string
 from featuretools.variable_types import Boolean, Categorical, Numeric, Ordinal
 

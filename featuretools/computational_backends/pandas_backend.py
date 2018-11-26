@@ -16,7 +16,7 @@ from .feature_tree import FeatureTree
 
 from featuretools import variable_types
 from featuretools.exceptions import UnknownFeature
-from featuretools.primitives.primitive_utils import (
+from featuretools.primitives.base import (
     AggregationPrimitive,
     DirectFeature,
     IdentityFeature,

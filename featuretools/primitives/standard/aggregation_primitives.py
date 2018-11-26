@@ -6,10 +6,11 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 
-from ..primitive_utils.aggregation_primitive_base import (
+from ..base.aggregation_primitive_base import (
     AggregationPrimitive,
     make_agg_primitive
 )
+
 from featuretools.variable_types import (
     Boolean,
     DatetimeTimeIndex,

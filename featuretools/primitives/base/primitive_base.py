@@ -150,7 +150,7 @@ class PrimitiveBase(object):
         See also:
             :meth:`PrimitiveBase.equal_to`
         """
-        from featuretools.primitives.binary_transform import Equals
+        from featuretools.primitives import Equals
         return Equals(self, other_feature_or_val)
 
     def __ne__(self, other_feature_or_val):
@@ -159,7 +159,7 @@ class PrimitiveBase(object):
         See also:
             :meth:`PrimitiveBase.not_equal_to`
         """
-        from featuretools.primitives.binary_transform import NotEquals
+        from featuretools.primitives import NotEquals
         return NotEquals(self, other_feature_or_val)
 
     def __gt__(self, other_feature_or_val):
@@ -168,7 +168,7 @@ class PrimitiveBase(object):
         See also:
             :meth:`PrimitiveBase.GT`
         """
-        from featuretools.primitives.binary_transform import GreaterThan
+        from featuretools.primitives import GreaterThan
         return GreaterThan(self, other_feature_or_val)
 
     def __ge__(self, other_feature_or_val):
@@ -177,7 +177,7 @@ class PrimitiveBase(object):
         See also:
             :meth:`PrimitiveBase.greater_than_equal_to`
         """
-        from featuretools.primitives.binary_transform import GreaterThanEqualTo
+        from featuretools.primitives import GreaterThanEqualTo
         return GreaterThanEqualTo(self, other_feature_or_val)
 
     def __lt__(self, other_feature_or_val):
@@ -186,7 +186,7 @@ class PrimitiveBase(object):
         See also:
             :meth:`PrimitiveBase.less_than`
         """
-        from featuretools.primitives.binary_transform import LessThan
+        from featuretools.primitives import LessThan
         return LessThan(self, other_feature_or_val)
 
     def __le__(self, other_feature_or_val):
@@ -195,16 +195,16 @@ class PrimitiveBase(object):
         See also:
             :meth:`PrimitiveBase.less_than_equal_to`
         """
-        from featuretools.primitives.binary_transform import LessThanEqualTo
+        from featuretools.primitives import LessThanEqualTo
         return LessThanEqualTo(self, other_feature_or_val)
 
     def __add__(self, other_feature_or_val):
         """Add other_feature_or_val"""
-        from featuretools.primitives.binary_transform import Add
+        from featuretools.primitives import Add
         return Add(self, other_feature_or_val)
 
     def __radd__(self, other):
-        from featuretools.primitives.binary_transform import Add
+        from featuretools.primitives import Add
         return Add(other, self)
 
     def __sub__(self, other_feature_or_val):
@@ -213,11 +213,11 @@ class PrimitiveBase(object):
         See also:
             :meth:`PrimitiveBase.subtract`
         """
-        from featuretools.primitives.binary_transform import Subtract
+        from featuretools.primitives import Subtract
         return Subtract(self, other_feature_or_val)
 
     def __rsub__(self, other):
-        from featuretools.primitives.binary_transform import Subtract
+        from featuretools.primitives import Subtract
         return Subtract(other, self)
 
     def __div__(self, other_feature_or_val):
@@ -226,18 +226,18 @@ class PrimitiveBase(object):
         See also:
             :meth:`PrimitiveBase.divide`
         """
-        from featuretools.primitives.binary_transform import Divide
+        from featuretools.primitives import Divide
         return Divide(self, other_feature_or_val)
 
     def __truediv__(self, other_feature_or_val):
         return self.__div__(other_feature_or_val)
 
     def __rtruediv__(self, other_feature_or_val):
-        from featuretools.primitives.binary_transform import Divide
+        from featuretools.primitives import Divide
         return Divide(other_feature_or_val, self)
 
     def __rdiv__(self, other_feature_or_val):
-        from featuretools.primitives.binary_transform import Divide
+        from featuretools.primitives import Divide
         return Divide(other_feature_or_val, self)
 
     def __mul__(self, other_feature_or_val):
@@ -246,11 +246,11 @@ class PrimitiveBase(object):
         See also:
             :meth:`PrimitiveBase.multiply`
         """
-        from featuretools.primitives.binary_transform import Multiply
+        from featuretools.primitives import Multiply
         return Multiply(self, other_feature_or_val)
 
     def __rmul__(self, other):
-        from featuretools.primitives.binary_transform import Multiply
+        from featuretools.primitives import Multiply
         return Multiply(other, self)
 
     def __mod__(self, other_feature_or_val):
@@ -259,64 +259,64 @@ class PrimitiveBase(object):
         See also:
             :meth:`PrimitiveBase.modulo`
         """
-        from featuretools.primitives.binary_transform import Mod
+        from featuretools.primitives import Mod
         return Mod(self, other_feature_or_val)
 
     def __and__(self, other):
         return self.AND(other)
 
     def __rand__(self, other):
-        from featuretools.primitives.binary_transform import And
+        from featuretools.primitives import And
         return And(other, self)
 
     def __or__(self, other):
         return self.OR(other)
 
     def __ror__(self, other):
-        from featuretools.primitives.binary_transform import Or
+        from featuretools.primitives import Or
         return Or(other, self)
 
     def __not__(self, other):
         return self.NOT(other)
 
     def __abs__(self):
-        from featuretools.primitives.transform_primitive import Absolute
+        from featuretools.primitives import Absolute
         return Absolute(self)
 
     def __neg__(self):
-        from featuretools.primitives.binary_transform import Negate
+        from featuretools.primitives import Negate
         return Negate(self)
 
     def AND(self, other_feature):
         """Logical AND with other_feature"""
-        from featuretools.primitives.binary_transform import And
+        from featuretools.primitives import And
         return And(self, other_feature)
 
     def OR(self, other_feature):
         """Logical OR with other_feature"""
-        from featuretools.primitives.binary_transform import Or
+        from featuretools.primitives import Or
         return Or(self, other_feature)
 
     def NOT(self):
         """Creates inverse of feature"""
-        from featuretools.primitives.transform_primitive import Not
-        from featuretools.primitives.binary_transform import Compare
+        from featuretools.primitives import Not
+        from featuretools.primitives import Compare
         if isinstance(self, Compare):
             return self.invert()
         return Not(self)
 
     def LIKE(self, like_string, case_sensitive=False):
-        from featuretools.primitives.transform_primitive import Like
+        from featuretools.primitives import Like
         return Like(self, like_string,
                     case_sensitive=case_sensitive)
 
     def isin(self, list_of_output):
-        from featuretools.primitives.transform_primitive import IsIn
+        from featuretools.primitives import IsIn
         return IsIn(self, list_of_outputs=list_of_output)
 
     def is_null(self):
         """Compares feature to null by equality"""
-        from featuretools.primitives.transform_primitive import IsNull
+        from featuretools.primitives import IsNull
         return IsNull(self)
 
     def __invert__(self):

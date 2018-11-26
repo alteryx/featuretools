@@ -4,16 +4,11 @@ from builtins import str
 import numpy as np
 import pandas as pd
 
+from ..base.primitive_base import IdentityFeature, PrimitiveBase
+from ..base.transform_primitive_base import TransformPrimitive
 from .aggregation_primitives import Count, Max, Mean, Min, Sum
+from .utils import apply_dual_op_from_feat
 
-from ..primitive_utils.primitive_base import (
-    IdentityFeature,
-    PrimitiveBase
-)
-from ..primitive_utils.transform_primitive_base import (
-    TransformPrimitive
-)
-from ..primitive_utils.utils import apply_dual_op_from_feat
 from featuretools.utils import is_string
 from featuretools.utils.wrangle import _check_timedelta
 from featuretools.variable_types import Id, Index, Numeric, TimeIndex
