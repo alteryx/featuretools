@@ -8,7 +8,8 @@ from featuretools.primitives.install import (
     get_installation_dir,
     install_primitives,
     list_primitive_files,
-    load_primitive_from_file
+    load_primitive_from_file,
+    get_featuretools_root
 )
 
 
@@ -61,6 +62,7 @@ def do_installation(install_path):
     print(str(subprocess.check_output(['featuretools', "info"])))
     result = str(subprocess.check_output(['featuretools', "list-primitives"]))
     print(result)
+    print("Featuretools installation directory: %s" % get_featuretools_root())
 
     # make sure the custom primitives are there
     assert "custommax" in result
