@@ -10,7 +10,7 @@ Deployment of machine learning models requires repeating feature engineering ste
 Saving Features
 ***************
 
-First, let's build some generate some training and test data in the same format. We use a random seed to generate different data for the test.
+First, let's build some generate some training and test data in the same format. We use a random seed to generate different data for the test. **Note**: features created in one version of Featuretools are not guaranteed to work in another. This means the features might need to be re-created after upgrading Featuretools.
 
 .. ipython:: python
 
