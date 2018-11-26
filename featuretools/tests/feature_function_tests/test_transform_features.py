@@ -619,7 +619,7 @@ def test_cum_sum_use_previous_and_where_absolute(es):
 
 def test_cum_handles_uses_full_entity(es):
     log_value_feat = es['log']['value']
-    for primitive in [CumSum, CumMean, CumMax, CumMax]:
+    for primitive in [CumSum, CumMean, CumMax, CumMin]:
         features = [primitive(log_value_feat, es['log']['session_id'])]
         pandas_backend = PandasBackend(es, features)
         df_1 = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2], time_last=None)
