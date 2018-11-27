@@ -35,7 +35,7 @@ First, we initialize an EntitySet and give it an ``id``
 
 .. ipython:: python
 
-    es = ft.EntitySet(id="transactions")
+    es = ft.EntitySet()
 
 
 Adding entities
