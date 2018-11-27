@@ -6,6 +6,7 @@ from builtins import input
 from inspect import isclass
 
 import s3fs
+from botocore.exceptions import NoCredentialsError
 from smart_open import smart_open
 from tqdm import tqdm
 
@@ -95,16 +96,16 @@ def get_installation_temp_dir():
 
 def download_archive(uri):
     # determine where to save locally
-    parsed = urlparse(uri)
     filename = os.path.basename(urlparse(uri).path)
     local_archive = os.path.join(get_installation_temp_dir(), filename)
 
     with open(local_archive, 'wb') as f:
-        if parsed.scheme in ['s3', 's3n', 's3a']:
-            s3 = s3fs.S3FileSystem(anon=False)
-            remote_archive = s3.open(uri, 'rb')
-        else:
+        try:
             remote_archive = smart_open(uri, 'rb', ignore_extension=True)
+        except NoCredentialsError:
+            # fallback to anonymous using s3fs
+            s3 = s3fs.S3FileSystem(anon=True)
+            remote_archive = s3.open(uri, 'rb')
 
         f.write(remote_archive.read())
 
