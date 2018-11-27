@@ -32,11 +32,8 @@ setup(
          'Programming Language :: Python :: 3.7'
     ],
     install_requires=open('requirements.txt').readlines(),
-    setup_requires=open('setup-requirements.txt').readlines(),
     python_requires='>=2.7, <4',
     cmdclass={'build_ext': build_ext},
-    test_suite='featuretools/tests',
-    tests_require=open('test-requirements.txt').readlines(),
     keywords='feature engineering data science machine learning',
     include_package_data=True,
     entry_points={
