@@ -1,0 +1,6 @@
+pytest==3.8.2
+mock==2.0.0
+pympler==0.6
+pytest-xdist==1.23.2
+pytest-cov==2.6.0
+fastparquet>=0.1.6

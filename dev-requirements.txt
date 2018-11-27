@@ -11,9 +11,3 @@ nbsphinx==0.3.5
 Sphinx==1.8.1
 sphinx_rtd_theme==0.4.2
 tox==3.5.3
-pytest==3.8.2
-mock==2.0.0
-pympler==0.6
-pytest-xdist==1.23.2
-pytest-cov==2.6.0
-fastparquet>=0.1.6
