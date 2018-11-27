@@ -1,11 +1,10 @@
 import os
-import subprocess
 
 import pytest
 
+import featuretools
 from featuretools.primitives.base import PrimitiveBase
 from featuretools.primitives.install import (
-    get_featuretools_root,
     get_installation_dir,
     list_primitive_files,
     load_primitive_from_file
@@ -54,19 +53,11 @@ def cleanup_installation():
 
 
 def do_installation(install_path):
-    subprocess.check_output(['featuretools', "install", "--no-prompt", install_path])
+    featuretools.primitives.install.install_primitives(install_path, prompt=False)
 
-    # due to how python modules are loaded/reloaded check for installed
-    # primitives in subprocesses
-    print(str(subprocess.check_output(['featuretools', "info"])))
-    result = str(subprocess.check_output(['featuretools', "list-primitives"]))
-    print(result)
-    print("Featuretools installation directory: %s" % get_featuretools_root())
-
-    # make sure the custom primitives are there
-    assert "custommax" in result
-    assert "custommean" in result
-    assert "customsum" in result
+    # must reload submodule for it to work
+    reload(featuretools.primitives.installed)
+    from featuretools.primitives.installed import CustomMax, CustomSum, CustomMean  # noqa: F401
 
     installation_dir = get_installation_dir()
     files = list_primitive_files(installation_dir)
