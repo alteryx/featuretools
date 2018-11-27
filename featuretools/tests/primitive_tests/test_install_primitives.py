@@ -10,6 +10,11 @@ from featuretools.primitives.install import (
     load_primitive_from_file
 )
 
+try:
+    from builtins import reload
+except Exception:
+    from importlib import reload
+
 
 @pytest.fixture(scope='module')
 def primitives_to_install_dir():
