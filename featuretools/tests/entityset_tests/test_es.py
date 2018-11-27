@@ -209,6 +209,18 @@ def test_add_parent_not_index_varible(entityset):
                                                 entityset['customers'][u'région_id']))
 
 
+def test_none_index():
+    df = pd.DataFrame({'category': [1, 2, 3], 'category2': ['1', '2', '3']})
+    vtypes = {'category': variable_types.Categorical, 'category2': variable_types.Categorical}
+
+    entityset = EntitySet(id='test')
+    entityset.entity_from_dataframe(entity_id='test_entity',
+                                    dataframe=df,
+                                    variable_types=vtypes)
+    assert entityset['test_entity'].index == 'category'
+    assert isinstance(entityset['test_entity']['category'], variable_types.Index)
+
+
 def test_unknown_index():
     # more variables
     df = pd.DataFrame({'category': ['a', 'b', 'a']})
@@ -922,3 +934,35 @@ def test_sizeof(entityset):
         total_size += entity.last_time_index.__sizeof__()
 
     assert entityset.__sizeof__() == total_size
+
+
+def test_construct_without_id():
+    assert ft.EntitySet().id is None
+
+
+def test_repr_without_id():
+    match = 'Entityset: None\n  Entities:\n  Relationships:\n    No relationships'
+    assert repr(ft.EntitySet()) == match
+
+
+def test_getitem_without_id():
+    error_text = 'Entity test does not exist'
+    with pytest.raises(KeyError, match=error_text):
+        ft.EntitySet()['test']
+
+
+def test_metadata_without_id():
+    es = ft.EntitySet()
+    assert es.create_metadata_dict().get('id') is None
+
+
+def test_to_pickle_id_none():
+    entityset = ft.EntitySet()
+    dirname = os.path.dirname(integration_data.__file__)
+    path = os.path.join(dirname, 'test_entityset.p')
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    entityset.to_pickle(path)
+    new_es = ft.read_pickle(path)
+    assert entityset.__eq__(new_es, deep=True)
+    shutil.rmtree(path)
