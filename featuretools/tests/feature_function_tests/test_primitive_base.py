@@ -108,6 +108,10 @@ def test_return_type_inference_numeric_time_index(es_numeric):
     assert last.variable_type == Numeric
 
 
-def test_return_type_inference_id(es_numeric):
-    mode = Mode(es_numeric["log"]["session_id"], es_numeric["customers"])
+def test_return_type_inference_id(es):
+    mode = Mode(es["log"]["session_id"], es["customers"])
     assert mode.variable_type == Categorical
+
+    # also test direct feature
+    mode_direct = Feature(mode, es["sessions"])
+    assert mode_direct.variable_type == Categorical
