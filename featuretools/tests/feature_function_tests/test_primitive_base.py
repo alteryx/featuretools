@@ -4,7 +4,7 @@ from pympler.asizeof import asizeof
 from ..testing_utils import make_ecommerce_entityset
 
 from featuretools.primitives import Feature, IdentityFeature, Last, Mode, Sum
-from featuretools.variable_types import Categorical, Datetime, Numeric
+from featuretools.variable_types import Categorical, Datetime, Id, Numeric
 
 
 @pytest.fixture(scope='module')
@@ -109,9 +109,14 @@ def test_return_type_inference_numeric_time_index(es_numeric):
 
 
 def test_return_type_inference_id(es):
+    # direct features should keep Id variable type
+    direct_id_feature = Feature(es["sessions"]["customer_id"], es["log"])
+    assert direct_id_feature.variable_type == Id
+
+    # aggregations of Id variable types should get converted
     mode = Mode(es["log"]["session_id"], es["customers"])
     assert mode.variable_type == Categorical
 
-    # also test direct feature
+    # also test direct feature of aggregation
     mode_direct = Feature(mode, es["sessions"])
     assert mode_direct.variable_type == Categorical
