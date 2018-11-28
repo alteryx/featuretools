@@ -7,5 +7,5 @@ pyyaml>=3.12
 cloudpickle>=0.4.0
 future>=0.16.0
 dask>=0.19.4
-distributed>=1.23.3
+distributed>=1.24.2
 psutil>=5.4.8
