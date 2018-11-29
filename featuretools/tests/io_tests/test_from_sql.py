@@ -21,11 +21,6 @@ def test_infers_index_column(sqlite):
     assert(es.entity_dict['customers'].index == 'id')
 
 
-def test_generates_index_column(sqlite):
-    es = ft.io.from_sql(id="widget_es", connection=sqlite)
-    assert(es.entity_dict['customers_widgets'].index == 'featuretools_sql_import_id')
-
-
 def test_infers_relationships(sqlite):
     es = ft.io.from_sql(id="widget_es", connection=sqlite)
     assert(len(es.relationships) == 3)

@@ -12,8 +12,7 @@ def from_sql(id, connection=None, connection_string=None, tables=None, **kwargs)
             connection = sa.create_engine(connection_string, echo=False).connect()
 
     loader = EntitySetLoaderFromSQL(connection=connection, id=id, passthrough_args=kwargs)
-    loader.load_tables(tables)
-    loader.load_relationships()
+    loader.load_entityset(tables)
     return loader.es
 
 
@@ -37,6 +36,10 @@ class EntitySetLoaderFromSQL:
         self.table_names = self._get_table_names()
         self.es = ft.EntitySet(id=id)
 
+    def load_entityset(self, tables):
+        self.load_tables(tables)
+        self.load_relationships()
+
     def _get_table_names(self):
         return list(self.metadata.tables.keys())
 
@@ -45,17 +48,15 @@ class EntitySetLoaderFromSQL:
 
     def _load_table(self, table_name):
         table = sa.Table(table_name, self.metadata, autoload=True)
-        index_name = _find_pk_name(table)
-        make_index = index_name is None
-        if make_index:
-            index_name = 'featuretools_sql_import_id'
         df = pd.read_sql(table.select(), table.metadata.bind)
+
         table_args = self._get_args_for_table(table_name)
+        if 'index' not in table_args:
+            table_args['index'] = _find_pk_name(table)
+
         return self.es.entity_from_dataframe(
             entity_id=table_name,
             dataframe=df,
-            index=index_name,
-            make_index=make_index,
             **table_args
         )
 
