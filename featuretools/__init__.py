@@ -12,4 +12,4 @@ from .utils.pickle_utils import *
 from .utils.time_utils import *
 import featuretools.demo
 
-__version__ = '0.4.0'
+__version__ = '0.4.1'
