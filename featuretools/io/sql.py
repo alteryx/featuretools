@@ -4,14 +4,17 @@ import sqlalchemy as sa
 import featuretools as ft
 
 
-def from_sql(id, connection=None, connection_string=None, tables=None, **kwargs):
+def from_sql(id, connection=None, connection_string=None, tables=None, index={},
+             time_index={}, secondary_time_index={}, encoding={}, variable_types={}):
     if connection is None:
         if connection_string is None:
             raise ValueError('connection or connection_string is required')
         else:
             connection = sa.create_engine(connection_string, echo=False).connect()
 
-    loader = EntitySetLoaderFromSQL(connection=connection, id=id, passthrough_args=kwargs)
+    loader = EntitySetLoaderFromSQL(connection=connection, id=id, index=index, time_index=time_index,
+                                    secondary_time_index=secondary_time_index, encoding=encoding,
+                                    variable_types=variable_types)
     loader.load_entityset(tables)
     return loader.es
 
@@ -28,7 +31,7 @@ def _find_pk_name(table):
 
 
 class EntitySetLoaderFromSQL:
-    def __init__(self, id, connection, passthrough_args):
+    def __init__(self, id, connection, **passthrough_args):
         self.connection = connection
         self.metadata = sa.MetaData(connection)
         self.metadata.reflect(bind=self.connection.engine)
@@ -51,7 +54,8 @@ class EntitySetLoaderFromSQL:
         df = pd.read_sql(table.select(), table.metadata.bind)
 
         table_args = self._get_args_for_table(table_name)
-        if 'index' not in table_args:
+        print("table_args:", table_args)
+        if 'index' not in table_args or table_args['index'] is None:
             table_args['index'] = _find_pk_name(table)
 
         return self.es.entity_from_dataframe(
