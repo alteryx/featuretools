@@ -39,7 +39,7 @@ class EntitySet(object):
     relationships = []
     name = None
 
-    def __init__(self, id, entities=None, relationships=None):
+    def __init__(self, id=None, entities=None, relationships=None):
         """Creates EntitySet
 
             Args:
