@@ -617,6 +617,21 @@ def test_cum_sum_use_previous_and_where_absolute(es):
         assert v == cvalues[i]
 
 
+def test_cum_handles_uses_full_entity(es):
+    def check(feature):
+        pandas_backend = PandasBackend(es, [feature])
+        df_1 = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2], time_last=None)
+        df_2 = pandas_backend.calculate_all_features(instance_ids=[2], time_last=None)
+
+        # check that the value for instance id 2 matches
+        assert (df_2.loc[2] == df_1.loc[2]).all()
+
+    for primitive in [CumSum, CumMean, CumMax, CumMin]:
+        check(primitive(es['log']['value'], es['log']['session_id']))
+
+    check(CumCount(es['log']['id'], es['log']['session_id']))
+
+
 def test_cum_mean(es):
     log_value_feat = es['log']['value']
     cum_mean = CumMean(log_value_feat, es['log']['session_id'])
