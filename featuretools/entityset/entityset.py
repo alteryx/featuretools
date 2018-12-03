@@ -1172,10 +1172,6 @@ class EntitySet(object):
             if not is_string(c):
                 raise ValueError("All column names must be strings (Column {} is not a string)".format(c))
 
-            if dataframe[c].dtype.name.find('category') > -1:
-                if c not in variable_types:
-                    variable_types[c] = vtypes.Categorical
-
         entity = Entity(entity_id,
                         dataframe,
                         self,
