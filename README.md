@@ -1,7 +1,7 @@
-<p align="center"> 
+<p align="center">
 <img width=50% src="https://www.featuretools.com/wp-content/uploads/2017/12/FeatureLabs-Logo-Tangerine-800.png" alt="Featuretools" />
 </p>
-<p align="center"> 
+<p align="center">
 <i>"One of the holy grails of machine learning is to automate more and more of the feature engineering process."</i> ― Pedro Domingos, <a href="https://bit.ly/things_to_know_ml">A Few Useful Things to Know about Machine Learning</a>
 
 </p>
@@ -11,7 +11,7 @@
 [![Circle CI](https://circleci.com/gh/Featuretools/featuretools.svg?maxAge=2592000&style=shield)](https://circleci.com/gh/Featuretools/featuretools)
 [![Coverage Status](https://codecov.io/gh/Featuretools/featuretools/branch/master/graph/badge.svg)](https://codecov.io/gh/Featuretools/featuretools)
 [![PyPI version](https://badge.fury.io/py/featuretools.svg?maxAge=2592000)](https://badge.fury.io/py/featuretools)
-[![Anaconda-Server Badge](https://anaconda.org/featuretools/featuretools/badges/version.svg)](https://anaconda.org/featuretools/featuretools)
+[![Anaconda-Server Badge](https://anaconda.org/conda-forge/featuretools/badges/version.svg)](https://anaconda.org/conda-forge/featuretools)
 [![StackOverflow](http://img.shields.io/badge/questions-on_stackoverflow-blue.svg)](https://stackoverflow.com/questions/tagged/featuretools)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/featuretools.svg)](https://pypistats.org/packages/featuretools)
 
@@ -24,10 +24,10 @@
 Install with pip
 
 	python -m pip install featuretools
-	
-or from the Featuretools channel on [conda](https://anaconda.org/Featuretools/featuretools):
 
-	conda install -c featuretools featuretools
+or from the Conda-forge channel on [conda](https://anaconda.org/conda-forge/featuretools):
+
+	conda install -c conda-forge featuretools
 
 ## Example
 Below is an example of using Deep Feature Synthesis (DFS) to perform automated feature engineering. In this example, we apply DFS to a multi-table dataset consisting of timestamped customer transactions.
