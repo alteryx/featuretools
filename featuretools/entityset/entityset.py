@@ -14,7 +14,7 @@ from .relationship import Relationship
 from .serialization import load_entity_data, write_entityset
 
 import featuretools.variable_types.variable as vtypes
-from featuretools.utils.gen_utils import is_string, make_tqdm_iterator
+from featuretools.utils.gen_utils import make_tqdm_iterator
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
@@ -1167,10 +1167,6 @@ class EntitySet(object):
 
         if time_index is not None and time_index not in dataframe.columns:
             raise LookupError('Time index not found in dataframe')
-
-        for c in dataframe.columns:
-            if not is_string(c):
-                raise ValueError("All column names must be strings (Column {} is not a string)".format(c))
 
         entity = Entity(entity_id,
                         dataframe,

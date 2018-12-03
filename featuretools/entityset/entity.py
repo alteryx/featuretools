@@ -66,6 +66,10 @@ class Entity(object):
         """
         assert is_string(id), "Entity id must be a string"
         assert len(df.columns) == len(set(df.columns)), "Duplicate column names"
+        for c in df.columns:
+            if not is_string(c):
+                raise ValueError("All column names must be strings (Column {} "
+                                 "is not a string)".format(c))
         self.data = {"df": df,
                      "last_time_index": last_time_index,
                      }
