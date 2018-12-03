@@ -70,6 +70,9 @@ class Entity(object):
             if not is_string(c):
                 raise ValueError("All column names must be strings (Column {} "
                                  "is not a string)".format(c))
+        if time_index is not None and time_index not in df.columns:
+            raise LookupError('Time index not found in dataframe')
+
         self.data = {"df": df,
                      "last_time_index": last_time_index,
                      }

@@ -1165,9 +1165,6 @@ class EntitySet(object):
             dataframe.insert(0, index, range(0, len(dataframe)))
             created_index = index
 
-        if time_index is not None and time_index not in dataframe.columns:
-            raise LookupError('Time index not found in dataframe')
-
         entity = Entity(entity_id,
                         dataframe,
                         self,
