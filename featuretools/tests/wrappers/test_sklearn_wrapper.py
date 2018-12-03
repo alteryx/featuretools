@@ -11,7 +11,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 from featuretools.demo.mock_customer import load_mock_customer
-from featuretools.wrappers.sklearn import DFSTransformer
+from featuretools.wrappers import DFSTransformer
 
 
 @pytest.fixture(scope='module')

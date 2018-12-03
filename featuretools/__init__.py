@@ -10,7 +10,7 @@ from .computational_backends.api import *
 from . import tests
 from .utils.pickle_utils import *
 from .utils.time_utils import *
-from .wrappers import DFSTransformer
 import featuretools.demo
+import featuretools.wrappers
 
 __version__ = '0.4.1'

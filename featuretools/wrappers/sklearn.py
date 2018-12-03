@@ -97,42 +97,45 @@ class DFSTransformer(TransformerMixin):
             profile (bool, optional): Enables profiling if True.
 
         Example:
+            .. ipython:: python
 
-            .. code-block:: python
-
-                import numpy as np
-                import pandas as pd
-                from sklearn.pipeline import Pipeline
                 import featuretools as ft
+                import pandas as pd
+
+                from sklearn.pipeline import Pipeline
                 from sklearn.ensemble import ExtraTreesClassifier
 
                 # Get examle data
-                es = ft.demo.load_mock_customer(return_entityset=True)
-                df = es['customers'].df
-                df['target'] = np.random.randint(1,3, df.shape[0])
+                n_customers = 3
+                es = ft.demo.load_mock_customer(return_entityset=True, n_customers=5)
+                y = [True, False, True]
 
                 # Build dataset
                 pipeline = Pipeline(steps=[
-                    ('ft', ft.DFSTransformer(entityset=es,
-                                          target_entity="customers",
-                                          max_features=2)),
+                    ('ft', ft.wrappers.DFSTransformer(entityset=es,
+                                                      target_entity="customers",
+                                                      max_features=3)),
                     ('et', ExtraTreesClassifier())
                 ])
 
                 # Fit and predict
-                pipeline.fit(df['customer_id'].values, y=df.target.values) \
-                        .predict(df['customer_id'].values)
+                pipeline.fit([1, 2, 3], y=y) # fit on first 3 customers
+                pipeline.predict_proba([4,5]) # predict probability of each class on last 2
+                pipeline.predict([4,5]) # predict on last 2
 
-
-                # Cuttof time
+                # Same as above, but using cutoff times
                 ct = pd.DataFrame()
-                ct['customer_id'] = [1, 2, 3]
+                ct['customer_id'] = [1, 2, 3, 4, 5]
                 ct['time'] = pd.to_datetime(['2014-1-1 04:00',
-                                             '2014-1-1 04:00',
-                                             '2014-1-1 04:00'])
-                ct['label'] = [True, True, False]
+                                             '2014-1-2 17:20',
+                                             '2014-1-4 09:53',
+                                             '2014-1-4 13:48',
+                                             '2014-1-5 15:32'])
 
-                pipeline.fit(ct, y=ct.label.values).predict(ct)
+                pipeline.fit(ct.head(3), y=y)
+                pipeline.predict_proba(ct.tail(2))
+                pipeline.predict(ct.tail(2))
+
         """
         self.feature_defs = []
         self.entities = entities
@@ -166,9 +169,7 @@ class DFSTransformer(TransformerMixin):
             See Also:
                 :func:`synthesis.dfs`
         """
-        if isinstance(cuttof_time_ids, list) or \
-           isinstance(cuttof_time_ids, np.ndarray):
-
+        if isinstance(cuttof_time_ids, (list, np.ndarray, pd.Series)):
             self.feature_defs = dfs(entities=self.entities,
                                     relationships=self.relationships,
                                     entityset=self.entityset,
@@ -187,6 +188,7 @@ class DFSTransformer(TransformerMixin):
                                     max_features=self.max_features,
                                     features_only=True,
                                     verbose=self.verbose)
+
         elif isinstance(cuttof_time_ids, pd.DataFrame):
             self.feature_defs = dfs(entities=self.entities,
                                     relationships=self.relationships,
@@ -207,7 +209,7 @@ class DFSTransformer(TransformerMixin):
                                     features_only=True,
                                     verbose=self.verbose)
         else:
-            raise TypeError('instance_ids must be a list or pd.DataFrame')
+            raise TypeError('instance_ids must be a list, np.ndarray, pd.Series, or pd.DataFrame')
 
         return self
 
@@ -224,9 +226,7 @@ class DFSTransformer(TransformerMixin):
             See Also:
                 :func:`computational_backends.calculate_feature_matrix`
         """
-        if isinstance(cuttof_time_ids, list) or \
-           isinstance(cuttof_time_ids, np.ndarray):
-
+        if isinstance(cuttof_time_ids, (list, np.ndarray, pd.Series)):
             X_transformed = calculate_feature_matrix(
                 features=self.feature_defs,
                 entityset=self.entityset,
