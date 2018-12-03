@@ -1141,12 +1141,6 @@ class EntitySet(object):
                 Defaults to False.
         """
         variable_types = variable_types or {}
-
-        # DFS TODO: confirm we want this if else block
-        if index is not None:
-            if index not in variable_types:
-                variable_types[index] = vtypes.Index
-
         entity = Entity(entity_id,
                         dataframe,
                         self,
