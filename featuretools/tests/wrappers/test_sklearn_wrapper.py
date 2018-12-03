@@ -9,11 +9,14 @@ from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.model_selection import GridSearchCV, cross_val_score
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, FunctionTransformer
 
 from featuretools.demo.mock_customer import load_mock_customer
 from featuretools.wrappers import DFSTransformer
 
+
+def select_numeric(df):
+    return df.select_dtypes(exclude=['object'])
 
 @pytest.fixture(scope='module')
 def es():
@@ -38,7 +41,8 @@ def pipeline(es):
     pipeline = Pipeline(steps=[
         ('ft', DFSTransformer(entityset=es,
                               target_entity="customers",
-                              max_features=2)),
+                              max_features=20)),
+        ("numeric", FunctionTransformer(select_numeric, validate=False)),
         ('imp', SimpleImputer()),
         ('et', ExtraTreesClassifier(n_estimators=10))
     ])
@@ -50,11 +54,12 @@ def test_sklearn_transformer(es, df):
     pipeline = Pipeline(steps=[
         ('ft', DFSTransformer(entityset=es,
                               target_entity="customers",
-                              max_features=2)),
+                              max_features=20)),
+        ("numeric", FunctionTransformer(select_numeric, validate=False)),
         ('sc', StandardScaler()),
     ])
-    X_train = pipeline.fit(df['customer_id'].values) \
-                      .transform(df['customer_id'].values)
+
+    X_train = pipeline.fit(df['customer_id']).transform(df['customer_id'])
 
     assert X_train.shape[0] == 15
     assert X_train.shape[1] == 2
@@ -68,13 +73,10 @@ def test_sklearn_estimator(df, pipeline):
 
     assert isinstance(result, (float))
 
-
-def test_sklearn_estimator_pickle(df, pipeline):
     # Pickling / Unpickling Pipeline
     s = pickle.dumps(pipeline)
     pipe_pickled = pickle.loads(s)
     result = pipe_pickled.score(df['customer_id'].values, df.target.values)
-
     assert isinstance(result, (float))
 
 
