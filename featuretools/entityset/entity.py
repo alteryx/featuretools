@@ -79,7 +79,6 @@ class Entity(object):
         self.encoding = encoding
         self._verbose = verbose
         self.created_index = created_index
-        self.convert_all_variable_data(variable_types)
         self.id = id
         self.entityset = entityset
         variable_types = variable_types or {}
@@ -100,9 +99,8 @@ class Entity(object):
 
         inferred_variable_types = self.infer_variable_types(ignore=list(variable_types.keys()),
                                                             link_vars=link_vars)
+
         for var_id, desired_type in variable_types.items():
-            if isinstance(desired_type, tuple):
-                desired_type = desired_type[0]
             inferred_variable_types.update({var_id: desired_type})
 
         self.variables = []
