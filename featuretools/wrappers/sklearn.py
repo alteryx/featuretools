@@ -115,7 +115,7 @@ class DFSTransformer(TransformerMixin):
                     ('ft', ft.wrappers.DFSTransformer(entityset=es,
                                                       target_entity="customers",
                                                       max_features=3)),
-                    ('et', ExtraTreesClassifier())
+                    ('et', ExtraTreesClassifier(n_estimators=100))
                 ])
 
                 # Fit and predict
