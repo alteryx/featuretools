@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.impute import SimpleImputer
 from sklearn.model_selection import GridSearchCV, cross_val_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
@@ -38,6 +39,7 @@ def pipeline(es):
         ('ft', DFSTransformer(entityset=es,
                               target_entity="customers",
                               max_features=2)),
+        ('imp', SimpleImputer()),
         ('et', ExtraTreesClassifier(n_estimators=10))
     ])
     return pipeline
