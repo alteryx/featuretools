@@ -1130,7 +1130,6 @@ class EntitySet(object):
             make_index (bool, optional) : If True, assume index does not exist as a column in
                 dataframe, and create a new column of that name using integers the (0, len(dataframe)).
                 Otherwise, assume index exists in dataframe.
-                An entity's variable_types dict maps string variable ids to types (:class:`.Variable`).
             time_index (str, optional) : Name of column to use as a time index for this entity. Must be
                 a Datetime or Numeric dtype.
             secondary_time_index (str, optional): Name of variable containing
@@ -1144,26 +1143,9 @@ class EntitySet(object):
         variable_types = variable_types or {}
 
         # DFS TODO: confirm we want this if else block
-        if index is None:
-            assert not make_index, "Must specify an index name if make_index is True"
-            logger.warning(("Using first column as index. ",
-                            "To change this, specify the index parameter"))
-            index = dataframe.columns[0]
-        else:
+        if index is not None:
             if index not in variable_types:
                 variable_types[index] = vtypes.Index
-
-        created_index = None
-
-        if make_index and index in dataframe.columns:
-            raise RuntimeError("Cannot make index: index variable already present")
-
-        if make_index or index not in dataframe.columns:
-            if not make_index:
-                logger.warning("index %s not found in dataframe, creating new integer column",
-                               index)
-            dataframe.insert(0, index, range(0, len(dataframe)))
-            created_index = index
 
         entity = Entity(entity_id,
                         dataframe,
@@ -1175,7 +1157,7 @@ class EntitySet(object):
                         last_time_index=last_time_index,
                         encoding=encoding,
                         already_sorted=already_sorted,
-                        created_index=created_index)
+                        make_index=make_index)
         self.entity_dict[entity.id] = entity
         self.reset_metadata()
         return self

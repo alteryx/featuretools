@@ -42,7 +42,7 @@ class Entity(object):
     def __init__(self, id, df, entityset, variable_types=None,
                  index=None, time_index=None, secondary_time_index=None,
                  last_time_index=None, encoding=None,
-                 already_sorted=False, created_index=None, verbose=False):
+                 already_sorted=False, make_index=False, verbose=False):
         """ Create Entity
 
         Args:
@@ -62,7 +62,9 @@ class Entity(object):
                 instance across all child entities.
             encoding (str, optional)) : If None, will use 'ascii'. Another option is 'utf-8',
                 or any encoding supported by pandas.
-
+            make_index (bool, optional) : If True, assume index does not exist as a column in
+                dataframe, and create a new column of that name using integers the (0, len(dataframe)).
+                Otherwise, assume index exists in dataframe.
         """
         assert is_string(id), "Entity id must be a string"
         assert len(df.columns) == len(set(df.columns)), "Duplicate column names"
@@ -72,6 +74,21 @@ class Entity(object):
                                  "is not a string)".format(c))
         if time_index is not None and time_index not in df.columns:
             raise LookupError('Time index not found in dataframe')
+
+        created_index = None
+        if index is None:
+            assert not make_index, "Must specify an index name if make_index is True"
+            logger.warning(("Using first column as index. ",
+                            "To change this, specify the index parameter"))
+            index = df.columns[0]
+        elif make_index and index in df.columns:
+            raise RuntimeError("Cannot make index: index variable already present")
+        elif make_index or index not in df.columns:
+            if index not in df.columns and not make_index:
+                logger.warning("index %s not found in dataframe, creating new "
+                               "integer column", index)
+            df.insert(0, index, range(0, len(df)))
+            created_index = index
 
         self.data = {"df": df,
                      "last_time_index": last_time_index,
