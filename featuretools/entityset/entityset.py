@@ -1114,7 +1114,6 @@ class EntitySet(object):
                                time_index=None,
                                secondary_time_index=None,
                                last_time_index=None,
-                               parse_date_cols=None,
                                encoding=None,
                                already_sorted=False):
         """
@@ -1168,10 +1167,6 @@ class EntitySet(object):
 
         if time_index is not None and time_index not in dataframe.columns:
             raise LookupError('Time index not found in dataframe')
-
-        if parse_date_cols is not None:
-            for c in parse_date_cols:
-                variable_types[c] = vtypes.Datetime
 
         for c in dataframe.columns:
             if not is_string(c):

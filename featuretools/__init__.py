@@ -13,4 +13,4 @@ from .utils.time_utils import *
 from .wrappers import DFSTransformer
 import featuretools.demo
 
-__version__ = '0.4.0'
+__version__ = '0.4.1'
