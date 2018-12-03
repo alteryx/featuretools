@@ -4,3 +4,4 @@ pympler==0.5
 pytest-xdist==1.23.2
 pytest-cov==2.6.0
 fastparquet>=0.1.6
+scikit-learn>=0.20.0
