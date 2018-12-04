@@ -116,9 +116,7 @@ class Entity(object):
 
         inferred_variable_types = self.infer_variable_types(ignore=list(variable_types.keys()),
                                                             link_vars=link_vars)
-
-        for var_id, desired_type in variable_types.items():
-            inferred_variable_types.update({var_id: desired_type})
+        inferred_variable_types.update(variable_types)
 
         self.variables = []
         for v in inferred_variable_types:
