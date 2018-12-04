@@ -87,45 +87,14 @@ class Entity(object):
         self.created_index = created_index
         self.id = id
         self.entityset = entityset
+
         variable_types = variable_types or {}
-        self.index = index
-        self.time_index = time_index
-        self.secondary_time_index = secondary_time_index or {}
-        # make sure time index is actually in the columns
-        for ti, cols in self.secondary_time_index.items():
-            if ti not in cols:
-                cols.append(ti)
+        secondary_time_index = secondary_time_index or {}
+        self.create_variables(variable_types, index, time_index, secondary_time_index)
 
-        relationships = [r for r in entityset.relationships
-                         if r.parent_entity.id == id or
-                         r.child_entity.id == id]
-
-        link_vars = [v.id for rel in relationships for v in [rel.parent_variable, rel.child_variable]
-                     if v.entity.id == self.id]
-
-        inferred_variable_types = self.infer_variable_types(ignore=list(variable_types.keys()),
-                                                            link_vars=link_vars)
-        inferred_variable_types.update(variable_types)
-
-        self.variables = []
-        for v in inferred_variable_types:
-            # TODO document how vtype can be tuple
-            vtype = inferred_variable_types[v]
-            if isinstance(vtype, tuple):
-                # vtype is (ft.Variable, dict_of_kwargs)
-                _v = vtype[0](v, self, **vtype[1])
-            else:
-                _v = inferred_variable_types[v](v, self)
-            self.variables += [_v]
-
-        # do one last conversion of data once we've inferred
-        self.convert_all_variable_data(inferred_variable_types)
-
-        # make sure index is at the beginning
-        index_variable = [v for v in self.variables
-                          if v.id == self.index][0]
-        self.variables = [index_variable] + [v for v in self.variables
-                                             if v.id != self.index]
+        self.set_index(index)
+        self.set_time_index(time_index, already_sorted=already_sorted)
+        self.set_secondary_time_index(secondary_time_index)
         self.update_data(df=self.df,
                          already_sorted=already_sorted,
                          recalculate_last_time_indexes=False)
@@ -368,7 +337,31 @@ class Entity(object):
 
         return df
 
-    def infer_variable_types(self, ignore=None, link_vars=None):
+    def create_variables(self, variable_types, index, time_index, secondary_time_index):
+        variables = []
+        inferred_variable_types = self.infer_variable_types(variable_types,
+                                                            time_index,
+                                                            secondary_time_index)
+        inferred_variable_types.update(variable_types)
+
+        for v in inferred_variable_types:
+            # TODO document how vtype can be tuple
+            vtype = inferred_variable_types[v]
+            if isinstance(vtype, tuple):
+                # vtype is (ft.Variable, dict_of_kwargs)
+                _v = vtype[0](v, self, **vtype[1])
+            else:
+                _v = inferred_variable_types[v](v, self)
+            variables += [_v]
+        # convert data once we've inferred
+        self.convert_all_variable_data(inferred_variable_types)
+        # make sure index is at the beginning
+        index_variable = [v for v in variables
+                          if v.id == index][0]
+        self.variables = [index_variable] + [v for v in variables
+                                             if v.id != index]
+
+    def infer_variable_types(self, variable_types, time_index, secondary_time_index):
         """Extracts the variables from a dataframe
 
         Args:
@@ -379,20 +372,30 @@ class Entity(object):
             list[Variable]: A list of variables describing the
                 contents of the dataframe.
         """
+        # make sure time index is actually in the columns
+        secondary_time_index = secondary_time_index or {}
+        for ti, cols in secondary_time_index.items():
+            if ti not in cols:
+                cols.append(ti)
+
+        link_relationships = [r for r in self.entityset.relationships
+                              if r.parent_entity.id == self.id or
+                              r.child_entity.id == self.id]
+
+        link_vars = [v.id for rel in link_relationships
+                     for v in [rel.parent_variable, rel.child_variable]
+                     if v.entity.id == self.id]
+
         # TODO: set pk and pk types here
-        ignore = ignore or []
-        link_vars = link_vars or []
         inferred_types = {}
         df = self.df
-        vids_to_assume_datetime = [self.time_index]
-        if len(list(self.secondary_time_index.keys())):
-            vids_to_assume_datetime.append(list(self.secondary_time_index.keys())[0])
+        vids_to_assume_datetime = [time_index]
+        if len(list(secondary_time_index.keys())):
+            vids_to_assume_datetime.append(list(secondary_time_index.keys())[0])
         inferred_type = vtypes.Unknown
         for variable in df.columns:
-            if variable in ignore:
+            if variable in variable_types:
                 continue
-            elif variable == self.index or variable.lower() == 'id':
-                inferred_type = vtypes.Index
 
             elif variable in vids_to_assume_datetime:
                 if col_is_datetime(df[variable]):
