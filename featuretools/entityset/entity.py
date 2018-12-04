@@ -75,20 +75,9 @@ class Entity(object):
         if time_index is not None and time_index not in df.columns:
             raise LookupError('Time index not found in dataframe')
 
-        created_index = None
-        if index is None:
-            assert not make_index, "Must specify an index name if make_index is True"
-            logger.warning(("Using first column as index. ",
-                            "To change this, specify the index parameter"))
-            index = df.columns[0]
-        elif make_index and index in df.columns:
-            raise RuntimeError("Cannot make index: index variable already present")
-        elif make_index or index not in df.columns:
-            if index not in df.columns and not make_index:
-                logger.warning("index %s not found in dataframe, creating new "
-                               "integer column", index)
-            df.insert(0, index, range(0, len(df)))
-            created_index = index
+        created_index, index, df = create_index(index, make_index, df)
+        if index not in variable_types:
+            variable_types[index] = vtypes.Index
 
         self.data = {"df": df,
                      "last_time_index": last_time_index,
@@ -689,3 +678,21 @@ def col_is_datetime(col):
         else:
             return True
     return False
+
+
+def create_index(index, make_index, df):
+    created_index = None
+    if index is None:
+        assert not make_index, "Must specify an index name if make_index is True"
+        logger.warning(("Using first column as index. ",
+                        "To change this, specify the index parameter"))
+        index = df.columns[0]
+    elif make_index and index in df.columns:
+        raise RuntimeError("Cannot make index: index variable already present")
+    elif make_index or index not in df.columns:
+        if index not in df.columns and not make_index:
+            logger.warning("index %s not found in dataframe, creating new "
+                           "integer column", index)
+        df.insert(0, index, range(0, len(df)))
+        created_index = index
+    return created_index, index, df
