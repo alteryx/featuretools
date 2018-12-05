@@ -669,21 +669,30 @@ def col_is_datetime(col):
 
 
 def _create_index(index, make_index, df):
-    '''Handles index creation logic'''
+    '''Handles index creation logic base on user input'''
     created_index = None
+
     if index is None:
+        # Case 1: user wanted to make index but did not specify column name
         assert not make_index, "Must specify an index name if make_index is True"
+        # Case 2: make_index not specified but no index supplied, use first column
         logger.warning(("Using first column as index. ",
                         "To change this, specify the index parameter"))
         index = df.columns[0]
     elif make_index and index in df.columns:
+        # Case 3: user wanted to make index but column already exists
         raise RuntimeError("Cannot make index: index variable already present")
-    elif make_index or index not in df.columns:
-        if index not in df.columns and not make_index:
+    elif index not in df.columns:
+        if not make_index:
+            # Case 4: user names index, it is not in df. does not specify
+            # make_index.  Make new index column and warn
             logger.warning("index %s not found in dataframe, creating new "
                            "integer column", index)
+        # Case 5: make_index with no errors or warnings
+        # (Case 4 also uses this code path)
         df.insert(0, index, range(0, len(df)))
         created_index = index
+    # Case 6: user specified index, which is already in df. No action needed.
     return created_index, index, df
 
 
