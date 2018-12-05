@@ -90,7 +90,7 @@ class Entity(object):
 
         variable_types = variable_types or {}
         secondary_time_index = secondary_time_index or {}
-        self.create_variables(variable_types, index, time_index, secondary_time_index)
+        self._create_variables(variable_types, index, time_index, secondary_time_index)
 
         self.set_index(index)
         self.set_time_index(time_index, already_sorted=already_sorted)
@@ -337,7 +337,7 @@ class Entity(object):
 
         return df
 
-    def create_variables(self, variable_types, index, time_index, secondary_time_index):
+    def _create_variables(self, variable_types, index, time_index, secondary_time_index):
         variables = []
         inferred_variable_types = self.infer_variable_types(variable_types,
                                                             time_index,
