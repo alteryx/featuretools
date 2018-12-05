@@ -34,11 +34,6 @@ class Entity(object):
         :class:`.Relationship`, :class:`.Variable`, :class:`.EntitySet`
 
     """
-    id = None
-    variables = None
-    time_index = None
-    index = None
-
     def __init__(self, id, df, entityset, variable_types=None,
                  index=None, time_index=None, secondary_time_index=None,
                  last_time_index=None, encoding=None,

@@ -34,11 +34,6 @@ class EntitySet(object):
         metadata
 
     """
-    id = None
-    entities = []
-    relationships = []
-    name = None
-
     def __init__(self, id=None, entities=None, relationships=None):
         """Creates EntitySet
 
