@@ -404,7 +404,7 @@ class Entity(object):
             elif df[variable].dtype == "bool":
                 inferred_type = vtypes.Boolean
 
-            elif df[variable].dtype.name == "category":
+            elif pdtypes.is_categorical_dtype(df[variable].dtype):
                 inferred_type = vtypes.Categorical
 
             elif col_is_datetime(df[variable]):
