@@ -69,12 +69,12 @@ class Entity(object):
         _validate_entity_params(id, df, time_index)
         created_index, index, df = _create_index(index, make_index, df)
 
-        self.encoding = encoding
-        self._verbose = verbose
-        self.created_index = created_index
         self.id = id
         self.entityset = entityset
         self.data = {'df': df, 'last_time_index': last_time_index}
+        self.created_index = created_index
+        self.encoding = encoding
+        self._verbose = verbose
 
         variable_types = variable_types or {}
         secondary_time_index = secondary_time_index or {}
