@@ -67,7 +67,7 @@ class Entity(object):
                 Otherwise, assume index exists in dataframe.
         """
         _validate_entity_params(id, df, time_index)
-        created_index, index, df = create_index(index, make_index, df)
+        created_index, index, df = _create_index(index, make_index, df)
         if index not in variable_types:
             variable_types[index] = vtypes.Index
 
@@ -675,7 +675,8 @@ def col_is_datetime(col):
     return False
 
 
-def create_index(index, make_index, df):
+def _create_index(index, make_index, df):
+    '''Handles index creation logic'''
     created_index = None
     if index is None:
         assert not make_index, "Must specify an index name if make_index is True"
