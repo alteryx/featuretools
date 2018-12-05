@@ -198,7 +198,6 @@ class EntitySet(object):
                 'index': e.index,
                 'time_index': e.time_index,
                 'secondary_time_index': e.secondary_time_index,
-                'encoding': e.encoding,
                 'variables': {
                     v.id: v.create_metadata_dict()
                     for v in e.variables
@@ -220,7 +219,6 @@ class EntitySet(object):
                                      index=entity['index'],
                                      time_index=entity['time_index'],
                                      secondary_time_index=entity['secondary_time_index'],
-                                     encoding=entity['encoding'],
                                      variable_types=variable_types)
             if entity['has_last_time_index']:
                 set_last_time_indexes = True
@@ -638,7 +636,6 @@ class EntitySet(object):
                               make_index=False,
                               time_index=None,
                               secondary_time_index=None,
-                              encoding=None,
                               already_sorted=False):
         """
         Load the data for a specified entity from a Pandas DataFrame.
@@ -665,9 +662,6 @@ class EntitySet(object):
 
             secondary_time_index (dict[str -> Variable]): Name of variable
                 containing time data to use a second time index for the entity.
-
-            encoding (str, optional): If None, will use 'ascii'. Another option is
-                'utf-8', or any encoding supported by pandas.
 
             already_sorted (bool, optional) : If True, assumes that input dataframe
                 is already sorted by time. Defaults to False.
@@ -696,13 +690,11 @@ class EntitySet(object):
                 es["transactions"].df
 
         """
-
         return self._import_from_dataframe(entity_id, dataframe.copy(), index=index,
                                            make_index=make_index,
                                            time_index=time_index,
                                            secondary_time_index=secondary_time_index,
                                            variable_types=variable_types,
-                                           encoding=encoding,
                                            already_sorted=already_sorted)
 
     def normalize_entity(self, base_entity_id, new_entity_id, index,
@@ -845,8 +837,7 @@ class EntitySet(object):
                                     time_index=new_entity_time_index,
                                     secondary_time_index=make_secondary_time_index,
                                     last_time_index=None,
-                                    variable_types=transfer_types,
-                                    encoding=base_entity.encoding)
+                                    variable_types=transfer_types)
 
         for v in additional_variables:
             self.entity_dict[base_entity_id].delete_variable(v)
@@ -1109,7 +1100,6 @@ class EntitySet(object):
                                time_index=None,
                                secondary_time_index=None,
                                last_time_index=None,
-                               encoding=None,
                                already_sorted=False):
         """
         Load the data for a specified entity from a pandas dataframe.
@@ -1129,9 +1119,6 @@ class EntitySet(object):
                 a Datetime or Numeric dtype.
             secondary_time_index (str, optional): Name of variable containing
                 time data to use a second time index for the entity.
-            encoding (str, optional) : If None, will use 'ascii'. Another option is 'utf-8',
-                or any encoding supported by pandas. Passed into underlying pandas.to_csv() calls,
-                so see Pandas documentation for more information.
             already_sorted (bool, optional) : If True, assumes that input dataframe is already sorted by time.
                 Defaults to False.
         """
@@ -1144,7 +1131,6 @@ class EntitySet(object):
                         time_index=time_index,
                         secondary_time_index=secondary_time_index,
                         last_time_index=last_time_index,
-                        encoding=encoding,
                         already_sorted=already_sorted,
                         make_index=make_index)
         self.entity_dict[entity.id] = entity

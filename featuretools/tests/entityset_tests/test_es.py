@@ -106,8 +106,7 @@ def test_add_relationship_errors_on_dtype_mismatch(entityset):
                                     dataframe=log_2_df,
                                     index='id',
                                     variable_types=log_variable_types,
-                                    time_index='datetime',
-                                    encoding='utf-8')
+                                    time_index='datetime')
 
     error_text = u'Unable to add relationship because id in customers is Pandas dtype category and session_id in log2 is Pandas dtype int64.'
     with pytest.raises(ValueError, match=error_text):

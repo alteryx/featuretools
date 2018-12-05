@@ -36,8 +36,8 @@ class Entity(object):
     """
     def __init__(self, id, df, entityset, variable_types=None,
                  index=None, time_index=None, secondary_time_index=None,
-                 last_time_index=None, encoding=None,
-                 already_sorted=False, make_index=False, verbose=False):
+                 last_time_index=None, already_sorted=False, make_index=False,
+                 verbose=False):
         """ Create Entity
 
         Args:
@@ -55,8 +55,6 @@ class Entity(object):
                 in the dataframe to the time index column they are associated with.
             last_time_index (pd.Series): Time index of the last event for each
                 instance across all child entities.
-            encoding (str, optional)) : If None, will use 'ascii'. Another option is 'utf-8',
-                or any encoding supported by pandas.
             make_index (bool, optional) : If True, assume index does not exist as a column in
                 dataframe, and create a new column of that name using integers the (0, len(dataframe)).
                 Otherwise, assume index exists in dataframe.
@@ -68,7 +66,6 @@ class Entity(object):
         self.entityset = entityset
         self.data = {'df': df, 'last_time_index': last_time_index}
         self.created_index = created_index
-        self.encoding = encoding
         self._verbose = verbose
 
         variable_types = variable_types or {}
