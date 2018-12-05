@@ -69,25 +69,21 @@ class Entity(object):
         _validate_entity_params(id, df, time_index)
         created_index, index, df = _create_index(index, make_index, df)
 
-        self.data = {"df": df,
-                     "last_time_index": last_time_index,
-                     }
         self.encoding = encoding
         self._verbose = verbose
         self.created_index = created_index
         self.id = id
         self.entityset = entityset
+        self.data = {'df': df, 'last_time_index': last_time_index}
 
         variable_types = variable_types or {}
         secondary_time_index = secondary_time_index or {}
         self._create_variables(variable_types, index, time_index, secondary_time_index)
 
+        self.df = df[[v.id for v in self.variables]]
         self.set_index(index)
         self.set_time_index(time_index, already_sorted=already_sorted)
         self.set_secondary_time_index(secondary_time_index)
-        self.update_data(df=self.df,
-                         already_sorted=already_sorted,
-                         recalculate_last_time_indexes=False)
 
     def __repr__(self):
         repr_out = u"Entity: {}\n".format(self.id)
