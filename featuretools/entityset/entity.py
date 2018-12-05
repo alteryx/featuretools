@@ -361,12 +361,6 @@ class Entity(object):
             list[Variable]: A list of variables describing the
                 contents of the dataframe.
         """
-        # make sure time index is actually in the columns
-        secondary_time_index = secondary_time_index or {}
-        for ti, cols in secondary_time_index.items():
-            if ti not in cols:
-                cols.append(ti)
-
         link_relationships = [r for r in self.entityset.relationships
                               if r.parent_entity.id == self.id or
                               r.child_entity.id == self.id]
@@ -578,7 +572,7 @@ class Entity(object):
 
     def set_secondary_time_index(self, secondary_time_index):
         if secondary_time_index is not None:
-            for time_index in secondary_time_index:
+            for time_index, columns in secondary_time_index.items():
                 if self.df.empty:
                     time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[time_index]._default_pandas_dtype]
                 else:
@@ -591,6 +585,9 @@ class Entity(object):
                     raise TypeError("%s time index is %s type which differs from"
                                     " other entityset time indexes" %
                                     (self.id, time_type))
+                if time_index not in columns:
+                    columns.append(time_index)
+
         self.secondary_time_index = secondary_time_index or {}
 
     def _vals_to_series(self, instance_vals, variable_id):
