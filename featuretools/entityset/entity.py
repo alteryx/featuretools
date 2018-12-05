@@ -642,12 +642,11 @@ class Entity(object):
                         )
                     df = df[mask]
 
-        for secondary_time_index in self.secondary_time_index:
-                # should we use ignore time last here?
+        for secondary_time_index, columns in self.secondary_time_index.items():
+            # should we use ignore time last here?
             if time_last is not None and not df.empty:
                 mask = df[secondary_time_index] >= time_last
-                second_time_index_columns = self.secondary_time_index[secondary_time_index]
-                df.loc[mask, second_time_index_columns] = np.nan
+                df.loc[mask, columns] = np.nan
 
         return df
 
