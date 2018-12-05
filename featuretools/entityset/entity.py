@@ -66,15 +66,7 @@ class Entity(object):
                 dataframe, and create a new column of that name using integers the (0, len(dataframe)).
                 Otherwise, assume index exists in dataframe.
         """
-        assert is_string(id), "Entity id must be a string"
-        assert len(df.columns) == len(set(df.columns)), "Duplicate column names"
-        for c in df.columns:
-            if not is_string(c):
-                raise ValueError("All column names must be strings (Column {} "
-                                 "is not a string)".format(c))
-        if time_index is not None and time_index not in df.columns:
-            raise LookupError('Time index not found in dataframe')
-
+        _validate_entity_params(id, df, time_index)
         created_index, index, df = create_index(index, make_index, df)
         if index not in variable_types:
             variable_types[index] = vtypes.Index
@@ -699,3 +691,15 @@ def create_index(index, make_index, df):
         df.insert(0, index, range(0, len(df)))
         created_index = index
     return created_index, index, df
+
+
+def _validate_entity_params(id, df, time_index):
+    '''Validation checks for Entity inputs'''
+    assert is_string(id), "Entity id must be a string"
+    assert len(df.columns) == len(set(df.columns)), "Duplicate column names"
+    for c in df.columns:
+        if not is_string(c):
+            raise ValueError("All column names must be strings (Column {} "
+                             "is not a string)".format(c))
+    if time_index is not None and time_index not in df.columns:
+        raise LookupError('Time index not found in dataframe')
