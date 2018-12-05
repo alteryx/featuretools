@@ -68,8 +68,6 @@ class Entity(object):
         """
         _validate_entity_params(id, df, time_index)
         created_index, index, df = _create_index(index, make_index, df)
-        if index not in variable_types:
-            variable_types[index] = vtypes.Index
 
         self.data = {"df": df,
                      "last_time_index": last_time_index,
@@ -331,6 +329,9 @@ class Entity(object):
 
     def _create_variables(self, variable_types, index, time_index, secondary_time_index):
         variables = []
+        if index not in variable_types:
+            variable_types[index] = vtypes.Index
+
         inferred_variable_types = self.infer_variable_types(variable_types,
                                                             time_index,
                                                             secondary_time_index)
