@@ -1,5 +1,10 @@
+from os import path
 from setuptools import find_packages, setup
 from setuptools.command.build_ext import build_ext as _build_ext
+
+dirname = path.abspath(path.dirname(__file__))
+with open(path.join(dirname, 'README.md')) as f:
+    long_description = f.read()
 
 
 # Bootstrap numpy install
@@ -38,5 +43,7 @@ setup(
     test_suite='featuretools/tests',
     tests_require=open('test-requirements.txt').readlines(),
     keywords='feature engineering data science machine learning',
-    include_package_data=True
+    include_package_data=True,
+    long_description=long_description,
+    long_description_content_type='text/markdown'
 )
