@@ -45,10 +45,9 @@ class Entity(object):
             df (pd.DataFrame): Dataframe providing the data for the
                 entity.
             entityset (EntitySet): Entityset for this Entity.
-            variable_types (dict[str -> dict[str -> type]]) : Optional mapping of
-                entity_id to variable_types dict with which to initialize an
-                entity's store.
-                An entity's variable_types dict maps string variable ids to types (:class:`.Variable`).
+            variable_types (dict[str -> dict[str -> type]]) : An entity's
+                variable_types dict maps string variable ids to types (:class:`.Variable`)
+                or (type, kwargs) to pass keyword arguments to the Variable.
             index (str): Name of id column in the dataframe.
             time_index (str): Name of time column in the dataframe.
             secondary_time_index (dict[str -> str]): Dictionary mapping columns
@@ -100,6 +99,7 @@ class Entity(object):
 
     @property
     def shape(self):
+        '''Shape of the entity's dataframe'''
         return self.df.shape
 
     def __eq__(self, other, deep=False):
@@ -133,10 +133,15 @@ class Entity(object):
 
     @property
     def is_metadata(self):
+        '''Returns True if all of the Entity's contain no data (empty DataFrames).
+        In general, EntitySets with no data are created by accessing the EntitySet.metadata property,
+        which returns a copy of the current EntitySet with all data removed.
+        '''
         return self.entityset.is_metadata
 
     @property
     def df(self):
+        '''Dataframe providing the data for the entity.'''
         return self.data["df"]
 
     @df.setter
@@ -145,6 +150,9 @@ class Entity(object):
 
     @property
     def last_time_index(self):
+        '''
+        Time index of the last event for each instance across all child entities.
+        '''
         return self.data["last_time_index"]
 
     @last_time_index.setter
@@ -177,6 +185,7 @@ class Entity(object):
 
     @property
     def variable_types(self):
+        '''Dictionary mapping variable id's to variable types'''
         return {v.id: type(v) for v in self.variables}
 
     def convert_variable_type(self, variable_id, new_type,
@@ -321,6 +330,17 @@ class Entity(object):
         return df
 
     def _create_variables(self, variable_types, index, time_index, secondary_time_index):
+        """Extracts the variables from a dataframe
+
+        Args:
+            variable_types (dict[str -> dict[str -> type]]) : An entity's
+                variable_types dict maps string variable ids to types (:class:`.Variable`)
+                or (type, kwargs) to pass keyword arguments to the Variable.
+            index (str): Name of index column
+            time_index (str or None): Name of time_index column
+            secondary_time_index (dict[str: [str]]): Dictionary of secondary time columns
+                that each map to a list of columns that depend on that secondary time
+        """
         variables = []
         if index not in variable_types:
             variable_types[index] = vtypes.Index
@@ -348,16 +368,16 @@ class Entity(object):
                                              if v.id != index]
 
     def infer_variable_types(self, variable_types, time_index, secondary_time_index):
-        """Extracts the variables from a dataframe
+        '''Infer variable types from dataframe
 
         Args:
-            ignore (list[str]): Names of variables (columns) for which to skip
-                inference.
-            link_vars (list[str]): Name of linked variables to other entities.
-        Returns:
-            list[Variable]: A list of variables describing the
-                contents of the dataframe.
-        """
+            variable_types (dict[str -> dict[str -> type]]) : An entity's
+                variable_types dict maps string variable ids to types (:class:`.Variable`)
+                or (type, kwargs) to pass keyword arguments to the Variable.
+            time_index (str or None): Name of time_index column
+            secondary_time_index (dict[str: [str]]): Dictionary of secondary time columns
+                that each map to a list of columns that depend on that secondary time
+        '''
         link_relationships = [r for r in self.entityset.relationships
                               if r.parent_entity.id == self.id or
                               r.child_entity.id == self.id]
