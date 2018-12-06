@@ -249,16 +249,16 @@ Constructors
     Entity
     Relationship
 
-EntitySet attributes
---------------------
-.. currentmodule:: featuretools.entityset
-.. autosummary::
-    :toctree: generated/
+.. EntitySet attributes
+.. --------------------
+.. .. currentmodule:: featuretools.entityset
+.. .. autosummary::
+..     :toctree: generated/
 
-    EntitySet.id
-    EntitySet.name
-    EntitySet.entities
-    EntitySet.relationships
+..     EntitySet.id
+..     EntitySet.name
+..     EntitySet.entities
+..     EntitySet.relationships
 
 EntitySet load and prepare data
 -------------------------------
@@ -298,14 +298,14 @@ EntitySet query methods
     EntitySet.get_backward_entities
 
 
-Entity attributes
-----------------------
-.. autosummary::
-    :toctree: generated/
+.. Entity attributes
+.. ----------------------
+.. .. autosummary::
+..     :toctree: generated/
 
-    Entity.variables
-    Entity.index
-    Entity.time_index
+..     Entity.variables
+..     Entity.index
+..     Entity.time_index
 
 
 Entity methods
