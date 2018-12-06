@@ -464,7 +464,7 @@ class Entity(object):
         self.set_index(self.index)
         if self.time_index is not None:
             self.set_time_index(self.time_index, already_sorted=already_sorted)
-        elif already_sorted:
+        elif not already_sorted:
             self.df.sort_index(kind="mergesort", inplace=True)
         self.set_secondary_time_index(self.secondary_time_index)
         if recalculate_last_time_indexes and self.last_time_index is not None:

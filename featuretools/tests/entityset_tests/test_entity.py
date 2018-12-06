@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import copy
 
 import pandas as pd
 import pytest
@@ -78,3 +79,9 @@ def test_update_data(es):
     with pytest.raises(ValueError, match=error_text) as excinfo:
         es['customers'].update_data(df)
     assert 'Updated dataframe contains 13 columns, expecting 12' in str(excinfo)
+
+    es_copy = copy.deepcopy(es)
+    df = es["sessions"].df.copy(deep=True)
+    df["id"].iloc[1:3] = [2, 1]
+    es["sessions"].update_data(df)
+    assert es_copy.__eq__(es, deep=True)
