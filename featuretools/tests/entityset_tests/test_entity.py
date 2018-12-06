@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import copy
+from datetime import datetime
 
 import pandas as pd
 import pytest
@@ -80,8 +80,18 @@ def test_update_data(es):
         es['customers'].update_data(df)
     assert 'Updated dataframe contains 13 columns, expecting 12' in str(excinfo)
 
-    es_copy = copy.deepcopy(es)
+    # test already_sorted on entity without time index
     df = es["sessions"].df.copy(deep=True)
     df["id"].iloc[1:3] = [2, 1]
-    es["sessions"].update_data(df)
-    assert es_copy.__eq__(es, deep=True)
+    es["sessions"].update_data(df.copy(deep=True))
+    assert es["sessions"].df["id"].iloc[1] == 1
+    es["sessions"].update_data(df.copy(deep=True), already_sorted=True)
+    assert es["sessions"].df["id"].iloc[1] == 2
+
+    # test already_sorted on entity with time index
+    df = es["customers"].df.copy(deep=True)
+    df["signup_date"].iloc[0] = datetime(2011, 4, 11)
+    es["customers"].update_data(df.copy(deep=True))
+    assert es["customers"].df["id"].iloc[0]== 0
+    es["customers"].update_data(df.copy(deep=True), already_sorted=True)
+    assert es["customers"].df["id"].iloc[0] == 2
