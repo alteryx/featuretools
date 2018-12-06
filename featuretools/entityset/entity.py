@@ -67,7 +67,6 @@ class Entity(object):
         self.created_index = created_index
         self._verbose = verbose
 
-        variable_types = variable_types or {}
         secondary_time_index = secondary_time_index or {}
         self._create_variables(variable_types, index, time_index, secondary_time_index)
 
@@ -342,6 +341,7 @@ class Entity(object):
                 that each map to a list of columns that depend on that secondary time
         """
         variables = []
+        variable_types = variable_types or {}
         if index not in variable_types:
             variable_types[index] = vtypes.Index
 
