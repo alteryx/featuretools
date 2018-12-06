@@ -75,11 +75,10 @@ class Entity(object):
         self.df = df[[v.id for v in self.variables]]
         self.set_index(index)
 
+        self.time_index = None
         if time_index:
             self.set_time_index(time_index, already_sorted=already_sorted)
-        else:
-            self.time_index = None
-            if not already_sorted:
+        elif not already_sorted:
                 self.df.sort_index(kind="mergesort", inplace=True)
         self.set_secondary_time_index(secondary_time_index)
 
