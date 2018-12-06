@@ -92,6 +92,6 @@ def test_update_data(es):
     df = es["customers"].df.copy(deep=True)
     df["signup_date"].iloc[0] = datetime(2011, 4, 11)
     es["customers"].update_data(df.copy(deep=True))
-    assert es["customers"].df["id"].iloc[0]== 0
+    assert es["customers"].df["id"].iloc[0] == 0
     es["customers"].update_data(df.copy(deep=True), already_sorted=True)
     assert es["customers"].df["id"].iloc[0] == 2
