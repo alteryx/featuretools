@@ -344,7 +344,6 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
                                  df,
                                  index='id',
                                  variable_types=variable_types[entity],
-                                 encoding='utf-8',
                                  time_index=ti_name,
                                  secondary_time_index=secondary)
 
