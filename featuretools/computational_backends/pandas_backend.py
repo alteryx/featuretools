@@ -310,9 +310,11 @@ class PandasBackend(ComputationalBackend):
             else:
                 values = feature_func(*variable_data)
 
+            # if we don't get just the values, the assignment breaks when indexes don't match
             if isinstance(values, pd.Series):
                 values = values.values
-            frame[f.get_name()] = list(values)
+
+            frame[f.get_name()] = values
         return frame
 
     def _calculate_direct_features(self, features, entity_frames):
