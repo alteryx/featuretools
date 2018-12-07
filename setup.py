@@ -1,5 +1,10 @@
+from os import path
 from setuptools import find_packages, setup
 from setuptools.command.build_ext import build_ext as _build_ext
+
+dirname = path.abspath(path.dirname(__file__))
+with open(path.join(dirname, 'README.md')) as f:
+    long_description = f.read()
 
 
 # Bootstrap numpy install
@@ -15,7 +20,7 @@ class build_ext(_build_ext):
 
 setup(
     name='featuretools',
-    version='0.4.0',
+    version='0.4.1',
     packages=find_packages(),
     description='a framework for automated feature engineering',
     url='http://featuretools.com',
@@ -44,4 +49,6 @@ setup(
               'featuretools = featuretools.__main__:cli'
           ]
       },
+    long_description=long_description,
+    long_description_content_type='text/markdown'
 )

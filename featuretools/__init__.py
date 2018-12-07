@@ -11,5 +11,6 @@ from . import tests
 from .utils.pickle_utils import *
 from .utils.time_utils import *
 import featuretools.demo
+import featuretools.wrappers
 
-__version__ = '0.4.0'
+__version__ = '0.4.1'

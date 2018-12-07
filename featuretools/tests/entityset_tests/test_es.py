@@ -106,8 +106,7 @@ def test_add_relationship_errors_on_dtype_mismatch(entityset):
                                     dataframe=log_2_df,
                                     index='id',
                                     variable_types=log_variable_types,
-                                    time_index='datetime',
-                                    encoding='utf-8')
+                                    time_index='datetime')
 
     error_text = u'Unable to add relationship because id in customers is Pandas dtype category and session_id in log2 is Pandas dtype int64.'
     with pytest.raises(ValueError, match=error_text):
@@ -583,6 +582,13 @@ def test_sets_time_when_adding_entity():
                                         time_index="signup_date")
 
 
+def test_checks_time_type_setting_time_index(entityset):
+    # set non time type as time index
+    error_text = 'log time index not recognized as numeric or datetime'
+    with pytest.raises(TypeError, match=error_text):
+        entityset['log'].set_time_index('purchased')
+
+
 def test_checks_time_type_setting_secondary_time_index(entityset):
     # entityset is timestamp time type
     assert entityset.time_type == variable_types.DatetimeTimeIndex
@@ -650,6 +656,11 @@ def test_checks_time_type_setting_secondary_time_index(entityset):
                   'fraud_decision_time': ['fraud_decision_time', 'fraud']}
     with pytest.raises(TypeError, match=error_text):
         card_es['transactions'].set_secondary_time_index(new_2nd_ti)
+
+    # add bool secondary time index
+    error_text = 'transactions time index not recognized as numeric or datetime'
+    with pytest.raises(TypeError, match=error_text):
+        card_es['transactions'].set_secondary_time_index({'fraud': ['fraud']})
 
 
 def test_related_instances_backward(entityset):

@@ -26,6 +26,20 @@ Deep Feature Synthesis
 
     dfs
 
+
+Wrappers
+~~~~~~~~
+.. currentmodule:: featuretools.wrappers
+
+Scikit-learn (BETA)
+-------------------
+.. autosummary::
+    :toctree: generated/
+
+    DFSTransformer
+
+
+
 .. DeepFeatureSynthesis
 
 Timedelta
@@ -235,17 +249,6 @@ Constructors
     Entity
     Relationship
 
-EntitySet attributes
---------------------
-.. currentmodule:: featuretools.entityset
-.. autosummary::
-    :toctree: generated/
-
-    EntitySet.id
-    EntitySet.name
-    EntitySet.entities
-    EntitySet.relationships
-
 EntitySet load and prepare data
 -------------------------------
 .. autosummary::
@@ -282,16 +285,6 @@ EntitySet query methods
     EntitySet.find_forward_path
     EntitySet.get_forward_entities
     EntitySet.get_backward_entities
-
-
-Entity attributes
-----------------------
-.. autosummary::
-    :toctree: generated/
-
-    Entity.variables
-    Entity.index
-    Entity.time_index
 
 
 Entity methods

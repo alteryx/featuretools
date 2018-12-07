@@ -191,7 +191,7 @@ Table of contents
 * :doc:`guides/deployment`
 * :doc:`guides/exporting_feature_matrix`
 * :doc:`guides/advanced_custom_primitives`
-* :doc:`guides/installing_primitives`
+.. * :doc:`guides/installing_primitives`
 
 .. toctree::
    :maxdepth: 1
@@ -203,7 +203,7 @@ Table of contents
    guides/deployment
    guides/exporting_feature_matrix
    guides/advanced_custom_primitives
-   guides/installing_primitives
+.. guides/installing_primitives
 
 .. **Tutorials and Demos**
 

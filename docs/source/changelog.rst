@@ -2,6 +2,20 @@
 
 Changelog
 ---------
+**v0.4.1** Nov 29, 2018
+    * Resolve bug preventing using first column as index by default (:pr:`308`)
+    * Handle return type when creating features from Id variables (:pr:`318`)
+    * Make id an optional parameter of EntitySet constructor (:pr:`324`)
+    * Handle primitives with same function being applied to same column (:pr:`321`)
+    * Update requirements (:pr:`328`)
+    * Clean up DFS arguments (:pr:`319`)
+    * Clean up Pandas Backend (:pr:`302`)
+    * Update properties of cumulative transform primitives (:pr:`320`)
+    * Feature stability between versions documentation (:pr:`316`)
+    * Add download count to GitHub readme (:pr:`310`)
+    * Fixed #297 update tests to check error strings (:pr:`303`)
+    * Remove usage of fixtures in agg primitive tests (:pr:`325`)
+
 **v0.4.0** Oct 31, 2018
     * Remove ft.utils.gen_utils.getsize and make pympler a test requirement (:pr:`299`)
     * Update requirements.txt (:pr:`298`)

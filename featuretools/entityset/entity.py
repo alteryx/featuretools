@@ -34,15 +34,10 @@ class Entity(object):
         :class:`.Relationship`, :class:`.Variable`, :class:`.EntitySet`
 
     """
-    id = None
-    variables = None
-    time_index = None
-    index = None
-
     def __init__(self, id, df, entityset, variable_types=None,
                  index=None, time_index=None, secondary_time_index=None,
-                 last_time_index=None, encoding=None,
-                 already_sorted=False, created_index=None, verbose=False):
+                 last_time_index=None, already_sorted=False, make_index=False,
+                 verbose=False):
         """ Create Entity
 
         Args:
@@ -50,76 +45,40 @@ class Entity(object):
             df (pd.DataFrame): Dataframe providing the data for the
                 entity.
             entityset (EntitySet): Entityset for this Entity.
-            variable_types (dict[str -> dict[str -> type]]) : Optional mapping of
-                entity_id to variable_types dict with which to initialize an
-                entity's store.
-                An entity's variable_types dict maps string variable ids to types (:class:`.Variable`).
+            variable_types (dict[str -> dict[str -> type]]) : An entity's
+                variable_types dict maps string variable ids to types (:class:`.Variable`)
+                or (type, kwargs) to pass keyword arguments to the Variable.
             index (str): Name of id column in the dataframe.
             time_index (str): Name of time column in the dataframe.
             secondary_time_index (dict[str -> str]): Dictionary mapping columns
                 in the dataframe to the time index column they are associated with.
             last_time_index (pd.Series): Time index of the last event for each
                 instance across all child entities.
-            encoding (str, optional)) : If None, will use 'ascii'. Another option is 'utf-8',
-                or any encoding supported by pandas.
-
+            make_index (bool, optional) : If True, assume index does not exist as a column in
+                dataframe, and create a new column of that name using integers the (0, len(dataframe)).
+                Otherwise, assume index exists in dataframe.
         """
-        assert is_string(id), "Entity id must be a string"
-        assert len(df.columns) == len(set(df.columns)), "Duplicate column names"
-        self.data = {"df": df,
-                     "last_time_index": last_time_index,
-                     }
-        self.encoding = encoding
-        self._verbose = verbose
-        self.created_index = created_index
-        self.convert_all_variable_data(variable_types)
+        _validate_entity_params(id, df, time_index)
+        created_index, index, df = _create_index(index, make_index, df)
+
         self.id = id
         self.entityset = entityset
-        variable_types = variable_types or {}
-        self.index = index
-        self.time_index = time_index
-        self.secondary_time_index = secondary_time_index or {}
-        # make sure time index is actually in the columns
-        for ti, cols in self.secondary_time_index.items():
-            if ti not in cols:
-                cols.append(ti)
+        self.data = {'df': df, 'last_time_index': last_time_index}
+        self.created_index = created_index
+        self._verbose = verbose
 
-        relationships = [r for r in entityset.relationships
-                         if r.parent_entity.id == id or
-                         r.child_entity.id == id]
+        secondary_time_index = secondary_time_index or {}
+        self._create_variables(variable_types, index, time_index, secondary_time_index)
 
-        link_vars = [v.id for rel in relationships for v in [rel.parent_variable, rel.child_variable]
-                     if v.entity.id == self.id]
+        self.df = df[[v.id for v in self.variables]]
+        self.set_index(index)
 
-        inferred_variable_types = self.infer_variable_types(ignore=list(variable_types.keys()),
-                                                            link_vars=link_vars)
-        for var_id, desired_type in variable_types.items():
-            if isinstance(desired_type, tuple):
-                desired_type = desired_type[0]
-            inferred_variable_types.update({var_id: desired_type})
-
-        self.variables = []
-        for v in inferred_variable_types:
-            # TODO document how vtype can be tuple
-            vtype = inferred_variable_types[v]
-            if isinstance(vtype, tuple):
-                # vtype is (ft.Variable, dict_of_kwargs)
-                _v = vtype[0](v, self, **vtype[1])
-            else:
-                _v = inferred_variable_types[v](v, self)
-            self.variables += [_v]
-
-        # do one last conversion of data once we've inferred
-        self.convert_all_variable_data(inferred_variable_types)
-
-        # make sure index is at the beginning
-        index_variable = [v for v in self.variables
-                          if v.id == self.index][0]
-        self.variables = [index_variable] + [v for v in self.variables
-                                             if v.id != self.index]
-        self.update_data(df=self.df,
-                         already_sorted=already_sorted,
-                         recalculate_last_time_indexes=False)
+        self.time_index = None
+        if time_index:
+            self.set_time_index(time_index, already_sorted=already_sorted)
+        elif not already_sorted:
+                self.df.sort_index(kind="mergesort", inplace=True)
+        self.set_secondary_time_index(secondary_time_index)
 
     def __repr__(self):
         repr_out = u"Entity: {}\n".format(self.id)
@@ -139,6 +98,7 @@ class Entity(object):
 
     @property
     def shape(self):
+        '''Shape of the entity's dataframe'''
         return self.df.shape
 
     def __eq__(self, other, deep=False):
@@ -172,10 +132,15 @@ class Entity(object):
 
     @property
     def is_metadata(self):
+        '''Returns True if all of the Entity's contain no data (empty DataFrames).
+        In general, EntitySets with no data are created by accessing the EntitySet.metadata property,
+        which returns a copy of the current EntitySet with all data removed.
+        '''
         return self.entityset.is_metadata
 
     @property
     def df(self):
+        '''Dataframe providing the data for the entity.'''
         return self.data["df"]
 
     @df.setter
@@ -184,6 +149,9 @@ class Entity(object):
 
     @property
     def last_time_index(self):
+        '''
+        Time index of the last event for each instance across all child entities.
+        '''
         return self.data["last_time_index"]
 
     @last_time_index.setter
@@ -216,6 +184,7 @@ class Entity(object):
 
     @property
     def variable_types(self):
+        '''Dictionary mapping variable id's to variable types'''
         return {v.id: type(v) for v in self.variables}
 
     def convert_variable_type(self, variable_id, new_type,
@@ -359,31 +328,74 @@ class Entity(object):
 
         return df
 
-    def infer_variable_types(self, ignore=None, link_vars=None):
+    def _create_variables(self, variable_types, index, time_index, secondary_time_index):
         """Extracts the variables from a dataframe
 
         Args:
-            ignore (list[str]): Names of variables (columns) for which to skip
-                inference.
-            link_vars (list[str]): Name of linked variables to other entities.
-        Returns:
-            list[Variable]: A list of variables describing the
-                contents of the dataframe.
+            variable_types (dict[str -> dict[str -> type]]) : An entity's
+                variable_types dict maps string variable ids to types (:class:`.Variable`)
+                or (type, kwargs) to pass keyword arguments to the Variable.
+            index (str): Name of index column
+            time_index (str or None): Name of time_index column
+            secondary_time_index (dict[str: [str]]): Dictionary of secondary time columns
+                that each map to a list of columns that depend on that secondary time
         """
+        variables = []
+        variable_types = variable_types or {}
+        if index not in variable_types:
+            variable_types[index] = vtypes.Index
+
+        inferred_variable_types = self.infer_variable_types(variable_types,
+                                                            time_index,
+                                                            secondary_time_index)
+        inferred_variable_types.update(variable_types)
+
+        for v in inferred_variable_types:
+            # TODO document how vtype can be tuple
+            vtype = inferred_variable_types[v]
+            if isinstance(vtype, tuple):
+                # vtype is (ft.Variable, dict_of_kwargs)
+                _v = vtype[0](v, self, **vtype[1])
+            else:
+                _v = inferred_variable_types[v](v, self)
+            variables += [_v]
+        # convert data once we've inferred
+        self.convert_all_variable_data(inferred_variable_types)
+        # make sure index is at the beginning
+        index_variable = [v for v in variables
+                          if v.id == index][0]
+        self.variables = [index_variable] + [v for v in variables
+                                             if v.id != index]
+
+    def infer_variable_types(self, variable_types, time_index, secondary_time_index):
+        '''Infer variable types from dataframe
+
+        Args:
+            variable_types (dict[str -> dict[str -> type]]) : An entity's
+                variable_types dict maps string variable ids to types (:class:`.Variable`)
+                or (type, kwargs) to pass keyword arguments to the Variable.
+            time_index (str or None): Name of time_index column
+            secondary_time_index (dict[str: [str]]): Dictionary of secondary time columns
+                that each map to a list of columns that depend on that secondary time
+        '''
+        link_relationships = [r for r in self.entityset.relationships
+                              if r.parent_entity.id == self.id or
+                              r.child_entity.id == self.id]
+
+        link_vars = [v.id for rel in link_relationships
+                     for v in [rel.parent_variable, rel.child_variable]
+                     if v.entity.id == self.id]
+
         # TODO: set pk and pk types here
-        ignore = ignore or []
-        link_vars = link_vars or []
         inferred_types = {}
         df = self.df
-        vids_to_assume_datetime = [self.time_index]
-        if len(list(self.secondary_time_index.keys())):
-            vids_to_assume_datetime.append(list(self.secondary_time_index.keys())[0])
+        vids_to_assume_datetime = [time_index]
+        if len(list(secondary_time_index.keys())):
+            vids_to_assume_datetime.append(list(secondary_time_index.keys())[0])
         inferred_type = vtypes.Unknown
         for variable in df.columns:
-            if variable in ignore:
+            if variable in variable_types:
                 continue
-            elif variable == self.index or variable.lower() == 'id':
-                inferred_type = vtypes.Index
 
             elif variable in vids_to_assume_datetime:
                 if col_is_datetime(df[variable]):
@@ -409,7 +421,7 @@ class Entity(object):
             elif df[variable].dtype == "bool":
                 inferred_type = vtypes.Boolean
 
-            elif df[variable].dtype.name == "category":
+            elif pdtypes.is_categorical_dtype(df[variable].dtype):
                 inferred_type = vtypes.Categorical
 
             elif col_is_datetime(df[variable]):
@@ -450,7 +462,10 @@ class Entity(object):
         # Make sure column ordering matches variable ordering
         self.df = df[[v.id for v in self.variables]]
         self.set_index(self.index)
-        self.set_time_index(self.time_index, already_sorted=already_sorted)
+        if self.time_index is not None:
+            self.set_time_index(self.time_index, already_sorted=already_sorted)
+        elif not already_sorted:
+            self.df.sort_index(kind="mergesort", inplace=True)
         self.set_secondary_time_index(self.secondary_time_index)
         if recalculate_last_time_indexes and self.last_time_index is not None:
             self.entityset.add_last_time_indexes(updated_entities=[self.id])
@@ -524,40 +539,33 @@ class Entity(object):
         self.variables.remove(v)
 
     def set_time_index(self, variable_id, already_sorted=False):
-        if variable_id is not None:
-            # check time type
-            if self.df.empty:
-                time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
-            else:
-                time_to_check = self.df[variable_id].iloc[0]
-
-            time_type = _check_time_type(time_to_check)
-            if time_type is None:
-                raise TypeError("%s time index not recognized as numeric or"
-                                " datetime" % (self.id))
-
-            if self.entityset.time_type is None:
-                self.entityset.time_type = time_type
-            elif self.entityset.time_type != time_type:
-                raise TypeError("%s time index is %s type which differs from"
-                                " other entityset time indexes" %
-                                (self.id, time_type))
-
-            # use stable sort
-            if not already_sorted:
-                # sort by time variable, then by index
-                self.df.sort_values([variable_id, self.index], inplace=True)
-
-            t = vtypes.NumericTimeIndex
-            if col_is_datetime(self.df[variable_id]):
-                t = vtypes.DatetimeTimeIndex
-            self.convert_variable_type(variable_id, t, convert_data=False)
+        # check time type
+        if self.df.empty:
+            time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
         else:
-            # todo add test for this
-            if not already_sorted:
-                # sort by index
-                self.df.sort_index(kind="mergesort",
-                                   inplace=True)
+            time_to_check = self.df[variable_id].iloc[0]
+
+        time_type = _check_time_type(time_to_check)
+        if time_type is None:
+            raise TypeError("%s time index not recognized as numeric or"
+                            " datetime" % (self.id))
+
+        if self.entityset.time_type is None:
+            self.entityset.time_type = time_type
+        elif self.entityset.time_type != time_type:
+            raise TypeError("%s time index is %s type which differs from"
+                            " other entityset time indexes" %
+                            (self.id, time_type))
+
+        # use stable sort
+        if not already_sorted:
+            # sort by time variable, then by index
+            self.df.sort_values([variable_id, self.index], inplace=True)
+
+        t = vtypes.NumericTimeIndex
+        if col_is_datetime(self.df[variable_id]):
+            t = vtypes.DatetimeTimeIndex
+        self.convert_variable_type(variable_id, t, convert_data=False)
 
         self.time_index = variable_id
 
@@ -576,21 +584,23 @@ class Entity(object):
         self.index = variable_id
 
     def set_secondary_time_index(self, secondary_time_index):
-        if secondary_time_index is not None:
-            for time_index in secondary_time_index:
-                if self.df.empty:
-                    time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[time_index]._default_pandas_dtype]
-                else:
-                    time_to_check = self.df[time_index].iloc[0]
-                time_type = _check_time_type(time_to_check)
-                if time_type is None:
-                    raise TypeError("%s time index not recognized as numeric or"
-                                    " datetime" % (self.id))
-                if self.entityset.time_type != time_type:
-                    raise TypeError("%s time index is %s type which differs from"
-                                    " other entityset time indexes" %
-                                    (self.id, time_type))
-        self.secondary_time_index = secondary_time_index or {}
+        for time_index, columns in secondary_time_index.items():
+            if self.df.empty:
+                time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[time_index]._default_pandas_dtype]
+            else:
+                time_to_check = self.df[time_index].iloc[0]
+            time_type = _check_time_type(time_to_check)
+            if time_type is None:
+                raise TypeError("%s time index not recognized as numeric or"
+                                " datetime" % (self.id))
+            if self.entityset.time_type != time_type:
+                raise TypeError("%s time index is %s type which differs from"
+                                " other entityset time indexes" %
+                                (self.id, time_type))
+            if time_index not in columns:
+                columns.append(time_index)
+
+        self.secondary_time_index = secondary_time_index
 
     def _vals_to_series(self, instance_vals, variable_id):
         """
@@ -644,12 +654,11 @@ class Entity(object):
                         )
                     df = df[mask]
 
-        for secondary_time_index in self.secondary_time_index:
-                # should we use ignore time last here?
+        for secondary_time_index, columns in self.secondary_time_index.items():
+            # should we use ignore time last here?
             if time_last is not None and not df.empty:
                 mask = df[secondary_time_index] >= time_last
-                second_time_index_columns = self.secondary_time_index[secondary_time_index]
-                df.loc[mask, second_time_index_columns] = np.nan
+                df.loc[mask, columns] = np.nan
 
         return df
 
@@ -669,3 +678,43 @@ def col_is_datetime(col):
         else:
             return True
     return False
+
+
+def _create_index(index, make_index, df):
+    '''Handles index creation logic base on user input'''
+    created_index = None
+
+    if index is None:
+        # Case 1: user wanted to make index but did not specify column name
+        assert not make_index, "Must specify an index name if make_index is True"
+        # Case 2: make_index not specified but no index supplied, use first column
+        logger.warning(("Using first column as index. ",
+                        "To change this, specify the index parameter"))
+        index = df.columns[0]
+    elif make_index and index in df.columns:
+        # Case 3: user wanted to make index but column already exists
+        raise RuntimeError("Cannot make index: index variable already present")
+    elif index not in df.columns:
+        if not make_index:
+            # Case 4: user names index, it is not in df. does not specify
+            # make_index.  Make new index column and warn
+            logger.warning("index %s not found in dataframe, creating new "
+                           "integer column", index)
+        # Case 5: make_index with no errors or warnings
+        # (Case 4 also uses this code path)
+        df.insert(0, index, range(0, len(df)))
+        created_index = index
+    # Case 6: user specified index, which is already in df. No action needed.
+    return created_index, index, df
+
+
+def _validate_entity_params(id, df, time_index):
+    '''Validation checks for Entity inputs'''
+    assert is_string(id), "Entity id must be a string"
+    assert len(df.columns) == len(set(df.columns)), "Duplicate column names"
+    for c in df.columns:
+        if not is_string(c):
+            raise ValueError("All column names must be strings (Column {} "
+                             "is not a string)".format(c))
+    if time_index is not None and time_index not in df.columns:
+        raise LookupError('Time index not found in dataframe')

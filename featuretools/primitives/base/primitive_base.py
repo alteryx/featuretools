@@ -12,8 +12,10 @@ from featuretools.utils.wrangle import (
     _check_timedelta
 )
 from featuretools.variable_types import (
+    Categorical,
     Datetime,
     DatetimeTimeIndex,
+    Id,
     Numeric,
     NumericTimeIndex,
     Variable
@@ -104,8 +106,9 @@ class PrimitiveBase(object):
         return_type = self.return_type
 
         while return_type is None:
-            feature = feature.base_features[0]
-            return_type = feature.return_type
+            # get return type of first base feature
+            base_feature = feature.base_features[0]
+            return_type = base_feature.return_type
 
             # only the original time index should exist
             # so make this feature's return type just a Datetime
@@ -113,6 +116,13 @@ class PrimitiveBase(object):
                 return_type = Datetime
             elif return_type == NumericTimeIndex:
                 return_type = Numeric
+
+            # direct features should keep the Id return type, but all other features should get
+            # converted to Categorical
+            if not isinstance(feature, DirectFeature) and return_type == Id:
+                return_type = Categorical
+
+            feature = base_feature
 
         return return_type
 

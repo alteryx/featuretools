@@ -14,7 +14,7 @@ from .relationship import Relationship
 from .serialization import load_entity_data, write_entityset
 
 import featuretools.variable_types.variable as vtypes
-from featuretools.utils.gen_utils import is_string, make_tqdm_iterator
+from featuretools.utils.gen_utils import make_tqdm_iterator
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
@@ -34,11 +34,6 @@ class EntitySet(object):
         metadata
 
     """
-    id = None
-    entities = []
-    relationships = []
-    name = None
-
     def __init__(self, id=None, entities=None, relationships=None):
         """Creates EntitySet
 
@@ -203,7 +198,6 @@ class EntitySet(object):
                 'index': e.index,
                 'time_index': e.time_index,
                 'secondary_time_index': e.secondary_time_index,
-                'encoding': e.encoding,
                 'variables': {
                     v.id: v.create_metadata_dict()
                     for v in e.variables
@@ -225,7 +219,6 @@ class EntitySet(object):
                                      index=entity['index'],
                                      time_index=entity['time_index'],
                                      secondary_time_index=entity['secondary_time_index'],
-                                     encoding=entity['encoding'],
                                      variable_types=variable_types)
             if entity['has_last_time_index']:
                 set_last_time_indexes = True
@@ -643,7 +636,6 @@ class EntitySet(object):
                               make_index=False,
                               time_index=None,
                               secondary_time_index=None,
-                              encoding=None,
                               already_sorted=False):
         """
         Load the data for a specified entity from a Pandas DataFrame.
@@ -670,9 +662,6 @@ class EntitySet(object):
 
             secondary_time_index (dict[str -> Variable]): Name of variable
                 containing time data to use a second time index for the entity.
-
-            encoding (str, optional): If None, will use 'ascii'. Another option is
-                'utf-8', or any encoding supported by pandas.
 
             already_sorted (bool, optional) : If True, assumes that input dataframe
                 is already sorted by time. Defaults to False.
@@ -701,13 +690,11 @@ class EntitySet(object):
                 es["transactions"].df
 
         """
-
         return self._import_from_dataframe(entity_id, dataframe.copy(), index=index,
                                            make_index=make_index,
                                            time_index=time_index,
                                            secondary_time_index=secondary_time_index,
                                            variable_types=variable_types,
-                                           encoding=encoding,
                                            already_sorted=already_sorted)
 
     def normalize_entity(self, base_entity_id, new_entity_id, index,
@@ -850,8 +837,7 @@ class EntitySet(object):
                                     time_index=new_entity_time_index,
                                     secondary_time_index=make_secondary_time_index,
                                     last_time_index=None,
-                                    variable_types=transfer_types,
-                                    encoding=base_entity.encoding)
+                                    variable_types=transfer_types)
 
         for v in additional_variables:
             self.entity_dict[base_entity_id].delete_variable(v)
@@ -1114,8 +1100,6 @@ class EntitySet(object):
                                time_index=None,
                                secondary_time_index=None,
                                last_time_index=None,
-                               parse_date_cols=None,
-                               encoding=None,
                                already_sorted=False):
         """
         Load the data for a specified entity from a pandas dataframe.
@@ -1131,56 +1115,14 @@ class EntitySet(object):
             make_index (bool, optional) : If True, assume index does not exist as a column in
                 dataframe, and create a new column of that name using integers the (0, len(dataframe)).
                 Otherwise, assume index exists in dataframe.
-                An entity's variable_types dict maps string variable ids to types (:class:`.Variable`).
             time_index (str, optional) : Name of column to use as a time index for this entity. Must be
                 a Datetime or Numeric dtype.
             secondary_time_index (str, optional): Name of variable containing
                 time data to use a second time index for the entity.
-            encoding (str, optional) : If None, will use 'ascii'. Another option is 'utf-8',
-                or any encoding supported by pandas. Passed into underlying pandas.to_csv() calls,
-                so see Pandas documentation for more information.
             already_sorted (bool, optional) : If True, assumes that input dataframe is already sorted by time.
                 Defaults to False.
         """
         variable_types = variable_types or {}
-
-        # DFS TODO: confirm we want this if else block
-        if index is None:
-            assert not make_index, "Must specify an index name if make_index is True"
-            logger.warning(("Using first column as index. ",
-                            "To change this, specify the index parameter"))
-            index = dataframe.columns[0]
-        else:
-            if index not in variable_types:
-                variable_types[index] = vtypes.Index
-
-        created_index = None
-
-        if make_index and index in dataframe.columns:
-            raise RuntimeError("Cannot make index: index variable already present")
-
-        if make_index or index not in dataframe.columns:
-            if not make_index:
-                logger.warning("index %s not found in dataframe, creating new integer column",
-                               index)
-            dataframe.insert(0, index, range(0, len(dataframe)))
-            created_index = index
-
-        if time_index is not None and time_index not in dataframe.columns:
-            raise LookupError('Time index not found in dataframe')
-
-        if parse_date_cols is not None:
-            for c in parse_date_cols:
-                variable_types[c] = vtypes.Datetime
-
-        for c in dataframe.columns:
-            if not is_string(c):
-                raise ValueError("All column names must be strings (Column {} is not a string)".format(c))
-
-            if dataframe[c].dtype.name.find('category') > -1:
-                if c not in variable_types:
-                    variable_types[c] = vtypes.Categorical
-
         entity = Entity(entity_id,
                         dataframe,
                         self,
@@ -1189,9 +1131,8 @@ class EntitySet(object):
                         time_index=time_index,
                         secondary_time_index=secondary_time_index,
                         last_time_index=last_time_index,
-                        encoding=encoding,
                         already_sorted=already_sorted,
-                        created_index=created_index)
+                        make_index=make_index)
         self.entity_dict[entity.id] = entity
         self.reset_metadata()
         return self
