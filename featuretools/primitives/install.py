@@ -107,7 +107,8 @@ def download_archive(uri):
             s3 = s3fs.S3FileSystem(anon=True)
             remote_archive = s3.open(uri, 'rb')
 
-        f.write(remote_archive.read())
+        for line in remote_archive:
+            f.write(line)
 
         remote_archive.close()
 
