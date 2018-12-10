@@ -36,7 +36,7 @@ class AggregationPrimitive(PrimitiveBase):
             assert self.where.entity.id == self.child_entity.id, msg
 
         if use_previous:
-            assert self.child_entity.has_time_index(), (
+            assert self.child_entity.time_index is not None, (
                 "Applying function that requires time index to entity that "
                 "doesn't have one")
 
@@ -70,7 +70,7 @@ class AggregationPrimitive(PrimitiveBase):
         base_features_str = self._base_feature_str()
 
         return u"%s(%s.%s%s%s)" % (self.name.upper(),
-                                   self.child_entity.name,
+                                   self.child_entity.id,
                                    base_features_str,
                                    where_str, use_prev_str)
 
@@ -126,7 +126,6 @@ def make_agg_primitive(function, input_types, return_type, name=None,
             from featuretools.primitives import make_agg_primitive
             from featuretools.variable_types import DatetimeTimeIndex, Numeric
 
-
             def time_since_last(values, time=None):
                 time_since = time - values.iloc[0]
                 return time_since.total_seconds()
@@ -180,7 +179,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
                 assert self.where.entity.id == self.child_entity.id, msg
 
             if use_previous:
-                assert self.child_entity.has_time_index(), (
+                assert self.child_entity.time_index is not None, (
                     "Applying function that requires time index to entity that"
                     " doesn't have one")
 
@@ -188,6 +187,8 @@ def make_agg_primitive(function, input_types, return_type, name=None,
             self.kwargs = copy.deepcopy(self.default_kwargs)
             self.kwargs.update(kwargs)
             self.partial = functools.partial(function, **self.kwargs)
+            self.partial.__name__ = name
+
             super(AggregationPrimitive, self).__init__(parent_entity,
                                                        self.base_features)
         new_class.__init__ = new_class_init

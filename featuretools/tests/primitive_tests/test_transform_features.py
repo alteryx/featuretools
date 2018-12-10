@@ -249,7 +249,8 @@ def test_arithmetic_of_val(es):
 
 
 def test_arithmetic_two_vals_fails(es):
-    with pytest.raises(ValueError):
+    error_text = "one of.*must be an instance,of PrimitiveBase or Variable"
+    with pytest.raises(ValueError, match=error_text):
         Add(2, 2)
 
 
@@ -476,7 +477,7 @@ def test_cum_sum_use_previous_integer_time(int_es):
     es = int_es
 
     log_value_feat = es['log']['value']
-    with pytest.raises(AssertionError):
+    with pytest.raises(AssertionError, match=''):
         CumSum(log_value_feat, es['log']['session_id'],
                use_previous=Timedelta(3, 'm'))
 
@@ -614,6 +615,21 @@ def test_cum_sum_use_previous_and_where_absolute(es):
     assert len(cvalues) == 15
     for i, v in enumerate(cum_sum_values):
         assert v == cvalues[i]
+
+
+def test_cum_handles_uses_full_entity(es):
+    def check(feature):
+        pandas_backend = PandasBackend(es, [feature])
+        df_1 = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2], time_last=None)
+        df_2 = pandas_backend.calculate_all_features(instance_ids=[2], time_last=None)
+
+        # check that the value for instance id 2 matches
+        assert (df_2.loc[2] == df_1.loc[2]).all()
+
+    for primitive in [CumSum, CumMean, CumMax, CumMin]:
+        check(primitive(es['log']['value'], es['log']['session_id']))
+
+    check(CumCount(es['log']['id'], es['log']['session_id']))
 
 
 def test_cum_mean(es):
@@ -816,7 +832,7 @@ def test_overrides(es):
 
 
 def test_override_boolean(es):
-    count = Count(es['log']['value'], es['sessions'])
+    count = Count(es['log']['id'], es['sessions'])
     count_lo = GreaterThan(count, 1)
     count_hi = LessThan(count, 10)
 
@@ -853,7 +869,7 @@ def test_override_cmp_from_variable(es):
 
 
 def test_override_cmp(es):
-    count = Count(es['log']['value'], es['sessions'])
+    count = Count(es['log']['id'], es['sessions'])
     _sum = Sum(es['log']['value'], es['sessions'])
     gt_lo = count > 1
     gt_other = count > _sum
@@ -1126,7 +1142,7 @@ def test_two_kinds_of_dependents(es):
     agg3 = Sum(agg2, es['customers'])
     pandas_backend = PandasBackend(es, [p, g, agg3])
     df = pandas_backend.calculate_all_features([0, 1], None)
-    assert df[p.get_name()].tolist() == [0.5, 1.0]
+    assert df[p.get_name()].tolist() == [2. / 3, 1.0]
     assert df[g.get_name()].tolist() == [15, 26]
 
 
@@ -1161,7 +1177,8 @@ def test_make_transform_restricts_time_keyword():
         description="This primitive should be accepted",
         uses_calc_time=True)
 
-    with pytest.raises(ValueError):
+    error_text = "'time' is a restricted keyword.  Please use a different keyword."
+    with pytest.raises(ValueError, match=error_text):
         make_trans_primitive(
             lambda x, time=False: x,
             [Datetime],
@@ -1179,7 +1196,8 @@ def test_make_transform_restricts_time_arg():
         description="This primitive should be accepted",
         uses_calc_time=True)
 
-    with pytest.raises(ValueError):
+    error_text = "'time' is a restricted keyword.  Please use a different keyword."
+    with pytest.raises(ValueError, match=error_text):
         make_trans_primitive(
             lambda time: time,
             [Datetime],

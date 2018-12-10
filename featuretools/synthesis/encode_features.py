@@ -12,7 +12,7 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
             feature_matrix (pd.DataFrame): Dataframe of features.
             features (list[PrimitiveBase]): Feature definitions in feature_matrix.
             top_n (pd.DataFrame): Number of top values to include.
-            include_unknown (pd.DataFrame): Add feature encoding an unkwown class.
+            include_unknown (pd.DataFrame): Add feature encoding an unknown class.
                 defaults to True
             to_encode (list[str]): List of feature names to encode.
                 features not in this list are unencoded in the output matrix
@@ -110,7 +110,7 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
             X[add.get_name()] = (X[f.get_name()] == label).astype(int)
 
         if include_unknown:
-            unknown = f.isin(unique).NOT().rename(f.get_name() + " = unknown")
+            unknown = f.isin(unique).NOT().rename(f.get_name() + " is unknown")
             encoded.append(unknown)
             X[unknown.get_name()] = (~X[f.get_name()].isin(unique)).astype(int)
 

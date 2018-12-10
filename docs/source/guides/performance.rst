@@ -13,27 +13,8 @@ Each row in a feature matrix created by Featuretools is calculated at a specific
 
     Featuretools is very precise in how it deals with time. For more information, see :doc:`/automated_feature_engineering/handling_time`.
 
-If there are a large number of unique cutoff times relative to the number of instances for which we are calculating features, this overhead can outweigh the time needed to calculate the features. Therefore, by reducing the number of unique cutoff times, we minimize the overhead from searching for and extracting data for feature calculations.
+If you have many unique cutoff times, it is often worthwhile to figure out how to have fewer. This can be done manually by figuring out which unique times are necessary for your prediction problem or automatically using :ref:`approximate <approximate>`.
 
-
-Approximating features by rounding cutoff time
-----------------------------------------------
-One way to decrease the number of unique cutoff times is to round cutoff times to an nearby earlier point in time. An earlier cutoff time is always valid for predictive modeling — it just means we’re not using some of the data we could potentially use while calculating that feature. In that way, we gain computational speed by losing some information.
-
-To understand when approximation is useful, consider calculating features for a model to predict fraudulent credit card transactions. In this case, an important feature might be, "the average transaction amount for this card in the past". While this value can change every time there is a new transaction, updating it less frequently might not impact accuracy.
-
-.. note::
-
-    The bank BBVA used approximation when building a predictive model for credit card fraud using Featuretools. For more details, see the "Real-time deployment considerations" section of the `white paper <https://arxiv.org/pdf/1710.07709.pdf>`_ describing the work.
-
-The frequency of approximation is controlled using the ``approximate`` parameter to ``dfs`` or ``calculate_feature_matrix``. For example, the following code would approximate aggregation features at 1 day intervals::
-
-    fm = ft.calculate_feature_matrix(entityset=entityset
-                                     features=feature_list,
-                                     cutoff_time=cutoff_times,
-                                     approximate="1 day")
-
-In this computation, features that can be approximated will be calculated at 1 day intervals, while features that cannot be approximated (e.g "is the current transaction > $50") will be calculated at the exact cutoff time.
 
 Adjust chunk size when calculating feature matrix
 -------------------------------------------------
@@ -83,6 +64,10 @@ Partition and Distribute Data
 When an entire dataset is not required to calculate the features for a given set of instances, we can split the data into independent partitions and calculate on each partition. For example, imagine we are calculating features for customers and the features are "number of other customers in this zip code" or "average age of other customers in this zip code". In this case, we can load in data partitioned by zip code. As long as we have all of the data for a zip code when calculating, we can calculate all features for a subset of customers.
 
 An example of this approach can be seen in the `Predict Next Purchase demo notebook <https://github.com/featuretools/predict_next_purchase>`_. In this example, we partition data by customer and only load a fixed number of customers into memory at any given time. We implement this easily using `Dask <https://dask.pydata.org/>`_, which could also be used to scale the computation to a cluster of computers. A framework like `Spark <https://spark.apache.org/>`_ could be used similarly.
+
+An additional example of partitioning data to distribute on multiple cores or a cluster using Dask can be seen in the `Featuretools on Dask notebook <https://github.com/Featuretools/Automated-Manual-Comparison/blob/master/Loan%20Repayment/notebooks/Featuretools%20on%20Dask.ipynb>`_. This approach is detailed in the `Parallelizing Feature Engineering with Dask article <https://medium.com/feature-labs-engineering/scaling-featuretools-with-dask-ce46f9774c7d>`_ on the Feature Labs engineering blog. Dask allows for simple scaling to multiple cores on a single computer or multiple machines on a cluster. 
+
+For a similar partition and distribute implementation using Apache Spark with PySpark, refer to the `Feature Engineering on Spark notebook <https://github.com/Featuretools/predicting-customer-churn-with-spark/blob/master/churn/Feature%20Engineering%20on%20Spark.ipynb>`_. This implementation shows how to carry out feature engineering on a cluster of EC2 instances using Spark as the distributed framework. A write-up of this approach is described in the `Featuretools on Spark article <https://medium.com/feature-labs-engineering/featuretools-on-spark-e5aa67eaf807>`_ on the Feature Labs engineering blog.
 
 Feature Labs
 ------------

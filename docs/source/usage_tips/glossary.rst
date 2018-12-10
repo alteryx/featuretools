@@ -8,7 +8,7 @@ Glossary
     :sorted:
 
     feature
-        A transformation of data used for machine learning.  featuretools has a custom language for defining features as described :ref:`here <feature-engineering-language>`. All features are represented by subclasses of :class:`FeatureBase`.
+        A transformation of data used for machine learning.  featuretools has a custom language for defining features as described :ref:`here <primitives>`. All features are represented by subclasses of :class:`FeatureBase`.
 
     feature engineering
         The process of transforming data into representations that are better for machine learning.

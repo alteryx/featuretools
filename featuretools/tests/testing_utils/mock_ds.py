@@ -16,11 +16,11 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
     """ Makes a entityset with the following shape:
 
           R         Regions
-         / \        .
+         / \\       .
         S   C       Stores, Customers
             |       .
             S   P   Sessions, Products
-             \ /    .
+             \\ /   .
               L     Log
     """
 
@@ -34,6 +34,8 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
     product_df = pd.DataFrame({'id': ['Haribo sugar-free gummy bears', 'car',
                                       'toothpaste', 'brown bag', 'coke zero',
                                       'taco clock'],
+                               'department': ["food", "electronics", "health",
+                                              "food", "food", "electronics"],
                                'rating': [3.5, 4.0, 4.5, 1.5, 5.0, 5.0]})
     customer_times = {
         'signup_date': [datetime(2011, 4, 8), datetime(2011, 4, 9),
@@ -224,6 +226,7 @@ def make_variable_types(with_integer_time_index=False):
     product_variable_types = {
         'id': variable_types.Categorical,
         'rating': variable_types.Numeric,
+        'department': variable_types.Categorical,
     }
 
     customer_variable_types = {
@@ -327,8 +330,9 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
         if time_index is not None:
             ti_name = time_index['name']
             secondary = time_index['secondary']
-
         df = pd.read_csv(filenames[entity], encoding='utf-8')
+        if entity == "customers":
+            df["id"] = pd.Categorical(df['id'])
         if entity == 'sessions':
             # This should be changed back when converted to an EntitySet
             df['customer_id'] = pd.Categorical(df['customer_id'])
@@ -340,7 +344,6 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
                                  df,
                                  index='id',
                                  variable_types=variable_types[entity],
-                                 encoding='utf-8',
                                  time_index=ti_name,
                                  secondary_time_index=secondary)
 

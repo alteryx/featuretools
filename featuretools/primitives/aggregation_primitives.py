@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
-from scipy.stats import skew
 
 from .aggregation_primitive_base import (
     AggregationPrimitive,
@@ -27,47 +26,36 @@ from featuretools.variable_types import (
 class Count(AggregationPrimitive):
     """Counts the number of non null values."""
     name = "count"
-    input_types = [[Index], [Variable]]
+    input_types = [[Index]]
     return_type = Numeric
     stack_on_self = False
     default_value = 0
 
-    def __init__(self, id_feature, parent_entity, count_null=False, **kwargs):
-        self.count_null = count_null
+    def __init__(self, id_feature, parent_entity, **kwargs):
         super(Count, self).__init__(id_feature, parent_entity, **kwargs)
 
     def get_function(self):
-        def func(values, count_null=self.count_null):
-            if len(values) == 0:
-                return 0
-
-            if count_null:
-                values = values.fillna(0)
-
-            return values.count()
-        return func
+        return 'count'
 
     def generate_name(self):
         where_str = self._where_str()
         use_prev_str = self._use_prev_str()
 
-        return u"COUNT(%s%s%s)" % (self.child_entity.name,
+        return u"COUNT(%s%s%s)" % (self.child_entity.id,
                                    where_str, use_prev_str)
 
 
 class Sum(AggregationPrimitive):
-    """Counts the number of elements of a numeric or boolean feature."""
+    """Sums elements of a numeric or boolean feature."""
     name = "sum"
     input_types = [Numeric]
     return_type = Numeric
     stack_on_self = False
     stack_on_exclude = [Count]
+    default_value = 0
 
-    # todo: handle count nulls
     def get_function(self):
-        def sum_func(x):
-            return np.nan_to_num(x.values).sum(dtype=np.float)
-        return sum_func
+        return np.sum
 
 
 class Mean(AggregationPrimitive):
@@ -76,9 +64,8 @@ class Mean(AggregationPrimitive):
     input_types = [Numeric]
     return_type = Numeric
 
-    # p todo: handle nulls
     def get_function(self):
-        return np.nanmean
+        return np.mean
 
 
 class Mode(AggregationPrimitive):
@@ -88,39 +75,25 @@ class Mode(AggregationPrimitive):
     return_type = None
 
     def get_function(self):
-        def pd_mode(x):
-            if x.mode().shape[0] == 0:
-                return np.nan
-            return x.mode().iloc[0]
+        def pd_mode(s):
+            return s.mode().get(0, np.nan)
         return pd_mode
 
 
 Min = make_agg_primitive(
     np.min,
     [Numeric],
-    None,
-    name="min",
+    Numeric,
+    name="Min",
     stack_on_self=False,
     description="Finds the minimum non-null value of a numeric feature.")
-
-
-# class Min(AggregationPrimitive):
-#     """Finds the minimum non-null value of a numeric feature."""
-#     name = "min"
-#     input_types =  [Numeric]
-#     return_type = None
-#     # max_stack_depth = 1
-#     stack_on_self = False
-
-#     def get_function(self):
-#         return np.min
 
 
 class Max(AggregationPrimitive):
     """Finds the maximum non-null value of a numeric feature."""
     name = "max"
     input_types = [Numeric]
-    return_type = None
+    return_type = Numeric
     # max_stack_depth = 1
     stack_on_self = False
 
@@ -138,7 +111,7 @@ class NUnique(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self):
-        return lambda x: x.nunique()
+        return 'nunique'
 
 
 class NumTrue(AggregationPrimitive):
@@ -151,9 +124,7 @@ class NumTrue(AggregationPrimitive):
     stack_on_exclude = []
 
     def get_function(self):
-        def num_true(x):
-            return np.nan_to_num(x.values).sum()
-        return num_true
+        return np.sum
 
 
 class PercentTrue(AggregationPrimitive):
@@ -164,12 +135,11 @@ class PercentTrue(AggregationPrimitive):
     max_stack_depth = 1
     stack_on = []
     stack_on_exclude = []
+    default_value = 0
 
     def get_function(self):
-        def percent_true(x):
-            if len(x) == 0:
-                return np.nan
-            return np.nan_to_num(x.values).sum(dtype=np.float) / len(x)
+        def percent_true(s):
+            return s.fillna(0).mean()
         return percent_true
 
 
@@ -252,7 +222,7 @@ class Median(AggregationPrimitive):
     """Finds the median value of any feature with well-ordered values."""
     name = "median"
     input_types = [Numeric]
-    return_type = None
+    return_type = Numeric
     # max_stack_depth = 2
 
     def get_function(self):
@@ -274,7 +244,7 @@ class Skew(AggregationPrimitive):
     # max_stack_depth = 1
 
     def get_function(self):
-        return skew
+        return 'skew'
 
 
 class Std(AggregationPrimitive):
@@ -287,7 +257,7 @@ class Std(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self):
-        return np.nanstd
+        return np.std
 
 
 class Last(AggregationPrimitive):

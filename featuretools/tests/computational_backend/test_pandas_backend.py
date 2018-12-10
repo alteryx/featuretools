@@ -2,10 +2,14 @@
 
 from datetime import datetime
 
+import numpy as np
+import pandas as pd
 import pytest
+from numpy.testing import assert_array_equal
 
 from ..testing_utils import make_ecommerce_entityset
 
+import featuretools as ft
 from featuretools import Timedelta
 from featuretools.computational_backends.pandas_backend import PandasBackend
 from featuretools.primitives import (
@@ -23,7 +27,8 @@ from featuretools.primitives import (
     Mode,
     NMostCommon,
     NotEquals,
-    Sum
+    Sum,
+    Trend
 )
 
 
@@ -377,7 +382,7 @@ def test_make_dfeat_of_agg_feat_through_parent(entityset, backend):
     The graph looks like this:
 
         R       C = Customers, the entity we're trying to predict on
-       / \      R = Regions, a parent of customers
+       / \\     R = Regions, a parent of customers
       S   C     S = Stores, a child of regions
           |
          etc.
@@ -406,7 +411,7 @@ def test_make_deep_agg_feat_of_dfeat_of_agg_feat(entityset, backend):
           C     C = Customers, the entity we're trying to predict on
           |     S = Sessions, a child of Customers
       P   S     L = Log, a child of both Sessions and Log
-       \ /      P = Products, a parent of Log which is not a descendent of customers
+       \\ /     P = Products, a parent of Log which is not a descendent of customers
         L
 
     We're trying to calculate a DFeat from L to P on an agg_feat of P on L, and
@@ -464,6 +469,19 @@ def test_topn(entityset, backend):
         assert set(true_results[i]) == set(values)
 
 
+def test_trend(entityset, backend):
+    trend = Trend([entityset['log']['value'], entityset['log']['datetime']],
+                  entityset['customers'])
+    pandas_backend = backend([trend])
+
+    df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2],
+                                               time_last=None)
+
+    true_results = [-0.812730, 4.870378, np.nan]
+
+    np.testing.assert_almost_equal(df[trend.get_name()].values.tolist(), true_results, decimal=5)
+
+
 def test_direct_squared(entityset, backend):
     feature = IdentityFeature(entityset['log']['value'])
     squared = feature * feature
@@ -472,3 +490,49 @@ def test_direct_squared(entityset, backend):
                                                time_last=None)
     for i, row in df.iterrows():
         assert (row[0] * row[0]) == row[1]
+
+
+def test_agg_empty_child(entityset, backend):
+    customer_count_feat = Count(entityset['log']['id'],
+                                parent_entity=entityset['customers'])
+    pandas_backend = backend([customer_count_feat])
+
+    # time last before the customer had any events, so child frame is empty
+    df = pandas_backend.calculate_all_features(instance_ids=[0],
+                                               time_last=datetime(2011, 4, 8))
+
+    assert df["COUNT(log)"].iloc[0] == 0
+
+
+def test_empty_child_dataframe():
+    parent_df = pd.DataFrame({"id": [1]})
+    child_df = pd.DataFrame({"id": [1, 2, 3],
+                             "parent_id": [1, 1, 1],
+                             "time_index": pd.date_range(start='1/1/2018', periods=3),
+                             "value": [10, 5, 2]})
+
+    es = ft.EntitySet(id="blah")
+    es.entity_from_dataframe(entity_id="parent", dataframe=parent_df, index="id")
+    es.entity_from_dataframe(entity_id="child", dataframe=child_df, index="id", time_index="time_index")
+    es.add_relationship(ft.Relationship(es["parent"]["id"], es["child"]["parent_id"]))
+
+    # create regular agg
+    count = Count(es["child"]['id'], es["parent"])
+
+    # create agg feature that requires multiple arguments
+    trend = Trend([es["child"]['value'], es["child"]['time_index']], es["parent"])
+
+    # create aggs with where
+    where = ft.Feature(es["child"]["value"]) == 1
+    count_where = Count(es["child"]['id'], es["parent"], where=where)
+    trend_where = Trend([es["child"]['value'], es["child"]['time_index']], es["parent"], where=where)
+
+    # cutoff time before all rows
+    fm = ft.calculate_feature_matrix(entityset=es, features=[count, count_where, trend, trend_where], cutoff_time=pd.Timestamp("12/31/2017"))
+    names = [count.get_name(), count_where.get_name(), trend.get_name(), trend_where.get_name()]
+    assert_array_equal(fm[names], [[0, 0, np.nan, np.nan]])
+
+    # cutoff time after all rows, but where clause filters all rows
+    fm2 = ft.calculate_feature_matrix(entityset=es, features=[count_where, trend_where], cutoff_time=pd.Timestamp("1/4/2018"))
+    names = [count_where.get_name(), trend_where.get_name()]
+    assert_array_equal(fm2[names], [[0, np.nan]])

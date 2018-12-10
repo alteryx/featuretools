@@ -8,13 +8,14 @@ import pytest
 
 from ..testing_utils import feature_with_name, make_ecommerce_entityset
 
-from featuretools import calculate_feature_matrix, dfs
+import featuretools as ft
 from featuretools.primitives import (
     AggregationPrimitive,
     Count,
     Feature,
     Mean,
     Median,
+    NMostCommon,
     NumTrue,
     Sum,
     TimeSinceLast,
@@ -29,6 +30,7 @@ from featuretools.synthesis.deep_feature_synthesis import (
 from featuretools.variable_types import (
     Datetime,
     DatetimeTimeIndex,
+    Discrete,
     Index,
     Numeric,
     Variable
@@ -38,38 +40,6 @@ from featuretools.variable_types import (
 @pytest.fixture(scope='module')
 def es():
     return make_ecommerce_entityset()
-
-
-@pytest.fixture
-def child_entity(es):
-    return es['customers']
-
-
-@pytest.fixture
-def grandchild_entity(es):
-    return es['sessions']
-
-
-@pytest.fixture
-def child(es, child_entity):
-    return Count(es['sessions']['id'],
-                 parent_entity=child_entity)
-
-
-@pytest.fixture
-def parent_class():
-    return Mean
-
-
-@pytest.fixture
-def parent_entity(es):
-    return es[u'régions']
-
-
-@pytest.fixture
-def parent(parent_class, parent_entity, child):
-    return make_parent_instance(parent_class,
-                                parent_entity, child)
 
 
 @pytest.fixture
@@ -84,11 +54,6 @@ def test_primitive():
             return None
 
     return TestAgg
-
-
-def make_parent_instance(parent_class, parent_entity, base_feature,
-                         where=None):
-    return parent_class(base_feature, parent_entity, where=where)
 
 
 def test_get_depth(es):
@@ -111,7 +76,6 @@ def test_get_depth(es):
 def test_makes_count(es):
     dfs = DeepFeatureSynthesis(target_entity_id='sessions',
                                entityset=es,
-                               filters=[],
                                agg_primitives=[Count],
                                trans_primitives=[])
 
@@ -139,7 +103,7 @@ def test_count_null_and_make_agg_primitive(es):
     def count_generate_name(self):
         where_str = self._where_str()
         use_prev_str = self._use_prev_str()
-        return u"COUNT(%s%s%s)" % (self.child_entity.name,
+        return u"COUNT(%s%s%s)" % (self.child_entity.id,
                                    where_str,
                                    use_prev_str)
 
@@ -147,21 +111,23 @@ def test_count_null_and_make_agg_primitive(es):
                                name="count", stack_on_self=False,
                                cls_attributes={"generate_name": count_generate_name})
     count_null = Count(es['log']['value'], es['sessions'], count_null=True)
-    feature_matrix = calculate_feature_matrix([count_null], entityset=es)
+    feature_matrix = ft.calculate_feature_matrix([count_null], entityset=es)
     values = [5, 4, 1, 2, 3, 2]
     assert (values == feature_matrix[count_null.get_name()]).all()
 
 
-def test_check_input_types(es, child, parent):
-    mean = parent
+def test_check_input_types(es):
+    count = Count(es["sessions"]["id"], es["customers"])
+    mean = Mean(count, es[u"régions"])
     assert mean._check_input_types()
-    boolean = child > 3
-    mean = make_parent_instance(Mean, es[u'régions'],
-                                child, where=boolean)
+
+    boolean = count > 3
+    mean = Mean(count, es[u"régions"], where=boolean)
     assert mean._check_input_types()
 
 
-def test_base_of_and_stack_on_heuristic(es, test_primitive, child):
+def test_base_of_and_stack_on_heuristic(es, test_primitive):
+    child = Count(es["sessions"]["id"], es["customers"])
     test_primitive.stack_on = []
     child.base_of = []
     assert not (check_stacking(test_primitive, [child]))
@@ -199,9 +165,9 @@ def test_base_of_and_stack_on_heuristic(es, test_primitive, child):
     assert (check_stacking(test_primitive, [child]))
 
 
-def test_stack_on_self(es, test_primitive, parent_entity):
+def test_stack_on_self(es, test_primitive):
     # test stacks on self
-    child = test_primitive(es['log']['value'], parent_entity)
+    child = test_primitive(es['log']['value'], es[u'régions'])
     test_primitive.stack_on = []
     child.base_of = []
     test_primitive.stack_on_self = False
@@ -214,6 +180,12 @@ def test_stack_on_self(es, test_primitive, parent_entity):
     test_primitive.stack_on = None
     test_primitive.stack_on_self = False
     assert not (check_stacking(test_primitive, [child]))
+
+
+def test_stack_expanding(es, test_primitive):
+    test_primitive.input_types = [Discrete]
+    expanding_primitive = NMostCommon(es['sessions']['device_type'], es[u'régions'])
+    assert not (check_stacking(test_primitive, [expanding_primitive]))
 
 
 # P TODO: this functionality is currently missing
@@ -234,7 +206,6 @@ def test_stack_on_self(es, test_primitive, parent_entity):
 #     assert grandparent.can_apply(parent_entity, 'customers')
 
 def test_init_and_name(es):
-    from featuretools import calculate_feature_matrix
     session = es['sessions']
     log = es['log']
 
@@ -256,15 +227,15 @@ def test_init_and_name(es):
 
                 # try to get name and calculate
                 instance.get_name()
-                calculate_feature_matrix([instance], entityset=es).head(5)
+                ft.calculate_feature_matrix([instance], entityset=es).head(5)
 
 
 def test_time_since_last(es):
     f = TimeSinceLast(es["log"]["datetime"], es["customers"])
-    fm = calculate_feature_matrix([f],
-                                  entityset=es,
-                                  instance_ids=[0, 1, 2],
-                                  cutoff_time=datetime(2015, 6, 8))
+    fm = ft.calculate_feature_matrix([f],
+                                     entityset=es,
+                                     instance_ids=[0, 1, 2],
+                                     cutoff_time=datetime(2015, 6, 8))
 
     correct = [131376600, 131289600, 131287800]
     # note: must round to nearest second
@@ -273,13 +244,52 @@ def test_time_since_last(es):
 
 def test_median(es):
     f = Median(es["log"]["value_many_nans"], es["customers"])
-    fm = calculate_feature_matrix([f],
-                                  entityset=es,
-                                  instance_ids=[0, 1, 2],
-                                  cutoff_time=datetime(2015, 6, 8))
+    fm = ft.calculate_feature_matrix([f],
+                                     entityset=es,
+                                     instance_ids=[0, 1, 2],
+                                     cutoff_time=datetime(2015, 6, 8))
 
     correct = [1, 3, np.nan]
     np.testing.assert_equal(fm[f.get_name()].values, correct)
+
+
+def test_agg_same_method_name(es):
+    """
+        Pandas relies on the function name when calculating aggregations. This means if a two
+        primitives with the same function name are applied to the same column, pandas
+        can't differentiate them. We have a work around to this based on the name property
+        that we test here.
+    """
+
+    # test with normally defined functions
+    def custom_primitive(x):
+        return x.sum()
+
+    Sum = make_agg_primitive(custom_primitive, input_types=[Numeric],
+                             return_type=Numeric, name="sum")
+
+    def custom_primitive(x):
+        return x.max()
+
+    Max = make_agg_primitive(custom_primitive, input_types=[Numeric],
+                             return_type=Numeric, name="max")
+
+    f_sum = Sum(es["log"]["value"], es["customers"])
+    f_max = Max(es["log"]["value"], es["customers"])
+
+    fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
+    assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
+
+    # test with lambdas
+    Sum = make_agg_primitive(lambda x: x.sum(), input_types=[Numeric],
+                             return_type=Numeric, name="sum")
+    Max = make_agg_primitive(lambda x: x.max(), input_types=[Numeric],
+                             return_type=Numeric, name="max")
+
+    f_sum = Sum(es["log"]["value"], es["customers"])
+    f_max = Max(es["log"]["value"], es["customers"])
+    fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
+    assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
 
 
 def test_time_since_last_custom(es):
@@ -293,16 +303,17 @@ def test_time_since_last_custom(es):
                                        name="time_since_last",
                                        uses_calc_time=True)
     f = TimeSinceLast(es["log"]["datetime"], es["customers"])
-    fm = calculate_feature_matrix([f],
-                                  entityset=es,
-                                  instance_ids=[0, 1, 2],
-                                  cutoff_time=datetime(2015, 6, 8))
+    fm = ft.calculate_feature_matrix([f],
+                                     entityset=es,
+                                     instance_ids=[0, 1, 2],
+                                     cutoff_time=datetime(2015, 6, 8))
 
     correct = [131376600, 131289600, 131287800]
     # note: must round to nearest second
     assert all(fm[f.get_name()].round().values == correct)
 
-    with pytest.raises(ValueError):
+    error_text = "'time' is a restricted keyword.  Please use a different keyword."
+    with pytest.raises(ValueError, match=error_text):
         TimeSinceLast = make_agg_primitive(time_since_last,
                                            [DatetimeTimeIndex],
                                            Numeric,
@@ -320,16 +331,17 @@ def test_custom_primitive_time_as_arg(es):
                                        uses_calc_time=True)
     assert TimeSinceLast.name == "time_since_last"
     f = TimeSinceLast(es["log"]["datetime"], es["customers"])
-    fm = calculate_feature_matrix([f],
-                                  entityset=es,
-                                  instance_ids=[0, 1, 2],
-                                  cutoff_time=datetime(2015, 6, 8))
+    fm = ft.calculate_feature_matrix([f],
+                                     entityset=es,
+                                     instance_ids=[0, 1, 2],
+                                     cutoff_time=datetime(2015, 6, 8))
 
     correct = [131376600, 131289600, 131287800]
     # note: must round to nearest second
     assert all(fm[f.get_name()].round().values == correct)
 
-    with pytest.raises(ValueError):
+    error_text = "'time' is a restricted keyword.  Please use a different keyword."
+    with pytest.raises(ValueError, match=error_text):
         make_agg_primitive(time_since_last,
                            [DatetimeTimeIndex],
                            Numeric,
@@ -349,10 +361,10 @@ def test_custom_primitive_multiple_inputs(es):
                                     input_types=[Numeric, Datetime],
                                     return_type=Numeric)
 
-    fm, features = dfs(entityset=es,
-                       target_entity="sessions",
-                       agg_primitives=[MeanSunday],
-                       trans_primitives=[])
+    fm, features = ft.dfs(entityset=es,
+                          target_entity="sessions",
+                          agg_primitives=[MeanSunday],
+                          trans_primitives=[])
     mean_sunday_value = pd.Series([None, None, None, 2.5, 7, None])
     iterator = zip(fm["MEAN_SUNDAY(log.value, datetime)"], mean_sunday_value)
     for x, y in iterator:
@@ -360,11 +372,11 @@ def test_custom_primitive_multiple_inputs(es):
 
     es.add_interesting_values()
     mean_sunday_value_priority_0 = pd.Series([None, None, None, 2.5, 0, None])
-    fm, features = dfs(entityset=es,
-                       target_entity="sessions",
-                       agg_primitives=[MeanSunday],
-                       trans_primitives=[],
-                       where_primitives=[MeanSunday])
+    fm, features = ft.dfs(entityset=es,
+                          target_entity="sessions",
+                          agg_primitives=[MeanSunday],
+                          trans_primitives=[],
+                          where_primitives=[MeanSunday])
     where_feat = "MEAN_SUNDAY(log.value, datetime WHERE priority_level = 0)"
     for x, y in zip(fm[where_feat], mean_sunday_value_priority_0):
         assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
@@ -393,7 +405,6 @@ def test_custom_primitive_default_kwargs(es):
 def test_makes_numtrue(es):
     dfs = DeepFeatureSynthesis(target_entity_id='sessions',
                                entityset=es,
-                               filters=[],
                                agg_primitives=[NumTrue],
                                trans_primitives=[])
     features = dfs.build_features()

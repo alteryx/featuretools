@@ -66,7 +66,7 @@ First, we specify a dictionary with all the entities in our dataset.
     }
 
 
-Second, we specify how the entities are related. When 2 two entities have a one-to-many relationship, we call the "one" enitity, the "parent entity". A relationship between a parent and child is defined like this:
+Second, we specify how the entities are related. When two entities have a one-to-many relationship, we call the "one" enitity, the "parent entity". A relationship between a parent and child is defined like this:
 
 .. code-block:: python
 
@@ -137,16 +137,9 @@ What's next?
 
 * Learn about :doc:`loading_data/using_entitysets`
 * Apply automated feature engineering with :doc:`automated_feature_engineering/afe`
+* Can't find what you're looking for? Ask for :doc:`help`
 
 
-Get help
---------
-The Featuretools community is happy to provide support to users of Featuretools. Project support can be found in four places depending on the type of question:
-
-1. For usage questions, use `Stack Overflow <https://stackoverflow.com/questions/tagged/featuretools>`_ with the ``featuretools`` tag.
-2. For bugs, issues, or feature requests start a `Github issue <https://github.com/featuretools/featuretools/issues>`_.
-3. For discussion regarding development on the core library, use `gitter <https://gitter.im/featuretools/featuretools>`_.
-4. For everything else, the core developers can be reached by email at help@featuretools.com.
 
 
 Table of contents
@@ -163,7 +156,6 @@ Table of contents
 
 .. toctree::
    :maxdepth: 1
-   :hidden:
    :caption: Getting Started
 
    self
@@ -195,17 +187,18 @@ Table of contents
 
 * :doc:`guides/tuning_dfs`
 * :doc:`guides/performance`
+* :doc:`guides/parallel`
 * :doc:`guides/deployment`
 * :doc:`guides/exporting_feature_matrix`
 * :doc:`guides/advanced_custom_primitives`
 
 .. toctree::
    :maxdepth: 1
-   :hidden:
    :caption: Guides
 
    guides/tuning_dfs
    guides/performance
+   guides/parallel
    guides/deployment
    guides/exporting_feature_matrix
    guides/advanced_custom_primitives
@@ -228,6 +221,7 @@ Table of contents
 
 **Resources and References**
 
+* :doc:`help`
 * :doc:`usage_tips/limitations`
 * :doc:`usage_tips/glossary`
 * :doc:`api_reference`
@@ -235,16 +229,23 @@ Table of contents
 
 .. toctree::
    :maxdepth: 1
-   :hidden:
    :caption: Resources and References
 
+   help
    usage_tips/limitations
    usage_tips/glossary
    api_reference
    changelog
 
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Hide from Table of Contents
+   :hidden:
 
+   feature_engineering_language/feature-types
+   guides/chunking
+   guides/save_progress_example
 
 Other links
 ------------

@@ -19,23 +19,22 @@ def values_es(entityset):
     new_es = copy.deepcopy(entityset)
     new_es.normalize_entity('log', 'values', 'value',
                             make_time_index=True,
-                            new_entity_time_index="value_time",
-                            convert_links_to_integers=True)
+                            new_entity_time_index="value_time")
     return new_es
 
 
 @pytest.fixture
 def true_values_lti():
     true_values_lti = pd.Series([datetime(2011, 4, 10, 10, 41, 0),
-                                 datetime(2011, 4, 10, 10, 40, 1),
-                                 datetime(2011, 4, 9, 10, 30, 12),
-                                 datetime(2011, 4, 9, 10, 30, 18),
-                                 datetime(2011, 4, 9, 10, 30, 24),
                                  datetime(2011, 4, 9, 10, 31, 9),
                                  datetime(2011, 4, 9, 10, 31, 18),
                                  datetime(2011, 4, 9, 10, 31, 27),
+                                 datetime(2011, 4, 10, 10, 40, 1),
                                  datetime(2011, 4, 10, 10, 41, 3),
+                                 datetime(2011, 4, 9, 10, 30, 12),
                                  datetime(2011, 4, 10, 10, 41, 6),
+                                 datetime(2011, 4, 9, 10, 30, 18),
+                                 datetime(2011, 4, 9, 10, 30, 24),
                                  datetime(2011, 4, 10, 11, 10, 3)])
     return true_values_lti
 
@@ -109,17 +108,19 @@ class TestLastTimeIndex(object):
         values = values_es['values']
 
         # add extra value instance with no children
-        row_values = {'value': 6.0,
+        row_values = {'value': 21.0,
                       'value_time': pd.Timestamp("2011-04-10 11:10:02"),
                       'values_id': 11}
         # make sure index doesn't have same name as column to suppress pandas warning
         row = pd.DataFrame(row_values, index=pd.Index([11]))
         df = values.df.append(row, sort=True)
-        df = df.sort_values(['value_time', 'values_id'], kind='mergesort')
+        df = df[['value', 'value_time']].sort_values(by='value')
+        df.index.name = 'values_id'
         values.update_data(df)
         values_es.add_last_time_indexes()
         # lti value should default to instance's time index
-        true_values_lti[11] = pd.Timestamp("2011-04-10 11:10:02")
+        true_values_lti[10] = pd.Timestamp("2011-04-10 11:10:02")
+        true_values_lti[11] = pd.Timestamp("2011-04-10 11:10:03")
 
         assert len(values.last_time_index) == 12
         sorted_lti = values.last_time_index.sort_index()

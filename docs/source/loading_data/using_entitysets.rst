@@ -7,24 +7,16 @@ Representing Data with EntitySets
 An ``EntitySet`` is a collection of entities and the relationships between them. They are useful for preparing raw, structured datasets for feature engineering. While many functions in Featuretools  take ``entities`` and ``relationships`` as separate arguments, it is recommended to create an ``EntitySet``, so you can more easily manipulate your data as needed.
 
 
-.. ipython:: python
-    :suppress:
-
-    import featuretools as ft
-    import pandas as pd
-
-    data = ft.demo.load_mock_customer()
-    products_df = data["products"]
-    transactions_df = data["transactions"].merge(data["sessions"]).merge(data["customers"])
-    transactions_df.drop("session_start", axis=1, inplace=True)
-    transactions_df.drop("join_date", axis=1, inplace=True)
-
 The Raw Data
 ~~~~~~~~~~~~
 
-Below we have a two tables of data (represented as Pandas DataFrames) related to customer transactions. The first is a list of all transactions
+Below we have a two tables of data (represented as Pandas DataFrames) related to customer transactions. The first is a merge of transactions, sessions, and customers so that the result looks like something you might see in a log file:
 
 .. ipython:: python
+
+    import featuretools as ft
+    data = ft.demo.load_mock_customer()
+    transactions_df = data["transactions"].merge(data["sessions"]).merge(data["customers"])
 
     transactions_df.sample(10)
 
@@ -32,6 +24,7 @@ And the second dataframe is a list of products involved in those transactions.
 
 .. ipython:: python
 
+    products_df = data["products"]
     products_df
 
 
@@ -42,7 +35,7 @@ First, we initialize an EntitySet and give it an ``id``
 
 .. ipython:: python
 
-    es = ft.EntitySet(id="transactions")
+    es = ft.EntitySet()
 
 
 Adding entities
@@ -108,7 +101,8 @@ When working with raw data, it is common to have sufficient information to justi
     es = es.normalize_entity(base_entity_id="transactions",
                              new_entity_id="sessions",
                              index="session_id",
-                             additional_variables=["device", "customer_id", "zip_code"])
+                             make_time_index="session_start",
+                             additional_variables=["device", "customer_id", "zip_code", "session_start", "join_date"])
 
     es
 
@@ -124,8 +118,8 @@ If we look at the variables in transactions and the new sessions entity, we see 
     es["transactions"].variables
     es["sessions"].variables
 
-1. It removed "device", "customer_id", and "zip_code" from "transactions" and created a new variables in the sessions entity. This reduces redundant information as the those properties of a session don't change between transactions.
-2. It created the "first_transactions_time" variable in the new sessions entity to indicate the beginning of a session. If we don't want this variable to be created, we can set ``make_time_index=False``.
+1. It removed "device", "customer_id", "zip_code", "session_start" and "join_date" from "transactions" and created a new variables in the sessions entity. This reduces redundant information as the those properties of a session don't change between transactions.
+2. It marked "session_start" as a time index in the new sessions entity to indicate the beginning of a session. By default, unless it's explicitly set to another variable, ``normalize_entity`` would have made a "first_transactions_time" in this entity. If we don't want this variable to be created, we can set ``make_time_index=False``.
 
 If we look at the dataframes, can see what the ``normalize_entity`` did to the actual data.
 
@@ -142,9 +136,8 @@ To finish preparing this dataset, create a "customers" entity using the same met
     es = es.normalize_entity(base_entity_id="sessions",
                              new_entity_id="customers",
                              index="customer_id",
-                             additional_variables=["zip_code"],
-                             make_time_index=False)
-
+                             make_time_index="join_date",
+                             additional_variables=["zip_code", "join_date"])
     es
 
 

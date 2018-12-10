@@ -3,13 +3,13 @@ from builtins import str
 
 import numpy as np
 import pandas as pd
-from past.builtins import basestring
 
 from .aggregation_primitives import Count, Max, Mean, Min, Sum
 from .primitive_base import IdentityFeature, PrimitiveBase
 from .transform_primitive import TransformPrimitive
 from .utils import apply_dual_op_from_feat
 
+from featuretools.utils import is_string
 from featuretools.utils.wrangle import _check_timedelta
 from featuretools.variable_types import Id, Index, Numeric, TimeIndex
 from featuretools.variable_types.variable import Discrete
@@ -19,7 +19,7 @@ class CumFeature(TransformPrimitive):
     allow_where = True
     agg_feature = None
     rolling_function = True
-    needs_all_values = True
+    uses_full_entity = True
 
     # Note: Any row with a nan value in the group by feature will have a
     # NaN value in the cumfeat
@@ -45,7 +45,7 @@ class CumFeature(TransformPrimitive):
         base_feature = self._check_feature(base_feature)
 
         td_entity_id = None
-        if isinstance(use_previous, basestring):
+        if is_string(use_previous):
             td_entity_id = base_feature.entity.id
         self.use_previous = _check_timedelta(
             use_previous, entity_id=td_entity_id)
@@ -188,7 +188,7 @@ def pd_rolling_outer(rolling_func, f):
                         }
             if rolling_func in ["count", "sum", "max", "min"]:
                 cumfunc = cumfuncs[rolling_func]
-                grouped = df.groupby(groupby, sort=False)[bf_name]
+                grouped = df.groupby(groupby, sort=False, observed=True)[bf_name]
                 applied = getattr(grouped, cumfunc)()
                 # TODO: to produce same functionality as the rolling cases already
                 # implemented, we add 1
@@ -254,7 +254,7 @@ def pd_rolling_outer(rolling_func, f):
         new_index_name = str(uuid.uuid1())
         new_index = pd.RangeIndex(len(df), name=new_index_name)
         df.set_index(new_index, append=True, inplace=True)
-        grouped = df.groupby(groupby).apply(apply_rolling)
+        grouped = df.groupby(groupby, observed=True).apply(apply_rolling)
         original_index = pd.Series(np.nan, index=df.index)
         if isinstance(grouped, pd.DataFrame):
             if grouped.shape[0] == 0 or grouped.empty:

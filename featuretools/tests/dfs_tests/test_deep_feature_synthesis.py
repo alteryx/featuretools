@@ -6,6 +6,7 @@ import os
 import numpy as np
 import pandas as pd
 import pytest
+from pympler.asizeof import asizeof
 
 from ..testing_utils import feature_with_name, make_ecommerce_entityset
 
@@ -23,13 +24,13 @@ from featuretools.primitives import (
     IdentityFeature,
     Last,
     Mean,
+    Mode,
     Sum,
     TimeSincePrevious,
     TransformPrimitive,
     make_agg_primitive
 )
 from featuretools.synthesis import DeepFeatureSynthesis
-from featuretools.utils.gen_utils import getsize
 from featuretools.utils.pickle_utils import save_obj_pickle
 from featuretools.variable_types import Numeric
 
@@ -63,7 +64,6 @@ def relationships():
 def test_makes_agg_features_from_str(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=['last'],
                                    trans_primitives=[])
 
@@ -74,7 +74,6 @@ def test_makes_agg_features_from_str(es):
 def test_makes_agg_features_from_mixed_str(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Count, 'last'],
                                    trans_primitives=[])
 
@@ -83,10 +82,20 @@ def test_makes_agg_features_from_mixed_str(es):
     assert (feature_with_name(features, 'COUNT(log)'))
 
 
+def test_case_insensitive(es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
+                                   entityset=es,
+                                   agg_primitives=['MiN'],
+                                   trans_primitives=['AbsOlute'])
+
+    features = dfs_obj.build_features()
+    assert (feature_with_name(features, 'MIN(log.value)'))
+    assert (feature_with_name(features, 'ABSOLUTE(MIN(log.value_many_nans))'))
+
+
 def test_makes_agg_features(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last],
                                    trans_primitives=[])
 
@@ -98,7 +107,6 @@ def test_only_makes_supplied_agg_feat(es):
     kwargs = dict(
         target_entity_id='customers',
         entityset=es,
-        filters=[],
         max_depth=3,
     )
     dfs_obj = DeepFeatureSynthesis(agg_primitives=[Last], **kwargs)
@@ -118,9 +126,16 @@ def test_only_makes_supplied_agg_feat(es):
 
 
 def test_ignores_entities(es):
+    error_text = 'ignore_entities must be a list'
+    with pytest.raises(TypeError, match=error_text):
+        DeepFeatureSynthesis(target_entity_id='sessions',
+                             entityset=es,
+                             agg_primitives=[Last],
+                             trans_primitives=[],
+                             ignore_entities='log')
+
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last],
                                    trans_primitives=[],
                                    ignore_entities=['log'])
@@ -135,7 +150,6 @@ def test_ignores_entities(es):
 def test_ignores_variables(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last],
                                    trans_primitives=[],
                                    ignore_variables={'log': ['value']})
@@ -152,7 +166,6 @@ def test_ignores_variables(es):
 def test_makes_dfeatures(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[],
                                    trans_primitives=[])
 
@@ -163,7 +176,6 @@ def test_makes_dfeatures(es):
 def test_makes_trans_feat(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[],
                                    trans_primitives=[Hour])
 
@@ -174,7 +186,6 @@ def test_makes_trans_feat(es):
 def test_handles_diff_entity_groupby(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[],
                                    trans_primitives=[Diff])
 
@@ -186,7 +197,6 @@ def test_handles_diff_entity_groupby(es):
 def test_handles_time_since_previous_entity_groupby(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[],
                                    trans_primitives=[TimeSincePrevious])
 
@@ -197,7 +207,6 @@ def test_handles_time_since_previous_entity_groupby(es):
 def test_handles_cumsum_entity_groupby(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[],
                                    trans_primitives=[CumMean])
 
@@ -208,7 +217,6 @@ def test_handles_cumsum_entity_groupby(es):
 def test_only_makes_supplied_trans_feat(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[],
                                    trans_primitives=[Hour])
 
@@ -225,7 +233,6 @@ def test_only_makes_supplied_trans_feat(es):
 def test_makes_dfeatures_of_agg_primitives(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last],
                                    trans_primitives=[])
     features = dfs_obj.build_features()
@@ -236,7 +243,6 @@ def test_makes_dfeatures_of_agg_primitives(es):
 def test_makes_agg_features_of_trans_primitives(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last],
                                    trans_primitives=[Hour])
 
@@ -249,20 +255,23 @@ def test_makes_agg_features_with_where(es):
 
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Count],
+                                   where_primitives=[Count],
                                    trans_primitives=[])
 
     features = dfs_obj.build_features()
     assert (feature_with_name(features,
                               'COUNT(log WHERE priority_level = 0)'))
 
+    # make sure they are made using direct features too
+    assert (feature_with_name(features,
+                              'COUNT(log WHERE products.department = food)'))
+
 
 def test_abides_by_max_depth_param(es):
     for i in [1, 2, 3]:
         dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                        entityset=es,
-                                       filters=[],
                                        agg_primitives=[Last],
                                        trans_primitives=[],
                                        max_depth=i)
@@ -276,7 +285,6 @@ def test_abides_by_max_depth_param(es):
 def test_drop_contains(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last],
                                    trans_primitives=[],
                                    max_depth=1,
@@ -287,7 +295,6 @@ def test_drop_contains(es):
     partial_name = to_drop.get_name()[:5]
     dfs_drop = DeepFeatureSynthesis(target_entity_id='sessions',
                                     entityset=es,
-                                    filters=[],
                                     agg_primitives=[Last],
                                     trans_primitives=[],
                                     max_depth=1,
@@ -300,7 +307,6 @@ def test_drop_contains(es):
 def test_drop_exact(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last],
                                    trans_primitives=[],
                                    max_depth=1,
@@ -311,7 +317,6 @@ def test_drop_exact(es):
     name = to_drop.get_name()
     dfs_drop = DeepFeatureSynthesis(target_entity_id='sessions',
                                     entityset=es,
-                                    filters=[],
                                     agg_primitives=[Last],
                                     trans_primitives=[],
                                     max_depth=1,
@@ -327,7 +332,6 @@ def test_seed_features(es):
     session_agg = Last(seed_feature_log, es['sessions'])
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last],
                                    trans_primitives=[],
                                    max_depth=2,
@@ -346,11 +350,10 @@ def test_dfs_builds_on_seed_features_more_than_max_depth(es):
 
     # Depth of this feat is 2 relative to session_agg, the seed feature,
     # which is greater than max_depth so it shouldn't be built
-    session_agg_trans = DirectFeature(Count(session_agg, es['customers']),
+    session_agg_trans = DirectFeature(Mode(session_agg, es['customers']),
                                       es['sessions'])
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last, Count],
                                    trans_primitives=[],
                                    max_depth=1,
@@ -368,7 +371,6 @@ def test_allowed_paths(es):
     kwargs = dict(
         target_entity_id='customers',
         entityset=es,
-        filters=[],
         agg_primitives=[Last],
         trans_primitives=[],
         max_depth=2,
@@ -397,7 +399,6 @@ def test_max_features(es):
     kwargs = dict(
         target_entity_id='customers',
         entityset=es,
-        filters=[],
         agg_primitives=[Last],
         trans_primitives=[],
         max_depth=2,
@@ -424,7 +425,7 @@ def test_where_primitives(es):
         trans_primitives=[Absolute],
         max_depth=3,
     )
-    dfs_unconstrained = DeepFeatureSynthesis(filters=[], **kwargs)
+    dfs_unconstrained = DeepFeatureSynthesis(**kwargs)
     dfs_constrained = DeepFeatureSynthesis(where_primitives=['last'], **kwargs)
     features_unconstrained = dfs_unconstrained.build_features()
     features = dfs_constrained.build_features()
@@ -539,7 +540,7 @@ def test_where_different_base_feats(es):
         where_primitives=[Last, Count],
         max_depth=3,
     )
-    dfs_unconstrained = DeepFeatureSynthesis(filters=[], **kwargs)
+    dfs_unconstrained = DeepFeatureSynthesis(**kwargs)
     features = dfs_unconstrained.build_features()
     where_feats = [f.hash() for f in features
                    if f.where is not None]
@@ -554,17 +555,17 @@ def test_dfeats_where(es):
 
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Count],
                                    trans_primitives=[])
 
     features = dfs_obj.build_features()
-    assert not (feature_with_name(
-        features, 'COUNT(sessions WHERE device_name = Mobile)'))
-    assert not (feature_with_name(features,
-                                  'COUNT(sessions WHERE device_name = PC)'))
-    assert not (feature_with_name(features,
-                                  'COUNT(sessions WHERE device_type = 0)'))
+
+    # test to make sure we build direct features of agg features with where clause
+    assert (feature_with_name(
+        features, 'customers.COUNT(log WHERE priority_level = 0)'))
+
+    assert (feature_with_name(
+        features, 'COUNT(log WHERE products.department = electronics)'))
 
 
 def test_max_hlevel(es):
@@ -603,7 +604,6 @@ def test_max_hlevel(es):
 def test_pickle_features(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last, Mean],
                                    trans_primitives=[],
                                    max_features=20)
@@ -624,7 +624,7 @@ def test_pickle_features(es):
         assert feat_1.entityset == feat_2.entityset
 
     # file is smaller than entityset in memory
-    assert os.path.getsize(filepath) < getsize(es)
+    assert os.path.getsize(filepath) < asizeof(es)
 
     # file is smaller than entityset pickled
     assert os.path.getsize(filepath) < os.path.getsize(es_filepath)
@@ -641,7 +641,6 @@ def test_pickle_features_with_custom_primitive(es):
         description="Calculate means ignoring nan values")
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Last, Mean, NewMean],
                                    trans_primitives=[],
                                    max_features=20)
@@ -662,7 +661,7 @@ def test_pickle_features_with_custom_primitive(es):
         assert feat_1.entityset == feat_2.entityset
 
     # file is smaller than entityset in memory
-    assert os.path.getsize(filepath) < getsize(es)
+    assert os.path.getsize(filepath) < asizeof(es)
 
     # file is smaller than entityset pickled
     assert os.path.getsize(filepath) < os.path.getsize(es_filepath)
@@ -673,7 +672,6 @@ def test_pickle_features_with_custom_primitive(es):
 def test_commutative(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
-                                   filters=[],
                                    agg_primitives=[Sum],
                                    trans_primitives=[Add],
                                    max_depth=3)
@@ -690,3 +688,35 @@ def test_commutative(es):
 
     assert num_add_feats == 3
     assert num_add_as_base_feat == 9
+
+
+def test_transform_consistency():
+    # Create dataframe
+    df = pd.DataFrame({'a': [14, 12, 10], 'b': [False, False, True],
+                       'b1': [True, True, False], 'b12': [4, 5, 6],
+                       'P': [10, 15, 12]})
+    es = ft.EntitySet(id='test')
+    # Add dataframe to entityset
+    es.entity_from_dataframe(entity_id='first', dataframe=df,
+                             index='index',
+                             make_index=True)
+
+    # Generate features
+    feature_defs = ft.dfs(entityset=es, target_entity='first',
+                          trans_primitives=['and', 'add', 'or'],
+                          features_only=True)
+
+    # Check for correct ordering of features
+    assert feature_with_name(feature_defs, 'a')
+    assert feature_with_name(feature_defs, 'b')
+    assert feature_with_name(feature_defs, 'b1')
+    assert feature_with_name(feature_defs, 'b12')
+    assert feature_with_name(feature_defs, 'P')
+    assert feature_with_name(feature_defs, 'AND(b, b1)')
+    assert not feature_with_name(feature_defs, 'AND(b1, b)')  # make sure it doesn't exist the other way
+    assert feature_with_name(feature_defs, 'a + P')
+    assert feature_with_name(feature_defs, 'b12 + P')
+    assert feature_with_name(feature_defs, 'a + b12')
+    assert feature_with_name(feature_defs, 'OR(b, b1)')
+    assert feature_with_name(feature_defs, 'OR(AND(b, b1), b)')
+    assert feature_with_name(feature_defs, 'OR(AND(b, b1), b1)')

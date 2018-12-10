@@ -30,6 +30,10 @@ class DirectFeature(PrimitiveBase):
     def default_value(self):
         return self.base_features[0].default_value
 
+    @property
+    def variable(self):
+        return getattr(self.base_features[0], 'variable', None)
+
     def generate_name(self):
-        return u"%s.%s" % (self.parent_entity.name,
+        return u"%s.%s" % (self.parent_entity.id,
                            self.base_features[0].get_name())

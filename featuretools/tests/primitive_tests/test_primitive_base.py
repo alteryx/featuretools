@@ -1,14 +1,20 @@
 import pytest
+from pympler.asizeof import asizeof
 
 from ..testing_utils import make_ecommerce_entityset
 
-from featuretools.primitives import Feature, IdentityFeature, Last, Sum
-from featuretools.utils.gen_utils import getsize
+from featuretools.primitives import Feature, IdentityFeature, Last, Mode, Sum
+from featuretools.variable_types import Categorical, Datetime, Id, Numeric
 
 
 @pytest.fixture(scope='module')
 def es():
     return make_ecommerce_entityset()
+
+
+@pytest.fixture(scope='module')
+def es_numeric():
+    return make_ecommerce_entityset(with_integer_time_index=True)
 
 
 def test_copy_features_does_not_copy_entityset(es):
@@ -21,9 +27,9 @@ def test_copy_features_does_not_copy_entityset(es):
                                  where=IdentityFeature(es['log']['value']) == 2,
                                  use_previous='4 days')
     features = [agg, agg_where, agg_use_previous, agg_use_previous_where]
-    in_memory_size = getsize(locals())
+    in_memory_size = asizeof(locals())
     copied = [f.copy() for f in features]
-    new_in_memory_size = getsize(locals())
+    new_in_memory_size = asizeof(locals())
     assert new_in_memory_size < 2 * in_memory_size
 
     for f, c in zip(features, copied):
@@ -79,3 +85,38 @@ def test_squared(es):
     squared = feature * feature
     assert len(squared.base_features) == 1
     assert squared.base_features[0].hash() == feature.hash()
+
+
+def test_return_type_inference(es):
+    mode = Mode(es["log"]["priority_level"], es["customers"])
+    assert mode.variable_type == es["log"]["priority_level"].__class__
+
+
+def test_return_type_inference_direct_feature(es):
+    mode = Mode(es["log"]["priority_level"], es["customers"])
+    mode_session = Feature(mode, es["sessions"])
+    assert mode_session.variable_type == es["log"]["priority_level"].__class__
+
+
+def test_return_type_inference_datetime_time_index(es):
+    last = Last(es["log"]["datetime"], es["customers"])
+    assert last.variable_type == Datetime
+
+
+def test_return_type_inference_numeric_time_index(es_numeric):
+    last = Last(es_numeric["log"]["datetime"], es_numeric["customers"])
+    assert last.variable_type == Numeric
+
+
+def test_return_type_inference_id(es):
+    # direct features should keep Id variable type
+    direct_id_feature = Feature(es["sessions"]["customer_id"], es["log"])
+    assert direct_id_feature.variable_type == Id
+
+    # aggregations of Id variable types should get converted
+    mode = Mode(es["log"]["session_id"], es["customers"])
+    assert mode.variable_type == Categorical
+
+    # also test direct feature of aggregation
+    mode_direct = Feature(mode, es["sessions"])
+    assert mode_direct.variable_type == Categorical

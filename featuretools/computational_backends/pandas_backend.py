@@ -1,22 +1,18 @@
 import cProfile
-import io
-import logging
 import os
 import pstats
 import sys
-import uuid
 import warnings
 from datetime import datetime
 
 import numpy as np
 import pandas as pd
-from future import standard_library
+import pandas.api.types as pdtypes
 
 from .base_backend import ComputationalBackend
 from .feature_tree import FeatureTree
 
 from featuretools import variable_types
-from featuretools.entityset.relationship import Relationship
 from featuretools.exceptions import UnknownFeature
 from featuretools.primitives import (
     AggregationPrimitive,
@@ -24,13 +20,13 @@ from featuretools.primitives import (
     IdentityFeature,
     TransformPrimitive
 )
-from featuretools.utils.gen_utils import make_tqdm_iterator
+from featuretools.utils.gen_utils import (
+    get_relationship_variable_id,
+    make_tqdm_iterator
+)
 
-standard_library.install_aliases()
 warnings.simplefilter('ignore', np.RankWarning)
 warnings.simplefilter("ignore", category=RuntimeWarning)
-logger = logging.getLogger('featuretools.computational_backend')
-ROOT_DIR = os.path.expanduser("~")
 
 
 class PandasBackend(ComputationalBackend):
@@ -43,6 +39,9 @@ class PandasBackend(ComputationalBackend):
         self.target_eid = features[0].entity.id
         self.features = features
         self.feature_tree = FeatureTree(entityset, features)
+
+    def __sizeof__(self):
+        return self.entityset.__sizeof__()
 
     def calculate_all_features(self, instance_ids, time_last,
                                training_window=None, profile=False,
@@ -232,15 +231,13 @@ class PandasBackend(ComputationalBackend):
         # debugging
         if profile:
             pr.disable()
-            s = io.StringIO()
-            ps = pstats.Stats(pr, stream=s).sort_stats("cumulative", "tottime")
-            ps.print_stats()
+            ROOT_DIR = os.path.expanduser("~")
             prof_folder_path = os.path.join(ROOT_DIR, 'prof')
             if not os.path.exists(prof_folder_path):
                 os.mkdir(prof_folder_path)
             with open(os.path.join(prof_folder_path, 'inst-%s.log' %
                                    list(instance_ids)[0]), 'w') as f:
-                f.write(s.getvalue())
+                pstats.Stats(pr, stream=f).strip_dirs().sort_stats("cumulative", "tottime").print_stats()
 
         df = eframes_by_filter[self.target_eid][self.target_eid]
 
@@ -250,11 +247,7 @@ class PandasBackend(ComputationalBackend):
         if missing_ids:
             default_df = self.generate_default_df(instance_ids=missing_ids,
                                                   extra_columns=df.columns)
-            # pandas added sort parameter in 0.23.0
-            try:
-                df = df.append(default_df, sort=True)
-            except:
-                df = df.append(default_df)
+            df = df.append(default_df, sort=True)
 
         df.index.name = self.entityset[self.target_eid].index
         return df[[feat.get_name() for feat in self.features]]
@@ -317,9 +310,11 @@ class PandasBackend(ComputationalBackend):
             else:
                 values = feature_func(*variable_data)
 
+            # if we don't get just the values, the assignment breaks when indexes don't match
             if isinstance(values, pd.Series):
                 values = values.values
-            frame[f.get_name()] = list(values)
+
+            frame[f.get_name()] = values
         return frame
 
     def _calculate_direct_features(self, features, entity_frames):
@@ -366,15 +361,11 @@ class PandasBackend(ComputationalBackend):
 
     def _calculate_agg_features(self, features, entity_frames):
         test_feature = features[0]
-        use_previous = test_feature.use_previous
-        base_features = test_feature.base_features
-        where = test_feature.where
         entity = test_feature.entity
-        child_entity = base_features[0].entity
+        child_entity = test_feature.base_features[0].entity
 
         assert entity.id in entity_frames and child_entity.id in entity_frames
 
-        index_var = entity.index
         frame = entity_frames[entity.id]
         base_frame = entity_frames[child_entity.id]
         # Sometimes approximate features get computed in a previous filter frame
@@ -385,131 +376,100 @@ class PandasBackend(ComputationalBackend):
         if not len(features):
             return frame
 
-        # handle where clause for all functions below
-        if where is not None:
-            base_frame = base_frame[base_frame[where.get_name()]]
+        # handle where
+        where = test_feature.where
+        if where is not None and not base_frame.empty:
+            base_frame = base_frame.loc[base_frame[where.get_name()]]
 
-        relationship_path = self.entityset.find_backward_path(entity.id,
-                                                              child_entity.id)
-
-        groupby_var = Relationship._get_link_variable_name(relationship_path)
-
-        # if the use_previous property exists on this feature, include only the
-        # instances from the child entity included in that Timedelta
-        if use_previous and not base_frame.empty:
-            # Filter by use_previous values
-            time_last = self.time_last
-            if use_previous.is_absolute():
-                time_first = time_last - use_previous
-                ti = child_entity.time_index
-                if ti is not None:
-                    base_frame = base_frame[base_frame[ti] >= time_first]
-            else:
-                n = use_previous.value
-
-                def last_n(df):
-                    return df.iloc[-n:]
-
-                base_frame = base_frame.groupby(groupby_var).apply(last_n)
-
-        if not base_frame.empty:
-            if groupby_var not in base_frame:
-                # This occured sometimes. I think it might have to do with category
-                # but not sure. TODO: look into when this occurs
-                no_instances = True
-            # if the foreign key column in the child (base_frame) that links to
-            # frame is an integer and the id column in the parent is an object or
-            # category dtype, the .isin() call errors.
-            elif (frame[index_var].dtype != base_frame[groupby_var].dtype or
-                    frame[index_var].dtype.name.find('category') > -1):
-                try:
-                    frame_as_obj = frame[index_var].astype(object)
-                    base_frame_as_obj = base_frame[groupby_var].astype(object)
-                except ValueError:
-                    msg = u"Could not join {}.{} (dtype={}) with {}.{} (dtype={})"
-                    raise ValueError(msg.format(entity.id, index_var,
-                                                frame[index_var].dtype,
-                                                child_entity.id, groupby_var,
-                                                base_frame[groupby_var].dtype))
-                else:
-                    no_instances = check_no_related_instances(
-                        frame_as_obj.values, base_frame_as_obj.values)
-            else:
-                no_instances = check_no_related_instances(
-                    frame[index_var].values, base_frame[groupby_var].values)
-
-        if base_frame.empty or no_instances:
+        # when no child data, just add all the features to frame with nan
+        if base_frame.empty:
             for f in features:
-                set_default_column(entity_frames[entity.id], f)
+                frame[f.get_name()] = np.nan
+        else:
+            relationship_path = self.entityset.find_backward_path(entity.id,
+                                                                  child_entity.id)
 
-            return frame
+            groupby_var = get_relationship_variable_id(relationship_path)
 
-        def wrap_func_with_name(func, name):
-            def inner(x):
-                return func(x)
-            inner.__name__ = name
-            return inner
+            # if the use_previous property exists on this feature, include only the
+            # instances from the child entity included in that Timedelta
+            use_previous = test_feature.use_previous
+            if use_previous and not base_frame.empty:
+                # Filter by use_previous values
+                time_last = self.time_last
+                if use_previous.is_absolute():
+                    time_first = time_last - use_previous
+                    ti = child_entity.time_index
+                    if ti is not None:
+                        base_frame = base_frame[base_frame[ti] >= time_first]
+                else:
+                    n = use_previous.value
 
-        to_agg = {}
-        agg_rename = {}
-        to_apply = set()
-        # apply multivariable and time-dependent features as we find them, and
-        # save aggregable features for later
-        for f in features:
-            if _can_agg(f):
-                variable_id = f.base_features[0].get_name()
-                if variable_id not in to_agg:
-                    to_agg[variable_id] = []
-                func = f.get_function()
-                # make sure function names are unique
-                random_id = str(uuid.uuid1())
-                func = wrap_func_with_name(func, random_id)
-                funcname = random_id
-                to_agg[variable_id].append(func)
-                agg_rename[u"{}-{}".format(variable_id, funcname)] = \
-                    f.get_name()
+                    def last_n(df):
+                        return df.iloc[-n:]
 
-                continue
+                    base_frame = base_frame.groupby(groupby_var, observed=True, sort=False).apply(last_n)
 
-            to_apply.add(f)
+            to_agg = {}
+            agg_rename = {}
+            to_apply = set()
+            # apply multivariable and time-dependent features as we find them, and
+            # save aggregable features for later
+            for f in features:
+                if _can_agg(f):
+                    variable_id = f.base_features[0].get_name()
 
-        # Apply the non-aggregable functions generate a new dataframe, and merge
-        # it with the existing one
-        if len(to_apply):
-            wrap = agg_wrapper(to_apply, self.time_last)
-            # groupby_var can be both the name of the index and a column,
-            # to silence pandas warning about ambiguity we explicitly pass
-            # the column (in actuality grouping by both index and group would
-            # work)
-            to_merge = base_frame.groupby(base_frame[groupby_var]).apply(wrap)
+                    if variable_id not in to_agg:
+                        to_agg[variable_id] = []
 
-            to_merge.reset_index(1, drop=True, inplace=True)
-            frame = pd.merge(left=frame, right=to_merge,
-                             left_index=True,
-                             right_index=True, how='left')
+                    func = f.get_function()
+                    funcname = func
+                    if callable(func):
+                        # make sure func has a unique name due to how pandas names aggregations
+                        func.__name__ = f.name
+                        funcname = f.name
 
-        # Apply the aggregate functions to generate a new dataframe, and merge
-        # it with the existing one
-        # Do the [variables] accessor on to_merge because the agg call returns
-        # a dataframe with columns that contain the dataframes we want
-        if len(to_agg):
-            # groupby_var can be both the name of the index and a column,
-            # to silence pandas warning about ambiguity we explicitly pass
-            # the column (in actuality grouping by both index and group would
-            # work)
+                    to_agg[variable_id].append(func)
+                    # this is used below to rename columns that pandas names for us
+                    agg_rename[u"{}-{}".format(variable_id, funcname)] = f.get_name()
+                    continue
 
-            to_merge = base_frame.groupby(base_frame[groupby_var]).agg(to_agg)
-            # we apply multiple functions to each column, creating
-            # a multiindex as the column
-            # rename the columns to a concatenation of the two indexes
-            to_merge.columns = [u"{}-{}".format(n1, n2)
-                                for n1, n2 in to_merge.columns.ravel()]
-            # to enable a rename
-            to_merge = to_merge.rename(columns=agg_rename)
-            variables = list(agg_rename.values())
-            to_merge = to_merge[variables]
-            frame = pd.merge(left=frame, right=to_merge,
-                             left_on=frame[index_var], right_index=True, how='left')
+                to_apply.add(f)
+
+            # Apply the non-aggregable functions generate a new dataframe, and merge
+            # it with the existing one
+            if len(to_apply):
+                wrap = agg_wrapper(to_apply, self.time_last)
+                # groupby_var can be both the name of the index and a column,
+                # to silence pandas warning about ambiguity we explicitly pass
+                # the column (in actuality grouping by both index and group would
+                # work)
+                to_merge = base_frame.groupby(base_frame[groupby_var], observed=True, sort=False).apply(wrap)
+                frame = pd.merge(left=frame, right=to_merge,
+                                 left_index=True,
+                                 right_index=True, how='left')
+
+            # Apply the aggregate functions to generate a new dataframe, and merge
+            # it with the existing one
+            if len(to_agg):
+                # groupby_var can be both the name of the index and a column,
+                # to silence pandas warning about ambiguity we explicitly pass
+                # the column (in actuality grouping by both index and group would
+                # work)
+                to_merge = base_frame.groupby(base_frame[groupby_var],
+                                              observed=True, sort=False).agg(to_agg)
+                # rename columns to the correct feature names
+                to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns.ravel()]
+                to_merge = to_merge[list(agg_rename.values())]
+
+                # workaround for pandas bug where categories are in the wrong order
+                # see: https://github.com/pandas-dev/pandas/issues/22501
+                if pdtypes.is_categorical_dtype(frame.index):
+                    categories = pdtypes.CategoricalDtype(categories=frame.index.categories)
+                    to_merge.index = to_merge.index.astype(object).astype(categories)
+
+                frame = pd.merge(left=frame, right=to_merge,
+                                 left_index=True, right_index=True, how='left')
 
         # Handle default values
         # 1. handle non scalar default values
@@ -558,24 +518,12 @@ def agg_wrapper(feats, time_last):
             args = [df[v] for v in variable_ids]
 
             if f.uses_calc_time:
-                d[f.get_name()] = [func(*args, time=time_last)]
+                d[f.get_name()] = func(*args, time=time_last)
             else:
-                d[f.get_name()] = [func(*args)]
+                d[f.get_name()] = func(*args)
 
-        return pd.DataFrame(d)
+        return pd.Series(d)
     return wrap
-
-
-def check_no_related_instances(array1, array2):
-    some_instances = False
-    set_frame = set(array1)
-    set_base_frame = set(array2)
-    for s in set_frame:
-        for b in set_base_frame:
-            if s == b:
-                some_instances = True
-                break
-    return not some_instances
 
 
 def set_default_column(frame, f):

@@ -93,7 +93,6 @@ def make_trans_primitive(function, input_types, return_type, name=None,
             from featuretools.primitives import make_trans_primitive
             from featuretools.variable_types import Variable, Boolean
 
-
             def pd_is_in(array, list_of_outputs=None):
                 if list_of_outputs is None:
                     list_of_outputs = []
@@ -140,6 +139,8 @@ def make_trans_primitive(function, input_types, return_type, name=None,
                 "More than one entity for base features"
             self.kwargs.update(kwargs)
             self.partial = functools.partial(function, **self.kwargs)
+            self.partial.__name__ = name
+
             super(TransformPrimitive, self).__init__(
                 self.base_features[0].entity, self.base_features)
         new_class.__init__ = new_class_init

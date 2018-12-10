@@ -15,20 +15,22 @@ def dfs(entities=None,
         agg_primitives=None,
         trans_primitives=None,
         allowed_paths=None,
-        max_depth=None,
+        max_depth=2,
         ignore_entities=None,
         ignore_variables=None,
         seed_features=None,
         drop_contains=None,
         drop_exact=None,
         where_primitives=None,
-        max_features=None,
+        max_features=-1,
         cutoff_time_in_index=False,
         save_progress=None,
         features_only=False,
         training_window=None,
         approximate=None,
         chunk_size=None,
+        n_jobs=1,
+        dask_kwargs=None,
         verbose=False):
     '''Calculates a feature matrix and features given a dictionary of entities
     and a list of relationships.
@@ -107,11 +109,9 @@ def dfs(entities=None,
             where the second index is the cutoff time (first is instance id).
             DataFrame will be sorted by (time, instance_id).
 
-        training_window (dict[str -> Timedelta] or Timedelta, optional):
-            Window or windows defining how much older than the cutoff time data
-            can be to be included when calculating the feature.  To specify
-            which entities to apply windows to, use a dictionary mapping an entity
-            id to Timedelta. If None, all older data is used.
+        training_window (Timedelta, optional):
+            Window defining how much older than the cutoff time data
+            can be to be included when calculating the feature. If None, all older data is used.
 
         approximate (Timedelta): Bucket size to group instances with similar
             cutoff times by for features with costly calculations. For example,
@@ -120,12 +120,29 @@ def dfs(entities=None,
 
         save_progress (str, optional): Path to save intermediate computational results.
 
+        n_jobs (int, optional): number of parallel processes to use when
+            calculating feature matrix
+
         chunk_size (int or float or None or "cutoff time", optionsal): Number
             of rows of output feature matrix to calculate at time. If passed an
             integer greater than 0, will try to use that many rows per chunk.
             If passed a float value between 0 and 1 sets the chunk size to that
             percentage of all instances. If passed the string "cutoff time",
             rows are split per cutoff time.
+
+        dask_kwargs (dict, optional): Dictionary of keyword arguments to be
+            passed when creating the dask client and scheduler. Even if n_jobs
+            is not set, using `dask_kwargs` will enable multiprocessing.
+            Main parameters:
+
+            cluster (str or dask.distributed.LocalCluster):
+                cluster or address of cluster to send tasks to. If unspecified,
+                a cluster will be created.
+            diagnostics port (int):
+                port number to use for web dashboard.  If left unspecified, web
+                interface will not be enabled.
+
+            Valid keyword arguments for LocalCluster will also be accepted.
 
     Examples:
         .. code-block:: python
@@ -178,6 +195,8 @@ def dfs(entities=None,
                                                   cutoff_time_in_index=cutoff_time_in_index,
                                                   save_progress=save_progress,
                                                   chunk_size=chunk_size,
+                                                  n_jobs=n_jobs,
+                                                  dask_kwargs=dask_kwargs,
                                                   verbose=verbose)
     else:
         feature_matrix = calculate_feature_matrix(features,
@@ -189,5 +208,7 @@ def dfs(entities=None,
                                                   cutoff_time_in_index=cutoff_time_in_index,
                                                   save_progress=save_progress,
                                                   chunk_size=chunk_size,
+                                                  n_jobs=n_jobs,
+                                                  dask_kwargs=dask_kwargs,
                                                   verbose=verbose)
     return feature_matrix, features

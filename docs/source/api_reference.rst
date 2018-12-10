@@ -26,6 +26,20 @@ Deep Feature Synthesis
 
     dfs
 
+
+Wrappers
+~~~~~~~~
+.. currentmodule:: featuretools.wrappers
+
+Scikit-learn (BETA)
+-------------------
+.. autosummary::
+    :toctree: generated/
+
+    DFSTransformer
+
+
+
 .. DeepFeatureSynthesis
 
 Timedelta
@@ -235,18 +249,6 @@ Constructors
     Entity
     Relationship
 
-EntitySet attributes
---------------------
-.. currentmodule:: featuretools.entityset
-.. autosummary::
-    :toctree: generated/
-
-    EntitySet.id
-    EntitySet.name
-    EntitySet.entity_names
-    EntitySet.entities
-    EntitySet.relationships
-
 EntitySet load and prepare data
 -------------------------------
 .. autosummary::
@@ -255,16 +257,23 @@ EntitySet load and prepare data
     EntitySet.entity_from_dataframe
     EntitySet.add_relationship
     EntitySet.normalize_entity
-    EntitySet.combine_variables
     EntitySet.add_interesting_values
 
 EntitySet serialization
 -------------------------------
+.. currentmodule:: featuretools
+.. autosummary::
+    :toctree: generated/
+
+    read_pickle
+    read_parquet
+
+.. currentmodule:: featuretools.entityset
 .. autosummary::
     :toctree: generated/
 
     EntitySet.to_pickle
-    EntitySet.read_pickle
+    EntitySet.to_parquet
 
 EntitySet query methods
 -----------------------
@@ -278,27 +287,12 @@ EntitySet query methods
     EntitySet.get_backward_entities
 
 
-Entity attributes
-----------------------
-.. autosummary::
-    :toctree: generated/
-
-    Entity.name
-    Entity.variables
-    Entity.index
-    Entity.time_index
-
-
 Entity methods
 -------------------
 .. autosummary::
     :toctree: generated/
 
-    Entity.show_instance
-    Entity.is_child_of
-    Entity.is_parent_of
     Entity.convert_variable_type
-    Entity.has_time_index
     Entity.add_interesting_values
 
 Relationship attributes

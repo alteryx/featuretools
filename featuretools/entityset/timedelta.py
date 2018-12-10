@@ -6,9 +6,9 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 from dateutil.relativedelta import relativedelta
-from past.builtins import basestring
 
 from featuretools.exceptions import NotEnoughData
+from featuretools.utils import is_string
 
 
 class Timedelta(object):
@@ -74,7 +74,7 @@ class Timedelta(object):
                 exactly timedelta distance away from the original time/observation
         """
         # TODO: check if value is int or float
-        if isinstance(value, basestring):
+        if is_string(value):
             from featuretools.utils.wrangle import _check_timedelta
             td = _check_timedelta(value)
             value, unit = td.value, td.unit
@@ -189,9 +189,9 @@ class Timedelta(object):
         if self.unit != self._Observations:
             return self
 
-        time_index = entityset.entity_stores[self.entity].time_index
-        data = entityset._related_instances(parent_entity, self.entity,
-                                            [instance_id])[time_index]
+        time_index = entityset.entity_dict[self.entity].time_index
+        data = entityset.related_instances(parent_entity, self.entity,
+                                           [instance_id])[time_index]
         self.inclusive = inclusive
 
         # return copy with this info set
