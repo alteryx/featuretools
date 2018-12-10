@@ -977,3 +977,11 @@ def test_to_pickle_id_none():
     new_es = ft.read_pickle(path)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
+
+
+def test_datetime64_conversion(entityset):
+    log = entityset['log'].df.copy()
+    log["datetime"] = pd.Timestamp.now()
+    log["datetime"] = log["datetime"].astype("datetime64[ns, UTC]")
+    entityset["log"].update_data(log.copy(deep=True))
+    entityset.normalize_entity('log', 'values', 'value')
