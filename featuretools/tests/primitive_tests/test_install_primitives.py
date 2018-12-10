@@ -18,25 +18,27 @@ except Exception:
 
 
 @pytest.fixture(scope='module')
-def primitives_to_install_dir():
-    this_dir = os.path.dirname(os.path.abspath(__file__))
+def this_dir():
+    return os.path.dirname(os.path.abspath(__file__))
+
+
+@pytest.fixture(scope='module')
+def primitives_to_install_dir(this_dir):
     return os.path.join(this_dir, "primitives_to_install")
 
 
 @pytest.fixture(scope='module')
-def bad_primitives_files_dir():
-    this_dir = os.path.dirname(os.path.abspath(__file__))
+def bad_primitives_files_dir(this_dir):
     return os.path.join(this_dir, "bad_primitive_files")
 
 
-@pytest.fixture(scope='module')
-def primitives_to_install_archive():
-    # command to make this file: tar -zcvf primitives_to_install.tar.gz primitives_to_install/*.py
-    this_dir = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(this_dir, "primitives_to_install.tar.gz")
-
-
-def setup_installation():
+@pytest.mark.parametrize("install_path", [
+    primitives_to_install_dir(this_dir()),
+    os.path.join(this_dir(), "primitives_to_install.tar.gz"),
+    "s3://featuretools-static/primitives_to_install.tar.gz",
+    "https://s3.amazonaws.com/featuretools-static/primitives_to_install.tar.gz"
+])
+def test_install_primitives(install_path):
     installation_dir = get_installation_dir()
     custom_max_file = os.path.join(installation_dir, "custom_max.py")
     custom_mean_file = os.path.join(installation_dir, "custom_mean.py")
@@ -49,54 +51,19 @@ def setup_installation():
         except Exception:
             pass
 
-
-def cleanup_installation():
-    installation_dir = get_installation_dir()
-    files = list_primitive_files(installation_dir)
-    # then delete to clean up
-    for f in files:
-        os.unlink(f)
-
-
-def do_installation(install_path):
     featuretools.primitives.install.install_primitives(install_path, prompt=False)
 
     # must reload submodule for it to work
     reload(featuretools.primitives.installed)
     from featuretools.primitives.installed import CustomMax, CustomSum, CustomMean  # noqa: F401
 
-    installation_dir = get_installation_dir()
     files = list_primitive_files(installation_dir)
-    custom_max_file = os.path.join(installation_dir, "custom_max.py")
-    custom_mean_file = os.path.join(installation_dir, "custom_mean.py")
-    custom_sum_file = os.path.join(installation_dir, "custom_sum.py")
     assert set(files) == {custom_max_file, custom_mean_file, custom_sum_file}
 
-
-def test_install_primitives_directory(primitives_to_install_dir):
-    setup_installation()
-    do_installation(primitives_to_install_dir)
-    cleanup_installation()
-
-
-def test_install_primitives_archive(primitives_to_install_archive):
-    setup_installation()
-    do_installation(primitives_to_install_archive)
-    cleanup_installation()
-
-
-def test_install_primitives_s3(primitives_to_install_dir, primitives_to_install_archive):
-    setup_installation()
-    s3_archive = "s3://featuretools-static/primitives_to_install.tar.gz"
-    do_installation(s3_archive)
-    cleanup_installation()
-
-
-def test_install_primitives_https(primitives_to_install_dir, primitives_to_install_archive):
-    setup_installation()
-    https_archive = "https://s3.amazonaws.com/featuretools-static/primitives_to_install.tar.gz"
-    do_installation(https_archive)
-    cleanup_installation()
+    files = list_primitive_files(installation_dir)
+    # then delete to clean up
+    for f in files:
+        os.unlink(f)
 
 
 def test_list_primitive_files(primitives_to_install_dir):
