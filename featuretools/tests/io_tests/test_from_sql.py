@@ -37,7 +37,7 @@ def test_passes_through_parameters(sqlite):
 
 
 def test_throws_an_error_without_connection_or_connection_string(sqlite):
-    with pytest.raises(ValueError, match="connection or connection_string is required"):
+    with pytest.raises(ValueError, match="connection is required"):
         ft.io.from_sql(id="no_connection")
 
 
@@ -45,3 +45,8 @@ def test_loads_only_specified_tables(sqlite):
     es = ft.io.from_sql(id="widget_limited_tables", connection=sqlite, tables=['widgets', 'factories'])
     assert(len(es.entities) == 2)
     assert(len(es.relationships) == 1)
+
+
+def test_throws_an_error_when_missing_table(sqlite):
+    with pytest.raises(ValueError, match="Can't load the table 'doodads'"):
+        ft.io.from_sql(id="widget_es", connection=sqlite, tables=['widgets', 'doodads'])

@@ -2,21 +2,28 @@ import pandas as pd
 import sqlalchemy as sa
 
 import featuretools as ft
+from featuretools.utils.gen_utils import is_string
 
 
-def from_sql(id, connection=None, connection_string=None, tables=None, index={},
+def from_sql(id, connection=None, tables=None, index={},
              time_index={}, secondary_time_index={}, encoding={}, variable_types={}):
     if connection is None:
-        if connection_string is None:
-            raise ValueError('connection or connection_string is required')
-        else:
-            connection = sa.create_engine(connection_string, echo=False).connect()
+        raise ValueError('connection is required')
+    else:
+        connection = _connection_builder(connection)
 
     loader = EntitySetLoaderFromSQL(connection=connection, id=id, index=index, time_index=time_index,
                                     secondary_time_index=secondary_time_index, encoding=encoding,
                                     variable_types=variable_types)
     loader.load_entityset(tables)
     return loader.es
+
+
+def _connection_builder(con):
+    if is_string(con):
+        return sa.create_engine(con).connect()
+    else:
+        return con
 
 
 def _find_pk_name(table):
@@ -54,7 +61,6 @@ class EntitySetLoaderFromSQL:
         df = pd.read_sql(table.select(), table.metadata.bind)
 
         table_args = self._get_args_for_table(table_name)
-        print("table_args:", table_args)
         if 'index' not in table_args or table_args['index'] is None:
             table_args['index'] = _find_pk_name(table)
 
@@ -66,7 +72,7 @@ class EntitySetLoaderFromSQL:
 
     def _column_fk_list(self, table, column_name):
         fks = table.columns[column_name].foreign_keys
-        return list(filter(lambda fk: fk, fks))
+        return [fk for fk in fks if fk is not None]
 
     def _load_table_fks(self, table_name):
         table = sa.Table(table_name, self.metadata, autoload=True)
@@ -80,7 +86,6 @@ class EntitySetLoaderFromSQL:
             child_table = table_name
             for column_name, fks in fk_dict.items():
                 child_column = column_name
-                child_table = table_name
                 for fk in fks:
                     parent_column = fk.column.name
                     parent_table = fk.column.table.name
@@ -88,8 +93,10 @@ class EntitySetLoaderFromSQL:
 
     def load_tables(self, included_tables):
         if included_tables is not None:
-            tables_to_load = set(self.table_names) & set(included_tables)
-            self.table_names = list(tables_to_load)
+            for t in included_tables:
+                if t not in self.table_names:
+                    raise ValueError("Can't load the table '{}'".format(t))
+            self.table_names = list(included_tables)
 
         for table_name in self.table_names:
             self.es = self._load_table(table_name)
