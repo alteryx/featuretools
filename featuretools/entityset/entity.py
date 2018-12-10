@@ -269,8 +269,6 @@ class Entity(object):
             # TODO: what happens to nans?
             df[column_id] = df[column_id].map(map_dict).astype(np.bool)
         elif not issubclass(new_type, vtypes.Discrete):
-            print(new_type)
-            print(column_id)
             raise Exception("Cannot convert column %s to %s" %
                             (column_id, new_type))
 
