@@ -1,6 +1,5 @@
 from __future__ import division
 
-import datetime
 from builtins import str
 
 import numpy as np
