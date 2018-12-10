@@ -174,8 +174,8 @@ def load_primitive_from_file(filepath):
             primitives.append((primitive_name, primitive_class))
 
     if len(primitives) == 0:
-        raise RuntimeError("No primitive defined in file")
+        raise RuntimeError("No primitive defined in file %s" % filepath)
     elif len(primitives) > 1:
-        raise RuntimeError("More than one primitive defined in file")
+        raise RuntimeError("More than one primitive defined in file %s" % filepath)
 
     return primitives[0]
