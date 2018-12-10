@@ -51,8 +51,7 @@ def test_sklearn_transformer(es, df):
     # Using with transformers
     pipeline = Pipeline(steps=[
         ('ft', DFSTransformer(entityset=es,
-                              target_entity="customers",
-                              max_features=20)),
+                              target_entity="customers")),
         ("numeric", FunctionTransformer(select_numeric, validate=False)),
         ('sc', StandardScaler()),
     ])
@@ -60,7 +59,6 @@ def test_sklearn_transformer(es, df):
     X_train = pipeline.fit(df['customer_id']).transform(df['customer_id'])
 
     assert X_train.shape[0] == 15
-    assert X_train.shape[1] == 18
 
 
 def test_sklearn_estimator(df, pipeline):
