@@ -256,7 +256,7 @@ class Entity(object):
             nonnull = df[column_id].dropna().shape[0]
             if nonnull == 0 and orig_nonnull != 0:
                 raise TypeError("Attempted to convert all string column {} to numeric".format(column_id))
-        elif new_type == vtypes.Datetime:
+        elif issubclass(new_type, vtypes.Datetime):
             format = kwargs.get("format", None)
             # TODO: if float convert to int?
             df[column_id] = pd.to_datetime(df[column_id], format=format,
