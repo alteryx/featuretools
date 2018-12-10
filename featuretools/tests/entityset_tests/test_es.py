@@ -979,9 +979,14 @@ def test_to_pickle_id_none():
     shutil.rmtree(path)
 
 
-def test_datetime64_conversion(entityset):
-    log = entityset['log'].df.copy()
-    log["datetime"] = pd.Timestamp.now()
-    log["datetime"] = log["datetime"].astype("datetime64[ns, UTC]")
-    entityset["log"].update_data(log.copy(deep=True))
-    entityset.normalize_entity('log', 'values', 'value')
+def test_datetime64_conversion():
+    df = pd.DataFrame({'id': [0, 1, 2],
+                       'ints': ['1', '2', '1']})
+    df["time"] = pd.Timestamp.now()
+    df["time"] = df["time"].astype("datetime64[ns, UTC]")
+
+    entityset = EntitySet(id='test')
+    entityset.entity_from_dataframe(entity_id='test_entity', index='id',
+                                    dataframe=df)
+    vtype_time_index = variable_types.variable.DatetimeTimeIndex
+    entityset['test_entity'].convert_variable_type('time', vtype_time_index)
