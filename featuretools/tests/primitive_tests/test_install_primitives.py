@@ -5,6 +5,7 @@ import pytest
 import featuretools
 from featuretools.primitives.base import PrimitiveBase
 from featuretools.primitives.install import (
+    extract_archive,
     get_installation_dir,
     list_primitive_files,
     load_primitive_from_file
@@ -124,3 +125,10 @@ def test_errors_no_primitive_in_file(bad_primitives_files_dir):
     error_text = 'No primitive defined in file %s' % primitive_file
     with pytest.raises(RuntimeError, match=error_text):
         load_primitive_from_file(primitive_file)
+
+
+def test_extract_non_archive_errors(bad_primitives_files_dir):
+    primitive_file = os.path.join(bad_primitives_files_dir, "no_primitives.py")
+    error_text = "Cannot extract archive from %s. Must provide archive ending in .tar or .tar.gz" % primitive_file
+    with pytest.raises(RuntimeError, match=error_text):
+        extract_archive(primitive_file)

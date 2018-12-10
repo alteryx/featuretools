@@ -119,6 +119,10 @@ def extract_archive(filepath):
         tar = tarfile.open(filepath, mode='r:gz')
     elif (filepath.endswith("tar")):
         tar = tarfile.open(filepath, "r:")
+    else:
+        e = "Cannot extract archive from %s." % filepath
+        e += " Must provide archive ending in .tar or .tar.gz"
+        raise RuntimeError(e)
 
     tmp_dir = get_installation_temp_dir()
     members = [m for m in tar.getmembers() if check_valid_primitive_path(m.path)]
