@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 import pytest
 
@@ -36,7 +37,8 @@ def bad_primitives_files_dir(this_dir):
     primitives_to_install_dir(this_dir()),
     os.path.join(this_dir(), "primitives_to_install.tar.gz"),
     "s3://featuretools-static/primitives_to_install.tar.gz",
-    "https://s3.amazonaws.com/featuretools-static/primitives_to_install.tar.gz"
+    "https://s3.amazonaws.com/featuretools-static/primitives_to_install.tar.gz",
+    "INSTALL_VIA_CLI"
 ])
 def test_install_primitives(install_path):
     installation_dir = get_installation_dir()
@@ -51,7 +53,11 @@ def test_install_primitives(install_path):
         except Exception:
             pass
 
-    featuretools.primitives.install.install_primitives(install_path, prompt=False)
+    # handle install via command line as a special case
+    if install_path == "INSTALL_VIA_CLI":
+        subprocess.check_output(['featuretools', "install", "--no-prompt", primitives_to_install_dir(this_dir())])
+    else:
+        featuretools.primitives.install.install_primitives(install_path, prompt=False)
 
     # must reload submodule for it to work
     reload(featuretools.primitives.installed)
