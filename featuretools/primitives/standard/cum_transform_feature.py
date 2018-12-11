@@ -4,9 +4,9 @@ from builtins import str
 import numpy as np
 import pandas as pd
 
+from ..base.primitive_base import IdentityFeature, PrimitiveBase
+from ..base.transform_primitive_base import TransformPrimitive
 from .aggregation_primitives import Count, Max, Mean, Min, Sum
-from .primitive_base import IdentityFeature, PrimitiveBase
-from .transform_primitive import TransformPrimitive
 from .utils import apply_dual_op_from_feat
 
 from featuretools.utils import is_string

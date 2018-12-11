@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 
-from .aggregation_primitive_base import (
+from ..base.aggregation_primitive_base import (
     AggregationPrimitive,
     make_agg_primitive
 )
@@ -354,39 +354,6 @@ class Trend(AggregationPrimitive):
 
             return coefficients[0]
         return pd_trend
-
-
-# # TODO: Not implemented yet
-# class ConseqPos(AggregationPrimitive):
-#     name = "conseq_pos"
-#     input_types =  [(variable_types.Numeric,),
-#                 (variable_types.Ordinal,)]
-#     return_type = variable_types.Numeric
-#     max_stack_depth = 1
-#     stack_on = []
-#     stack_on_exclude = []
-
-#     def get_function(self):
-#         raise NotImplementedError("This feature has not been implemented")
-
-
-# # TODO: Not implemented yet
-# class ConseqSame(AggregationPrimitive):
-#     name = "conseq_same"
-#     input_types =  [(variable_types.Categorical,),
-#                 (variable_types.Ordinal,),
-#                 (variable_types.Numeric,)]
-#     return_type = variable_types.Numeric
-#     max_stack_depth = 1
-#     stack_on = []
-#     stack_on_exclude = []
-
-#     def get_function(self):
-#         raise NotImplementedError("This feature has not been implemented")
-
-
-# # TODO: Not implemented yet
-# class TimeSinceLast(AggregationPrimitive):
 
 
 def convert_datetime_to_floats(x):

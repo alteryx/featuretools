@@ -15,7 +15,6 @@ from featuretools.computational_backends.pandas_backend import PandasBackend
 from featuretools.primitives import (
     And,
     Count,
-    DirectFeature,
     Equals,
     GreaterThan,
     GreaterThanEqualTo,
@@ -30,6 +29,7 @@ from featuretools.primitives import (
     Sum,
     Trend
 )
+from featuretools.primitives.base import DirectFeature
 
 
 @pytest.fixture(scope='module')

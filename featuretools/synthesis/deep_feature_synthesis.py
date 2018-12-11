@@ -5,15 +5,14 @@ from collections import defaultdict
 import featuretools.primitives.api as ftypes
 from featuretools import variable_types
 from featuretools.primitives.api import (
-    AggregationPrimitive,
     BinaryFeature,
     Compare,
-    DirectFeature,
     Discrete,
     Equals,
     IdentityFeature,
     TimeSince
 )
+from featuretools.primitives.base import AggregationPrimitive, DirectFeature
 from featuretools.utils import is_string
 from featuretools.variable_types import Boolean, Categorical, Numeric, Ordinal
 
@@ -28,7 +27,7 @@ class DeepFeatureSynthesis(object):
 
             entityset (EntitySet): Entityset for which to build features.
 
-            agg_primitives (list[str or :class:`.primitives.AggregationPrimitive`], optional):
+            agg_primitives (list[str or :class:`.primitives.`], optional):
                 list of Aggregation Feature types to apply.
 
                 Default: ["sum", "std", "max", "skew", "min", "mean", "count", "percent_true", "num_unique", "mode"]

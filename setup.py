@@ -44,6 +44,11 @@ setup(
     tests_require=open('test-requirements.txt').readlines(),
     keywords='feature engineering data science machine learning',
     include_package_data=True,
+    entry_points={
+          'console_scripts': [
+              'featuretools = featuretools.__main__:cli'
+          ]
+      },
     long_description=long_description,
     long_description_content_type='text/markdown'
 )

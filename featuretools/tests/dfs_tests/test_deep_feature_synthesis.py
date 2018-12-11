@@ -14,19 +14,21 @@ import featuretools as ft
 from featuretools.primitives import (
     Absolute,
     Add,
-    AggregationPrimitive,
     Count,
     CumMean,
     Diff,
-    DirectFeature,
-    Feature,
     Hour,
-    IdentityFeature,
     Last,
     Mean,
     Mode,
     Sum,
-    TimeSincePrevious,
+    TimeSincePrevious
+)
+from featuretools.primitives.base import (
+    AggregationPrimitive,
+    DirectFeature,
+    Feature,
+    IdentityFeature,
     TransformPrimitive,
     make_agg_primitive
 )

@@ -1,4 +1,3 @@
-TEST_CMD=setup.py test --addopts --boxed
 clean:
 	find . -name '*.pyo' -delete
 	find . -name '*.pyc' -delete
@@ -9,7 +8,7 @@ lint:
 	flake8 featuretools && isort --check-only --recursive featuretools
 
 test: lint
-	python $(TEST_CMD)
+	pytest featuretools/tests
 
 installdeps:
 	pip install --upgrade pip

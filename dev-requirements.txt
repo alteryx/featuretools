@@ -10,4 +10,3 @@ matplotlib==2.2.3; python_version<'3'
 nbsphinx==0.3.5
 Sphinx==1.8.1
 sphinx_rtd_theme==0.4.2
-tox==3.5.3

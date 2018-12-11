@@ -19,10 +19,8 @@ from featuretools.primitives import (
     CumSum,
     Day,
     Diff,
-    DirectFeature,
     Divide,
     Equals,
-    Feature,
     GreaterThan,
     GreaterThanEqualTo,
     Haversine,
@@ -45,7 +43,11 @@ from featuretools.primitives import (
     Percentile,
     Subtract,
     Sum,
-    get_transform_primitives,
+    get_transform_primitives
+)
+from featuretools.primitives.base import (
+    DirectFeature,
+    Feature,
     make_trans_primitive
 )
 from featuretools.synthesis.deep_feature_synthesis import match

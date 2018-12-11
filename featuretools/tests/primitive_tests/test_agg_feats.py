@@ -10,16 +10,18 @@ from ..testing_utils import feature_with_name, make_ecommerce_entityset
 
 import featuretools as ft
 from featuretools.primitives import (
-    AggregationPrimitive,
     Count,
-    Feature,
     Mean,
     Median,
     NMostCommon,
     NumTrue,
     Sum,
     TimeSinceLast,
-    get_aggregation_primitives,
+    get_aggregation_primitives
+)
+from featuretools.primitives.base import (
+    AggregationPrimitive,
+    Feature,
     make_agg_primitive
 )
 from featuretools.synthesis.deep_feature_synthesis import (
