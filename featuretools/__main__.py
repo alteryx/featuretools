@@ -33,3 +33,7 @@ def list_primitives():
 cli.add_command(install)
 cli.add_command(list_primitives)
 cli.add_command(info)
+
+
+if __name__ == "__main__":
+    cli()
