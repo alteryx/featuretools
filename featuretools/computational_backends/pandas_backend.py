@@ -537,10 +537,9 @@ def agg_wrapper(feats, time_last):
 
             if f.expanding:
                 names = f.get_expanded_names()
-                for i, name in enumerate(names):
-                    d[name] = None
-                    if i < len(values):
-                        d[name] = values[i]
+                d.update({name: None for name in names})
+                assert len(values) <= len(names)
+                d.update({name: value for name, value in zip(names, values)})
             else:
                 d[f.get_name()] = values
         return pd.Series(d)
