@@ -702,8 +702,7 @@ class EntitySet(object):
                          make_time_index=None,
                          make_secondary_time_index=None,
                          new_entity_time_index=None,
-                         new_entity_secondary_time_index=None,
-                         time_index_reduce='first'):
+                         new_entity_secondary_time_index=None):
         """Create a new entity and relationship from unique values of an existing variable.
 
         Args:
@@ -736,11 +735,6 @@ class EntitySet(object):
             new_entity_time_index (str, optional): Rename new entity time index.
 
             new_entity_secondary_time_index (str, optional): Rename new entity secondary time index.
-
-            time_index_reduce (str): If making a time_index, choose either
-                the 'first' time or the 'last' time from the associated children instances.
-                If creating a secondary time index, then the primary time index always reduces
-                using 'first', and secondary using 'last'.
 
         """
         base_entity = self.entity_dict[base_entity_id]
@@ -778,7 +772,7 @@ class EntitySet(object):
         elif make_time_index:
             base_time_index = base_entity.time_index
             if new_entity_time_index is None:
-                new_entity_time_index = "%s_%s_time" % (time_index_reduce, base_entity.id)
+                new_entity_time_index = "first_%s_time" % (base_entity.id)
 
             assert base_entity.time_index is not None, \
                 "Base entity doesn't have time_index defined"
@@ -799,13 +793,11 @@ class EntitySet(object):
             [v for v in copy_variables]
 
         new_entity_df2 = new_entity_df. \
-            drop_duplicates(index, keep=time_index_reduce)[selected_variables]
+            drop_duplicates(index, keep='first')[selected_variables]
 
         if make_time_index:
             new_entity_df2.rename(columns={base_time_index: new_entity_time_index}, inplace=True)
         if make_secondary_time_index:
-            time_index_reduce = 'first'
-
             assert len(make_secondary_time_index) == 1, "Can only provide 1 secondary time index"
             secondary_time_index = list(make_secondary_time_index.keys())[0]
 
