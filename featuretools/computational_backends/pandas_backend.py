@@ -250,7 +250,13 @@ class PandasBackend(ComputationalBackend):
             df = df.append(default_df, sort=True)
 
         df.index.name = self.entityset[self.target_eid].index
-        return df[[feat.get_name() for feat in self.features]]
+        column_list = []
+        for feat in self.features:
+            if feat.expanding:
+                column_list.extend(feat.get_expanded_names())
+            else:
+                column_list.append(feat.get_name())
+        return df[column_list]
 
     def generate_default_df(self, instance_ids, extra_columns=None):
         index_name = self.features[0].entity.index
@@ -472,17 +478,24 @@ class PandasBackend(ComputationalBackend):
                                  left_index=True, right_index=True, how='left')
 
         # Handle default values
-        # 1. handle non scalar default values
-        iterfeats = [f for f in features
-                     if hasattr(f.default_value, '__iter__')]
-        for f in iterfeats:
-            nulls = pd.isnull(frame[f.get_name()])
-            for ni in nulls[nulls].index:
-                frame.at[ni, f.get_name()] = f.default_value
+        fillna_dict = {}
+        for f in features:
+            names = [f.get_name()]
+            defaults = [f.default_value]
+            if f.expanding:
+                names = f.get_expanded_names()
+                defaults = f.default_value
 
-        # 2. handle scalars default values
-        fillna_dict = {f.get_name(): f.default_value for f in features
-                       if f not in iterfeats}
+            # 1. handle non scalar default values
+            for name, default in zip(names, defaults):
+                if hasattr(default, '__iter__'):
+                    nulls = pd.isnull(frame[name])
+                    for ni in nulls[nulls].index:
+                        frame.at[ni, name] = default
+                # 2. handle scalars default values
+                else:
+                    fillna_dict[name] = default
+
         frame.fillna(fillna_dict, inplace=True)
 
         # convert boolean dtypes to floats as appropriate
@@ -518,10 +531,18 @@ def agg_wrapper(feats, time_last):
             args = [df[v] for v in variable_ids]
 
             if f.uses_calc_time:
-                d[f.get_name()] = func(*args, time=time_last)
+                values = func(*args, time=time_last)
             else:
-                d[f.get_name()] = func(*args)
+                values = func(*args)
 
+            if f.expanding:
+                names = f.get_expanded_names()
+                for i, name in enumerate(names):
+                    d[name] = None
+                    if i < len(values):
+                        d[name] = values[i]
+            else:
+                d[f.get_name()] = values
         return pd.Series(d)
     return wrap
 

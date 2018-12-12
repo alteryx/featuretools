@@ -459,14 +459,20 @@ def test_topn(entityset, backend):
     df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2],
                                                time_last=None)
 
-    true_results = [
-        ['toothpaste', 'coke zero'],
+    true_results = pd.DataFrame([
+        ['coke zero', 'toothpaste'],
         ['coke zero', 'Haribo sugar-free gummy bears'],
-        ['taco clock']
-    ]
-    assert (topn.get_name() in df.columns)
-    for i, values in enumerate(df[topn.get_name()].values):
-        assert set(true_results[i]) == set(values)
+        ['taco clock', np.nan]
+    ])
+    assert ([name in df.columns for name in topn.get_expanded_names()])
+    for i in range(df.shape[0]):
+        if i == 0:
+            # coke zero and toothpaste have same number of occurrences
+            # so just check that the top two match
+            assert set(true_results.loc[i].values) == set(df.loc[i].values)
+        else:
+            for i1, i2 in zip(true_results.iloc[i], df.iloc[i]):
+                assert (pd.isnull(i1) and pd.isnull(i2)) or (i1 == i2)
 
 
 def test_trend(entityset, backend):
