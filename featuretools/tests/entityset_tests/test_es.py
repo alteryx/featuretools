@@ -843,6 +843,20 @@ def test_normalize_time_index_from_none(entityset):
     assert entityset['birthdays'].time_index == 'date_of_birth'
 
 
+def test_raise_error_if_dupicate_additional_variables_passed(entityset):
+    error_text = "'additional_variables' contains duplicate variables. All variables must be unique."
+    with pytest.raises(ValueError, match=error_text):
+        entityset.normalize_entity('sessions', 'device_types', 'device_type',
+                                   additional_variables=['device_name', 'device_name'])
+
+
+def test_raise_error_if_dupicate_copy_variables_passed(entityset):
+    error_text = "'copy_variables' contains duplicate variables. All variables must be unique."
+    with pytest.raises(ValueError, match=error_text):
+        entityset.normalize_entity('sessions', 'device_types', 'device_type',
+                                   copy_variables=['device_name', 'device_name'])
+
+
 def test_normalize_entity_copies_variable_types(entityset):
     entityset['log'].convert_variable_type(
         'value', variable_types.Ordinal, convert_data=False)
