@@ -322,9 +322,12 @@ def test_converts_datetime():
               'time': variable_types.Datetime}
 
     entityset = EntitySet(id='test')
-    entityset._import_from_dataframe(entity_id='test_entity', index='id',
-                                     time_index="time", variable_types=vtypes,
-                                     dataframe=df)
+    entityset.entity_from_dataframe(
+        entity_id='test_entity',
+        index='id',
+        time_index="time",
+        variable_types=vtypes,
+        dataframe=df)
     pd_col = entityset['test_entity'].df['time']
     # assert type(entityset['test_entity']['time']) == variable_types.Datetime
     assert type(pd_col[0]) == pd.Timestamp
@@ -343,8 +346,11 @@ def test_handles_datetime_format():
               'time_no_format': variable_types.Datetime}
 
     entityset = EntitySet(id='test')
-    entityset._import_from_dataframe(entity_id='test_entity', index='id',
-                                     variable_types=vtypes, dataframe=df)
+    entityset.entity_from_dataframe(
+        entity_id='test_entity',
+        index='id',
+        variable_types=vtypes,
+        dataframe=df)
 
     col_format = entityset['test_entity'].df['time_format']
     col_no_format = entityset['test_entity'].df['time_no_format']
