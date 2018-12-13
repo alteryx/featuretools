@@ -4,7 +4,7 @@ import pytest
 from ..testing_utils import make_ecommerce_entityset
 
 from featuretools import EntitySet, calculate_feature_matrix, dfs
-from featuretools.primitives import IdentityFeature
+from featuretools.primitives import IdentityFeature, NMostCommon
 from featuretools.synthesis import encode_features
 
 
@@ -128,3 +128,13 @@ def test_encode_unknown_features():
                                                      include_unknown=True)
     assert list(features_enc.columns) == ['category = unknown', 'category = e', 'category = d',
                                           'category = c', 'category = b', 'category is unknown']
+
+
+def test_encode_features_topn(entityset):
+    features, feature_defs = dfs(entityset=entityset,
+                                 instance_ids=[0, 1, 2],
+                                 target_entity="customers",
+                                 agg_primitives=["n_most_common"])
+    features_enc, feature_defs_enc = encode_features(features,
+                                                     feature_defs,
+                                                     include_unknown=True)
