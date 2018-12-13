@@ -636,7 +636,6 @@ class EntitySet(object):
                               make_index=False,
                               time_index=None,
                               secondary_time_index=None,
-                              last_time_index=None,
                               already_sorted=False):
         """
         Load the data for a specified entity from a Pandas DataFrame.
@@ -700,7 +699,6 @@ class EntitySet(object):
             index=index,
             time_index=time_index,
             secondary_time_index=secondary_time_index,
-            last_time_index=last_time_index,
             already_sorted=already_sorted,
             make_index=make_index)
         self.entity_dict[entity.id] = entity
@@ -840,7 +838,6 @@ class EntitySet(object):
             index,
             time_index=new_entity_time_index,
             secondary_time_index=make_secondary_time_index,
-            last_time_index=None,
             variable_types=transfer_types)
 
         for v in additional_variables:
