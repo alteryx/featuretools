@@ -131,6 +131,8 @@ def test_encode_unknown_features():
 
 
 def test_encode_features_topn(entityset):
+    topn = NMostCommon(entityset['log']['product_id'],
+                       entityset['customers'], n=3)
     features, feature_defs = dfs(entityset=entityset,
                                  instance_ids=[0, 1, 2],
                                  target_entity="customers",
@@ -138,3 +140,6 @@ def test_encode_features_topn(entityset):
     features_enc, feature_defs_enc = encode_features(features,
                                                      feature_defs,
                                                      include_unknown=True)
+    assert topn in feature_defs_enc
+    for name in topn.get_expanded_names():
+        assert name in features_enc.columns

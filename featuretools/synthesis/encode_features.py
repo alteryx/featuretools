@@ -67,11 +67,16 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
     encoded = []
     feature_names = []
     for feature in features:
-        fname = feature.get_name()
-        assert fname in X.columns, (
-            "Feature %s not found in feature matrix" % (fname)
-        )
-        feature_names.append(fname)
+        if feature.expanding:
+            names = feature.get_expanded_names()
+        else:
+            names = [feature.get_name()]
+
+        for fname in names:
+            assert fname in X.columns, (
+                "Feature %s not found in feature matrix" % (fname)
+            )
+            feature_names.append(fname)
 
     extra_columns = [col for col in X.columns if col not in feature_names]
 
@@ -84,6 +89,8 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
         iterator = features
 
     for f in iterator:
+        # TODO: features with multiple columns are not encoded by this method,
+        # which can cause an "encoded" matrix non-numeric values
         if (f.expanding or (not issubclass(f.variable_type, Discrete))):
             encoded.append(f)
             continue
@@ -116,7 +123,14 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
 
         X.drop(f.get_name(), axis=1, inplace=True)
 
-    new_X = X[[e.get_name() for e in encoded] + extra_columns]
+    new_columns = []
+    for e in encoded:
+        if e.expanding:
+            new_columns.extend(e.get_expanded_names())
+        else:
+            new_columns.append(e.get_name())
+    new_columns.extend(extra_columns)
+    new_X = X[new_columns]
     iterator = new_X.columns
     if verbose:
         iterator = make_tqdm_iterator(iterable=new_X.columns,
