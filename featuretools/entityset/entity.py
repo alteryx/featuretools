@@ -30,6 +30,11 @@ class Entity(object):
 
     An Entity is analogous to a table in a relational database
 
+    Attributes:
+        id (str): Id of Entity.
+        index (str): Name of id column in the dataframe.
+        time_index (str): Name of time column in the dataframe.
+
     See Also:
         :class:`.Relationship`, :class:`.Variable`, :class:`.EntitySet`
 

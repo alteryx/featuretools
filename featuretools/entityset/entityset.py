@@ -25,13 +25,9 @@ class EntitySet(object):
     Stores all actual data for a entityset
 
     Attributes:
-        id
-        entity_dict
-        relationships
-        time_type
-
-    Properties:
-        metadata
+        id (str) : Unique identifier to associate with this instance
+        entity_dict (dict[str -> Entity]) : Dictionary of entities.
+        relationships (list[(str, str, str, str)]): List of relationships between entities.
 
     """
     def __init__(self, id=None, entities=None, relationships=None):
@@ -61,7 +57,9 @@ class EntitySet(object):
                     relationships = [("cards", "id", "transactions", "card_id")]
 
                     ft.EntitySet("my-entity-set", entities, relationships)
+
         """
+
         self.id = id
         self.entity_dict = {}
         self.relationships = []
@@ -133,6 +131,7 @@ class EntitySet(object):
 
     @property
     def entities(self):
+        '''List of entities.'''
         return list(self.entity_dict.values())
 
     @property
