@@ -140,6 +140,6 @@ def test_encode_features_topn(entityset):
     features_enc, feature_defs_enc = encode_features(features,
                                                      feature_defs,
                                                      include_unknown=True)
-    assert topn in feature_defs_enc
+    assert topn.hash() in [feat.hash() for feat in feature_defs_enc]
     for name in topn.get_expanded_names():
         assert name in features_enc.columns
