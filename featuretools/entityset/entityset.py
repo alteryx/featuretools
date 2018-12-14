@@ -753,9 +753,15 @@ class EntitySet(object):
             raise TypeError("'additional_variables' must be a list, but received type {}"
                             .format(type(additional_variables)))
 
+        if len(additional_variables) != len(set(additional_variables)):
+            raise ValueError("'additional_variables' contains duplicate variables. All variables must be unique.")
+
         if not isinstance(copy_variables, list):
             raise TypeError("'copy_variables' must be a list, but received type {}"
                             .format(type(copy_variables)))
+
+        if len(copy_variables) != len(set(copy_variables)):
+            raise ValueError("'copy_variables' contains duplicate variables. All variables must be unique.")
 
         for v in additional_variables + copy_variables:
             if v == index:
