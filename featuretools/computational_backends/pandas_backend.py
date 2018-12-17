@@ -257,8 +257,13 @@ class PandasBackend(ComputationalBackend):
 
     def generate_default_df(self, instance_ids, extra_columns=None):
         index_name = self.features[0].entity.index
-        default_row = [f.default_value for f in self.features]
-        default_cols = [f.get_name() for f in self.features]
+        default_row = []
+        default_cols = []
+        for f in self.features:
+            for name in f.output_feature_names():
+                default_cols.append(name)
+                default_row.append(f.default_value)
+
         default_matrix = [default_row] * len(instance_ids)
         default_df = pd.DataFrame(default_matrix,
                                   columns=default_cols,
@@ -477,14 +482,9 @@ class PandasBackend(ComputationalBackend):
         # Handle default values
         fillna_dict = {}
         for f in features:
-            names = f.output_feature_names()
-            defaults = [f.default_value]
-            if len(names) > 1:
-                defaults = f.default_value
-
-            # 1. handle non scalar default values
-            for name, default in zip(names, defaults):
-                fillna_dict[name] = default
+            feature_defaults = {name: f.default_value for
+                                name in f.output_feature_names()}
+            fillna_dict.update(feature_defaults)
 
         frame.fillna(fillna_dict, inplace=True)
 
@@ -537,10 +537,5 @@ def agg_wrapper(feats, time_last):
 
 
 def set_default_column(frame, f):
-    default = [f.default_value]
-    names = f.output_feature_names()
-    if len(names) > 1:
-        default = f.default_value
-
-    for name, value in zip(names, default):
-            frame[name] = value
+    for name in f.output_feature_names():
+        frame[name] = f.default_value

@@ -158,7 +158,7 @@ class NMostCommon(AggregationPrimitive):
 
     @property
     def default_value(self):
-        return np.zeros(self.number_output_features) * np.nan
+        return np.nan
 
     def output_feature_names(self):
         names = []
