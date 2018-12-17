@@ -14,8 +14,8 @@ class TransformPrimitive(PrimitiveBase):
         # Any edits made to this method should also be made to the
         # new_class_init method in make_trans_primitive
         self.base_features = [self._check_feature(f) for f in base_features]
-        if any(bf.expanding for bf in self.base_features):
-            self.expanding = True
+        assert (bf.number_output_features == 1 for bf in self.base_features)
+
         assert len(set([f.entity for f in self.base_features])) == 1, \
             "More than one entity for base features"
         super(TransformPrimitive, self).__init__(self.base_features[0].entity,
@@ -107,8 +107,8 @@ def make_trans_primitive(function, input_types, return_type, name=None,
         def new_class_init(self, *args, **kwargs):
             self.kwargs = copy.deepcopy(self.default_kwargs)
             self.base_features = [self._check_feature(f) for f in args]
-            if any(bf.expanding for bf in self.base_features):
-                self.expanding = True
+            assert (bf.number_output_features == 1 for bf in self.base_features)
+
             assert len(set([f.entity for f in self.base_features])) == 1, \
                 "More than one entity for base features"
             self.kwargs.update(kwargs)

@@ -252,10 +252,7 @@ class PandasBackend(ComputationalBackend):
         df.index.name = self.entityset[self.target_eid].index
         column_list = []
         for feat in self.features:
-            if feat.expanding:
-                column_list.extend(feat.get_expanded_names())
-            else:
-                column_list.append(feat.get_name())
+            column_list.extend(feat.output_feature_names())
         return df[column_list]
 
     def generate_default_df(self, instance_ids, extra_columns=None):
@@ -480,28 +477,21 @@ class PandasBackend(ComputationalBackend):
         # Handle default values
         fillna_dict = {}
         for f in features:
-            names = [f.get_name()]
+            names = f.output_feature_names()
             defaults = [f.default_value]
-            if f.expanding:
-                names = f.get_expanded_names()
+            if len(names) > 1:
                 defaults = f.default_value
 
             # 1. handle non scalar default values
             for name, default in zip(names, defaults):
-                if hasattr(default, '__iter__'):
-                    nulls = pd.isnull(frame[name])
-                    for ni in nulls[nulls].index:
-                        frame.at[ni, name] = default
-                # 2. handle scalars default values
-                else:
-                    fillna_dict[name] = default
+                fillna_dict[name] = default
 
         frame.fillna(fillna_dict, inplace=True)
 
         # convert boolean dtypes to floats as appropriate
         # pandas behavior: https://github.com/pydata/pandas/issues/3752
         for f in features:
-            if (not f.expanding and
+            if (not f.number_output_features > 1 and
                     f.variable_type == variable_types.Numeric and
                     frame[f.get_name()].dtype.name in ['object', 'bool']):
                 frame[f.get_name()] = frame[f.get_name()].astype(float)
@@ -519,7 +509,7 @@ def _can_agg(feature):
     if feature.uses_calc_time:
         return False
 
-    return len(base_features) == 1 and not feature.expanding
+    return len(base_features) == 1 and feature.number_output_features == 1
 
 
 def agg_wrapper(feats, time_last):
@@ -535,8 +525,8 @@ def agg_wrapper(feats, time_last):
             else:
                 values = func(*args)
 
-            if f.expanding:
-                names = f.get_expanded_names()
+            if f.number_output_features > 1:
+                names = f.output_feature_names()
                 d.update({name: None for name in names})
                 assert len(values) <= len(names)
                 d.update({name: value for name, value in zip(names, values)})

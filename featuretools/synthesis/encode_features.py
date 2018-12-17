@@ -67,12 +67,7 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
     encoded = []
     feature_names = []
     for feature in features:
-        if feature.expanding:
-            names = feature.get_expanded_names()
-        else:
-            names = [feature.get_name()]
-
-        for fname in names:
+        for fname in feature.output_feature_names():
             assert fname in X.columns, (
                 "Feature %s not found in feature matrix" % (fname)
             )
@@ -91,7 +86,7 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
     for f in iterator:
         # TODO: features with multiple columns are not encoded by this method,
         # which can cause an "encoded" matrix non-numeric values
-        if (f.expanding or (not issubclass(f.variable_type, Discrete))):
+        if (f.number_output_features > 1 or (not issubclass(f.variable_type, Discrete))):
             encoded.append(f)
             continue
 
@@ -125,10 +120,8 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
 
     new_columns = []
     for e in encoded:
-        if e.expanding:
-            new_columns.extend(e.get_expanded_names())
-        else:
-            new_columns.append(e.get_name())
+        new_columns.extend(e.output_feature_names())
+
     new_columns.extend(extra_columns)
     new_X = X[new_columns]
     iterator = new_X.columns

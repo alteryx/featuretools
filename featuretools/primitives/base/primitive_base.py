@@ -50,9 +50,8 @@ class PrimitiveBase(object):
     # downward from this feature's base features.
     max_stack_depth = None
     rolling_function = False
-    #: (bool): If True, feature will expand into multiple values during
-    # calculation
-    expanding = False
+    #: (int): Number of colums in feature matrix associated with this feature
+    number_output_features = 1
     _name = None
     # whitelist of primitives can have this primitive in input_types
     base_of = None
@@ -372,6 +371,14 @@ class PrimitiveBase(object):
             return self._name
         return self.generate_name()
 
+    def output_feature_names(self):
+        n = self.number_output_features
+        if n == 1:
+            names = [self.get_name()]
+        else:
+            names = [self.get_name() + "__{}".format(i) for i in range(n)]
+        return names
+
     def get_function(self):
         raise NotImplementedError("Implement in subclass")
 
@@ -472,8 +479,7 @@ class DirectFeature(PrimitiveBase):
 
     def __init__(self, base_feature, child_entity):
         base_feature = self._check_feature(base_feature)
-        if base_feature.expanding:
-            self.expanding = True
+        self.number_output_features = base_feature.number_output_features
 
         path = child_entity.entityset.find_forward_path(child_entity.id, base_feature.entity.id)
         if len(path) > 1:

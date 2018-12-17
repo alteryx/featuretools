@@ -151,24 +151,23 @@ class NMostCommon(AggregationPrimitive):
     # max_stack_depth = 1
     stack_on = []
     stack_on_exclude = []
-    expanding = True
 
     def __init__(self, base_feature, parent_entity, n=3):
-        self.n = n
+        self.number_output_features = n
         super(NMostCommon, self).__init__(base_feature, parent_entity)
 
     @property
     def default_value(self):
-        return np.zeros(self.n) * np.nan
+        return np.zeros(self.number_output_features) * np.nan
 
-    def get_expanded_names(self):
+    def output_feature_names(self):
         names = []
-        for i in range(1, self.n + 1):
+        for i in range(1, self.number_output_features + 1):
             names.append(str(i) + self.get_name()[1:])
         return names
 
     def get_function(self):
-        def pd_topn(x, n=self.n):
+        def pd_topn(x, n=self.number_output_features):
             return np.array(x.value_counts()[:n].index)
         return pd_topn
 

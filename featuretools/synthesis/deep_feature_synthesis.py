@@ -507,7 +507,7 @@ class DeepFeatureSynthesis(object):
 
             for matching_input in matching_inputs:
                 new_f = trans_prim(*matching_input)
-                if new_f.expanding:
+                if new_f.number_output_features > 1:
                     continue
 
                 self._handle_new_feature(all_features=all_features,
@@ -538,7 +538,7 @@ class DeepFeatureSynthesis(object):
 
             new_f = DirectFeature(f, child_entity)
 
-            if f.expanding:
+            if f.number_output_features > 1:
                 continue
             else:
                 self._handle_new_feature(all_features=all_features,
@@ -683,7 +683,7 @@ def check_stacking(primitive, input_types):
                 return False
 
     for f in input_types:
-        if f.expanding:
+        if f.number_output_features > 1:
             return False
 
     for f in input_types:
