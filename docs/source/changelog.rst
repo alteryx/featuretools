@@ -2,6 +2,22 @@
 
 Changelog
 ---------
+**v0.5.0** Dec 17, 2018
+    * Add specific error for duplicate additional/copy_variables in normalize_entity (:pr:`348`)
+    * Removed EntitySet._import_from_dataframe (:pr:`346`)
+    * Removed time_index_reduce parameter (:pr:`344`)
+    * Allow installation of additional primitives (:pr:`326`)
+    * Fix DatetimeIndex variable conversion (:pr:`342`)
+    * Update Sklearn DFS Transformer (:pr:`343`)
+    * Clean up entity creation logic (:pr:`336`)
+    * remove casting to list in transform feature calculation (:pr:`330`)
+    * Fix sklearn wrapper (:pr:`335`)
+    * Add readme to pypi
+    * Update conda docs after move to conda-forge (:pr:`334`)
+    * Add wrapper for scikit-learn Pipelines (:pr:`323`)
+    * Remove parse_date_cols parameter from EntitySet._import_from_dataframe (:pr:`333`)
+
+    Thanks to the following people for contributing to this release: :user:`bukosabino`, :user:`georgewambold`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`kmax12`, and :user:`rwedge`.
 **v0.4.1** Nov 29, 2018
     * Resolve bug preventing using first column as index by default (:pr:`308`)
     * Handle return type when creating features from Id variables (:pr:`318`)
