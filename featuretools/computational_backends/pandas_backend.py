@@ -537,8 +537,10 @@ def agg_wrapper(feats, time_last):
 
 
 def set_default_column(frame, f):
-    default = f.default_value
-    if hasattr(default, '__iter__'):
-        length = frame.shape[0]
-        default = [f.default_value] * length
-    frame[f.get_name()] = default
+    default = [f.default_value]
+    names = f.output_feature_names()
+    if len(names) > 1:
+        default = f.default_value
+
+    for name, value in zip(names, default):
+            frame[name] = value
