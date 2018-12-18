@@ -14,7 +14,7 @@ First, let's build some generate some training and test data in the same format.
 
 .. note ::
 
-    Features created in one version of Featuretools are not guaranteed to work in another. This means the features might need to be re-created after upgrading Featuretools.
+    Features saved in one version of Featuretools are not guaranteed to load in another. This means the features might need to be re-created after upgrading Featuretools.
 
 .. ipython:: python
 
