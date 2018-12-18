@@ -3,8 +3,8 @@
 Changelog
 ---------
 **v0.5.1** Dec 17, 2018
-    * Add missing dependencies  (:pr:`353`)
-    * Move comment to note in documentation  (:pr:`352`)
+    * Add missing dependencies (:pr:`353`)
+    * Move comment to note in documentation (:pr:`352`)
 
 **v0.5.0** Dec 17, 2018
     * Add specific error for duplicate additional/copy_variables in normalize_entity (:pr:`348`)
