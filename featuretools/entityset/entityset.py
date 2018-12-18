@@ -690,20 +690,27 @@ class EntitySet(object):
                 es["transactions"].df
 
         """
-        return self._import_from_dataframe(entity_id, dataframe.copy(), index=index,
-                                           make_index=make_index,
-                                           time_index=time_index,
-                                           secondary_time_index=secondary_time_index,
-                                           variable_types=variable_types,
-                                           already_sorted=already_sorted)
+        variable_types = variable_types or {}
+        entity = Entity(
+            entity_id,
+            dataframe,
+            self,
+            variable_types=variable_types,
+            index=index,
+            time_index=time_index,
+            secondary_time_index=secondary_time_index,
+            already_sorted=already_sorted,
+            make_index=make_index)
+        self.entity_dict[entity.id] = entity
+        self.reset_metadata()
+        return self
 
     def normalize_entity(self, base_entity_id, new_entity_id, index,
                          additional_variables=None, copy_variables=None,
                          make_time_index=None,
                          make_secondary_time_index=None,
                          new_entity_time_index=None,
-                         new_entity_secondary_time_index=None,
-                         time_index_reduce='first'):
+                         new_entity_secondary_time_index=None):
         """Create a new entity and relationship from unique values of an existing variable.
 
         Args:
@@ -737,11 +744,6 @@ class EntitySet(object):
 
             new_entity_secondary_time_index (str, optional): Rename new entity secondary time index.
 
-            time_index_reduce (str): If making a time_index, choose either
-                the 'first' time or the 'last' time from the associated children instances.
-                If creating a secondary time index, then the primary time index always reduces
-                using 'first', and secondary using 'last'.
-
         """
         base_entity = self.entity_dict[base_entity_id]
         additional_variables = additional_variables or []
@@ -751,9 +753,15 @@ class EntitySet(object):
             raise TypeError("'additional_variables' must be a list, but received type {}"
                             .format(type(additional_variables)))
 
+        if len(additional_variables) != len(set(additional_variables)):
+            raise ValueError("'additional_variables' contains duplicate variables. All variables must be unique.")
+
         if not isinstance(copy_variables, list):
             raise TypeError("'copy_variables' must be a list, but received type {}"
                             .format(type(copy_variables)))
+
+        if len(copy_variables) != len(set(copy_variables)):
+            raise ValueError("'copy_variables' contains duplicate variables. All variables must be unique.")
 
         for v in additional_variables + copy_variables:
             if v == index:
@@ -778,7 +786,7 @@ class EntitySet(object):
         elif make_time_index:
             base_time_index = base_entity.time_index
             if new_entity_time_index is None:
-                new_entity_time_index = "%s_%s_time" % (time_index_reduce, base_entity.id)
+                new_entity_time_index = "first_%s_time" % (base_entity.id)
 
             assert base_entity.time_index is not None, \
                 "Base entity doesn't have time_index defined"
@@ -799,13 +807,11 @@ class EntitySet(object):
             [v for v in copy_variables]
 
         new_entity_df2 = new_entity_df. \
-            drop_duplicates(index, keep=time_index_reduce)[selected_variables]
+            drop_duplicates(index, keep='first')[selected_variables]
 
         if make_time_index:
             new_entity_df2.rename(columns={base_time_index: new_entity_time_index}, inplace=True)
         if make_secondary_time_index:
-            time_index_reduce = 'first'
-
             assert len(make_secondary_time_index) == 1, "Can only provide 1 secondary time index"
             secondary_time_index = list(make_secondary_time_index.keys())[0]
 
@@ -832,12 +838,13 @@ class EntitySet(object):
             ti_cols = [c if c != old_ti_name else secondary_time_index for c in ti_cols]
             make_secondary_time_index = {secondary_time_index: ti_cols}
 
-        self._import_from_dataframe(new_entity_id, new_entity_df,
-                                    index,
-                                    time_index=new_entity_time_index,
-                                    secondary_time_index=make_secondary_time_index,
-                                    last_time_index=None,
-                                    variable_types=transfer_types)
+        self.entity_from_dataframe(
+            new_entity_id,
+            new_entity_df,
+            index,
+            time_index=new_entity_time_index,
+            secondary_time_index=make_secondary_time_index,
+            variable_types=transfer_types)
 
         for v in additional_variables:
             self.entity_dict[base_entity_id].delete_variable(v)
@@ -1090,52 +1097,6 @@ class EntitySet(object):
     ###########################################################################
     #  Private methods  ######################################################
     ###########################################################################
-
-    def _import_from_dataframe(self,
-                               entity_id,
-                               dataframe,
-                               index=None,
-                               variable_types=None,
-                               make_index=False,
-                               time_index=None,
-                               secondary_time_index=None,
-                               last_time_index=None,
-                               already_sorted=False):
-        """
-        Load the data for a specified entity from a pandas dataframe.
-
-        Args:
-            entity_id (str) : Unique id to associate with this entity.
-            dataframe (pd.DataFrame) : Pandas dataframe containing the data.
-            index (str, optional): Name of the variable used to index the entity.
-                If None, take the first column.
-            variable_types (dict[str -> dict[str -> type]]) : Optional mapping of
-                entity_id to variable_types dict with which to initialize an
-                entity's store.
-            make_index (bool, optional) : If True, assume index does not exist as a column in
-                dataframe, and create a new column of that name using integers the (0, len(dataframe)).
-                Otherwise, assume index exists in dataframe.
-            time_index (str, optional) : Name of column to use as a time index for this entity. Must be
-                a Datetime or Numeric dtype.
-            secondary_time_index (str, optional): Name of variable containing
-                time data to use a second time index for the entity.
-            already_sorted (bool, optional) : If True, assumes that input dataframe is already sorted by time.
-                Defaults to False.
-        """
-        variable_types = variable_types or {}
-        entity = Entity(entity_id,
-                        dataframe,
-                        self,
-                        variable_types=variable_types,
-                        index=index,
-                        time_index=time_index,
-                        secondary_time_index=secondary_time_index,
-                        last_time_index=last_time_index,
-                        already_sorted=already_sorted,
-                        make_index=make_index)
-        self.entity_dict[entity.id] = entity
-        self.reset_metadata()
-        return self
 
     def _add_multigenerational_link_vars(self, frames, start_entity_id,
                                          end_entity_id=None, path=None):

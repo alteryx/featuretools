@@ -322,9 +322,12 @@ def test_converts_datetime():
               'time': variable_types.Datetime}
 
     entityset = EntitySet(id='test')
-    entityset._import_from_dataframe(entity_id='test_entity', index='id',
-                                     time_index="time", variable_types=vtypes,
-                                     dataframe=df)
+    entityset.entity_from_dataframe(
+        entity_id='test_entity',
+        index='id',
+        time_index="time",
+        variable_types=vtypes,
+        dataframe=df)
     pd_col = entityset['test_entity'].df['time']
     # assert type(entityset['test_entity']['time']) == variable_types.Datetime
     assert type(pd_col[0]) == pd.Timestamp
@@ -343,8 +346,11 @@ def test_handles_datetime_format():
               'time_no_format': variable_types.Datetime}
 
     entityset = EntitySet(id='test')
-    entityset._import_from_dataframe(entity_id='test_entity', index='id',
-                                     variable_types=vtypes, dataframe=df)
+    entityset.entity_from_dataframe(
+        entity_id='test_entity',
+        index='id',
+        variable_types=vtypes,
+        dataframe=df)
 
     col_format = entityset['test_entity'].df['time_format']
     col_no_format = entityset['test_entity'].df['time_no_format']
@@ -835,6 +841,20 @@ def test_normalize_time_index_from_none(entityset):
     entityset['customers'].time_index = None
     entityset.normalize_entity('customers', 'birthdays', 'date_of_birth', make_time_index='date_of_birth')
     assert entityset['birthdays'].time_index == 'date_of_birth'
+
+
+def test_raise_error_if_dupicate_additional_variables_passed(entityset):
+    error_text = "'additional_variables' contains duplicate variables. All variables must be unique."
+    with pytest.raises(ValueError, match=error_text):
+        entityset.normalize_entity('sessions', 'device_types', 'device_type',
+                                   additional_variables=['device_name', 'device_name'])
+
+
+def test_raise_error_if_dupicate_copy_variables_passed(entityset):
+    error_text = "'copy_variables' contains duplicate variables. All variables must be unique."
+    with pytest.raises(ValueError, match=error_text):
+        entityset.normalize_entity('sessions', 'device_types', 'device_type',
+                                   copy_variables=['device_name', 'device_name'])
 
 
 def test_normalize_entity_copies_variable_types(entityset):

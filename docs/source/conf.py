@@ -320,7 +320,8 @@ nbsphinx_execute = 'never'
 
 extlinks = {
     'issue': ('https://github.com/featuretools/featuretools/issues/%s', 'GH#'),
-    'pr': ('https://github.com/featuretools/featuretools/pull/%s', 'GH#')
+    'pr': ('https://github.com/featuretools/featuretools/pull/%s', 'GH#'),
+    'user': ('https://github.com/%s', '@')
 }
 
 

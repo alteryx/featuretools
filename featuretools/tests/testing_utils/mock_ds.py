@@ -349,7 +349,6 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
 
     es.normalize_entity('customers', 'cohorts', 'cohort',
                         additional_variables=['cohort_name'],
-                        time_index_reduce='last',
                         make_time_index=True,
                         new_entity_time_index='cohort_end')
 
