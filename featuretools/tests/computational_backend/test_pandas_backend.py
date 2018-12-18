@@ -464,7 +464,7 @@ def test_topn(entityset, backend):
         ['coke zero', 'Haribo sugar-free gummy bears'],
         ['taco clock', np.nan]
     ])
-    assert ([name in df.columns for name in topn.output_feature_names()])
+    assert ([name in df.columns for name in topn.get_feature_names()])
     for i in range(df.shape[0]):
         if i == 0:
             # coke zero and toothpaste have same number of occurrences

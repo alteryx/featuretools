@@ -252,7 +252,7 @@ class PandasBackend(ComputationalBackend):
         df.index.name = self.entityset[self.target_eid].index
         column_list = []
         for feat in self.features:
-            column_list.extend(feat.output_feature_names())
+            column_list.extend(feat.get_feature_names())
         return df[column_list]
 
     def generate_default_df(self, instance_ids, extra_columns=None):
@@ -260,7 +260,7 @@ class PandasBackend(ComputationalBackend):
         default_row = []
         default_cols = []
         for f in self.features:
-            for name in f.output_feature_names():
+            for name in f.get_feature_names():
                 default_cols.append(name)
                 default_row.append(f.default_value)
 
@@ -483,7 +483,7 @@ class PandasBackend(ComputationalBackend):
         fillna_dict = {}
         for f in features:
             feature_defaults = {name: f.default_value for
-                                name in f.output_feature_names()}
+                                name in f.get_feature_names()}
             fillna_dict.update(feature_defaults)
 
         frame.fillna(fillna_dict, inplace=True)
@@ -526,7 +526,7 @@ def agg_wrapper(feats, time_last):
                 values = func(*args)
 
             if f.number_output_features > 1:
-                names = f.output_feature_names()
+                names = f.get_feature_names()
                 d.update({name: None for name in names})
                 assert len(values) <= len(names)
                 d.update({name: value for name, value in zip(names, values)})
@@ -537,5 +537,5 @@ def agg_wrapper(feats, time_last):
 
 
 def set_default_column(frame, f):
-    for name in f.output_feature_names():
+    for name in f.get_feature_names():
         frame[name] = f.default_value

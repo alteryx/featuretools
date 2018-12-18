@@ -371,7 +371,7 @@ class PrimitiveBase(object):
             return self._name
         return self.generate_name()
 
-    def output_feature_names(self):
+    def get_feature_names(self):
         n = self.number_output_features
         if n == 1:
             names = [self.get_name()]

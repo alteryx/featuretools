@@ -160,7 +160,7 @@ class NMostCommon(AggregationPrimitive):
     def default_value(self):
         return np.nan
 
-    def output_feature_names(self):
+    def get_feature_names(self):
         names = []
         for i in range(1, self.number_output_features + 1):
             names.append(str(i) + self.get_name()[1:])

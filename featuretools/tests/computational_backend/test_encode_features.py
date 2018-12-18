@@ -141,5 +141,5 @@ def test_encode_features_topn(entityset):
                                                      feature_defs,
                                                      include_unknown=True)
     assert topn.hash() in [feat.hash() for feat in feature_defs_enc]
-    for name in topn.output_feature_names():
+    for name in topn.get_feature_names():
         assert name in features_enc.columns

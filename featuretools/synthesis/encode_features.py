@@ -67,7 +67,7 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
     encoded = []
     feature_names = []
     for feature in features:
-        for fname in feature.output_feature_names():
+        for fname in feature.get_feature_names():
             assert fname in X.columns, (
                 "Feature %s not found in feature matrix" % (fname)
             )
@@ -120,7 +120,7 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
 
     new_columns = []
     for e in encoded:
-        new_columns.extend(e.output_feature_names())
+        new_columns.extend(e.get_feature_names())
 
     new_columns.extend(extra_columns)
     new_X = X[new_columns]
