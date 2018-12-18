@@ -13,4 +13,4 @@ from .utils.time_utils import *
 import featuretools.demo
 import featuretools.wrappers
 
-__version__ = '0.5.0'
+__version__ = '0.5.1'
