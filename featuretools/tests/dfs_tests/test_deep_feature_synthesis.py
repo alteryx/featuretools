@@ -352,7 +352,6 @@ def test_seed_features_added_with_identity_features(es):
                                    agg_primitives=[Last],
                                    trans_primitives=[],
                                    max_depth=2,
-                                   ignore_entities=["régions", "cohorts"],
                                    seed_features=[count_sessions])
     features = dfs_obj.build_features()
     # this feature is meaningless because customers.COUNT(sessions) is already defined on
