@@ -32,8 +32,10 @@ from featuretools.primitives import (
     LessThan,
     LessThanEqualTo,
     Longitude,
+    Minute,
     Mod,
     Mode,
+    Month,
     Multiply,
     Negate,
     Not,
@@ -41,8 +43,10 @@ from featuretools.primitives import (
     NumCharacters,
     NumWords,
     Percentile,
+    Second,
     Subtract,
     Sum,
+    Year,
     get_transform_primitives
 )
 from featuretools.primitives.base import (
@@ -1237,3 +1241,40 @@ def test_make_transform_sets_kwargs_correctly(es):
     assert isin_1_list == isin_1.kwargs['list_of_outputs']
     assert isin_2_base_f == isin_2.base_features[0]
     assert isin_2_list == isin_2.kwargs['list_of_outputs']
+
+
+def test_make_transform_multiple_output_features(es):
+    def test_f(x):
+        times = pd.Series(x)
+        units = ["year", "month", "day", "hour", "minute", "second"]
+        return [times.apply(lambda x: getattr(x, unit)) for unit in units]
+
+    def gen_feat_names(self):
+        subnames = ["Year", "Month", "Day", "Hour", "Minute", "Second"]
+        return ["Now.%s(%s)" % (subname, self.base_features[0].get_name())
+                for subname in subnames]
+
+    TestTime = make_trans_primitive(
+        function=test_f,
+        input_types=[Datetime],
+        return_type=Numeric,
+        cls_attributes={"number_output_features": 6,
+                        "get_feature_names": gen_feat_names},
+    )
+
+    join_time_split = TestTime(es["log"]["datetime"])
+    backend = PandasBackend(es,  [join_time_split])
+    df = backend.calculate_all_features(range(17), None)
+
+    alt_features = [Year(es["log"]["datetime"]),
+                    Month(es["log"]["datetime"]),
+                    Day(es["log"]["datetime"]),
+                    Hour(es["log"]["datetime"]),
+                    Minute(es["log"]["datetime"]),
+                    Second(es["log"]["datetime"])]
+    backend = PandasBackend(es, alt_features)
+    alt_df = backend.calculate_all_features(range(17), None)
+    subnames = join_time_split.get_feature_names()
+    altnames = [f.get_name() for f in alt_features]
+    for col1, col2 in zip(subnames, altnames):
+        assert (df[col1] == alt_df[col2]).all()

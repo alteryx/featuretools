@@ -319,10 +319,21 @@ class PandasBackend(ComputationalBackend):
                 values = feature_func(*variable_data)
 
             # if we don't get just the values, the assignment breaks when indexes don't match
-            if isinstance(values, pd.Series):
-                values = values.values
+            def strip_values_if_series(values):
+                if isinstance(values, pd.Series):
+                    values = values.values
+                return values
 
-            frame[f.get_name()] = values
+            if f.number_output_features > 1:
+                names = f.get_feature_names()
+                assert len(names) == len(values)
+                for name, value in zip(names, values):
+                    value = strip_values_if_series(value)
+                    frame[name] = value
+
+            else:
+                values = strip_values_if_series(values)
+                frame[f.get_name()] = values
         return frame
 
     def _calculate_direct_features(self, features, entity_frames):

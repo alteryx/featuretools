@@ -35,7 +35,7 @@ class TransformPrimitive(PrimitiveBase):
 def make_trans_primitive(function, input_types, return_type, name=None,
                          description='A custom transform primitive',
                          cls_attributes=None, uses_calc_time=False,
-                         commutative=False):
+                         commutative=False, number_output_features_keyword=None):
     '''Returns a new transform primitive class
 
     Args:
@@ -60,6 +60,9 @@ def make_trans_primitive(function, input_types, return_type, name=None,
 
         commutative (bool): If True, will only make one feature per unique set
             of base features.
+
+        number_output_features_keyword (str): The name of the keyword argument
+            that sets the number of output features.
 
     Example:
         .. ipython :: python
@@ -112,6 +115,8 @@ def make_trans_primitive(function, input_types, return_type, name=None,
             assert len(set([f.entity for f in self.base_features])) == 1, \
                 "More than one entity for base features"
             self.kwargs.update(kwargs)
+            if number_output_features_keyword in self.kwargs:
+                self.number_output_features = self.kwargs[number_output_features_keyword]
             self.partial = functools.partial(function, **self.kwargs)
             self.partial.__name__ = name
 
