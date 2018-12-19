@@ -80,7 +80,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
                        stack_on_exclude=None, base_of=None,
                        base_of_exclude=None, description='A custom primitive',
                        cls_attributes=None, uses_calc_time=False,
-                       commutative=False):
+                       commutative=False, number_output_features_keyword=None):
     '''Returns a new aggregation primitive class. The primitive infers default
     values by passing in empty data.
 
@@ -119,6 +119,9 @@ def make_agg_primitive(function, input_types, return_type, name=None,
 
         commutative (bool): If True, will only make one feature per unique set
             of base features.
+
+        number_output_features_keyword (str): The name of the keyword argument
+            that sets the number of output features.
 
     Example:
         .. ipython :: python
@@ -186,6 +189,8 @@ def make_agg_primitive(function, input_types, return_type, name=None,
             self.use_previous = use_previous
             self.kwargs = copy.deepcopy(self.default_kwargs)
             self.kwargs.update(kwargs)
+            if number_output_features_keyword in self.kwargs:
+                self.number_output_features = self.kwargs[number_output_features_keyword]
             self.partial = functools.partial(function, **self.kwargs)
             self.partial.__name__ = name
 
