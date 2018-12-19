@@ -527,9 +527,8 @@ def agg_wrapper(feats, time_last):
 
             if f.number_output_features > 1:
                 names = f.get_feature_names()
-                d.update({name: None for name in names})
-                assert len(values) <= len(names)
-                d.update({name: value for name, value in zip(names, values)})
+                assert len(names) == len(values)
+                d.update(dict(zip(names, values)))
             else:
                 d[f.get_name()] = values
         return pd.Series(d)

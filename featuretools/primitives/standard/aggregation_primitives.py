@@ -168,7 +168,11 @@ class NMostCommon(AggregationPrimitive):
 
     def get_function(self):
         def pd_topn(x, n=self.number_output_features):
-            return np.array(x.value_counts()[:n].index)
+            array = np.array(x.value_counts()[:n].index)
+            if len(array) < n:
+                filler = np.full(n - len(array), self.default_value)
+                array = np.append(array, filler)
+            return array
         return pd_topn
 
 
