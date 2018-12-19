@@ -1258,8 +1258,8 @@ def test_make_transform_multiple_output_features(es):
         function=test_f,
         input_types=[Datetime],
         return_type=Numeric,
-        cls_attributes={"number_output_features": 6,
-                        "get_feature_names": gen_feat_names},
+        number_output_features=6,
+        cls_attributes={"get_feature_names": gen_feat_names},
     )
 
     join_time_split = TestTime(es["log"]["datetime"])

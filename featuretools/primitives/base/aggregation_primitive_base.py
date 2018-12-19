@@ -80,7 +80,8 @@ def make_agg_primitive(function, input_types, return_type, name=None,
                        stack_on_exclude=None, base_of=None,
                        base_of_exclude=None, description='A custom primitive',
                        cls_attributes=None, uses_calc_time=False,
-                       commutative=False, number_output_features_keyword=None):
+                       commutative=False, number_output_features=1,
+                       number_output_features_keyword=None):
     '''Returns a new aggregation primitive class. The primitive infers default
     values by passing in empty data.
 
@@ -120,8 +121,13 @@ def make_agg_primitive(function, input_types, return_type, name=None,
         commutative (bool): If True, will only make one feature per unique set
             of base features.
 
-        number_output_features_keyword (str): The name of the keyword argument
-            that sets the number of output features.
+        number_output_features (int): The number of output features (columns in
+            the matrix) associated with this feature.
+
+        number_output_features_keyword (str): If the number of output features
+            can vary based on arguments in the feature init, this is the name
+            of the keyword argument in the init that correspaonds to the number
+            of output features.
 
     Example:
         .. ipython :: python
@@ -155,6 +161,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
     new_class.base_of = base_of
     new_class.base_of_exclude = base_of_exclude
     new_class.commutative = commutative
+    new_class.number_output_features = number_output_features
     new_class, default_kwargs = inspect_function_args(new_class,
                                                       function,
                                                       uses_calc_time)
