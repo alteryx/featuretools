@@ -412,3 +412,38 @@ def test_makes_numtrue(es):
     features = dfs.build_features()
     assert feature_with_name(features, 'customers.NUM_TRUE(log.purchased)')
     assert feature_with_name(features, 'NUM_TRUE(log.purchased)')
+
+
+def test_make_n_most_common(es):
+    def pd_topn(x, n=3):
+        array = np.array(x.value_counts()[:n].index)
+        if len(array) < n:
+            filler = np.full(n - len(array), np.nan)
+            array = np.append(array, filler)
+        return array
+
+    NMostCommoner = make_agg_primitive(function=pd_topn,
+                                       input_types=[Discrete],
+                                       return_type=Discrete,
+                                       number_output_features_keyword="n")
+
+    fm, features = ft.dfs(entityset=es,
+                          target_entity="customers",
+                          agg_primitives=[NMostCommoner],
+                          trans_primitives=[])
+
+    true_results = pd.DataFrame([
+        ['coke zero', 'toothpaste', "car"],
+        ['coke zero', 'Haribo sugar-free gummy bears', np.nan],
+        ['taco clock', np.nan, np.nan]
+    ])
+    df = fm[["PD_TOPN(log.product_id)__%s" % i for i in range(3)]]
+    for i in range(df.shape[0]):
+        if i == 0:
+            # coke zero and toothpaste have same number of occurrences
+            # so just check that the top two match
+            assert set(true_results.iloc[i].values[:2]) == set(df.iloc[i].values[:2])
+            assert df.iloc[0].values[2] in ("brown bag", "car")
+        else:
+            for i1, i2 in zip(true_results.iloc[i], df.iloc[i]):
+                assert (pd.isnull(i1) and pd.isnull(i2)) or (i1 == i2)
