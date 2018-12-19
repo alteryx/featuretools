@@ -345,6 +345,21 @@ def test_seed_features(es):
     assert session_agg.get_name() in [f.get_name() for f in features]
 
 
+def test_seed_features_added_with_identity_features(es):
+    count_sessions = Count(es['sessions']["id"], es['customers'])
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   agg_primitives=[Last],
+                                   trans_primitives=[],
+                                   max_depth=2,
+                                   ignore_entities=["régions", "cohorts"],
+                                   seed_features=[count_sessions])
+    features = dfs_obj.build_features()
+    # this feature is meaningless because customers.COUNT(sessions) is already defined on
+    # the customers entity
+    assert not feature_with_name(features, 'LAST(sessions.customers.COUNT(sessions))')
+
+
 def test_dfs_builds_on_seed_features_more_than_max_depth(es):
     seed_feature_sessions = Count(es['log']["id"], es['sessions']) > 2
     seed_feature_log = Hour(es['log']['datetime'])
