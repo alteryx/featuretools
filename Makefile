@@ -11,7 +11,7 @@ test: lint
 	pytest featuretools/tests
 
 testcoverage: lint
-	pytest featuretools/test --cov=featuretools
+	pytest featuretools/tests --cov=featuretools
 
 installdeps:
 	pip install --upgrade pip
