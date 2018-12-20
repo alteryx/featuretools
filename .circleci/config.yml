@@ -3,44 +3,48 @@ jobs:
   "python-2.7":
     working_directory: ~/featuretools
     docker:
-        - image: themattrix/tox
+        - image: circleci/python:2.7
     steps:
       - checkout
-      - run: pyenv local 2.7.15
-      - run: make installdeps lint
-      - run: make test
+      - run: virtualenv venv
+      - run: source venv/bin/activate && make installdeps lint
+      - run: source venv/bin/activate && make test
 
   "python-3.5":
     working_directory: ~/featuretools
     docker:
-        - image: themattrix/tox
+        - image: circleci/python:3.5
     steps:
       - checkout
-      - run: pyenv local 3.5.6
-      - run: make installdeps lint
-      - run: make test
+      - run: virtualenv venv
+      - run: source venv/bin/activate && make installdeps lint
+      - run: source venv/bin/activate && make test
 
   "python-3.6":
     working_directory: ~/featuretools
     docker:
-        - image: themattrix/tox
+        - image: circleci/python:3.6
     steps:
-      - run: apt update && apt install pandoc -y
+      - run: sudo apt update && sudo apt install pandoc -y
       - checkout
-      - run: pyenv local 3.6.6
-      - run: make installdeps lint
-      - run: make -C docs/ -e "SPHINXOPTS=-W" clean html
-      - run: coverage erase && make testcoverage && codecov
+      - run: virtualenv venv
+      - run: source venv/bin/activate && make installdeps lint
+      - run: source venv/bin/activate && make -C docs/ -e "SPHINXOPTS=-W" clean html
+      - run:
+        - command: |
+          source venv/bin/activate
+          coverage erase
+          make testcoverage && codecov
 
   "python-3.7":
     working_directory: ~/featuretools
     docker:
-        - image: themattrix/tox
+        - image: circleci/python:3.7
     steps:
       - checkout
-      - run: pyenv local 3.7.0
-      - run: make installdeps lint
-      - run: make test
+      - run: virtualenv venv
+      - run: source venv/bin/activate && make installdeps lint
+      - run: source venv/bin/activate && make test
 
 workflows:
   version: 2
