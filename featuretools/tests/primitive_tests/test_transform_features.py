@@ -55,8 +55,13 @@ from featuretools.primitives.base import (
     make_trans_primitive
 )
 from featuretools.synthesis.deep_feature_synthesis import match
-from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
-
+from featuretools.variable_types import (
+    Boolean,
+    Datetime,
+    Numeric,
+    Text,
+    Variable
+)
 
 # some tests change the entityset values, so we have to create it fresh
 # for each test (rather than setting scope='module')
@@ -1278,3 +1283,29 @@ def test_make_transform_multiple_output_features(es):
     altnames = [f.get_name() for f in alt_features]
     for col1, col2 in zip(subnames, altnames):
         assert (df[col1] == alt_df[col2]).all()
+
+
+def test_multi_column_transform_variable_columns(es):
+    def most_common(x, n=1):
+        def x_most_common(text, x):
+            from collections import Counter
+            counts = Counter(text.split(" "))
+            return counts.most_common(x)[x-1][0]
+
+        x_series = pd.Series(x)
+        if n > 1:
+            out = [x_series.apply(x_most_common, args=(i,)) for i in range(1, n+1)]
+        else:
+            out = x_series.apply(x_most_common, args=(1,))
+        return out
+
+    MostCommonWord = make_trans_primitive(function=most_common,
+                                          input_types=[Text],
+                                          return_type=Text,
+                                          number_output_features_keyword="n")
+
+    most_common_words = MostCommonWord(es["log"]["comments"], n=3)
+    backend = PandasBackend(es, [most_common_words])
+    df = backend.calculate_all_features(range(3), None)
+    assert df.shape == (3, 3)
+    assert (df.columns == most_common_words.get_feature_names()).all()
