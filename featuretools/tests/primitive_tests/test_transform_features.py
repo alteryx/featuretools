@@ -63,6 +63,7 @@ from featuretools.variable_types import (
     Variable
 )
 
+
 # some tests change the entityset values, so we have to create it fresh
 # for each test (rather than setting scope='module')
 @pytest.fixture
@@ -1290,11 +1291,12 @@ def test_multi_column_transform_variable_columns(es):
         def x_most_common(text, x):
             from collections import Counter
             counts = Counter(text.split(" "))
-            return counts.most_common(x)[x-1][0]
+            return counts.most_common(x)[x - 1][0]
 
         x_series = pd.Series(x)
         if n > 1:
-            out = [x_series.apply(x_most_common, args=(i,)) for i in range(1, n+1)]
+            out = [x_series.apply(x_most_common, args=(i,))
+                   for i in range(1, n + 1)]
         else:
             out = x_series.apply(x_most_common, args=(1,))
         return out
