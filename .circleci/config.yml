@@ -30,8 +30,7 @@ jobs:
       - run: pyenv local 3.6.6
       - run: make installdeps lint
       - run: make -C docs/ -e "SPHINXOPTS=-W" clean html
-      - run: make test
-      - run: coverage erase && coverage && codecov
+      - run: coverage erase && make testcoverage && codecov
 
   "python-3.7":
     working_directory: ~/featuretools

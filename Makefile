@@ -10,6 +10,9 @@ lint:
 test: lint
 	pytest featuretools/tests
 
+testcoverage: lint
+	pytest featuretools/test --cov=featuretools
+
 installdeps:
 	pip install --upgrade pip
 	pip install -e .
