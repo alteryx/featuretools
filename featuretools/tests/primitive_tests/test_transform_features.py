@@ -1263,7 +1263,7 @@ def test_make_transform_multiple_output_features(es):
     )
 
     join_time_split = TestTime(es["log"]["datetime"])
-    backend = PandasBackend(es,  [join_time_split])
+    backend = PandasBackend(es, [join_time_split])
     df = backend.calculate_all_features(range(17), None)
 
     alt_features = [Year(es["log"]["datetime"]),
