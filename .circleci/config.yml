@@ -30,8 +30,7 @@ jobs:
       - run: virtualenv venv
       - run: source venv/bin/activate && make installdeps lint
       - run: source venv/bin/activate && make -C docs/ -e "SPHINXOPTS=-W" clean html
-      - run:
-        command: |
+      - run: |
           source venv/bin/activate
           coverage erase
           make testcoverage && codecov
