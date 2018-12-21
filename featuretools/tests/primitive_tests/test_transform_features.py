@@ -1291,6 +1291,30 @@ def test_make_transform_multiple_output_features(es):
             assert base_feature.hash() != join_time_split.hash()
 
 
+def test_make_transform_multiple_output_bad_kwargs(es):
+    def test_f(x):
+        times = pd.Series(x)
+        units = ["year", "month", "day", "hour", "minute", "second"]
+        return [times.apply(lambda x: getattr(x, unit)) for unit in units]
+
+    def gen_feat_names(self):
+        subnames = ["Year", "Month", "Day", "Hour", "Minute", "Second"]
+        return ["Now.%s(%s)" % (subname, self.base_features[0].get_name())
+                for subname in subnames]
+
+    error_text = "Either 'number_output_features' or "\
+        "'number_output_features_keyword' should be used, not both."
+    with pytest.raises(AssertionError, match=error_text):
+        make_trans_primitive(
+            function=test_f,
+            input_types=[Datetime],
+            return_type=Numeric,
+            number_output_features=6,
+            number_output_features_keyword="x",
+            cls_attributes={"get_feature_names": gen_feat_names}
+        )
+
+
 def test_dfs_direct_of_multi_output_transform_feat(es):
     def test_f(x):
         times = pd.Series(x)

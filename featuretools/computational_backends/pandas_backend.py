@@ -327,10 +327,9 @@ class PandasBackend(ComputationalBackend):
             if f.number_output_features > 1:
                 names = f.get_feature_names()
                 assert len(names) == len(values)
+                values = [strip_values_if_series(value) for value in values]
                 for name, value in zip(names, values):
-                    value = strip_values_if_series(value)
                     frame[name] = value
-
             else:
                 values = strip_values_if_series(values)
                 frame[f.get_name()] = values

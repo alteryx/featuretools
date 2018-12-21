@@ -80,7 +80,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
                        stack_on_exclude=None, base_of=None,
                        base_of_exclude=None, description='A custom primitive',
                        cls_attributes=None, uses_calc_time=False,
-                       commutative=False, number_output_features=1,
+                       commutative=False, number_output_features=None,
                        number_output_features_keyword=None):
     '''Returns a new aggregation primitive class. The primitive infers default
     values by passing in empty data.
@@ -147,6 +147,11 @@ def make_agg_primitive(function, input_types, return_type, name=None,
                 uses_calc_time=True)
 
     '''
+    assert not (number_output_features is not None and
+                number_output_features_keyword is not None), "Either "\
+        "'number_output_features' or 'number_output_features_keyword' should "\
+        "be used, not both."
+
     cls = {"__doc__": description}
     if cls_attributes is not None:
         cls.update(cls_attributes)
@@ -161,7 +166,8 @@ def make_agg_primitive(function, input_types, return_type, name=None,
     new_class.base_of = base_of
     new_class.base_of_exclude = base_of_exclude
     new_class.commutative = commutative
-    new_class.number_output_features = number_output_features
+    if number_output_features is not None:
+        new_class.number_output_features = number_output_features
     new_class, default_kwargs = inspect_function_args(new_class,
                                                       function,
                                                       uses_calc_time)

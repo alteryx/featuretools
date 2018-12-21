@@ -35,7 +35,7 @@ class TransformPrimitive(PrimitiveBase):
 def make_trans_primitive(function, input_types, return_type, name=None,
                          description='A custom transform primitive',
                          cls_attributes=None, uses_calc_time=False,
-                         commutative=False, number_output_features=1,
+                         commutative=False, number_output_features=None,
                          number_output_features_keyword=None):
     '''Returns a new transform primitive class
 
@@ -94,6 +94,11 @@ def make_trans_primitive(function, input_types, return_type, name=None,
                 "whether it is in a list that provided.",
                 cls_attributes={"generate_name": isin_generate_name})
     '''
+    assert not (number_output_features is not None and
+                number_output_features_keyword is not None), "Either "\
+        "'number_output_features' or 'number_output_features_keyword' should "\
+        "be used, not both."
+
     # dictionary that holds attributes for class
     cls = {"__doc__": description}
     if cls_attributes is not None:
@@ -106,7 +111,8 @@ def make_trans_primitive(function, input_types, return_type, name=None,
     new_class.input_types = input_types
     new_class.return_type = return_type
     new_class.commutative = commutative
-    new_class.number_output_features = number_output_features
+    if number_output_features is not None:
+        new_class.number_output_features = number_output_features
     new_class, default_kwargs = inspect_function_args(new_class,
                                                       function,
                                                       uses_calc_time)

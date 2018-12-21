@@ -447,3 +447,21 @@ def test_make_n_most_common(es):
         else:
             for i1, i2 in zip(true_results.iloc[i], df.iloc[i]):
                 assert (pd.isnull(i1) and pd.isnull(i2)) or (i1 == i2)
+
+
+def test_make_mulit_output_custom_agg_bad_kwargs(es):
+    def pd_topn(x, n=3):
+        array = np.array(x.value_counts()[:n].index)
+        if len(array) < n:
+            filler = np.full(n - len(array), np.nan)
+            array = np.append(array, filler)
+        return array
+
+    error_text = "Either 'number_output_features' or "\
+        "'number_output_features_keyword' should be used, not both."
+    with pytest.raises(AssertionError, match=error_text):
+        make_agg_primitive(function=pd_topn,
+                           input_types=[Discrete],
+                           return_type=Discrete,
+                           number_output_features=3,
+                           number_output_features_keyword="n")
