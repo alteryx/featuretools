@@ -1336,11 +1336,9 @@ def test_multi_column_transform_variable_columns(es):
             return counts.most_common(x)[x - 1][0]
 
         x_series = pd.Series(x)
-        if n > 1:
-            out = [x_series.apply(x_most_common, args=(i,))
-                   for i in range(1, n + 1)]
-        else:
-            out = x_series.apply(x_most_common, args=(1,))
+        # this would break if n<2 but we only use n=3 in the test
+        out = [x_series.apply(x_most_common, args=(i,))
+               for i in range(1, n + 1)]
         return out
 
     MostCommonWord = make_trans_primitive(function=most_common,
