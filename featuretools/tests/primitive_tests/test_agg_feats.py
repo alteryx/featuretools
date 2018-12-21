@@ -450,17 +450,10 @@ def test_make_n_most_common(es):
 
 
 def test_make_mulit_output_custom_agg_bad_kwargs(es):
-    def pd_topn(x, n=3):
-        array = np.array(x.value_counts()[:n].index)
-        if len(array) < n:
-            filler = np.full(n - len(array), np.nan)
-            array = np.append(array, filler)
-        return array
-
     error_text = "Either 'number_output_features' or "\
         "'number_output_features_keyword' should be used, not both."
     with pytest.raises(AssertionError, match=error_text):
-        make_agg_primitive(function=pd_topn,
+        make_agg_primitive(function=lambda x: x,
                            input_types=[Discrete],
                            return_type=Discrete,
                            number_output_features=3,
