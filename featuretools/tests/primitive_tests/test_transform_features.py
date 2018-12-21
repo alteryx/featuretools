@@ -6,7 +6,7 @@ import pytest
 
 from ..testing_utils import make_ecommerce_entityset
 
-from featuretools import Timedelta
+from featuretools import Timedelta, dfs
 from featuretools.computational_backends import PandasBackend
 from featuretools.primitives import (
     Absolute,
@@ -1269,21 +1269,26 @@ def test_make_transform_multiple_output_features(es):
     )
 
     join_time_split = TestTime(es["log"]["datetime"])
-    backend = PandasBackend(es, [join_time_split])
-    df = backend.calculate_all_features(range(17), None)
-
     alt_features = [Year(es["log"]["datetime"]),
                     Month(es["log"]["datetime"]),
                     Day(es["log"]["datetime"]),
                     Hour(es["log"]["datetime"]),
                     Minute(es["log"]["datetime"]),
                     Second(es["log"]["datetime"])]
-    backend = PandasBackend(es, alt_features)
-    alt_df = backend.calculate_all_features(range(17), None)
+    fm, fl = dfs(
+        entityset=es,
+        target_entity="log",
+        trans_primitives=[TestTime, Year, Month, Day, Hour, Minute, Second])
+
     subnames = join_time_split.get_feature_names()
     altnames = [f.get_name() for f in alt_features]
     for col1, col2 in zip(subnames, altnames):
-        assert (df[col1] == alt_df[col2]).all()
+        assert (fm[col1] == fm[col2]).all()
+
+    # check no feature stacked on new primitive
+    for feature in fl:
+        for base_feature in feature.base_features:
+            assert base_feature.hash() != join_time_split.hash()
 
 
 def test_multi_column_transform_variable_columns(es):

@@ -507,8 +507,6 @@ class DeepFeatureSynthesis(object):
 
             for matching_input in matching_inputs:
                 new_f = trans_prim(*matching_input)
-                if new_f.number_output_features > 1:
-                    continue
 
                 self._handle_new_feature(all_features=all_features,
                                          new_feature=new_f)
