@@ -360,9 +360,11 @@ class PandasBackend(ComputationalBackend):
             # Sometimes entityset._add_multigenerational_links adds link variables
             # that would ordinarily get calculated as direct features,
             # so we make sure not to attempt to calculate again
-            if f.get_name() in child_df.columns:
-                continue
-            col_map[f.base_features[0].get_name()] = f.get_name()
+            base_names = f.base_features[0].get_feature_names()
+            for name, base_name in zip(f.get_feature_names(), base_names):
+                if name in child_df.columns:
+                    continue
+                col_map[base_name] = name
 
         # merge the identity feature from the parent entity into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)

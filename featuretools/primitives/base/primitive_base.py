@@ -505,6 +505,10 @@ class DirectFeature(PrimitiveBase):
         return u"%s.%s" % (self.parent_entity.id,
                            self.base_features[0].get_name())
 
+    def get_feature_names(self):
+        return [u"%s.%s" % (self.parent_entity.id, base_name)
+                for base_name in self.base_features[0].get_feature_names()]
+
 
 class Feature(PrimitiveBase):
     """

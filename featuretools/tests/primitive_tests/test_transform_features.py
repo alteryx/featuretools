@@ -1291,6 +1291,43 @@ def test_make_transform_multiple_output_features(es):
             assert base_feature.hash() != join_time_split.hash()
 
 
+def test_dfs_direct_of_multi_output_transform_feat(es):
+    def test_f(x):
+        times = pd.Series(x)
+        units = ["year", "month", "day", "hour", "minute", "second"]
+        return [times.apply(lambda x: getattr(x, unit)) for unit in units]
+
+    def gen_feat_names(self):
+        subnames = ["Year", "Month", "Day", "Hour", "Minute", "Second"]
+        return ["Now.%s(%s)" % (subname, self.base_features[0].get_name())
+                for subname in subnames]
+
+    TestTime = make_trans_primitive(
+        function=test_f,
+        input_types=[Datetime],
+        return_type=Numeric,
+        number_output_features=6,
+        cls_attributes={"get_feature_names": gen_feat_names},
+    )
+
+    join_time_split = TestTime(es["customers"]["signup_date"])
+    alt_features = [Year(es["customers"]["signup_date"]),
+                    Month(es["customers"]["signup_date"]),
+                    Day(es["customers"]["signup_date"]),
+                    Hour(es["customers"]["signup_date"]),
+                    Minute(es["customers"]["signup_date"]),
+                    Second(es["customers"]["signup_date"])]
+    fm, fl = dfs(
+        entityset=es,
+        target_entity="sessions",
+        trans_primitives=[TestTime, Year, Month, Day, Hour, Minute, Second])
+
+    subnames = DirectFeature(join_time_split, es["sessions"]).get_feature_names()
+    altnames = [DirectFeature(f, es["sessions"]).get_name() for f in alt_features]
+    for col1, col2 in zip(subnames, altnames):
+        assert (fm[col1] == fm[col2]).all()
+
+
 def test_multi_column_transform_variable_columns(es):
     def most_common(x, n=1):
         def x_most_common(text, x):
