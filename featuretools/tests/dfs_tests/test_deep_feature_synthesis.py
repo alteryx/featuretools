@@ -34,7 +34,7 @@ from featuretools.primitives.base import (
 )
 from featuretools.synthesis import DeepFeatureSynthesis
 from featuretools.utils.pickle_utils import save_obj_pickle
-from featuretools.variable_types import Numeric
+from featuretools.variable_types import Categorical, Numeric
 
 
 @pytest.fixture(scope='module')
@@ -722,3 +722,28 @@ def test_transform_consistency():
     assert feature_with_name(feature_defs, 'OR(b, b1)')
     assert feature_with_name(feature_defs, 'OR(AND(b, b1), b)')
     assert feature_with_name(feature_defs, 'OR(AND(b, b1), b1)')
+
+
+def test_direct_features_of_multi_ouput_agg_primitives(es):
+    def pd_topn(x, n=3):
+        array = np.array(x.value_counts()[:n].index)
+        if len(array) < n:
+            filler = np.full(n - len(array), np.nan)
+            array = np.append(array, filler)
+        return array
+
+    NMostCommonCat = make_agg_primitive(function=pd_topn,
+                                        input_types=[Categorical],
+                                        return_type=Categorical,
+                                        number_output_features_keyword="n")
+    fm, fl = ft.dfs(entityset=es,
+                    target_entity="sessions",
+                    agg_primitives=[NMostCommonCat])
+    has_nmost_as_base = []
+    for feature in fl:
+        is_base = False
+        if (len(feature.base_features) > 0 and
+                isinstance(feature.base_features[0], NMostCommonCat)):
+            is_base = True
+        has_nmost_as_base.append(is_base)
+    assert any(has_nmost_as_base)
