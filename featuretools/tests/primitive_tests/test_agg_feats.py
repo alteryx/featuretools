@@ -458,3 +458,38 @@ def test_make_mulit_output_custom_agg_bad_kwargs(es):
                            return_type=Discrete,
                            number_output_features=3,
                            number_output_features_keyword="n")
+
+
+def test_make_three_most_common(es):
+    def pd_top3(x):
+        array = np.array(x.value_counts()[:3].index)
+        if len(array) < 3:
+            filler = np.full(3 - len(array), np.nan)
+            array = np.append(array, filler)
+        return array
+
+    NMostCommoner = make_agg_primitive(function=pd_top3,
+                                       input_types=[Discrete],
+                                       return_type=Discrete,
+                                       number_output_features=3)
+
+    fm, features = ft.dfs(entityset=es,
+                          target_entity="customers",
+                          agg_primitives=[NMostCommoner],
+                          trans_primitives=[])
+
+    true_results = pd.DataFrame([
+        ['coke zero', 'toothpaste', "car"],
+        ['coke zero', 'Haribo sugar-free gummy bears', np.nan],
+        ['taco clock', np.nan, np.nan]
+    ])
+    df = fm[["PD_TOP3(log.product_id)__%s" % i for i in range(3)]]
+    for i in range(df.shape[0]):
+        if i == 0:
+            # coke zero and toothpaste have same number of occurrences
+            # so just check that the top two match
+            assert set(true_results.iloc[i].values[:2]) == set(df.iloc[i].values[:2])
+            assert df.iloc[0].values[2] in ("brown bag", "car")
+        else:
+            for i1, i2 in zip(true_results.iloc[i], df.iloc[i]):
+                assert (pd.isnull(i1) and pd.isnull(i2)) or (i1 == i2)
