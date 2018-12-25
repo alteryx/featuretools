@@ -80,12 +80,12 @@ def make_agg_primitive(function, input_types, return_type, name=None,
                        stack_on_exclude=None, base_of=None,
                        base_of_exclude=None, description='A custom primitive',
                        cls_attributes=None, uses_calc_time=False,
-                       commutative=False):
+                       default_value=None, commutative=False):
     '''Returns a new aggregation primitive class. The primitive infers default
     values by passing in empty data.
 
     Args:
-        function (function): Function that takes in an array  and applies some
+        function (function): Function that takes in an array and applies some
             transformation to it.
 
         input_types (list[Variable]): Variable types of the inputs.
@@ -116,6 +116,10 @@ def make_agg_primitive(function, input_types, return_type, name=None,
         uses_calc_time (bool): If True, the cutoff time the feature is being
             calculated at will be passed to the function as the keyword
             argument 'time'.
+
+        default_value (): Default value when creating the primitive to avoid
+            the inference step. If no default value if provided, the inference
+            happen.
 
         commutative (bool): If True, will only make one feature per unique set
             of base features.
@@ -197,10 +201,14 @@ def make_agg_primitive(function, input_types, return_type, name=None,
         # creates a lambda function that returns function every time
         new_class.get_function = lambda self, f=function: f
 
-    # infers default_value by passing empty data
-    try:
-        new_class.default_value = function(*[[]] * len(input_types))
-    except Exception:
-        pass
+    if default_value is None:
+        # infers default_value by passing empty data
+        try:
+            new_class.default_value = function(*[[]] * len(input_types))
+        except Exception:
+            pass
+    else:
+        # avoiding the inference step
+        new_class.default_value = default_value
 
     return new_class
