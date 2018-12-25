@@ -85,8 +85,7 @@ Min = make_agg_primitive(
     [Numeric],
     Numeric,
     name="Min",
-    stack_on_self=False,
-    description="Finds the minimum non-null value of a numeric feature.")
+    stack_on_self=False)
 
 
 class Max(AggregationPrimitive):

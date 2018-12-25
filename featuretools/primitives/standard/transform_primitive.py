@@ -257,6 +257,7 @@ class NumWords(TransformPrimitive):
 
 
 def pd_time_since(array, time):
+    """Calculates time since the cutoff time."""
     return (time - pd.DatetimeIndex(array)).values
 
 
@@ -264,7 +265,6 @@ TimeSince = make_trans_primitive(function=pd_time_since,
                                  input_types=[[DatetimeTimeIndex], [Datetime]],
                                  return_type=Timedelta,
                                  uses_calc_time=True,
-                                 description="Calculates time since the cutoff time.",
                                  name="time_since")
 
 

@@ -1,5 +1,6 @@
 import copy
 import functools
+import inspect
 
 from .primitive_base import PrimitiveBase
 from .utils import inspect_function_args
@@ -78,9 +79,9 @@ class AggregationPrimitive(PrimitiveBase):
 def make_agg_primitive(function, input_types, return_type, name=None,
                        stack_on_self=True, stack_on=None,
                        stack_on_exclude=None, base_of=None,
-                       base_of_exclude=None, description='A custom primitive',
-                       cls_attributes=None, uses_calc_time=False,
-                       default_value=None, commutative=False):
+                       base_of_exclude=None, cls_attributes=None,
+                       uses_calc_time=False, default_value=None,
+                       commutative=False):
     '''Returns a new aggregation primitive class. The primitive infers default
     values by passing in empty data.
 
@@ -109,8 +110,6 @@ def make_agg_primitive(function, input_types, return_type, name=None,
         base_of_exclude (list[PrimitiveBase]): Blacklist of
             primitives that cannot have this primitive in input_types.
 
-        description (str): Description of primitive.
-
         cls_attributes (dict[str -> anytype]): Custom attributes to be added to                     class. Key is attribute name, value is the attribute value.
 
         uses_calc_time (bool): If True, the cutoff time the feature is being
@@ -138,10 +137,12 @@ def make_agg_primitive(function, input_types, return_type, name=None,
                 function=time_since_last,
                 input_types=[DatetimeTimeIndex],
                 return_type=Numeric,
-                description="Time since last related instance",
                 uses_calc_time=True)
 
     '''
+    default_description = 'A custom primitive'
+    doc = inspect.getdoc(function)
+    description = doc if doc is not None else default_description
     cls = {"__doc__": description}
     if cls_attributes is not None:
         cls.update(cls_attributes)
