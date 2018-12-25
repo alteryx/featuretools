@@ -1,175 +1,112 @@
-# -*- coding: utf-8 -*-
-
-import json
 import os
+import json
 import shutil
-import sys
-import uuid
-from tempfile import mkdtemp
-
-import numpy as np
 import pandas as pd
-from pandas.io.pickle import read_pickle as pd_read_pickle
-from pandas.io.pickle import to_pickle as pd_to_pickle
+from .. import variable_types
 
-
-def read_parquet(path, load_data=True):
-    '''Load an EntitySet from a path on disk, assuming
-    the EntitySet was saved in the parquet format.
-    '''
-    return read_entityset(path, load_data=load_data)
-
-
-def read_pickle(path, load_data=True):
-    '''Load an EntitySet from a path on disk, assuming
-    the EntitySet was saved in the pickle format.
-    '''
-    return read_entityset(path, load_data=load_data)
-
-
-def read_entityset(path, load_data=True):
-    from featuretools.entityset.entityset import EntitySet
-    data_root = os.path.abspath(os.path.expanduser(path))
-    with open(os.path.join(data_root, 'metadata.json')) as f:
-        metadata = json.load(f)
-    if not load_data:
-        data_root = None
-    return EntitySet.from_metadata(metadata, data_root=data_root)
-
-
-def load_entity_data(metadata, root):
-    '''Load an entity's data from disk.'''
-    if metadata['data_files']['filetype'] == 'pickle':
-        data = pd_read_pickle(os.path.join(root, metadata['data_files']['data_filename']))
-        df = data['df']
-    elif metadata['data_files']['filetype'] == 'parquet':
-        df = pd.read_parquet(os.path.join(root,
-                                          metadata['data_files']['df_filename']),
-                             engine=metadata['data_files']['engine'])
-        df.index = df[metadata['index']]
-        to_join = metadata['data_files'].get('to_join', None)
-        if to_join is not None:
-            for cname, to_join_names in to_join.items():
-                df[cname] = df[to_join_names].apply(tuple, axis=1)
-                df.drop(to_join_names, axis=1, inplace=True)
-    else:
-        raise ValueError("Unknown entityset data filetype: {}".format(metadata['data_files']['filetype']))
-    return df
-
-
-def write_entityset(entityset, path, serialization_method='pickle',
-                    engine='auto', compression='gzip'):
-    '''Write entityset to disk, location specified by `path`.
-
-        Args:
-            * entityset: entityset to write to disk
-            * path (str): location on disk to write to (will be created as a directory)
-            * serialization_method (str, optional): Possible serialization methods are:
-              - 'pickle'
-              - 'parquet'
-            * engine (str, optional): parquet serialization engine to be passed to underlying pd.DataFrame.to_parquet() call
-            * compression (str, optional): type of compression to be used in parquet serialization,
-                  passed to underlying pd.DataFrame.to_parquet() call
-    '''
-    metadata = entityset.create_metadata_dict()
-    entityset_path = os.path.abspath(os.path.expanduser(path))
-    try:
-        os.makedirs(entityset_path)
-    except OSError:
-        pass
-
-    temp_dir = mkdtemp()
-    try:
-        for e_id, entity in entityset.entity_dict.items():
-            if serialization_method == 'parquet':
-                metadata = _write_parquet_entity_data(temp_dir,
-                                                      entity,
-                                                      metadata,
-                                                      engine=engine,
-                                                      compression=compression)
-            elif serialization_method == 'pickle':
-                metadata = _write_pickle_entity_data(temp_dir,
-                                                     entity,
-                                                     metadata)
-            else:
-                raise ValueError("unknown serialization_method {}, ".format(serialization_method),
-                                 "available methods are 'parquet' and 'pickle'")
-
-        timestamp = pd.Timestamp.now().isoformat()
-        with open(os.path.join(temp_dir, 'save_time.txt'), 'w') as f:
-            f.write(timestamp)
-        with open(os.path.join(temp_dir, 'metadata.json'), 'w') as f:
-            json.dump(metadata, f)
-
-        # can use a lock here if need be
-        if os.path.exists(entityset_path):
-            shutil.rmtree(entityset_path)
-        shutil.move(temp_dir, entityset_path)
-    except:  # noqa
-        # make sure to clean up
-        shutil.rmtree(temp_dir)
-        raise
-
-
-def _parquet_compatible(df):
-    df = df.reset_index(drop=True)
-    to_join = {}
-    if not df.empty:
-        for c in df:
-            if df[c].dtype == object:
-                dropped = df[c].dropna()
-                if not dropped.empty and isinstance(dropped.iloc[0], tuple):
-                    to_join[c] = []
-                    # Assume all tuples are of same length
-                    for i in range(len(dropped.iloc[0])):
-                        new_name = str(uuid.uuid1())
-                        df[new_name] = np.nan
-                        df.loc[dropped.index, new_name] = dropped.apply(lambda x: x[i])
-                        to_join[c].append(new_name)
-                    del df[c]
-    if sys.version_info <= (3, 0):
-        from past.builtins import unicode
-        df.columns = [unicode(c) for c in df.columns]
-    return df, to_join
-
-
-def _write_pickle_entity_data(root, entity, metadata):
-    rel_filename = os.path.join(entity.id, 'data.p')
-    filename = os.path.join(root, rel_filename)
-    os.makedirs(os.path.join(root, entity.id))
-    pd_to_pickle(entity.data, filename)
-    metadata['entity_dict'][entity.id]['data_files'] = {
-        'data_filename': rel_filename,
-        'filetype': 'pickle',
-        'size': os.stat(filename).st_size
+TYPES = ['csv', 'pickle', 'parquet']
+SCHEMA = {
+    'entities':
+    ['id', 'index', 'time_index', 'variables', 'properties', 'loading_info'],
+    'relationships': {
+        'parent': ['parent_entity', 'parent_variable'],
+        'child': ['child_entity', 'child_variable']
     }
-    return metadata
+}
+VTYPES = {
+    getattr(variable_types, v)._dtype_repr: getattr(variable_types, v)
+    for v in dir(variable_types)
+    if hasattr(getattr(variable_types, v), '_dtype_repr')
+}
+_error = '"{}" is not supported'.format
 
 
-def _write_parquet_entity_data(root, entity, metadata,
-                               engine='auto', compression='gzip'):
-    '''Write an Entity's data to the binary parquet format, using pd.DataFrame.to_parquet.
+def to_entity_descr(e):
+    '''serialize entity of entity set to data description'''
+    descr = {}
+    for key in SCHEMA.get('entities'):
+        if key in ['id', 'index', 'time_index']:
+            descr[key] = getattr(e, key)
+        elif key == 'properties':
+            descr[key] = dict(secondary_time_index=e.secondary_time_index)
+        elif key == 'variables':
+            descr[key] = [v.create_metadata_dict() for v in e.variables]
+        elif key == 'loading_info':
+            descr[key] = dict(dtypes=e.df.dtypes.astype(str).to_dict())
+        else:
+            raise ValueError(_error(key))
+    return e.id, descr
 
-    You can choose different parquet backends, and have the option of compression.
-    See the Pandas [documentation](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.to_parquet.html)
-    for more details on engines and compression types.
-    '''
-    entity_path = os.path.join(root, entity.id)
-    os.makedirs(entity_path)
-    entity_size = 0
-    df, to_join = _parquet_compatible(entity.df)
-    data_files = {}
 
-    rel_df_filename = os.path.join(entity.id, 'df.parq')
-    data_files['df_filename'] = rel_df_filename
-    df_filename = os.path.join(root, rel_df_filename)
-    df.to_parquet(df_filename, engine=engine, compression=compression)
+def to_relation_descr(r):
+    '''serialize relationship of entity set to data description'''
+    return {
+        key: [getattr(r, attr).id for attr in attrs]
+        for key, attrs in SCHEMA.get('relationships').items()
+    }
 
-    entity_size += os.stat(df_filename).st_size
 
-    data_files[u'to_join'] = to_join
-    data_files[u'filetype'] = 'parquet'
-    data_files[u'engine'] = engine
-    data_files[u'size'] = entity_size
-    metadata['entity_dict'][entity.id][u'data_files'] = data_files
-    return metadata
+def write_data(e, path, type='csv', **params):
+    '''serialize data of entity to disk'''
+    basename = '.'.join([e.id, type])
+    if 'compression' in params:
+        basename += '.' + params['compression']
+    location = os.path.join('data', basename)
+    loading_info = dict(location=location, type=type.lower())
+    assert loading_info['type'] in TYPES, _error(type)
+    attr = 'to_{}'.format(loading_info['type'])
+    file = os.path.join(path, location)
+    getattr(e.df, attr)(file, **params)
+    return loading_info
+
+
+def write(es, path, **params):
+    '''serialize entity set to disk'''
+    path = os.path.abspath(path)
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    for p in [path, os.path.join(path, 'data')]:
+        os.makedirs(p)
+    d = es.create_data_description()
+    for e in es.entities:
+        info = write_data(e, path, **params)
+        d['entities'][e.id]['loading_info'].update(info)
+    file = os.path.join(path, 'data_description.json')
+    with open(file, 'w') as f:
+        json.dump(d, f)
+
+
+def from_var_descr(v):
+    '''serialize variable of entity from data description'''
+    return v['id'], VTYPES.get(v['dtype_repr'], VTYPES.get(None))
+
+
+def from_entity_descr(e):
+    '''serialize entity from data description'''
+    keys = ['index', 'time_index']
+    d = dict(zip(keys, map(e.get, keys)))
+    d.update(secondary_time_index=e['properties']['secondary_time_index'])
+    d.update(variable_types=dict(map(from_var_descr, e['variables'])))
+    return d
+
+
+def read_data(d, path=None, **params):
+    '''serialize data of entity from disk or memory'''
+    if path is None:
+        df = pd.DataFrame(columns=list(d['variable_types']))
+    else:
+        file = os.path.join(path, params['location'])
+        attr = 'read_{}'.format(params['type'])
+        df = getattr(pd, attr)(file, **params.get('params', {}))
+    return df.astype(params['dtypes'])
+
+
+def read(path):
+    '''serialize entity set from disk'''
+    path = os.path.abspath(path)
+    assert os.path.exists(path), '"{}" does not exist'.format(path)
+    file = os.path.join(path, 'data_description.json')
+    with open(file, 'r') as f:
+        d = json.load(f)
+    d['root'] = path
+    return d

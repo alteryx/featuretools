@@ -984,7 +984,7 @@ def test_getitem_without_id():
 
 def test_metadata_without_id():
     es = ft.EntitySet()
-    assert es.create_metadata_dict().get('id') is None
+    assert es.create_data_description().get('id') is None
 
 
 def test_to_pickle_id_none():
