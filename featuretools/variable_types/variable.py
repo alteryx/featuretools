@@ -91,13 +91,17 @@ class Variable(object):
     def series(self):
         return self.entity.df[self.id]
 
-    def create_metadata_dict(self):
+    def create_data_description(self):
         return {
-            'dtype_repr': self._dtype_repr,
-            'entity': self.entity.id,
             'id': self.id,
-            'name': self.name,
-            'interesting_values': self._interesting_values
+            'type': {
+                'value': self._dtype_repr,
+            },
+            'properties': {
+                'name': self.name,
+                'entity': self.entity.id,
+                'interesting_values': self._interesting_values
+            },
         }
 
 
@@ -121,19 +125,51 @@ class Discrete(Variable):
     def interesting_values(self, values):
         seen = set()
         seen_add = seen.add
-        self._interesting_values = [v for v in values
-                                    if not (v in seen or seen_add(v))]
+        self._interesting_values = [
+            v for v in values if not (v in seen or seen_add(v))
+        ]
 
 
 class Boolean(Variable):
-    """Represents variables that take on one of two values"""
+    """Represents variables that take on one of two values
+
+    Args:
+        true_values (list) : List of valued true values. Defaults to [1, True, "true", "True", "yes", "t", "T"]
+        false_values (list): List of valued false values. Defaults to [0, False, "false", "False", "no", "f", "F"]
+    """
     _dtype_repr = "boolean"
     _default_pandas_dtype = bool
 
+    def __init__(self, *a, **k):
+        self.true_values = k.pop('true_values', [1, True, "true", "True", "yes", "t", "T"])
+        self.false_values = k.pop('false_values', [0, False, "false", "False", "no", "f", "F"])
+        super(Boolean, self).__init__(*a, **k)
+
+    def create_data_description(self):
+        descr = super(Boolean, self).create_data_description()
+        descr['properties'].update({
+            'true_values': self.true_values,
+            'false_values': self.false_values
+        })
+        return descr
+
 
 class Categorical(Discrete):
-    """Represents variables that can take an unordered discrete values"""
+    """Represents variables that can take an unordered discrete values
+
+    Args:
+        categories (list) : List of categories. If left blank, inferred from data.
+    """
     _dtype_repr = "categorical"
+
+    def __init__(self, *a, **k):
+        self.categories = k.pop('categories', [])
+        super(Categorical, self).__init__(*a, **k)
+
+    def create_data_description(self):
+        descr = super(Categorical, self).create_data_description()
+        descr['properties'].update({'categories': self.categories})
+        return descr
 
 
 class Id(Categorical):
@@ -151,6 +187,11 @@ class Ordinal(Discrete):
 class Numeric(Variable):
     """Represents variables that contain numeric values
 
+    Args:
+        range (list, optional) : List of start and end. Can use inf and -inf to represent infinity. Unconstrained if not specified.
+        start_inclusive (bool, optional) : Whether or not range includes the start value.
+        end_inclusive (bool, optional) : Whether or not range includes the end value
+
     Attributes:
         max (float)
         min (float)
@@ -159,6 +200,21 @@ class Numeric(Variable):
     """
     _dtype_repr = "numeric"
     _default_pandas_dtype = float
+
+    def __init__(self, *a, **k):
+        self.range = k.pop('range', [])
+        self.start_inclusive = k.pop('start_inclusive', True)
+        self.end_inclusive = k.pop('end_inclusive', False)
+        super(Numeric, self).__init__(*a, **k)
+
+    def create_data_description(self):
+        descr = super(Numeric, self).create_data_description()
+        descr['properties'].update({
+            'range': self.range,
+            'start_inclusive': self.start_inclusive,
+            'end_inclusive': self.end_inclusive,
+        })
+        return descr
 
 
 class Index(Variable):
@@ -172,7 +228,11 @@ class Index(Variable):
 
 
 class Datetime(Variable):
-    """Represents variables that are points in time"""
+    """Represents variables that are points in time
+
+    Args:
+        format (str): Python datetime format string documented `here <http://strftime.org/>`_.
+    """
     _dtype_repr = "datetime"
     _default_pandas_dtype = np.datetime64
 
@@ -181,13 +241,19 @@ class Datetime(Variable):
         super(Datetime, self).__init__(id, entity, name)
 
     def __repr__(self):
-        ret = u"<Variable: {} (dtype: {}, format: {})>".format(self.name, self.dtype, self.format)
+        ret = u"<Variable: {} (dtype: {}, format: {})>".format(
+            self.name, self.dtype, self.format)
 
         # encode for python 2
         if type(ret) != str:
             ret = ret.encode("utf-8")
 
         return ret
+
+    def create_data_description(self):
+        descr = super(Datetime, self).create_data_description()
+        descr['properties'].update({'format': self.format})
+        return descr
 
 
 class TimeIndex(Variable):
@@ -209,9 +275,30 @@ class DatetimeTimeIndex(TimeIndex, Datetime):
 
 
 class Timedelta(Variable):
-    """Represents variables that are timedeltas"""
+    """Represents variables that are timedeltas
+
+    Args:
+        range (list, optional) : List of start and end of allowed range in seconds. Can use inf and -inf to represent infinity. Unconstrained if not specified.
+        start_inclusive (bool, optional) : Whether or not range includes the start value.
+        end_inclusive (bool, optional) : Whether or not range includes the end value
+    """
     _dtype_repr = "timedelta"
     _default_pandas_dtype = np.timedelta64
+
+    def __init__(self, *a, **k):
+        self.range = k.pop('range', [])
+        self.start_inclusive = k.pop('start_inclusive', True)
+        self.end_inclusive = k.pop('end_inclusive', False)
+        super(Timedelta, self).__init__(*a, **k)
+
+    def create_data_description(self):
+        descr = super(Timedelta, self).create_data_description()
+        descr['properties'].update({
+            'range': self.range,
+            'start_inclusive': self.start_inclusive,
+            'end_inclusive': self.end_inclusive,
+        })
+        return descr
 
 
 class Text(Variable):
@@ -225,8 +312,9 @@ class PandasTypes(object):
     _categorical = 'category'
     _pandas_datetimes = ['datetime64[ns]', 'datetime64[ns, tz]']
     _pandas_timedeltas = ['Timedelta']
-    _pandas_numerics = ['int16', 'int32', 'int64',
-                        'float16', 'float32', 'float64']
+    _pandas_numerics = [
+        'int16', 'int32', 'int64', 'float16', 'float32', 'float64'
+    ]
 
 
 class LatLong(Variable):
@@ -237,10 +325,9 @@ class LatLong(Variable):
     _dtype_repr = "latlong"
 
 
-ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
-                      Categorical, Text, Ordinal,
-                      Boolean, LatLong]
-
+ALL_VARIABLE_TYPES = [
+    Datetime, Numeric, Timedelta, Categorical, Text, Ordinal, Boolean, LatLong
+]
 
 DEFAULT_DTYPE_VALUES = {
     np.datetime64: pd.Timestamp.now(),

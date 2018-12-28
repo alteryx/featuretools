@@ -924,24 +924,29 @@ def test_secondary_time_index(entityset):
             'second_ti': ['comments', 'second_ti']})
 
 
+def test_to_csv(entityset):
+    dirname = os.path.dirname(integration_data.__file__)
+    path = os.path.join(dirname, 'test')
+    entityset.to_csv(path, encoding='utf-8')
+    new_es = ft.EntitySet.read(path, encoding='utf-8', engine='python')
+    assert entityset.__eq__(new_es, deep=True)
+    shutil.rmtree(path)
+
+
 def test_to_pickle(entityset):
     dirname = os.path.dirname(integration_data.__file__)
-    path = os.path.join(dirname, 'test_entityset.p')
-    if os.path.exists(path):
-        shutil.rmtree(path)
+    path = os.path.join(dirname, 'test')
     entityset.to_pickle(path)
-    new_es = ft.read_pickle(path)
+    new_es = ft.EntitySet.read(path)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
 
 
 def test_to_parquet(entityset):
     dirname = os.path.dirname(integration_data.__file__)
-    path = os.path.join(dirname, 'test_entityset.p')
-    if os.path.exists(path):
-        shutil.rmtree(path)
+    path = os.path.join(dirname, 'test')
     entityset.to_parquet(path)
-    new_es = ft.read_parquet(path)
+    new_es = ft.EntitySet.read(path)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
 
@@ -949,11 +954,9 @@ def test_to_parquet(entityset):
 def test_to_parquet_with_lti():
     entityset = ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
     dirname = os.path.dirname(integration_data.__file__)
-    path = os.path.join(dirname, 'test_entityset.p')
-    if os.path.exists(path):
-        shutil.rmtree(path)
+    path = os.path.join(dirname, 'test')
     entityset.to_parquet(path)
-    new_es = ft.read_parquet(path)
+    new_es = ft.EntitySet.read(path)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
 
@@ -990,11 +993,9 @@ def test_metadata_without_id():
 def test_to_pickle_id_none():
     entityset = ft.EntitySet()
     dirname = os.path.dirname(integration_data.__file__)
-    path = os.path.join(dirname, 'test_entityset.p')
-    if os.path.exists(path):
-        shutil.rmtree(path)
+    path = os.path.join(dirname, 'test')
     entityset.to_pickle(path)
-    new_es = ft.read_pickle(path)
+    new_es = ft.EntitySet.read(path)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
 

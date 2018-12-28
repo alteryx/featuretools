@@ -183,7 +183,7 @@ class EntitySet(object):
                 * entityset: entityset to write to disk
                 * path (str): location on disk to write to (will be created as a directory)
         '''
-        serialization.write(self, path, type='parquet', **params)
+        serialization.write(self, path, type='parquet', compression='gzip', **params)
         return self
 
     def to_csv(self, path, **params):
@@ -204,27 +204,34 @@ class EntitySet(object):
         return {'id': self.id, 'entities': entities, 'relationships': relationships}
 
     @classmethod
-    def from_data_description(cls, descr):
+    def from_data_description(cls, descr, **params):
         '''Serialize entityset from data description'''
+        lti = []
         es = cls(descr['id'])
         for id, e in descr['entities'].items():
-            params = serialization.from_entity_descr(e)
-            df = serialization.read_data(params, path=descr.get('root'), **e['loading_info'])
-            es.entity_from_dataframe(id, df, **params)
+            e['loading_info']['params'].update(params)
+            d = serialization.from_entity_descr(e)
+            df = serialization.read_data(d, path=descr.get('root'), **e['loading_info'])
+            es.entity_from_dataframe(id, df, **d)
+            if e['loading_info']['properties']['last_time_index']:
+                lti.append(e['id'])
         for r in descr['relationships']:
             parent = es[r['parent'][0]][r['parent'][1]]
             child = es[r['child'][0]][r['child'][1]]
             es.add_relationship(Relationship(parent, child))
+        if len(lti):
+            es.add_last_time_indexes(updated_entities=lti)
         return es
 
     @classmethod
-    def read(cls, path):
+    def read(cls, path, **params):
         '''Read entityset from disk in the supported format, location specified by `path`.
 
             Args:
                 * path (str): location of root directory on disk to read
+                * params (dict): parameters are passed to the underlying method
         '''
-        return cls.from_data_description(serialization.read(path))
+        return cls.from_data_description(serialization.read(path), **params)
     ###########################################################################
     #   Public getter/setter methods  #########################################
     ###########################################################################
@@ -296,8 +303,7 @@ class EntitySet(object):
         # default to object dtypes for discrete variables, but
         # indexes/ids default to ints. In this case, we convert
         # the empty column's type to int
-        if (child_e.df.empty and child_e.df[child_v].dtype == object
-                and is_numeric_dtype(parent_e.df[parent_v])):
+        if (child_e.df.empty and child_e.df[child_v].dtype == object and is_numeric_dtype(parent_e.df[parent_v])):
             child_e.df[child_v] = pd.Series(name=child_v, dtype=np.int64)
 
         parent_dtype = parent_e.df[parent_v].dtype
@@ -901,8 +907,7 @@ class EntitySet(object):
         '''
         assert_string = "Entitysets must have the same entities, relationships"\
             ", and variable_ids"
-        assert (self.__eq__(other)
-                and self.relationships == other.relationships), assert_string
+        assert (self.__eq__(other) and self.relationships == other.relationships), assert_string
 
         for entity in self.entities:
             assert entity.id in other.entity_dict, assert_string
@@ -940,8 +945,7 @@ class EntitySet(object):
                                         inplace=True)
             else:
                 combined_df.sort_index(inplace=True)
-            if (entity.last_time_index is not None
-                    or other[entity.id].last_time_index is not None):
+            if (entity.last_time_index is not None or other[entity.id].last_time_index is not None):
                 has_last_time_index.append(entity.id)
             combined_es[entity.id].update_data(
                 df=combined_df, recalculate_last_time_indexes=False)
@@ -1236,4 +1240,3 @@ class EntitySet(object):
                         child_df,
                         left_on=r.child_variable.id,
                         right_on=r.child_variable.id)
-
