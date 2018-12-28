@@ -1,7 +1,9 @@
-import os
 import json
+import os
 import shutil
+
 import pandas as pd
+
 from .. import variable_types
 
 TYPES = ['csv', 'pickle', 'parquet']
@@ -22,7 +24,7 @@ _error = '"{}" is not supported'.format
 
 
 def to_entity_descr(e):
-    '''serialize entity of entity set to data description'''
+    '''serialize entity to data description'''
     descr = {}
     for key in SCHEMA.get('entities'):
         if key in ['id', 'index', 'time_index']:
@@ -30,9 +32,15 @@ def to_entity_descr(e):
         elif key == 'properties':
             descr[key] = dict(secondary_time_index=e.secondary_time_index)
         elif key == 'variables':
-            descr[key] = [v.create_metadata_dict() for v in e.variables]
+            descr[key] = [v.create_data_description() for v in e.variables]
         elif key == 'loading_info':
-            descr[key] = dict(dtypes=e.df.dtypes.astype(str).to_dict())
+            descr[key] = {
+                'properties': {
+                    'last_time_index': e.last_time_index is not None,
+                    'dtypes': e.df.dtypes.astype(str).to_dict(),
+                },
+                'params': {},
+            }
         else:
             raise ValueError(_error(key))
     return e.id, descr
@@ -47,7 +55,7 @@ def to_relation_descr(r):
 
 
 def write_data(e, path, type='csv', **params):
-    '''serialize data of entity to disk'''
+    '''serialize entity data to disk'''
     basename = '.'.join([e.id, type])
     if 'compression' in params:
         basename += '.' + params['compression']
@@ -56,6 +64,9 @@ def write_data(e, path, type='csv', **params):
     assert loading_info['type'] in TYPES, _error(type)
     attr = 'to_{}'.format(loading_info['type'])
     file = os.path.join(path, location)
+    obj = e.df.select_dtypes('object').columns
+    e.df[obj] = e.df[obj].astype('unicode')
+    e.df.columns = e.df.columns.astype('unicode')
     getattr(e.df, attr)(file, **params)
     return loading_info
 
@@ -77,12 +88,13 @@ def write(es, path, **params):
 
 
 def from_var_descr(v):
-    '''serialize variable of entity from data description'''
-    return v['id'], VTYPES.get(v['dtype_repr'], VTYPES.get(None))
+    '''deserialize entity variable from data description'''
+    type = v['type'] if isinstance(v['type'], str) else v['type']['value']
+    return v['id'], VTYPES.get(type, VTYPES.get(None))
 
 
 def from_entity_descr(e):
-    '''serialize entity from data description'''
+    '''deserialize entity from data description'''
     keys = ['index', 'time_index']
     d = dict(zip(keys, map(e.get, keys)))
     d.update(secondary_time_index=e['properties']['secondary_time_index'])
@@ -91,18 +103,21 @@ def from_entity_descr(e):
 
 
 def read_data(d, path=None, **params):
-    '''serialize data of entity from disk or memory'''
+    '''deserialize entity data from disk or memory'''
+    columns = list(d['variable_types'])
+    get = params['properties']['dtypes'].get
+    dtypes = dict(zip(columns, map(get, columns)))
     if path is None:
-        df = pd.DataFrame(columns=list(d['variable_types']))
+        df = pd.DataFrame(columns=columns)
     else:
         file = os.path.join(path, params['location'])
         attr = 'read_{}'.format(params['type'])
         df = getattr(pd, attr)(file, **params.get('params', {}))
-    return df.astype(params['dtypes'])
+    return df.astype(dtypes)
 
 
 def read(path):
-    '''serialize entity set from disk'''
+    '''deserialize entity set from disk'''
     path = os.path.abspath(path)
     assert os.path.exists(path), '"{}" does not exist'.format(path)
     file = os.path.join(path, 'data_description.json')

@@ -330,7 +330,7 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
         if time_index is not None:
             ti_name = time_index['name']
             secondary = time_index['secondary']
-        df = pd.read_csv(filenames[entity], encoding='utf-8')
+        df = pd.read_csv(filenames[entity], encoding='utf-8', engine='python')
         if entity == "customers":
             df["id"] = pd.Categorical(df['id'])
         if entity == 'sessions':
