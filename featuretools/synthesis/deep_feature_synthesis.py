@@ -4,15 +4,19 @@ from collections import defaultdict
 
 import featuretools.primitives.api as ftypes
 from featuretools import variable_types
+from featuretools.feature_base import (
+    AggregationFeature,
+    DirectFeature,
+    IdentityFeature,
+    TransformFeature
+)
 from featuretools.primitives.api import (
-    BinaryFeature,
+    BinaryPrimitive,
     Compare,
     Discrete,
     Equals,
-    IdentityFeature,
     TimeSince
 )
-from featuretools.primitives.base import AggregationPrimitive, DirectFeature
 from featuretools.utils import is_string
 from featuretools.variable_types import Boolean, Categorical, Numeric, Ordinal
 
@@ -229,7 +233,7 @@ class DeepFeatureSynthesis(object):
             for s_time_index, exclude in secondary_time_index.items():
                 if isinstance(f, IdentityFeature) and f.variable.id in exclude:
                     return False
-                elif isinstance(f, (BinaryFeature, Compare)):
+                elif isinstance(f, (BinaryPrimitive, Compare)):
                     if (not check_secondary_index(f.left) or
                             not check_secondary_index(f.right)):
                         return False
@@ -245,7 +249,7 @@ class DeepFeatureSynthesis(object):
                     f.variable.id == self.es[self.target_entity_id].index):
                 return False
 
-            if (isinstance(f, (IdentityFeature, BinaryFeature, Compare, TimeSince)) and
+            if (isinstance(f, (IdentityFeature, BinaryPrimitive, Compare, TimeSince)) and
                     not check_secondary_index(f)):
 
                 return False
@@ -506,7 +510,7 @@ class DeepFeatureSynthesis(object):
                                     commutative=trans_prim.commutative)
 
             for matching_input in matching_inputs:
-                new_f = trans_prim(*matching_input)
+                new_f = TransformFeature(*matching_input, primitive=trans_prim())
                 if new_f.expanding:
                     continue
 
@@ -530,10 +534,10 @@ class DeepFeatureSynthesis(object):
             if self._feature_in_relationship_path([relationship], f):
                 continue
             # limits allowing direct features of agg_feats with where clauses
-            if isinstance(f, AggregationPrimitive):
+            if isinstance(f, AggregationFeature):
                 deep_base_features = [f] + f.get_deep_dependencies()
                 for feat in deep_base_features:
-                    if isinstance(feat, AggregationPrimitive) and feat.where is not None:
+                    if isinstance(feat, AggregationFeature) and feat.where is not None:
                         continue
 
             new_f = DirectFeature(f, child_entity)
@@ -577,21 +581,24 @@ class DeepFeatureSynthesis(object):
             for matching_input in matching_inputs:
                 if not check_stacking(agg_prim, matching_input):
                     continue
-                new_f = agg_prim(matching_input,
-                                 parent_entity=parent_entity)
+                new_f = AggregationFeature(*matching_input,
+                                           parent_entity=parent_entity,
+                                           primitive=agg_prim())
                 self._handle_new_feature(new_f, all_features)
 
                 # Obey allow where
                 if not agg_prim.allow_where:
                     continue
 
-                # limits the stacking of where features
+                # limit the stacking of where features
+                # count up the the number of where features
+                # in this feature and its dependencies
                 feat_wheres = []
                 for f in matching_input:
-                    if f.where is not None:
+                    if isinstance(f, AggregationFeature) and f.where is not None:
                         feat_wheres.append(f)
                     for feat in f.get_deep_dependencies():
-                        if (isinstance(feat, AggregationPrimitive) and
+                        if (isinstance(feat, AggregationFeature) and
                                 feat.where is not None):
                             feat_wheres.append(feat)
 
@@ -604,12 +611,15 @@ class DeepFeatureSynthesis(object):
 
                 for where in wheres:
                     # limits the where feats so they are different than base feats
-                    if any([base_feat.hash() in new_f.base_hashes for base_feat in where.base_features]):
+                    base_hashes = [f.hash() for f in new_f.base_features]
+                    if any([base_feat.hash() in base_hashes for base_feat in where.base_features]):
                         continue
 
-                    new_f = agg_prim(matching_input,
-                                     parent_entity=parent_entity,
-                                     where=where)
+                    new_f = AggregationFeature(*matching_input,
+                                               parent_entity=parent_entity,
+                                               where=where,
+                                               primitive=agg_prim())
+
                     self._handle_new_feature(new_f, all_features)
 
     def _features_by_type(self, all_features, entity, variable_type, max_depth):
@@ -659,7 +669,7 @@ class DeepFeatureSynthesis(object):
         hlevel = 0
         for d in deps:
             if isinstance(d, DirectFeature) and \
-                    isinstance(d.base_features[0], AggregationPrimitive):
+                    isinstance(d.base_features[0], AggregationFeature):
 
                 assert d.parent_entity.id == d.base_features[0].entity.id
                 path, new_hlevel = self.es.find_path(self.target_entity_id,
@@ -683,25 +693,25 @@ def check_stacking(primitive, input_types):
                 return False
 
     for f in input_types:
-        if f.expanding:
+        if f.primitive.expanding:
             return False
 
     for f in input_types:
-        if f.base_of_exclude is not None:
+        if f.primitive.base_of_exclude is not None:
             if primitive in f.base_of_exclude:
                 return False
 
     for f in input_types:
         if primitive.stack_on_self is True:
-            if type(f) == primitive:
+            if isinstance(f.primitive, primitive):
                 continue
         if primitive.stack_on is not None:
-            if type(f) in primitive.stack_on:
+            if isinstance(f, tuple(primitive.stack_on)):
                 continue
         else:
             continue
-        if f.base_of is not None:
-            if primitive in f.base_of:
+        if f.primitive.base_of is not None:
+            if primitive in f.primitive.base_of:
                 continue
         else:
             continue

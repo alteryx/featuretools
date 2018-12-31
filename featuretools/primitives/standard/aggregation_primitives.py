@@ -20,8 +20,6 @@ from featuretools.variable_types import (
     Variable
 )
 
-# TODO: make sure get func gets numpy arrays not series
-
 
 class Count(AggregationPrimitive):
     """Counts the number of non null values."""
@@ -31,17 +29,12 @@ class Count(AggregationPrimitive):
     stack_on_self = False
     default_value = 0
 
-    def __init__(self, id_feature, parent_entity, **kwargs):
-        super(Count, self).__init__(id_feature, parent_entity, **kwargs)
-
     def get_function(self):
         return 'count'
 
-    def generate_name(self):
-        where_str = self._where_str()
-        use_prev_str = self._use_prev_str()
-
-        return u"COUNT(%s%s%s)" % (self.child_entity.id,
+    def generate_name(self, base_feature_names, child_entity_id,
+                      parent_entity_id, where_str, use_prev_str):
+        return u"COUNT(%s%s%s)" % (child_entity_id,
                                    where_str, use_prev_str)
 
 
@@ -80,13 +73,24 @@ class Mode(AggregationPrimitive):
         return pd_mode
 
 
-Min = make_agg_primitive(
-    np.min,
-    [Numeric],
-    Numeric,
-    name="Min",
-    stack_on_self=False,
-    description="Finds the minimum non-null value of a numeric feature.")
+class Min(AggregationPrimitive):
+    """Finds the minimum non-null value of a numeric feature."""
+    name = "min"
+    input_types = [Numeric]
+    return_type = Numeric
+    stack_on_self=False
+
+    def get_function(self):
+        return np.min
+
+
+# Min = make_agg_primitive(
+#     np.min,
+#     [Numeric],
+#     Numeric,
+#     name="Min",
+#     stack_on_self=False,
+#     description="Finds the minimum non-null value of a numeric feature.")
 
 
 class Max(AggregationPrimitive):

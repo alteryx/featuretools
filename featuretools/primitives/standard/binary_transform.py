@@ -17,7 +17,7 @@ from featuretools.variable_types import (
 )
 
 
-class BinaryFeature(TransformPrimitive):
+class BinaryPrimitive(TransformPrimitive):
 
     def __init__(self, left, right):
         if isinstance(left, (PrimitiveBase, Variable)):
@@ -47,7 +47,7 @@ class BinaryFeature(TransformPrimitive):
             raise ValueError("one of (left, right) must be an instance,"
                              "of PrimitiveBase or Variable")
 
-        super(BinaryFeature, self).__init__(*base_features)
+        super(BinaryPrimitive, self).__init__(*base_features)
 
     def left_str(self):
         if isinstance(self.left, PrimitiveBase):
@@ -106,7 +106,7 @@ class BinaryFeature(TransformPrimitive):
         return apply_dual_op_from_feat(self, array_1, array_2).values
 
 
-class ArithmeticFeature(BinaryFeature):
+class ArithmeticFeature(BinaryPrimitive):
     _ADD = '+'
     _SUB = '-'
     _MUL = '*'
@@ -238,7 +238,7 @@ class Negate(Subtract):
         return u"-%s" % (self.right_str())
 
 
-class Compare(BinaryFeature):
+class Compare(BinaryPrimitive):
     """Compares two features using provided operator.
         Returns a boolean value"""
     EQ = '='

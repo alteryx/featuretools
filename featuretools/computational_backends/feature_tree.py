@@ -8,11 +8,11 @@ from ..utils import gen_utils as utils
 
 from featuretools import variable_types
 from featuretools.exceptions import UnknownFeature
-from featuretools.primitives.base import (
-    AggregationPrimitive,
+from featuretools.feature_base import (
+    AggregationFeature,
     DirectFeature,
     IdentityFeature,
-    TransformPrimitive
+    TransformFeature
 )
 
 logger = logging.getLogger('featuretools.computational_backend')
@@ -200,13 +200,13 @@ class FeatureTree(object):
         return list(features.values()), out
 
     def uses_full_entity(self, feature):
-        if feature.uses_full_entity:
+        if isinstance(feature, TransformFeature) and feature.primitive.uses_full_entity:
             return True
         return self._dependent_uses_full_entity(feature)
 
     def _dependent_uses_full_entity(self, feature):
         for d in self.feature_dependents[feature.hash()]:
-            if d.uses_full_entity:
+            if isinstance(d, TransformFeature) and d.primitive.uses_full_entity:
                 return True
         return False
 
@@ -223,8 +223,9 @@ class FeatureTree(object):
     def output_frames_type(self, f):
         is_output = f.hash() in self.feature_hashes
         dependent_uses_full_entity = self._dependent_uses_full_entity(f)
-        dependent_has_subset_input = any([(not d.uses_full_entity and
-                                           d.hash() in self.feature_hashes)
+        dependent_has_subset_input = any([(not isinstance(d, TransformFeature) or
+                                           (not d.primitive.uses_full_entity and
+                                           d.hash() in self.feature_hashes))
                                           for d in self.feature_dependents[f.hash()]])
         # If the feature is one in which the user requested as
         # an output (meaning it's part of the input feature list
@@ -246,15 +247,14 @@ class FeatureTree(object):
 
 
 def _get_use_previous(f):
-    if hasattr(f, "use_previous") and f.use_previous is not None:
-        previous = f.use_previous
-        return (previous.unit, previous.value)
+    if isinstance(f, AggregationFeature) and f.use_previous is not None:
+        return (f.use_previous.unit, f.use_previous.value)
     else:
         return ("", -1)
 
 
 def _get_where(f):
-    if hasattr(f, "where") and f.where is not None:
+    if isinstance(f, AggregationFeature) and f.where is not None:
         return f.where.hash()
     else:
         return -1
@@ -270,11 +270,11 @@ def _get_base_entity_id(f):
 
 
 def _get_ftype_string(f):
-    if isinstance(f, TransformPrimitive):
+    if isinstance(f, TransformFeature):
         return "transform"
     elif isinstance(f, DirectFeature):
         return "direct"
-    elif isinstance(f, AggregationPrimitive):
+    elif isinstance(f, AggregationFeature):
         return "aggregation"
     elif isinstance(f, IdentityFeature):
         return "identity"

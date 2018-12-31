@@ -24,7 +24,7 @@ from .utils import (
     save_csv_decorator
 )
 
-from featuretools.primitives import AggregationPrimitive, PrimitiveBase
+from featuretools.feature_base import AggregationFeature, FeatureBase
 from featuretools.utils.gen_utils import (
     get_relationship_variable_id,
     make_tqdm_iterator
@@ -45,7 +45,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     """Calculates a matrix for a given set of instance ids and calculation times.
 
     Args:
-        features (list[PrimitiveBase]): Feature definitions to be calculated.
+        features (list[FeatureBase]): Feature definitions to be calculated.
 
         entityset (EntitySet): An already initialized entityset. Required if `entities` and `relationships`
             not provided
@@ -113,7 +113,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         save_progress (str, optional): path to save intermediate computational results.
     """
     assert (isinstance(features, list) and features != [] and
-            all([isinstance(feature, PrimitiveBase) for feature in features])), \
+            all([isinstance(feature, FeatureBase) for feature in features])), \
         "features must be a non-empty list of features"
 
     # handle loading entityset
@@ -189,7 +189,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     # Check if there are any non-approximated aggregation features
     no_unapproximated_aggs = True
     for feature in features:
-        if isinstance(feature, AggregationPrimitive):
+        if isinstance(feature, AggregationFeature):
             # do not need to check if feature is in to_approximate since
             # only base features of direct features can be in to_approximate
             no_unapproximated_aggs = False
@@ -197,7 +197,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
         deps = feature.get_deep_dependencies(all_approx_feature_set)
         for dependency in deps:
-            if (isinstance(dependency, AggregationPrimitive) and
+            if (isinstance(dependency, AggregationFeature) and
                     dependency not in to_approximate[dependency.entity.id]):
                 no_unapproximated_aggs = False
                 break
@@ -386,12 +386,12 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
     at one cutoff time for each bucket.
 
 
-    ..note:: this only approximates DirectFeatures of AggregationPrimitives, on
+    ..note:: this only approximates DirectFeatures of AggregationFeatures, on
         the target entity. In future versions, it may also be possible to
         approximate these features on other top-level entities
 
     Args:
-        features (list[:class:`.PrimitiveBase`]): if these features are dependent
+        features (list[:class:`.FeatureBase`]): if these features are dependent
             on aggregation features on the prediction, the approximate values
             for the aggregation feature will be calculated
 

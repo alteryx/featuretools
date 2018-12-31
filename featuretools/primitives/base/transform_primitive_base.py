@@ -10,20 +10,13 @@ class TransformPrimitive(PrimitiveBase):
         in that entity."""
     rolling_function = False
 
-    def __init__(self, *base_features):
-        # Any edits made to this method should also be made to the
-        # new_class_init method in make_trans_primitive
-        self.base_features = [self._check_feature(f) for f in base_features]
-        if any(bf.expanding for bf in self.base_features):
-            self.expanding = True
-        assert len(set([f.entity for f in self.base_features])) == 1, \
-            "More than one entity for base features"
-        super(TransformPrimitive, self).__init__(self.base_features[0].entity,
-                                                 self.base_features)
+    # (bool) If True, feature function depends on all values of entity
+    #   (and will receive these values as input, regardless of specified instance ids)
+    uses_full_entity = False
 
-    def generate_name(self):
+    def generate_name(self, base_feature_names):
         name = u"{}(".format(self.name.upper())
-        name += u", ".join(f.get_name() for f in self.base_features)
+        name += u", ".join(base_feature_names)
         name += u")"
         return name
 
