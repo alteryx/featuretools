@@ -203,6 +203,9 @@ class AddNumericScalar(TransformPrimitive):
     return_type = Numeric
     commutative = True
 
+    def __init__(self, value):
+        self.value = value
+
     def get_function(self):
         def add_scalar(vals):
             return vals + self.value
@@ -230,6 +233,9 @@ class SubtractNumericScalar(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     commutative = True
+
+    def __init__(self, value):
+        self.value = value
 
     def get_function(self):
         def subtract_scalar(vals):
@@ -259,6 +265,9 @@ class MultiplyNumericScalar(TransformPrimitive):
     return_type = Numeric
     commutative = True
 
+    def __init__(self, value):
+        self.value = value
+
     def get_function(self):
         def multiply_scalar(vals):
             return vals * self.value
@@ -285,6 +294,9 @@ class DivideNumericScalar(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
 
+    def __init__(self, value):
+        self.value = value
+
     def get_function(self):
         def divide_scalar(vals):
             return vals / self.value
@@ -310,6 +322,9 @@ class ModuloNumericScalar(TransformPrimitive):
     name = "modulo_numeric"
     input_types = [Numeric]
     return_type = Numeric
+
+    def __init__(self, value):
+        self.value = value
 
     def get_function(self):
         def modulo_scalar(vals):

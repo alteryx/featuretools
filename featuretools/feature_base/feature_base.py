@@ -48,7 +48,6 @@ class FeatureBase(object):
 
         raise Exception("Not a feature")
 
-
     def rename(self, name):
         """Rename Feature, returns copy"""
         feature_copy = self.copy()
