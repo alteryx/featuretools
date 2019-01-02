@@ -1,5 +1,5 @@
 from featuretools import primitives
-from featuretools.primitives.base import PrimitiveBase
+from featuretools.primitives.base import PrimitiveBase, AggregationPrimitive, TransformPrimitive
 import copy
 from builtins import zip
 
@@ -327,7 +327,6 @@ class IdentityFeature(FeatureBase):
         self.return_type = type(variable)
         super(IdentityFeature, self).__init__(variable.entity, [], primitive=PrimitiveBase())
 
-
     def copy(self):
         """Return copy of feature"""
         return IdentityFeature(self.variable)
@@ -434,7 +433,6 @@ class AggregationFeature(FeatureBase):
                                             "on entities with a time index")
             assert _check_time_against_column(self.use_previous, time_col)
 
-
         super(AggregationFeature, self).__init__(parent_entity,
                                                  base_features,
                                                  primitive=primitive)
@@ -507,10 +505,12 @@ class Feature(object):
         elif primitive is None and entity is not None:
             return DirectFeature(base, entity)
         elif primitive is not None and parent_entity is not None:
+            assert isinstance(primitive, AggregationPrimitive)
             return AggregationFeature(base, parent_entity=parent_entity,
                                       use_previous=use_previous, where=where,
                                       primitive=primitive)
         elif primitive is not None:
+            assert isinstance(primitive, TransformPrimitive)
             return TransformFeature(base, primitive=primitive)
 
         raise Expection("Unrecognized feature initialization")

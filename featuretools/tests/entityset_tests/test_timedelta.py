@@ -13,6 +13,7 @@ from featuretools.utils.wrangle import _check_timedelta
 
 import featuretools as ft
 
+
 @pytest.fixture(scope='module')
 def es():
     return make_ecommerce_entityset()

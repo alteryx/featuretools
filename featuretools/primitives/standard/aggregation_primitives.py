@@ -322,7 +322,6 @@ class Trend(AggregationPrimitive):
     input_types = [Numeric, DatetimeTimeIndex]
     return_type = Numeric
 
-
     def get_function(self):
         def pd_trend(y, x):
             df = pd.DataFrame({"x": x, "y": y}).dropna()

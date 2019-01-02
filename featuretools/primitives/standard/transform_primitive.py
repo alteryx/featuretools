@@ -297,7 +297,6 @@ class Diff(TransformPrimitive):
     input_types = [Numeric, Id]
     return_type = Numeric
 
-
     def generate_name(self, base_feature_names):
         base_features_str = base_feature_names[0] + u" by " + \
             base_feature_names[1]

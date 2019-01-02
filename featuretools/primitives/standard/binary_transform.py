@@ -3,12 +3,12 @@ from builtins import str
 import numpy as np
 
 from ..base.transform_primitive_base import TransformPrimitive
-from featuretools.variable_types import Boolean, Numeric, Variable
+from featuretools.variable_types import Boolean, Numeric, Variable, Datetime
 
 
 class GreaterThan(TransformPrimitive):
     name = "greater_than"
-    input_types = [Numeric, Numeric]
+    input_types = [[Numeric, Numeric], [Datetime, Datetime]]
     return_type = Boolean
 
     def get_function(self):
@@ -20,7 +20,7 @@ class GreaterThan(TransformPrimitive):
 
 class GreaterThanScalar(TransformPrimitive):
     name = "greater_than_scalar"
-    input_types = [Numeric]
+    input_types = [[Numeric], [Datetime]]
     return_type = Boolean
 
     def __init__(self, value):
@@ -37,7 +37,7 @@ class GreaterThanScalar(TransformPrimitive):
 
 class GreaterThanEqualTo(TransformPrimitive):
     name = "greater_than_equal_to"
-    input_types = [Numeric, Numeric]
+    input_types = [[Numeric, Numeric], [Datetime, Datetime]]
     return_type = Boolean
 
     def get_function(self):
@@ -49,7 +49,7 @@ class GreaterThanEqualTo(TransformPrimitive):
 
 class GreaterThanEqualToScalar(TransformPrimitive):
     name = "greater_than_equal_to_scalar"
-    input_types = [Numeric]
+    input_types = [[Numeric], [Datetime]]
     return_type = Boolean
 
     def __init__(self, value):
@@ -66,7 +66,7 @@ class GreaterThanEqualToScalar(TransformPrimitive):
 
 class LessThan(TransformPrimitive):
     name = "less_than"
-    input_types = [Numeric, Numeric]
+    input_types = [[Numeric, Numeric], [Datetime, Datetime]]
     return_type = Boolean
 
     def get_function(self):
@@ -78,7 +78,7 @@ class LessThan(TransformPrimitive):
 
 class LessThanScalar(TransformPrimitive):
     name = "less_than_scalar"
-    input_types = [Numeric]
+    input_types = [[Numeric], [Datetime]]
     return_type = Boolean
 
     def __init__(self, value):
@@ -95,7 +95,7 @@ class LessThanScalar(TransformPrimitive):
 
 class LessThanEqualTo(TransformPrimitive):
     name = "less_than_equal_to"
-    input_types = [Numeric, Numeric]
+    input_types = [[Numeric, Numeric], [Datetime, Datetime]]
     return_type = Boolean
 
     def get_function(self):
@@ -107,7 +107,7 @@ class LessThanEqualTo(TransformPrimitive):
 
 class LessThanEqualToScalar(TransformPrimitive):
     name = "less_than_equal_to_scalar"
-    input_types = [Numeric]
+    input_types = [[Numeric], [Datetime]]
     return_type = Boolean
 
     def __init__(self, value):
