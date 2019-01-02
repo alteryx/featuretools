@@ -23,7 +23,7 @@ class GreaterThanScalar(TransformPrimitive):
     input_types = [[Numeric], [Datetime]]
     return_type = Boolean
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         self.value = value
 
     def get_function(self):
@@ -52,7 +52,7 @@ class GreaterThanEqualToScalar(TransformPrimitive):
     input_types = [[Numeric], [Datetime]]
     return_type = Boolean
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         self.value = value
 
     def get_function(self):
@@ -81,7 +81,7 @@ class LessThanScalar(TransformPrimitive):
     input_types = [[Numeric], [Datetime]]
     return_type = Boolean
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         self.value = value
 
     def get_function(self):
@@ -110,7 +110,7 @@ class LessThanEqualToScalar(TransformPrimitive):
     input_types = [[Numeric], [Datetime]]
     return_type = Boolean
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         self.value = value
 
     def get_function(self):
@@ -141,7 +141,7 @@ class EqualScalar(TransformPrimitive):
     return_type = Boolean
     commutative = True
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         self.value = value
 
     def get_function(self):
@@ -172,7 +172,7 @@ class NotEqualScalar(TransformPrimitive):
     return_type = Boolean
     commutative = True
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         self.value = value
 
     def get_function(self):
@@ -203,7 +203,7 @@ class AddNumericScalar(TransformPrimitive):
     return_type = Numeric
     commutative = True
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         self.value = value
 
     def get_function(self):
@@ -234,7 +234,7 @@ class SubtractNumericScalar(TransformPrimitive):
     return_type = Numeric
     commutative = True
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         self.value = value
 
     def get_function(self):
@@ -265,7 +265,7 @@ class MultiplyNumericScalar(TransformPrimitive):
     return_type = Numeric
     commutative = True
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         self.value = value
 
     def get_function(self):
@@ -294,7 +294,7 @@ class DivideNumericScalar(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         self.value = value
 
     def get_function(self):
@@ -323,7 +323,7 @@ class ModuloNumericScalar(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
 
-    def __init__(self, value):
+    def __init__(self, value=None):
         self.value = value
 
     def get_function(self):

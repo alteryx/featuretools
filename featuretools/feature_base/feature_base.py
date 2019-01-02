@@ -28,10 +28,15 @@ class FeatureBase(object):
         assert all(isinstance(f, FeatureBase) for f in base_features), \
             "All base features must be features"
 
+
         self.entity_id = entity.id
         self.entityset = entity.entityset.metadata
 
         self.base_features = base_features
+
+        # initialize if not already initialized
+        if not isinstance(primitive, PrimitiveBase):
+            primitive = primitive()
         self.primitive = primitive
 
         assert self._check_input_types(), ("Provided inputs don't match input "
@@ -146,7 +151,7 @@ class FeatureBase(object):
         return ret
 
     def hash(self):
-        return hash(self.get_name() + self.entity.id)
+        return hash(self.get_name() + self.entity.id + hash(self.primitive))
 
     def __hash__(self):
         # logger.warning("To hash a feature, use feature.hash()")
@@ -201,27 +206,15 @@ class FeatureBase(object):
         return self._handle_binary_comparision(other, primitives.GreaterThan, primitives.GreaterThanScalar)
 
     def __ge__(self, other):
-        """Compares if greater than or equal to other
-
-        See also:
-            :meth:`PrimitiveBase.greater_than_equal_to`
-        """
+        """Compares if greater than or equal to other"""
         return self._handle_binary_comparision(other, primitives.GreaterThanEqualTo, primitives.GreaterThanEqualToScalar)
 
     def __lt__(self, other):
-        """Compares if less than other
-
-        See also:
-            :meth:`PrimitiveBase.less_than`
-        """
+        """Compares if less than other"""
         return self._handle_binary_comparision(other, primitives.LessThanEqualTo, primitives.LessThanEqualToScalar)
 
     def __le__(self, other):
-        """Compares if less than or equal to other
-
-        See also:
-            :meth:`PrimitiveBase.less_than_equal_to`
-        """
+        """Compares if less than or equal to other"""
         return self._handle_binary_comparision(other, primitives.LessThanEqualTo, primitives.LessThanEqualToScalar)
 
     def __add__(self, other):
@@ -240,11 +233,7 @@ class FeatureBase(object):
         pass
 
     def __div__(self, other):
-        """Divide by other
-
-        See also:
-            :meth:`PrimitiveBase.divide`
-        """
+        """Divide by other"""
         return self._handle_binary_comparision(other, primitives.DivideNumeric, primitives.DivideNumericScalar)
 
     def __truediv__(self, other):
@@ -264,11 +253,7 @@ class FeatureBase(object):
         return self.__mul__(other)
 
     def __mod__(self, other):
-        """Take modulus of other
-
-        See also:
-            :meth:`PrimitiveBase.modulo`
-        """
+        """Take modulus of other"""
         return Feature([self, other], primitive=primitives.Mod())
 
     def __and__(self, other):
@@ -303,9 +288,6 @@ class FeatureBase(object):
     def NOT(self):
         """Creates inverse of feature"""
         return Feature([self], primitive=primitives.Not())
-
-    def LIKE(self, like_string, case_sensitive=False):
-        return Feature([self, like_string], primitive=primitives.Like(case_sensitive=case_sensitive))
 
     def isin(self, list_of_output):
         return Feature([self], primitive=primitives.IsIn(list_of_outputs=list_of_output))
@@ -400,8 +382,8 @@ class AggregationFeature(FeatureBase):
     # each time point during calculation
     use_previous = None
 
-    def __init__(self, base_features, parent_entity, use_previous=None,
-                 where=None, primitive=None):
+    def __init__(self, base_features, parent_entity, primitive, use_previous=None,
+                 where=None):
         # Any edits made to this method should also be made to the
         # new_class_init method in make_agg_primitive
         if hasattr(base_features, '__iter__'):
@@ -464,7 +446,7 @@ class AggregationFeature(FeatureBase):
 
 
 class TransformFeature(FeatureBase):
-    def __init__(self, base_features, primitive=None):
+    def __init__(self, base_features, primitive):
         # Any edits made to this method should also be made to the
         # new_class_init method in make_trans_primitive
         if hasattr(base_features, '__iter__'):

@@ -150,7 +150,7 @@ class FeatureTree(object):
                 return (feature_depth[f.hash()],
                         f.entity.id,
                         _get_base_entity_id(f),
-                        _get_ftype_string(f),
+                        str(f.__class__),
                         _get_use_previous(f),
                         _get_where(f),
                         self.input_frames_type(f),
@@ -267,16 +267,3 @@ def _get_base_entity_id(f):
     else:
         # Assume all of f's base_features belong to the same entity
         return f.base_features[0].entity_id
-
-
-def _get_ftype_string(f):
-    if isinstance(f, TransformFeature):
-        return "transform"
-    elif isinstance(f, DirectFeature):
-        return "direct"
-    elif isinstance(f, AggregationFeature):
-        return "aggregation"
-    elif isinstance(f, IdentityFeature):
-        return "identity"
-    else:
-        raise UnknownFeature("{} feature unknown".format(f.__class__))

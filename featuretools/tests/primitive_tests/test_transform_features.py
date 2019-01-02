@@ -792,7 +792,7 @@ def test_overrides(es):
     i = 0
     for left, right in compares:
         for feat in feats:
-            f = feat(left, right)
+            f = ft.Feature([left, right], primitive=feat)
             o = overrides[i]
             assert o.hash() == f.hash()
             i += 1
@@ -834,7 +834,7 @@ def test_overrides(es):
 def test_override_boolean(es):
     count = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count())
     count_lo = ft.Feature(count,primitive=GreaterThanScalar(1))
-    count_hi = ft.Feature(count, primitive=LessThan(10))
+    count_hi = ft.Feature(count, primitive=LessThanScalar(10))
 
     to_test = [[True, True, True],
                [True, True, False],
@@ -1209,8 +1209,8 @@ def test_make_transform_sets_kwargs_correctly(es):
             list_of_outputs = []
         return pd.Series(array).isin(list_of_outputs)
 
-    def isin_generate_name(self):
-        return u"%s.isin(%s)" % (self.base_features[0].get_name(),
+    def isin_generate_name(self, base_features_names):
+        return u"%s.isin(%s)" % (base_features_names[0],
                                  str(self.kwargs['list_of_outputs']))
 
     IsIn = make_trans_primitive(
