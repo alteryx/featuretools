@@ -224,7 +224,7 @@ class DeepFeatureSynthesis(object):
 
         def check_secondary_index(f):
             # M TODO
-            pass
+            return True
             secondary_time_index = self.es[self.target_entity_id].secondary_time_index
             for s_time_index, exclude in secondary_time_index.items():
                 if isinstance(f, IdentityFeature) and f.variable.id in exclude:
@@ -577,7 +577,7 @@ class DeepFeatureSynthesis(object):
             for matching_input in matching_inputs:
                 if not check_stacking(agg_prim, matching_input):
                     continue
-                new_f = AggregationFeature(*matching_input,
+                new_f = AggregationFeature(matching_input,
                                            parent_entity=parent_entity,
                                            primitive=agg_prim())
                 self._handle_new_feature(new_f, all_features)
@@ -611,7 +611,7 @@ class DeepFeatureSynthesis(object):
                     if any([base_feat.hash() in base_hashes for base_feat in where.base_features]):
                         continue
 
-                    new_f = AggregationFeature(*matching_input,
+                    new_f = AggregationFeature(matching_input,
                                                parent_entity=parent_entity,
                                                where=where,
                                                primitive=agg_prim())
@@ -678,14 +678,15 @@ class DeepFeatureSynthesis(object):
 def check_stacking(primitive, input_types):
     """checks if features in input_types can be used with supplied primitive
        using the stacking rules"""
+
     if primitive.stack_on_self is False:
         for f in input_types:
-            if type(f) == primitive:
+            if isinstance(f.primitive, primitive):
                 return False
 
     if primitive.stack_on_exclude is not None:
         for f in input_types:
-            if type(f) in primitive.stack_on_exclude:
+            if isinstance(f.primitive, tuple(primitive.stack_on_exclude)):
                 return False
 
     for f in input_types:
@@ -702,7 +703,7 @@ def check_stacking(primitive, input_types):
             if isinstance(f.primitive, primitive):
                 continue
         if primitive.stack_on is not None:
-            if isinstance(f, tuple(primitive.stack_on)):
+            if isinstance(f.primitive, tuple(primitive.stack_on)):
                 continue
         else:
             continue

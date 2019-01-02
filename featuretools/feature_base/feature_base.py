@@ -27,9 +27,6 @@ class FeatureBase(object):
     def __init__(self, entity, base_features, primitive):
         assert all(isinstance(f, FeatureBase) for f in base_features), \
             "All base features must be features"
-        if len(set([bf.hash() for bf in base_features])) != len(base_features):
-            raise ValueError(u"Duplicate base features ({}): {}".format(
-                self.__class__, base_features))
 
         self.entity_id = entity.id
         self.entityset = entity.entityset.metadata
@@ -55,9 +52,7 @@ class FeatureBase(object):
         return feature_copy
 
     def copy(self):
-        """Return copy of feature"""
-        # M TODO implement Feature copy
-        return self
+        raise NotImplementedError("Must define copy on FeatureBase subclass")
 
     def get_name(self):
         if self._name is not None:
@@ -327,12 +322,15 @@ class IdentityFeature(FeatureBase):
     """Feature for entity that is equivalent to underlying variable"""
 
     def __init__(self, variable):
-        # TODO: perhaps we can change the attributes of this class to
-        # just entityset reference to original variable object
         entity_id = variable.entity_id
         self.variable = variable.entityset.metadata[entity_id][variable.id]
         self.return_type = type(variable)
         super(IdentityFeature, self).__init__(variable.entity, [], primitive=PrimitiveBase())
+
+
+    def copy(self):
+        """Return copy of feature"""
+        return IdentityFeature(self.variable)
 
     def generate_name(self):
         return self.variable.name
@@ -355,6 +353,7 @@ class DirectFeature(FeatureBase):
         base_feature = self._check_feature(base_feature)
         if base_feature.expanding:
             self.expanding = True
+        self.base_feature = base_feature
 
         # M TODO what does this do?
         path = child_entity.entityset.find_forward_path(child_entity.id, base_feature.entity.id)
@@ -369,8 +368,16 @@ class DirectFeature(FeatureBase):
         super(DirectFeature, self).__init__(child_entity, [parent_feature], primitive=PrimitiveBase())
 
     @property
+    def variable(self):
+        return self.base_feature.variable
+
+    @property
     def default_value(self):
         return self.base_features[0].default_value
+
+    def copy(self):
+        """Return copy of feature"""
+        return DirectFeature(self.base_feature, self.entity)
 
     # @property
     # def variable(self):
@@ -419,7 +426,7 @@ class AggregationFeature(FeatureBase):
                 "Applying function that requires time index to entity that "
                 "doesn't have one")
 
-            self.use_previous = _check_timedelta(self.use_previous)
+            self.use_previous = _check_timedelta(use_previous)
             assert len(base_features) > 0
             time_index = base_features[0].entity.time_index
             time_col = base_features[0].entity[time_index]
@@ -427,11 +434,14 @@ class AggregationFeature(FeatureBase):
                                             "on entities with a time index")
             assert _check_time_against_column(self.use_previous, time_col)
 
-        self.use_previous = use_previous
 
         super(AggregationFeature, self).__init__(parent_entity,
                                                  base_features,
                                                  primitive=primitive)
+
+    def copy(self):
+        return AggregationFeature(self.base_features, self.parent_entity,
+                                  self.use_previous,self.where, self.primitive)
 
     def _where_str(self):
         if self.where is not None:
@@ -474,6 +484,9 @@ class TransformFeature(FeatureBase):
             "More than one entity for base features"
         super(TransformFeature, self).__init__(list(base_entity)[0],
                                                base_features, primitive=primitive)
+
+    def copy(self):
+        return TransformFeature(self.base_features, self.primitive)
 
     def generate_name(self):
         return self.primitive.generate_name(base_feature_names=[bf.get_name() for bf in self.base_features])

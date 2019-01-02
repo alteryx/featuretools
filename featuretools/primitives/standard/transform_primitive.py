@@ -51,23 +51,8 @@ class TimeSincePrevious(TransformPrimitive):
     input_types = [DatetimeTimeIndex, Id]
     return_type = Numeric
 
-    def __init__(self, time_index, group_feature):
-        """Summary
-
-        Args:
-            base_feature (PrimitiveBase): Base feature.
-            group_feature (None, optional): Variable or feature to group
-                rows by before calculating diff.
-
-        """
-        group_feature = self._check_feature(group_feature)
-        assert issubclass(group_feature.variable_type, Discrete), \
-            "group_feature must have a discrete variable_type"
-        self.group_feature = group_feature
-        super(TimeSincePrevious, self).__init__(time_index, group_feature)
-
-    def generate_name(self):
-        return u"time_since_previous_by_%s" % self.group_feature.get_name()
+    def generate_name(self, base_feature_names):
+        return u"time_since_previous_by_%s" % base_feature_names[1]
 
     def get_function(self):
         def pd_diff(base_array, group_array):
@@ -312,22 +297,11 @@ class Diff(TransformPrimitive):
     input_types = [Numeric, Id]
     return_type = Numeric
 
-    def __init__(self, base_feature, group_feature):
-        """Summary
 
-        Args:
-            base_feature (PrimitiveBase): Base feature.
-            group_feature (PrimitiveBase): Variable or feature to
-                group rows by before calculating diff.
-
-        """
-        self.group_feature = self._check_feature(group_feature)
-        super(Diff, self).__init__(base_feature, group_feature)
-
-    def generate_name(self):
-        base_features_str = self.base_features[0].get_name() + u" by " + \
-            self.group_feature.get_name()
-        return u"%s(%s)" % (self.name.upper(), base_features_str)
+    def generate_name(self, base_feature_names):
+        base_features_str = base_feature_names[0] + u" by " + \
+            base_feature_names[1]
+        return u"DIFF(%s)" % (base_features_str)
 
     def get_function(self):
         def pd_diff(base_array, group_array):

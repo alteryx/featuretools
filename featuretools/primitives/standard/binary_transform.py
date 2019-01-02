@@ -345,7 +345,7 @@ class And(TransformPrimitive):
         return np.logical_and
 
     def generate_name(self, base_feature_names):
-        return "%s AND %s" % (base_feature_names[0], base_feature_names[1])
+        return "AND(%s, %s)" % (base_feature_names[0], base_feature_names[1])
 
 
 class Or(TransformPrimitive):
@@ -358,4 +358,4 @@ class Or(TransformPrimitive):
         return np.logical_or
 
     def generate_name(self, base_feature_names):
-        return "%s or %s" % (base_feature_names[0], base_feature_names[1])
+        return "OR(%s, %s)" % (base_feature_names[0], base_feature_names[1])

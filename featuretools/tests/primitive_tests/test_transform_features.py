@@ -634,7 +634,7 @@ def test_haversine(es):
 #     for primitive in [CumSum, CumMean, CumMax, CumMin]:
 #         check(primitive(es['log']['value'], es['log']['session_id']))
 
-#     check(CumCount(es['log']['id'], es['log']['session_id']))
+#     check(Cumft.Feature(es['log']['id'], parent_entity=es['log']['session_id']), primitive=Count())
 
 # # M TODOS
 # def test_cum_mean(es):
@@ -837,7 +837,7 @@ def test_overrides(es):
 
 
 def test_override_boolean(es):
-    count = Count(es['log']['id'], es['sessions'])
+    count = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count())
     count_lo = GreaterThan(count, 1)
     count_hi = LessThan(count, 10)
 
@@ -874,7 +874,7 @@ def test_override_cmp_from_variable(es):
 
 
 def test_override_cmp(es):
-    count = Count(es['log']['id'], es['sessions'])
+    count = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count())
     _sum = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum())
     gt_lo = count > 1
     gt_other = count > _sum
@@ -1014,7 +1014,7 @@ def test_init_and_name(es):
             raise Exception(
                 "Transform Primitive %s not tested" % transform_prim.name)
         for s in matching_inputs:
-            instance = transform_prim(*s)
+            instance = ft.Feature(s, primitive=transform_prim())
 
             # try to get name and calculate
             instance.get_name()

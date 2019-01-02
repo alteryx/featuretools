@@ -11,6 +11,7 @@ from featuretools.exceptions import NotEnoughData
 from featuretools.primitives import Count  # , SlidingMean
 from featuretools.utils.wrangle import _check_timedelta
 
+import featuretools as ft
 
 @pytest.fixture(scope='module')
 def es():
@@ -137,8 +138,8 @@ def test_string_timedelta_args():
 
 
 def test_feature_takes_timedelta_string(es):
-    feature = Count(es['log']['id'], es['customers'],
-                    use_previous="1 day")
+    feature = ft.Feature(es['log']['id'], parent_entity=es['customers'],
+                         use_previous="1 day", primitive=Count())
     assert feature.use_previous == Timedelta(1, 'd')
 
 

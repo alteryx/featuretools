@@ -146,35 +146,35 @@ class PercentTrue(AggregationPrimitive):
             return s.fillna(0).mean()
         return percent_true
 
+# M TODO
+# class NMostCommon(AggregationPrimitive):
+#     """Finds the N most common elements in a categorical feature."""
+#     name = "n_most_common"
+#     input_types = [Discrete]
+#     return_type = Discrete
+#     # max_stack_depth = 1
+#     stack_on = []
+#     stack_on_exclude = []
+#     expanding = True
 
-class NMostCommon(AggregationPrimitive):
-    """Finds the N most common elements in a categorical feature."""
-    name = "n_most_common"
-    input_types = [Discrete]
-    return_type = Discrete
-    # max_stack_depth = 1
-    stack_on = []
-    stack_on_exclude = []
-    expanding = True
+#     def __init__(self, base_feature, parent_entity, n=3):
+#         self.n = n
+#         super(NMostCommon, self).__init__(base_feature, parent_entity)
 
-    def __init__(self, base_feature, parent_entity, n=3):
-        self.n = n
-        super(NMostCommon, self).__init__(base_feature, parent_entity)
+#     @property
+#     def default_value(self):
+#         return np.zeros(self.n) * np.nan
 
-    @property
-    def default_value(self):
-        return np.zeros(self.n) * np.nan
+#     def get_expanded_names(self):
+#         names = []
+#         for i in range(1, self.n + 1):
+#             names.append(str(i) + self.get_name()[1:])
+#         return names
 
-    def get_expanded_names(self):
-        names = []
-        for i in range(1, self.n + 1):
-            names.append(str(i) + self.get_name()[1:])
-        return names
-
-    def get_function(self):
-        def pd_topn(x, n=self.n):
-            return np.array(x.value_counts()[:n].index)
-        return pd_topn
+#     def get_function(self):
+#         def pd_topn(x, n=self.n):
+#             return np.array(x.value_counts()[:n].index)
+#         return pd_topn
 
 
 class AvgTimeBetween(AggregationPrimitive):
@@ -322,12 +322,6 @@ class Trend(AggregationPrimitive):
     input_types = [Numeric, DatetimeTimeIndex]
     return_type = Numeric
 
-    def __init__(self, base_features, parent_entity, **kwargs):
-        self.value = base_features[0]
-        self.time_index = base_features[1]
-        super(Trend, self).__init__(base_features,
-                                    parent_entity,
-                                    **kwargs)
 
     def get_function(self):
         def pd_trend(y, x):

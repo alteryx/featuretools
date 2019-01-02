@@ -15,7 +15,7 @@ class AggregationPrimitive(PrimitiveBase):
 
     def generate_name(self, base_feature_names, child_entity_id,
                       parent_entity_id, where_str, use_prev_str):
-        base_features_str = base_feature_names[0]
+        base_features_str = ", ".join(base_feature_names)
         return u"%s(%s.%s%s%s)" % (self.name.upper(),
                                    child_entity_id,
                                    base_features_str,
@@ -111,38 +111,12 @@ def make_agg_primitive(function, input_types, return_type, name=None,
     if len(default_kwargs) > 0:
         new_class.default_kwargs = default_kwargs
 
-        def new_class_init(self, base_features, parent_entity,
-                           use_previous=None, where=None, **kwargs):
-            if not hasattr(base_features, '__iter__'):
-                base_features = [self._check_feature(base_features)]
-            else:
-                base_features = [self._check_feature(bf)
-                                 for bf in base_features]
-                msg = "all base features must share the same entity"
-                assert len(set([bf.entity for bf in base_features])) == 1, msg
-            self.base_features = base_features[:]
-
-            self.child_entity = base_features[0].entity
-
-            if where is not None:
-                self.where = self._check_feature(where)
-                msg = "Where feature must be defined on child entity {}"
-                msg = msg.format(self.child_entity.id)
-                assert self.where.entity.id == self.child_entity.id, msg
-
-            if use_previous:
-                assert self.child_entity.time_index is not None, (
-                    "Applying function that requires time index to entity that"
-                    " doesn't have one")
-
-            self.use_previous = use_previous
+        def new_class_init(self, **kwargs):
             self.kwargs = copy.deepcopy(self.default_kwargs)
             self.kwargs.update(kwargs)
             self.partial = functools.partial(function, **self.kwargs)
             self.partial.__name__ = name
 
-            super(AggregationPrimitive, self).__init__(parent_entity,
-                                                       self.base_features)
         new_class.__init__ = new_class_init
         new_class.get_function = lambda self: self.partial
     else:

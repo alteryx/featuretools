@@ -15,21 +15,20 @@ from featuretools.computational_backends.pandas_backend import PandasBackend
 from featuretools.primitives import (
     And,
     Count,
-    Equals,
+    Equal,
     GreaterThan,
     GreaterThanEqualTo,
-    IdentityFeature,
     LessThan,
     LessThanEqualTo,
     Mean,
     Min,
     Mode,
-    NMostCommon,
-    NotEquals,
+    # NMostCommon,
+    NotEqual,
     Sum,
     Trend
 )
-from featuretools.primitives.base import DirectFeature
+from featuretools.feature_base import DirectFeature, IdentityFeature
 
 
 @pytest.fixture(scope='module')

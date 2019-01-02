@@ -3,8 +3,9 @@ from pympler.asizeof import asizeof
 
 from ..testing_utils import make_ecommerce_entityset
 
+import featuretools as ft
 from featuretools.primitives import Last, Mode, Sum
-from featuretools.primitives.base import Feature, IdentityFeature
+from featuretools.feature_base import IdentityFeature, AggregationFeature
 from featuretools.variable_types import Categorical, Datetime, Id, Numeric
 
 
@@ -19,14 +20,14 @@ def es_numeric():
 
 
 def test_copy_features_does_not_copy_entityset(es):
-    agg = Sum(es['log']['value'], es['sessions'])
-    agg_where = Sum(es['log']['value'], es['sessions'],
-                    where=IdentityFeature(es['log']['value']) == 2)
-    agg_use_previous = Sum(es['log']['value'], es['sessions'],
-                           use_previous='4 days')
-    agg_use_previous_where = Sum(es['log']['value'], es['sessions'],
+    agg = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum())
+    agg_where = ft.Feature(es['log']['value'], parent_entity=es['sessions'],
+                    where=IdentityFeature(es['log']['value']) == 2, primitive=Sum())
+    agg_use_previous = ft.Feature(es['log']['value'], parent_entity=es['sessions'],
+                           use_previous='4 days', primitive=Sum())
+    agg_use_previous_where = ft.Feature(es['log']['value'], parent_entity=es['sessions'],
                                  where=IdentityFeature(es['log']['value']) == 2,
-                                 use_previous='4 days')
+                                 use_previous='4 days', primitive=Sum())
     features = [agg, agg_where, agg_use_previous, agg_use_previous_where]
     in_memory_size = asizeof(locals())
     copied = [f.copy() for f in features]
@@ -37,21 +38,21 @@ def test_copy_features_does_not_copy_entityset(es):
         assert f.entityset
         assert c.entityset
         assert id(f.entityset) == id(c.entityset)
-        if f.where:
+        if isinstance(f, AggregationFeature) and f.where:
             assert c.where
             assert id(f.where.entityset) == id(c.where.entityset)
         for bf, bf_c in zip(f.base_features, c.base_features):
             assert id(bf.entityset) == id(bf_c.entityset)
-            if bf.where:
+            if isinstance(bf, AggregationFeature) and bf.where:
                 assert bf_c.where
                 assert id(bf.where.entityset) == id(bf_c.where.entityset)
 
 
 def test_get_dependencies(es):
-    f = Feature(es['log']['value'])
-    agg1 = Sum(f, es['sessions'])
-    agg2 = Sum(agg1, es['customers'])
-    d1 = Feature(agg2, es['sessions'])
+    f = ft.Feature(es['log']['value'])
+    agg1 = ft.Feature(f, parent_entity=es['sessions'], primitive=Sum())
+    agg2 = ft.Feature(agg1, parent_entity=es['customers'], primitive=Sum())
+    d1 = ft.Feature(agg2, es['sessions'])
     shallow = d1.get_dependencies(deep=False, ignored=None)
     deep = d1.get_dependencies(deep=True, ignored=None)
     ignored = set([agg1.hash()])
@@ -63,12 +64,12 @@ def test_get_dependencies(es):
 
 def test_get_depth(es):
     es = make_ecommerce_entityset()
-    f = Feature(es['log']['value'])
-    g = Feature(es['log']['value'])
-    agg1 = Last(f, es['sessions'])
-    agg2 = Last(agg1, es['customers'])
-    d1 = Feature(agg2, es['sessions'])
-    d2 = Feature(d1, es['log'])
+    f = ft.Feature(es['log']['value'])
+    g = ft.Feature(es['log']['value'])
+    agg1 = ft.Feature(f, parent_entity=es['sessions'], primitive=Last())
+    agg2 = ft.Feature(agg1, parent_entity=es['customers'], primitive=Last())
+    d1 = ft.Feature(agg2, es['sessions'])
+    d2 = ft.Feature(d1, es['log'])
     assert d2.get_depth() == 4
     # Make sure this works if we pass in two of the same
     # feature. This came up when user supplied duplicates
@@ -82,42 +83,42 @@ def test_get_depth(es):
 
 
 def test_squared(es):
-    feature = Feature(es['log']['value'])
+    feature = ft.Feature(es['log']['value'])
     squared = feature * feature
-    assert len(squared.base_features) == 1
-    assert squared.base_features[0].hash() == feature.hash()
+    assert len(squared.base_features) == 2
+    assert squared.base_features[0].hash() == squared.base_features[1].hash()
 
 
 def test_return_type_inference(es):
-    mode = Mode(es["log"]["priority_level"], es["customers"])
+    mode = ft.Feature(es["log"]["priority_level"], parent_entity=es["customers"], primitive=Mode())
     assert mode.variable_type == es["log"]["priority_level"].__class__
 
 
 def test_return_type_inference_direct_feature(es):
-    mode = Mode(es["log"]["priority_level"], es["customers"])
-    mode_session = Feature(mode, es["sessions"])
+    mode = ft.Feature(es["log"]["priority_level"], parent_entity=es["customers"], primitive=Mode())
+    mode_session = ft.Feature(mode, es["sessions"])
     assert mode_session.variable_type == es["log"]["priority_level"].__class__
 
 
 def test_return_type_inference_datetime_time_index(es):
-    last = Last(es["log"]["datetime"], es["customers"])
+    last = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=Last())
     assert last.variable_type == Datetime
 
 
 def test_return_type_inference_numeric_time_index(es_numeric):
-    last = Last(es_numeric["log"]["datetime"], es_numeric["customers"])
+    last = ft.Feature(es_numeric["log"]["datetime"], parent_entity=es_numeric["customers"], primitive=Last())
     assert last.variable_type == Numeric
 
 
 def test_return_type_inference_id(es):
     # direct features should keep Id variable type
-    direct_id_feature = Feature(es["sessions"]["customer_id"], es["log"])
+    direct_id_feature = ft.Feature(es["sessions"]["customer_id"], es["log"])
     assert direct_id_feature.variable_type == Id
 
     # aggregations of Id variable types should get converted
-    mode = Mode(es["log"]["session_id"], es["customers"])
+    mode = ft.Feature(es["log"]["session_id"], parent_entity=es["customers"], primitive=Mode())
     assert mode.variable_type == Categorical
 
     # also test direct feature of aggregation
-    mode_direct = Feature(mode, es["sessions"])
+    mode_direct = ft.Feature(mode, es["sessions"])
     assert mode_direct.variable_type == Categorical
