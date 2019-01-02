@@ -93,17 +93,10 @@ def make_trans_primitive(function, input_types, return_type, name=None,
 
         def new_class_init(self, *args, **kwargs):
             self.kwargs = copy.deepcopy(self.default_kwargs)
-            self.base_features = [self._check_feature(f) for f in args]
-            if any(bf.expanding for bf in self.base_features):
-                self.expanding = True
-            assert len(set([f.entity for f in self.base_features])) == 1, \
-                "More than one entity for base features"
             self.kwargs.update(kwargs)
             self.partial = functools.partial(function, **self.kwargs)
             self.partial.__name__ = name
 
-            super(TransformPrimitive, self).__init__(
-                self.base_features[0].entity, self.base_features)
         new_class.__init__ = new_class_init
         new_class.get_function = lambda self: self.partial
     else:

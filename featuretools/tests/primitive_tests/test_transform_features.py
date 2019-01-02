@@ -56,6 +56,7 @@ import featuretools as ft
 from featuretools.primitives.base import (
     make_trans_primitive
 )
+
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
@@ -85,10 +86,10 @@ def test_make_trans_feat(es):
 def test_diff(es):
     value = ft.Feature(es['log']['value'])
     customer_id_feat = \
-        DirectFeature(es['sessions']['customer_id'],
+        ft.Feature(es['sessions']['customer_id'],
                       child_entity=es['log'])
-    diff1 = Diff(value, es['log']['session_id'])
-    diff2 = Diff(value, customer_id_feat)
+    diff1 = ft.Feature([value, es['log']['session_id']], primitive=Diff())
+    diff2 = ft.Feature([value, customer_id_feat], primitive=Diff())
 
     pandas_backend = PandasBackend(es, [diff1, diff2])
     df = pandas_backend.calculate_all_features(instance_ids=range(15),
@@ -114,7 +115,7 @@ def test_diff(es):
 
 
 def test_diff_single_value(es):
-    diff = Diff(es['stores']['num_square_feet'], es['stores'][u'région_id'])
+    diff = ft.Feature([es['stores']['num_square_feet'], es['stores'][u'région_id']], primitive=Diff())
     pandas_backend = PandasBackend(es, [diff])
     df = pandas_backend.calculate_all_features(instance_ids=[5],
                                                time_last=None)
@@ -144,7 +145,7 @@ def test_compare_of_identity(es):
 
 
 def test_compare_of_direct(es):
-    log_rating = DirectFeature(es['products']['rating'],
+    log_rating = ft.Feature(es['products']['rating'],
                                child_entity=es['log'])
     to_test = [(EqualScalar, [False, False, False, False]),
                (NotEqualScalar, [True, True, True, True]),
@@ -271,7 +272,7 @@ def test_arithmetic_of_identity(es):
 
     features = []
     for test in to_test:
-        features.append(test[0](logs['value'], logs['value_2']))
+        features.append(ft.Feature([logs['value'], logs['value_2']], primitive=test[0]))
 
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2, 3],
@@ -288,13 +289,10 @@ def test_arithmetic_of_identity(es):
 
 def test_arithmetic_of_direct(es):
     rating = es['products']['rating']
-    log_rating = DirectFeature(rating,
-                               child_entity=es['log'])
+    log_rating = ft.Feature(rating, entity=es['log'])
     customer_age = es['customers']['age']
-    session_age = DirectFeature(customer_age,
-                                child_entity=es['sessions'])
-    log_age = DirectFeature(session_age,
-                            child_entity=es['log'])
+    session_age = ft.Feature(customer_age, entity=es['sessions'])
+    log_age = ft.Feature(session_age, entity=es['log'])
 
     to_test = [(AddNumeric, [38, 37, 37.5, 37.5]),
                (SubtractNumeric, [28, 29, 28.5, 28.5]),
@@ -316,10 +314,8 @@ def test_arithmetic_of_direct(es):
 
 # P TODO: rewrite this  test
 def test_arithmetic_of_transform(es):
-    diff1 = Diff(ft.Feature(es['log']['value']),
-                 ft.Feature(es['log']['product_id']))
-    diff2 = Diff(ft.Feature(es['log']['value_2']),
-                 ft.Feature(es['log']['product_id']))
+    diff1 = ft.Feature([es['log']['value'], es['log']['product_id']], primitive=Diff())
+    diff2 = ft.Feature([es['log']['value_2'], es['log']['product_id']], primitive=Diff())
 
     to_test = [(AddNumeric, [np.nan, 14., -7., 3.]),
                (SubtractNumeric, [np.nan, 6., -3., 1.]),
@@ -328,7 +324,7 @@ def test_arithmetic_of_transform(es):
 
     features = []
     for test in to_test:
-        features.append(test[0](diff1, diff2))
+        features.append(ft.Feature([diff1, diff2], primitive=test[0]()))
 
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(instance_ids=[0, 2, 11, 13],
@@ -341,8 +337,7 @@ def test_arithmetic_of_transform(es):
 
 
 def test_not_feature(es):
-    likes_ice_cream = es['customers']['loves_ice_cream']
-    not_feat = ft.Feature(likes_ice_cream, primitive=Not())
+    not_feat = ft.Feature(es['customers']['loves_ice_cream'], primitive=Not())
     features = [not_feat]
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(instance_ids=[0, 1],
@@ -364,7 +359,7 @@ def test_arithmetic_of_agg(es):
 
     features = []
     for test in to_test:
-        features.append(test[0](count_customer, count_stores))
+        features.append(ft.Feature([count_customer, count_stores], primitive=test[0]()))
 
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(
@@ -405,7 +400,7 @@ def test_latlong(es):
 def test_haversine(es):
     log_latlong_feat = es['log']['latlong']
     log_latlong_feat2 = es['log']['latlong2']
-    haversine = ft.Feature([log_latlong_feat, log_latlong_feat2], primitve=Haversine())
+    haversine = ft.Feature([log_latlong_feat, log_latlong_feat2], primitive=Haversine())
     features = [haversine]
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(instance_ids=range(15),
@@ -751,10 +746,10 @@ def test_overrides(es):
     value = ft.Feature(es['log']['value'])
     value2 = ft.Feature(es['log']['value_2'])
 
-    feats = [Add, Subtract, Multiply, Divide]
+    feats = [AddNumeric, SubtractNumeric, MultiplyNumeric, DivideNumeric]
     compare_ops = [GreaterThan, LessThan, Equal, NotEqual,
                    GreaterThanEqualTo, LessThanEqualTo]
-    assert Negate(value).hash() == (-value).hash()
+    assert ft.Feature(value, primitive=Negate()).hash() == (-value).hash()
 
     compares = [(value, value),
                 (value, value2),
@@ -838,8 +833,8 @@ def test_overrides(es):
 
 def test_override_boolean(es):
     count = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count())
-    count_lo = GreaterThan(count, 1)
-    count_hi = LessThan(count, 10)
+    count_lo = ft.Feature(count,primitive=GreaterThanScalar(1))
+    count_hi = ft.Feature(count, primitive=LessThan(10))
 
     to_test = [[True, True, True],
                [True, True, False],
@@ -906,8 +901,7 @@ def test_override_cmp(es):
 
 
 def test_isin_feat(es):
-    isin = IsIn(es['log']['product_id'],
-                list_of_outputs=["toothpaste", "coke zero"])
+    isin = ft.Feature(es['log']['product_id'], primitive=IsIn(list_of_outputs=["toothpaste", "coke zero"]))
     features = [isin]
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(range(8), None)
@@ -942,8 +936,8 @@ def test_isin_feat_custom(es):
             list_of_outputs = []
         return pd.Series(array).isin(list_of_outputs)
 
-    def isin_generate_name(self):
-        return u"%s.isin(%s)" % (self.base_features[0].get_name(),
+    def isin_generate_name(self, base_features_names):
+        return u"%s.isin(%s)" % (base_features_names[0],
                                  str(self.kwargs['list_of_outputs']))
 
     IsIn = make_trans_primitive(
@@ -955,8 +949,7 @@ def test_isin_feat_custom(es):
         "in a list that is provided.",
         cls_attributes={"generate_name": isin_generate_name})
 
-    isin = IsIn(es['log']['product_id'],
-                list_of_outputs=["toothpaste", "coke zero"])
+    isin = ft.Feature(es['log']['product_id'], primitive=IsIn(list_of_outputs=["toothpaste", "coke zero"]))
     features = [isin]
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(range(8), None)
@@ -983,8 +976,8 @@ def test_isin_feat_custom(es):
 
 def test_isnull_feat(es):
     value = ft.Feature(es['log']['value'])
-    diff = Diff(value, es['log']['session_id'])
-    isnull = IsNull(diff)
+    diff = ft.Feature([value, es['log']['session_id']], primitive=Diff())
+    isnull = ft.Feature(diff, primitive=IsNull())
     features = [isnull]
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(range(15), None)
@@ -1172,71 +1165,70 @@ def test_two_kinds_of_dependents(es):
 #     v = df[like.get_name()].values.tolist()
 #     assert true == v
 
-# M TODO
-# def test_make_transform_restricts_time_keyword():
-#     make_trans_primitive(
-#         lambda x, time=False: x,
-#         [Datetime],
-#         Numeric,
-#         name="AllowedPrimitive",
-#         description="This primitive should be accepted",
-#         uses_calc_time=True)
+def test_make_transform_restricts_time_keyword():
+    make_trans_primitive(
+        lambda x, time=False: x,
+        [Datetime],
+        Numeric,
+        name="AllowedPrimitive",
+        description="This primitive should be accepted",
+        uses_calc_time=True)
 
-#     error_text = "'time' is a restricted keyword.  Please use a different keyword."
-#     with pytest.raises(ValueError, match=error_text):
-#         make_trans_primitive(
-#             lambda x, time=False: x,
-#             [Datetime],
-#             Numeric,
-#             name="BadPrimitive",
-#             description="This primitive should error")
+    error_text = "'time' is a restricted keyword.  Please use a different keyword."
+    with pytest.raises(ValueError, match=error_text):
+        make_trans_primitive(
+            lambda x, time=False: x,
+            [Datetime],
+            Numeric,
+            name="BadPrimitive",
+            description="This primitive should error")
 
-# M TODO
-# def test_make_transform_restricts_time_arg():
-#     make_trans_primitive(
-#         lambda time: time,
-#         [Datetime],
-#         Numeric,
-#         name="AllowedPrimitive",
-#         description="This primitive should be accepted",
-#         uses_calc_time=True)
 
-#     error_text = "'time' is a restricted keyword.  Please use a different keyword."
-#     with pytest.raises(ValueError, match=error_text):
-#         make_trans_primitive(
-#             lambda time: time,
-#             [Datetime],
-#             Numeric,
-#             name="BadPrimitive",
-#             description="This primitive should erorr")
+def test_make_transform_restricts_time_arg():
+    make_trans_primitive(
+        lambda time: time,
+        [Datetime],
+        Numeric,
+        name="AllowedPrimitive",
+        description="This primitive should be accepted",
+        uses_calc_time=True)
 
-# M TODO
-# def test_make_transform_sets_kwargs_correctly(es):
-#     def pd_is_in(array, list_of_outputs=None):
-#         if list_of_outputs is None:
-#             list_of_outputs = []
-#         return pd.Series(array).isin(list_of_outputs)
+    error_text = "'time' is a restricted keyword.  Please use a different keyword."
+    with pytest.raises(ValueError, match=error_text):
+        make_trans_primitive(
+            lambda time: time,
+            [Datetime],
+            Numeric,
+            name="BadPrimitive",
+            description="This primitive should erorr")
 
-#     def isin_generate_name(self):
-#         return u"%s.isin(%s)" % (self.base_features[0].get_name(),
-#                                  str(self.kwargs['list_of_outputs']))
 
-#     IsIn = make_trans_primitive(
-#         pd_is_in,
-#         [Variable],
-#         Boolean,
-#         name="is_in",
-#         description="For each value of the base feature, checks whether it is "
-#         "in a list that is provided.",
-#         cls_attributes={"generate_name": isin_generate_name})
+def test_make_transform_sets_kwargs_correctly(es):
+    def pd_is_in(array, list_of_outputs=None):
+        if list_of_outputs is None:
+            list_of_outputs = []
+        return pd.Series(array).isin(list_of_outputs)
 
-#     isin_1_list = ["toothpaste", "coke_zero"]
-#     isin_1_base_f = ft.Feature(es['log']['product_id'])
-#     isin_1 = IsIn(isin_1_base_f, list_of_outputs=isin_1_list)
-#     isin_2_list = ["coke_zero"]
-#     isin_2_base_f = ft.Feature(es['log']['session_id'])
-#     isin_2 = IsIn(isin_2_base_f, list_of_outputs=isin_2_list)
-#     assert isin_1_base_f == isin_1.base_features[0]
-#     assert isin_1_list == isin_1.kwargs['list_of_outputs']
-#     assert isin_2_base_f == isin_2.base_features[0]
-#     assert isin_2_list == isin_2.kwargs['list_of_outputs']
+    def isin_generate_name(self):
+        return u"%s.isin(%s)" % (self.base_features[0].get_name(),
+                                 str(self.kwargs['list_of_outputs']))
+
+    IsIn = make_trans_primitive(
+        pd_is_in,
+        [Variable],
+        Boolean,
+        name="is_in",
+        description="For each value of the base feature, checks whether it is "
+        "in a list that is provided.",
+        cls_attributes={"generate_name": isin_generate_name})
+
+    isin_1_list = ["toothpaste", "coke_zero"]
+    isin_1_base_f = ft.Feature(es['log']['product_id'])
+    isin_1 = ft.Feature(isin_1_base_f, primitive=IsIn(list_of_outputs=isin_1_list))
+    isin_2_list = ["coke_zero"]
+    isin_2_base_f = ft.Feature(es['log']['session_id'])
+    isin_2 = ft.Feature(isin_2_base_f, primitive=IsIn(list_of_outputs=isin_2_list))
+    assert isin_1_base_f == isin_1.base_features[0]
+    assert isin_1_list == isin_1.primitive.kwargs['list_of_outputs']
+    assert isin_2_base_f == isin_2.base_features[0]
+    assert isin_2_list == isin_2.primitive.kwargs['list_of_outputs']

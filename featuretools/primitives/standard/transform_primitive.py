@@ -336,7 +336,7 @@ class Not(TransformPrimitive):
     input_types = [Boolean]
     return_type = Boolean
 
-    def generate_name(self):
+    def generate_name(self, base_feature_names):
         return u"NOT({})".format(self.base_features[0].get_name())
 
     def get_function(self):
