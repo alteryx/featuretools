@@ -10,13 +10,7 @@ from featuretools.feature_base import (
     IdentityFeature,
     TransformFeature
 )
-from featuretools.primitives.api import (
-    BinaryPrimitive,
-    Compare,
-    Discrete,
-    Equals,
-    TimeSince
-)
+from featuretools.primitives.api import Discrete, TimeSince
 from featuretools.utils import is_string
 from featuretools.variable_types import Boolean, Categorical, Numeric, Ordinal
 
@@ -229,6 +223,8 @@ class DeepFeatureSynthesis(object):
                             if any(issubclass(f.variable_type, vt) for vt in variable_types)]
 
         def check_secondary_index(f):
+            # M TODO
+            pass
             secondary_time_index = self.es[self.target_entity_id].secondary_time_index
             for s_time_index, exclude in secondary_time_index.items():
                 if isinstance(f, IdentityFeature) and f.variable.id in exclude:
@@ -249,7 +245,7 @@ class DeepFeatureSynthesis(object):
                     f.variable.id == self.es[self.target_entity_id].index):
                 return False
 
-            if (isinstance(f, (IdentityFeature, BinaryPrimitive, Compare, TimeSince)) and
+            if (isinstance(f, (IdentityFeature, TimeSince)) and
                     not check_secondary_index(f)):
 
                 return False
@@ -474,7 +470,7 @@ class DeepFeatureSynthesis(object):
                 continue
 
             for val in variable.interesting_values:
-                self.where_clauses[entity.id].add(Equals(feat, val))
+                self.where_clauses[entity.id].add(feat == val)
 
     def _build_transform_features(self, all_features, entity, max_depth=0):
         """Creates trans_features for all the variables in an entity
@@ -510,7 +506,7 @@ class DeepFeatureSynthesis(object):
                                     commutative=trans_prim.commutative)
 
             for matching_input in matching_inputs:
-                new_f = TransformFeature(*matching_input, primitive=trans_prim())
+                new_f = TransformFeature(matching_input, primitive=trans_prim())
                 if new_f.expanding:
                     continue
 

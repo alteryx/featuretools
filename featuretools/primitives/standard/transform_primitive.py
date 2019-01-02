@@ -42,7 +42,7 @@ class Absolute(TransformPrimitive):
     return_type = Numeric
 
     def get_function(self):
-        return lambda array: np.absolute(array)
+        return np.absolute
 
 
 class TimeSincePrevious(TransformPrimitive):

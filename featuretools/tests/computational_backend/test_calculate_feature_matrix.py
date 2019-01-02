@@ -26,12 +26,12 @@ from featuretools.computational_backends.utils import (
     get_next_chunk,
     n_jobs_to_workers
 )
-from featuretools.primitives import Count, Max, Min, Percentile, Sum
-from featuretools.primitives.base import (
-    AggregationPrimitive,
+from featuretools.feature_base import (
+    AggregationFeature,
     DirectFeature,
     IdentityFeature
 )
+from featuretools.primitives import Count, Max, Min, Percentile, Sum
 
 
 @pytest.fixture(scope='module')
@@ -56,7 +56,7 @@ def test_calc_feature_matrix(entityset):
     cutoff_time = pd.DataFrame({'time': times, entityset['log'].index: instances})
     labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
 
-    property_feature = IdentityFeature(entityset['log']['value']) > 10
+    property_feature = ft.Feature(entityset['log']['value']) > 10
 
     feature_matrix = calculate_feature_matrix([property_feature],
                                               entityset,
@@ -121,7 +121,7 @@ def test_cfm_approximate_correct_ordering():
     flight_features = [feature for feature in features
                        if isinstance(feature, DirectFeature) and
                        isinstance(feature.base_features[0],
-                                  AggregationPrimitive)]
+                                  AggregationFeature)]
     property_feature = IdentityFeature(es['trips']['trip_id'])
     # direct_agg_feat = DirectFeature(Sum(es['trips']['trip_duration'],
     #                                     es['flights']),
@@ -149,8 +149,8 @@ def test_cfm_approximate_correct_ordering():
 
 def test_cfm_no_cutoff_time_index(entityset):
     es = entityset
-    agg_feat = Count(es['log']['id'], es['sessions'])
-    agg_feat4 = Sum(agg_feat, es['customers'])
+    agg_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count())
+    agg_feat4 = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Sum())
     dfeat = DirectFeature(agg_feat4, es['sessions'])
     cutoff_time = pd.DataFrame({
         'time': [datetime(2013, 4, 9, 10, 31, 19), datetime(2013, 4, 9, 11, 0, 0)],
@@ -186,7 +186,7 @@ def test_cfm_duplicated_index_in_cutoff_time(entityset):
              pd.datetime(2011, 4, 1), pd.datetime(2011, 5, 1)]
 
     instances = [1, 1, 2, 2]
-    property_feature = IdentityFeature(entityset['log']['value']) > 10
+    property_feature = ft.Feature(entityset['log']['value']) > 10
     cutoff_time = pd.DataFrame({'id': instances, 'time': times},
                                index=[1, 1, 1, 1])
 
@@ -206,7 +206,7 @@ def test_saveprogress(entityset):
                  [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
                  [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
-    property_feature = IdentityFeature(entityset['log']['value']) > 10
+    property_feature = ft.Feature(entityset['log']['value']) > 10
     save_progress = tempfile.mkdtemp()
     fm_save = calculate_feature_matrix([property_feature],
                                        entityset,
@@ -232,7 +232,7 @@ def test_saveprogress(entityset):
 
 
 def test_cutoff_time_correctly(entityset):
-    property_feature = Count(entityset['log']['id'], entityset['customers'])
+    property_feature = ft.Feature(entityset['log']['id'], parent_entity=entityset['customers'], primitive=Count())
     times = [datetime(2011, 4, 10), datetime(2011, 4, 11), datetime(2011, 4, 7)]
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 1, 2]})
     feature_matrix = calculate_feature_matrix([property_feature],
@@ -266,8 +266,8 @@ def test_cutoff_time_binning(entityset):
 
 
 def test_training_window(entityset):
-    property_feature = Count(entityset['log']['id'], entityset['customers'])
-    top_level_agg = Count(entityset['customers']['id'], entityset[u'régions'])
+    property_feature = ft.Feature(entityset['log']['id'], parent_entity=entityset['customers'], primitive=Count())
+    top_level_agg = ft.Feature(entityset['customers']['id'], parent_entity=entityset[u'régions'], primitive=Count())
 
     # make sure features that have a direct to a higher level agg
     # so we have multiple "filter eids" in get_pandas_data_slice,
@@ -337,8 +337,8 @@ def test_training_window_recent_time_index(entityset):
                                        recalculate_last_time_indexes=False)
     entityset.add_last_time_indexes()
 
-    property_feature = Count(entityset['log']['id'], entityset['customers'])
-    top_level_agg = Count(entityset['customers']['id'], entityset[u'régions'])
+    property_feature = ft.Feature(entityset['log']['id'], parent_entity=entityset['customers'], primitive=Count())
+    top_level_agg = ft.Feature(entityset['customers']['id'], parent_entity=entityset[u'régions'], primitive=Count())
     dagg = DirectFeature(top_level_agg, entityset['customers'])
     instance_ids = [0, 1, 2, 3]
     times = [datetime(2011, 4, 9, 12, 31), datetime(2011, 4, 10, 11),
@@ -359,8 +359,8 @@ def test_training_window_recent_time_index(entityset):
 
 def test_approximate_multiple_instances_per_cutoff_time(entityset):
     es = entityset
-    agg_feat = Count(es['log']['id'], es['sessions'])
-    agg_feat2 = Sum(agg_feat, es['customers'])
+    agg_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count())
+    agg_feat2 = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Sum())
     dfeat = DirectFeature(agg_feat2, es['sessions'])
     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 2]})
@@ -375,8 +375,8 @@ def test_approximate_multiple_instances_per_cutoff_time(entityset):
 
 def test_approximate_dfeat_of_agg_on_target(entityset):
     es = entityset
-    agg_feat = Count(es['log']['id'], es['sessions'])
-    agg_feat2 = Sum(agg_feat, es['customers'])
+    agg_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count())
+    agg_feat2 = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Sum())
     dfeat = DirectFeature(agg_feat2, es['sessions'])
     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 2]})
@@ -391,9 +391,9 @@ def test_approximate_dfeat_of_agg_on_target(entityset):
 
 def test_approximate_dfeat_of_need_all_values(entityset):
     es = entityset
-    p = Percentile(es['log']['value'])
-    agg_feat = Sum(p, es['sessions'])
-    agg_feat2 = Sum(agg_feat, es['customers'])
+    p = ft.Feature(es['log']['value'], primitive=Percentile())
+    agg_feat = ft.Feature(p, parent_entity=es['sessions'], primitive=Sum())
+    agg_feat2 = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Sum())
     dfeat = DirectFeature(agg_feat2, es['sessions'])
     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 2]})
@@ -426,12 +426,12 @@ def test_approximate_dfeat_of_need_all_values(entityset):
 
 def test_uses_full_entity_feat_of_approximate(entityset):
     es = entityset
-    agg_feat = Sum(es['log']['value'], es['sessions'])
-    agg_feat2 = Sum(agg_feat, es['customers'])
-    agg_feat3 = Max(agg_feat, es['customers'])
+    agg_feat = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum())
+    agg_feat2 = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Sum())
+    agg_feat3 = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Max())
     dfeat = DirectFeature(agg_feat2, es['sessions'])
     dfeat2 = DirectFeature(agg_feat3, es['sessions'])
-    p = Percentile(dfeat)
+    p = ft.Feature(dfeat, primitive=Percentile())
     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 2]})
     # only dfeat2 should be approximated
@@ -474,8 +474,8 @@ def test_uses_full_entity_feat_of_approximate(entityset):
 
 def test_approximate_dfeat_of_dfeat_of_agg_on_target(entityset):
     es = entityset
-    agg_feat = Count(es['log']['id'], es['sessions'])
-    agg_feat2 = Sum(agg_feat, es['customers'])
+    agg_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count())
+    agg_feat2 = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Sum())
     dfeat = DirectFeature(agg_feat2, es['log'])
     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 2]})
@@ -489,8 +489,8 @@ def test_approximate_dfeat_of_dfeat_of_agg_on_target(entityset):
 def test_empty_path_approximate_full(entityset):
     es = copy.deepcopy(entityset)
     es['sessions'].df['customer_id'] = [np.nan, np.nan, np.nan, 1, 1, 2]
-    agg_feat = Count(es['log']['id'], es['sessions'])
-    agg_feat2 = Sum(agg_feat, es['customers'])
+    agg_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count())
+    agg_feat2 = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Sum())
     dfeat = DirectFeature(agg_feat2, es['sessions'])
     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 2]})
@@ -507,8 +507,8 @@ def test_empty_path_approximate_full(entityset):
 # def test_empty_path_approximate_partial(entityset):
 #     es = copy.deepcopy(entityset)
 #     es['sessions'].df['customer_id'] = pd.Categorical([0, 0, np.nan, 1, 1, 2])
-#     agg_feat = Count(es['log']['id'], es['sessions'])
-#     agg_feat2 = Sum(agg_feat, es['customers'])
+#     agg_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count())
+#     agg_feat2 = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Sum())
 #     dfeat = DirectFeature(agg_feat2, es['sessions'])
 #     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
 #     cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 2]})
@@ -526,8 +526,8 @@ def test_approx_base_feature_is_also_first_class_feature(entityset):
     es = entityset
     log_to_products = DirectFeature(es['products']['rating'], es['log'])
     # This should still be computed properly
-    agg_feat = Min(log_to_products, es['sessions'])
-    customer_agg_feat = Sum(agg_feat, es['customers'])
+    agg_feat = ft.Feature(log_to_products, parent_entity=es['sessions'], primitive=Min())
+    customer_agg_feat = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Sum())
     # This is to be approximated
     sess_to_cust = DirectFeature(customer_agg_feat, es['sessions'])
     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
@@ -544,8 +544,8 @@ def test_approx_base_feature_is_also_first_class_feature(entityset):
 
 def test_approximate_time_split_returns_the_same_result(entityset):
     es = entityset
-    agg_feat = Count(es['log']['id'], es['sessions'])
-    agg_feat2 = Sum(agg_feat, es['customers'])
+    agg_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count())
+    agg_feat2 = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Sum())
     dfeat = DirectFeature(agg_feat2, es['sessions'])
 
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:07:30'),
@@ -579,7 +579,7 @@ def test_approximate_time_split_returns_the_same_result(entityset):
 
 def test_approximate_returns_correct_empty_default_values(entityset):
     es = entityset
-    agg_feat = Count(es['log']['id'], es['customers'])
+    agg_feat = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count())
     dfeat = DirectFeature(agg_feat, es['sessions'])
 
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-08 11:00:00'),
@@ -595,12 +595,12 @@ def test_approximate_returns_correct_empty_default_values(entityset):
 
 # def test_approximate_deep_recurse(entityset):
     # es = entityset
-    # agg_feat = Count(es['customers']['id'], es[u'régions'])
+    # agg_feat = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count())
     # dfeat1 = DirectFeature(agg_feat, es['sessions'])
     # agg_feat2 = Sum(dfeat1, es['customers'])
     # dfeat2 = DirectFeature(agg_feat2, es['sessions'])
 
-    # agg_feat3 = Count(es['log']['id'], es['products'])
+    # agg_feat3 = ft.Feature(es['log']['id'], parent_entity=es['products'], primitive=Count())
     # dfeat3 = DirectFeature(agg_feat3, es['log'])
     # agg_feat4 = Sum(dfeat3, es['sessions'])
 
@@ -615,9 +615,9 @@ def test_approximate_returns_correct_empty_default_values(entityset):
 
 def test_approximate_child_aggs_handled_correctly(entityset):
     es = entityset
-    agg_feat = Count(es['customers']['id'], es[u'régions'])
+    agg_feat = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count())
     dfeat = DirectFeature(agg_feat, es['customers'])
-    agg_feat_2 = Sum(es['log']['value'], es['customers'])
+    agg_feat_2 = ft.Feature(es['log']['value'], parent_entity=es['customers'], primitive=Sum())
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-08 10:30:00'),
                                        pd.Timestamp('2011-04-09 10:30:06')],
                               'instance_id': [0, 0]})
@@ -637,7 +637,7 @@ def test_approximate_child_aggs_handled_correctly(entityset):
 def test_cutoff_time_naming(entityset):
     es = entityset
 
-    agg_feat = Count(es['customers']['id'], es[u'régions'])
+    agg_feat = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count())
     dfeat = DirectFeature(agg_feat, es['customers'])
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-08 10:30:00'),
                                        pd.Timestamp('2011-04-09 10:30:06')],
@@ -661,7 +661,7 @@ def test_cutoff_time_naming(entityset):
 def test_cutoff_time_extra_columns(entityset):
     es = entityset
 
-    agg_feat = Count(es['customers']['id'], es[u'régions'])
+    agg_feat = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count())
     dfeat = DirectFeature(agg_feat, es['customers'])
 
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),
@@ -691,9 +691,9 @@ def test_cutoff_time_extra_columns(entityset):
 def test_cfm_returns_original_time_indexes(entityset):
     es = entityset
 
-    agg_feat = Count(es['customers']['id'], es[u'régions'])
+    agg_feat = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count())
     dfeat = DirectFeature(agg_feat, es['customers'])
-    agg_feat_2 = Count(es['sessions']['id'], es['customers'])
+    agg_feat_2 = ft.Feature(es['sessions']['id'], parent_entity=es['customers'], primitive=Count())
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),
                                        pd.Timestamp('2011-04-09 10:30:03'),
                                        pd.Timestamp('2011-04-08 10:30:00')],
@@ -1135,7 +1135,7 @@ def test_datetime_index_mixed_cutoff(entityset):
 def test_string_time_values_in_cutoff_time(entityset):
     times = ['2011-04-09 10:31:27', '2011-04-09 10:30:18']
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 0]})
-    agg_feature = Sum(entityset['log']['value'], entityset['customers'])
+    agg_feature = ft.Feature(entityset['log']['value'], parent_entity=entityset['customers'], primitive=Sum())
 
     error_text = 'cutoff_time times must be.*try casting via.*'
     with pytest.raises(TypeError, match=error_text):
@@ -1147,9 +1147,9 @@ def test_no_data_for_cutoff_time():
     cutoff_times = pd.DataFrame({"customer_id": [4],
                                  "time": pd.Timestamp('2011-04-08 20:08:13')})
 
-    trans_per_session = Count(es["transactions"]["transaction_id"], es["sessions"])
-    trans_per_customer = Count(es["transactions"]["transaction_id"], es["customers"])
-    features = [trans_per_customer, Max(trans_per_session, es["customers"])]
+    trans_per_session = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["sessions"], primitive=Count())
+    trans_per_customer = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["customers"], primitive=Count())
+    features = [trans_per_customer, ft.Feature(trans_per_session, parent_entity=es["customers"], primitive=Max())]
 
     fm = ft.calculate_feature_matrix(features, entityset=es, cutoff_time=cutoff_times)
 

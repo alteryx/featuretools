@@ -1,14 +1,16 @@
-from featuretools.variable_types import Variable
+from featuretools import primitives
 from featuretools.primitives.base import PrimitiveBase
 from featuretools.variable_types import (
     Categorical,
     Datetime,
     DatetimeTimeIndex,
+    Discrete,
     Id,
     Numeric,
     NumericTimeIndex,
     Variable
 )
+
 
 class FeatureBase(object):
     _name = None
@@ -35,6 +37,7 @@ class FeatureBase(object):
             return IdentityFeature(feature)
         elif isinstance(feature, FeatureBase):
             return feature
+
         raise Exception("Not a feature")
 
 
@@ -201,6 +204,147 @@ class FeatureBase(object):
     def default_value(self):
         return self.primitive.default_value
 
+
+    def _handle_binary_comparision(self, other, Primitive, PrimitiveScalar):
+        if isinstance(other, FeatureBase):
+            return Feature([self, other], primitive=Primitive())
+
+        return Feature([self], primitive=PrimitiveScalar(other))
+
+
+
+    def __eq__(self, other):
+        """Compares to other by equality"""
+        return self._handle_binary_comparision(other, primitives.Equal, primitives.EqualScalar)
+
+    def __ne__(self, other):
+        """Compares to other by non-equality"""
+        return self._handle_binary_comparision(other, primitives.NotEqual, primitives.NotEqualScalar)
+
+    def __gt__(self, other):
+        """Compares if greater than other"""
+        return self._handle_binary_comparision(other, primitives.GreaterThan, primitives.GreaterThanScalar)
+
+    def __ge__(self, other):
+        """Compares if greater than or equal to other
+
+        See also:
+            :meth:`PrimitiveBase.greater_than_equal_to`
+        """
+        return self._handle_binary_comparision(other, primitives.GreaterThanEqualTo, primitives.GreaterThanEqualToScalar)
+
+    def __lt__(self, other):
+        """Compares if less than other
+
+        See also:
+            :meth:`PrimitiveBase.less_than`
+        """
+        return self._handle_binary_comparision(other, primitives.LessThanEqualTo, primitives.LessThanEqualToScalar)
+
+    def __le__(self, other):
+        """Compares if less than or equal to other
+
+        See also:
+            :meth:`PrimitiveBase.less_than_equal_to`
+        """
+        return self._handle_binary_comparision(other, primitives.LessThanEqualTo, primitives.LessThanEqualToScalar)
+
+    def __add__(self, other):
+        """Add other"""
+        return self._handle_binary_comparision(other, primitives.AddNumeric, primitives.AddNumericScalar)
+
+    def __radd__(self, other):
+        return self.__add__(other)
+
+    def __sub__(self, other):
+        """Subtract other"""
+        return self._handle_binary_comparision(other, primitives.SubtractNumeric, primitives.SubtractNumericScalar)
+
+    def __rsub__(self, other):
+        # TODO
+        pass
+
+    def __div__(self, other):
+        """Divide by other
+
+        See also:
+            :meth:`PrimitiveBase.divide`
+        """
+        return self._handle_binary_comparision(other, primitives.DivideNumeric, primitives.DivideNumericScalar)
+
+    def __truediv__(self, other):
+        return self.__div__(other)
+
+    # todo
+    # def __rtruediv__(self, other):
+        # pass
+    # def __rdiv__(self, other):
+        # pass
+
+    def __mul__(self, other):
+        """Multiply by other"""
+        return self._handle_binary_comparision(other, primitives.MultiplyNumeric, primitives.MultiplyNumericScalar)
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    def __mod__(self, other):
+        """Take modulus of other
+
+        See also:
+            :meth:`PrimitiveBase.modulo`
+        """
+        return Feature([self, other], primitive=primitives.Mod())
+
+    def __and__(self, other):
+        return self.AND(other)
+
+    def __rand__(self, other):
+        return Feature([other, self], primitive=primitives.And())
+
+    def __or__(self, other):
+        return self.OR(other)
+
+    def __ror__(self, other):
+        return Feature([other, self], primitive=primitives.Or())
+
+    def __not__(self, other):
+        return self.NOT(other)
+
+    def __abs__(self):
+        return Feature([self], primitive=primitives.Absolute())
+
+    def __neg__(self):
+        return Feature([self], primitive=primitives.Negate())
+
+    def AND(self, other_feature):
+        """Logical AND with other_feature"""
+        return Feature([self, other_feature], primitive=primitives.And())
+
+    def OR(self, other_feature):
+        """Logical OR with other_feature"""
+        return Feature([self, other_feature], primitive=primitives.Or())
+
+    # M TODO
+    def NOT(self):
+        """Creates inverse of feature"""
+        if isinstance(self, Compare):
+            return self.invert()
+        return Feature([self], primitive=primitives.Not())
+
+    def LIKE(self, like_string, case_sensitive=False):
+        return Feature([self, like_string], primitive=primitives.Like(case_sensitive=case_sensitive))
+
+    def isin(self, list_of_output):
+        return Feature([self], primitive=primitives.IsIn(list_of_outputs=list_of_output))
+
+    def is_null(self):
+        """Compares feature to null by equality"""
+        return Feature([self], primitive=primitives.IsNull())
+
+    def __invert__(self):
+        return self.NOT()
+
 class IdentityFeature(FeatureBase):
     """Feature for entity that is equivalent to underlying variable"""
 
@@ -210,7 +354,6 @@ class IdentityFeature(FeatureBase):
         entity_id = variable.entity_id
         self.variable = variable.entityset.metadata[entity_id][variable.id]
         self.return_type = type(variable)
-        self.base_feature = None
         super(IdentityFeature, self).__init__(variable.entity, [], primitive=PrimitiveBase())
 
     def generate_name(self):
@@ -231,11 +374,11 @@ class DirectFeature(FeatureBase):
     return_type = None
 
     def __init__(self, base_feature, child_entity):
-        self.primitive = PrimitiveBase() # TODO
         base_feature = self._check_feature(base_feature)
         if base_feature.expanding:
             self.expanding = True
 
+        # M TODO what does this do?
         path = child_entity.entityset.find_forward_path(child_entity.id, base_feature.entity.id)
         if len(path) > 1:
             parent_entity_id = path[1].child_entity.id
@@ -245,20 +388,19 @@ class DirectFeature(FeatureBase):
             parent_feature = base_feature
 
         self.parent_entity = parent_feature.entity
-        self._variable_type = parent_feature.variable_type
-        super(DirectFeature, self).__init__(child_entity, [parent_feature])
+        super(DirectFeature, self).__init__(child_entity, [parent_feature], primitive=PrimitiveBase())
 
     @property
     def default_value(self):
         return self.base_features[0].default_value
 
-    @property
-    def variable(self):
-        return getattr(self.base_features[0], 'variable', None)
+    # @property
+    # def variable(self):
+    #     return self.base_features[0]
 
     @property
     def variable_type(self):
-        return type(self.variable)
+        return self.base_features[0].variable_type
 
     def generate_name(self):
         return u"%s.%s" % (self.parent_entity.id,
@@ -278,13 +420,13 @@ class AggregationFeature(FeatureBase):
                  where=None, primitive=None):
         # Any edits made to this method should also be made to the
         # new_class_init method in make_agg_primitive
-        if not hasattr(base_features, '__iter__'):
-            base_features = [self._check_feature(base_features)]
-        else:
+        if hasattr(base_features, '__iter__'):
             base_features = [self._check_feature(bf) for bf in base_features]
             msg = "all base features must share the same entity"
             assert len(set([bf.entity for bf in base_features])) == 1, msg
-        self.base_features = base_features[:]
+        else:
+            base_features = [self._check_feature(base_features)]
+
 
         self.child_entity = base_features[0].entity
         self.parent_entity = parent_entity
@@ -301,9 +443,9 @@ class AggregationFeature(FeatureBase):
                 "doesn't have one")
 
             self.use_previous = _check_timedelta(self.use_previous)
-            assert len(self.base_features) > 0
-            time_index = self.base_features[0].entity.time_index
-            time_col = self.base_features[0].entity[time_index]
+            assert len(base_features) > 0
+            time_index = base_features[0].entity.time_index
+            time_col = base_features[0].entity[time_index]
             assert time_index is not None, ("Use previous can only be defined "
                                             "on entities with a time index")
             assert _check_time_against_column(self.use_previous, time_col)
@@ -311,7 +453,7 @@ class AggregationFeature(FeatureBase):
         self.use_previous = use_previous
 
         super(AggregationFeature, self).__init__(parent_entity,
-                                                 self.base_features,
+                                                 base_features,
                                                  primitive=primitive)
 
     def _where_str(self):
@@ -336,16 +478,49 @@ class AggregationFeature(FeatureBase):
                                             use_prev_str=self._use_prev_str())
 
 class TransformFeature(FeatureBase):
-    def __init__(self, *base_features, primitive=None):
+    def __init__(self, base_features, primitive=None):
         # Any edits made to this method should also be made to the
         # new_class_init method in make_trans_primitive
-        self.base_features = [self._check_feature(f) for f in base_features]
-        if any(bf.expanding for bf in self.base_features):
+        if hasattr(base_features, '__iter__'):
+            base_features = [self._check_feature(bf) for bf in base_features]
+            msg = "all base features must share the same entity"
+            assert len(set([bf.entity for bf in base_features])) == 1, msg
+        else:
+            base_features = [self._check_feature(base_features)]
+
+        if any(bf.expanding for bf in base_features):
             self.expanding = True
-        assert len(set([f.entity for f in self.base_features])) == 1, \
+
+        base_entity = set([f.entity for f in base_features])
+        assert len(base_entity) == 1, \
             "More than one entity for base features"
-        super(TransformFeature, self).__init__(self.base_features[0].entity,
-                                               self.base_features, primitive=primitive)
+        super(TransformFeature, self).__init__(list(base_entity)[0],
+                                               base_features, primitive=primitive)
 
     def generate_name(self):
         return self.primitive.generate_name(base_feature_names=[bf.get_name() for bf in self.base_features])
+
+
+
+class Feature(object):
+    """
+    Alias to create feature
+    """
+
+    # def __new__(self, feature_or_var, entity=None):
+    def __new__(self, base, entity=None,
+                parent_entity=None, primitive=None, use_previous=None, where=None):
+
+        # either direct or indentity
+        if primitive is None and entity is None:
+            return IdentityFeature(base)
+        elif primitive is None and entity is not None:
+            return DirectFeature(base, entity)
+        elif primitive is not None and parent_entity is not None:
+            return AggregationFeature(base, parent_entity=parent_entity,
+                                      use_previous=use_previous, where=where,
+                                      primitive=primitive)
+        elif primitive is not None:
+            return TransformFeature(base, primitive=primitive)
+
+        raise Expection("Unrecognized feature initialization")

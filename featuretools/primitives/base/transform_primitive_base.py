@@ -8,8 +8,6 @@ from .utils import inspect_function_args
 class TransformPrimitive(PrimitiveBase):
     """Feature for entity that is a based off one or more other features
         in that entity."""
-    rolling_function = False
-
     # (bool) If True, feature function depends on all values of entity
     #   (and will receive these values as input, regardless of specified instance ids)
     uses_full_entity = False
@@ -19,10 +17,6 @@ class TransformPrimitive(PrimitiveBase):
         name += u", ".join(base_feature_names)
         name += u")"
         return name
-
-    @property
-    def default_value(self):
-        return self.base_features[0].default_value
 
 
 def make_trans_primitive(function, input_types, return_type, name=None,
