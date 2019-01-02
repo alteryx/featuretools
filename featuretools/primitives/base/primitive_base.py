@@ -1,16 +1,5 @@
 from __future__ import absolute_import
-
-import copy
-import logging
-from builtins import zip
-
 import numpy as np
-
-from featuretools.entityset import Entity, EntitySet
-from featuretools.utils.wrangle import (
-    _check_time_against_column,
-    _check_timedelta
-)
 
 
 class PrimitiveBase(object):

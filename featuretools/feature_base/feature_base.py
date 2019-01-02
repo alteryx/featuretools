@@ -1,10 +1,18 @@
 from featuretools import primitives
 from featuretools.primitives.base import PrimitiveBase
+import copy
+from builtins import zip
+
+from featuretools.entityset import Entity, EntitySet
+from featuretools.utils.wrangle import (
+    _check_time_against_column,
+    _check_timedelta
+)
+
 from featuretools.variable_types import (
     Categorical,
     Datetime,
     DatetimeTimeIndex,
-    Discrete,
     Id,
     Numeric,
     NumericTimeIndex,
@@ -39,7 +47,6 @@ class FeatureBase(object):
             return feature
 
         raise Exception("Not a feature")
-
 
     def rename(self, name):
         """Rename Feature, returns copy"""
@@ -204,14 +211,11 @@ class FeatureBase(object):
     def default_value(self):
         return self.primitive.default_value
 
-
     def _handle_binary_comparision(self, other, Primitive, PrimitiveScalar):
         if isinstance(other, FeatureBase):
             return Feature([self, other], primitive=Primitive())
 
         return Feature([self], primitive=PrimitiveScalar(other))
-
-
 
     def __eq__(self, other):
         """Compares to other by equality"""
@@ -325,11 +329,8 @@ class FeatureBase(object):
         """Logical OR with other_feature"""
         return Feature([self, other_feature], primitive=primitives.Or())
 
-    # M TODO
     def NOT(self):
         """Creates inverse of feature"""
-        if isinstance(self, Compare):
-            return self.invert()
         return Feature([self], primitive=primitives.Not())
 
     def LIKE(self, like_string, case_sensitive=False):
@@ -344,6 +345,7 @@ class FeatureBase(object):
 
     def __invert__(self):
         return self.NOT()
+
 
 class IdentityFeature(FeatureBase):
     """Feature for entity that is equivalent to underlying variable"""
@@ -427,7 +429,6 @@ class AggregationFeature(FeatureBase):
         else:
             base_features = [self._check_feature(base_features)]
 
-
         self.child_entity = base_features[0].entity
         self.parent_entity = parent_entity
 
@@ -477,6 +478,7 @@ class AggregationFeature(FeatureBase):
                                             where_str=self._where_str(),
                                             use_prev_str=self._use_prev_str())
 
+
 class TransformFeature(FeatureBase):
     def __init__(self, base_features, primitive=None):
         # Any edits made to this method should also be made to the
@@ -499,7 +501,6 @@ class TransformFeature(FeatureBase):
 
     def generate_name(self):
         return self.primitive.generate_name(base_feature_names=[bf.get_name() for bf in self.base_features])
-
 
 
 class Feature(object):

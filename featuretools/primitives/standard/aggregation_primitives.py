@@ -78,7 +78,7 @@ class Min(AggregationPrimitive):
     name = "min"
     input_types = [Numeric]
     return_type = Numeric
-    stack_on_self=False
+    stack_on_self = False
 
     def get_function(self):
         return np.min

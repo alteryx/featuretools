@@ -1,17 +1,13 @@
-import operator
 from builtins import str
 
 import numpy as np
 
-from ..base.primitive_base import PrimitiveBase
 from ..base.transform_primitive_base import TransformPrimitive
-from .utils import apply_dual_op_from_feat
-
 from featuretools.variable_types import Boolean, Numeric
 
 
 class GreaterThan(TransformPrimitive):
-    name="greater_than"
+    name = "greater_than"
     input_types = [Numeric, Numeric]
     return_type = Boolean
 
@@ -23,7 +19,7 @@ class GreaterThan(TransformPrimitive):
 
 
 class GreaterThanScalar(TransformPrimitive):
-    name="greater_than_scalar"
+    name = "greater_than_scalar"
     input_types = [Numeric]
     return_type = Boolean
 
@@ -40,7 +36,7 @@ class GreaterThanScalar(TransformPrimitive):
 
 
 class GreaterThanEqualTo(TransformPrimitive):
-    name="greater_than_equal_to"
+    name = "greater_than_equal_to"
     input_types = [Numeric, Numeric]
     return_type = Boolean
 
@@ -52,7 +48,7 @@ class GreaterThanEqualTo(TransformPrimitive):
 
 
 class GreaterThanEqualToScalar(TransformPrimitive):
-    name="greater_than_equal_to_scalar"
+    name = "greater_than_equal_to_scalar"
     input_types = [Numeric]
     return_type = Boolean
 
@@ -69,7 +65,7 @@ class GreaterThanEqualToScalar(TransformPrimitive):
 
 
 class LessThan(TransformPrimitive):
-    name="less_than"
+    name = "less_than"
     input_types = [Numeric, Numeric]
     return_type = Boolean
 
@@ -81,7 +77,7 @@ class LessThan(TransformPrimitive):
 
 
 class LessThanScalar(TransformPrimitive):
-    name="less_than_scalar"
+    name = "less_than_scalar"
     input_types = [Numeric]
     return_type = Boolean
 
@@ -98,7 +94,7 @@ class LessThanScalar(TransformPrimitive):
 
 
 class LessThanEqualTo(TransformPrimitive):
-    name="less_than_equal_to"
+    name = "less_than_equal_to"
     input_types = [Numeric, Numeric]
     return_type = Boolean
 
@@ -110,7 +106,7 @@ class LessThanEqualTo(TransformPrimitive):
 
 
 class LessThanEqualToScalar(TransformPrimitive):
-    name="less_than_equal_to_scalar"
+    name = "less_than_equal_to_scalar"
     input_types = [Numeric]
     return_type = Boolean
 
@@ -127,7 +123,7 @@ class LessThanEqualToScalar(TransformPrimitive):
 
 
 class Equal(TransformPrimitive):
-    name="equal"
+    name = "equal"
     input_types = [Numeric, Numeric]
     return_type = Boolean
     commutative = True
@@ -140,11 +136,10 @@ class Equal(TransformPrimitive):
 
 
 class EqualScalar(TransformPrimitive):
-    name="equal_scalar"
+    name = "equal_scalar"
     input_types = [Numeric]
     return_type = Boolean
     commutative = True
-
 
     def __init__(self, value):
         self.value = value
@@ -159,7 +154,7 @@ class EqualScalar(TransformPrimitive):
 
 
 class NotEqual(TransformPrimitive):
-    name="not_equal"
+    name = "not_equal"
     input_types = [Numeric, Numeric]
     return_type = Boolean
     commutative = True
@@ -172,7 +167,7 @@ class NotEqual(TransformPrimitive):
 
 
 class NotEqualScalar(TransformPrimitive):
-    name="not_equal_scalar"
+    name = "not_equal_scalar"
     input_types = [Numeric]
     return_type = Boolean
     commutative = True
@@ -183,14 +178,14 @@ class NotEqualScalar(TransformPrimitive):
     def get_function(self):
         def not_equal_scalar(vals):
             return vals != self.value
-        return equal_scalar
+        return not_equal_scalar
 
     def generate_name(self, base_feature_names):
         return "%s != %s" % (base_feature_names[0], str(self.value))
 
 
 class AddNumeric(TransformPrimitive):
-    name="add_numeric"
+    name = "add_numeric"
     input_types = [Numeric, Numeric]
     return_type = Numeric
     commutative = True
@@ -203,7 +198,7 @@ class AddNumeric(TransformPrimitive):
 
 
 class AddNumericScalar(TransformPrimitive):
-    name="add_numeric_scalar"
+    name = "add_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
     commutative = True
@@ -218,7 +213,7 @@ class AddNumericScalar(TransformPrimitive):
 
 
 class SubtractNumeric(TransformPrimitive):
-    name="subtract_numeric"
+    name = "subtract_numeric"
     input_types = [Numeric, Numeric]
     return_type = Numeric
     commutative = True
@@ -231,7 +226,7 @@ class SubtractNumeric(TransformPrimitive):
 
 
 class SubtractNumericScalar(TransformPrimitive):
-    name="subtract_numeric_scalar"
+    name = "subtract_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
     commutative = True
@@ -246,7 +241,7 @@ class SubtractNumericScalar(TransformPrimitive):
 
 
 class MultiplyNumeric(TransformPrimitive):
-    name="multiply_numeric"
+    name = "multiply_numeric"
     input_types = [Numeric, Numeric]
     return_type = Numeric
     commutative = True
@@ -259,7 +254,7 @@ class MultiplyNumeric(TransformPrimitive):
 
 
 class MultiplyNumericScalar(TransformPrimitive):
-    name="multiply_numeric_scalar"
+    name = "multiply_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
     commutative = True
@@ -274,7 +269,7 @@ class MultiplyNumericScalar(TransformPrimitive):
 
 
 class DivideNumeric(TransformPrimitive):
-    name="divide_numeric"
+    name = "divide_numeric"
     input_types = [Numeric, Numeric]
     return_type = Numeric
 
@@ -286,7 +281,7 @@ class DivideNumeric(TransformPrimitive):
 
 
 class DivideNumericScalar(TransformPrimitive):
-    name="divide_numeric_scalar"
+    name = "divide_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
 
@@ -300,7 +295,7 @@ class DivideNumericScalar(TransformPrimitive):
 
 
 class ModuloNumeric(TransformPrimitive):
-    name="modulo_numeric"
+    name = "modulo_numeric"
     input_types = [Numeric, Numeric]
     return_type = Numeric
 
@@ -312,7 +307,7 @@ class ModuloNumeric(TransformPrimitive):
 
 
 class ModuloNumericScalar(TransformPrimitive):
-    name="modulo_numeric"
+    name = "modulo_numeric"
     input_types = [Numeric]
     return_type = Numeric
 
@@ -325,22 +320,8 @@ class ModuloNumericScalar(TransformPrimitive):
         return "%s %% %s" % (base_feature_names[0], str(self.value))
 
 
-class Negate(TransformPrimitive):
-    name="negate"
-    input_types = [Numeric]
-    return_type = Numeric
-
-    def get_function(self):
-        def negate(vals):
-            return vals * -1
-        return negate
-
-    def generate_name(self, base_feature_names):
-        return "-%s" % (base_feature_names[0])
-
-
 class And(TransformPrimitive):
-    name="and"
+    name = "and"
     input_types = [Boolean, Boolean]
     return_type = Boolean
     commutative = True
@@ -353,11 +334,10 @@ class And(TransformPrimitive):
 
 
 class Or(TransformPrimitive):
-    name="or"
+    name = "or"
     input_types = [Boolean, Boolean]
     return_type = Boolean
     commutative = True
-
 
     def get_function(self):
         return np.logical_or

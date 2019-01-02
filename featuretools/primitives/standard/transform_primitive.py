@@ -346,9 +346,22 @@ class Diff(TransformPrimitive):
         return pd_diff
 
 
+class Negate(TransformPrimitive):
+    name = "negate"
+    input_types = [Numeric]
+    return_type = Numeric
+
+    def get_function(self):
+        def negate(vals):
+            return vals * -1
+        return negate
+
+    def generate_name(self, base_feature_names):
+        return "-%s" % (base_feature_names[0])
+
+
 class Not(TransformPrimitive):
-    """For each value of the base feature, negates the boolean value.
-    """
+    """For each value of the base feature, negates the boolean value."""
     name = "not"
     input_types = [Boolean]
     return_type = Boolean
@@ -356,11 +369,8 @@ class Not(TransformPrimitive):
     def generate_name(self):
         return u"NOT({})".format(self.base_features[0].get_name())
 
-    def _get_op(self):
-        return "__not__"
-
     def get_function(self):
-        return lambda array: np.logical_not(array)
+        return np.logical_not
 
 
 class Percentile(TransformPrimitive):
