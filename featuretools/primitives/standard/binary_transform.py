@@ -3,7 +3,7 @@ from builtins import str
 import numpy as np
 
 from ..base.transform_primitive_base import TransformPrimitive
-from featuretools.variable_types import Boolean, Numeric
+from featuretools.variable_types import Boolean, Numeric, Variable
 
 
 class GreaterThan(TransformPrimitive):
@@ -124,7 +124,7 @@ class LessThanEqualToScalar(TransformPrimitive):
 
 class Equal(TransformPrimitive):
     name = "equal"
-    input_types = [Numeric, Numeric]
+    input_types = [Variable, Variable]
     return_type = Boolean
     commutative = True
 
@@ -137,7 +137,7 @@ class Equal(TransformPrimitive):
 
 class EqualScalar(TransformPrimitive):
     name = "equal_scalar"
-    input_types = [Numeric]
+    input_types = [Variable]
     return_type = Boolean
     commutative = True
 
@@ -155,7 +155,7 @@ class EqualScalar(TransformPrimitive):
 
 class NotEqual(TransformPrimitive):
     name = "not_equal"
-    input_types = [Numeric, Numeric]
+    input_types = [Variable, Variable]
     return_type = Boolean
     commutative = True
 
@@ -168,7 +168,7 @@ class NotEqual(TransformPrimitive):
 
 class NotEqualScalar(TransformPrimitive):
     name = "not_equal_scalar"
-    input_types = [Numeric]
+    input_types = [Variable]
     return_type = Boolean
     commutative = True
 

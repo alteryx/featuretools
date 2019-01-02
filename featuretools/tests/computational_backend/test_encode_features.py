@@ -4,7 +4,7 @@ import pytest
 from ..testing_utils import make_ecommerce_entityset
 
 from featuretools import EntitySet, calculate_feature_matrix, dfs
-from featuretools.primitives import IdentityFeature
+from featuretools.feature_base import IdentityFeature
 from featuretools.synthesis import encode_features
 
 

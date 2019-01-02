@@ -290,19 +290,16 @@ class IsIn(TransformPrimitive):
     input_types = [Variable]
     return_type = Boolean
 
-    def __init__(self, base_feature, list_of_outputs=None):
+    def __init__(self, list_of_outputs=None):
         self.list_of_outputs = list_of_outputs
-        super(IsIn, self).__init__(base_feature)
 
     def get_function(self):
-        def pd_is_in(array, list_of_outputs=self.list_of_outputs):
-            if list_of_outputs is None:
-                list_of_outputs = []
-            return pd.Series(array).isin(list_of_outputs)
+        def pd_is_in(array):
+            return pd.Series(array).isin(self.list_of_outputs)
         return pd_is_in
 
-    def generate_name(self):
-        return u"%s.isin(%s)" % (self.base_features[0].get_name(),
+    def generate_name(self, base_feature_names):
+        return u"%s.isin(%s)" % (base_feature_names[0],
                                  str(self.list_of_outputs))
 
 

@@ -48,6 +48,7 @@ class FeatureBase(object):
 
         raise Exception("Not a feature")
 
+
     def rename(self, name):
         """Rename Feature, returns copy"""
         feature_copy = self.copy()
@@ -56,32 +57,8 @@ class FeatureBase(object):
 
     def copy(self):
         """Return copy of feature"""
-        original_attrs = {}
-        copied_attrs = {}
-        for k, v in self.__dict__.items():
-            list_like = False
-            to_check = v
-            if isinstance(v, (list, set, tuple)) and len(v):
-                to_check = list(v)[0]
-                list_like = True
-            if isinstance(to_check, PrimitiveBase):
-                if list_like:
-                    copied_attrs[k] = [f.copy() for f in v]
-                    original_attrs[k] = [f.copy() for f in v]
-                else:
-                    copied_attrs[k] = v.copy()
-                    original_attrs[k] = v.copy()
-                setattr(self, k, None)
-            elif isinstance(to_check, (Variable, Entity, EntitySet)):
-                copied_attrs[k] = v
-                original_attrs[k] = v
-                setattr(self, k, None)
-        copied = copy.deepcopy(self)
-        for k, v in copied_attrs.items():
-            setattr(copied, k, v)
-        for k, v in original_attrs.items():
-            setattr(self, k, v)
-        return copied
+        # M TODO implement Feature copy
+        return self
 
     def get_name(self):
         if self._name is not None:
