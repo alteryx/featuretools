@@ -23,7 +23,7 @@ class GreaterThanScalar(TransformPrimitive):
     input_types = [[Numeric], [Datetime]]
     return_type = Boolean
 
-    def __init__(self, value=None):
+    def __init__(self, value=0):
         self.value = value
 
     def get_function(self):
@@ -52,7 +52,7 @@ class GreaterThanEqualToScalar(TransformPrimitive):
     input_types = [[Numeric], [Datetime]]
     return_type = Boolean
 
-    def __init__(self, value=None):
+    def __init__(self, value=0):
         self.value = value
 
     def get_function(self):
@@ -81,7 +81,7 @@ class LessThanScalar(TransformPrimitive):
     input_types = [[Numeric], [Datetime]]
     return_type = Boolean
 
-    def __init__(self, value=None):
+    def __init__(self, value=0):
         self.value = value
 
     def get_function(self):
@@ -110,7 +110,7 @@ class LessThanEqualToScalar(TransformPrimitive):
     input_types = [[Numeric], [Datetime]]
     return_type = Boolean
 
-    def __init__(self, value=None):
+    def __init__(self, value=0):
         self.value = value
 
     def get_function(self):
@@ -203,7 +203,7 @@ class AddNumericScalar(TransformPrimitive):
     return_type = Numeric
     commutative = True
 
-    def __init__(self, value=None):
+    def __init__(self, value=0):
         self.value = value
 
     def get_function(self):
@@ -234,7 +234,7 @@ class SubtractNumericScalar(TransformPrimitive):
     return_type = Numeric
     commutative = True
 
-    def __init__(self, value=None):
+    def __init__(self, value=0):
         self.value = value
 
     def get_function(self):
@@ -265,7 +265,7 @@ class MultiplyNumericScalar(TransformPrimitive):
     return_type = Numeric
     commutative = True
 
-    def __init__(self, value=None):
+    def __init__(self, value=1):
         self.value = value
 
     def get_function(self):
@@ -294,7 +294,7 @@ class DivideNumericScalar(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
 
-    def __init__(self, value=None):
+    def __init__(self, value=1):
         self.value = value
 
     def get_function(self):
@@ -304,6 +304,23 @@ class DivideNumericScalar(TransformPrimitive):
 
     def generate_name(self, base_feature_names):
         return "%s / %s" % (base_feature_names[0], str(self.value))
+
+
+class DivideByFeature(TransformPrimitive):
+    name = "divide_by_feature"
+    input_types = [Numeric]
+    return_type = Numeric
+
+    def __init__(self, value=1):
+        self.value = value
+
+    def get_function(self):
+        def divide_by_feature(vals):
+            return self.value / vals
+        return divide_by_feature
+
+    def generate_name(self, base_feature_names):
+        return "%s / %s" % (str(self.value), base_feature_names[0])
 
 
 class ModuloNumeric(TransformPrimitive):
@@ -323,7 +340,7 @@ class ModuloNumericScalar(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
 
-    def __init__(self, value=None):
+    def __init__(self, value=1):
         self.value = value
 
     def get_function(self):

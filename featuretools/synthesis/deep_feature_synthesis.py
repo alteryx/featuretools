@@ -506,7 +506,7 @@ class DeepFeatureSynthesis(object):
                                     commutative=trans_prim.commutative)
 
             for matching_input in matching_inputs:
-                new_f = TransformFeature(matching_input, primitive=trans_prim())
+                new_f = TransformFeature(matching_input, primitive=trans_prim)
                 if new_f.expanding:
                     continue
 
@@ -531,7 +531,7 @@ class DeepFeatureSynthesis(object):
                 continue
             # limits allowing direct features of agg_feats with where clauses
             if isinstance(f, AggregationFeature):
-                deep_base_features = [f] + f.get_deep_dependencies()
+                deep_base_features = [f] + f.get_dependencies(deep=True)
                 for feat in deep_base_features:
                     if isinstance(feat, AggregationFeature) and feat.where is not None:
                         continue
@@ -579,7 +579,7 @@ class DeepFeatureSynthesis(object):
                     continue
                 new_f = AggregationFeature(matching_input,
                                            parent_entity=parent_entity,
-                                           primitive=agg_prim())
+                                           primitive=agg_prim)
                 self._handle_new_feature(new_f, all_features)
 
                 # Obey allow where
@@ -593,7 +593,7 @@ class DeepFeatureSynthesis(object):
                 for f in matching_input:
                     if isinstance(f, AggregationFeature) and f.where is not None:
                         feat_wheres.append(f)
-                    for feat in f.get_deep_dependencies():
+                    for feat in f.get_dependencies(deep=True):
                         if (isinstance(feat, AggregationFeature) and
                                 feat.where is not None):
                             feat_wheres.append(feat)
@@ -614,7 +614,7 @@ class DeepFeatureSynthesis(object):
                     new_f = AggregationFeature(matching_input,
                                                parent_entity=parent_entity,
                                                where=where,
-                                               primitive=agg_prim())
+                                               primitive=agg_prim)
 
                     self._handle_new_feature(new_f, all_features)
 
@@ -661,7 +661,7 @@ class DeepFeatureSynthesis(object):
         # if base_feat is a direct_feature of an agg_primitive
         # determine aggfeat's hlevel
         # return max hlevel
-        deps = [f] + f.get_deep_dependencies()
+        deps = [f] + f.get_dependencies(deep=True)
         hlevel = 0
         for d in deps:
             if isinstance(d, DirectFeature) and \

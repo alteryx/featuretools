@@ -195,7 +195,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             no_unapproximated_aggs = False
             break
 
-        deps = feature.get_deep_dependencies(all_approx_feature_set)
+        deps = feature.get_dependencies(deep=True, ignored=all_approx_feature_set)
         for dependency in deps:
             if (isinstance(dependency, AggregationFeature) and
                     dependency not in to_approximate[dependency.entity.id]):

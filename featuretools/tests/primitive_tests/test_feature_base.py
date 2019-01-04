@@ -20,14 +20,14 @@ def es_numeric():
 
 
 def test_copy_features_does_not_copy_entityset(es):
-    agg = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum())
+    agg = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum)
     agg_where = ft.Feature(es['log']['value'], parent_entity=es['sessions'],
-                    where=IdentityFeature(es['log']['value']) == 2, primitive=Sum())
+                    where=IdentityFeature(es['log']['value']) == 2, primitive=Sum)
     agg_use_previous = ft.Feature(es['log']['value'], parent_entity=es['sessions'],
-                           use_previous='4 days', primitive=Sum())
+                           use_previous='4 days', primitive=Sum)
     agg_use_previous_where = ft.Feature(es['log']['value'], parent_entity=es['sessions'],
                                  where=IdentityFeature(es['log']['value']) == 2,
-                                 use_previous='4 days', primitive=Sum())
+                                 use_previous='4 days', primitive=Sum)
     features = [agg, agg_where, agg_use_previous, agg_use_previous_where]
     in_memory_size = asizeof(locals())
     copied = [f.copy() for f in features]
@@ -50,8 +50,8 @@ def test_copy_features_does_not_copy_entityset(es):
 
 def test_get_dependencies(es):
     f = ft.Feature(es['log']['value'])
-    agg1 = ft.Feature(f, parent_entity=es['sessions'], primitive=Sum())
-    agg2 = ft.Feature(agg1, parent_entity=es['customers'], primitive=Sum())
+    agg1 = ft.Feature(f, parent_entity=es['sessions'], primitive=Sum)
+    agg2 = ft.Feature(agg1, parent_entity=es['customers'], primitive=Sum)
     d1 = ft.Feature(agg2, es['sessions'])
     shallow = d1.get_dependencies(deep=False, ignored=None)
     deep = d1.get_dependencies(deep=True, ignored=None)

@@ -143,7 +143,7 @@ def test_ignores_entities(es):
 
     features = dfs_obj.build_features()
     for f in features:
-        deps = f.get_deep_dependencies()
+        deps = f.get_dependencies(deep=True)
         entities = [d.entity.id for d in deps]
         assert 'log' not in entities
 
@@ -156,7 +156,7 @@ def test_ignores_variables(es):
                                    ignore_variables={'log': ['value']})
     features = dfs_obj.build_features()
     for f in features:
-        deps = f.get_deep_dependencies()
+        deps = f.get_dependencies(deep=True)
         identities = [d for d in deps
                       if isinstance(d, IdentityFeature)]
         variables = [d.variable.id for d in identities
@@ -328,7 +328,7 @@ def test_drop_exact(es):
 
 
 def test_seed_features(es):
-    seed_feature_sessions = ft.Feature(es['log']["id"], parent_entity=es['sessions'] , primitive=Count())
+    seed_feature_sessions = ft.Feature(es['log']["id"], parent_entity=es['sessions'] , primitive=Count)
     seed_feature_log = ft.Feature(es['log']['datetime'], primitive=Hour())
     session_agg = ft.Feature(seed_feature_log, parent_entity=es['sessions'], primitive=Last())
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
@@ -345,7 +345,7 @@ def test_seed_features(es):
 
 
 def test_dfs_builds_on_seed_features_more_than_max_depth(es):
-    seed_feature_sessions = ft.Feature(es['log']["id"], parent_entity=es['sessions'] , primitive=Count())
+    seed_feature_sessions = ft.Feature(es['log']["id"], parent_entity=es['sessions'] , primitive=Count)
     seed_feature_log = ft.Feature(es['log']['datetime'], primitive=Hour())
     session_agg = ft.Feature(seed_feature_log, parent_entity=es['sessions'], primitive=Last())
 
@@ -447,7 +447,7 @@ def test_where_primitives(es):
     assert len([f for f in where_feats
                 if isinstance(f.primitive, Count)]) == 0
     assert len([d for f in where_feats
-                for d in f.get_deep_dependencies()
+                for d in f.get_dependencies(deep=True)
                 if isinstance(d.primitive, Absolute)]) > 0
 
 

@@ -34,13 +34,12 @@ class FeatureTree(object):
         feature_dependencies = {}
         feature_dependents = defaultdict(set)
         for f in features:
-            deps = f.get_deep_dependencies(ignored=ignored)
+            deps = f.get_dependencies(deep=True, ignored=ignored)
             feature_dependencies[f.hash()] = deps
             for dep in deps:
                 feature_dependents[dep.hash()].add(f.hash())
                 all_features[dep.hash()] = dep
-                subdeps = dep.get_deep_dependencies(
-                    ignored=ignored)
+                subdeps = dep.get_dependencies(deep=True, ignored=ignored)
                 feature_dependencies[dep.hash()] = subdeps
                 for sd in subdeps:
                     feature_dependents[sd.hash()].add(dep.hash())

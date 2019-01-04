@@ -11,6 +11,7 @@ from featuretools.computational_backends import PandasBackend
 from featuretools.primitives import (
     Absolute,
     AddNumeric,
+    AddNumericScalar,
     Count,
     # CumCount,
     # CumMax,
@@ -22,6 +23,7 @@ from featuretools.primitives import (
     DivideNumeric,
     DivideNumericScalar,
     Equal,
+    EqualScalar,
     GreaterThan,
     GreaterThanScalar,
     GreaterThanEqualTo,
@@ -44,6 +46,7 @@ from featuretools.primitives import (
     Negate,
     Not,
     NotEqual,
+    NotEqualScalar,
     NumCharacters,
     NumWords,
     Percentile,
@@ -85,9 +88,7 @@ def test_make_trans_feat(es):
 
 def test_diff(es):
     value = ft.Feature(es['log']['value'])
-    customer_id_feat = \
-        ft.Feature(es['sessions']['customer_id'],
-                      child_entity=es['log'])
+    customer_id_feat = ft.Feature(es['sessions']['customer_id'], entity=es['log'])
     diff1 = ft.Feature([value, es['log']['session_id']], primitive=Diff())
     diff2 = ft.Feature([value, customer_id_feat], primitive=Diff())
 
@@ -133,7 +134,7 @@ def test_compare_of_identity(es):
 
     features = []
     for test in to_test:
-        features.append(ft.Feature(es['log']['value'], test[0](10)))
+        features.append(ft.Feature(es['log']['value'], primitive=test[0](10)))
 
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2, 3],
@@ -145,8 +146,7 @@ def test_compare_of_identity(es):
 
 
 def test_compare_of_direct(es):
-    log_rating = ft.Feature(es['products']['rating'],
-                               child_entity=es['log'])
+    log_rating = ft.Feature(es['products']['rating'], entity=es['log'])
     to_test = [(EqualScalar, [False, False, False, False]),
                (NotEqualScalar, [True, True, True, True]),
                (LessThanScalar, [False, False, False, True]),
@@ -156,7 +156,7 @@ def test_compare_of_direct(es):
 
     features = []
     for test in to_test:
-        features.append(ft.Feature(log_rating, test[0](4.5)))
+        features.append(ft.Feature(log_rating, primitive=test[0](4.5)))
 
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2, 3],
@@ -178,7 +178,7 @@ def test_compare_of_transform(es):
 
     features = []
     for test in to_test:
-        features.append(ft.Feature(day, test[0](10)))
+        features.append(ft.Feature(day, primitive=test[0](10)))
 
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(instance_ids=[0, 14],
@@ -190,18 +190,18 @@ def test_compare_of_transform(es):
 
 
 def test_compare_of_agg(es):
-    count_logs = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count())
+    count_logs = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
 
-    to_test = [(Equal, [False, False, False, True]),
-               (NotEqual, [True, True, True, False]),
-               (LessThan, [False, False, True, False]),
-               (LessThanEqualTo, [False, False, True, True]),
-               (GreaterThan, [True, True, False, False]),
-               (GreaterThanEqualTo, [True, True, False, True])]
+    to_test = [(EqualScalar, [False, False, False, True]),
+               (NotEqualScalar, [True, True, True, False]),
+               (LessThanScalar, [False, False, True, False]),
+               (LessThanEqualToScalar, [False, False, True, True]),
+               (GreaterThanScalar, [True, True, False, False]),
+               (GreaterThanEqualToScalar, [True, True, False, True])]
 
     features = []
     for test in to_test:
-        features.append(test[0](count_logs, 2))
+        features.append(ft.Feature(count_logs, primitive=test[0](2)))
 
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2, 3],
@@ -213,7 +213,7 @@ def test_compare_of_agg(es):
 
 
 def test_compare_all_nans(es):
-    nan_feat = Mode(es['log']['product_id'], es['sessions'])
+    nan_feat = ft.Feature(es['log']['product_id'], parent_entity=es['sessions'], primitive=Mode)
     compare = nan_feat == 'brown bag'
     # before all data
     time_last = pd.Timestamp('1/1/1993')
@@ -225,18 +225,18 @@ def test_compare_all_nans(es):
 
 
 def test_arithmetic_of_val(es):
-    to_test = [(AddNumeric, [2.0, 7.0, 12.0, 17.0], [2.0, 7.0, 12.0, 17.0]),
-               (SubtractNumeric, [-2.0, 3.0, 8.0, 13.0], [2.0, -3.0, -8.0, -13.0]),
-               (MultiplyNumeric, [0, 10, 20, 30], [0, 10, 20, 30]),
-               (DivideNumeric, [0, 2.5, 5, 7.5], [np.inf, 0.4, 0.2, 2 / 15.0],
+    to_test = [(AddNumericScalar, [2.0, 7.0, 12.0, 17.0], [2.0, 7.0, 12.0, 17.0]),
+               (SubtractNumericScalar, [-2.0, 3.0, 8.0, 13.0], [2.0, -3.0, -8.0, -13.0]),
+               (MultiplyNumericScalar, [0, 10, 20, 30], [0, 10, 20, 30]),
+               (DivideNumericScalar, [0, 2.5, 5, 7.5], [np.inf, 0.4, 0.2, 2 / 15.0],
                 [np.nan, np.inf, np.inf, np.inf])]
 
     features = []
     logs = es['log']
 
     for test in to_test:
-        features.append(test[0](logs['value'], 2))
-        features.append(test[0](2, logs['value']))
+
+        features.append(ft.Feature(logs['value'], primitive=test[0](2)))
 
     features.append(ft.Feature(logs['value']) / 0)
 
@@ -257,9 +257,9 @@ def test_arithmetic_of_val(es):
 
 
 def test_arithmetic_two_vals_fails(es):
-    error_text = "one of.*must be an instance,of PrimitiveBase or Variable"
-    with pytest.raises(ValueError, match=error_text):
-        AddNumeric(2, 2)
+    error_text = "Not a feature"
+    with pytest.raises(Exception, match=error_text):
+        ft.Feature([2, 2], primitive=AddNumeric)
 
 
 def test_arithmetic_of_identity(es):
@@ -301,7 +301,7 @@ def test_arithmetic_of_direct(es):
 
     features = []
     for test in to_test:
-        features.append(test[0](log_age, log_rating))
+        features.append(ft.Feature([log_age, log_rating], primitive=test[0]))
 
     pandas_backend = PandasBackend(es, features)
     df = pandas_backend.calculate_all_features(instance_ids=[0, 3, 5, 7],
@@ -350,8 +350,8 @@ def test_not_feature(es):
 def test_arithmetic_of_agg(es):
     customer_id_feat = es['customers']['id']
     store_id_feat = es['stores']['id']
-    count_customer = ft.Feature(customer_id_feat, parent_entity=es[u'régions'], primitive=Count())
-    count_stores = ft.Feature(store_id_feat, parent_entity=es[u'régions'], primitive=Count())
+    count_customer = ft.Feature(customer_id_feat, parent_entity=es[u'régions'], primitive=Count)
+    count_stores = ft.Feature(store_id_feat, parent_entity=es[u'régions'], primitive=Count)
     to_test = [(AddNumeric, [6, 2]),
                (SubtractNumeric, [0, -2]),
                (MultiplyNumeric, [9, 0]),
@@ -629,7 +629,7 @@ def test_haversine(es):
 #     for primitive in [CumSum, CumMean, CumMax, CumMin]:
 #         check(primitive(es['log']['value'], es['log']['session_id']))
 
-#     check(Cumft.Feature(es['log']['id'], parent_entity=es['log']['session_id']), primitive=Count())
+#     check(Cumft.Feature(es['log']['id'], parent_entity=es['log']['session_id']), primitive=Count)
 
 # # M TODOS
 # def test_cum_mean(es):
@@ -741,19 +741,55 @@ def test_text_primitives(es):
     for i, v in enumerate(char_values):
         assert v == char_counts[i]
 
+# M TODO
+    # value2 + 2,
+    # value2 - 2,
+    # value2 * 2,
+    # value2 / 2,
+    # value2 > 2,
+    # value2 < 2,
+    # value2 == 2,
+    # value2 != 2,
+    # value2 >= 2,
+    # value2 <= 2,
+    #                 (value2, 2)
+    #     our_reverse_overrides = [
+    #     2 + value2,
+    #     2 - value2,
+    #     2 * value2,
+    #     2 / value2]
+    # i = 0
+    # for feat in feats:
+    #     if feat != Mod:
+    #         f = feat(2, value2)
+    #         o = our_reverse_overrides[i]
+    #         assert o.hash() == f.hash()
+    #         i += 1
+
+    # python_reverse_overrides = [
+    #     2 < value2,
+    #     2 > value2,
+    #     2 == value2,
+    #     2 != value2,
+    #     2 <= value2,
+    #     2 >= value2]
+    # i = 0
+    # for compare_op in compare_ops:
+    #     f = compare_op(value2, 2)
+    #     o = python_reverse_overrides[i]
+    #     assert o.hash() == f.hash()
+    #     i += 1
+
 
 def test_overrides(es):
     value = ft.Feature(es['log']['value'])
     value2 = ft.Feature(es['log']['value_2'])
 
-    feats = [AddNumeric, SubtractNumeric, MultiplyNumeric, DivideNumeric]
-    compare_ops = [GreaterThan, LessThan, Equal, NotEqual,
-                   GreaterThanEqualTo, LessThanEqualTo]
+    feats = [AddNumeric, SubtractNumeric, MultiplyNumeric, DivideNumeric, GreaterThan,
+             LessThan, Equal, NotEqual, GreaterThanEqualTo, LessThanEqualTo]
     assert ft.Feature(value, primitive=Negate()).hash() == (-value).hash()
 
-    compares = [(value, value),
-                (value, value2),
-                (value2, 2)]
+    compares = [(value, value), (value, value2)]
     overrides = [
         value + value,
         value - value,
@@ -776,63 +812,17 @@ def test_overrides(es):
         value != value2,
         value >= value2,
         value <= value2,
-
-        value2 + 2,
-        value2 - 2,
-        value2 * 2,
-        value2 / 2,
-        value2 > 2,
-        value2 < 2,
-        value2 == 2,
-        value2 != 2,
-        value2 >= 2,
-        value2 <= 2,
     ]
 
-    i = 0
     for left, right in compares:
         for feat in feats:
             f = ft.Feature([left, right], primitive=feat)
-            o = overrides[i]
+            o = overrides.pop(0)
             assert o.hash() == f.hash()
-            i += 1
-
-        for compare_op in compare_ops:
-            f = compare_op(left, right)
-            o = overrides[i]
-            assert o.hash() == f.hash()
-            i += 1
-
-    our_reverse_overrides = [
-        2 + value2,
-        2 - value2,
-        2 * value2,
-        2 / value2]
-    i = 0
-    for feat in feats:
-        if feat != Mod:
-            f = feat(2, value2)
-            o = our_reverse_overrides[i]
-            assert o.hash() == f.hash()
-            i += 1
-
-    python_reverse_overrides = [
-        2 < value2,
-        2 > value2,
-        2 == value2,
-        2 != value2,
-        2 <= value2,
-        2 >= value2]
-    i = 0
-    for compare_op in compare_ops:
-        f = compare_op(value2, 2)
-        o = python_reverse_overrides[i]
-        assert o.hash() == f.hash()
-        i += 1
 
 
 def test_override_boolean(es):
-    count = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count())
+    count = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
     count_lo = ft.Feature(count,primitive=GreaterThanScalar(1))
     count_hi = ft.Feature(count, primitive=LessThanScalar(10))
 
@@ -869,8 +859,8 @@ def test_override_cmp_from_variable(es):
 
 
 def test_override_cmp(es):
-    count = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count())
-    _sum = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum())
+    count = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
+    _sum = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum)
     gt_lo = count > 1
     gt_other = count > _sum
     ge_lo = count >= 1
@@ -936,8 +926,8 @@ def test_isin_feat_custom(es):
             list_of_outputs = []
         return pd.Series(array).isin(list_of_outputs)
 
-    def isin_generate_name(self, base_features_names):
-        return u"%s.isin(%s)" % (base_features_names[0],
+    def isin_generate_name(self, base_feature_names):
+        return u"%s.isin(%s)" % (base_feature_names[0],
                                  str(self.kwargs['list_of_outputs']))
 
     IsIn = make_trans_primitive(
@@ -997,6 +987,11 @@ def test_init_and_name(es):
     # Add Timedelta feature
     # features.append(pd.Timestamp.now() - ft.Feature(log['datetime']))
     for transform_prim in get_transform_primitives().values():
+
+        # skip automated testing if a few special cases
+        if transform_prim in [NotEqual, Equal]:
+            continue
+
         # use the input_types matching function from DFS
         input_types = transform_prim.input_types
         if type(input_types[0]) == list:
@@ -1040,7 +1035,7 @@ def test_dependent_percentile(es):
 def test_agg_percentile(es):
     v = ft.Feature(es['log']['value'])
     p = ft.Feature(v, primitive=Percentile())
-    agg = ft.Feature(p, parent_entity=es['sessions'], primitive=Sum())
+    agg = ft.Feature(p, parent_entity=es['sessions'], primitive=Sum)
     pandas_backend = PandasBackend(es, [agg])
     df = pandas_backend.calculate_all_features([0, 1], None)
 
@@ -1054,7 +1049,7 @@ def test_agg_percentile(es):
 def test_percentile_agg_percentile(es):
     v = ft.Feature(es['log']['value'])
     p = ft.Feature(v, primitive=Percentile())
-    agg = ft.Feature(p, parent_entity=es['sessions'], primitive=Sum())
+    agg = ft.Feature(p, parent_entity=es['sessions'], primitive=Sum)
     pagg = ft.Feature(agg, primitive=Percentile())
     pandas_backend = PandasBackend(es, [pagg])
     df = pandas_backend.calculate_all_features([0, 1], None)
@@ -1070,7 +1065,7 @@ def test_percentile_agg_percentile(es):
 
 def test_percentile_agg(es):
     v = ft.Feature(es['log']['value'])
-    agg = ft.Feature(v, parent_entity=es['sessions'], primitive=Sum())
+    agg = ft.Feature(v, parent_entity=es['sessions'], primitive=Sum)
     pagg = ft.Feature(agg, primitive=Percentile())
     pandas_backend = PandasBackend(es, [pagg])
     df = pandas_backend.calculate_all_features([0, 1], None)
@@ -1100,7 +1095,7 @@ def test_direct_percentile(es):
 def test_direct_agg_percentile(es):
     v = ft.Feature(es['log']['value'])
     p = ft.Feature(v, primitive=Percentile())
-    agg = ft.Feature(p, parent_entity=es['customers'], primitive=Sum())
+    agg = ft.Feature(p, parent_entity=es['customers'], primitive=Sum)
     d = ft.Feature(agg, es['sessions'])
     pandas_backend = PandasBackend(es, [d])
     df = pandas_backend.calculate_all_features([0, 1], None)
@@ -1126,10 +1121,10 @@ def test_percentile_with_cutoff(es):
 def test_two_kinds_of_dependents(es):
     v = ft.Feature(es['log']['value'])
     product = ft.Feature(es['log']['product_id'])
-    agg = ft.Feature(v, parent_entity=es['customers'], where= product == 'coke zero', primitive=Sum())
+    agg = ft.Feature(v, parent_entity=es['customers'], where= product == 'coke zero', primitive=Sum)
     p = ft.Feature(agg, primitive=Percentile())
     g = ft.Feature(agg, primitive=Absolute())
-    agg2 = ft.Feature(v, parent_entity=es['sessions'], where= product == 'coke zero', primitive=Sum())
+    agg2 = ft.Feature(v, parent_entity=es['sessions'], where= product == 'coke zero', primitive=Sum)
     # Adding this feature in tests line 218 in pandas_backend
     # where we remove columns in result_frame that already exist
     # in the output entity_frames in preparation for pd.concat
@@ -1137,7 +1132,7 @@ def test_two_kinds_of_dependents(es):
     # variable itself, rather than making a new variable _result_frame.
     # When len(output_frames) > 1, the second iteration won't have
     # all the necessary columns because they were removed in the first
-    agg3 = ft.Feature(agg2, parent_entity=es['customers'], primitive=Sum())
+    agg3 = ft.Feature(agg2, parent_entity=es['customers'], primitive=Sum)
     pandas_backend = PandasBackend(es, [p, g, agg3])
     df = pandas_backend.calculate_all_features([0, 1], None)
     assert df[p.get_name()].tolist() == [2. / 3, 1.0]
@@ -1209,8 +1204,8 @@ def test_make_transform_sets_kwargs_correctly(es):
             list_of_outputs = []
         return pd.Series(array).isin(list_of_outputs)
 
-    def isin_generate_name(self, base_features_names):
-        return u"%s.isin(%s)" % (base_features_names[0],
+    def isin_generate_name(self, base_feature_names):
+        return u"%s.isin(%s)" % (base_feature_names[0],
                                  str(self.kwargs['list_of_outputs']))
 
     IsIn = make_trans_primitive(

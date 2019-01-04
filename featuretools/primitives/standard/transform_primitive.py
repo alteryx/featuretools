@@ -65,121 +65,88 @@ class TimeSincePrevious(TransformPrimitive):
         return pd_diff
 
 
-class DatetimeUnitBasePrimitive(TransformPrimitive):
-    """Transform Datetime feature into time or calendar units
-     (second/day/week/etc)"""
-    name = None
+class Day(TransformPrimitive):
+    """Transform a Datetime feature into the day."""
+    name = "day"
     input_types = [Datetime]
-    return_type = Ordinal
-
-    def get_function(self):
-        return lambda array: pd_time_unit(self.name)(pd.DatetimeIndex(array))
-
-
-class TimedeltaUnitBasePrimitive(TransformPrimitive):
-    """Transform Timedelta features into number of time units
-     (seconds/days/etc) they encompass."""
-    name = None
-    input_types = [Timedelta]
     return_type = Numeric
 
     def get_function(self):
-        return lambda array: pd_time_unit(self.name)(pd.TimedeltaIndex(array))
+        def day(vals):
+            return pd.DatetimeIndex(vals).day.values
+        return day
 
 
-class Day(DatetimeUnitBasePrimitive):
-    """Transform a Datetime feature into the day."""
-    name = "day"
-
-
-class Days(TimedeltaUnitBasePrimitive):
-    """Transform a Timedelta feature into the number of days."""
-    name = "days"
-
-
-class Hour(DatetimeUnitBasePrimitive):
+class Hour(TransformPrimitive):
     """Transform a Datetime feature into the hour."""
     name = "hour"
-
-
-class Hours(TimedeltaUnitBasePrimitive):
-    """Transform a Timedelta feature into the number of hours."""
-    name = "hours"
+    input_types = [Datetime]
+    return_type = Numeric
 
     def get_function(self):
-        def pd_hours(array):
-            return pd_time_unit("seconds")(pd.TimedeltaIndex(array)) / 3600.
-        return pd_hours
+        def hour(vals):
+            return pd.DatetimeIndex(vals).hour.values
+        return hour
 
 
-class Second(DatetimeUnitBasePrimitive):
+class Second(TransformPrimitive):
     """Transform a Datetime feature into the second."""
     name = "second"
-
-
-class Seconds(TimedeltaUnitBasePrimitive):
-    """Transform a Timedelta feature into the number of seconds."""
-    name = "seconds"
-
-
-class Minute(DatetimeUnitBasePrimitive):
-    """Transform a Datetime feature into the minute."""
-    name = "minute"
-
-
-class Minutes(TimedeltaUnitBasePrimitive):
-    """Transform a Timedelta feature into the number of minutes."""
-    name = "minutes"
+    input_types = [Datetime]
+    return_type = Numeric
 
     def get_function(self):
-        def pd_minutes(array):
-            return pd_time_unit("seconds")(pd.TimedeltaIndex(array)) / 60
-        return pd_minutes
+        def second(vals):
+            return pd.DatetimeIndex(vals).second.values
+        return second
 
 
-class Week(DatetimeUnitBasePrimitive):
+class Minute(TransformPrimitive):
+    """Transform a Datetime feature into the "minute."""
+    name = "minute"
+    input_types = [Datetime]
+    return_type = Numeric
+
+    def get_function(self):
+        def minute(vals):
+            return pd.DatetimeIndex(vals).minute.values
+        return minute
+
+
+class Week(TransformPrimitive):
     """Transform a Datetime feature into the week."""
     name = "week"
-
-
-class Weeks(TimedeltaUnitBasePrimitive):
-    """Transform a Timedelta feature into the number of weeks."""
-    name = "weeks"
+    input_types = [Datetime]
+    return_type = Numeric
 
     def get_function(self):
-        def pd_weeks(array):
-            return pd_time_unit("days")(pd.TimedeltaIndex(array)) / 7
-        return pd_weeks
+        def week(vals):
+            return pd.DatetimeIndex(vals).week.values
+        return week
 
 
-class Month(DatetimeUnitBasePrimitive):
-    """Transform a Datetime feature into the month."""
+class Month(TransformPrimitive):
+    """Transform a Datetime feature into the  "month."""
     name = "month"
-
-
-class Months(TimedeltaUnitBasePrimitive):
-    """Transform a Timedelta feature into the number of months."""
-    name = "months"
+    input_types = [Datetime]
+    return_type = Numeric
 
     def get_function(self):
-        def pd_months(array):
-            return pd_time_unit("days")(pd.TimedeltaIndex(array)) * (12 / 365)
-        return pd_months
+        def month(vals):
+            return pd.DatetimeIndex(vals).month.values
+        return month
 
 
-class Year(DatetimeUnitBasePrimitive):
+class Year(TransformPrimitive):
     """Transform a Datetime feature into the year."""
     name = "year"
-
-
-class Years(TimedeltaUnitBasePrimitive):
-    """Transform a Timedelta feature into the number of years."""
-    name = "years"
+    input_types = [Datetime]
+    return_type = Numeric
 
     def get_function(self):
-        def pd_years(array):
-            return pd_time_unit("days")(pd.TimedeltaIndex(array)) / 365
-        return pd_years
+        def year(vals):
+            return pd.DatetimeIndex(vals).year.values
+        return year
 
 
 class Weekend(TransformPrimitive):
@@ -189,12 +156,21 @@ class Weekend(TransformPrimitive):
     return_type = Boolean
 
     def get_function(self):
-        return lambda df: pd_time_unit("weekday")(pd.DatetimeIndex(df)) > 4
+        def weekend(vals):
+            return pd.DatetimeIndex(vals).weekday.values > 4
+        return weekend
 
 
-class Weekday(DatetimeUnitBasePrimitive):
-    """Transform Datetime feature into the boolean of Weekday."""
+class Weekday(TransformPrimitive):
+    """Transform a Datetime feature into the weekday."""
     name = "weekday"
+    input_types = [Datetime]
+    return_type = Numeric
+
+    def get_function(self):
+        def weekday(vals):
+            return pd.DatetimeIndex(vals).weekday.values
+        return weekday
 
 
 class NumCharacters(TransformPrimitive):
@@ -280,7 +256,7 @@ class IsIn(TransformPrimitive):
 
     def get_function(self):
         def pd_is_in(array):
-            return pd.Series(array).isin(self.list_of_outputs)
+            return pd.Series(array).isin(self.list_of_outputs or [])
         return pd_is_in
 
     def generate_name(self, base_feature_names):
@@ -337,7 +313,7 @@ class Not(TransformPrimitive):
     return_type = Boolean
 
     def generate_name(self, base_feature_names):
-        return u"NOT({})".format(self.base_features[0].get_name())
+        return u"NOT({})".format(base_feature_names[0])
 
     def get_function(self):
         return np.logical_not

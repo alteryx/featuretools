@@ -60,13 +60,13 @@ def test_primitive():
 def test_get_depth(es):
     log_id_feat = es['log']['id']
     customer_id_feat = es['customers']['id']
-    count_logs = ft.Feature(log_id_feat, parent_entity=es['sessions'], primitive=Count())
-    sum_count_logs = ft.Feature(count_logs, parent_entity=es['customers'], primitive=Sum())
+    count_logs = ft.Feature(log_id_feat, parent_entity=es['sessions'], primitive=Count)
+    sum_count_logs = ft.Feature(count_logs, parent_entity=es['customers'], primitive=Sum)
     num_logs_greater_than_5 = sum_count_logs > 5
     count_customers = ft.Feature(customer_id_feat,
                                  parent_entity=es[u'régions'],
                                  where=num_logs_greater_than_5,
-                                 primitive=Count())
+                                 primitive=Count)
     num_customers_region = ft.Feature(count_customers, entity=es["customers"])
 
     depth = num_customers_region.get_depth()
@@ -116,17 +116,17 @@ def test_count_null_and_make_agg_primitive(es):
 
 
 def test_check_input_types(es):
-    count = ft.Feature(es["sessions"]["id"], parent_entity=es["customers"], primitive=Count())
-    mean = ft.Feature(count, parent_entity=es[u"régions"], primitive=Mean())
+    count = ft.Feature(es["sessions"]["id"], parent_entity=es["customers"], primitive=Count)
+    mean = ft.Feature(count, parent_entity=es[u"régions"], primitive=Mean)
     assert mean._check_input_types()
 
     boolean = count > 3
-    mean = ft.Feature(count, parent_entity=es[u"régions"], where=boolean, primitive=Mean())
+    mean = ft.Feature(count, parent_entity=es[u"régions"], where=boolean, primitive=Mean)
     assert mean._check_input_types()
 
 
 def test_base_of_and_stack_on_heuristic(es, test_primitive):
-    child = ft.Feature(es["sessions"]["id"], parent_entity=es["customers"], primitive=Count())
+    child = ft.Feature(es["sessions"]["id"], parent_entity=es["customers"], primitive=Count)
     test_primitive.stack_on = []
     child.primitive.base_of = []
     assert not check_stacking(test_primitive, [child])
@@ -273,7 +273,7 @@ def test_agg_same_method_name(es):
     Max = make_agg_primitive(custom_primitive, input_types=[Numeric],
                              return_type=Numeric, name="max")
 
-    f_sum = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Sum())
+    f_sum = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Sum)
     f_max = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Max())
 
     fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
@@ -285,7 +285,7 @@ def test_agg_same_method_name(es):
     Max = make_agg_primitive(lambda x: x.max(), input_types=[Numeric],
                              return_type=Numeric, name="max")
 
-    f_sum = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Sum())
+    f_sum = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Sum)
     f_max = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Max())
     fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
     assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]

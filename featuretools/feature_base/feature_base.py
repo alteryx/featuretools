@@ -28,7 +28,6 @@ class FeatureBase(object):
         assert all(isinstance(f, FeatureBase) for f in base_features), \
             "All base features must be features"
 
-
         self.entity_id = entity.id
         self.entityset = entity.entityset.metadata
 
@@ -41,14 +40,6 @@ class FeatureBase(object):
 
         assert self._check_input_types(), ("Provided inputs don't match input "
                                            "type requirements")
-
-    def _check_feature(self, feature):
-        if isinstance(feature, Variable):
-            return IdentityFeature(feature)
-        elif isinstance(feature, FeatureBase):
-            return feature
-
-        raise Exception("Not a feature")
 
     def rename(self, name):
         """Rename Feature, returns copy"""
@@ -101,9 +92,6 @@ class FeatureBase(object):
 
         return deps
 
-    def get_deep_dependencies(self, ignored=None):
-        return self.get_dependencies(deep=True, ignored=ignored)
-
     def get_depth(self, stop_at=None):
         """Returns depth of feature"""
         max_depth = 0
@@ -113,7 +101,7 @@ class FeatureBase(object):
         if (stop_at is not None and
                 self.hash() in stop_at_hash):
             return 0
-        for dep in self.get_deep_dependencies(ignored=stop_at_hash):
+        for dep in self.get_dependencies(deep=True, ignored=stop_at_hash):
             max_depth = max(dep.get_depth(stop_at=stop_at),
                             max_depth)
         return max_depth + 1
@@ -151,7 +139,7 @@ class FeatureBase(object):
         return ret
 
     def hash(self):
-        return hash(self.get_name() + self.entity.id + hash(self.primitive))
+        return hash(self.get_name() + self.entity.id)
 
     def __hash__(self):
         # logger.warning("To hash a feature, use feature.hash()")
@@ -211,7 +199,7 @@ class FeatureBase(object):
 
     def __lt__(self, other):
         """Compares if less than other"""
-        return self._handle_binary_comparision(other, primitives.LessThanEqualTo, primitives.LessThanEqualToScalar)
+        return self._handle_binary_comparision(other, primitives.LessThan, primitives.LessThanScalar)
 
     def __le__(self, other):
         """Compares if less than or equal to other"""
@@ -242,8 +230,9 @@ class FeatureBase(object):
     # todo
     # def __rtruediv__(self, other):
         # pass
-    # def __rdiv__(self, other):
-        # pass
+
+    def __rdiv__(self, other):
+        return Feature([self], primitive=primitives.DivideByFeature(other))
 
     def __mul__(self, other):
         """Multiply by other"""
@@ -254,7 +243,7 @@ class FeatureBase(object):
 
     def __mod__(self, other):
         """Take modulus of other"""
-        return Feature([self, other], primitive=primitives.Mod())
+        return self._handle_binary_comparision(other, primitives.ModuloNumeric, primitives.ModuloNumericScalar)
 
     def __and__(self, other):
         return self.AND(other)
@@ -331,7 +320,7 @@ class DirectFeature(FeatureBase):
     return_type = None
 
     def __init__(self, base_feature, child_entity):
-        base_feature = self._check_feature(base_feature)
+        base_feature = _check_feature(base_feature)
         if base_feature.expanding:
             self.expanding = True
         self.base_feature = base_feature
@@ -374,7 +363,7 @@ class DirectFeature(FeatureBase):
 
 
 class AggregationFeature(FeatureBase):
-    #: (:class:`.PrimitiveBase`): Feature to condition this feature by in
+    # Feature to condition this feature by in
     # computation (e.g. take the Count of products where the product_id is
     # "basketball".)
     where = None
@@ -387,17 +376,17 @@ class AggregationFeature(FeatureBase):
         # Any edits made to this method should also be made to the
         # new_class_init method in make_agg_primitive
         if hasattr(base_features, '__iter__'):
-            base_features = [self._check_feature(bf) for bf in base_features]
+            base_features = [_check_feature(bf) for bf in base_features]
             msg = "all base features must share the same entity"
             assert len(set([bf.entity for bf in base_features])) == 1, msg
         else:
-            base_features = [self._check_feature(base_features)]
+            base_features = [_check_feature(base_features)]
 
         self.child_entity = base_features[0].entity
         self.parent_entity = parent_entity
 
         if where is not None:
-            self.where = self._check_feature(where)
+            self.where = _check_feature(where)
             msg = "Where feature must be defined on child entity {}".format(
                 self.child_entity.id)
             assert self.where.entity.id == self.child_entity.id, msg
@@ -420,8 +409,8 @@ class AggregationFeature(FeatureBase):
                                                  primitive=primitive)
 
     def copy(self):
-        return AggregationFeature(self.base_features, self.parent_entity,
-                                  self.use_previous,self.where, self.primitive)
+        return AggregationFeature(self.base_features, parent_entity=self.parent_entity,
+                                    primitive=self.primitive, use_previous= self.use_previous, where=self.where)
 
     def _where_str(self):
         if self.where is not None:
@@ -450,11 +439,11 @@ class TransformFeature(FeatureBase):
         # Any edits made to this method should also be made to the
         # new_class_init method in make_trans_primitive
         if hasattr(base_features, '__iter__'):
-            base_features = [self._check_feature(bf) for bf in base_features]
+            base_features = [_check_feature(bf) for bf in base_features]
             msg = "all base features must share the same entity"
             assert len(set([bf.entity for bf in base_features])) == 1, msg
         else:
-            base_features = [self._check_feature(base_features)]
+            base_features = [_check_feature(base_features)]
 
         if any(bf.expanding for bf in base_features):
             self.expanding = True
@@ -487,12 +476,21 @@ class Feature(object):
         elif primitive is None and entity is not None:
             return DirectFeature(base, entity)
         elif primitive is not None and parent_entity is not None:
-            assert isinstance(primitive, AggregationPrimitive)
+            assert isinstance(primitive, AggregationPrimitive) or issubclass(primitive, AggregationPrimitive)
             return AggregationFeature(base, parent_entity=parent_entity,
                                       use_previous=use_previous, where=where,
                                       primitive=primitive)
         elif primitive is not None:
-            assert isinstance(primitive, TransformPrimitive)
+            assert isinstance(primitive, TransformPrimitive) or issubclass(primitive, TransformPrimitive)
             return TransformFeature(base, primitive=primitive)
 
         raise Expection("Unrecognized feature initialization")
+
+
+def _check_feature(feature):
+    if isinstance(feature, Variable):
+        return IdentityFeature(feature)
+    elif isinstance(feature, FeatureBase):
+        return feature
+
+    raise Exception("Not a feature")
