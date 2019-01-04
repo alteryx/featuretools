@@ -186,39 +186,38 @@ def test_make_agg_feat_where_different_identity_feat(entityset, backend):
                                 where=ft.Feature(entityset['log']['datetime'], primitive=where_cmp(datetime(2011, 4, 10, 10, 40, 1))),
                                 primitive=Count))
 
-    df = ft.calculate_feature_matrix(entityset=es, features=feats, instance_ids=[0, 1, 2])
+    df = ft.calculate_feature_matrix(entityset=entityset, features=feats, instance_ids=[0, 1, 2, 3])
 
     for i, where_cmp in enumerate(where_cmps):
-        feat = feats[i]
-        name = feat.get_name()
+        name = feats[i].get_name()
         instances = df[name]
         v0, v1, v2, v3 = instances[0:4]
-        if where_cmp == LessThan:
+        if where_cmp == LessThanScalar:
             assert (v0 == 5)
             assert (v1 == 4)
             assert (v2 == 1)
             assert (v3 == 1)
-        elif where_cmp == GreaterThan:
+        elif where_cmp == GreaterThanScalar:
             assert (v0 == 0)
             assert (v1 == 0)
             assert (v2 == 0)
             assert (v3 == 0)
-        elif where_cmp == LessThanEqualTo:
+        elif where_cmp == LessThanEqualToScalar:
             assert (v0 == 5)
             assert (v1 == 4)
             assert (v2 == 1)
             assert (v3 == 2)
-        elif where_cmp == GreaterThanEqualTo:
+        elif where_cmp == GreaterThanEqualToScalar:
             assert (v0 == 0)
             assert (v1 == 0)
             assert (v2 == 0)
             assert (v3 == 1)
-        elif where_cmp == Equal:
+        elif where_cmp == EqualScalar:
             assert (v0 == 0)
             assert (v1 == 0)
             assert (v2 == 0)
             assert (v3 == 1)
-        elif where_cmp == NotEqual:
+        elif where_cmp == NotEqualScalar:
             assert (v0 == 5)
             assert (v1 == 4)
             assert (v2 == 1)

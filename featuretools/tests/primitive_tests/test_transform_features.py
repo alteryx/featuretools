@@ -136,9 +136,7 @@ def test_compare_of_identity(es):
     for test in to_test:
         features.append(ft.Feature(es['log']['value'], primitive=test[0](10)))
 
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2, 3],
-                                               time_last=None)
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
@@ -158,9 +156,7 @@ def test_compare_of_direct(es):
     for test in to_test:
         features.append(ft.Feature(log_rating, primitive=test[0](4.5)))
 
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2, 3],
-                                               time_last=None)
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
@@ -180,9 +176,7 @@ def test_compare_of_transform(es):
     for test in to_test:
         features.append(ft.Feature(day, primitive=test[0](10)))
 
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(instance_ids=[0, 14],
-                                               time_last=None)
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 14])
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
@@ -203,9 +197,7 @@ def test_compare_of_agg(es):
     for test in to_test:
         features.append(ft.Feature(count_logs, primitive=test[0](2)))
 
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2, 3],
-                                               time_last=None)
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
@@ -217,9 +209,8 @@ def test_compare_all_nans(es):
     compare = nan_feat == 'brown bag'
     # before all data
     time_last = pd.Timestamp('1/1/1993')
-    pandas_backend = PandasBackend(es, [nan_feat, compare])
-    df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2],
-                                               time_last=time_last)
+
+    df = ft.calculate_feature_matrix(entityset=es, features=[nan_feat, compare], instance_ids=[0, 1, 2], cutoff_time=time_last)
     assert df[nan_feat.get_name()].dropna().shape[0] == 0
     assert not df[compare.get_name()].any()
 
@@ -240,9 +231,7 @@ def test_arithmetic_of_val(es):
 
     features.append(ft.Feature(logs['value']) / 0)
 
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2, 3],
-                                               time_last=None)
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
 
     for i, test in enumerate(to_test):
         v = df[features[2 * i].get_name()].values.tolist()
@@ -274,9 +263,7 @@ def test_arithmetic_of_identity(es):
     for test in to_test:
         features.append(ft.Feature([logs['value'], logs['value_2']], primitive=test[0]))
 
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2, 3],
-                                               time_last=None)
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
 
     for i, test in enumerate(to_test[:-1]):
         v = df[features[i].get_name()].values.tolist()
@@ -303,10 +290,7 @@ def test_arithmetic_of_direct(es):
     for test in to_test:
         features.append(ft.Feature([log_age, log_rating], primitive=test[0]))
 
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(instance_ids=[0, 3, 5, 7],
-                                               time_last=None)
-
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 3, 5, 7])
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert v == test[1]
@@ -339,9 +323,7 @@ def test_arithmetic_of_transform(es):
 def test_not_feature(es):
     not_feat = ft.Feature(es['customers']['loves_ice_cream'], primitive=Not())
     features = [not_feat]
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(instance_ids=[0, 1],
-                                               time_last=None)
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1])
     v = df[not_feat.get_name()].values
     assert not v[0]
     assert v[1]
@@ -361,9 +343,8 @@ def test_arithmetic_of_agg(es):
     for test in to_test:
         features.append(ft.Feature([count_customer, count_stores], primitive=test[0]()))
 
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(
-        instance_ids=['United States', 'Mexico'], time_last=None)
+    df = ft.calculate_feature_matrix(entityset=es, features=features,
+                                     instance_ids=['United States', 'Mexico'])
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
@@ -382,9 +363,7 @@ def test_latlong(es):
     latitude = ft.Feature(log_latlong_feat, primitive=Latitude())
     longitude = ft.Feature(log_latlong_feat, primitive=Longitude())
     features = [latitude, longitude]
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(instance_ids=range(15),
-                                               time_last=None)
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
     latvalues = df[latitude.get_name()].values
     lonvalues = df[longitude.get_name()].values
     assert len(latvalues) == 15
@@ -402,9 +381,8 @@ def test_haversine(es):
     log_latlong_feat2 = es['log']['latlong2']
     haversine = ft.Feature([log_latlong_feat, log_latlong_feat2], primitive=Haversine())
     features = [haversine]
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(instance_ids=range(15),
-                                               time_last=None)
+
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
     values = df[haversine.get_name()].values
     real = [0., 524.15585776, 1043.00845747, 1551.12130243,
             2042.79840241, 0., 137.86000883, 275.59396684,
@@ -419,9 +397,7 @@ def test_haversine(es):
 #     log_value_feat = es['log']['value']
 #     cum_sum = CumSum(log_value_feat, es['log']['session_id'])
 #     features = [cum_sum]
-#     pandas_backend = PandasBackend(es, features)
-#     df = pandas_backend.calculate_all_features(instance_ids=range(15),
-#                                                time_last=None)
+#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
 #     cvalues = df[cum_sum.get_name()].values
 #     assert len(cvalues) == 15
 #     cum_sum_values = [0, 5, 15, 30, 50, 0, 1, 3, 6, 0, 0, 5, 0, 7, 21]
@@ -433,9 +409,7 @@ def test_haversine(es):
 #     log_value_feat = es['log']['value']
 #     cum_min = CumMin(log_value_feat, es['log']['session_id'])
 #     features = [cum_min]
-#     pandas_backend = PandasBackend(es, features)
-#     df = pandas_backend.calculate_all_features(instance_ids=range(15),
-#                                                time_last=None)
+#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
 #     cvalues = df[cum_min.get_name()].values
 #     assert len(cvalues) == 15
 #     cum_min_values = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -447,9 +421,7 @@ def test_haversine(es):
 #     log_value_feat = es['log']['value']
 #     cum_max = CumMax(log_value_feat, es['log']['session_id'])
 #     features = [cum_max]
-#     pandas_backend = PandasBackend(es, features)
-#     df = pandas_backend.calculate_all_features(instance_ids=range(15),
-#                                                time_last=None)
+#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
 #     cvalues = df[cum_max.get_name()].values
 #     assert len(cvalues) == 15
 #     cum_max_values = [0, 5, 10, 15, 20, 0, 1, 2, 3, 0, 0, 5, 0, 7, 14]
@@ -463,9 +435,7 @@ def test_haversine(es):
 #                      use_previous=Timedelta(3, 'observations',
 #                                             entity=es['log']))
 #     features = [cum_sum]
-#     pandas_backend = PandasBackend(es, features)
-#     df = pandas_backend.calculate_all_features(instance_ids=range(15),
-#                                                time_last=None)
+#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
 #     cvalues = df[cum_sum.get_name()].values
 #     assert len(cvalues) == 15
 #     cum_sum_values = [0, 5, 15, 30, 45, 0, 1, 3, 6, 0, 0, 5, 0, 7, 21]
@@ -485,9 +455,7 @@ def test_haversine(es):
 #                      use_previous=Timedelta(3, 'observations',
 #                                             entity=es['log']))
 #     features = [cum_sum]
-#     pandas_backend = PandasBackend(es, features)
-#     df = pandas_backend.calculate_all_features(instance_ids=range(15),
-#                                                time_last=None)
+#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
 #     cvalues = df[cum_sum.get_name()].values
 #     assert len(cvalues) == 15
 #     cum_sum_values = [0, 5, 15, 30, 45, 0, 1, 3, 6, 0, 0, 5, 0, 7, 21]
@@ -502,9 +470,7 @@ def test_haversine(es):
 #     cum_sum = CumSum(log_value_feat, dfeat,
 #                      where=compare_feat)
 #     features = [cum_sum]
-#     pandas_backend = PandasBackend(es, features)
-#     df = pandas_backend.calculate_all_features(instance_ids=range(15),
-#                                                time_last=None)
+#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
 #     cvalues = df[cum_sum.get_name()].values
 #     assert len(cvalues) == 15
 #     cum_sum_values = [0, 5, 15, 30, 50, 50, 50, 50, 50, 50,
@@ -526,9 +492,7 @@ def test_haversine(es):
 #                      use_previous=Timedelta(3, 'observations',
 #                                             entity=es['log']))
 #     features = [cum_sum]
-#     pandas_backend = PandasBackend(es, features)
-#     df = pandas_backend.calculate_all_features(instance_ids=range(15),
-#                                                time_last=None)
+#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
 
 #     cum_sum_values = [0, 5, 15, 30, 45, 45, 45, 45, 45, 45,
 #                       0, 5, 5, 12, 26]
@@ -547,9 +511,7 @@ def test_haversine(es):
 #                                   ['coke_zero'] * 2)
 #     cum_sum = CumSum(log_value_feat, es['log']['product_id'])
 #     features = [cum_sum]
-#     pandas_backend = PandasBackend(es, features)
-#     df = pandas_backend.calculate_all_features(instance_ids=range(15),
-#                                                time_last=None)
+#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
 #     cvalues = df[cum_sum.get_name()].values
 #     assert len(cvalues) == 15
 #     cum_sum_values = [0, 5, 15,
@@ -579,9 +541,7 @@ def test_haversine(es):
 #                      es["log"]["datetime"],
 #                      use_previous=Timedelta(40, 'seconds'))
 #     features = [cum_sum]
-#     pandas_backend = PandasBackend(es, features)
-#     df = pandas_backend.calculate_all_features(instance_ids=range(15),
-#                                                time_last=None)
+#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
 #     cvalues = df[cum_sum.get_name()].values
 #     assert len(cvalues) == 15
 #     cum_sum_values = [0, 5, 15,
@@ -605,9 +565,7 @@ def test_haversine(es):
 #                      where=compare_feat,
 #                      use_previous=Timedelta(40, 'seconds'))
 #     features = [cum_sum]
-#     pandas_backend = PandasBackend(es, features)
-#     df = pandas_backend.calculate_all_features(instance_ids=range(15),
-#                                                time_last=None)
+#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
 
 #     cum_sum_values = [0, 5, 15, 30, 50, 0, 0, 0, 0, 0,
 #                       0, 5, 0, 7, 21]
@@ -636,9 +594,7 @@ def test_haversine(es):
 #     log_value_feat = es['log']['value']
 #     cum_mean = CumMean(log_value_feat, es['log']['session_id'])
 #     features = [cum_mean]
-#     pandas_backend = PandasBackend(es, features)
-#     df = pandas_backend.calculate_all_features(instance_ids=range(15),
-#                                                time_last=None)
+#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
 #     cvalues = df[cum_mean.get_name()].values
 #     assert len(cvalues) == 15
 #     cum_mean_values = [0, 2.5, 5, 7.5, 10, 0, .5, 1, 1.5, 0, 0, 2.5, 0, 3.5, 7]
@@ -652,9 +608,7 @@ def test_haversine(es):
 #                        use_previous=Timedelta(3, 'observations',
 #                                               entity=es['log']))
 #     features = [cum_mean]
-#     pandas_backend = PandasBackend(es, features)
-#     df = pandas_backend.calculate_all_features(instance_ids=range(15),
-#                                                time_last=None)
+#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
 #     cvalues = df[cum_mean.get_name()].values
 #     assert len(cvalues) == 15
 #     cum_mean_values = [0, 2.5, 5, 10, 15, 0, .5, 1, 2, 0, 0, 2.5, 0, 3.5, 7]
@@ -669,9 +623,7 @@ def test_haversine(es):
 #     cum_mean = CumMean(log_value_feat, dfeat,
 #                        where=compare_feat)
 #     features = [cum_mean]
-#     pandas_backend = PandasBackend(es, features)
-#     df = pandas_backend.calculate_all_features(instance_ids=range(15),
-#                                                time_last=None)
+#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
 #     cvalues = df[cum_mean.get_name()].values
 #     assert len(cvalues) == 15
 #     cum_mean_values = [0, 5, 7.5, 10, 12.5, 12.5, 12.5, 12.5, 12.5, 12.5,
@@ -694,9 +646,7 @@ def test_haversine(es):
 #                        use_previous=Timedelta(2, 'observations',
 #                                               entity=es['log']))
 #     features = [cum_mean]
-#     pandas_backend = PandasBackend(es, features)
-#     df = pandas_backend.calculate_all_features(instance_ids=range(15),
-#                                                time_last=None)
+#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
 
 #     cum_mean_values = [0, 5, 7.5, 12.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5,
 #                        0, 5, 5, 6, 10.5]
@@ -710,9 +660,7 @@ def test_haversine(es):
 #     log_id_feat = es['log']['id']
 #     cum_count = CumCount(log_id_feat, es['log']['session_id'])
 #     features = [cum_count]
-#     pandas_backend = PandasBackend(es, features)
-#     df = pandas_backend.calculate_all_features(instance_ids=range(15),
-#                                                time_last=None)
+#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
 #     cvalues = df[cum_count.get_name()].values
 #     assert len(cvalues) == 15
 #     cum_count_values = [1, 2, 3, 4, 5, 1, 2, 3, 4, 1, 1, 2, 1, 2, 3]
@@ -725,9 +673,8 @@ def test_text_primitives(es):
     chars = ft.Feature(es['log']['comments'], primitive=NumCharacters())
 
     features = [words, chars]
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(instance_ids=range(15),
-                                               time_last=None)
+
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
 
     word_counts = [514, 3, 3, 644, 1268, 1269, 177, 172, 79,
                    240, 1239, 3, 3, 3, 3]
@@ -745,8 +692,7 @@ def test_text_primitives(es):
 def test_isin_feat(es):
     isin = ft.Feature(es['log']['product_id'], primitive=IsIn(list_of_outputs=["toothpaste", "coke zero"]))
     features = [isin]
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(range(8), None)
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8))
     true = [True, True, True, False, False, True, True, True]
     v = df[isin.get_name()].values.tolist()
     assert true == v
@@ -755,8 +701,7 @@ def test_isin_feat(es):
 def test_isin_feat_other_syntax(es):
     isin = ft.Feature(es['log']['product_id']).isin(["toothpaste", "coke zero"])
     features = [isin]
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(range(8), None)
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8))
     true = [True, True, True, False, False, True, True, True]
     v = df[isin.get_name()].values.tolist()
     assert true == v
@@ -765,8 +710,7 @@ def test_isin_feat_other_syntax(es):
 def test_isin_feat_other_syntax_int(es):
     isin = ft.Feature(es['log']['value']).isin([5, 10])
     features = [isin]
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(range(8), None)
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8))
     true = [False, True, True, False, False, False, False, False]
     v = df[isin.get_name()].values.tolist()
     assert true == v
@@ -793,24 +737,21 @@ def test_isin_feat_custom(es):
 
     isin = ft.Feature(es['log']['product_id'], primitive=IsIn(list_of_outputs=["toothpaste", "coke zero"]))
     features = [isin]
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(range(8), None)
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8))
     true = [True, True, True, False, False, True, True, True]
     v = df[isin.get_name()].values.tolist()
     assert true == v
 
     isin = ft.Feature(es['log']['product_id']).isin(["toothpaste", "coke zero"])
     features = [isin]
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(range(8), None)
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8))
     true = [True, True, True, False, False, True, True, True]
     v = df[isin.get_name()].values.tolist()
     assert true == v
 
     isin = ft.Feature(es['log']['value']).isin([5, 10])
     features = [isin]
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(range(8), None)
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8))
     true = [False, True, True, False, False, False, False, False]
     v = df[isin.get_name()].values.tolist()
     assert true == v
@@ -821,8 +762,7 @@ def test_isnull_feat(es):
     diff = ft.Feature([value, es['log']['session_id']], primitive=Diff())
     isnull = ft.Feature(diff, primitive=IsNull())
     features = [isnull]
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(range(15), None)
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
     # correct_vals_diff = [
     #     np.nan, 5, 5, 5, 5, np.nan, 1, 1, 1, np.nan, np.nan, 5, np.nan, 7, 7]
     correct_vals = [True, False, False, False, False, True, False, False,

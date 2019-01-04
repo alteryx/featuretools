@@ -96,6 +96,7 @@ def test_overrides(es):
             assert o.hash() == f.hash()
 
 
+
 def test_override_boolean(es):
     count = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
     count_lo = ft.Feature(count,primitive=GreaterThanScalar(1))
@@ -116,44 +117,45 @@ def test_override_boolean(es):
         assert v == test
 
 
-# M TODO
-# def test_scalar_overrides(es):
-#     value = ft.Feature(es['log']['value'])
+def test_scalar_overrides(es):
+    value = ft.Feature(es['log']['value'])
 
-#     feats = [AddNumeric, SubtractNumeric, MultiplyNumeric, DivideNumeric, GreaterThan,
-#              LessThan, Equal, NotEqual, GreaterThanEqualTo, LessThanEqualTo]
+    feats = [AddNumericScalar, SubtractNumericScalar, MultiplyNumericScalar, DivideNumericScalar,
+             GreaterThanScalar, LessThanScalar, EqualScalar, NotEqualScalar,
+             GreaterThanEqualToScalar, LessThanEqualToScalar]
+
+    overrides = [
+            value + 2,
+            value - 2,
+            value * 2,
+            value / 2,
+            value > 2,
+            value < 2,
+            value == 2,
+            value != 2,
+            value >= 2,
+            value <= 2,
+    ]
+
+    for feat in feats:
+        f = ft.Feature(value, primitive=feat(2))
+        o = overrides.pop(0)
+        assert o.hash() == f.hash()
 
 
-#     overrides = [
-#             value + 2,
-#             value - 2,
-#             value * 2,
-#             value / 2,
-#             value > 2,
-#             value < 2,
-#             value == 2,
-#             value != 2,
-#             value >= 2,
-#             value <= 2,
-#     ]
+    # M TODO - test these cases
+    # our_reverse_overrides = [
+    #     2 + value2,
+    #     2 - value2,
+    #     2 * value2,
+    #     2 / value2,
+    #     2 < value2,
+    #     2 > value2,
+    #     2 == value2,
+    #     2 != value2,
+    #     2 <= value2,
+    #     2 >= value2]
 
-#     our_reverse_overrides = [
-#         2 + value2,
-#         2 - value2,
-#         2 * value2,
-#         2 / value2,
-#         2 < value2,
-#         2 > value2,
-#         2 == value2,
-#         2 != value2,
-#         2 <= value2,
-#         2 >= value2]
-
-#     for left, right in compares:
-#         for feat in feats:
-#             f = ft.Feature([left, right], primitive=feat)
-#             o = overrides.pop(0)
-#             assert o.hash() == f.hash()
 
 
 def test_override_cmp_from_variable(es):

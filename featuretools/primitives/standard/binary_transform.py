@@ -1,5 +1,6 @@
 from builtins import str
 
+import pandas as pd
 import numpy as np
 
 from ..base.transform_primitive_base import TransformPrimitive
@@ -28,7 +29,7 @@ class GreaterThanScalar(TransformPrimitive):
 
     def get_function(self):
         def greater_than_scalar(vals):
-            return vals > self.value
+            return pd.Series(vals) > self.value
         return greater_than_scalar
 
     def generate_name(self, base_feature_names):
@@ -57,7 +58,7 @@ class GreaterThanEqualToScalar(TransformPrimitive):
 
     def get_function(self):
         def greater_than_equal_to_scalar(vals):
-            return vals >= self.value
+            return pd.Series(vals) >= self.value
         return greater_than_equal_to_scalar
 
     def generate_name(self, base_feature_names):
@@ -86,7 +87,7 @@ class LessThanScalar(TransformPrimitive):
 
     def get_function(self):
         def less_than_scalar(vals):
-            return vals < self.value
+            return pd.Series(vals) < self.value
         return less_than_scalar
 
     def generate_name(self, base_feature_names):
@@ -115,7 +116,7 @@ class LessThanEqualToScalar(TransformPrimitive):
 
     def get_function(self):
         def less_than_equal_to_scalar(vals):
-            return vals <= self.value
+            return pd.Series(vals) <= self.value
         return less_than_equal_to_scalar
 
     def generate_name(self, base_feature_names):
@@ -146,7 +147,7 @@ class EqualScalar(TransformPrimitive):
 
     def get_function(self):
         def equal_scalar(vals):
-            return vals == self.value
+            return pd.Series(vals) == self.value
         return equal_scalar
 
     def generate_name(self, base_feature_names):
@@ -177,7 +178,7 @@ class NotEqualScalar(TransformPrimitive):
 
     def get_function(self):
         def not_equal_scalar(vals):
-            return vals != self.value
+            return pd.Series(vals) != self.value
         return not_equal_scalar
 
     def generate_name(self, base_feature_names):
@@ -208,7 +209,7 @@ class AddNumericScalar(TransformPrimitive):
 
     def get_function(self):
         def add_scalar(vals):
-            return vals + self.value
+            return pd.Series(vals) + self.value
         return add_scalar
 
     def generate_name(self, base_feature_names):
@@ -239,7 +240,7 @@ class SubtractNumericScalar(TransformPrimitive):
 
     def get_function(self):
         def subtract_scalar(vals):
-            return vals - self.value
+            return pd.Series(vals) - self.value
         return subtract_scalar
 
     def generate_name(self, base_feature_names):
@@ -270,7 +271,7 @@ class MultiplyNumericScalar(TransformPrimitive):
 
     def get_function(self):
         def multiply_scalar(vals):
-            return vals * self.value
+            return pd.Series(vals) * self.value
         return multiply_scalar
 
     def generate_name(self, base_feature_names):
@@ -299,7 +300,7 @@ class DivideNumericScalar(TransformPrimitive):
 
     def get_function(self):
         def divide_scalar(vals):
-            return vals / self.value
+            return pd.Series(vals) / self.value
         return divide_scalar
 
     def generate_name(self, base_feature_names):
@@ -345,7 +346,7 @@ class ModuloNumericScalar(TransformPrimitive):
 
     def get_function(self):
         def modulo_scalar(vals):
-            return vals % self.value
+            return pd.Series(vals) % self.value
         return modulo_scalar
 
     def generate_name(self, base_feature_names):
