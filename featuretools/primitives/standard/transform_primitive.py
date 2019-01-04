@@ -303,7 +303,7 @@ class Negate(TransformPrimitive):
         return negate
 
     def generate_name(self, base_feature_names):
-        return "-%s" % (base_feature_names[0])
+        return "-(%s)" % (base_feature_names[0])
 
 
 class Not(TransformPrimitive):

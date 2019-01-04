@@ -20,6 +20,7 @@ from featuretools.primitives import (
     # CumSum,
     Day,
     Diff,
+    DivideByFeature,
     DivideNumeric,
     DivideNumericScalar,
     Equal,
@@ -216,30 +217,25 @@ def test_compare_all_nans(es):
 
 
 def test_arithmetic_of_val(es):
-    to_test = [(AddNumericScalar, [2.0, 7.0, 12.0, 17.0], [2.0, 7.0, 12.0, 17.0]),
-               (SubtractNumericScalar, [-2.0, 3.0, 8.0, 13.0], [2.0, -3.0, -8.0, -13.0]),
-               (MultiplyNumericScalar, [0, 10, 20, 30], [0, 10, 20, 30]),
-               (DivideNumericScalar, [0, 2.5, 5, 7.5], [np.inf, 0.4, 0.2, 2 / 15.0],
-                [np.nan, np.inf, np.inf, np.inf])]
+    to_test = [(AddNumericScalar, [2.0, 7.0, 12.0, 17.0]),
+               (SubtractNumericScalar, [-2.0, 3.0, 8.0, 13.0]),
+               (MultiplyNumericScalar, [0, 10, 20, 30]),
+               (DivideNumericScalar, [0, 2.5, 5, 7.5]),
+               (DivideByFeature, [np.inf, 0.4, 0.2, 2 / 15.0])]
 
     features = []
-    logs = es['log']
-
     for test in to_test:
+        features.append(ft.Feature(es['log']['value'], primitive=test[0](2)))
 
-        features.append(ft.Feature(logs['value'], primitive=test[0](2)))
-
-    features.append(ft.Feature(logs['value']) / 0)
+    features.append(ft.Feature(es['log']['value']) / 0)
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
 
-    for i, test in enumerate(to_test):
-        v = df[features[2 * i].get_name()].values.tolist()
+    for f, test in zip(features, to_test):
+        v = df[f.get_name()].values.tolist()
         assert v == test[1]
-        v = df[features[2 * i + 1].get_name()].values.tolist()
-        assert v == test[2]
 
-    test = to_test[-1][-1]
+    test = [np.nan, np.inf, np.inf, np.inf]
     v = df[features[-1].get_name()].values.tolist()
     assert (np.isnan(v[0]))
     assert v[1:] == test[1:]
@@ -343,8 +339,10 @@ def test_arithmetic_of_agg(es):
     for test in to_test:
         features.append(ft.Feature([count_customer, count_stores], primitive=test[0]()))
 
+    ids = ['United States', 'Mexico']
     df = ft.calculate_feature_matrix(entityset=es, features=features,
-                                     instance_ids=['United States', 'Mexico'])
+                                     instance_ids=ids)
+    df = df.loc[ids]
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
