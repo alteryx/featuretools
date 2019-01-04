@@ -8,7 +8,7 @@ lint:
 	flake8 featuretools && isort --check-only --recursive featuretools
 
 lint-fix:
-	autopep8 --in-place --recursive --max-line-length=100 --exclude="*/migrations/*" --select="E225,E303,E302" featuretools
+	autopep8 --in-place --recursive --max-line-length=100 --exclude="*/migrations/*" --select="E225,E303,E302,E203" featuretools
 
 
 test: lint

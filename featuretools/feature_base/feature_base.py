@@ -1,9 +1,7 @@
 from featuretools import primitives
 from featuretools.primitives.base import PrimitiveBase, AggregationPrimitive, TransformPrimitive
-import copy
 from builtins import zip
 
-from featuretools.entityset import Entity, EntitySet
 from featuretools.utils.wrangle import (
     _check_time_against_column,
     _check_timedelta
@@ -484,7 +482,7 @@ class Feature(object):
             assert isinstance(primitive, TransformPrimitive) or issubclass(primitive, TransformPrimitive)
             return TransformFeature(base, primitive=primitive)
 
-        raise Expection("Unrecognized feature initialization")
+        raise Exception("Unrecognized feature initialization")
 
 
 def _check_feature(feature):

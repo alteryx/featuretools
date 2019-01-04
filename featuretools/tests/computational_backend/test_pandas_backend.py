@@ -186,9 +186,7 @@ def test_make_agg_feat_where_different_identity_feat(entityset, backend):
                                 where=ft.Feature(entityset['log']['datetime'], primitive=where_cmp(datetime(2011, 4, 10, 10, 40, 1))),
                                 primitive=Count))
 
-    pandas_backend = backend(feats)
-    df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2, 3],
-                                               time_last=None)
+    df = ft.calculate_feature_matrix(entityset=es, features=feats, instance_ids=[0, 1, 2])
 
     for i, where_cmp in enumerate(where_cmps):
         feat = feats[i]

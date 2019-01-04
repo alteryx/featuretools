@@ -3,7 +3,6 @@
 import copy
 import os
 
-import numpy as np
 import pandas as pd
 import pytest
 from pympler.asizeof import asizeof
@@ -33,7 +32,6 @@ from featuretools.feature_base import (
 )
 from featuretools.synthesis import DeepFeatureSynthesis
 from featuretools.utils.pickle_utils import save_obj_pickle
-from featuretools.variable_types import Numeric
 
 
 @pytest.fixture(scope='module')
@@ -328,7 +326,7 @@ def test_drop_exact(es):
 
 
 def test_seed_features(es):
-    seed_feature_sessions = ft.Feature(es['log']["id"], parent_entity=es['sessions'] , primitive=Count)
+    seed_feature_sessions = ft.Feature(es['log']["id"], parent_entity=es['sessions'], primitive=Count)
     seed_feature_log = ft.Feature(es['log']['datetime'], primitive=Hour())
     session_agg = ft.Feature(seed_feature_log, parent_entity=es['sessions'], primitive=Last())
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
@@ -345,7 +343,7 @@ def test_seed_features(es):
 
 
 def test_dfs_builds_on_seed_features_more_than_max_depth(es):
-    seed_feature_sessions = ft.Feature(es['log']["id"], parent_entity=es['sessions'] , primitive=Count)
+    seed_feature_sessions = ft.Feature(es['log']["id"], parent_entity=es['sessions'], primitive=Count)
     seed_feature_log = ft.Feature(es['log']['datetime'], primitive=Hour())
     session_agg = ft.Feature(seed_feature_log, parent_entity=es['sessions'], primitive=Last())
 
