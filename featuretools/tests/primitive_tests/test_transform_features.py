@@ -742,7 +742,6 @@ def test_text_primitives(es):
         assert v == char_counts[i]
 
 
-
 def test_isin_feat(es):
     isin = ft.Feature(es['log']['product_id'], primitive=IsIn(list_of_outputs=["toothpaste", "coke zero"]))
     features = [isin]

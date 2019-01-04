@@ -50,6 +50,7 @@ from featuretools.primitives import (
     get_transform_primitives
 )
 
+
 @pytest.fixture
 def es():
     return make_ecommerce_entityset()
@@ -95,7 +96,6 @@ def test_overrides(es):
             assert o.hash() == f.hash()
 
 
-
 def test_override_boolean(es):
     count = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
     count_lo = ft.Feature(count,primitive=GreaterThanScalar(1))
@@ -109,8 +109,6 @@ def test_override_boolean(es):
     features.append(count_lo.OR(count_hi))
     features.append(count_lo.AND(count_hi))
     features.append(~(count_lo.AND(count_hi)))
-
-
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2])
     for i, test in enumerate(to_test):
@@ -158,15 +156,12 @@ def test_override_boolean(es):
 #             assert o.hash() == f.hash()
 
 
-
 def test_override_cmp_from_variable(es):
     count_lo = ft.Feature(es['log']['value']) > 1
 
     to_test = [False, True, True]
 
     features = [count_lo]
-
-
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2])
     v = df[count_lo.get_name()].values.tolist()
@@ -198,7 +193,6 @@ def test_override_cmp(es):
                [True, True, False]]
     features = [gt_lo, gt_other, ge_lo, ge_other, lt_hi,
                 lt_other, le_hi, le_other, ne_lo, ne_other]
-
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2])
     for i, test in enumerate(to_test):
