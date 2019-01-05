@@ -69,7 +69,7 @@ class Day(TransformPrimitive):
     """Transform a Datetime feature into the day."""
     name = "day"
     input_types = [Datetime]
-    return_type = Numeric
+    return_type = Ordinal
 
     def get_function(self):
         def day(vals):
@@ -81,7 +81,7 @@ class Hour(TransformPrimitive):
     """Transform a Datetime feature into the hour."""
     name = "hour"
     input_types = [Datetime]
-    return_type = Numeric
+    return_type = Ordinal
 
     def get_function(self):
         def hour(vals):
@@ -117,7 +117,7 @@ class Week(TransformPrimitive):
     """Transform a Datetime feature into the week."""
     name = "week"
     input_types = [Datetime]
-    return_type = Numeric
+    return_type = Ordinal
 
     def get_function(self):
         def week(vals):
@@ -129,7 +129,7 @@ class Month(TransformPrimitive):
     """Transform a Datetime feature into the  "month."""
     name = "month"
     input_types = [Datetime]
-    return_type = Numeric
+    return_type = Ordinal
 
     def get_function(self):
         def month(vals):
@@ -141,7 +141,7 @@ class Year(TransformPrimitive):
     """Transform a Datetime feature into the year."""
     name = "year"
     input_types = [Datetime]
-    return_type = Numeric
+    return_type = Ordinal
 
     def get_function(self):
         def year(vals):
@@ -165,7 +165,7 @@ class Weekday(TransformPrimitive):
     """Transform a Datetime feature into the weekday."""
     name = "weekday"
     input_types = [Datetime]
-    return_type = Numeric
+    return_type = Ordinal
 
     def get_function(self):
         def weekday(vals):

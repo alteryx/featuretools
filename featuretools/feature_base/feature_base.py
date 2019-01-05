@@ -23,6 +23,13 @@ class FeatureBase(object):
     expanding = False
 
     def __init__(self, entity, base_features, primitive):
+        """Base class for all features
+
+        Args:
+            entity (Entity): entity this feature is being calculated for
+            base_featres (list[FeatureBase]): list of base features for primitive
+            primitive (): primitive to calculate. if not initilized when passed, gets initialized with no arguments
+        """
         assert all(isinstance(f, FeatureBase) for f in base_features), \
             "All base features must be features"
 

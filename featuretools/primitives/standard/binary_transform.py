@@ -4,12 +4,12 @@ import pandas as pd
 import numpy as np
 
 from ..base.transform_primitive_base import TransformPrimitive
-from featuretools.variable_types import Boolean, Numeric, Variable, Datetime
+from featuretools.variable_types import Boolean, Numeric, Variable, Datetime, Ordinal
 
 
 class GreaterThan(TransformPrimitive):
     name = "greater_than"
-    input_types = [[Numeric, Numeric], [Datetime, Datetime]]
+    input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
 
     def get_function(self):
@@ -21,7 +21,7 @@ class GreaterThan(TransformPrimitive):
 
 class GreaterThanScalar(TransformPrimitive):
     name = "greater_than_scalar"
-    input_types = [[Numeric], [Datetime]]
+    input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
 
     def __init__(self, value=0):
@@ -29,6 +29,7 @@ class GreaterThanScalar(TransformPrimitive):
 
     def get_function(self):
         def greater_than_scalar(vals):
+            # convert series to handle both numeric and datetime case
             return pd.Series(vals) > self.value
         return greater_than_scalar
 
@@ -38,7 +39,7 @@ class GreaterThanScalar(TransformPrimitive):
 
 class GreaterThanEqualTo(TransformPrimitive):
     name = "greater_than_equal_to"
-    input_types = [[Numeric, Numeric], [Datetime, Datetime]]
+    input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
 
     def get_function(self):
@@ -50,7 +51,7 @@ class GreaterThanEqualTo(TransformPrimitive):
 
 class GreaterThanEqualToScalar(TransformPrimitive):
     name = "greater_than_equal_to_scalar"
-    input_types = [[Numeric], [Datetime]]
+    input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
 
     def __init__(self, value=0):
@@ -58,6 +59,7 @@ class GreaterThanEqualToScalar(TransformPrimitive):
 
     def get_function(self):
         def greater_than_equal_to_scalar(vals):
+            # convert series to handle both numeric and datetime case
             return pd.Series(vals) >= self.value
         return greater_than_equal_to_scalar
 
@@ -67,7 +69,7 @@ class GreaterThanEqualToScalar(TransformPrimitive):
 
 class LessThan(TransformPrimitive):
     name = "less_than"
-    input_types = [[Numeric, Numeric], [Datetime, Datetime]]
+    input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
 
     def get_function(self):
@@ -79,7 +81,7 @@ class LessThan(TransformPrimitive):
 
 class LessThanScalar(TransformPrimitive):
     name = "less_than_scalar"
-    input_types = [[Numeric], [Datetime]]
+    input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
 
     def __init__(self, value=0):
@@ -87,6 +89,7 @@ class LessThanScalar(TransformPrimitive):
 
     def get_function(self):
         def less_than_scalar(vals):
+            # convert series to handle both numeric and datetime case
             return pd.Series(vals) < self.value
         return less_than_scalar
 
@@ -96,7 +99,7 @@ class LessThanScalar(TransformPrimitive):
 
 class LessThanEqualTo(TransformPrimitive):
     name = "less_than_equal_to"
-    input_types = [[Numeric, Numeric], [Datetime, Datetime]]
+    input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
 
     def get_function(self):
@@ -108,7 +111,7 @@ class LessThanEqualTo(TransformPrimitive):
 
 class LessThanEqualToScalar(TransformPrimitive):
     name = "less_than_equal_to_scalar"
-    input_types = [[Numeric], [Datetime]]
+    input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
 
     def __init__(self, value=0):
@@ -116,6 +119,7 @@ class LessThanEqualToScalar(TransformPrimitive):
 
     def get_function(self):
         def less_than_equal_to_scalar(vals):
+            # convert series to handle both numeric and datetime case
             return pd.Series(vals) <= self.value
         return less_than_equal_to_scalar
 
@@ -147,7 +151,8 @@ class EqualScalar(TransformPrimitive):
 
     def get_function(self):
         def equal_scalar(vals):
-            return pd.Series(vals) == self.value
+            # case to correct pandas type for comparison
+            return pd.Series(vals).astype(pd.Series([self.value]).dtype) == self.value
         return equal_scalar
 
     def generate_name(self, base_feature_names):
@@ -178,7 +183,8 @@ class NotEqualScalar(TransformPrimitive):
 
     def get_function(self):
         def not_equal_scalar(vals):
-            return pd.Series(vals) != self.value
+            # case to correct pandas type for comparison
+            return pd.Series(vals).astype(pd.Series([self.value]).dtype) != self.value
         return not_equal_scalar
 
     def generate_name(self, base_feature_names):
@@ -209,7 +215,7 @@ class AddNumericScalar(TransformPrimitive):
 
     def get_function(self):
         def add_scalar(vals):
-            return pd.Series(vals) + self.value
+            return vals + self.value
         return add_scalar
 
     def generate_name(self, base_feature_names):
@@ -240,7 +246,7 @@ class SubtractNumericScalar(TransformPrimitive):
 
     def get_function(self):
         def subtract_scalar(vals):
-            return pd.Series(vals) - self.value
+            return vals - self.value
         return subtract_scalar
 
     def generate_name(self, base_feature_names):
@@ -271,7 +277,7 @@ class MultiplyNumericScalar(TransformPrimitive):
 
     def get_function(self):
         def multiply_scalar(vals):
-            return pd.Series(vals) * self.value
+            return vals * self.value
         return multiply_scalar
 
     def generate_name(self, base_feature_names):
@@ -300,7 +306,7 @@ class DivideNumericScalar(TransformPrimitive):
 
     def get_function(self):
         def divide_scalar(vals):
-            return pd.Series(vals) / self.value
+            return vals / self.value
         return divide_scalar
 
     def generate_name(self, base_feature_names):
@@ -346,7 +352,7 @@ class ModuloNumericScalar(TransformPrimitive):
 
     def get_function(self):
         def modulo_scalar(vals):
-            return pd.Series(vals) % self.value
+            return vals % self.value
         return modulo_scalar
 
     def generate_name(self, base_feature_names):

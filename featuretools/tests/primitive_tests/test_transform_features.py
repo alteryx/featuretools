@@ -77,6 +77,36 @@ def int_es():
     return make_ecommerce_entityset(with_integer_time_index=True)
 
 
+def test_init_and_name(es):
+    log = es['log']
+    rating = ft.Feature(es["products"]["rating"], es["log"])
+    features = [ft.Feature(v) for v in log.variables] +\
+        [ft.Feature(rating, primitive=GreaterThanScalar(2.5))]
+    # Add Timedelta feature
+    # features.append(pd.Timestamp.now() - ft.Feature(log['datetime']))
+    for transform_prim in get_transform_primitives().values():
+
+        # skip automated testing if a few special cases
+        if transform_prim in [NotEqual, Equal]:
+            continue
+
+        # use the input_types matching function from DFS
+        input_types = transform_prim.input_types
+        if type(input_types[0]) == list:
+            matching_inputs = match(input_types[0], features)
+        else:
+            matching_inputs = match(input_types, features)
+        if len(matching_inputs) == 0:
+            raise Exception(
+                "Transform Primitive %s not tested" % transform_prim.name)
+        for s in matching_inputs:
+            instance = ft.Feature(s, primitive=transform_prim())
+
+            # try to get name and calculate
+            instance.get_name()
+            ft.calculate_feature_matrix([instance], entityset=es).head(5)
+
+
 def test_make_trans_feat(es):
     f = ft.Feature(es['log']['datetime'], primitive=Hour())
 
@@ -769,34 +799,6 @@ def test_isnull_feat(es):
     assert correct_vals == values
 
 
-def test_init_and_name(es):
-    log = es['log']
-    rating = ft.Feature(es["products"]["rating"], es["log"])
-    features = [ft.Feature(v) for v in log.variables] +\
-        [ft.Feature(rating, primitive=GreaterThanScalar(2.5))]
-    # Add Timedelta feature
-    # features.append(pd.Timestamp.now() - ft.Feature(log['datetime']))
-    for transform_prim in get_transform_primitives().values():
-
-        # skip automated testing if a few special cases
-        if transform_prim in [NotEqual, Equal]:
-            continue
-
-        # use the input_types matching function from DFS
-        input_types = transform_prim.input_types
-        if type(input_types[0]) == list:
-            matching_inputs = match(input_types[0], features)
-        else:
-            matching_inputs = match(input_types, features)
-        if len(matching_inputs) == 0:
-            raise Exception(
-                "Transform Primitive %s not tested" % transform_prim.name)
-        for s in matching_inputs:
-            instance = ft.Feature(s, primitive=transform_prim())
-
-            # try to get name and calculate
-            instance.get_name()
-            ft.calculate_feature_matrix([instance], entityset=es).head(5)
 
 
 def test_percentile(es):
