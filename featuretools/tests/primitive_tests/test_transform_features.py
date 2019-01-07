@@ -6,7 +6,6 @@ import pytest
 
 from ..testing_utils import make_ecommerce_entityset
 
-from featuretools import Timedelta
 from featuretools.computational_backends import PandasBackend
 from featuretools.primitives import (
     Absolute,
@@ -25,26 +24,19 @@ from featuretools.primitives import (
     DivideNumericScalar,
     Equal,
     EqualScalar,
-    GreaterThan,
     GreaterThanScalar,
-    GreaterThanEqualTo,
     GreaterThanEqualToScalar,
     Haversine,
     Hour,
     IsIn,
     IsNull,
     Latitude,
-    LessThan,
     LessThanScalar,
-    LessThanEqualTo,
     LessThanEqualToScalar,
     Longitude,
-    ModuloNumeric,
-    ModuloNumericScalar,
     Mode,
     MultiplyNumeric,
     MultiplyNumericScalar,
-    Negate,
     Not,
     NotEqual,
     NotEqualScalar,
@@ -56,6 +48,7 @@ from featuretools.primitives import (
     Sum,
     get_transform_primitives
 )
+
 import featuretools as ft
 from featuretools.primitives.base import (
     make_trans_primitive
@@ -911,10 +904,10 @@ def test_percentile_with_cutoff(es):
 def test_two_kinds_of_dependents(es):
     v = ft.Feature(es['log']['value'])
     product = ft.Feature(es['log']['product_id'])
-    agg = ft.Feature(v, parent_entity=es['customers'], where= product == 'coke zero', primitive=Sum)
+    agg = ft.Feature(v, parent_entity=es['customers'], where=product == 'coke zero', primitive=Sum)
     p = ft.Feature(agg, primitive=Percentile())
     g = ft.Feature(agg, primitive=Absolute())
-    agg2 = ft.Feature(v, parent_entity=es['sessions'], where= product == 'coke zero', primitive=Sum)
+    agg2 = ft.Feature(v, parent_entity=es['sessions'], where=product == 'coke zero', primitive=Sum)
     # Adding this feature in tests line 218 in pandas_backend
     # where we remove columns in result_frame that already exist
     # in the output entity_frames in preparation for pd.concat

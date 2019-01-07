@@ -415,7 +415,7 @@ class AggregationFeature(FeatureBase):
 
     def copy(self):
         return AggregationFeature(self.base_features, parent_entity=self.parent_entity,
-                                    primitive=self.primitive, use_previous= self.use_previous, where=self.where)
+                                  primitive=self.primitive, use_previous=self.use_previous, where=self.where)
 
     def _where_str(self):
         if self.where is not None:

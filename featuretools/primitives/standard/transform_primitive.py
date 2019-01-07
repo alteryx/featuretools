@@ -14,7 +14,6 @@ from featuretools.variable_types import (
     Boolean,
     Datetime,
     DatetimeTimeIndex,
-    Discrete,
     Id,
     LatLong,
     Numeric,

@@ -31,7 +31,6 @@ from featuretools.synthesis.deep_feature_synthesis import (
 from featuretools.variable_types import (
     Datetime,
     DatetimeTimeIndex,
-    Discrete,
     Index,
     Numeric,
     Variable

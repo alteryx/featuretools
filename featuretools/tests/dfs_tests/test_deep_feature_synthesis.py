@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import copy
-import os
 
 import pandas as pd
 import pytest
@@ -17,7 +16,6 @@ from featuretools.primitives import (
     Diff,
     Hour,
     Last,
-    Mean,
     Mode,
     Sum,
     TimeSincePrevious
@@ -28,7 +26,6 @@ from featuretools.feature_base import (
     IdentityFeature,
     TransformFeature
 )
-from featuretools.primitives import make_agg_primitive
 from featuretools.synthesis import DeepFeatureSynthesis
 
 
@@ -427,9 +424,9 @@ def test_where_primitives(es):
     features = dfs_constrained.build_features()
 
     where_feats_unconstrained = [f for f in features_unconstrained
-                                 if isinstance(f, AggregationFeature) and  f.where is not None]
+                                 if isinstance(f, AggregationFeature) and f.where is not None]
     where_feats = [f for f in features
-                   if isinstance(f, AggregationFeature) and  f.where is not None]
+                   if isinstance(f, AggregationFeature) and f.where is not None]
 
     assert len(where_feats_unconstrained) >= 1
 

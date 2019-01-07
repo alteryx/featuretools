@@ -23,9 +23,6 @@ from featuretools.primitives import (
     LessThanScalar,
     LessThanEqualTo,
     LessThanEqualToScalar,
-    Longitude,
-    ModuloNumeric,
-    ModuloNumericScalar,
     MultiplyNumeric,
     MultiplyNumericScalar,
     Negate,
@@ -84,7 +81,7 @@ def test_overrides(es):
 
 def test_override_boolean(es):
     count = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
-    count_lo = ft.Feature(count,primitive=GreaterThanScalar(1))
+    count_lo = ft.Feature(count, primitive=GreaterThanScalar(1))
     count_hi = ft.Feature(count, primitive=LessThanScalar(10))
 
     to_test = [[True, True, True],
@@ -110,16 +107,16 @@ def test_scalar_overrides(es):
              GreaterThanEqualToScalar, LessThanEqualToScalar]
 
     overrides = [
-            value + 2,
-            value - 2,
-            value * 2,
-            value / 2,
-            value > 2,
-            value < 2,
-            value == 2,
-            value != 2,
-            value >= 2,
-            value <= 2,
+        value + 2,
+        value - 2,
+        value * 2,
+        value / 2,
+        value > 2,
+        value < 2,
+        value == 2,
+        value != 2,
+        value >= 2,
+        value <= 2,
     ]
 
     for feat in feats:
