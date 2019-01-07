@@ -34,19 +34,6 @@ def test_copy_features_does_not_copy_entityset(es):
     new_in_memory_size = asizeof(locals())
     assert new_in_memory_size < 2 * in_memory_size
 
-    for f, c in zip(features, copied):
-        assert f.entityset
-        assert c.entityset
-        assert id(f.entityset) == id(c.entityset)
-        if isinstance(f, AggregationFeature) and f.where:
-            assert c.where
-            assert id(f.where.entityset) == id(c.where.entityset)
-        for bf, bf_c in zip(f.base_features, c.base_features):
-            assert id(bf.entityset) == id(bf_c.entityset)
-            if isinstance(bf, AggregationFeature) and bf.where:
-                assert bf_c.where
-                assert id(bf.where.entityset) == id(bf_c.where.entityset)
-
 
 def test_get_dependencies(es):
     f = ft.Feature(es['log']['value'])
