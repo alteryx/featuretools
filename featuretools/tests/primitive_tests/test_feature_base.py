@@ -53,8 +53,8 @@ def test_get_depth(es):
     es = make_ecommerce_entityset()
     f = ft.Feature(es['log']['value'])
     g = ft.Feature(es['log']['value'])
-    agg1 = ft.Feature(f, parent_entity=es['sessions'], primitive=Last())
-    agg2 = ft.Feature(agg1, parent_entity=es['customers'], primitive=Last())
+    agg1 = ft.Feature(f, parent_entity=es['sessions'], primitive=Last)
+    agg2 = ft.Feature(agg1, parent_entity=es['customers'], primitive=Last)
     d1 = ft.Feature(agg2, es['sessions'])
     d2 = ft.Feature(d1, es['log'])
     assert d2.get_depth() == 4
@@ -77,23 +77,23 @@ def test_squared(es):
 
 
 def test_return_type_inference(es):
-    mode = ft.Feature(es["log"]["priority_level"], parent_entity=es["customers"], primitive=Mode())
+    mode = ft.Feature(es["log"]["priority_level"], parent_entity=es["customers"], primitive=Mode)
     assert mode.variable_type == es["log"]["priority_level"].__class__
 
 
 def test_return_type_inference_direct_feature(es):
-    mode = ft.Feature(es["log"]["priority_level"], parent_entity=es["customers"], primitive=Mode())
+    mode = ft.Feature(es["log"]["priority_level"], parent_entity=es["customers"], primitive=Mode)
     mode_session = ft.Feature(mode, es["sessions"])
     assert mode_session.variable_type == es["log"]["priority_level"].__class__
 
 
 def test_return_type_inference_datetime_time_index(es):
-    last = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=Last())
+    last = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=Last)
     assert last.variable_type == Datetime
 
 
 def test_return_type_inference_numeric_time_index(es_numeric):
-    last = ft.Feature(es_numeric["log"]["datetime"], parent_entity=es_numeric["customers"], primitive=Last())
+    last = ft.Feature(es_numeric["log"]["datetime"], parent_entity=es_numeric["customers"], primitive=Last)
     assert last.variable_type == Numeric
 
 
@@ -103,7 +103,7 @@ def test_return_type_inference_id(es):
     assert direct_id_feature.variable_type == Id
 
     # aggregations of Id variable types should get converted
-    mode = ft.Feature(es["log"]["session_id"], parent_entity=es["customers"], primitive=Mode())
+    mode = ft.Feature(es["log"]["session_id"], parent_entity=es["customers"], primitive=Mode)
     assert mode.variable_type == Categorical
 
     # also test direct feature of aggregation

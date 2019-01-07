@@ -320,9 +320,9 @@ def test_drop_exact(es):
 
 
 def test_seed_features(es):
-    seed_feature_sessions = ft.Feature(es['log']["id"], parent_entity=es['sessions'], primitive=Count)
+    seed_feature_sessions = ft.Feature(es['log']["id"], parent_entity=es['sessions'], primitive=Count) > 2
     seed_feature_log = ft.Feature(es['log']['datetime'], primitive=Hour())
-    session_agg = ft.Feature(seed_feature_log, parent_entity=es['sessions'], primitive=Last())
+    session_agg = ft.Feature(seed_feature_log, parent_entity=es['sessions'], primitive=Last)
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
                                    agg_primitives=[Last],
@@ -339,11 +339,11 @@ def test_seed_features(es):
 def test_dfs_builds_on_seed_features_more_than_max_depth(es):
     seed_feature_sessions = ft.Feature(es['log']["id"], parent_entity=es['sessions'], primitive=Count)
     seed_feature_log = ft.Feature(es['log']['datetime'], primitive=Hour())
-    session_agg = ft.Feature(seed_feature_log, parent_entity=es['sessions'], primitive=Last())
+    session_agg = ft.Feature(seed_feature_log, parent_entity=es['sessions'], primitive=Last)
 
     # Depth of this feat is 2 relative to session_agg, the seed feature,
     # which is greater than max_depth so it shouldn't be built
-    session_agg_trans = DirectFeature(ft.Feature(session_agg, parent_entity=es['customers'], primitive=Mode()),
+    session_agg_trans = DirectFeature(ft.Feature(session_agg, parent_entity=es['customers'], primitive=Mode),
                                       es['sessions'])
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
@@ -373,8 +373,8 @@ def test_allowed_paths(es):
     features_unconstrained = dfs_unconstrained.build_features()
 
     unconstrained_names = [f.get_name() for f in features_unconstrained]
-    customers_session_feat = ft.Feature(es['sessions']['device_type'], parent_entity=es['customers'], primitive=Last())
-    customers_session_log_feat = ft.Feature(es['log']['value'], parent_entity=es['customers'], primitive=Last())
+    customers_session_feat = ft.Feature(es['sessions']['device_type'], parent_entity=es['customers'], primitive=Last)
+    customers_session_log_feat = ft.Feature(es['log']['value'], parent_entity=es['customers'], primitive=Last)
     assert customers_session_feat.get_name() in unconstrained_names
     assert customers_session_log_feat.get_name() in unconstrained_names
 
@@ -579,8 +579,8 @@ def test_max_hlevel(es):
     feats_1 = dfs_h_1.build_features()
     feats_1 = [f.get_name() for f in feats_1]
 
-    customer_log = ft.Feature(es['log']['value'], parent_entity=es['customers'], primitive=Last())
-    session_log = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Last())
+    customer_log = ft.Feature(es['log']['value'], parent_entity=es['customers'], primitive=Last)
+    session_log = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Last)
     log_customer_log = ft.Feature(customer_log, es['log'])
     log_session_log = ft.Feature(session_log, es['log'])
     assert log_customer_log.get_name() in feats_n1

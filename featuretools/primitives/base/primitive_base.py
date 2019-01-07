@@ -11,7 +11,7 @@ class PrimitiveBase(object):
     input_types = None
     #: (:class:`.Variable`): variable type of return
     return_type = None
-    #: Default value this feature returns if no data found. defaults to np.nan
+    #: Default value this feature returns if no data found. Defaults to np.nan
     default_value = np.nan
     #: (bool): True if feature needs to know what the current calculation time
     # is (provided to computational backend as "time_last")
@@ -30,6 +30,9 @@ class PrimitiveBase(object):
     base_of_exclude = None
     # (bool) If True will only make one feature per unique set of base features
     commutative = False
+
+    def generate_name(self):
+        raise NotImplementedError("Subclass must implement")
 
     def get_function(self):
         raise NotImplementedError("Subclass must implement")

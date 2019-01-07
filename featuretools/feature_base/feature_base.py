@@ -235,9 +235,8 @@ class FeatureBase(object):
     def __truediv__(self, other):
         return self.__div__(other)
 
-    # todo
-    # def __rtruediv__(self, other):
-        # pass
+    def __rtruediv__(self, other):
+        return Feature([self], primitive=primitives.DivideByFeature(other))
 
     def __rdiv__(self, other):
         return Feature([self], primitive=primitives.DivideByFeature(other))
@@ -471,10 +470,9 @@ class TransformFeature(FeatureBase):
 
 class Feature(object):
     """
-    Alias to create feature
+    Alias to create feature. Infers the feature type based on init parameters.
     """
 
-    # def __new__(self, feature_or_var, entity=None):
     def __new__(self, base, entity=None,
                 parent_entity=None, primitive=None, use_previous=None, where=None):
 
