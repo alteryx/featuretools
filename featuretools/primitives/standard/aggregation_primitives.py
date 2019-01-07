@@ -86,7 +86,6 @@ class Max(AggregationPrimitive):
     name = "max"
     input_types = [Numeric]
     return_type = Numeric
-    # max_stack_depth = 1
     stack_on_self = False
 
     def get_function(self):
@@ -99,7 +98,6 @@ class NUnique(AggregationPrimitive):
     # todo can we use discrete in input_types instead?
     input_types = [Discrete]
     return_type = Numeric
-    # max_stack_depth = 1
     stack_on_self = False
 
     def get_function(self):
@@ -124,7 +122,6 @@ class PercentTrue(AggregationPrimitive):
     name = "percent_true"
     input_types = [Boolean]
     return_type = Numeric
-    max_stack_depth = 1
     stack_on = []
     stack_on_exclude = []
     default_value = 0
@@ -140,7 +137,6 @@ class PercentTrue(AggregationPrimitive):
 #     name = "n_most_common"
 #     input_types = [Discrete]
 #     return_type = Discrete
-#     # max_stack_depth = 1
 #     stack_on = []
 #     stack_on_exclude = []
 #     expanding = True
@@ -178,7 +174,6 @@ class AvgTimeBetween(AggregationPrimitive):
     name = "avg_time_between"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
-    # max_stack_depth = 1
 
     def get_function(self):
         def pd_avg_time_between(x):
@@ -215,7 +210,6 @@ class Median(AggregationPrimitive):
     name = "median"
     input_types = [Numeric]
     return_type = Numeric
-    # max_stack_depth = 2
 
     def get_function(self):
         return lambda x: x.median()
@@ -233,7 +227,6 @@ class Skew(AggregationPrimitive):
     return_type = Numeric
     stack_on = []
     stack_on_self = False
-    # max_stack_depth = 1
 
     def get_function(self):
         return 'skew'
@@ -245,7 +238,6 @@ class Std(AggregationPrimitive):
     name = "std"
     input_types = [Numeric]
     return_type = Numeric
-    # max_stack_depth = 2
     stack_on_self = False
 
     def get_function(self):
@@ -258,7 +250,6 @@ class Last(AggregationPrimitive):
     input_types = [Variable]
     return_type = None
     stack_on_self = False
-    # max_stack_depth = 1
 
     def get_function(self):
         def pd_last(x):

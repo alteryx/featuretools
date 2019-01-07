@@ -1,7 +1,7 @@
 Advanced Custom Primitives Guide
 --------------------------------
 
-Functions With Additonal Arguments
+Functions With Additional Arguments
 ==================================
 .. ipython:: python
     :suppress:
@@ -26,9 +26,8 @@ In order to have features defined using the primitive reflect what string is bei
 
 .. ipython:: python
 
-    def string_count_generate_name(self):
-        return u"STRING_COUNT(%s, %s)" % (self.base_features[0].get_name(),
-                                          '"'+str(self.kwargs['string']+'"'))
+    def string_count_generate_name(self, base_feature_names):
+        return u'STRING_COUNT(%s, "%s")' % (base_feature_names[0], self.kwargs['string'])
 
 
 Now that we have the function, we create the primitive using the ``make_trans_primitive`` function.
@@ -40,14 +39,14 @@ Now that we have the function, we create the primitive using the ``make_trans_pr
                                        return_type=Numeric,
                                        cls_attributes={"generate_name": string_count_generate_name})
 
-Passing in ``string="test"`` as a keyword argument when creating a StringCount feature will make "test" the value used for string when ``string_count`` is called to calculate the feature values.  Now we use this primitive to create a feature and calculate the feature values.
+Passing in ``string="test"`` as a keyword argument when initializing the `StringCount` primitive will make "test" the value used for string when ``string_count`` is called to calculate the feature values.  Now we use this primitive to define features and calculate the feature values.
 
 .. ipython:: python
 
     from featuretools.tests.testing_utils import make_ecommerce_entityset
 
     es = make_ecommerce_entityset()
-    count_the_feat = StringCount(es['log']['comments'], string="the")
+    count_the_feat = StringCount(string="the")
 
 Since ``string`` is a non-feature input Deep Feature Synthesis cannot automatically stack ``StringCount`` on other primitives to create more features.  However, a user-defined ``StringCount`` feature can be used by DFS as a seed feature that DFS can stack on top of.
 
@@ -56,5 +55,7 @@ Since ``string`` is a non-feature input Deep Feature Synthesis cannot automatica
     feature_matrix, features = ft.dfs(entityset=es,
                                       target_entity="sessions",
                                       agg_primitives=["sum", "mean", "std"],
-                                      seed_features=[count_the_feat])
+                                      trans_primitives=[count_the_feat])
+    feature_matrix.columns
     feature_matrix[['STD(log.STRING_COUNT(comments, "the"))', 'SUM(log.STRING_COUNT(comments, "the"))', 'MEAN(log.STRING_COUNT(comments, "the"))']]
+

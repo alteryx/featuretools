@@ -28,15 +28,14 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
                 :suppress:
 
                 from featuretools.tests.testing_utils import make_ecommerce_entityset
-                from featuretools.primitives import Feature
                 import featuretools as ft
                 es = make_ecommerce_entityset()
 
             .. ipython:: python
 
-                f1 = Feature(es["log"]["product_id"])
-                f2 = Feature(es["log"]["purchased"])
-                f3 = Feature(es["log"]["value"])
+                f1 = ft.Feature(es["log"]["product_id"])
+                f2 = ft.Feature(es["log"]["purchased"])
+                f3 = ft.Feature(es["log"]["value"])
 
                 features = [f1, f2, f3]
                 ids = [0, 1, 2, 3, 4, 5]

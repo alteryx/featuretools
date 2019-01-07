@@ -61,9 +61,11 @@ Time utils
     make_temporal_cutoffs
 
 
+
+
+
 Feature Primitives
 ~~~~~~~~~~~~~~~~~~
-
 Primitive Types
 ---------------
 .. currentmodule:: featuretools.primitives
@@ -71,7 +73,6 @@ Primitive Types
 .. autosummary::
     :toctree: generated/
 
-    Feature
     TransformPrimitive
     AggregationPrimitive
 
@@ -109,16 +110,6 @@ Aggregation Primitives
     Skew
     Trend
 
-.. _api_ref.sliding_window_features:
-
-.. Sliding Window Features
-.. -----------------------
-.. .. autosummary::
-..     :toctree: generated/
-
-..     SlidingMean
-..     SlidingSum
-..     SlidingStd
 
 Transform Primitives
 --------------------
@@ -127,20 +118,10 @@ Combine features
 .. autosummary::
     :toctree: generated/
 
-    PrimitiveBase.isin
-    PrimitiveBase.AND
-    PrimitiveBase.OR
-    PrimitiveBase.NOT
-    .. PrimitiveBase.add
-    .. PrimitiveBase.subtract
-    .. PrimitiveBase.multiply
-    .. PrimitiveBase.divide
-    .. PrimitiveBase.equal_to
-    .. PrimitiveBase.not_equal_to
-    .. PrimitiveBase.less_than
-    .. PrimitiveBase.greater_than
-    .. PrimitiveBase.less_than_equal_to
-    .. PrimitiveBase.greater_than_equal_to
+    IsIn
+    And
+    Or
+    Not
 
 
 
@@ -174,11 +155,6 @@ Cumulative Transform Primitives
 .. autosummary::
     :toctree: generated/
 
-    CumCount
-    CumSum
-    CumMean
-    CumMax
-    CumMin
     Diff
     TimeSincePrevious
 
@@ -201,11 +177,12 @@ Location Transform Primitives
 
 Feature methods
 ---------------
+.. currentmodule:: featuretools.feature_base
 .. autosummary::
     :toctree: generated/
 
-    PrimitiveBase.rename
-    PrimitiveBase.get_depth
+    FeatureBase.rename
+    FeatureBase.get_depth
 
 
 Feature calculation

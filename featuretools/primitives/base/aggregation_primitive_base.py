@@ -22,11 +22,6 @@ class AggregationPrimitive(PrimitiveBase):
                                    where_str, use_prev_str)
 
 
-#     def _base_feature_str(self):
-#         return u', ' \
-#             .join([bf.get_name() for bf in self.base_features])
-
-
 def make_agg_primitive(function, input_types, return_type, name=None,
                        stack_on_self=True, stack_on=None,
                        stack_on_exclude=None, base_of=None,

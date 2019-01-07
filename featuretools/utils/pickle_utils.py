@@ -20,16 +20,15 @@ def save_features(features, filepath):
 
             from featuretools.tests.testing_utils import (
                 make_ecommerce_entityset)
-            from featuretools.primitives import Feature
             import featuretools as ft
             es = make_ecommerce_entityset()
             import os
 
         .. code-block:: python
 
-            f1 = Feature(es["log"]["product_id"])
-            f2 = Feature(es["log"]["purchased"])
-            f3 = Feature(es["log"]["value"])
+            f1 = ft.Feature(es["log"]["product_id"])
+            f2 = ft.Feature(es["log"]["purchased"])
+            f3 = ft.Feature(es["log"]["value"])
 
             features = [f1, f2, f3]
 
