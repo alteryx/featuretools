@@ -2,7 +2,7 @@ Advanced Custom Primitives Guide
 --------------------------------
 
 Functions With Additional Arguments
-==================================
+===================================
 .. ipython:: python
     :suppress:
 
@@ -27,7 +27,7 @@ In order to have features defined using the primitive reflect what string is bei
 .. ipython:: python
 
     def string_count_generate_name(self, base_feature_names):
-        return u'STRING_COUNT(%s, "%s")' % (base_feature_names[0], self.kwargs['string'])
+      return u'STRING_COUNT(%s, "%s")' % (base_feature_names[0], self.kwargs['string'])
 
 
 Now that we have the function, we create the primitive using the ``make_trans_primitive`` function.

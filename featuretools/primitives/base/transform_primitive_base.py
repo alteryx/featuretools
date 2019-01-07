@@ -49,7 +49,6 @@ def make_trans_primitive(function, input_types, return_type, name=None,
             of base features.
 
     Example:
-        M TODO
         .. ipython :: python
 
             from featuretools.primitives import make_trans_primitive

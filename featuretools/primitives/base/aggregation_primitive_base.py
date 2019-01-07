@@ -58,7 +58,8 @@ def make_agg_primitive(function, input_types, return_type, name=None,
 
         description (str): Description of primitive.
 
-        cls_attributes (dict[str -> anytype]): Custom attributes to be added to                     class. Key is attribute name, value is the attribute value.
+        cls_attributes (dict[str -> anytype]): Custom attributes to be added to
+            class. Key is attribute name, value is the attribute value.
 
         uses_calc_time (bool): If True, the cutoff time the feature is being
             calculated at will be passed to the function as the keyword
