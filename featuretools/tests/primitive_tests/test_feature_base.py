@@ -4,8 +4,8 @@ from pympler.asizeof import asizeof
 from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
+from featuretools.feature_base import AggregationFeature, IdentityFeature
 from featuretools.primitives import Last, Mode, Sum
-from featuretools.feature_base import IdentityFeature, AggregationFeature
 from featuretools.variable_types import Categorical, Datetime, Id, Numeric
 
 

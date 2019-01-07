@@ -6,17 +6,17 @@ import pytest
 
 from ..testing_utils import make_ecommerce_entityset
 
+import featuretools as ft
 from featuretools.computational_backends import PandasBackend
-from featuretools.primitives import (
+from featuretools.primitives.base import make_trans_primitive
+from featuretools.synthesis.deep_feature_synthesis import match
+from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
+
+from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; CumSum,
     Absolute,
     AddNumeric,
     AddNumericScalar,
     Count,
-    # CumCount,
-    # CumMax,
-    # CumMean,
-    # CumMin,
-    # CumSum,
     Day,
     Diff,
     DivideByFeature,
@@ -24,15 +24,15 @@ from featuretools.primitives import (
     DivideNumericScalar,
     Equal,
     EqualScalar,
-    GreaterThanScalar,
     GreaterThanEqualToScalar,
+    GreaterThanScalar,
     Haversine,
     Hour,
     IsIn,
     IsNull,
     Latitude,
-    LessThanScalar,
     LessThanEqualToScalar,
+    LessThanScalar,
     Longitude,
     Mode,
     MultiplyNumeric,
@@ -48,14 +48,6 @@ from featuretools.primitives import (
     Sum,
     get_transform_primitives
 )
-
-import featuretools as ft
-from featuretools.primitives.base import (
-    make_trans_primitive
-)
-
-from featuretools.synthesis.deep_feature_synthesis import match
-from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
 
 # some tests change the entityset values, so we have to create it fresh
@@ -794,7 +786,7 @@ def test_isnull_feat(es):
 
 def test_percentile(es):
     v = ft.Feature(es['log']['value'])
-    p = ft.Feature(v, primitive=Percentile())
+    p = ft.Feature(v, primitive=Percentile)
     pandas_backend = PandasBackend(es, [p])
     df = pandas_backend.calculate_all_features(range(10, 17), None)
     true = es['log'].df[v.get_name()].rank(pct=True)
@@ -805,8 +797,8 @@ def test_percentile(es):
 
 def test_dependent_percentile(es):
     v = ft.Feature(es['log']['value'])
-    p = ft.Feature(v, primitive=Percentile())
-    p2 = ft.Feature(p - 1, primitive=Percentile())
+    p = ft.Feature(v, primitive=Percentile)
+    p2 = ft.Feature(p - 1, primitive=Percentile)
     pandas_backend = PandasBackend(es, [p, p2])
     df = pandas_backend.calculate_all_features(range(10, 17), None)
     true = es['log'].df[v.get_name()].rank(pct=True)
@@ -817,7 +809,7 @@ def test_dependent_percentile(es):
 
 def test_agg_percentile(es):
     v = ft.Feature(es['log']['value'])
-    p = ft.Feature(v, primitive=Percentile())
+    p = ft.Feature(v, primitive=Percentile)
     agg = ft.Feature(p, parent_entity=es['sessions'], primitive=Sum)
     pandas_backend = PandasBackend(es, [agg])
     df = pandas_backend.calculate_all_features([0, 1], None)
@@ -831,9 +823,9 @@ def test_agg_percentile(es):
 
 def test_percentile_agg_percentile(es):
     v = ft.Feature(es['log']['value'])
-    p = ft.Feature(v, primitive=Percentile())
+    p = ft.Feature(v, primitive=Percentile)
     agg = ft.Feature(p, parent_entity=es['sessions'], primitive=Sum)
-    pagg = ft.Feature(agg, primitive=Percentile())
+    pagg = ft.Feature(agg, primitive=Percentile)
     pandas_backend = PandasBackend(es, [pagg])
     df = pandas_backend.calculate_all_features([0, 1], None)
 
@@ -849,7 +841,7 @@ def test_percentile_agg_percentile(es):
 def test_percentile_agg(es):
     v = ft.Feature(es['log']['value'])
     agg = ft.Feature(v, parent_entity=es['sessions'], primitive=Sum)
-    pagg = ft.Feature(agg, primitive=Percentile())
+    pagg = ft.Feature(agg, primitive=Percentile)
     pandas_backend = PandasBackend(es, [pagg])
     df = pandas_backend.calculate_all_features([0, 1], None)
 
@@ -863,7 +855,7 @@ def test_percentile_agg(es):
 
 def test_direct_percentile(es):
     v = ft.Feature(es['customers']['age'])
-    p = ft.Feature(v, primitive=Percentile())
+    p = ft.Feature(v, primitive=Percentile)
     d = ft.Feature(p, es['sessions'])
     pandas_backend = PandasBackend(es, [d])
     df = pandas_backend.calculate_all_features([0, 1], None)
@@ -877,7 +869,7 @@ def test_direct_percentile(es):
 
 def test_direct_agg_percentile(es):
     v = ft.Feature(es['log']['value'])
-    p = ft.Feature(v, primitive=Percentile())
+    p = ft.Feature(v, primitive=Percentile)
     agg = ft.Feature(p, parent_entity=es['customers'], primitive=Sum)
     d = ft.Feature(agg, es['sessions'])
     pandas_backend = PandasBackend(es, [d])
@@ -894,7 +886,7 @@ def test_direct_agg_percentile(es):
 
 def test_percentile_with_cutoff(es):
     v = ft.Feature(es['log']['value'])
-    p = ft.Feature(v, primitive=Percentile())
+    p = ft.Feature(v, primitive=Percentile)
     pandas_backend = PandasBackend(es, [p])
     df = pandas_backend.calculate_all_features(
         [2], pd.Timestamp('2011/04/09 10:30:13'))
@@ -905,7 +897,7 @@ def test_two_kinds_of_dependents(es):
     v = ft.Feature(es['log']['value'])
     product = ft.Feature(es['log']['product_id'])
     agg = ft.Feature(v, parent_entity=es['customers'], where=product == 'coke zero', primitive=Sum)
-    p = ft.Feature(agg, primitive=Percentile())
+    p = ft.Feature(agg, primitive=Percentile)
     g = ft.Feature(agg, primitive=Absolute())
     agg2 = ft.Feature(v, parent_entity=es['sessions'], where=product == 'coke zero', primitive=Sum)
     # Adding this feature in tests line 218 in pandas_backend

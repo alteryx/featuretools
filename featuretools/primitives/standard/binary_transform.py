@@ -1,10 +1,17 @@
 from builtins import str
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 from ..base.transform_primitive_base import TransformPrimitive
-from featuretools.variable_types import Boolean, Numeric, Variable, Datetime, Ordinal
+
+from featuretools.variable_types import (
+    Boolean,
+    Datetime,
+    Numeric,
+    Ordinal,
+    Variable
+)
 
 
 class GreaterThan(TransformPrimitive):

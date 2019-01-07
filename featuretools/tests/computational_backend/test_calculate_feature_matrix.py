@@ -391,7 +391,7 @@ def test_approximate_dfeat_of_agg_on_target(entityset):
 
 def test_approximate_dfeat_of_need_all_values(entityset):
     es = entityset
-    p = ft.Feature(es['log']['value'], primitive=Percentile())
+    p = ft.Feature(es['log']['value'], primitive=Percentile)
     agg_feat = ft.Feature(p, parent_entity=es['sessions'], primitive=Sum)
     agg_feat2 = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Sum)
     dfeat = DirectFeature(agg_feat2, es['sessions'])
@@ -431,7 +431,7 @@ def test_uses_full_entity_feat_of_approximate(entityset):
     agg_feat3 = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Max())
     dfeat = DirectFeature(agg_feat2, es['sessions'])
     dfeat2 = DirectFeature(agg_feat3, es['sessions'])
-    p = ft.Feature(dfeat, primitive=Percentile())
+    p = ft.Feature(dfeat, primitive=Percentile)
     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 2]})
     # only dfeat2 should be approximated

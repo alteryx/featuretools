@@ -12,23 +12,22 @@ from ..testing_utils import make_ecommerce_entityset
 import featuretools as ft
 from featuretools import Timedelta
 from featuretools.computational_backends.pandas_backend import PandasBackend
-from featuretools.primitives import (
+from featuretools.feature_base import DirectFeature, IdentityFeature
+from featuretools.primitives import (  # NMostCommon,
     And,
     Count,
     EqualScalar,
-    GreaterThanScalar,
     GreaterThanEqualToScalar,
-    LessThanScalar,
+    GreaterThanScalar,
     LessThanEqualToScalar,
+    LessThanScalar,
     Mean,
     Min,
     Mode,
-    # NMostCommon,
     NotEqualScalar,
     Sum,
     Trend
 )
-from featuretools.feature_base import DirectFeature, IdentityFeature
 
 
 @pytest.fixture(scope='module')

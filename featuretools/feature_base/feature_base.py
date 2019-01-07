@@ -1,12 +1,15 @@
-from featuretools import primitives
-from featuretools.primitives.base import PrimitiveBase, AggregationPrimitive, TransformPrimitive
 from builtins import zip
 
+from featuretools import primitives
+from featuretools.primitives.base import (
+    AggregationPrimitive,
+    PrimitiveBase,
+    TransformPrimitive
+)
 from featuretools.utils.wrangle import (
     _check_time_against_column,
     _check_timedelta
 )
-
 from featuretools.variable_types import (
     Categorical,
     Datetime,

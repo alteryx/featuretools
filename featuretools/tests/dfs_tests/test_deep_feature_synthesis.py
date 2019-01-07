@@ -8,23 +8,22 @@ import pytest
 from ..testing_utils import feature_with_name, make_ecommerce_entityset
 
 import featuretools as ft
-from featuretools.primitives import (
+from featuretools.feature_base import (
+    AggregationFeature,
+    DirectFeature,
+    IdentityFeature,
+    TransformFeature
+)
+from featuretools.primitives import (  # CumMean,
     Absolute,
     AddNumeric,
     Count,
-    # CumMean,
     Diff,
     Hour,
     Last,
     Mode,
     Sum,
     TimeSincePrevious
-)
-from featuretools.feature_base import (
-    AggregationFeature,
-    DirectFeature,
-    IdentityFeature,
-    TransformFeature
 )
 from featuretools.synthesis import DeepFeatureSynthesis
 

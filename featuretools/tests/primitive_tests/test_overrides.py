@@ -1,28 +1,25 @@
-import featuretools as ft
 import pytest
+
 from ..testing_utils import make_ecommerce_entityset
 
-from featuretools.primitives import (
+import featuretools as ft
+
+from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; CumSum,
     AddNumeric,
     AddNumericScalar,
     Count,
-    # CumCount,
-    # CumMax,
-    # CumMean,
-    # CumMin,
-    # CumSum,
     DivideNumeric,
     DivideNumericScalar,
     Equal,
     EqualScalar,
     GreaterThan,
-    GreaterThanScalar,
     GreaterThanEqualTo,
     GreaterThanEqualToScalar,
+    GreaterThanScalar,
     LessThan,
-    LessThanScalar,
     LessThanEqualTo,
     LessThanEqualToScalar,
+    LessThanScalar,
     MultiplyNumeric,
     MultiplyNumericScalar,
     Negate,

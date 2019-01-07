@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+
 import numpy as np
 
 
@@ -29,3 +30,6 @@ class PrimitiveBase(object):
     base_of_exclude = None
     # (bool) If True will only make one feature per unique set of base features
     commutative = False
+
+    def get_function(self):
+        raise NotImplementedError("Subclass must implement")
