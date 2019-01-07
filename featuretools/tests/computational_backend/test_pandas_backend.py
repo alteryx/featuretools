@@ -162,9 +162,9 @@ def test_make_agg_feat_multiple_dtypes(entityset, backend):
                           primitive=Count)
 
     agg_feat2 = ft.Feature(entityset['log']['product_id'],
-                          parent_entity=entityset['sessions'],
-                          where=compare_prod,
-                          primitive=Mode())
+                           parent_entity=entityset['sessions'],
+                           where=compare_prod,
+                           primitive=Mode())
 
     pandas_backend = backend([agg_feat, agg_feat2])
     df = pandas_backend.calculate_all_features(instance_ids=[0],
@@ -457,8 +457,8 @@ def test_deep_agg_feat_chain(entityset, backend):
 
 def test_trend(entityset, backend):
     trend = ft.Feature([entityset['log']['value'], entityset['log']['datetime']],
-                  parent_entity=entityset['customers'],
-                  primitive=Trend)
+                       parent_entity=entityset['customers'],
+                       primitive=Trend)
     pandas_backend = backend([trend])
 
     df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2],

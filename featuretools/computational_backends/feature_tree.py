@@ -7,10 +7,8 @@ from collections import defaultdict
 from ..utils import gen_utils as utils
 
 from featuretools import variable_types
-from featuretools.exceptions import UnknownFeature
 from featuretools.feature_base import (
     AggregationFeature,
-    DirectFeature,
     IdentityFeature,
     TransformFeature
 )
@@ -224,7 +222,7 @@ class FeatureTree(object):
         dependent_uses_full_entity = self._dependent_uses_full_entity(f)
         dependent_has_subset_input = any([(not isinstance(d, TransformFeature) or
                                            (not d.primitive.uses_full_entity and
-                                           d.hash() in self.feature_hashes))
+                                            d.hash() in self.feature_hashes))
                                           for d in self.feature_dependents[f.hash()]])
         # If the feature is one in which the user requested as
         # an output (meaning it's part of the input feature list

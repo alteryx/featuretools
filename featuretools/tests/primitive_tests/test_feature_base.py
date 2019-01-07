@@ -22,12 +22,12 @@ def es_numeric():
 def test_copy_features_does_not_copy_entityset(es):
     agg = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum)
     agg_where = ft.Feature(es['log']['value'], parent_entity=es['sessions'],
-                    where=IdentityFeature(es['log']['value']) == 2, primitive=Sum)
+                           where=IdentityFeature(es['log']['value']) == 2, primitive=Sum)
     agg_use_previous = ft.Feature(es['log']['value'], parent_entity=es['sessions'],
-                           use_previous='4 days', primitive=Sum)
+                                  use_previous='4 days', primitive=Sum)
     agg_use_previous_where = ft.Feature(es['log']['value'], parent_entity=es['sessions'],
-                                 where=IdentityFeature(es['log']['value']) == 2,
-                                 use_previous='4 days', primitive=Sum)
+                                        where=IdentityFeature(es['log']['value']) == 2,
+                                        use_previous='4 days', primitive=Sum)
     features = [agg, agg_where, agg_use_previous, agg_use_previous_where]
     in_memory_size = asizeof(locals())
     copied = [f.copy() for f in features]

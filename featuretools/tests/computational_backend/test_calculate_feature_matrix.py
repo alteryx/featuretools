@@ -91,7 +91,7 @@ def test_calc_feature_matrix(entityset):
 
     cutoff_times_dup = pd.DataFrame({'time': [pd.datetime(2018, 3, 1),
                                               pd.datetime(2018, 3, 1)],
-                                    entityset['log'].index: [1, 1]})
+                                     entityset['log'].index: [1, 1]})
 
     error_text = 'Duplicated rows in cutoff time dataframe.'
     with pytest.raises(AssertionError, match=error_text):

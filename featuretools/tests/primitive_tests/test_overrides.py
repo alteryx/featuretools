@@ -3,7 +3,6 @@ import pytest
 from ..testing_utils import make_ecommerce_entityset
 
 from featuretools.primitives import (
-    Absolute,
     AddNumeric,
     AddNumericScalar,
     Count,
@@ -12,8 +11,6 @@ from featuretools.primitives import (
     # CumMean,
     # CumMin,
     # CumSum,
-    Day,
-    Diff,
     DivideNumeric,
     DivideNumericScalar,
     Equal,
@@ -22,11 +19,6 @@ from featuretools.primitives import (
     GreaterThanScalar,
     GreaterThanEqualTo,
     GreaterThanEqualToScalar,
-    Haversine,
-    Hour,
-    IsIn,
-    IsNull,
-    Latitude,
     LessThan,
     LessThanScalar,
     LessThanEqualTo,
@@ -34,20 +26,14 @@ from featuretools.primitives import (
     Longitude,
     ModuloNumeric,
     ModuloNumericScalar,
-    Mode,
     MultiplyNumeric,
     MultiplyNumericScalar,
     Negate,
-    Not,
     NotEqual,
     NotEqualScalar,
-    NumCharacters,
-    NumWords,
-    Percentile,
     SubtractNumeric,
     SubtractNumericScalar,
-    Sum,
-    get_transform_primitives
+    Sum
 )
 
 
