@@ -799,8 +799,6 @@ def test_isnull_feat(es):
     assert correct_vals == values
 
 
-
-
 def test_percentile(es):
     v = ft.Feature(es['log']['value'])
     p = ft.Feature(v, primitive=Percentile())

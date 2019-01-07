@@ -388,7 +388,7 @@ class AggregationFeature(FeatureBase):
             base_features = [_check_feature(base_features)]
 
         self.child_entity = base_features[0].entity
-        self.parent_entity = parent_entity
+        self.parent_entity = parent_entity.entityset.metadata[parent_entity.id]
 
         if where is not None:
             self.where = _check_feature(where)

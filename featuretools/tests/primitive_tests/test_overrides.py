@@ -96,7 +96,6 @@ def test_overrides(es):
             assert o.hash() == f.hash()
 
 
-
 def test_override_boolean(es):
     count = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
     count_lo = ft.Feature(count,primitive=GreaterThanScalar(1))
@@ -142,7 +141,6 @@ def test_scalar_overrides(es):
         o = overrides.pop(0)
         assert o.hash() == f.hash()
 
-
     # M TODO - test these cases
     # our_reverse_overrides = [
     #     2 + value2,
@@ -155,7 +153,6 @@ def test_scalar_overrides(es):
     #     2 != value2,
     #     2 <= value2,
     #     2 >= value2]
-
 
 
 def test_override_cmp_from_variable(es):

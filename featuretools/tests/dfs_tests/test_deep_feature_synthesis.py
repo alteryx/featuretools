@@ -5,7 +5,6 @@ import os
 
 import pandas as pd
 import pytest
-from pympler.asizeof import asizeof
 
 from ..testing_utils import feature_with_name, make_ecommerce_entityset
 
@@ -28,10 +27,9 @@ from featuretools.feature_base import (
     DirectFeature,
     IdentityFeature,
     TransformFeature
-    # make_agg_primitive
 )
+from featuretools.primitives import make_agg_primitive
 from featuretools.synthesis import DeepFeatureSynthesis
-from featuretools.utils.pickle_utils import save_obj_pickle
 
 
 @pytest.fixture(scope='module')
@@ -597,74 +595,6 @@ def test_max_hlevel(es):
 
     assert log_customer_log.get_name() not in feats_0
     assert log_session_log.get_name() not in feats_0
-
-
-def test_pickle_features(es):
-    dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
-                                   entityset=es,
-                                   agg_primitives=[Last, Mean],
-                                   trans_primitives=[],
-                                   max_features=20)
-
-    features_no_pickle = dfs_obj.build_features()
-
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    filepath = os.path.join(dir_path, 'test_feature')
-    es_filepath = os.path.join(dir_path, 'test_entityset')
-
-    # pickle entityset
-    save_obj_pickle(es, es_filepath)
-
-    ft.save_features(features_no_pickle, filepath)
-    features_pickle = ft.load_features(filepath)
-    for feat_1, feat_2 in zip(features_no_pickle, features_pickle):
-        assert feat_1.hash() == feat_2.hash()
-        assert feat_1.entityset == feat_2.entityset
-
-    # file is smaller than entityset in memory
-    assert os.path.getsize(filepath) < asizeof(es)
-
-    # file is smaller than entityset pickled
-    assert os.path.getsize(filepath) < os.path.getsize(es_filepath)
-    os.remove(filepath)
-    os.remove(es_filepath)
-
-# M TODO
-# def test_pickle_features_with_custom_primitive(es):
-#     NewMean = make_agg_primitive(
-#         np.nanmean,
-#         name="NewMean",
-#         input_types=[Numeric],
-#         return_type=Numeric,
-#         description="Calculate means ignoring nan values")
-#     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
-#                                    entityset=es,
-#                                    agg_primitives=[Last, Mean, NewMean],
-#                                    trans_primitives=[],
-#                                    max_features=20)
-
-#     features_no_pickle = dfs_obj.build_features()
-#     assert any([isinstance(feat, NewMean) for feat in features_no_pickle])
-#     dir_path = os.path.dirname(os.path.realpath(__file__))
-#     filepath = os.path.join(dir_path, 'test_feature')
-#     es_filepath = os.path.join(dir_path, 'test_entityset')
-
-#     # pickle entityset
-#     save_obj_pickle(es, es_filepath)
-
-#     ft.save_features(features_no_pickle, filepath)
-#     features_pickle = ft.load_features(filepath)
-#     for feat_1, feat_2 in zip(features_no_pickle, features_pickle):
-#         assert feat_1.hash() == feat_2.hash()
-#         assert feat_1.entityset == feat_2.entityset
-
-#     # file is smaller than entityset in memory
-#     assert os.path.getsize(filepath) < asizeof(es)
-
-#     # file is smaller than entityset pickled
-#     assert os.path.getsize(filepath) < os.path.getsize(es_filepath)
-#     os.remove(filepath)
-#     os.remove(es_filepath)
 
 
 def test_commutative(es):
