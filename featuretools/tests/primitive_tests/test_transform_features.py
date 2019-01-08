@@ -43,6 +43,7 @@ from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; 
     NumCharacters,
     NumWords,
     Percentile,
+    ScalarSubtractNumeric,
     SubtractNumeric,
     SubtractNumericScalar,
     Sum,
@@ -234,6 +235,7 @@ def test_compare_all_nans(es):
 def test_arithmetic_of_val(es):
     to_test = [(AddNumericScalar, [2.0, 7.0, 12.0, 17.0]),
                (SubtractNumericScalar, [-2.0, 3.0, 8.0, 13.0]),
+               (ScalarSubtractNumeric, [2.0, -3.0, -8.0, -13.0]),
                (MultiplyNumericScalar, [0, 10, 20, 30]),
                (DivideNumericScalar, [0, 2.5, 5, 7.5]),
                (DivideByFeature, [np.inf, 0.4, 0.2, 2 / 15.0])]
