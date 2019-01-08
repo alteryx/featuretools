@@ -256,6 +256,23 @@ class SubtractNumericScalar(TransformPrimitive):
         return "%s - %s" % (base_feature_names[0], str(self.value))
 
 
+class ScalarSubtractNumeric(TransformPrimitive):
+    name = "scalar_subtract_numeric"
+    input_types = [Numeric]
+    return_type = Numeric
+
+    def __init__(self, value=0):
+        self.value = value
+
+    def get_function(self):
+        def scalar_subtract_numeric(vals):
+            return self.value - vals
+        return scalar_subtract_numeric
+
+    def generate_name(self, base_feature_names):
+        return "%s - %s" % (str(self.value), base_feature_names[0])
+
+
 class MultiplyNumeric(TransformPrimitive):
     name = "multiply_numeric"
     input_types = [Numeric, Numeric]
