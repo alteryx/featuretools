@@ -27,7 +27,7 @@ from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; 
     NotEqual,
     NotEqualScalar,
     ScalarSubtractNumericFeature,
-    SubtractNumericFeature,
+    SubtractNumeric,
     SubtractNumericScalar,
     Sum
 )
@@ -42,7 +42,7 @@ def test_overrides(es):
     value = ft.Feature(es['log']['value'])
     value2 = ft.Feature(es['log']['value_2'])
 
-    feats = [AddNumeric, SubtractNumericFeature, MultiplyNumeric, DivideNumeric,
+    feats = [AddNumeric, SubtractNumeric, MultiplyNumeric, DivideNumeric,
              GreaterThan, LessThan, Equal, NotEqual, GreaterThanEqualTo,
              LessThanEqualTo]
     assert ft.Feature(value, primitive=Negate()).hash() == (-value).hash()

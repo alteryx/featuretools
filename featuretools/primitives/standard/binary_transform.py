@@ -226,8 +226,8 @@ class AddNumericScalar(TransformPrimitive):
         return "%s + %s" % (base_feature_names[0], str(self.value))
 
 
-class SubtractNumericFeature(TransformPrimitive):
-    name = "subtract_numeric_feature"
+class SubtractNumeric(TransformPrimitive):
+    name = "subtract_numeric"
     input_types = [Numeric, Numeric]
     return_type = Numeric
     commutative = True

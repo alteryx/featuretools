@@ -222,10 +222,10 @@ class FeatureBase(object):
 
     def __sub__(self, other):
         """Subtract other"""
-        return self._handle_binary_comparision(other, primitives.SubtractNumericFeature, primitives.SubtractNumericScalar)
+        return self._handle_binary_comparision(other, primitives.SubtractNumeric, primitives.SubtractNumericScalar)
 
     def __rsub__(self, other):
-        return self._handle_binary_comparision(other, primitives.SubtractNumericFeature, primitives.ScalarSubtractNumericFeature)
+        return self._handle_binary_comparision(other, primitives.SubtractNumeric, primitives.ScalarSubtractNumericFeature)
 
     def __div__(self, other):
         """Divide by other"""
