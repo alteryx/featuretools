@@ -141,7 +141,7 @@ Datetime Transform Primitives
     Second
     Minute
     Weekday
-    Weekend
+    IsWeekend
     Hour
     Day
     Week
