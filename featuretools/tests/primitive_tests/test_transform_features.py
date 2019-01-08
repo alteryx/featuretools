@@ -43,8 +43,8 @@ from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; 
     NumCharacters,
     NumWords,
     Percentile,
-    ScalarSubtractNumeric,
-    SubtractNumeric,
+    ScalarSubtractNumericFeature,
+    SubtractNumericFeature,
     SubtractNumericScalar,
     Sum,
     get_transform_primitives
@@ -235,7 +235,7 @@ def test_compare_all_nans(es):
 def test_arithmetic_of_val(es):
     to_test = [(AddNumericScalar, [2.0, 7.0, 12.0, 17.0]),
                (SubtractNumericScalar, [-2.0, 3.0, 8.0, 13.0]),
-               (ScalarSubtractNumeric, [2.0, -3.0, -8.0, -13.0]),
+               (ScalarSubtractNumericFeature, [2.0, -3.0, -8.0, -13.0]),
                (MultiplyNumericScalar, [0, 10, 20, 30]),
                (DivideNumericScalar, [0, 2.5, 5, 7.5]),
                (DivideByFeature, [np.inf, 0.4, 0.2, 2 / 15.0])]
@@ -268,7 +268,7 @@ def test_arithmetic_of_identity(es):
     logs = es['log']
 
     to_test = [(AddNumeric, [0., 7., 14., 21.]),
-               (SubtractNumeric, [0, 3, 6, 9]),
+               (SubtractNumericFeature, [0, 3, 6, 9]),
                (MultiplyNumeric, [0, 10, 40, 90]),
                (DivideNumeric, [np.nan, 2.5, 2.5, 2.5])]
 
@@ -295,7 +295,7 @@ def test_arithmetic_of_direct(es):
     log_age = ft.Feature(session_age, entity=es['log'])
 
     to_test = [(AddNumeric, [38, 37, 37.5, 37.5]),
-               (SubtractNumeric, [28, 29, 28.5, 28.5]),
+               (SubtractNumericFeature, [28, 29, 28.5, 28.5]),
                (MultiplyNumeric, [165, 132, 148.5, 148.5]),
                (DivideNumeric, [6.6, 8.25, 22. / 3, 22. / 3])]
 
@@ -315,7 +315,7 @@ def test_arithmetic_of_transform(es):
     diff2 = ft.Feature([es['log']['value_2'], es['log']['product_id']], primitive=Diff)
 
     to_test = [(AddNumeric, [np.nan, 14., -7., 3.]),
-               (SubtractNumeric, [np.nan, 6., -3., 1.]),
+               (SubtractNumericFeature, [np.nan, 6., -3., 1.]),
                (MultiplyNumeric, [np.nan, 40., 10., 2.]),
                (DivideNumeric, [np.nan, 2.5, 2.5, 2.])]
 
@@ -348,7 +348,7 @@ def test_arithmetic_of_agg(es):
     count_customer = ft.Feature(customer_id_feat, parent_entity=es[u'régions'], primitive=Count)
     count_stores = ft.Feature(store_id_feat, parent_entity=es[u'régions'], primitive=Count)
     to_test = [(AddNumeric, [6, 2]),
-               (SubtractNumeric, [0, -2]),
+               (SubtractNumericFeature, [0, -2]),
                (MultiplyNumeric, [9, 0]),
                (DivideNumeric, [1, 0])]
 

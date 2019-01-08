@@ -26,8 +26,8 @@ from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; 
     Negate,
     NotEqual,
     NotEqualScalar,
-    ScalarSubtractNumeric,
-    SubtractNumeric,
+    ScalarSubtractNumericFeature,
+    SubtractNumericFeature,
     SubtractNumericScalar,
     Sum
 )
@@ -42,8 +42,9 @@ def test_overrides(es):
     value = ft.Feature(es['log']['value'])
     value2 = ft.Feature(es['log']['value_2'])
 
-    feats = [AddNumeric, SubtractNumeric, MultiplyNumeric, DivideNumeric, GreaterThan,
-             LessThan, Equal, NotEqual, GreaterThanEqualTo, LessThanEqualTo]
+    feats = [AddNumeric, SubtractNumericFeature, MultiplyNumeric, DivideNumeric,
+             GreaterThan, LessThan, Equal, NotEqual, GreaterThanEqualTo,
+             LessThanEqualTo]
     assert ft.Feature(value, primitive=Negate()).hash() == (-value).hash()
 
     compares = [(value, value), (value, value2)]
@@ -101,9 +102,10 @@ def test_override_boolean(es):
 def test_scalar_overrides(es):
     value = ft.Feature(es['log']['value'])
 
-    feats = [AddNumericScalar, SubtractNumericScalar, MultiplyNumericScalar, DivideNumericScalar,
-             GreaterThanScalar, LessThanScalar, EqualScalar, NotEqualScalar,
-             GreaterThanEqualToScalar, LessThanEqualToScalar]
+    feats = [AddNumericScalar, SubtractNumericScalar, MultiplyNumericScalar,
+             DivideNumericScalar, GreaterThanScalar, LessThanScalar,
+             EqualScalar, NotEqualScalar, GreaterThanEqualToScalar,
+             LessThanEqualToScalar]
 
     overrides = [
         value + 2,
@@ -125,7 +127,7 @@ def test_scalar_overrides(es):
 
     value2 = ft.Feature(es['log']['value_2'])
 
-    reverse_feats = [AddNumericScalar, ScalarSubtractNumeric,
+    reverse_feats = [AddNumericScalar, ScalarSubtractNumericFeature,
                      MultiplyNumericScalar, DivideByFeature, GreaterThanScalar,
                      LessThanScalar, EqualScalar, NotEqualScalar,
                      GreaterThanEqualToScalar, LessThanEqualToScalar]

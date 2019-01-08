@@ -226,8 +226,8 @@ class AddNumericScalar(TransformPrimitive):
         return "%s + %s" % (base_feature_names[0], str(self.value))
 
 
-class SubtractNumeric(TransformPrimitive):
-    name = "subtract_numeric"
+class SubtractNumericFeature(TransformPrimitive):
+    name = "subtract_numeric_feature"
     input_types = [Numeric, Numeric]
     return_type = Numeric
     commutative = True
@@ -256,8 +256,8 @@ class SubtractNumericScalar(TransformPrimitive):
         return "%s - %s" % (base_feature_names[0], str(self.value))
 
 
-class ScalarSubtractNumeric(TransformPrimitive):
-    name = "scalar_subtract_numeric"
+class ScalarSubtractNumericFeature(TransformPrimitive):
+    name = "scalar_subtract_numeric_feature"
     input_types = [Numeric]
     return_type = Numeric
 
@@ -265,9 +265,9 @@ class ScalarSubtractNumeric(TransformPrimitive):
         self.value = value
 
     def get_function(self):
-        def scalar_subtract_numeric(vals):
+        def scalar_subtract_numeric_feature(vals):
             return self.value - vals
-        return scalar_subtract_numeric
+        return scalar_subtract_numeric_feature
 
     def generate_name(self, base_feature_names):
         return "%s - %s" % (str(self.value), base_feature_names[0])
