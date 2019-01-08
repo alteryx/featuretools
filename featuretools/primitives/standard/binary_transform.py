@@ -151,7 +151,6 @@ class EqualScalar(TransformPrimitive):
     name = "equal_scalar"
     input_types = [Variable]
     return_type = Boolean
-    commutative = True
 
     def __init__(self, value=None):
         self.value = value
@@ -183,7 +182,6 @@ class NotEqualScalar(TransformPrimitive):
     name = "not_equal_scalar"
     input_types = [Variable]
     return_type = Boolean
-    commutative = True
 
     def __init__(self, value=None):
         self.value = value
@@ -215,7 +213,6 @@ class AddNumericScalar(TransformPrimitive):
     name = "add_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
-    commutative = True
 
     def __init__(self, value=0):
         self.value = value
@@ -246,7 +243,6 @@ class SubtractNumericScalar(TransformPrimitive):
     name = "subtract_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
-    commutative = True
 
     def __init__(self, value=0):
         self.value = value
@@ -258,6 +254,23 @@ class SubtractNumericScalar(TransformPrimitive):
 
     def generate_name(self, base_feature_names):
         return "%s - %s" % (base_feature_names[0], str(self.value))
+
+
+class ScalarSubtractNumericFeature(TransformPrimitive):
+    name = "scalar_subtract_numeric_feature"
+    input_types = [Numeric]
+    return_type = Numeric
+
+    def __init__(self, value=0):
+        self.value = value
+
+    def get_function(self):
+        def scalar_subtract_numeric_feature(vals):
+            return self.value - vals
+        return scalar_subtract_numeric_feature
+
+    def generate_name(self, base_feature_names):
+        return "%s - %s" % (str(self.value), base_feature_names[0])
 
 
 class MultiplyNumeric(TransformPrimitive):
@@ -277,7 +290,6 @@ class MultiplyNumericScalar(TransformPrimitive):
     name = "multiply_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
-    commutative = True
 
     def __init__(self, value=1):
         self.value = value

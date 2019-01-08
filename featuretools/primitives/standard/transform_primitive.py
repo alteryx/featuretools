@@ -148,16 +148,16 @@ class Year(TransformPrimitive):
         return year
 
 
-class Weekend(TransformPrimitive):
+class IsWeekend(TransformPrimitive):
     """Transform Datetime feature into the boolean of Weekend."""
-    name = "weekend"
+    name = "is_weekend"
     input_types = [Datetime]
     return_type = Boolean
 
     def get_function(self):
-        def weekend(vals):
+        def is_weekend(vals):
             return pd.DatetimeIndex(vals).weekday.values > 4
-        return weekend
+        return is_weekend
 
 
 class Weekday(TransformPrimitive):
