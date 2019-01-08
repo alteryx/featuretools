@@ -151,7 +151,6 @@ class EqualScalar(TransformPrimitive):
     name = "equal_scalar"
     input_types = [Variable]
     return_type = Boolean
-    commutative = True
 
     def __init__(self, value=None):
         self.value = value
@@ -183,7 +182,6 @@ class NotEqualScalar(TransformPrimitive):
     name = "not_equal_scalar"
     input_types = [Variable]
     return_type = Boolean
-    commutative = True
 
     def __init__(self, value=None):
         self.value = value
@@ -215,7 +213,6 @@ class AddNumericScalar(TransformPrimitive):
     name = "add_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
-    commutative = True
 
     def __init__(self, value=0):
         self.value = value
@@ -246,7 +243,6 @@ class SubtractNumericScalar(TransformPrimitive):
     name = "subtract_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
-    commutative = True
 
     def __init__(self, value=0):
         self.value = value
@@ -277,7 +273,6 @@ class MultiplyNumericScalar(TransformPrimitive):
     name = "multiply_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
-    commutative = True
 
     def __init__(self, value=1):
         self.value = value
