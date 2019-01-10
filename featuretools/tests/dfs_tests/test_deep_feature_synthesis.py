@@ -337,7 +337,7 @@ def test_seed_features(es):
 
 
 def test_seed_features_added_with_identity_features(es):
-    count_sessions = Count(es['sessions']["id"], es['customers'])
+    count_sessions = ft.Feature(es['sessions']["id"], parent_entity=es['customers'], primitive=Count)
     dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
                                    entityset=es,
                                    agg_primitives=[Last],
