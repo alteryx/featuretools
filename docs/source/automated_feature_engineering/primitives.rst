@@ -164,7 +164,6 @@ Next, we need to create a custom primitive from the ``word_count`` function.
                                      return_type=Numeric)
 
 .. ipython :: python
-    :suppress:
 
     from featuretools.tests.testing_utils import make_ecommerce_entityset
     es = make_ecommerce_entityset()
