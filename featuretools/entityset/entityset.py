@@ -164,36 +164,37 @@ class EntitySet(object):
         '''
         return all(e.df.empty for e in self.entity_dict.values())
 
-    def to_pickle(self, path, **params):
+    def to_pickle(self, path, **kwargs):
         '''Write entityset to disk in the pickle format, location specified by `path`.
 
             Args:
-                * entityset: entityset to write to disk
-                * path (str): location on disk to write to (will be created as a directory)
-                * params (dict): parameters are passed to the underlying method
+                entityset: entityset to write to disk
+                path (str): location on disk to write to (will be created as a directory)
+                kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialization.write(self, path, type='pickle', **params)
+        serialization.write(self, path, type='pickle', **kwargs)
         return self
 
-    def to_parquet(self, path, **params):
+    def to_parquet(self, path, **kwargs):
         '''Write entityset to disk in the parquet format, location specified by `path`.
 
             Args:
-                * entityset: entityset to write to disk
-                * path (str): location on disk to write to (will be created as a directory)
+                entityset: entityset to write to disk
+                path (str): location on disk to write to (will be created as a directory)
+                kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialization.write(self, path, type='parquet', compression='gzip', **params)
+        serialization.write(self, path, type='parquet', compression='gzip', **kwargs)
         return self
 
-    def to_csv(self, path, **params):
+    def to_csv(self, path, **kwargs):
         '''Write entityset to disk in the csv format, location specified by `path`.
 
             Args:
-                * entityset: entityset to write to disk
-                * path (str): location on disk to write to (will be created as a directory)
-                * params (dict): parameters are passed to the underlying method
+                entityset: entityset to write to disk
+                path (str): location on disk to write to (will be created as a directory)
+                kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialization.write(self, path, type='csv', index=False, **params)
+        serialization.write(self, path, type='csv', index=False, **kwargs)
         return self
 
     def create_data_description(self):
@@ -203,34 +204,38 @@ class EntitySet(object):
         return {'id': self.id, 'entities': entities, 'relationships': relationships}
 
     @classmethod
-    def from_data_description(cls, descr, **params):
-        '''Serialize entityset from data description'''
-        lti = []
+    def from_data_description(cls, descr, **kwargs):
+        '''Deserialize entityset from data description'''
         es = cls(descr['id'])
+
+        lti = []
         for id, e in descr['entities'].items():
-            e['loading_info']['params'].update(params)
+            e['loading_info']['params'].update(kwargs)
             d = serialization.from_entity_descr(e)
             df = serialization.read_data(d, path=descr.get('root'), **e['loading_info'])
             es.entity_from_dataframe(id, df, **d)
             if e['loading_info']['properties']['last_time_index']:
                 lti.append(e['id'])
+
         for r in descr['relationships']:
             parent = es[r['parent'][0]][r['parent'][1]]
             child = es[r['child'][0]][r['child'][1]]
             es.add_relationship(Relationship(parent, child))
+
         if len(lti):
             es.add_last_time_indexes(updated_entities=lti)
+
         return es
 
     @classmethod
-    def read(cls, path, **params):
+    def read(cls, path, **kwargs):
         '''Read entityset from disk in the supported format, location specified by `path`.
 
             Args:
-                * path (str): location of root directory on disk to read
-                * params (dict): parameters are passed to the underlying method
+                path (str): location of root directory on disk to read
+                kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying serialization method.
         '''
-        return cls.from_data_description(serialization.read(path), **params)
+        return cls.from_data_description(serialization.read(path), **kwargs)
     ###########################################################################
     #   Public getter/setter methods  #########################################
     ###########################################################################
@@ -914,7 +919,7 @@ class EntitySet(object):
         an instance or children of that instance were observed).  Used when
         calculating features using training windows
         Args:
-          * updated_entities (list[str]): List of entity ids to update last_time_index for
+            updated_entities (list[str]): List of entity ids to update last_time_index for
                 (will update all parents of those entities as well)
         """
         # Generate graph of entities to find leaf entities
@@ -1171,3 +1176,6 @@ class EntitySet(object):
                     frames[child_entity.id] = merge_df.merge(child_df,
                                                              left_on=r.child_variable.id,
                                                              right_on=r.child_variable.id)
+
+
+read_entityset = EntitySet.read
