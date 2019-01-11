@@ -235,7 +235,7 @@ class EntitySet(object):
                 path (str): location of root directory on disk to read
                 kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying serialization method.
         '''
-        return cls.from_data_description(serialization.read(path), **kwargs)
+        return cls.from_data_description(serialization.read_data_description(path), **kwargs)
     ###########################################################################
     #   Public getter/setter methods  #########################################
     ###########################################################################
