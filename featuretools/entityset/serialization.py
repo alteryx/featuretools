@@ -116,8 +116,12 @@ def read_entity_data(d, path=None, **params):
     return df.astype(dtypes)
 
 
-def read(path):
-    '''deserialize entity set from disk'''
+def read_data_description(path):
+    '''Deserialize entity set from `data_description.json`.
+
+        Args:
+            path (str): Location of root directory to read `data_description.json`.
+    '''
     path = os.path.abspath(path)
     assert os.path.exists(path), '"{}" does not exist'.format(path)
     file = os.path.join(path, 'data_description.json')
