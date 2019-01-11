@@ -102,7 +102,7 @@ def from_entity_descr(e):
     return d
 
 
-def read_data(d, path=None, **params):
+def read_entity_data(d, path=None, **params):
     '''deserialize entity data from disk or memory'''
     columns = list(d['variable_types'])
     get = params['properties']['dtypes'].get

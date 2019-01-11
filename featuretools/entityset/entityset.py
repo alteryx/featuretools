@@ -212,7 +212,7 @@ class EntitySet(object):
         for id, e in descr['entities'].items():
             e['loading_info']['params'].update(kwargs)
             d = serialization.from_entity_descr(e)
-            df = serialization.read_data(d, path=descr.get('root'), **e['loading_info'])
+            df = serialization.read_entity_data(d, path=descr.get('root'), **e['loading_info'])
             es.entity_from_dataframe(id, df, **d)
             if e['loading_info']['properties']['last_time_index']:
                 lti.append(e['id'])
