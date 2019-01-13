@@ -34,8 +34,8 @@ class TransformPrimitive(PrimitiveBase):
 
 
 def make_trans_primitive(function, input_types, return_type, name=None,
-                         cls_attributes=None, uses_calc_time=False,
-                         commutative=False):
+                         description=None, cls_attributes=None,
+                         uses_calc_time=False, commutative=False):
     '''Returns a new transform primitive class
 
     Args:
@@ -48,6 +48,8 @@ def make_trans_primitive(function, input_types, return_type, name=None,
 
         name (str): Name of the primitive. If no name is provided, the name
             of `function` will be used.
+
+        description (str): Description of primitive.
 
         cls_attributes (dict[str -> anytype]): Custom attributes to be added to
             class. Key is attribute name, value is the attribute value.
@@ -79,13 +81,15 @@ def make_trans_primitive(function, input_types, return_type, name=None,
                 input_types=[Variable],
                 return_type=Boolean,
                 name="is_in",
+                description="For each value of the base feature, checks "
                 "whether it is in a list that provided.",
                 cls_attributes={"generate_name": isin_generate_name})
     '''
     # dictionary that holds attributes for class
-    default_description = 'A custom transform primitive'
-    doc = inspect.getdoc(function)
-    description = doc if doc is not None else default_description
+    if description is None:
+        default_description = 'A custom transform primitive'
+        doc = inspect.getdoc(function)
+        description = doc if doc is not None else default_description
     cls = {"__doc__": description}
     if cls_attributes is not None:
         cls.update(cls_attributes)
