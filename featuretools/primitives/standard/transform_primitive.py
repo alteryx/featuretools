@@ -265,6 +265,7 @@ TimeSince = make_trans_primitive(function=pd_time_since,
                                  input_types=[[DatetimeTimeIndex], [Datetime]],
                                  return_type=Timedelta,
                                  uses_calc_time=True,
+                                 description="Calculates time since the cutoff time.",
                                  name="time_since")
 
 
