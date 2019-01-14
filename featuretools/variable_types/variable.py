@@ -125,8 +125,9 @@ class Discrete(Variable):
     def interesting_values(self, values):
         seen = set()
         seen_add = seen.add
-        self._interesting_values = [v for v in values
-                                    if not (v in seen or seen_add(v))]
+        self._interesting_values = [
+            v for v in values if not (v in seen or seen_add(v))
+        ]
 
 
 class Boolean(Variable):
@@ -139,10 +140,17 @@ class Boolean(Variable):
     _dtype_repr = "boolean"
     _default_pandas_dtype = bool
 
-    def __init__(self, *a, **k):
-        self.true_values = k.pop('true_values', [1, True, "true", "True", "yes", "t", "T"])
-        self.false_values = k.pop('false_values', [0, False, "false", "False", "no", "f", "F"])
-        super(Boolean, self).__init__(*a, **k)
+    def __init__(self,
+                 id,
+                 entity,
+                 name=None,
+                 true_values=None,
+                 false_values=None):
+        default = [1, True, "true", "True", "yes", "t", "T"]
+        self.true_values = true_values or default
+        default = [0, False, "false", "False", "no", "f", "F"]
+        self.false_values = false_values or default
+        super(Boolean, self).__init__(id, entity, name=name)
 
     def create_data_description(self):
         descr = super(Boolean, self).create_data_description()
@@ -161,9 +169,9 @@ class Categorical(Discrete):
     """
     _dtype_repr = "categorical"
 
-    def __init__(self, *a, **k):
-        self.categories = k.pop('categories', [])
-        super(Categorical, self).__init__(*a, **k)
+    def __init__(self, id, entity, name=None, categories=None):
+        self.categories = None or []
+        super(Categorical, self).__init__(id, entity, name=name)
 
     def create_data_description(self):
         descr = super(Categorical, self).create_data_description()
@@ -200,11 +208,17 @@ class Numeric(Variable):
     _dtype_repr = "numeric"
     _default_pandas_dtype = float
 
-    def __init__(self, *a, **k):
-        self.range = k.pop('range', [])
-        self.start_inclusive = k.pop('start_inclusive', True)
-        self.end_inclusive = k.pop('end_inclusive', False)
-        super(Numeric, self).__init__(*a, **k)
+    def __init__(self,
+                 id,
+                 entity,
+                 name=None,
+                 range=None,
+                 start_inclusive=True,
+                 end_inclusive=False):
+        self.range = None or []
+        self.start_inclusive = start_inclusive
+        self.end_inclusive = end_inclusive
+        super(Numeric, self).__init__(id, entity, name=name)
 
     def create_data_description(self):
         descr = super(Numeric, self).create_data_description()
@@ -235,12 +249,13 @@ class Datetime(Variable):
     _dtype_repr = "datetime"
     _default_pandas_dtype = np.datetime64
 
-    def __init__(self, id, entity, format=None, name=None):
+    def __init__(self, id, entity, name=None, format=None):
         self.format = format
-        super(Datetime, self).__init__(id, entity, name)
+        super(Datetime, self).__init__(id, entity, name=name)
 
     def __repr__(self):
-        ret = u"<Variable: {} (dtype: {}, format: {})>".format(self.name, self.dtype, self.format)
+        ret = u"<Variable: {} (dtype: {}, format: {})>".format(
+            self.name, self.dtype, self.format)
 
         # encode for python 2
         if type(ret) != str:
@@ -283,11 +298,16 @@ class Timedelta(Variable):
     _dtype_repr = "timedelta"
     _default_pandas_dtype = np.timedelta64
 
-    def __init__(self, *a, **k):
-        self.range = k.pop('range', [])
-        self.start_inclusive = k.pop('start_inclusive', True)
-        self.end_inclusive = k.pop('end_inclusive', False)
-        super(Timedelta, self).__init__(*a, **k)
+    def __init__(self,
+                 id,
+                 entity,
+                 name=None,
+                 start_inclusive=True,
+                 end_inclusive=False):
+        self.range = None or []
+        self.start_inclusive = start_inclusive
+        self.end_inclusive = end_inclusive
+        super(Timedelta, self).__init__(id, entity, name=name)
 
     def create_data_description(self):
         descr = super(Timedelta, self).create_data_description()
@@ -310,8 +330,9 @@ class PandasTypes(object):
     _categorical = 'category'
     _pandas_datetimes = ['datetime64[ns]', 'datetime64[ns, tz]']
     _pandas_timedeltas = ['Timedelta']
-    _pandas_numerics = ['int16', 'int32', 'int64',
-                        'float16', 'float32', 'float64']
+    _pandas_numerics = [
+        'int16', 'int32', 'int64', 'float16', 'float32', 'float64'
+    ]
 
 
 class LatLong(Variable):
@@ -322,10 +343,9 @@ class LatLong(Variable):
     _dtype_repr = "latlong"
 
 
-ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
-                      Categorical, Text, Ordinal,
-                      Boolean, LatLong]
-
+ALL_VARIABLE_TYPES = [
+    Datetime, Numeric, Timedelta, Categorical, Text, Ordinal, Boolean, LatLong
+]
 
 DEFAULT_DTYPE_VALUES = {
     np.datetime64: pd.Timestamp.now(),
