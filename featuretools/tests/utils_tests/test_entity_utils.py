@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import, division, print_function
+
 import featuretools as ft
 from featuretools import variable_types as vtypes
 from featuretools.utils.entity_utils import (
