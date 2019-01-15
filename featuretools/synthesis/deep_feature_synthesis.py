@@ -176,7 +176,7 @@ class DeepFeatureSynthesis(object):
         self.drop_contains = drop_contains or []
         self.where_stacking_limit = where_stacking_limit
 
-    def build_features(self, variable_types=None, verbose=False):
+    def build_features(self, allowed_variable_types=None, verbose=False):
         """Automatically builds feature definitions for target
             entity using Deep Feature Synthesis algorithm
 
@@ -204,19 +204,18 @@ class DeepFeatureSynthesis(object):
 
         new_features = list(all_features[self.target_entity_id].values())
 
-        if variable_types is None:
-            variable_types = [Numeric,
-                              Discrete,
-                              Boolean]
-        elif variable_types == 'all':
-            variable_types = None
+        if allowed_variable_types is None:
+            allowed_variable_types = [Numeric, Discrete, Boolean]
+        elif allowed_variable_types == 'all':
+            allowed_variable_types = None
         else:
-            msg = "variable_types must be a list, or 'all'"
-            assert isinstance(variable_types, list), msg
+            msg = "allowed_variable_types must be a list, or 'all'"
+            assert isinstance(allowed_variable_types, list), msg
 
-        if variable_types is not None:
+        if allowed_variable_types is not None:
             new_features = [f for f in new_features
-                            if any(issubclass(f.variable_type, vt) for vt in variable_types)]
+                            if any(issubclass(
+                                f.variable_type, vt) for vt in allowed_variable_types)]
 
         def check_secondary_index(f):
             secondary_time_index = self.es[self.target_entity_id].secondary_time_index
