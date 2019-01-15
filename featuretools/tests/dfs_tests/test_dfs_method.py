@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+
 from distributed.utils_test import cluster
 
 from ..testing_utils import make_ecommerce_entityset

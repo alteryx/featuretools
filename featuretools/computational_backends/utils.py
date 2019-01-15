@@ -7,8 +7,9 @@ from functools import wraps
 import numpy as np
 import pandas as pd
 import psutil
-from distributed import Client, LocalCluster
 from pandas.tseries.frequencies import to_offset
+
+from distributed import Client, LocalCluster
 
 from featuretools.primitives.base import AggregationPrimitive, DirectFeature
 from featuretools.utils.wrangle import _check_timedelta
