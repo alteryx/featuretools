@@ -31,7 +31,9 @@ def dfs(entities=None,
         chunk_size=None,
         n_jobs=1,
         dask_kwargs=None,
-        verbose=False):
+        verbose=False,
+        allowed_variable_types = None,
+        ):
     '''Calculates a feature matrix and features given a dictionary of entities
     and a list of relationships.
 
@@ -144,6 +146,12 @@ def dfs(entities=None,
 
             Valid keyword arguments for LocalCluster will also be accepted.
 
+        allowed_variable_types (list[Variable] or str, optional): Types of
+                variables to return. If None, default to
+                Numeric, Categorical, Ordinal, and Boolean. If given as
+                the string 'all', use all available variable types.
+
+
     Examples:
         .. code-block:: python
 
@@ -181,7 +189,8 @@ def dfs(entities=None,
                                       max_features=max_features,
                                       seed_features=seed_features)
 
-    features = dfs_object.build_features(verbose=verbose)
+    features = dfs_object.build_features(
+        verbose=verbose, allowed_variable_types=allowed_variable_types)
 
     if features_only:
         return features

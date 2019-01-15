@@ -199,21 +199,23 @@ class DeepFeatureSynthesis(object):
                 all_features[e.id] = {}
 
         self.where_clauses = defaultdict(set)
+
+        if allowed_variable_types is None:
+            allowed_variable_types = [Numeric, Discrete, Boolean]
+        elif allowed_variable_types == 'all':
+            pass
+        else:
+            msg = "allowed_variable_types must be a list, or 'all'"
+            assert isinstance(allowed_variable_types, list), msg
+
         self._run_dfs(self.es[self.target_entity_id], [],
                       all_features, max_depth=self.max_depth,
                       allowed_variable_types=allowed_variable_types)
 
         new_features = list(all_features[self.target_entity_id].values())
 
-        if allowed_variable_types is None:
-            allowed_variable_types = [Numeric, Discrete, Boolean]
-        elif allowed_variable_types == 'all':
-            allowed_variable_types = None
-        else:
-            msg = "allowed_variable_types must be a list, or 'all'"
-            assert isinstance(allowed_variable_types, list), msg
 
-        if allowed_variable_types is not None:
+        if allowed_variable_types is not 'all':
             new_features = [f for f in new_features
                             if any(issubclass(
                                 f.variable_type, vt) for vt in allowed_variable_types)]
@@ -527,9 +529,7 @@ class DeepFeatureSynthesis(object):
 
         features = self._features_by_type(all_features=all_features,
                                           entity=parent_entity,
-                                          variable_type=[Numeric,
-                                                         Categorical,
-                                                         Ordinal],
+                                          variable_type=allowed_variable_types,
                                           max_depth=max_depth)
 
         for f in features:
