@@ -238,8 +238,8 @@ class LatLong(Variable):
 
 
 class ZIPCode(Variable):
-    """Represents a postal address in the United States.  
-    Consists of a series of digits. 
+    """Represents a postal address in the United States.
+    Consists of a series of digits.
     """
     _dtype_repr = "zipcode"
 
