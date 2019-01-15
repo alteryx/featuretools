@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 import os
 import warnings
@@ -7,9 +9,8 @@ from functools import wraps
 import numpy as np
 import pandas as pd
 import psutil
-from pandas.tseries.frequencies import to_offset
-
 from distributed import Client, LocalCluster
+from pandas.tseries.frequencies import to_offset
 
 from featuretools.primitives.base import AggregationPrimitive, DirectFeature
 from featuretools.utils.wrangle import _check_timedelta

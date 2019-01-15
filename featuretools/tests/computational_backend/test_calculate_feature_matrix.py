@@ -13,7 +13,6 @@ import numpy as np
 import pandas as pd
 import psutil
 import pytest
-
 from distributed.utils_test import cluster
 
 from ..testing_utils import MockClient, make_ecommerce_entityset, mock_cluster
