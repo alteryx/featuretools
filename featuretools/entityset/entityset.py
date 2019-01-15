@@ -138,15 +138,7 @@ class EntitySet(object):
 
     @property
     def metadata(self):
-        '''Version of this EntitySet with all data replaced with empty DataFrames.
-
-        An EntitySet's metadata is used in many places, for instance,
-        for each feature in a feature list.
-        To prevent using copying the full metadata object to each feature,
-        we generate a new metadata object and check if it's the same as the existing one,
-        and if it is return the existing one. Thus, all features in the feature list
-        would reference the same object, rather than copies. This saves a lot of memory
-        '''
+        '''Returns the metadata for this EntitySet. The metadata will be recomputed if it does not exist.'''
         if self._metadata is None:
             d = self.create_data_description()
             self._metadata = self.from_data_description(d)
