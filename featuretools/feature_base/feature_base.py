@@ -23,14 +23,13 @@ from featuretools.variable_types import (
 
 class FeatureBase(object):
     _name = None
-    expanding = False
 
     def __init__(self, entity, base_features, primitive):
         """Base class for all features
 
         Args:
             entity (Entity): entity this feature is being calculated for
-            base_featres (list[FeatureBase]): list of base features for primitive
+            base_features (list[FeatureBase]): list of base features for primitive
             primitive (): primitive to calculate. if not initilized when passed, gets initialized with no arguments
         """
         assert all(isinstance(f, FeatureBase) for f in base_features), \
@@ -62,6 +61,14 @@ class FeatureBase(object):
         if self._name is not None:
             return self._name
         return self.generate_name()
+
+    def get_feature_names(self):
+        n = self.primitive.number_output_features
+        if n == 1:
+            names = [self.get_name()]
+        else:
+            names = [self.get_name() + "__{}".format(i) for i in range(n)]
+        return names
 
     def get_function(self):
         return self.primitive.get_function()
@@ -327,9 +334,8 @@ class DirectFeature(FeatureBase):
 
     def __init__(self, base_feature, child_entity):
         base_feature = _check_feature(base_feature)
-        if base_feature.expanding:
-            self.expanding = True
         self.base_feature = base_feature
+        self.primitive = base_feature.primitive
 
         # M TODO what does this do?
         path = child_entity.entityset.find_forward_path(child_entity.id, base_feature.entity.id)
@@ -366,6 +372,10 @@ class DirectFeature(FeatureBase):
     def generate_name(self):
         return u"%s.%s" % (self.parent_entity.id,
                            self.base_features[0].get_name())
+
+    def get_feature_names(self):
+        return [u"%s.%s" % (self.parent_entity.id, base_name)
+                for base_name in self.base_features[0].get_feature_names()]
 
 
 class AggregationFeature(FeatureBase):
@@ -451,8 +461,8 @@ class TransformFeature(FeatureBase):
         else:
             base_features = [_check_feature(base_features)]
 
-        if any(bf.expanding for bf in base_features):
-            self.expanding = True
+        # R TODO handle stacking on sub-features
+        assert (bf.primitive.number_output_features == 1 for bf in base_features)
 
         base_entity = set([f.entity for f in base_features])
         assert len(base_entity) == 1, \

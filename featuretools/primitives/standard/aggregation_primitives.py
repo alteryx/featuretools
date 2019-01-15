@@ -131,34 +131,36 @@ class PercentTrue(AggregationPrimitive):
             return s.fillna(0).mean()
         return percent_true
 
-# M TODO
-# class NMostCommon(AggregationPrimitive):
-#     """Finds the N most common elements in a categorical feature."""
-#     name = "n_most_common"
-#     input_types = [Discrete]
-#     return_type = Discrete
-#     stack_on = []
-#     stack_on_exclude = []
-#     expanding = True
 
-#     def __init__(self, base_feature, parent_entity, n=3):
-#         self.n = n
-#         super(NMostCommon, self).__init__(base_feature, parent_entity)
+class NMostCommon(AggregationPrimitive):
+    """Finds the N most common elements in a categorical feature."""
+    name = "n_most_common"
+    input_types = [Discrete]
+    return_type = Discrete
+    stack_on = []
+    stack_on_exclude = []
 
-#     @property
-#     def default_value(self):
-#         return np.zeros(self.n) * np.nan
+    def __init__(self, n=3):
+        self.number_output_features = n
 
-#     def get_expanded_names(self):
-#         names = []
-#         for i in range(1, self.n + 1):
-#             names.append(str(i) + self.get_name()[1:])
-#         return names
+    @property
+    def default_value(self):
+        return np.nan
 
-#     def get_function(self):
-#         def pd_topn(x, n=self.n):
-#             return np.array(x.value_counts()[:n].index)
-#         return pd_topn
+    def get_feature_names(self):
+        names = []
+        for i in range(1, self.number_output_features + 1):
+            names.append(str(i) + self.get_name()[1:])
+        return names
+
+    def get_function(self):
+        def pd_topn(x, n=self.number_output_features):
+            array = np.array(x.value_counts()[:n].index)
+            if len(array) < n:
+                filler = np.full(n-len(array), self.default_value)
+                array = np.append(array, filler)
+            return array
+        return pd_topn
 
 
 class AvgTimeBetween(AggregationPrimitive):

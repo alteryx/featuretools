@@ -20,8 +20,10 @@ from featuretools.primitives import (  # CumMean,
     Count,
     Diff,
     Hour,
+    IsIn,
     Last,
     Mode,
+    NMostCommon,
     Sum,
     TimeSincePrevious
 )
@@ -644,3 +646,24 @@ def test_transform_consistency():
     assert feature_with_name(feature_defs, 'OR(b, b1)')
     assert feature_with_name(feature_defs, 'OR(AND(b, b1), b)')
     assert feature_with_name(feature_defs, 'OR(AND(b, b1), b1)')
+
+
+def test_intialized_trans_prim(es):
+    prim = IsIn(list_of_outputs=['coke zero'])
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[prim])
+
+    features = dfs_obj.build_features()
+    assert (feature_with_name(features, "product_id.isin(['coke zero'])"))
+
+
+def test_initialized_agg_prim(es):
+    ThreeMost = NMostCommon(n=3)
+    dfs_obj = DeepFeatureSynthesis(target_entity_id="sessions",
+                                   entityset=es,
+                                   agg_primitives=[ThreeMost],
+                                   trans_primitives=[])
+    features = dfs_obj.build_features()
+    assert (feature_with_name(features, "NMostCommon(log.product_id)"))

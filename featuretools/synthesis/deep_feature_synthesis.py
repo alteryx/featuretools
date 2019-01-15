@@ -486,9 +486,6 @@ class DeepFeatureSynthesis(object):
 
             for matching_input in matching_inputs:
                 new_f = TransformFeature(matching_input, primitive=trans_prim)
-                if new_f.expanding:
-                    continue
-
                 self._handle_new_feature(all_features=all_features,
                                          new_feature=new_f)
 
@@ -517,11 +514,8 @@ class DeepFeatureSynthesis(object):
 
             new_f = DirectFeature(f, child_entity)
 
-            if f.expanding:
-                continue
-            else:
-                self._handle_new_feature(all_features=all_features,
-                                         new_feature=new_f)
+            self._handle_new_feature(all_features=all_features,
+                                     new_feature=new_f)
 
     def _build_agg_features(self, all_features,
                             parent_entity, child_entity, max_depth=0):
@@ -669,7 +663,7 @@ def check_stacking(primitive, input_types):
                 return False
 
     for f in input_types:
-        if f.primitive.expanding:
+        if f.primitive.number_output_features > 1:
             return False
 
     for f in input_types:
