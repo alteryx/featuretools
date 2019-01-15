@@ -183,7 +183,7 @@ class DeepFeatureSynthesis(object):
         Args:
             allowed_variable_types (list[Variable] or str, optional): Types of
                 variables to return. If None, default to
-                Numeric, Categorical, Ordinal, and Boolean. If given as
+                Numeric, Discrete, and Boolean. If given as
                 the string 'all', use all available variable types.
 
             verbose (bool, optional): If True, print progress.

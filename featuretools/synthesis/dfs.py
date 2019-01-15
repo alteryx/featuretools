@@ -148,9 +148,8 @@ def dfs(entities=None,
 
         allowed_variable_types (list[Variable] or str, optional): Types of
                 variables to return. If None, default to
-                Numeric, Categorical, Ordinal, and Boolean. If given as
+                Numeric, Discrete, and Boolean. If given as
                 the string 'all', use all available variable types.
-
 
     Examples:
         .. code-block:: python
