@@ -235,7 +235,7 @@ class LatLong(Variable):
     data['latlong'] = data[['latitude', 'longitude']].apply(tuple, axis=1)
     """
     _dtype_repr = "latlong"
-    
+
 
 class ZIPCode(Variable):
     """Represents a postal address in the United States.  
