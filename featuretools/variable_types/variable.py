@@ -125,9 +125,8 @@ class Discrete(Variable):
     def interesting_values(self, values):
         seen = set()
         seen_add = seen.add
-        self._interesting_values = [
-            v for v in values if not (v in seen or seen_add(v))
-        ]
+        self._interesting_values = [v for v in values
+                                    if not (v in seen or seen_add(v))]
 
 
 class Boolean(Variable):
@@ -254,8 +253,7 @@ class Datetime(Variable):
         super(Datetime, self).__init__(id, entity, name=name)
 
     def __repr__(self):
-        ret = u"<Variable: {} (dtype: {}, format: {})>".format(
-            self.name, self.dtype, self.format)
+        ret = u"<Variable: {} (dtype: {}, format: {})>".format(self.name, self.dtype, self.format)
 
         # encode for python 2
         if type(ret) != str:
@@ -330,9 +328,8 @@ class PandasTypes(object):
     _categorical = 'category'
     _pandas_datetimes = ['datetime64[ns]', 'datetime64[ns, tz]']
     _pandas_timedeltas = ['Timedelta']
-    _pandas_numerics = [
-        'int16', 'int32', 'int64', 'float16', 'float32', 'float64'
-    ]
+    _pandas_numerics = ['int16', 'int32', 'int64',
+                        'float16', 'float32', 'float64']
 
 
 class LatLong(Variable):
@@ -343,9 +340,10 @@ class LatLong(Variable):
     _dtype_repr = "latlong"
 
 
-ALL_VARIABLE_TYPES = [
-    Datetime, Numeric, Timedelta, Categorical, Text, Ordinal, Boolean, LatLong
-]
+ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
+                      Categorical, Text, Ordinal,
+                      Boolean, LatLong]
+
 
 DEFAULT_DTYPE_VALUES = {
     np.datetime64: pd.Timestamp.now(),
