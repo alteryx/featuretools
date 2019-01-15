@@ -181,7 +181,7 @@ class DeepFeatureSynthesis(object):
             entity using Deep Feature Synthesis algorithm
 
         Args:
-            variable_types (list[Variable] or str, optional): Types of
+            allowed_variable_types (list[Variable] or str, optional): Types of
                 variables to return. If None, default to
                 Numeric, Categorical, Ordinal, and Boolean. If given as
                 the string 'all', use all available variable types.
@@ -200,7 +200,8 @@ class DeepFeatureSynthesis(object):
 
         self.where_clauses = defaultdict(set)
         self._run_dfs(self.es[self.target_entity_id], [],
-                      all_features, max_depth=self.max_depth)
+                      all_features, max_depth=self.max_depth,
+                      allowed_variable_types=allowed_variable_types)
 
         new_features = list(all_features[self.target_entity_id].values())
 
@@ -285,7 +286,8 @@ class DeepFeatureSynthesis(object):
 
         return f_keep
 
-    def _run_dfs(self, entity, entity_path, all_features, max_depth):
+    def _run_dfs(self, entity, entity_path, all_features, max_depth,
+                 allowed_variable_types=None):
         """
         create features for the provided entity
 
@@ -321,7 +323,8 @@ class DeepFeatureSynthesis(object):
             self._run_dfs(entity=self.es[b_entity_id],
                           entity_path=list(entity_path),
                           all_features=all_features,
-                          max_depth=new_max_depth)
+                          max_depth=new_max_depth,
+                          allowed_variable_types=allowed_variable_types)
 
         """
         Step 2 - Create agg_feat features for all deep backward relationships
@@ -369,7 +372,8 @@ class DeepFeatureSynthesis(object):
             self._run_dfs(entity=self.es[f_entity_id],
                           entity_path=list(entity_path),
                           all_features=all_features,
-                          max_depth=new_max_depth)
+                          max_depth=new_max_depth,
+                          allowed_variable_types=allowed_variable_types)
 
         """
         Step 5 - Create dfeat features for forward relationships
@@ -382,11 +386,13 @@ class DeepFeatureSynthesis(object):
         for r in forward:
             if self.allowed_paths and tuple(entity_path + [r.parent_entity.id]) not in self.allowed_paths:
                 continue
-            self._build_forward_features(all_features=all_features,
-                                         parent_entity=r.parent_entity,
-                                         child_entity=r.child_entity,
-                                         relationship=r,
-                                         max_depth=max_depth)
+            self._build_forward_features(
+                all_features=all_features,
+                parent_entity=r.parent_entity,
+                child_entity=r.child_entity,
+                relationship=r,
+                max_depth=max_depth,
+                allowed_variable_types=allowed_variable_types)
 
         # now that all  features are added, build where clauses
         self._build_where_clauses(all_features, entity)
@@ -513,7 +519,8 @@ class DeepFeatureSynthesis(object):
                                          new_feature=new_f)
 
     def _build_forward_features(self, all_features, parent_entity,
-                                child_entity, relationship, max_depth=0):
+                                child_entity, relationship, max_depth=0,
+                                allowed_variable_types=None):
 
         if max_depth is not None and max_depth < 0:
             return
