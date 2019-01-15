@@ -32,8 +32,7 @@ def dfs(entities=None,
         n_jobs=1,
         dask_kwargs=None,
         verbose=False,
-        allowed_variable_types = None,
-        ):
+        allowed_variable_types=None):
     '''Calculates a feature matrix and features given a dictionary of entities
     and a list of relationships.
 

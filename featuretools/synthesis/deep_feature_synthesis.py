@@ -14,7 +14,7 @@ from featuretools.primitives.api import (
 )
 from featuretools.primitives.base import AggregationPrimitive, DirectFeature
 from featuretools.utils import is_string
-from featuretools.variable_types import Boolean, Categorical, Numeric, Ordinal
+from featuretools.variable_types import Boolean, Numeric
 
 logger = logging.getLogger('featuretools')
 
@@ -213,7 +213,6 @@ class DeepFeatureSynthesis(object):
                       allowed_variable_types=allowed_variable_types)
 
         new_features = list(all_features[self.target_entity_id].values())
-
 
         if allowed_variable_types is not 'all':
             new_features = [f for f in new_features
