@@ -118,7 +118,6 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
 
         X.drop(f.get_name(), axis=1, inplace=True)
 
-    new_X = X[[e.get_name() for e in encoded] + extra_columns]
     new_columns = []
     for e in encoded:
         new_columns.extend(e.get_feature_names())
