@@ -12,7 +12,6 @@ from featuretools.primitives import (
     Hour,
     Minute,
     Month,
-    NMostCommon,
     Second,
     TransformPrimitive,
     Year
