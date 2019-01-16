@@ -667,7 +667,8 @@ def check_stacking(primitive, input_types):
 
     # R TODO: handle this
     for f in input_types:
-        if f.primitive.number_output_features > 1:
+        feats = f.get_dependencies(deep=True) + [f]
+        if any([feat.primitive.number_output_features > 1 for feat in feats]):
             return False
 
     for f in input_types:
