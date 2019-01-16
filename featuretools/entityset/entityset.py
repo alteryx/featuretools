@@ -164,7 +164,7 @@ class EntitySet(object):
                 path (str): location on disk to write to (will be created as a directory)
                 kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialization.write(self, path, type='pickle', **kwargs)
+        serialization.write_data_description(self, path, type='pickle', **kwargs)
         return self
 
     def to_parquet(self, path, **kwargs):
@@ -175,7 +175,7 @@ class EntitySet(object):
                 path (str): location on disk to write to (will be created as a directory)
                 kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialization.write(self, path, type='parquet', compression='gzip', **kwargs)
+        serialization.write_data_description(self, path, type='parquet', compression='gzip', **kwargs)
         return self
 
     def to_csv(self, path, **kwargs):
@@ -186,26 +186,43 @@ class EntitySet(object):
                 path (str): location on disk to write to (will be created as a directory)
                 kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialization.write(self, path, type='csv', index=False, **kwargs)
+        serialization.write_data_description(self, path, type='csv', index=False, **kwargs)
         return self
 
     def create_data_description(self):
-        '''Serialize entityset to data description'''
+        '''Serialize entityset to data description.
+
+        Args:
+            es (EntitySet) : Instance of :class:`.EntitySet`.
+        
+        Returns:
+            description (dict) : Description of :class:`.EntitySet`.
+        '''
         entities = dict(map(serialization.to_entity_descr, self.entities))
         relationships = list(map(serialization.to_relation_descr, self.relationships))
         return {'id': self.id, 'entities': entities, 'relationships': relationships}
 
     @classmethod
     def from_data_description(cls, descr, **kwargs):
-        '''Deserialize entityset from data description'''
+        '''Deserialize entityset from data description.
+
+        Args:
+            descr (dict) : Description of :class:`.EntitySet`.
+
+        Returns:
+            es (EntitySet) : Instance of :class:`.EntitySet`.
+        '''
         es = cls(descr['id'])
+        root = descr.get('root')
 
         lti = []
         for id, e in descr['entities'].items():
             e['loading_info']['params'].update(kwargs)
-            d = serialization.from_entity_descr(e)
-            df = serialization.read_entity_data(d, path=descr.get('root'), **e['loading_info'])
-            es.entity_from_dataframe(id, df, **d)
+            k = serialization.from_entity_descr(e)
+            c, i = list(k['variable_types']), e['loading_info']
+            t = dict(zip(c, map(e['loading_info']['properties']['dtypes'].get, c)))
+            df = pd.DataFrame(columns=c) if root is None else serialization.read_entity_data(i, root)
+            es.entity_from_dataframe(id, df.astype(t), **k)
             if e['loading_info']['properties']['last_time_index']:
                 lti.append(e['id'])
 
@@ -221,10 +238,10 @@ class EntitySet(object):
 
     @classmethod
     def read(cls, path, **kwargs):
-        '''Read entityset from disk in the supported format, location specified by `path`.
+        '''Read entityset from disk.
 
             Args:
-                path (str): location of root directory on disk to read
+                path (str): Directory on disk to read `data_description.json`.
                 kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying serialization method.
         '''
         return cls.from_data_description(serialization.read_data_description(path), **kwargs)
