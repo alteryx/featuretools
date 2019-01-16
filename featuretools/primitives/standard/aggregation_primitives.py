@@ -147,12 +147,6 @@ class NMostCommon(AggregationPrimitive):
     def default_value(self):
         return np.nan
 
-    def get_feature_names(self):
-        names = []
-        for i in range(1, self.number_output_features + 1):
-            names.append(str(i) + self.get_name()[1:])
-        return names
-
     def get_function(self):
         def pd_topn(x, n=self.number_output_features):
             array = np.array(x.value_counts()[:n].index)
