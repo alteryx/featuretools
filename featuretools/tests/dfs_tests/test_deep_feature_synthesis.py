@@ -666,4 +666,4 @@ def test_initialized_agg_prim(es):
                                    agg_primitives=[ThreeMost],
                                    trans_primitives=[])
     features = dfs_obj.build_features()
-    assert (feature_with_name(features, "NMostCommon(log.product_id)"))
+    assert (feature_with_name(features, "N_MOST_COMMON(log.product_id)"))

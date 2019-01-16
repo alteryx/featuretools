@@ -1050,7 +1050,6 @@ def test_make_transform_multiple_output_features(es):
     for feature in fl:
         for base_feature in feature.base_features:
             assert base_feature.hash() != join_time_split.hash()
-    assert False
 
 
 def test_feature_names_inherit_from_make_trans_primitive():
