@@ -61,7 +61,7 @@ class DeepFeatureSynthesis(object):
                 variables within each entity to blacklist when creating features.
                 If None, use all variables.
 
-            seed_features (list[:class:`.PrimitiveBase`], optional): List of manually
+            seed_features (list[:class:`.FeatureBase`], optional): List of manually
                 defined features to use.
 
             drop_contains (list[str], optional): Drop features
@@ -375,7 +375,7 @@ class DeepFeatureSynthesis(object):
         """Adds new feature to the dict
 
         Args:
-            new_feature (:class:`.PrimitiveBase`): New feature being
+            new_feature (:class:`.FeatureBase`): New feature being
                 checked.
             all_features (dict[Entity.id -> dict[str -> BaseFeature]]):
                 Dict containing a dict for each entity. Each nested dict

@@ -163,7 +163,7 @@ def test_make_agg_feat_multiple_dtypes(entityset, backend):
     agg_feat2 = ft.Feature(entityset['log']['product_id'],
                            parent_entity=entityset['sessions'],
                            where=compare_prod,
-                           primitive=Mode())
+                           primitive=Mode)
 
     pandas_backend = backend([agg_feat, agg_feat2])
     df = pandas_backend.calculate_all_features(instance_ids=[0],
@@ -239,7 +239,6 @@ def test_make_agg_feat_where_count_feat(entityset, backend):
     Number of sessions for each customer where the
     number of logs in the session is less than 3
     """
-    Count.max_stack_depth = 2
     log_count_feat = ft.Feature(entityset['log']['id'], parent_entity=entityset['sessions'], primitive=Count)
 
     feat = ft.Feature(entityset['sessions']['id'],
@@ -263,7 +262,6 @@ def test_make_compare_feat(entityset, backend):
     Number of sessions for each customer where the
     number of logs in the session is less than 3
     """
-    Count.max_stack_depth = 2
     log_count_feat = ft.Feature(entityset['log']['id'], parent_entity=entityset['sessions'], primitive=Count)
 
     mean_agg_feat = ft.Feature(log_count_feat, parent_entity=entityset['customers'], primitive=Mean)
@@ -289,7 +287,6 @@ def test_make_agg_feat_where_count_and_device_type_feat(entityset, backend):
     Number of sessions for each customer where the
     number of logs in the session is less than 3
     """
-    Count.max_stack_depth = 2
     log_count_feat = ft.Feature(entityset['log']['id'], parent_entity=entityset['sessions'], primitive=Count)
 
     compare_count = log_count_feat == 1
@@ -314,7 +311,6 @@ def test_make_agg_feat_where_count_or_device_type_feat(entityset, backend):
     Number of sessions for each customer where the
     number of logs in the session is less than 3
     """
-    Count.max_stack_depth = 2
     log_count_feat = ft.Feature(entityset['log']['id'], parent_entity=entityset['sessions'], primitive=Count)
 
     compare_count = log_count_feat > 1
@@ -434,24 +430,6 @@ def test_deep_agg_feat_chain(entityset, backend):
                                                time_last=None)
     v = df[region_avg_feat.get_name()][0]
     assert (v == 17 / 3.)
-
-# M TODO
-# def test_topn(entityset, backend):
-#     topn = NMostCommon(entityset['log']['product_id'],
-#                        entityset['customers'], n=2)
-#     pandas_backend = backend([topn])
-
-#     df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2],
-#                                                time_last=None)
-
-#     true_results = [
-#         ['toothpaste', 'coke zero'],
-#         ['coke zero', 'Haribo sugar-free gummy bears'],
-#         ['taco clock']
-#     ]
-#     assert (topn.get_name() in df.columns)
-#     for i, values in enumerate(df[topn.get_name()].values):
-#         assert set(true_results[i]) == set(values)
 
 
 def test_trend(entityset, backend):

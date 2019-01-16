@@ -355,10 +355,6 @@ class DirectFeature(FeatureBase):
         """Return copy of feature"""
         return DirectFeature(self.base_feature, self.entity)
 
-    # @property
-    # def variable(self):
-    #     return self.base_features[0]
-
     @property
     def variable_type(self):
         return self.base_features[0].variable_type
@@ -379,8 +375,6 @@ class AggregationFeature(FeatureBase):
 
     def __init__(self, base_features, parent_entity, primitive, use_previous=None,
                  where=None):
-        # Any edits made to this method should also be made to the
-        # new_class_init method in make_agg_primitive
         if hasattr(base_features, '__iter__'):
             base_features = [_check_feature(bf) for bf in base_features]
             msg = "all base features must share the same entity"

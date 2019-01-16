@@ -61,9 +61,6 @@ Time utils
     make_temporal_cutoffs
 
 
-
-
-
 Feature Primitives
 ~~~~~~~~~~~~~~~~~~
 Primitive Types

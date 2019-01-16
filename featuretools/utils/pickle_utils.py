@@ -5,7 +5,7 @@ def save_features(features, filepath):
     """Saves the features list to a specificed filepath.
 
     Args:
-        features (list[:class:`.PrimitiveBase`]): List of Feature definitions.
+        features (list[:class:`.FeatureBase`]): List of Feature definitions.
 
         filepath (str): The location of where to save the pickled features list
              filepath. This must include the name of the file.
@@ -48,7 +48,7 @@ def load_features(filepath):
             This must include the name of the file.
 
     Returns:
-        features (list[:class:`.PrimitiveBase`]): Feature definitions list.
+        features (list[:class:`.FeatureBase`]): Feature definitions list.
 
     Note:
         Features saved in one version of Featuretools are not guaranteed to work in another.

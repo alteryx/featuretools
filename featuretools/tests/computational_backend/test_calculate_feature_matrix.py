@@ -428,7 +428,7 @@ def test_uses_full_entity_feat_of_approximate(entityset):
     es = entityset
     agg_feat = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum)
     agg_feat2 = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Sum)
-    agg_feat3 = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Max())
+    agg_feat3 = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Max)
     dfeat = DirectFeature(agg_feat2, es['sessions'])
     dfeat2 = DirectFeature(agg_feat3, es['sessions'])
     p = ft.Feature(dfeat, primitive=Percentile)
@@ -1149,7 +1149,7 @@ def test_no_data_for_cutoff_time():
 
     trans_per_session = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["sessions"], primitive=Count)
     trans_per_customer = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["customers"], primitive=Count)
-    features = [trans_per_customer, ft.Feature(trans_per_session, parent_entity=es["customers"], primitive=Max())]
+    features = [trans_per_customer, ft.Feature(trans_per_session, parent_entity=es["customers"], primitive=Max)]
 
     fm = ft.calculate_feature_matrix(features, entityset=es, cutoff_time=cutoff_times)
 

@@ -45,7 +45,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     """Calculates a matrix for a given set of instance ids and calculation times.
 
     Args:
-        features (list[FeatureBase]): Feature definitions to be calculated.
+        features (list[:class:`.FeatureBase`]): Feature definitions to be calculated.
 
         entityset (EntitySet): An already initialized entityset. Required if `entities` and `relationships`
             not provided
