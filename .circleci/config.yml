@@ -7,8 +7,8 @@ jobs:
     steps:
       - checkout
       - run: virtualenv venv
+      - run: source venv/bin/activate && pip install numpy==1.15.4
       - run: source venv/bin/activate && make installdeps lint
-      - run: pip install --user numpy==1.5.1
       - run: source venv/bin/activate && make test
 
   "python-3.5":
