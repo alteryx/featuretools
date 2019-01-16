@@ -128,39 +128,39 @@ def test_base_of_and_stack_on_heuristic(es, test_primitive):
     child = ft.Feature(es["sessions"]["id"], parent_entity=es["customers"], primitive=Count)
     test_primitive.stack_on = []
     child.primitive.base_of = []
-    assert not check_stacking(test_primitive, [child])
+    assert not check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = []
     child.primitive.base_of = None
-    assert check_stacking(test_primitive, [child])
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = []
     child.primitive.base_of = [test_primitive]
-    assert check_stacking(test_primitive, [child])
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = None
     child.primitive.base_of = []
-    assert check_stacking(test_primitive, [child])
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = None
     child.primitive.base_of = None
-    assert check_stacking(test_primitive, [child])
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = None
     child.primitive.base_of = [test_primitive]
-    assert check_stacking(test_primitive, [child])
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = [type(child.primitive)]
     child.primitive.base_of = []
-    assert check_stacking(test_primitive, [child])
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = [type(child.primitive)]
     child.primitive.base_of = None
-    assert check_stacking(test_primitive, [child])
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = [type(child.primitive)]
     child.primitive.base_of = [test_primitive]
-    assert check_stacking(test_primitive, [child])
+    assert check_stacking(test_primitive(), [child])
 
 
 def test_stack_on_self(es, test_primitive):
@@ -170,14 +170,14 @@ def test_stack_on_self(es, test_primitive):
     child.primitive.base_of = []
     test_primitive.stack_on_self = False
     child.primitive.stack_on_self = False
-    assert not check_stacking(test_primitive, [child])
+    assert not check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on_self = True
-    assert check_stacking(test_primitive, [child])
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = None
     test_primitive.stack_on_self = False
-    assert not check_stacking(test_primitive, [child])
+    assert not check_stacking(test_primitive(), [child])
 
 # M TODO
 # def test_stack_expanding(es, test_primitive):
