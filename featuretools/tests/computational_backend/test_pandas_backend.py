@@ -164,7 +164,7 @@ def test_make_agg_feat_multiple_dtypes(entityset, backend):
     agg_feat2 = ft.Feature(entityset['log']['product_id'],
                            parent_entity=entityset['sessions'],
                            where=compare_prod,
-                           primitive=Mode())
+                           primitive=Mode)
 
     pandas_backend = backend([agg_feat, agg_feat2])
     df = pandas_backend.calculate_all_features(instance_ids=[0],
@@ -240,7 +240,6 @@ def test_make_agg_feat_where_count_feat(entityset, backend):
     Number of sessions for each customer where the
     number of logs in the session is less than 3
     """
-    Count.max_stack_depth = 2
     log_count_feat = ft.Feature(entityset['log']['id'], parent_entity=entityset['sessions'], primitive=Count)
 
     feat = ft.Feature(entityset['sessions']['id'],
@@ -264,7 +263,6 @@ def test_make_compare_feat(entityset, backend):
     Number of sessions for each customer where the
     number of logs in the session is less than 3
     """
-    Count.max_stack_depth = 2
     log_count_feat = ft.Feature(entityset['log']['id'], parent_entity=entityset['sessions'], primitive=Count)
 
     mean_agg_feat = ft.Feature(log_count_feat, parent_entity=entityset['customers'], primitive=Mean)
@@ -290,7 +288,6 @@ def test_make_agg_feat_where_count_and_device_type_feat(entityset, backend):
     Number of sessions for each customer where the
     number of logs in the session is less than 3
     """
-    Count.max_stack_depth = 2
     log_count_feat = ft.Feature(entityset['log']['id'], parent_entity=entityset['sessions'], primitive=Count)
 
     compare_count = log_count_feat == 1
@@ -315,7 +312,6 @@ def test_make_agg_feat_where_count_or_device_type_feat(entityset, backend):
     Number of sessions for each customer where the
     number of logs in the session is less than 3
     """
-    Count.max_stack_depth = 2
     log_count_feat = ft.Feature(entityset['log']['id'], parent_entity=entityset['sessions'], primitive=Count)
 
     compare_count = log_count_feat > 1

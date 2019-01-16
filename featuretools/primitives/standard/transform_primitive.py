@@ -196,26 +196,6 @@ class NumWords(TransformPrimitive):
         return word_counter
 
 
-# class Like(TransformPrimitive):
-#     """Equivalent to SQL LIKE(%text%)
-#        Returns true if text is contained with the string base_feature
-#     """
-#     name = "like"
-#     input_types =  [(Text,), (Categorical,)]
-#     return_type = Boolean
-
-#     def __init__(self, base_feature, like_statement, case_sensitive=False):
-#         self.like_statement = like_statement
-#         self.case_sensitive = case_sensitive
-#         super(Like, self).__init__(base_feature)
-
-#     def get_function(self):
-#         def pd_like(df, f):
-#             return df[df.columns[0]].str.contains(f.like_statement,
-#                                                   case=f.case_sensitive)
-#         return pd_like
-
-
 def pd_time_since(array, time):
     return (time - pd.DatetimeIndex(array)).values
 
@@ -239,7 +219,7 @@ class DaysSince(TransformPrimitive):
 
     def get_function(self):
         def pd_days_since(array, time):
-            return pd_time_unit('days')(time - pd.DatetimeIndex(array))
+            return (time - pd.DatetimeIndex(array)).days
         return pd_days_since
 
 
@@ -329,12 +309,6 @@ class Percentile(TransformPrimitive):
 
     def get_function(self):
         return lambda array: pd.Series(array).rank(pct=True)
-
-
-def pd_time_unit(time_unit):
-    def inner(pd_index):
-        return getattr(pd_index, time_unit).values
-    return inner
 
 
 class Latitude(TransformPrimitive):

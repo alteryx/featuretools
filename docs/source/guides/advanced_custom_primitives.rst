@@ -15,10 +15,9 @@ One caveat with the make\_primitive functions is that the required arguments of 
 .. ipython:: python
 
     def string_count(column, string=None):
-        '''
-        ..note:: this is a naive implementation used for clarity
-        '''
+        '''Count the number of times the value string occurs'''
         assert string is not None, "string to count needs to be defined"
+        # this is a naive implementation used for clarity
         counts = [element.lower().count(string) for element in column]
         return counts
 
@@ -39,6 +38,7 @@ Now that we have the function, we create the primitive using the ``make_trans_pr
                                        return_type=Numeric,
                                        cls_attributes={"generate_name": string_count_generate_name})
 
+
 Passing in ``string="test"`` as a keyword argument when initializing the `StringCount` primitive will make "test" the value used for string when ``string_count`` is called to calculate the feature values.  Now we use this primitive to define features and calculate the feature values.
 
 .. ipython:: python
@@ -46,16 +46,11 @@ Passing in ``string="test"`` as a keyword argument when initializing the `String
     from featuretools.tests.testing_utils import make_ecommerce_entityset
 
     es = make_ecommerce_entityset()
-    count_the_feat = StringCount(string="the")
-
-Since ``string`` is a non-feature input Deep Feature Synthesis cannot automatically stack ``StringCount`` on other primitives to create more features.  However, a user-defined ``StringCount`` feature can be used by DFS as a seed feature that DFS can stack on top of.
-
-.. ipython:: python
 
     feature_matrix, features = ft.dfs(entityset=es,
                                       target_entity="sessions",
                                       agg_primitives=["sum", "mean", "std"],
-                                      trans_primitives=[count_the_feat])
+                                      trans_primitives=[StringCount(string="the")])
     feature_matrix.columns
     feature_matrix[['STD(log.STRING_COUNT(comments, "the"))', 'SUM(log.STRING_COUNT(comments, "the"))', 'MEAN(log.STRING_COUNT(comments, "the"))']]
 

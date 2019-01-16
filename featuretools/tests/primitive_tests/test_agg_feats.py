@@ -179,29 +179,6 @@ def test_stack_on_self(es, test_primitive):
     test_primitive.stack_on_self = False
     assert not check_stacking(test_primitive(), [child])
 
-# M TODO
-# def test_stack_expanding(es, test_primitive):
-#     test_primitive.input_types = [Discrete]
-#     expanding_primitive = NMostCommon(es['sessions']['device_type'], es[u'régions'])
-#     assert not (check_stacking(test_primitive, [expanding_primitive]))
-
-
-# P TODO: this functionality is currently missing
-# def test_max_depth_heuristic(es, parent_class, parent_entity, parent):
-#     grandparent = make_parent_instance(parent_class, parent_entity,
-#                                        parent)
-#     for f in [parent, grandparent]:
-#         f.stack_on = ['child']
-#         f.stack_on_self = True
-#         f.base_of = ['parent']
-#         f.apply_to = [(Numeric,)]
-#         f.max_stack_depth = 2
-
-#     assert parent.can_apply(parent_entity, 'customers')
-#     assert not grandparent.can_apply(parent_entity, 'customers')
-
-#     grandparent.max_stack_depth = 3
-#     assert grandparent.can_apply(parent_entity, 'customers')
 
 def test_init_and_name(es):
     session = es['sessions']
@@ -229,7 +206,7 @@ def test_init_and_name(es):
 
 
 def test_time_since_last(es):
-    f = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=TimeSinceLast())
+    f = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=TimeSinceLast)
     fm = ft.calculate_feature_matrix([f],
                                      entityset=es,
                                      instance_ids=[0, 1, 2],
@@ -241,7 +218,7 @@ def test_time_since_last(es):
 
 
 def test_median(es):
-    f = ft.Feature(es["log"]["value_many_nans"], parent_entity=es["customers"], primitive=Median())
+    f = ft.Feature(es["log"]["value_many_nans"], parent_entity=es["customers"], primitive=Median)
     fm = ft.calculate_feature_matrix([f],
                                      entityset=es,
                                      instance_ids=[0, 1, 2],
@@ -273,7 +250,7 @@ def test_agg_same_method_name(es):
                              return_type=Numeric, name="max")
 
     f_sum = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Sum)
-    f_max = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Max())
+    f_max = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Max)
 
     fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
     assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
@@ -285,7 +262,7 @@ def test_agg_same_method_name(es):
                              return_type=Numeric, name="max")
 
     f_sum = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Sum)
-    f_max = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Max())
+    f_max = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Max)
     fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
     assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
 
@@ -300,7 +277,7 @@ def test_time_since_last_custom(es):
                                        Numeric,
                                        name="time_since_last",
                                        uses_calc_time=True)
-    f = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=TimeSinceLast())
+    f = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=TimeSinceLast)
     fm = ft.calculate_feature_matrix([f],
                                      entityset=es,
                                      instance_ids=[0, 1, 2],
@@ -328,7 +305,7 @@ def test_custom_primitive_time_as_arg(es):
                                        Numeric,
                                        uses_calc_time=True)
     assert TimeSinceLast.name == "time_since_last"
-    f = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=TimeSinceLast())
+    f = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=TimeSinceLast)
     fm = ft.calculate_feature_matrix([f],
                                      entityset=es,
                                      instance_ids=[0, 1, 2],

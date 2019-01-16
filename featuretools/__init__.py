@@ -13,6 +13,6 @@ from .utils.time_utils import *
 import featuretools.demo
 import featuretools.wrappers
 from . import feature_base
-from .feature_base import *
+from .feature_base import AggregationFeature, DirectFeature, Feature, FeatureBase, IdentityFeature, TransformFeature
 
 __version__ = '0.5.1'
