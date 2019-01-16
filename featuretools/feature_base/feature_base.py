@@ -232,7 +232,7 @@ class FeatureBase(object):
         return self._handle_binary_comparision(other, primitives.SubtractNumeric, primitives.SubtractNumericScalar)
 
     def __rsub__(self, other):
-        return self._handle_binary_comparision(other, primitives.SubtractNumeric, primitives.ScalarSubtractNumericFeature)
+        return Feature([self], primitive=primitives.ScalarSubtractNumericFeature(other))
 
     def __div__(self, other):
         """Divide by other"""
@@ -242,7 +242,7 @@ class FeatureBase(object):
         return self.__div__(other)
 
     def __rtruediv__(self, other):
-        return Feature([self], primitive=primitives.DivideByFeature(other))
+        return self.__rdiv__(other)
 
     def __rdiv__(self, other):
         return Feature([self], primitive=primitives.DivideByFeature(other))

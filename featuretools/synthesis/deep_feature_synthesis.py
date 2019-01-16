@@ -196,12 +196,6 @@ class DeepFeatureSynthesis(object):
             if e not in self.ignore_entities:
                 all_features[e.id] = {}
 
-        # add seed features, if any, for dfs to build on top of
-        if self.seed_features is not None:
-            for f in self.seed_features:
-                self._handle_new_feature(all_features=all_features,
-                                         new_feature=f)
-
         self.where_clauses = defaultdict(set)
         self._run_dfs(self.es[self.target_entity_id], [],
                       all_features, max_depth=self.max_depth)
@@ -295,7 +289,7 @@ class DeepFeatureSynthesis(object):
         backward_entities = [b_id for b_id in backward_entities
                              if b_id not in self.ignore_entities]
         for b_entity_id in backward_entities:
-            # if in path, we've alrady built features
+            # if in path, we've already built features
             if b_entity_id in entity_path:
                 continue
 
@@ -426,6 +420,12 @@ class DeepFeatureSynthesis(object):
             self._handle_new_feature(all_features=all_features,
                                      new_feature=new_f)
 
+        # add seed features, if any, for dfs to build on top of
+        for f in self.seed_features:
+            if f.entity.id == entity.id:
+                self._handle_new_feature(all_features=all_features,
+                                         new_feature=f)
+
     def _build_where_clauses(self, all_features, entity):
         """Traverses all identity features and creates a Compare for
             each one, based on some heuristics
@@ -505,6 +505,7 @@ class DeepFeatureSynthesis(object):
         for f in features:
             if self._feature_in_relationship_path([relationship], f):
                 continue
+
             # limits allowing direct features of agg_feats with where clauses
             if isinstance(f, AggregationFeature):
                 deep_base_features = [f] + f.get_dependencies(deep=True)
