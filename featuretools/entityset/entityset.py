@@ -197,7 +197,7 @@ class EntitySet(object):
 
         Args:
             es (EntitySet) : Instance of :class:`.EntitySet`.
-        
+
         Returns:
             description (dict) : Description of :class:`.EntitySet`.
         '''

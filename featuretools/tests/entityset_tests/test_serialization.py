@@ -1,7 +1,9 @@
 import pytest
+
+from ..testing_utils import make_ecommerce_entityset
+
 import featuretools as ft
 from featuretools.entityset import serialization as sr
-from ..testing_utils import make_ecommerce_entityset
 
 
 @pytest.fixture()
