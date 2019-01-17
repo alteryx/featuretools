@@ -321,7 +321,7 @@ def test_drop_exact(es):
 
 def test_seed_features(es):
     seed_feature_sessions = ft.Feature(es['log']["id"], parent_entity=es['sessions'], primitive=Count) > 2
-    seed_feature_log = ft.Feature(es['log']['datetime'], primitive=Hour())
+    seed_feature_log = ft.Feature(es['log']['datetime'], primitive=Hour)
     session_agg = ft.Feature(seed_feature_log, parent_entity=es['sessions'], primitive=Last)
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
@@ -352,7 +352,7 @@ def test_seed_features_added_with_identity_features(es):
 
 def test_dfs_builds_on_seed_features_more_than_max_depth(es):
     seed_feature_sessions = ft.Feature(es['log']["id"], parent_entity=es['sessions'], primitive=Count)
-    seed_feature_log = ft.Feature(es['log']['datetime'], primitive=Hour())
+    seed_feature_log = ft.Feature(es['log']['datetime'], primitive=Hour)
     session_agg = ft.Feature(seed_feature_log, parent_entity=es['sessions'], primitive=Last)
 
     # Depth of this feat is 2 relative to session_agg, the seed feature,

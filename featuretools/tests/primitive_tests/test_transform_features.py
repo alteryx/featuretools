@@ -86,7 +86,7 @@ def test_init_and_name(es):
             raise Exception(
                 "Transform Primitive %s not tested" % transform_prim.name)
         for s in matching_inputs:
-            instance = ft.Feature(s, primitive=transform_prim())
+            instance = ft.Feature(s, primitive=transform_prim)
 
             # try to get name and calculate
             instance.get_name()
@@ -94,7 +94,7 @@ def test_init_and_name(es):
 
 
 def test_make_trans_feat(es):
-    f = ft.Feature(es['log']['datetime'], primitive=Hour())
+    f = ft.Feature(es['log']['datetime'], primitive=Hour)
 
     pandas_backend = PandasBackend(es, [f])
     df = pandas_backend.calculate_all_features(instance_ids=[0],
@@ -181,7 +181,7 @@ def test_compare_of_direct(es):
 
 
 def test_compare_of_transform(es):
-    day = ft.Feature(es['log']['datetime'], primitive=Day())
+    day = ft.Feature(es['log']['datetime'], primitive=Day)
     to_test = [(EqualScalar, [False, True]),
                (NotEqualScalar, [True, False]),
                (LessThanScalar, [True, False]),
@@ -375,8 +375,8 @@ def test_arithmetic_of_agg(es):
 
 def test_latlong(es):
     log_latlong_feat = es['log']['latlong']
-    latitude = ft.Feature(log_latlong_feat, primitive=Latitude())
-    longitude = ft.Feature(log_latlong_feat, primitive=Longitude())
+    latitude = ft.Feature(log_latlong_feat, primitive=Latitude)
+    longitude = ft.Feature(log_latlong_feat, primitive=Longitude)
     features = [latitude, longitude]
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
     latvalues = df[latitude.get_name()].values
@@ -394,7 +394,7 @@ def test_latlong(es):
 def test_haversine(es):
     log_latlong_feat = es['log']['latlong']
     log_latlong_feat2 = es['log']['latlong2']
-    haversine = ft.Feature([log_latlong_feat, log_latlong_feat2], primitive=Haversine())
+    haversine = ft.Feature([log_latlong_feat, log_latlong_feat2], primitive=Haversine)
     features = [haversine]
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
@@ -684,8 +684,8 @@ def test_haversine(es):
 
 
 def test_text_primitives(es):
-    words = ft.Feature(es['log']['comments'], primitive=NumWords())
-    chars = ft.Feature(es['log']['comments'], primitive=NumCharacters())
+    words = ft.Feature(es['log']['comments'], primitive=NumWords)
+    chars = ft.Feature(es['log']['comments'], primitive=NumCharacters)
 
     features = [words, chars]
 
@@ -775,7 +775,7 @@ def test_isin_feat_custom(es):
 def test_isnull_feat(es):
     value = ft.Feature(es['log']['value'])
     diff = ft.Feature([value, es['log']['session_id']], primitive=Diff)
-    isnull = ft.Feature(diff, primitive=IsNull())
+    isnull = ft.Feature(diff, primitive=IsNull)
     features = [isnull]
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
     # correct_vals_diff = [
@@ -900,7 +900,7 @@ def test_two_kinds_of_dependents(es):
     product = ft.Feature(es['log']['product_id'])
     agg = ft.Feature(v, parent_entity=es['customers'], where=product == 'coke zero', primitive=Sum)
     p = ft.Feature(agg, primitive=Percentile)
-    g = ft.Feature(agg, primitive=Absolute())
+    g = ft.Feature(agg, primitive=Absolute)
     agg2 = ft.Feature(v, parent_entity=es['sessions'], where=product == 'coke zero', primitive=Sum)
     # Adding this feature in tests line 218 in pandas_backend
     # where we remove columns in result_frame that already exist

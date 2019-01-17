@@ -122,13 +122,13 @@ def test_make_agg_feat_using_prev_n_events(entityset, backend):
                             parent_entity=entityset['sessions'],
                             use_previous=Timedelta(1, 'observations',
                                                    entity=entityset['log']),
-                            primitive=Min())
+                            primitive=Min)
 
     agg_feat_2 = ft.Feature(entityset['log']['value'],
                             parent_entity=entityset['sessions'],
                             use_previous=Timedelta(3, 'observations',
                                                    entity=entityset['log']),
-                            primitive=Min())
+                            primitive=Min)
 
     assert agg_feat_1.get_name() != agg_feat_2.get_name(), \
         'Features should have different names based on use_previous'
@@ -291,7 +291,7 @@ def test_make_agg_feat_where_count_and_device_type_feat(entityset, backend):
 
     compare_count = log_count_feat == 1
     compare_device_type = IdentityFeature(entityset['sessions']['device_type']) == 1
-    and_feat = ft.Feature([compare_count, compare_device_type], primitive=And())
+    and_feat = ft.Feature([compare_count, compare_device_type], primitive=And)
     feat = ft.Feature(entityset['sessions']['id'],
                       parent_entity=entityset['customers'],
                       where=and_feat,

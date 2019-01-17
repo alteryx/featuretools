@@ -526,7 +526,7 @@ def test_approx_base_feature_is_also_first_class_feature(entityset):
     es = entityset
     log_to_products = DirectFeature(es['products']['rating'], es['log'])
     # This should still be computed properly
-    agg_feat = ft.Feature(log_to_products, parent_entity=es['sessions'], primitive=Min())
+    agg_feat = ft.Feature(log_to_products, parent_entity=es['sessions'], primitive=Min)
     customer_agg_feat = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Sum)
     # This is to be approximated
     sess_to_cust = DirectFeature(customer_agg_feat, es['sessions'])
