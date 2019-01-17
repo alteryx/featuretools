@@ -143,10 +143,6 @@ class NMostCommon(AggregationPrimitive):
     def __init__(self, n=3):
         self.number_output_features = n
 
-    @property
-    def default_value(self):
-        return np.nan
-
     def get_function(self):
         def n_most_common(x, n=self.number_output_features):
             array = np.array(x.value_counts()[:n].index)
