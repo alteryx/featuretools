@@ -36,17 +36,13 @@ def to_entity_descr(e):
         if key in ['id', 'index', 'time_index']:
             descr[key] = getattr(e, key)
         elif key == 'properties':
-            descr[key] = dict(secondary_time_index=e.secondary_time_index)
+            sti, lti = e.secondary_time_index, e.last_time_index is not None
+            descr[key] = dict(secondary_time_index=sti, last_time_index=lti)
         elif key == 'variables':
             descr[key] = [v.create_data_description() for v in e.variables]
         elif key == 'loading_info':
-            descr[key] = {
-                'properties': {
-                    'last_time_index': e.last_time_index is not None,
-                    'dtypes': e.df.dtypes.astype(str).to_dict(),
-                },
-                'params': {},
-            }
+            dtypes = dict(dtypes=e.df.dtypes.astype(str).to_dict())
+            descr[key] = dict(properties=dtypes, params={})
         else:
             raise ValueError('"{}" is not supported'.format(key))
     return e.id, descr
@@ -94,15 +90,17 @@ def write_entity_data(e, path, type='csv', **kwargs):
     return loading_info
 
 
-def write_data_description(es, path, **kwargs):
+def write_data_description(es, path, params=None, **kwargs):
     '''Serialize entityset to data description and write to disk.
 
     Args:
         es (EntitySet) : Instance of :class:`.EntitySet`.
         path (str) : Location on disk to write `data_description.json` and entity data.
+        params (dict): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
         kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
     '''
     path = os.path.abspath(path)
+    params = params or {}
     if os.path.exists(path):
         shutil.rmtree(path)
     for p in [path, os.path.join(path, 'data')]:
@@ -111,6 +109,7 @@ def write_data_description(es, path, **kwargs):
     for e in es.entities:
         info = write_entity_data(e, path, **kwargs)
         d['entities'][e.id]['loading_info'].update(info)
+        d['entities'][e.id]['loading_info']['params'].update(params)
     file = os.path.join(path, 'data_description.json')
     with open(file, 'w') as f:
         json.dump(d, f)

@@ -34,7 +34,6 @@ class EntitySet(object):
         metadata
 
     """
-
     def __init__(self, id=None, entities=None, relationships=None):
         """Creates EntitySet
 
@@ -156,37 +155,40 @@ class EntitySet(object):
         '''
         return all(e.df.empty for e in self.entity_dict.values())
 
-    def to_pickle(self, path, **kwargs):
+    def to_pickle(self, path, params=None, **kwargs):
         '''Write entityset to disk in the pickle format, location specified by `path`.
 
             Args:
                 entityset: entityset to write to disk
                 path (str): location on disk to write to (will be created as a directory)
+                params (dict): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
                 kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialization.write_data_description(self, path, type='pickle', **kwargs)
+        serialization.write_data_description(self, path, type='pickle', params=params, **kwargs)
         return self
 
-    def to_parquet(self, path, **kwargs):
+    def to_parquet(self, path, params=None, **kwargs):
         '''Write entityset to disk in the parquet format, location specified by `path`.
 
             Args:
                 entityset: entityset to write to disk
                 path (str): location on disk to write to (will be created as a directory)
+                params (dict): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
                 kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialization.write_data_description(self, path, type='parquet', compression='gzip', **kwargs)
+        serialization.write_data_description(self, path, type='parquet', params=params, compression='gzip', **kwargs)
         return self
 
-    def to_csv(self, path, **kwargs):
+    def to_csv(self, path, params=None, **kwargs):
         '''Write entityset to disk in the csv format, location specified by `path`.
 
             Args:
                 entityset: entityset to write to disk
                 path (str): location on disk to write to (will be created as a directory)
+                params (dict): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
                 kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialization.write_data_description(self, path, type='csv', index=False, **kwargs)
+        serialization.write_data_description(self, path, type='csv', params=params, index=False, **kwargs)
         return self
 
     def create_data_description(self):
@@ -208,6 +210,7 @@ class EntitySet(object):
 
         Args:
             descr (dict) : Description of :class:`.EntitySet`.
+            kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
 
         Returns:
             es (EntitySet) : Instance of :class:`.EntitySet`.
@@ -223,7 +226,7 @@ class EntitySet(object):
             t = dict(zip(c, map(e['loading_info']['properties']['dtypes'].get, c)))
             df = pd.DataFrame(columns=c) if root is None else serialization.read_entity_data(i, root)
             es.entity_from_dataframe(id, df.astype(t), **k)
-            if e['loading_info']['properties']['last_time_index']:
+            if e['properties']['last_time_index']:
                 lti.append(e['id'])
 
         for r in descr['relationships']:
@@ -242,7 +245,7 @@ class EntitySet(object):
 
             Args:
                 path (str): Directory on disk to read `data_description.json`.
-                kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying serialization method.
+                kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
         '''
         return cls.from_data_description(serialization.read_data_description(path), **kwargs)
     ###########################################################################

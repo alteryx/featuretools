@@ -927,8 +927,9 @@ def test_secondary_time_index(entityset):
 def test_to_csv(entityset):
     dirname = os.path.dirname(integration_data.__file__)
     path = os.path.join(dirname, 'test')
-    entityset.to_csv(path, encoding='utf-8')
-    new_es = ft.EntitySet.read(path, encoding='utf-8', engine='python')
+    p = dict(encoding='utf-8', engine='python')
+    entityset.to_csv(path, params=p, encoding='utf-8')
+    new_es = ft.EntitySet.read(path)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
 
