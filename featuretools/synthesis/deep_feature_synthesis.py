@@ -650,32 +650,30 @@ class DeepFeatureSynthesis(object):
         return hlevel
 
 
-def check_stacking(primitive, input_types):
-    """checks if features in input_types can be used with supplied primitive
+def check_stacking(primitive, inputs):
+    """checks if features in inputs can be used with supplied primitive
        using the stacking rules"""
-    assert primitive.__class__ != str.__class__
-
     if primitive.stack_on_self is False:
-        for f in input_types:
+        for f in inputs:
             if isinstance(f.primitive, primitive.__class__):
                 return False
 
     if primitive.stack_on_exclude is not None:
-        for f in input_types:
+        for f in inputs:
             if isinstance(f.primitive, tuple(primitive.stack_on_exclude)):
                 return False
 
     # R TODO: handle this
-    for f in input_types:
+    for f in inputs:
         if f.number_output_features > 1:
             return False
 
-    for f in input_types:
+    for f in inputs:
         if f.primitive.base_of_exclude is not None:
             if primitive in f.base_of_exclude:
                 return False
 
-    for f in input_types:
+    for f in inputs:
         if primitive.stack_on_self is True:
             if isinstance(f.primitive, primitive.__class__):
                 continue
