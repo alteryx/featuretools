@@ -196,7 +196,7 @@ class FeatureBase(object):
 
     def _handle_binary_comparision(self, other, Primitive, PrimitiveScalar):
         if isinstance(other, FeatureBase):
-            return Feature([self, other], primitive=Primitive())
+            return Feature([self, other], primitive=Primitive)
 
         return Feature([self], primitive=PrimitiveScalar(other))
 
@@ -266,41 +266,41 @@ class FeatureBase(object):
         return self.AND(other)
 
     def __rand__(self, other):
-        return Feature([other, self], primitive=primitives.And())
+        return Feature([other, self], primitive=primitives.And)
 
     def __or__(self, other):
         return self.OR(other)
 
     def __ror__(self, other):
-        return Feature([other, self], primitive=primitives.Or())
+        return Feature([other, self], primitive=primitives.Or)
 
     def __not__(self, other):
         return self.NOT(other)
 
     def __abs__(self):
-        return Feature([self], primitive=primitives.Absolute())
+        return Feature([self], primitive=primitives.Absolute)
 
     def __neg__(self):
-        return Feature([self], primitive=primitives.Negate())
+        return Feature([self], primitive=primitives.Negate)
 
     def AND(self, other_feature):
         """Logical AND with other_feature"""
-        return Feature([self, other_feature], primitive=primitives.And())
+        return Feature([self, other_feature], primitive=primitives.And)
 
     def OR(self, other_feature):
         """Logical OR with other_feature"""
-        return Feature([self, other_feature], primitive=primitives.Or())
+        return Feature([self, other_feature], primitive=primitives.Or)
 
     def NOT(self):
         """Creates inverse of feature"""
-        return Feature([self], primitive=primitives.Not())
+        return Feature([self], primitive=primitives.Not)
 
     def isin(self, list_of_output):
         return Feature([self], primitive=primitives.IsIn(list_of_outputs=list_of_output))
 
     def is_null(self):
         """Compares feature to null by equality"""
-        return Feature([self], primitive=primitives.IsNull())
+        return Feature([self], primitive=primitives.IsNull)
 
     def __invert__(self):
         return self.NOT()
@@ -313,7 +313,7 @@ class IdentityFeature(FeatureBase):
         entity_id = variable.entity_id
         self.variable = variable.entityset.metadata[entity_id][variable.id]
         self.return_type = type(variable)
-        super(IdentityFeature, self).__init__(variable.entity, [], primitive=PrimitiveBase())
+        super(IdentityFeature, self).__init__(variable.entity, [], primitive=PrimitiveBase)
 
     def copy(self):
         """Return copy of feature"""
@@ -350,7 +350,7 @@ class DirectFeature(FeatureBase):
             parent_feature = base_feature
 
         self.parent_entity = parent_feature.entity
-        super(DirectFeature, self).__init__(child_entity, [parent_feature], primitive=PrimitiveBase())
+        super(DirectFeature, self).__init__(child_entity, [parent_feature], primitive=PrimitiveBase)
 
     @property
     def variable(self):

@@ -45,7 +45,7 @@ def test_overrides(es):
     feats = [AddNumeric, SubtractNumeric, MultiplyNumeric, DivideNumeric,
              GreaterThan, LessThan, Equal, NotEqual, GreaterThanEqualTo,
              LessThanEqualTo]
-    assert ft.Feature(value, primitive=Negate()).hash() == (-value).hash()
+    assert ft.Feature(value, primitive=Negate).hash() == (-value).hash()
 
     compares = [(value, value), (value, value2)]
     overrides = [

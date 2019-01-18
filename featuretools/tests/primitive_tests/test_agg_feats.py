@@ -165,7 +165,7 @@ def test_base_of_and_stack_on_heuristic(es, test_primitive):
 
 def test_stack_on_self(es, test_primitive):
     # test stacks on self
-    child = ft.Feature(es['log']['value'], parent_entity=es[u'régions'], primitive=test_primitive())
+    child = ft.Feature(es['log']['value'], parent_entity=es[u'régions'], primitive=test_primitive)
     test_primitive.stack_on = []
     child.primitive.base_of = []
     test_primitive.stack_on_self = False
@@ -198,7 +198,7 @@ def test_init_and_name(es):
             if len(matching_types) == 0:
                 raise Exception("Agg Primitive %s not tested" % agg_prim.name)
             for t in matching_types:
-                instance = ft.Feature(t, parent_entity=session, primitive=agg_prim())
+                instance = ft.Feature(t, parent_entity=session, primitive=agg_prim)
 
                 # try to get name and calculate
                 instance.get_name()
