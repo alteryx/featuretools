@@ -577,8 +577,8 @@ class DeepFeatureSynthesis(object):
                     continue
 
                 # limits the aggregation feature by the given allowed feature types.
-                if not any([issubclass(type(agg_prim), type(feature_type))
-                            for feature_type in self.where_primitives]):
+                if not any([issubclass(type(agg_prim), type(primitive))
+                            for primitive in self.where_primitives]):
                     continue
 
                 for where in wheres:
