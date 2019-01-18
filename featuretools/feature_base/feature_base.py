@@ -335,7 +335,6 @@ class DirectFeature(FeatureBase):
     def __init__(self, base_feature, child_entity):
         base_feature = _check_feature(base_feature)
         self.base_feature = base_feature
-        self.primitive = base_feature.primitive
 
         # M TODO what does this do?
         path = child_entity.entityset.find_forward_path(child_entity.id, base_feature.entity.id)
