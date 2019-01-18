@@ -144,6 +144,10 @@ class FeatureBase(object):
         """Entity this feature belongs too"""
         return self.entityset[self.entity_id]
 
+    @property
+    def number_output_features(self):
+        return self.primitive.number_output_features
+
     def __repr__(self):
         ret = "<Feature: %s>" % (self.get_name())
 
@@ -351,6 +355,10 @@ class DirectFeature(FeatureBase):
     @property
     def variable(self):
         return self.base_feature.variable
+
+    @property
+    def number_output_features(self):
+        return self.base_feature.primitive.number_output_features
 
     @property
     def default_value(self):
