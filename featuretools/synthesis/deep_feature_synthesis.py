@@ -11,6 +11,7 @@ from featuretools.feature_base import (
     TransformFeature
 )
 from featuretools.primitives.api import Discrete
+from featuretools.primitives.base import PrimitiveBase
 from featuretools.utils import is_string
 from featuretools.variable_types import Boolean, Categorical, Numeric, Ordinal
 
@@ -136,7 +137,7 @@ class DeepFeatureSynthesis(object):
                                      "Call ft.primitives.list_primitives() to get",
                                      " a list of available primitives")
                 a = agg_prim_dict[a.lower()]
-            a = ready_primitive(a)
+            a = handle_primitive(a)
             self.agg_primitives.append(a)
 
         if trans_primitives is None:
@@ -152,7 +153,7 @@ class DeepFeatureSynthesis(object):
                                      "Call ft.primitives.list_primitives() to get",
                                      " a list of available primitives")
                 t = trans_prim_dict[t.lower()]
-            t = ready_primitive(t)
+            t = handle_primitive(t)
             self.trans_primitives.append(t)
 
         if where_primitives is None:
@@ -166,7 +167,7 @@ class DeepFeatureSynthesis(object):
                                      "Call ft.primitives.list_primitives() to get",
                                      " a list of available primitives")
                 p = prim_obj
-            p = ready_primitive(p)
+            p = handle_primitive(p)
             self.where_primitives.append(p)
 
         self.seed_features = seed_features or []
@@ -733,7 +734,8 @@ def match(input_types, features, replace=False, commutative=False):
     return set([tuple(s) for s in matching_inputs])
 
 
-def ready_primitive(primitive):
-    if type(primitive) == type:
+def handle_primitive(primitive):
+    if not isinstance(primitive, PrimitiveBase):
         primitive = primitive()
+    assert isinstance(primitive, PrimitiveBase), "must be a primitive"
     return primitive
