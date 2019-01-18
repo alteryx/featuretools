@@ -137,8 +137,6 @@ class NMostCommon(AggregationPrimitive):
     name = "n_most_common"
     input_types = [Discrete]
     return_type = Discrete
-    stack_on = []
-    stack_on_exclude = []
 
     def __init__(self, n=3):
         self.number_output_features = n
@@ -147,7 +145,7 @@ class NMostCommon(AggregationPrimitive):
         def n_most_common(x, n=self.number_output_features):
             array = np.array(x.value_counts()[:n].index)
             if len(array) < n:
-                filler = np.full(n - len(array), self.default_value)
+                filler = np.full(n - len(array), np.nan)
                 array = np.append(array, filler)
             return array
         return n_most_common
