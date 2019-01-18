@@ -14,11 +14,11 @@ from .feature_tree import FeatureTree
 
 from featuretools import variable_types
 from featuretools.exceptions import UnknownFeature
-from featuretools.primitives.base import (
-    AggregationPrimitive,
+from featuretools.feature_base import (
+    AggregationFeature,
     DirectFeature,
     IdentityFeature,
-    TransformPrimitive
+    TransformFeature
 )
 from featuretools.utils.gen_utils import (
     get_relationship_variable_id,
@@ -103,7 +103,7 @@ class PandasBackend(ComputationalBackend):
                                                  training_window=training_window,
                                                  verbose=verbose)
         large_eframes_by_filter = None
-        if any([f.uses_full_entity for f in self.feature_tree.all_features]):
+        if any([f.primitive.uses_full_entity for f in self.feature_tree.all_features if isinstance(f, TransformFeature)]):
             large_necessary_columns = self.feature_tree.necessary_columns_for_all_values_features
             large_eframes_by_filter = \
                 self.entityset.get_pandas_data_slice(filter_entity_ids=ordered_entities,
@@ -268,11 +268,11 @@ class PandasBackend(ComputationalBackend):
         return default_df
 
     def _feature_type_handler(self, f):
-        if isinstance(f, TransformPrimitive):
+        if isinstance(f, TransformFeature):
             return self._calculate_transform_features
         elif isinstance(f, DirectFeature):
             return self._calculate_direct_features
-        elif isinstance(f, AggregationPrimitive):
+        elif isinstance(f, AggregationFeature):
             return self._calculate_agg_features
         elif isinstance(f, IdentityFeature):
             return self._calculate_identity_features
@@ -305,7 +305,7 @@ class PandasBackend(ComputationalBackend):
             feature_func = f.get_function()
             # apply the function to the relevant dataframe slice and add the
             # feature row to the results dataframe.
-            if f.uses_calc_time:
+            if f.primitive.uses_calc_time:
                 values = feature_func(*variable_data, time=self.time_last)
             else:
                 values = feature_func(*variable_data)
@@ -426,8 +426,8 @@ class PandasBackend(ComputationalBackend):
                     funcname = func
                     if callable(func):
                         # make sure func has a unique name due to how pandas names aggregations
-                        func.__name__ = f.name
-                        funcname = f.name
+                        func.__name__ = f.primitive.name
+                        funcname = f.primitive.name
 
                     to_agg[variable_id].append(func)
                     # this is used below to rename columns that pandas names for us
@@ -497,13 +497,13 @@ class PandasBackend(ComputationalBackend):
 
 
 def _can_agg(feature):
-    assert isinstance(feature, AggregationPrimitive)
+    assert isinstance(feature, AggregationFeature)
     base_features = feature.base_features
     if feature.where is not None:
         base_features = [bf.get_name() for bf in base_features
                          if bf.get_name() != feature.where.get_name()]
 
-    if feature.uses_calc_time:
+    if feature.primitive.uses_calc_time:
         return False
 
     return len(base_features) == 1 and not feature.expanding
@@ -517,7 +517,7 @@ def agg_wrapper(feats, time_last):
             variable_ids = [bf.get_name() for bf in f.base_features]
             args = [df[v] for v in variable_ids]
 
-            if f.uses_calc_time:
+            if f.primitive.uses_calc_time:
                 d[f.get_name()] = func(*args, time=time_last)
             else:
                 d[f.get_name()] = func(*args)

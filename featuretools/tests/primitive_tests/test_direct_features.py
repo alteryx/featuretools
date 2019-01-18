@@ -3,7 +3,7 @@ import pytest
 from ..testing_utils import make_ecommerce_entityset
 
 from featuretools.computational_backends import PandasBackend
-from featuretools.primitives.base import DirectFeature
+from featuretools.feature_base import DirectFeature
 
 
 @pytest.fixture(scope='module')
@@ -14,8 +14,6 @@ def es():
 def test_direct_from_identity(es):
     device = es['sessions']['device_type']
     d = DirectFeature(base_feature=device, child_entity=es['log'])
-
-    assert d.variable == device
 
     pandas_backend = PandasBackend(es, [d])
     df = pandas_backend.calculate_all_features(instance_ids=[0, 5],
@@ -29,8 +27,6 @@ def test_direct_from_variable(es):
     device = es['sessions']['device_type']
     d = DirectFeature(base_feature=device,
                       child_entity=es['log'])
-
-    assert d.variable == device
 
     pandas_backend = PandasBackend(es, [d])
     df = pandas_backend.calculate_all_features(instance_ids=[0, 5],

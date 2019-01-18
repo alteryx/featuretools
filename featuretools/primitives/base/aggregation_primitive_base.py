@@ -6,8 +6,6 @@ from .utils import inspect_function_args
 
 
 class AggregationPrimitive(PrimitiveBase):
-    """Feature for a parent entity that summarizes
-        related instances in a child entity"""
     stack_on = None  # whitelist of primitives that can be in input_types
     stack_on_exclude = None  # blacklist of primitives that can be insigniture
     base_of = None  # whitelist of primitives this prim can be input for
@@ -15,62 +13,11 @@ class AggregationPrimitive(PrimitiveBase):
     stack_on_self = True  # whether or not it can be in input_types of self
     allow_where = True  # whether DFS can apply where clause to this primitive
 
-    def __init__(self, base_features, parent_entity, use_previous=None,
-                 where=None):
-        # Any edits made to this method should also be made to the
-        # new_class_init method in make_agg_primitive
-        if not hasattr(base_features, '__iter__'):
-            base_features = [self._check_feature(base_features)]
-        else:
-            base_features = [self._check_feature(bf) for bf in base_features]
-            msg = "all base features must share the same entity"
-            assert len(set([bf.entity for bf in base_features])) == 1, msg
-        self.base_features = base_features[:]
-
-        self.child_entity = base_features[0].entity
-
-        if where is not None:
-            self.where = self._check_feature(where)
-            msg = "Where feature must be defined on child entity {}".format(
-                self.child_entity.id)
-            assert self.where.entity.id == self.child_entity.id, msg
-
-        if use_previous:
-            assert self.child_entity.time_index is not None, (
-                "Applying function that requires time index to entity that "
-                "doesn't have one")
-
-        self.use_previous = use_previous
-
-        super(AggregationPrimitive, self).__init__(parent_entity,
-                                                   self.base_features)
-
-    def _where_str(self):
-        if self.where is not None:
-            where_str = u" WHERE " + self.where.get_name()
-        else:
-            where_str = ''
-        return where_str
-
-    def _use_prev_str(self):
-        if self.use_previous is not None:
-            use_prev_str = u", Last {}".format(self.use_previous.get_name())
-        else:
-            use_prev_str = u''
-        return use_prev_str
-
-    def _base_feature_str(self):
-        return u', ' \
-            .join([bf.get_name() for bf in self.base_features])
-
-    def generate_name(self):
-        where_str = self._where_str()
-        use_prev_str = self._use_prev_str()
-
-        base_features_str = self._base_feature_str()
-
+    def generate_name(self, base_feature_names, child_entity_id,
+                      parent_entity_id, where_str, use_prev_str):
+        base_features_str = ", ".join(base_feature_names)
         return u"%s(%s.%s%s%s)" % (self.name.upper(),
-                                   self.child_entity.id,
+                                   child_entity_id,
                                    base_features_str,
                                    where_str, use_prev_str)
 
@@ -111,7 +58,8 @@ def make_agg_primitive(function, input_types, return_type, name=None,
 
         description (str): Description of primitive.
 
-        cls_attributes (dict[str -> anytype]): Custom attributes to be added to                     class. Key is attribute name, value is the attribute value.
+        cls_attributes (dict[str -> anytype]): Custom attributes to be added to
+            class. Key is attribute name, value is the attribute value.
 
         uses_calc_time (bool): If True, the cutoff time the feature is being
             calculated at will be passed to the function as the keyword
@@ -159,38 +107,12 @@ def make_agg_primitive(function, input_types, return_type, name=None,
     if len(default_kwargs) > 0:
         new_class.default_kwargs = default_kwargs
 
-        def new_class_init(self, base_features, parent_entity,
-                           use_previous=None, where=None, **kwargs):
-            if not hasattr(base_features, '__iter__'):
-                base_features = [self._check_feature(base_features)]
-            else:
-                base_features = [self._check_feature(bf)
-                                 for bf in base_features]
-                msg = "all base features must share the same entity"
-                assert len(set([bf.entity for bf in base_features])) == 1, msg
-            self.base_features = base_features[:]
-
-            self.child_entity = base_features[0].entity
-
-            if where is not None:
-                self.where = self._check_feature(where)
-                msg = "Where feature must be defined on child entity {}"
-                msg = msg.format(self.child_entity.id)
-                assert self.where.entity.id == self.child_entity.id, msg
-
-            if use_previous:
-                assert self.child_entity.time_index is not None, (
-                    "Applying function that requires time index to entity that"
-                    " doesn't have one")
-
-            self.use_previous = use_previous
+        def new_class_init(self, **kwargs):
             self.kwargs = copy.deepcopy(self.default_kwargs)
             self.kwargs.update(kwargs)
             self.partial = functools.partial(function, **self.kwargs)
             self.partial.__name__ = name
 
-            super(AggregationPrimitive, self).__init__(parent_entity,
-                                                       self.base_features)
         new_class.__init__ = new_class_init
         new_class.get_function = lambda self: self.partial
     else:

@@ -5,6 +5,7 @@ from toolz import merge
 
 from ..testing_utils import make_ecommerce_entityset
 
+import featuretools as ft
 from featuretools.entityset import Timedelta
 from featuretools.entityset.timedelta import add_td
 from featuretools.exceptions import NotEnoughData
@@ -137,8 +138,8 @@ def test_string_timedelta_args():
 
 
 def test_feature_takes_timedelta_string(es):
-    feature = Count(es['log']['id'], es['customers'],
-                    use_previous="1 day")
+    feature = ft.Feature(es['log']['id'], parent_entity=es['customers'],
+                         use_previous="1 day", primitive=Count)
     assert feature.use_previous == Timedelta(1, 'd')
 
 

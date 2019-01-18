@@ -1,6 +1,5 @@
 from __future__ import division
 
-from builtins import range, str
 from datetime import datetime, timedelta
 
 import numpy as np
@@ -20,8 +19,6 @@ from featuretools.variable_types import (
     Variable
 )
 
-# TODO: make sure get func gets numpy arrays not series
-
 
 class Count(AggregationPrimitive):
     """Counts the number of non null values."""
@@ -31,17 +28,12 @@ class Count(AggregationPrimitive):
     stack_on_self = False
     default_value = 0
 
-    def __init__(self, id_feature, parent_entity, **kwargs):
-        super(Count, self).__init__(id_feature, parent_entity, **kwargs)
-
     def get_function(self):
         return 'count'
 
-    def generate_name(self):
-        where_str = self._where_str()
-        use_prev_str = self._use_prev_str()
-
-        return u"COUNT(%s%s%s)" % (self.child_entity.id,
+    def generate_name(self, base_feature_names, child_entity_id,
+                      parent_entity_id, where_str, use_prev_str):
+        return u"COUNT(%s%s%s)" % (child_entity_id,
                                    where_str, use_prev_str)
 
 
@@ -94,7 +86,6 @@ class Max(AggregationPrimitive):
     name = "max"
     input_types = [Numeric]
     return_type = Numeric
-    # max_stack_depth = 1
     stack_on_self = False
 
     def get_function(self):
@@ -107,7 +98,6 @@ class NUnique(AggregationPrimitive):
     # todo can we use discrete in input_types instead?
     input_types = [Discrete]
     return_type = Numeric
-    # max_stack_depth = 1
     stack_on_self = False
 
     def get_function(self):
@@ -132,7 +122,6 @@ class PercentTrue(AggregationPrimitive):
     name = "percent_true"
     input_types = [Boolean]
     return_type = Numeric
-    max_stack_depth = 1
     stack_on = []
     stack_on_exclude = []
     default_value = 0
@@ -141,36 +130,6 @@ class PercentTrue(AggregationPrimitive):
         def percent_true(s):
             return s.fillna(0).mean()
         return percent_true
-
-
-class NMostCommon(AggregationPrimitive):
-    """Finds the N most common elements in a categorical feature."""
-    name = "n_most_common"
-    input_types = [Discrete]
-    return_type = Discrete
-    # max_stack_depth = 1
-    stack_on = []
-    stack_on_exclude = []
-    expanding = True
-
-    def __init__(self, base_feature, parent_entity, n=3):
-        self.n = n
-        super(NMostCommon, self).__init__(base_feature, parent_entity)
-
-    @property
-    def default_value(self):
-        return np.zeros(self.n) * np.nan
-
-    def get_expanded_names(self):
-        names = []
-        for i in range(1, self.n + 1):
-            names.append(str(i) + self.get_name()[1:])
-        return names
-
-    def get_function(self):
-        def pd_topn(x, n=self.n):
-            return np.array(x.value_counts()[:n].index)
-        return pd_topn
 
 
 class AvgTimeBetween(AggregationPrimitive):
@@ -186,7 +145,6 @@ class AvgTimeBetween(AggregationPrimitive):
     name = "avg_time_between"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
-    # max_stack_depth = 1
 
     def get_function(self):
         def pd_avg_time_between(x):
@@ -223,7 +181,6 @@ class Median(AggregationPrimitive):
     name = "median"
     input_types = [Numeric]
     return_type = Numeric
-    # max_stack_depth = 2
 
     def get_function(self):
         return lambda x: x.median()
@@ -241,7 +198,6 @@ class Skew(AggregationPrimitive):
     return_type = Numeric
     stack_on = []
     stack_on_self = False
-    # max_stack_depth = 1
 
     def get_function(self):
         return 'skew'
@@ -253,7 +209,6 @@ class Std(AggregationPrimitive):
     name = "std"
     input_types = [Numeric]
     return_type = Numeric
-    # max_stack_depth = 2
     stack_on_self = False
 
     def get_function(self):
@@ -266,7 +221,6 @@ class Last(AggregationPrimitive):
     input_types = [Variable]
     return_type = None
     stack_on_self = False
-    # max_stack_depth = 1
 
     def get_function(self):
         def pd_last(x):
@@ -317,13 +271,6 @@ class Trend(AggregationPrimitive):
     name = "trend"
     input_types = [Numeric, DatetimeTimeIndex]
     return_type = Numeric
-
-    def __init__(self, base_features, parent_entity, **kwargs):
-        self.value = base_features[0]
-        self.time_index = base_features[1]
-        super(Trend, self).__init__(base_features,
-                                    parent_entity,
-                                    **kwargs)
 
     def get_function(self):
         def pd_trend(y, x):

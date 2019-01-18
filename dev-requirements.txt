@@ -1,5 +1,6 @@
 -r test-requirements.txt
 codecov==2.0.15
+autopep8
 flake8==3.6.0
 ipython==7.1.1; python_version>'3.4'
 ipython==5.8.0; python_version<'3'
