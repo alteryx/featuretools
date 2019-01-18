@@ -63,7 +63,7 @@ class FeatureBase(object):
         return self.generate_name()
 
     def get_feature_names(self):
-        n = self.primitive.number_output_features
+        n = self.number_output_features
         if n == 1:
             names = [self.get_name()]
         else:
@@ -463,7 +463,7 @@ class TransformFeature(FeatureBase):
             base_features = [_check_feature(base_features)]
 
         # R TODO handle stacking on sub-features
-        assert (bf.primitive.number_output_features == 1 for bf in base_features)
+        assert (bf.number_output_features == 1 for bf in base_features)
 
         base_entity = set([f.entity for f in base_features])
         assert len(base_entity) == 1, \

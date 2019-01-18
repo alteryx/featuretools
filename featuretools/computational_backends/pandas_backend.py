@@ -324,7 +324,7 @@ class PandasBackend(ComputationalBackend):
                     values = values.values
                 return values
 
-            if f.primitive.number_output_features > 1:
+            if f.number_output_features > 1:
                 names = f.get_feature_names()
                 assert len(names) == len(values)
                 for name, value in zip(names, values):
@@ -502,7 +502,7 @@ class PandasBackend(ComputationalBackend):
         # convert boolean dtypes to floats as appropriate
         # pandas behavior: https://github.com/pydata/pandas/issues/3752
         for f in features:
-            if (f.primitive.number_output_features == 1 and
+            if (f.number_output_features == 1 and
                     f.variable_type == variable_types.Numeric and
                     frame[f.get_name()].dtype.name in ['object', 'bool']):
                 frame[f.get_name()] = frame[f.get_name()].astype(float)
@@ -536,7 +536,7 @@ def agg_wrapper(feats, time_last):
             else:
                 values = func(*args)
 
-            if f.primitive.number_output_features > 1:
+            if f.number_output_features > 1:
                 names = f.get_feature_names()
                 assert len(names) == len(values)
                 d.update(dict(zip(names, values)))

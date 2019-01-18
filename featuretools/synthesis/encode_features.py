@@ -86,7 +86,7 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
         # TODO: features with multiple columns are not encoded by this method,
         # which can cause an "encoded" matrix with non-numeric vlaues
         is_discrete = issubclass(f.variable_type, Discrete)
-        if (f.primitive.number_output_features > 1 or not is_discrete):
+        if (f.number_output_features > 1 or not is_discrete):
             encoded.append(f)
             continue
 
