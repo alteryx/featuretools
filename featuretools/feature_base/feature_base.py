@@ -31,7 +31,7 @@ class FeatureBase(object):
         Args:
             entity (Entity): entity this feature is being calculated for
             base_featres (list[FeatureBase]): list of base features for primitive
-            primitive (): primitive to calculate. if not initilized when passed, gets initialized with no arguments
+            primitive (:class:`.PrimitiveBase`): primitive to calculate. if not initialized when passed, gets initialized with no arguments
         """
         assert all(isinstance(f, FeatureBase) for f in base_features), \
             "All base features must be features"
@@ -83,11 +83,6 @@ class FeatureBase(object):
 
         if hasattr(self, "where") and self.where:
             deps += [self.where]
-
-        # if self.use_previous and self.use_previous.is_absolute():
-            # entity = self.entity
-            # time_var = IdentityFeature(entity[entity.time_index])
-            # deps += [time_var]
 
         if ignored is None:
             ignored = set([])
@@ -448,10 +443,7 @@ class TransformFeature(FeatureBase):
         if any(bf.expanding for bf in base_features):
             self.expanding = True
 
-        base_entity = set([f.entity for f in base_features])
-        assert len(base_entity) == 1, \
-            "More than one entity for base features"
-        super(TransformFeature, self).__init__(list(base_entity)[0],
+        super(TransformFeature, self).__init__(base_features[0].entity,
                                                base_features, primitive=primitive)
 
     def copy(self):
