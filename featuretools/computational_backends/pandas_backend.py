@@ -325,13 +325,11 @@ class PandasBackend(ComputationalBackend):
                 return values
 
             if f.number_output_features > 1:
-                names = f.get_feature_names()
-                assert len(names) == len(values)
-                for name, value in zip(names, values):
-                    frame[name] = strip_values_if_series(value)
+                values = [strip_values_if_series(value) for value in values]
             else:
-                values = strip_values_if_series(values)
-                frame[f.get_name()] = values
+                values = [strip_values_if_series(values)]
+            update_feature_columns(f, frame, values)
+
         return frame
 
     def _calculate_direct_features(self, features, entity_frames):
@@ -536,12 +534,10 @@ def agg_wrapper(feats, time_last):
             else:
                 values = func(*args)
 
-            if f.number_output_features > 1:
-                names = f.get_feature_names()
-                assert len(names) == len(values)
-                d.update(dict(zip(names, values)))
-            else:
-                d[f.get_name()] = values
+            if f.number_output_features == 1:
+                values = [values]
+            update_feature_columns(f, d, values)
+
         return pd.Series(d)
     return wrap
 
@@ -549,3 +545,10 @@ def agg_wrapper(feats, time_last):
 def set_default_column(frame, f):
     for name in f.get_feature_names():
         frame[name] = f.default_value
+
+
+def update_feature_columns(feature, data, values):
+    names = feature.get_feature_names()
+    assert len(names) == len(values)
+    for name, value in zip(names, values):
+        data[name] = value
