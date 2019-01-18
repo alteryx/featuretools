@@ -87,8 +87,11 @@ def test_direct_of_multi_output_transform_feat(es):
         target_entity="sessions",
         trans_primitives=[TestTime, Year, Month, Day, Hour, Minute, Second])
 
+    # Get column names of for multi feature and normal features
     subnames = DirectFeature(join_time_split, es["sessions"]).get_feature_names()
     altnames = [DirectFeature(f, es["sessions"]).get_name() for f in alt_features]
+
+    # Check values are equal between
     for col1, col2 in zip(subnames, altnames):
         assert (fm[col1] == fm[col2]).all()
 
@@ -110,9 +113,11 @@ def test_direct_features_of_multi_output_agg_primitives(es):
             return pd_top3
 
     fm, fl = dfs(entityset=es,
-                 target_entity="sessions",
+                 target_entity="log",
                  agg_primitives=[ThreeMostCommonCat],
+                 trans_primitives=[],
                  max_depth=3)
+
     has_nmost_as_base = []
     for feature in fl:
         is_base = False
@@ -121,3 +126,27 @@ def test_direct_features_of_multi_output_agg_primitives(es):
             is_base = True
         has_nmost_as_base.append(is_base)
     assert any(has_nmost_as_base)
+
+    true_result_rows = []
+    session_data = {
+        0: ['coke zero', "car", np.nan],
+        1: ['toothpaste', 'brown bag', np.nan],
+        2: ['brown bag', np.nan, np.nan],
+        3: set(['Haribo sugar-free gummy bears', 'coke zero', np.nan]),
+        4: ['coke zero', np.nan, np.nan],
+        5: ['taco clock', np.nan, np.nan]
+    }
+    for i, count in enumerate([5, 4, 1, 2, 3, 2]):
+        while count > 0:
+            true_result_rows.append(session_data[i])
+            count -= 1
+
+    tempname = "sessions.N_MOST_COMMON_CATEGORICAL(log.product_id)__%s"
+    for i, row in enumerate(true_result_rows):
+        for j in range(3):
+            value = fm[tempname % (j)][i]
+            if isinstance(row, set):
+                assert pd.isnull(value) or value in row
+            else:
+                assert ((pd.isnull(value) and pd.isnull(row[j])) or
+                        value == row[j])

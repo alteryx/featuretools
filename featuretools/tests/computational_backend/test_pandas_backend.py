@@ -524,8 +524,3 @@ def test_empty_child_dataframe():
     fm2 = ft.calculate_feature_matrix(entityset=es, features=[count_where, trend_where], cutoff_time=pd.Timestamp("1/4/2018"))
     names = [count_where.get_name(), trend_where.get_name()]
     assert_array_equal(fm2[names], [[0, np.nan]])
-
-
-def test_computes_direct_features_of_multi_ouput_features():
-    # TODO: implement
-    pass
