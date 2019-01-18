@@ -476,7 +476,7 @@ def test_approximate_dfeat_of_dfeat_of_agg_on_target(entityset):
     es = entityset
     agg_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
     agg_feat2 = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Sum)
-    dfeat = DirectFeature(agg_feat2, es['log'])
+    dfeat = DirectFeature(ft.Feature(agg_feat2, es["sessions"]), es['log'])
     times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 2]})
     feature_matrix = calculate_feature_matrix([dfeat],

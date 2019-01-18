@@ -333,27 +333,16 @@ class DirectFeature(FeatureBase):
 
     def __init__(self, base_feature, child_entity):
         base_feature = _check_feature(base_feature)
-        self.base_feature = base_feature
-
-        # M TODO what does this do?
-        path = child_entity.entityset.find_forward_path(child_entity.id, base_feature.entity.id)
-        if len(path) > 1:
-            parent_entity_id = path[1].child_entity.id
-            parent_entity = child_entity.entityset[parent_entity_id]
-            parent_feature = DirectFeature(base_feature, parent_entity)
-        else:
-            parent_feature = base_feature
-
-        self.parent_entity = parent_feature.entity
-        super(DirectFeature, self).__init__(child_entity, [parent_feature], primitive=PrimitiveBase)
+        self.parent_entity = base_feature.entity
+        super(DirectFeature, self).__init__(child_entity, [base_feature], primitive=PrimitiveBase)
 
     @property
     def variable(self):
-        return self.base_feature.variable
+        return self.base_features[0].variable
 
     @property
     def number_output_features(self):
-        return self.base_feature.primitive.number_output_features
+        return self.base_features[0].primitive.number_output_features
 
     @property
     def default_value(self):
@@ -361,7 +350,7 @@ class DirectFeature(FeatureBase):
 
     def copy(self):
         """Return copy of feature"""
-        return DirectFeature(self.base_feature, self.entity)
+        return DirectFeature(self.base_features[0], self.entity)
 
     @property
     def variable_type(self):

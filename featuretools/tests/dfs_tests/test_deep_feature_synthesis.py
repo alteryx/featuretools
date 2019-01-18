@@ -597,7 +597,7 @@ def test_max_hlevel(es):
 
     customer_log = ft.Feature(es['log']['value'], parent_entity=es['customers'], primitive=Last)
     session_log = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Last)
-    log_customer_log = ft.Feature(customer_log, es['log'])
+    log_customer_log = ft.Feature(ft.Feature(customer_log, es["sessions"]), es['log'])
     log_session_log = ft.Feature(session_log, es['log'])
     assert log_customer_log.get_name() in feats_n1
     assert log_session_log.get_name() in feats_n1
