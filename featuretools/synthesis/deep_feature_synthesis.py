@@ -11,6 +11,7 @@ from featuretools.feature_base import (
     TransformFeature
 )
 from featuretools.primitives.api import Discrete
+from featuretools.primitives.base import PrimitiveBase
 from featuretools.utils import is_string
 from featuretools.variable_types import Boolean, Categorical, Numeric, Ordinal
 
@@ -136,7 +137,7 @@ class DeepFeatureSynthesis(object):
                                      "Call ft.primitives.list_primitives() to get",
                                      " a list of available primitives")
                 a = agg_prim_dict[a.lower()]
-
+            a = handle_primitive(a)
             self.agg_primitives.append(a)
 
         if trans_primitives is None:
@@ -152,7 +153,7 @@ class DeepFeatureSynthesis(object):
                                      "Call ft.primitives.list_primitives() to get",
                                      " a list of available primitives")
                 t = trans_prim_dict[t.lower()]
-
+            t = handle_primitive(t)
             self.trans_primitives.append(t)
 
         if where_primitives is None:
@@ -166,7 +167,7 @@ class DeepFeatureSynthesis(object):
                                      "Call ft.primitives.list_primitives() to get",
                                      " a list of available primitives")
                 p = prim_obj
-
+            p = handle_primitive(p)
             self.where_primitives.append(p)
 
         self.seed_features = seed_features or []
@@ -486,9 +487,6 @@ class DeepFeatureSynthesis(object):
 
             for matching_input in matching_inputs:
                 new_f = TransformFeature(matching_input, primitive=trans_prim)
-                if new_f.expanding:
-                    continue
-
                 self._handle_new_feature(all_features=all_features,
                                          new_feature=new_f)
 
@@ -518,11 +516,8 @@ class DeepFeatureSynthesis(object):
 
             new_f = DirectFeature(f, child_entity)
 
-            if f.expanding:
-                continue
-            else:
-                self._handle_new_feature(all_features=all_features,
-                                         new_feature=new_f)
+            self._handle_new_feature(all_features=all_features,
+                                     new_feature=new_f)
 
     def _build_agg_features(self, all_features,
                             parent_entity, child_entity, max_depth=0):
@@ -582,7 +577,8 @@ class DeepFeatureSynthesis(object):
                     continue
 
                 # limits the aggregation feature by the given allowed feature types.
-                if not any([issubclass(agg_prim, feature_type) for feature_type in self.where_primitives]):
+                if not any([issubclass(type(agg_prim), type(primitive))
+                            for primitive in self.where_primitives]):
                     continue
 
                 for where in wheres:
@@ -655,32 +651,32 @@ class DeepFeatureSynthesis(object):
         return hlevel
 
 
-def check_stacking(primitive, input_types):
-    """checks if features in input_types can be used with supplied primitive
+def check_stacking(primitive, inputs):
+    """checks if features in inputs can be used with supplied primitive
        using the stacking rules"""
-
     if primitive.stack_on_self is False:
-        for f in input_types:
-            if isinstance(f.primitive, primitive):
+        for f in inputs:
+            if isinstance(f.primitive, primitive.__class__):
                 return False
 
     if primitive.stack_on_exclude is not None:
-        for f in input_types:
+        for f in inputs:
             if isinstance(f.primitive, tuple(primitive.stack_on_exclude)):
                 return False
 
-    for f in input_types:
-        if f.primitive.expanding:
+    # R TODO: handle this
+    for f in inputs:
+        if f.number_output_features > 1:
             return False
 
-    for f in input_types:
+    for f in inputs:
         if f.primitive.base_of_exclude is not None:
             if primitive in f.base_of_exclude:
                 return False
 
-    for f in input_types:
+    for f in inputs:
         if primitive.stack_on_self is True:
-            if isinstance(f.primitive, primitive):
+            if isinstance(f.primitive, primitive.__class__):
                 continue
         if primitive.stack_on is not None:
             if isinstance(f.primitive, tuple(primitive.stack_on)):
@@ -688,7 +684,7 @@ def check_stacking(primitive, input_types):
         else:
             continue
         if f.primitive.base_of is not None:
-            if primitive in f.primitive.base_of:
+            if primitive.__class__ in f.primitive.base_of:
                 continue
         else:
             continue
@@ -736,3 +732,10 @@ def match(input_types, features, replace=False, commutative=False):
         return set([tuple(sorted(s, key=lambda x: x.get_name().lower())) for s in matching_inputs])
 
     return set([tuple(s) for s in matching_inputs])
+
+
+def handle_primitive(primitive):
+    if not isinstance(primitive, PrimitiveBase):
+        primitive = primitive()
+    assert isinstance(primitive, PrimitiveBase), "must be a primitive"
+    return primitive

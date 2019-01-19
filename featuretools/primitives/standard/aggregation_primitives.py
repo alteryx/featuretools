@@ -132,6 +132,25 @@ class PercentTrue(AggregationPrimitive):
         return percent_true
 
 
+class NMostCommon(AggregationPrimitive):
+    """Finds the N most common elements in a categorical feature."""
+    name = "n_most_common"
+    input_types = [Discrete]
+    return_type = Discrete
+
+    def __init__(self, n=3):
+        self.number_output_features = n
+
+    def get_function(self):
+        def n_most_common(x, n=self.number_output_features):
+            array = np.array(x.value_counts()[:n].index)
+            if len(array) < n:
+                filler = np.full(n - len(array), np.nan)
+                array = np.append(array, filler)
+            return array
+        return n_most_common
+
+
 class AvgTimeBetween(AggregationPrimitive):
     """Computes the average time between consecutive events.
 

@@ -21,9 +21,8 @@ class PrimitiveBase(object):
     #: (int): Maximum number of features in the largest chain proceeding
     # downward from this feature's base features.
     max_stack_depth = None
-    #: (bool): If True, feature will expand into multiple values during
-    # calculation
-    expanding = False
+    #: (int): Number of columns in feature matrix associated with this feature
+    number_output_features = 1
     # whitelist of primitives can have this primitive in input_types
     base_of = None
     # blacklist of primitives can have this primitive in input_types

@@ -34,7 +34,9 @@ from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; 
     LessThanEqualToScalar,
     LessThanScalar,
     Longitude,
+    Minute,
     Mode,
+    Month,
     MultiplyNumeric,
     MultiplyNumericScalar,
     Not,
@@ -44,9 +46,11 @@ from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; 
     NumWords,
     Percentile,
     ScalarSubtractNumericFeature,
+    Second,
     SubtractNumeric,
     SubtractNumericScalar,
     Sum,
+    Year,
     get_transform_primitives
 )
 
@@ -1004,3 +1008,50 @@ def test_make_transform_sets_kwargs_correctly(es):
     assert isin_1_list == isin_1.primitive.kwargs['list_of_outputs']
     assert isin_2_base_f == isin_2.base_features[0]
     assert isin_2_list == isin_2.primitive.kwargs['list_of_outputs']
+
+
+def test_make_transform_multiple_output_features(es):
+    def test_f(x):
+        times = pd.Series(x)
+        units = ["year", "month", "day", "hour", "minute", "second"]
+        return [times.apply(lambda x: getattr(x, unit)) for unit in units]
+
+    def gen_feat_names(self):
+        subnames = ["Year", "Month", "Day", "Hour", "Minute", "Second"]
+        return ["Now.%s(%s)" % (subname, self.base_features[0].get_name())
+                for subname in subnames]
+
+    TestTime = make_trans_primitive(
+        function=test_f,
+        input_types=[Datetime],
+        return_type=Numeric,
+        number_output_features=6,
+        cls_attributes={"get_feature_names": gen_feat_names},
+    )
+
+    join_time_split = ft.Feature(es["log"]["datetime"], primitive=TestTime)
+    alt_features = [ft.Feature(es["log"]["datetime"], primitive=Year),
+                    ft.Feature(es["log"]["datetime"], primitive=Month),
+                    ft.Feature(es["log"]["datetime"], primitive=Day),
+                    ft.Feature(es["log"]["datetime"], primitive=Hour),
+                    ft.Feature(es["log"]["datetime"], primitive=Minute),
+                    ft.Feature(es["log"]["datetime"], primitive=Second)]
+    fm, fl = ft.dfs(
+        entityset=es,
+        target_entity="log",
+        trans_primitives=[TestTime, Year, Month, Day, Hour, Minute, Second])
+
+    subnames = join_time_split.get_feature_names()
+    altnames = [f.get_name() for f in alt_features]
+    for col1, col2 in zip(subnames, altnames):
+        assert (fm[col1] == fm[col2]).all()
+
+    # check no feature stacked on new primitive
+    for feature in fl:
+        for base_feature in feature.base_features:
+            assert base_feature.hash() != join_time_split.hash()
+
+
+def test_feature_names_inherit_from_make_trans_primitive():
+    # R TODO
+    pass

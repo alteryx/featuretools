@@ -30,6 +30,7 @@ from featuretools.synthesis.deep_feature_synthesis import (
 from featuretools.variable_types import (
     Datetime,
     DatetimeTimeIndex,
+    Discrete,
     Index,
     Numeric,
     Variable
@@ -127,39 +128,39 @@ def test_base_of_and_stack_on_heuristic(es, test_primitive):
     child = ft.Feature(es["sessions"]["id"], parent_entity=es["customers"], primitive=Count)
     test_primitive.stack_on = []
     child.primitive.base_of = []
-    assert not check_stacking(test_primitive, [child])
+    assert not check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = []
     child.primitive.base_of = None
-    assert check_stacking(test_primitive, [child])
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = []
     child.primitive.base_of = [test_primitive]
-    assert check_stacking(test_primitive, [child])
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = None
     child.primitive.base_of = []
-    assert check_stacking(test_primitive, [child])
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = None
     child.primitive.base_of = None
-    assert check_stacking(test_primitive, [child])
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = None
     child.primitive.base_of = [test_primitive]
-    assert check_stacking(test_primitive, [child])
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = [type(child.primitive)]
     child.primitive.base_of = []
-    assert check_stacking(test_primitive, [child])
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = [type(child.primitive)]
     child.primitive.base_of = None
-    assert check_stacking(test_primitive, [child])
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = [type(child.primitive)]
     child.primitive.base_of = [test_primitive]
-    assert check_stacking(test_primitive, [child])
+    assert check_stacking(test_primitive(), [child])
 
 
 def test_stack_on_self(es, test_primitive):
@@ -169,14 +170,14 @@ def test_stack_on_self(es, test_primitive):
     child.primitive.base_of = []
     test_primitive.stack_on_self = False
     child.primitive.stack_on_self = False
-    assert not check_stacking(test_primitive, [child])
+    assert not check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on_self = True
-    assert check_stacking(test_primitive, [child])
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = None
     test_primitive.stack_on_self = False
-    assert not check_stacking(test_primitive, [child])
+    assert not check_stacking(test_primitive(), [child])
 
 
 def test_init_and_name(es):
@@ -384,3 +385,38 @@ def test_makes_numtrue(es):
     features = dfs.build_features()
     assert feature_with_name(features, 'customers.NUM_TRUE(log.purchased)')
     assert feature_with_name(features, 'NUM_TRUE(log.purchased)')
+
+
+def test_make_three_most_common(es):
+    def pd_top3(x):
+        array = np.array(x.value_counts()[:3].index)
+        if len(array) < 3:
+            filler = np.full(3 - len(array), np.nan)
+            array = np.append(array, filler)
+        return array
+
+    NMostCommoner = make_agg_primitive(function=pd_top3,
+                                       input_types=[Discrete],
+                                       return_type=Discrete,
+                                       number_output_features=3)
+
+    fm, features = ft.dfs(entityset=es,
+                          target_entity="customers",
+                          agg_primitives=[NMostCommoner],
+                          trans_primitives=[])
+
+    true_results = pd.DataFrame([
+        ['coke zero', 'toothpaste', "car"],
+        ['coke zero', 'Haribo sugar-free gummy bears', np.nan],
+        ['taco clock', np.nan, np.nan]
+    ])
+    df = fm[["PD_TOP3(log.product_id)__%s" % i for i in range(3)]]
+    for i in range(df.shape[0]):
+        if i == 0:
+            # coke zero and toothpaste have same number of occurrences
+            # so just check that the top two match
+            assert set(true_results.iloc[i].values[:2]) == set(df.iloc[i].values[:2])
+            assert df.iloc[0].values[2] in ("brown bag", "car")
+        else:
+            for i1, i2 in zip(true_results.iloc[i], df.iloc[i]):
+                assert (pd.isnull(i1) and pd.isnull(i2)) or (i1 == i2)

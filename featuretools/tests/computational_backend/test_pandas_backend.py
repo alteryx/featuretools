@@ -24,6 +24,7 @@ from featuretools.primitives import (  # NMostCommon,
     Mean,
     Min,
     Mode,
+    NMostCommon,
     NotEqualScalar,
     Sum,
     Trend
@@ -430,6 +431,30 @@ def test_deep_agg_feat_chain(entityset, backend):
                                                time_last=None)
     v = df[region_avg_feat.get_name()][0]
     assert (v == 17 / 3.)
+
+
+def test_topn(entityset, backend):
+    topn = ft.Feature(entityset['log']['product_id'],
+                      parent_entity=entityset['customers'],
+                      primitive=NMostCommon(n=2))
+    pandas_backend = backend([topn])
+
+    df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2],
+                                               time_last=None)
+
+    true_results = pd.DataFrame([
+        ['toothpaste', 'coke zero'],
+        ['coke zero', 'Haribo sugar-free gummy bears'],
+        ['taco clock', np.nan]
+    ])
+    assert ([name in df.columns for name in topn.get_feature_names()])
+    for i in range(df.shape[0]):
+        if i == 0:
+            # coke zero and toothpase have same number of occurrences
+            assert set(true_results.loc[i].values) == set(df.loc[i].values)
+        else:
+            for i1, i2 in zip(true_results.loc[i], df.iloc[i]):
+                assert (pd.isnull(i1) and pd.isnull(i2)) or (i1 == i2)
 
 
 def test_trend(entityset, backend):
