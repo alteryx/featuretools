@@ -10,10 +10,10 @@ Discussion
 
 Conversation happens in the following places:
 
-1.  **Usage questions** are directed to `StackOverflow`_ with the #featuretools tag.
+1.  **General Usage questions** are directed to `StackOverflow`_ with the #featuretools tag.
 2.  **Bug reports and feature requests** are managed on the `GitHub issue
     tracker`_.
-3.  **Chat** occurs on at `Slack`_. Please do not post questions and bug reports
+3.  **Chat** occurs on at `Slack`_. Please do not post general usage questions and bug reports
     on Slack. Instead people should use Stack Overflow or GitHub.
 4.  **Everything else, core developers** can be reached at help@featuretools.com.
 
