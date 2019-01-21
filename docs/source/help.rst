@@ -10,16 +10,16 @@ Discussion
 
 Conversation happens in the following places:
 
-1.  **Usage questions** are directed to `StackOverflow`_ with the #featuretools tag.
+1.  **General Usage questions** are directed to `StackOverflow`_ with the #featuretools tag.
 2.  **Bug reports and feature requests** are managed on the `GitHub issue
     tracker`_.
-3.  **Chat** occurs on at `Gitter`_. Please do not post questions and bug reports
-    on gitter. Instead people should use Stack Overflow or GitHub.
+3.  **Chat** occurs on at `Slack`_. Please do not post general usage questions and bug reports
+    on Slack. Instead people should use Stack Overflow or GitHub.
 4.  **Everything else, core developers** can be reached at help@featuretools.com.
 
 .. _`StackOverflow`: http://stackoverflow.com/questions/tagged/featuretools
 .. _`Github issue tracker`: https://github.com/featuretools/featuretools/issues
-.. _`Gitter`: https://gitter.im/featuretools/featuretools
+.. _`Gitter`: https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTZiZDdkYjZhZTVkMmVmZDIxNWZiNTVjNDQxYmZkMzI5NGRlOTg5YjcwYmJiNWE2YjIzZmFkMjc1NDZkNjBhZTQ
 
 
 Asking for help
