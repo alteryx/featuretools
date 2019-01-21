@@ -14,11 +14,11 @@ from .feature_tree import FeatureTree
 
 from featuretools import variable_types
 from featuretools.exceptions import UnknownFeature
-from featuretools.primitives.base import (
-    AggregationPrimitive,
+from featuretools.feature_base import (
+    AggregationFeature,
     DirectFeature,
     IdentityFeature,
-    TransformPrimitive
+    TransformFeature
 )
 from featuretools.utils.gen_utils import (
     get_relationship_variable_id,
@@ -103,7 +103,7 @@ class PandasBackend(ComputationalBackend):
                                                  training_window=training_window,
                                                  verbose=verbose)
         large_eframes_by_filter = None
-        if any([f.uses_full_entity for f in self.feature_tree.all_features]):
+        if any([f.primitive.uses_full_entity for f in self.feature_tree.all_features if isinstance(f, TransformFeature)]):
             large_necessary_columns = self.feature_tree.necessary_columns_for_all_values_features
             large_eframes_by_filter = \
                 self.entityset.get_pandas_data_slice(filter_entity_ids=ordered_entities,
@@ -250,12 +250,20 @@ class PandasBackend(ComputationalBackend):
             df = df.append(default_df, sort=True)
 
         df.index.name = self.entityset[self.target_eid].index
-        return df[[feat.get_name() for feat in self.features]]
+        column_list = []
+        for feat in self.features:
+            column_list.extend(feat.get_feature_names())
+        return df[column_list]
 
     def generate_default_df(self, instance_ids, extra_columns=None):
         index_name = self.features[0].entity.index
-        default_row = [f.default_value for f in self.features]
-        default_cols = [f.get_name() for f in self.features]
+        default_row = []
+        default_cols = []
+        for f in self.features:
+            for name in f.get_feature_names():
+                default_cols.append(name)
+                default_row.append(f.default_value)
+
         default_matrix = [default_row] * len(instance_ids)
         default_df = pd.DataFrame(default_matrix,
                                   columns=default_cols,
@@ -268,11 +276,11 @@ class PandasBackend(ComputationalBackend):
         return default_df
 
     def _feature_type_handler(self, f):
-        if isinstance(f, TransformPrimitive):
+        if isinstance(f, TransformFeature):
             return self._calculate_transform_features
         elif isinstance(f, DirectFeature):
             return self._calculate_direct_features
-        elif isinstance(f, AggregationPrimitive):
+        elif isinstance(f, AggregationFeature):
             return self._calculate_agg_features
         elif isinstance(f, IdentityFeature):
             return self._calculate_identity_features
@@ -305,16 +313,23 @@ class PandasBackend(ComputationalBackend):
             feature_func = f.get_function()
             # apply the function to the relevant dataframe slice and add the
             # feature row to the results dataframe.
-            if f.uses_calc_time:
+            if f.primitive.uses_calc_time:
                 values = feature_func(*variable_data, time=self.time_last)
             else:
                 values = feature_func(*variable_data)
 
             # if we don't get just the values, the assignment breaks when indexes don't match
-            if isinstance(values, pd.Series):
-                values = values.values
+            def strip_values_if_series(values):
+                if isinstance(values, pd.Series):
+                    values = values.values
+                return values
 
-            frame[f.get_name()] = values
+            if f.number_output_features > 1:
+                values = [strip_values_if_series(value) for value in values]
+            else:
+                values = [strip_values_if_series(values)]
+            update_feature_columns(f, frame, values)
+
         return frame
 
     def _calculate_direct_features(self, features, entity_frames):
@@ -341,9 +356,11 @@ class PandasBackend(ComputationalBackend):
             # Sometimes entityset._add_multigenerational_links adds link variables
             # that would ordinarily get calculated as direct features,
             # so we make sure not to attempt to calculate again
-            if f.get_name() in child_df.columns:
-                continue
-            col_map[f.base_features[0].get_name()] = f.get_name()
+            base_names = f.base_features[0].get_feature_names()
+            for name, base_name in zip(f.get_feature_names(), base_names):
+                if name in child_df.columns:
+                    continue
+                col_map[base_name] = name
 
         # merge the identity feature from the parent entity into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
@@ -426,8 +443,8 @@ class PandasBackend(ComputationalBackend):
                     funcname = func
                     if callable(func):
                         # make sure func has a unique name due to how pandas names aggregations
-                        func.__name__ = f.name
-                        funcname = f.name
+                        func.__name__ = f.primitive.name
+                        funcname = f.primitive.name
 
                     to_agg[variable_id].append(func)
                     # this is used below to rename columns that pandas names for us
@@ -472,23 +489,18 @@ class PandasBackend(ComputationalBackend):
                                  left_index=True, right_index=True, how='left')
 
         # Handle default values
-        # 1. handle non scalar default values
-        iterfeats = [f for f in features
-                     if hasattr(f.default_value, '__iter__')]
-        for f in iterfeats:
-            nulls = pd.isnull(frame[f.get_name()])
-            for ni in nulls[nulls].index:
-                frame.at[ni, f.get_name()] = f.default_value
+        fillna_dict = {}
+        for f in features:
+            feature_defaults = {name: f.default_value
+                                for name in f.get_feature_names()}
+            fillna_dict.update(feature_defaults)
 
-        # 2. handle scalars default values
-        fillna_dict = {f.get_name(): f.default_value for f in features
-                       if f not in iterfeats}
         frame.fillna(fillna_dict, inplace=True)
 
         # convert boolean dtypes to floats as appropriate
         # pandas behavior: https://github.com/pydata/pandas/issues/3752
         for f in features:
-            if (not f.expanding and
+            if (f.number_output_features == 1 and
                     f.variable_type == variable_types.Numeric and
                     frame[f.get_name()].dtype.name in ['object', 'bool']):
                 frame[f.get_name()] = frame[f.get_name()].astype(float)
@@ -497,16 +509,16 @@ class PandasBackend(ComputationalBackend):
 
 
 def _can_agg(feature):
-    assert isinstance(feature, AggregationPrimitive)
+    assert isinstance(feature, AggregationFeature)
     base_features = feature.base_features
     if feature.where is not None:
         base_features = [bf.get_name() for bf in base_features
                          if bf.get_name() != feature.where.get_name()]
 
-    if feature.uses_calc_time:
+    if feature.primitive.uses_calc_time:
         return False
-
-    return len(base_features) == 1 and not feature.expanding
+    single_output = feature.primitive.number_output_features == 1
+    return len(base_features) == 1 and single_output
 
 
 def agg_wrapper(feats, time_last):
@@ -517,18 +529,26 @@ def agg_wrapper(feats, time_last):
             variable_ids = [bf.get_name() for bf in f.base_features]
             args = [df[v] for v in variable_ids]
 
-            if f.uses_calc_time:
-                d[f.get_name()] = func(*args, time=time_last)
+            if f.primitive.uses_calc_time:
+                values = func(*args, time=time_last)
             else:
-                d[f.get_name()] = func(*args)
+                values = func(*args)
+
+            if f.number_output_features == 1:
+                values = [values]
+            update_feature_columns(f, d, values)
 
         return pd.Series(d)
     return wrap
 
 
 def set_default_column(frame, f):
-    default = f.default_value
-    if hasattr(default, '__iter__'):
-        length = frame.shape[0]
-        default = [f.default_value] * length
-    frame[f.get_name()] = default
+    for name in f.get_feature_names():
+        frame[name] = f.default_value
+
+
+def update_feature_columns(feature, data, values):
+    names = feature.get_feature_names()
+    assert len(names) == len(values)
+    for name, value in zip(names, values):
+        data[name] = value

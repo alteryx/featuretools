@@ -53,6 +53,14 @@ Run featuretools tests::
 
     make test
 
+Before committing make sure to run linting in order to pass CI::
+
+    make lint
+
+Some linting errors can be automatically fixed by running the command below::
+
+    make lint-fix
+
 
 Build Documentation
 ~~~~~~~~~~~~~~~~~~~

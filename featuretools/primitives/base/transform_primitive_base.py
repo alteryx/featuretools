@@ -8,34 +8,21 @@ from .utils import inspect_function_args
 class TransformPrimitive(PrimitiveBase):
     """Feature for entity that is a based off one or more other features
         in that entity."""
-    rolling_function = False
+    # (bool) If True, feature function depends on all values of entity
+    #   (and will receive these values as input, regardless of specified instance ids)
+    uses_full_entity = False
 
-    def __init__(self, *base_features):
-        # Any edits made to this method should also be made to the
-        # new_class_init method in make_trans_primitive
-        self.base_features = [self._check_feature(f) for f in base_features]
-        if any(bf.expanding for bf in self.base_features):
-            self.expanding = True
-        assert len(set([f.entity for f in self.base_features])) == 1, \
-            "More than one entity for base features"
-        super(TransformPrimitive, self).__init__(self.base_features[0].entity,
-                                                 self.base_features)
-
-    def generate_name(self):
+    def generate_name(self, base_feature_names):
         name = u"{}(".format(self.name.upper())
-        name += u", ".join(f.get_name() for f in self.base_features)
+        name += u", ".join(base_feature_names)
         name += u")"
         return name
-
-    @property
-    def default_value(self):
-        return self.base_features[0].default_value
 
 
 def make_trans_primitive(function, input_types, return_type, name=None,
                          description='A custom transform primitive',
                          cls_attributes=None, uses_calc_time=False,
-                         commutative=False):
+                         commutative=False, number_output_features=1):
     '''Returns a new transform primitive class
 
     Args:
@@ -60,6 +47,9 @@ def make_trans_primitive(function, input_types, return_type, name=None,
 
         commutative (bool): If True, will only make one feature per unique set
             of base features.
+
+        number_output_features (int): The number of output features (columns in
+            the matrix) associated with this feature.
 
     Example:
         .. ipython :: python
@@ -97,6 +87,7 @@ def make_trans_primitive(function, input_types, return_type, name=None,
     new_class.input_types = input_types
     new_class.return_type = return_type
     new_class.commutative = commutative
+    new_class.number_output_features = number_output_features
     new_class, default_kwargs = inspect_function_args(new_class,
                                                       function,
                                                       uses_calc_time)
@@ -106,17 +97,10 @@ def make_trans_primitive(function, input_types, return_type, name=None,
 
         def new_class_init(self, *args, **kwargs):
             self.kwargs = copy.deepcopy(self.default_kwargs)
-            self.base_features = [self._check_feature(f) for f in args]
-            if any(bf.expanding for bf in self.base_features):
-                self.expanding = True
-            assert len(set([f.entity for f in self.base_features])) == 1, \
-                "More than one entity for base features"
             self.kwargs.update(kwargs)
             self.partial = functools.partial(function, **self.kwargs)
             self.partial.__name__ = name
 
-            super(TransformPrimitive, self).__init__(
-                self.base_features[0].entity, self.base_features)
         new_class.__init__ = new_class_init
         new_class.get_function = lambda self: self.partial
     else:

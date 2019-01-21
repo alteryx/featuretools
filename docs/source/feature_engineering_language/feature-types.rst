@@ -24,16 +24,14 @@ Featuretools groups features into four general types:
 
 Identity Features
 -----------------
-In Featuretools, each feature is defined as a combination of other features.  At the lowest level are :class:`IdentityFeature <.primitives.IdentityFeature>` features which are equal to the plain old value of a single variable.
+In Featuretools, each feature is defined as a combination of other features.  At the lowest level are :class:`IdentityFeature <.feature_base.IdentityFeature>` features which are equal to the value of a single variable.
+
 Most of the time, identity features will be defined transparently for you, such as in the transform feature example below. They may also be defined explicitly:
 
 .. ipython:: python
 
-    from featuretools.primitives import Feature
-    time_feature = Feature(es["transactions"]["transaction_time"])
+    time_feature = ft.Feature(es["transactions"]["transaction_time"])
     time_feature
-
-Note: ``Feature`` is an alias for :class:`IdentityFeature <.primitives.IdentityFeature>` if only a single argument is provided.
 
 .. _feature-types.direct:
 
@@ -45,8 +43,7 @@ In this case, ``Feature`` is an alias for :class:`primitives.DirectFeature`:
 
 .. ipython:: python
 
-    from featuretools.primitives import Feature
-    brand = Feature(es["products"]["brand"], es["transactions"])
+    brand = ft.Feature(es["products"]["brand"], entity=es["transactions"])
     brand
 
 
@@ -58,17 +55,15 @@ Transform features take one or more features on an :class:`.Entity` and create a
 
 .. ipython:: python
 
-    from featuretools.primitives import Hour, Weekend
-    Hour(time_feature)
-    Weekend(time_feature)
+    from featuretools.primitives import Hour
+    ft.Feature(time_feature, primitive=Hour)
 
-The :class:`Hour <.primitives.Hour>` feature takes one parameter: the variable or feature we want to transform. If a variable is passed in, as in this case, an :class:`IdentityFeature <.primitives.IdentityFeature>` will be created automatically.
 
 Using algebraic and boolean operations, transform features can combine other features into arbitrary expressions. For example, to determine if a given event event happened in the afternoon, we can write:
 
 .. ipython:: python
 
-    hour_feature = Hour(time_feature)
+    hour_feature = ft.Feature(time_feature, primitive=Hour)
     after_twelve = hour_feature > 12
     after_twelve
     at_twelve = hour_feature == 12
@@ -83,21 +78,22 @@ Aggregation features are used to create features for a :term:`parent entity` by 
 .. ipython:: python
 
     from featuretools.primitives import Count
-    total_events = Count(es["transactions"]["transaction_id"], es["customers"])
+    total_events = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["customers"], primitive=Count)
     fm = ft.calculate_feature_matrix([total_events], es)
     fm.head()
 
 .. note::
 
-    For users who have written aggregations in SQL, this concept will be familar. One key difference in featuretools is that ``GROUP BY`` and ``JOIN`` are implicit. Since the parent and child entities are specified, featuretools can infer how to group the child entity and then join the resulting aggregation back to the parent entity.
+    For users who have written aggregations in SQL, this concept will be familiar. One key difference in featuretools is that ``GROUP BY`` and ``JOIN`` are implicit. Since the parent and child entities are specified, featuretools can infer how to group the child entity and then join the resulting aggregation back to the parent entity.
 
 Often times, we only want to aggregate using a certain amount of previous data. For example, we might only want to count events from the past 30 days. In this case, we can provide the ``use_previous`` parameter:
 
 .. ipython:: python
 
-    total_events_last_30_days = Count(es["transactions"]["transaction_id"],
-                                      parent_entity=es["customers"],
-                                      use_previous="30 days")
+    total_events_last_30_days = ft.Feature(es["transactions"]["transaction_id"],
+                                           parent_entity=es["customers"],
+                                           use_previous="30 days",
+                                           primitive=Count)
     fm = ft.calculate_feature_matrix([total_events_last_30_days], es)
     fm.head()
 
@@ -111,33 +107,34 @@ When defining aggregation or cumulative transform features, we can provide a ``w
 
 .. ipython:: python
 
-    afternoon_events = Count(es["transactions"]["transaction_id"],
-                         parent_entity=es["customers"],
-                         where=is_afternoon).rename("afternoon_events")
+    afternoon_events = ft.Feature(es["transactions"]["transaction_id"],
+                                  parent_entity=es["customers"],
+                                  where=is_afternoon,
+                                  primitive=Count).rename("afternoon_events")
     fm = ft.calculate_feature_matrix([afternoon_events], es)
     fm.head()
 
 The where argument can be any previously-defined boolean feature. Only instances for which the where feature is True are included in the final calculation.
 
-Cumulative Transform Features
------------------------------
-Like regular transform features, cumulative transform are features for an entity based on other features already defined on that entity. However, they differ in that they use data from many :term:`instances <instance>` to compute a single value.
+.. Cumulative Transform Features
+.. -----------------------------
+.. Like regular transform features, cumulative transform are features for an entity based on other features already defined on that entity. However, they differ in that they use data from many :term:`instances <instance>` to compute a single value.
 
-Each cumulative transform feature is created with a new parameter, ``use_previous``, that takes a :class:`.Timedelta` object. This parameter specifies how long before the timestamp of each instance to look for data. Think of a cumulative transform feature like a rolling function: the feature iterates over the entity and, for each instance ``i``, aggregates data from the window defined by ``(i.timestamp - use_previous, i.timestamp]``.
+.. Each cumulative transform feature is created with a new parameter, ``use_previous``, that takes a :class:`.Timedelta` object. This parameter specifies how long before the timestamp of each instance to look for data. Think of a cumulative transform feature like a rolling function: the feature iterates over the entity and, for each instance ``i``, aggregates data from the window defined by ``(i.timestamp - use_previous, i.timestamp]``.
 
-Say we want to calculate the number of events per customer in the past 30 days. We can create a cumulative count feature that tallies, `for each event`, the number of events which share a customer in the 30 days preceding that event's timestamp.
+.. Say we want to calculate the number of events per customer in the past 30 days. We can create a cumulative count feature that tallies, `for each event`, the number of events which share a customer in the 30 days preceding that event's timestamp.
 
-.. ipython:: python
+.. .. ipython:: python
 
-    from featuretools.primitives import CumCount
-    total_events = CumCount(base_feature=es["transactions"]["transaction_id"],
-                            group_feature=es["transactions"]["session_id"],
-                            use_previous="1 hour")
-    fm = ft.calculate_feature_matrix([total_events], es)
-    fm.head()
+..     from featuretools.primitives import CumCount
+..     total_events = CumCount(base_feature=es["transactions"]["transaction_id"],
+..                             group_feature=es["transactions"]["session_id"],
+..                             use_previous="1 hour")
+..     fm = ft.calculate_feature_matrix([total_events], es)
+..     fm.head()
 
 
-Because they use previous data, cumulative transform features can only be defined on entities that have a time index. Find the list of available cumulative transform features :ref:`here <api_ref.cumulative_features>`.
+.. Because they use previous data, cumulative transform features can only be defined on entities that have a time index. Find the list of available cumulative transform features :ref:`here <api_ref.cumulative_features>`.
 
 .. _feature-types.aggregation:
 
@@ -151,8 +148,8 @@ For instance, we can aggregate direct features on a child entity from a differen
 .. ipython:: python
 
     from featuretools.primitives import Mode
-    brand = Feature(es["products"]["brand"], es["transactions"])
-    favorite_brand = Mode(brand, parent_entity=es["customers"])
+    brand = ft.Feature(es["products"]["brand"], entity=es["transactions"])
+    favorite_brand = ft.Feature(brand, parent_entity=es["customers"], primitive=Mode)
     fm = ft.calculate_feature_matrix([favorite_brand], es)
     fm.head()
 
