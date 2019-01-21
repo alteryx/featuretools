@@ -3,7 +3,7 @@ def remove_low_information_features(feature_matrix, features=None):
 
         Args:
             feature_matrix (:class:`pd.DataFrame`): DataFrame whose columns are feature names and rows are instances
-            features (list[:class:`featuretools.PrimitiveBase`] or list[str], optional): List of features to select
+            features (list[:class:`featuretools.FeatureBase`] or list[str], optional): List of features to select
 
         Returns:
             (feature_matrix, features)
