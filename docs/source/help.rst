@@ -19,7 +19,7 @@ Conversation happens in the following places:
 
 .. _`StackOverflow`: http://stackoverflow.com/questions/tagged/featuretools
 .. _`Github issue tracker`: https://github.com/featuretools/featuretools/issues
-.. _`Gitter`: https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTZiZDdkYjZhZTVkMmVmZDIxNWZiNTVjNDQxYmZkMzI5NGRlOTg5YjcwYmJiNWE2YjIzZmFkMjc1NDZkNjBhZTQ
+.. _`Slack`: https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTZiZDdkYjZhZTVkMmVmZDIxNWZiNTVjNDQxYmZkMzI5NGRlOTg5YjcwYmJiNWE2YjIzZmFkMjc1NDZkNjBhZTQ
 
 
 Asking for help
@@ -31,8 +31,8 @@ few simple guidelines:
 1.  **Use the right resource**: We suggest using Github or StackOverflow.
     Questions asked at these locations will be more searchable for other users.
 
-    - Gitter should only be used for developer and community discussion.
-    - General questions on how something should work or tips, use StackOverflow.
+    - Slack should be used for community discussion and collaboration.
+    - For general questions on how something should work or tips, use StackOverflow.
     - Bugs should be reported on Github.
 
 2.  **Ask in one place only**: Please post your question in one place
