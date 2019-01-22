@@ -1,9 +1,14 @@
+import os
+import shutil
+
 import pytest
 
 from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
+from featuretools.demo import load_mock_customer
 from featuretools.entityset import serialization as sr
+from featuretools.tests import integration_data
 
 
 @pytest.fixture()
@@ -45,3 +50,41 @@ def test_relationship(entityset):
         child = entityset[d['child'][0]][d['child'][1]]
         _r = ft.Relationship(parent, child)
         assert r.__eq__(_r)
+
+
+def test_to_csv(entityset):
+    dirname = os.path.dirname(integration_data.__file__)
+    path = os.path.join(dirname, 'test')
+    p = dict(encoding='utf-8', engine='python')
+    entityset.to_csv(path, params=p, encoding='utf-8')
+    new_es = ft.EntitySet.read(path)
+    assert entityset.__eq__(new_es, deep=True)
+    shutil.rmtree(path)
+
+
+def test_to_pickle(entityset):
+    dirname = os.path.dirname(integration_data.__file__)
+    path = os.path.join(dirname, 'test')
+    entityset.to_pickle(path)
+    new_es = ft.EntitySet.read(path)
+    assert entityset.__eq__(new_es, deep=True)
+    shutil.rmtree(path)
+
+
+def test_to_parquet(entityset):
+    dirname = os.path.dirname(integration_data.__file__)
+    path = os.path.join(dirname, 'test')
+    entityset.to_parquet(path)
+    new_es = ft.EntitySet.read(path)
+    assert entityset.__eq__(new_es, deep=True)
+    shutil.rmtree(path)
+
+
+def test_to_parquet_with_lti():
+    entityset = load_mock_customer(return_entityset=True, random_seed=0)
+    dirname = os.path.dirname(integration_data.__file__)
+    path = os.path.join(dirname, 'test')
+    entityset.to_parquet(path)
+    new_es = ft.EntitySet.read(path)
+    assert entityset.__eq__(new_es, deep=True)
+    shutil.rmtree(path)
