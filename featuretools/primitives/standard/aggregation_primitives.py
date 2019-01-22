@@ -52,8 +52,7 @@ class Sum(AggregationPrimitive):
 
 class Mean(AggregationPrimitive):
     """Computes the average value of a numeric feature.
-
-        Defaults to ignoring NaNs when computing mean.
+       Defaults to ignoring NaNs when computing mean.
 
     """
     name = "mean"
