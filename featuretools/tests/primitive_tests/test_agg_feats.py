@@ -127,6 +127,8 @@ def test_check_input_types(es):
 
 def test_mean_nan():
     mean_func = Mean().get_function()
+    array = np.array([5, 5, 5, 5, 5])
+    assert mean_func(array) == 5
     array = np.array([5, np.nan, np.nan, np.nan, np.nan, 10])
     assert isnan(mean_func(array))
     mean_func_nans = Mean(ignore_nans=True).get_function()
