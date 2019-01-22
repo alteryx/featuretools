@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
+from math import isnan
 
 import numpy as np
 import pandas as pd
@@ -9,6 +10,7 @@ import pytest
 from ..testing_utils import feature_with_name, make_ecommerce_entityset
 
 import featuretools as ft
+from featuretools.computational_backends.pandas_backend import PandasBackend
 from featuretools.primitives import (  # NMostCommon,
     Count,
     Mean,
@@ -40,6 +42,13 @@ from featuretools.variable_types import (
 @pytest.fixture(scope='module')
 def es():
     return make_ecommerce_entityset()
+
+
+@pytest.fixture
+def backend(es):
+    def inner(features):
+        return PandasBackend(es, features)
+    return inner
 
 
 @pytest.fixture
@@ -122,6 +131,14 @@ def test_check_input_types(es):
     boolean = count > 3
     mean = ft.Feature(count, parent_entity=es[u"régions"], where=boolean, primitive=Mean)
     assert mean._check_input_types()
+
+
+def test_mean_nan():
+    mean_func = Mean().get_function()
+    array = np.array([5, np.nan, np.nan, np.nan, np.nan, 10])
+    assert isnan(mean_func(array))
+    mean_func_nans = Mean(ignore_nans=True).get_function()
+    assert mean_func_nans(array) == 7.5
 
 
 def test_base_of_and_stack_on_heuristic(es, test_primitive):

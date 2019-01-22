@@ -51,12 +51,21 @@ class Sum(AggregationPrimitive):
 
 
 class Mean(AggregationPrimitive):
-    """Computes the average value of a numeric feature."""
+    """Computes the average value of a numeric feature.
+
+        Defaults to ignoring NaNs when computing mean.
+
+    """
     name = "mean"
     input_types = [Numeric]
     return_type = Numeric
 
+    def __init__(self, ignore_nans=False):
+        self.ignore_nans = ignore_nans
+
     def get_function(self):
+        if self.ignore_nans is True:
+            return np.nanmean
         return np.mean
 
 
