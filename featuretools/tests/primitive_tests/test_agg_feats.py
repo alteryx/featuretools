@@ -10,7 +10,6 @@ import pytest
 from ..testing_utils import feature_with_name, make_ecommerce_entityset
 
 import featuretools as ft
-from featuretools.computational_backends.pandas_backend import PandasBackend
 from featuretools.primitives import (  # NMostCommon,
     Count,
     Mean,
@@ -42,13 +41,6 @@ from featuretools.variable_types import (
 @pytest.fixture(scope='module')
 def es():
     return make_ecommerce_entityset()
-
-
-@pytest.fixture
-def backend(es):
-    def inner(features):
-        return PandasBackend(es, features)
-    return inner
 
 
 @pytest.fixture
