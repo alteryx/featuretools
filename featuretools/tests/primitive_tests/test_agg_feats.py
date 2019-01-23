@@ -128,8 +128,8 @@ def test_check_input_types(es):
 def test_mean_nan():
     array = np.array([5, 5, 5, 5, 5])
     mean_func_nans_default = Mean().get_function()
-    mean_func_nans_true = Mean(ignore_nans=True).get_function()
     mean_func_nans_false = Mean(ignore_nans=False).get_function()
+    mean_func_nans_true = Mean(ignore_nans=True).get_function()
     assert mean_func_nans_default(array) == 5
     assert mean_func_nans_false(array) == 5
     assert mean_func_nans_true(array) == 5
