@@ -240,15 +240,6 @@ class EntitySet(object):
 
         return es
 
-    @classmethod
-    def read(cls, path, **kwargs):
-        '''Read entityset from disk.
-
-            Args:
-                path (str): Directory on disk to read `data_description.json`.
-                kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
-        '''
-        return cls.from_data_description(serialization.read_data_description(path), **kwargs)
     ###########################################################################
     #   Public getter/setter methods  #########################################
     ###########################################################################
@@ -1191,4 +1182,11 @@ class EntitySet(object):
                                                              right_on=r.child_variable.id)
 
 
-read_entityset = EntitySet.read
+def read_entityset(path, **kwargs):
+    '''Read entityset from disk.
+
+        Args:
+            path (str): Directory on disk to read `data_description.json`.
+            kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
+    '''
+    return EntitySet.from_data_description(serialization.read_data_description(path), **kwargs)

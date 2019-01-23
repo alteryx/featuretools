@@ -235,6 +235,12 @@ EntitySet load and prepare data
 
 EntitySet serialization
 -------------------------------
+.. currentmodule:: featuretools
+.. autosummary::
+    :toctree: generated/
+
+    read_entityset
+
 .. currentmodule:: featuretools.entityset
 .. autosummary::
     :toctree: generated/
@@ -242,7 +248,6 @@ EntitySet serialization
     EntitySet.to_csv
     EntitySet.to_pickle
     EntitySet.to_parquet
-    EntitySet.read
 
 EntitySet query methods
 -----------------------

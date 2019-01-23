@@ -57,7 +57,7 @@ def test_to_csv(entityset):
     path = os.path.join(dirname, 'test')
     p = dict(encoding='utf-8', engine='python')
     entityset.to_csv(path, params=p, encoding='utf-8')
-    new_es = ft.EntitySet.read(path)
+    new_es = ft.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
 
@@ -66,7 +66,7 @@ def test_to_pickle(entityset):
     dirname = os.path.dirname(integration_data.__file__)
     path = os.path.join(dirname, 'test')
     entityset.to_pickle(path)
-    new_es = ft.EntitySet.read(path)
+    new_es = ft.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
 
@@ -75,7 +75,7 @@ def test_to_parquet(entityset):
     dirname = os.path.dirname(integration_data.__file__)
     path = os.path.join(dirname, 'test')
     entityset.to_parquet(path)
-    new_es = ft.EntitySet.read(path)
+    new_es = ft.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
 
@@ -85,6 +85,6 @@ def test_to_parquet_with_lti():
     dirname = os.path.dirname(integration_data.__file__)
     path = os.path.join(dirname, 'test')
     entityset.to_parquet(path)
-    new_es = ft.EntitySet.read(path)
+    new_es = ft.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
