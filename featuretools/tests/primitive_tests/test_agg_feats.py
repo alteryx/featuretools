@@ -131,8 +131,13 @@ def test_mean_nan():
     assert mean_func(array) == 5
     array = np.array([5, np.nan, np.nan, np.nan, np.nan, 10])
     assert isnan(mean_func(array))
-    mean_func_nans = Mean(ignore_nans=True).get_function()
-    assert mean_func_nans(array) == 7.5
+    mean_func_nans_true = Mean(ignore_nans=True).get_function()
+    assert mean_func_nans_true(array) == 7.5
+    mean_func_nans_false = Mean(ignore_nans=False).get_function()
+    assert isnan(mean_func_nans_false(array))
+    array_nans = np.array([np.nan, np.nan, np.nan, np.nan])
+    assert isnan(mean_func_nans_true(array_nans))
+    assert isnan(mean_func_nans_false(array_nans))
 
 
 def test_base_of_and_stack_on_heuristic(es, test_primitive):
