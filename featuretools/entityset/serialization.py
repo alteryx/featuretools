@@ -6,6 +6,10 @@ import pandas as pd
 
 from .. import variable_types
 
+from featuretools import read_entityset
+from featuretools.demo import load_mock_customer
+from featuretools.tests import integration_data
+
 TYPES = ['csv', 'pickle', 'parquet']
 SCHEMA = {
     'entities':
@@ -175,3 +179,41 @@ def read_data_description(path):
         d = json.load(f)
     d['root'] = path
     return d
+
+
+def test_to_csv(entityset):
+    dirname = os.path.dirname(integration_data.__file__)
+    path = os.path.join(dirname, 'test')
+    p = dict(encoding='utf-8', engine='python')
+    entityset.to_csv(path, params=p, encoding='utf-8')
+    new_es = read_entityset(path)
+    assert entityset.__eq__(new_es, deep=True)
+    shutil.rmtree(path)
+
+
+def test_to_pickle(entityset):
+    dirname = os.path.dirname(integration_data.__file__)
+    path = os.path.join(dirname, 'test')
+    entityset.to_pickle(path)
+    new_es = read_entityset(path)
+    assert entityset.__eq__(new_es, deep=True)
+    shutil.rmtree(path)
+
+
+def test_to_parquet(entityset):
+    dirname = os.path.dirname(integration_data.__file__)
+    path = os.path.join(dirname, 'test')
+    entityset.to_parquet(path)
+    new_es = read_entityset(path)
+    assert entityset.__eq__(new_es, deep=True)
+    shutil.rmtree(path)
+
+
+def test_to_parquet_with_lti():
+    entityset = load_mock_customer(return_entityset=True, random_seed=0)
+    dirname = os.path.dirname(integration_data.__file__)
+    path = os.path.join(dirname, 'test')
+    entityset.to_parquet(path)
+    new_es = read_entityset(path)
+    assert entityset.__eq__(new_es, deep=True)
+    shutil.rmtree(path)
