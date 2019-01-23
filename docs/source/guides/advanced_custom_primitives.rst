@@ -54,3 +54,33 @@ Passing in ``string="test"`` as a keyword argument when initializing the `String
     feature_matrix.columns
     feature_matrix[['STD(log.STRING_COUNT(comments, "the"))', 'SUM(log.STRING_COUNT(comments, "the"))', 'MEAN(log.STRING_COUNT(comments, "the"))']]
 
+Primitives That Use External Data
+=================================
+It's possible to write primitives that require external data for computation. For example, there could be a transform primitive that takes specifice features and a trained model as input and returns the model's prediction as a new feature.  Here's an example:
+
+.. ipython:: python
+
+    from featuretools.primitives.base import TransformPrimitive
+    from featuretools.primitives.data import get_primitive_data_path
+
+    class MLPipeline(TransformPrimitive):
+        name = "ml_pipeline"
+        input_types = [Numeric, Numeric, Numeric]
+        return_type = Numeric
+        def __init__(self, filepath=None):
+            if filepath is not None:
+                self.filepath = filepath
+            else:
+                self.filepath = get_primitive_data_path(temp_name)
+        def get_function(self):
+            import pickle
+            with open(self.filepath, 'r') as f:
+                model = pickle.load(f)
+            def score(x):
+                return model.predict(x)
+            return score
+
+
+The ``get_primitive_data_path`` function is used to simplify finding the location of the trained model.  If no alternate filepath is supplied, the function will look for the file in the featuretools/primitives/data folder in the featuretools package.
+
+Note that loading in the model occurs within the `get_function` method but outside of the `score` function.  This way the model is loaded from disk once when the Featuretools backend requests the primitive function instead of every time `score` is called.
