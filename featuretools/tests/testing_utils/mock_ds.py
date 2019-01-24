@@ -115,9 +115,8 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
     zipcodes = list(['02116'] * 5 +
                     ['02116-3899'] * 4 +
                     ['0'] +
-                    ['1234567890'] * 2 +
-                    ['12345-6789'] * 2 +
-                    [] * 3)
+                    ['1234567890'] * 3 +
+                    ['12345-6789'] * 4)
 
     log_df = pd.DataFrame({
         'id': range(17),
