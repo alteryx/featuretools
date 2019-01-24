@@ -237,7 +237,7 @@ class LatLong(Variable):
     _dtype_repr = "latlong"
 
 
-class ZipCode(Text):
+class ZipCode(Variable):
     """Represents a postal address in the United States.
     Consists of a series of digits which are casts as
     string. Five digit or 9 digit zipcodes are supported.
