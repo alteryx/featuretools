@@ -7,12 +7,10 @@ from collections import defaultdict
 from ..utils import gen_utils as utils
 
 from featuretools import variable_types
-from featuretools.exceptions import UnknownFeature
-from featuretools.primitives.base import (
-    AggregationPrimitive,
-    DirectFeature,
+from featuretools.feature_base import (
+    AggregationFeature,
     IdentityFeature,
-    TransformPrimitive
+    TransformFeature
 )
 
 logger = logging.getLogger('featuretools.computational_backend')
@@ -34,13 +32,12 @@ class FeatureTree(object):
         feature_dependencies = {}
         feature_dependents = defaultdict(set)
         for f in features:
-            deps = f.get_deep_dependencies(ignored=ignored)
+            deps = f.get_dependencies(deep=True, ignored=ignored)
             feature_dependencies[f.hash()] = deps
             for dep in deps:
                 feature_dependents[dep.hash()].add(f.hash())
                 all_features[dep.hash()] = dep
-                subdeps = dep.get_deep_dependencies(
-                    ignored=ignored)
+                subdeps = dep.get_dependencies(deep=True, ignored=ignored)
                 feature_dependencies[dep.hash()] = subdeps
                 for sd in subdeps:
                     feature_dependents[sd.hash()].add(dep.hash())
@@ -150,7 +147,7 @@ class FeatureTree(object):
                 return (feature_depth[f.hash()],
                         f.entity.id,
                         _get_base_entity_id(f),
-                        _get_ftype_string(f),
+                        str(f.__class__),
                         _get_use_previous(f),
                         _get_where(f),
                         self.input_frames_type(f),
@@ -200,13 +197,13 @@ class FeatureTree(object):
         return list(features.values()), out
 
     def uses_full_entity(self, feature):
-        if feature.uses_full_entity:
+        if isinstance(feature, TransformFeature) and feature.primitive.uses_full_entity:
             return True
         return self._dependent_uses_full_entity(feature)
 
     def _dependent_uses_full_entity(self, feature):
         for d in self.feature_dependents[feature.hash()]:
-            if d.uses_full_entity:
+            if isinstance(d, TransformFeature) and d.primitive.uses_full_entity:
                 return True
         return False
 
@@ -223,8 +220,9 @@ class FeatureTree(object):
     def output_frames_type(self, f):
         is_output = f.hash() in self.feature_hashes
         dependent_uses_full_entity = self._dependent_uses_full_entity(f)
-        dependent_has_subset_input = any([(not d.uses_full_entity and
-                                           d.hash() in self.feature_hashes)
+        dependent_has_subset_input = any([(not isinstance(d, TransformFeature) or
+                                           (not d.primitive.uses_full_entity and
+                                            d.hash() in self.feature_hashes))
                                           for d in self.feature_dependents[f.hash()]])
         # If the feature is one in which the user requested as
         # an output (meaning it's part of the input feature list
@@ -246,15 +244,14 @@ class FeatureTree(object):
 
 
 def _get_use_previous(f):
-    if hasattr(f, "use_previous") and f.use_previous is not None:
-        previous = f.use_previous
-        return (previous.unit, previous.value)
+    if isinstance(f, AggregationFeature) and f.use_previous is not None:
+        return (f.use_previous.unit, f.use_previous.value)
     else:
         return ("", -1)
 
 
 def _get_where(f):
-    if hasattr(f, "where") and f.where is not None:
+    if isinstance(f, AggregationFeature) and f.where is not None:
         return f.where.hash()
     else:
         return -1
@@ -267,16 +264,3 @@ def _get_base_entity_id(f):
     else:
         # Assume all of f's base_features belong to the same entity
         return f.base_features[0].entity_id
-
-
-def _get_ftype_string(f):
-    if isinstance(f, TransformPrimitive):
-        return "transform"
-    elif isinstance(f, DirectFeature):
-        return "direct"
-    elif isinstance(f, AggregationPrimitive):
-        return "aggregation"
-    elif isinstance(f, IdentityFeature):
-        return "identity"
-    else:
-        raise UnknownFeature("{} feature unknown".format(f.__class__))

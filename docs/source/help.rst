@@ -10,16 +10,16 @@ Discussion
 
 Conversation happens in the following places:
 
-1.  **Usage questions** are directed to `StackOverflow`_ with the #featuretools tag.
+1.  **General Usage questions** are directed to `StackOverflow`_ with the #featuretools tag.
 2.  **Bug reports and feature requests** are managed on the `GitHub issue
     tracker`_.
-3.  **Chat** occurs on at `Gitter`_. Please do not post questions and bug reports
-    on gitter. Instead people should use Stack Overflow or GitHub.
+3.  **Chat** occurs on at `Slack`_. Please do not post general usage questions and bug reports
+    on Slack. Instead people should use Stack Overflow or GitHub.
 4.  **Everything else, core developers** can be reached at help@featuretools.com.
 
 .. _`StackOverflow`: http://stackoverflow.com/questions/tagged/featuretools
 .. _`Github issue tracker`: https://github.com/featuretools/featuretools/issues
-.. _`Gitter`: https://gitter.im/featuretools/featuretools
+.. _`Slack`: https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTZiZDdkYjZhZTVkMmVmZDIxNWZiNTVjNDQxYmZkMzI5NGRlOTg5YjcwYmJiNWE2YjIzZmFkMjc1NDZkNjBhZTQ
 
 
 Asking for help
@@ -31,8 +31,8 @@ few simple guidelines:
 1.  **Use the right resource**: We suggest using Github or StackOverflow.
     Questions asked at these locations will be more searchable for other users.
 
-    - Gitter should only be used for developer and community discussion.
-    - General questions on how something should work or tips, use StackOverflow.
+    - Slack should be used for community discussion and collaboration.
+    - For general questions on how something should work or tips, use StackOverflow.
     - Bugs should be reported on Github.
 
 2.  **Ask in one place only**: Please post your question in one place
