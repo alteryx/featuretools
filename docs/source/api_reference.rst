@@ -297,6 +297,7 @@ Variable types
     Boolean
     Text
     LatLong
+    ZipCode
 
 
 Feature Selection
