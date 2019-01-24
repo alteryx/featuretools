@@ -66,7 +66,7 @@ Some primitives require external data files in order to perform their computatio
         '''Reads in a text field and returns "negative", "neutral", or "positive"'''
         name = "sentiment"
         input_types = [Text]
-        return_type = Ordinal
+        return_type = Categorical
         def get_function(self):
             filepath = self.get_data_path('sentiment_model.pickle') # returns absolute path to the file
             import pickle
