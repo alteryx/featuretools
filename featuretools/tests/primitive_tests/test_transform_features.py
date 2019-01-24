@@ -9,7 +9,6 @@ from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
 from featuretools.computational_backends import PandasBackend
-from featuretools.primitives.data import get_primitive_data_path
 from featuretools.primitives.base import make_trans_primitive
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
@@ -1060,10 +1059,6 @@ def test_feature_names_inherit_from_make_trans_primitive():
 
 
 def test_load_data_feature(es):
-    from uuid import uuid4
-    temp_name = uuid4().hex + ".csv"
-    installed_path = get_primitive_data_path(temp_name)
-
     class Mod4(TransformPrimitive):
         '''Replace each integer with a word from a shakespearean sonnet'''
         name = "mod4"
@@ -1074,7 +1069,7 @@ def test_load_data_feature(es):
             if filepath is not None:
                 self.filepath = filepath
             else:
-                self.filepath = get_primitive_data_path(temp_name)
+                self.filepath = self.get_data_path("pytest.csv")
 
         def get_function(self):
             reference = pd.read_csv(self.filepath, header=None, squeeze=True)
@@ -1087,30 +1082,19 @@ def test_load_data_feature(es):
                 return pd.Series(x).apply(_map)
             return map_to_word
 
-    try:
-        pd.Series([0, 1, 2, 3]).to_csv(installed_path, index=False)
-        feat = ft.Feature(es['log']['value'],
-                          primitive=Mod4)
-        pandas_backend = PandasBackend(es, [feat])
-        df = pandas_backend.calculate_all_features(instance_ids=range(17),
-                                                   time_last=None)
-    finally:
-        if os.path.exists(installed_path):
-            os.remove(installed_path)
+    feat = ft.Feature(es['log']['value'], primitive=Mod4)
+    pandas_backend = PandasBackend(es, [feat])
+    df = pandas_backend.calculate_all_features(instance_ids=range(17),
+                                               time_last=None)
 
     assert pd.isnull(df["MOD4(value)"][15])
     assert df["MOD4(value)"][0] == 0
     assert df["MOD4(value)"][14] == 2
 
-    try:
-        pd.Series([0, 1, 2, 3]).to_csv(installed_path, index=False)
-        fm, fl = ft.dfs(entityset=es,
-                        target_entity="log",
-                        agg_primitives=[],
-                        trans_primitives=[Mod4])
-    finally:
-        if os.path.exists(installed_path):
-            os.remove(installed_path)
+    fm, fl = ft.dfs(entityset=es,
+                    target_entity="log",
+                    agg_primitives=[],
+                    trans_primitives=[Mod4])
 
     assert fm["MOD4(value)"][0] == 0
     assert fm["MOD4(value)"][14] == 2
