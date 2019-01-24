@@ -1077,9 +1077,9 @@ def test_load_data_feature(es):
             return map_to_word
 
     feat = ft.Feature(es['log']['value'], primitive=Mod4)
-    pandas_backend = PandasBackend(es, [feat])
-    df = pandas_backend.calculate_all_features(instance_ids=range(17),
-                                               time_last=None)
+    df = ft.calculate_feature_matrix(features=[feat],
+                                     entityset=es,
+                                     instance_ids=range(17))
 
     assert pd.isnull(df["MOD4(value)"][15])
     assert df["MOD4(value)"][0] == 0
