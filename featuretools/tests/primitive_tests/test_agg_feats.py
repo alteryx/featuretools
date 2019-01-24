@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
+from math import isnan
 
 import numpy as np
 import pandas as pd
@@ -122,6 +123,24 @@ def test_check_input_types(es):
     boolean = count > 3
     mean = ft.Feature(count, parent_entity=es[u"régions"], where=boolean, primitive=Mean)
     assert mean._check_input_types()
+
+
+def test_mean_nan():
+    array = np.array([5, 5, 5, 5, 5])
+    mean_func_nans_default = Mean().get_function()
+    mean_func_nans_false = Mean(ignore_nans=False).get_function()
+    mean_func_nans_true = Mean(ignore_nans=True).get_function()
+    assert mean_func_nans_default(array) == 5
+    assert mean_func_nans_false(array) == 5
+    assert mean_func_nans_true(array) == 5
+    array = np.array([5, np.nan, np.nan, np.nan, np.nan, 10])
+    assert isnan(mean_func_nans_default(array))
+    assert isnan(mean_func_nans_false(array))
+    assert mean_func_nans_true(array) == 7.5
+    array_nans = np.array([np.nan, np.nan, np.nan, np.nan])
+    assert isnan(mean_func_nans_default(array))
+    assert isnan(mean_func_nans_false(array_nans))
+    assert isnan(mean_func_nans_true(array_nans))
 
 
 def test_base_of_and_stack_on_heuristic(es, test_primitive):
