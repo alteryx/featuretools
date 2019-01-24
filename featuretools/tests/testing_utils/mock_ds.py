@@ -117,7 +117,7 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                     ['0'] +
                     ['1234567890'] * 2 +
                     ['12345-6789'] * 3 +
-                    ['']* 2)
+                    [''] * 2)
 
     log_df = pd.DataFrame({
         'id': range(17),
