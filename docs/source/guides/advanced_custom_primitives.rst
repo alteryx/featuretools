@@ -8,7 +8,7 @@ Functions With Additional Arguments
 
     import featuretools as ft
     from featuretools.primitives import make_trans_primitive
-    from featuretools.variable_types import Text, Numeric, Ordinal
+    from featuretools.variable_types import Text, Numeric, Categorical
 
 One caveat with the make\_primitive functions is that the required arguments of ``function`` must be input features.  Here we create a function for ``StringCount``, a primitive which counts the number of occurrences of a string in a ``Text`` input.  Since ``string`` is not a feature, it needs to be a keyword argument to ``string_count``.
 
