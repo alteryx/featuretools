@@ -1057,7 +1057,7 @@ def test_feature_names_inherit_from_make_trans_primitive():
     pass
 
 
-def test_load_data_feature(es):
+def test_get_data_path(es):
     class Mod4(TransformPrimitive):
         '''Replace each integer with a word from a shakespearean sonnet'''
         name = "mod4"
@@ -1065,7 +1065,7 @@ def test_load_data_feature(es):
         return_type = Numeric
 
         def get_function(self):
-            filepath = self.get_data_path("pytest.csv")
+            filepath = self.get_data_path("featuretools_unit_test_example.csv")
             reference = pd.read_csv(filepath, header=None, squeeze=True)
 
             def map_to_word(x):
