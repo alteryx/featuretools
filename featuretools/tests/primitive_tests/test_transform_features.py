@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-import os
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -12,6 +10,7 @@ from featuretools.computational_backends import PandasBackend
 from featuretools.primitives.base import make_trans_primitive
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
+
 from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; CumSum,
     Absolute,
     AddNumeric,
