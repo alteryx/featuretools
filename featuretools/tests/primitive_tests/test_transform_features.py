@@ -1065,14 +1065,9 @@ def test_load_data_feature(es):
         input_types = [Numeric]
         return_type = Numeric
 
-        def __init__(self, filepath=None):
-            if filepath is not None:
-                self.filepath = filepath
-            else:
-                self.filepath = self.get_data_path("pytest.csv")
-
         def get_function(self):
-            reference = pd.read_csv(self.filepath, header=None, squeeze=True)
+            filepath = self.get_data_path("pytest.csv")
+            reference = pd.read_csv(filepath, header=None, squeeze=True)
 
             def map_to_word(x):
                 def _map(x):
