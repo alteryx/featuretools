@@ -8,7 +8,7 @@ Functions With Additional Arguments
 
     import featuretools as ft
     from featuretools.primitives import make_trans_primitive
-    from featuretools.variable_types import Text, Numeric
+    from featuretools.variable_types import Text, Numeric, Ordinal
 
 One caveat with the make\_primitive functions is that the required arguments of ``function`` must be input features.  Here we create a function for ``StringCount``, a primitive which counts the number of occurrences of a string in a ``Text`` input.  Since ``string`` is not a feature, it needs to be a keyword argument to ``string_count``.
 
@@ -60,27 +60,23 @@ It's possible to write primitives that require external data for computation. Fo
 
 .. ipython:: python
 
-    from featuretools.primitives.base import TransformPrimitive
-    from featuretools.primitives.data import get_primitive_data_path
+    from featuretools.primitives import TransformPrimitive
 
-    class MLPipeline(TransformPrimitive):
-        name = "ml_pipeline"
-        input_types = [Numeric, Numeric, Numeric]
-        return_type = Numeric
-        def __init__(self, filepath=None):
-            if filepath is not None:
-                self.filepath = filepath
-            else:
-                self.filepath = get_primitive_data_path(temp_name)
+    class Sentiment(TransformPrimitive):
+        '''Reads in a text field and returns "negative", "neutral", or "positive"'''
+        name = "sentiment"
+        input_types = [Text]
+        return_type = Ordinal
         def get_function(self):
+            filepath = self.get_data_path('sentiment_model.pickle')
             import pickle
-            with open(self.filepath, 'r') as f:
+            with open(filepath, 'r') as f:
                 model = pickle.load(f)
-            def score(x):
+            def predict(x):
                 return model.predict(x)
-            return score
+            return predict
 
 
-The ``get_primitive_data_path`` function is used to simplify finding the location of the trained model.  If no alternate filepath is supplied, the function will look for the file in the featuretools/primitives/data folder in the featuretools package.
+The ``get_data_path`` function is used to simplify finding the location of the trained model.  The function looks for the file in the featuretools/primitives/data folder in the featuretools package.
 
-Note that loading in the model occurs within the `get_function` method but outside of the `score` function.  This way the model is loaded from disk once when the Featuretools backend requests the primitive function instead of every time `score` is called.
+Note that the primitive loads the model within the `get_function` method but outside of the `score` function.  This way the model is loaded from disk once when the Featuretools backend requests the primitive function instead of every time `score` is called.
