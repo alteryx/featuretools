@@ -6,60 +6,59 @@ import pandas as pd
 
 from .. import variable_types
 
-TYPES = ['csv', 'pickle', 'parquet']
+FORMATS = ['csv', 'pickle', 'parquet']
 SCHEMA = {
-    'entities':
-    ['id', 'index', 'time_index', 'variables', 'properties', 'loading_info'],
+    'entities': ['id', 'index', 'time_index', 'variables', 'properties', 'loading_info'],
     'relationships': {
         'parent': ['parent_entity', 'parent_variable'],
         'child': ['child_entity', 'child_variable']
     }
 }
-VTYPES = {
-    getattr(variable_types, v)._dtype_repr: getattr(variable_types, v)
-    for v in dir(variable_types)
-    if hasattr(getattr(variable_types, v), '_dtype_repr')
+VARIABLE_TYPES = {
+    getattr(variable_types, type)._dtype_repr: getattr(variable_types, type)
+    for type in dir(variable_types) if hasattr(getattr(variable_types, type), '_dtype_repr')
 }
 
 
-def to_entity_descr(e):
+def to_entity_description(entity):
     '''Serialize entity to data description.
 
     Args:
-        e (Entity) : Instance of :class:`.Entity`.
+        entity (Entity) : Instance of :class:`.Entity`.
 
     Returns:
-        item (tuple(str, dict)) : Tuple containing id (str) and description (dict) of :class:`.Entity`.
+        dictionary (dict) : Description of :class:`.Entity`.
     '''
-    descr = {}
+    description = {}
     for key in SCHEMA.get('entities'):
         if key in ['id', 'index', 'time_index']:
-            descr[key] = getattr(e, key)
+            description[key] = getattr(entity, key)
         elif key == 'properties':
-            sti, lti = e.secondary_time_index, e.last_time_index is not None
-            descr[key] = dict(secondary_time_index=sti, last_time_index=lti)
+            description[key] = {
+                'secondary_time_index': entity.secondary_time_index,
+                'last_time_index': entity.last_time_index is not None,
+            }
         elif key == 'variables':
-            descr[key] = [v.create_data_description() for v in e.variables]
+            description[key] = [variable.create_data_description() for variable in entity.variables]
         elif key == 'loading_info':
-            dtypes = dict(dtypes=e.df.dtypes.astype(str).to_dict())
-            descr[key] = dict(properties=dtypes, params={})
+            description[key] = {'params': {}}
         else:
             raise ValueError('"{}" is not supported'.format(key))
-    return e.id, descr
+    return description
 
 
-def to_relation_descr(r):
+def to_relationship_description(relationship):
     '''Serialize entityset relationship to data description.
 
     Args:
-        r (Relationship) : Instance of :class:`.Relationship`.
+        relationship (Relationship) : Instance of :class:`.Relationship`.
 
     Returns:
         description (dict) : Description of :class:`.Relationship`.
     '''
     return {
-        key: [getattr(r, attr).id for attr in attrs]
-        for key, attrs in SCHEMA.get('relationships').items()
+        key: [getattr(relationship, attr).id for attr in attrs]
+        for key, attrs in SCHEMA['relationships'].items()
     }
 
 
@@ -80,7 +79,8 @@ def write_entity_data(e, path, type='csv', **kwargs):
         basename += '.' + kwargs['compression']
     location = os.path.join('data', basename)
     loading_info = dict(location=location, type=type.lower())
-    assert loading_info['type'] in TYPES, '"{}" is not supported'.format(type)
+    error = 'must be one of the following formats: {}'
+    assert loading_info['type'] in FORMATS, error.format(', '.join(FORMATS))
     attr = 'to_{}'.format(loading_info['type'])
     file = os.path.join(path, location)
     obj = e.df.select_dtypes('object').columns
@@ -115,48 +115,79 @@ def write_data_description(es, path, params=None, **kwargs):
         json.dump(d, f)
 
 
-def from_var_descr(d):
+def from_variable_description(description):
     '''Deserialize variable from data description.
 
     Args:
-        d (dict) : Description of :class:`.Variable`.
+        description (dict) : Description of :class:`.Variable`.
 
     Returns:
-        item (tuple(str, Variable)) : Tuple containing id (str) and type of :class:`.Variable`.
+        variable (Variable) : Returns type :class:`.Variable`.
     '''
-    type = d['type'] if isinstance(d['type'], str) else d['type']['value']
-    return d['id'], VTYPES.get(type, VTYPES.get(None))
+    is_string = isinstance(description['type'], str)
+    type = description['type'] if is_string else description['type']['value']
+    return VARIABLE_TYPES.get(type, VARIABLE_TYPES.get(None))
 
 
-def from_entity_descr(d):
-    '''Deserialize entity from data description.
+def from_entity_description(entityset, entity, path=None):
+    '''Deserialize entity from data description and add to entityset.
 
     Args:
-        d (dict) : Description of :class:`.Entity`.
+        entityset (EntitySet) : Instance of :class:`.EntitySet` to add :class:`.Entity`.
+        entity (dict) : Description of :class:`.Entity`.
+        path (str) : Root directory to serialized entityset.
+    '''
+    entityset.entity_from_dataframe(
+        entity['id'],
+        read_entity_data(entity, path=path),
+        index=entity.get('index'),
+        time_index=entity.get('time_index'),
+        secondary_time_index=entity['properties'].get('secondary_time_index'),
+        variable_types={
+            variable['id']: from_variable_description(variable) for variable in entity['variables']
+        })
+
+
+def from_relationship_description(entityset, relationship):
+    '''Deserialize parent and child variables from relationship description.
+
+    Args:
+        entityset (EntitySet) : Instance of :class:`.EntitySet`.
+        relationship (dict) : Description of :class:`.Relationship`.
 
     Returns:
-        k (dict) : Keyword arguments to instantiate :class:`.Entity` from dataframe.
+        item (tuple(Variable, Variable)) : Tuple containing parent and child variables.
     '''
-    keys = ['index', 'time_index']
-    k = dict(zip(keys, map(d.get, keys)))
-    k.update(secondary_time_index=d['properties']['secondary_time_index'])
-    k.update(variable_types=dict(map(from_var_descr, d['variables'])))
-    return k
+    entity, variable = relationship['parent']
+    parent = entityset[entity][variable]
+    entity, variable = relationship['child']
+    child = entityset[entity][variable]
+    return parent, child
 
 
-def read_entity_data(info, path):
+def read_entity_data(entity, path=None):
     '''Read entity data from disk.
 
     Args:
-        info (dict) : Information for loading entity data.
-        path (str) : Location on disk to read entity data.
+        entity (dict) : Information for loading entity data.
 
     Returns:
-        df (DataFrame) : Instance of entity dataframe.
+        df (DataFrame) : Instance of dataframe. Returns an empty dataframe path is not specified.
     '''
-    file = os.path.join(path, info['location'])
-    attr = 'read_{}'.format(info['type'])
-    return getattr(pd, attr)(file, **info.get('params', {}))
+    if path is None:
+        columns = [variable['id'] for variable in entity['variables']]
+        return pd.DataFrame(columns=columns)
+    file = os.path.join(path, entity['loading_info']['location'])
+    params = entity['loading_info'].get('params', {})
+    if entity['loading_info']['type'] == 'csv':
+        return pd.read_csv(file, **params)
+    elif entity['loading_info']['type'] == 'parquet':
+        return pd.read_parquet(file, **params)
+    elif entity['loading_info']['type'] == 'pickle':
+        return pd.read_pickle(file, **params)
+    else:
+        error = 'must be one of the following formats: {}'
+        raise ValueError(error.format(', '.join(FORMATS)))
 
 
 def read_data_description(path):

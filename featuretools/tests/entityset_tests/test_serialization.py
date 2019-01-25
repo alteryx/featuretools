@@ -7,7 +7,7 @@ from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
 from featuretools.demo import load_mock_customer
-from featuretools.entityset import serialization as sr
+from featuretools.entityset import serialization
 from featuretools.tests import integration_data
 
 
@@ -17,39 +17,39 @@ def entityset():
 
 
 def test_variable(entityset):
-    keys = ['entity', 'interesting_values']
-    for e in entityset.entities:
-        for v in e.variables:
-            d = v.create_data_description()
-            id, var = sr.from_var_descr(d)
-            _e, iv = map(d['properties'].pop, keys)
-            _v = var(id, entityset[_e], **d['properties'])
-            _v.interesting_values = iv
-            assert v.__eq__(_v)
+    for entity in entityset.entities:
+        for variable in entity.variables:
+            description = variable.create_data_description()
+            Variable = serialization.from_variable_description(description)
+            interesting_values = description['properties'].pop('interesting_values')
+            _entity = entityset[description['properties'].pop('entity')]
+            _variable = Variable(description['id'], _entity, **description['properties'])
+            _variable.interesting_values = interesting_values
+            assert variable.__eq__(_variable)
 
 
 def test_entity(entityset):
-    for e in entityset.entities:
-        id, d = sr.to_entity_descr(e)
-        kwargs = sr.from_entity_descr(d)
-        df, lti = entityset[id].df, entityset[id].last_time_index
-        _e = ft.Entity(id, df, entityset, last_time_index=lti, **kwargs)
-        assert e.__eq__(_e, deep=True)
+    _entityset = ft.EntitySet(entityset.id)
+    for entity in entityset.metadata.entities:
+        description = serialization.to_entity_description(entity)
+        serialization.from_entity_description(_entityset, description)
+        _entity = _entityset[description['id']]
+        _entity.last_time_index = entity.last_time_index
+        assert entity.__eq__(_entity, deep=True)
 
 
 def test_entityset(entityset):
-    d = entityset.create_data_description()
-    _es = ft.EntitySet.from_data_description(d)
-    assert entityset.metadata.__eq__(_es, deep=True)
+    description = entityset.create_data_description()
+    _entityset = ft.EntitySet.from_data_description(description)
+    assert entityset.metadata.__eq__(_entityset, deep=True)
 
 
 def test_relationship(entityset):
-    for r in entityset.relationships:
-        d = sr.to_relation_descr(r)
-        parent = entityset[d['parent'][0]][d['parent'][1]]
-        child = entityset[d['child'][0]][d['child'][1]]
-        _r = ft.Relationship(parent, child)
-        assert r.__eq__(_r)
+    for relationship in entityset.relationships:
+        description = serialization.to_relationship_description(relationship)
+        parent, child = serialization.from_relationship_description(entityset, description)
+        _relationship = ft.Relationship(parent, child)
+        assert relationship.__eq__(_relationship)
 
 
 def test_to_csv(entityset):

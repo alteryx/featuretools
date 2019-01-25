@@ -201,44 +201,39 @@ class EntitySet(object):
         Returns:
             description (dict) : Description of :class:`.EntitySet`.
         '''
-        entities = dict(map(serialization.to_entity_descr, self.entities))
-        relationships = list(map(serialization.to_relation_descr, self.relationships))
+        entities = {entity.id: serialization.to_entity_description(entity) for entity in self.entities}
+        relationships = [serialization.to_relationship_description(relationship) for relationship in self.relationships]
         return {'id': self.id, 'entities': entities, 'relationships': relationships}
 
     @classmethod
-    def from_data_description(cls, descr, **kwargs):
+    def from_data_description(cls, description, **kwargs):
         '''Deserialize entityset from data description.
 
         Args:
-            descr (dict) : Description of :class:`.EntitySet`.
+            description (dict) : Description of :class:`.EntitySet`.
             kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
 
         Returns:
-            es (EntitySet) : Instance of :class:`.EntitySet`.
+            entityset (EntitySet) : Instance of :class:`.EntitySet`.
         '''
-        es = cls(descr['id'])
-        root = descr.get('root')
+        path = description.get('root')
+        entityset = cls(description['id'])
 
-        lti = []
-        for id, e in descr['entities'].items():
-            e['loading_info']['params'].update(kwargs)
-            k = serialization.from_entity_descr(e)
-            c, i = list(k['variable_types']), e['loading_info']
-            t = dict(zip(c, map(e['loading_info']['properties']['dtypes'].get, c)))
-            df = pd.DataFrame(columns=c) if root is None else serialization.read_entity_data(i, root)
-            es.entity_from_dataframe(id, df.astype(t), **k)
-            if e['properties']['last_time_index']:
-                lti.append(e['id'])
+        last_time_index = []
+        for entity in description['entities'].values():
+            entity['loading_info']['params'].update(kwargs)
+            serialization.from_entity_description(entityset, entity, path=path)
+            if entity['properties']['last_time_index']:
+                last_time_index.append(entity['id'])
 
-        for r in descr['relationships']:
-            parent = es[r['parent'][0]][r['parent'][1]]
-            child = es[r['child'][0]][r['child'][1]]
-            es.add_relationship(Relationship(parent, child))
+        for relationship in description['relationships']:
+            parent, child = serialization.from_relationship_description(entityset, relationship)
+            entityset.add_relationship(Relationship(parent, child))
 
-        if len(lti):
-            es.add_last_time_indexes(updated_entities=lti)
+        if len(last_time_index):
+            entityset.add_last_time_indexes(updated_entities=last_time_index)
 
-        return es
+        return entityset
 
     ###########################################################################
     #   Public getter/setter methods  #########################################
