@@ -1100,10 +1100,8 @@ class EntitySet(object):
         Create a UML diagram-ish graph of the EntitySet.
 
         Args:
-            format (str) : The graphical format in which the graph will be
-                rendered. See https://www.graphviz.org/doc/info/output.html for
-                a comprehensive list of possible formats.
-            output_path (str) : Path to where the plot should be saved.
+            to_file (str, optional) : Path to where the plot should be saved.
+                If set to None (as by default), the plot will not be saved.
 
         Returns:
             graphviz.Digraph : Graph object that can directly be displayed in
