@@ -112,6 +112,13 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
 
     latlong = list([(values[i], values_2[i]) for i, _ in enumerate(values)])
     latlong2 = list([(values_2[i], -values[i]) for i, _ in enumerate(values)])
+    zipcodes = list(['02116'] * 5 +
+                    ['02116-3899'] * 4 +
+                    ['0'] +
+                    ['1234567890'] * 2 +
+                    ['12345-6789'] * 2 +
+                    [np.nan] +
+                    [''] * 2)
 
     log_df = pd.DataFrame({
         'id': range(17),
@@ -124,6 +131,7 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
         'value_2': values_2,
         'latlong': latlong,
         'latlong2': latlong2,
+        'zipcode': zipcodes,
         'value_many_nans': values_many_nans,
         'priority_level': [0] * 2 + [1] * 5 + [0] * 6 + [2] * 2 + [1] * 2,
         'purchased': [True] * 11 + [False] * 4 + [True, False],
@@ -258,6 +266,7 @@ def make_variable_types(with_integer_time_index=False):
         'value_2': variable_types.Numeric,
         'latlong': variable_types.LatLong,
         'latlong2': variable_types.LatLong,
+        'zipcode': variable_types.ZIPCode,
         'value_many_nans': variable_types.Numeric,
         'priority_level': variable_types.Ordinal,
         'purchased': variable_types.Boolean,

@@ -340,9 +340,17 @@ class LatLong(Variable):
     type_string = "latlong"
 
 
+class ZIPCode(Categorical):
+    """Represents a postal address in the United States.
+    Consists of a series of digits which are casts as
+    string. Five digit or 9 digit zipcodes are supported.
+    """
+    _dtype_repr = "str"
+
+
 ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
                       Categorical, Text, Ordinal,
-                      Boolean, LatLong]
+                      Boolean, LatLong, ZIPCode]
 
 
 DEFAULT_DTYPE_VALUES = {
