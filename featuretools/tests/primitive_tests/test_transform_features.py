@@ -1059,7 +1059,7 @@ def test_feature_names_inherit_from_make_trans_primitive():
 
 def test_get_data_path(es):
     class Mod4(TransformPrimitive):
-        '''Replace each integer with a word from a shakespearean sonnet'''
+        '''Return base feature modulo 4'''
         name = "mod4"
         input_types = [Numeric]
         return_type = Numeric
