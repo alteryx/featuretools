@@ -1,8 +1,9 @@
+from builtins import object, range, zip
+from collections import defaultdict
 import copy
 import itertools
 import logging
-from builtins import object, range, zip
-from collections import defaultdict
+import os
 
 import cloudpickle
 import numpy as np
@@ -1093,6 +1094,64 @@ class EntitySet(object):
             prev_entity_id = new_entity_id
 
         return df
+
+    def plot(self, to_file=None):
+        """
+        Create a UML diagram-ish graph of the EntitySet.
+
+        Args:
+            format (str) : The graphical format in which the graph will be
+                rendered. See https://www.graphviz.org/doc/info/output.html for
+                a comprehensive list of possible formats.
+            output_path (str) : Path to where the plot should be saved.
+
+        Returns:
+            graphviz.Digraph : Graph object that can directly be displayed in
+                Jupyter notebooks.
+        """
+        try:
+            import graphviz
+        except ImportError:
+            print("Error: Graphviz needs to be installed for plotting")
+            return
+
+        if to_file:
+            split_path = to_file.split('.')
+            if len(split_path) < 2:
+                raise ValueError("Please use a file extension like '.pdf'"
+                                 + " so that the format can be infered")
+
+            format = split_path[-1]
+            valid_formats = graphviz.backend.FORMATS
+            if not format in valid_formats:
+                raise ValueError("Unknown format. Make sure your format is"
+                                 + " amongst the following: %s" % valid_formats)
+        else:
+            format = None
+
+        # Initialize a new directed graph
+        graph = graphviz.Digraph(self.id, format=format)
+
+        # Draw entities
+        for entity in self.entities:
+            variables_string = '\l'.join([var.id + ' : ' + var.dtype
+                                          for var in entity.variables])
+            label = '{%s|%s\l}' % (entity.id, variables_string)
+            graph.node(entity.id, shape='record', label=label)
+
+        # Draw relationships
+        for rel in self.relationships:
+            label = '%s -> %s' % (rel._child_variable_id, rel._parent_variable_id)
+            graph.edge(rel._parent_entity_id, rel._child_entity_id, label=label)
+
+        if to_file:
+            # Graphviz always appends the format to the file name, so we need to
+            # remove it manually to avoid file names like 'file_name.pdf.pdf'
+            offset = len(format) + 1  # Add 1 for the dot
+            output_path = to_file[:-offset]
+            graph.render(output_path, cleanup=True)
+
+        return graph
 
     ###########################################################################
     #  Private methods  ######################################################
