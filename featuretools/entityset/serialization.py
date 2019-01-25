@@ -79,14 +79,19 @@ def write_entity_data(e, path, type='csv', **kwargs):
         basename += '.' + kwargs['compression']
     location = os.path.join('data', basename)
     loading_info = {'location': location, 'type': type.lower()}
-    error = 'must be one of the following formats: {}'
-    assert loading_info['type'] in FORMATS, error.format(', '.join(FORMATS))
-    attr = 'to_{}'.format(loading_info['type'])
     file = os.path.join(path, location)
-    obj = e.df.select_dtypes('object').columns
-    e.df[obj] = e.df[obj].astype('unicode')
-    e.df.columns = e.df.columns.astype('unicode')
-    getattr(e.df, attr)(file, **kwargs)
+    if loading_info['type'] == 'csv':
+        e.df.to_csv(file, **kwargs)
+    elif loading_info['type'] == 'parquet':
+        obj = e.df.select_dtypes('object').columns
+        e.df[obj] = e.df[obj].astype('unicode')
+        e.df.columns = e.df.columns.astype('unicode')
+        e.df.to_parquet(file, **kwargs)
+    elif loading_info['type'] == 'pickle':
+        e.df.to_pickle(file, **kwargs)
+    else:
+        error = 'must be one of the following formats: {}'
+        raise ValueError(error.format(', '.join(FORMATS)))
     return loading_info
 
 
