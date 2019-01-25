@@ -152,12 +152,12 @@ class Boolean(Variable):
         super(Boolean, self).__init__(id, entity, name=name)
 
     def create_data_description(self):
-        descr = super(Boolean, self).create_data_description()
-        descr['properties'].update({
+        description = super(Boolean, self).create_data_description()
+        description['properties'].update({
             'true_values': self.true_values,
             'false_values': self.false_values
         })
-        return descr
+        return description
 
 
 class Categorical(Discrete):
@@ -173,9 +173,9 @@ class Categorical(Discrete):
         super(Categorical, self).__init__(id, entity, name=name)
 
     def create_data_description(self):
-        descr = super(Categorical, self).create_data_description()
-        descr['properties'].update({'categories': self.categories})
-        return descr
+        description = super(Categorical, self).create_data_description()
+        description['properties'].update({'categories': self.categories})
+        return description
 
 
 class Id(Categorical):
@@ -220,13 +220,13 @@ class Numeric(Variable):
         super(Numeric, self).__init__(id, entity, name=name)
 
     def create_data_description(self):
-        descr = super(Numeric, self).create_data_description()
-        descr['properties'].update({
+        description = super(Numeric, self).create_data_description()
+        description['properties'].update({
             'range': self.range,
             'start_inclusive': self.start_inclusive,
             'end_inclusive': self.end_inclusive,
         })
-        return descr
+        return description
 
 
 class Index(Variable):
@@ -262,9 +262,9 @@ class Datetime(Variable):
         return ret
 
     def create_data_description(self):
-        descr = super(Datetime, self).create_data_description()
-        descr['properties'].update({'format': self.format})
-        return descr
+        description = super(Datetime, self).create_data_description()
+        description['properties'].update({'format': self.format})
+        return description
 
 
 class TimeIndex(Variable):
@@ -308,13 +308,13 @@ class Timedelta(Variable):
         super(Timedelta, self).__init__(id, entity, name=name)
 
     def create_data_description(self):
-        descr = super(Timedelta, self).create_data_description()
-        descr['properties'].update({
+        description = super(Timedelta, self).create_data_description()
+        description['properties'].update({
             'range': self.range,
             'start_inclusive': self.start_inclusive,
             'end_inclusive': self.end_inclusive,
         })
-        return descr
+        return description
 
 
 class Text(Variable):

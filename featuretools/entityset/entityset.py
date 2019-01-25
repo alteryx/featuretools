@@ -165,7 +165,7 @@ class EntitySet(object):
                 params (dict): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
                 kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialization.write_data_description(self, path, type='pickle', params=params, **kwargs)
+        serialization.write_data_description(self, path, format='pickle', params=params, **kwargs)
         return self
 
     def to_parquet(self, path, params=None, **kwargs):
@@ -177,7 +177,7 @@ class EntitySet(object):
                 params (dict): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
                 kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialization.write_data_description(self, path, type='parquet', params=params, compression='gzip', **kwargs)
+        serialization.write_data_description(self, path, format='parquet', params=params, compression='gzip', **kwargs)
         return self
 
     def to_csv(self, path, params=None, **kwargs):
@@ -189,7 +189,7 @@ class EntitySet(object):
                 params (dict): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
                 kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialization.write_data_description(self, path, type='csv', params=params, index=False, **kwargs)
+        serialization.write_data_description(self, path, format='csv', params=params, index=False, **kwargs)
         return self
 
     def create_data_description(self):
