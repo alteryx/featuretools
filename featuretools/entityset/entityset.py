@@ -6,6 +6,7 @@ import logging
 import os
 
 import cloudpickle
+import graphviz
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_dtype_equal, is_numeric_dtype
@@ -1109,12 +1110,6 @@ class EntitySet(object):
             graphviz.Digraph : Graph object that can directly be displayed in
                 Jupyter notebooks.
         """
-        try:
-            import graphviz
-        except ImportError:
-            print("Error: Graphviz needs to be installed for plotting")
-            return
-
         if to_file:
             split_path = to_file.split('.')
             if len(split_path) < 2:
