@@ -1,8 +1,8 @@
-from builtins import object, range, zip
-from collections import defaultdict
 import copy
 import itertools
 import logging
+from builtins import object, range, zip
+from collections import defaultdict
 
 import cloudpickle
 import graphviz
