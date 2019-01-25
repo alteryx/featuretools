@@ -345,7 +345,7 @@ class ZIPCode(Categorical):
     Consists of a series of digits which are casts as
     string. Five digit or 9 digit zipcodes are supported.
     """
-    _dtype_repr = "str"
+    type_string = "str"
 
 
 ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
