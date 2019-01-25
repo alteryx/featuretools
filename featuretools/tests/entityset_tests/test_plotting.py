@@ -8,9 +8,6 @@ import pytest
 from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
-from featuretools import variable_types
-from featuretools.entityset import EntitySet, Relationship
-from featuretools.tests import integration_data
 
 
 @pytest.fixture()

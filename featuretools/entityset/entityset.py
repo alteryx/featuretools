@@ -3,7 +3,6 @@ from collections import defaultdict
 import copy
 import itertools
 import logging
-import os
 
 import cloudpickle
 import graphviz
@@ -1113,14 +1112,14 @@ class EntitySet(object):
         if to_file:
             split_path = to_file.split('.')
             if len(split_path) < 2:
-                raise ValueError("Please use a file extension like '.pdf'"
-                                 + " so that the format can be infered")
+                raise ValueError("Please use a file extension like '.pdf'" +
+                                 " so that the format can be infered")
 
             format = split_path[-1]
             valid_formats = graphviz.backend.FORMATS
-            if not format in valid_formats:
-                raise ValueError("Unknown format. Make sure your format is"
-                                 + " amongst the following: %s" % valid_formats)
+            if format not in valid_formats:
+                raise ValueError("Unknown format. Make sure your format is" +
+                                 " amongst the following: %s" % valid_formats)
         else:
             format = None
 
@@ -1129,9 +1128,9 @@ class EntitySet(object):
 
         # Draw entities
         for entity in self.entities:
-            variables_string = '\l'.join([var.id + ' : ' + var.dtype
+            variables_string = '\l'.join([var.id + ' : ' + var.dtype  # noqa: W605
                                           for var in entity.variables])
-            label = '{%s|%s\l}' % (entity.id, variables_string)
+            label = '{%s|%s\l}' % (entity.id, variables_string)  # noqa: W605
             graph.node(entity.id, shape='record', label=label)
 
         # Draw relationships
