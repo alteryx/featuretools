@@ -83,6 +83,9 @@ def write_entity_data(entity, path, format='csv', **kwargs):
     if loading_info['type'] == 'csv':
         entity.df.to_csv(file, **kwargs)
     elif loading_info['type'] == 'parquet':
+        # Serializing to parquet format raises an error when columns contain tuples.
+        # Columns containing tuples are mapped as dtype object.
+        # Issue is resolved by casting columns of dtype object to string.
         columns = entity.df.select_dtypes('object').columns
         entity.df[columns] = entity.df[columns].astype('unicode')
         entity.df.columns = entity.df.columns.astype('unicode')
