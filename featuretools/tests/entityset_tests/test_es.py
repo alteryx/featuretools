@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import copy
-import os
-import shutil
 from builtins import range
 from datetime import datetime
 
@@ -15,7 +13,6 @@ from ..testing_utils import make_ecommerce_entityset
 import featuretools as ft
 from featuretools import variable_types
 from featuretools.entityset import EntitySet, Relationship
-from featuretools.tests import integration_data
 
 
 @pytest.fixture()
@@ -951,16 +948,6 @@ def test_getitem_without_id():
 def test_metadata_without_id():
     es = ft.EntitySet()
     assert es.create_data_description().get('id') is None
-
-
-def test_to_pickle_id_none():
-    entityset = ft.EntitySet()
-    dirname = os.path.dirname(integration_data.__file__)
-    path = os.path.join(dirname, 'test')
-    entityset.to_pickle(path)
-    new_es = ft.EntitySet.read(path)
-    assert entityset.__eq__(new_es, deep=True)
-    shutil.rmtree(path)
 
 
 def test_datetime64_conversion():

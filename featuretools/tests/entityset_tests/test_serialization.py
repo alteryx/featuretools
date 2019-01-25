@@ -88,3 +88,13 @@ def test_to_parquet_with_lti():
     new_es = ft.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
+
+
+def test_to_pickle_id_none():
+    entityset = ft.EntitySet()
+    dirname = os.path.dirname(integration_data.__file__)
+    path = os.path.join(dirname, '.cache/es')
+    entityset.to_pickle(path)
+    new_es = ft.read_entityset(path)
+    assert entityset.__eq__(new_es, deep=True)
+    shutil.rmtree(path)
