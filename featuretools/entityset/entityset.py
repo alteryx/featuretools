@@ -34,7 +34,6 @@ class EntitySet(object):
         metadata
 
     """
-
     def __init__(self, id=None, entities=None, relationships=None):
         """Creates EntitySet
 
@@ -140,8 +139,8 @@ class EntitySet(object):
     def metadata(self):
         '''Returns the metadata for this EntitySet. The metadata will be recomputed if it does not exist.'''
         if self._metadata is None:
-            d = self.create_data_description()
-            self._metadata = self.from_data_description(d)
+            description = self.create_data_description()
+            self._metadata = self.from_data_description(description)
 
         return self._metadata
 
