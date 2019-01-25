@@ -54,7 +54,7 @@ def test_relationship(entityset):
 
 def test_to_csv(entityset):
     dirname = os.path.dirname(integration_data.__file__)
-    path = os.path.join(dirname, 'test')
+    path = os.path.join(dirname, '.cache/es')
     params = dict(encoding='utf-8', engine='python')
     entityset.to_csv(path, params=params, encoding='utf-8')
     new_es = ft.read_entityset(path)
@@ -64,7 +64,7 @@ def test_to_csv(entityset):
 
 def test_to_pickle(entityset):
     dirname = os.path.dirname(integration_data.__file__)
-    path = os.path.join(dirname, 'test')
+    path = os.path.join(dirname, '.cache/es')
     entityset.to_pickle(path)
     new_es = ft.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
@@ -73,7 +73,7 @@ def test_to_pickle(entityset):
 
 def test_to_parquet(entityset):
     dirname = os.path.dirname(integration_data.__file__)
-    path = os.path.join(dirname, 'test')
+    path = os.path.join(dirname, '.cache/es')
     entityset.to_parquet(path)
     new_es = ft.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
@@ -83,7 +83,7 @@ def test_to_parquet(entityset):
 def test_to_parquet_with_lti():
     entityset = load_mock_customer(return_entityset=True, random_seed=0)
     dirname = os.path.dirname(integration_data.__file__)
-    path = os.path.join(dirname, 'test')
+    path = os.path.join(dirname, '.cache/es')
     entityset.to_parquet(path)
     new_es = ft.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
