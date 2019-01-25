@@ -5,6 +5,7 @@ jobs:
     docker:
         - image: circleci/python:2.7
     steps:
+      - run: sudo apt update && sudo apt install -y graphviz
       - checkout
       - run: virtualenv venv
       - run: source venv/bin/activate && make installdeps lint
@@ -15,6 +16,7 @@ jobs:
     docker:
         - image: circleci/python:3.5
     steps:
+      - run: sudo apt update && sudo apt install -y graphviz
       - checkout
       - run: virtualenv venv
       - run: source venv/bin/activate && make installdeps lint
@@ -25,7 +27,7 @@ jobs:
     docker:
         - image: circleci/python:3.6
     steps:
-      - run: sudo apt update && sudo apt install pandoc -y
+      - run: sudo apt update && sudo apt install -y graphviz pandoc
       - checkout
       - run: virtualenv venv
       - run: source venv/bin/activate && make installdeps lint
@@ -40,6 +42,7 @@ jobs:
     docker:
         - image: circleci/python:3.7
     steps:
+      - run: sudo apt update && sudo apt install -y graphviz
       - checkout
       - run: virtualenv venv
       - run: source venv/bin/activate && make installdeps lint
