@@ -22,7 +22,7 @@ class Variable(object):
     See Also:
         :class:`.Entity`, :class:`.Relationship`, :class:`.BaseEntitySet`
     """
-    _dtype_repr = None
+    type_string = None
     _default_pandas_dtype = object
 
     def __init__(self, id, entity, name=None):
@@ -72,8 +72,8 @@ class Variable(object):
 
     @property
     def dtype(self):
-        return self._dtype_repr \
-            if self._dtype_repr is not None else "generic_type"
+        return self.type_string \
+            if self.type_string is not None else "generic_type"
 
     @name.setter
     def name(self, name):
@@ -95,7 +95,7 @@ class Variable(object):
         return {
             'id': self.id,
             'type': {
-                'value': self._dtype_repr,
+                'value': self.type_string,
             },
             'properties': {
                 'name': self.name,
@@ -111,7 +111,7 @@ class Unknown(Variable):
 
 class Discrete(Variable):
     """Superclass representing variables that take on discrete values"""
-    _dtype_repr = "discrete"
+    type_string = "discrete"
 
     def __init__(self, id, entity, name=None):
         super(Discrete, self).__init__(id, entity, name)
@@ -136,7 +136,7 @@ class Boolean(Variable):
         true_values (list) : List of valued true values. Defaults to [1, True, "true", "True", "yes", "t", "T"]
         false_values (list): List of valued false values. Defaults to [0, False, "false", "False", "no", "f", "F"]
     """
-    _dtype_repr = "boolean"
+    type_string = "boolean"
     _default_pandas_dtype = bool
 
     def __init__(self,
@@ -166,7 +166,7 @@ class Categorical(Discrete):
     Args:
         categories (list) : List of categories. If left blank, inferred from data.
     """
-    _dtype_repr = "categorical"
+    type_string = "categorical"
 
     def __init__(self, id, entity, name=None, categories=None):
         self.categories = None or []
@@ -180,13 +180,13 @@ class Categorical(Discrete):
 
 class Id(Categorical):
     """Represents variables that identify another entity"""
-    _dtype_repr = "id"
+    type_string = "id"
     _default_pandas_dtype = int
 
 
 class Ordinal(Discrete):
     """Represents variables that take on an ordered discrete value"""
-    _dtype_repr = "ordinal"
+    type_string = "ordinal"
     _default_pandas_dtype = int
 
 
@@ -204,7 +204,7 @@ class Numeric(Variable):
         std (float)
         mean (float)
     """
-    _dtype_repr = "numeric"
+    type_string = "numeric"
     _default_pandas_dtype = float
 
     def __init__(self,
@@ -235,7 +235,7 @@ class Index(Variable):
     Attributes:
         count (int)
     """
-    _dtype_repr = "index"
+    type_string = "index"
     _default_pandas_dtype = int
 
 
@@ -245,7 +245,7 @@ class Datetime(Variable):
     Args:
         format (str): Python datetime format string documented `here <http://strftime.org/>`_.
     """
-    _dtype_repr = "datetime"
+    type_string = "datetime"
     _default_pandas_dtype = np.datetime64
 
     def __init__(self, id, entity, name=None, format=None):
@@ -269,19 +269,19 @@ class Datetime(Variable):
 
 class TimeIndex(Variable):
     """Represents time index of entity"""
-    _dtype_repr = "time_index"
+    type_string = "time_index"
     _default_pandas_dtype = np.datetime64
 
 
 class NumericTimeIndex(TimeIndex, Numeric):
     """Represents time index of entity that is numeric"""
-    _dtype_repr = "numeric_time_index"
+    type_string = "numeric_time_index"
     _default_pandas_dtype = float
 
 
 class DatetimeTimeIndex(TimeIndex, Datetime):
     """Represents time index of entity that is a datetime"""
-    _dtype_repr = "datetime_time_index"
+    type_string = "datetime_time_index"
     _default_pandas_dtype = np.datetime64
 
 
@@ -293,7 +293,7 @@ class Timedelta(Variable):
         start_inclusive (bool, optional) : Whether or not range includes the start value.
         end_inclusive (bool, optional) : Whether or not range includes the end value
     """
-    _dtype_repr = "timedelta"
+    type_string = "timedelta"
     _default_pandas_dtype = np.timedelta64
 
     def __init__(self,
@@ -319,7 +319,7 @@ class Timedelta(Variable):
 
 class Text(Variable):
     """Represents variables that are arbitary strings"""
-    _dtype_repr = "text"
+    type_string = "text"
     _default_pandas_dtype = str
 
 
@@ -337,7 +337,7 @@ class LatLong(Variable):
     To make a latlong in a dataframe do
     data['latlong'] = data[['latitude', 'longitude']].apply(tuple, axis=1)
     """
-    _dtype_repr = "latlong"
+    type_string = "latlong"
 
 
 ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,

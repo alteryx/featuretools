@@ -15,8 +15,8 @@ SCHEMA = {
     }
 }
 VARIABLE_TYPES = {
-    getattr(variable_types, type)._dtype_repr: getattr(variable_types, type)
-    for type in dir(variable_types) if hasattr(getattr(variable_types, type), '_dtype_repr')
+    getattr(variable_types, type).type_string: getattr(variable_types, type)
+    for type in dir(variable_types) if hasattr(getattr(variable_types, type), 'type_string')
 }
 
 

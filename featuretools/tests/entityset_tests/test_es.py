@@ -919,7 +919,7 @@ def test_secondary_time_index(entityset):
                                new_entity_secondary_time_index='second_ti')
 
     assert (isinstance(entityset['values'].df['second_ti'], pd.Series))
-    assert (entityset['values']['second_ti']._dtype_repr == 'datetime')
+    assert (entityset['values']['second_ti'].type_string == 'datetime')
     assert (entityset['values'].secondary_time_index == {
             'second_ti': ['comments', 'second_ti']})
 
