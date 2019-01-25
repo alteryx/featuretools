@@ -78,7 +78,7 @@ def write_entity_data(e, path, type='csv', **kwargs):
     if 'compression' in kwargs:
         basename += '.' + kwargs['compression']
     location = os.path.join('data', basename)
-    loading_info = dict(location=location, type=type.lower())
+    loading_info = {'location': location, 'type': type.lower()}
     error = 'must be one of the following formats: {}'
     assert loading_info['type'] in FORMATS, error.format(', '.join(FORMATS))
     attr = 'to_{}'.format(loading_info['type'])
