@@ -116,7 +116,8 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                     ['02116-3899'] * 4 +
                     ['0'] +
                     ['1234567890'] * 2 +
-                    ['12345-6789'] * 3 +
+                    ['12345-6789'] * 2 +
+                    [np.nan] +
                     [''] * 2)
 
     log_df = pd.DataFrame({
@@ -265,7 +266,7 @@ def make_variable_types(with_integer_time_index=False):
         'value_2': variable_types.Numeric,
         'latlong': variable_types.LatLong,
         'latlong2': variable_types.LatLong,
-        'zipcode': variable_types.ZipCode,
+        'zipcode': variable_types.ZIPCode,
         'value_many_nans': variable_types.Numeric,
         'priority_level': variable_types.Ordinal,
         'purchased': variable_types.Boolean,
