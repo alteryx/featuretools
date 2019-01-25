@@ -171,25 +171,25 @@ def from_relationship_description(entityset, description):
     return parent, child
 
 
-def read_entity_data(entity, path=None):
-    '''Read entity data from disk.
+def read_entity_data(description, path=None):
+    '''Read description data from disk.
 
     Args:
-        entity (dict) : Information for loading entity data.
+        description (dict) : Description of :class:`.Entity`.
 
     Returns:
         df (DataFrame) : Instance of dataframe. Returns an empty dataframe path is not specified.
     '''
     if path is None:
-        columns = [variable['id'] for variable in entity['variables']]
+        columns = [variable['id'] for variable in description['variables']]
         return pd.DataFrame(columns=columns)
-    file = os.path.join(path, entity['loading_info']['location'])
-    params = entity['loading_info'].get('params', {})
-    if entity['loading_info']['type'] == 'csv':
+    file = os.path.join(path, description['loading_info']['location'])
+    params = description['loading_info'].get('params', {})
+    if description['loading_info']['type'] == 'csv':
         return pd.read_csv(file, **params)
-    elif entity['loading_info']['type'] == 'parquet':
+    elif description['loading_info']['type'] == 'parquet':
         return pd.read_parquet(file, **params)
-    elif entity['loading_info']['type'] == 'pickle':
+    elif description['loading_info']['type'] == 'pickle':
         return pd.read_pickle(file, **params)
     else:
         error = 'must be one of the following formats: {}'
