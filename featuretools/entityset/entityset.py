@@ -1108,6 +1108,9 @@ class EntitySet(object):
                 Jupyter notebooks.
         """
         if to_file:
+            # Explicitly cast to str in case a Path object was passed in
+            to_file = str(to_file)
+
             split_path = to_file.split('.')
             if len(split_path) < 2:
                 raise ValueError("Please use a file extension like '.pdf'" +
