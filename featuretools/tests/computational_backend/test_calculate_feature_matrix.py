@@ -75,7 +75,8 @@ def test_calc_feature_matrix(entityset):
     with pytest.raises(AssertionError, match=error_text):
         feature_matrix = calculate_feature_matrix([1, 2, 3], entityset, cutoff_time=cutoff_time)
 
-    error_text = ".*type object 17"
+    error_text = "cutoff_time times must be datetime type: try casting via "\
+        "pd\\.to_datetime\\(cutoff_time\\['time'\\]\\)"
     with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([property_feature],
                                  entityset,
@@ -1023,7 +1024,8 @@ def test_integer_time_index_datetime_cutoffs(int_es):
     cutoff_df = pd.DataFrame({'time': times, 'instance_id': range(17)})
     property_feature = IdentityFeature(int_es['log']['value']) > 10
 
-    error_text = "Cannot compare type.*"
+    error_text = "cutoff_time times must be numeric: try casting via "\
+        "pd\\.to_numeric\\(cutoff_time\\['time'\\]\\)"
     with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([property_feature],
                                  int_es,

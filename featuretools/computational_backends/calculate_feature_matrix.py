@@ -30,7 +30,11 @@ from featuretools.utils.gen_utils import (
     make_tqdm_iterator
 )
 from featuretools.utils.wrangle import _check_time_type
-from featuretools.variable_types import DatetimeTimeIndex, NumericTimeIndex
+from featuretools.variable_types import (
+    DatetimeTimeIndex,
+    NumericTimeIndex,
+    PandasTypes
+)
 
 logger = logging.getLogger('featuretools.computational_backend')
 
@@ -142,31 +146,32 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         cutoff_time = [cutoff_time] * len(instance_ids)
         map_args = [(id, time) for id, time in zip(instance_ids, cutoff_time)]
         cutoff_time = pd.DataFrame(map_args, columns=['instance_id', 'time'])
-    else:
-        cutoff_time = cutoff_time.reset_index(drop=True)
-        # handle how columns are names in cutoff_time
-        if "instance_id" not in cutoff_time.columns:
-            if target_entity.index not in cutoff_time.columns:
-                raise AttributeError('Name of the index variable in the target entity'
-                                     ' or "instance_id" must be present in cutoff_time')
-            # rename to instance_id
-            cutoff_time.rename(columns={target_entity.index: "instance_id"}, inplace=True)
 
-        if "time" not in cutoff_time.columns:
-            # take the first column that isn't instance_id and assume it is time
-            not_instance_id = [c for c in cutoff_time.columns if c != "instance_id"]
-            cutoff_time.rename(columns={not_instance_id[0]: "time"}, inplace=True)
-        if cutoff_time['time'].dtype == object:
-            if (entityset.time_type == NumericTimeIndex and
-                    cutoff_time['time'].dtype.name.find('int') == -1 and
-                    cutoff_time['time'].dtype.name.find('float') == -1):
-                raise TypeError("cutoff_time times must be numeric: try casting via pd.to_numeric(cutoff_time['time'])")
-            elif (entityset.time_type == DatetimeTimeIndex and
-                  cutoff_time['time'].dtype.name.find('time') == -1):
-                raise TypeError("cutoff_time times must be datetime type: try casting via pd.to_datetime(cutoff_time['time'])")
-        assert (cutoff_time[['instance_id', 'time']].duplicated().sum() == 0), \
-            "Duplicated rows in cutoff time dataframe."
-        pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
+    cutoff_time = cutoff_time.reset_index(drop=True)
+    # handle how columns are names in cutoff_time
+    # maybe add _check_time_dtype helper function
+    if "instance_id" not in cutoff_time.columns:
+        if target_entity.index not in cutoff_time.columns:
+            raise AttributeError('Name of the index variable in the target entity'
+                                 ' or "instance_id" must be present in cutoff_time')
+        # rename to instance_id
+        cutoff_time.rename(columns={target_entity.index: "instance_id"}, inplace=True)
+
+    if "time" not in cutoff_time.columns:
+        # take the first column that isn't instance_id and assume it is time
+        not_instance_id = [c for c in cutoff_time.columns if c != "instance_id"]
+        cutoff_time.rename(columns={not_instance_id[0]: "time"}, inplace=True)
+    # Check that cutoff_time time type matches entityset time type
+    if entityset.time_type == NumericTimeIndex:
+        if cutoff_time['time'].dtype.name not in PandasTypes._pandas_numerics:
+            raise TypeError("cutoff_time times must be numeric: try casting "
+                            "via pd.to_numeric(cutoff_time['time'])")
+    elif entityset.time_type == DatetimeTimeIndex:
+        if cutoff_time['time'].dtype.name not in PandasTypes._pandas_datetimes:
+            raise TypeError("cutoff_time times must be datetime type: try casting via pd.to_datetime(cutoff_time['time'])")
+    assert (cutoff_time[['instance_id', 'time']].duplicated().sum() == 0), \
+        "Duplicated rows in cutoff time dataframe."
+    pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
 
     if _check_time_type(cutoff_time['time'].iloc[0]) is None:
         raise ValueError("cutoff_time time values must be datetime or numeric")
