@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -50,6 +49,7 @@ from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; 
     SubtractNumeric,
     SubtractNumericScalar,
     Sum,
+    TransformPrimitive,
     Year,
     get_transform_primitives
 )
@@ -1055,3 +1055,41 @@ def test_make_transform_multiple_output_features(es):
 def test_feature_names_inherit_from_make_trans_primitive():
     # R TODO
     pass
+
+
+def test_get_filepath(es):
+    class Mod4(TransformPrimitive):
+        '''Return base feature modulo 4'''
+        name = "mod4"
+        input_types = [Numeric]
+        return_type = Numeric
+
+        def get_function(self):
+            filepath = self.get_filepath("featuretools_unit_test_example.csv")
+            reference = pd.read_csv(filepath, header=None, squeeze=True)
+
+            def map_to_word(x):
+                def _map(x):
+                    if pd.isnull(x):
+                        return x
+                    return reference[int(x) % 4]
+                return pd.Series(x).apply(_map)
+            return map_to_word
+
+    feat = ft.Feature(es['log']['value'], primitive=Mod4)
+    df = ft.calculate_feature_matrix(features=[feat],
+                                     entityset=es,
+                                     instance_ids=range(17))
+
+    assert pd.isnull(df["MOD4(value)"][15])
+    assert df["MOD4(value)"][0] == 0
+    assert df["MOD4(value)"][14] == 2
+
+    fm, fl = ft.dfs(entityset=es,
+                    target_entity="log",
+                    agg_primitives=[],
+                    trans_primitives=[Mod4])
+
+    assert fm["MOD4(value)"][0] == 0
+    assert fm["MOD4(value)"][14] == 2
+    assert pd.isnull(fm["MOD4(value)"][15])
