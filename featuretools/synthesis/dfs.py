@@ -84,7 +84,7 @@ def dfs(entities=None,
         ignore_variables (dict[str -> list[str]], optional): List of specific
             variables within each entity to blacklist when creating features.
 
-        seed_features (list[:class:`.PrimitiveBase`]): List of manually defined
+        seed_features (list[:class:`.FeatureBase`]): List of manually defined
             features to use.
 
         drop_contains (list[str], optional): Drop features

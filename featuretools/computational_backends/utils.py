@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 import os
 import warnings
@@ -10,7 +12,7 @@ import psutil
 from distributed import Client, LocalCluster
 from pandas.tseries.frequencies import to_offset
 
-from featuretools.primitives.base import AggregationPrimitive, DirectFeature
+from featuretools.feature_base import AggregationFeature, DirectFeature
 from featuretools.utils.wrangle import _check_timedelta
 
 logger = logging.getLogger('featuretools.computational_backend')
@@ -71,12 +73,12 @@ def gather_approximate_features(features, backend):
             continue
         if isinstance(feature, DirectFeature):
             base_feature = feature.base_features[0]
-            while not isinstance(base_feature, AggregationPrimitive):
+            while not isinstance(base_feature, AggregationFeature):
                 if isinstance(base_feature, DirectFeature):
                     base_feature = base_feature.base_features[0]
                 else:
                     break
-            if isinstance(base_feature, AggregationPrimitive):
+            if isinstance(base_feature, AggregationFeature):
                 approx_entity = base_feature.entity.id
                 approximate_by_entity[approx_entity].append(base_feature)
                 approximate_feature_set.add(base_feature.hash())

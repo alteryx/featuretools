@@ -1,7 +1,11 @@
+import logging
+
 import pandas as pd
 
 from featuretools.utils.gen_utils import make_tqdm_iterator
 from featuretools.variable_types.variable import Discrete
+
+logger = logging.getLogger('featuretools')
 
 
 def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
@@ -28,15 +32,14 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
                 :suppress:
 
                 from featuretools.tests.testing_utils import make_ecommerce_entityset
-                from featuretools.primitives import Feature
                 import featuretools as ft
                 es = make_ecommerce_entityset()
 
             .. ipython:: python
 
-                f1 = Feature(es["log"]["product_id"])
-                f2 = Feature(es["log"]["purchased"])
-                f3 = Feature(es["log"]["value"])
+                f1 = ft.Feature(es["log"]["product_id"])
+                f2 = ft.Feature(es["log"]["purchased"])
+                f3 = ft.Feature(es["log"]["value"])
 
                 features = [f1, f2, f3]
                 ids = [0, 1, 2, 3, 4, 5]
@@ -67,10 +70,10 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
     encoded = []
     feature_names = []
     for feature in features:
-        fname = feature.get_name()
-        assert fname in X.columns, (
-            "Feature %s not found in feature matrix" % (fname)
-        )
+        for fname in feature.get_feature_names():
+            assert fname in X.columns, (
+                "Feature %s not found in feature matrix" % (fname)
+            )
         feature_names.append(fname)
 
     extra_columns = [col for col in X.columns if col not in feature_names]
@@ -84,7 +87,14 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
         iterator = features
 
     for f in iterator:
-        if (f.expanding or (not issubclass(f.variable_type, Discrete))):
+        # TODO: features with multiple columns are not encoded by this method,
+        # which can cause an "encoded" matrix with non-numeric vlaues
+        is_discrete = issubclass(f.variable_type, Discrete)
+        if (f.number_output_features > 1 or not is_discrete):
+            if f.number_output_features > 1:
+                logger.warning("Feature %s has multiple columns and will not "
+                               "be encoded.  This may result in a matrix with"
+                               " non-numeric values." % (f))
             encoded.append(f)
             continue
 
@@ -116,7 +126,12 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
 
         X.drop(f.get_name(), axis=1, inplace=True)
 
-    new_X = X[[e.get_name() for e in encoded] + extra_columns]
+    new_columns = []
+    for e in encoded:
+        new_columns.extend(e.get_feature_names())
+
+    new_columns.extend(extra_columns)
+    new_X = X[new_columns]
     iterator = new_X.columns
     if verbose:
         iterator = make_tqdm_iterator(iterable=new_X.columns,
