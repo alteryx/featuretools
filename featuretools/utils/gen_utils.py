@@ -40,17 +40,17 @@ def make_tqdm_iterator(**kwargs):
         # from IPython import display
         # capture_stderr = StringIO()
         # with RedirectStdStreams(stderr=capture_stderr):
-            # try:
-                # iterator = tqdm_notebook(**options)
-            # except:
-                # failed = True
-            # else:
-                # failed = False
-                # err_out = capture_stderr.getvalue()
+        #     try:
+        #         iterator = tqdm_notebook(**options)
+        #     except:
+        #         failed = True
+        #     else:
+        #         failed = False
+        #         err_out = capture_stderr.getvalue()
         # capture_stderr.close()
         # if failed or err_out.lower().find("widget javascript not detected") > -1:
-            # display.clear_output(wait=True)
-            # iterator = tqdm(**options)
+        #     display.clear_output(wait=True)
+        #     iterator = tqdm(**options)
         iterator = tqdm(**options)
 
     else:
