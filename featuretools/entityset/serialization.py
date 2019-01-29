@@ -87,6 +87,7 @@ def write_entity_data(entity, path, format='csv', **kwargs):
         # Issue is resolved by casting columns of dtype object to string.
         columns = entity.df.select_dtypes('object').columns
         entity.df[columns] = entity.df[columns].astype('unicode')
+        entity.df.columns = entity.df.columns.astype('unicode')  # ensures string column names for python 2.7
         entity.df.to_parquet(file, **kwargs)
     elif loading_info['type'] == 'pickle':
         entity.df.to_pickle(file, **kwargs)
