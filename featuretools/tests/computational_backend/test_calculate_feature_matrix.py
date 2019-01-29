@@ -63,7 +63,7 @@ def test_calc_feature_matrix(entityset):
                                               cutoff_time=cutoff_time,
                                               verbose=True)
 
-    assert (feature_matrix == labels).values.all()
+    assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
     error_text = 'features must be a non-empty list of features'
     with pytest.raises(AssertionError, match=error_text):
@@ -75,7 +75,8 @@ def test_calc_feature_matrix(entityset):
     with pytest.raises(AssertionError, match=error_text):
         feature_matrix = calculate_feature_matrix([1, 2, 3], entityset, cutoff_time=cutoff_time)
 
-    error_text = ".*type object 17"
+    error_text = "cutoff_time times must be datetime type: try casting via "\
+        "pd\\.to_datetime\\(cutoff_time\\['time'\\]\\)"
     with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([property_feature],
                                  entityset,
@@ -240,7 +241,7 @@ def test_cutoff_time_correctly(entityset):
                                               cutoff_time=cutoff_time)
 
     labels = [0, 10, 5]
-    assert (feature_matrix == labels).values.all()
+    assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 
 def test_cutoff_time_binning(entityset):
@@ -825,7 +826,7 @@ def test_verbose_cutoff_time_chunks(entityset):
                                               chunk_size="cutoff time",
                                               verbose=True)
 
-    assert (feature_matrix == labels).values.all()
+    assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 
 def test_dask_kwargs(entityset):
@@ -849,7 +850,7 @@ def test_dask_kwargs(entityset):
                                                   dask_kwargs=dkwargs,
                                                   approximate='1 hour')
 
-    assert (feature_matrix == labels).values.all()
+    assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 
 def test_dask_persisted_entityset(entityset, capsys):
@@ -872,7 +873,7 @@ def test_dask_persisted_entityset(entityset, capsys):
                                                   chunk_size=.13,
                                                   dask_kwargs=dkwargs,
                                                   approximate='1 hour')
-        assert (feature_matrix == labels).values.all()
+        assert (feature_matrix[property_feature.get_name()] == labels).values.all()
         feature_matrix = calculate_feature_matrix([property_feature],
                                                   entityset=entityset,
                                                   cutoff_time=cutoff_time,
@@ -882,7 +883,7 @@ def test_dask_persisted_entityset(entityset, capsys):
                                                   approximate='1 hour')
         captured = capsys.readouterr()
         assert "Using EntitySet persisted on the cluster as dataset " in captured[0]
-        assert (feature_matrix == labels).values.all()
+        assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 
 class TestCreateClientAndCluster(object):
@@ -1015,7 +1016,7 @@ def test_integer_time_index(int_es):
     time_level_vals = feature_matrix.index.get_level_values(1).values
     sorted_df = cutoff_df.sort_values(['time', 'instance_id'], kind='mergesort')
     assert (time_level_vals == sorted_df['time'].values).all()
-    assert (feature_matrix == labels).values.all()
+    assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 
 def test_integer_time_index_datetime_cutoffs(int_es):
@@ -1023,7 +1024,8 @@ def test_integer_time_index_datetime_cutoffs(int_es):
     cutoff_df = pd.DataFrame({'time': times, 'instance_id': range(17)})
     property_feature = IdentityFeature(int_es['log']['value']) > 10
 
-    error_text = "Cannot compare type.*"
+    error_text = "cutoff_time times must be numeric: try casting via "\
+        "pd\\.to_numeric\\(cutoff_time\\['time'\\]\\)"
     with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([property_feature],
                                  int_es,
