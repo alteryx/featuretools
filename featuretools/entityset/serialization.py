@@ -15,8 +15,8 @@ SCHEMA = {
     }
 }
 VARIABLE_TYPES = {
-    getattr(variable_types, type).type_string: getattr(variable_types, type)
-    for type in dir(variable_types) if hasattr(getattr(variable_types, type), 'type_string')
+    getattr(variable_types, type).type_string: getattr(variable_types, type) for type in dir(variable_types)
+    if hasattr(getattr(variable_types, type), 'type_string')
 }
 
 
@@ -41,7 +41,9 @@ def to_entity_description(entity):
         elif key == 'variables':
             description[key] = [variable.create_data_description() for variable in entity.variables]
         elif key == 'loading_info':
-            description[key] = {'params': {}}
+            index = entity.df.columns.isin([variable.id for variable in entity.variables])
+            dtypes = entity.df[entity.df.columns[index]].dtypes.astype(str).to_dict()
+            description[key] = {'params': {}, 'properties': {'dtypes': dtypes}}
         else:
             raise ValueError('"{}" is not supported'.format(key))
     return description
@@ -56,10 +58,7 @@ def to_relationship_description(relationship):
     Returns:
         description (dict) : Description of :class:`.Relationship`.
     '''
-    return {
-        key: [getattr(relationship, attr).id for attr in attrs]
-        for key, attrs in SCHEMA['relationships'].items()
-    }
+    return {key: [getattr(relationship, attr).id for attr in attrs] for key, attrs in SCHEMA['relationships'].items()}
 
 
 def write_entity_data(entity, path, format='csv', **kwargs):
@@ -136,6 +135,18 @@ def from_variable_description(description):
     return VARIABLE_TYPES.get(type, VARIABLE_TYPES.get(None))
 
 
+def get_variable_types(description):
+    '''Returns variable types from entity description.
+
+    Args:
+        description (dict) : Description of :class:`.Entity`.
+
+    Returns:
+        variable_types (dict) : Returns dictionary where variable id maps to variable type.
+    '''
+    return {variable['id']: from_variable_description(variable) for variable in description['variables']}
+
+
 def from_entity_description(entityset, description, path=None):
     '''Deserialize entity from entity description and add to entityset.
 
@@ -144,16 +155,16 @@ def from_entity_description(entityset, description, path=None):
         description (dict) : Description of :class:`.Entity`.
         path (str) : Root directory to serialized entityset.
     '''
+    dataframe = read_entity_data(description, path=path)
+    variable_types = get_variable_types(description)
+    dtypes = description['loading_info']['properties']['dtypes']
     entityset.entity_from_dataframe(
         description['id'],
-        read_entity_data(description, path=path),
+        dataframe.astype(dtypes),
         index=description.get('index'),
         time_index=description.get('time_index'),
         secondary_time_index=description['properties'].get('secondary_time_index'),
-        variable_types={
-            variable['id']: from_variable_description(variable)
-            for variable in description['variables']
-        })
+        variable_types=variable_types)
 
 
 def from_relationship_description(entityset, description):
