@@ -38,7 +38,7 @@ class PrimitiveBase(object):
     def get_function(self):
         raise NotImplementedError("Subclass must implement")
 
-    def get_data_path(self, filename):
+    def get_filepath(self, filename):
         PWD = os.path.dirname(__file__)
         path = os.path.join(PWD, "../data", filename)
         return path

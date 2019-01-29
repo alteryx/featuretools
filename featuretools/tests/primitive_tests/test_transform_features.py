@@ -1057,7 +1057,7 @@ def test_feature_names_inherit_from_make_trans_primitive():
     pass
 
 
-def test_get_data_path(es):
+def test_get_filepath(es):
     class Mod4(TransformPrimitive):
         '''Return base feature modulo 4'''
         name = "mod4"
@@ -1065,7 +1065,7 @@ def test_get_data_path(es):
         return_type = Numeric
 
         def get_function(self):
-            filepath = self.get_data_path("featuretools_unit_test_example.csv")
+            filepath = self.get_filepath("featuretools_unit_test_example.csv")
             reference = pd.read_csv(filepath, header=None, squeeze=True)
 
             def map_to_word(x):

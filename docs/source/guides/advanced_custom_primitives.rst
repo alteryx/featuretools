@@ -68,7 +68,7 @@ Some primitives require external data files in order to perform their computatio
         input_types = [Text]
         return_type = Categorical
         def get_function(self):
-            filepath = self.get_data_path('sentiment_model.pickle') # returns absolute path to the file
+            filepath = self.get_filepath('sentiment_model.pickle') # returns absolute path to the file
             import pickle
             with open(filepath, 'r') as f:
                 model = pickle.load(f)
@@ -77,7 +77,7 @@ Some primitives require external data files in order to perform their computatio
             return predict
 
 
-The ``get_data_path`` method is used to find the location of the trained model.
+The ``get_filepath`` method is used to find the location of the trained model.
 
 .. note::
 
