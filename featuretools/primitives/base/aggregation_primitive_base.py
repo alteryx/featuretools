@@ -32,7 +32,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
     values by passing in empty data.
 
     Args:
-        function (function): Function that takes in an array  and applies some
+        function (function): Function that takes in a series and applies some
             transformation to it.
 
         input_types (list[Variable]): Variable types of the inputs.
