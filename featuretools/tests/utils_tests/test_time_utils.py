@@ -7,9 +7,7 @@ from featuretools.utils import make_temporal_cutoffs
 
 def test_make_temporal_cutoffs():
     instance_ids = pd.Series(range(10))
-    cutoffs = pd.DatetimeIndex(start='1/2/2015',
-                               periods=10,
-                               freq='1d')
+    cutoffs = pd.date_range(start='1/2/2015', periods=10, freq='1d')
     temporal_cutoffs_by_nwindows = make_temporal_cutoffs(instance_ids,
                                                          cutoffs,
                                                          window_size='1h',
