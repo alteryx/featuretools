@@ -2,6 +2,23 @@
 
 Changelog
 ---------
+**v0.6.0** Jan 30, 2018
+    * Primitive refactor (:pr:`364`)
+    * Mean ignore NaNs (:pr:`379`)
+    * Plotting entitysets (:pr:`382`)
+    * Add seed features later in DFS process (:pr:`357`)
+    * Multiple output column features (:pr:`376`)
+    * Add ZipCode Variable Type (:pr:`367`)
+    * Add `primitive.get_filepath` and example of primitive loading data from external files (:pr:`380`)
+    * Transform primitives take series as input (:pr:`385`)
+    * Update dependency requirements (:pr:`378`, :pr:`383`, :pr:`386`)
+    * Add modulo to override tests (:pr:`384`)
+    * Update documentation (:pr:`368`, :pr:`377`)
+    * Update README.md (:pr:`366`, :pr:`373`)
+    * Update CI tests (:pr:`359`, :pr:`360`, :pr:`375`)
+
+    Thanks to the following people for contributing to this release: :user:`floscha`, :user:`gsheni`, :user:`kmax12`, :user:`RogerTangos`, :user:`rwedge`
+
 **v0.5.1** Dec 17, 2018
     * Add missing dependencies (:pr:`353`)
     * Move comment to note in documentation (:pr:`352`)
@@ -22,6 +39,7 @@ Changelog
     * Remove parse_date_cols parameter from EntitySet._import_from_dataframe (:pr:`333`)
 
     Thanks to the following people for contributing to this release: :user:`bukosabino`, :user:`georgewambold`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`kmax12`, and :user:`rwedge`.
+
 **v0.4.1** Nov 29, 2018
     * Resolve bug preventing using first column as index by default (:pr:`308`)
     * Handle return type when creating features from Id variables (:pr:`318`)
