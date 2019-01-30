@@ -1107,6 +1107,13 @@ class EntitySet(object):
             graphviz.Digraph : Graph object that can directly be displayed in
                 Jupyter notebooks.
         """
+        try:
+            import graphviz
+        except ImportError:
+            raise ImportError('Please install graphviz to plot entity sets.' +
+                              ' (See https://pypi.org/project/graphviz/ for' +
+                              ' details)')
+
         if to_file:
             # Explicitly cast to str in case a Path object was passed in
             to_file = str(to_file)
