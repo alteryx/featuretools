@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+import os
+
 import numpy as np
 
 
@@ -35,3 +37,8 @@ class PrimitiveBase(object):
 
     def get_function(self):
         raise NotImplementedError("Subclass must implement")
+
+    def get_filepath(self, filename):
+        PWD = os.path.dirname(__file__)
+        path = os.path.join(PWD, "../data", filename)
+        return path

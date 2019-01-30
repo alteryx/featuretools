@@ -257,6 +257,9 @@ class FeatureBase(object):
         """Take modulus of other"""
         return self._handle_binary_comparision(other, primitives.ModuloNumeric, primitives.ModuloNumericScalar)
 
+    def __rmod__(self, other):
+        return Feature([self], primitive=primitives.ModuloByFeature(other))
+
     def __and__(self, other):
         return self.AND(other)
 
