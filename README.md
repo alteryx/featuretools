@@ -80,7 +80,7 @@ For more examples of how to use Featuretools, check out our [demos](https://www.
 
 ## Testing & Development
 
-The FeatureTools community welcomes pull requests. Instructions for testing and development are avialable [here.](https://docs.featuretools.com/getting_started/install.html#development)
+The Featuretools community welcomes pull requests. Instructions for testing and development are avialable [here.](https://docs.featuretools.com/getting_started/install.html#development)
 
 ## Support
 The Featuretools community is happy to provide support to users of Featuretools. Project support can be found in four places depending on the type of question:
