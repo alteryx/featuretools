@@ -8,7 +8,7 @@ Functions With Additional Arguments
 
     import featuretools as ft
     from featuretools.primitives import make_trans_primitive
-    from featuretools.variable_types import Text, Numeric
+    from featuretools.variable_types import Text, Numeric, Categorical
 
 One caveat with the make\_primitive functions is that the required arguments of ``function`` must be input features.  Here we create a function for ``StringCount``, a primitive which counts the number of occurrences of a string in a ``Text`` input.  Since ``string`` is not a feature, it needs to be a keyword argument to ``string_count``.
 
@@ -54,3 +54,31 @@ Passing in ``string="test"`` as a keyword argument when initializing the `String
     feature_matrix.columns
     feature_matrix[['STD(log.STRING_COUNT(comments, "the"))', 'SUM(log.STRING_COUNT(comments, "the"))', 'MEAN(log.STRING_COUNT(comments, "the"))']]
 
+.. Primitives That Use External Data Files
+.. =======================================
+.. Some primitives require external data files in order to perform their computation. For example, imagine a primitive that uses a pre-trained sentiment classifier to classify text. Here is how that would be implemented
+
+.. .. ipython:: python
+
+..     from featuretools.primitives import TransformPrimitive
+
+..     class Sentiment(TransformPrimitive):
+..         '''Reads in a text field and returns "negative", "neutral", or "positive"'''
+..         name = "sentiment"
+..         input_types = [Text]
+..         return_type = Categorical
+..         def get_function(self):
+..             filepath = self.get_filepath('sentiment_model.pickle') # returns absolute path to the file
+..             import pickle
+..             with open(filepath, 'r') as f:
+..                 model = pickle.load(f)
+..             def predict(x):
+..                 return model.predict(x)
+..             return predict
+
+
+.. The ``get_filepath`` method is used to find the location of the trained model.
+
+.. .. note::
+
+..     The primitive loads the model within the `get_function` method, but outside of the `score` function.  This way the model is loaded from disk only once when the Featuretools backend requests the primitive function instead of every time `score` is called.
