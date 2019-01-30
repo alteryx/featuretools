@@ -33,15 +33,39 @@ def bad_primitives_files_dir(this_dir):
     return os.path.join(this_dir, "bad_primitive_files")
 
 
+@pytest.fixture
+def amazon_path_s3():
+    return "s3://featuretools-static/primitives_to_install.tar.gz"
+
+
+@pytest.fixture
+def amazon_path_http():
+    return "https://s3.amazonaws.com/featuretools-static/primitives_to_install.tar.gz"
+
+
+@pytest.fixture
+def install_via_cl():
+    return "INSTALL_VIA_CLI"
+
+
+@pytest.fixture
+def install_via_module():
+    return "INSTALL_VIA_MODULE"
+
+
+@pytest.fixture
+def install_path(request):
+    return request.getfixturevalue(request.param)
+
+
 @pytest.mark.parametrize("install_path", [
-    primitives_to_install_dir(this_dir()),
-    os.path.join(this_dir(), "primitives_to_install.tar.gz"),
-    "s3://featuretools-static/primitives_to_install.tar.gz",
-    "https://s3.amazonaws.com/featuretools-static/primitives_to_install.tar.gz",
-    "INSTALL_VIA_CLI",
-    "INSTALL_VIA_MODULE",
-])
-def test_install_primitives(install_path):
+    ("primitives_to_install_dir"),
+    ("amazon_path_s3"),
+    ("amazon_path_http"),
+    ("install_via_cl"),
+    ("install_via_module"),
+], indirect=True)
+def test_install_primitives(install_path, primitives_to_install_dir):
     installation_dir = get_installation_dir()
     custom_max_file = os.path.join(installation_dir, "custom_max.py")
     custom_mean_file = os.path.join(installation_dir, "custom_mean.py")
@@ -56,9 +80,9 @@ def test_install_primitives(install_path):
 
     # handle install via command line as a special case
     if install_path == "INSTALL_VIA_CLI":
-        subprocess.check_output(['featuretools', 'install', '--no-prompt', primitives_to_install_dir(this_dir())])
+        subprocess.check_output(['featuretools', 'install', '--no-prompt', primitives_to_install_dir])
     elif install_path == "INSTALL_VIA_MODULE":
-        subprocess.check_output(['python', '-m', 'featuretools', 'install', '--no-prompt', primitives_to_install_dir(this_dir())])
+        subprocess.check_output(['python', '-m', 'featuretools', 'install', '--no-prompt', primitives_to_install_dir])
     else:
         featuretools.primitives.install.install_primitives(install_path, prompt=False)
 
