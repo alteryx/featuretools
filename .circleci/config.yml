@@ -9,6 +9,7 @@ jobs:
       - checkout
       - run: virtualenv venv
       - run: source venv/bin/activate && make installdeps lint
+      - run: source venv/bin/activate && pip install graphviz
       - run: source venv/bin/activate && make test
 
   "python-3.5":
@@ -20,6 +21,7 @@ jobs:
       - checkout
       - run: virtualenv venv
       - run: source venv/bin/activate && make installdeps lint
+      - run: source venv/bin/activate && pip install graphviz
       - run: source venv/bin/activate && make test
 
   "python-3.6":
@@ -31,6 +33,7 @@ jobs:
       - checkout
       - run: virtualenv venv
       - run: source venv/bin/activate && make installdeps lint
+      - run: source venv/bin/activate && pip install graphviz
       - run: source venv/bin/activate && make -C docs/ -e "SPHINXOPTS=-W" clean html
       - run: |
           source venv/bin/activate
@@ -46,6 +49,7 @@ jobs:
       - checkout
       - run: virtualenv venv
       - run: source venv/bin/activate && make installdeps lint
+      - run: source venv/bin/activate && pip install graphviz
       - run: source venv/bin/activate && make test
 
 workflows:
