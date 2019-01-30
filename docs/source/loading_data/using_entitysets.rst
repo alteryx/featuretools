@@ -6,6 +6,10 @@ Representing Data with EntitySets
 
 An ``EntitySet`` is a collection of entities and the relationships between them. They are useful for preparing raw, structured datasets for feature engineering. While many functions in Featuretools  take ``entities`` and ``relationships`` as separate arguments, it is recommended to create an ``EntitySet``, so you can more easily manipulate your data as needed.
 
+.. note ::
+
+    You can visualize your entity set structure by using the `EntitySet.plot()` method.
+
 
 The Raw Data
 ~~~~~~~~~~~~
