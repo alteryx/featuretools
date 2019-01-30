@@ -1150,8 +1150,7 @@ class EntitySet(object):
                 label = '%s -> %s' % (rel._parent_variable_id,
                                       rel._child_variable_id)
 
-            graph.edge(rel._child_entity_id, rel._parent_entity_id,
-                       xlabel=label, arrowhead='crowtee')
+            graph.edge(rel._child_entity_id, rel._parent_entity_id, xlabel=label)
 
         if to_file:
             # Graphviz always appends the format to the file name, so we need to
