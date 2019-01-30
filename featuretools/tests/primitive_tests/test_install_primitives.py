@@ -44,7 +44,7 @@ def amazon_path_http():
 
 
 @pytest.fixture
-def install_via_cl():
+def install_via_cli():
     return "INSTALL_VIA_CLI"
 
 
@@ -62,7 +62,7 @@ def install_path(request):
     ("primitives_to_install_dir"),
     ("amazon_path_s3"),
     ("amazon_path_http"),
-    ("install_via_cl"),
+    ("install_via_cli"),
     ("install_via_module"),
 ], indirect=True)
 def test_install_primitives(install_path, primitives_to_install_dir):
