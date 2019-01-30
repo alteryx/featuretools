@@ -78,7 +78,7 @@ def select_high_variance_features(feature_matrix, features=None,
 
     Args:
         feature_matrix (:class:`pd.DataFrame`): DataFrame whose columns are feature names and rows are instances
-        features (list[:class:`featuretools.PrimitiveBase`] or list[str], optional): List of features to select
+        features (list[:class:`featuretools.FeatureBase`] or list[str], optional): List of features to select
         cv_threshold (float): Select features above this coefficient of variation
         categorical_nunique_ratio (float): Select categorical features whose ratio of unique
                 elements to total number of nonnull elements is greater than this parameter
@@ -128,7 +128,7 @@ def select_percent_null(feature_matrix, features, max_null_percent=1.0, keep=Non
 
     Args:
         feature_matrix (:class:`pd.DataFrame`): DataFrame whose columns are feature names and rows are instances
-        features (list[:class:`featuretools.PrimitiveBase`] or list[str], optional): List of features to select
+        features (list[:class:`featuretools.FeatureBase`] or list[str], optional): List of features to select
         max_null_percent (float): Select features below this
         keep (list[str]): list of feature names to force select
     '''

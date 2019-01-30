@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import pandas as pd
 import pytest
 from distributed.utils_test import cluster
@@ -139,7 +141,8 @@ def test_dask_kwargs(entities, relationships):
                                            target_entity="transactions",
                                            cutoff_time=cutoff_times_df,
                                            dask_kwargs=dask_kwargs)
-    assert features == features_2
+
+    assert all(f1.hash() == f2.hash() for f1, f2 in zip(features, features_2))
     for column in feature_matrix:
         for x, y in zip(feature_matrix[column], feature_matrix_2[column]):
             assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))

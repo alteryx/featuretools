@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
+from math import isnan
 
 import numpy as np
 import pandas as pd
@@ -9,11 +10,10 @@ import pytest
 from ..testing_utils import feature_with_name, make_ecommerce_entityset
 
 import featuretools as ft
-from featuretools.primitives import (
+from featuretools.primitives import (  # NMostCommon,
     Count,
     Mean,
     Median,
-    NMostCommon,
     NumTrue,
     Sum,
     TimeSinceLast,
@@ -21,7 +21,6 @@ from featuretools.primitives import (
 )
 from featuretools.primitives.base import (
     AggregationPrimitive,
-    Feature,
     make_agg_primitive
 )
 from featuretools.synthesis.deep_feature_synthesis import (
@@ -61,15 +60,14 @@ def test_primitive():
 def test_get_depth(es):
     log_id_feat = es['log']['id']
     customer_id_feat = es['customers']['id']
-    count_logs = Count(log_id_feat,
-                       parent_entity=es['sessions'])
-    sum_count_logs = Sum(count_logs,
-                         parent_entity=es['customers'])
+    count_logs = ft.Feature(log_id_feat, parent_entity=es['sessions'], primitive=Count)
+    sum_count_logs = ft.Feature(count_logs, parent_entity=es['customers'], primitive=Sum)
     num_logs_greater_than_5 = sum_count_logs > 5
-    count_customers = Count(customer_id_feat,
-                            parent_entity=es[u'régions'],
-                            where=num_logs_greater_than_5)
-    num_customers_region = Feature(count_customers, es["customers"])
+    count_customers = ft.Feature(customer_id_feat,
+                                 parent_entity=es[u'régions'],
+                                 where=num_logs_greater_than_5,
+                                 primitive=Count)
+    num_customers_region = ft.Feature(count_customers, entity=es["customers"])
 
     depth = num_customers_region.get_depth()
     assert depth == 5
@@ -102,116 +100,110 @@ def test_count_null_and_make_agg_primitive(es):
 
         return values.count()
 
-    def count_generate_name(self):
-        where_str = self._where_str()
-        use_prev_str = self._use_prev_str()
-        return u"COUNT(%s%s%s)" % (self.child_entity.id,
+    def count_generate_name(self, base_feature_names, child_entity_id,
+                            parent_entity_id, where_str, use_prev_str):
+        return u"COUNT(%s%s%s)" % (child_entity_id,
                                    where_str,
                                    use_prev_str)
 
     Count = make_agg_primitive(count_func, [[Index], [Variable]], Numeric,
                                name="count", stack_on_self=False,
                                cls_attributes={"generate_name": count_generate_name})
-    count_null = Count(es['log']['value'], es['sessions'], count_null=True)
+    count_null = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Count(count_null=True))
     feature_matrix = ft.calculate_feature_matrix([count_null], entityset=es)
     values = [5, 4, 1, 2, 3, 2]
     assert (values == feature_matrix[count_null.get_name()]).all()
 
 
 def test_check_input_types(es):
-    count = Count(es["sessions"]["id"], es["customers"])
-    mean = Mean(count, es[u"régions"])
+    count = ft.Feature(es["sessions"]["id"], parent_entity=es["customers"], primitive=Count)
+    mean = ft.Feature(count, parent_entity=es[u"régions"], primitive=Mean)
     assert mean._check_input_types()
 
     boolean = count > 3
-    mean = Mean(count, es[u"régions"], where=boolean)
+    mean = ft.Feature(count, parent_entity=es[u"régions"], where=boolean, primitive=Mean)
     assert mean._check_input_types()
 
 
+def test_mean_nan():
+    array = np.array([5, 5, 5, 5, 5])
+    mean_func_nans_default = Mean().get_function()
+    mean_func_nans_false = Mean(ignore_nans=False).get_function()
+    mean_func_nans_true = Mean(ignore_nans=True).get_function()
+    assert mean_func_nans_default(array) == 5
+    assert mean_func_nans_false(array) == 5
+    assert mean_func_nans_true(array) == 5
+    array = np.array([5, np.nan, np.nan, np.nan, np.nan, 10])
+    assert isnan(mean_func_nans_default(array))
+    assert isnan(mean_func_nans_false(array))
+    assert mean_func_nans_true(array) == 7.5
+    array_nans = np.array([np.nan, np.nan, np.nan, np.nan])
+    assert isnan(mean_func_nans_default(array))
+    assert isnan(mean_func_nans_false(array_nans))
+    assert isnan(mean_func_nans_true(array_nans))
+
+
 def test_base_of_and_stack_on_heuristic(es, test_primitive):
-    child = Count(es["sessions"]["id"], es["customers"])
+    child = ft.Feature(es["sessions"]["id"], parent_entity=es["customers"], primitive=Count)
     test_primitive.stack_on = []
-    child.base_of = []
-    assert not (check_stacking(test_primitive, [child]))
-
-    test_primitive.stack_on = []
-    child.base_of = None
-    assert (check_stacking(test_primitive, [child]))
+    child.primitive.base_of = []
+    assert not check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = []
-    child.base_of = [test_primitive]
-    assert (check_stacking(test_primitive, [child]))
+    child.primitive.base_of = None
+    assert check_stacking(test_primitive(), [child])
+
+    test_primitive.stack_on = []
+    child.primitive.base_of = [test_primitive]
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = None
-    child.base_of = []
-    assert (check_stacking(test_primitive, [child]))
+    child.primitive.base_of = []
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = None
-    child.base_of = None
-    assert (check_stacking(test_primitive, [child]))
+    child.primitive.base_of = None
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = None
-    child.base_of = [test_primitive]
-    assert (check_stacking(test_primitive, [child]))
+    child.primitive.base_of = [test_primitive]
+    assert check_stacking(test_primitive(), [child])
 
-    test_primitive.stack_on = [child]
-    child.base_of = []
-    assert (check_stacking(test_primitive, [child]))
+    test_primitive.stack_on = [type(child.primitive)]
+    child.primitive.base_of = []
+    assert check_stacking(test_primitive(), [child])
 
-    test_primitive.stack_on = [child]
-    child.base_of = None
-    assert (check_stacking(test_primitive, [child]))
+    test_primitive.stack_on = [type(child.primitive)]
+    child.primitive.base_of = None
+    assert check_stacking(test_primitive(), [child])
 
-    test_primitive.stack_on = [child]
-    child.base_of = [test_primitive]
-    assert (check_stacking(test_primitive, [child]))
+    test_primitive.stack_on = [type(child.primitive)]
+    child.primitive.base_of = [test_primitive]
+    assert check_stacking(test_primitive(), [child])
 
 
 def test_stack_on_self(es, test_primitive):
     # test stacks on self
-    child = test_primitive(es['log']['value'], es[u'régions'])
+    child = ft.Feature(es['log']['value'], parent_entity=es[u'régions'], primitive=test_primitive)
     test_primitive.stack_on = []
-    child.base_of = []
+    child.primitive.base_of = []
     test_primitive.stack_on_self = False
-    child.stack_on_self = False
-    assert not (check_stacking(test_primitive, [child]))
+    child.primitive.stack_on_self = False
+    assert not check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on_self = True
-    assert (check_stacking(test_primitive, [child]))
+    assert check_stacking(test_primitive(), [child])
 
     test_primitive.stack_on = None
     test_primitive.stack_on_self = False
-    assert not (check_stacking(test_primitive, [child]))
+    assert not check_stacking(test_primitive(), [child])
 
-
-def test_stack_expanding(es, test_primitive):
-    test_primitive.input_types = [Discrete]
-    expanding_primitive = NMostCommon(es['sessions']['device_type'], es[u'régions'])
-    assert not (check_stacking(test_primitive, [expanding_primitive]))
-
-
-# P TODO: this functionality is currently missing
-# def test_max_depth_heuristic(es, parent_class, parent_entity, parent):
-#     grandparent = make_parent_instance(parent_class, parent_entity,
-#                                        parent)
-#     for f in [parent, grandparent]:
-#         f.stack_on = ['child']
-#         f.stack_on_self = True
-#         f.base_of = ['parent']
-#         f.apply_to = [(Numeric,)]
-#         f.max_stack_depth = 2
-
-#     assert parent.can_apply(parent_entity, 'customers')
-#     assert not grandparent.can_apply(parent_entity, 'customers')
-
-#     grandparent.max_stack_depth = 3
-#     assert grandparent.can_apply(parent_entity, 'customers')
 
 def test_init_and_name(es):
     session = es['sessions']
     log = es['log']
 
-    features = [Feature(v) for v in log.variables]
+    features = [ft.Feature(v) for v in log.variables]
     for agg_prim in get_aggregation_primitives().values():
 
         input_types = agg_prim.input_types
@@ -225,7 +217,7 @@ def test_init_and_name(es):
             if len(matching_types) == 0:
                 raise Exception("Agg Primitive %s not tested" % agg_prim.name)
             for t in matching_types:
-                instance = agg_prim(t, parent_entity=session)
+                instance = ft.Feature(t, parent_entity=session, primitive=agg_prim)
 
                 # try to get name and calculate
                 instance.get_name()
@@ -233,7 +225,7 @@ def test_init_and_name(es):
 
 
 def test_time_since_last(es):
-    f = TimeSinceLast(es["log"]["datetime"], es["customers"])
+    f = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=TimeSinceLast)
     fm = ft.calculate_feature_matrix([f],
                                      entityset=es,
                                      instance_ids=[0, 1, 2],
@@ -245,7 +237,7 @@ def test_time_since_last(es):
 
 
 def test_median(es):
-    f = Median(es["log"]["value_many_nans"], es["customers"])
+    f = ft.Feature(es["log"]["value_many_nans"], parent_entity=es["customers"], primitive=Median)
     fm = ft.calculate_feature_matrix([f],
                                      entityset=es,
                                      instance_ids=[0, 1, 2],
@@ -276,8 +268,8 @@ def test_agg_same_method_name(es):
     Max = make_agg_primitive(custom_primitive, input_types=[Numeric],
                              return_type=Numeric, name="max")
 
-    f_sum = Sum(es["log"]["value"], es["customers"])
-    f_max = Max(es["log"]["value"], es["customers"])
+    f_sum = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Sum)
+    f_max = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Max)
 
     fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
     assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
@@ -288,8 +280,8 @@ def test_agg_same_method_name(es):
     Max = make_agg_primitive(lambda x: x.max(), input_types=[Numeric],
                              return_type=Numeric, name="max")
 
-    f_sum = Sum(es["log"]["value"], es["customers"])
-    f_max = Max(es["log"]["value"], es["customers"])
+    f_sum = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Sum)
+    f_max = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Max)
     fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
     assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
 
@@ -304,7 +296,7 @@ def test_time_since_last_custom(es):
                                        Numeric,
                                        name="time_since_last",
                                        uses_calc_time=True)
-    f = TimeSinceLast(es["log"]["datetime"], es["customers"])
+    f = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=TimeSinceLast)
     fm = ft.calculate_feature_matrix([f],
                                      entityset=es,
                                      instance_ids=[0, 1, 2],
@@ -332,7 +324,7 @@ def test_custom_primitive_time_as_arg(es):
                                        Numeric,
                                        uses_calc_time=True)
     assert TimeSinceLast.name == "time_since_last"
-    f = TimeSinceLast(es["log"]["datetime"], es["customers"])
+    f = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=TimeSinceLast)
     fm = ft.calculate_feature_matrix([f],
                                      entityset=es,
                                      instance_ids=[0, 1, 2],
@@ -393,15 +385,15 @@ def test_custom_primitive_default_kwargs(es):
                                    return_type=Numeric)
 
     sum_n_1_n = 1
-    sum_n_1_base_f = Feature(es['log']['value'])
-    sum_n_1 = SumNTimes([sum_n_1_base_f], es['sessions'], n=sum_n_1_n)
+    sum_n_1_base_f = ft.Feature(es['log']['value'])
+    sum_n_1 = ft.Feature([sum_n_1_base_f], parent_entity=es['sessions'], primitive=SumNTimes(n=sum_n_1_n))
     sum_n_2_n = 2
-    sum_n_2_base_f = Feature(es['log']['value_2'])
-    sum_n_2 = SumNTimes([sum_n_2_base_f], es['sessions'], n=sum_n_2_n)
+    sum_n_2_base_f = ft.Feature(es['log']['value_2'])
+    sum_n_2 = ft.Feature([sum_n_2_base_f], parent_entity=es['sessions'], primitive=SumNTimes(n=sum_n_2_n))
     assert sum_n_1_base_f == sum_n_1.base_features[0]
-    assert sum_n_1_n == sum_n_1.kwargs['n']
+    assert sum_n_1_n == sum_n_1.primitive.kwargs['n']
     assert sum_n_2_base_f == sum_n_2.base_features[0]
-    assert sum_n_2_n == sum_n_2.kwargs['n']
+    assert sum_n_2_n == sum_n_2.primitive.kwargs['n']
 
 
 def test_makes_numtrue(es):
@@ -412,3 +404,38 @@ def test_makes_numtrue(es):
     features = dfs.build_features()
     assert feature_with_name(features, 'customers.NUM_TRUE(log.purchased)')
     assert feature_with_name(features, 'NUM_TRUE(log.purchased)')
+
+
+def test_make_three_most_common(es):
+    def pd_top3(x):
+        array = np.array(x.value_counts()[:3].index)
+        if len(array) < 3:
+            filler = np.full(3 - len(array), np.nan)
+            array = np.append(array, filler)
+        return array
+
+    NMostCommoner = make_agg_primitive(function=pd_top3,
+                                       input_types=[Discrete],
+                                       return_type=Discrete,
+                                       number_output_features=3)
+
+    fm, features = ft.dfs(entityset=es,
+                          target_entity="customers",
+                          agg_primitives=[NMostCommoner],
+                          trans_primitives=[])
+
+    true_results = pd.DataFrame([
+        ['coke zero', 'toothpaste', "car"],
+        ['coke zero', 'Haribo sugar-free gummy bears', np.nan],
+        ['taco clock', np.nan, np.nan]
+    ])
+    df = fm[["PD_TOP3(log.product_id)__%s" % i for i in range(3)]]
+    for i in range(df.shape[0]):
+        if i == 0:
+            # coke zero and toothpaste have same number of occurrences
+            # so just check that the top two match
+            assert set(true_results.iloc[i].values[:2]) == set(df.iloc[i].values[:2])
+            assert df.iloc[0].values[2] in ("brown bag", "car")
+        else:
+            for i1, i2 in zip(true_results.iloc[i], df.iloc[i]):
+                assert (pd.isnull(i1) and pd.isnull(i2)) or (i1 == i2)

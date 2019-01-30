@@ -74,7 +74,7 @@ class DFSTransformer(TransformerMixin):
                 specific variables within each entity to blacklist when
                 creating features.
 
-            seed_features (list[:class:`.PrimitiveBase`]): List of manually
+            seed_features (list[:class:`.FeatureBase`]): List of manually
                 defined features to use.
 
             drop_contains (list[str], optional): Drop features

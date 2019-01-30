@@ -1,13 +1,13 @@
 boto3>=1.9.51
 botocore>=1.12.51
 numpy>=1.13.3
-pandas>=0.23.0
+pandas>=0.23.0,<0.24
 tqdm>=4.19.2
 toolz>=0.8.2
 pyyaml>=3.12
 cloudpickle>=0.4.0
 future>=0.16.0
-dask>=0.19.4
+dask>=1.1.0
 distributed>=1.24.2
 psutil>=5.4.8
 click>=7.0.0

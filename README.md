@@ -87,7 +87,7 @@ The Featuretools community is happy to provide support to users of Featuretools.
 
 1. For usage questions, use [Stack Overflow](https://stackoverflow.com/questions/tagged/featuretools) with the `featuretools` tag.
 2. For bugs, issues, or feature requests start a [Github issue](https://github.com/featuretools/featuretools/issues).
-3. For discussion regarding development on the core library, use [gitter](https://gitter.im/featuretools/featuretools).
+3. For discussion regarding development on the core library, use [Slack](https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTZiZDdkYjZhZTVkMmVmZDIxNWZiNTVjNDQxYmZkMzI5NGRlOTg5YjcwYmJiNWE2YjIzZmFkMjc1NDZkNjBhZTQ).
 4. For everything else, the core developers can be reached by email at help@featuretools.com.
 
 ## Citing Featuretools

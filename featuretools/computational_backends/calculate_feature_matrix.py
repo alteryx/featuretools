@@ -24,13 +24,17 @@ from .utils import (
     save_csv_decorator
 )
 
-from featuretools.primitives import AggregationPrimitive, PrimitiveBase
+from featuretools.feature_base import AggregationFeature, FeatureBase
 from featuretools.utils.gen_utils import (
     get_relationship_variable_id,
     make_tqdm_iterator
 )
 from featuretools.utils.wrangle import _check_time_type
-from featuretools.variable_types import DatetimeTimeIndex, NumericTimeIndex
+from featuretools.variable_types import (
+    DatetimeTimeIndex,
+    NumericTimeIndex,
+    PandasTypes
+)
 
 logger = logging.getLogger('featuretools.computational_backend')
 
@@ -45,7 +49,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     """Calculates a matrix for a given set of instance ids and calculation times.
 
     Args:
-        features (list[PrimitiveBase]): Feature definitions to be calculated.
+        features (list[:class:`.FeatureBase`]): Feature definitions to be calculated.
 
         entityset (EntitySet): An already initialized entityset. Required if `entities` and `relationships`
             not provided
@@ -113,7 +117,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         save_progress (str, optional): path to save intermediate computational results.
     """
     assert (isinstance(features, list) and features != [] and
-            all([isinstance(feature, PrimitiveBase) for feature in features])), \
+            all([isinstance(feature, FeatureBase) for feature in features])), \
         "features must be a non-empty list of features"
 
     # handle loading entityset
@@ -142,31 +146,32 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         cutoff_time = [cutoff_time] * len(instance_ids)
         map_args = [(id, time) for id, time in zip(instance_ids, cutoff_time)]
         cutoff_time = pd.DataFrame(map_args, columns=['instance_id', 'time'])
-    else:
-        cutoff_time = cutoff_time.reset_index(drop=True)
-        # handle how columns are names in cutoff_time
-        if "instance_id" not in cutoff_time.columns:
-            if target_entity.index not in cutoff_time.columns:
-                raise AttributeError('Name of the index variable in the target entity'
-                                     ' or "instance_id" must be present in cutoff_time')
-            # rename to instance_id
-            cutoff_time.rename(columns={target_entity.index: "instance_id"}, inplace=True)
 
-        if "time" not in cutoff_time.columns:
-            # take the first column that isn't instance_id and assume it is time
-            not_instance_id = [c for c in cutoff_time.columns if c != "instance_id"]
-            cutoff_time.rename(columns={not_instance_id[0]: "time"}, inplace=True)
-        if cutoff_time['time'].dtype == object:
-            if (entityset.time_type == NumericTimeIndex and
-                    cutoff_time['time'].dtype.name.find('int') == -1 and
-                    cutoff_time['time'].dtype.name.find('float') == -1):
-                raise TypeError("cutoff_time times must be numeric: try casting via pd.to_numeric(cutoff_time['time'])")
-            elif (entityset.time_type == DatetimeTimeIndex and
-                  cutoff_time['time'].dtype.name.find('time') == -1):
-                raise TypeError("cutoff_time times must be datetime type: try casting via pd.to_datetime(cutoff_time['time'])")
-        assert (cutoff_time[['instance_id', 'time']].duplicated().sum() == 0), \
-            "Duplicated rows in cutoff time dataframe."
-        pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
+    cutoff_time = cutoff_time.reset_index(drop=True)
+    # handle how columns are names in cutoff_time
+    # maybe add _check_time_dtype helper function
+    if "instance_id" not in cutoff_time.columns:
+        if target_entity.index not in cutoff_time.columns:
+            raise AttributeError('Name of the index variable in the target entity'
+                                 ' or "instance_id" must be present in cutoff_time')
+        # rename to instance_id
+        cutoff_time.rename(columns={target_entity.index: "instance_id"}, inplace=True)
+
+    if "time" not in cutoff_time.columns:
+        # take the first column that isn't instance_id and assume it is time
+        not_instance_id = [c for c in cutoff_time.columns if c != "instance_id"]
+        cutoff_time.rename(columns={not_instance_id[0]: "time"}, inplace=True)
+    # Check that cutoff_time time type matches entityset time type
+    if entityset.time_type == NumericTimeIndex:
+        if cutoff_time['time'].dtype.name not in PandasTypes._pandas_numerics:
+            raise TypeError("cutoff_time times must be numeric: try casting "
+                            "via pd.to_numeric(cutoff_time['time'])")
+    elif entityset.time_type == DatetimeTimeIndex:
+        if cutoff_time['time'].dtype.name not in PandasTypes._pandas_datetimes:
+            raise TypeError("cutoff_time times must be datetime type: try casting via pd.to_datetime(cutoff_time['time'])")
+    assert (cutoff_time[['instance_id', 'time']].duplicated().sum() == 0), \
+        "Duplicated rows in cutoff time dataframe."
+    pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
 
     if _check_time_type(cutoff_time['time'].iloc[0]) is None:
         raise ValueError("cutoff_time time values must be datetime or numeric")
@@ -189,15 +194,15 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     # Check if there are any non-approximated aggregation features
     no_unapproximated_aggs = True
     for feature in features:
-        if isinstance(feature, AggregationPrimitive):
+        if isinstance(feature, AggregationFeature):
             # do not need to check if feature is in to_approximate since
             # only base features of direct features can be in to_approximate
             no_unapproximated_aggs = False
             break
 
-        deps = feature.get_deep_dependencies(all_approx_feature_set)
+        deps = feature.get_dependencies(deep=True, ignored=all_approx_feature_set)
         for dependency in deps:
-            if (isinstance(dependency, AggregationPrimitive) and
+            if (isinstance(dependency, AggregationFeature) and
                     dependency not in to_approximate[dependency.entity.id]):
                 no_unapproximated_aggs = False
                 break
@@ -386,12 +391,12 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
     at one cutoff time for each bucket.
 
 
-    ..note:: this only approximates DirectFeatures of AggregationPrimitives, on
+    ..note:: this only approximates DirectFeatures of AggregationFeatures, on
         the target entity. In future versions, it may also be possible to
         approximate these features on other top-level entities
 
     Args:
-        features (list[:class:`.PrimitiveBase`]): if these features are dependent
+        features (list[:class:`.FeatureBase`]): if these features are dependent
             on aggregation features on the prediction, the approximate values
             for the aggregation feature will be calculated
 
