@@ -78,12 +78,9 @@ In this demonstration, we use a multi-table dataset of 3 million online grocery 
 
 For more examples of how to use Featuretools, check out our [demos](https://www.featuretools.com/demos) page.
 
-## Testing
-To test featuretools, first make sure to install the command line program, and then run pytest:
-```
-pip install -e .
-pytest featuretools/tests
-```
+## Testing & Development
+
+The FeatureTools community welcomes pull requests. Instructions for testing and development are avialable [here.](https://docs.featuretools.com/getting_started/install.html#development)
 
 ## Support
 The Featuretools community is happy to provide support to users of Featuretools. Project support can be found in four places depending on the type of question:
