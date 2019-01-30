@@ -5,7 +5,6 @@ from builtins import object, range, zip
 from collections import defaultdict
 
 import cloudpickle
-import graphviz
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_dtype_equal, is_numeric_dtype
@@ -1133,7 +1132,7 @@ class EntitySet(object):
 
         # Initialize a new directed graph
         graph = graphviz.Digraph(self.id, format=format,
-                                 graph_attr={'splines':'ortho'})
+                                 graph_attr={'splines': 'ortho'})
 
         # Draw entities
         for entity in self.entities:
