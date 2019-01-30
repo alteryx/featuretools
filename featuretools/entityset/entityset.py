@@ -1132,7 +1132,8 @@ class EntitySet(object):
             format = None
 
         # Initialize a new directed graph
-        graph = graphviz.Digraph(self.id, format=format)
+        graph = graphviz.Digraph(self.id, format=format,
+                                 graph_attr={'splines':'ortho'})
 
         # Draw entities
         for entity in self.entities:
@@ -1143,8 +1144,15 @@ class EntitySet(object):
 
         # Draw relationships
         for rel in self.relationships:
-            label = '%s -> %s' % (rel._child_variable_id, rel._parent_variable_id)
-            graph.edge(rel._parent_entity_id, rel._child_entity_id, label=label)
+            # Display the key only once if is the same for both related entities
+            if rel._parent_variable_id == rel._child_variable_id:
+                label = rel._parent_variable_id
+            else:
+                label = '%s -> %s' % (rel._parent_variable_id,
+                                      rel._child_variable_id)
+
+            graph.edge(rel._child_entity_id, rel._parent_entity_id,
+                       xlabel=label, arrowhead='crowtee')
 
         if to_file:
             # Graphviz always appends the format to the file name, so we need to
