@@ -307,7 +307,7 @@ class PandasBackend(ComputationalBackend):
                 continue
 
             # collect only the variables we need for this transformation
-            variable_data = [frame[bf.get_name()].values
+            variable_data = [frame[bf.get_name()]
                              for bf in f.base_features]
 
             feature_func = f.get_function()
