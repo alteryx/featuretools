@@ -151,7 +151,7 @@ def get_next_chunk(cutoff_time, time_variable, num_per_chunk):
         group_slices = []
         if len(group) > num_per_chunk:
             for i in range(0, len(group), num_per_chunk):
-                    group_slices.append(group[i: i + num_per_chunk])
+                group_slices.append(group[i: i + num_per_chunk])
         else:
             group_slices.append(group)
 
