@@ -1,13 +1,13 @@
 -r test-requirements.txt
 codecov==2.0.15
-flake8==3.6.0
-autopep8
-ipython==7.1.1; python_version>'3.4'
+flake8==3.7.0
+autopep8==1.4.3
+ipython==7.2.0; python_version>'3.4'
 ipython==5.8.0; python_version<'3'
 isort==4.3.4
 jupyter==1.0.0
-matplotlib==3.0.1; python_version>'3.4'
+matplotlib==3.0.2; python_version>'3.4'
 matplotlib==2.2.3; python_version<'3'
-nbsphinx==0.3.5
-Sphinx==1.8.1
+nbsphinx==0.4.2
+Sphinx==1.8.3
 sphinx_rtd_theme==0.4.2

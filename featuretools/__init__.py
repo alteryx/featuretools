@@ -15,4 +15,4 @@ import featuretools.wrappers
 from . import feature_base
 from .feature_base import AggregationFeature, DirectFeature, Feature, FeatureBase, IdentityFeature, TransformFeature
 
-__version__ = '0.5.1'
+__version__ = '0.6.0'

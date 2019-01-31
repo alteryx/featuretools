@@ -260,6 +260,13 @@ EntitySet query methods
     EntitySet.get_forward_entities
     EntitySet.get_backward_entities
 
+EntitySet visualization
+-----------------------
+.. autosummary::
+    :toctree: generated/
+
+    EntitySet.plot
+
 
 Entity methods
 -------------------
