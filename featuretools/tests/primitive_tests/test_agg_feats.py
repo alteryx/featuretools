@@ -17,6 +17,7 @@ from featuretools.primitives import (  # NMostCommon,
     NumTrue,
     Sum,
     TimeSinceLast,
+    TimeSinceFirst,
     get_aggregation_primitives
 )
 from featuretools.primitives.base import (
@@ -231,7 +232,19 @@ def test_time_since_last(es):
                                      instance_ids=[0, 1, 2],
                                      cutoff_time=datetime(2015, 6, 8))
 
-    correct = [131376600, 131289600, 131287800]
+    correct = [131376000.0, 131289534.0, 131287797.0]
+    # note: must round to nearest second
+    assert all(fm[f.get_name()].round().values == correct)
+
+
+def test_time_since_first(es):
+    f = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=TimeSinceFirst)
+    fm = ft.calculate_feature_matrix([f],
+                                     entityset=es,
+                                     instance_ids=[0, 1, 2],
+                                     cutoff_time=datetime(2015, 6, 8))
+
+    correct = [131376000.0, 131289534.0, 131287797.0]
     # note: must round to nearest second
     assert all(fm[f.get_name()].round().values == correct)
 

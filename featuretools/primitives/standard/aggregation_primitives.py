@@ -287,6 +287,22 @@ class TimeSinceLast(AggregationPrimitive):
     def get_function(self):
 
         def time_since_last(values, time=None):
+            time_since = time - values.iloc[-1]
+            return time_since.total_seconds()
+
+        return time_since_last
+
+
+class TimeSinceFirst(AggregationPrimitive):
+    """Time since first related instance."""
+    name = "time_since_last"
+    input_types = [DatetimeTimeIndex]
+    return_type = Numeric
+    uses_calc_time = True
+
+    def get_function(self):
+
+        def time_since_last(values, time=None):
             time_since = time - values.iloc[0]
             return time_since.total_seconds()
 
