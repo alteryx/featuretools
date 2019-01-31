@@ -16,8 +16,8 @@ from featuretools.primitives import (  # NMostCommon,
     Median,
     NumTrue,
     Sum,
-    TimeSinceLast,
     TimeSinceFirst,
+    TimeSinceLast,
     get_aggregation_primitives
 )
 from featuretools.primitives.base import (
