@@ -244,7 +244,7 @@ def test_time_since_first(es):
                                      instance_ids=[0, 1, 2],
                                      cutoff_time=datetime(2015, 6, 8))
 
-    correct = [131376000.0, 131289534.0, 131287797.0]
+    correct = [131376600.0, 131289600.0, 131287800.0]
     # note: must round to nearest second
     assert all(fm[f.get_name()].round().values == correct)
 
