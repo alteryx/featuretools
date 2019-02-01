@@ -59,11 +59,11 @@ class Mean(AggregationPrimitive):
     input_types = [Numeric]
     return_type = Numeric
 
-    def __init__(self, ignore_nans=True):
-        self.ignore_nans = ignore_nans
+    def __init__(self, skipna=True):
+        self.skipna = skipna
 
     def get_function(self):
-        if self.ignore_nans:
+        if self.skipna:
             # np.mean of series is functionally nanmean
             return np.mean
 
@@ -73,14 +73,16 @@ class Mean(AggregationPrimitive):
 
     def generate_name(self, base_feature_names, child_entity_id,
                       parent_entity_id, where_str, use_prev_str):
-        name = "MEAN"
-        if self.ignore_nans:
-            name = "NANMEAN"
+        skipna = ""
+        if not self.skipna:
+            skipna = ", skipna=False"
         base_features_str = ", ".join(base_feature_names)
-        return u"%s(%s.%s%s%s)" % (name,
-                                   child_entity_id,
-                                   base_features_str,
-                                   where_str, use_prev_str)
+        return u"%s(%s.%s%s%s%s)" % (self.name.upper(),
+                                     child_entity_id,
+                                     base_features_str,
+                                     where_str,
+                                     use_prev_str,
+                                     skipna)
 
 
 class Mode(AggregationPrimitive):
