@@ -665,11 +665,12 @@ def test_transform_consistency():
 
 def test_transform_no_stack_agg(es):
     feature_defs = ft.dfs(entityset=es,
-                      target_entity="log",
-                      agg_primitives=[NMostCommon],
-                      trans_primitives=[Percentile],
-                      features_only=True)
-    assert not feature_with_name(feature_defs, 'PERCENTILE(N_MOST_COMMON)')
+                          target_entity="log",
+                          agg_primitives=[NMostCommon],
+                          trans_primitives=[Percentile],
+                          features_only=True)
+    for x in feature_defs:
+        assert 'PERCENTILE(N_MOST_COMMON)' not in x.get_name()
 
 
 def test_intialized_trans_prim(es):
