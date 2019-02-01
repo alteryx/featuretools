@@ -126,7 +126,7 @@ def test_check_input_types(es):
     assert mean._check_input_types()
 
 
-def test_mean_nan():
+def test_mean_nan(es):
     array = pd.Series([5, 5, 5, 5, 5])
     mean_func_nans_default = Mean().get_function()
     mean_func_nans_false = Mean(ignore_nans=False).get_function()
@@ -142,6 +142,20 @@ def test_mean_nan():
     assert isnan(mean_func_nans_default(array_nans))
     assert isnan(mean_func_nans_false(array_nans))
     assert isnan(mean_func_nans_true(array_nans))
+
+    # test naming
+    default_feat = ft.Feature(es["log"]["value"],
+                              parent_entity=es["customers"],
+                              primitive=Mean)
+    assert default_feat.get_name() == "NANMEAN(log.value)"
+    ignore_nan_feat = ft.Feature(es["log"]["value"],
+                                 parent_entity=es["customers"],
+                                 primitive=Mean(ignore_nans=True))
+    assert ignore_nan_feat.get_name() == "NANMEAN(log.value)"
+    include_nan_feat = ft.Feature(es["log"]["value"],
+                                  parent_entity=es["customers"],
+                                  primitive=Mean(ignore_nans=False))
+    assert include_nan_feat.get_name() == "MEAN(log.value)"
 
 
 def test_base_of_and_stack_on_heuristic(es, test_primitive):
