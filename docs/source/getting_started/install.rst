@@ -70,6 +70,10 @@ Run::
 
 Test
 ~~~~
+.. note::
+
+    In order to the run the featuretools tests you will need to have graphviz installed as described above.
+
 Run featuretools tests::
 
     make test
