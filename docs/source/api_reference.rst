@@ -99,6 +99,7 @@ Aggregation Primitives
     Mode
     AvgTimeBetween
     TimeSinceLast
+    TimeSinceFirst
     NUnique
     PercentTrue
     All
