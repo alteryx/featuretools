@@ -52,6 +52,10 @@ To get started, we load the transactions dataframe as an entity.
                                   variable_types={"product_id": ft.variable_types.Categorical})
     es
 
+.. note ::
+
+    You can also display your entity set structure graphically by calling :meth:`.EntitySet.plot`.
+
 This method loads each column in the dataframe in as a variable. We can see the variables in an entity using the code below.
 
 .. ipython:: python

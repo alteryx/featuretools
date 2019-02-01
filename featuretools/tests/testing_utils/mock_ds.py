@@ -345,7 +345,7 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
         if entity == 'sessions':
             # This should be changed back when converted to an EntitySet
             df['customer_id'] = pd.Categorical(df['customer_id'])
-        if entity is 'log':
+        if entity == 'log':
             df['latlong'] = df['latlong'].apply(latlong_unstringify)
             df['latlong2'] = df['latlong2'].apply(latlong_unstringify)
 

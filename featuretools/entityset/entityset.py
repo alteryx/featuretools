@@ -1094,6 +1094,73 @@ class EntitySet(object):
 
         return df
 
+    def plot(self, to_file=None):
+        """
+        Create a UML diagram-ish graph of the EntitySet.
+
+        Args:
+            to_file (str, optional) : Path to where the plot should be saved.
+                If set to None (as by default), the plot will not be saved.
+
+        Returns:
+            graphviz.Digraph : Graph object that can directly be displayed in
+                Jupyter notebooks.
+        """
+        try:
+            import graphviz
+        except ImportError:
+            raise ImportError('Please install graphviz to plot entity sets.' +
+                              ' (See https://pypi.org/project/graphviz/ for' +
+                              ' details)')
+
+        if to_file:
+            # Explicitly cast to str in case a Path object was passed in
+            to_file = str(to_file)
+
+            split_path = to_file.split('.')
+            if len(split_path) < 2:
+                raise ValueError("Please use a file extension like '.pdf'" +
+                                 " so that the format can be infered")
+
+            format = split_path[-1]
+            valid_formats = graphviz.backend.FORMATS
+            if format not in valid_formats:
+                raise ValueError("Unknown format. Make sure your format is" +
+                                 " amongst the following: %s" % valid_formats)
+        else:
+            format = None
+
+        # Initialize a new directed graph
+        graph = graphviz.Digraph(self.id, format=format,
+                                 graph_attr={'splines': 'ortho'})
+
+        # Draw entities
+        for entity in self.entities:
+            variables_string = '\l'.join([var.id + ' : ' + var.dtype  # noqa: W605
+                                          for var in entity.variables])
+            label = '{%s|%s\l}' % (entity.id, variables_string)  # noqa: W605
+            graph.node(entity.id, shape='record', label=label)
+
+        # Draw relationships
+        for rel in self.relationships:
+            # Display the key only once if is the same for both related entities
+            if rel._parent_variable_id == rel._child_variable_id:
+                label = rel._parent_variable_id
+            else:
+                label = '%s -> %s' % (rel._parent_variable_id,
+                                      rel._child_variable_id)
+
+            graph.edge(rel._child_entity_id, rel._parent_entity_id, xlabel=label)
+
+        if to_file:
+            # Graphviz always appends the format to the file name, so we need to
+            # remove it manually to avoid file names like 'file_name.pdf.pdf'
+            offset = len(format) + 1  # Add 1 for the dot
+            output_path = to_file[:-offset]
+            graph.render(output_path, cleanup=True)
+
+        return graph
+
     ###########################################################################
     #  Private methods  ######################################################
     ###########################################################################
