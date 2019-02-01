@@ -665,7 +665,7 @@ def test_transform_consistency():
 
 def test_transform_no_stack_agg(es):
     feature_defs = ft.dfs(entityset=es,
-                          target_entity="sessions",
+                          target_entity="customers",
                           agg_primitives=[NMostCommon],
                           trans_primitives=[Percentile],
                           features_only=True)
