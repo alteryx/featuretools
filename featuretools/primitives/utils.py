@@ -51,4 +51,4 @@ def _get_descriptions(primitives):
         if prim.__doc__ is not None:
             description = prim.__doc__.split("\n")[0]
         descriptions.append(description)
-    return description
+    return descriptions
