@@ -11,7 +11,11 @@ from featuretools.feature_base import (
     TransformFeature
 )
 from featuretools.primitives.api import Discrete
-from featuretools.primitives.base import PrimitiveBase
+from featuretools.primitives.base import (
+    AggregationPrimitive,
+    PrimitiveBase,
+    TransformPrimitive
+)
 from featuretools.utils import is_string
 from featuretools.variable_types import Boolean, Categorical, Numeric, Ordinal
 
@@ -138,6 +142,9 @@ class DeepFeatureSynthesis(object):
                                      " a list of available primitives")
                 a = agg_prim_dict[a.lower()]
             a = handle_primitive(a)
+            if not isinstance(a, AggregationPrimitive):
+                raise ValueError("Primitive {} is not an aggregation "
+                                 "primitive".format(a))
             self.agg_primitives.append(a)
 
         if trans_primitives is None:
@@ -154,6 +161,9 @@ class DeepFeatureSynthesis(object):
                                      " a list of available primitives")
                 t = trans_prim_dict[t.lower()]
             t = handle_primitive(t)
+            if not isinstance(t, TransformPrimitive):
+                raise ValueError("Primitive {} is not a transform "
+                                 "primitive".format(t))
             self.trans_primitives.append(t)
 
         if where_primitives is None:
