@@ -670,7 +670,7 @@ def test_transform_no_stack_agg(es):
                           trans_primitives=[Percentile],
                           features_only=True)
     for x in feature_defs:
-        assert 'PERCENTILE(N_MOST_COMMON)' not in x.get_name()
+        assert 'PERCENTILE(N_MOST_COMMON' not in x.get_name()
 
 
 def test_intialized_trans_prim(es):
