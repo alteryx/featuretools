@@ -24,6 +24,7 @@ from featuretools.primitives import (  # CumMean,
     Last,
     Mode,
     NMostCommon,
+    Percentile,
     Sum,
     TimeSincePrevious
 )
@@ -660,6 +661,15 @@ def test_transform_consistency():
     assert feature_with_name(feature_defs, 'OR(b, b1)')
     assert feature_with_name(feature_defs, 'OR(AND(b, b1), b)')
     assert feature_with_name(feature_defs, 'OR(AND(b, b1), b1)')
+
+
+def test_transform_no_stack_agg(es):
+    feature_defs = ft.dfs(entityset=es,
+                      target_entity="log",
+                      agg_primitives=[NMostCommon],
+                      trans_primitives=[Percentile],
+                      features_only=True)
+    assert not feature_with_name(feature_defs, 'PERCENTILE(N_MOST_COMMON)')
 
 
 def test_intialized_trans_prim(es):

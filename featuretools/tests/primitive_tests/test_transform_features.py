@@ -1059,10 +1059,6 @@ def test_tranform_stack_agg(es):
                       primitive=NMostCommon(n=3))
     with pytest.raises(AssertionError):
         ft.Feature(topn, primitive=Percentile)
-    ft.dfs(entityset=es,
-           target_entity="log",
-           agg_primitives=[NMostCommon],
-           trans_primitives=[Percentile])
 
 
 def test_feature_names_inherit_from_make_trans_primitive():
