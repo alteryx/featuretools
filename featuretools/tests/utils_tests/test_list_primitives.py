@@ -30,5 +30,4 @@ def test_descriptions():
     primitives = {NumCharacters: 'Return the characters in a given string.',
                   Day: 'Transform a Datetime feature into the day.',
                   Last: 'Returns the last value.'}
-    for primitive, desc in primitives.items():
-        assert _get_descriptions([primitive]) == [desc]
+    assert _get_descriptions(list(primitives.keys())) == list(primitives.values())

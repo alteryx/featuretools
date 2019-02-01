@@ -30,19 +30,12 @@ def get_transform_primitives():
 
 
 def list_primitives():
-    def get_names_primitives(primitive_func):
-        names = []
-        primitives = []
-        for name, primitive in primitive_func().items():
-            names.append(name)
-            primitives.append(primitive)
-        return names, primitives
-    trans_names, trans_primitives = get_names_primitives(get_transform_primitives)
+    trans_names, trans_primitives = _get_names_primitives(get_transform_primitives)
     transform_df = pd.DataFrame({'name': trans_names,
                                  'description': _get_descriptions(trans_primitives)})
     transform_df['type'] = 'transform'
 
-    agg_names, agg_primitives = get_names_primitives(get_aggregation_primitives)
+    agg_names, agg_primitives = _get_names_primitives(get_aggregation_primitives)
     agg_df = pd.DataFrame({'name': agg_names,
                            'description': _get_descriptions(agg_primitives)})
     agg_df['type'] = 'aggregation'
@@ -58,3 +51,12 @@ def _get_descriptions(primitives):
             description = prim.__doc__.split("\n")[0]
         descriptions.append(description)
     return descriptions
+
+
+def _get_names_primitives(primitive_func):
+    names = []
+    primitives = []
+    for name, primitive in primitive_func().items():
+        names.append(name)
+        primitives.append(primitive)
+    return names, primitives
