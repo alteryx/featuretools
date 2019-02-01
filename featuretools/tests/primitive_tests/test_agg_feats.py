@@ -127,19 +127,19 @@ def test_check_input_types(es):
 
 
 def test_mean_nan():
-    array = np.array([5, 5, 5, 5, 5])
+    array = pd.Series([5, 5, 5, 5, 5])
     mean_func_nans_default = Mean().get_function()
     mean_func_nans_false = Mean(ignore_nans=False).get_function()
     mean_func_nans_true = Mean(ignore_nans=True).get_function()
     assert mean_func_nans_default(array) == 5
     assert mean_func_nans_false(array) == 5
     assert mean_func_nans_true(array) == 5
-    array = np.array([5, np.nan, np.nan, np.nan, np.nan, 10])
-    assert isnan(mean_func_nans_default(array))
+    array = pd.Series([5, np.nan, np.nan, np.nan, np.nan, 10])
+    assert mean_func_nans_default(array) == 7.5
     assert isnan(mean_func_nans_false(array))
     assert mean_func_nans_true(array) == 7.5
-    array_nans = np.array([np.nan, np.nan, np.nan, np.nan])
-    assert isnan(mean_func_nans_default(array))
+    array_nans = pd.Series([np.nan, np.nan, np.nan, np.nan])
+    assert isnan(mean_func_nans_default(array_nans))
     assert isnan(mean_func_nans_false(array_nans))
     assert isnan(mean_func_nans_true(array_nans))
 
