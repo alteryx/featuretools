@@ -17,11 +17,9 @@ def test_list_primitives_order():
     for name, primitive in all_primitives.items():
         assert name in df['name'].values
         row = df.loc[df['name'] == name].iloc[0]
-        actual_desc = _get_descriptions([primitive])
-        print(actual_desc)
-        print(row)
-        # if actual_desc:
-        #     assert actual_desc == row['description']
+        actual_desc = _get_descriptions([primitive])[0]
+        if actual_desc:
+            assert actual_desc == row['description']
 
     types = df['type'].values
     assert 'aggregation' in types
