@@ -1,6 +1,7 @@
 from featuretools import list_primitives
 from featuretools.primitives import (
     Day,
+    GreaterThan,
     Last,
     NumCharacters,
     get_aggregation_primitives,
@@ -29,5 +30,6 @@ def test_list_primitives_order():
 def test_descriptions():
     primitives = {NumCharacters: 'Return the characters in a given string.',
                   Day: 'Transform a Datetime feature into the day.',
-                  Last: 'Returns the last value.'}
+                  Last: 'Returns the last value.',
+                  GreaterThan: ''}
     assert _get_descriptions(list(primitives.keys())) == list(primitives.values())
