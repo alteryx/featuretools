@@ -12,6 +12,27 @@ or from the Conda-forge channel on `anaconda.org <https://anaconda.org/conda-for
 
     conda install -c conda-forge featuretools
 
+.. note ::
+
+    In order to use :meth:`EntitySet.plot <featuretools.entityset.EntitySet.plot>` you will need to install the graphviz library.
+
+    Conda users:
+        conda install python-graphviz
+
+    Ubuntu:
+        sudo apt-get install graphviz
+
+        pip install graphviz
+
+    Mac OS:
+        brew install graphviz
+
+        pip install graphviz
+
+    Windows:
+        conda install python-graphviz
+
+
 Install from Source
 -------------------
 
