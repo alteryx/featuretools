@@ -26,7 +26,7 @@ from featuretools.primitives import (  # CumMean,
     NMostCommon,
     NotEqual,
     Sum,
-    TimeSincePrevious,
+    TimeSincePrevious
 )
 from featuretools.synthesis import DeepFeatureSynthesis
 
