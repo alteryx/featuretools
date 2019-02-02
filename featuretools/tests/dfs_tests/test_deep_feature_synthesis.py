@@ -18,7 +18,6 @@ from featuretools.primitives import (  # CumMean,
     Absolute,
     AddNumeric,
     Count,
-    Datetime,
     Diff,
     Hour,
     IsIn,
@@ -26,10 +25,8 @@ from featuretools.primitives import (  # CumMean,
     Mode,
     NMostCommon,
     NotEqual,
-    Numeric,
     Sum,
     TimeSincePrevious,
-    TransformPrimitive
 )
 from featuretools.synthesis import DeepFeatureSynthesis
 
