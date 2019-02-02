@@ -18,15 +18,18 @@ from featuretools.primitives import (  # CumMean,
     Absolute,
     AddNumeric,
     Count,
+    Datetime,
     Diff,
     Hour,
     IsIn,
     Last,
     Mode,
     NMostCommon,
-    Percentile,
+    NotEqual,
+    Numeric,
     Sum,
-    TimeSincePrevious
+    TimeSincePrevious,
+    TransformPrimitive
 )
 from featuretools.synthesis import DeepFeatureSynthesis
 
@@ -667,10 +670,10 @@ def test_transform_no_stack_agg(es):
     feature_defs = ft.dfs(entityset=es,
                           target_entity="customers",
                           agg_primitives=[NMostCommon],
-                          trans_primitives=[Percentile],
+                          trans_primitives=[NotEqual],
+                          max_depth=3,
                           features_only=True)
-    fname = 'PERCENTILE(N_MOST_COMMON(log.product_id))'
-    assert not feature_with_name(feature_defs, fname)
+    assert not feature_with_name(feature_defs, 'id != N_MOST_COMMON(sessions.device_type)')
 
 
 def test_intialized_trans_prim(es):

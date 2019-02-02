@@ -486,12 +486,11 @@ class DeepFeatureSynthesis(object):
                                     commutative=trans_prim.commutative)
 
             for matching_input in matching_inputs:
-                try:
-                    new_f = TransformFeature(matching_input, primitive=trans_prim)
+                if all(bf.number_output_features == 1 for bf in matching_input):
+                    new_f = TransformFeature(matching_input,
+                                             primitive=trans_prim)
                     self._handle_new_feature(all_features=all_features,
                                              new_feature=new_f)
-                except AssertionError:
-                    continue
 
     def _build_forward_features(self, all_features, parent_entity,
                                 child_entity, relationship, max_depth=0):
