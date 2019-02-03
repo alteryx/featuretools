@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import copy
 import itertools
 import logging
@@ -1125,7 +1127,7 @@ class EntitySet(object):
                   "Mac OS: brew install graphviz\n",
                   "Linux (Ubuntu): sudo apt-get install graphviz\n",
                   "Windows: conda install python-graphviz",
-                  file=sys.stderr)  # noqa: E999
+                  file=sys.stderr)
             return  # Exit plotting method at this point
         finally:
             if os.path.isfile(test_graph_name + '.gv'):
