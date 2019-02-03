@@ -1,6 +1,8 @@
 import copy
 import itertools
 import logging
+import os
+import sys
 from builtins import object, range, zip
 from collections import defaultdict
 
@@ -1112,6 +1114,24 @@ class EntitySet(object):
             raise ImportError('Please install graphviz to plot entity sets.' +
                               ' (See https://pypi.org/project/graphviz/ for' +
                               ' details)')
+
+        # Try rendering a dummy graph to see if a working backend is installed
+        test_graph_name = 'test_graph'
+        try:
+            graphviz.Graph(test_graph_name).render()
+        except graphviz.backend.ExecutableNotFound:
+            print("To plot entity sets, a graphviz backend is required.",
+                  "Try one the following:\n",
+                  "Mac OS: brew install graphviz\n",
+                  "Linux (Ubuntu): sudo apt-get install graphviz\n",
+                  "Windows: conda install python-graphviz",
+                  file=sys.stderr)
+            return  # Exit plotting method at this point
+        finally:
+            if os.path.isfile(test_graph_name + '.gv'):
+                os.remove(test_graph_name + '.gv')
+            if os.path.isfile(test_graph_name + '.gv.pdf'):
+                os.remove(test_graph_name + '.gv.pdf')
 
         if to_file:
             # Explicitly cast to str in case a Path object was passed in
