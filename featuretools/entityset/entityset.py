@@ -1112,7 +1112,7 @@ class EntitySet(object):
             import graphviz
         except ImportError:
             raise ImportError('Please install graphviz to plot entity sets.' +
-                              ' (See https://pypi.org/project/graphviz/ for' +
+                              ' (See https://docs.featuretools.com/getting_started/install.html for' +
                               ' details)')
 
         # Try rendering a dummy graph to see if a working backend is installed
@@ -1125,7 +1125,7 @@ class EntitySet(object):
                   "Mac OS: brew install graphviz\n",
                   "Linux (Ubuntu): sudo apt-get install graphviz\n",
                   "Windows: conda install python-graphviz",
-                  file=sys.stderr)
+                  file=sys.stderr)  # noqa: E999
             return  # Exit plotting method at this point
         finally:
             if os.path.isfile(test_graph_name + '.gv'):
@@ -1140,7 +1140,7 @@ class EntitySet(object):
             split_path = to_file.split('.')
             if len(split_path) < 2:
                 raise ValueError("Please use a file extension like '.pdf'" +
-                                 " so that the format can be infered")
+                                 " so that the format can be inferred")
 
             format = split_path[-1]
             valid_formats = graphviz.backend.FORMATS
