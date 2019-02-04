@@ -1122,7 +1122,8 @@ class EntitySet(object):
                 "Install the backend using one of the following commands:\n" +
                 "  Mac OS: brew install graphviz\n" +
                 "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
-                "  Windows: conda install python-graphviz"
+                "  Windows: conda install python-graphviz\n" +
+                "  For more details visit: https://docs.featuretools.com/getting_started/install.html"
             )
 
         if to_file:
