@@ -1113,6 +1113,19 @@ class EntitySet(object):
                               ' (See https://docs.featuretools.com/getting_started/install.html for' +
                               ' details)')
 
+        # Try rendering a dummy graph to see if a working backend is installed
+        try:
+            graphviz.Digraph().pipe()
+        except graphviz.backend.ExecutableNotFound:
+            raise RuntimeError(
+                "To plot entity sets, a graphviz backend is required.\n" +
+                "Install the backend using one of the following commands:\n" +
+                "  Mac OS: brew install graphviz\n" +
+                "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
+                "  Windows: conda install python-graphviz\n" +
+                "  For more details visit: https://docs.featuretools.com/getting_started/install.html"
+            )
+
         if to_file:
             # Explicitly cast to str in case a Path object was passed in
             to_file = str(to_file)
