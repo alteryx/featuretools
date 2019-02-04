@@ -1,10 +1,11 @@
+import os.path
 import pytest
 from pympler.asizeof import asizeof
 
 from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
-from featuretools.feature_base import IdentityFeature
+from featuretools.feature_base import IdentityFeature, Feature
 from featuretools.primitives import Last, Mode, Sum
 from featuretools.variable_types import Categorical, Datetime, Id, Numeric
 
@@ -109,3 +110,18 @@ def test_return_type_inference_id(es):
     # also test direct feature of aggregation
     mode_direct = ft.Feature(mode, es["sessions"])
     assert mode_direct.variable_type == Categorical
+
+
+def test_set_data_path(es):
+    feat = Feature(es["log"]["value"])
+    orig_path = feat.primitive.data_path
+    new_path = "/home/charlesbradshaw/data/"
+    filename = "test.csv"
+    assert feat.primitive.get_filepath(filename) == os.path.join(orig_path,filename)
+    feat.primitive.set_data_path(new_path)
+    assert feat.primitive.get_filepath(filename) == os.path.join(new_path,filename)
+    feat2 = Feature(es["log"]["product_id"])
+    assert feat.primitive.get_filepath(filename) == os.path.join(new_path,filename)
+    # Ensure path was reset
+    feat.primitive.set_data_path(orig_path)
+    assert new_path != feat.primitive.data_path
