@@ -6,6 +6,7 @@ from pympler.asizeof import asizeof
 from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
+from featuretools.config import config
 from featuretools.feature_base import Feature, IdentityFeature
 from featuretools.primitives import Last, Mode, Sum
 from featuretools.variable_types import Categorical, Datetime, Id, Numeric
@@ -114,15 +115,30 @@ def test_return_type_inference_id(es):
 
 
 def test_set_data_path(es):
-    feat = Feature(es["log"]["value"])
-    orig_path = feat.primitive.data_path
-    new_path = "/home/charlesbradshaw/data/"
+    key = "primitive_data_folder"
+
+    # Don't change orig_path
+    orig_path = config.get(key)
+    new_path = "/example/new/directory"
     filename = "test.csv"
+
+    # Test that default path works
+    feat = Feature(es["log"]["value"])
     assert feat.primitive.get_filepath(filename) == os.path.join(orig_path, filename)
-    feat.primitive.set_data_path(new_path)
+
+    # Test that new path works
+    config.set({key: new_path})
     assert feat.primitive.get_filepath(filename) == os.path.join(new_path, filename)
+
+    # Test that new path with trailing / works
+    new_path += "/"
+    config.set({key: new_path})
+    assert feat.primitive.get_filepath(filename) == os.path.join(new_path, filename)
+
+    # Test that the new path change spread
     feat2 = Feature(es["log"]["product_id"])
     assert feat2.primitive.get_filepath(filename) == os.path.join(new_path, filename)
+
     # Ensure path was reset
-    feat.primitive.set_data_path(orig_path)
-    assert new_path != feat.primitive.data_path
+    config.set({key: orig_path})
+    assert config.get(key) == orig_path

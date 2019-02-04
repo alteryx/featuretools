@@ -4,6 +4,8 @@ import os
 
 import numpy as np
 
+from featuretools.config import config
+
 
 class PrimitiveBase(object):
     """Base class for all primitives."""
@@ -31,8 +33,6 @@ class PrimitiveBase(object):
     base_of_exclude = None
     # (bool) If True will only make one feature per unique set of base features
     commutative = False
-    # (str) the path primitives will use to search for data files
-    data_path = os.path.join(os.path.dirname(__file__), "../data")
 
     def generate_name(self):
         raise NotImplementedError("Subclass must implement")
@@ -41,9 +41,4 @@ class PrimitiveBase(object):
         raise NotImplementedError("Subclass must implement")
 
     def get_filepath(self, filename):
-        return os.path.join(self.data_path, filename)
-
-    @classmethod
-    def set_data_path(cls, data_path):
-        '''Updates the variable data_path for all primitives (static variable)'''
-        cls.data_path = data_path
+        return os.path.join(config.get("primitive_data_folder"), filename)
