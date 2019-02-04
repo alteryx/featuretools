@@ -1121,12 +1121,13 @@ class EntitySet(object):
         try:
             graphviz.Digraph().pipe()
         except graphviz.backend.ExecutableNotFound:
-            print("To plot entity sets, a graphviz backend is required.",
-                  "Try one the following:\n",
-                  "Mac OS: brew install graphviz\n",
-                  "Linux (Ubuntu): sudo apt-get install graphviz\n",
-                  "Windows: conda install python-graphviz",
-                  file=sys.stderr)
+            raise RuntimeError(
+                "To plot entity sets, a graphviz backend is required.\n" +
+                "Install the backend using one of the following commands:\n" +
+                "  Mac OS: brew install graphviz\n" +
+                "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
+                "  Windows: conda install python-graphviz"
+            )
             return  # Exit plotting method at this point
 
         if to_file:
