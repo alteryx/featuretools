@@ -29,7 +29,7 @@ class FeatureTree(object):
         # self.feature_hashes is a list of hashes of each feature
         self.feature_hashes = set([f.hash() for f in features])
 
-        # all_features maps a hash of each feature to the actual feature.
+        # maps a hash of each feature to the actual feature.
         hash_to_feature_map = {f.hash(): f for f in features}
         feature_dependencies = {}
         feature_dependents = defaultdict(set)
@@ -59,7 +59,7 @@ class FeatureTree(object):
         self.feature_dependencies = feature_dependencies
 
         # self.all_features is a list of all features that will be used to create a feature matrix
-        # including those that don't make it into the featurem matrix
+        # including those that don't make it into the final feature matrix
         self.all_features = list(hash_to_feature_map.values())
         self._find_necessary_columns()
 
@@ -191,7 +191,7 @@ class FeatureTree(object):
             f = queue.pop(0)
 
             # stop looking if the feature we've hit is on another top-level
-            # entity which is not a descendent of the current one. In this case,
+            # entity which is not a descendant of the current one. In this case,
             # we know we won't need to calculate this feature explicitly
             # because it should be handled by the other entity; we can treat it
             # like an identity feature.
