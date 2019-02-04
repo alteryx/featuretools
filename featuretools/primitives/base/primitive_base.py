@@ -4,7 +4,7 @@ import os
 
 import numpy as np
 
-from featuretools.config import config
+from featuretools import config
 
 
 class PrimitiveBase(object):

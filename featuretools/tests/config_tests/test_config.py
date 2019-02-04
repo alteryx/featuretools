@@ -1,4 +1,4 @@
-from featuretools.config import config
+from featuretools import config
 
 
 def test_get_default_config_does_not_change():

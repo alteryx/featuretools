@@ -6,7 +6,7 @@ from pympler.asizeof import asizeof
 from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
-from featuretools.config import config
+from featuretools import config
 from featuretools.feature_base import Feature, IdentityFeature
 from featuretools.primitives import Last, Mode, Sum
 from featuretools.variable_types import Categorical, Datetime, Id, Numeric

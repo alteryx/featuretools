@@ -1,7 +1,7 @@
 import logging
 import os
 
-from featuretools.config import initialize_logging
+from featuretools.config_init import initialize_logging
 
 logging_env_vars = {'FEATURETOOLS_LOG_LEVEL': "debug",
                     'FEATURETOOLS_ES_LOG_LEVEL': "critical",
