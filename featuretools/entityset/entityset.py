@@ -1128,7 +1128,6 @@ class EntitySet(object):
                 "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
                 "  Windows: conda install python-graphviz"
             )
-            return  # Exit plotting method at this point
 
         if to_file:
             # Explicitly cast to str in case a Path object was passed in
