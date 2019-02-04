@@ -1118,9 +1118,8 @@ class EntitySet(object):
                               ' details)')
 
         # Try rendering a dummy graph to see if a working backend is installed
-        test_graph_name = 'test_graph'
         try:
-            graphviz.Graph(test_graph_name).render()
+            graphviz.Digraph().pipe()
         except graphviz.backend.ExecutableNotFound:
             print("To plot entity sets, a graphviz backend is required.",
                   "Try one the following:\n",
@@ -1129,11 +1128,6 @@ class EntitySet(object):
                   "Windows: conda install python-graphviz",
                   file=sys.stderr)
             return  # Exit plotting method at this point
-        finally:
-            if os.path.isfile(test_graph_name + '.gv'):
-                os.remove(test_graph_name + '.gv')
-            if os.path.isfile(test_graph_name + '.gv.pdf'):
-                os.remove(test_graph_name + '.gv.pdf')
 
         if to_file:
             # Explicitly cast to str in case a Path object was passed in
