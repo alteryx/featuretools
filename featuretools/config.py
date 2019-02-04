@@ -47,7 +47,7 @@ def initialize_logging():
 initialize_logging()
 
 
-class _Config():
+class Config():
     def __init__(self):
         self._data = {}
         self.set_to_default()
@@ -69,4 +69,4 @@ class _Config():
         self._data.update(values)
 
 
-config = _Config()
+config = Config()
