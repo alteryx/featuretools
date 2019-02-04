@@ -135,7 +135,7 @@ def test_set_data_path(es):
     config.set({key: new_path})
     assert feat.primitive.get_filepath(filename) == os.path.join(new_path, filename)
 
-    # Test that the new path change spread
+    # Test that the path is correct on newly defined feature
     feat2 = Feature(es["log"]["product_id"])
     assert feat2.primitive.get_filepath(filename) == os.path.join(new_path, filename)
 
