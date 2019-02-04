@@ -7,7 +7,7 @@ from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
 from featuretools import config
-from featuretools.feature_base import Feature, IdentityFeature
+from featuretools.feature_base import IdentityFeature
 from featuretools.primitives import Last, Mode, Sum
 from featuretools.variable_types import Categorical, Datetime, Id, Numeric
 
@@ -123,21 +123,21 @@ def test_set_data_path(es):
     filename = "test.csv"
 
     # Test that default path works
-    feat = Feature(es["log"]["value"])
-    assert feat.primitive.get_filepath(filename) == os.path.join(orig_path, filename)
+    sum_prim = Sum()
+    assert sum_prim.get_filepath(filename) == os.path.join(orig_path, filename)
 
     # Test that new path works
     config.set({key: new_path})
-    assert feat.primitive.get_filepath(filename) == os.path.join(new_path, filename)
+    assert sum_prim.get_filepath(filename) == os.path.join(new_path, filename)
 
     # Test that new path with trailing / works
     new_path += "/"
     config.set({key: new_path})
-    assert feat.primitive.get_filepath(filename) == os.path.join(new_path, filename)
+    assert sum_prim.get_filepath(filename) == os.path.join(new_path, filename)
 
     # Test that the path is correct on newly defined feature
-    feat2 = Feature(es["log"]["product_id"])
-    assert feat2.primitive.get_filepath(filename) == os.path.join(new_path, filename)
+    sum_prim2 = Sum()
+    assert sum_prim2.get_filepath(filename) == os.path.join(new_path, filename)
 
     # Ensure path was reset
     config.set({key: orig_path})
