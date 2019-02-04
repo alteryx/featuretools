@@ -26,9 +26,11 @@ class FeatureTree(object):
         else:
             self.ignored = ignored
 
+        # self.feature_hashes is a list of hashes of each feature
         self.feature_hashes = set([f.hash() for f in features])
 
-        all_features = {f.hash(): f for f in features}
+        # maps a hash of each feature to the actual feature.
+        hash_to_feature_map = {f.hash(): f for f in features}
         feature_dependencies = {}
         feature_dependents = defaultdict(set)
         for f in features:
@@ -36,7 +38,7 @@ class FeatureTree(object):
             feature_dependencies[f.hash()] = deps
             for dep in deps:
                 feature_dependents[dep.hash()].add(f.hash())
-                all_features[dep.hash()] = dep
+                hash_to_feature_map[dep.hash()] = dep
                 subdeps = dep.get_dependencies(deep=True, ignored=ignored)
                 feature_dependencies[dep.hash()] = subdeps
                 for sd in subdeps:
@@ -44,10 +46,21 @@ class FeatureTree(object):
         # turn values which were hashes of features into the features themselves
         # (note that they were hashes to prevent checking equality of feature objects,
         #  which is not currently an allowed operation)
-        self.feature_dependents = {fhash: [all_features[dhash] for dhash in feature_dependents[fhash]]
-                                   for fhash, f in all_features.items()}
+
+        # self.feature_dependents and self.feature_dependencies are the same DAG
+        # with reversed cardinality
+
+        # feature hashes (keys) and the features that rely on them (values).
+        self.feature_dependents = {
+            fhash: [hash_to_feature_map[dhash] for dhash in feature_dependents[fhash]]
+            for fhash, f in hash_to_feature_map.items()}
+
+        # feature hashes (keys) and the features that they rely on (values).
         self.feature_dependencies = feature_dependencies
-        self.all_features = list(all_features.values())
+
+        # self.all_features is a list of all features that will be used to create a feature matrix
+        # including those that don't make it into the final feature matrix
+        self.all_features = list(hash_to_feature_map.values())
         self._find_necessary_columns()
 
         self._generate_feature_tree(features)
@@ -59,6 +72,8 @@ class FeatureTree(object):
         # intermediate large_entity_frames from self.necessary_columns
         # TODO: Can try to only keep Id/Index/DatetimeTimeIndex if actually
         # used for features
+
+        # entity_ids (keys) and entity columns (values) that are necessary for the feature matrix
         self.necessary_columns = defaultdict(set)
         entities = set([f.entity.id for f in self.all_features])
 
@@ -87,7 +102,8 @@ class FeatureTree(object):
             if self.uses_full_entity(f):
                 self.necessary_columns_for_all_values_features[f.entity.id].add(f.variable.id)
         self.necessary_columns = {eid: list(cols) for eid, cols in self.necessary_columns.items()}
-        self.necessary_columns_for_all_values_features = {eid: list(cols) for eid, cols in self.necessary_columns_for_all_values_features.items()}
+        self.necessary_columns_for_all_values_features = {
+            eid: list(cols) for eid, cols in self.necessary_columns_for_all_values_features.items()}
 
     def _generate_feature_tree(self, features):
         """
@@ -175,7 +191,7 @@ class FeatureTree(object):
             f = queue.pop(0)
 
             # stop looking if the feature we've hit is on another top-level
-            # entity which is not a descendent of the current one. In this case,
+            # entity which is not a descendant of the current one. In this case,
             # we know we won't need to calculate this feature explicitly
             # because it should be handled by the other entity; we can treat it
             # like an identity feature.
