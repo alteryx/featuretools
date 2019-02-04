@@ -213,10 +213,11 @@ class DeepFeatureSynthesis(object):
 
         new_features = list(all_features[self.target_entity_id].values())
 
-        if allowed_variable_types is not 'all':
-            new_features = [f for f in new_features
-                            if any(issubclass(
-                                f.variable_type, vt) for vt in allowed_variable_types)]
+        if allowed_variable_types != 'all':
+            new_features = [
+                f for f in new_features
+                if any(issubclass(
+                    f.variable_type, vt) for vt in allowed_variable_types)]
 
         def filt(f):
             # remove identity features of the ID field of the target entity
