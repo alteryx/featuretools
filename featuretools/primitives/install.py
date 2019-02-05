@@ -1,5 +1,6 @@
 import os
 import shutil
+import subprocess
 import sys
 import tarfile
 from builtins import input
@@ -67,6 +68,20 @@ def install_primitives(directory_or_archive, prompt=True):
     installation_dir = get_installation_dir()
     for to_copy in tqdm(files_to_copy):
         shutil.copy2(to_copy, installation_dir)
+
+    # handle data folder
+    data_path = os.path.join(directory, "data")
+    data_folder = featuretools.config.get("primitive_data_folder")
+    if os.path.exists(data_path) and os.path.isdir(data_path):
+        for to_copy in tqdm(os.listdir(data_path)):
+            src_path = os.path.join(data_path, to_copy)
+            dst_path = os.path.join(data_folder, to_copy)
+            shutil.copy2(src_path, dst_path)
+
+    # install dependencies
+    if "requirements.txt" in os.listdir(directory):
+        requirements_path = os.path.join(directory, "requirements.txt")
+        subprocess.check_call(["pip", "install", "-r", requirements_path])
 
     # clean up tmp dir
     if os.path.exists(tmp_dir):
