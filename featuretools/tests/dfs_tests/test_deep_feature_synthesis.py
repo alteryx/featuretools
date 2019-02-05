@@ -692,3 +692,23 @@ def test_initialized_agg_prim(es):
                                    trans_primitives=[])
     features = dfs_obj.build_features()
     assert (feature_with_name(features, "N_MOST_COMMON(log.product_id)"))
+
+
+def test_checks_primitives_correct_type(es):
+    error_text = "Primitive <class \\'featuretools\\.primitives\\.standard\\."\
+                 "transform_primitive\\.Hour\\'> in agg_primitives is not an "\
+                 "aggregation primitive"
+    with pytest.raises(ValueError, match=error_text):
+        DeepFeatureSynthesis(target_entity_id="sessions",
+                             entityset=es,
+                             agg_primitives=[Hour],
+                             trans_primitives=[])
+
+    error_text = "Primitive <class \\'featuretools\\.primitives\\.standard\\."\
+                 "aggregation_primitives\\.Last\\'> in trans_primitives is "\
+                 "not a transform primitive"
+    with pytest.raises(ValueError, match=error_text):
+        DeepFeatureSynthesis(target_entity_id="sessions",
+                             entityset=es,
+                             agg_primitives=[],
+                             trans_primitives=[Last])
