@@ -731,7 +731,6 @@ def test_return_variable_types(es):
     assert(datetime in f4_types)
 
 
-
 def test_checks_primitives_correct_type(es):
     error_text = "Primitive <class \\'featuretools\\.primitives\\.standard\\."\
                  "transform_primitive\\.Hour\\'> in agg_primitives is not an "\
