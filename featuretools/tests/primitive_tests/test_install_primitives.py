@@ -67,12 +67,14 @@ def install_path(request):
 ], indirect=True)
 def test_install_primitives(install_path, primitives_to_install_dir):
     installation_dir = get_installation_dir()
+    data_dir = featuretools.config.get("primitive_data_folder")
     custom_max_file = os.path.join(installation_dir, "custom_max.py")
     custom_mean_file = os.path.join(installation_dir, "custom_mean.py")
     custom_sum_file = os.path.join(installation_dir, "custom_sum.py")
+    data_file = os.path.join(data_dir, "_pytest_test.csv")
 
     # make sure primitive files aren't there e.g from a failed run
-    for p in [custom_max_file, custom_mean_file, custom_sum_file]:
+    for p in [custom_max_file, custom_mean_file, custom_sum_file, data_file]:
         try:
             os.unlink(p)
         except Exception:
@@ -92,6 +94,9 @@ def test_install_primitives(install_path, primitives_to_install_dir):
 
     files = list_primitive_files(installation_dir)
     assert set(files) == {custom_max_file, custom_mean_file, custom_sum_file}
+    if install_path in [primitives_to_install_dir, "INSTALL_VIA_CLI", "INSTALL_VIA_MODULE"]:
+        assert os.path.exists(data_file)
+        os.unlink(data_file)
 
     files = list_primitive_files(installation_dir)
     # then delete to clean up
@@ -132,3 +137,56 @@ def test_extract_non_archive_errors(bad_primitives_files_dir):
     error_text = "Cannot extract archive from %s. Must provide archive ending in .tar or .tar.gz" % primitive_file
     with pytest.raises(RuntimeError, match=error_text):
         extract_archive(primitive_file)
+
+
+def test_install_packages_from_requirements(primitives_to_install_dir):
+    def pip_freeze():
+        output = subprocess.check_output(['pip', 'freeze'])
+        if not isinstance(output, str):
+            output = output.decode()
+        return output
+
+    # make sure dummy module isn't installed
+    if "featuretools-pip-tester" in pip_freeze():
+        subprocess.check_call(["pip", "uninstall", "-y", "featuretools-pip-tester"])
+    assert "featuretools-pip-tester" not in pip_freeze()
+
+    # generate requirements file with correct path
+    requirements_path = os.path.join(primitives_to_install_dir, "requirements.txt")
+    with open(requirements_path, 'w') as f:
+        f.write(os.path.join(primitives_to_install_dir, "featuretools_pip_tester"))
+
+    installation_dir = get_installation_dir()
+    data_dir = featuretools.config.get("primitive_data_folder")
+    custom_max_file = os.path.join(installation_dir, "custom_max.py")
+    custom_mean_file = os.path.join(installation_dir, "custom_mean.py")
+    custom_sum_file = os.path.join(installation_dir, "custom_sum.py")
+    data_file = os.path.join(data_dir, "_pytest_test.csv")
+
+    # make sure primitive files aren't there e.g from a failed run
+    for p in [custom_max_file, custom_mean_file, custom_sum_file, data_file]:
+        try:
+            os.unlink(p)
+        except Exception:
+            pass
+
+    featuretools.primitives.install.install_primitives(primitives_to_install_dir, prompt=False)
+
+    assert "featuretools-pip-tester" in pip_freeze()
+
+    # must reload submodule for it to work
+    reload(featuretools.primitives.installed)
+    from featuretools.primitives.installed import CustomMax, CustomSum, CustomMean  # noqa: F401
+
+    files = list_primitive_files(installation_dir)
+    assert set(files) == {custom_max_file, custom_mean_file, custom_sum_file}
+    assert os.path.exists(data_file)
+    os.unlink(data_file)
+    os.unlink(requirements_path)
+
+    files = list_primitive_files(installation_dir)
+    # then delete to clean up
+    for f in files:
+        os.unlink(f)
+
+    subprocess.check_call(["pip", "uninstall", "-y", "featuretools-pip-tester"])
