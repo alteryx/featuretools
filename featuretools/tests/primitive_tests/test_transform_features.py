@@ -43,6 +43,7 @@ from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; 
     NotEqualScalar,
     NumCharacters,
     NumWords,
+    NMostCommon,
     Percentile,
     ScalarSubtractNumericFeature,
     Second,
@@ -1050,6 +1051,14 @@ def test_make_transform_multiple_output_features(es):
     for feature in fl:
         for base_feature in feature.base_features:
             assert base_feature.hash() != join_time_split.hash()
+
+
+def test_tranform_stack_agg(es):
+    topn = ft.Feature(es['log']['product_id'],
+                      parent_entity=es['customers'],
+                      primitive=NMostCommon(n=3))
+    with pytest.raises(AssertionError):
+        ft.Feature(topn, primitive=Percentile)
 
 
 def test_feature_names_inherit_from_make_trans_primitive():
