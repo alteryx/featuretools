@@ -683,7 +683,7 @@ def test_initialized_agg_prim(es):
     assert (feature_with_name(features, "N_MOST_COMMON(log.product_id)"))
 
 
-def test_checks_agg_primitives_are_aggs(es):
+def test_checks_primitives_correct_type(es):
     error_text = "Primitive .* is not an aggregation primitive"
     with pytest.raises(ValueError, match=error_text):
         DeepFeatureSynthesis(target_entity_id="sessions",
