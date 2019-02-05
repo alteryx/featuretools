@@ -450,7 +450,7 @@ class TransformFeature(FeatureBase):
             base_features = [_check_feature(base_features)]
 
         # R TODO handle stacking on sub-features
-        assert (bf.number_output_features == 1 for bf in base_features)
+        assert all(bf.number_output_features == 1 for bf in base_features)
 
         super(TransformFeature, self).__init__(base_features[0].entity,
                                                base_features, primitive=primitive)
