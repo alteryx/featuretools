@@ -172,8 +172,6 @@ def test_install_packages_from_requirements(primitives_to_install_dir):
 
     featuretools.primitives.install.install_primitives(primitives_to_install_dir, prompt=False)
 
-    assert "featuretools-pip-tester" in pip_freeze()
-
     # must reload submodule for it to work
     reload(featuretools.primitives.installed)
     from featuretools.primitives.installed import CustomMax, CustomSum, CustomMean  # noqa: F401
@@ -189,4 +187,5 @@ def test_install_packages_from_requirements(primitives_to_install_dir):
     for f in files:
         os.unlink(f)
 
+    assert "featuretools-pip-tester" in pip_freeze()
     subprocess.check_call(["pip", "uninstall", "-y", "featuretools-pip-tester"])
