@@ -143,8 +143,8 @@ class DeepFeatureSynthesis(object):
                 a = agg_prim_dict[a.lower()]
             a = handle_primitive(a)
             if not isinstance(a, AggregationPrimitive):
-                raise ValueError("Primitive {} is not an aggregation "
-                                 "primitive".format(a))
+                raise ValueError("Primitive {} in agg_primitives is not an "
+                                 "aggregation primitive".format(type(a)))
             self.agg_primitives.append(a)
 
         if trans_primitives is None:
@@ -162,8 +162,8 @@ class DeepFeatureSynthesis(object):
                 t = trans_prim_dict[t.lower()]
             t = handle_primitive(t)
             if not isinstance(t, TransformPrimitive):
-                raise ValueError("Primitive {} is not a transform "
-                                 "primitive".format(t))
+                raise ValueError("Primitive {} in trans_primitives is not a "
+                                 "transform primitive".format(type(t)))
             self.trans_primitives.append(t)
 
         if where_primitives is None:
