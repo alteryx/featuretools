@@ -238,7 +238,7 @@ class DeepFeatureSynthesis(object):
                 if any(issubclass(
                     f.variable_type, vt) for vt in return_variable_types)]
 
-            new_features = list(filter(filt, new_features))
+        new_features = list(filter(filt, new_features))
 
         # sanity check for duplicate features
         hashes = [f.hash() for f in new_features]
