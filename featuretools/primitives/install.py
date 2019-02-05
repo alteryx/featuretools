@@ -5,8 +5,6 @@ import tarfile
 from builtins import input
 from inspect import isclass
 
-import s3fs
-from botocore.exceptions import NoCredentialsError
 from smart_open import smart_open
 from tqdm import tqdm
 
@@ -100,12 +98,20 @@ def download_archive(uri):
     local_archive = os.path.join(get_installation_temp_dir(), filename)
 
     with open(local_archive, 'wb') as f:
-        try:
+        if uri.startswith('s3://') or uri.startswith('https://s3'):
+            try:
+                import s3fs
+                from botocore.exceptions import NoCredentialsError
+            except ImportError:
+                raise ImportError("The s3fs library is required to handle s3 files")
+            try:
+                remote_archive = smart_open(uri, 'rb', ignore_extension=True)
+            except NoCredentialsError:
+                # fallback to anonymous using s3fs
+                s3 = s3fs.S3FileSystem(anon=True)
+                remote_archive = s3.open(uri, 'rb')
+        else:
             remote_archive = smart_open(uri, 'rb', ignore_extension=True)
-        except NoCredentialsError:
-            # fallback to anonymous using s3fs
-            s3 = s3fs.S3FileSystem(anon=True)
-            remote_archive = s3.open(uri, 'rb')
 
         for line in remote_archive:
             f.write(line)
