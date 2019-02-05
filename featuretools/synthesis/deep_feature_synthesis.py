@@ -608,8 +608,8 @@ class DeepFeatureSynthesis(object):
 
                     self._handle_new_feature(new_f, all_features)
 
-    def _features_by_type(
-            self, all_features, entity, max_depth, variable_type=None):
+    def _features_by_type(self, all_features, entity, max_depth,
+                          variable_type=None):
 
         selected_features = []
 

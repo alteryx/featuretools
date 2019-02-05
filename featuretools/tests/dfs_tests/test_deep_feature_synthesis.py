@@ -702,23 +702,34 @@ def test_return_variable_types(es):
 
     discrete = ft.variable_types.Discrete
     numeric = ft.variable_types.Numeric
+    datetime = ft.variable_types.Datetime
 
     f1 = dfs_obj.build_features(return_variable_types=None)
     f2 = dfs_obj.build_features(return_variable_types=[discrete])
     f3 = dfs_obj.build_features(return_variable_types="all")
+    f4 = dfs_obj.build_features(return_variable_types=[datetime])
 
-    f1_types = set([type(f.primitive).return_type for f in f1])
-    f2_types = set([type(f.primitive).return_type for f in f2])
-    f3_types = set([type(f.primitive).return_type for f in f3])
+    f1_types = set([f.variable_type for f in f1])
+    f2_types = set([f.variable_type for f in f2])
+    f3_types = set([f.variable_type for f in f3])
+    f4_types = set([f.variable_type for f in f4])
 
     assert(discrete in f1_types)
     assert(numeric in f1_types)
+    assert(datetime not in f2_types)
 
     assert(discrete in f2_types)
     assert(numeric not in f2_types)
+    assert(datetime not in f2_types)
 
     assert(discrete in f3_types)
     assert(numeric in f3_types)
+    assert(datetime in f3_types)
+
+    assert(discrete not in f4_types)
+    assert(numeric not in f4_types)
+    assert(datetime in f4_types)
+
 
 
 def test_checks_primitives_correct_type(es):
