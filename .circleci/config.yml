@@ -8,7 +8,8 @@ jobs:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
       - run: virtualenv venv
-      - run: source venv/bin/activate && make installdeps lint
+      - run: source venv/bin/activate && make installdeps
+      - run: source venv/bin/activate && make lint
       - run: source venv/bin/activate && make test
 
   "python-3.5":
@@ -19,7 +20,8 @@ jobs:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
       - run: virtualenv venv
-      - run: source venv/bin/activate && make installdeps lint
+      - run: source venv/bin/activate && make installdeps
+      - run: source venv/bin/activate && make lint
       - run: source venv/bin/activate && make test
 
   "python-3.6":
@@ -30,7 +32,8 @@ jobs:
       - run: sudo apt update && sudo apt install -y graphviz pandoc
       - checkout
       - run: virtualenv venv
-      - run: source venv/bin/activate && make installdeps lint
+      - run: source venv/bin/activate && make installdeps
+      - run: source venv/bin/activate && make lint
       - run: source venv/bin/activate && make -C docs/ -e "SPHINXOPTS=-W" clean html
       - run: |
           source venv/bin/activate
@@ -45,7 +48,8 @@ jobs:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
       - run: virtualenv venv
-      - run: source venv/bin/activate && make installdeps lint
+      - run: source venv/bin/activate && make installdeps
+      - run: source venv/bin/activate && make lint
       - run: source venv/bin/activate && make test
 
 workflows:
