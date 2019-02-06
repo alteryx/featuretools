@@ -16,6 +16,14 @@ Libraries
 .. _`Featuretools for Spark`: https://github.com/pan5431333/featuretools4s
 .. _`internal tutorial`: https://github.com/pan5431333/featuretools4s
 
+
+
+`Featuretools for R`_
+=====================
+- Many data scientists use R instead of Python for day-to-day data analysis. This library provides an R interface for featuretools.
+
+.. _`Featuretools for R`: https://github.com/magnusfurugard/featuretoolsR
+
 `MLBlocks`_
 ===========
 - MLBlocks is a framework for creating end-to-end machine learning library pipelines. A primitive in MLBlocks which allows your to use Featuretools.
@@ -53,7 +61,7 @@ Tutorials
 
 .. _`Automated Feature Engineering in Python`: https://towardsdatascience.com/automated-feature-engineering-in-python-99baf11cc219
 
-`A Hands-On Guide to Automated Feature Engineering using eaturetools in Python`_
+`A Hands-On Guide to Automated Feature Engineering using featuretools in Python`_
 =================================================================================
 - A **in-depth** tutorial that works through using Featuretools and explains the importance of feature engineering.
 
