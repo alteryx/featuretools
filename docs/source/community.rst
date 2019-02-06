@@ -1,6 +1,6 @@
-=========
-Community
-=========
+======================
+featuretools Ecosystem
+======================
 For demos written by Feature Labs, checkout our `demos <https://www.featuretools.com/demos/>`_.
 
 Steadily, more people are building pipelines that use featuretools. This is encouraging because it provides validation for the importance of feature engineering.
