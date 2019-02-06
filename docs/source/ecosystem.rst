@@ -1,10 +1,9 @@
 ======================
-featuretools Ecosystem
+Featuretools Ecosystem
 ======================
-For demos written by Feature Labs, checkout our `demos <https://www.featuretools.com/demos/>`_.
+New projects are regularly being built on top of Featuretools. These projects not only validate the importance of feature engineering, but also signals that Featuretools is providing a useful set of functionality to users.
 
-Steadily, more people are building pipelines that use Featuretools. This is encouraging because it provides validation for the importance of feature engineering.
-In addition, many Kaggle competitors are using Featuretools, which shows us the gained valued in adding Featuretools to your data science pipeline.
+On this page, we have a list of libraries, use case / demos, and tutorials that leverage Featuretools. It is far from an exhaustive list. If you would like to add a project, please contact us or submit a pull request on GitHub.
 
 ---------
 Libraries
@@ -28,6 +27,13 @@ Libraries
 
 .. _`MLBlocks`: https://github.com/HDI-Project/MLBlocks
 
+`Cardea`_
+=========
+- Cardea is a machine learning library built on top of the FHIR data schema. It uses a number of **automl** tools, including featureotools.
+
+.. _`Cardea`: https://github.com/D3-AI/Cardea
+
+
 -----------------
 Demos & Use Cases
 -----------------
@@ -49,6 +55,8 @@ Demos & Use Cases
 - Social programs have a difficult time determining that the right people are given enough aid. Using a dataset of Costa Rican household characteristics, this Kaggle kernel predicts the poverty of households.
 
 .. _`Predict poverty of households in Costa Rica`: https://www.kaggle.com/willkoehrsen/featuretools-for-good
+
+- For demos written by Feature Labs, checkout our `demos <https://www.featuretools.com/demos/>`_.
 
 ---------
 Tutorials
