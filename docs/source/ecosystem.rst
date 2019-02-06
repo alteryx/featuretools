@@ -26,7 +26,7 @@ Libraries
 Demos & Use Cases
 -----------------
 `Predict customer lifetime value`_
-==========================================
+==================================
 - A common use case for machine learning is to create a model for predicting customer lifetime value. This article describes the business value of this prediction, explains the machine learning methodology, and show how well the results performed.
 
 .. _`Predict customer lifetime value`: https://towardsdatascience.com/automating-interpretable-feature-engineering-for-predicting-clv-87ece7da9b36
