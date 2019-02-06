@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 
 import pytest
@@ -8,6 +9,7 @@ from featuretools.primitives.base import PrimitiveBase
 from featuretools.primitives.install import (
     extract_archive,
     get_installation_dir,
+    get_installation_temp_dir,
     list_primitive_files,
     load_primitive_from_file,
     install_primitives
@@ -130,6 +132,18 @@ def test_errors_no_primitive_in_file(bad_primitives_files_dir):
     error_text = 'No primitive defined in file %s' % primitive_file
     with pytest.raises(RuntimeError, match=error_text):
         load_primitive_from_file(primitive_file)
+
+
+def test_cleans_up_tmp_dir_on_error(bad_primitives_files_dir):
+    tmp_dir = get_installation_temp_dir()
+    if os.path.exists(tmp_dir):
+        shutil.rmtree(tmp_dir)
+
+    error_text = "More than one primitive defined in file "\
+                 "{}/multiple_primitives\\.py".format(bad_primitives_files_dir)
+    with pytest.raises(RuntimeError, match=error_text):
+        install_primitives(bad_primitives_files_dir, prompt=False)
+    assert not os.path.exists(tmp_dir)
 
 
 def test_extract_non_archive_errors(bad_primitives_files_dir):
