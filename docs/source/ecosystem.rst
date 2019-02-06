@@ -32,63 +32,58 @@ Libraries
 - Cardea is a machine learning library built on top of the FHIR data schema. It uses a number of **automl** tools, including Featuretools.
 
 .. _`Cardea`: https://github.com/D3-AI/Cardea
-For demos writ demos, see Featuretools.com/demos maintined and developed
 
 -----------------
 Demos & Use Cases
 -----------------
 `Predict customer lifetime value`_
 ==================================
-- A common use case for machine learning is to create a model for predicting customer lifetime value. This article describes the business value of this prediction, explains the machine learning methodology, and show how well the results performed.
+- A common use case for machine learning is to predict customer lifetime value. This article walks through the importance of this prediction, and uses Featuretools in the process.
 
 .. _`Predict customer lifetime value`: https://towardsdatascience.com/automating-interpretable-feature-engineering-for-predicting-clv-87ece7da9b36
 
-
 `Predict NHL playoff matches`_
 ==============================
-- Many users of Kagglers are eager to use Featuretools to improve their model performance. In this blog post, we see how a user takes a NHL dataset containing game information, and uses Featuretools to create a sklearn model.
+- Many users of Kaggler are eager to use Featuretools to improve their model performance. In this blog post, a Kaggle user takes a NHL dataset containing game information, and uses Featuretools to create a model.
 
 .. _`Predict NHL playoff matches`: https://towardsdatascience.com/automated-feature-engineering-for-predictive-modeling-d8c9fa4e478b
 
 `Predict poverty of households in Costa Rica`_
 ==============================================
-- Social programs have a difficult time determining that the right people are given enough aid. Using a dataset of Costa Rican household characteristics, this Kaggle kernel predicts the poverty of households.
+- Social programs have a difficult time determining that the right people to give aid. Using a dataset of Costa Rican household characteristics, this Kaggle kernel predicts the poverty of households.
 
 .. _`Predict poverty of households in Costa Rica`: https://www.kaggle.com/willkoehrsen/featuretools-for-good
 
-`From Feature Labs`_
-====================
-- For demos written by Feature Labs, checkout our `demos <https://www.featuretools.com/demos/>`_.
+.. note::
 
-.. _`From Feature Labs`: https://www.featuretools.com/demos/
+    For demos written by Feature Labs, see `featuretools.com/demos <https://www.featuretools.com/demos/>`_
 
 ---------
 Tutorials
 ---------
 `Automated Feature Engineering in Python`_
 ==========================================
-- This article provides a walkthrough of how to user our demo retail dataset and use DFS for automated feature engineering.
+- This article provides a walk-through of how to use a retail dataset with DFS.
 
 .. _`Automated Feature Engineering in Python`: https://towardsdatascience.com/automated-feature-engineering-in-python-99baf11cc219
 
-`A Hands-On Guide to Automated Feature Engineering using featuretools in Python`_
-=================================================================================
-- A **in-depth** tutorial that works through using Featuretools and explains the importance of feature engineering.
+`A Hands-On Guide to Automated Feature Engineering using featuretools`_
+=======================================================================
+- A **in-depth** tutorial that works through using Featuretools.
 
-.. _`A Hands-On Guide to Automated Feature Engineering using Featuretools in Python`: https://www.analyticsvidhya.com/blog/2018/08/guide-automated-feature-engineering-featuretools-python/
+.. _`A Hands-On Guide to Automated Feature Engineering using Featuretools`: https://www.analyticsvidhya.com/blog/2018/08/guide-automated-feature-engineering-featuretools-python/
 
 `Simple Automatic Feature Engineering`_
 =======================================
-- A walkthrough which takes a user-generated dataset, and create a classifier to predict clients who make large orders. It also shows how to understand which features were the most important in classifing these clients.
+- A walk-through which takes a user-generated dataset, and create a classifier to predict clients who make large orders.
 
 .. _`Simple Automatic Feature Engineering`: https://medium.com/@rrfd/simple-automatic-feature-engineering-using-featuretools-in-python-for-classification-b1308040e183
 
 `Introduction to Automated Feature Engineering Using DFS`_
 ==========================================================
-- A comprehensive guide on feature engineering, and how to use Featuretools. Using the loan dataset, we see how Featuretools helps automate the manual process of feature engineering.
+- Using the loan dataset, we see how Featuretools helps automate the manual process of feature engineering.
 
 .. _`Introduction to Automated Feature Engineering Using DFS`: https://heartbeat.fritz.ai/introduction-to-automated-feature-engineering-using-deep-feature-synthesis-dfs-3feb69a7c00b
-
 
 `Automated Feature Engineering Workshop`_
 =========================================
