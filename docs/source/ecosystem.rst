@@ -38,11 +38,11 @@ Demos & Use Cases
 
 .. _`Predict NHL playoff matches`: https://towardsdatascience.com/automated-feature-engineering-for-predictive-modeling-d8c9fa4e478b
 
-`Predict the poverty of households in Costa Rica`
-=================================================
+`Predict poverty of households in Costa Rica`_
+==============================================
 - Social programs have a difficult time determining that the right people are given enough aid. Using a dataset of Costa Rican household characteristics, this Kaggle kernel predicts the poverty of households.
 
-.. _`Predict the poverty of households in Costa Rica`: https://www.kaggle.com/willkoehrsen/featuretools-for-good
+.. _`Predict poverty of households in Costa Rica`: https://www.kaggle.com/willkoehrsen/featuretools-for-good
 
 ---------
 Tutorials
