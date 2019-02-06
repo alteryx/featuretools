@@ -19,11 +19,18 @@ Libraries
 ---------
 Use Cases
 ---------
-`Will a user become a top-tier customer?`_
+`Predict customer lifetime value`_
 ==========================================
 - A common use case for machine learning is to create a model for predicting customer lifetime value. This article describes the business value of this prediction, explains the machine learning methodology, and show how well the results performed.
 
-.. _`Will a user become a top-tier customer?`: https://towardsdatascience.com/automating-interpretable-feature-engineering-for-predicting-clv-87ece7da9b36
+.. _`Predict customer lifetime value`: https://towardsdatascience.com/automating-interpretable-feature-engineering-for-predicting-clv-87ece7da9b36
+
+
+`Predict NHL playoff matches`_
+==============================
+- Many users of Kagglers are eager to use featuretools to improve their model performance. In this blog post, we see how a user takes a NHL dataset containing game information, and uses featuretools to create a sklearn model.
+
+.. _`Predict NHL playoff matches`: https://towardsdatascience.com/automated-feature-engineering-for-predictive-modeling-d8c9fa4e478b
 
 ---------
 Tutorials
@@ -33,12 +40,6 @@ Tutorials
 - This article provides a walkthrough of how to user our demo retail dataset and use DFS for automated feature engineering.
 
 .. _`Automated Feature Engineering in Python`: https://towardsdatascience.com/automated-feature-engineering-in-python-99baf11cc219
-
-`Automated Feature Engineering for Predictive Modeling`_
-========================================================
-- Many users of Kagglers are eager to use featuretools to improve their model performance. In this blog post, we see how a user takes a NHL dataset containing game information, and uses featuretools to create a sklearn model.
-
-.. _`Automated Feature Engineering for Predictive Modeling`: https://towardsdatascience.com/automated-feature-engineering-for-predictive-modeling-d8c9fa4e478b
 
 `A Hands-On Guide to Automated Feature Engineering using Featuretools in Python`_
 =================================================================================
