@@ -18,7 +18,7 @@ Libraries
 
 `MLBlocks`_
 ===========
-- MLBlocks is a framework for creating end-to-end machine learning library pipelines. A primitive is present in MLBlocks which allows your to use Featuretools.
+- MLBlocks is a framework for creating end-to-end machine learning library pipelines. A primitive in MLBlocks which allows your to use Featuretools.
 
 .. _`MLBlocks`: https://github.com/HDI-Project/MLBlocks
 
