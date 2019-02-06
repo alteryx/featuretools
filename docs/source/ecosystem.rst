@@ -3,17 +3,17 @@ featuretools Ecosystem
 ======================
 For demos written by Feature Labs, checkout our `demos <https://www.featuretools.com/demos/>`_.
 
-Steadily, more people are building pipelines that use featuretools. This is encouraging because it provides validation for the importance of feature engineering.
-In addition, many Kaggle competitors are using featuretools, which shows us the gained valued in adding featuretools to your data science pipeline.
+Steadily, more people are building pipelines that use Featuretools. This is encouraging because it provides validation for the importance of feature engineering.
+In addition, many Kaggle competitors are using Featuretools, which shows us the gained valued in adding Featuretools to your data science pipeline.
 
 ---------
 Libraries
 ---------
-`featuretools for Spark`_
+`Featuretools for Spark`_
 =========================
 - This is a python library written to scale FeatureTools with Spark. While we have developed an `internal tutorial`_, this is external resource you can use.
 
-.. _`featuretools for Spark`: https://github.com/pan5431333/featuretools4s
+.. _`Featuretools for Spark`: https://github.com/pan5431333/featuretools4s
 .. _`internal tutorial`: https://github.com/pan5431333/featuretools4s
 
 ---------
@@ -28,7 +28,7 @@ Use Cases
 
 `Predict NHL playoff matches`_
 ==============================
-- Many users of Kagglers are eager to use featuretools to improve their model performance. In this blog post, we see how a user takes a NHL dataset containing game information, and uses featuretools to create a sklearn model.
+- Many users of Kagglers are eager to use Featuretools to improve their model performance. In this blog post, we see how a user takes a NHL dataset containing game information, and uses Featuretools to create a sklearn model.
 
 .. _`Predict NHL playoff matches`: https://towardsdatascience.com/automated-feature-engineering-for-predictive-modeling-d8c9fa4e478b
 
@@ -41,9 +41,9 @@ Tutorials
 
 .. _`Automated Feature Engineering in Python`: https://towardsdatascience.com/automated-feature-engineering-in-python-99baf11cc219
 
-`A Hands-On Guide to Automated Feature Engineering using Featuretools in Python`_
+`A Hands-On Guide to Automated Feature Engineering using eaturetools in Python`_
 =================================================================================
-- A **in-depth** tutorial that works through using featuretools and explains the importance of feature engineering.
+- A **in-depth** tutorial that works through using Featuretools and explains the importance of feature engineering.
 
 .. _`A Hands-On Guide to Automated Feature Engineering using Featuretools in Python`: https://www.analyticsvidhya.com/blog/2018/08/guide-automated-feature-engineering-featuretools-python/
 
@@ -55,20 +55,20 @@ Tutorials
 
 `Introduction to Automated Feature Engineering Using DFS`_
 ==========================================================
-- A comprehensive guide on feature engineering, and how to use featuretools. Using the loan dataset, we see how featuretools helps automate the manual process of feature engineering.
+- A comprehensive guide on feature engineering, and how to use Featuretools. Using the loan dataset, we see how Featuretools helps automate the manual process of feature engineering.
 
 .. _`Introduction to Automated Feature Engineering Using DFS`: https://heartbeat.fritz.ai/introduction-to-automated-feature-engineering-using-deep-feature-synthesis-dfs-3feb69a7c00b
 
 
 `Automated Feature Engineering Workshop`_
 =========================================
-- From the 2017 Data Summer Conference, an automated feature engineering workshop using featuretools.
+- From the 2017 Data Summer Conference, an automated feature engineering workshop using Featuretools.
 
 .. _`Automated Feature Engineering Workshop`: https://github.com/fred-navruzov/featuretools-workshop
 
 `Tutorial in Japanese`_
 =======================
-- A tutorial of featuretools that works with a hyper parameter tuning library `Optuna`_, and a feature selection library `Boruta`_.
+- A tutorial of Featuretools that works with a hyper parameter tuning library `Optuna`_, and a feature selection library `Boruta`_.
 
 .. _`Tutorial in Japanese`: https://dev.classmethod.jp/machine-learning/yoshim-featuretools-boruta-optuna/
 .. _`Optuna`: https://github.com/pfnet/optuna
