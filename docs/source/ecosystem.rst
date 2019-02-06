@@ -18,7 +18,7 @@ Libraries
 
 `Featuretools for Spark`_
 =========================
-- FeatureTools4S is a Python library written to scale Featuretools with Spark, making it capable of generating features for billions of rows of data.
+- Featuretools4S is a Python library written to scale Featuretools with Spark, making it capable of generating features for billions of rows of data.
 
 .. note::
 
