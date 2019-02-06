@@ -56,7 +56,11 @@ Demos & Use Cases
 
 .. _`Predict poverty of households in Costa Rica`: https://www.kaggle.com/willkoehrsen/featuretools-for-good
 
+`From Feature Labs`_
+====================
 - For demos written by Feature Labs, checkout our `demos <https://www.featuretools.com/demos/>`_.
+
+.. _`From Feature Labs`: https://www.featuretools.com/demos/
 
 ---------
 Tutorials
