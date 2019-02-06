@@ -17,7 +17,7 @@ from featuretools.primitives.base import (
     TransformPrimitive
 )
 from featuretools.utils import is_string
-from featuretools.variable_types import Boolean, Categorical, Numeric, Ordinal
+from featuretools.variable_types import Boolean, Numeric
 
 logger = logging.getLogger('featuretools')
 
@@ -185,14 +185,14 @@ class DeepFeatureSynthesis(object):
         self.drop_contains = drop_contains or []
         self.where_stacking_limit = where_stacking_limit
 
-    def build_features(self, variable_types=None, verbose=False):
+    def build_features(self, return_variable_types=None, verbose=False):
         """Automatically builds feature definitions for target
             entity using Deep Feature Synthesis algorithm
 
         Args:
-            variable_types (list[Variable] or str, optional): Types of
+            return_variable_types (list[Variable] or str, optional): Types of
                 variables to return. If None, default to
-                Numeric, Categorical, Ordinal, and Boolean. If given as
+                Numeric, Discrete, and Boolean. If given as
                 the string 'all', use all available variable types.
 
             verbose (bool, optional): If True, print progress.
@@ -208,24 +208,19 @@ class DeepFeatureSynthesis(object):
                 all_features[e.id] = {}
 
         self.where_clauses = defaultdict(set)
+
+        if return_variable_types is None:
+            return_variable_types = [Numeric, Discrete, Boolean]
+        elif return_variable_types == 'all':
+            pass
+        else:
+            msg = "return_variable_types must be a list, or 'all'"
+            assert isinstance(return_variable_types, list), msg
+
         self._run_dfs(self.es[self.target_entity_id], [],
                       all_features, max_depth=self.max_depth)
 
         new_features = list(all_features[self.target_entity_id].values())
-
-        if variable_types is None:
-            variable_types = [Numeric,
-                              Discrete,
-                              Boolean]
-        elif variable_types == 'all':
-            variable_types = None
-        else:
-            msg = "variable_types must be a list, or 'all'"
-            assert isinstance(variable_types, list), msg
-
-        if variable_types is not None:
-            new_features = [f for f in new_features
-                            if any(issubclass(f.variable_type, vt) for vt in variable_types)]
 
         def filt(f):
             # remove identity features of the ID field of the target entity
@@ -235,6 +230,13 @@ class DeepFeatureSynthesis(object):
                 return False
 
             return True
+
+        # filter out features with undesired return types
+        if return_variable_types != 'all':
+            new_features = [
+                f for f in new_features
+                if any(issubclass(
+                    f.variable_type, vt) for vt in return_variable_types)]
 
         new_features = list(filter(filt, new_features))
 
@@ -373,11 +375,12 @@ class DeepFeatureSynthesis(object):
         for r in forward:
             if self.allowed_paths and tuple(entity_path + [r.parent_entity.id]) not in self.allowed_paths:
                 continue
-            self._build_forward_features(all_features=all_features,
-                                         parent_entity=r.parent_entity,
-                                         child_entity=r.child_entity,
-                                         relationship=r,
-                                         max_depth=max_depth)
+            self._build_forward_features(
+                all_features=all_features,
+                parent_entity=r.parent_entity,
+                child_entity=r.child_entity,
+                relationship=r,
+                max_depth=max_depth)
 
         # now that all  features are added, build where clauses
         self._build_where_clauses(all_features, entity)
@@ -489,8 +492,8 @@ class DeepFeatureSynthesis(object):
 
             features = self._features_by_type(all_features=all_features,
                                               entity=entity,
-                                              variable_type=set(input_types),
-                                              max_depth=new_max_depth)
+                                              max_depth=new_max_depth,
+                                              variable_type=set(input_types))
 
             matching_inputs = match(input_types, features,
                                     commutative=trans_prim.commutative)
@@ -508,12 +511,11 @@ class DeepFeatureSynthesis(object):
         if max_depth is not None and max_depth < 0:
             return
 
-        features = self._features_by_type(all_features=all_features,
-                                          entity=parent_entity,
-                                          variable_type=[Numeric,
-                                                         Categorical,
-                                                         Ordinal],
-                                          max_depth=max_depth)
+        features = self._features_by_type(
+            all_features=all_features,
+            entity=parent_entity,
+            max_depth=max_depth,
+            variable_type=variable_types.PandasTypes._all)
 
         for f in features:
             if self._feature_in_relationship_path([relationship], f):
@@ -548,8 +550,8 @@ class DeepFeatureSynthesis(object):
 
             features = self._features_by_type(all_features=all_features,
                                               entity=child_entity,
-                                              variable_type=set(input_types),
-                                              max_depth=new_max_depth)
+                                              max_depth=new_max_depth,
+                                              variable_type=set(input_types))
 
             # remove features in relationship path
             relationship_path = self.es.find_backward_path(parent_entity.id,
@@ -606,7 +608,9 @@ class DeepFeatureSynthesis(object):
 
                     self._handle_new_feature(new_f, all_features)
 
-    def _features_by_type(self, all_features, entity, variable_type, max_depth):
+    def _features_by_type(self, all_features, entity, max_depth,
+                          variable_type=None):
+
         selected_features = []
 
         if max_depth is not None and max_depth < 0:
