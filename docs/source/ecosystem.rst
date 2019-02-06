@@ -69,11 +69,12 @@ Tutorials
 
 .. _`Automated Feature Engineering in Python`: https://towardsdatascience.com/automated-feature-engineering-in-python-99baf11cc219
 
-`A Hands-On Guide to Automated Feature Engineering using featuretools`_
-=======================================================================
+`A Hands-On Guide to Automated Feature Engineering`_
+====================================================
+
 - A **in-depth** tutorial that works through using Featuretools.
 
-.. _`A Hands-On Guide to Automated Feature Engineering using Featuretools`: https://www.analyticsvidhya.com/blog/2018/08/guide-automated-feature-engineering-featuretools-python/
+.. _`A Hands-On Guide to Automated Feature Engineering`: https://www.analyticsvidhya.com/blog/2018/08/guide-automated-feature-engineering-featuretools-python/
 
 `Simple Automatic Feature Engineering`_
 =======================================
@@ -95,7 +96,7 @@ Tutorials
 
 `Tutorial in Japanese`_
 =======================
-- A tutorial of Featuretools that works with a hyper parameter tuning library `Optuna`_, and a feature selection library `Boruta`_.
+- A tutorial of Featuretools that works with a feature selection library `Boruta`_ and a hyper parameter tuning library `Optuna`_.
 
 .. _`Tutorial in Japanese`: https://dev.classmethod.jp/machine-learning/yoshim-featuretools-boruta-optuna/
 .. _`Optuna`: https://github.com/pfnet/optuna
