@@ -93,14 +93,13 @@ def test_install_primitives(install_path, primitives_to_install_dir):
     from featuretools.primitives.installed import CustomMax, CustomSum, CustomMean  # noqa: F401
 
     files = list_primitive_files(installation_dir)
-    assert set(files) == {custom_max_file, custom_mean_file, custom_sum_file}
+    assert {custom_max_file, custom_mean_file, custom_sum_file}.issubset(set(files))
     if install_path in [primitives_to_install_dir, "INSTALL_VIA_CLI", "INSTALL_VIA_MODULE"]:
         assert os.path.exists(data_file)
         os.unlink(data_file)
 
-    files = list_primitive_files(installation_dir)
     # then delete to clean up
-    for f in files:
+    for f in [custom_max_file, custom_mean_file, custom_sum_file]:
         os.unlink(f)
 
 
@@ -109,7 +108,7 @@ def test_list_primitive_files(primitives_to_install_dir):
     custom_max_file = os.path.join(primitives_to_install_dir, "custom_max.py")
     custom_mean_file = os.path.join(primitives_to_install_dir, "custom_mean.py")
     custom_sum_file = os.path.join(primitives_to_install_dir, "custom_sum.py")
-    assert set(files) == {custom_max_file, custom_mean_file, custom_sum_file}
+    assert {custom_max_file, custom_mean_file, custom_sum_file}.issubset(set(files))
 
 
 def test_load_primitive_from_file(primitives_to_install_dir):
@@ -177,14 +176,13 @@ def test_install_packages_from_requirements(primitives_to_install_dir):
     from featuretools.primitives.installed import CustomMax, CustomSum, CustomMean  # noqa: F401
 
     files = list_primitive_files(installation_dir)
-    assert set(files) == {custom_max_file, custom_mean_file, custom_sum_file}
+    assert {custom_max_file, custom_mean_file, custom_sum_file}.issubset(set(files))
     assert os.path.exists(data_file)
     os.unlink(data_file)
     os.unlink(requirements_path)
 
-    files = list_primitive_files(installation_dir)
     # then delete to clean up
-    for f in files:
+    for f in [custom_max_file, custom_mean_file, custom_sum_file]:
         os.unlink(f)
 
     assert "featuretools-pip-tester" in pip_freeze()
