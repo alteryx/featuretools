@@ -11,7 +11,7 @@ from botocore.exceptions import NoCredentialsError
 from smart_open import smart_open
 from tqdm import tqdm
 
-from .base.primitive_base import PrimitiveBase
+from .base import AggregationPrimitive, PrimitiveBase, TransformPrimitive
 
 import featuretools
 
@@ -190,7 +190,10 @@ def load_primitive_from_file(filepath):
     primitives = []
     for primitive_name in vars(module):
         primitive_class = getattr(module, primitive_name)
-        if isclass(primitive_class) and issubclass(primitive_class, PrimitiveBase):
+        if (isclass(primitive_class) and
+                issubclass(primitive_class, PrimitiveBase) and
+                primitive_class not in (AggregationPrimitive,
+                                        TransformPrimitive)):
             primitives.append((primitive_name, primitive_class))
 
     if len(primitives) == 0:
