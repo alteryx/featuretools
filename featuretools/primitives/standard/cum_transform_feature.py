@@ -1,10 +1,10 @@
 from featuretools.primitives.base import TransformPrimitive
-from featuretools.variable_types import Discrete, Id, Index, Numeric, TimeIndex
+from featuretools.variable_types import Discrete, Id, Numeric
 
 
 class CumSum(TransformPrimitive):
     """Returns the cumulative sum after grouping"""
-     
+
     name = "cum_sum"
     input_types = [[Numeric, Id],
                    [Numeric, Discrete]]
@@ -23,7 +23,7 @@ class CumSum(TransformPrimitive):
 
 class CumCount(TransformPrimitive):
     """Returns the cumulative count after grouping"""
-     
+
     name = "cum_count"
     input_types = [[Id], [Discrete]]
     return_type = Numeric
@@ -41,7 +41,7 @@ class CumCount(TransformPrimitive):
 
 class CumMean(TransformPrimitive):
     """Returns the cumulative mean after grouping"""
-     
+
     name = "cum_mean"
     input_types = [[Numeric, Id],
                    [Numeric, Discrete]]
@@ -51,7 +51,7 @@ class CumMean(TransformPrimitive):
     def get_function(self):
         def cum_mean(values, groups):
             temp = values.groupby(groups)
-            return temp.cumsum()/temp.cumcount().add(1)
+            return temp.cumsum() / temp.cumcount().add(1)
 
         return cum_mean
 
@@ -61,7 +61,7 @@ class CumMean(TransformPrimitive):
 
 class CumMin(TransformPrimitive):
     """Returns the cumulative min after grouping"""
-     
+
     name = "cum_min"
     input_types = [[Numeric, Id],
                    [Numeric, Discrete]]
@@ -80,7 +80,7 @@ class CumMin(TransformPrimitive):
 
 class CumMax(TransformPrimitive):
     """Returns the cumulative max after grouping"""
-     
+
     name = "cum_max"
     input_types = [[Numeric, Id],
                    [Numeric, Discrete]]

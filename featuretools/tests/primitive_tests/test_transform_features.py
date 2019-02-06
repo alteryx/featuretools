@@ -431,10 +431,11 @@ def compare(a, b, equals=None):
 class TestCumCount:
 
     primitive = CumCount
+
     def test_order(self):
         v = pd.Series([1, 2, 2])
         g = pd.Series(["a", "b", "a"])
-        
+
         answer = [0, 0, 1]
 
         function = self.primitive().get_function()
@@ -460,10 +461,11 @@ class TestCumCount:
 class TestCumSum:
 
     primitive = CumSum
+
     def test_order(self):
         v = pd.Series([1, 2, 2])
         g = pd.Series(["a", "b", "a"])
-        
+
         answer = [1, 2, 3]
 
         function = self.primitive().get_function()
@@ -480,10 +482,11 @@ class TestCumSum:
 
 class TestCumMean:
     primitive = CumMean
+
     def test_order(self):
         v = pd.Series([1, 2, 2])
         g = pd.Series(["a", "b", "a"])
-        
+
         answer = [1, 2, 1.5]
 
         function = self.primitive().get_function()
@@ -501,10 +504,11 @@ class TestCumMean:
 class TestCumMax:
 
     primitive = CumMax
+
     def test_order(self):
         v = pd.Series([1, 2, 2])
         g = pd.Series(["a", "b", "a"])
-        
+
         answer = [1, 2, 2]
 
         function = self.primitive().get_function()
@@ -522,10 +526,11 @@ class TestCumMax:
 class TestCumMin:
 
     primitive = CumMin
+
     def test_order(self):
         v = pd.Series([1, 2, 2])
         g = pd.Series(["a", "b", "a"])
-        
+
         answer = [1, 2, 1]
 
         function = self.primitive().get_function()
@@ -633,7 +638,6 @@ def test_cum_mean(es):
 
 
 def test_cum_count(es):
-    log_id_feat = es['log']['id']
     cum_count = ft.Feature([es['log']['session_id']], primitive=CumCount)
     features = [cum_count]
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
