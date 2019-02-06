@@ -33,59 +33,60 @@ def install_primitives(directory_or_archive, prompt=True):
     """Install primitives from the provided directory"""
     tmp_dir = get_installation_temp_dir()
 
-    # if it isn't local, download it. if remote, it must be archive
-    if not (os.path.isdir(directory_or_archive) or os.path.isfile(directory_or_archive)):
-        directory_or_archive = download_archive(directory_or_archive)
+    try:
+        # if it isn't local, download it. if remote, it must be archive
+        if not (os.path.isdir(directory_or_archive) or os.path.isfile(directory_or_archive)):
+            directory_or_archive = download_archive(directory_or_archive)
 
     # if archive, extract directory to temp folders
-    if os.path.isfile(directory_or_archive):
-        directory = extract_archive(directory_or_archive)
-    else:
-        directory = directory_or_archive
+        if os.path.isfile(directory_or_archive):
+            directory = extract_archive(directory_or_archive)
+        else:
+            directory = directory_or_archive
 
-    # Iterate over all the files and determine the primitives to install
-    files = list_primitive_files(directory)
-    all_primitives = {}
-    files_to_copy = []
-    for filepath in files:
-        primitive_name, primitive_obj = load_primitive_from_file(filepath)
-        files_to_copy.append(filepath)
-        all_primitives[primitive_name] = primitive_obj
+        # Iterate over all the files and determine the primitives to install
+        files = list_primitive_files(directory)
+        all_primitives = {}
+        files_to_copy = []
+        for filepath in files:
+            primitive_name, primitive_obj = load_primitive_from_file(filepath)
+            files_to_copy.append(filepath)
+            all_primitives[primitive_name] = primitive_obj
 
-    # before installing, confirm with user
-    primitives_list = ", ".join(all_primitives.keys())
-    if prompt:
-        while True:
-            resp = input("Install primitives: %s? (Y/n) " % primitives_list)
-            if resp == "Y":
-                break
-            elif resp == "n":
-                return
-    else:
-        print("Installing primitives: %s" % primitives_list)
+        # before installing, confirm with user
+        primitives_list = ", ".join(all_primitives.keys())
+        if prompt:
+            while True:
+                resp = input("Install primitives: %s? (Y/n) " % primitives_list)
+                if resp == "Y":
+                    break
+                elif resp == "n":
+                    return
+        else:
+            print("Installing primitives: %s" % primitives_list)
 
-    # copy the files
-    installation_dir = get_installation_dir()
-    for to_copy in tqdm(files_to_copy):
-        shutil.copy2(to_copy, installation_dir)
+        # copy the files
+        installation_dir = get_installation_dir()
+        for to_copy in tqdm(files_to_copy):
+            shutil.copy2(to_copy, installation_dir)
 
-    # handle data folder
-    data_path = os.path.join(directory, "data")
-    data_folder = featuretools.config.get("primitive_data_folder")
-    if os.path.exists(data_path) and os.path.isdir(data_path):
-        for to_copy in tqdm(os.listdir(data_path)):
-            src_path = os.path.join(data_path, to_copy)
-            dst_path = os.path.join(data_folder, to_copy)
-            shutil.copy2(src_path, dst_path)
+        # handle data folder
+        data_path = os.path.join(directory, "data")
+        data_folder = featuretools.config.get("primitive_data_folder")
+        if os.path.exists(data_path) and os.path.isdir(data_path):
+            for to_copy in tqdm(os.listdir(data_path)):
+                src_path = os.path.join(data_path, to_copy)
+                dst_path = os.path.join(data_folder, to_copy)
+                shutil.copy2(src_path, dst_path)
 
-    # install dependencies
-    if "requirements.txt" in os.listdir(directory):
-        requirements_path = os.path.join(directory, "requirements.txt")
-        subprocess.check_call(["pip", "install", "-r", requirements_path])
-
-    # clean up tmp dir
-    if os.path.exists(tmp_dir):
-        shutil.rmtree(tmp_dir)
+        # install dependencies
+        if "requirements.txt" in os.listdir(directory):
+            requirements_path = os.path.join(directory, "requirements.txt")
+            subprocess.check_call(["pip", "install", "-r", requirements_path])
+    finally:
+        # clean up tmp dir
+        if os.path.exists(tmp_dir):
+            shutil.rmtree(tmp_dir)
 
 
 def get_featuretools_root():
