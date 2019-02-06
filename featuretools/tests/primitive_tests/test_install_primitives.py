@@ -171,8 +171,9 @@ def test_cleans_up_tmp_dir_on_error(bad_primitives_files_dir):
     if os.path.exists(tmp_dir):
         shutil.rmtree(tmp_dir)
 
-    error_text = "More than one primitive defined in file "\
-                 "{}/multiple_primitives\\.py".format(bad_primitives_files_dir)
+    error_text = "(More than one primitive defined in file "\
+                 "{0}/multiple_primitives\\.py|No primitive defined in file "\
+                 "{0}/no_primitives\\.py)".format(bad_primitives_files_dir)
     with pytest.raises(RuntimeError, match=error_text):
         install_primitives(bad_primitives_files_dir, prompt=False)
     assert not os.path.exists(tmp_dir)
