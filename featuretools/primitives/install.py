@@ -77,7 +77,10 @@ def install_primitives(directory_or_archive, prompt=True):
             for to_copy in tqdm(os.listdir(data_path)):
                 src_path = os.path.join(data_path, to_copy)
                 dst_path = os.path.join(data_folder, to_copy)
-                shutil.copy2(src_path, dst_path)
+                if os.path.isdir(src):
+                    shutil.copytree(src, dst)
+                else:
+                    shutil.copy2(src, dst)
 
         # install dependencies
         if "requirements.txt" in os.listdir(directory):

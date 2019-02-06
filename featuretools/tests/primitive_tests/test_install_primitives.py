@@ -10,9 +10,9 @@ from featuretools.primitives.install import (
     extract_archive,
     get_installation_dir,
     get_installation_temp_dir,
+    install_primitives,
     list_primitive_files,
-    load_primitive_from_file,
-    install_primitives
+    load_primitive_from_file
 )
 
 try:
@@ -75,11 +75,15 @@ def test_install_primitives(install_path, primitives_to_install_dir):
     custom_mean_file = os.path.join(installation_dir, "custom_mean.py")
     custom_sum_file = os.path.join(installation_dir, "custom_sum.py")
     data_file = os.path.join(data_dir, "_pytest_test.csv")
+    data_subfolder = os.path.join(data_dir, "pytest_folder")
 
     # make sure primitive files aren't there e.g from a failed run
-    for p in [custom_max_file, custom_mean_file, custom_sum_file, data_file]:
+    for p in [custom_max_file, custom_mean_file, custom_sum_file, data_file, data_subfolder]:
         try:
-            os.unlink(p)
+            if p == data_subfolder:
+                shutil.rmtree(p)
+            else:
+                os.unlink(p)
         except Exception:
             pass
 
@@ -100,6 +104,9 @@ def test_install_primitives(install_path, primitives_to_install_dir):
     if install_path in [primitives_to_install_dir, "INSTALL_VIA_CLI", "INSTALL_VIA_MODULE"]:
         assert os.path.exists(data_file)
         os.unlink(data_file)
+        assert os.path.exists(data_subfolder)
+        assert os.path.exists(os.path.join(data_subfolder, "hello.txt"))
+        shutil.rmtree(data_subfolder)
 
     # then delete to clean up
     for f in [custom_max_file, custom_mean_file, custom_sum_file]:
@@ -112,6 +119,31 @@ def test_list_primitive_files(primitives_to_install_dir):
     custom_mean_file = os.path.join(primitives_to_install_dir, "custom_mean.py")
     custom_sum_file = os.path.join(primitives_to_install_dir, "custom_sum.py")
     assert {custom_max_file, custom_mean_file, custom_sum_file}.issubset(set(files))
+
+
+def test_install_twice(primitives_to_install_dir):
+    installation_dir = get_installation_dir()
+    data_dir = featuretools.config.get("primitive_data_folder")
+    custom_max_file = os.path.join(installation_dir, "custom_max.py")
+    custom_mean_file = os.path.join(installation_dir, "custom_mean.py")
+    custom_sum_file = os.path.join(installation_dir, "custom_sum.py")
+    data_file = os.path.join(data_dir, "_pytest_test.csv")
+    data_subfolder = os.path.join(data_dir, "pytest_folder")
+
+    # make sure primitive files aren't there e.g from a failed run
+    for p in [custom_max_file, custom_mean_file, custom_sum_file, data_file, data_subfolder]:
+        try:
+            if p == data_subfolder:
+                shutil.rmtree(p)
+            else:
+                os.unlink(p)
+        except Exception:
+            pass
+
+    install_primitives(primitives_to_install_dir, prompt=False)
+    # should fail second time when trying to copy files that already exist
+    with pytest.raises(FileExistsError):
+        install_primitives(primitives_to_install_dir, prompt=False)
 
 
 def test_load_primitive_from_file(primitives_to_install_dir):
@@ -176,11 +208,15 @@ def test_install_packages_from_requirements(primitives_to_install_dir):
     custom_mean_file = os.path.join(installation_dir, "custom_mean.py")
     custom_sum_file = os.path.join(installation_dir, "custom_sum.py")
     data_file = os.path.join(data_dir, "_pytest_test.csv")
+    data_subfolder = os.path.join(data_dir, "pytest_folder")
 
     # make sure primitive files aren't there e.g from a failed run
-    for p in [custom_max_file, custom_mean_file, custom_sum_file, data_file]:
+    for p in [custom_max_file, custom_mean_file, custom_sum_file, data_file, data_subfolder]:
         try:
-            os.unlink(p)
+            if p == data_subfolder:
+                shutil.rmtree(p)
+            else:
+                os.unlink(p)
         except Exception:
             pass
 
@@ -195,6 +231,9 @@ def test_install_packages_from_requirements(primitives_to_install_dir):
     assert os.path.exists(data_file)
     os.unlink(data_file)
     os.unlink(requirements_path)
+    assert os.path.exists(data_subfolder)
+    assert os.path.exists(os.path.join(data_subfolder, "hello.txt"))
+    shutil.rmtree(data_subfolder)
 
     # then delete to clean up
     for f in [custom_max_file, custom_mean_file, custom_sum_file]:
