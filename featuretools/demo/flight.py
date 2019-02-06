@@ -137,7 +137,7 @@ def _clean_data(data):
                                             'dest_city_name': 'dest_city'})
 
     # Combine strings like 0130 (1:30 AM) with dates (2017-01-01)
-    clean_data['scheduled_dep_time'] = clean_data['scheduled_dep_time'].apply(lambda x: str(x)) + clean_data['flight_date'].astype(str)
+    clean_data['scheduled_dep_time'] = clean_data['scheduled_dep_time'].apply(lambda x: str(x)) + clean_data['flight_date'].astype('str')
 
     # Parse combined string as a date
     clean_data.loc[:, 'scheduled_dep_time'] = pd.to_datetime(
