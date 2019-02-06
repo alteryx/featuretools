@@ -10,29 +10,29 @@ Libraries
 ---------
 `Featuretools for Spark`_
 =========================
-- This is a python library written to scale FeatureTools with Spark. While we have developed an `internal tutorial`_, this is external resource you can use.
+- This is a python library written to scale Featuretools with Spark. While we have developed an `internal tutorial`_, this is external resource you can use.
 
 .. _`Featuretools for Spark`: https://github.com/pan5431333/featuretools4s
-.. _`internal tutorial`: https://github.com/pan5431333/featuretools4s
+.. _`internal tutorial`: https://medium.com/feature-labs-engineering/featuretools-on-spark-e5aa67eaf807
 
 `Featuretools for R`_
 =====================
-- Many data scientists use **R** instead of **Python** for their day-to-day tasks. This library provides an R interface for featuretools.
+- Many data scientists use **R** instead of **Python** for their day-to-day tasks. This library provides an R interface for Featuretools.
 
 .. _`Featuretools for R`: https://github.com/magnusfurugard/featuretoolsR
 
 `MLBlocks`_
 ===========
-- MLBlocks is a framework for creating end-to-end machine learning library pipelines. A primitive in MLBlocks which allows your to use Featuretools.
+- MLBlocks is a framework for creating end-to-end machine learning pipelines. MLBlocks contains a primitive which allows you to use Featuretools.
 
 .. _`MLBlocks`: https://github.com/HDI-Project/MLBlocks
 
 `Cardea`_
 =========
-- Cardea is a machine learning library built on top of the FHIR data schema. It uses a number of **automl** tools, including featureotools.
+- Cardea is a machine learning library built on top of the FHIR data schema. It uses a number of **automl** tools, including Featuretools.
 
 .. _`Cardea`: https://github.com/D3-AI/Cardea
-
+For demos writ demos, see Featuretools.com/demos maintined and developed
 
 -----------------
 Demos & Use Cases
