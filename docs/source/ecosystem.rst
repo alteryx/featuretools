@@ -16,9 +16,15 @@ Libraries
 .. _`Featuretools for Spark`: https://github.com/pan5431333/featuretools4s
 .. _`internal tutorial`: https://github.com/pan5431333/featuretools4s
 
----------
-Use Cases
----------
+`MLBlocks`_
+===========
+- MLBlocks is a framework for creating end-to-end machine learning library pipelines. A primitive is present in MLBlocks which allows your to use Featuretools.
+
+.. _`MLBlocks`: https://github.com/HDI-Project/MLBlocks
+
+-----------------
+Demos & Use Cases
+-----------------
 `Predict customer lifetime value`_
 ==========================================
 - A common use case for machine learning is to create a model for predicting customer lifetime value. This article describes the business value of this prediction, explains the machine learning methodology, and show how well the results performed.
