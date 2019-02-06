@@ -10,20 +10,21 @@ Libraries
 ---------
 `Featuretools for Spark`_
 =========================
-- This is a python library written to scale Featuretools with Spark. While we have developed an `internal tutorial`_, this is external resource you can use.
+- This is a python library written to scale Featuretools with `Spark`_. While we have developed an `internal tutorial`_, this is external resource you can use.
 
 .. _`Featuretools for Spark`: https://github.com/pan5431333/featuretools4s
 .. _`internal tutorial`: https://medium.com/feature-labs-engineering/featuretools-on-spark-e5aa67eaf807
+.. _`Spark`: https://spark.apache.org/
 
 `Featuretools for R`_
 =====================
-- Many data scientists use **R** instead of **Python** for their day-to-day tasks. This library provides an R interface for Featuretools.
+- Many data scientists use **R** instead of **Python** for their day-to-day tasks. This library provides an **R** interface for Featuretools.
 
 .. _`Featuretools for R`: https://github.com/magnusfurugard/featuretoolsR
 
 `MLBlocks`_
 ===========
-- MLBlocks is a framework for creating end-to-end machine learning pipelines. MLBlocks contains a primitive which allows you to use Featuretools.
+- MLBlocks is a framework for creating end-to-end machine learning pipelines. MLBlocks contains a primitive which uses Featuretools.
 
 .. _`MLBlocks`: https://github.com/HDI-Project/MLBlocks
 
@@ -44,7 +45,7 @@ Demos & Use Cases
 
 `Predict NHL playoff matches`_
 ==============================
-- Many users of Kaggler are eager to use Featuretools to improve their model performance. In this blog post, a Kaggle user takes a NHL dataset containing game information, and uses Featuretools to create a model.
+- Many users of Kaggle are eager to use Featuretools to improve their model performance. In this blog post, a Kaggle user takes a NHL dataset containing game information, and uses Featuretools to create a model.
 
 .. _`Predict NHL playoff matches`: https://towardsdatascience.com/automated-feature-engineering-for-predictive-modeling-d8c9fa4e478b
 
