@@ -2,7 +2,8 @@
 Community
 =========
 For demos written by Feature Labs, checkout our `demos <https://www.featuretools.com/demos/>`_.
-Steadily, more and more people are building pipelines that use featuretools. This is encouraging because it provides validation for the importance of feature engineering.
+
+Steadily, more people are building pipelines that use featuretools. This is encouraging because it provides validation for the importance of feature engineering.
 In addition, many Kaggle competitors are using featuretools, which shows us the gained valued in adding featuretools to your data science pipeline.
 
 ---------
