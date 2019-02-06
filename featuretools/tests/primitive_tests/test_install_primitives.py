@@ -142,7 +142,7 @@ def test_install_twice(primitives_to_install_dir):
 
     install_primitives(primitives_to_install_dir, prompt=False)
     # should fail second time when trying to copy files that already exist
-    with pytest.raises(FileExistsError):
+    with pytest.raises(OSError):
         install_primitives(primitives_to_install_dir, prompt=False)
 
 
