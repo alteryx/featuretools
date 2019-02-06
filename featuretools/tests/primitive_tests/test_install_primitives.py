@@ -21,6 +21,18 @@ except Exception:
     from importlib import reload
 
 
+def remove_test_files(file_list):
+    # make sure primitive files aren't there e.g from a failed run
+    for p in file_list:
+        try:
+            if os.path.isdir(p):
+                shutil.rmtree(p)
+            else:
+                os.unlink(p)
+        except Exception:
+            pass
+
+
 @pytest.fixture(scope='module')
 def this_dir():
     return os.path.dirname(os.path.abspath(__file__))
@@ -78,14 +90,8 @@ def test_install_primitives(install_path, primitives_to_install_dir):
     data_subfolder = os.path.join(data_dir, "pytest_folder")
 
     # make sure primitive files aren't there e.g from a failed run
-    for p in [custom_max_file, custom_mean_file, custom_sum_file, data_file, data_subfolder]:
-        try:
-            if p == data_subfolder:
-                shutil.rmtree(p)
-            else:
-                os.unlink(p)
-        except Exception:
-            pass
+    old_files = [custom_max_file, custom_mean_file, custom_sum_file, data_file, data_subfolder]
+    remove_test_files(old_files)
 
     # handle install via command line as a special case
     if install_path == "INSTALL_VIA_CLI":
@@ -131,14 +137,9 @@ def test_install_twice(primitives_to_install_dir):
     data_subfolder = os.path.join(data_dir, "pytest_folder")
 
     # make sure primitive files aren't there e.g from a failed run
-    for p in [custom_max_file, custom_mean_file, custom_sum_file, data_file, data_subfolder]:
-        try:
-            if p == data_subfolder:
-                shutil.rmtree(p)
-            else:
-                os.unlink(p)
-        except Exception:
-            pass
+    # make sure primitive files aren't there e.g from a failed run
+    old_files = [custom_max_file, custom_mean_file, custom_sum_file, data_file, data_subfolder]
+    remove_test_files(old_files)
 
     install_primitives(primitives_to_install_dir, prompt=False)
     # should fail second time when trying to copy files that already exist
@@ -212,14 +213,8 @@ def test_install_packages_from_requirements(primitives_to_install_dir):
     data_subfolder = os.path.join(data_dir, "pytest_folder")
 
     # make sure primitive files aren't there e.g from a failed run
-    for p in [custom_max_file, custom_mean_file, custom_sum_file, data_file, data_subfolder]:
-        try:
-            if p == data_subfolder:
-                shutil.rmtree(p)
-            else:
-                os.unlink(p)
-        except Exception:
-            pass
+    old_files = [custom_max_file, custom_mean_file, custom_sum_file, data_file, data_subfolder]
+    remove_test_files(old_files)
 
     install_primitives(primitives_to_install_dir, prompt=False)
 
