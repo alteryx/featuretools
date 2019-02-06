@@ -45,13 +45,14 @@ Demos & Use Cases
 
 `Predict NHL playoff matches`_
 ==============================
-- Many users of Kaggle are eager to use Featuretools to improve their model performance. In this blog post, a Kaggle user takes a NHL dataset containing game information, and uses Featuretools to create a model.
+- Many users of `Kaggle`_ are eager to use Featuretools to improve their model performance. In this blog post, a Kaggle user takes a NHL dataset containing game information, and uses Featuretools to create a model.
 
 .. _`Predict NHL playoff matches`: https://towardsdatascience.com/automated-feature-engineering-for-predictive-modeling-d8c9fa4e478b
+.. _`Kaggle`: https://www.kaggle.com/
 
 `Predict poverty of households in Costa Rica`_
 ==============================================
-- Social programs have a difficult time determining that the right people to give aid. Using a dataset of Costa Rican household characteristics, this Kaggle kernel predicts the poverty of households.
+- Social programs have a difficult time determining the right people to give aid. Using a dataset of Costa Rican household characteristics, this Kaggle kernel predicts the poverty of households.
 
 .. _`Predict poverty of households in Costa Rica`: https://www.kaggle.com/willkoehrsen/featuretools-for-good
 
