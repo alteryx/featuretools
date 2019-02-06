@@ -18,7 +18,7 @@ Libraries
 
 `Featuretools for R`_
 =====================
-- Many data scientists use **R** instead of **Python** for day-to-day data analysis. This library provides an R interface for featuretools.
+- Many data scientists use **R** instead of **Python** for their day-to-day tasks. This library provides an R interface for featuretools.
 
 .. _`Featuretools for R`: https://github.com/magnusfurugard/featuretoolsR
 
