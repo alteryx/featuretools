@@ -9,7 +9,8 @@ from featuretools.primitives.install import (
     extract_archive,
     get_installation_dir,
     list_primitive_files,
-    load_primitive_from_file
+    load_primitive_from_file,
+    install_primitives
 )
 
 try:
@@ -86,7 +87,7 @@ def test_install_primitives(install_path, primitives_to_install_dir):
     elif install_path == "INSTALL_VIA_MODULE":
         subprocess.check_output(['python', '-m', 'featuretools', 'install', '--no-prompt', primitives_to_install_dir])
     else:
-        featuretools.primitives.install.install_primitives(install_path, prompt=False)
+        install_primitives(install_path, prompt=False)
 
     # must reload submodule for it to work
     reload(featuretools.primitives.installed)
@@ -169,7 +170,7 @@ def test_install_packages_from_requirements(primitives_to_install_dir):
         except Exception:
             pass
 
-    featuretools.primitives.install.install_primitives(primitives_to_install_dir, prompt=False)
+    install_primitives(primitives_to_install_dir, prompt=False)
 
     # must reload submodule for it to work
     reload(featuretools.primitives.installed)
