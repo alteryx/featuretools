@@ -433,7 +433,6 @@ class TestCumCount:
     primitive = CumCount
 
     def test_order(self):
-        v = pd.Series([1, 2, 2])
         g = pd.Series(["a", "b", "a"])
 
         answer = [1, 1, 2]
@@ -442,7 +441,6 @@ class TestCumCount:
         compare(function(g), answer)
 
     def test_regular(self):
-        v = pd.Series([101, 102, 103, 104, 105, 106])
         g = pd.Series(["a", "b", "a", "c", "d", "b"])
         answer = [1, 1, 2, 1, 1, 2]
 
@@ -450,7 +448,6 @@ class TestCumCount:
         compare(function(g), answer)
 
     def test_discrete(self):
-        v = pd.Series(["1", "2", "3", "4", "5", "6"])
         g = pd.Series(["a", "b", "a", "c", "d", "b"])
         answer = [1, 1, 2, 1, 1, 2]
 
