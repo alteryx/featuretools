@@ -44,7 +44,7 @@ class Variable(object):
             self.entity_id == other.entity_id
 
     def __repr__(self):
-        ret = u"<Variable: {} >".format(self.name)
+        ret = u"<Variable: {} (dtype = {})>".format(self.name, self._dtype_repr)
 
         # encode for python 2
         if type(ret) != str:
