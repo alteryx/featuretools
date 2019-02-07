@@ -111,11 +111,6 @@ When working with raw data, it is common to have sufficient information to justi
 
     es
 
-.. ipython:: python
-    :suppress:
-
-    pd.options.display.max_columns = 200
-
 Looking at the output above, we see this method did two operations
 
 1. It created a new entity called "sessions" based on the "session_id" variable in "transactions"
