@@ -70,11 +70,6 @@ class Variable(object):
     def name(self):
         return self._name if self._name is not None else self.id
 
-    # @property
-    # def dtype(self):
-    #     return self._dtype_repr \
-    #         if self._dtype_repr is not None else "generic_type"
-
     @name.setter
     def name(self, name):
         self._name = name
