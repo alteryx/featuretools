@@ -31,7 +31,7 @@ class CumCount(TransformPrimitive):
 
     def get_function(self):
         def cum_count(values):
-            return values.groupby(values).cumcount().add(1)
+            return values.groupby(values).cumcount() + 1
 
         return cum_count
 
@@ -51,7 +51,7 @@ class CumMean(TransformPrimitive):
     def get_function(self):
         def cum_mean(values, groups):
             temp = values.groupby(groups)
-            return temp.cumsum() / temp.cumcount().add(1)
+            return temp.cumsum() / (temp.cumcount() + 1)
 
         return cum_mean
 
