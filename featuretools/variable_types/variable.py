@@ -181,7 +181,7 @@ class Datetime(Variable):
         super(Datetime, self).__init__(id, entity, name)
 
     def __repr__(self):
-        ret = u"<Variable: {} (dtype: {}, format: {})>".format(self.name, self.dtype, self.format)
+        ret = u"<Variable: {} (dtype: {}, format: {})>".format(self.name, self._dtype_repr, self.format)
 
         # encode for python 2
         if type(ret) != str:
