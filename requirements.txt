@@ -1,7 +1,7 @@
 boto3>=1.9.51
 botocore>=1.12.51
 numpy>=1.13.3
-pandas>=0.23.0,<0.24
+pandas>=0.23.0
 tqdm>=4.19.2
 toolz>=0.8.2
 pyyaml>=3.12
@@ -12,5 +12,4 @@ distributed>=1.24.2
 psutil>=5.4.8
 click>=7.0.0
 smart_open>=1.7.1
-s3fs>=0.1.5
 scikit-learn>=0.20.0
