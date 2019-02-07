@@ -13,15 +13,18 @@ There are many ways to contribute to Featuretools, with the most common ones bei
 
 3. Submit pull requests for our "Good First Issues" on GitHub: https://github.com/featuretools/featuretools/issues?q=is%3Aopen+is%3Aissue+label%3A%22Good+First+Issue%22
 
-4. Improve our documentation, which can be found under the [docs](docs/) directory or at https://docs.featuretools.com
+4. Make changes to the codebase, see [Contributing to the codebase](#Contributing-to-the-Codebase).
 
-5. [Report issues](#Report issues) you're facing, and give a "thumbs up" on issues that others reported and that are relevant to you. Issues should be used for bugs, and feature requests only.
+5. Improve our documentation, which can be found under the [docs](docs/) directory or at https://docs.featuretools.com
 
-6. Spread the word: reference Featuretools from your blog and articles, link to it from your website, or simply star it in GitHub to say "I use it".
+6. [Report issues](#Report-issues) you're facing, and give a "thumbs up" on issues that others reported and that are relevant to you. Issues should be used for bugs, and feature requests only.
+
+7. Spread the word: reference Featuretools from your blog and articles, link to it from your website, or simply star it in GitHub to say "I use it".
+  * If you would like to be featured on [ecosystem page](https://docs.featuretools.com/ecosystem.html), you can submit a [pull request](https://github.com/Featuretools/featuretools).
 
 ## Contributing to the Codebase
 
-* Before starting major work, you should touch base with the maintainers of Featuretools by filing an issue on GitHub or posting a message in the [#development channel on Slack](https://featuretools.slack.com/join/shared_invite/enQtNTEwODEzOTEwMjg4LTZiZDdkYjZhZTVkMmVmZDIxNWZiNTVjNDQxYmZkMzI5NGRlOTg5YjcwYmJiNWE2YjIzZmFkMjc1NDZkNjBhZTQ). This will increase the likelihood your pull request will eventually get merged in.
+Before starting major work, you should touch base with the maintainers of Featuretools by filing an issue on GitHub or posting a message in the [#development channel on Slack](https://featuretools.slack.com/join/shared_invite/enQtNTEwODEzOTEwMjg4LTZiZDdkYjZhZTVkMmVmZDIxNWZiNTVjNDQxYmZkMzI5NGRlOTg5YjcwYmJiNWE2YjIzZmFkMjc1NDZkNjBhZTQ). This will increase the likelihood your pull request will eventually get merged in.
 
 #### 1. Clone repo
 * The code is hosted on GitHub, so you will need to use Git to clone the project and make changes to the codebase. Once you have obtained a copy of the code, you should create a development environment that is separate from your existing Python environment so that you can make and test changes without compromising your own work environment.
