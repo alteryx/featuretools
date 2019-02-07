@@ -44,7 +44,7 @@ class Variable(object):
             self.entity_id == other.entity_id
 
     def __repr__(self):
-        ret = u"<Variable: {} (dtype = {})>".format(self.name, self.dtype)
+        ret = u"<Variable: {} >".format(self.name)
 
         # encode for python 2
         if type(ret) != str:
@@ -70,10 +70,10 @@ class Variable(object):
     def name(self):
         return self._name if self._name is not None else self.id
 
-    @property
-    def dtype(self):
-        return self._dtype_repr \
-            if self._dtype_repr is not None else "generic_type"
+    # @property
+    # def dtype(self):
+    #     return self._dtype_repr \
+    #         if self._dtype_repr is not None else "generic_type"
 
     @name.setter
     def name(self, name):
