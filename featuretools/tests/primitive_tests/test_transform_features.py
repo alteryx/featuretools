@@ -417,17 +417,6 @@ def test_haversine(es):
         assert v - values[i] < .0001
 
 
-def compare(a, b, equals=None):
-    assert len(a) == len(b)
-    for x, y in zip(a, b):
-        if equals is None:
-            if x != y:
-                print(x, y)
-            assert x == y
-        else:
-            assert equals(a, b)
-
-
 class TestCumCount:
 
     primitive = CumCount
@@ -438,21 +427,21 @@ class TestCumCount:
         answer = [1, 1, 2]
 
         function = self.primitive().get_function()
-        compare(function(g), answer)
+        np.testing.assert_array_equal(function(g), answer)
 
     def test_regular(self):
         g = pd.Series(["a", "b", "a", "c", "d", "b"])
         answer = [1, 1, 2, 1, 1, 2]
 
         function = self.primitive().get_function()
-        compare(function(g), answer)
+        np.testing.assert_array_equal(function(g), answer)
 
     def test_discrete(self):
         g = pd.Series(["a", "b", "a", "c", "d", "b"])
         answer = [1, 1, 2, 1, 1, 2]
 
         function = self.primitive().get_function()
-        compare(function(g), answer)
+        np.testing.assert_array_equal(function(g), answer)
 
 
 class TestCumSum:
@@ -466,7 +455,7 @@ class TestCumSum:
         answer = [1, 2, 3]
 
         function = self.primitive().get_function()
-        compare(function(v, g), answer)
+        np.testing.assert_array_equal(function(v, g), answer)
 
     def test_regular(self):
         v = pd.Series([101, 102, 103, 104, 105, 106])
@@ -474,7 +463,7 @@ class TestCumSum:
         answer = [101, 102, 204, 104, 105, 208]
 
         function = self.primitive().get_function()
-        compare(function(v, g), answer)
+        np.testing.assert_array_equal(function(v, g), answer)
 
 
 class TestCumMean:
@@ -487,7 +476,7 @@ class TestCumMean:
         answer = [1, 2, 1.5]
 
         function = self.primitive().get_function()
-        compare(function(v, g), answer)
+        np.testing.assert_array_equal(function(v, g), answer)
 
     def test_regular(self):
         v = pd.Series([101, 102, 103, 104, 105, 106])
@@ -495,7 +484,7 @@ class TestCumMean:
         answer = [101, 102, 102, 104, 105, 104]
 
         function = self.primitive().get_function()
-        compare(function(v, g), answer)
+        np.testing.assert_array_equal(function(v, g), answer)
 
 
 class TestCumMax:
@@ -509,7 +498,7 @@ class TestCumMax:
         answer = [1, 2, 2]
 
         function = self.primitive().get_function()
-        compare(function(v, g), answer)
+        np.testing.assert_array_equal(function(v, g), answer)
 
     def test_regular(self):
         v = pd.Series([101, 102, 103, 104, 105, 106])
@@ -517,7 +506,7 @@ class TestCumMax:
         answer = [101, 102, 103, 104, 105, 106]
 
         function = self.primitive().get_function()
-        compare(function(v, g), answer)
+        np.testing.assert_array_equal(function(v, g), answer)
 
 
 class TestCumMin:
@@ -531,7 +520,7 @@ class TestCumMin:
         answer = [1, 2, 1]
 
         function = self.primitive().get_function()
-        compare(function(v, g), answer)
+        np.testing.assert_array_equal(function(v, g), answer)
 
     def test_regular(self):
         v = pd.Series([101, 102, 103, 104, 105, 106, 100])
@@ -539,7 +528,7 @@ class TestCumMin:
         answer = [101, 102, 101, 104, 105, 102, 100]
 
         function = self.primitive().get_function()
-        compare(function(v, g), answer)
+        np.testing.assert_array_equal(function(v, g), answer)
 
 
 def test_cum_sum(es):
@@ -611,11 +600,8 @@ def test_cum_handles_uses_full_entity(es):
         df_2 = pandas_backend.calculate_all_features(instance_ids=[2, 4], time_last=None)
 
         # check that the value for instance id 2 matches
-        if not (df_2.loc[2] == df_1.loc[2]).all():
-            print("DF2:", df_2[df_2.columns[0]], "DF1", df_1[df_1.columns[0]])
         assert (df_2.loc[2] == df_1.loc[2]).all()
 
-    print("Value", es['log'].df['value'], es['log'].df['session_id'])
     for primitive in [CumSum, CumMean, CumMax, CumMin]:
         check(ft.Feature([es['log']['value'], es['log']['session_id']], primitive=primitive))
 
@@ -641,7 +627,6 @@ def test_cum_count(es):
     cvalues = df[cum_count.get_name()].values
     assert len(cvalues) == 15
     cum_count_values = [1, 2, 3, 4, 5, 1, 2, 3, 4, 1, 1, 2, 1, 2, 3]
-    print(es['log'].df['session_id'])
     for i, v in enumerate(cum_count_values):
         assert v == cvalues[i]
 
