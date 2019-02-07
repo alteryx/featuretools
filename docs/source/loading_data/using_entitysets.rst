@@ -49,7 +49,8 @@ To get started, we load the transactions dataframe as an entity.
                                   dataframe=transactions_df,
                                   index="transaction_id",
                                   time_index="transaction_time",
-                                  variable_types={"product_id": ft.variable_types.Categorical})
+                                  variable_types={"product_id": ft.variable_types.Categorical,
+                                                  "zip_code": ft.variable_types.ZIPCode})
     es
 
 .. note ::
@@ -109,6 +110,11 @@ When working with raw data, it is common to have sufficient information to justi
                              additional_variables=["device", "customer_id", "zip_code", "session_start", "join_date"])
 
     es
+
+.. ipython:: python
+    :suppress:
+
+    pd.options.display.max_columns = 200
 
 Looking at the output above, we see this method did two operations
 
