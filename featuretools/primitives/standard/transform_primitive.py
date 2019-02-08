@@ -175,7 +175,7 @@ class Weekday(TransformPrimitive):
 class NumCharacters(TransformPrimitive):
     """Return the characters in a given string.
     """
-    name = 'characters'
+    name = 'num_characters'
     input_types = [Text]
     return_type = Numeric
 
