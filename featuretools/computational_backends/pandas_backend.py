@@ -441,6 +441,8 @@ class PandasBackend(ComputationalBackend):
                         to_agg[variable_id] = []
 
                     func = f.get_function()
+                    # funcname used in case f.get_function() returns a string
+                    # since strings don't have __name__
                     funcname = func
                     if callable(func):
                         # if the same function is being applied to the same
