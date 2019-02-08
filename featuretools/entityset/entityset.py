@@ -202,14 +202,19 @@ class EntitySet(object):
         '''
         entities = {entity.id: serialization.to_entity_description(entity) for entity in self.entities}
         relationships = [serialization.to_relationship_description(relationship) for relationship in self.relationships]
-        return {'id': self.id, 'entities': entities, 'relationships': relationships}
+        data_description = {
+            'id': self.id,
+            'entities': entities,
+            'relationships': relationships
+        }
+        return data_description
 
     @classmethod
     def from_data_description(cls, description, **kwargs):
         '''Deserialize entityset from data description.
 
         Args:
-            description (dict) : Description of :class:`.EntitySet`.
+            description (dict) : Description of an :class:`.EntitySet`. Likely generated using :meth:`.EntitySet.create_data_description`
             kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
 
         Returns:
