@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+import tarfile
 
 import pytest
 
@@ -200,8 +201,26 @@ def test_install_packages_from_requirements(primitives_to_install_dir):
 
     # generate requirements file with correct path
     requirements_path = os.path.join(primitives_to_install_dir, "requirements.txt")
+    package_path = os.path.join(primitives_to_install_dir, "featuretools_pip_tester")
     with open(requirements_path, 'w') as f:
-        f.write(os.path.join(primitives_to_install_dir, "featuretools_pip_tester"))
+        f.write(package_path)
+
+    tar_path = os.path.join(os.path.dirname(primitives_to_install_dir),
+                            "test_install_primitives.tar.gz")
+    if os.path.exists(tar_path):
+        os.unlink(tar_path)
+
+    with tarfile.open(tar_path, "w:gz") as tar:
+        tar.add(requirements_path, arcname="requirements.txt")
+        tar.add(os.path.join(primitives_to_install_dir, "info.json"),
+                arcname="info.json")
+        tar.add(os.path.join(primitives_to_install_dir, "custom_max.py"),
+                arcname="custom_max.py")
+        tar.add(os.path.join(primitives_to_install_dir, "custom_mean.py"),
+                arcname="custom_mean.py")
+        tar.add(os.path.join(primitives_to_install_dir, "custom_sum.py"),
+                arcname="custom_sum.py")
+        tar.add(os.path.join(primitives_to_install_dir, "data"), arcname="data")
 
     installation_dir = get_installation_dir()
     data_dir = featuretools.config.get("primitive_data_folder")
@@ -215,7 +234,7 @@ def test_install_packages_from_requirements(primitives_to_install_dir):
     old_files = [custom_max_file, custom_mean_file, custom_sum_file, data_file, data_subfolder]
     remove_test_files(old_files)
 
-    install_primitives(primitives_to_install_dir, prompt=False)
+    install_primitives(tar_path, prompt=False)
 
     # must reload submodule for it to work
     reload(featuretools.primitives.installed)
@@ -229,6 +248,7 @@ def test_install_packages_from_requirements(primitives_to_install_dir):
     assert os.path.exists(data_subfolder)
     assert os.path.exists(os.path.join(data_subfolder, "hello.txt"))
     shutil.rmtree(data_subfolder)
+    os.unlink(tar_path)
 
     # then delete to clean up
     for f in [custom_max_file, custom_mean_file, custom_sum_file]:
