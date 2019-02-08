@@ -1,6 +1,10 @@
 from __future__ import absolute_import
 
+import os
+
 import numpy as np
+
+from featuretools import config
 
 
 class PrimitiveBase(object):
@@ -35,3 +39,6 @@ class PrimitiveBase(object):
 
     def get_function(self):
         raise NotImplementedError("Subclass must implement")
+
+    def get_filepath(self, filename):
+        return os.path.join(config.get("primitive_data_folder"), filename)

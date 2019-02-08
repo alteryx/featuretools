@@ -31,7 +31,8 @@ def dfs(entities=None,
         chunk_size=None,
         n_jobs=1,
         dask_kwargs=None,
-        verbose=False):
+        verbose=False,
+        return_variable_types=None):
     '''Calculates a feature matrix and features given a dictionary of entities
     and a list of relationships.
 
@@ -123,7 +124,7 @@ def dfs(entities=None,
         n_jobs (int, optional): number of parallel processes to use when
             calculating feature matrix
 
-        chunk_size (int or float or None or "cutoff time", optionsal): Number
+        chunk_size (int or float or None or "cutoff time", optional): Number
             of rows of output feature matrix to calculate at time. If passed an
             integer greater than 0, will try to use that many rows per chunk.
             If passed a float value between 0 and 1 sets the chunk size to that
@@ -143,6 +144,11 @@ def dfs(entities=None,
                 interface will not be enabled.
 
             Valid keyword arguments for LocalCluster will also be accepted.
+
+        return_variable_types (list[Variable] or str, optional): Types of
+                variables to return. If None, default to
+                Numeric, Discrete, and Boolean. If given as
+                the string 'all', use all available variable types.
 
     Examples:
         .. code-block:: python
@@ -181,7 +187,8 @@ def dfs(entities=None,
                                       max_features=max_features,
                                       seed_features=seed_features)
 
-    features = dfs_object.build_features(verbose=verbose)
+    features = dfs_object.build_features(
+        verbose=verbose, return_variable_types=return_variable_types)
 
     if features_only:
         return features

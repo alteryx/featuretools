@@ -1,6 +1,8 @@
-pytest==3.8.2
+pytest==4.1.1
 mock==2.0.0
 pympler==0.5
-pytest-xdist==1.23.2
-pytest-cov==2.6.0
+pytest-xdist==1.26.1
+pytest-cov==2.6.1
 fastparquet>=0.1.6
+graphviz>=0.8.4
+s3fs>=0.1.5

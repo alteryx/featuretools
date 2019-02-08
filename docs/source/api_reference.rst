@@ -99,6 +99,7 @@ Aggregation Primitives
     Mode
     AvgTimeBetween
     TimeSinceLast
+    TimeSinceFirst
     NUnique
     PercentTrue
     All
@@ -259,6 +260,13 @@ EntitySet query methods
     EntitySet.find_forward_path
     EntitySet.get_forward_entities
     EntitySet.get_backward_entities
+
+EntitySet visualization
+-----------------------
+.. autosummary::
+    :toctree: generated/
+
+    EntitySet.plot
 
 
 Entity methods

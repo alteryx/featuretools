@@ -16,6 +16,7 @@ from featuretools.primitives import (  # NMostCommon,
     Median,
     NumTrue,
     Sum,
+    TimeSinceFirst,
     TimeSinceLast,
     get_aggregation_primitives
 )
@@ -125,22 +126,36 @@ def test_check_input_types(es):
     assert mean._check_input_types()
 
 
-def test_mean_nan():
-    array = np.array([5, 5, 5, 5, 5])
+def test_mean_nan(es):
+    array = pd.Series([5, 5, 5, 5, 5])
     mean_func_nans_default = Mean().get_function()
-    mean_func_nans_false = Mean(ignore_nans=False).get_function()
-    mean_func_nans_true = Mean(ignore_nans=True).get_function()
+    mean_func_nans_false = Mean(skipna=False).get_function()
+    mean_func_nans_true = Mean(skipna=True).get_function()
     assert mean_func_nans_default(array) == 5
     assert mean_func_nans_false(array) == 5
     assert mean_func_nans_true(array) == 5
-    array = np.array([5, np.nan, np.nan, np.nan, np.nan, 10])
-    assert isnan(mean_func_nans_default(array))
+    array = pd.Series([5, np.nan, np.nan, np.nan, np.nan, 10])
+    assert mean_func_nans_default(array) == 7.5
     assert isnan(mean_func_nans_false(array))
     assert mean_func_nans_true(array) == 7.5
-    array_nans = np.array([np.nan, np.nan, np.nan, np.nan])
-    assert isnan(mean_func_nans_default(array))
+    array_nans = pd.Series([np.nan, np.nan, np.nan, np.nan])
+    assert isnan(mean_func_nans_default(array_nans))
     assert isnan(mean_func_nans_false(array_nans))
     assert isnan(mean_func_nans_true(array_nans))
+
+    # test naming
+    default_feat = ft.Feature(es["log"]["value"],
+                              parent_entity=es["customers"],
+                              primitive=Mean)
+    assert default_feat.get_name() == "MEAN(log.value)"
+    ignore_nan_feat = ft.Feature(es["log"]["value"],
+                                 parent_entity=es["customers"],
+                                 primitive=Mean(skipna=True))
+    assert ignore_nan_feat.get_name() == "MEAN(log.value)"
+    include_nan_feat = ft.Feature(es["log"]["value"],
+                                  parent_entity=es["customers"],
+                                  primitive=Mean(skipna=False))
+    assert include_nan_feat.get_name() == "MEAN(log.value, skipna=False)"
 
 
 def test_base_of_and_stack_on_heuristic(es, test_primitive):
@@ -231,7 +246,19 @@ def test_time_since_last(es):
                                      instance_ids=[0, 1, 2],
                                      cutoff_time=datetime(2015, 6, 8))
 
-    correct = [131376600, 131289600, 131287800]
+    correct = [131376000.0, 131289534.0, 131287797.0]
+    # note: must round to nearest second
+    assert all(fm[f.get_name()].round().values == correct)
+
+
+def test_time_since_first(es):
+    f = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=TimeSinceFirst)
+    fm = ft.calculate_feature_matrix([f],
+                                     entityset=es,
+                                     instance_ids=[0, 1, 2],
+                                     cutoff_time=datetime(2015, 6, 8))
+
+    correct = [131376600.0, 131289600.0, 131287800.0]
     # note: must round to nearest second
     assert all(fm[f.get_name()].round().values == correct)
 

@@ -44,7 +44,7 @@ class Variable(object):
             self.entity_id == other.entity_id
 
     def __repr__(self):
-        ret = u"<Variable: {} (dtype = {})>".format(self.name, self.dtype)
+        ret = u"<Variable: {} (dtype = {})>".format(self.name, self._dtype_repr)
 
         # encode for python 2
         if type(ret) != str:
@@ -253,7 +253,7 @@ class Datetime(Variable):
         super(Datetime, self).__init__(id, entity, name=name)
 
     def __repr__(self):
-        ret = u"<Variable: {} (dtype: {}, format: {})>".format(self.name, self.dtype, self.format)
+        ret = u"<Variable: {} (dtype: {}, format: {})>".format(self.name, self._dtype_repr, self.format)
 
         # encode for python 2
         if type(ret) != str:
@@ -345,7 +345,8 @@ class ZIPCode(Categorical):
     Consists of a series of digits which are casts as
     string. Five digit or 9 digit zipcodes are supported.
     """
-    type_string = "str"
+    type_string = "zipcode"
+    _default_pandas_dtype = str
 
 
 ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,

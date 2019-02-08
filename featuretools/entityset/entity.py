@@ -77,14 +77,14 @@ class Entity(object):
         if time_index:
             self.set_time_index(time_index, already_sorted=already_sorted)
         elif not already_sorted:
-                self.df.sort_index(kind="mergesort", inplace=True)
+            self.df.sort_index(kind="mergesort", inplace=True)
         self.set_secondary_time_index(secondary_time_index)
 
     def __repr__(self):
         repr_out = u"Entity: {}\n".format(self.id)
         repr_out += u"  Variables:"
         for v in self.variables:
-            repr_out += u"\n    {} (dtype: {})".format(v.id, v.dtype)
+            repr_out += u"\n    {} (dtype: {})".format(v.id, v._dtype_repr)
 
         shape = self.shape
         repr_out += u"\n  Shape:\n    (Rows: {}, Columns: {})".format(

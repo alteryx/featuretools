@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 # flake8: noqa
-from . import config
+from .config_init import config
 from . import variable_types
 from .entityset.api import *
 from . import primitives
@@ -15,4 +15,4 @@ import featuretools.wrappers
 from . import feature_base
 from .feature_base import AggregationFeature, DirectFeature, Feature, FeatureBase, IdentityFeature, TransformFeature
 
-__version__ = '0.5.1'
+__version__ = '0.6.0'

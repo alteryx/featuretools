@@ -59,13 +59,30 @@ class Mean(AggregationPrimitive):
     input_types = [Numeric]
     return_type = Numeric
 
-    def __init__(self, ignore_nans=False):
-        self.ignore_nans = ignore_nans
+    def __init__(self, skipna=True):
+        self.skipna = skipna
 
     def get_function(self):
-        if self.ignore_nans:
-            return np.nanmean
-        return np.mean
+        if self.skipna:
+            # np.mean of series is functionally nanmean
+            return np.mean
+
+        def mean(series):
+            return np.mean(series.values)
+        return mean
+
+    def generate_name(self, base_feature_names, child_entity_id,
+                      parent_entity_id, where_str, use_prev_str):
+        skipna = ""
+        if not self.skipna:
+            skipna = ", skipna=False"
+        base_features_str = ", ".join(base_feature_names)
+        return u"%s(%s.%s%s%s%s)" % (self.name.upper(),
+                                     child_entity_id,
+                                     base_features_str,
+                                     where_str,
+                                     use_prev_str,
+                                     skipna)
 
 
 class Mode(AggregationPrimitive):
@@ -287,10 +304,26 @@ class TimeSinceLast(AggregationPrimitive):
     def get_function(self):
 
         def time_since_last(values, time=None):
-            time_since = time - values.iloc[0]
+            time_since = time - values.iloc[-1]
             return time_since.total_seconds()
 
         return time_since_last
+
+
+class TimeSinceFirst(AggregationPrimitive):
+    """Time since first related instance."""
+    name = "time_since_first"
+    input_types = [DatetimeTimeIndex]
+    return_type = Numeric
+    uses_calc_time = True
+
+    def get_function(self):
+
+        def time_since_first(values, time=None):
+            time_since = time - values.iloc[0]
+            return time_since.total_seconds()
+
+        return time_since_first
 
 
 class Trend(AggregationPrimitive):

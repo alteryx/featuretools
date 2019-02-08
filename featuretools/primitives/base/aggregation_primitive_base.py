@@ -32,7 +32,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
     values by passing in empty data.
 
     Args:
-        function (function): Function that takes in an array  and applies some
+        function (function): Function that takes in a series and applies some
             transformation to it.
 
         input_types (list[Variable]): Variable types of the inputs.
@@ -78,7 +78,7 @@ def make_agg_primitive(function, input_types, return_type, name=None,
             from featuretools.variable_types import DatetimeTimeIndex, Numeric
 
             def time_since_last(values, time=None):
-                time_since = time - values.iloc[0]
+                time_since = time - values.iloc[-1]
                 return time_since.total_seconds()
 
             TimeSinceLast = make_agg_primitive(

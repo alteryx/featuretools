@@ -26,8 +26,8 @@ def make_trans_primitive(function, input_types, return_type, name=None,
     '''Returns a new transform primitive class
 
     Args:
-        function (function): Function that takes in an array and applies some
-            transformation to it, returning an array.
+        function (function): Function that takes in a series and applies some
+            transformation to it.
 
         input_types (list[Variable]): Variable types of the inputs.
 

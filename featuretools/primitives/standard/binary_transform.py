@@ -362,7 +362,7 @@ class ModuloNumeric(TransformPrimitive):
 
 
 class ModuloNumericScalar(TransformPrimitive):
-    name = "modulo_numeric"
+    name = "modulo_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
 
@@ -376,6 +376,23 @@ class ModuloNumericScalar(TransformPrimitive):
 
     def generate_name(self, base_feature_names):
         return "%s %% %s" % (base_feature_names[0], str(self.value))
+
+
+class ModuloByFeature(TransformPrimitive):
+    name = "modulo_by_feature"
+    input_types = [Numeric]
+    return_type = Numeric
+
+    def __init__(self, value=1):
+        self.value = value
+
+    def get_function(self):
+        def modulo_by_feature(vals):
+            return self.value % vals
+        return modulo_by_feature
+
+    def generate_name(self, base_feature_names):
+        return "%s %% %s" % (str(self.value), base_feature_names[0])
 
 
 class And(TransformPrimitive):
