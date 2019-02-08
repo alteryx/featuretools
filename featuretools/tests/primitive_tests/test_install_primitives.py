@@ -205,6 +205,24 @@ def test_errors_if_missing_primitives(primitives_to_install_dir):
             json.dump(old_info, f)
 
 
+def test_errors_if_extra_primitives(primitives_to_install_dir):
+    tmp_dir = get_installation_temp_dir()
+    if os.path.exists(tmp_dir):
+        shutil.rmtree(tmp_dir)
+
+    extra_path = os.path.join(primitives_to_install_dir, "extra_primitive.py")
+    with open(extra_path, 'w') as f:
+        f.write("from featuretools.primitives import Sum")
+
+    try:
+        error_text = "Primitive sum not listed in info.json"
+        with pytest.raises(RuntimeError, match=error_text):
+            install_primitives(primitives_to_install_dir, prompt=False)
+        assert not os.path.exists(tmp_dir)
+    finally:
+        os.unlink(extra_path)
+
+
 def test_extract_non_archive_errors(bad_primitives_files_dir):
     primitive_file = os.path.join(bad_primitives_files_dir, "no_primitives.py")
     error_text = "Cannot extract archive from %s. Must provide archive ending in .tar or .tar.gz" % primitive_file
