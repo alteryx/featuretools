@@ -172,6 +172,7 @@ def extract_archive(filepath):
     for member in members:
         if member.name.endswith("info.json"):
             directory = os.path.join(tmp_dir, os.path.dirname(member.path))
+            break
 
     return directory
 
