@@ -124,7 +124,7 @@ def dfs(entities=None,
         n_jobs (int, optional): number of parallel processes to use when
             calculating feature matrix
 
-        chunk_size (int or float or None or "cutoff time", optionsal): Number
+        chunk_size (int or float or None or "cutoff time", optional): Number
             of rows of output feature matrix to calculate at time. If passed an
             integer greater than 0, will try to use that many rows per chunk.
             If passed a float value between 0 and 1 sets the chunk size to that
