@@ -53,9 +53,9 @@ def install_primitives(directory_or_archive, prompt=True):
         if prompt:
             while True:
                 resp = input("Install primitives: %s? (Y/n) " % primitives_list)
-                if resp == "Y":
+                if resp.lower() == "y":
                     break
-                elif resp == "n":
+                elif resp.lower() == "n":
                     return
         else:
             print("Installing primitives: %s" % primitives_list)
