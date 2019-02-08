@@ -186,7 +186,7 @@ class NumCharacters(TransformPrimitive):
 class NumWords(TransformPrimitive):
     """Returns the words in a given string by counting the spaces.
     """
-    name = 'numwords'
+    name = 'num_words'
     input_types = [Text]
     return_type = Numeric
 
