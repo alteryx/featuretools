@@ -2,6 +2,7 @@
 docs/source/generated/
 venv/
 data/
+installed/
 output.csv
 htmlcov/
 .idea/
