@@ -7,8 +7,8 @@ Whether you are a novice or experienced software developer, all contributions an
 There are many ways to contribute to Featuretools, with the most common ones being contribution of code or documentation to the project.
 
 **To contribute, you can:**
-1. Help users on our [Slack channel](https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTZiZDdkYjZhZTVkMmVmZDIxNWZiNTVjNDQxYmZkMzI5NGRlOTg5YjcwYmJiNWE2YjIzZmFkMjc1NDZkNjBhZTQ)
-  * Answer questions under the featuretools tag on [Stack Overflow](https://stackoverflow.com/questions/tagged/featuretools)
+1. Help users on our [Slack channel](https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTZiZDdkYjZhZTVkMmVmZDIxNWZiNTVjNDQxYmZkMzI5NGRlOTg5YjcwYmJiNWE2YjIzZmFkMjc1NDZkNjBhZTQ) 
+    * Answer questions under the featuretools tag on [Stack Overflow](https://stackoverflow.com/questions/tagged/featuretools)
 
 3. Submit pull requests for our "Good First Issues" on GitHub: https://github.com/featuretools/featuretools/issues?q=is%3Aopen+is%3Aissue+label%3A%22Good+First+Issue%22
 
@@ -19,7 +19,7 @@ There are many ways to contribute to Featuretools, with the most common ones bei
 6. [Report issues](#Report-issues) you're facing, and give a "thumbs up" on issues that others reported and that are relevant to you. Issues should be used for bugs, and feature requests only.
 
 7. Spread the word: reference Featuretools from your blog and articles, link to it from your website, or simply star it in GitHub to say "I use it".
-  * If you would like to be featured on [ecosystem page](https://docs.featuretools.com/ecosystem.html), you can submit a [pull request](https://github.com/Featuretools/featuretools).
+    * If you would like to be featured on [ecosystem page](https://docs.featuretools.com/ecosystem.html), you can submit a [pull request](https://github.com/Featuretools/featuretools).
 
 ## Contributing to the Codebase
 
