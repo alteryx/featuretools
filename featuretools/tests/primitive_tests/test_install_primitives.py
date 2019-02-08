@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import subprocess
@@ -178,6 +179,30 @@ def test_cleans_up_tmp_dir_on_error(bad_primitives_files_dir):
     with pytest.raises(RuntimeError, match=error_text):
         install_primitives(bad_primitives_files_dir, prompt=False)
     assert not os.path.exists(tmp_dir)
+
+
+def test_errors_if_missing_primitives(primitives_to_install_dir):
+    tmp_dir = get_installation_temp_dir()
+    if os.path.exists(tmp_dir):
+        shutil.rmtree(tmp_dir)
+
+    info_path = os.path.join(primitives_to_install_dir, "info.json")
+    with open(info_path, 'r') as f:
+        old_info = json.load(f)
+
+    new_info = {"primitives": old_info["primitives"][:]}
+    new_info["primitives"].append("MissingPrimitive")
+    with open(info_path, 'w') as f:
+        json.dump(new_info, f)
+
+    try:
+        error_text = "Not all listed primitives discovered"
+        with pytest.raises(RuntimeError, match=error_text):
+            install_primitives(primitives_to_install_dir, prompt=False)
+        assert not os.path.exists(tmp_dir)
+    finally:
+        with open(info_path, 'w') as f:
+            json.dump(old_info, f)
 
 
 def test_extract_non_archive_errors(bad_primitives_files_dir):
