@@ -1,16 +1,17 @@
+import json
 import os
 import shutil
+import subprocess
 import sys
 import tarfile
 from builtins import input
 from inspect import isclass
 
-import s3fs
 from botocore.exceptions import NoCredentialsError
 from smart_open import smart_open
 from tqdm import tqdm
 
-from .base.primitive_base import PrimitiveBase
+from .base import AggregationPrimitive, PrimitiveBase, TransformPrimitive
 
 import featuretools
 
@@ -32,45 +33,73 @@ def install_primitives(directory_or_archive, prompt=True):
     """Install primitives from the provided directory"""
     tmp_dir = get_installation_temp_dir()
 
-    # if it isn't local, download it. if remote, it must be archive
-    if not (os.path.isdir(directory_or_archive) or os.path.isfile(directory_or_archive)):
-        directory_or_archive = download_archive(directory_or_archive)
+    try:
+        # if it isn't local, download it. if remote, it must be archive
+        if not (os.path.isdir(directory_or_archive) or os.path.isfile(directory_or_archive)):
+            directory_or_archive = download_archive(directory_or_archive)
 
     # if archive, extract directory to temp folders
-    if os.path.isfile(directory_or_archive):
-        directory = extract_archive(directory_or_archive)
-    else:
-        directory = directory_or_archive
+        if os.path.isfile(directory_or_archive):
+            directory = extract_archive(directory_or_archive)
+        else:
+            directory = directory_or_archive
 
-    # Iterate over all the files and determine the primitives to install
-    files = list_primitive_files(directory)
-    all_primitives = {}
-    files_to_copy = []
-    for filepath in files:
-        primitive_name, primitive_obj = load_primitive_from_file(filepath)
-        files_to_copy.append(filepath)
-        all_primitives[primitive_name] = primitive_obj
+        # Iterate over all the files and determine the primitives to install
+        with open(os.path.join(directory, "info.json"), 'r') as f:
+            info = json.load(f)
 
-    # before installing, confirm with user
-    primitives_list = ", ".join(all_primitives.keys())
-    if prompt:
-        while True:
-            resp = input("Install primitives: %s? (Y/n) " % primitives_list)
-            if resp == "Y":
-                break
-            elif resp == "n":
-                return
-    else:
-        print("Installing primitives: %s" % primitives_list)
+        # before installing, confirm with user
+        primitives_list = ", ".join(info['primitives'])
+        if prompt:
+            while True:
+                resp = input("Install primitives: %s? (Y/n) " % primitives_list)
+                if resp.lower() == "y":
+                    break
+                elif resp.lower() == "n":
+                    return
+        else:
+            print("Installing primitives: %s" % primitives_list)
 
-    # copy the files
-    installation_dir = get_installation_dir()
-    for to_copy in tqdm(files_to_copy):
-        shutil.copy2(to_copy, installation_dir)
+        # install dependencies
+        if "requirements.txt" in os.listdir(directory):
+            requirements_path = os.path.join(directory, "requirements.txt")
+            subprocess.check_call(["pip", "install", "-r", requirements_path])
 
-    # clean up tmp dir
-    if os.path.exists(tmp_dir):
-        shutil.rmtree(tmp_dir)
+        # copy the files
+        installation_dir = get_installation_dir()
+
+        files = list_primitive_files(directory)
+        files_to_copy = []
+        all_primitives = set()
+        for filepath in files:
+            primitive_name, primitive_obj = load_primitive_from_file(filepath)
+            if primitive_obj.name not in info['primitives']:
+                raise RuntimeError("Primitive %s not listed in "
+                                   "info.json" % (primitive_obj.name))
+            files_to_copy.append(filepath)
+            all_primitives.add(primitive_obj.name)
+
+        if all_primitives != set(info['primitives']):
+            raise RuntimeError("Not all listed primitives discovered")
+        for to_copy in tqdm(files_to_copy):
+            shutil.copy2(to_copy, installation_dir)
+
+        # handle data folder
+        data_path = os.path.join(directory, "data")
+        data_folder = featuretools.config.get("primitive_data_folder")
+        if os.path.exists(data_path) and os.path.isdir(data_path):
+            for to_copy in tqdm(os.listdir(data_path)):
+                src_path = os.path.join(data_path, to_copy)
+                dst_path = os.path.join(data_folder, to_copy)
+                if os.path.isdir(src_path):
+                    shutil.copytree(src_path, dst_path)
+                else:
+                    shutil.copy2(src_path, dst_path)
+
+    finally:
+        # clean up tmp dir
+        if os.path.exists(tmp_dir):
+            shutil.rmtree(tmp_dir)
 
 
 def get_featuretools_root():
@@ -104,6 +133,11 @@ def download_archive(uri):
             remote_archive = smart_open(uri, 'rb', ignore_extension=True)
         except NoCredentialsError:
             # fallback to anonymous using s3fs
+            try:
+                import s3fs
+            except ImportError:
+                raise ImportError("The s3fs library is required to handle s3 files")
+
             s3 = s3fs.S3FileSystem(anon=True)
             remote_archive = s3.open(uri, 'rb')
 
@@ -126,12 +160,19 @@ def extract_archive(filepath):
         raise RuntimeError(e)
 
     tmp_dir = get_installation_temp_dir()
-    members = [m for m in tar.getmembers() if check_valid_primitive_path(m.path)]
+    members = [m for m in tar.getmembers()
+               if((check_valid_primitive_path(m.path) or
+                  m.name.endswith("requirements.txt") or
+                  m.name.endswith("info.json") or
+                  "data/" in m.name) and (not m.path.startswith("/")))]
     tar.extractall(tmp_dir, members=members)
     tar.close()
 
     # figure out the directory name from any file in archive
-    directory = os.path.join(tmp_dir, os.path.dirname(members[0].path))
+    for member in members:
+        if member.name.endswith("info.json"):
+            directory = os.path.join(tmp_dir, os.path.dirname(member.path))
+            break
 
     return directory
 
@@ -175,7 +216,10 @@ def load_primitive_from_file(filepath):
     primitives = []
     for primitive_name in vars(module):
         primitive_class = getattr(module, primitive_name)
-        if isclass(primitive_class) and issubclass(primitive_class, PrimitiveBase):
+        if (isclass(primitive_class) and
+                issubclass(primitive_class, PrimitiveBase) and
+                primitive_class not in (AggregationPrimitive,
+                                        TransformPrimitive)):
             primitives.append((primitive_name, primitive_class))
 
     if len(primitives) == 0:

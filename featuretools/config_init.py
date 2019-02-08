@@ -1,3 +1,4 @@
+import copy
 import logging
 import os
 import sys
@@ -44,3 +45,28 @@ def initialize_logging():
 
 
 initialize_logging()
+
+
+class Config():
+    def __init__(self):
+        self._data = {}
+        self.set_to_default()
+
+    def set_to_default(self):
+        PWD = os.path.dirname(__file__)
+        primitive_data_folder = os.path.join(PWD, "primitives/data")
+        self._data = {
+            "primitive_data_folder": primitive_data_folder,
+        }
+
+    def get(self, key):
+        return copy.deepcopy(self._data[key])
+
+    def get_all(self):
+        return copy.deepcopy(self._data)
+
+    def set(self, values):
+        self._data.update(values)
+
+
+config = Config()

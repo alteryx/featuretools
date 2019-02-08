@@ -24,6 +24,7 @@ from featuretools.primitives import (  # CumMean,
     Last,
     Mode,
     NMostCommon,
+    NotEqual,
     Sum,
     TimeSincePrevious
 )
@@ -662,6 +663,16 @@ def test_transform_consistency():
     assert feature_with_name(feature_defs, 'OR(AND(b, b1), b1)')
 
 
+def test_transform_no_stack_agg(es):
+    feature_defs = ft.dfs(entityset=es,
+                          target_entity="customers",
+                          agg_primitives=[NMostCommon],
+                          trans_primitives=[NotEqual],
+                          max_depth=3,
+                          features_only=True)
+    assert not feature_with_name(feature_defs, 'id != N_MOST_COMMON(sessions.device_type)')
+
+
 def test_intialized_trans_prim(es):
     prim = IsIn(list_of_outputs=['coke zero'])
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
@@ -681,3 +692,60 @@ def test_initialized_agg_prim(es):
                                    trans_primitives=[])
     features = dfs_obj.build_features()
     assert (feature_with_name(features, "N_MOST_COMMON(log.product_id)"))
+
+
+def test_return_variable_types(es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id="sessions",
+                                   entityset=es,
+                                   agg_primitives=[Count, NMostCommon],
+                                   trans_primitives=[Absolute, Hour, IsIn])
+
+    discrete = ft.variable_types.Discrete
+    numeric = ft.variable_types.Numeric
+    datetime = ft.variable_types.Datetime
+
+    f1 = dfs_obj.build_features(return_variable_types=None)
+    f2 = dfs_obj.build_features(return_variable_types=[discrete])
+    f3 = dfs_obj.build_features(return_variable_types="all")
+    f4 = dfs_obj.build_features(return_variable_types=[datetime])
+
+    f1_types = set([f.variable_type for f in f1])
+    f2_types = set([f.variable_type for f in f2])
+    f3_types = set([f.variable_type for f in f3])
+    f4_types = set([f.variable_type for f in f4])
+
+    assert(discrete in f1_types)
+    assert(numeric in f1_types)
+    assert(datetime not in f2_types)
+
+    assert(discrete in f2_types)
+    assert(numeric not in f2_types)
+    assert(datetime not in f2_types)
+
+    assert(discrete in f3_types)
+    assert(numeric in f3_types)
+    assert(datetime in f3_types)
+
+    assert(discrete not in f4_types)
+    assert(numeric not in f4_types)
+    assert(datetime in f4_types)
+
+
+def test_checks_primitives_correct_type(es):
+    error_text = "Primitive <class \\'featuretools\\.primitives\\.standard\\."\
+                 "transform_primitive\\.Hour\\'> in agg_primitives is not an "\
+                 "aggregation primitive"
+    with pytest.raises(ValueError, match=error_text):
+        DeepFeatureSynthesis(target_entity_id="sessions",
+                             entityset=es,
+                             agg_primitives=[Hour],
+                             trans_primitives=[])
+
+    error_text = "Primitive <class \\'featuretools\\.primitives\\.standard\\."\
+                 "aggregation_primitives\\.Last\\'> in trans_primitives is "\
+                 "not a transform primitive"
+    with pytest.raises(ValueError, match=error_text):
+        DeepFeatureSynthesis(target_entity_id="sessions",
+                             entityset=es,
+                             agg_primitives=[],
+                             trans_primitives=[Last])

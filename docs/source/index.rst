@@ -224,6 +224,7 @@ Table of contents
 * :doc:`help`
 * :doc:`usage_tips/limitations`
 * :doc:`usage_tips/glossary`
+* :doc:`ecosystem`
 * :doc:`api_reference`
 * :doc:`changelog`
 
@@ -234,6 +235,7 @@ Table of contents
    help
    usage_tips/limitations
    usage_tips/glossary
+   ecosystem
    api_reference
    changelog
 

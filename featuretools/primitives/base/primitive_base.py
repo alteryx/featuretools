@@ -4,6 +4,8 @@ import os
 
 import numpy as np
 
+from featuretools import config
+
 
 class PrimitiveBase(object):
     """Base class for all primitives."""
@@ -39,6 +41,4 @@ class PrimitiveBase(object):
         raise NotImplementedError("Subclass must implement")
 
     def get_filepath(self, filename):
-        PWD = os.path.dirname(__file__)
-        path = os.path.join(PWD, "../data", filename)
-        return path
+        return os.path.join(config.get("primitive_data_folder"), filename)
