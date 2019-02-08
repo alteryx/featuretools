@@ -71,4 +71,4 @@ For a similar partition and distribute implementation using Apache Spark with Py
 
 Feature Labs
 ------------
-`Feature Labs <http://featurelabs.com>`_ provides tools and support to organizations that want to scale their usage of Featuretools. More information is available `here <http://featurelabs.com/featuretools>`_.
+`Feature Labs <http://featurelabs.com>`_ provides tools and support to organizations that want to scale their usage of Featuretools. More information is available `here <https://www.featurelabs.com/featuretools>`_.
