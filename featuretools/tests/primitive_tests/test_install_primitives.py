@@ -128,7 +128,7 @@ def test_list_primitive_files(primitives_to_install_dir):
     assert {custom_max_file, custom_mean_file, custom_sum_file}.issubset(set(files))
 
 
-def test_install_twice(primitives_to_install_dir):
+def test_fails_if_data_would_be_overwritten(primitives_to_install_dir):
     installation_dir = get_installation_dir()
     data_dir = featuretools.config.get("primitive_data_folder")
     custom_max_file = os.path.join(installation_dir, "custom_max.py")
