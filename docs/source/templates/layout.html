@@ -7,5 +7,24 @@
   analytics.page();
   }}();
 </script>
+
+
+{% set image = 'https://docs.featuretools.com/_static/featuretools-open-graph-min.jpg' %}
+{% set description = 'Automated feature engineering in Python' %}
+{% if meta is defined %}
+    {% if meta.description is defined %}
+        {% set description = meta.description %}
+    {% endif %}
+{% endif %}
+
+<meta property="og:title" content="{{ title|striptags|e }}{{ titlesuffix }}">
+<meta content="{{description}}" />
+<meta property="og:description" content="{{description}}">
+<meta property="og:image" content="{{image}}">
+<meta property="twitter:image" content="{{image}}">
+<meta name="twitter:card" content="summary_large_image">
+
+
+
 {% endblock %}
 
