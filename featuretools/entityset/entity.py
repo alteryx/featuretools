@@ -84,7 +84,7 @@ class Entity(object):
         repr_out = u"Entity: {}\n".format(self.id)
         repr_out += u"  Variables:"
         for v in self.variables:
-            repr_out += u"\n    {} (dtype: {})".format(v.id, v.dtype)
+            repr_out += u"\n    {} (dtype: {})".format(v.id, v._dtype_repr)
 
         shape = self.shape
         repr_out += u"\n  Shape:\n    (Rows: {}, Columns: {})".format(
