@@ -4,6 +4,7 @@ import pstats
 import sys
 import warnings
 from datetime import datetime
+from functools import partial
 
 import numpy as np
 import pandas as pd
@@ -442,6 +443,11 @@ class PandasBackend(ComputationalBackend):
                     func = f.get_function()
                     funcname = func
                     if callable(func):
+                        # if the same function is being applied to the same
+                        # variable twice, wrap it in a partial to avoid
+                        # duplicate functions
+                        if u"{}-{}".format(variable_id, id(func)) in agg_rename:
+                            func = partial(func)
                         func.__name__ = str(id(func))
                         funcname = str(id(func))
 
