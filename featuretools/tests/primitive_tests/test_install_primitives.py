@@ -50,12 +50,12 @@ def bad_primitives_files_dir(this_dir):
 
 @pytest.fixture
 def amazon_path_s3():
-    return "s3://featuretools-static/primitives_to_install.tar.gz"
+    return "s3://featuretools-static/primitives_to_install_v1.tar.gz"
 
 
 @pytest.fixture
 def amazon_path_http():
-    return "https://s3.amazonaws.com/featuretools-static/primitives_to_install.tar.gz"
+    return "https://s3.amazonaws.com/featuretools-static/primitives_to_install_v1.tar.gz"
 
 
 @pytest.fixture
@@ -107,12 +107,11 @@ def test_install_primitives(install_path, primitives_to_install_dir):
 
     files = list_primitive_files(installation_dir)
     assert {custom_max_file, custom_mean_file, custom_sum_file}.issubset(set(files))
-    if install_path in [primitives_to_install_dir, "INSTALL_VIA_CLI", "INSTALL_VIA_MODULE"]:
-        assert os.path.exists(data_file)
-        os.unlink(data_file)
-        assert os.path.exists(data_subfolder)
-        assert os.path.exists(os.path.join(data_subfolder, "hello.txt"))
-        shutil.rmtree(data_subfolder)
+    assert os.path.exists(data_file)
+    os.unlink(data_file)
+    assert os.path.exists(data_subfolder)
+    assert os.path.exists(os.path.join(data_subfolder, "hello.txt"))
+    shutil.rmtree(data_subfolder)
 
     # then delete to clean up
     for f in [custom_max_file, custom_mean_file, custom_sum_file]:

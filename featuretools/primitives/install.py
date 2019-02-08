@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import subprocess
@@ -44,16 +45,11 @@ def install_primitives(directory_or_archive, prompt=True):
             directory = directory_or_archive
 
         # Iterate over all the files and determine the primitives to install
-        files = list_primitive_files(directory)
-        all_primitives = {}
-        files_to_copy = []
-        for filepath in files:
-            primitive_name, primitive_obj = load_primitive_from_file(filepath)
-            files_to_copy.append(filepath)
-            all_primitives[primitive_name] = primitive_obj
+        with open(os.path.join(directory, "info.json"), 'r') as f:
+            info = json.load(f)
 
         # before installing, confirm with user
-        primitives_list = ", ".join(all_primitives.keys())
+        primitives_list = ", ".join(info['primitives'])
         if prompt:
             while True:
                 resp = input("Install primitives: %s? (Y/n) " % primitives_list)
@@ -64,8 +60,27 @@ def install_primitives(directory_or_archive, prompt=True):
         else:
             print("Installing primitives: %s" % primitives_list)
 
+        # install dependencies
+        if "requirements.txt" in os.listdir(directory):
+            requirements_path = os.path.join(directory, "requirements.txt")
+            subprocess.check_call(["pip", "install", "-r", requirements_path])
+
         # copy the files
         installation_dir = get_installation_dir()
+
+        files = list_primitive_files(directory)
+        files_to_copy = []
+        all_primitives = set()
+        for filepath in files:
+            primitive_name, primitive_obj = load_primitive_from_file(filepath)
+            if primitive_obj.name not in info['primitives']:
+                raise RuntimeError("Primitive %s not listed in "
+                                   "info.json" % (primitive_obj.name))
+            files_to_copy.append(filepath)
+            all_primitives.add(primitive_obj.name)
+
+        if all_primitives != set(info['primitives']):
+            raise RuntimeError("Not all listed primitives discovered")
         for to_copy in tqdm(files_to_copy):
             shutil.copy2(to_copy, installation_dir)
 
@@ -81,10 +96,6 @@ def install_primitives(directory_or_archive, prompt=True):
                 else:
                     shutil.copy2(src_path, dst_path)
 
-        # install dependencies
-        if "requirements.txt" in os.listdir(directory):
-            requirements_path = os.path.join(directory, "requirements.txt")
-            subprocess.check_call(["pip", "install", "-r", requirements_path])
     finally:
         # clean up tmp dir
         if os.path.exists(tmp_dir):
@@ -149,12 +160,18 @@ def extract_archive(filepath):
         raise RuntimeError(e)
 
     tmp_dir = get_installation_temp_dir()
-    members = [m for m in tar.getmembers() if check_valid_primitive_path(m.path)]
+    members = [m for m in tar.getmembers()
+               if(check_valid_primitive_path(m.path) or
+                  m.name.endswith("requirements.txt") or
+                  m.name.endswith("info.json") or
+                  "/data/" in m.name)]
     tar.extractall(tmp_dir, members=members)
     tar.close()
 
     # figure out the directory name from any file in archive
-    directory = os.path.join(tmp_dir, os.path.dirname(members[0].path))
+    for member in members:
+        if os.path.isfile(os.path.join(tmp_dir, member.path)):
+            directory = os.path.join(tmp_dir, os.path.dirname(member.path))
 
     return directory
 
