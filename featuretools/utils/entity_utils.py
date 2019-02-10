@@ -34,7 +34,7 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
             continue
 
         elif variable in vids_to_assume_datetime:
-            if _col_is_datetime(df[variable]):
+            if col_is_datetime(df[variable]):
                 inferred_type = vtypes.Datetime
             else:
                 inferred_type = vtypes.Numeric
@@ -43,7 +43,7 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
             if variable in link_vars:
                 inferred_type = vtypes.Categorical
             elif len(df[variable]):
-                if _col_is_datetime(df[variable]):
+                if col_is_datetime(df[variable]):
                     inferred_type = vtypes.Datetime
                 else:
                     # heuristics to predict this some other than categorical
@@ -60,7 +60,7 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
         elif pdtypes.is_categorical_dtype(df[variable].dtype):
             inferred_type = vtypes.Categorical
 
-        elif _col_is_datetime(df[variable]):
+        elif col_is_datetime(df[variable]):
             inferred_type = vtypes.Datetime
 
         elif variable in link_vars:
@@ -99,15 +99,24 @@ def convert_all_variable_data(df, variable_types):
 
         if issubclass(desired_type, vtypes.Numeric) and \
                 current_type not in vtypes.PandasTypes._pandas_numerics:
-            df = convert_variable_data(df, var_id, desired_type, **type_args)
+            df = convert_variable_data(df=df,
+                                       column_id=var_id,
+                                       new_type=desired_type,
+                                       **type_args)
 
         if issubclass(desired_type, vtypes.Discrete) and \
                 current_type not in [vtypes.PandasTypes._categorical]:
-            df = convert_variable_data(df, var_id, desired_type, **type_args)
+            df = convert_variable_data(df=df,
+                                       column_id=var_id,
+                                       new_type=desired_type,
+                                       **type_args)
 
         if issubclass(desired_type, vtypes.Datetime) and \
                 current_type not in vtypes.PandasTypes._pandas_datetimes:
-            df = convert_variable_data(df, var_id, desired_type, **type_args)
+            df = convert_variable_data(df=df,
+                                       column_id=var_id,
+                                       new_type=desired_type,
+                                       **type_args)
 
     return df
 
@@ -157,7 +166,7 @@ def get_linked_vars(entity):
     return link_vars
 
 
-def _col_is_datetime(col):
+def col_is_datetime(col):
     if (col.dtype.name.find('datetime') > -1 or
             (len(col) and isinstance(col.iloc[0], datetime))):
         return True

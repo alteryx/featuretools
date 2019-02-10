@@ -13,7 +13,7 @@ from .timedelta import Timedelta
 from featuretools import variable_types as vtypes
 from featuretools.utils import is_string
 from featuretools.utils.entity_utils import (
-    _col_is_datetime,
+    col_is_datetime,
     convert_all_variable_data,
     convert_variable_data,
     get_linked_vars,
@@ -214,7 +214,10 @@ class Entity(object):
         """
         if convert_data:
             # first, convert the underlying data (or at least try to)
-            self.df = convert_variable_data(self.df, variable_id, new_type, **kwargs)
+            self.df = convert_variable_data(df=self.df,
+                                            column_id=variable_id,
+                                            new_type=new_type,
+                                            **kwargs)
 
         # replace the old variable with the new one, maintaining order
         variable = self._get_variable(variable_id)
@@ -312,7 +315,8 @@ class Entity(object):
                 _v = inferred_variable_types[v](v, self)
             variables += [_v]
         # convert data once we've inferred
-        self.df = convert_all_variable_data(self.df, inferred_variable_types)
+        self.df = convert_all_variable_data(df=self.df,
+                                            variable_types=inferred_variable_types)
         # make sure index is at the beginning
         index_variable = [v for v in variables
                           if v.id == index][0]
@@ -436,7 +440,7 @@ class Entity(object):
             self.df.sort_values([variable_id, self.index], inplace=True)
 
         t = vtypes.NumericTimeIndex
-        if _col_is_datetime(self.df[variable_id]):
+        if col_is_datetime(self.df[variable_id]):
             t = vtypes.DatetimeTimeIndex
         self.convert_variable_type(variable_id, t, convert_data=False)
 

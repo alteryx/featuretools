@@ -1,101 +1,106 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-import pytest
+import pandas as pd
 
-import featuretools as ft
 from featuretools import variable_types as vtypes
 from featuretools.utils.entity_utils import (
     convert_all_variable_data,
     convert_variable_data,
-    get_linked_vars,
     infer_variable_types
 )
 
 
-@pytest.fixture(scope='module')
-def es():
-    es = ft.demo.load_mock_customer(return_entityset=True)
-    return es
+def test_infer_variable_types():
 
+    df = pd.DataFrame({'id': [0, 1, 2],
+                       'category': ['a', 'b', 'a'],
+                       'ints': ['1', '2', '1'],
+                       'boolean': [True, False, True],
+                       'date': ['3/11/2000', '3/12/2000', '3/13/2000'],
+                       'integers': [1, 2, 1]})
 
-def test_infer_variable_types(es):
-    # Customers Entity
-    total_variables = es['customers'].df.columns
-    variable_types = ['customer_id']
+    total_variables = df.columns
+    variable_types = ['id']
 
-    entity = es['customers']
-    link_vars = get_linked_vars(entity)
-    inferred_variable_types = infer_variable_types(entity.df,
-                                                   link_vars,
-                                                   variable_types,
-                                                   'join_date',
-                                                   {})
-
-    # Check columns' number
-    assert len(variable_types) + len(inferred_variable_types) == len(total_variables)
-
-    # Check columns' types
-    assert isinstance(entity['join_date'], inferred_variable_types['join_date'])
-    assert inferred_variable_types['join_date'] == vtypes.Datetime
-
-    assert isinstance(entity['date_of_birth'], inferred_variable_types['date_of_birth'])
-    assert inferred_variable_types['date_of_birth'] == vtypes.Datetime
-
-    assert isinstance(entity['zip_code'], inferred_variable_types['zip_code'])
-    assert inferred_variable_types['zip_code'] == vtypes.Categorical
-
-    # Sessions Entity
-    entity = es['sessions']
-    link_vars = get_linked_vars(entity)
-    total_variables = entity.df.columns
-    variable_types = ['session_id']
-    inferred_variable_types = infer_variable_types(entity.df,
-                                                   link_vars,
-                                                   variable_types,
-                                                   'session_start',
-                                                   {})
+    inferred_variable_types = infer_variable_types(df=df,
+                                                   link_vars=[],
+                                                   variable_types=variable_types,
+                                                   time_index=None,
+                                                   secondary_time_index={})
 
     # Check columns' number
     assert len(variable_types) + len(inferred_variable_types) == len(total_variables)
 
     # Check columns' types
-    assert inferred_variable_types['customer_id'] == vtypes.Ordinal
-
-    assert isinstance(entity['device'], inferred_variable_types['device'])
-    assert inferred_variable_types['device'] == vtypes.Categorical
-
-    assert isinstance(entity['session_start'], inferred_variable_types['session_start'])
-    assert inferred_variable_types['session_start'] == vtypes.Datetime
+    assert inferred_variable_types['category'] == vtypes.Categorical
+    assert inferred_variable_types['ints'] == vtypes.Categorical
+    assert inferred_variable_types['boolean'] == vtypes.Boolean
+    assert inferred_variable_types['date'] == vtypes.Datetime
+    assert inferred_variable_types['integers'] == vtypes.Numeric
 
 
-def test_convert_all_variable_data(es):
+def test_convert_all_variable_data():
+
+    df = pd.DataFrame({'id': [0, 1, 2],
+                       'category': ['a', 'b', 'a'],
+                       'ints': ['1', '2', '1'],
+                       'boolean': [True, False, True],
+                       'date': ['3/11/2000', '3/12/2000', '3/13/2000'],
+                       'integers': [1, 2, 1]})
+
     variable_types = {
-        'transaction_id': vtypes.Numeric,
-        'session_id': vtypes.Numeric,
-        'transaction_time': vtypes.Datetime,
-        'amount': vtypes.Numeric,
-        'product_id': vtypes.Numeric
+        'id': vtypes.Numeric,
+        'category': vtypes.Categorical,
+        'ints': vtypes.Numeric,
+        'boolean': vtypes.Boolean,
+        'date': vtypes.Datetime,
+        'integers': vtypes.Numeric
     }
-    es['transactions'].df = convert_all_variable_data(es['transactions'].df, variable_types)
-    assert es['transactions'].df['transaction_id'].dtype.name in vtypes.PandasTypes._pandas_numerics
-    assert es['transactions'].df['session_id'].dtype.name in vtypes.PandasTypes._pandas_numerics
-    assert es['transactions'].df['transaction_time'].dtype.name in vtypes.PandasTypes._pandas_datetimes
-    assert es['transactions'].df['amount'].dtype.name in vtypes.PandasTypes._pandas_numerics
-    assert es['transactions'].df['product_id'].dtype.name in vtypes.PandasTypes._pandas_numerics
+
+    df = convert_all_variable_data(df, variable_types)
+
+    assert df['id'].dtype.name in vtypes.PandasTypes._pandas_numerics
+    assert df['category'].dtype.name == 'object'
+    assert df['ints'].dtype.name in vtypes.PandasTypes._pandas_numerics
+    assert df['boolean'].dtype.name == 'bool'
+    assert df['date'].dtype.name in vtypes.PandasTypes._pandas_datetimes
+    assert df['integers'].dtype.name in vtypes.PandasTypes._pandas_numerics
 
 
-def test_convert_variable_data(es):
-    init_dtype = es['products'].df['product_id'].dtype.name
-    es['products'].df = convert_variable_data(es['products'].df,
-                                              'product_id',
-                                              vtypes.Numeric)
-    assert init_dtype != es['products'].df['product_id'].dtype.name
-    assert es['products'].df['product_id'].dtype.name in vtypes.PandasTypes._pandas_numerics
+def test_convert_variable_data():
 
-    init_dtype = es['customers'].df['zip_code'].dtype.name
-    es['customers'].df = convert_variable_data(es['customers'].df,
-                                               'zip_code',
-                                               vtypes.Numeric)
-    assert init_dtype != es['customers'].df['zip_code'].dtype.name
-    assert es['customers'].df['zip_code'].dtype.name in vtypes.PandasTypes._pandas_numerics
+    df = pd.DataFrame({'id': [0, 1, 2],
+                       'category': ['a', 'b', 'a'],
+                       'ints': ['1', '2', '1'],
+                       'boolean': [True, False, True],
+                       'date': ['3/11/2000', '3/12/2000', '3/13/2000'],
+                       'integers': [1, 2, 1]})
+
+    # Categorical -> Numeric
+    init_dtype = df['ints'].dtype.name
+    df = convert_variable_data(df=df,
+                               column_id='ints',
+                               new_type=vtypes.Numeric)
+
+    assert init_dtype != df['ints'].dtype.name
+    assert df['ints'].dtype.name in vtypes.PandasTypes._pandas_numerics
+
+    # Numeric -> Boolean
+    init_dtype = df['ints'].dtype.name
+    df = convert_variable_data(df=df,
+                               column_id='ints',
+                               new_type=vtypes.Boolean,
+                               true_val=1,
+                               false_val=2)
+
+    assert init_dtype != df['ints'].dtype.name
+
+    # Categorical -> Datetime
+    init_dtype = df['date'].dtype.name
+    df = convert_variable_data(df=df,
+                               column_id='date',
+                               new_type=vtypes.Datetime)
+
+    assert init_dtype != df['date'].dtype.name
+    assert df['date'].dtype.name in vtypes.PandasTypes._pandas_datetimes
