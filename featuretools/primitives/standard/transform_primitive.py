@@ -197,6 +197,7 @@ class NumWords(TransformPrimitive):
 
 
 def pd_time_since(array, time):
+    """Calculates time since the cutoff time."""
     return (time - pd.DatetimeIndex(array)).values
 
 
