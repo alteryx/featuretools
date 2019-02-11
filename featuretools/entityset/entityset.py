@@ -204,12 +204,14 @@ class EntitySet(object):
         Returns:
             entityset (EntitySet) : Instance of :class:`.EntitySet`.
         '''
+        # If data description was not read from disk, path is None.
         path = description.get('root')
         entityset = cls(description['id'])
 
         last_time_index = []
         for entity in description['entities'].values():
             entity['loading_info']['params'].update(kwargs)
+            # If path is None, an empty dataframe will be created for entity.
             serialization.from_entity_description(entityset, entity, path=path)
             if entity['properties']['last_time_index']:
                 last_time_index.append(entity['id'])
