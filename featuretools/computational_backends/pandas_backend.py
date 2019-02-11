@@ -4,6 +4,7 @@ import pstats
 import sys
 import warnings
 from datetime import datetime
+from functools import partial
 
 import numpy as np
 import pandas as pd
@@ -440,11 +441,17 @@ class PandasBackend(ComputationalBackend):
                         to_agg[variable_id] = []
 
                     func = f.get_function()
+                    # funcname used in case f.get_function() returns a string
+                    # since strings don't have __name__
                     funcname = func
                     if callable(func):
-                        # make sure func has a unique name due to how pandas names aggregations
-                        func.__name__ = f.primitive.name
-                        funcname = f.primitive.name
+                        # if the same function is being applied to the same
+                        # variable twice, wrap it in a partial to avoid
+                        # duplicate functions
+                        if u"{}-{}".format(variable_id, id(func)) in agg_rename:
+                            func = partial(func)
+                        func.__name__ = str(id(func))
+                        funcname = str(id(func))
 
                     to_agg[variable_id].append(func)
                     # this is used below to rename columns that pandas names for us

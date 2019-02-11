@@ -49,7 +49,8 @@ To get started, we load the transactions dataframe as an entity.
                                   dataframe=transactions_df,
                                   index="transaction_id",
                                   time_index="transaction_time",
-                                  variable_types={"product_id": ft.variable_types.Categorical})
+                                  variable_types={"product_id": ft.variable_types.Categorical,
+                                                  "zip_code": ft.variable_types.ZIPCode})
     es
 
 .. note ::
