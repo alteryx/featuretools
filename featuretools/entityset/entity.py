@@ -34,6 +34,7 @@ class Entity(object):
         :class:`.Relationship`, :class:`.Variable`, :class:`.EntitySet`
 
     """
+
     def __init__(self, id, df, entityset, variable_types=None,
                  index=None, time_index=None, secondary_time_index=None,
                  last_time_index=None, already_sorted=False, make_index=False,
