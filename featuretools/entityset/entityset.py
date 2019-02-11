@@ -89,7 +89,7 @@ class EntitySet(object):
             child_variable = self[relationship[2]][relationship[3]]
             self.add_relationship(Relationship(parent_variable,
                                                child_variable))
-        self.reset_metadata()
+        self.reset_data_description()
 
     def __sizeof__(self):
         return sum([entity.__sizeof__() for entity in self.entities])
@@ -138,22 +138,14 @@ class EntitySet(object):
     @property
     def metadata(self):
         '''Returns the metadata for this EntitySet. The metadata will be recomputed if it does not exist.'''
-        if self._metadata is None:
+        if self._data_description is None:
             description = self.create_data_description()
-            self._metadata = self.from_data_description(description)
+            self._data_description = self.from_data_description(description)
 
-        return self._metadata
+        return self._data_description
 
-    def reset_metadata(self):
-        self._metadata = None
-
-    @property
-    def is_metadata(self):
-        '''Returns True if all of the Entity's contain no data (empty DataFrames).
-        In general, EntitySets with no data are created by accessing the EntitySet.metadata property,
-        which returns a copy of the current EntitySet with all data removed.
-        '''
-        return all(e.df.empty for e in self.entity_dict.values())
+    def reset_data_description(self):
+        self._data_description = None
 
     def to_pickle(self, path, params=None, **kwargs):
         '''Write entityset to disk in the pickle format, location specified by `path`.
@@ -318,7 +310,7 @@ class EntitySet(object):
                                         child_v, child_e.id, child_dtype))
 
         self.relationships.append(relationship)
-        self.reset_metadata()
+        self.reset_data_description()
         return self
 
     def get_pandas_data_slice(self, filter_entity_ids, index_eid,
@@ -702,7 +694,7 @@ class EntitySet(object):
             already_sorted=already_sorted,
             make_index=make_index)
         self.entity_dict[entity.id] = entity
-        self.reset_metadata()
+        self.reset_data_description()
         return self
 
     def normalize_entity(self, base_entity_id, new_entity_id, index,
@@ -852,7 +844,7 @@ class EntitySet(object):
         new_entity = self.entity_dict[new_entity_id]
         base_entity.convert_variable_type(base_entity_index, vtypes.Id, convert_data=False)
         self.add_relationship(Relationship(new_entity[index], base_entity[base_entity_index]))
-        self.reset_metadata()
+        self.reset_data_description()
         return self
 
     ###########################################################################
@@ -905,7 +897,7 @@ class EntitySet(object):
                                                recalculate_last_time_indexes=False)
 
         combined_es.add_last_time_indexes(updated_entities=has_last_time_index)
-        self.reset_metadata()
+        self.reset_data_description()
         return combined_es
 
     ###########################################################################
@@ -1008,7 +1000,7 @@ class EntitySet(object):
                     entity.last_time_index.name = 'last_time'
 
             explored.add(entity.id)
-        self.reset_metadata()
+        self.reset_data_description()
 
     ###########################################################################
     #  Other ###############################################
@@ -1027,7 +1019,7 @@ class EntitySet(object):
         """
         for entity in self.entities:
             entity.add_interesting_values(max_values=max_values, verbose=verbose)
-        self.reset_metadata()
+        self.reset_data_description()
 
     def related_instances(self, start_entity_id, final_entity_id,
                           instance_ids=None, time_last=None,
