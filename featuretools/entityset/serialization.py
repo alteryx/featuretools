@@ -156,12 +156,11 @@ def from_entity_description(entityset, description, path=None):
         description (dict) : Description of :class:`.Entity`.
         path (str) : Root directory to serialized entityset.
     '''
-    dataframe = read_entity_data(description, path=path)
+    dataframe = empty_dataframe(description) if path is None else read_entity_data(description, path=path)
     variable_types = get_variable_types(description)
-    dtypes = description['loading_info']['properties']['dtypes']
     entityset.entity_from_dataframe(
         description['id'],
-        dataframe.astype(dtypes),
+        dataframe,
         index=description.get('index'),
         time_index=description.get('time_index'),
         secondary_time_index=description['properties'].get('secondary_time_index'),
@@ -185,6 +184,20 @@ def from_relationship_description(entityset, description):
     return parent, child
 
 
+def empty_dataframe(description):
+    '''Deserialize empty dataframe from entity description.
+
+    Args:
+        description (dict) : Description of :class:`.Entity`.
+
+    Returns:
+        df (DataFrame) : Empty dataframe for entity.
+    '''
+    columns = [variable['id'] for variable in description['variables']]
+    dtypes = description['loading_info']['properties']['dtypes']
+    return pd.DataFrame(columns=columns).astype(dtypes)
+
+
 def read_entity_data(description, path=None):
     '''Read description data from disk.
 
@@ -194,20 +207,19 @@ def read_entity_data(description, path=None):
     Returns:
         df (DataFrame) : Instance of dataframe. Returns an empty dataframe path is not specified.
     '''
-    if path is None:
-        columns = [variable['id'] for variable in description['variables']]
-        return pd.DataFrame(columns=columns)
     file = os.path.join(path, description['loading_info']['location'])
     params = description['loading_info'].get('params', {})
     if description['loading_info']['type'] == 'csv':
-        return pd.read_csv(file, **params)
+        dataframe = pd.read_csv(file, **params)
     elif description['loading_info']['type'] == 'parquet':
-        return pd.read_parquet(file, **params)
+        dataframe = pd.read_parquet(file, **params)
     elif description['loading_info']['type'] == 'pickle':
-        return pd.read_pickle(file, **params)
+        dataframe = pd.read_pickle(file, **params)
     else:
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))
+    dtypes = description['loading_info']['properties']['dtypes']
+    return dataframe.astype(dtypes)
 
 
 def read_data_description(path):
