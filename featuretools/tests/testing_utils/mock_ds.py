@@ -119,6 +119,17 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                     ['12345-6789'] * 2 +
                     [np.nan] +
                     [''] * 2)
+    ips = list(['192.168.0.1'] * 5 +
+               ['2001:4860:4860::8888'] * 4 +
+               ['0.0.0.0'] * 2 +
+               ['192.168.1.1:2869'] * 2 +
+               [np.nan] * 2 +
+               [''] * 2)
+    emails = list(['john.smith@example.com'] * 5 +
+                  ['john_smith@example.com'] * 4 +
+                  [''] * 2 +
+                  [np.nan] * 3 +
+                  ['John_smith@example.com'] * 3)
 
     log_df = pd.DataFrame({
         'id': range(17),
@@ -132,6 +143,8 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
         'latlong': latlong,
         'latlong2': latlong2,
         'zipcode': zipcodes,
+        'ip': ips,
+        'email': emails,
         'value_many_nans': values_many_nans,
         'priority_level': [0] * 2 + [1] * 5 + [0] * 6 + [2] * 2 + [1] * 2,
         'purchased': [True] * 11 + [False] * 4 + [True, False],
@@ -267,6 +280,8 @@ def make_variable_types(with_integer_time_index=False):
         'latlong': variable_types.LatLong,
         'latlong2': variable_types.LatLong,
         'zipcode': variable_types.ZIPCode,
+        'ip': variable_types.IP,
+        'email': variable_types.Email,
         'value_many_nans': variable_types.Numeric,
         'priority_level': variable_types.Ordinal,
         'purchased': variable_types.Boolean,
