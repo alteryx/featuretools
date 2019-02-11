@@ -186,9 +186,6 @@ class EntitySet(object):
     def create_data_description(self):
         '''Serialize entityset to data description.
 
-        Args:
-            es (EntitySet) : Instance of :class:`.EntitySet`.
-
         Returns:
             description (dict) : Description of :class:`.EntitySet`.
         '''
