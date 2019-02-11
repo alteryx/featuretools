@@ -7,13 +7,6 @@ import pandas as pd
 from .. import variable_types
 
 FORMATS = ['csv', 'pickle', 'parquet']
-SCHEMA = {
-    'entities': ['id', 'index', 'time_index', 'variables', 'properties', 'loading_info'],
-    'relationships': {
-        'parent': ['parent_entity', 'parent_variable'],
-        'child': ['child_entity', 'child_variable']
-    }
-}
 VARIABLE_TYPES = {
     getattr(variable_types, type).type_string: getattr(variable_types, type) for type in dir(variable_types)
     if hasattr(getattr(variable_types, type), 'type_string')
@@ -29,23 +22,25 @@ def to_entity_description(entity):
     Returns:
         dictionary (dict) : Description of :class:`.Entity`.
     '''
-    description = {}
-    for key in SCHEMA.get('entities'):
-        if key in ['id', 'index', 'time_index']:
-            description[key] = getattr(entity, key)
-        elif key == 'properties':
-            description[key] = {
-                'secondary_time_index': entity.secondary_time_index,
-                'last_time_index': entity.last_time_index is not None,
+    index = entity.df.columns.isin([variable.id for variable in entity.variables])
+    dtypes = entity.df[entity.df.columns[index]].dtypes.astype(str).to_dict()
+    description = {
+        "id": entity.id,
+        "index": entity.index,
+        "time_index": entity.time_index,
+        "properties": {
+            'secondary_time_index': entity.secondary_time_index,
+            'last_time_index': entity.last_time_index is not None,
+        },
+        "variables": [variable.create_data_description() for variable in entity.variables],
+        "loading_info": {
+            'params': {},
+            'properties': {
+                'dtypes': dtypes
             }
-        elif key == 'variables':
-            description[key] = [variable.create_data_description() for variable in entity.variables]
-        elif key == 'loading_info':
-            index = entity.df.columns.isin([variable.id for variable in entity.variables])
-            dtypes = entity.df[entity.df.columns[index]].dtypes.astype(str).to_dict()
-            description[key] = {'params': {}, 'properties': {'dtypes': dtypes}}
-        else:
-            raise ValueError('"{}" is not supported'.format(key))
+        }
+    }
+
     return description
 
 
@@ -58,7 +53,10 @@ def to_relationship_description(relationship):
     Returns:
         description (dict) : Description of :class:`.Relationship`.
     '''
-    return {key: [getattr(relationship, attr).id for attr in attrs] for key, attrs in SCHEMA['relationships'].items()}
+    return {
+        'parent': [relationship.parent_entity.id, relationship.parent_variable.id],
+        'child': [relationship.child_entity.id, relationship.child_variable.id],
+    }
 
 
 def write_entity_data(entity, path, format='csv', **kwargs):
