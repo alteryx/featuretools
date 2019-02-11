@@ -5,6 +5,7 @@ import shutil
 import pandas as pd
 
 from .. import variable_types
+from .relationship import Relationship
 
 FORMATS = ['csv', 'pickle', 'parquet']
 VARIABLE_TYPES = {
@@ -179,7 +180,7 @@ def from_relationship_description(entityset, description):
     parent = entityset[entity][variable]
     entity, variable = description['child']
     child = entityset[entity][variable]
-    return parent, child
+    return Relationship(parent, child)
 
 
 def empty_dataframe(description):

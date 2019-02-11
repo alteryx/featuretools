@@ -47,9 +47,8 @@ def test_entityset(entityset):
 def test_relationship(entityset):
     for relationship in entityset.relationships:
         description = serialization.to_relationship_description(relationship)
-        parent, child = serialization.from_relationship_description(entityset, description)
-        _relationship = ft.Relationship(parent, child)
-        assert relationship.__eq__(_relationship)
+        relationship = serialization.from_relationship_description(entityset, description)
+        assert relationship.__eq__(relationship)
 
 
 def test_to_csv(entityset):

@@ -217,8 +217,8 @@ class EntitySet(object):
                 last_time_index.append(entity['id'])
 
         for relationship in description['relationships']:
-            parent, child = serialization.from_relationship_description(entityset, relationship)
-            entityset.add_relationship(Relationship(parent, child))
+            relationship = serialization.from_relationship_description(entityset, relationship)
+            entityset.add_relationship(relationship)
 
         if len(last_time_index):
             entityset.add_last_time_indexes(updated_entities=last_time_index)
