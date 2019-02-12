@@ -290,9 +290,7 @@ class PandasBackend(ComputationalBackend):
 
     def _calculate_identity_features(self, features, entity_frames):
         entity_id = features[0].entity.id
-        assert (entity_id in entity_frames and
-                features[0].get_name() in entity_frames[entity_id].columns)
-        return entity_frames[entity_id]
+        return entity_frames[entity_id][[f.get_name() for f in features]]
 
     def _calculate_transform_features(self, features, entity_frames):
         entity_id = features[0].entity.id
