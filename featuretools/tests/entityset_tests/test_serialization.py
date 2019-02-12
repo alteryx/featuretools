@@ -19,7 +19,7 @@ def entityset():
 def test_variable(entityset):
     for entity in entityset.entities:
         for variable in entity.variables:
-            description = variable.create_data_description()
+            description = variable.to_data_description()
             _variable = serialization.from_variable_description(description, entity=entity)
             assert variable.__eq__(_variable)
 
@@ -35,7 +35,7 @@ def test_entity(entityset):
 
 
 def test_entityset(entityset):
-    description = entityset.create_data_description()
+    description = entityset.to_data_description()
     _entityset = ft.EntitySet.from_data_description(description)
     assert entityset.metadata.__eq__(_entityset, deep=True)
 

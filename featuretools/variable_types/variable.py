@@ -91,7 +91,7 @@ class Variable(object):
     def series(self):
         return self.entity.df[self.id]
 
-    def create_data_description(self):
+    def to_data_description(self):
         return {
             'id': self.id,
             'type': {
@@ -151,8 +151,8 @@ class Boolean(Variable):
         self.false_values = false_values or default
         super(Boolean, self).__init__(id, entity, name=name)
 
-    def create_data_description(self):
-        description = super(Boolean, self).create_data_description()
+    def to_data_description(self):
+        description = super(Boolean, self).to_data_description()
         description['type'].update({
             'true_values': self.true_values,
             'false_values': self.false_values
@@ -172,8 +172,8 @@ class Categorical(Discrete):
         self.categories = None or []
         super(Categorical, self).__init__(id, entity, name=name)
 
-    def create_data_description(self):
-        description = super(Categorical, self).create_data_description()
+    def to_data_description(self):
+        description = super(Categorical, self).to_data_description()
         description['type'].update({'categories': self.categories})
         return description
 
@@ -219,8 +219,8 @@ class Numeric(Variable):
         self.end_inclusive = end_inclusive
         super(Numeric, self).__init__(id, entity, name=name)
 
-    def create_data_description(self):
-        description = super(Numeric, self).create_data_description()
+    def to_data_description(self):
+        description = super(Numeric, self).to_data_description()
         description['type'].update({
             'range': self.range,
             'start_inclusive': self.start_inclusive,
@@ -261,8 +261,8 @@ class Datetime(Variable):
 
         return ret
 
-    def create_data_description(self):
-        description = super(Datetime, self).create_data_description()
+    def to_data_description(self):
+        description = super(Datetime, self).to_data_description()
         description['type'].update({'format': self.format})
         return description
 
@@ -307,8 +307,8 @@ class Timedelta(Variable):
         self.end_inclusive = end_inclusive
         super(Timedelta, self).__init__(id, entity, name=name)
 
-    def create_data_description(self):
-        description = super(Timedelta, self).create_data_description()
+    def to_data_description(self):
+        description = super(Timedelta, self).to_data_description()
         description['type'].update({
             'range': self.range,
             'start_inclusive': self.start_inclusive,

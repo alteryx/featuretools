@@ -139,7 +139,7 @@ class EntitySet(object):
     def metadata(self):
         '''Returns the metadata for this EntitySet. The metadata will be recomputed if it does not exist.'''
         if self._data_description is None:
-            description = self.create_data_description()
+            description = self.to_data_description()
             self._data_description = self.from_data_description(description)
 
         return self._data_description
@@ -180,7 +180,7 @@ class EntitySet(object):
         serialization.write_data_description(self, path, format='csv', index=False, **kwargs)
         return self
 
-    def create_data_description(self):
+    def to_data_description(self):
         '''Serialize entityset to data description.
 
         Returns:

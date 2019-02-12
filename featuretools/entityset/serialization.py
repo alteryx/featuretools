@@ -33,7 +33,7 @@ def to_entity_description(entity):
             'secondary_time_index': entity.secondary_time_index,
             'last_time_index': entity.last_time_index is not None,
         },
-        "variables": [variable.create_data_description() for variable in entity.variables],
+        "variables": [variable.to_data_description() for variable in entity.variables],
         "loading_info": {
             'params': {},
             'properties': {
@@ -111,7 +111,7 @@ def write_data_description(entityset, path, **kwargs):
         shutil.rmtree(path)
     for dirname in [path, os.path.join(path, 'data')]:
         os.makedirs(dirname)
-    description = entityset.create_data_description()
+    description = entityset.to_data_description()
     for entity in entityset.entities:
         loading_info = write_entity_data(entity, path, **kwargs)
         description['entities'][entity.id]['loading_info'].update(loading_info)
