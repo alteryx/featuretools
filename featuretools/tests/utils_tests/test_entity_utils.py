@@ -3,10 +3,12 @@ from __future__ import absolute_import, division, print_function
 
 import pandas as pd
 
+import featuretools as ft
 from featuretools import variable_types as vtypes
 from featuretools.utils.entity_utils import (
     convert_all_variable_data,
     convert_variable_data,
+    get_linked_vars,
     infer_variable_types
 )
 
@@ -18,9 +20,10 @@ def test_infer_variable_types():
                        'ints': ['1', '2', '1'],
                        'boolean': [True, False, True],
                        'date': ['3/11/2000', '3/12/2000', '3/13/2000'],
-                       'integers': [1, 2, 1]})
+                       'integers': [1, 2, 1],
+                       'integers_category': [1, 2, 1]})
 
-    total_variables = df.columns
+    df['integers_category'] = df['integers_category'].astype('category')
     variable_types = ['id']
 
     inferred_variable_types = infer_variable_types(df=df,
@@ -30,7 +33,7 @@ def test_infer_variable_types():
                                                    secondary_time_index={})
 
     # Check columns' number
-    assert len(variable_types) + len(inferred_variable_types) == len(total_variables)
+    assert len(variable_types) + len(inferred_variable_types) == len(df.columns)
 
     # Check columns' types
     assert inferred_variable_types['category'] == vtypes.Categorical
@@ -38,6 +41,7 @@ def test_infer_variable_types():
     assert inferred_variable_types['boolean'] == vtypes.Boolean
     assert inferred_variable_types['date'] == vtypes.Datetime
     assert inferred_variable_types['integers'] == vtypes.Numeric
+    assert inferred_variable_types['integers_category'] == vtypes.Categorical
 
 
 def test_convert_all_variable_data():
@@ -104,3 +108,31 @@ def test_convert_variable_data():
 
     assert init_dtype != df['date'].dtype.name
     assert df['date'].dtype.name in vtypes.PandasTypes._pandas_datetimes
+
+
+def test_get_linked_vars():
+
+    data = ft.demo.load_mock_customer()
+    es = ft.EntitySet()
+
+    es = es.entity_from_dataframe(entity_id="transactions",
+                                  dataframe=data["transactions"].merge(data["sessions"]).merge(data["customers"]),
+                                  index="transaction_id",
+                                  time_index="transaction_time",
+                                  variable_types={"product_id": ft.variable_types.Categorical})
+
+    es = es.entity_from_dataframe(entity_id="products",
+                                  dataframe=data["products"],
+                                  index="product_id")
+
+    es = es.add_relationship(ft.Relationship(es["products"]["product_id"],
+                                             es["transactions"]["product_id"]))
+
+    transactions_linked_vars = get_linked_vars(es['transactions'])
+    products_linked_vars = get_linked_vars(es['products'])
+
+    linked_vars = ['product_id']
+
+    assert transactions_linked_vars == linked_vars
+    assert products_linked_vars == linked_vars
+    assert transactions_linked_vars == products_linked_vars
