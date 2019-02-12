@@ -121,30 +121,24 @@ def write_data_description(entityset, path, params=None, **kwargs):
         json.dump(description, file)
 
 
-def from_variable_description(description):
+def from_variable_description(description, entity=None):
     '''Deserialize variable from variable description.
 
     Args:
         description (dict) : Description of :class:`.Variable`.
+        entity (Entity) : Instance of :class:`.Entity` to add :class:`.Variable`. If entity is not None, :class:`.Variable` will be instantiated.
 
     Returns:
         variable (Variable) : Returns :class:`.Variable`.
     '''
-    is_string = isinstance(description['type'], str)
-    type = description['type'] if is_string else description['type']['value']
-    return VARIABLE_TYPES.get(type, VARIABLE_TYPES.get(None))
-
-
-def get_variable_types(description):
-    '''Returns variable types from entity description.
-
-    Args:
-        description (dict) : Description of :class:`.Entity`.
-
-    Returns:
-        variable_types (dict) : Returns dictionary where variable id maps to variable type.
-    '''
-    return {variable['id']: from_variable_description(variable) for variable in description['variables']}
+    is_type_string = isinstance(description['type'], str)
+    type = description['type'] if is_type_string else description['type'].pop('value')
+    variable = VARIABLE_TYPES.get(type, VARIABLE_TYPES.get(None))
+    if entity is not None:
+        kwargs = {} if is_type_string else description['type']
+        variable = variable(description['id'], entity, **kwargs)
+        variable.interesting_values = description['properties']['interesting_values']
+    return variable
 
 
 def from_entity_description(entityset, description, path=None):
@@ -155,8 +149,9 @@ def from_entity_description(entityset, description, path=None):
         description (dict) : Description of :class:`.Entity`.
         path (str) : Root directory to serialized entityset.
     '''
-    dataframe = empty_dataframe(description) if path is None else read_entity_data(description, path=path)
-    variable_types = get_variable_types(description)
+    from_disk = path is not None
+    dataframe = read_entity_data(description, path=path) if from_disk else empty_dataframe(description)
+    variable_types = {variable['id']: from_variable_description(variable) for variable in description['variables']}
     entityset.entity_from_dataframe(
         description['id'],
         dataframe,

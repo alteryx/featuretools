@@ -20,11 +20,7 @@ def test_variable(entityset):
     for entity in entityset.entities:
         for variable in entity.variables:
             description = variable.create_data_description()
-            Variable = serialization.from_variable_description(description)
-            interesting_values = description['properties'].pop('interesting_values')
-            _entity = entityset[description['properties'].pop('entity')]
-            _variable = Variable(description['id'], _entity, **description['properties'])
-            _variable.interesting_values = interesting_values
+            _variable = serialization.from_variable_description(description, entity=entity)
             assert variable.__eq__(_variable)
 
 
