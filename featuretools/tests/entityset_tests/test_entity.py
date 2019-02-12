@@ -78,7 +78,7 @@ def test_update_data(es):
     error_text = 'Updated dataframe contains 14 columns, expecting 13'
     with pytest.raises(ValueError, match=error_text) as excinfo:
         es['customers'].update_data(df)
-    assert 'Updated dataframe contains 13 columns, expecting 12' in str(excinfo)
+    assert 'Updated dataframe contains 14 columns, expecting 13' in str(excinfo)
 
     # test already_sorted on entity without time index
     df = es["sessions"].df.copy(deep=True)
