@@ -7,7 +7,7 @@ from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
 from featuretools.demo import load_mock_customer
-from featuretools.entityset import serialization
+from featuretools.entityset import serialize, deserialize
 from featuretools.tests import integration_data
 
 
@@ -20,15 +20,15 @@ def test_variable(entityset):
     for entity in entityset.entities:
         for variable in entity.variables:
             description = variable.to_data_description()
-            _variable = serialization.from_variable_description(description, entity=entity)
+            _variable = deserialize.from_variable_description(description, entity=entity)
             assert variable.__eq__(_variable)
 
 
 def test_entity(entityset):
     _entityset = ft.EntitySet(entityset.id)
     for entity in entityset.metadata.entities:
-        description = serialization.to_entity_description(entity)
-        serialization.from_entity_description(description, _entityset)
+        description = serialize.to_entity_description(entity)
+        deserialize.from_entity_description(description, _entityset)
         _entity = _entityset[description['id']]
         _entity.last_time_index = entity.last_time_index
         assert entity.__eq__(_entity, deep=True)
@@ -42,8 +42,8 @@ def test_entityset(entityset):
 
 def test_relationship(entityset):
     for relationship in entityset.relationships:
-        description = serialization.to_relationship_description(relationship)
-        relationship = serialization.from_relationship_description(description, entityset)
+        description = serialize.to_relationship_description(relationship)
+        relationship = deserialize.from_relationship_description(description, entityset)
         assert relationship.__eq__(relationship)
 
 

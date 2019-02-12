@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_dtype_equal, is_numeric_dtype
 
-from . import serialization
+from . import serialize, deserialize
 from .entity import Entity
 from .relationship import Relationship
 
@@ -155,7 +155,7 @@ class EntitySet(object):
                 path (str): location on disk to write to (will be created as a directory)
                 kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialization.write_data_description(self, path, format='pickle', **kwargs)
+        serialize.write_data_description(self, path, format='pickle', **kwargs)
         return self
 
     def to_parquet(self, path, **kwargs):
@@ -166,7 +166,7 @@ class EntitySet(object):
                 path (str): location on disk to write to (will be created as a directory)
                 kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialization.write_data_description(self, path, format='parquet', compression='gzip', **kwargs)
+        serialize.write_data_description(self, path, format='parquet', compression='gzip', **kwargs)
         return self
 
     def to_csv(self, path, **kwargs):
@@ -177,7 +177,7 @@ class EntitySet(object):
                 path (str): location on disk to write to (will be created as a directory)
                 kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialization.write_data_description(self, path, format='csv', index=False, **kwargs)
+        serialize.write_data_description(self, path, format='csv', index=False, **kwargs)
         return self
 
     def to_data_description(self):
@@ -186,8 +186,8 @@ class EntitySet(object):
         Returns:
             description (dict) : Description of :class:`.EntitySet`.
         '''
-        entities = {entity.id: serialization.to_entity_description(entity) for entity in self.entities}
-        relationships = [serialization.to_relationship_description(relationship) for relationship in self.relationships]
+        entities = {entity.id: serialize.to_entity_description(entity) for entity in self.entities}
+        relationships = [serialize.to_relationship_description(relationship) for relationship in self.relationships]
         return {'id': self.id, 'entities': entities, 'relationships': relationships}
 
     @classmethod
@@ -209,12 +209,12 @@ class EntitySet(object):
         for entity in description['entities'].values():
             entity['loading_info']['params'].update(kwargs)
             # If path is None, an empty dataframe will be created for entity.
-            serialization.from_entity_description(entity, entityset, path=path)
+            deserialize.from_entity_description(entity, entityset, path=path)
             if entity['properties']['last_time_index']:
                 last_time_index.append(entity['id'])
 
         for relationship in description['relationships']:
-            relationship = serialization.from_relationship_description(relationship, entityset)
+            relationship = deserialize.from_relationship_description(relationship, entityset)
             entityset.add_relationship(relationship)
 
         if len(last_time_index):
@@ -1251,4 +1251,4 @@ def read_entityset(path, **kwargs):
             path (str): Directory on disk to read `data_description.json`.
             kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
     '''
-    return EntitySet.from_data_description(serialization.read_data_description(path), **kwargs)
+    return EntitySet.from_data_description(deserialize.read_data_description(path), **kwargs)
