@@ -241,7 +241,7 @@ class ZIPCode(Categorical):
     _default_pandas_dtype = str
 
 
-class IP(Variable):
+class IPAddress(Variable):
     """Represents a computer network address. Represented
     in dotted-decimal notation. IPv4 and IPv6 are supported.
     """
@@ -249,7 +249,7 @@ class IP(Variable):
     _default_pandas_dtype = str
 
 
-class Email(Variable):
+class EmailAddress(Variable):
     """Represents an email box to which email message are sent.
     Consits of a local-part, an @ symbol, and a domain.
     """
@@ -259,8 +259,8 @@ class Email(Variable):
 
 ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
                       Categorical, Text, Ordinal,
-                      Boolean, LatLong, ZIPCode, IP,
-                      Email]
+                      Boolean, LatLong, ZIPCode, IPAddress,
+                      EmailAddress]
 
 
 DEFAULT_DTYPE_VALUES = {

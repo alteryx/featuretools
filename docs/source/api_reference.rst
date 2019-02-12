@@ -306,8 +306,8 @@ Variable types
     Text
     LatLong
     ZIPCode
-    IP
-    Email
+    IPAddress
+    EmailAddress
 
 
 Feature Selection
