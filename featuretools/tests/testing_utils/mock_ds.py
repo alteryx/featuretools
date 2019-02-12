@@ -126,11 +126,11 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                         ['ALB'] * 2 +
                         ['USA'])
     subregioncodes = list(['US-AZ'] * 5 +
-                        ['US-MT'] * 4 +
-                        [np.nan] * 2 +
-                        [''] +
-                        ['UG-219'] * 2 +
-                        ['ZM-06'] * 3)
+                          ['US-MT'] * 4 +
+                          [np.nan] * 2 +
+                          [''] +
+                          ['UG-219'] * 2 +
+                          ['ZM-06'] * 3)
     log_df = pd.DataFrame({
         'id': range(17),
         'session_id': [0] * 5 + [1] * 4 + [2] * 1 + [3] * 2 + [4] * 3 + [5] * 2,
