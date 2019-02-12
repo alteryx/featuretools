@@ -153,7 +153,7 @@ class Boolean(Variable):
 
     def create_data_description(self):
         description = super(Boolean, self).create_data_description()
-        description['properties'].update({
+        description['type'].update({
             'true_values': self.true_values,
             'false_values': self.false_values
         })
@@ -174,7 +174,7 @@ class Categorical(Discrete):
 
     def create_data_description(self):
         description = super(Categorical, self).create_data_description()
-        description['properties'].update({'categories': self.categories})
+        description['type'].update({'categories': self.categories})
         return description
 
 
@@ -221,7 +221,7 @@ class Numeric(Variable):
 
     def create_data_description(self):
         description = super(Numeric, self).create_data_description()
-        description['properties'].update({
+        description['type'].update({
             'range': self.range,
             'start_inclusive': self.start_inclusive,
             'end_inclusive': self.end_inclusive,
@@ -263,7 +263,7 @@ class Datetime(Variable):
 
     def create_data_description(self):
         description = super(Datetime, self).create_data_description()
-        description['properties'].update({'format': self.format})
+        description['type'].update({'format': self.format})
         return description
 
 
@@ -309,7 +309,7 @@ class Timedelta(Variable):
 
     def create_data_description(self):
         description = super(Timedelta, self).create_data_description()
-        description['properties'].update({
+        description['type'].update({
             'range': self.range,
             'start_inclusive': self.start_inclusive,
             'end_inclusive': self.end_inclusive,
