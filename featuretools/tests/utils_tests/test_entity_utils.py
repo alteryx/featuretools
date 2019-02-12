@@ -111,28 +111,16 @@ def test_convert_variable_data():
 
 
 def test_get_linked_vars():
-
-    data = ft.demo.load_mock_customer()
-    es = ft.EntitySet()
-
-    es = es.entity_from_dataframe(entity_id="transactions",
-                                  dataframe=data["transactions"].merge(data["sessions"]).merge(data["customers"]),
-                                  index="transaction_id",
-                                  time_index="transaction_time",
-                                  variable_types={"product_id": ft.variable_types.Categorical})
-
-    es = es.entity_from_dataframe(entity_id="products",
-                                  dataframe=data["products"],
-                                  index="product_id")
-
-    es = es.add_relationship(ft.Relationship(es["products"]["product_id"],
-                                             es["transactions"]["product_id"]))
+    es = ft.demo.load_mock_customer(return_entityset=True)
 
     transactions_linked_vars = get_linked_vars(es['transactions'])
+    assert transactions_linked_vars == ['product_id', 'session_id']
+
     products_linked_vars = get_linked_vars(es['products'])
+    assert products_linked_vars == ['product_id']
 
-    linked_vars = ['product_id']
+    sessions_linked_vars = get_linked_vars(es['sessions'])
+    assert sessions_linked_vars == ['session_id', 'customer_id']
 
-    assert transactions_linked_vars == linked_vars
-    assert products_linked_vars == linked_vars
-    assert transactions_linked_vars == products_linked_vars
+    customers_linked_vars = get_linked_vars(es['customers'])
+    assert customers_linked_vars == ['customer_id']
