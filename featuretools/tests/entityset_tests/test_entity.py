@@ -2,6 +2,7 @@
 from datetime import datetime
 
 import pandas as pd
+import numpy as np
 import pytest
 
 from ..testing_utils import make_ecommerce_entityset
@@ -97,9 +98,17 @@ def test_update_data(es):
     assert es["customers"].df["id"].iloc[0] == 2
 
 
-def test_query_by_values_output_id_always_increments(es):
-    data = es['log'].query_by_values(['toothpaste', 'coke zero'],
-                                     variable_id='product_id')
-    diff = data['id'].diff()
-    diff[0] = 1
-    assert diff.apply(lambda x: x > 0).all()
+def test_query_by_values_returns_rows_in_given_order():
+    data = pd.DataFrame({
+        "id": [1, 2, 3, 4, 5],
+        "value": ["a", "c", "b", "a", "a"],
+        "time": [1000, 2000, 3000, 4000, 5000]
+    })
+
+    es = ft.EntitySet()
+    es = es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
+                                  time_index="time", variable_types={
+                                      "value": ft.variable_types.Categorical
+                                  })
+    query = es['test'].query_by_values(['b', 'a'], variable_id='value')
+    assert np.array_equal(query['id'],[1,3,4,5])
