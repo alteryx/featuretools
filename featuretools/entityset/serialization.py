@@ -126,7 +126,7 @@ def from_variable_description(description, entity=None):
 
     Args:
         description (dict) : Description of :class:`.Variable`.
-        entity (Entity) : Instance of :class:`.Entity` to add :class:`.Variable`. If entity is not None, :class:`.Variable` will be instantiated.
+        entity (Entity) : Instance of :class:`.Entity` to add :class:`.Variable`. If entity is None, :class:`.Variable` will not be instantiated.
 
     Returns:
         variable (Variable) : Returns :class:`.Variable`.
@@ -199,7 +199,7 @@ def read_entity_data(description, path=None):
         description (dict) : Description of :class:`.Entity`.
 
     Returns:
-        df (DataFrame) : Instance of dataframe. Returns an empty dataframe path is not specified.
+        df (DataFrame) : Instance of dataframe.
     '''
     file = os.path.join(path, description['loading_info']['location'])
     params = description['loading_info'].get('params', {})
