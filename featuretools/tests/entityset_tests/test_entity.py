@@ -95,3 +95,11 @@ def test_update_data(es):
     assert es["customers"].df["id"].iloc[0] == 0
     es["customers"].update_data(df.copy(deep=True), already_sorted=True)
     assert es["customers"].df["id"].iloc[0] == 2
+
+
+def test_query_by_values_output_id_always_increments(es):
+    data = es['log'].query_by_values(['toothpaste','coke zero'],
+                                     variable_id = 'product_id')
+    diff = data['id'].diff()
+    diff[0] = 1
+    assert diff.apply(lambda x: x > 0).all()
