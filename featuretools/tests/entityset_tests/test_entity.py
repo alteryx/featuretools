@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pytest
 
 from ..testing_utils import make_ecommerce_entityset
@@ -111,4 +111,4 @@ def test_query_by_values_returns_rows_in_given_order():
                                       "value": ft.variable_types.Categorical
                                   })
     query = es['test'].query_by_values(['b', 'a'], variable_id='value')
-    assert np.array_equal(query['id'],[1,3,4,5])
+    assert np.array_equal(query['id'], [1, 3, 4, 5])
