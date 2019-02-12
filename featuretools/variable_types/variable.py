@@ -44,7 +44,7 @@ class Variable(object):
             self.entity_id == other.entity_id
 
     def __repr__(self):
-        ret = u"<Variable: {} (dtype = {})>".format(self.name, self._dtype_repr)
+        ret = u"<Variable: {} (dtype = {})>".format(self.name, self.type_string)
 
         # encode for python 2
         if type(ret) != str:
@@ -253,7 +253,7 @@ class Datetime(Variable):
         super(Datetime, self).__init__(id, entity, name=name)
 
     def __repr__(self):
-        ret = u"<Variable: {} (dtype: {}, format: {})>".format(self.name, self._dtype_repr, self.format)
+        ret = u"<Variable: {} (dtype: {}, format: {})>".format(self.name, self.type_string, self.format)
 
         # encode for python 2
         if type(ret) != str:
