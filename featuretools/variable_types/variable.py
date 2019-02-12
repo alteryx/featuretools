@@ -247,7 +247,7 @@ class CountryCode(Categorical):
     should be in the Alpha-2 format.
     e.g. United States of America = US
     """
-     _dtype_repr = "countrycode"
+    _dtype_repr = "countrycode"
     _default_pandas_dtype = str
 
 
@@ -257,13 +257,13 @@ class SubRegionCode(Categorical):
     should be in the Alpha-2 format.
     e.g. United States of America, Arizona = US-AZ
     """
-     _dtype_repr = "subregioncode"
+    _dtype_repr = "subregioncode"
     _default_pandas_dtype = str
 
 
 ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
                       Categorical, Text, Ordinal,
-                      Boolean, LatLong, ZIPCode, 
+                      Boolean, LatLong, ZIPCode,
                       CountryCode, SubRegionCode]
 
 
