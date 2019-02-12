@@ -240,23 +240,26 @@ class ZIPCode(Categorical):
     _dtype_repr = "zipcode"
     _default_pandas_dtype = str
 
-class  CountryCode(Categorical):
+
+class CountryCode(Categorical):
     """Represents an ISO-3166 standard country code.
-    ISO 3166-1 (countries) are supported. These codes 
+    ISO 3166-1 (countries) are supported. These codes
     should be in the Alpha-2 format.
     e.g. United States of America = US
     """
      _dtype_repr = "countrycode"
     _default_pandas_dtype = str
-    
-class  SubRegionCode(Categorical):
+
+
+class SubRegionCode(Categorical):
     """Represents an ISO-3166 standard sub-region code.
-    ISO 3166-2 codes (sub-regions are supported. These codes 
+    ISO 3166-2 codes (sub-regions are supported. These codes
     should be in the Alpha-2 format.
     e.g. United States of America, Arizona = US-AZ
     """
      _dtype_repr = "subregioncode"
     _default_pandas_dtype = str
+
 
 ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
                       Categorical, Text, Ordinal,
