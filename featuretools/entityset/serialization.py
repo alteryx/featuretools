@@ -141,12 +141,12 @@ def from_variable_description(description, entity=None):
     return variable
 
 
-def from_entity_description(entityset, description, path=None):
+def from_entity_description(description, entityset, path=None):
     '''Deserialize entity from entity description and add to entityset.
 
     Args:
-        entityset (EntitySet) : Instance of :class:`.EntitySet` to add :class:`.Entity`.
         description (dict) : Description of :class:`.Entity`.
+        entityset (EntitySet) : Instance of :class:`.EntitySet` to add :class:`.Entity`.
         path (str) : Root directory to serialized entityset.
     '''
     from_disk = path is not None
@@ -161,12 +161,12 @@ def from_entity_description(entityset, description, path=None):
         variable_types=variable_types)
 
 
-def from_relationship_description(entityset, description):
+def from_relationship_description(description, entityset):
     '''Deserialize parent and child variables from relationship description.
 
     Args:
-        entityset (EntitySet) : Instance of :class:`.EntitySet` containing parent and child variables.
         description (dict) : Description of :class:`.Relationship`.
+        entityset (EntitySet) : Instance of :class:`.EntitySet` containing parent and child variables.
 
     Returns:
         item (tuple(Variable, Variable)) : Tuple containing parent and child variables.

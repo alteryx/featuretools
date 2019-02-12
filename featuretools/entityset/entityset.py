@@ -212,12 +212,12 @@ class EntitySet(object):
         for entity in description['entities'].values():
             entity['loading_info']['params'].update(kwargs)
             # If path is None, an empty dataframe will be created for entity.
-            serialization.from_entity_description(entityset, entity, path=path)
+            serialization.from_entity_description(entity, entityset, path=path)
             if entity['properties']['last_time_index']:
                 last_time_index.append(entity['id'])
 
         for relationship in description['relationships']:
-            relationship = serialization.from_relationship_description(entityset, relationship)
+            relationship = serialization.from_relationship_description(relationship, entityset)
             entityset.add_relationship(relationship)
 
         if len(last_time_index):

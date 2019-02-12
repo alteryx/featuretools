@@ -28,7 +28,7 @@ def test_entity(entityset):
     _entityset = ft.EntitySet(entityset.id)
     for entity in entityset.metadata.entities:
         description = serialization.to_entity_description(entity)
-        serialization.from_entity_description(_entityset, description)
+        serialization.from_entity_description(description, _entityset)
         _entity = _entityset[description['id']]
         _entity.last_time_index = entity.last_time_index
         assert entity.__eq__(_entity, deep=True)
@@ -43,7 +43,7 @@ def test_entityset(entityset):
 def test_relationship(entityset):
     for relationship in entityset.relationships:
         description = serialization.to_relationship_description(relationship)
-        relationship = serialization.from_relationship_description(entityset, description)
+        relationship = serialization.from_relationship_description(description, entityset)
         assert relationship.__eq__(relationship)
 
 
