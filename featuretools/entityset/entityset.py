@@ -147,40 +147,37 @@ class EntitySet(object):
     def reset_data_description(self):
         self._data_description = None
 
-    def to_pickle(self, path, params=None, **kwargs):
+    def to_pickle(self, path, **kwargs):
         '''Write entityset to disk in the pickle format, location specified by `path`.
 
             Args:
                 entityset: entityset to write to disk
                 path (str): location on disk to write to (will be created as a directory)
-                params (dict): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
                 kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialization.write_data_description(self, path, format='pickle', params=params, **kwargs)
+        serialization.write_data_description(self, path, format='pickle', **kwargs)
         return self
 
-    def to_parquet(self, path, params=None, **kwargs):
+    def to_parquet(self, path, **kwargs):
         '''Write entityset to disk in the parquet format, location specified by `path`.
 
             Args:
                 entityset: entityset to write to disk
                 path (str): location on disk to write to (will be created as a directory)
-                params (dict): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
                 kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialization.write_data_description(self, path, format='parquet', params=params, compression='gzip', **kwargs)
+        serialization.write_data_description(self, path, format='parquet', compression='gzip', **kwargs)
         return self
 
-    def to_csv(self, path, params=None, **kwargs):
+    def to_csv(self, path, **kwargs):
         '''Write entityset to disk in the csv format, location specified by `path`.
 
             Args:
                 entityset: entityset to write to disk
                 path (str): location on disk to write to (will be created as a directory)
-                params (dict): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
                 kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialization.write_data_description(self, path, format='csv', params=params, index=False, **kwargs)
+        serialization.write_data_description(self, path, format='csv', index=False, **kwargs)
         return self
 
     def create_data_description(self):

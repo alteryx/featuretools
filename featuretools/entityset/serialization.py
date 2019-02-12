@@ -72,15 +72,17 @@ def write_entity_data(entity, path, format='csv', **kwargs):
     Returns:
         loading_info (dict) : Information on storage location and format of entity data.
     '''
+    format = format.lower()
     basename = '.'.join([entity.id, format])
     if 'compression' in kwargs:
         basename += '.' + kwargs['compression']
     location = os.path.join('data', basename)
-    loading_info = {'location': location, 'type': format.lower()}
     file = os.path.join(path, location)
-    if loading_info['type'] == 'csv':
-        entity.df.to_csv(file, **kwargs)
-    elif loading_info['type'] == 'parquet':
+    if format == 'csv':
+        params = ['index', 'encoding']
+        subset = {key: kwargs[key] for key in params if key in kwargs}
+        entity.df.to_csv(file, **subset)
+    elif format == 'parquet':
         # Serializing to parquet format raises an error when columns contain tuples.
         # Columns containing tuples are mapped as dtype object.
         # Issue is resolved by casting columns of dtype object to string.
@@ -88,25 +90,23 @@ def write_entity_data(entity, path, format='csv', **kwargs):
         entity.df[columns] = entity.df[columns].astype('unicode')
         entity.df.columns = entity.df.columns.astype('unicode')  # ensures string column names for python 2.7
         entity.df.to_parquet(file, **kwargs)
-    elif loading_info['type'] == 'pickle':
+    elif format == 'pickle':
         entity.df.to_pickle(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))
-    return loading_info
+    return {'location': location, 'type': format, 'params': kwargs}
 
 
-def write_data_description(entityset, path, params=None, **kwargs):
+def write_data_description(entityset, path, **kwargs):
     '''Serialize entityset to data description and write to disk.
 
     Args:
         entityset (EntitySet) : Instance of :class:`.EntitySet`.
         path (str) : Location on disk to write `data_description.json` and entity data.
-        params (dict): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
         kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
     '''
     path = os.path.abspath(path)
-    params = params or {}
     if os.path.exists(path):
         shutil.rmtree(path)
     for dirname in [path, os.path.join(path, 'data')]:
@@ -115,7 +115,6 @@ def write_data_description(entityset, path, params=None, **kwargs):
     for entity in entityset.entities:
         loading_info = write_entity_data(entity, path, **kwargs)
         description['entities'][entity.id]['loading_info'].update(loading_info)
-        description['entities'][entity.id]['loading_info']['params'].update(params)
     file = os.path.join(path, 'data_description.json')
     with open(file, 'w') as file:
         json.dump(description, file)
@@ -202,13 +201,19 @@ def read_entity_data(description, path=None):
         df (DataFrame) : Instance of dataframe.
     '''
     file = os.path.join(path, description['loading_info']['location'])
-    params = description['loading_info'].get('params', {})
+    kwargs = description['loading_info'].get('params', {})
     if description['loading_info']['type'] == 'csv':
-        dataframe = pd.read_csv(file, **params)
+        params = ['compression', 'engine', 'encoding']
+        subset = {key: kwargs[key] for key in params if key in kwargs}
+        dataframe = pd.read_csv(file, **subset)
     elif description['loading_info']['type'] == 'parquet':
-        dataframe = pd.read_parquet(file, **params)
+        params = ['engine', 'columns']
+        subset = {key: kwargs[key] for key in params if key in kwargs}
+        dataframe = pd.read_parquet(file, **subset)
     elif description['loading_info']['type'] == 'pickle':
-        dataframe = pd.read_pickle(file, **params)
+        params = ['compression']
+        subset = {key: kwargs[key] for key in params if key in kwargs}
+        dataframe = pd.read_pickle(file, **subset)
     else:
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))
