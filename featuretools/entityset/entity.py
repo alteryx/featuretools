@@ -288,7 +288,7 @@ class Entity(object):
                 Data older than time_last by more than this will be ignored
 
         Returns:
-            pd.DataFrame : instances that match constraints
+            pd.DataFrame : instances that match constraints with ids in order
         """
         instance_vals = self._vals_to_series(instance_vals, variable_id)
 
