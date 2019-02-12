@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -95,3 +96,19 @@ def test_update_data(es):
     assert es["customers"].df["id"].iloc[0] == 0
     es["customers"].update_data(df.copy(deep=True), already_sorted=True)
     assert es["customers"].df["id"].iloc[0] == 2
+
+
+def test_query_by_values_returns_rows_in_given_order():
+    data = pd.DataFrame({
+        "id": [1, 2, 3, 4, 5],
+        "value": ["a", "c", "b", "a", "a"],
+        "time": [1000, 2000, 3000, 4000, 5000]
+    })
+
+    es = ft.EntitySet()
+    es = es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
+                                  time_index="time", variable_types={
+                                      "value": ft.variable_types.Categorical
+                                  })
+    query = es['test'].query_by_values(['b', 'a'], variable_id='value')
+    assert np.array_equal(query['id'], [1, 3, 4, 5])
