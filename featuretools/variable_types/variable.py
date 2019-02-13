@@ -354,7 +354,7 @@ class IPAddress(Variable):
     """Represents a computer network address. Represented
     in dotted-decimal notation. IPv4 and IPv6 are supported.
     """
-    _dtype_repr = "ip"
+    type_string = "ip"
     _default_pandas_dtype = str
 
 
@@ -362,7 +362,7 @@ class EmailAddress(Variable):
     """Represents an email box to which email message are sent.
     Consits of a local-part, an @ symbol, and a domain.
     """
-    _dtype_repr = "email"
+    type_string = "email"
     _default_pandas_dtype = str
 
 
