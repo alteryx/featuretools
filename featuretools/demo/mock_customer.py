@@ -56,7 +56,7 @@ def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transaction
                                       dataframe=transactions_df,
                                       index="transaction_id",
                                       time_index="transaction_time",
-                                      variable_types={"product_id": ft.variable_types.Categorical})
+                                      variable_types={"product_id": Categorical})
 
         es = es.entity_from_dataframe(entity_id="products",
                                       dataframe=products_df,
