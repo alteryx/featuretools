@@ -16,6 +16,7 @@ class TransformPrimitive(PrimitiveBase):
         name = u"{}(".format(self.name.upper())
         name += u", ".join(base_feature_names)
         name += u")"
+        name += self.get_args_string()
         return name
 
 

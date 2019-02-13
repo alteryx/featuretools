@@ -27,3 +27,12 @@ def test_get_args_string():
 
     example = PrimitiveBaseTest(1, 2, c=np.nan, d=np.nan).get_args_string()
     assert example == "a=1,b=2,c=nan"
+
+
+class PrimitiveBaseTest2(PrimitiveBase):
+    def __init__(self):
+        pass
+
+
+def test_empty_args_string():
+    assert PrimitiveBaseTest2().get_args_string() == ''

@@ -46,9 +46,11 @@ class PrimitiveBase(object):
 
     def get_args_string(self):
         arguments, *_, defaults = inspect.getargspec(self.__init__)
+        if defaults is None:
+            defaults = []
+
         args = arguments[1:-len(defaults)]
         kwargs = arguments[len(defaults) + 1:]
-        print(args, kwargs, defaults)
         controllable_format = "{0}={1},"
         controllable_name = ""
 

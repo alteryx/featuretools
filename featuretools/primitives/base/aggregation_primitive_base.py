@@ -16,10 +16,11 @@ class AggregationPrimitive(PrimitiveBase):
     def generate_name(self, base_feature_names, child_entity_id,
                       parent_entity_id, where_str, use_prev_str):
         base_features_str = ", ".join(base_feature_names)
-        return u"%s(%s.%s%s%s)" % (self.name.upper(),
-                                   child_entity_id,
-                                   base_features_str,
-                                   where_str, use_prev_str)
+        return u"%s(%s.%s%s%s)%s" % (self.name.upper(),
+                                     child_entity_id,
+                                     base_features_str,
+                                     where_str, use_prev_str,
+                                     self.get_args_string())
 
 
 def make_agg_primitive(function, input_types, return_type, name=None,
