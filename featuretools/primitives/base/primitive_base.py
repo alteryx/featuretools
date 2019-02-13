@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import inspect
 import os
 
 import numpy as np
@@ -42,3 +43,23 @@ class PrimitiveBase(object):
 
     def get_filepath(self, filename):
         return os.path.join(config.get("primitive_data_folder"), filename)
+
+    def get_args_string(self):
+        arguments, *_, defaults = inspect.getargspec(self.__init__)
+        args = arguments[1:-len(defaults)]
+        kwargs = arguments[len(defaults) + 1:]
+        print(args, kwargs, defaults)
+        controllable_format = "{0}={1},"
+        controllable_name = ""
+
+        variables = self.__dict__
+        for arg in args:
+            val = variables[arg]
+            controllable_name += controllable_format.format(arg, val)
+
+        for kwarg, default in zip(kwargs, defaults):
+            val = variables[kwarg]
+            if val != default and (not np.isnan(val) or not np.isnan(default)):
+                controllable_name += controllable_format.format(kwarg, val)
+
+        return controllable_name[:-1]
