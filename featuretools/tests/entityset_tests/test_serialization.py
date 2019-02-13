@@ -15,7 +15,7 @@ def entityset():
     return make_ecommerce_entityset()
 
 
-def test_variable_descriptions():
+def test_all_variable_descriptions():
     entityset = EntitySet()
     dataframe = pd.DataFrame(columns=list(serialize.VARIABLE_TYPES))
     entityset.entity_from_dataframe(
@@ -30,6 +30,14 @@ def test_variable_descriptions():
         description = variable.to_data_description()
         _variable = deserialize.from_variable_description(description, entity=entity)
         assert variable.__eq__(_variable)
+
+
+def test_variable_descriptions(entityset):
+    for entity in entityset.entities:
+        for variable in entity.variables:
+            description = variable.to_data_description()
+            _variable = deserialize.from_variable_description(description, entity=entity)
+            assert variable.__eq__(_variable)
 
 
 def test_entity_descriptions(entityset):
