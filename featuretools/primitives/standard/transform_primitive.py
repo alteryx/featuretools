@@ -173,9 +173,9 @@ class Weekday(TransformPrimitive):
 
 
 class NumCharacters(TransformPrimitive):
-    """Return the characters in a given string.
+    """Return the number of characters in a given string.
     """
-    name = 'characters'
+    name = 'num_characters'
     input_types = [Text]
     return_type = Numeric
 
@@ -184,9 +184,9 @@ class NumCharacters(TransformPrimitive):
 
 
 class NumWords(TransformPrimitive):
-    """Returns the words in a given string by counting the spaces.
+    """Returns the number of words in a given string by counting the spaces.
     """
-    name = 'numwords'
+    name = 'num_words'
     input_types = [Text]
     return_type = Numeric
 

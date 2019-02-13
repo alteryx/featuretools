@@ -54,6 +54,7 @@ of ``setup.py``.
 
 Development
 -----------
+Before making contributing to the codebase, please follow the guidelines `here <https://github.com/Featuretools/featuretools/blob/master/docs/contributing.md>`_
 
 Virtualenv
 ~~~~~~~~~~

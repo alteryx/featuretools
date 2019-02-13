@@ -26,9 +26,12 @@ from featuretools.primitives import (  # NMostCommon,
     Mode,
     NMostCommon,
     NotEqualScalar,
+    NumTrue,
     Sum,
     Trend
 )
+from featuretools.primitives.base import AggregationPrimitive
+from featuretools.variable_types import Numeric
 
 
 @pytest.fixture(scope='module')
@@ -524,3 +527,114 @@ def test_empty_child_dataframe():
     fm2 = ft.calculate_feature_matrix(entityset=es, features=[count_where, trend_where], cutoff_time=pd.Timestamp("1/4/2018"))
     names = [count_where.get_name(), trend_where.get_name()]
     assert_array_equal(fm2[names], [[0, np.nan]])
+
+
+def test_handles_primitive_function_name_uniqueness(entityset):
+    class SumTimesN(AggregationPrimitive):
+        name = "sum_times_n"
+        input_types = [Numeric]
+        return_type = Numeric
+
+        def __init__(self, n):
+            self.n = n
+
+        def get_function(self):
+            def my_function(values):
+                return values.sum() * self.n
+
+            return my_function
+
+        def generate_name(self, base_feature_names, child_entity_id,
+                          parent_entity_id, where_str, use_prev_str):
+            base_features_str = ", ".join(base_feature_names)
+            return u"%s(%s.%s%s%s, n=%s)" % (self.name.upper(),
+                                             child_entity_id,
+                                             base_features_str,
+                                             where_str, use_prev_str, self.n)
+
+    # works as expected
+    f1 = ft.Feature(entityset["log"]["value"],
+                    parent_entity=entityset["customers"],
+                    primitive=SumTimesN(n=1))
+    fm = ft.calculate_feature_matrix(features=[f1], entityset=entityset)
+    value_sum = pd.Series([56, 26, 0])
+    assert all(fm[f1.get_name()].sort_index() == value_sum)
+
+    # works as expected
+    f2 = ft.Feature(entityset["log"]["value"],
+                    parent_entity=entityset["customers"],
+                    primitive=SumTimesN(n=2))
+    fm = ft.calculate_feature_matrix(features=[f2], entityset=entityset)
+    double_value_sum = pd.Series([112, 52, 0])
+    assert all(fm[f2.get_name()].sort_index() == double_value_sum)
+
+    # same primitive, same variable, different args
+    fm = ft.calculate_feature_matrix(features=[f1, f2], entityset=entityset)
+    assert all(fm[f1.get_name()].sort_index() == value_sum)
+    assert all(fm[f2.get_name()].sort_index() == double_value_sum)
+
+    # different primtives, same function returned by get_function,
+    # different base features
+    f3 = ft.Feature(entityset["log"]["value"],
+                    parent_entity=entityset["customers"],
+                    primitive=Sum)
+    f4 = ft.Feature(entityset["log"]["purchased"],
+                    parent_entity=entityset["customers"],
+                    primitive=NumTrue)
+    fm = ft.calculate_feature_matrix(features=[f3, f4], entityset=entityset)
+    purchased_sum = pd.Series([10, 1, 1])
+    assert all(fm[f3.get_name()].sort_index() == value_sum)
+    assert all(fm[f4.get_name()].sort_index() == purchased_sum)\
+
+
+    # different primtives, same function returned by get_function,
+    # same base feature
+    class Sum1(AggregationPrimitive):
+        """Sums elements of a numeric or boolean feature."""
+        name = "sum1"
+        input_types = [Numeric]
+        return_type = Numeric
+        stack_on_self = False
+        stack_on_exclude = [Count]
+        default_value = 0
+
+        def get_function(self):
+            return np.sum
+
+    class Sum2(AggregationPrimitive):
+        """Sums elements of a numeric or boolean feature."""
+        name = "sum2"
+        input_types = [Numeric]
+        return_type = Numeric
+        stack_on_self = False
+        stack_on_exclude = [Count]
+        default_value = 0
+
+        def get_function(self):
+            return np.sum
+
+    class Sum3(AggregationPrimitive):
+        """Sums elements of a numeric or boolean feature."""
+        name = "sum3"
+        input_types = [Numeric]
+        return_type = Numeric
+        stack_on_self = False
+        stack_on_exclude = [Count]
+        default_value = 0
+
+        def get_function(self):
+            return np.sum
+
+    f5 = ft.Feature(entityset["log"]["value"],
+                    parent_entity=entityset["customers"],
+                    primitive=Sum1)
+    f6 = ft.Feature(entityset["log"]["value"],
+                    parent_entity=entityset["customers"],
+                    primitive=Sum2)
+    f7 = ft.Feature(entityset["log"]["value"],
+                    parent_entity=entityset["customers"],
+                    primitive=Sum3)
+    fm = ft.calculate_feature_matrix(features=[f5, f6, f7], entityset=entityset)
+    assert all(fm[f5.get_name()].sort_index() == value_sum)
+    assert all(fm[f6.get_name()].sort_index() == value_sum)
+    assert all(fm[f7.get_name()].sort_index() == value_sum)

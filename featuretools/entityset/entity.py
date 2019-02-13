@@ -41,6 +41,7 @@ class Entity(object):
         :class:`.Relationship`, :class:`.Variable`, :class:`.EntitySet`
 
     """
+
     def __init__(self, id, df, entityset, variable_types=None,
                  index=None, time_index=None, secondary_time_index=None,
                  last_time_index=None, already_sorted=False, make_index=False,
@@ -239,7 +240,7 @@ class Entity(object):
                 Data older than time_last by more than this will be ignored
 
         Returns:
-            pd.DataFrame : instances that match constraints
+            pd.DataFrame : instances that match constraints with ids in order of underlying dataframe
         """
         instance_vals = self._vals_to_series(instance_vals, variable_id)
 
@@ -260,8 +261,8 @@ class Entity(object):
             df.dropna(subset=[self.index], inplace=True)
 
         else:
-            df = self.df.merge(instance_vals.to_frame(variable_id),
-                               how="inner", on=variable_id)
+            df = self.df[self.df[variable_id].isin(instance_vals)]
+
             df = df.set_index(self.index, drop=False)
 
             # ensure filtered df has same categories as original

@@ -7,7 +7,7 @@ from numpy import random
 from numpy.random import choice
 
 import featuretools as ft
-from featuretools.variable_types import Categorical
+from featuretools.variable_types import ZIPCode
 
 
 def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transactions=500,
@@ -50,7 +50,6 @@ def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transaction
 
     if return_single_table:
         return transactions_df.merge(sessions_df).merge(customers_df).merge(products_df).reset_index(drop=True)
-
     elif return_entityset:
         es = ft.EntitySet(id="transactions")
         es = es.entity_from_dataframe(entity_id="transactions",
@@ -72,7 +71,7 @@ def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transaction
                                       dataframe=customers_df,
                                       index="customer_id",
                                       time_index="join_date",
-                                      variable_types={"zip_code": Categorical})
+                                      variable_types={"zip_code": ZIPCode})
 
         rels = [ft.Relationship(es["products"]["product_id"],
                                 es["transactions"]["product_id"]),
