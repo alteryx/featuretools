@@ -162,9 +162,9 @@ def extract_archive(filepath):
     tmp_dir = get_installation_temp_dir()
     members = [m for m in tar.getmembers()
                if((check_valid_primitive_path(m.path) or
-                  m.name.endswith("requirements.txt") or
-                  m.name.endswith("info.json") or
-                  "data/" in m.name) and (not m.path.startswith("/")))]
+                   m.name.endswith("requirements.txt") or
+                   m.name.endswith("info.json") or
+                   "data/" in m.name) and (not m.path.startswith("/")))]
     tar.extractall(tmp_dir, members=members)
     tar.close()
 
