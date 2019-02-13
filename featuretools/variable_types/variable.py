@@ -256,6 +256,7 @@ class EmailAddress(Variable):
     _dtype_repr = "email"
     _default_pandas_dtype = str
 
+
 class CountryCode(Categorical):
     """Represents an ISO-3166 standard country code.
     ISO 3166-1 (countries) are supported. These codes
