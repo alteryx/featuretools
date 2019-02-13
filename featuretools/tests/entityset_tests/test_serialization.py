@@ -64,7 +64,16 @@ def test_data_description(entityset):
 
 
 def test_write_data_description(entityset):
-    params = {'csv': {'index': False}, 'parquet': {'compression': 'gzip'}}
+    params = {
+        'csv': {
+            'index': False,
+            'encoding': 'utf-8',
+            'engine': 'python'
+        },
+        'parquet': {
+            'compression': 'gzip'
+        },
+    }
     for format in serialize.FORMATS:
         kwargs = params.get(format, {})
         path = os.path.join(os.path.dirname(integration_data.__file__), '.cache/es')
