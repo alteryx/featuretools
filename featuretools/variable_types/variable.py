@@ -300,9 +300,10 @@ class Timedelta(Variable):
                  id,
                  entity,
                  name=None,
+                 range=None,
                  start_inclusive=True,
                  end_inclusive=False):
-        self.range = None or []
+        self.range = range or []
         self.start_inclusive = start_inclusive
         self.end_inclusive = end_inclusive
         super(Timedelta, self).__init__(id, entity, name=name)

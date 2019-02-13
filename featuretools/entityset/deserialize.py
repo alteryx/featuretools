@@ -3,14 +3,8 @@ import os
 
 import pandas as pd
 
-from .. import variable_types
 from .relationship import Relationship
-from .serialize import FORMATS
-
-VARIABLE_TYPES = {
-    getattr(variable_types, type).type_string: getattr(variable_types, type) for type in dir(variable_types)
-    if hasattr(getattr(variable_types, type), 'type_string')
-}
+from .serialize import FORMATS, VARIABLE_TYPES
 
 
 def from_variable_description(description, entity=None):
@@ -25,7 +19,7 @@ def from_variable_description(description, entity=None):
     '''
     is_type_string = isinstance(description['type'], str)
     type = description['type'] if is_type_string else description['type'].pop('value')
-    variable = VARIABLE_TYPES.get(type, VARIABLE_TYPES.get(None))
+    variable = VARIABLE_TYPES.get(type, VARIABLE_TYPES.get('None'))
     if entity is not None:
         kwargs = {} if is_type_string else description['type']
         variable = variable(description['id'], entity, **kwargs)

@@ -2,7 +2,13 @@ import json
 import os
 import shutil
 
+from .. import variable_types
+
 FORMATS = ['csv', 'pickle', 'parquet']
+VARIABLE_TYPES = {
+    str(getattr(variable_types, type).type_string): getattr(variable_types, type) for type in dir(variable_types)
+    if hasattr(getattr(variable_types, type), 'type_string')
+}
 
 
 def to_entity_description(entity):
