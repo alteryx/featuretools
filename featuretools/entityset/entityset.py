@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_dtype_equal, is_numeric_dtype
 
-from . import serialize, deserialize
+from . import deserialize, serialize
 from .entity import Entity
 from .relationship import Relationship
 
