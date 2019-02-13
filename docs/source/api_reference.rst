@@ -306,6 +306,8 @@ Variable types
     Text
     LatLong
     ZIPCode
+    IPAddress
+    EmailAddress
     CountryCode
     SubRegionCode
 

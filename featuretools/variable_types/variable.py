@@ -235,11 +235,26 @@ class LatLong(Variable):
 class ZIPCode(Categorical):
     """Represents a postal address in the United States.
     Consists of a series of digits which are casts as
-    string. Five digit or 9 digit zipcodes are supported.
+    string. Five digit and 9 digit zipcodes are supported.
     """
     _dtype_repr = "zipcode"
     _default_pandas_dtype = str
 
+
+class IPAddress(Variable):
+    """Represents a computer network address. Represented
+    in dotted-decimal notation. IPv4 and IPv6 are supported.
+    """
+    _dtype_repr = "ip"
+    _default_pandas_dtype = str
+
+
+class EmailAddress(Variable):
+    """Represents an email box to which email message are sent.
+    Consits of a local-part, an @ symbol, and a domain.
+    """
+    _dtype_repr = "email"
+    _default_pandas_dtype = str
 
 class CountryCode(Categorical):
     """Represents an ISO-3166 standard country code.
@@ -263,8 +278,9 @@ class SubRegionCode(Categorical):
 
 ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
                       Categorical, Text, Ordinal,
-                      Boolean, LatLong, ZIPCode,
-                      CountryCode, SubRegionCode]
+                      Boolean, LatLong, ZIPCode, IPAddress,
+                      EmailAddress, CountryCode,
+                      SubRegionCode]
 
 
 DEFAULT_DTYPE_VALUES = {
