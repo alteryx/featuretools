@@ -47,7 +47,7 @@ class PrimitiveBase(object):
     def get_args_string(self):
         if not callable(self.__init__):
             return ""
-        
+
         temp = inspect.getargspec(self.__init__)
         arguments = temp[0]
         defaults = temp[-1]
