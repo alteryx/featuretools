@@ -45,7 +45,7 @@ class PrimitiveBase(object):
         return os.path.join(config.get("primitive_data_folder"), filename)
 
     def get_args_string(self):
-        if not callable(self.__init__):
+        if not isfunction(self.__init__):
             return ""
 
         temp = inspect.getargspec(self.__init__)
