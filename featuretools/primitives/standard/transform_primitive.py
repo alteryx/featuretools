@@ -299,8 +299,8 @@ class Not(TransformPrimitive):
 
 
 class Percentile(TransformPrimitive):
-    """For each value of the base feature, determines the percentile in relation
-    to the rest of the feature.
+    """For each value of the base feature, determines the percentile in
+        relation to the rest of the feature.
     """
     name = 'percentile'
     uses_full_entity = True
@@ -336,12 +336,19 @@ class Longitude(TransformPrimitive):
 
 
 class Haversine(TransformPrimitive):
-    """Calculate the approximate haversine distance in miles between two LatLong variable types.
+    """Calculate the approximate haversine distance between two LatLong
+        variable types. Defaults to computing in miles.
+
     """
     name = 'haversine'
     input_types = [LatLong, LatLong]
     return_type = Numeric
     commutative = True
+
+    def __init__(self, unit='miles'):
+        if unit not in ['miles', 'kilometers']:
+            raise ValueError("Invalid unit given")
+        self.unit = unit
 
     def get_function(self):
         def haversine(latlong1, latlong2):
@@ -355,6 +362,9 @@ class Haversine(TransformPrimitive):
             dlat = lat2 - lat1
             a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * \
                 np.cos(lat2) * np.sin(dlon / 2.0)**2
-            mi = 3950 * 2 * np.arcsin(np.sqrt(a))
-            return mi
+            radius_earth = 3950
+            if self.unit == 'kilometers':
+                radius_earth = 6373
+            distance = radius_earth * 2 * np.arcsin(np.sqrt(a))
+            return distance
         return haversine
