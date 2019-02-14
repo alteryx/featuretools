@@ -126,7 +126,7 @@ class NUnique(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self):
-        return 'nunique'
+        return pd.Series.nunique
 
 
 class NumTrue(AggregationPrimitive):
