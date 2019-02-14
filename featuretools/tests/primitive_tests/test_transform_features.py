@@ -433,7 +433,6 @@ def test_haversine(es):
         assert v - values[i] < .0001
 
 
-
 class TestCumCount:
 
     primitive = CumCount
