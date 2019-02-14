@@ -368,3 +368,11 @@ class Haversine(TransformPrimitive):
             distance = radius_earth * 2 * np.arcsin(np.sqrt(a))
             return distance
         return haversine
+
+    def generate_name(self, base_feature_names):
+        name = u"{}(".format(self.name.upper())
+        name += u", ".join(base_feature_names)
+        if self.unit != 'miles':
+            name += u", unit={}".format(self.unit)
+        name += u")"
+        return name

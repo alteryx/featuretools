@@ -403,10 +403,12 @@ def test_latlong(es):
 def test_haversine(es):
     log_latlong_feat = es['log']['latlong']
     log_latlong_feat2 = es['log']['latlong2']
-    haversine = ft.Feature([log_latlong_feat, log_latlong_feat2], primitive=Haversine)
+    haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
+                           primitive=Haversine)
     features = [haversine]
 
-    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
+    df = ft.calculate_feature_matrix(entityset=es, features=features,
+                                     instance_ids=range(15))
     values = df[haversine.get_name()].values
     real = [0., 524.15585776, 1043.00845747, 1551.12130243,
             2042.79840241, 0., 137.86000883, 275.59396684,
@@ -415,6 +417,21 @@ def test_haversine(es):
     assert len(values) == 15
     for i, v in enumerate(real):
         assert v - values[i] < .0001
+
+    haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
+                           primitive=Haversine(unit='kilometers'))
+    features = [haversine]
+    df = ft.calculate_feature_matrix(entityset=es, features=features,
+                                     instance_ids=range(15))
+    values = df[haversine.get_name()].values
+    real_km = [0, 843.5470847509094, 1678.5594029785998, 2496.287761337906,
+               3287.5653521281192, 0, 221.86417805050752, 443.52549697015303,
+               664.7807895352589, 0, 0, 843.5470847509094, 0,
+               1190.8150887809088, 2356.529838207748]
+    assert len(values) == 15
+    for i, v in enumerate(real_km):
+        assert v - values[i] < .0001
+
 
 
 class TestCumCount:
