@@ -47,7 +47,7 @@ class PrimitiveBase(object):
     def get_args_string(self):
         temp = inspect.getargspec(self.__init__)
         arguments = temp[0]
-        defaults = temp[:-1]
+        defaults = temp[-1]
         if defaults is None:
             defaults = []
 
