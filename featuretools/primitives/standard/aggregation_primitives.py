@@ -120,13 +120,15 @@ class Max(AggregationPrimitive):
 class NUnique(AggregationPrimitive):
     """Returns the number of unique categorical variables."""
     name = "num_unique"
-    # todo can we use discrete in input_types instead?
     input_types = [Discrete]
     return_type = Numeric
     stack_on_self = False
 
     def get_function(self):
-        return pd.Series.nunique
+        # TODO: Revert to pd.Series.nunique after dropping py27
+        def nunique(x):
+            return pd.Series(x).nunique()
+        return nunique
 
 
 class NumTrue(AggregationPrimitive):
