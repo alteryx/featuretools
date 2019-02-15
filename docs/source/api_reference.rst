@@ -308,6 +308,8 @@ Variable types
     ZIPCode
     IPAddress
     EmailAddress
+    CountryCode
+    SubRegionCode
 
 
 Feature Selection

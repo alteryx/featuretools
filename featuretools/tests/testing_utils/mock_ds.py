@@ -124,7 +124,18 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                     ['12345-6789'] * 2 +
                     [np.nan] +
                     [''] * 2)
-
+    countrycodes = list(['US'] * 5 +
+                        ['AL'] * 4 +
+                        [np.nan] * 2 +
+                        [''] * 3 +
+                        ['ALB'] * 2 +
+                        ['USA'])
+    subregioncodes = list(['US-AZ'] * 5 +
+                          ['US-MT'] * 4 +
+                          [np.nan] * 2 +
+                          [''] +
+                          ['UG-219'] * 2 +
+                          ['ZM-06'] * 3)
     log_df = pd.DataFrame({
         'id': range(17),
         'session_id': [0] * 5 + [1] * 4 + [2] * 1 + [3] * 2 + [4] * 3 + [5] * 2,
@@ -137,6 +148,8 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
         'latlong': latlong,
         'latlong2': latlong2,
         'zipcode': zipcodes,
+        'countrycode': countrycodes,
+        'subregioncode': subregioncodes,
         'value_many_nans': values_many_nans,
         'priority_level': [0] * 2 + [1] * 5 + [0] * 6 + [2] * 2 + [1] * 2,
         'purchased': [True] * 11 + [False] * 4 + [True, False],
@@ -274,6 +287,8 @@ def make_variable_types(with_integer_time_index=False):
         'latlong': variable_types.LatLong,
         'latlong2': variable_types.LatLong,
         'zipcode': variable_types.ZIPCode,
+        'countrycode': variable_types.CountryCode,
+        'subregioncode': variable_types.SubRegionCode,
         'value_many_nans': variable_types.Numeric,
         'priority_level': variable_types.Ordinal,
         'purchased': variable_types.Boolean,

@@ -1143,7 +1143,7 @@ class EntitySet(object):
 
         # Draw entities
         for entity in self.entities:
-            variables_string = '\l'.join([var.id + ' : ' + var.dtype  # noqa: W605
+            variables_string = '\l'.join([var.id + ' : ' + var._dtype_repr  # noqa: W605
                                           for var in entity.variables])
             label = '{%s|%s\l}' % (entity.id, variables_string)  # noqa: W605
             graph.node(entity.id, shape='record', label=label)
