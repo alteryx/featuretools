@@ -49,7 +49,7 @@ class PrimitiveBase(object):
             temp = inspect.getargspec(self.__init__)
         except:
             return ""
-            
+
         arguments = temp[0]
         defaults = temp[-1]
         if defaults is None:
