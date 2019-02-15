@@ -11,7 +11,7 @@ VARIABLE_TYPES = {
 }
 
 
-def to_entity_description(entity):
+def entity_to_description(entity):
     '''Serialize entity to data description.
 
     Args:
@@ -42,7 +42,7 @@ def to_entity_description(entity):
     return description
 
 
-def to_relationship_description(relationship):
+def relationship_to_description(relationship):
     '''Serialize entityset relationship to data description.
 
     Args:

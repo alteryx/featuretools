@@ -28,7 +28,7 @@ def test_all_variable_descriptions():
     entity = entityset['variable_types']
     for variable in entity.variables:
         description = variable.to_data_description()
-        _variable = deserialize.from_variable_description(description, entity=entity)
+        _variable = deserialize.description_to_variable(description, entity=entity)
         assert variable.__eq__(_variable)
 
 
@@ -36,15 +36,15 @@ def test_variable_descriptions(entityset):
     for entity in entityset.entities:
         for variable in entity.variables:
             description = variable.to_data_description()
-            _variable = deserialize.from_variable_description(description, entity=entity)
+            _variable = deserialize.description_to_variable(description, entity=entity)
             assert variable.__eq__(_variable)
 
 
 def test_entity_descriptions(entityset):
     _entityset = EntitySet(entityset.id)
     for entity in entityset.metadata.entities:
-        description = serialize.to_entity_description(entity)
-        deserialize.from_entity_description(description, _entityset)
+        description = serialize.entity_to_description(entity)
+        deserialize.description_to_entity(description, _entityset)
         _entity = _entityset[description['id']]
         _entity.last_time_index = entity.last_time_index
         assert entity.__eq__(_entity, deep=True)
@@ -52,8 +52,8 @@ def test_entity_descriptions(entityset):
 
 def test_relationship_descriptions(entityset):
     for relationship in entityset.relationships:
-        description = serialize.to_relationship_description(relationship)
-        relationship = deserialize.from_relationship_description(description, entityset)
+        description = serialize.relationship_to_description(relationship)
+        relationship = deserialize.description_to_relationship(description, entityset)
         assert relationship.__eq__(relationship)
 
 
@@ -98,7 +98,7 @@ def test_invalid_read_entity_data():
 
 def test_empty_dataframe(entityset):
     for entity in entityset.entities:
-        description = serialize.to_entity_description(entity)
+        description = serialize.entity_to_description(entity)
         dataframe = deserialize.empty_dataframe(description)
         assert dataframe.empty
 

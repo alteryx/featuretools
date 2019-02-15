@@ -187,8 +187,8 @@ class EntitySet(object):
         Returns:
             description (dict) : Description of :class:`.EntitySet`.
         '''
-        entities = {entity.id: serialize.to_entity_description(entity) for entity in self.entities}
-        relationships = [serialize.to_relationship_description(relationship) for relationship in self.relationships]
+        entities = {entity.id: serialize.entity_to_description(entity) for entity in self.entities}
+        relationships = [serialize.relationship_to_description(relationship) for relationship in self.relationships]
         data_description = {
             'id': self.id,
             'entities': entities,
@@ -215,12 +215,12 @@ class EntitySet(object):
         for entity in description['entities'].values():
             entity['loading_info']['params'].update(kwargs)
             # If path is None, an empty dataframe will be created for entity.
-            deserialize.from_entity_description(entity, entityset, path=path)
+            deserialize.description_to_entity(entity, entityset, path=path)
             if entity['properties']['last_time_index']:
                 last_time_index.append(entity['id'])
 
         for relationship in description['relationships']:
-            relationship = deserialize.from_relationship_description(relationship, entityset)
+            relationship = deserialize.description_to_relationship(relationship, entityset)
             entityset.add_relationship(relationship)
 
         if len(last_time_index):

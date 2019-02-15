@@ -7,7 +7,7 @@ from .relationship import Relationship
 from .serialize import FORMATS, VARIABLE_TYPES
 
 
-def from_variable_description(description, entity=None):
+def description_to_variable(description, entity=None):
     '''Deserialize variable from variable description.
 
     Args:
@@ -27,7 +27,7 @@ def from_variable_description(description, entity=None):
     return variable
 
 
-def from_entity_description(description, entityset, path=None):
+def description_to_entity(description, entityset, path=None):
     '''Deserialize entity from entity description and add to entityset.
 
     Args:
@@ -37,7 +37,7 @@ def from_entity_description(description, entityset, path=None):
     '''
     from_disk = path is not None
     dataframe = read_entity_data(description, path=path) if from_disk else empty_dataframe(description)
-    variable_types = {variable['id']: from_variable_description(variable) for variable in description['variables']}
+    variable_types = {variable['id']: description_to_variable(variable) for variable in description['variables']}
     entityset.entity_from_dataframe(
         description['id'],
         dataframe,
@@ -47,7 +47,7 @@ def from_entity_description(description, entityset, path=None):
         variable_types=variable_types)
 
 
-def from_relationship_description(description, entityset):
+def description_to_relationship(description, entityset):
     '''Deserialize parent and child variables from relationship description.
 
     Args:
