@@ -125,10 +125,15 @@ class NUnique(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self):
-        # TODO: Revert to pd.Series.nunique after dropping py27
-        def nunique(x):
-            return pd.Series(x).nunique()
-        return nunique
+        # note: returning pd.Series.nunique errors for python2,
+        # so using this branching code path while we support python2
+        from sys import version_info
+        if version_info.major < 3:
+            def nunique(x):
+                return pd.Series(x).nunique()
+            return nunique
+        else:
+            return pd.Series.nunique
 
 
 class NumTrue(AggregationPrimitive):
