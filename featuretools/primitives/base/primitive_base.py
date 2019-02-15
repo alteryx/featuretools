@@ -47,7 +47,7 @@ class PrimitiveBase(object):
     def get_args_string(self):
         try:
             temp = inspect.getargspec(self.__init__)
-        except:
+        except TypeError:
             return ""
 
         arguments = temp[0]
