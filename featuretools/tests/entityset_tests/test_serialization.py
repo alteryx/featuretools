@@ -63,34 +63,11 @@ def test_entityset_description(entityset):
     assert entityset.metadata.__eq__(_entityset, deep=True)
 
 
-def test_write_data_description(entityset):
-    params = {
-        'csv': {
-            'index': False,
-            'encoding': 'utf-8',
-            'engine': 'python'
-        },
-        'parquet': {
-            'compression': 'gzip'
-        },
-    }
-    for format in serialize.FORMATS:
-        kwargs = params.get(format, {})
-        path = os.path.join(os.path.dirname(integration_data.__file__), '.cache/es')
-        serialize.write_data_description(entityset, path=path, format=format, **kwargs)
-        assert os.path.exists(path)
-        shutil.rmtree(path)
-
-
-def test_invalid_write_data_description(entityset):
-    path = os.path.join(os.path.dirname(integration_data.__file__), '.cache/es')
+def test_invalid_formats(entityset):
     error_text = 'must be one of the following formats: .*'
     with pytest.raises(ValueError, match=error_text):
-        serialize.write_data_description(entityset, path=path, format='')
-
-
-def test_invalid_read_entity_data():
-    error_text = 'must be one of the following formats: .*'
+        path = os.path.join(os.path.dirname(integration_data.__file__), '.cache/es')
+        serialize.write_entity_data(entityset.entities[0], path=path, format='')
     with pytest.raises(ValueError, match=error_text):
         entity = {'loading_info': {'location': 'data', 'type': ''}}
         deserialize.read_entity_data(entity, path='.')

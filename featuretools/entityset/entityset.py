@@ -148,37 +148,43 @@ class EntitySet(object):
     def reset_data_description(self):
         self._data_description = None
 
-    def to_pickle(self, path, **kwargs):
+    def to_pickle(self, path, compression='infer', **kwargs):
         '''Write entityset to disk in the pickle format, location specified by `path`.
 
             Args:
-                entityset: entityset to write to disk
                 path (str): location on disk to write to (will be created as a directory)
+                compression (str) : Name of the compression to use. Possible values are: {'infer', 'gzip', 'bz2', 'zip', 'xz', None}.
                 kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
+        kwargs['params'] = {'compression': compression}
         serialize.write_data_description(self, path, format='pickle', **kwargs)
         return self
 
-    def to_parquet(self, path, **kwargs):
+    def to_parquet(self, path, engine='auto', compression='gzip', **kwargs):
         '''Write entityset to disk in the parquet format, location specified by `path`.
 
             Args:
-                entityset: entityset to write to disk
                 path (str): location on disk to write to (will be created as a directory)
+                engine (str) : Name of the engine to use. Possible values are: {'auto', 'pyarrow', 'fastparquet'}.
+                compression (str) : Name of the compression to use. Possible values are: {'snappy', 'gzip', 'brotli', None}.
                 kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialize.write_data_description(self, path, format='parquet', compression='gzip', **kwargs)
+        kwargs['params'] = {'engine': engine, 'compression': compression}
+        serialize.write_data_description(self, path, format='parquet', **kwargs)
         return self
 
-    def to_csv(self, path, **kwargs):
+    def to_csv(self, path, sep=',', encoding='utf-8', compression=None, **kwargs):
         '''Write entityset to disk in the csv format, location specified by `path`.
 
             Args:
-                entityset: entityset to write to disk
-                path (str): location on disk to write to (will be created as a directory)
-                kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
+                path (str) : Location on disk to write to (will be created as a directory)
+                sep (str) : String of length 1. Field delimiter for the output file.
+                encoding (str) : A string representing the encoding to use in the output file, defaults to 'utf-8'.
+                compression (str) : Name of the compression to use. Possible values are: {'infer', 'gzip', 'bz2', 'zip', 'xz', None}.
+                kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
-        serialize.write_data_description(self, path, format='csv', index=False, **kwargs)
+        kwargs['params'] = {'index': False, 'sep': sep, 'encoding': encoding, 'compression': compression}
+        serialize.write_data_description(self, path, format='csv', **kwargs)
         return self
 
     ###########################################################################
