@@ -76,7 +76,7 @@ def write_entity_data(entity, path, format='csv', **kwargs):
     location = os.path.join('data', basename)
     file = os.path.join(path, location)
     if format == 'csv':
-        params = ['compression', 'encoding', 'index']
+        params = ['compression', 'encoding', 'index', 'sep']
         subset = {key: kwargs[key] for key in params if key in kwargs}
         entity.df.to_csv(file, **subset)
     elif format == 'parquet':
