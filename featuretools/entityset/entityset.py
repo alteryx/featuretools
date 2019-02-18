@@ -140,8 +140,8 @@ class EntitySet(object):
     def metadata(self):
         '''Returns the metadata for this EntitySet. The metadata will be recomputed if it does not exist.'''
         if self._data_description is None:
-            description = self.to_data_description()
-            self._data_description = self.from_data_description(description)
+            description = serialize.entityset_to_description(self)
+            self._data_description = deserialize.description_to_entityset(description)
 
         return self._data_description
 
@@ -180,53 +180,6 @@ class EntitySet(object):
         '''
         serialize.write_data_description(self, path, format='csv', index=False, **kwargs)
         return self
-
-    def to_data_description(self):
-        '''Serialize entityset to data description.
-
-        Returns:
-            description (dict) : Description of :class:`.EntitySet`.
-        '''
-        entities = {entity.id: serialize.entity_to_description(entity) for entity in self.entities}
-        relationships = [serialize.relationship_to_description(relationship) for relationship in self.relationships]
-        data_description = {
-            'id': self.id,
-            'entities': entities,
-            'relationships': relationships
-        }
-        return data_description
-
-    @classmethod
-    def from_data_description(cls, description, **kwargs):
-        '''Deserialize entityset from data description.
-
-        Args:
-            description (dict) : Description of an :class:`.EntitySet`. Likely generated using :meth:`.EntitySet.to_data_description`
-            kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
-
-        Returns:
-            entityset (EntitySet) : Instance of :class:`.EntitySet`.
-        '''
-        # If data description was not read from disk, path is None.
-        path = description.get('root')
-        entityset = cls(description['id'])
-
-        last_time_index = []
-        for entity in description['entities'].values():
-            entity['loading_info']['params'].update(kwargs)
-            # If path is None, an empty dataframe will be created for entity.
-            deserialize.description_to_entity(entity, entityset, path=path)
-            if entity['properties']['last_time_index']:
-                last_time_index.append(entity['id'])
-
-        for relationship in description['relationships']:
-            relationship = deserialize.description_to_relationship(relationship, entityset)
-            entityset.add_relationship(relationship)
-
-        if len(last_time_index):
-            entityset.add_last_time_indexes(updated_entities=last_time_index)
-
-        return entityset
 
     ###########################################################################
     #   Public getter/setter methods  #########################################
@@ -1248,14 +1201,3 @@ class EntitySet(object):
                     frames[child_entity.id] = merge_df.merge(child_df,
                                                              left_on=r.child_variable.id,
                                                              right_on=r.child_variable.id)
-
-
-def read_entityset(path, **kwargs):
-    '''Read entityset from disk.
-
-        Args:
-            path (str): Directory on disk to read `data_description.json`.
-            kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
-    '''
-    data_description = deserialize.read_data_description(path)
-    return EntitySet.from_data_description(data_description, **kwargs)

@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from ...demo import load_mock_customer
-from ...entityset import EntitySet, deserialize, read_entityset, serialize
+from ...entityset import EntitySet, deserialize, serialize
 from ...tests import integration_data
 from ..testing_utils import make_ecommerce_entityset
 
@@ -53,13 +53,13 @@ def test_entity_descriptions(entityset):
 def test_relationship_descriptions(entityset):
     for relationship in entityset.relationships:
         description = serialize.relationship_to_description(relationship)
-        relationship = deserialize.description_to_relationship(description, entityset)
-        assert relationship.__eq__(relationship)
+        _relationship = deserialize.description_to_relationship(description, entityset)
+        assert relationship.__eq__(_relationship)
 
 
-def test_data_description(entityset):
-    description = entityset.to_data_description()
-    _entityset = EntitySet.from_data_description(description)
+def test_entityset_description(entityset):
+    description = serialize.entityset_to_description(entityset)
+    _entityset = deserialize.description_to_entityset(description)
     assert entityset.metadata.__eq__(_entityset, deep=True)
 
 
@@ -107,7 +107,7 @@ def test_to_csv(entityset):
     dirname = os.path.dirname(integration_data.__file__)
     path = os.path.join(dirname, '.cache/es')
     entityset.to_csv(path, encoding='utf-8', engine='python')
-    new_es = read_entityset(path)
+    new_es = deserialize.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
 
@@ -116,7 +116,7 @@ def test_to_pickle(entityset):
     dirname = os.path.dirname(integration_data.__file__)
     path = os.path.join(dirname, '.cache/es')
     entityset.to_pickle(path)
-    new_es = read_entityset(path)
+    new_es = deserialize.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
 
@@ -125,7 +125,7 @@ def test_to_parquet(entityset):
     dirname = os.path.dirname(integration_data.__file__)
     path = os.path.join(dirname, '.cache/es')
     entityset.to_parquet(path)
-    new_es = read_entityset(path)
+    new_es = deserialize.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
 
@@ -135,7 +135,7 @@ def test_to_parquet_with_lti():
     dirname = os.path.dirname(integration_data.__file__)
     path = os.path.join(dirname, '.cache/es')
     entityset.to_parquet(path)
-    new_es = read_entityset(path)
+    new_es = deserialize.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)
 
@@ -145,6 +145,6 @@ def test_to_pickle_id_none():
     dirname = os.path.dirname(integration_data.__file__)
     path = os.path.join(dirname, '.cache/es')
     entityset.to_pickle(path)
-    new_es = read_entityset(path)
+    new_es = deserialize.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
     shutil.rmtree(path)

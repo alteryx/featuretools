@@ -57,6 +57,25 @@ def relationship_to_description(relationship):
     }
 
 
+def entityset_to_description(entityset):
+    '''Serialize entityset to data description.
+
+    Args:
+        entityset (EntitySet) : Instance of :class:`.EntitySet`.
+
+    Returns:
+        description (dict) : Description of :class:`.EntitySet`.
+    '''
+    entities = {entity.id: entity_to_description(entity) for entity in entityset.entities}
+    relationships = [relationship_to_description(relationship) for relationship in entityset.relationships]
+    data_description = {
+        'id': entityset.id,
+        'entities': entities,
+        'relationships': relationships,
+    }
+    return data_description
+
+
 def write_entity_data(entity, path, format='csv', **kwargs):
     '''Write entity data to disk.
 
@@ -112,7 +131,7 @@ def write_data_description(entityset, path, **kwargs):
         shutil.rmtree(path)
     for dirname in [path, os.path.join(path, 'data')]:
         os.makedirs(dirname)
-    description = entityset.to_data_description()
+    description = entityset_to_description(entityset)
     for entity in entityset.entities:
         loading_info = write_entity_data(entity, path, **kwargs)
         description['entities'][entity.id]['loading_info'].update(loading_info)

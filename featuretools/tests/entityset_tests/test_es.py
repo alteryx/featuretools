@@ -947,7 +947,7 @@ def test_getitem_without_id():
 
 def test_metadata_without_id():
     es = ft.EntitySet()
-    assert es.to_data_description().get('id') is None
+    assert es.metadata.id is None
 
 
 def test_datetime64_conversion():

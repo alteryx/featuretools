@@ -3,7 +3,8 @@ import os
 
 import pandas as pd
 
-from .relationship import Relationship
+from . import entityset as _entityset
+from . import relationship as _relationship
 from .serialize import FORMATS, VARIABLE_TYPES
 
 
@@ -63,7 +64,39 @@ def description_to_relationship(description, entityset):
     parent = entityset[entity][variable]
     entity, variable = description['child']
     child = entityset[entity][variable]
-    return Relationship(parent, child)
+    return _relationship.Relationship(parent, child)
+
+
+def description_to_entityset(description, **kwargs):
+    '''Deserialize entityset from data description.
+
+    Args:
+        description (dict) : Description of an :class:`.EntitySet`. Likely generated using :meth:`.serialize.entityset_to_description`
+        kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying deserialization method.
+
+    Returns:
+        entityset (EntitySet) : Instance of :class:`.EntitySet`.
+    '''
+    # If data description was not read from disk, path is None.
+    path = description.get('path')
+    entityset = _entityset.EntitySet(description['id'])
+
+    last_time_index = []
+    for entity in description['entities'].values():
+        entity['loading_info']['params'].update(kwargs)
+        # If path is None, an empty dataframe will be created for entity.
+        description_to_entity(entity, entityset, path=path)
+        if entity['properties']['last_time_index']:
+            last_time_index.append(entity['id'])
+
+    for relationship in description['relationships']:
+        relationship = description_to_relationship(relationship, entityset)
+        entityset.add_relationship(relationship)
+
+    if len(last_time_index):
+        entityset.add_last_time_indexes(updated_entities=last_time_index)
+
+    return entityset
 
 
 def empty_dataframe(description):
@@ -124,5 +157,16 @@ def read_data_description(path):
     file = os.path.join(path, 'data_description.json')
     with open(file, 'r') as file:
         description = json.load(file)
-    description['root'] = path
+    description['path'] = path
     return description
+
+
+def read_entityset(path, **kwargs):
+    '''Read entityset from disk.
+
+        Args:
+            path (str): Directory on disk to read `data_description.json`.
+            kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
+    '''
+    data_description = read_data_description(path)
+    return description_to_entityset(data_description, **kwargs)
