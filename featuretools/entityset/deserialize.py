@@ -35,8 +35,10 @@ def description_to_entity(description, entityset, path=None):
         entityset (EntitySet) : Instance of :class:`.EntitySet` to add :class:`.Entity`.
         path (str) : Root directory to serialized entityset.
     '''
-    from_disk = path is not None
-    dataframe = read_entity_data(description, path=path) if from_disk else empty_dataframe(description)
+    if path:
+        dataframe = read_entity_data(description, path=path)
+    else:
+        dataframe = empty_dataframe(description)
     variable_types = {variable['id']: description_to_variable(variable) for variable in description['variables']}
     entityset.entity_from_dataframe(
         description['id'],

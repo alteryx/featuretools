@@ -1257,4 +1257,5 @@ def read_entityset(path, **kwargs):
             path (str): Directory on disk to read `data_description.json`.
             kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
     '''
-    return EntitySet.from_data_description(deserialize.read_data_description(path), **kwargs)
+    data_description = deserialize.read_data_description(path)
+    return EntitySet.from_data_description(data_description, **kwargs)
