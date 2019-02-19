@@ -415,8 +415,7 @@ def test_haversine(es):
             413.07563177, 0., 0., 524.15585776,
             0., 739.93819145, 1464.27975511]
     assert len(values) == 15
-    for i, v in enumerate(real):
-        assert v - values[i] < .0001
+    assert np.allclose(values, real, atol=0.0001)
 
     haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
                            primitive=Haversine(unit='kilometers'))
@@ -424,13 +423,14 @@ def test_haversine(es):
     df = ft.calculate_feature_matrix(entityset=es, features=features,
                                      instance_ids=range(15))
     values = df[haversine.get_name()].values
-    real_km = [0, 843.5470847509094, 1678.5594029785998, 2496.287761337906,
-               3287.5653521281192, 0, 221.86417805050752, 443.52549697015303,
-               664.7807895352589, 0, 0, 843.5470847509094, 0,
-               1190.8150887809088, 2356.529838207748]
+    real_km = [0, 845.68234976, 1682.80832898, 2502.60659757, 3295.88714394,
+               0, 222.42578133, 444.64819005, 666.46354463, 0, 0,
+               845.68234976, 0, 1193.82939092, 2362.49490616]
     assert len(values) == 15
-    for i, v in enumerate(real_km):
-        assert v - values[i] < .0001
+    assert np.allclose(values, real_km, atol=0.0001)
+    error_text = 'Invalid unit given'
+    with pytest.raises(ValueError, match=error_text):
+        Haversine(unit='inches')
 
 
 class TestCumCount:

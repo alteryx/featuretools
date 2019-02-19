@@ -339,6 +339,17 @@ class Haversine(TransformPrimitive):
     """Calculate the approximate haversine distance between two LatLong
         variable types. Defaults to computing in miles.
 
+        Args:
+            unit (str): Determines the unit value to output. Could
+                be `miles` or `kilometers`. Default is `miles.
+
+        Example:
+
+           .. code-block:: python
+
+                from featuretools.primitives import Haversine
+                haversine_miles = Haversine(unit='miles')
+
     """
     name = 'haversine'
     input_types = [LatLong, LatLong]
