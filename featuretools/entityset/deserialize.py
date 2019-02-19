@@ -113,11 +113,12 @@ def empty_dataframe(description):
     return pd.DataFrame(columns=columns).astype(dtypes)
 
 
-def read_entity_data(description, path=None):
+def read_entity_data(description, path):
     '''Read description data from disk.
 
     Args:
         description (dict) : Description of :class:`.Entity`.
+        path (str): Location on disk to read entity data.
 
     Returns:
         df (DataFrame) : Instance of dataframe.
