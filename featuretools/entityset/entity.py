@@ -1,8 +1,8 @@
-from __future__ import division, print_function
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, division, print_function
 
 import logging
 from builtins import range
-from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -12,6 +12,13 @@ from .timedelta import Timedelta
 
 from featuretools import variable_types as vtypes
 from featuretools.utils import is_string
+from featuretools.utils.entity_utils import (
+    col_is_datetime,
+    convert_all_variable_data,
+    convert_variable_data,
+    get_linked_vars,
+    infer_variable_types
+)
 from featuretools.utils.wrangle import (
     _check_time_type,
     _check_timedelta,
@@ -200,70 +207,15 @@ class Entity(object):
         """
         if convert_data:
             # first, convert the underlying data (or at least try to)
-            self.convert_variable_data(
-                variable_id, new_type, **kwargs)
+            self.df = convert_variable_data(df=self.df,
+                                            column_id=variable_id,
+                                            new_type=new_type,
+                                            **kwargs)
 
         # replace the old variable with the new one, maintaining order
         variable = self._get_variable(variable_id)
         new_variable = new_type.create_from(variable)
         self.variables[self.variables.index(variable)] = new_variable
-
-    def convert_all_variable_data(self, variable_types):
-        for var_id, desired_type in variable_types.items():
-            type_args = {}
-            if isinstance(desired_type, tuple):
-                # grab args before assigning type
-                type_args = desired_type[1]
-                desired_type = desired_type[0]
-
-            if var_id not in self.df.columns:
-                raise LookupError("Variable ID %s not in DataFrame" % (var_id))
-            current_type = self.df[var_id].dtype.name
-
-            if issubclass(desired_type, vtypes.Numeric) and \
-                    current_type not in _numeric_types:
-                self.convert_variable_data(var_id, desired_type, **type_args)
-
-            if issubclass(desired_type, vtypes.Discrete) and \
-                    current_type not in _categorical_types:
-                self.convert_variable_data(var_id, desired_type, **type_args)
-
-            if issubclass(desired_type, vtypes.Datetime) and \
-                    current_type not in _datetime_types:
-                self.convert_variable_data(var_id, desired_type, **type_args)
-
-    def convert_variable_data(self, column_id, new_type, **kwargs):
-        """
-        Convert variable in data set to different type
-        """
-        df = self.df
-        if df[column_id].empty:
-            return
-        if new_type == vtypes.Numeric:
-            orig_nonnull = df[column_id].dropna().shape[0]
-            df[column_id] = pd.to_numeric(df[column_id], errors='coerce')
-            # This will convert strings to nans
-            # If column contained all strings, then we should
-            # just raise an error, because that shouldn't have
-            # been converted to numeric
-            nonnull = df[column_id].dropna().shape[0]
-            if nonnull == 0 and orig_nonnull != 0:
-                raise TypeError("Attempted to convert all string column {} to numeric".format(column_id))
-        elif issubclass(new_type, vtypes.Datetime):
-            format = kwargs.get("format", None)
-            # TODO: if float convert to int?
-            df[column_id] = pd.to_datetime(df[column_id], format=format,
-                                           infer_datetime_format=True)
-        elif new_type == vtypes.Boolean:
-            map_dict = {kwargs.get("true_val", True): True,
-                        kwargs.get("false_val", False): False,
-                        True: True,
-                        False: False}
-            # TODO: what happens to nans?
-            df[column_id] = df[column_id].map(map_dict).astype(np.bool)
-        elif not issubclass(new_type, vtypes.Discrete):
-            raise Exception("Cannot convert column %s to %s" %
-                            (column_id, new_type))
 
     def query_by_values(self, instance_vals, variable_id=None, columns=None,
                         time_last=None, training_window=None):
@@ -338,9 +290,12 @@ class Entity(object):
         if index not in variable_types:
             variable_types[index] = vtypes.Index
 
-        inferred_variable_types = self.infer_variable_types(variable_types,
-                                                            time_index,
-                                                            secondary_time_index)
+        link_vars = get_linked_vars(self)
+        inferred_variable_types = infer_variable_types(self.df,
+                                                       link_vars,
+                                                       variable_types,
+                                                       time_index,
+                                                       secondary_time_index)
         inferred_variable_types.update(variable_types)
 
         for v in inferred_variable_types:
@@ -353,91 +308,13 @@ class Entity(object):
                 _v = inferred_variable_types[v](v, self)
             variables += [_v]
         # convert data once we've inferred
-        self.convert_all_variable_data(inferred_variable_types)
+        self.df = convert_all_variable_data(df=self.df,
+                                            variable_types=inferred_variable_types)
         # make sure index is at the beginning
         index_variable = [v for v in variables
                           if v.id == index][0]
         self.variables = [index_variable] + [v for v in variables
                                              if v.id != index]
-
-    def infer_variable_types(self, variable_types, time_index, secondary_time_index):
-        '''Infer variable types from dataframe
-
-        Args:
-            variable_types (dict[str -> dict[str -> type]]) : An entity's
-                variable_types dict maps string variable ids to types (:class:`.Variable`)
-                or (type, kwargs) to pass keyword arguments to the Variable.
-            time_index (str or None): Name of time_index column
-            secondary_time_index (dict[str: [str]]): Dictionary of secondary time columns
-                that each map to a list of columns that depend on that secondary time
-        '''
-        link_relationships = [r for r in self.entityset.relationships
-                              if r.parent_entity.id == self.id or
-                              r.child_entity.id == self.id]
-
-        link_vars = [v.id for rel in link_relationships
-                     for v in [rel.parent_variable, rel.child_variable]
-                     if v.entity.id == self.id]
-
-        # TODO: set pk and pk types here
-        inferred_types = {}
-        df = self.df
-        vids_to_assume_datetime = [time_index]
-        if len(list(secondary_time_index.keys())):
-            vids_to_assume_datetime.append(list(secondary_time_index.keys())[0])
-        inferred_type = vtypes.Unknown
-        for variable in df.columns:
-            if variable in variable_types:
-                continue
-
-            elif variable in vids_to_assume_datetime:
-                if col_is_datetime(df[variable]):
-                    inferred_type = vtypes.Datetime
-                else:
-                    inferred_type = vtypes.Numeric
-
-            elif df[variable].dtype == "object":
-                if variable in link_vars:
-                    inferred_type = vtypes.Categorical
-                elif len(df[variable]):
-                    if col_is_datetime(df[variable]):
-                        inferred_type = vtypes.Datetime
-                    else:
-                        # heuristics to predict this some other than categorical
-                        sample = df[variable].sample(min(10000, df[variable].nunique()))
-                        avg_length = sample.str.len().mean()
-                        if avg_length > 50:
-                            inferred_type = vtypes.Text
-                        else:
-                            inferred_type = vtypes.Categorical
-
-            elif df[variable].dtype == "bool":
-                inferred_type = vtypes.Boolean
-
-            elif pdtypes.is_categorical_dtype(df[variable].dtype):
-                inferred_type = vtypes.Categorical
-
-            elif col_is_datetime(df[variable]):
-                inferred_type = vtypes.Datetime
-
-            elif variable in link_vars:
-                inferred_type = vtypes.Ordinal
-
-            elif len(df[variable]):
-                sample = df[variable] \
-                    .sample(min(10000, df[variable].nunique(dropna=False)))
-
-                unique = sample.unique()
-                percent_unique = sample.size / len(unique)
-
-                if percent_unique < .05:
-                    inferred_type = vtypes.Categorical
-                else:
-                    inferred_type = vtypes.Numeric
-
-            inferred_types[variable] = inferred_type
-
-        return inferred_types
 
     def update_data(self, df, already_sorted=False,
                     recalculate_last_time_indexes=True):
@@ -654,23 +531,6 @@ class Entity(object):
                 df.loc[mask, columns] = np.nan
 
         return df
-
-
-def col_is_datetime(col):
-    if (col.dtype.name.find('datetime') > -1 or
-            (len(col) and isinstance(col.iloc[0], datetime))):
-        return True
-
-    # TODO: not sure this is ideal behavior.
-    # it converts int columns that have dtype=object to datetimes starting from 1970
-    elif col.dtype.name.find('str') > -1 or col.dtype.name.find('object') > -1:
-        try:
-            pd.to_datetime(col.dropna().iloc[:10], errors='raise')
-        except Exception:
-            return False
-        else:
-            return True
-    return False
 
 
 def _create_index(index, make_index, df):
