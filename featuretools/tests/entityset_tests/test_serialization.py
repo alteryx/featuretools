@@ -85,6 +85,7 @@ def test_empty_dataframe(entityset):
 
 def test_to_csv(entityset):
     path = os.path.join(CACHE, 'es')
+    os.makedirs(path)
     entityset.to_csv(path, encoding='utf-8', engine='python')
     new_es = deserialize.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
@@ -93,6 +94,7 @@ def test_to_csv(entityset):
 
 def test_to_pickle(entityset):
     path = os.path.join(CACHE, 'es')
+    os.makedirs(path)
     entityset.to_pickle(path)
     new_es = deserialize.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
@@ -101,6 +103,7 @@ def test_to_pickle(entityset):
 
 def test_to_parquet(entityset):
     path = os.path.join(CACHE, 'es')
+    os.makedirs(path)
     entityset.to_parquet(path)
     new_es = deserialize.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
@@ -110,6 +113,7 @@ def test_to_parquet(entityset):
 def test_to_parquet_with_lti():
     entityset = load_mock_customer(return_entityset=True, random_seed=0)
     path = os.path.join(CACHE, 'es')
+    os.makedirs(path)
     entityset.to_parquet(path)
     new_es = deserialize.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
@@ -117,8 +121,9 @@ def test_to_parquet_with_lti():
 
 
 def test_to_pickle_id_none():
-    entityset = EntitySet()
     path = os.path.join(CACHE, 'es')
+    os.makedirs(path)
+    entityset = EntitySet()
     entityset.to_pickle(path)
     new_es = deserialize.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
