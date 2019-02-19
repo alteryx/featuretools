@@ -3,8 +3,7 @@ import os
 
 import pandas as pd
 
-from . import entityset as _entityset
-from . import relationship as _relationship
+from .relationship import Relationship
 from .serialize import FORMATS, VARIABLE_TYPES
 
 
@@ -64,7 +63,7 @@ def description_to_relationship(description, entityset):
     parent = entityset[entity][variable]
     entity, variable = description['child']
     child = entityset[entity][variable]
-    return _relationship.Relationship(parent, child)
+    return Relationship(parent, child)
 
 
 def description_to_entityset(description, **kwargs):
@@ -77,9 +76,10 @@ def description_to_entityset(description, **kwargs):
     Returns:
         entityset (EntitySet) : Instance of :class:`.EntitySet`.
     '''
+    from .entityset import EntitySet
     # If data description was not read from disk, path is None.
     path = description.get('path')
-    entityset = _entityset.EntitySet(description['id'])
+    entityset = EntitySet(description['id'])
 
     last_time_index = []
     for entity in description['entities'].values():
