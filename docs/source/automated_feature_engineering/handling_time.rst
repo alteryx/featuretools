@@ -242,7 +242,8 @@ To understand when approximation is useful, consider calculating features for a 
 
 The frequency of approximation is controlled using the ``approximate`` parameter to DFS or :func:`calculate_feature_matrix`. For example, the following code would approximate aggregation features at 1 day intervals::
 
-    fm = ft.calculate_feature_matrix(entityset=es_flight
+    fm = ft.calculate_feature_matrix(features=features,
+                                     entityset=es_flight,
                                      cutoff_time=ct_flight,
                                      approximate="1 day")
 
