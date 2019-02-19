@@ -9,6 +9,8 @@ from ...entityset import EntitySet, deserialize, serialize
 from ...tests import integration_data
 from ..testing_utils import make_ecommerce_entityset
 
+CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
+
 
 @pytest.fixture()
 def entityset():
@@ -64,9 +66,10 @@ def test_entityset_description(entityset):
 
 
 def test_invalid_formats(entityset):
-    error_text = 'must be one of the following formats: .*'
+    path = os.path.join(CACHE, 'es')
+    error_text = 'must be one of the following formats: {}'
+    error_text = error_text.format(', '.join(serialize.FORMATS))
     with pytest.raises(ValueError, match=error_text):
-        path = os.path.join(os.path.dirname(integration_data.__file__), '.cache/es')
         serialize.write_entity_data(entityset.entities[0], path=path, format='')
     with pytest.raises(ValueError, match=error_text):
         entity = {'loading_info': {'location': 'data', 'type': ''}}
@@ -81,8 +84,7 @@ def test_empty_dataframe(entityset):
 
 
 def test_to_csv(entityset):
-    dirname = os.path.dirname(integration_data.__file__)
-    path = os.path.join(dirname, '.cache/es')
+    path = os.path.join(CACHE, 'es')
     entityset.to_csv(path, encoding='utf-8', engine='python')
     new_es = deserialize.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
@@ -90,8 +92,7 @@ def test_to_csv(entityset):
 
 
 def test_to_pickle(entityset):
-    dirname = os.path.dirname(integration_data.__file__)
-    path = os.path.join(dirname, '.cache/es')
+    path = os.path.join(CACHE, 'es')
     entityset.to_pickle(path)
     new_es = deserialize.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
@@ -99,8 +100,7 @@ def test_to_pickle(entityset):
 
 
 def test_to_parquet(entityset):
-    dirname = os.path.dirname(integration_data.__file__)
-    path = os.path.join(dirname, '.cache/es')
+    path = os.path.join(CACHE, 'es')
     entityset.to_parquet(path)
     new_es = deserialize.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
@@ -109,8 +109,7 @@ def test_to_parquet(entityset):
 
 def test_to_parquet_with_lti():
     entityset = load_mock_customer(return_entityset=True, random_seed=0)
-    dirname = os.path.dirname(integration_data.__file__)
-    path = os.path.join(dirname, '.cache/es')
+    path = os.path.join(CACHE, 'es')
     entityset.to_parquet(path)
     new_es = deserialize.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
@@ -119,8 +118,7 @@ def test_to_parquet_with_lti():
 
 def test_to_pickle_id_none():
     entityset = EntitySet()
-    dirname = os.path.dirname(integration_data.__file__)
-    path = os.path.join(dirname, '.cache/es')
+    path = os.path.join(CACHE, 'es')
     entityset.to_pickle(path)
     new_es = deserialize.read_entityset(path)
     assert entityset.__eq__(new_es, deep=True)
