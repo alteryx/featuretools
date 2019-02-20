@@ -58,7 +58,8 @@ def dfs(entities=None,
             list of values, or a single
             value to calculate for all instances. If the dataframe has more than
             two columns, any additional columns will be added to the resulting
-            feature matrix.
+            feature matrix. If a cutoff time isn't provided, the cutoff time will 
+            get set to the current time using cutoff_time = datetime.now()
 
         instance_ids (list): List of instances on which to calculate features. Only
             used if cutoff_time is a single datetime.
