@@ -428,7 +428,7 @@ def test_haversine(es):
                845.68234976, 0, 1193.82939092, 2362.49490616]
     assert len(values) == 15
     assert np.allclose(values, real_km, atol=0.0001)
-    error_text = 'Invalid unit given'
+    error_text = "Invalid unit inches provided. Must be one of"
     with pytest.raises(ValueError, match=error_text):
         Haversine(unit='inches')
 

@@ -357,8 +357,10 @@ class Haversine(TransformPrimitive):
     commutative = True
 
     def __init__(self, unit='miles'):
-        if unit not in ['miles', 'kilometers']:
-            raise ValueError("Invalid unit given")
+        valid_units = ['miles', 'kilometers']
+        if unit not in valid_units:
+            error_message = 'Invalid unit %s provided. Must be one of %s' % (unit, valid_units)
+            raise ValueError(error_message)
         self.unit = unit
 
     def get_function(self):
