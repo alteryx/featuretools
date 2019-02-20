@@ -46,6 +46,11 @@ def primitives_to_install_dir(this_dir):
 
 
 @pytest.fixture(scope='module')
+def primitives_to_install_gzip(this_dir):
+    return os.path.join(this_dir, "primitives_to_install.tar.gz")
+
+
+@pytest.fixture(scope='module')
 def bad_primitives_files_dir(this_dir):
     return os.path.join(this_dir, "bad_primitive_files")
 
@@ -77,6 +82,7 @@ def install_path(request):
 
 @pytest.mark.parametrize("install_path", [
     ("primitives_to_install_dir"),
+    ("primitives_to_install_gzip"),
     ("amazon_path_s3"),
     ("amazon_path_http"),
     ("install_via_cli"),

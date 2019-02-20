@@ -1,8 +1,11 @@
 include *.txt
 include LICENSE
 include README.md
+include featuretools/tests/primitive_tests/bad_primitive_files/info.json
 include featuretools/tests/primitive_tests/primitives_to_install.tar.gz
 include featuretools/tests/primitive_tests/primitives_to_install/info.json
+include featuretools/tests/primitive_tests/primitives_to_install/data/_pytest_test.csv
+include featuretools/tests/primitive_tests/primitives_to_install/data/pytest_folder/hello.txt
 include featuretools/primitives/data/featuretools_unit_test_example.csv
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
