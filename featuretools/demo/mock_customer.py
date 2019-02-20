@@ -7,7 +7,7 @@ from numpy import random
 from numpy.random import choice
 
 import featuretools as ft
-from featuretools.variable_types import ZIPCode
+from featuretools.variable_types import (Categorical, ZIPCode)
 
 
 def load_mock_customer(n_customers=5, n_products=5, n_sessions=35, n_transactions=500,
