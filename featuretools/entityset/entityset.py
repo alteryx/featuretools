@@ -148,12 +148,12 @@ class EntitySet(object):
     def reset_data_description(self):
         self._data_description = None
 
-    def to_pickle(self, path, compression='infer', **kwargs):
+    def to_pickle(self, path, compression=None, **kwargs):
         '''Write entityset to disk in the pickle format, location specified by `path`.
 
             Args:
                 path (str): location on disk to write to (will be created as a directory)
-                compression (str) : Name of the compression to use. Possible values are: {'infer', 'gzip', 'bz2', 'zip', 'xz', None}.
+                compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
                 kwargs (keywords): Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
         kwargs['params'] = {'compression': compression}
@@ -180,7 +180,7 @@ class EntitySet(object):
                 path (str) : Location on disk to write to (will be created as a directory)
                 sep (str) : String of length 1. Field delimiter for the output file.
                 encoding (str) : A string representing the encoding to use in the output file, defaults to 'utf-8'.
-                compression (str) : Name of the compression to use. Possible values are: {'infer', 'gzip', 'bz2', 'zip', 'xz', None}.
+                compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
                 kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
         '''
         kwargs['params'] = {'index': False, 'sep': sep, 'encoding': encoding, 'compression': compression}
