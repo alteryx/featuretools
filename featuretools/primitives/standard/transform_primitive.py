@@ -299,8 +299,8 @@ class Not(TransformPrimitive):
 
 
 class Percentile(TransformPrimitive):
-    """For each value of the base feature, determines the percentile in relation
-    to the rest of the feature.
+    """For each value of the base feature, determines the percentile in
+        relation to the rest of the feature.
     """
     name = 'percentile'
     uses_full_entity = True
@@ -336,12 +336,32 @@ class Longitude(TransformPrimitive):
 
 
 class Haversine(TransformPrimitive):
-    """Calculate the approximate haversine distance in miles between two LatLong variable types.
+    """Calculate the approximate haversine distance between two LatLong
+        variable types. Defaults to computing in miles.
+
+        Args:
+            unit (str): Determines the unit value to output. Could
+                be `miles` or `kilometers`. Default is `miles.
+
+        Example:
+
+           .. code-block:: python
+
+                from featuretools.primitives import Haversine
+                haversine_miles = Haversine(unit='miles')
+
     """
     name = 'haversine'
     input_types = [LatLong, LatLong]
     return_type = Numeric
     commutative = True
+
+    def __init__(self, unit='miles'):
+        valid_units = ['miles', 'kilometers']
+        if unit not in valid_units:
+            error_message = 'Invalid unit %s provided. Must be one of %s' % (unit, valid_units)
+            raise ValueError(error_message)
+        self.unit = unit
 
     def get_function(self):
         def haversine(latlong1, latlong2):
@@ -355,6 +375,17 @@ class Haversine(TransformPrimitive):
             dlat = lat2 - lat1
             a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * \
                 np.cos(lat2) * np.sin(dlon / 2.0)**2
-            mi = 3950 * 2 * np.arcsin(np.sqrt(a))
-            return mi
+            radius_earth = 3950
+            if self.unit == 'kilometers':
+                radius_earth = 6373
+            distance = radius_earth * 2 * np.arcsin(np.sqrt(a))
+            return distance
         return haversine
+
+    def generate_name(self, base_feature_names):
+        name = u"{}(".format(self.name.upper())
+        name += u", ".join(base_feature_names)
+        if self.unit != 'miles':
+            name += u", unit={}".format(self.unit)
+        name += u")"
+        return name
