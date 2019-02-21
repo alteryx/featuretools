@@ -126,17 +126,16 @@ def read_entity_data(description, path):
     file = os.path.join(path, description['loading_info']['location'])
     kwargs = description['loading_info'].get('params', {})
     if description['loading_info']['type'] == 'csv':
-        params = ['compression', 'engine', 'encoding']
-        subset = {key: kwargs[key] for key in params if key in kwargs}
-        dataframe = pd.read_csv(file, **subset)
+        dataframe = pd.read_csv(
+            file,
+            engine=kwargs['engine'],
+            compression=kwargs['compression'],
+            encoding=kwargs['encoding'],
+        )
     elif description['loading_info']['type'] == 'parquet':
-        params = ['engine', 'columns']
-        subset = {key: kwargs[key] for key in params if key in kwargs}
-        dataframe = pd.read_parquet(file, **subset)
+        dataframe = pd.read_parquet(file, engine=kwargs['engine'])
     elif description['loading_info']['type'] == 'pickle':
-        params = ['compression']
-        subset = {key: kwargs[key] for key in params if key in kwargs}
-        dataframe = pd.read_pickle(file, **subset)
+        dataframe = pd.read_pickle(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))

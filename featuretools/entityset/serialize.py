@@ -91,11 +91,15 @@ def write_entity_data(entity, path, format='csv', **kwargs):
     format = format.lower()
     basename = '.'.join([entity.id, format])
     location = os.path.join('data', basename)
-    kwargs['params'] = kwargs.get('params', {})
-    params = kwargs.pop('params').copy()
     file = os.path.join(path, location)
     if format == 'csv':
-        entity.df.to_csv(file, **params)
+        entity.df.to_csv(
+            file,
+            index=kwargs['index'],
+            sep=kwargs['sep'],
+            encoding=kwargs['encoding'],
+            compression=kwargs['compression'],
+        )
     elif format == 'parquet':
         # Serializing to parquet format raises an error when columns contain tuples.
         # Columns containing tuples are mapped as dtype object.
@@ -103,14 +107,13 @@ def write_entity_data(entity, path, format='csv', **kwargs):
         columns = entity.df.select_dtypes('object').columns
         entity.df[columns] = entity.df[columns].astype('unicode')
         entity.df.columns = entity.df.columns.astype('unicode')  # ensures string column names for python 2.7
-        entity.df.to_parquet(file, **params)
+        entity.df.to_parquet(file, **kwargs)
     elif format == 'pickle':
-        entity.df.to_pickle(file, **params)
+        entity.df.to_pickle(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))
-    params.update(kwargs)
-    return {'location': location, 'type': format, 'params': params}
+    return {'location': location, 'type': format, 'params': kwargs}
 
 
 def write_data_description(entityset, path, **kwargs):
