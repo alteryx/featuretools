@@ -36,7 +36,10 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                                       'taco clock'],
                                'department': ["food", "electronics", "health",
                                               "food", "food", "electronics"],
-                               'rating': [3.5, 4.0, 4.5, 1.5, 5.0, 5.0]})
+                               'rating': [3.5, 4.0, 4.5, 1.5, 5.0, 5.0],
+                               'url': ['google.com', 'https://www.featuretools.com/',
+                                       np.nan, 'www.featuretools.com', 'bit.ly', 'featuretools.com/demos/'],
+                               })
     customer_times = {
         'signup_date': [datetime(2011, 4, 8), datetime(2011, 4, 9),
                         datetime(2011, 4, 6)],
@@ -70,9 +73,10 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
         'upgrade_date': customer_times['upgrade_date'],
         'cancel_date': customer_times['cancel_date'],
         'cancel_reason': ["reason_1", "reason_2", "reason_1"],
-        'date_of_birth': customer_times['date_of_birth'],
         'engagement_level': [1, 3, 2],
         'email': ['john.smith@example.com', '', np.nan],
+        'phone_number': ['5555555555', np.nan, '1-(555)-555-5555'],
+        'date_of_birth': customer_times['date_of_birth'],
     })
 
     ips = ['192.168.0.1', '2001:4860:4860::8888', '0.0.0.0',
@@ -253,6 +257,7 @@ def make_variable_types(with_integer_time_index=False):
         'id': variable_types.Categorical,
         'rating': variable_types.Numeric,
         'department': variable_types.Categorical,
+        'url': variable_types.URL,
     }
 
     customer_variable_types = {
@@ -261,13 +266,14 @@ def make_variable_types(with_integer_time_index=False):
         u'région_id': variable_types.Id,
         'loves_ice_cream': variable_types.Boolean,
         'favorite_quote': variable_types.Text,
-        'date_of_birth': variable_types.Datetime,
         'signup_date': variable_types.Datetime,
         'upgrade_date': variable_types.Datetime,
         'cancel_date': variable_types.Datetime,
         'cancel_reason': variable_types.Categorical,
         'engagement_level': variable_types.Ordinal,
         'email': variable_types.EmailAddress,
+        'phone_number': variable_types.PhoneNumber,
+        'date_of_birth': variable_types.DateOfBirth,
     }
 
     session_variable_types = {
