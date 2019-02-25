@@ -1,4 +1,4 @@
-from featuretools.primitives.base import GroupByGroupByTransformPrimitive
+from featuretools.primitives.base import GroupByTransformPrimitive
 from featuretools.variable_types import Discrete, Id, Numeric
 
 

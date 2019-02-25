@@ -3,6 +3,7 @@ from builtins import zip
 from featuretools import primitives
 from featuretools.primitives.base import (
     AggregationPrimitive,
+    GroupByTransformPrimitive,
     PrimitiveBase,
     TransformPrimitive
 )
@@ -462,13 +463,47 @@ class TransformFeature(FeatureBase):
         return self.primitive.generate_name(base_feature_names=[bf.get_name() for bf in self.base_features])
 
 
+class GroupByTransformFeature(FeatureBase):
+    def __init__(self, base_features, primitive, groupby):
+        # Any edits made to this method should also be made to the
+        # new_class_init method in make_trans_primitive
+        if hasattr(base_features, '__iter__'):
+            base_features = [_check_feature(bf) for bf in base_features]
+            msg = "all base features must share the same entity"
+            assert len(set([bf.entity for bf in base_features])) == 1, msg
+        else:
+            base_features = [_check_feature(base_features)]
+
+        # R TODO handle stacking on sub-features
+        assert all(bf.number_output_features == 1 for bf in base_features)
+
+        if not isinstance(groupby, FeatureBase):
+            groupby = IdentityFeature(groupby)
+        assert groupby.variable_type == Id
+        self.groupby = groupby
+
+        super(GroupByTransformFeature, self).__init__(base_features[0].entity,
+                                                      base_features,
+                                                      primitive=primitive)
+
+    def copy(self):
+        return GroupByTransformFeature(self.base_features,
+                                       self.primitive,
+                                       self.groupby)
+
+    def generate_name(self):
+        base_names = [bf.get_name() for bf in self.base_features]
+        groupby_name = self.groupby.get_name()
+        return self.primitive.generate_name(base_names, groupby_name)
+
+
 class Feature(object):
     """
     Alias to create feature. Infers the feature type based on init parameters.
     """
 
-    def __new__(self, base, entity=None,
-                parent_entity=None, primitive=None, use_previous=None, where=None):
+    def __new__(self, base, entity=None, groupby=None, parent_entity=None,
+                primitive=None, use_previous=None, where=None):
 
         # either direct or indentity
         if primitive is None and entity is None:
@@ -480,8 +515,15 @@ class Feature(object):
             return AggregationFeature(base, parent_entity=parent_entity,
                                       use_previous=use_previous, where=where,
                                       primitive=primitive)
+        elif primitive is not None and groupby is not None:
+            assert (isinstance(primitive, GroupByTransformPrimitive) or
+                    issubclass(primitive, GroupByTransformPrimitive))
+            return GroupByTransformFeature(base,
+                                           primitive=primitive,
+                                           groupby=groupby)
         elif primitive is not None:
-            assert isinstance(primitive, TransformPrimitive) or issubclass(primitive, TransformPrimitive)
+            assert (isinstance(primitive, TransformPrimitive) or
+                    issubclass(primitive, TransformPrimitive))
             return TransformFeature(base, primitive=primitive)
 
         raise Exception("Unrecognized feature initialization")
