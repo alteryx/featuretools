@@ -403,18 +403,34 @@ def test_latlong(es):
 def test_haversine(es):
     log_latlong_feat = es['log']['latlong']
     log_latlong_feat2 = es['log']['latlong2']
-    haversine = ft.Feature([log_latlong_feat, log_latlong_feat2], primitive=Haversine)
+    haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
+                           primitive=Haversine)
     features = [haversine]
 
-    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
+    df = ft.calculate_feature_matrix(entityset=es, features=features,
+                                     instance_ids=range(15))
     values = df[haversine.get_name()].values
     real = [0., 524.15585776, 1043.00845747, 1551.12130243,
             2042.79840241, 0., 137.86000883, 275.59396684,
             413.07563177, 0., 0., 524.15585776,
             0., 739.93819145, 1464.27975511]
     assert len(values) == 15
-    for i, v in enumerate(real):
-        assert v - values[i] < .0001
+    assert np.allclose(values, real, atol=0.0001)
+
+    haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
+                           primitive=Haversine(unit='kilometers'))
+    features = [haversine]
+    df = ft.calculate_feature_matrix(entityset=es, features=features,
+                                     instance_ids=range(15))
+    values = df[haversine.get_name()].values
+    real_km = [0, 845.68234976, 1682.80832898, 2502.60659757, 3295.88714394,
+               0, 222.42578133, 444.64819005, 666.46354463, 0, 0,
+               845.68234976, 0, 1193.82939092, 2362.49490616]
+    assert len(values) == 15
+    assert np.allclose(values, real_km, atol=0.0001)
+    error_text = "Invalid unit inches provided. Must be one of"
+    with pytest.raises(ValueError, match=error_text):
+        Haversine(unit='inches')
 
 
 class TestCumCount:
