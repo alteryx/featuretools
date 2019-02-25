@@ -38,7 +38,8 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                                               "food", "food", "electronics"],
                                'rating': [3.5, 4.0, 4.5, 1.5, 5.0, 5.0],
                                'url': ['google.com', 'https://www.featuretools.com/',
-                                       np.nan, 'www.featuretools.com', 'bit.ly', 'featuretools.com/demos/'],
+                                       'amazon.com', 'www.featuretools.com', 'bit.ly',
+                                       'featuretools.com/demos/'],
                                })
     customer_times = {
         'signup_date': [datetime(2011, 4, 8), datetime(2011, 4, 9),
