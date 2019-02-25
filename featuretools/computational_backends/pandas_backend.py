@@ -3,6 +3,7 @@ import os
 import pstats
 import sys
 import warnings
+from collections import defaultdict
 from datetime import datetime
 from functools import partial
 
@@ -282,6 +283,8 @@ class PandasBackend(ComputationalBackend):
     def _feature_type_handler(self, f):
         if isinstance(f, TransformFeature):
             return self._calculate_transform_features
+        elif isinstance(f, GroupByTransformFeature):
+            return self._calculate_groupby_features
         elif isinstance(f, DirectFeature):
             return self._calculate_direct_features
         elif isinstance(f, AggregationFeature):
@@ -319,6 +322,59 @@ class PandasBackend(ComputationalBackend):
                 values = feature_func(*variable_data, time=self.time_last)
             else:
                 values = feature_func(*variable_data)
+
+            # if we don't get just the values, the assignment breaks when indexes don't match
+            def strip_values_if_series(values):
+                if isinstance(values, pd.Series):
+                    values = values.values
+                return values
+
+            if f.number_output_features > 1:
+                values = [strip_values_if_series(value) for value in values]
+            else:
+                values = [strip_values_if_series(values)]
+            update_feature_columns(f, frame, values)
+
+        return frame
+
+    def _calculate_groupby_features(self, features, entity_frames):
+        entity_id = features[0].entity.id
+        assert len(set([f.entity.id for f in features])) == 1, \
+            "features must share base entity"
+        assert entity_id in entity_frames
+
+        frame = entity_frames[entity_id]
+
+        # get list of groupby fatures
+        groupby_lists = defaultdict(list)
+        for f in features:
+            # handle when no data
+            if frame.shape[0] == 0:
+                set_default_column(frame, f)
+                continue
+
+            groupby_lists[f.groupby.get_name()].append(f)
+
+        for groupby, features in groupby_lists.items():
+            # collect only the variables we need for this transformation
+            variables = set([groupby])
+            for feature in features:
+                for base_feature in feature.base_features:
+                    variables.add(base_feature.get_name())
+
+            grouped = frame[variables].groupby(groupby)
+
+            for feature in features:
+                variable_data = [grouped[bf.get_name()] for
+                                 bf in feature.base_features]
+
+                feature_func = f.get_function()
+                # apply the function to the relevant dataframe slice and add the
+                # feature row to the results dataframe.
+                if f.primitive.uses_calc_time:
+                    values = feature_func(*variable_data, time=self.time_last)
+                else:
+                    values = feature_func(*variable_data)
 
             # if we don't get just the values, the assignment breaks when indexes don't match
             def strip_values_if_series(values):
