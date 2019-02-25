@@ -368,7 +368,7 @@ class EmailAddress(Variable):
 
 class URL(Variable):
     """Represents a valid web url (with or without http/www)"""
-    _dtype_repr = "url"
+    type_string = "url"
     _default_pandas_dtype = str
 
 
@@ -377,13 +377,13 @@ class PhoneNumber(Variable):
     Can be with/without parenthesis.
     Can be with/without area/country codes.
     """
-    _dtype_repr = "phone_number"
+    type_string = "phone_number"
     _default_pandas_dtype = str
 
 
 class DateOfBirth(Datetime):
     """Represents a date of birth as a datetime"""
-    _dtype_repr = "date_of_birth"
+    type_string = "date_of_birth"
     _default_pandas_dtype = np.datetime64
 
 
