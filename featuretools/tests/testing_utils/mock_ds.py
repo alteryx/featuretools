@@ -75,8 +75,8 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
         'cancel_date': customer_times['cancel_date'],
         'cancel_reason': ["reason_1", "reason_2", "reason_1"],
         'engagement_level': [1, 3, 2],
-        'email': ['john.smith@example.com', '', np.nan],
-        'phone_number': ['5555555555', np.nan, '1-(555)-555-5555'],
+        'email': ['john.smith@example.com', '', 'team@featuretools.com'],
+        'phone_number': ['5555555555', '555-555-5555', '1-(555)-555-5555'],
         'date_of_birth': customer_times['date_of_birth'],
     })
 
