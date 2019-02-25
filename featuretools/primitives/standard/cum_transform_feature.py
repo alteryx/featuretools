@@ -1,8 +1,8 @@
-from featuretools.primitives.base import TransformPrimitive
+from featuretools.primitives.base import GroupByGroupByTransformPrimitive
 from featuretools.variable_types import Discrete, Id, Numeric
 
 
-class CumSum(TransformPrimitive):
+class CumSum(GroupByTransformPrimitive):
     """Returns the cumulative sum after grouping"""
 
     name = "cum_sum"
@@ -12,16 +12,13 @@ class CumSum(TransformPrimitive):
     uses_full_entity = True
 
     def get_function(self):
-        def cum_sum(values, groups):
-            return values.groupby(groups).cumsum()
+        def cum_sum(values):
+            return values.cumsum()
 
         return cum_sum
 
-    def generate_name(self, base_feature_names):
-        return "CUM_SUM(%s by %s)" % (base_feature_names[0], base_feature_names[1])
 
-
-class CumCount(TransformPrimitive):
+class CumCount(GroupByTransformPrimitive):
     """Returns the cumulative count after grouping"""
 
     name = "cum_count"
@@ -31,15 +28,12 @@ class CumCount(TransformPrimitive):
 
     def get_function(self):
         def cum_count(values):
-            return values.groupby(values).cumcount() + 1
+            return values.cumcount() + 1
 
         return cum_count
 
-    def generate_name(self, base_feature_names):
-        return "CUM_COUNT(%s)" % (base_feature_names[0])
 
-
-class CumMean(TransformPrimitive):
+class CumMean(GroupByTransformPrimitive):
     """Returns the cumulative mean after grouping"""
 
     name = "cum_mean"
@@ -49,17 +43,13 @@ class CumMean(TransformPrimitive):
     uses_full_entity = True
 
     def get_function(self):
-        def cum_mean(values, groups):
-            temp = values.groupby(groups)
-            return temp.cumsum() / (temp.cumcount() + 1)
+        def cum_mean(values):
+            return values.cumsum() / (values.cumcount() + 1)
 
         return cum_mean
 
-    def generate_name(self, base_feature_names):
-        return "CUM_MEAN(%s by %s)" % (base_feature_names[0], base_feature_names[1])
 
-
-class CumMin(TransformPrimitive):
+class CumMin(GroupByTransformPrimitive):
     """Returns the cumulative min after grouping"""
 
     name = "cum_min"
@@ -69,16 +59,13 @@ class CumMin(TransformPrimitive):
     uses_full_entity = True
 
     def get_function(self):
-        def cum_min(values, groups):
-            return values.groupby(groups).cummin()
+        def cum_min(values):
+            return values.cummin()
 
         return cum_min
 
-    def generate_name(self, base_feature_names):
-        return "CUM_MIN(%s by %s)" % (base_feature_names[0], base_feature_names[1])
 
-
-class CumMax(TransformPrimitive):
+class CumMax(GroupByTransformPrimitive):
     """Returns the cumulative max after grouping"""
 
     name = "cum_max"
@@ -88,10 +75,7 @@ class CumMax(TransformPrimitive):
     uses_full_entity = True
 
     def get_function(self):
-        def cum_max(values, groups):
-            return values.groupby(groups).cummax()
+        def cum_max(values):
+            return values.cummax()
 
         return cum_max
-
-    def generate_name(self, base_feature_names):
-        return "CUM_MAX(%s by %s)" % (base_feature_names[0], base_feature_names[1])
