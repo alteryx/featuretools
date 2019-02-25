@@ -240,13 +240,13 @@ EntitySet serialization
 .. autosummary::
     :toctree: generated/
 
-    read_pickle
-    read_parquet
+    read_entityset
 
 .. currentmodule:: featuretools.entityset
 .. autosummary::
     :toctree: generated/
 
+    EntitySet.to_csv
     EntitySet.to_pickle
     EntitySet.to_parquet
 

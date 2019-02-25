@@ -22,7 +22,7 @@ class Variable(object):
     See Also:
         :class:`.Entity`, :class:`.Relationship`, :class:`.BaseEntitySet`
     """
-    _dtype_repr = None
+    type_string = None
     _default_pandas_dtype = object
 
     def __init__(self, id, entity, name=None):
@@ -44,7 +44,7 @@ class Variable(object):
             self.entity_id == other.entity_id
 
     def __repr__(self):
-        ret = u"<Variable: {} (dtype = {})>".format(self.name, self._dtype_repr)
+        ret = u"<Variable: {} (dtype = {})>".format(self.name, self.type_string)
 
         # encode for python 2
         if type(ret) != str:
@@ -70,6 +70,11 @@ class Variable(object):
     def name(self):
         return self._name if self._name is not None else self.id
 
+    @property
+    def dtype(self):
+        return self.type_string \
+            if self.type_string is not None else "generic_type"
+
     @name.setter
     def name(self, name):
         self._name = name
@@ -86,13 +91,17 @@ class Variable(object):
     def series(self):
         return self.entity.df[self.id]
 
-    def create_metadata_dict(self):
+    def to_data_description(self):
         return {
-            'dtype_repr': self._dtype_repr,
-            'entity': self.entity.id,
             'id': self.id,
-            'name': self.name,
-            'interesting_values': self._interesting_values
+            'type': {
+                'value': self.type_string,
+            },
+            'properties': {
+                'name': self.name,
+                'entity': self.entity.id,
+                'interesting_values': self._interesting_values
+            },
         }
 
 
@@ -102,7 +111,7 @@ class Unknown(Variable):
 
 class Discrete(Variable):
     """Superclass representing variables that take on discrete values"""
-    _dtype_repr = "discrete"
+    type_string = "discrete"
 
     def __init__(self, id, entity, name=None):
         super(Discrete, self).__init__(id, entity, name)
@@ -121,30 +130,73 @@ class Discrete(Variable):
 
 
 class Boolean(Variable):
-    """Represents variables that take on one of two values"""
-    _dtype_repr = "boolean"
+    """Represents variables that take on one of two values
+
+    Args:
+        true_values (list) : List of valued true values. Defaults to [1, True, "true", "True", "yes", "t", "T"]
+        false_values (list): List of valued false values. Defaults to [0, False, "false", "False", "no", "f", "F"]
+    """
+    type_string = "boolean"
     _default_pandas_dtype = bool
+
+    def __init__(self,
+                 id,
+                 entity,
+                 name=None,
+                 true_values=None,
+                 false_values=None):
+        default = [1, True, "true", "True", "yes", "t", "T"]
+        self.true_values = true_values or default
+        default = [0, False, "false", "False", "no", "f", "F"]
+        self.false_values = false_values or default
+        super(Boolean, self).__init__(id, entity, name=name)
+
+    def to_data_description(self):
+        description = super(Boolean, self).to_data_description()
+        description['type'].update({
+            'true_values': self.true_values,
+            'false_values': self.false_values
+        })
+        return description
 
 
 class Categorical(Discrete):
-    """Represents variables that can take an unordered discrete values"""
-    _dtype_repr = "categorical"
+    """Represents variables that can take an unordered discrete values
+
+    Args:
+        categories (list) : List of categories. If left blank, inferred from data.
+    """
+    type_string = "categorical"
+
+    def __init__(self, id, entity, name=None, categories=None):
+        self.categories = None or []
+        super(Categorical, self).__init__(id, entity, name=name)
+
+    def to_data_description(self):
+        description = super(Categorical, self).to_data_description()
+        description['type'].update({'categories': self.categories})
+        return description
 
 
 class Id(Categorical):
     """Represents variables that identify another entity"""
-    _dtype_repr = "id"
+    type_string = "id"
     _default_pandas_dtype = int
 
 
 class Ordinal(Discrete):
     """Represents variables that take on an ordered discrete value"""
-    _dtype_repr = "ordinal"
+    type_string = "ordinal"
     _default_pandas_dtype = int
 
 
 class Numeric(Variable):
     """Represents variables that contain numeric values
+
+    Args:
+        range (list, optional) : List of start and end. Can use inf and -inf to represent infinity. Unconstrained if not specified.
+        start_inclusive (bool, optional) : Whether or not range includes the start value.
+        end_inclusive (bool, optional) : Whether or not range includes the end value
 
     Attributes:
         max (float)
@@ -152,8 +204,29 @@ class Numeric(Variable):
         std (float)
         mean (float)
     """
-    _dtype_repr = "numeric"
+    type_string = "numeric"
     _default_pandas_dtype = float
+
+    def __init__(self,
+                 id,
+                 entity,
+                 name=None,
+                 range=None,
+                 start_inclusive=True,
+                 end_inclusive=False):
+        self.range = None or []
+        self.start_inclusive = start_inclusive
+        self.end_inclusive = end_inclusive
+        super(Numeric, self).__init__(id, entity, name=name)
+
+    def to_data_description(self):
+        description = super(Numeric, self).to_data_description()
+        description['type'].update({
+            'range': self.range,
+            'start_inclusive': self.start_inclusive,
+            'end_inclusive': self.end_inclusive,
+        })
+        return description
 
 
 class Index(Variable):
@@ -162,21 +235,25 @@ class Index(Variable):
     Attributes:
         count (int)
     """
-    _dtype_repr = "index"
+    type_string = "index"
     _default_pandas_dtype = int
 
 
 class Datetime(Variable):
-    """Represents variables that are points in time"""
-    _dtype_repr = "datetime"
+    """Represents variables that are points in time
+
+    Args:
+        format (str): Python datetime format string documented `here <http://strftime.org/>`_.
+    """
+    type_string = "datetime"
     _default_pandas_dtype = np.datetime64
 
-    def __init__(self, id, entity, format=None, name=None):
+    def __init__(self, id, entity, name=None, format=None):
         self.format = format
-        super(Datetime, self).__init__(id, entity, name)
+        super(Datetime, self).__init__(id, entity, name=name)
 
     def __repr__(self):
-        ret = u"<Variable: {} (dtype: {}, format: {})>".format(self.name, self._dtype_repr, self.format)
+        ret = u"<Variable: {} (dtype: {}, format: {})>".format(self.name, self.type_string, self.format)
 
         # encode for python 2
         if type(ret) != str:
@@ -184,34 +261,66 @@ class Datetime(Variable):
 
         return ret
 
+    def to_data_description(self):
+        description = super(Datetime, self).to_data_description()
+        description['type'].update({'format': self.format})
+        return description
+
 
 class TimeIndex(Variable):
     """Represents time index of entity"""
-    _dtype_repr = "time_index"
+    type_string = "time_index"
     _default_pandas_dtype = np.datetime64
 
 
 class NumericTimeIndex(TimeIndex, Numeric):
     """Represents time index of entity that is numeric"""
-    _dtype_repr = "numeric_time_index"
+    type_string = "numeric_time_index"
     _default_pandas_dtype = float
 
 
 class DatetimeTimeIndex(TimeIndex, Datetime):
     """Represents time index of entity that is a datetime"""
-    _dtype_repr = "datetime_time_index"
+    type_string = "datetime_time_index"
     _default_pandas_dtype = np.datetime64
 
 
 class Timedelta(Variable):
-    """Represents variables that are timedeltas"""
-    _dtype_repr = "timedelta"
+    """Represents variables that are timedeltas
+
+    Args:
+        range (list, optional) : List of start and end of allowed range in seconds. Can use inf and -inf to represent infinity. Unconstrained if not specified.
+        start_inclusive (bool, optional) : Whether or not range includes the start value.
+        end_inclusive (bool, optional) : Whether or not range includes the end value
+    """
+    type_string = "timedelta"
     _default_pandas_dtype = np.timedelta64
+
+    def __init__(self,
+                 id,
+                 entity,
+                 name=None,
+                 range=None,
+                 start_inclusive=True,
+                 end_inclusive=False):
+        self.range = range or []
+        self.start_inclusive = start_inclusive
+        self.end_inclusive = end_inclusive
+        super(Timedelta, self).__init__(id, entity, name=name)
+
+    def to_data_description(self):
+        description = super(Timedelta, self).to_data_description()
+        description['type'].update({
+            'range': self.range,
+            'start_inclusive': self.start_inclusive,
+            'end_inclusive': self.end_inclusive,
+        })
+        return description
 
 
 class Text(Variable):
     """Represents variables that are arbitary strings"""
-    _dtype_repr = "text"
+    type_string = "text"
     _default_pandas_dtype = str
 
 
@@ -229,7 +338,7 @@ class LatLong(Variable):
     To make a latlong in a dataframe do
     data['latlong'] = data[['latitude', 'longitude']].apply(tuple, axis=1)
     """
-    _dtype_repr = "latlong"
+    type_string = "latlong"
 
 
 class ZIPCode(Categorical):
@@ -237,7 +346,7 @@ class ZIPCode(Categorical):
     Consists of a series of digits which are casts as
     string. Five digit and 9 digit zipcodes are supported.
     """
-    _dtype_repr = "zipcode"
+    type_string = "zipcode"
     _default_pandas_dtype = str
 
 
@@ -245,7 +354,7 @@ class IPAddress(Variable):
     """Represents a computer network address. Represented
     in dotted-decimal notation. IPv4 and IPv6 are supported.
     """
-    _dtype_repr = "ip"
+    type_string = "ip"
     _default_pandas_dtype = str
 
 
@@ -253,7 +362,7 @@ class EmailAddress(Variable):
     """Represents an email box to which email message are sent.
     Consits of a local-part, an @ symbol, and a domain.
     """
-    _dtype_repr = "email"
+    type_string = "email"
     _default_pandas_dtype = str
 
 
@@ -263,7 +372,7 @@ class CountryCode(Categorical):
     should be in the Alpha-2 format.
     e.g. United States of America = US
     """
-    _dtype_repr = "country_code"
+    type_string = "country_code"
     _default_pandas_dtype = str
 
 
@@ -273,7 +382,7 @@ class SubRegionCode(Categorical):
     should be in the Alpha-2 format.
     e.g. United States of America, Arizona = US-AZ
     """
-    _dtype_repr = "subregion_code"
+    type_string = "subregion_code"
     _default_pandas_dtype = str
 
 
