@@ -9,6 +9,7 @@ from ..utils import gen_utils as utils
 from featuretools import variable_types
 from featuretools.feature_base import (
     AggregationFeature,
+    GroupByTransformFeature,
     IdentityFeature,
     TransformFeature
 )
@@ -213,7 +214,8 @@ class FeatureTree(object):
         return list(features.values()), out
 
     def uses_full_entity(self, feature):
-        if isinstance(feature, TransformFeature) and feature.primitive.uses_full_entity:
+        if (isinstance(feature, (GroupByTransformFeature, TransformFeature)) and
+                feature.primitive.uses_full_entity):
             return True
         return self._dependent_uses_full_entity(feature)
 

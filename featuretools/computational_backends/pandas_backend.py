@@ -18,6 +18,7 @@ from featuretools.exceptions import UnknownFeature
 from featuretools.feature_base import (
     AggregationFeature,
     DirectFeature,
+    GroupByTransformFeature,
     IdentityFeature,
     TransformFeature
 )
@@ -104,7 +105,9 @@ class PandasBackend(ComputationalBackend):
                                                  training_window=training_window,
                                                  verbose=verbose)
         large_eframes_by_filter = None
-        if any([f.primitive.uses_full_entity for f in self.feature_tree.all_features if isinstance(f, TransformFeature)]):
+        if any([f.primitive.uses_full_entity
+                for f in self.feature_tree.all_features
+                if isinstance(f, (GroupByTransformFeature, TransformFeature))]):
             large_necessary_columns = self.feature_tree.necessary_columns_for_all_values_features
             large_eframes_by_filter = \
                 self.entityset.get_pandas_data_slice(filter_entity_ids=ordered_entities,
