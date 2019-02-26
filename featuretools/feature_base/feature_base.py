@@ -490,11 +490,10 @@ class GroupByTransformFeature(FeatureBase):
                                        self.primitive,
                                        self.groupby)
 
-    # TODO: add groupby param to generate_name
     def generate_name(self):
         base_names = [bf.get_name() for bf in self.base_features]
         # groupby_name = self.groupby.get_name()
-        return self.primitive.generate_name(base_names)
+        return self.primitive.generate_name(base_names, groupby=self.groupby)
 
 
 class Feature(object):
