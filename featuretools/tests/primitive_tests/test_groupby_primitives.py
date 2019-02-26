@@ -21,24 +21,27 @@ class TestCumCount:
     def test_order(self):
         g = pd.Series(["a", "b", "a"])
 
-        answer = [1, 1, 2]
+        answers = ([1, 2], [1])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(g.groupby(g)), answer)
+        for (_, group), answer in zip(g.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
     def test_regular(self):
         g = pd.Series(["a", "b", "a", "c", "d", "b"])
-        answer = [1, 1, 2, 1, 1, 2]
+        answers = ([1, 2], [1, 2], [1], [1])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(g.groupby(g)), answer)
+        for (_, group), answer in zip(g.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
     def test_discrete(self):
         g = pd.Series(["a", "b", "a", "c", "d", "b"])
-        answer = [1, 1, 2, 1, 1, 2]
+        answers = ([1, 2], [1, 2], [1], [1])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(g.groupby(g)), answer)
+        for (_, group), answer in zip(g.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
 
 class TestCumSum:
@@ -49,18 +52,20 @@ class TestCumSum:
         v = pd.Series([1, 2, 2])
         g = pd.Series(["a", "b", "a"])
 
-        answer = [1, 2, 3]
+        answers = ([1, 3], [2])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v.groupby(g)), answer)
+        for (_, group), answer in zip(v.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
     def test_regular(self):
         v = pd.Series([101, 102, 103, 104, 105, 106])
         g = pd.Series(["a", "b", "a", "c", "d", "b"])
-        answer = [101, 102, 204, 104, 105, 208]
+        answers = ([101, 204], [102, 208], [104], [105])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v.groupby(g)), answer)
+        for (_, group), answer in zip(v.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
 
 class TestCumMean:
@@ -70,18 +75,20 @@ class TestCumMean:
         v = pd.Series([1, 2, 2])
         g = pd.Series(["a", "b", "a"])
 
-        answer = [1, 2, 1.5]
+        answers = ([1, 1.5], [2])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v.groupby(g)), answer)
+        for (_, group), answer in zip(v.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
     def test_regular(self):
         v = pd.Series([101, 102, 103, 104, 105, 106])
         g = pd.Series(["a", "b", "a", "c", "d", "b"])
-        answer = [101, 102, 102, 104, 105, 104]
+        answers = ([101, 102], [102, 104], [104], [105])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v.groupby(g)), answer)
+        for (_, group), answer in zip(v.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
 
 class TestCumMax:
@@ -92,18 +99,20 @@ class TestCumMax:
         v = pd.Series([1, 2, 2])
         g = pd.Series(["a", "b", "a"])
 
-        answer = [1, 2, 2]
+        answers = ([1, 2], [2])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v.groupby(g)), answer)
+        for (_, group), answer in zip(v.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
     def test_regular(self):
         v = pd.Series([101, 102, 103, 104, 105, 106])
         g = pd.Series(["a", "b", "a", "c", "d", "b"])
-        answer = [101, 102, 103, 104, 105, 106]
+        answers = ([101, 103], [102, 106], [104], [105])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v.groupby(g)), answer)
+        for (_, group), answer in zip(v.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
 
 class TestCumMin:
@@ -114,18 +123,20 @@ class TestCumMin:
         v = pd.Series([1, 2, 2])
         g = pd.Series(["a", "b", "a"])
 
-        answer = [1, 2, 1]
+        answers = ([1, 1], [2])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v.groupby(g)), answer)
+        for (_, group), answer in zip(v.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
     def test_regular(self):
         v = pd.Series([101, 102, 103, 104, 105, 106, 100])
         g = pd.Series(["a", "b", "a", "c", "d", "b", "a"])
-        answer = [101, 102, 101, 104, 105, 102, 100]
+        answers = ([101, 101, 100], [102, 102], [104], [105])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v.groupby(g)), answer)
+        for (_, group), answer in zip(v.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
 
 def test_cum_sum(es):
