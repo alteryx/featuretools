@@ -1,13 +1,12 @@
-from featuretools.primitives.base import GroupByTransformPrimitive
+from featuretools.primitives.base import TransformPrimitive
 from featuretools.variable_types import Discrete, Id, Numeric
 
 
-class CumSum(GroupByTransformPrimitive):
+class CumSum(TransformPrimitive):
     """Returns the cumulative sum after grouping"""
 
     name = "cum_sum"
-    input_types = [[Numeric, Id],
-                   [Numeric, Discrete]]
+    input_types = [Numeric]
     return_type = Numeric
     uses_full_entity = True
 
@@ -18,7 +17,7 @@ class CumSum(GroupByTransformPrimitive):
         return cum_sum
 
 
-class CumCount(GroupByTransformPrimitive):
+class CumCount(TransformPrimitive):
     """Returns the cumulative count after grouping"""
 
     name = "cum_count"
@@ -33,12 +32,11 @@ class CumCount(GroupByTransformPrimitive):
         return cum_count
 
 
-class CumMean(GroupByTransformPrimitive):
+class CumMean(TransformPrimitive):
     """Returns the cumulative mean after grouping"""
 
     name = "cum_mean"
-    input_types = [[Numeric, Id],
-                   [Numeric, Discrete]]
+    input_types = [Numeric]
     return_type = Numeric
     uses_full_entity = True
 
@@ -49,12 +47,11 @@ class CumMean(GroupByTransformPrimitive):
         return cum_mean
 
 
-class CumMin(GroupByTransformPrimitive):
+class CumMin(TransformPrimitive):
     """Returns the cumulative min after grouping"""
 
     name = "cum_min"
-    input_types = [[Numeric, Id],
-                   [Numeric, Discrete]]
+    input_types = [Numeric]
     return_type = Numeric
     uses_full_entity = True
 
@@ -65,12 +62,11 @@ class CumMin(GroupByTransformPrimitive):
         return cum_min
 
 
-class CumMax(GroupByTransformPrimitive):
+class CumMax(TransformPrimitive):
     """Returns the cumulative max after grouping"""
 
     name = "cum_max"
-    input_types = [[Numeric, Id],
-                   [Numeric, Discrete]]
+    input_types = [Numeric]
     return_type = Numeric
     uses_full_entity = True
 

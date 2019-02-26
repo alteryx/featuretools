@@ -3,7 +3,6 @@ from builtins import zip
 from featuretools import primitives
 from featuretools.primitives.base import (
     AggregationPrimitive,
-    GroupByTransformPrimitive,
     PrimitiveBase,
     TransformPrimitive
 )
@@ -491,10 +490,11 @@ class GroupByTransformFeature(FeatureBase):
                                        self.primitive,
                                        self.groupby)
 
+    # TODO: add groupby param to generate_name
     def generate_name(self):
         base_names = [bf.get_name() for bf in self.base_features]
-        groupby_name = self.groupby.get_name()
-        return self.primitive.generate_name(base_names, groupby_name)
+        # groupby_name = self.groupby.get_name()
+        return self.primitive.generate_name(base_names)
 
 
 class Feature(object):
@@ -515,15 +515,13 @@ class Feature(object):
             return AggregationFeature(base, parent_entity=parent_entity,
                                       use_previous=use_previous, where=where,
                                       primitive=primitive)
-        elif primitive is not None and groupby is not None:
-            assert (isinstance(primitive, GroupByTransformPrimitive) or
-                    issubclass(primitive, GroupByTransformPrimitive))
-            return GroupByTransformFeature(base,
-                                           primitive=primitive,
-                                           groupby=groupby)
         elif primitive is not None:
             assert (isinstance(primitive, TransformPrimitive) or
                     issubclass(primitive, TransformPrimitive))
+            if groupby is not None:
+                return GroupByTransformFeature(base,
+                                               primitive=primitive,
+                                               groupby=groupby)
             return TransformFeature(base, primitive=primitive)
 
         raise Exception("Unrecognized feature initialization")
