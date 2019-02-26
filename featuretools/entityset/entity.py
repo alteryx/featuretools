@@ -92,7 +92,7 @@ class Entity(object):
         repr_out = u"Entity: {}\n".format(self.id)
         repr_out += u"  Variables:"
         for v in self.variables:
-            repr_out += u"\n    {} (dtype: {})".format(v.id, v._dtype_repr)
+            repr_out += u"\n    {} (dtype: {})".format(v.id, v.type_string)
 
         shape = self.shape
         repr_out += u"\n  Shape:\n    (Rows: {}, Columns: {})".format(
@@ -137,14 +137,6 @@ class Entity(object):
 
     def __sizeof__(self):
         return sum([value.__sizeof__() for value in self.data.values()])
-
-    @property
-    def is_metadata(self):
-        '''Returns True if all of the Entity's contain no data (empty DataFrames).
-        In general, EntitySets with no data are created by accessing the EntitySet.metadata property,
-        which returns a copy of the current EntitySet with all data removed.
-        '''
-        return self.entityset.is_metadata
 
     @property
     def df(self):
@@ -347,7 +339,7 @@ class Entity(object):
         self.set_secondary_time_index(self.secondary_time_index)
         if recalculate_last_time_indexes and self.last_time_index is not None:
             self.entityset.add_last_time_indexes(updated_entities=[self.id])
-        self.entityset.reset_metadata()
+        self.entityset.reset_data_description()
 
     def add_interesting_values(self, max_values=5, verbose=False):
         """
@@ -405,7 +397,7 @@ class Entity(object):
                         else:
                             break
 
-        self.entityset.reset_metadata()
+        self.entityset.reset_data_description()
 
     def delete_variable(self, variable_id):
         """
