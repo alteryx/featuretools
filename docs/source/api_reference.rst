@@ -308,6 +308,9 @@ Variable types
     ZIPCode
     IPAddress
     EmailAddress
+    URL
+    PhoneNumber
+    DateOfBirth
     CountryCode
     SubRegionCode
 

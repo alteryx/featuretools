@@ -366,6 +366,27 @@ class EmailAddress(Variable):
     _default_pandas_dtype = str
 
 
+class URL(Variable):
+    """Represents a valid web url (with or without http/www)"""
+    type_string = "url"
+    _default_pandas_dtype = str
+
+
+class PhoneNumber(Variable):
+    """Represents any valid phone number.
+    Can be with/without parenthesis.
+    Can be with/without area/country codes.
+    """
+    type_string = "phone_number"
+    _default_pandas_dtype = str
+
+
+class DateOfBirth(Datetime):
+    """Represents a date of birth as a datetime"""
+    type_string = "date_of_birth"
+    _default_pandas_dtype = np.datetime64
+
+
 class CountryCode(Categorical):
     """Represents an ISO-3166 standard country code.
     ISO 3166-1 (countries) are supported. These codes
@@ -389,8 +410,8 @@ class SubRegionCode(Categorical):
 ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
                       Categorical, Text, Ordinal,
                       Boolean, LatLong, ZIPCode, IPAddress,
-                      EmailAddress, CountryCode,
-                      SubRegionCode]
+                      EmailAddress, URL, PhoneNumber,
+                      DateOfBirth, CountryCode, SubRegionCode]
 
 
 DEFAULT_DTYPE_VALUES = {
