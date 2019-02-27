@@ -1,3 +1,5 @@
+import pandas as pd
+
 from featuretools.primitives.base import TransformPrimitive
 from featuretools.variable_types import Discrete, Id, Numeric
 
@@ -27,7 +29,7 @@ class CumCount(TransformPrimitive):
 
     def get_function(self):
         def cum_count(values):
-            return values.cumcount() + 1
+            return pd.Series(range(1, len(values) + 1), index=values.index)
 
         return cum_count
 
@@ -42,7 +44,7 @@ class CumMean(TransformPrimitive):
 
     def get_function(self):
         def cum_mean(values):
-            return values.cumsum() / (values.cumcount() + 1)
+            return values.cumsum() / pd.Series(range(1, len(values) + 1), index=values.index)
 
         return cum_mean
 

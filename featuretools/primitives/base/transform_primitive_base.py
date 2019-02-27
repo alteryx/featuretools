@@ -12,9 +12,11 @@ class TransformPrimitive(PrimitiveBase):
     #   (and will receive these values as input, regardless of specified instance ids)
     uses_full_entity = False
 
-    def generate_name(self, base_feature_names):
+    def generate_name(self, base_feature_names, groupby=None):
         name = u"{}(".format(self.name.upper())
         name += u", ".join(base_feature_names)
+        if groupby is not None:
+            name += u" by {}".format(groupby)
         name += u")"
         return name
 

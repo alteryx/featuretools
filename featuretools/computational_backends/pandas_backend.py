@@ -324,11 +324,6 @@ class PandasBackend(ComputationalBackend):
                 values = feature_func(*variable_data)
 
             # if we don't get just the values, the assignment breaks when indexes don't match
-            def strip_values_if_series(values):
-                if isinstance(values, pd.Series):
-                    values = values.values
-                return values
-
             if f.number_output_features > 1:
                 values = [strip_values_if_series(value) for value in values]
             else:
@@ -345,30 +340,20 @@ class PandasBackend(ComputationalBackend):
 
         frame = entity_frames[entity_id]
 
-        # get list of groupby fatures
-        groupby_lists = defaultdict(list)
         for f in features:
             # handle when no data
             if frame.shape[0] == 0:
                 set_default_column(frame, f)
                 continue
 
-            groupby_lists[f.groupby.get_name()].append(f)
+            groupby = f.groupby.get_name()
+            column_names = [bf.get_name() for bf in f.base_features]
+            frame_data = frame[set(column_names + [groupby])]
+            feature_func = f.get_function()
 
-        for groupby, features in groupby_lists.items():
-            # collect only the variables we need for this transformation
-            variables = set([groupby])
-            for feature in features:
-                for base_feature in feature.base_features:
-                    variables.add(base_feature.get_name())
-
-            grouped = frame[variables].groupby(groupby)
-
-            for feature in features:
-                variable_data = [grouped[bf.get_name()] for
-                                 bf in feature.base_features]
-
-                feature_func = f.get_function()
+            group_values = []
+            for index, group in frame_data.groupby(groupby):
+                variable_data = [group[name] for name in column_names]
                 # apply the function to the relevant dataframe slice and add the
                 # feature row to the results dataframe.
                 if f.primitive.uses_calc_time:
@@ -376,17 +361,14 @@ class PandasBackend(ComputationalBackend):
                 else:
                     values = feature_func(*variable_data)
 
-            # if we don't get just the values, the assignment breaks when indexes don't match
-            def strip_values_if_series(values):
-                if isinstance(values, pd.Series):
-                    values = values.values
-                return values
+                if not isinstance(values, pd.Series):
+                    values = pd.Series(values, index=variable_data[0].index)
+                group_values.append(values)
 
-            if f.number_output_features > 1:
-                values = [strip_values_if_series(value) for value in values]
-            else:
-                values = [strip_values_if_series(values)]
-            update_feature_columns(f, frame, values)
+            null_group = frame[pd.isnull(frame[groupby])]
+            group_values.append(null_group[groupby])
+            group_values = pd.concat(group_values)
+            update_feature_columns(f, frame, [group_values.sort_index().values])
 
         return frame
 
@@ -616,3 +598,9 @@ def update_feature_columns(feature, data, values):
     assert len(names) == len(values)
     for name, value in zip(names, values):
         data[name] = value
+
+
+def strip_values_if_series(values):
+    if isinstance(values, pd.Series):
+        values = values.values
+    return values

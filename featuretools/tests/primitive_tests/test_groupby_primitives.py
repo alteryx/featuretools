@@ -6,7 +6,8 @@ from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
 from featuretools.computational_backends import PandasBackend
-from featuretools.primitives import CumCount, CumMax, CumMean, CumMin, CumSum
+from featuretools.primitives import CumCount, CumMax, CumMean, CumMin, CumSum, TransformPrimitive
+from featuretools.variable_types import Numeric
 
 
 @pytest.fixture
@@ -21,24 +22,27 @@ class TestCumCount:
     def test_order(self):
         g = pd.Series(["a", "b", "a"])
 
-        answer = [1, 1, 2]
+        answers = ([1, 2], [1])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(g.groupby(g)), answer)
+        for (_, group), answer in zip(g.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
     def test_regular(self):
         g = pd.Series(["a", "b", "a", "c", "d", "b"])
-        answer = [1, 1, 2, 1, 1, 2]
+        answers = ([1, 2], [1, 2], [1], [1])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(g.groupby(g)), answer)
+        for (_, group), answer in zip(g.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
     def test_discrete(self):
         g = pd.Series(["a", "b", "a", "c", "d", "b"])
-        answer = [1, 1, 2, 1, 1, 2]
+        answers = ([1, 2], [1, 2], [1], [1])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(g.groupby(g)), answer)
+        for (_, group), answer in zip(g.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
 
 class TestCumSum:
@@ -49,18 +53,20 @@ class TestCumSum:
         v = pd.Series([1, 2, 2])
         g = pd.Series(["a", "b", "a"])
 
-        answer = [1, 2, 3]
+        answers = ([1, 3], [2])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v.groupby(g)), answer)
+        for (_, group), answer in zip(v.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
     def test_regular(self):
         v = pd.Series([101, 102, 103, 104, 105, 106])
         g = pd.Series(["a", "b", "a", "c", "d", "b"])
-        answer = [101, 102, 204, 104, 105, 208]
+        answers = ([101, 204], [102, 208], [104], [105])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v.groupby(g)), answer)
+        for (_, group), answer in zip(v.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
 
 class TestCumMean:
@@ -70,18 +76,20 @@ class TestCumMean:
         v = pd.Series([1, 2, 2])
         g = pd.Series(["a", "b", "a"])
 
-        answer = [1, 2, 1.5]
+        answers = ([1, 1.5], [2])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v.groupby(g)), answer)
+        for (_, group), answer in zip(v.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
     def test_regular(self):
         v = pd.Series([101, 102, 103, 104, 105, 106])
         g = pd.Series(["a", "b", "a", "c", "d", "b"])
-        answer = [101, 102, 102, 104, 105, 104]
+        answers = ([101, 102], [102, 104], [104], [105])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v.groupby(g)), answer)
+        for (_, group), answer in zip(v.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
 
 class TestCumMax:
@@ -92,18 +100,20 @@ class TestCumMax:
         v = pd.Series([1, 2, 2])
         g = pd.Series(["a", "b", "a"])
 
-        answer = [1, 2, 2]
+        answers = ([1, 2], [2])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v.groupby(g)), answer)
+        for (_, group), answer in zip(v.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
     def test_regular(self):
         v = pd.Series([101, 102, 103, 104, 105, 106])
         g = pd.Series(["a", "b", "a", "c", "d", "b"])
-        answer = [101, 102, 103, 104, 105, 106]
+        answers = ([101, 103], [102, 106], [104], [105])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v.groupby(g)), answer)
+        for (_, group), answer in zip(v.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
 
 class TestCumMin:
@@ -114,18 +124,20 @@ class TestCumMin:
         v = pd.Series([1, 2, 2])
         g = pd.Series(["a", "b", "a"])
 
-        answer = [1, 2, 1]
+        answers = ([1, 1], [2])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v.groupby(g)), answer)
+        for (_, group), answer in zip(v.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
     def test_regular(self):
         v = pd.Series([101, 102, 103, 104, 105, 106, 100])
         g = pd.Series(["a", "b", "a", "c", "d", "b", "a"])
-        answer = [101, 102, 101, 104, 105, 102, 100]
+        answers = ([101, 101, 100], [102, 102], [104], [105])
 
         function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v.groupby(g)), answer)
+        for (_, group), answer in zip(v.groupby(g), answers):
+            np.testing.assert_array_equal(function(group), answer)
 
 
 def test_cum_sum(es):
@@ -172,17 +184,61 @@ def test_cum_sum_group_on_nan(es):
                                   ['shoes'] +
                                   [np.nan] * 4 +
                                   ['coke_zero'] * 2)
+    es['log'].df['value'][16] = 10
     cum_sum = ft.Feature(log_value_feat, groupby=es['log']['product_id'], primitive=CumSum)
     features = [cum_sum]
-    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(17))
     cvalues = df[cum_sum.get_name()].values
-    assert len(cvalues) == 15
+    assert len(cvalues) == 17
     cum_sum_values = [0, 5, 15,
                       15, 35,
                       0, 1, 3,
                       3, 3,
                       0,
-                      np.nan, np.nan, np.nan, np.nan]
+                      np.nan, np.nan, np.nan, np.nan, np.nan, 10]
+
+    assert len(cvalues) == len(cum_sum_values)
+    for i, v in enumerate(cum_sum_values):
+        if np.isnan(v):
+            assert (np.isnan(cvalues[i]))
+        else:
+            assert v == cvalues[i]
+
+
+def test_cum_sum_numpy_group_on_nan(es):
+    class CumSumNumpy(TransformPrimitive):
+        """Returns the cumulative sum after grouping"""
+
+        name = "cum_sum"
+        input_types = [Numeric]
+        return_type = Numeric
+        uses_full_entity = True
+
+        def get_function(self):
+            def cum_sum(values):
+                return values.cumsum().values
+            return cum_sum
+
+    log_value_feat = es['log']['value']
+    es['log'].df['product_id'] = (['coke zero'] * 3 + ['car'] * 2 +
+                                  ['toothpaste'] * 3 + ['brown bag'] * 2 +
+                                  ['shoes'] +
+                                  [np.nan] * 4 +
+                                  ['coke_zero'] * 2)
+    es['log'].df['value'][16] = 10
+    cum_sum = ft.Feature(log_value_feat, groupby=es['log']['product_id'], primitive=CumSumNumpy)
+    features = [cum_sum]
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(17))
+    cvalues = df[cum_sum.get_name()].values
+    assert len(cvalues) == 17
+    cum_sum_values = [0, 5, 15,
+                      15, 35,
+                      0, 1, 3,
+                      3, 3,
+                      0,
+                      np.nan, np.nan, np.nan, np.nan, np.nan, 10]
+
+    assert len(cvalues) == len(cum_sum_values)
     for i, v in enumerate(cum_sum_values):
         if np.isnan(v):
             assert (np.isnan(cvalues[i]))
