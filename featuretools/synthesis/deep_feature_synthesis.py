@@ -509,7 +509,7 @@ class DeepFeatureSynthesis(object):
 
         for groupby_prim in self.groupby_primitives:
             # if multiple input_types, only use first one for DFS
-            input_types = groupby_prim.input_types
+            input_types = groupby_prim.input_types[:]
             if type(input_types[0]) == list:
                 input_types = input_types[0]
             input_types.append(Id)
