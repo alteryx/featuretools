@@ -264,6 +264,28 @@ def test_makes_agg_features_with_where(es):
                               'COUNT(log WHERE products.department = food)'))
 
 
+def test_make_groupby_features(es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[],
+                                   groupby_primitives=['cum_sum'])
+    features = dfs_obj.build_features()
+    assert (feature_with_name(features,
+                              "CUM_SUM(value by <Feature: session_id>)"))
+
+
+def test_make_groupby_features_with_agg(es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   agg_primitives=['sum'],
+                                   trans_primitives=[],
+                                   groupby_primitives=['cum_sum'])
+    features = dfs_obj.build_features()
+    assert (feature_with_name(features,
+                              "CUM_SUM(age by <Feature: région_id>)"))
+
+
 def test_abides_by_max_depth_param(es):
     for i in [1, 2, 3]:
         dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
