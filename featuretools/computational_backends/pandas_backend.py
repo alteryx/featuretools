@@ -361,12 +361,14 @@ class PandasBackend(ComputationalBackend):
                 else:
                     values = feature_func(*variable_data)
 
-                values = strip_values_if_series(values)
-                values = pd.Series(values, index=variable_data[0].index)
+                if not isinstance(values, pd.Series):
+                    values = pd.Series(values, index=variable_data[0].index)
                 group_values.append(values)
 
-            values = [pd.concat(group_values)]
-            update_feature_columns(f, frame, values)
+            null_group = frame[pd.isnull(frame[groupby])]
+            group_values.append(null_group[groupby])
+            group_values = pd.concat(group_values)
+            update_feature_columns(f, frame, [group_values.sort_index().values])
 
         return frame
 

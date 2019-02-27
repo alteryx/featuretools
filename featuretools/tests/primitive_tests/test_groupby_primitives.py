@@ -6,7 +6,8 @@ from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
 from featuretools.computational_backends import PandasBackend
-from featuretools.primitives import CumCount, CumMax, CumMean, CumMin, CumSum
+from featuretools.primitives import CumCount, CumMax, CumMean, CumMin, CumSum, TransformPrimitive
+from featuretools.variable_types import Numeric
 
 
 @pytest.fixture
@@ -183,17 +184,61 @@ def test_cum_sum_group_on_nan(es):
                                   ['shoes'] +
                                   [np.nan] * 4 +
                                   ['coke_zero'] * 2)
+    es['log'].df['value'][16] = 10
     cum_sum = ft.Feature(log_value_feat, groupby=es['log']['product_id'], primitive=CumSum)
     features = [cum_sum]
-    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(17))
     cvalues = df[cum_sum.get_name()].values
-    assert len(cvalues) == 15
+    assert len(cvalues) == 17
     cum_sum_values = [0, 5, 15,
                       15, 35,
                       0, 1, 3,
                       3, 3,
                       0,
-                      np.nan, np.nan, np.nan, np.nan]
+                      np.nan, np.nan, np.nan, np.nan, np.nan, 10]
+
+    assert len(cvalues) == len(cum_sum_values)
+    for i, v in enumerate(cum_sum_values):
+        if np.isnan(v):
+            assert (np.isnan(cvalues[i]))
+        else:
+            assert v == cvalues[i]
+
+
+def test_cum_sum_numpy_group_on_nan(es):
+    class CumSumNumpy(TransformPrimitive):
+        """Returns the cumulative sum after grouping"""
+
+        name = "cum_sum"
+        input_types = [Numeric]
+        return_type = Numeric
+        uses_full_entity = True
+
+        def get_function(self):
+            def cum_sum(values):
+                return values.cumsum().values
+            return cum_sum
+
+    log_value_feat = es['log']['value']
+    es['log'].df['product_id'] = (['coke zero'] * 3 + ['car'] * 2 +
+                                  ['toothpaste'] * 3 + ['brown bag'] * 2 +
+                                  ['shoes'] +
+                                  [np.nan] * 4 +
+                                  ['coke_zero'] * 2)
+    es['log'].df['value'][16] = 10
+    cum_sum = ft.Feature(log_value_feat, groupby=es['log']['product_id'], primitive=CumSumNumpy)
+    features = [cum_sum]
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(17))
+    cvalues = df[cum_sum.get_name()].values
+    assert len(cvalues) == 17
+    cum_sum_values = [0, 5, 15,
+                      15, 35,
+                      0, 1, 3,
+                      3, 3,
+                      0,
+                      np.nan, np.nan, np.nan, np.nan, np.nan, 10]
+
+    assert len(cvalues) == len(cum_sum_values)
     for i, v in enumerate(cum_sum_values):
         if np.isnan(v):
             assert (np.isnan(cvalues[i]))
