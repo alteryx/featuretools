@@ -764,8 +764,8 @@ def test_checks_primitives_correct_type(es):
                              trans_primitives=[])
 
     error_text = "Primitive <class \\'featuretools\\.primitives\\.standard\\."\
-                 "aggregation_primitives\\.Last\\'> in trans_primitives is "\
-                 "not a transform primitive"
+                 "aggregation_primitives\\.Last\\'> in trans_primitives or "\
+                 "groupby_primitives is not a transform primitive"
     with pytest.raises(ValueError, match=error_text):
         DeepFeatureSynthesis(target_entity_id="sessions",
                              entityset=es,

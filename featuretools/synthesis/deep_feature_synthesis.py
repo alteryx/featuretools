@@ -158,7 +158,7 @@ class DeepFeatureSynthesis(object):
                                 ftypes.NumWords, ftypes.NumCharacters]  # ftypes.TimeSince
         self.trans_primitives = []
         for t in trans_primitives:
-            t = check_trans_primitive(t, "trans_primitives")
+            t = check_trans_primitive(t)
             self.trans_primitives.append(t)
 
         if where_primitives is None:
@@ -179,7 +179,7 @@ class DeepFeatureSynthesis(object):
             groupby_primitives = []
         self.groupby_primitives = []
         for p in groupby_primitives:
-            p = check_trans_primitive(p, "groupby_primitives")
+            p = check_trans_primitive(p)
             self.groupby_primitives.append(p)
 
         self.seed_features = seed_features or []
@@ -785,7 +785,7 @@ def handle_primitive(primitive):
     return primitive
 
 
-def check_trans_primitive(primitive, list_name):
+def check_trans_primitive(primitive):
     trans_prim_dict = ftypes.get_transform_primitives()
 
     if is_string(primitive):
@@ -796,6 +796,7 @@ def check_trans_primitive(primitive, list_name):
         primitive = trans_prim_dict[primitive.lower()]
     primitive = handle_primitive(primitive)
     if not isinstance(primitive, TransformPrimitive):
-        raise ValueError("Primitive {} in {} is not a transform "
-                         "primitive".format(type(primitive), list_name))
+        raise ValueError("Primitive {} in trans_primitives or "
+                         "groupby_primitives is not a transform "
+                         "primitive".format(type(primitive)))
     return primitive
