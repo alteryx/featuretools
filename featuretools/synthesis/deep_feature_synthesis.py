@@ -508,8 +508,12 @@ class DeepFeatureSynthesis(object):
                                              new_feature=new_f)
 
         for groupby_prim in self.groupby_primitives:
-            # if multiple input_types, only use first one for DFS
+            # Normally input_types is a list of what inputs can be supplied to
+            # the primitive function.  Here we temporarily add `Id` as an extra
+            # item in input_types so that the matching function will also look
+            # for feature columns to group by.
             input_types = groupby_prim.input_types[:]
+            # if multiple input_types, only use first one for DFS
             if type(input_types[0]) == list:
                 input_types = input_types[0]
             input_types.append(Id)
