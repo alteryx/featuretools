@@ -16,3 +16,8 @@ from . import feature_base
 from .feature_base import AggregationFeature, DirectFeature, Feature, FeatureBase, IdentityFeature, TransformFeature
 
 __version__ = '0.6.1'
+
+import pkg_resources
+for entry_point in pkg_resources.iter_entry_points('featuretools_init'):
+    module = entry_point.load()
+    module.initialize()
