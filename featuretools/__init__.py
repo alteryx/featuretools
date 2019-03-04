@@ -18,6 +18,6 @@ from .feature_base import AggregationFeature, DirectFeature, Feature, FeatureBas
 __version__ = '0.6.1'
 
 import pkg_resources
-for entry_point in pkg_resources.iter_entry_points('featuretools_init'):
+for entry_point in pkg_resources.iter_entry_points('featuretools_initialize'):
     module = entry_point.load()
     module.initialize()
