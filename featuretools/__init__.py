@@ -20,4 +20,5 @@ __version__ = '0.6.1'
 import pkg_resources
 for entry_point in pkg_resources.iter_entry_points('featuretools_initialize'):
     module = entry_point.load()
-    module.initialize()
+    if hasattr(module, 'initialize'):
+        module.initialize()
