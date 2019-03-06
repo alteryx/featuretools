@@ -6,5 +6,4 @@ for entry_point in pkg_resources.iter_entry_points('featuretools_primitives'):
     loaded = entry_point.load()
     if hasattr(loaded, 'primitives'):
         for name, obj in loaded.primitives.items():
-            print(name,obj)
             globals()[name] = obj

@@ -237,12 +237,6 @@ def test_extract_non_archive_errors(bad_primitives_files_dir):
 
 
 def test_install_packages_from_requirements(primitives_to_install_dir):
-    def pip_freeze():
-        output = subprocess.check_output(['pip', 'freeze'])
-        if not isinstance(output, str):
-            output = output.decode()
-        return output
-
     # make sure dummy module isn't installed
     if "featuretools-pip-tester" in pip_freeze():
         subprocess.check_call(["pip", "uninstall", "-y", "featuretools-pip-tester"])
@@ -305,3 +299,10 @@ def test_install_packages_from_requirements(primitives_to_install_dir):
 
     assert "featuretools-pip-tester" in pip_freeze()
     subprocess.check_call(["pip", "uninstall", "-y", "featuretools-pip-tester"])
+
+
+def pip_freeze():
+    output = subprocess.check_output(['pip', 'freeze'])
+    if not isinstance(output, str):
+        output = output.decode()
+    return output
