@@ -12,6 +12,7 @@ from featuretools.primitives import (
     CumMean,
     CumMin,
     CumSum,
+    Last,
     TransformPrimitive
 )
 from featuretools.variable_types import Numeric
@@ -306,3 +307,16 @@ def test_rename(es):
     assert all([x.generate_name() == y.generate_name() for x, y
                 in zip(cum_count.base_features, copy_feat.base_features)])
     assert cum_count.entity == copy_feat.entity
+
+
+def test_groupby_no_data(es):
+    cum_count = ft.Feature(es['log']['session_id'],
+                           groupby=es['log']['session_id'],
+                           primitive=CumCount)
+    last_feat = ft.Feature(cum_count, parent_entity=es['customers'], primitive=Last)
+    df = ft.calculate_feature_matrix(entityset=es,
+                                     features=[last_feat],
+                                     cutoff_time=pd.Timestamp("2011-04-08"))
+    cvalues = df[last_feat.get_name()].values
+    assert len(cvalues) == 3
+    assert all([pd.isnull(value) for value in cvalues])
