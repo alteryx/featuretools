@@ -464,8 +464,6 @@ class TransformFeature(FeatureBase):
 
 class GroupByTransformFeature(FeatureBase):
     def __init__(self, base_features, primitive, groupby):
-        # Any edits made to this method should also be made to the
-        # new_class_init method in make_trans_primitive
         if hasattr(base_features, '__iter__'):
             base_features = [_check_feature(bf) for bf in base_features]
             msg = "all base features must share the same entity"
@@ -492,8 +490,8 @@ class GroupByTransformFeature(FeatureBase):
 
     def generate_name(self):
         base_names = [bf.get_name() for bf in self.base_features]
-        # groupby_name = self.groupby.get_name()
-        return self.primitive.generate_name(base_names, groupby=self.groupby)
+        _name = self.primitive.generate_name(base_names)
+        return "{} by {}".format(_name, self.groupby.get_name())
 
 
 class Feature(object):

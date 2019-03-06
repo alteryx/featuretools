@@ -227,6 +227,7 @@ def test_cum_sum_numpy_group_on_nan(es):
                                   ['coke_zero'] * 2)
     es['log'].df['value'][16] = 10
     cum_sum = ft.Feature(log_value_feat, groupby=es['log']['product_id'], primitive=CumSumNumpy)
+    assert cum_sum.get_name() == "CUM_SUM(value) by product_id"
     features = [cum_sum]
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(17))
     cvalues = df[cum_sum.get_name()].values
