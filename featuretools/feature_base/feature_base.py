@@ -14,6 +14,7 @@ from featuretools.variable_types import (
     Categorical,
     Datetime,
     DatetimeTimeIndex,
+    Discrete,
     Id,
     Numeric,
     NumericTimeIndex,
@@ -466,7 +467,7 @@ class GroupByTransformFeature(TransformFeature):
     def __init__(self, base_features, primitive, groupby):
         if not isinstance(groupby, FeatureBase):
             groupby = IdentityFeature(groupby)
-        assert groupby.variable_type == Id
+        assert issubclass(groupby.variable_type, Discrete)
         self.groupby = groupby
 
         super(GroupByTransformFeature, self).__init__(base_features,
