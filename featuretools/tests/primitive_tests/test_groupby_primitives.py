@@ -149,13 +149,13 @@ class TestCumMin:
 
 def test_cum_sum(es):
     log_value_feat = es['log']['value']
-
-    cum_sum = ft.Feature(log_value_feat, groupby=es['log']['session_id'], primitive=CumSum)
+    dfeat = ft.Feature(es['sessions']['device_type'], entity=es['log'])
+    cum_sum = ft.Feature(log_value_feat, groupby=dfeat, primitive=CumSum)
     features = [cum_sum]
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
     cvalues = df[cum_sum.get_name()].values
     assert len(cvalues) == 15
-    cum_sum_values = [0, 5, 15, 30, 50, 0, 1, 3, 6, 0, 0, 5, 0, 7, 21]
+    cum_sum_values = [0, 5, 15, 30, 50, 0, 1, 3, 6, 6, 50, 55, 55, 62, 76]
     for i, v in enumerate(cum_sum_values):
         assert v == cvalues[i]
 

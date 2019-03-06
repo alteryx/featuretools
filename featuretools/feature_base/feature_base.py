@@ -469,17 +469,17 @@ class GroupByTransformFeature(TransformFeature):
             groupby = IdentityFeature(groupby)
         assert issubclass(groupby.variable_type, Discrete)
         self.groupby = groupby
-
         super(GroupByTransformFeature, self).__init__(base_features,
                                                       primitive=primitive)
+        self.base_features.append(groupby)
 
     def copy(self):
-        return GroupByTransformFeature(self.base_features,
+        return GroupByTransformFeature(self.base_features[:-1],
                                        self.primitive,
                                        self.groupby)
 
     def generate_name(self):
-        base_names = [bf.get_name() for bf in self.base_features]
+        base_names = [bf.get_name() for bf in self.base_features[:-1]]
         _name = self.primitive.generate_name(base_names)
         return "{} by {}".format(_name, self.groupby.get_name())
 

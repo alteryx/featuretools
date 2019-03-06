@@ -347,12 +347,12 @@ class PandasBackend(ComputationalBackend):
 
             groupby = f.groupby.get_name()
             column_names = [bf.get_name() for bf in f.base_features]
-            frame_data = frame[set(column_names + [groupby])]
+            frame_data = frame[set(column_names)]
             feature_func = f.get_function()
 
             group_values = []
             for index, group in frame_data.groupby(groupby):
-                variable_data = [group[name] for name in column_names]
+                variable_data = [group[name] for name in column_names[:-1]]
                 # apply the function to the relevant dataframe slice and add the
                 # feature row to the results dataframe.
                 if f.primitive.uses_calc_time:
