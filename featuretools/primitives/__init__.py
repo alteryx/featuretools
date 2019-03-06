@@ -3,6 +3,8 @@ from .api import *
 
 import pkg_resources
 for entry_point in pkg_resources.iter_entry_points('featuretools_primitives'):
-    if hasattr(entry_point, 'primitives'):
-        for name, obj in entry_point.load().primitives.items():
+    loaded = entry_point.load()
+    if hasattr(loaded, 'primitives'):
+        for name, obj in loaded.primitives.items():
+            print(name,obj)
             globals()[name] = obj
