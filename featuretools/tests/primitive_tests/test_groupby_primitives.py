@@ -282,11 +282,27 @@ def test_cum_mean(es):
 
 
 def test_cum_count(es):
-    cum_count = ft.Feature(es['log']['session_id'], groupby=es['log']['session_id'], primitive=CumCount)
+    cum_count = ft.Feature(es['log']['session_id'],
+                           groupby=es['log']['session_id'],
+                           primitive=CumCount)
     features = [cum_count]
-    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
+    df = ft.calculate_feature_matrix(entityset=es,
+                                     features=features,
+                                     instance_ids=range(15))
     cvalues = df[cum_count.get_name()].values
     assert len(cvalues) == 15
     cum_count_values = [1, 2, 3, 4, 5, 1, 2, 3, 4, 1, 1, 2, 1, 2, 3]
     for i, v in enumerate(cum_count_values):
         assert v == cvalues[i]
+
+
+def test_rename(es):
+    cum_count = ft.Feature(es['log']['session_id'],
+                           groupby=es['log']['session_id'],
+                           primitive=CumCount)
+    copy_feat = cum_count.rename("rename_test")
+    assert cum_count.hash() != copy_feat.hash()
+    assert cum_count.get_name() != copy_feat.get_name()
+    assert all([x.generate_name() == y.generate_name() for x, y
+                in zip(cum_count.base_features, copy_feat.base_features)])
+    assert cum_count.entity == copy_feat.entity
