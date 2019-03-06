@@ -529,7 +529,6 @@ class DeepFeatureSynthesis(object):
                     new_f = GroupByTransformFeature(matching_input[:-1],
                                                     groupby=matching_input[-1],
                                                     primitive=groupby_prim)
-                    print(new_f)
                     self._handle_new_feature(all_features=all_features,
                                              new_feature=new_f)
 
