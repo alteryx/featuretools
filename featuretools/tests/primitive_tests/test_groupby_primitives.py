@@ -6,7 +6,14 @@ from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
 from featuretools.computational_backends import PandasBackend
-from featuretools.primitives import CumCount, CumMax, CumMean, CumMin, CumSum, TransformPrimitive
+from featuretools.primitives import (
+    CumCount,
+    CumMax,
+    CumMean,
+    CumMin,
+    CumSum,
+    TransformPrimitive
+)
 from featuretools.variable_types import Numeric
 
 
