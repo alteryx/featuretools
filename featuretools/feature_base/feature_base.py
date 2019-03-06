@@ -462,25 +462,14 @@ class TransformFeature(FeatureBase):
         return self.primitive.generate_name(base_feature_names=[bf.get_name() for bf in self.base_features])
 
 
-class GroupByTransformFeature(FeatureBase):
+class GroupByTransformFeature(TransformFeature):
     def __init__(self, base_features, primitive, groupby):
-        if hasattr(base_features, '__iter__'):
-            base_features = [_check_feature(bf) for bf in base_features]
-            msg = "all base features must share the same entity"
-            assert len(set([bf.entity for bf in base_features])) == 1, msg
-        else:
-            base_features = [_check_feature(base_features)]
-
-        # R TODO handle stacking on sub-features
-        assert all(bf.number_output_features == 1 for bf in base_features)
-
         if not isinstance(groupby, FeatureBase):
             groupby = IdentityFeature(groupby)
         assert groupby.variable_type == Id
         self.groupby = groupby
 
-        super(GroupByTransformFeature, self).__init__(base_features[0].entity,
-                                                      base_features,
+        super(GroupByTransformFeature, self).__init__(base_features,
                                                       primitive=primitive)
 
     def copy(self):
