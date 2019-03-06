@@ -230,8 +230,10 @@ class SubtractNumeric(TransformPrimitive):
     name = "subtract_numeric"
     input_types = [Numeric, Numeric]
     return_type = Numeric
-    commutative = True
 
+    def __init__(self, commutative=True):
+        self.commutative = commutative
+        
     def get_function(self):
         return np.subtract
 
@@ -308,6 +310,9 @@ class DivideNumeric(TransformPrimitive):
     input_types = [Numeric, Numeric]
     return_type = Numeric
 
+    def __init__(self, commutative=False):
+        self.commutative = commutative
+        
     def get_function(self):
         return np.divide
 
