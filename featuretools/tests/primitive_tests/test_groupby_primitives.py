@@ -13,9 +13,10 @@ from featuretools.primitives import (
     CumMin,
     CumSum,
     Last,
+    TimeSince,
     TransformPrimitive
 )
-from featuretools.variable_types import Numeric
+from featuretools.variable_types import Numeric, DatetimeTimeIndex
 
 
 @pytest.fixture
@@ -320,3 +321,33 @@ def test_groupby_no_data(es):
     cvalues = df[last_feat.get_name()].values
     assert len(cvalues) == 3
     assert all([pd.isnull(value) for value in cvalues])
+
+
+def test_groupby_uses_calc_time(es):
+    def projected_amount_left(amount, timestamp, time=None):
+        # cumulative sum of amout, with timedelta *  constant subtracted
+        delta = time - timestamp
+        delta_seconds = delta / np.timedelta64(1, 's')
+        return amount.cumsum() - (delta_seconds)
+
+    class ProjectedAmountRemaining(TransformPrimitive):
+        name = "projected_amount_remaining"
+        uses_calc_time = True
+        input_types = [Numeric, DatetimeTimeIndex]
+        return_type = Numeric
+        uses_full_entity = True
+
+        def get_function(self):
+            return projected_amount_left
+
+    time_since_product = ft.Feature([es['log']['value'], es['log']['datetime']],
+                                    groupby=es['log']['product_id'],
+                                    primitive=ProjectedAmountRemaining)
+    df = ft.calculate_feature_matrix(entityset=es,
+                                     features=[time_since_product],
+                                     cutoff_time=pd.Timestamp("2011-04-10 11:10:30"))
+    answers = [-88830, -88819, -88803, -88797, -88771, -88770, -88760, -88749,
+               -88740, -88227, -1830, -1809, -1750, -1740, -1723, np.nan, np.nan]
+
+    for x, y in zip(df[time_since_product.get_name()], answers):
+        assert ((pd.isnull(x) and pd.isnull(y)) or x == y)
