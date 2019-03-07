@@ -6,3 +6,4 @@ pytest-cov==2.6.1
 fastparquet>=0.1.6
 graphviz>=0.8.4
 s3fs>=0.1.5
+./featuretools/tests/entry_point_tests/featuretools_plugin_tester

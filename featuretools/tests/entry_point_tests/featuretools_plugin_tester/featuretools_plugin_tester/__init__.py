@@ -1,3 +1,3 @@
-from .custom_min import CustomMin
+from .custom_min import CustomMinPlusOne
 
-primitives = {'CustomMin': CustomMin}
+primitives = {'CustomMinPlusOne': CustomMinPlusOne}
