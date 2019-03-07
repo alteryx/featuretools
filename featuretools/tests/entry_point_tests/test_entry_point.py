@@ -1,5 +1,5 @@
 import os
-import subprocess
+
 import pytest
 
 
@@ -13,26 +13,26 @@ def plugin_to_install_dir(this_dir):
     return os.path.join(this_dir, "featuretools_plugin_tester")
 
 
-def install_and_import(package_dir, package_name):
-    import importlib
-    try:
-        importlib.import_module(package_name)
-    except ImportError:
-        from pip._internal import main
-        main(['install', package_dir])
-    finally:
-        globals()[package_name] = importlib.import_module(package_name)
+# def install_and_import(package_dir, package_name):
+#     import importlib
+#     try:
+#         importlib.import_module(package_name)
+#     except ImportError:
+#         from pip._internal import main
+#         main(['install', package_dir])
+#     finally:
+#         globals()[package_name] = importlib.import_module(package_name)
 
 
-def uninstall(package_name):
-    import importlib
-    try:
-        from pip._internal import main
-        importlib.import_module(package_name)
-        main(["uninstall",  "-y", package_name])
-    except ImportError:
-        pass
-    return
+# def uninstall(package_name):
+#     import importlib
+#     try:
+#         from pip._internal import main
+#         importlib.import_module(package_name)
+#         main(["uninstall",  "-y", package_name])
+#     except ImportError:
+#         pass
+#     return
 
 
 # TODO : Entry point Test
@@ -56,4 +56,3 @@ def uninstall(package_name):
 #     from featuretools.primitives import CustomMin
 #     uninstall('featuretools_plugin_tester')
 #     subprocess.check_call(["pip", "uninstall", "-y", "featuretools-plugin-tester"])
-
