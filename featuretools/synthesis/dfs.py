@@ -171,6 +171,12 @@ def dfs(entities=None,
                            target_entity="transactions",
                            features_only=True)
     '''
+    import pkg_resources
+    for entry_point in pkg_resources.iter_entry_points('featuretools_dfs'):
+        module = entry_point.load()
+        if hasattr(module, 'initialize'):
+            module.initialize()
+
     if not isinstance(entityset, EntitySet):
         entityset = EntitySet("dfs", entities, relationships)
 
