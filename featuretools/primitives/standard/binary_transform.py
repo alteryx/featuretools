@@ -227,6 +227,12 @@ class AddNumericScalar(TransformPrimitive):
 
 
 class SubtractNumeric(TransformPrimitive):
+    """Subtracts one feature from another and returns the difference
+    Args:
+        commutative (bool): determines if Deep Feature Synthesis should generate
+            both a - b and b - a, or just one.  If True, there is no
+            guarantee which of the two will be generated. Defaults to True.
+    """
     name = "subtract_numeric"
     input_types = [Numeric, Numeric]
     return_type = Numeric
@@ -306,6 +312,12 @@ class MultiplyNumericScalar(TransformPrimitive):
 
 
 class DivideNumeric(TransformPrimitive):
+    """Divides one feature to another
+    Args:
+        commutative (bool): determines if Deep Feature Synthesis should generate
+            both a / b and b / a, or just one. If True, there is no
+            guarantee which of the two will be generated. Defaults to False.
+    """
     name = "divide_numeric"
     input_types = [Numeric, Numeric]
     return_type = Numeric
