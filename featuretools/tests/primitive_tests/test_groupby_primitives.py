@@ -13,10 +13,9 @@ from featuretools.primitives import (
     CumMin,
     CumSum,
     Last,
-    TimeSince,
     TransformPrimitive
 )
-from featuretools.variable_types import Numeric, DatetimeTimeIndex
+from featuretools.variable_types import DatetimeTimeIndex, Numeric
 
 
 @pytest.fixture
