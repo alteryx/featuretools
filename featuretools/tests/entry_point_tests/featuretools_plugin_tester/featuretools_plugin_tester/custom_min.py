@@ -1,6 +1,7 @@
-from featuretools.variable_types import Numeric
-from featuretools.primitives.base import AggregationPrimitive
 import numpy as np
+
+from featuretools.primitives.base import AggregationPrimitive
+from featuretools.variable_types import Numeric
 
 
 class CustomMin(AggregationPrimitive):

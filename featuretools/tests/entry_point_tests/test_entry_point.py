@@ -1,15 +1,13 @@
 import os
 import subprocess
-
 import pytest
-from ..primitive_tests.test_install_primitives import pip_freeze, remove_test_files
-
-import featuretools
 
 try:
     from builtins import reload
 except Exception:
     from importlib import reload
+
+from ..primitive_tests.test_install_primitives import pip_freeze
 
 
 @pytest.fixture(scope='module')
@@ -23,26 +21,26 @@ def plugin_to_install_dir(this_dir):
 
 
 def test_install_packages_from_requirements(plugin_to_install_dir):
-
     if 'featuretools-plugin-tester' in pip_freeze():
-        subprocess.check_call(["pip", "uninstall", "-y",
-                               'featuretools-plugin-tester'])
+        subprocess.check_call(["pip", "uninstall", "-y", "featuretools-plugin-tester"])
     assert 'featuretools-plugin-tester' not in pip_freeze()
 
-    reload(featuretools.primitives.installed)
+    # with pytest.raises(ImportError):
+    #     from featuretools.primitives import CustomMin
 
-    # plugin has primitive we want
-    text = "cannot import name 'CustomMin'"
-    with pytest.raises(ImportError, match=text):
-        from featuretools.primitives import CustomMin
-
-    # install pip package
-    subprocess.call(["pip", "install", plugin_to_install_dir + '/'])
+    # Install plugin with entry point
+    subprocess.check_call(["pip", "install", plugin_to_install_dir + '/'])
     assert 'featuretools-plugin-tester' in pip_freeze()
-    print(pip_freeze())
-    reload(featuretools.primitives.installed)
-    # Now plugin with primitive should work
-    from featuretools.primitives import CustomMin
+    # reload module
+    import featuretools
+    reload(featuretools.primitives)
+    import featuretools_plugin_tester
+    reload(featuretools)
+    reload(featuretools_plugin_tester)
 
-    assert 'featuretools-plugin-tester' in pip_freeze()
-    subprocess.check_call(["pip", "uninstall", "-y", 'featuretools-plugin-tester'])
+    # # Now plugin with primitive should work
+    # from featuretools.primitives import CustomMin
+
+    subprocess.check_call(["pip", "uninstall", "-y", "featuretools-plugin-tester"])
+    assert 'featuretools-plugin-tester' not in pip_freeze()
+
