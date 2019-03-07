@@ -1,4 +1,5 @@
 import pandas as pd
+import pkg_resources
 
 from .deep_feature_synthesis import DeepFeatureSynthesis
 
@@ -171,14 +172,40 @@ def dfs(entities=None,
                            target_entity="transactions",
                            features_only=True)
     '''
-    import pkg_resources
-    for entry_point in pkg_resources.iter_entry_points('featuretools_dfs'):
-        module = entry_point.load()
-        if hasattr(module, 'initialize'):
-            module.initialize()
-
     if not isinstance(entityset, EntitySet):
         entityset = EntitySet("dfs", entities, relationships)
+
+    for entry_point in pkg_resources.iter_entry_points('featuretools_dfs'):
+        module = entry_point.load()
+        # TODO: change name of module function
+        if hasattr(module, 'dfs'):
+            module.dfs(entities=None,
+                       relationships=None,
+                       entityset=None,
+                       target_entity=None,
+                       cutoff_time=None,
+                       instance_ids=None,
+                       agg_primitives=None,
+                       trans_primitives=None,
+                       allowed_paths=None,
+                       max_depth=2,
+                       ignore_entities=None,
+                       ignore_variables=None,
+                       seed_features=None,
+                       drop_contains=None,
+                       drop_exact=None,
+                       where_primitives=None,
+                       max_features=-1,
+                       cutoff_time_in_index=False,
+                       save_progress=None,
+                       features_only=False,
+                       training_window=None,
+                       approximate=None,
+                       chunk_size=None,
+                       n_jobs=1,
+                       dask_kwargs=None,
+                       verbose=False,
+                       return_variable_types=None)
 
     dfs_object = DeepFeatureSynthesis(target_entity, entityset,
                                       agg_primitives=agg_primitives,
