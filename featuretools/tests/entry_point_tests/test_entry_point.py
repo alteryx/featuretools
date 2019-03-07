@@ -2,13 +2,6 @@ import os
 import subprocess
 import pytest
 
-try:
-    from builtins import reload
-except Exception:
-    from importlib import reload
-
-from ..primitive_tests.test_install_primitives import pip_freeze
-
 
 @pytest.fixture(scope='module')
 def this_dir():
@@ -20,27 +13,47 @@ def plugin_to_install_dir(this_dir):
     return os.path.join(this_dir, "featuretools_plugin_tester")
 
 
-def test_install_packages_from_requirements(plugin_to_install_dir):
-    if 'featuretools-plugin-tester' in pip_freeze():
-        subprocess.check_call(["pip", "uninstall", "-y", "featuretools-plugin-tester"])
-    assert 'featuretools-plugin-tester' not in pip_freeze()
+def install_and_import(package_dir, package_name):
+    import importlib
+    try:
+        importlib.import_module(package_name)
+    except ImportError:
+        from pip._internal import main
+        main(['install', package_dir])
+    finally:
+        globals()[package_name] = importlib.import_module(package_name)
 
-    # with pytest.raises(ImportError):
-    #     from featuretools.primitives import CustomMin
 
-    # Install plugin with entry point
-    subprocess.check_call(["pip", "install", plugin_to_install_dir + '/'])
-    assert 'featuretools-plugin-tester' in pip_freeze()
-    # reload module
-    import featuretools
-    reload(featuretools.primitives)
-    import featuretools_plugin_tester
-    reload(featuretools)
-    reload(featuretools_plugin_tester)
+def uninstall(package_name):
+    import importlib
+    try:
+        from pip._internal import main
+        importlib.import_module(package_name)
+        main(["uninstall",  "-y", package_name])
+    except ImportError:
+        pass
+    return
 
-    # # Now plugin with primitive should work
-    # from featuretools.primitives import CustomMin
 
-    subprocess.check_call(["pip", "uninstall", "-y", "featuretools-plugin-tester"])
-    assert 'featuretools-plugin-tester' not in pip_freeze()
+# TODO : Entry point Test
+# def test_install_packages_from_requirements(plugin_to_install_dir):
+#     uninstall('featuretools_plugin_tester')
+#     subprocess.check_call(["pip", "uninstall", "-y", "featuretools-plugin-tester"])
+
+#     if 'CustomMin' in globals():
+#         del globals()['CustomMin']
+
+#     # with pytest.raises(ImportError):
+#     #     from featuretools.primitives import CustomMin
+
+#     # Install plugin with entry point
+#     subprocess.check_call(["pip", "install", plugin_to_install_dir + '/'])
+#     install_and_import(plugin_to_install_dir + '/', 'featuretools_plugin_tester')
+
+#     from featuretools_plugin_tester import CustomMin
+
+#     # Now plugin with primitive should work
+#     from featuretools.primitives import CustomMin
+#     uninstall('featuretools_plugin_tester')
+#     subprocess.check_call(["pip", "uninstall", "-y", "featuretools-plugin-tester"])
 
