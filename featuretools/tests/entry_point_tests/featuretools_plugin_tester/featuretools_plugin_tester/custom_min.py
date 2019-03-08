@@ -1,11 +1,12 @@
-from featuretools.variable_types import Numeric
-from featuretools.primitives.base import AggregationPrimitive
 import numpy as np
 
+from featuretools.primitives.base import AggregationPrimitive
+from featuretools.variable_types import Numeric
 
-class CustomMin(AggregationPrimitive):
-    """Finds the mininium non-null value of a numeric feature."""
-    name = "custom_min"
+
+class CustomMinPlusOne(AggregationPrimitive):
+    """Finds the mininium non-null value of a numeric feature plus one."""
+    name = "custom_min_plus_one"
     input_types = [Numeric]
     return_type = Numeric
     stack_on_self = False
