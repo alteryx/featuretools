@@ -23,5 +23,5 @@ for entry_point in pkg_resources.iter_entry_points('featuretools_initialize'):
         module = entry_point.load()
         if hasattr(module, 'initialize'):
             module.initialize()
-    except:
+    except Exception:
         pass

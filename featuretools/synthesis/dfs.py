@@ -204,7 +204,7 @@ def dfs(entities=None,
                            n_jobs=n_jobs,
                            verbose=verbose,
                            return_variable_types=return_variable_types)
-        except:
+        except Exception:
             pass
 
     dfs_object = DeepFeatureSynthesis(target_entity, entityset,

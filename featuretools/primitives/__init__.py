@@ -8,5 +8,5 @@ for entry_point in pkg_resources.iter_entry_points('featuretools_primitives'):
         if hasattr(loaded, 'primitives'):
             for name, obj in loaded.primitives.items():
                 globals()[name] = obj
-    except:
+    except Exception:
         pass
