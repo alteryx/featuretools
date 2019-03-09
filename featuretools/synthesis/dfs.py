@@ -176,36 +176,36 @@ def dfs(entities=None,
         entityset = EntitySet("dfs", entities, relationships)
 
     for entry_point in pkg_resources.iter_entry_points('featuretools_dfs'):
-        module = entry_point.load()
-        # TODO: change name of module function
-        if hasattr(module, 'dfs'):
-            module.dfs(entities=None,
-                       relationships=None,
-                       entityset=None,
-                       target_entity=None,
-                       cutoff_time=None,
-                       instance_ids=None,
-                       agg_primitives=None,
-                       trans_primitives=None,
-                       allowed_paths=None,
-                       max_depth=2,
-                       ignore_entities=None,
-                       ignore_variables=None,
-                       seed_features=None,
-                       drop_contains=None,
-                       drop_exact=None,
-                       where_primitives=None,
-                       max_features=-1,
-                       cutoff_time_in_index=False,
-                       save_progress=None,
-                       features_only=False,
-                       training_window=None,
-                       approximate=None,
-                       chunk_size=None,
-                       n_jobs=1,
-                       dask_kwargs=None,
-                       verbose=False,
-                       return_variable_types=None)
+        try:
+            loaded = entry_point.load()
+            # TODO: change name of module function
+            if hasattr(loaded, 'dfs'):
+                loaded.dfs(entityset=entityset,
+                           target_entity=target_entity,
+                           cutoff_time=cutoff_time,
+                           instance_ids=instance_ids,
+                           agg_primitives=agg_primitives,
+                           trans_primitives=trans_primitives,
+                           allowed_paths=allowed_paths,
+                           max_depth=max_depth,
+                           ignore_entities=ignore_entities,
+                           ignore_variables=ignore_variables,
+                           seed_features=seed_features,
+                           drop_contains=drop_contains,
+                           drop_exact=drop_exact,
+                           where_primitives=where_primitives,
+                           max_features=max_features,
+                           cutoff_time_in_index=cutoff_time_in_index,
+                           save_progress=save_progress,
+                           features_only=features_only,
+                           training_window=training_window,
+                           approximate=approximate,
+                           chunk_size=chunk_size,
+                           n_jobs=n_jobs,
+                           verbose=verbose,
+                           return_variable_types=return_variable_types)
+        except:
+            pass
 
     dfs_object = DeepFeatureSynthesis(target_entity, entityset,
                                       agg_primitives=agg_primitives,
