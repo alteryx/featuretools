@@ -11,8 +11,7 @@ jobs:
       - run: |
           source venv/bin/activate
           python setup.py sdist
-          FEATURETOOLS_VERSION=$(python setup.py --version)
-          tar -zxvf "dist/featuretools-${FEATURETOOLS_VERSION}.tar.gz"
+          tar -zxvf "dist/featuretools-$(python setup.py --version).tar.gz"
       - run: |
           source venv/bin/activate
           FEATURETOOLS_VERSION=$(python setup.py --version)
@@ -22,8 +21,7 @@ jobs:
       - run: source venv/bin/activate && make lint
       - run: |
           source venv/bin/activate
-          FEATURETOOLS_VERSION=$(python setup.py --version)
-          cd "featuretools-${FEATURETOOLS_VERSION}/"
+          cd "featuretools-$(python setup.py --version)/"
           pytest
 
   "python-3.5":
@@ -34,9 +32,21 @@ jobs:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
       - run: virtualenv venv
-      - run: source venv/bin/activate && make installdeps
+      - run: |
+          source venv/bin/activate
+          python setup.py sdist
+          tar -zxvf "dist/featuretools-$(python setup.py --version).tar.gz"
+      - run: |
+          source venv/bin/activate
+          FEATURETOOLS_VERSION=$(python setup.py --version)
+          pip install -e "featuretools-${FEATURETOOLS_VERSION}/"
+          pip install -r "featuretools-${FEATURETOOLS_VERSION}/test-requirements.txt"
+          pip install -r dev-requirements.txt
       - run: source venv/bin/activate && make lint
-      - run: source venv/bin/activate && make test
+      - run: |
+          source venv/bin/activate
+          cd "featuretools-$(python setup.py --version)/"
+          pytest
 
   "python-3.6":
     working_directory: ~/featuretools
@@ -46,13 +56,26 @@ jobs:
       - run: sudo apt update && sudo apt install -y graphviz pandoc
       - checkout
       - run: virtualenv venv
-      - run: source venv/bin/activate && make installdeps
+      - run: |
+          source venv/bin/activate
+          python setup.py sdist
+          tar -zxvf "dist/featuretools-$(python setup.py --version).tar.gz"
+      - run: |
+          source venv/bin/activate
+          FEATURETOOLS_VERSION=$(python setup.py --version)
+          pip install -e "featuretools-${FEATURETOOLS_VERSION}/"
+          pip install -r "featuretools-${FEATURETOOLS_VERSION}/test-requirements.txt"
+          pip install -r dev-requirements.txt
       - run: source venv/bin/activate && make lint
       - run: source venv/bin/activate && make -C docs/ -e "SPHINXOPTS=-W" clean html
       - run: |
           source venv/bin/activate
+          FEATURETOOLS_VERSION=$(python setup.py --version)
+          cp .coveragerc "featuretools-${FEATURETOOLS_VERSION}/"
+          cd "featuretools-${FEATURETOOLS_VERSION}/"
           coverage erase
-          make testcoverage && codecov
+          pytest featuretools/tests --cov=featuretools
+          codecov
 
   "python-3.7":
     working_directory: ~/featuretools
@@ -62,9 +85,21 @@ jobs:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
       - run: virtualenv venv
-      - run: source venv/bin/activate && make installdeps
+      - run: |
+          source venv/bin/activate
+          python setup.py sdist
+          tar -zxvf "dist/featuretools-$(python setup.py --version).tar.gz"
+      - run: |
+          source venv/bin/activate
+          FEATURETOOLS_VERSION=$(python setup.py --version)
+          pip install -e "featuretools-${FEATURETOOLS_VERSION}/"
+          pip install -r "featuretools-${FEATURETOOLS_VERSION}/test-requirements.txt"
+          pip install -r dev-requirements.txt
       - run: source venv/bin/activate && make lint
-      - run: source venv/bin/activate && make test
+      - run: |
+          source venv/bin/activate
+          cd "featuretools-$(python setup.py --version)/"
+          pytest
 
 workflows:
   version: 2
