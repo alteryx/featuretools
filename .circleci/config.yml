@@ -16,7 +16,7 @@ jobs:
       - run: |
           source venv/bin/activate
           FEATURETOOLS_VERSION=$(python setup.py --version)
-          pip install "featuretools-${FEATURETOOLS_VERSION}/"
+          pip install -e "featuretools-${FEATURETOOLS_VERSION}/"
           pip install -r "featuretools-${FEATURETOOLS_VERSION}/test-requirements.txt"
           pip install -r dev-requirements.txt
       - run: source venv/bin/activate && make lint
