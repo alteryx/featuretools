@@ -8,9 +8,22 @@ jobs:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
       - run: virtualenv venv
-      - run: source venv/bin/activate && make installdeps
+      - run: |
+          source venv/bin/activate
+          python setup.py sdist
+          FEATURETOOLS_VERSION=$(python setup.py --version)
+          tar -zxvf "dist/featuretools-${FEATURETOOLS_VERSION}.tar.gz"
+      - run: |
+          source venv/bin/activate
+          FEATURETOOLS_VERSION=$(python setup.py --version)
+          pip install "featuretools-${FEATURETOOLS_VERSION}/"
+          pip install -r "featuretools-${FEATURETOOLS_VERSION}/test-requirements.txt"
       - run: source venv/bin/activate && make lint
-      - run: source venv/bin/activate && make test
+      - run: |
+          source venv/bin/activate
+          FEATURETOOLS_VERSION=$(python setup.py --version)
+          cd "featuretools-${FEATURETOOLS_VERSION}/"
+          pytest
 
   "python-3.5":
     working_directory: ~/featuretools
