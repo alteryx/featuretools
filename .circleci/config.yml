@@ -91,10 +91,11 @@ jobs:
       - run: |
           source test_env/bin/activate
           FEATURETOOLS_VERSION=$(python setup.py --version)
-          cp .coveragerc "featuretools-${FEATURETOOLS_VERSION}/"
           cd "featuretools-${FEATURETOOLS_VERSION}/"
           coverage erase
-          pytest featuretools/tests --cov=featuretools
+          pytest featuretools/tests --cov=featuretools --cov-config=../.coveragerc
+          cd ../
+          cp "featuretools-${FEATURETOOLS_VERSION}/.coverage" .coverage
           codecov
 
 workflows:
