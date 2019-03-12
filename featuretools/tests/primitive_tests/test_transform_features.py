@@ -410,9 +410,9 @@ def test_haversine(es):
     df = ft.calculate_feature_matrix(entityset=es, features=features,
                                      instance_ids=range(15))
     values = df[haversine.get_name()].values
-    real = [0, 525.61553231, 1045.91303799, 1555.44088074, 2048.48720809, 0,
-            138.24392278, 276.36144371, 414.22596898, 0, 0, 525.61553231, 0,
-            741.99877882, 1468.3574962]
+    real = [0, 525.318462, 1045.32190304, 1554.56176802, 2047.3294327, 0,
+            138.16578931, 276.20524822, 413.99185444, 0, 0, 525.318462, 0,
+            741.57941183, 1467.52760175]
     assert len(values) == 15
     assert np.allclose(values, real, atol=0.0001)
 
@@ -422,9 +422,9 @@ def test_haversine(es):
     df = ft.calculate_feature_matrix(entityset=es, features=features,
                                      instance_ids=range(15))
     values = df[haversine.get_name()].values
-    real_km = [0, 845.68234976, 1682.80832898, 2502.60659757, 3295.88714394,
-               0, 222.42578133, 444.64819005, 666.46354463, 0, 0,
-               845.68234976, 0, 1193.82939092, 2362.49490616]
+    real_km = [0, 845.41812212, 1682.2825471, 2501.82467535, 3294.85736668,
+               0, 222.35628593, 444.50926278, 666.25531268, 0, 0,
+               845.41812212, 0, 1193.45638714, 2361.75676089]
     assert len(values) == 15
     assert np.allclose(values, real_km, atol=0.0001)
     error_text = "Invalid unit inches provided. Must be one of"
