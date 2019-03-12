@@ -375,9 +375,9 @@ class Haversine(TransformPrimitive):
             dlat = lat2 - lat1
             a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * \
                 np.cos(lat2) * np.sin(dlon / 2.0)**2
-            radius_earth = 3959.87433
+            radius_earth = 3961
             if self.unit == 'kilometers':
-                radius_earth = 6372.8
+                radius_earth = 6373
             distance = radius_earth * 2 * np.arcsin(np.sqrt(a))
             return distance
         return haversine
