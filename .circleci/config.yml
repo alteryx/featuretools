@@ -7,20 +7,20 @@ jobs:
     steps:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
-      - run: virtualenv venv
+      - run: virtualenv test_env && virtualenv lint_env
       - run: |
-          source venv/bin/activate
+          source test_env/bin/activate
           python setup.py sdist
           tar -zxvf "dist/featuretools-$(python setup.py --version).tar.gz"
       - run: |
-          source venv/bin/activate
+          source test_env/bin/activate
           FEATURETOOLS_VERSION=$(python setup.py --version)
           pip install -e "featuretools-${FEATURETOOLS_VERSION}/"
           pip install -r "featuretools-${FEATURETOOLS_VERSION}/test-requirements.txt"
-          pip install -r dev-requirements.txt
-      - run: source venv/bin/activate && make lint
+      - run: source lint_env/bin/activate && make installdeps
+      - run: source lint_env/bin/activate && make lint
       - run: |
-          source venv/bin/activate
+          source test_env/bin/activate
           cd "featuretools-$(python setup.py --version)/"
           pytest
 
