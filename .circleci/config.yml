@@ -90,8 +90,12 @@ jobs:
       - run: source dev_env/bin/activate && make lint
       - run: |
           source test_env/bin/activate
+          FEATURETOOLS_VERSION=$(python setup.py --version)
+          cp .coveragerc "featuretools-${FEATURETOOLS_VERSION}/"
+          cd "featuretools-${FEATURETOOLS_VERSION}/"
           coverage erase
-          pytest featuretools/tests --cov=featuretools && codecov
+          pytest featuretools/tests --cov=featuretools
+          codecov
 
 workflows:
   version: 2
