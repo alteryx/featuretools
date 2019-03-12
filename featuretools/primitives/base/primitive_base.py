@@ -35,14 +35,13 @@ class PrimitiveBase(object):
     # (bool) If True will only make one feature per unique set of base features
     commutative = False
 
-    def __call__(self, data):
-        # We only want to call get_function once, when __call__ is run for the
-        # first time. Since we know that we don't need to call get_function after
-        # that, we can redefine the __call__ function instead of checking for if
-        # it is the first time __call__ has been called
-        method = self.get_function()
-        self.__call__ = lambda data: method(pd.Series(data))
-        return self.__call__(data)
+    def __call__(self, *args, **kwargs):
+        series_args = [pd.Series(arg) for arg in args]
+        try:
+            return self.method(*series_args, **kwargs)
+        except AttributeError:
+            self.method = self.get_function()
+            return self.method(*series_args, **kwargs)
 
     def generate_name(self):
         raise NotImplementedError("Subclass must implement")
