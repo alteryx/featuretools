@@ -410,10 +410,9 @@ def test_haversine(es):
     df = ft.calculate_feature_matrix(entityset=es, features=features,
                                      instance_ids=range(15))
     values = df[haversine.get_name()].values
-    real = [0., 524.15585776, 1043.00845747, 1551.12130243,
-            2042.79840241, 0., 137.86000883, 275.59396684,
-            413.07563177, 0., 0., 524.15585776,
-            0., 739.93819145, 1464.27975511]
+    real = [0, 525.61553231, 1045.91303799, 1555.44088074, 2048.48720809, 0,
+            138.24392278, 276.36144371, 414.22596898, 0, 0, 525.61553231, 0,
+            741.99877882, 1468.3574962]
     assert len(values) == 15
     assert np.allclose(values, real, atol=0.0001)
 
