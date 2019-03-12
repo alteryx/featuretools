@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import os
 
 import numpy as np
+import pandas as pd
 
 from featuretools import config
 
@@ -39,7 +40,8 @@ class PrimitiveBase(object):
         # first time. Since we know that we don't need to call get_function after
         # that, we can redefine the __call__ function instead of checking for if
         # it is the first time __call__ has been called
-        self.__call__ = self.get_function()
+        method = self.get_function()
+        self.__call__ = lambda data: method(pd.Series(data))
         return self.__call__(data)
 
     def generate_name(self):
