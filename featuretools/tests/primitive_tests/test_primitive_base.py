@@ -41,12 +41,9 @@ def test_call_multiple_args():
     class TestPrimitive(PrimitiveBase):
         def get_function(self):
             def test(x, y):
-                print("x", x)
-                print("y", y)
                 return y
             return test
     primitive = TestPrimitive()
-    print("Output", primitive(range(1), range(2)))
     assert pd.Series([0, 1]).equals(primitive(range(1), range(2)))
     assert pd.Series([0, 1]).equals(primitive(range(1), range(2)))
 
