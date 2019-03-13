@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import os
 
 import numpy as np
+import pandas as pd
 
 from featuretools import config
 
@@ -33,6 +34,14 @@ class PrimitiveBase(object):
     base_of_exclude = None
     # (bool) If True will only make one feature per unique set of base features
     commutative = False
+
+    def __call__(self, *args, **kwargs):
+        series_args = [pd.Series(arg) for arg in args]
+        try:
+            return self.method(*series_args, **kwargs)
+        except AttributeError:
+            self.method = self.get_function()
+            return self.method(*series_args, **kwargs)
 
     def generate_name(self):
         raise NotImplementedError("Subclass must implement")
