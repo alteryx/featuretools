@@ -95,6 +95,7 @@ jobs:
       - run: source dev_env/bin/activate && make lint
       - run: |
           source test_env/bin/activate
+          coverage erase
           FEATURETOOLS_VERSION=$(python setup.py --version)
           cd "featuretools-${FEATURETOOLS_VERSION}/"
           coverage erase
