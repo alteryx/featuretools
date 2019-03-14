@@ -51,7 +51,7 @@ jobs:
       - run: source test_env/bin/activate && make circleci-install-packaged-featuretools
       - run: source dev_env/bin/activate && make installdeps
       - run: source dev_env/bin/activate && make lint
-      - run: source test_env/bin/activate && make circeci-run-test-coverage
+      - run: source test_env/bin/activate && make circelci-run-test-coverage
 
 workflows:
   version: 2
