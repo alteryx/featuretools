@@ -1,3 +1,5 @@
+FEATURETOOLS_VERSION := $(shell python setup.py --version)
+
 clean:
 	find . -name '*.pyo' -delete
 	find . -name '*.pyc' -delete
@@ -25,19 +27,17 @@ installdeps:
 
 circleci-install-packaged-featuretools:
 	python setup.py sdist
-	FEATURETOOLS_VERSION=$(python setup.py --version)
 	tar -zxvf "dist/featuretools-${FEATURETOOLS_VERSION}.tar.gz"
 	pip install -e "featuretools-${FEATURETOOLS_VERSION}/"
 	pip install -r "featuretools-${FEATURETOOLS_VERSION}/test-requirements.txt"
 
-circeci-run-packaged-tests:
+circleci-run-packaged-tests:
 	cd "featuretools-$(python setup.py --version)/"
 	pytest
 
-circeci-run-test-coverage:
-	pip install "$(cat dev-requirements.txt | grep codecov)"
+circleci-run-test-coverage:
+	pip install "$(shell cat dev-requirements.txt | grep codecov)"
 	coverage erase
-	FEATURETOOLS_VERSION=$(python setup.py --version)
 	cd "featuretools-${FEATURETOOLS_VERSION}/"
 	coverage erase
 	pytest featuretools/tests --cov=featuretools --cov-config=../.coveragerc
