@@ -32,15 +32,12 @@ circleci-install-packaged-featuretools:
 	pip install -r "featuretools-${FEATURETOOLS_VERSION}/test-requirements.txt"
 
 circleci-run-packaged-tests:
-	cd "featuretools-$(python setup.py --version)/"
-	pytest
+	cd "featuretools-${FEATURETOOLS_VERSION}/" && pytest
 
 circleci-run-test-coverage:
 	pip install "$(shell cat dev-requirements.txt | grep codecov)"
 	coverage erase
-	cd "featuretools-${FEATURETOOLS_VERSION}/"
-	coverage erase
-	pytest featuretools/tests --cov=featuretools --cov-config=../.coveragerc
-	cd ../
+	cd "featuretools-${FEATURETOOLS_VERSION}/" && coverage erase
+	cd "featuretools-${FEATURETOOLS_VERSION}/" && pytest featuretools/tests --cov=featuretools --cov-config=../.coveragerc
 	cp "featuretools-${FEATURETOOLS_VERSION}/.coverage" .coverage
 	codecov
