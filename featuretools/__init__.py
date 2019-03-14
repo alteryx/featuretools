@@ -1,17 +1,6 @@
+# flake8: noqa
 from __future__ import absolute_import
 from .config_init import config
-
-import pkg_resources
-for entry_point in pkg_resources.iter_entry_points('featuretools_initialize'):
-    try:
-        module = entry_point.load()
-        if hasattr(module, 'initialize'):
-            module.initialize()
-    except Exception as e:
-        pass
-
-
-# flake8: noqa
 from . import variable_types
 from .entityset.api import *
 from . import primitives
@@ -28,3 +17,11 @@ from .feature_base import AggregationFeature, DirectFeature, Feature, FeatureBas
 
 __version__ = '0.6.1'
 
+import pkg_resources
+for entry_point in pkg_resources.iter_entry_points('featuretools_initialize'):
+    try:
+        module = entry_point.load()
+        if hasattr(module, 'initialize'):
+            module.initialize()
+    except Exception:
+        pass
