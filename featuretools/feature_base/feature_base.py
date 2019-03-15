@@ -469,9 +469,14 @@ class GroupByTransformFeature(TransformFeature):
             groupby = IdentityFeature(groupby)
         assert issubclass(groupby.variable_type, Discrete)
         self.groupby = groupby
+
+        if hasattr(base_features, '__iter__'):
+            base_features.append(groupby)
+        else:
+            base_features = [base_features, groupby]
+
         super(GroupByTransformFeature, self).__init__(base_features,
                                                       primitive=primitive)
-        self.base_features.append(groupby)
 
     def copy(self):
         return GroupByTransformFeature(self.base_features[:-1],
