@@ -25,3 +25,9 @@ for entry_point in pkg_resources.iter_entry_points('featuretools_initialize'):
             module.initialize()
     except Exception:
         pass
+
+for entry_point in pkg_resources.iter_entry_points('featuretools_plugin'):
+    try:
+        globals()[entry_point.name] = entry_point.load()
+    except Exception:
+        pass
