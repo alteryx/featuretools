@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 
 commands:
   install-packaged-featuretools:
@@ -15,6 +15,7 @@ commands:
           tar -zxvf "dist/featuretools-${FEATURETOOLS_VERSION}.tar.gz"
           pip install -e "featuretools-${FEATURETOOLS_VERSION}/"
           pip install -r "featuretools-${FEATURETOOLS_VERSION}/test-requirements.txt"
+
   run-packaged-tests:
     description: "run unit tests on packaged testing files"
     parameters:
