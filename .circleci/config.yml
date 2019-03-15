@@ -5,25 +5,25 @@ commands:
     description: "install featuretools from source distribution"
     steps:
       - run : |
-        source test_env/bin/activate
-        python setup.py sdist
-        FEATURETOOLS_VERSION=$(python setup.py --version)
-        tar -zxvf "dist/featuretools-${FEATURETOOLS_VERSION}.tar.gz"
-        pip install -e "featuretools-${FEATURETOOLS_VERSION}/"
-        pip install -r "featuretools-${FEATURETOOLS_VERSION}/test-requirements.txt"
+          source test_env/bin/activate
+          python setup.py sdist
+          FEATURETOOLS_VERSION=$(python setup.py --version)
+          tar -zxvf "dist/featuretools-${FEATURETOOLS_VERSION}.tar.gz"
+          pip install -e "featuretools-${FEATURETOOLS_VERSION}/"
+          pip install -r "featuretools-${FEATURETOOLS_VERSION}/test-requirements.txt"
   run-packaged-tests:
     description: "run unit tests on packaged testing files"
     steps:
       - run: |
-        source test_env/bin/activate
-        cd "featuretools-$(python setup.py --version)/"
-        pytest
+          source test_env/bin/activate
+          cd "featuretools-$(python setup.py --version)/"
+          pytest
 
 jobs:
   "python-2.7":
     working_directory: ~/featuretools
     docker:
-        - image: circleci/python:2.7
+      - image: circleci/python:2.7
     steps:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
@@ -36,7 +36,7 @@ jobs:
   "python-3.5":
     working_directory: ~/featuretools
     docker:
-        - image: circleci/python:3.5
+      - image: circleci/python:3.5
     steps:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
@@ -49,7 +49,7 @@ jobs:
   "python-3.6":
     working_directory: ~/featuretools
     docker:
-        - image: circleci/python:3.6
+      - image: circleci/python:3.6
     steps:
       - run: sudo apt update && sudo apt install -y graphviz pandoc
       - checkout
@@ -63,7 +63,7 @@ jobs:
   "python-3.7":
     working_directory: ~/featuretools
     docker:
-        - image: circleci/python:3.7
+      - image: circleci/python:3.7
     steps:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
