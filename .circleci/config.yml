@@ -3,9 +3,13 @@ version: 2
 commands:
   install-packaged-featuretools:
     description: "install featuretools from source distribution"
+    parameters:
+      venv:
+        type: string
+        default: "test_env"
     steps:
       - run : |
-          source test_env/bin/activate
+          source << parameters.venv >>/bin/activate
           python setup.py sdist
           FEATURETOOLS_VERSION=$(python setup.py --version)
           tar -zxvf "dist/featuretools-${FEATURETOOLS_VERSION}.tar.gz"
@@ -13,9 +17,13 @@ commands:
           pip install -r "featuretools-${FEATURETOOLS_VERSION}/test-requirements.txt"
   run-packaged-tests:
     description: "run unit tests on packaged testing files"
+    parameters:
+      venv:
+        type: string
+        default: "test_env"
     steps:
       - run: |
-          source test_env/bin/activate
+          source << parameters.venv>>/bin/activate
           cd "featuretools-$(python setup.py --version)/"
           pytest
 
@@ -28,10 +36,12 @@ jobs:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
       - run: virtualenv test_env && virtualenv dev_env
-      - install-packaged-featuretools
+      - install-packaged-featuretools:
+          venv: test_env
       - run: source dev_env/bin/activate && make installdeps
       - run: source dev_env/bin/activate && make lint
-      - run-packaged-tests
+      - run-packaged-tests:
+          venv: test_env
 
   "python-3.5":
     working_directory: ~/featuretools
@@ -41,10 +51,12 @@ jobs:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
       - run: virtualenv test_env && virtualenv dev_env
-      - install-packaged-featuretools
+      - install-packaged-featuretools:
+          venv: test_env
       - run: source dev_env/bin/activate && make installdeps
       - run: source dev_env/bin/activate && make lint
-      - run-packaged-tests
+      - run-packaged-tests:
+          venv: test_env
 
   "python-3.6":
     working_directory: ~/featuretools
@@ -54,10 +66,12 @@ jobs:
       - run: sudo apt update && sudo apt install -y graphviz pandoc
       - checkout
       - run: virtualenv test_env && virtualenv dev_env
-      - install-packaged-featuretools
+      - install-packaged-featuretools:
+          venv: test_env
       - run: source dev_env/bin/activate && make installdeps
       - run: source dev_env/bin/activate && make lint
-      - run-packaged-tests
+      - run-packaged-tests:
+          venv: test_env
       - run: source dev_env/bin/activate && make -C docs/ -e "SPHINXOPTS=-W" clean html
 
   "python-3.7":
@@ -68,7 +82,8 @@ jobs:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
       - run: virtualenv test_env && virtualenv dev_env
-      - install-packaged-featuretools
+      - install-packaged-featuretools:
+          venv: test_env
       - run: source dev_env/bin/activate && make installdeps
       - run: source dev_env/bin/activate && make lint
       - run: |
