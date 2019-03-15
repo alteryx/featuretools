@@ -280,15 +280,15 @@ class PandasBackend(ComputationalBackend):
         return default_df
 
     def _feature_type_handler(self, f):
-        if isinstance(f, GroupByTransformFeature):
-            return self._calculate_groupby_features
-        elif isinstance(f, TransformFeature):
+        if type(f) == TransformFeature:
             return self._calculate_transform_features
-        elif isinstance(f, DirectFeature):
+        elif type(f) == GroupByTransformFeature:
+            return self._calculate_groupby_features
+        elif type(f) == DirectFeature:
             return self._calculate_direct_features
-        elif isinstance(f, AggregationFeature):
+        elif type(f) == AggregationFeature:
             return self._calculate_agg_features
-        elif isinstance(f, IdentityFeature):
+        elif type(f) == IdentityFeature:
             return self._calculate_identity_features
         else:
             raise UnknownFeature(u"{} feature unknown".format(f.__class__))
