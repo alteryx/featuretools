@@ -1,4 +1,24 @@
 version: 2
+
+commands:
+  install-packaged-featuretools:
+    description: "install featuretools from source distribution"
+    steps:
+      - run : |
+        source test_env/bin/activate
+        python setup.py sdist
+        FEATURETOOLS_VERSION=$(python setup.py --version)
+        tar -zxvf "dist/featuretools-${FEATURETOOLS_VERSION}.tar.gz"
+        pip install -e "featuretools-${FEATURETOOLS_VERSION}/"
+        pip install -r "featuretools-${FEATURETOOLS_VERSION}/test-requirements.txt"
+  run-packaged-tests:
+    description: "run unit tests on packaged testing files"
+    steps:
+      - run: |
+        source test_env/bin/activate
+        cd "featuretools-$(python setup.py --version)/"
+        pytest
+
 jobs:
   "python-2.7":
     working_directory: ~/featuretools
@@ -8,10 +28,10 @@ jobs:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
       - run: virtualenv test_env && virtualenv dev_env
-      - run: source test_env/bin/activate && make circleci-install-packaged-featuretools
+      - install-packaged-featuretools
       - run: source dev_env/bin/activate && make installdeps
       - run: source dev_env/bin/activate && make lint
-      - run: source test_env/bin/activate && make circleci-run-packaged-tests
+      - run-packaged-tests
 
   "python-3.5":
     working_directory: ~/featuretools
@@ -21,10 +41,10 @@ jobs:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
       - run: virtualenv test_env && virtualenv dev_env
-      - run: source test_env/bin/activate && make circleci-install-packaged-featuretools
+      - install-packaged-featuretools
       - run: source dev_env/bin/activate && make installdeps
       - run: source dev_env/bin/activate && make lint
-      - run: source test_env/bin/activate && make circleci-run-packaged-tests
+      - run-packaged-tests
 
   "python-3.6":
     working_directory: ~/featuretools
@@ -34,10 +54,10 @@ jobs:
       - run: sudo apt update && sudo apt install -y graphviz pandoc
       - checkout
       - run: virtualenv test_env && virtualenv dev_env
-      - run: source test_env/bin/activate && make circleci-install-packaged-featuretools
+      - install-packaged-featuretools
       - run: source dev_env/bin/activate && make installdeps
       - run: source dev_env/bin/activate && make lint
-      - run: source test_env/bin/activate && make circleci-run-packaged-tests
+      - run-packaged-tests
       - run: source dev_env/bin/activate && make -C docs/ -e "SPHINXOPTS=-W" clean html
 
   "python-3.7":
@@ -48,10 +68,20 @@ jobs:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
       - run: virtualenv test_env && virtualenv dev_env
-      - run: source test_env/bin/activate && make circleci-install-packaged-featuretools
+      - install-packaged-featuretools
       - run: source dev_env/bin/activate && make installdeps
       - run: source dev_env/bin/activate && make lint
-      - run: source test_env/bin/activate && make circelci-run-test-coverage
+      - run: |
+        source test_env/bin/activate
+        pip install "$(cat dev-requirements.txt | grep codecov)"
+        coverage erase
+        FEATURETOOLS_VERSION=$(python setup.py --version)
+        cd "featuretools-${FEATURETOOLS_VERSION}/"
+        coverage erase
+        pytest featuretools/tests --cov=featuretools --cov-config=../.coveragerc
+        cd ../
+        cp "featuretools-${FEATURETOOLS_VERSION}/.coverage" .coverage
+        codecov
 
 workflows:
   version: 2

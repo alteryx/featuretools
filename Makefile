@@ -1,5 +1,3 @@
-FEATURETOOLS_VERSION := $(shell python setup.py --version)
-
 clean:
 	find . -name '*.pyo' -delete
 	find . -name '*.pyc' -delete
@@ -24,20 +22,3 @@ installdeps:
 	pip install --upgrade pip
 	pip install -e .
 	pip install -r dev-requirements.txt
-
-circleci-install-packaged-featuretools:
-	python setup.py sdist
-	tar -zxvf "dist/featuretools-${FEATURETOOLS_VERSION}.tar.gz"
-	pip install -e "featuretools-${FEATURETOOLS_VERSION}/"
-	pip install -r "featuretools-${FEATURETOOLS_VERSION}/test-requirements.txt"
-
-circleci-run-packaged-tests:
-	cd "featuretools-${FEATURETOOLS_VERSION}/" && pytest
-
-circleci-run-test-coverage:
-	pip install "$(shell cat dev-requirements.txt | grep codecov)"
-	coverage erase
-	cd "featuretools-${FEATURETOOLS_VERSION}/" && coverage erase
-	cd "featuretools-${FEATURETOOLS_VERSION}/" && pytest featuretools/tests --cov=featuretools --cov-config=../.coveragerc
-	cp "featuretools-${FEATURETOOLS_VERSION}/.coverage" .coverage
-	codecov
