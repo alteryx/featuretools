@@ -18,6 +18,7 @@ from .feature_base import AggregationFeature, DirectFeature, Feature, FeatureBas
 __version__ = '0.6.1'
 
 import pkg_resources
+import sys
 for entry_point in pkg_resources.iter_entry_points('featuretools_initialize'):
     try:
         module = entry_point.load()
@@ -26,8 +27,9 @@ for entry_point in pkg_resources.iter_entry_points('featuretools_initialize'):
     except Exception:
         pass
 
+
 for entry_point in pkg_resources.iter_entry_points('featuretools_plugin'):
     try:
-        globals()[entry_point.name] = entry_point.load()
+        sys.modules["featuretools." + entry_point.name] = entry_point.load()
     except Exception:
         pass

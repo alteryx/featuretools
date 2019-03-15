@@ -180,30 +180,7 @@ def dfs(entities=None,
             loaded = entry_point.load()
             # TODO: change name of module function
             if hasattr(loaded, 'dfs'):
-                loaded.dfs(entityset=entityset,
-                           target_entity=target_entity,
-                           cutoff_time=cutoff_time,
-                           instance_ids=instance_ids,
-                           agg_primitives=agg_primitives,
-                           trans_primitives=trans_primitives,
-                           allowed_paths=allowed_paths,
-                           max_depth=max_depth,
-                           ignore_entities=ignore_entities,
-                           ignore_variables=ignore_variables,
-                           seed_features=seed_features,
-                           drop_contains=drop_contains,
-                           drop_exact=drop_exact,
-                           where_primitives=where_primitives,
-                           max_features=max_features,
-                           cutoff_time_in_index=cutoff_time_in_index,
-                           save_progress=save_progress,
-                           features_only=features_only,
-                           training_window=training_window,
-                           approximate=approximate,
-                           chunk_size=chunk_size,
-                           n_jobs=n_jobs,
-                           verbose=verbose,
-                           return_variable_types=return_variable_types)
+                loaded.dfs(locals())
         except Exception:
             pass
 
