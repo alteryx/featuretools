@@ -526,7 +526,7 @@ class DeepFeatureSynthesis(object):
                                     commutative=groupby_prim.commutative)
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
-                    new_f = GroupByTransformFeature(matching_input[:-1],
+                    new_f = GroupByTransformFeature(list(matching_input[:-1]),
                                                     groupby=matching_input[-1],
                                                     primitive=groupby_prim)
                     self._handle_new_feature(all_features=all_features,
