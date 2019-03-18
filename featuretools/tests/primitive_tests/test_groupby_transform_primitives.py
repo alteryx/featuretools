@@ -12,9 +12,10 @@ from featuretools.primitives import (
     CumMean,
     CumMin,
     CumSum,
+    Last,
     TransformPrimitive
 )
-from featuretools.variable_types import Numeric
+from featuretools.variable_types import DatetimeTimeIndex, Numeric
 
 
 @pytest.fixture
@@ -149,13 +150,13 @@ class TestCumMin:
 
 def test_cum_sum(es):
     log_value_feat = es['log']['value']
-
-    cum_sum = ft.Feature(log_value_feat, groupby=es['log']['session_id'], primitive=CumSum)
+    dfeat = ft.Feature(es['sessions']['device_type'], entity=es['log'])
+    cum_sum = ft.Feature(log_value_feat, groupby=dfeat, primitive=CumSum)
     features = [cum_sum]
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
     cvalues = df[cum_sum.get_name()].values
     assert len(cvalues) == 15
-    cum_sum_values = [0, 5, 15, 30, 50, 0, 1, 3, 6, 0, 0, 5, 0, 7, 21]
+    cum_sum_values = [0, 5, 15, 30, 50, 0, 1, 3, 6, 6, 50, 55, 55, 62, 76]
     for i, v in enumerate(cum_sum_values):
         assert v == cvalues[i]
 
@@ -282,11 +283,70 @@ def test_cum_mean(es):
 
 
 def test_cum_count(es):
-    cum_count = ft.Feature(es['log']['session_id'], groupby=es['log']['session_id'], primitive=CumCount)
+    cum_count = ft.Feature(es['log']['session_id'],
+                           groupby=es['log']['session_id'],
+                           primitive=CumCount)
     features = [cum_count]
-    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
+    df = ft.calculate_feature_matrix(entityset=es,
+                                     features=features,
+                                     instance_ids=range(15))
     cvalues = df[cum_count.get_name()].values
     assert len(cvalues) == 15
     cum_count_values = [1, 2, 3, 4, 5, 1, 2, 3, 4, 1, 1, 2, 1, 2, 3]
     for i, v in enumerate(cum_count_values):
         assert v == cvalues[i]
+
+
+def test_rename(es):
+    cum_count = ft.Feature(es['log']['session_id'],
+                           groupby=es['log']['session_id'],
+                           primitive=CumCount)
+    copy_feat = cum_count.rename("rename_test")
+    assert cum_count.hash() != copy_feat.hash()
+    assert cum_count.get_name() != copy_feat.get_name()
+    assert all([x.generate_name() == y.generate_name() for x, y
+                in zip(cum_count.base_features, copy_feat.base_features)])
+    assert cum_count.entity == copy_feat.entity
+
+
+def test_groupby_no_data(es):
+    cum_count = ft.Feature(es['log']['session_id'],
+                           groupby=es['log']['session_id'],
+                           primitive=CumCount)
+    last_feat = ft.Feature(cum_count, parent_entity=es['customers'], primitive=Last)
+    df = ft.calculate_feature_matrix(entityset=es,
+                                     features=[last_feat],
+                                     cutoff_time=pd.Timestamp("2011-04-08"))
+    cvalues = df[last_feat.get_name()].values
+    assert len(cvalues) == 3
+    assert all([pd.isnull(value) for value in cvalues])
+
+
+def test_groupby_uses_calc_time(es):
+    def projected_amount_left(amount, timestamp, time=None):
+        # cumulative sum of amout, with timedelta *  constant subtracted
+        delta = time - timestamp
+        delta_seconds = delta / np.timedelta64(1, 's')
+        return amount.cumsum() - (delta_seconds)
+
+    class ProjectedAmountRemaining(TransformPrimitive):
+        name = "projected_amount_remaining"
+        uses_calc_time = True
+        input_types = [Numeric, DatetimeTimeIndex]
+        return_type = Numeric
+        uses_full_entity = True
+
+        def get_function(self):
+            return projected_amount_left
+
+    time_since_product = ft.Feature([es['log']['value'], es['log']['datetime']],
+                                    groupby=es['log']['product_id'],
+                                    primitive=ProjectedAmountRemaining)
+    df = ft.calculate_feature_matrix(entityset=es,
+                                     features=[time_since_product],
+                                     cutoff_time=pd.Timestamp("2011-04-10 11:10:30"))
+    answers = [-88830, -88819, -88803, -88797, -88771, -88770, -88760, -88749,
+               -88740, -88227, -1830, -1809, -1750, -1740, -1723, np.nan, np.nan]
+
+    for x, y in zip(df[time_since_product.get_name()], answers):
+        assert ((pd.isnull(x) and pd.isnull(y)) or x == y)

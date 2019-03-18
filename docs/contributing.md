@@ -33,7 +33,7 @@ Before starting major work, you should touch base with the maintainers of Featur
 * Before submitting to GitHub, verify the tests run and the code lints properly
   ```bash
   # runs test
-  make tests
+  make test
 
   # runs linting
   make lint
@@ -53,7 +53,7 @@ Before starting major work, you should touch base with the maintainers of Featur
 
 #### 3. Submit your Pull Request
 
-* Once your changes are ready to be submitted, make sure to push your changes to GitHub before creating a pull request. Create a pull reuest, and our continuous integration will run automatically. We will review your changes, and you will most likely be asked to make additional changes before it is finally ready to merge. However, once it's reviewed by a maintainer of Featuretools, passes continuous integration, we will merge it, and you will have successfully contributed to Featuretools!
+* Once your changes are ready to be submitted, make sure to push your changes to GitHub before creating a pull request. Create a pull request, and our continuous integration will run automatically. We will review your changes, and you will most likely be asked to make additional changes before it is finally ready to merge. However, once it's reviewed by a maintainer of Featuretools, passes continuous integration, we will merge it, and you will have successfully contributed to Featuretools!
 
 ## Report issues
 When reporting issues please include as much detail as possible about your operating system, featuretools version and python version. Whenever possible, please also include a brief, self-contained code example that demonstrates the problem.

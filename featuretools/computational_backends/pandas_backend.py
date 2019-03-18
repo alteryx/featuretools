@@ -280,15 +280,15 @@ class PandasBackend(ComputationalBackend):
         return default_df
 
     def _feature_type_handler(self, f):
-        if isinstance(f, TransformFeature):
+        if type(f) == TransformFeature:
             return self._calculate_transform_features
-        elif isinstance(f, GroupByTransformFeature):
+        elif type(f) == GroupByTransformFeature:
             return self._calculate_groupby_features
-        elif isinstance(f, DirectFeature):
+        elif type(f) == DirectFeature:
             return self._calculate_direct_features
-        elif isinstance(f, AggregationFeature):
+        elif type(f) == AggregationFeature:
             return self._calculate_agg_features
-        elif isinstance(f, IdentityFeature):
+        elif type(f) == IdentityFeature:
             return self._calculate_identity_features
         else:
             raise UnknownFeature(u"{} feature unknown".format(f.__class__))
@@ -339,20 +339,20 @@ class PandasBackend(ComputationalBackend):
 
         frame = entity_frames[entity_id]
 
-        for f in features:
-            # handle when no data
-            if frame.shape[0] == 0:
+        # handle when no data
+        if frame.shape[0] == 0:
+            for f in features:
                 set_default_column(frame, f)
-                continue
+            return frame
 
-            groupby = f.groupby.get_name()
-            column_names = [bf.get_name() for bf in f.base_features]
-            frame_data = frame[set(column_names + [groupby])]
-            feature_func = f.get_function()
+        groupby = features[0].groupby.get_name()
+        group_values = {f.hash(): [] for f in features}
+        for index, group in frame.groupby(groupby):
+            for f in features:
+                column_names = [bf.get_name() for bf in f.base_features]
+                variable_data = [group[name] for name in column_names[:-1]]
+                feature_func = f.get_function()
 
-            group_values = []
-            for index, group in frame_data.groupby(groupby):
-                variable_data = [group[name] for name in column_names]
                 # apply the function to the relevant dataframe slice and add the
                 # feature row to the results dataframe.
                 if f.primitive.uses_calc_time:
@@ -362,12 +362,14 @@ class PandasBackend(ComputationalBackend):
 
                 if not isinstance(values, pd.Series):
                     values = pd.Series(values, index=variable_data[0].index)
-                group_values.append(values)
+                group_values[f.hash()].append(values)
 
-            null_group = frame[pd.isnull(frame[groupby])]
-            group_values.append(null_group[groupby])
-            group_values = pd.concat(group_values)
-            update_feature_columns(f, frame, [group_values.sort_index().values])
+        null_group = frame[pd.isnull(frame[groupby])]
+        for f in features:
+            values = group_values[f.hash()]
+            values.append(null_group[groupby])
+            values = pd.concat(values)
+            update_feature_columns(f, frame, [values.sort_index().values])
 
         return frame
 

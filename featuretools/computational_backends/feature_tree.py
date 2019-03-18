@@ -168,7 +168,8 @@ class FeatureTree(object):
                         _get_use_previous(f),
                         _get_where(f),
                         self.input_frames_type(f),
-                        self.output_frames_type(f))
+                        self.output_frames_type(f),
+                        _get_groupby(f))
 
             # Sort the list of features by the complex key function above, then
             # group them by the same key
@@ -282,3 +283,10 @@ def _get_base_entity_id(f):
     else:
         # Assume all of f's base_features belong to the same entity
         return f.base_features[0].entity_id
+
+
+def _get_groupby(f):
+    if isinstance(f, GroupByTransformFeature):
+        return f.groupby.hash()
+    else:
+        return -1
