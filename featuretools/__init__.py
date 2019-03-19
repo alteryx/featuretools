@@ -19,6 +19,7 @@ __version__ = '0.6.1'
 
 import pkg_resources
 import sys
+# Call functions registered by other libraries when featuretools is imported
 for entry_point in pkg_resources.iter_entry_points('featuretools_initialize'):
     try:
         module = entry_point.load()
@@ -27,7 +28,7 @@ for entry_point in pkg_resources.iter_entry_points('featuretools_initialize'):
     except Exception:
         pass
 
-
+# Load in submodules registered by other libraries into Featuretools namespace
 for entry_point in pkg_resources.iter_entry_points('featuretools_plugin'):
     try:
         sys.modules["featuretools." + entry_point.name] = entry_point.load()

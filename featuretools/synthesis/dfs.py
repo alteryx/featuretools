@@ -175,10 +175,10 @@ def dfs(entities=None,
     if not isinstance(entityset, EntitySet):
         entityset = EntitySet("dfs", entities, relationships)
 
+    # Call functions registered by other libraries with DFS arguments
     for entry_point in pkg_resources.iter_entry_points('featuretools_dfs'):
         try:
             loaded = entry_point.load()
-            # TODO: change name of module function
             if hasattr(loaded, 'dfs'):
                 loaded.dfs(locals())
         except Exception:
