@@ -1,4 +1,5 @@
 import pandas as pd
+import pkg_resources
 
 from .deep_feature_synthesis import DeepFeatureSynthesis
 
@@ -177,6 +178,15 @@ def dfs(entities=None,
     '''
     if not isinstance(entityset, EntitySet):
         entityset = EntitySet("dfs", entities, relationships)
+
+    # Call functions registered by other libraries with DFS arguments
+    for entry_point in pkg_resources.iter_entry_points('featuretools_dfs'):
+        try:
+            loaded = entry_point.load()
+            if hasattr(loaded, 'dfs'):
+                loaded.dfs(locals())
+        except Exception:
+            pass
 
     dfs_object = DeepFeatureSynthesis(target_entity, entityset,
                                       agg_primitives=agg_primitives,

@@ -346,10 +346,10 @@ class PandasBackend(ComputationalBackend):
             return frame
 
         groupby = features[0].groupby.get_name()
-        group_values = {f.hash(): [] for f in features}
         for index, group in frame.groupby(groupby):
             for f in features:
                 column_names = [bf.get_name() for bf in f.base_features]
+                # exclude the groupby variable from being passed to the function
                 variable_data = [group[name] for name in column_names[:-1]]
                 feature_func = f.get_function()
 
@@ -360,16 +360,17 @@ class PandasBackend(ComputationalBackend):
                 else:
                     values = feature_func(*variable_data)
 
-                if not isinstance(values, pd.Series):
+                # make sure index is aligned
+                if isinstance(values, pd.Series):
+                    values.index = variable_data[0].index
+                else:
                     values = pd.Series(values, index=variable_data[0].index)
-                group_values[f.hash()].append(values)
 
-        null_group = frame[pd.isnull(frame[groupby])]
-        for f in features:
-            values = group_values[f.hash()]
-            values.append(null_group[groupby])
-            values = pd.concat(values)
-            update_feature_columns(f, frame, [values.sort_index().values])
+                feature_name = f.get_name()
+                if feature_name in frame.columns:
+                    frame[feature_name].update(values)
+                else:
+                    frame[feature_name] = values
 
         return frame
 

@@ -479,11 +479,15 @@ class GroupByTransformFeature(TransformFeature):
                                                       primitive=primitive)
 
     def copy(self):
+        # the groupby feature is appended to base_features in the __init__
+        # so here we separate them again
         return GroupByTransformFeature(self.base_features[:-1],
                                        self.primitive,
                                        self.groupby)
 
     def generate_name(self):
+        # exclude the groupby feature from base_names since it has a special
+        # place in the feature name
         base_names = [bf.get_name() for bf in self.base_features[:-1]]
         _name = self.primitive.generate_name(base_names)
         return "{} by {}".format(_name, self.groupby.get_name())

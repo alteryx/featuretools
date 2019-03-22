@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 from featuretools.primitives.base import TransformPrimitive
@@ -29,7 +30,7 @@ class CumCount(TransformPrimitive):
 
     def get_function(self):
         def cum_count(values):
-            return pd.Series(range(1, len(values) + 1), index=values.index)
+            return np.arange(1, len(values) + 1)
 
         return cum_count
 
