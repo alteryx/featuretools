@@ -346,7 +346,6 @@ class PandasBackend(ComputationalBackend):
             return frame
 
         groupby = features[0].groupby.get_name()
-        group_values = {f.hash(): [] for f in features}
         for index, group in frame.groupby(groupby):
             for f in features:
                 column_names = [bf.get_name() for bf in f.base_features]
@@ -366,7 +365,6 @@ class PandasBackend(ComputationalBackend):
                     values.index = variable_data[0].index
                 else:
                     values = pd.Series(values, index=variable_data[0].index)
-
 
                 feature_name = f.get_name()
                 if feature_name in frame.columns:
