@@ -38,10 +38,10 @@ class PrimitiveBase(object):
     def __call__(self, *args, **kwargs):
         series_args = [pd.Series(arg) for arg in args]
         try:
-            return self.method(*series_args, **kwargs)
+            return self._method(*series_args, **kwargs)
         except AttributeError:
-            self.method = self.get_function()
-            return self.method(*series_args, **kwargs)
+            self._method = self.get_function()
+            return self._method(*series_args, **kwargs)
 
     def generate_name(self):
         raise NotImplementedError("Subclass must implement")
