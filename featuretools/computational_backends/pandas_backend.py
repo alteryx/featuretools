@@ -350,6 +350,7 @@ class PandasBackend(ComputationalBackend):
         for index, group in frame.groupby(groupby):
             for f in features:
                 column_names = [bf.get_name() for bf in f.base_features]
+                # exclude the groupby variable from being passed to the function
                 variable_data = [group[name] for name in column_names[:-1]]
                 feature_func = f.get_function()
 
