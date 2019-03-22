@@ -361,7 +361,10 @@ class PandasBackend(ComputationalBackend):
                 else:
                     values = feature_func(*variable_data)
 
-                if not isinstance(values, pd.Series):
+                # make sure index is aligned
+                if isinstance(values, pd.Series):
+                    values.index = variable_data[0].index
+                else:
                     values = pd.Series(values, index=variable_data[0].index)
                 group_values[f.hash()].append(values)
 
