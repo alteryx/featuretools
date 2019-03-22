@@ -366,14 +366,13 @@ class PandasBackend(ComputationalBackend):
                     values.index = variable_data[0].index
                 else:
                     values = pd.Series(values, index=variable_data[0].index)
-                group_values[f.hash()].append(values)
 
-        null_group = frame[pd.isnull(frame[groupby])]
-        for f in features:
-            values = group_values[f.hash()]
-            values.append(null_group[groupby])
-            values = pd.concat(values)
-            update_feature_columns(f, frame, [values.sort_index().values])
+
+                feature_name = f.get_name()
+                if feature_name in frame.columns:
+                    frame[feature_name].update(values)
+                else:
+                    frame[feature_name] = values
 
         return frame
 
