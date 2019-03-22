@@ -283,7 +283,7 @@ def test_make_groupby_features_with_agg(es):
                                    groupby_primitives=['cum_sum'])
     features = dfs_obj.build_features()
     assert (feature_with_name(features,
-                              "CUM_SUM(age) by région_id"))
+                              u"CUM_SUM(age) by région_id"))
 
 
 def test_abides_by_max_depth_param(es):
