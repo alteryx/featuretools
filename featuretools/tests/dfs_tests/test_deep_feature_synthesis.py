@@ -286,6 +286,16 @@ def test_make_groupby_features_with_agg(es):
                               u"CUM_SUM(age) by région_id"))
 
 
+def test_bad_groupby_feature(es):
+    msg = "Unknown transform primitive max"
+    with pytest.raises(ValueError, match=msg):
+        dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                       entityset=es,
+                                       agg_primitives=['sum'],
+                                       trans_primitives=[],
+                                       groupby_primitives=['max'])
+
+
 def test_abides_by_max_depth_param(es):
     for i in [1, 2, 3]:
         dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
