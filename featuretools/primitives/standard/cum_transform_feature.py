@@ -1,3 +1,5 @@
+import numpy as np
+
 from featuretools.primitives.base import TransformPrimitive
 from featuretools.variable_types import Discrete, Id, Numeric
 
@@ -6,19 +8,15 @@ class CumSum(TransformPrimitive):
     """Returns the cumulative sum after grouping"""
 
     name = "cum_sum"
-    input_types = [[Numeric, Id],
-                   [Numeric, Discrete]]
+    input_types = [Numeric]
     return_type = Numeric
     uses_full_entity = True
 
     def get_function(self):
-        def cum_sum(values, groups):
-            return values.groupby(groups).cumsum()
+        def cum_sum(values):
+            return values.cumsum()
 
         return cum_sum
-
-    def generate_name(self, base_feature_names):
-        return "CUM_SUM(%s by %s)" % (base_feature_names[0], base_feature_names[1])
 
 
 class CumCount(TransformPrimitive):
@@ -31,67 +29,51 @@ class CumCount(TransformPrimitive):
 
     def get_function(self):
         def cum_count(values):
-            return values.groupby(values).cumcount() + 1
+            return np.arange(1, len(values) + 1)
 
         return cum_count
-
-    def generate_name(self, base_feature_names):
-        return "CUM_COUNT(%s)" % (base_feature_names[0])
 
 
 class CumMean(TransformPrimitive):
     """Returns the cumulative mean after grouping"""
 
     name = "cum_mean"
-    input_types = [[Numeric, Id],
-                   [Numeric, Discrete]]
+    input_types = [Numeric]
     return_type = Numeric
     uses_full_entity = True
 
     def get_function(self):
-        def cum_mean(values, groups):
-            temp = values.groupby(groups)
-            return temp.cumsum() / (temp.cumcount() + 1)
+        def cum_mean(values):
+            return values.cumsum() / np.arange(1, len(values) + 1)
 
         return cum_mean
-
-    def generate_name(self, base_feature_names):
-        return "CUM_MEAN(%s by %s)" % (base_feature_names[0], base_feature_names[1])
 
 
 class CumMin(TransformPrimitive):
     """Returns the cumulative min after grouping"""
 
     name = "cum_min"
-    input_types = [[Numeric, Id],
-                   [Numeric, Discrete]]
+    input_types = [Numeric]
     return_type = Numeric
     uses_full_entity = True
 
     def get_function(self):
-        def cum_min(values, groups):
-            return values.groupby(groups).cummin()
+        def cum_min(values):
+            return values.cummin()
 
         return cum_min
-
-    def generate_name(self, base_feature_names):
-        return "CUM_MIN(%s by %s)" % (base_feature_names[0], base_feature_names[1])
 
 
 class CumMax(TransformPrimitive):
     """Returns the cumulative max after grouping"""
 
     name = "cum_max"
-    input_types = [[Numeric, Id],
-                   [Numeric, Discrete]]
+    input_types = [Numeric]
     return_type = Numeric
     uses_full_entity = True
 
     def get_function(self):
-        def cum_max(values, groups):
-            return values.groupby(groups).cummax()
+        def cum_max(values):
+            return values.cummax()
 
         return cum_max
-
-    def generate_name(self, base_feature_names):
-        return "CUM_MAX(%s by %s)" % (base_feature_names[0], base_feature_names[1])
