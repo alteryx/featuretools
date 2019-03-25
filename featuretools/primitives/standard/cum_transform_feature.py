@@ -45,7 +45,7 @@ class CumMean(TransformPrimitive):
 
     def get_function(self):
         def cum_mean(values):
-            return values.cumsum() / pd.Series(range(1, len(values) + 1), index=values.index)
+            return values.cumsum() / np.arange(1, len(values) + 1)
 
         return cum_mean
 
