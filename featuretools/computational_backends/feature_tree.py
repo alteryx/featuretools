@@ -9,6 +9,7 @@ from ..utils import gen_utils as utils
 from featuretools import variable_types
 from featuretools.feature_base import (
     AggregationFeature,
+    GroupByTransformFeature,
     IdentityFeature,
     TransformFeature
 )
@@ -167,7 +168,8 @@ class FeatureTree(object):
                         _get_use_previous(f),
                         _get_where(f),
                         self.input_frames_type(f),
-                        self.output_frames_type(f))
+                        self.output_frames_type(f),
+                        _get_groupby(f))
 
             # Sort the list of features by the complex key function above, then
             # group them by the same key
@@ -213,7 +215,8 @@ class FeatureTree(object):
         return list(features.values()), out
 
     def uses_full_entity(self, feature):
-        if isinstance(feature, TransformFeature) and feature.primitive.uses_full_entity:
+        if (isinstance(feature, (GroupByTransformFeature, TransformFeature)) and
+                feature.primitive.uses_full_entity):
             return True
         return self._dependent_uses_full_entity(feature)
 
@@ -280,3 +283,10 @@ def _get_base_entity_id(f):
     else:
         # Assume all of f's base_features belong to the same entity
         return f.base_features[0].entity_id
+
+
+def _get_groupby(f):
+    if isinstance(f, GroupByTransformFeature):
+        return f.groupby.hash()
+    else:
+        return -1
