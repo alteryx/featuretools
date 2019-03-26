@@ -313,6 +313,7 @@ Variable types
     DateOfBirth
     CountryCode
     SubRegionCode
+    FilePath
 
 
 Feature Selection
