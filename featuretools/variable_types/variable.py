@@ -407,11 +407,18 @@ class SubRegionCode(Categorical):
     _default_pandas_dtype = str
 
 
+class FilePath(Variable):
+    """Represents a valid filepath, absolute or relative"""
+    type_string = "filepath"
+    _default_pandas_dtype = str
+
+
 ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
                       Categorical, Text, Ordinal,
                       Boolean, LatLong, ZIPCode, IPAddress,
                       EmailAddress, URL, PhoneNumber,
-                      DateOfBirth, CountryCode, SubRegionCode]
+                      DateOfBirth, CountryCode, SubRegionCode,
+                      FilePath]
 
 
 DEFAULT_DTYPE_VALUES = {
