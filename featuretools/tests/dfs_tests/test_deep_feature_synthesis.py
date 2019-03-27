@@ -276,14 +276,14 @@ def test_make_groupby_features(es):
 
 
 def test_make_groupby_features_with_agg(es):
-    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='cohorts',
                                    entityset=es,
                                    agg_primitives=['sum'],
                                    trans_primitives=[],
                                    groupby_transform_primitives=['cum_sum'])
     features = dfs_obj.build_features()
-    assert (feature_with_name(features,
-                              u"CUM_SUM(age) by région_id"))
+    agg_on_groupby_name = u"SUM(customers.CUM_SUM(age) by région_id)"
+    assert (feature_with_name(features, agg_on_groupby_name))
 
 
 def test_bad_groupby_feature(es):
