@@ -269,7 +269,7 @@ def test_make_groupby_features(es):
                                    entityset=es,
                                    agg_primitives=[],
                                    trans_primitives=[],
-                                   groupby_primitives=['cum_sum'])
+                                   groupby_transform_primitives=['cum_sum'])
     features = dfs_obj.build_features()
     assert (feature_with_name(features,
                               "CUM_SUM(value) by session_id"))
@@ -280,7 +280,7 @@ def test_make_groupby_features_with_agg(es):
                                    entityset=es,
                                    agg_primitives=['sum'],
                                    trans_primitives=[],
-                                   groupby_primitives=['cum_sum'])
+                                   groupby_transform_primitives=['cum_sum'])
     features = dfs_obj.build_features()
     assert (feature_with_name(features,
                               u"CUM_SUM(age) by région_id"))
@@ -293,7 +293,7 @@ def test_bad_groupby_feature(es):
                              entityset=es,
                              agg_primitives=['sum'],
                              trans_primitives=[],
-                             groupby_primitives=['max'])
+                             groupby_transform_primitives=['max'])
 
 
 def test_abides_by_max_depth_param(es):
@@ -775,7 +775,7 @@ def test_checks_primitives_correct_type(es):
 
     error_text = "Primitive <class \\'featuretools\\.primitives\\.standard\\."\
                  "aggregation_primitives\\.Last\\'> in trans_primitives or "\
-                 "groupby_primitives is not a transform primitive"
+                 "groupby_transform_primitives is not a transform primitive"
     with pytest.raises(ValueError, match=error_text):
         DeepFeatureSynthesis(target_entity_id="sessions",
                              entityset=es,

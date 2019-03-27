@@ -48,7 +48,7 @@ class DeepFeatureSynthesis(object):
 
                     ["count"]
 
-            groupby_primitives (list[str or :class:`.primitives.TransformPrimitive`], optional):
+            groupby_transform_primitives (list[str or :class:`.primitives.TransformPrimitive`], optional):
                 list of Transform primitives to make GroupByTransformFeatures with
 
             max_depth (int, optional) : maximum allowed depth of features.
@@ -89,7 +89,7 @@ class DeepFeatureSynthesis(object):
                  agg_primitives=None,
                  trans_primitives=None,
                  where_primitives=None,
-                 groupby_primitives=None,
+                 groupby_transform_primitives=None,
                  max_depth=2,
                  max_hlevel=2,
                  max_features=-1,
@@ -175,12 +175,12 @@ class DeepFeatureSynthesis(object):
             p = handle_primitive(p)
             self.where_primitives.append(p)
 
-        if groupby_primitives is None:
-            groupby_primitives = []
-        self.groupby_primitives = []
-        for p in groupby_primitives:
+        if groupby_transform_primitives is None:
+            groupby_transform_primitives = []
+        self.groupby_transform_primitives = []
+        for p in groupby_transform_primitives:
             p = check_trans_primitive(p)
-            self.groupby_primitives.append(p)
+            self.groupby_transform_primitives.append(p)
 
         self.seed_features = seed_features or []
         self.drop_exact = drop_exact or []
@@ -507,7 +507,7 @@ class DeepFeatureSynthesis(object):
                     self._handle_new_feature(all_features=all_features,
                                              new_feature=new_f)
 
-        for groupby_prim in self.groupby_primitives:
+        for groupby_prim in self.groupby_transform_primitives:
             # Normally input_types is a list of what inputs can be supplied to
             # the primitive function.  Here we temporarily add `Id` as an extra
             # item in input_types so that the matching function will also look
@@ -796,6 +796,6 @@ def check_trans_primitive(primitive):
     primitive = handle_primitive(primitive)
     if not isinstance(primitive, TransformPrimitive):
         raise ValueError("Primitive {} in trans_primitives or "
-                         "groupby_primitives is not a transform "
+                         "groupby_transform_primitives is not a transform "
                          "primitive".format(type(primitive)))
     return primitive
