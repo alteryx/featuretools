@@ -16,7 +16,7 @@ Breaking Changes:
     .. code-block:: python
         :caption: New behavior
 
-        ft.dfs(entityset=es, target_entity='customers', groupby_primitives=["cum_mean"])
+        ft.dfs(entityset=es, target_entity='customers', groupby_transform_primitives=["cum_mean"])
 
     Changes to writing individual features:
 
