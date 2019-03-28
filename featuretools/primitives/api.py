@@ -1,5 +1,4 @@
 # flake8: noqa
-from .install import install_primitives
 from .installed import *
 from .standard.aggregation_primitives import *
 from .standard.binary_transform import *
