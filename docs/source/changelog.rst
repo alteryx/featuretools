@@ -2,6 +2,75 @@
 
 Changelog
 ---------
+**v0.7.0** Mar XX, 2019
+
+Breaking Changes:
+
+* ``ft.dfs`` now has a ``groupby_transform_primitives`` parameter that DFS uses to automatically construct features that group by an ID column and then apply a transform primitive to search group. This change applies to the following primitives: ``CumSum``, ``CumCount``, ``CumMean``, ``CumMin``, and ``CumMax``.
+
+    Previous behavior
+
+    .. code-block:: python
+
+        ft.dfs(entityset=es,
+               target_entity='customers',
+               transform_primitives=["cum_mean"])
+
+    New behavior
+
+    .. code-block:: python
+
+        ft.dfs(entityset=es,
+               target_entity='customers',
+               groupby_transform_primitives=["cum_mean"])
+
+* Related to the above change, cumulative transform features are now defined using a new feature class, ``GroupByTransformFeature``.
+
+    Previous behavior
+
+    .. code-block:: python
+
+        ft.Feature([base_feature, groupby_feature], primitive=CumulativePrimitive)
+
+
+    New behavior
+
+    .. code-block:: python
+
+        ft.Feature(base_feature, groupby=groupby_feature, primitive=CumulativePrimitive)
+
+
+
+
+
+**v0.6.1** Feb 15, 2019
+    * Cumulative primitives (:pr:`410`)
+    * Entity.query_by_values now preserves row order of underlying data (:pr:`428`)
+    * Implementing Country Code and Sub Region Codes as variable types (:pr:`430`)
+    * Added IPAddress and EmailAddress variable types (:pr:`426`)
+    * Install data and dependencies (:pr:`403`)
+    * Add TimeSinceFirst, fix TimeSinceLast (:pr:`388`)
+    * Allow user to pass in desired feature return types (:pr:`372`)
+    * Add new configuration object (:pr:`401`)
+    * Replace NUnique get_function (:pr:`434`)
+    * _calculate_idenity_features now only returns the features asked for, instead of the entire entity (:pr:`429`)
+    * Primitive function name uniqueness (:pr:`424`)
+    * Update NumCharacters and NumWords primitives (:pr:`419`)
+    * Removed Variable.dtype (:pr:`416`, :pr:`433`)
+    * Change to zipcode rep, str for pandas (:pr:`418`)
+    * Remove pandas version upper bound (:pr:`408`)
+    * Make S3 dependencies optional (:pr:`404`)
+    * Check that agg_primitives and trans_primitives are right primitive type (:pr:`397`)
+    * Mean primitive changes (:pr:`395`)
+    * Fix transform stacking on multi-output aggregation (:pr:`394`)
+    * Fix list_primitives (:pr:`391`)
+    * Handle graphviz dependency (:pr:`389`, :pr:`396`, :pr:`398`)
+    * Testing updates (:pr:`402`, :pr:`417`, :pr:`433`)
+    * Documentation updates (:pr:`400`, :pr:`409`, :pr:`415`, :pr:`417`, :pr:`420`, :pr:`421`, :pr:`422`, :pr:`431`)
+
+
+    Thanks to the following people for contributing to this release:  :user:`CharlesBradshaw`, :user:`csala`, :user:`floscha`, :user:`gsheni`, :user:`jxwolstenholme`, :user:`kmax12`, :user:`RogerTangos`, :user:`rwedge`
+
 **v0.6.0** Jan 30, 2018
     * Primitive refactor (:pr:`364`)
     * Mean ignore NaNs (:pr:`379`)

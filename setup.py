@@ -21,7 +21,7 @@ class build_ext(_build_ext):
 
 setup(
     name='featuretools',
-    version='0.6.0',
+    version='0.6.1',
     packages=find_packages(),
     description='a framework for automated feature engineering',
     url='http://featuretools.com',
@@ -46,10 +46,10 @@ setup(
     keywords='feature engineering data science machine learning',
     include_package_data=True,
     entry_points={
-          'console_scripts': [
-              'featuretools = featuretools.__main__:cli'
-          ]
-      },
+        'console_scripts': [
+          'featuretools = featuretools.__main__:cli'
+        ]
+    },
     long_description=long_description,
     long_description_content_type='text/markdown'
 )

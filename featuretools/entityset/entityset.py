@@ -9,9 +9,9 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_dtype_equal, is_numeric_dtype
 
+from . import deserialize, serialize
 from .entity import Entity
 from .relationship import Relationship
-from .serialization import load_entity_data, write_entityset
 
 import featuretools.variable_types.variable as vtypes
 from featuretools.utils.gen_utils import make_tqdm_iterator
@@ -34,6 +34,7 @@ class EntitySet(object):
         metadata
 
     """
+
     def __init__(self, id=None, entities=None, relationships=None):
         """Creates EntitySet
 
@@ -89,7 +90,7 @@ class EntitySet(object):
             child_variable = self[relationship[2]][relationship[3]]
             self.add_relationship(Relationship(parent_variable,
                                                child_variable))
-        self.reset_metadata()
+        self.reset_data_description()
 
     def __sizeof__(self):
         return sum([entity.__sizeof__() for entity in self.entities])
@@ -137,102 +138,49 @@ class EntitySet(object):
 
     @property
     def metadata(self):
-        '''Version of this EntitySet with all data replaced with empty DataFrames.
+        '''Returns the metadata for this EntitySet. The metadata will be recomputed if it does not exist.'''
+        if self._data_description is None:
+            description = serialize.entityset_to_description(self)
+            self._data_description = deserialize.description_to_entityset(description)
 
-        An EntitySet's metadata is used in many places, for instance,
-        for each feature in a feature list.
-        To prevent using copying the full metadata object to each feature,
-        we generate a new metadata object and check if it's the same as the existing one,
-        and if it is return the existing one. Thus, all features in the feature list
-        would reference the same object, rather than copies. This saves a lot of memory
-        '''
-        if self._metadata is None:
-            self._metadata = self.from_metadata(self.create_metadata_dict(),
-                                                data_root=None)
+        return self._data_description
 
-        return self._metadata
+    def reset_data_description(self):
+        self._data_description = None
 
-    def reset_metadata(self):
-        self._metadata = None
-
-    @property
-    def is_metadata(self):
-        '''Returns True if all of the Entity's contain no data (empty DataFrames).
-        In general, EntitySets with no data are created by accessing the EntitySet.metadata property,
-        which returns a copy of the current EntitySet with all data removed.
-        '''
-        return all(e.df.empty for e in self.entity_dict.values())
-
-    def to_pickle(self, path):
+    def to_pickle(self, path, compression=None):
         '''Write entityset to disk in the pickle format, location specified by `path`.
 
             Args:
-                * entityset: entityset to write to disk
-                * path (str): location on disk to write to (will be created as a directory)
+                path (str): location on disk to write to (will be created as a directory)
+                compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
         '''
-
-        write_entityset(self, path, serialization_method='pickle')
+        serialize.write_data_description(self, path, format='pickle', compression=compression)
         return self
 
-    def to_parquet(self, path):
+    def to_parquet(self, path, engine='auto', compression=None):
         '''Write entityset to disk in the parquet format, location specified by `path`.
 
             Args:
-                * entityset: entityset to write to disk
-                * path (str): location on disk to write to (will be created as a directory)
+                path (str): location on disk to write to (will be created as a directory)
+                engine (str) : Name of the engine to use. Possible values are: {'auto', 'pyarrow', 'fastparquet'}.
+                compression (str) : Name of the compression to use. Possible values are: {'snappy', 'gzip', 'brotli', None}.
         '''
-
-        write_entityset(self, path, serialization_method='parquet')
+        serialize.write_data_description(self, path, format='parquet', engine=engine, compression=compression)
         return self
 
-    def create_metadata_dict(self):
-        return {
-            'id': self.id,
-            'relationships': [{
-                'parent_entity': r.parent_entity.id,
-                'parent_variable': r.parent_variable.id,
-                'child_entity': r.child_entity.id,
-                'child_variable': r.child_variable.id,
-            } for r in self.relationships],
-            'entity_dict': {eid: {
-                'index': e.index,
-                'time_index': e.time_index,
-                'secondary_time_index': e.secondary_time_index,
-                'variables': {
-                    v.id: v.create_metadata_dict()
-                    for v in e.variables
-                },
-                'has_last_time_index': e.last_time_index is not None
-            } for eid, e in self.entity_dict.items()},
-        }
+    def to_csv(self, path, sep=',', encoding='utf-8', engine='python', compression=None):
+        '''Write entityset to disk in the csv format, location specified by `path`.
 
-    @classmethod
-    def from_metadata(cls, metadata, data_root=None):
-        es = EntitySet(metadata['id'])
-        set_last_time_indexes = False
-        for eid, entity in metadata['entity_dict'].items():
-            df, variable_types = cls._load_dummy_entity_data_and_variable_types(entity)
-            if data_root is not None:
-                df = load_entity_data(entity, data_root)
-            es.entity_from_dataframe(eid,
-                                     df,
-                                     index=entity['index'],
-                                     time_index=entity['time_index'],
-                                     secondary_time_index=entity['secondary_time_index'],
-                                     variable_types=variable_types)
-            if entity['has_last_time_index']:
-                set_last_time_indexes = True
-            for vid, v in entity['variables'].items():
-                if v['interesting_values'] and len(v['interesting_values']):
-                    es[eid][vid].interesting_values = v['interesting_values']
-        for rel in metadata['relationships']:
-            es.add_relationship(Relationship(
-                es[rel['parent_entity']][rel['parent_variable']],
-                es[rel['child_entity']][rel['child_variable']],
-            ))
-        if set_last_time_indexes:
-            es.add_last_time_indexes()
-        return es
+            Args:
+                path (str) : Location on disk to write to (will be created as a directory)
+                sep (str) : String of length 1. Field delimiter for the output file.
+                encoding (str) : A string representing the encoding to use in the output file, defaults to 'utf-8'.
+                engine (str) : Name of the engine to use. Possible values are: {'c', 'python'}.
+                compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
+        '''
+        serialize.write_data_description(self, path, format='csv', index=False, sep=sep, encoding=encoding, engine=engine, compression=compression)
+        return self
 
     ###########################################################################
     #   Public getter/setter methods  #########################################
@@ -318,7 +266,7 @@ class EntitySet(object):
                                         child_v, child_e.id, child_dtype))
 
         self.relationships.append(relationship)
-        self.reset_metadata()
+        self.reset_data_description()
         return self
 
     def get_pandas_data_slice(self, filter_entity_ids, index_eid,
@@ -702,7 +650,7 @@ class EntitySet(object):
             already_sorted=already_sorted,
             make_index=make_index)
         self.entity_dict[entity.id] = entity
-        self.reset_metadata()
+        self.reset_data_description()
         return self
 
     def normalize_entity(self, base_entity_id, new_entity_id, index,
@@ -852,7 +800,7 @@ class EntitySet(object):
         new_entity = self.entity_dict[new_entity_id]
         base_entity.convert_variable_type(base_entity_index, vtypes.Id, convert_data=False)
         self.add_relationship(Relationship(new_entity[index], base_entity[base_entity_index]))
-        self.reset_metadata()
+        self.reset_data_description()
         return self
 
     ###########################################################################
@@ -905,7 +853,7 @@ class EntitySet(object):
                                                recalculate_last_time_indexes=False)
 
         combined_es.add_last_time_indexes(updated_entities=has_last_time_index)
-        self.reset_metadata()
+        self.reset_data_description()
         return combined_es
 
     ###########################################################################
@@ -917,7 +865,7 @@ class EntitySet(object):
         an instance or children of that instance were observed).  Used when
         calculating features using training windows
         Args:
-          * updated_entities (list[str]): List of entity ids to update last_time_index for
+            updated_entities (list[str]): List of entity ids to update last_time_index for
                 (will update all parents of those entities as well)
         """
         # Generate graph of entities to find leaf entities
@@ -1008,7 +956,7 @@ class EntitySet(object):
                     entity.last_time_index.name = 'last_time'
 
             explored.add(entity.id)
-        self.reset_metadata()
+        self.reset_data_description()
 
     ###########################################################################
     #  Other ###############################################
@@ -1027,7 +975,7 @@ class EntitySet(object):
         """
         for entity in self.entities:
             entity.add_interesting_values(max_values=max_values, verbose=verbose)
-        self.reset_metadata()
+        self.reset_data_description()
 
     def related_instances(self, start_entity_id, final_entity_id,
                           instance_ids=None, time_last=None,
@@ -1149,7 +1097,7 @@ class EntitySet(object):
 
         # Draw entities
         for entity in self.entities:
-            variables_string = '\l'.join([var.id + ' : ' + var.dtype  # noqa: W605
+            variables_string = '\l'.join([var.id + ' : ' + var.type_string  # noqa: W605
                                           for var in entity.variables])
             label = '{%s|%s\l}' % (entity.id, variables_string)  # noqa: W605
             graph.node(entity.id, shape='record', label=label)
@@ -1254,27 +1202,3 @@ class EntitySet(object):
                     frames[child_entity.id] = merge_df.merge(child_df,
                                                              left_on=r.child_variable.id,
                                                              right_on=r.child_variable.id)
-
-    @classmethod
-    def _load_dummy_entity_data_and_variable_types(cls, metadata):
-        variable_types = {}
-        defaults = []
-        columns = []
-        variable_names = {}
-        for elt in dir(vtypes):
-            try:
-                cls = getattr(vtypes, elt)
-                if issubclass(cls, vtypes.Variable):
-                    variable_names[cls._dtype_repr] = cls
-            except TypeError:
-                pass
-        for vid, vmetadata in metadata['variables'].items():
-            if vmetadata['dtype_repr']:
-                vtype = variable_names.get(vmetadata['dtype_repr'], vtypes.Variable)
-                variable_types[vid] = vtype
-                defaults.append(vtypes.DEFAULT_DTYPE_VALUES[vtype._default_pandas_dtype])
-            else:
-                defaults.append(vtypes.DEFAULT_DTYPE_VALUES[object])
-            columns.append(vid)
-        df = pd.DataFrame({c: [d] for c, d in zip(columns, defaults)}).head(0)
-        return df, variable_types

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -75,10 +76,10 @@ def test_update_data(es):
         es['customers'].update_data(df.drop(columns=['cohort']))
     assert 'Updated dataframe is missing new cohort column' in str(excinfo)
 
-    error_text = 'Updated dataframe contains 13 columns, expecting 12'
+    error_text = 'Updated dataframe contains 15 columns, expecting 14'
     with pytest.raises(ValueError, match=error_text) as excinfo:
         es['customers'].update_data(df)
-    assert 'Updated dataframe contains 13 columns, expecting 12' in str(excinfo)
+    assert 'Updated dataframe contains 15 columns, expecting 14' in str(excinfo)
 
     # test already_sorted on entity without time index
     df = es["sessions"].df.copy(deep=True)
@@ -95,3 +96,19 @@ def test_update_data(es):
     assert es["customers"].df["id"].iloc[0] == 0
     es["customers"].update_data(df.copy(deep=True), already_sorted=True)
     assert es["customers"].df["id"].iloc[0] == 2
+
+
+def test_query_by_values_returns_rows_in_given_order():
+    data = pd.DataFrame({
+        "id": [1, 2, 3, 4, 5],
+        "value": ["a", "c", "b", "a", "a"],
+        "time": [1000, 2000, 3000, 4000, 5000]
+    })
+
+    es = ft.EntitySet()
+    es = es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
+                                  time_index="time", variable_types={
+                                      "value": ft.variable_types.Categorical
+                                  })
+    query = es['test'].query_by_values(['b', 'a'], variable_id='value')
+    assert np.array_equal(query['id'], [1, 3, 4, 5])

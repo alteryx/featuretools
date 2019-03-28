@@ -14,6 +14,7 @@ from featuretools.variable_types import (
     Categorical,
     Datetime,
     DatetimeTimeIndex,
+    Discrete,
     Id,
     Numeric,
     NumericTimeIndex,
@@ -462,13 +463,43 @@ class TransformFeature(FeatureBase):
         return self.primitive.generate_name(base_feature_names=[bf.get_name() for bf in self.base_features])
 
 
+class GroupByTransformFeature(TransformFeature):
+    def __init__(self, base_features, primitive, groupby):
+        if not isinstance(groupby, FeatureBase):
+            groupby = IdentityFeature(groupby)
+        assert issubclass(groupby.variable_type, Discrete)
+        self.groupby = groupby
+
+        if hasattr(base_features, '__iter__'):
+            base_features.append(groupby)
+        else:
+            base_features = [base_features, groupby]
+
+        super(GroupByTransformFeature, self).__init__(base_features,
+                                                      primitive=primitive)
+
+    def copy(self):
+        # the groupby feature is appended to base_features in the __init__
+        # so here we separate them again
+        return GroupByTransformFeature(self.base_features[:-1],
+                                       self.primitive,
+                                       self.groupby)
+
+    def generate_name(self):
+        # exclude the groupby feature from base_names since it has a special
+        # place in the feature name
+        base_names = [bf.get_name() for bf in self.base_features[:-1]]
+        _name = self.primitive.generate_name(base_names)
+        return u"{} by {}".format(_name, self.groupby.get_name())
+
+
 class Feature(object):
     """
     Alias to create feature. Infers the feature type based on init parameters.
     """
 
-    def __new__(self, base, entity=None,
-                parent_entity=None, primitive=None, use_previous=None, where=None):
+    def __new__(self, base, entity=None, groupby=None, parent_entity=None,
+                primitive=None, use_previous=None, where=None):
 
         # either direct or indentity
         if primitive is None and entity is None:
@@ -481,7 +512,12 @@ class Feature(object):
                                       use_previous=use_previous, where=where,
                                       primitive=primitive)
         elif primitive is not None:
-            assert isinstance(primitive, TransformPrimitive) or issubclass(primitive, TransformPrimitive)
+            assert (isinstance(primitive, TransformPrimitive) or
+                    issubclass(primitive, TransformPrimitive))
+            if groupby is not None:
+                return GroupByTransformFeature(base,
+                                               primitive=primitive,
+                                               groupby=groupby)
             return TransformFeature(base, primitive=primitive)
 
         raise Exception("Unrecognized feature initialization")
