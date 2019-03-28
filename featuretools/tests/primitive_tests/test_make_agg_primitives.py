@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 import featuretools as ft
@@ -22,15 +23,16 @@ def test_description_make_agg_primitive():
 
     Maximum2 = make_agg_primitive(function=maximum,
                                   input_types=[Numeric],
-                                  return_type=Numeric)
+                                  return_type=Numeric,
+                                  description='Get max value of a column.')
 
     Maximum3 = make_agg_primitive(function=maximum,
                                   input_types=[Numeric],
                                   return_type=Numeric,
-                                  default_value='Get the max value of a column.')
+                                  default_value=np.nan)
 
     assert Maximum.__doc__ != Maximum2.__doc__
-    assert Maximum2.__doc__ == Maximum3.__doc__
+    assert Maximum2.__doc__ != Maximum3.__doc__
 
 
 # Check the successful default value for custom aggregation primitives
