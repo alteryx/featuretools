@@ -490,7 +490,7 @@ class GroupByTransformFeature(TransformFeature):
         # place in the feature name
         base_names = [bf.get_name() for bf in self.base_features[:-1]]
         _name = self.primitive.generate_name(base_names)
-        return "{} by {}".format(_name, self.groupby.get_name())
+        return u"{} by {}".format(_name, self.groupby.get_name())
 
 
 class Feature(object):

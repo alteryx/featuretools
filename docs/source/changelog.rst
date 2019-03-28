@@ -2,6 +2,47 @@
 
 Changelog
 ---------
+**v0.7.0** Mar XX, 2019
+
+Breaking Changes:
+
+* ``ft.dfs`` now has a ``groupby_transform_primitives`` parameter that DFS uses to automatically construct features that group by an ID column and then apply a transform primitive to search group. This change applies to the following primitives: ``CumSum``, ``CumCount``, ``CumMean``, ``CumMin``, and ``CumMax``.
+
+    Previous behavior
+
+    .. code-block:: python
+
+        ft.dfs(entityset=es,
+               target_entity='customers',
+               transform_primitives=["cum_mean"])
+
+    New behavior
+
+    .. code-block:: python
+
+        ft.dfs(entityset=es,
+               target_entity='customers',
+               groupby_transform_primitives=["cum_mean"])
+
+* Related to the above change, cumulative transform features are now defined using a new feature class, ``GroupByTransformFeature``.
+
+    Previous behavior
+
+    .. code-block:: python
+
+        ft.Feature([base_feature, groupby_feature], primitive=CumulativePrimitive)
+
+
+    New behavior
+
+    .. code-block:: python
+
+        ft.Feature(base_feature, groupby=groupby_feature, primitive=CumulativePrimitive)
+
+
+
+
+
 **v0.6.1** Feb 15, 2019
     * Cumulative primitives (:pr:`410`)
     * Entity.query_by_values now preserves row order of underlying data (:pr:`428`)
