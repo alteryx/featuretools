@@ -24,7 +24,7 @@ Breaking Changes:
                target_entity='customers',
                groupby_transform_primitives=["cum_mean"])
 
-* Related to the above change, cumulative transform features are now calculated using a new feature class, ``GroupByTransformFeature``.
+* Related to the above change, cumulative transform features are now defined using a new feature class, ``GroupByTransformFeature``.
 
     Previous behavior
 
