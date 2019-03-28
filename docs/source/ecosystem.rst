@@ -64,6 +64,12 @@ Demos & Use Cases
 
 .. _`Predict poverty of households in Costa Rica`: https://www.kaggle.com/willkoehrsen/featuretools-for-good
 
+`Predicting Functional Threshold Power (FTP)`_
+==============================================
+- This notebook and accompanying report evaluates the use of machine learning for predicting a cyclist’s FTP using data collected from previous training sessions. Featuretools is used to generate a set of independent variables that capture changes in performance over time.
+
+.. _`Predicting Functional Threshold Power (FTP)`: https://github.com/jrkinley/ftp_proba
+
 .. note::
 
     For more demos written by `Feature Labs <https://www.featurelabs.com>`_, see `featuretools.com/demos <https://www.featuretools.com/demos/>`_

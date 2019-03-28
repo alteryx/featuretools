@@ -7,11 +7,7 @@ from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
 from featuretools.computational_backends import PandasBackend
-from featuretools.primitives.base import make_trans_primitive
-from featuretools.synthesis.deep_feature_synthesis import match
-from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
-
-from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; CumSum,
+from featuretools.primitives import (
     Absolute,
     AddNumeric,
     AddNumericScalar,
@@ -38,12 +34,12 @@ from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; 
     Month,
     MultiplyNumeric,
     MultiplyNumericScalar,
+    NMostCommon,
     Not,
     NotEqual,
     NotEqualScalar,
     NumCharacters,
     NumWords,
-    NMostCommon,
     Percentile,
     ScalarSubtractNumericFeature,
     Second,
@@ -54,6 +50,9 @@ from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; 
     Year,
     get_transform_primitives
 )
+from featuretools.primitives.base import make_trans_primitive
+from featuretools.synthesis.deep_feature_synthesis import match
+from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
 
 # some tests change the entityset values, so we have to create it fresh
@@ -399,293 +398,33 @@ def test_latlong(es):
 def test_haversine(es):
     log_latlong_feat = es['log']['latlong']
     log_latlong_feat2 = es['log']['latlong2']
-    haversine = ft.Feature([log_latlong_feat, log_latlong_feat2], primitive=Haversine)
+    haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
+                           primitive=Haversine)
     features = [haversine]
 
-    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
+    df = ft.calculate_feature_matrix(entityset=es, features=features,
+                                     instance_ids=range(15))
     values = df[haversine.get_name()].values
-    real = [0., 524.15585776, 1043.00845747, 1551.12130243,
-            2042.79840241, 0., 137.86000883, 275.59396684,
-            413.07563177, 0., 0., 524.15585776,
-            0., 739.93819145, 1464.27975511]
+    real = [0, 525.318462, 1045.32190304, 1554.56176802, 2047.3294327, 0,
+            138.16578931, 276.20524822, 413.99185444, 0, 0, 525.318462, 0,
+            741.57941183, 1467.52760175]
     assert len(values) == 15
-    for i, v in enumerate(real):
-        assert v - values[i] < .0001
+    assert np.allclose(values, real, atol=0.0001)
 
-# # M TODOS
-# def test_cum_sum(es):
-#     log_value_feat = es['log']['value']
-#     cum_sum = CumSum(log_value_feat, es['log']['session_id'])
-#     features = [cum_sum]
-#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-#     cvalues = df[cum_sum.get_name()].values
-#     assert len(cvalues) == 15
-#     cum_sum_values = [0, 5, 15, 30, 50, 0, 1, 3, 6, 0, 0, 5, 0, 7, 21]
-#     for i, v in enumerate(cum_sum_values):
-#         assert v == cvalues[i]
-
-# # M TODOS
-# def test_cum_min(es):
-#     log_value_feat = es['log']['value']
-#     cum_min = CumMin(log_value_feat, es['log']['session_id'])
-#     features = [cum_min]
-#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-#     cvalues = df[cum_min.get_name()].values
-#     assert len(cvalues) == 15
-#     cum_min_values = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-#     for i, v in enumerate(cum_min_values):
-#         assert v == cvalues[i]
-
-# # M TODOS
-# def test_cum_max(es):
-#     log_value_feat = es['log']['value']
-#     cum_max = CumMax(log_value_feat, es['log']['session_id'])
-#     features = [cum_max]
-#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-#     cvalues = df[cum_max.get_name()].values
-#     assert len(cvalues) == 15
-#     cum_max_values = [0, 5, 10, 15, 20, 0, 1, 2, 3, 0, 0, 5, 0, 7, 14]
-#     for i, v in enumerate(cum_max_values):
-#         assert v == cvalues[i]
-
-# # M TODOS
-# def test_cum_sum_use_previous(es):
-#     log_value_feat = es['log']['value']
-#     cum_sum = CumSum(log_value_feat, es['log']['session_id'],
-#                      use_previous=Timedelta(3, 'observations',
-#                                             entity=es['log']))
-#     features = [cum_sum]
-#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-#     cvalues = df[cum_sum.get_name()].values
-#     assert len(cvalues) == 15
-#     cum_sum_values = [0, 5, 15, 30, 45, 0, 1, 3, 6, 0, 0, 5, 0, 7, 21]
-#     for i, v in enumerate(cum_sum_values):
-#         assert v == cvalues[i]
-
-# # M TODOS
-# def test_cum_sum_use_previous_integer_time(int_es):
-#     es = int_es
-
-#     log_value_feat = es['log']['value']
-#     with pytest.raises(AssertionError, match=''):
-#         CumSum(log_value_feat, es['log']['session_id'],
-#                use_previous=Timedelta(3, 'm'))
-
-#     cum_sum = CumSum(log_value_feat, es['log']['session_id'],
-#                      use_previous=Timedelta(3, 'observations',
-#                                             entity=es['log']))
-#     features = [cum_sum]
-#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-#     cvalues = df[cum_sum.get_name()].values
-#     assert len(cvalues) == 15
-#     cum_sum_values = [0, 5, 15, 30, 45, 0, 1, 3, 6, 0, 0, 5, 0, 7, 21]
-#     for i, v in enumerate(cum_sum_values):
-#         assert v == cvalues[i]
-
-# # M TODOS
-# def test_cum_sum_where(es):
-#     log_value_feat = es['log']['value']
-#     compare_feat = GreaterThan(log_value_feat, 3)
-#     dfeat = ft.Feature(es['sessions']['customer_id'], es['log'])
-#     cum_sum = CumSum(log_value_feat, dfeat,
-#                      where=compare_feat)
-#     features = [cum_sum]
-#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-#     cvalues = df[cum_sum.get_name()].values
-#     assert len(cvalues) == 15
-#     cum_sum_values = [0, 5, 15, 30, 50, 50, 50, 50, 50, 50,
-#                       0, 5, 5, 12, 26]
-#     for i, v in enumerate(cum_sum_values):
-#         if not np.isnan(v):
-#             assert v == cvalues[i]
-#         else:
-#             assert (np.isnan(cvalues[i]))
-
-# # M TODOS
-# def test_cum_sum_use_previous_and_where(es):
-#     log_value_feat = es['log']['value']
-#     compare_feat = GreaterThan(log_value_feat, 3)
-#     # todo should this be cummean?
-#     dfeat = ft.Feature(es['sessions']['customer_id'], es['log'])
-#     cum_sum = CumSum(log_value_feat, dfeat,
-#                      where=compare_feat,
-#                      use_previous=Timedelta(3, 'observations',
-#                                             entity=es['log']))
-#     features = [cum_sum]
-#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-
-#     cum_sum_values = [0, 5, 15, 30, 45, 45, 45, 45, 45, 45,
-#                       0, 5, 5, 12, 26]
-#     cvalues = df[cum_sum.get_name()].values
-#     assert len(cvalues) == 15
-#     for i, v in enumerate(cum_sum_values):
-#         assert v == cvalues[i]
-
-# # M TODOS
-# def test_cum_sum_group_on_nan(es):
-#     log_value_feat = es['log']['value']
-#     es['log'].df['product_id'] = (['coke zero'] * 3 + ['car'] * 2 +
-#                                   ['toothpaste'] * 3 + ['brown bag'] * 2 +
-#                                   ['shoes'] +
-#                                   [np.nan] * 4 +
-#                                   ['coke_zero'] * 2)
-#     cum_sum = CumSum(log_value_feat, es['log']['product_id'])
-#     features = [cum_sum]
-#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-#     cvalues = df[cum_sum.get_name()].values
-#     assert len(cvalues) == 15
-#     cum_sum_values = [0, 5, 15,
-#                       15, 35,
-#                       0, 1, 3,
-#                       3, 3,
-#                       0,
-#                       np.nan, np.nan, np.nan, np.nan]
-#     for i, v in enumerate(cum_sum_values):
-#         if np.isnan(v):
-#             assert (np.isnan(cvalues[i]))
-#         else:
-#             assert v == cvalues[i]
-
-# # M TODOS
-# def test_cum_sum_use_previous_group_on_nan(es):
-#     # TODO: Figure out how to test where `df`
-#     # in pd_rolling get_function() has multiindex
-#     log_value_feat = es['log']['value']
-#     es['log'].df['product_id'] = (['coke zero'] * 3 + ['car'] * 2 +
-#                                   ['toothpaste'] * 3 + ['brown bag'] * 2 +
-#                                   ['shoes'] +
-#                                   [np.nan] * 4 +
-#                                   ['coke_zero'] * 2)
-#     cum_sum = CumSum(log_value_feat,
-#                      es['log']['product_id'],
-#                      es["log"]["datetime"],
-#                      use_previous=Timedelta(40, 'seconds'))
-#     features = [cum_sum]
-#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-#     cvalues = df[cum_sum.get_name()].values
-#     assert len(cvalues) == 15
-#     cum_sum_values = [0, 5, 15,
-#                       15, 35,
-#                       0, 1, 3,
-#                       3, 0,
-#                       0,
-#                       np.nan, np.nan, np.nan, np.nan]
-#     for i, v in enumerate(cum_sum_values):
-#         if np.isnan(v):
-#             assert (np.isnan(cvalues[i]))
-#         else:
-#             assert v == cvalues[i]
-
-# # M TODOS
-# def test_cum_sum_use_previous_and_where_absolute(es):
-#     log_value_feat = es['log']['value']
-#     compare_feat = GreaterThan(log_value_feat, 3)
-#     dfeat = ft.Feature(es['sessions']['customer_id'], es['log'])
-#     cum_sum = CumSum(log_value_feat, dfeat, es["log"]["datetime"],
-#                      where=compare_feat,
-#                      use_previous=Timedelta(40, 'seconds'))
-#     features = [cum_sum]
-#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-
-#     cum_sum_values = [0, 5, 15, 30, 50, 0, 0, 0, 0, 0,
-#                       0, 5, 0, 7, 21]
-#     cvalues = df[cum_sum.get_name()].values
-#     assert len(cvalues) == 15
-#     for i, v in enumerate(cum_sum_values):
-#         assert v == cvalues[i]
-
-# # M TODOS
-# def test_cum_handles_uses_full_entity(es):
-#     def check(feature):
-#         pandas_backend = PandasBackend(es, [feature])
-#         df_1 = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2], time_last=None)
-#         df_2 = pandas_backend.calculate_all_features(instance_ids=[2], time_last=None)
-
-#         # check that the value for instance id 2 matches
-#         assert (df_2.loc[2] == df_1.loc[2]).all()
-
-#     for primitive in [CumSum, CumMean, CumMax, CumMin]:
-#         check(primitive(es['log']['value'], es['log']['session_id']))
-
-#     check(Cumft.Feature(es['log']['id'], parent_entity=es['log']['session_id']), primitive=Count)
-
-# # M TODOS
-# def test_cum_mean(es):
-#     log_value_feat = es['log']['value']
-#     cum_mean = CumMean(log_value_feat, es['log']['session_id'])
-#     features = [cum_mean]
-#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-#     cvalues = df[cum_mean.get_name()].values
-#     assert len(cvalues) == 15
-#     cum_mean_values = [0, 2.5, 5, 7.5, 10, 0, .5, 1, 1.5, 0, 0, 2.5, 0, 3.5, 7]
-#     for i, v in enumerate(cum_mean_values):
-#         assert v == cvalues[i]
-
-# # M TODOS
-# def test_cum_mean_use_previous(es):
-#     log_value_feat = es['log']['value']
-#     cum_mean = CumMean(log_value_feat, es['log']['session_id'],
-#                        use_previous=Timedelta(3, 'observations',
-#                                               entity=es['log']))
-#     features = [cum_mean]
-#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-#     cvalues = df[cum_mean.get_name()].values
-#     assert len(cvalues) == 15
-#     cum_mean_values = [0, 2.5, 5, 10, 15, 0, .5, 1, 2, 0, 0, 2.5, 0, 3.5, 7]
-#     for i, v in enumerate(cum_mean_values):
-#         assert v == cvalues[i]
-
-# # M TODOS
-# def test_cum_mean_where(es):
-#     log_value_feat = es['log']['value']
-#     compare_feat = GreaterThan(log_value_feat, 3)
-#     dfeat = ft.Feature(es['sessions']['customer_id'], es['log'])
-#     cum_mean = CumMean(log_value_feat, dfeat,
-#                        where=compare_feat)
-#     features = [cum_mean]
-#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-#     cvalues = df[cum_mean.get_name()].values
-#     assert len(cvalues) == 15
-#     cum_mean_values = [0, 5, 7.5, 10, 12.5, 12.5, 12.5, 12.5, 12.5, 12.5,
-#                        0, 5, 5, 6, 26. / 3]
-
-#     for i, v in enumerate(cum_mean_values):
-#         if not np.isnan(v):
-#             assert v == cvalues[i]
-#         else:
-#             assert (np.isnan(cvalues[i]))
-
-# # M TODOS
-# def test_cum_mean_use_previous_and_where(es):
-#     log_value_feat = es['log']['value']
-#     compare_feat = GreaterThan(log_value_feat, 3)
-#     # todo should this be cummean?
-#     dfeat = ft.Feature(es['sessions']['customer_id'], es['log'])
-#     cum_mean = CumMean(log_value_feat, dfeat,
-#                        where=compare_feat,
-#                        use_previous=Timedelta(2, 'observations',
-#                                               entity=es['log']))
-#     features = [cum_mean]
-#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-
-#     cum_mean_values = [0, 5, 7.5, 12.5, 17.5, 17.5, 17.5, 17.5, 17.5, 17.5,
-#                        0, 5, 5, 6, 10.5]
-#     cvalues = df[cum_mean.get_name()].values
-#     assert len(cvalues) == 15
-#     for i, v in enumerate(cum_mean_values):
-#         assert v == cvalues[i]
-
-# M TODOS
-# def test_cum_count(es):
-#     log_id_feat = es['log']['id']
-#     cum_count = CumCount(log_id_feat, es['log']['session_id'])
-#     features = [cum_count]
-#     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-#     cvalues = df[cum_count.get_name()].values
-#     assert len(cvalues) == 15
-#     cum_count_values = [1, 2, 3, 4, 5, 1, 2, 3, 4, 1, 1, 2, 1, 2, 3]
-#     for i, v in enumerate(cum_count_values):
-#         assert v == cvalues[i]
+    haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
+                           primitive=Haversine(unit='kilometers'))
+    features = [haversine]
+    df = ft.calculate_feature_matrix(entityset=es, features=features,
+                                     instance_ids=range(15))
+    values = df[haversine.get_name()].values
+    real_km = [0, 845.41812212, 1682.2825471, 2501.82467535, 3294.85736668,
+               0, 222.35628593, 444.50926278, 666.25531268, 0, 0,
+               845.41812212, 0, 1193.45638714, 2361.75676089]
+    assert len(values) == 15
+    assert np.allclose(values, real_km, atol=0.0001)
+    error_text = "Invalid unit inches provided. Must be one of"
+    with pytest.raises(ValueError, match=error_text):
+        Haversine(unit='inches')
 
 
 def test_text_primitives(es):
