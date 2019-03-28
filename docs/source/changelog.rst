@@ -6,27 +6,36 @@ Changelog
 
 Breaking Changes:
 
-* Cumulative transform primitives are now calculated using a new feature class, ``GroupByTransformFeature``.  ``ft.dfs`` now has a ``groupby_transform_primitives`` parameter, which DFS will use to automatically construct groupby features. This change applies to ``CumSum``, ``CumCount``, ``CumMean``, ``CumMin``, and ``CumMax``.
+* ``ft.dfs`` now has a ``groupby_transform_primitives`` parameter that DFS uses to automatically construct features that group by an ID column and then apply a transform primitive to search group. This change applies to the following primitives: ``CumSum``, ``CumCount``, ``CumMean``, ``CumMin``, and ``CumMax``.
+
+    Previous behavior
 
     .. code-block:: python
-        :caption: Previous behavior
 
-        ft.dfs(entityset=es, target_entity='customers', transform_primitives=["cum_mean"])
+        ft.dfs(entityset=es,
+               target_entity='customers',
+               transform_primitives=["cum_mean"])
 
-    .. code-block:: python
-        :caption: New behavior
-
-        ft.dfs(entityset=es, target_entity='customers', groupby_transform_primitives=["cum_mean"])
-
-    Changes to writing individual features:
+    New behavior
 
     .. code-block:: python
-        :caption: Previous behavior
+
+        ft.dfs(entityset=es,
+               target_entity='customers',
+               groupby_transform_primitives=["cum_mean"])
+
+* Related to the above change, cumulative transform features are now calculated using a new feature class, ``GroupByTransformFeature``.
+
+    Previous behavior
+
+    .. code-block:: python
 
         ft.Feature([base_feature, groupby_feature], primitive=CumulativePrimitive)
 
+
+    New behavior
+
     .. code-block:: python
-        :caption: New behavior
 
         ft.Feature(base_feature, groupby=groupby_feature, primitive=CumulativePrimitive)
 
