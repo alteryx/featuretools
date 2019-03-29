@@ -40,17 +40,18 @@ Breaking Changes:
         ft.Feature(base_feature, groupby=groupby_feature, primitive=CumulativePrimitive)
 
 Summary:
-    * Improve Entity Set Serialization (#361)
-    * Support calling a primitive instance's function directly (#461, #468)
-    * Support other libraries extending featuretools functionality via entrypoints (#452)
-    * Add GroupByTransformFeature (#455, #472)
-    * Update Haversine Primitive (#435, #462)
-    * Add commutative argument to SubtractNumeric and DivideNumeric primitives (#457)
-    * Add FilePath variable_type (#470)
-    * Add PhoneNumber, DateOfBirth, URL variable types (#447)
-    * Generalize infer_variable_type, convert_variable_data and convert_all_variable_data methods (#423)
-    * Documentation updates (#438, #446, #458, #469)
-    * Testing updates (#440, #444, #445, #459)
+    * Improve Entity Set Serialization (:pr:`361`)
+    * Support calling a primitive instance's function directly (:pr:`461`, :pr:`468`)
+    * Support other libraries extending featuretools functionality via entrypoints (:pr:`452`)
+    * Remove featuretools install command (:pr:`475`)
+    * Add GroupByTransformFeature (:pr:`455`, :pr:`472`, :pr:`476`)
+    * Update Haversine Primitive (:pr:`435`, :pr:`462`)
+    * Add commutative argument to SubtractNumeric and DivideNumeric primitives (:pr:`457`)
+    * Add FilePath variable_type (:pr:`470`)
+    * Add PhoneNumber, DateOfBirth, URL variable types (:pr:`447`)
+    * Generalize infer_variable_type, convert_variable_data and convert_all_variable_data methods (:pr:`423`)
+    * Documentation updates (:pr:`438`, :pr:`446`, :pr:`458`, :pr:`469`)
+    * Testing updates (:pr:`440`, :pr:`444`, :pr:`445`, :pr:`459`)
 
     Thanks to the following people for contributing to this release: :user:`bukosabino`, :user:`CharlesBradshaw`, :user:`ColCarroll`, :user:`glentennis`, :user:`grayskripko`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`jrkinley`, :user:`kmax12`, :user:`RogerTangos`, :user:`rwedge`
 
