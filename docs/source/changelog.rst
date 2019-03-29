@@ -6,7 +6,7 @@ Changelog
 
 Breaking Changes:
 
-* ``ft.dfs`` now has a ``groupby_transform_primitives`` parameter that DFS uses to automatically construct features that group by an ID column and then apply a transform primitive to search group. This change applies to the following primitives: ``CumSum``, ``CumCount``, ``CumMean``, ``CumMin``, and ``CumMax``.
+* ``ft.dfs`` now has a ``groupby_trans_primitives`` parameter that DFS uses to automatically construct features that group by an ID column and then apply a transform primitive to search group. This change applies to the following primitives: ``CumSum``, ``CumCount``, ``CumMean``, ``CumMin``, and ``CumMax``.
 
     Previous behavior
 
@@ -22,7 +22,7 @@ Breaking Changes:
 
         ft.dfs(entityset=es,
                target_entity='customers',
-               groupby_transform_primitives=["cum_mean"])
+               groupby_trans_primitives=["cum_mean"])
 
 * Related to the above change, cumulative transform features are now defined using a new feature class, ``GroupByTransformFeature``.
 
