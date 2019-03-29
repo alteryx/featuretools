@@ -109,7 +109,7 @@ def test_all_variables(entities, relationships):
                                    instance_ids=instance_ids,
                                    agg_primitives=[Max, Mean, Min, Sum],
                                    trans_primitives=[],
-                                   groupby_transform_primitives=["cum_sum"],
+                                   groupby_trans_primitives=["cum_sum"],
                                    max_depth=3,
                                    allowed_paths=None,
                                    ignore_entities=None,
