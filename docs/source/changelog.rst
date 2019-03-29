@@ -18,7 +18,7 @@ Changelog
 
     Thanks to the following people for contributing to this release: :user:`bukosabino`, :user:`CharlesBradshaw`, :user:`ColCarroll`, :user:`glentennis`, :user:`grayskripko`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`jrkinley`, :user:`kmax12`, :user:`RogerTangos`, :user:`rwedge`
 
-Breaking Changes:
+**Breaking Changes**
 
 * ``ft.dfs`` now has a ``groupby_trans_primitives`` parameter that DFS uses to automatically construct features that group by an ID column and then apply a transform primitive to search group. This change applies to the following primitives: ``CumSum``, ``CumCount``, ``CumMean``, ``CumMin``, and ``CumMax``.
 
