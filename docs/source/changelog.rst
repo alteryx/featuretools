@@ -2,7 +2,7 @@
 
 Changelog
 ---------
-**v0.7.0** Mar 28, 2019
+**v0.7.0** Mar 29, 2019
 
 Breaking Changes:
 
