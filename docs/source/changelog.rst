@@ -14,7 +14,7 @@ Breaking Changes:
 
         ft.dfs(entityset=es,
                target_entity='customers',
-               transform_primitives=["cum_mean"])
+               trans_primitives=["cum_mean"])
 
     New behavior
 
