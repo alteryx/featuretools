@@ -2,7 +2,7 @@ import click
 import pandas as pd
 
 import featuretools
-from featuretools.primitives.install import get_featuretools_root
+from featuretools.primitives.utils import get_featuretools_root
 
 
 @click.group()

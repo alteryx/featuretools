@@ -3,7 +3,7 @@ import os
 import pytest
 
 from featuretools.primitives.base import PrimitiveBase
-from featuretools.primitives.install import (
+from featuretools.primitives.utils import (
     get_featuretools_root,
     list_primitive_files,
     load_primitive_from_file
