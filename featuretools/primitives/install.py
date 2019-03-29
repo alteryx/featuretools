@@ -19,12 +19,6 @@ def get_featuretools_root():
     return os.path.dirname(featuretools.__file__)
 
 
-def get_installation_dir():
-    "return the path to the installation directory with in featuretools"
-    installation_dir = os.path.join(get_featuretools_root(), "primitives", "installed")
-    return installation_dir
-
-
 def list_primitive_files(directory):
     """returns list of files in directory that might contain primitives"""
     files = os.listdir(directory)
