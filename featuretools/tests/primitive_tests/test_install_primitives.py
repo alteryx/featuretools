@@ -1,5 +1,4 @@
 import os
-import shutil
 
 import pytest
 
@@ -8,18 +7,6 @@ from featuretools.primitives.install import (
     list_primitive_files,
     load_primitive_from_file
 )
-
-
-def remove_test_files(file_list):
-    # make sure primitive files aren't there e.g from a failed run
-    for p in file_list:
-        try:
-            if os.path.isdir(p):
-                shutil.rmtree(p)
-            else:
-                os.unlink(p)
-        except Exception:
-            pass
 
 
 @pytest.fixture(scope='module')
@@ -33,38 +20,8 @@ def primitives_to_install_dir(this_dir):
 
 
 @pytest.fixture(scope='module')
-def primitives_to_install_gzip(this_dir):
-    return os.path.join(this_dir, "primitives_to_install.tar.gz")
-
-
-@pytest.fixture(scope='module')
 def bad_primitives_files_dir(this_dir):
     return os.path.join(this_dir, "bad_primitive_files")
-
-
-@pytest.fixture
-def amazon_path_s3():
-    return "s3://featuretools-static/primitives_to_install_v1.tar.gz"
-
-
-@pytest.fixture
-def amazon_path_http():
-    return "https://s3.amazonaws.com/featuretools-static/primitives_to_install_v1.tar.gz"
-
-
-@pytest.fixture
-def install_via_cli():
-    return "INSTALL_VIA_CLI"
-
-
-@pytest.fixture
-def install_via_module():
-    return "INSTALL_VIA_MODULE"
-
-
-@pytest.fixture
-def install_path(request):
-    return request.getfixturevalue(request.param)
 
 
 def test_list_primitive_files(primitives_to_install_dir):
