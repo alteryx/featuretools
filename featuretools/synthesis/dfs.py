@@ -15,7 +15,7 @@ def dfs(entities=None,
         instance_ids=None,
         agg_primitives=None,
         trans_primitives=None,
-        groupby_transform_primitives=None,
+        groupby_trans_primitives=None,
         allowed_paths=None,
         max_depth=2,
         ignore_entities=None,
@@ -75,7 +75,7 @@ def dfs(entities=None,
 
                 Default: ["day", "year", "month", "weekday", "haversine", "num_words", "num_characters"]
 
-        groupby_transform_primitives (list[str or :class:`.primitives.TransformPrimitive`], optional):
+        groupby_trans_primitives (list[str or :class:`.primitives.TransformPrimitive`], optional):
             list of Transform primitives to make GroupByTransformFeatures with
 
         allowed_paths (list[list[str]]): Allowed entity paths on which to make
@@ -191,7 +191,7 @@ def dfs(entities=None,
     dfs_object = DeepFeatureSynthesis(target_entity, entityset,
                                       agg_primitives=agg_primitives,
                                       trans_primitives=trans_primitives,
-                                      groupby_transform_primitives=groupby_transform_primitives,
+                                      groupby_trans_primitives=groupby_trans_primitives,
                                       max_depth=max_depth,
                                       where_primitives=where_primitives,
                                       allowed_paths=allowed_paths,
