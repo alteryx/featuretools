@@ -54,25 +54,26 @@ class PrimitiveBase(object):
         return os.path.join(config.get("primitive_data_folder"), filename)
 
     def get_args_string(self):
+        if self.__init__.__class__.__name__ == 'method-wrapper':
+            return ''  # __init__ is not defined
+
         def get_signature(primitive):
             v2 = version_info.major == 2
             module = __import__('funcsigs' if v2 else 'inspect')
             return module.signature(primitive.__class__)
 
         def args_to_string(primitive):
-            parameters_modified = {}
-            error = '"{}" must be attribute of {}'
+            string = {}
             parameters = get_signature(primitive).parameters
+            error = '"{}" must be attribute of {}'
             for key, parameter in parameters.items():
                 assert hasattr(primitive, key), error.format(key, primitive.__class__.__name__)
                 if parameter.default == getattr(primitive, key):
                     continue
-                parameters_modified[key] = str(getattr(primitive, key))
-            string = ', '.join(map('='.join, parameters_modified.items()))
-            string = ', ' + string if len(string) else ''
+                string[key] = str(getattr(primitive, key))
+            if len(string) == 0:
+                return ''
+            string = ', ' + ', '.join(map('='.join, string.items()))
             return string
-
-        if self.__init__.__class__.__name__ == 'method-wrapper':
-            return ''  # __init__ is not defined
 
         return args_to_string(self)
