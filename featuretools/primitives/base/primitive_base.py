@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+import inspect
 import os
 
 import numpy as np
@@ -51,3 +52,34 @@ class PrimitiveBase(object):
 
     def get_filepath(self, filename):
         return os.path.join(config.get("primitive_data_folder"), filename)
+
+    def get_args_string(self):
+        # getargspec fails for non user defined inits in python2
+        from sys import version_info
+        if version_info.major < 3:
+            try:
+                parameter_names, _, _, default_values = inspect.getargspec(self.__init__)
+            except TypeError:
+                return ""
+        else:
+            parameter_names, _, _, default_values = inspect.getargspec(self.__init__)
+
+        if default_values is None:
+            default_values = []
+
+        num_kwargs = len(default_values)
+        args = parameter_names[1:-num_kwargs]
+        kwargs = parameter_names[num_kwargs + 1:]
+
+        parameter_format = "{0}={1}"
+        variables = self.__dict__
+        arg_strings = [parameter_format.format(x, variables[x]) for x in args]
+
+        for kwarg, default in zip(kwargs, default_values):
+            val = variables[kwarg]
+            # Only add string where val != default
+            # Handles case where val = np.nan and default = np.nan
+            if val != default and not (np.isnan(val) and np.isnan(default)):
+                arg_strings.append(parameter_format.format(kwarg, val))
+
+        return ', '.join(arg_strings)

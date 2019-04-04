@@ -15,6 +15,9 @@ class TransformPrimitive(PrimitiveBase):
     def generate_name(self, base_feature_names):
         name = u"{}(".format(self.name.upper())
         name += u", ".join(base_feature_names)
+        arg_string = self.get_args_string()
+        if len(arg_string):
+            name += ', ' + arg_string
         name += u")"
         return name
 
