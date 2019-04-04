@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
-import inspect
 import os
+from sys import version_info
 
 import numpy as np
 import pandas as pd
@@ -54,32 +54,25 @@ class PrimitiveBase(object):
         return os.path.join(config.get("primitive_data_folder"), filename)
 
     def get_args_string(self):
-        # getargspec fails for non user defined inits in python2
-        from sys import version_info
-        if version_info.major < 3:
-            try:
-                parameter_names, _, _, default_values = inspect.getargspec(self.__init__)
-            except TypeError:
-                return ""
-        else:
-            parameter_names, _, _, default_values = inspect.getargspec(self.__init__)
+        def get_signature(primitive):
+            v2 = version_info.major == 2
+            module = __import__('funcsigs' if v2 else 'inspect')
+            return module.signature(primitive.__class__)
 
-        if default_values is None:
-            default_values = []
+        def args_to_string(primitive):
+            parameters_modified = {}
+            error = '"{}" must be attribute of {}'
+            parameters = get_signature(primitive).parameters
+            for key, parameter in parameters.items():
+                assert hasattr(primitive, key), error.format(key, primitive.__class__.__name__)
+                if parameter.default == getattr(primitive, key):
+                    continue
+                parameters_modified[key] = str(getattr(primitive, key))
+            string = ', '.join(map('='.join, parameters_modified.items()))
+            string = ', ' + string if len(string) else ''
+            return string
 
-        num_kwargs = len(default_values)
-        args = parameter_names[1:-num_kwargs]
-        kwargs = parameter_names[num_kwargs + 1:]
+        if self.__init__.__class__.__name__ == 'method-wrapper':
+            return ''  # __init__ is not defined
 
-        parameter_format = "{0}={1}"
-        variables = self.__dict__
-        arg_strings = [parameter_format.format(x, variables[x]) for x in args]
-
-        for kwarg, default in zip(kwargs, default_values):
-            val = variables[kwarg]
-            # Only add string where val != default
-            # Handles case where val = np.nan and default = np.nan
-            if val != default and not (np.isnan(val) and np.isnan(default)):
-                arg_strings.append(parameter_format.format(kwarg, val))
-
-        return ', '.join(arg_strings)
+        return args_to_string(self)
