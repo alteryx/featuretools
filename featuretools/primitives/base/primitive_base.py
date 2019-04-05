@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import os
+import types
 from sys import version_info
 
 import numpy as np
@@ -54,26 +55,26 @@ class PrimitiveBase(object):
         return os.path.join(config.get("primitive_data_folder"), filename)
 
     def get_args_string(self):
-        if self.__init__.__class__.__name__ == 'method-wrapper':
-            return ''  # __init__ is not defined
+        if not isinstance(self.__init__, types.MethodType):  # __init__ must be defined
+            return ''
 
-        def get_signature(primitive):
-            v2 = version_info.major == 2
-            module = __import__('funcsigs' if v2 else 'inspect')
-            return module.signature(primitive.__class__)
+        v2 = version_info.major == 2
+        module = __import__('funcsigs' if v2 else 'inspect')
+        args = module.signature(self.__class__).parameters.values()
 
-        def args_to_string(primitive):
-            string = {}
-            parameters = get_signature(primitive).parameters
+        def valid(arg):
             error = '"{}" must be attribute of {}'
-            for key, parameter in parameters.items():
-                assert hasattr(primitive, key), error.format(key, primitive.__class__.__name__)
-                if parameter.default == getattr(primitive, key):
-                    continue
-                string[key] = str(getattr(primitive, key))
-            if len(string) == 0:
-                return ''
-            string = ', ' + ', '.join(map('='.join, string.items()))
-            return string
+            assert hasattr(self, arg.name), error.format(arg.name, self.__class__.__name__)
+            is_positional_or_keyword = arg.kind == arg.POSITIONAL_OR_KEYWORD
+            not_default = arg.default != getattr(self, arg.name)
+            return is_positional_or_keyword and not_default
 
-        return args_to_string(self)
+        string = {}
+        for arg in args:
+            if not valid(arg):
+                continue
+            string[arg.name] = str(getattr(self, arg.name))
+        if len(string) == 0:
+            return ''
+        string = ', ' + ', '.join(map('='.join, string.items()))
+        return string

@@ -103,5 +103,5 @@ def test_args_string_error():
         def __init__(self, bool=True, int=0, float=None):
             pass
 
-    with raises(ValueError, match='must be attribute'):
+    with raises(AssertionError, match='must be attribute'):
         Primitive(bool=True, int=4, float=.1).get_args_string()
