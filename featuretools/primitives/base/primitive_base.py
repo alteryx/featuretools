@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import os
 import types
+from collections import OrderedDict
 from sys import version_info
 
 import numpy as np
@@ -69,7 +70,7 @@ class PrimitiveBase(object):
             not_default = arg.default != getattr(self, arg.name)
             return is_positional_or_keyword and not_default
 
-        string = {}
+        string = OrderedDict()
         for arg in args:
             if not valid(arg):
                 continue
