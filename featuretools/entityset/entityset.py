@@ -240,12 +240,12 @@ class EntitySet(object):
         child_v = relationship.child_variable.id
         parent_e = relationship.parent_entity
         parent_v = relationship.parent_variable.id
-        if not isinstance(child_e[child_v], vtypes.Discrete):
+        if not isinstance(child_e[child_v], vtypes.Id):
             child_e.convert_variable_type(variable_id=child_v,
                                           new_type=vtypes.Id,
                                           convert_data=False)
 
-        if not isinstance(parent_e[parent_v], vtypes.Discrete):
+        if not isinstance(parent_e[parent_v], vtypes.Index):
             parent_e.convert_variable_type(variable_id=parent_v,
                                            new_type=vtypes.Index,
                                            convert_data=False)
