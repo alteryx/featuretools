@@ -2,8 +2,7 @@ import logging
 from builtins import filter, object, str
 from collections import defaultdict
 
-import featuretools.primitives.api as ftypes
-from featuretools import variable_types
+from featuretools import primitives, variable_types
 from featuretools.feature_base import (
     AggregationFeature,
     DirectFeature,
@@ -11,14 +10,13 @@ from featuretools.feature_base import (
     IdentityFeature,
     TransformFeature
 )
-from featuretools.primitives.api import Discrete
 from featuretools.primitives.base import (
     AggregationPrimitive,
     PrimitiveBase,
     TransformPrimitive
 )
 from featuretools.utils import is_string
-from featuretools.variable_types import Boolean, Id, Numeric
+from featuretools.variable_types import Boolean, Discrete, Id, Numeric
 
 logger = logging.getLogger('featuretools')
 
@@ -134,11 +132,11 @@ class DeepFeatureSynthesis(object):
         self.es = entityset
 
         if agg_primitives is None:
-            agg_primitives = [ftypes.Sum, ftypes.Std, ftypes.Max, ftypes.Skew,
-                              ftypes.Min, ftypes.Mean, ftypes.Count,
-                              ftypes.PercentTrue, ftypes.NUnique, ftypes.Mode]
+            agg_primitives = [primitives.Sum, primitives.Std, primitives.Max, primitives.Skew,
+                              primitives.Min, primitives.Mean, primitives.Count,
+                              primitives.PercentTrue, primitives.NUnique, primitives.Mode]
         self.agg_primitives = []
-        agg_prim_dict = ftypes.get_aggregation_primitives()
+        agg_prim_dict = primitives.get_aggregation_primitives()
         for a in agg_primitives:
             if is_string(a):
                 if a.lower() not in agg_prim_dict:
@@ -153,16 +151,16 @@ class DeepFeatureSynthesis(object):
             self.agg_primitives.append(a)
 
         if trans_primitives is None:
-            trans_primitives = [ftypes.Day, ftypes.Year, ftypes.Month,
-                                ftypes.Weekday, ftypes.Haversine,
-                                ftypes.NumWords, ftypes.NumCharacters]  # ftypes.TimeSince
+            trans_primitives = [primitives.Day, primitives.Year, primitives.Month,
+                                primitives.Weekday, primitives.Haversine,
+                                primitives.NumWords, primitives.NumCharacters]  # primitives.TimeSince
         self.trans_primitives = []
         for t in trans_primitives:
             t = check_trans_primitive(t)
             self.trans_primitives.append(t)
 
         if where_primitives is None:
-            where_primitives = [ftypes.Count]
+            where_primitives = [primitives.Count]
         self.where_primitives = []
         for p in where_primitives:
             if is_string(p):
@@ -785,7 +783,7 @@ def handle_primitive(primitive):
 
 
 def check_trans_primitive(primitive):
-    trans_prim_dict = ftypes.get_transform_primitives()
+    trans_prim_dict = primitives.get_transform_primitives()
 
     if is_string(primitive):
         if primitive.lower() not in trans_prim_dict:
