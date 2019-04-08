@@ -1,3 +1,10 @@
+try:
+    # python 3
+    from inspect import signature
+except ImportError:
+    # python 2
+    from funcsigs import signature
+
 import time
 from functools import wraps
 
@@ -9,6 +16,11 @@ def entry_point(name):
         @wraps(func)
         def function_wrapper(*args, **kwargs):
             """ function_wrapper of greeting """
+            # add positional args as named kwargs
+            on_call_kwargs = kwargs.copy()
+            sig = signature(func)
+            for arg, parameter in zip(args, sig.parameters):
+                on_call_kwargs[parameter] = arg
 
             # collect and initialize all registered entry points
             entry_points = []
@@ -18,8 +30,7 @@ def entry_point(name):
 
             # send arguments before function is called
             for ep in entry_points:
-                # todo: update kwargs with args but named
-                ep.on_call(kwargs)
+                ep.on_call(on_call_kwargs)
 
             try:
                 # call function

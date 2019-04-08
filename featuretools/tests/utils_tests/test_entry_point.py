@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 
 from ..testing_utils import make_ecommerce_entityset
@@ -55,3 +56,28 @@ def test_entry_point_error(entityset, monkeypatch):
         dfs(entityset=entityset, target_entity='missing_entity')
 
     assert isinstance(entry_point.error, KeyError)
+
+
+def test_entry_point_detect_arg(monkeypatch):
+    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
+    transactions_df = pd.DataFrame({
+        "id": [1, 2, 3, 4, 5, 6],
+        "card_id": [1, 2, 1, 3, 4, 5],
+        "transaction_time": [10, 12, 13, 20, 21, 20],
+        "fraud": [True, False, True, False, True, True]
+    })
+    entities = {
+        "cards": (cards_df, "id"),
+        "transactions": (transactions_df, "id", "transaction_time")
+    }
+    relationships = [("cards", "id", "transactions", "card_id")]
+    entry_point = MockEntryPoint()
+    monkeypatch.setitem(dfs.__globals__['entry_point'].__globals__,
+                        "pkg_resources",
+                        MockPkgResources(entry_point))
+    fm, fl = dfs(entities,
+                 relationships,
+                 target_entity='cards')
+    assert "entities" in entry_point.kwargs.keys()
+    assert "relationships" in entry_point.kwargs.keys()
+    assert "target_entity" in entry_point.kwargs.keys()
