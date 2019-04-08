@@ -13,7 +13,8 @@ class AggregationPrimitive(PrimitiveBase):
     stack_on_self = True  # whether or not it can be in input_types of self
     allow_where = True  # whether DFS can apply where clause to this primitive
 
-    def generate_name(self, base_feature_names, child_entity_id, parent_entity_id, where_str, use_prev_str):
+    def generate_name(self, base_feature_names, child_entity_id,
+                      parent_entity_id, where_str, use_prev_str):
         base_features_str = ", ".join(base_feature_names)
         return u"%s(%s.%s%s%s%s)" % (
             self.name.upper(),
