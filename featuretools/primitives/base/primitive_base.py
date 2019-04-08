@@ -2,10 +2,11 @@ from __future__ import absolute_import
 
 import os
 from collections import OrderedDict
-from sys import version_info
 
 import numpy as np
 import pandas as pd
+
+from .utils import signature
 
 from featuretools import config
 
@@ -58,10 +59,6 @@ class PrimitiveBase(object):
         return os.path.join(config.get("primitive_data_folder"), filename)
 
     def get_args_string(self):
-        v2 = version_info.major == 2
-        module = __import__('funcsigs' if v2 else 'inspect')
-        args = module.signature(self.__class__).parameters.values()
-
         def valid(arg):
             error = '"{}" must be attribute of {}'
             assert hasattr(self, arg.name), error.format(arg.name, self.__class__.__name__)
@@ -71,6 +68,7 @@ class PrimitiveBase(object):
             return is_positional_or_keyword and not default
 
         string = OrderedDict()
+        args = signature(self.__class__).parameters.values()
         for arg in args:
             if not valid(arg):
                 continue
