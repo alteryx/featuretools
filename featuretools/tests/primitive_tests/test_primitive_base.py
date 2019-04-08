@@ -90,6 +90,18 @@ def test_args_string_default():
     assert string == ''
 
 
+def test_args_string_mixed():
+    class Primitive(PrimitiveBase):
+        def __init__(self, bool=True, int=0, float=None):
+            self.bool = bool
+            self.int = int
+            self.float = float
+
+    primitive = Primitive(bool=False, int=0)
+    string = primitive.get_args_string()
+    assert string == ', bool=False'
+
+
 def test_args_string_undefined():
     class Primitive(PrimitiveBase):
         pass
