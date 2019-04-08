@@ -67,8 +67,9 @@ class PrimitiveBase(object):
             error = '"{}" must be attribute of {}'
             assert hasattr(self, arg.name), error.format(arg.name, self.__class__.__name__)
             is_positional_or_keyword = arg.kind == arg.POSITIONAL_OR_KEYWORD
-            not_default = arg.default != getattr(self, arg.name)
-            return is_positional_or_keyword and not_default
+            is_same_type = isinstance(getattr(self, arg.name), type(arg.default))
+            default = is_same_type and arg.default == getattr(self, arg.name)
+            return is_positional_or_keyword and not default
 
         string = OrderedDict()
         for arg in args:
