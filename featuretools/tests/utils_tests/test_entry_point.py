@@ -38,6 +38,8 @@ class MockPkgResources(object):
 
 def test_entry_point(entityset, monkeypatch):
     entry_point = MockEntryPoint()
+    # overrides a module used in the entry_point decorator for dfs
+    # so the decorator will use this mock entry point
     monkeypatch.setitem(dfs.__globals__['entry_point'].__globals__,
                         "pkg_resources",
                         MockPkgResources(entry_point))
