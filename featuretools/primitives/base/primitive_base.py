@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 import os
-from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
@@ -59,21 +58,31 @@ class PrimitiveBase(object):
         return os.path.join(config.get("primitive_data_folder"), filename)
 
     def get_args_string(self):
-        def valid(arg):
+        strings = []
+        args = signature(self.__class__).parameters.items()
+        for name, arg in args:
+            # assert that arg is attribute of primitive
             error = '"{}" must be attribute of {}'
             assert hasattr(self, arg.name), error.format(arg.name, self.__class__.__name__)
-            is_positional_or_keyword = arg.kind == arg.POSITIONAL_OR_KEYWORD
-            is_same_type = isinstance(getattr(self, arg.name), type(arg.default))
-            default = is_same_type and arg.default == getattr(self, arg.name)
-            return is_positional_or_keyword and not default
 
-        string = OrderedDict()
-        args = signature(self.__class__).parameters.values()
-        for arg in args:
-            if not valid(arg):
+            # skip if *args or **kwargs
+            if arg.kind != arg.POSITIONAL_OR_KEYWORD:
                 continue
-            string[arg.name] = str(getattr(self, arg.name))
-        if len(string) == 0:
+
+            value = getattr(self, name)
+            # check if args are the same type
+            if isinstance(value, type(arg.default)):
+                # skip if default value
+                if arg.default == value:
+                    continue
+
+            # format arg to string
+            string = '{}={}'.format(name, str(value))
+            strings.append(string)
+
+        if len(strings) == 0:
             return ''
-        string = ', ' + ', '.join(map('='.join, string.items()))
+
+        string = ', '.join(strings)
+        string = ', ' + string
         return string
