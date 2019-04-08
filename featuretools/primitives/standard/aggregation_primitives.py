@@ -172,6 +172,7 @@ class NMostCommon(AggregationPrimitive):
 
     def __init__(self, n=3):
         self.n = n
+        self.number_output_features = n
 
     def get_function(self):
         def n_most_common(x, n=self.number_output_features):
