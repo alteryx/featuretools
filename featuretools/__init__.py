@@ -22,9 +22,9 @@ import sys
 # Call functions registered by other libraries when featuretools is imported
 for entry_point in pkg_resources.iter_entry_points('featuretools_initialize'):
     try:
-        module = entry_point.load()
-        if hasattr(module, 'initialize'):
-            module.initialize()
+        method = entry_point.load()
+        if callable(method):
+            method()
     except Exception:
         pass
 
