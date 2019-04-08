@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 
 import os
-import types
 from collections import OrderedDict
 from sys import version_info
 
@@ -38,6 +37,9 @@ class PrimitiveBase(object):
     # (bool) If True will only make one feature per unique set of base features
     commutative = False
 
+    def __init__(self):
+        pass
+
     def __call__(self, *args, **kwargs):
         series_args = [pd.Series(arg) for arg in args]
         try:
@@ -56,9 +58,6 @@ class PrimitiveBase(object):
         return os.path.join(config.get("primitive_data_folder"), filename)
 
     def get_args_string(self):
-        if not isinstance(self.__init__, types.MethodType):  # __init__ must be defined
-            return ''
-
         v2 = version_info.major == 2
         module = __import__('funcsigs' if v2 else 'inspect')
         args = module.signature(self.__class__).parameters.values()
