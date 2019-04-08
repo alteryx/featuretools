@@ -15,7 +15,7 @@ import featuretools.wrappers
 from . import feature_base
 from .feature_base import AggregationFeature, DirectFeature, Feature, FeatureBase, IdentityFeature, TransformFeature
 
-__version__ = '0.7.0'
+__version__ = '0.7.1'
 
 import pkg_resources
 import sys
