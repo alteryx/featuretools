@@ -1,5 +1,6 @@
 import copy
 import functools
+import inspect
 
 from .primitive_base import PrimitiveBase
 from .utils import inspect_function_args
@@ -21,9 +22,9 @@ class TransformPrimitive(PrimitiveBase):
 
 
 def make_trans_primitive(function, input_types, return_type, name=None,
-                         description='A custom transform primitive',
-                         cls_attributes=None, uses_calc_time=False,
-                         commutative=False, number_output_features=1):
+                         description=None, cls_attributes=None,
+                         uses_calc_time=False, commutative=False,
+                         number_output_features=1):
     '''Returns a new transform primitive class
 
     Args:
@@ -76,6 +77,10 @@ def make_trans_primitive(function, input_types, return_type, name=None,
                 "whether it is in a list that provided.",
                 cls_attributes={"generate_name": isin_generate_name})
     '''
+    if description is None:
+        default_description = 'A custom transform primitive'
+        doc = inspect.getdoc(function)
+        description = doc if doc is not None else default_description
     # dictionary that holds attributes for class
     cls = {"__doc__": description}
     if cls_attributes is not None:

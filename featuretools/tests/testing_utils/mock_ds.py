@@ -291,7 +291,7 @@ def make_variable_types(with_integer_time_index=False):
     log_variable_types = {
         'id': variable_types.Categorical,
         'session_id': variable_types.Id,
-        'product_id': variable_types.Id,
+        'product_id': variable_types.Categorical,
         'datetime': variable_types.Datetime,
         'value': variable_types.Numeric,
         'value_2': variable_types.Numeric,
