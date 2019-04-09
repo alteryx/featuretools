@@ -63,9 +63,9 @@ class PrimitiveBase(object):
         for name, arg in args:
             # assert that arg is attribute of primitive
             error = '"{}" must be attribute of {}'
-            assert hasattr(self, arg.name), error.format(arg.name, self.__class__.__name__)
+            assert hasattr(self, name), error.format(name, self.__class__.__name__)
 
-            # skip if *args or **kwargs
+            # skip if not a standard argument (e.g. excluding *args and **kwargs)
             if arg.kind != arg.POSITIONAL_OR_KEYWORD:
                 continue
 
