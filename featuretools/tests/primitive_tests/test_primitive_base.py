@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import pandas as pd
+from pytest import raises
 
 from featuretools.primitives import IsNull, Max
 from featuretools.primitives.base import PrimitiveBase, make_agg_primitive
@@ -64,3 +65,55 @@ def test_get_function_called_once():
     primitive(range(6))
     primitive(range(6))
     assert primitive.get_function_call_count == 1
+
+
+def test_args_string():
+    class Primitive(PrimitiveBase):
+        def __init__(self, bool=True, int=0, float=None):
+            self.bool = bool
+            self.int = int
+            self.float = float
+
+    primitive = Primitive(bool=True, int=4, float=.1)
+    string = primitive.get_args_string()
+    assert string == ', int=4, float=0.1'
+
+
+def test_args_string_default():
+    class Primitive(PrimitiveBase):
+        def __init__(self, bool=True, int=0, float=None):
+            self.bool = bool
+            self.int = int
+            self.float = float
+
+    string = Primitive().get_args_string()
+    assert string == ''
+
+
+def test_args_string_mixed():
+    class Primitive(PrimitiveBase):
+        def __init__(self, bool=True, int=0, float=None):
+            self.bool = bool
+            self.int = int
+            self.float = float
+
+    primitive = Primitive(bool=False, int=0)
+    string = primitive.get_args_string()
+    assert string == ', bool=False'
+
+
+def test_args_string_undefined():
+    class Primitive(PrimitiveBase):
+        pass
+
+    string = Primitive().get_args_string()
+    assert string == ''
+
+
+def test_args_string_error():
+    class Primitive(PrimitiveBase):
+        def __init__(self, bool=True, int=0, float=None):
+            pass
+
+    with raises(AssertionError, match='must be attribute'):
+        Primitive(bool=True, int=4, float=.1).get_args_string()

@@ -171,6 +171,7 @@ class NMostCommon(AggregationPrimitive):
     return_type = Discrete
 
     def __init__(self, n=3):
+        self.n = n
         self.number_output_features = n
 
     def get_function(self):
