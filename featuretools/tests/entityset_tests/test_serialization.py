@@ -83,6 +83,15 @@ def test_empty_dataframe(entityset):
         assert dataframe.empty
 
 
+def test_empty_dataframe_tz():
+    timezones = ['UTC', 'CET', 'EST', 'HST']
+    for tz in timezones:
+        es = EntitySet()
+        df = pd.DataFrame({"time": pd.date_range("1/1/2019", "1/10/2019", tz=tz)})
+        es.entity_from_dataframe(entity_id="test", index="id", dataframe=df)
+        assert es.metadata['test'].df.empty
+
+
 def test_to_csv(entityset):
     path = os.path.join(CACHE, 'es')
     os.makedirs(path)
