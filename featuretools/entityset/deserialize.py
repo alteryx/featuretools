@@ -110,6 +110,8 @@ def empty_dataframe(description):
     '''
     columns = [variable['id'] for variable in description['variables']]
     dtypes = description['loading_info']['properties']['dtypes']
+    for column, dtype in dtypes.items():
+        dtypes[column] = pd.core.dtypes.common.pandas_dtype(dtype).base
     return pd.DataFrame(columns=columns).astype(dtypes)
 
 
