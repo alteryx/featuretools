@@ -67,7 +67,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Featuretools'
-copyright = u'2018, Feature Labs. BSD License'
+copyright = u'2019, Feature Labs. BSD License'
 author = u'Feature Labs, Inc.'
 latex_documents = [
     (master_doc, 'featuretools.tex', u'test Documentation',
