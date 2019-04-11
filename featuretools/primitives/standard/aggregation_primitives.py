@@ -77,9 +77,10 @@ class Mean(AggregationPrimitive):
         Given a list of values, return the mean of values.
         Uses `np.mean`.
 
+
     Args:
         skipna (bool): If this is False and if any value in x is `NaN`,
-            return `NaN`. If this is True, `NaN`s are ignored.
+            return `NaN`. If this is True, `NaN` are ignored.
             Defaults to True to skip NA/null.
 
     Examples:
