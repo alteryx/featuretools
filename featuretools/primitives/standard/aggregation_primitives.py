@@ -6,8 +6,7 @@ import numpy as np
 import pandas as pd
 
 from ..base.aggregation_primitive_base import (
-    AggregationPrimitive,
-    make_agg_primitive
+    AggregationPrimitive
 )
 
 from featuretools.variable_types import (
@@ -125,7 +124,18 @@ class Mean(AggregationPrimitive):
 
 
 class Mode(AggregationPrimitive):
-    """Finds the most common element in a categorical feature."""
+    """Finds the mode of a feature.
+
+    Description:
+        Given a list of values, return the mode (or most
+        commonly repeated value in the list). If list is
+        empty, return `NaN`.
+
+    Examples:
+        >>> mode = Mode()
+        >>> mode([1, 2, 3, 4, 4, 5, None])
+        4
+    """
     name = "mode"
     input_types = [Discrete]
     return_type = None
@@ -136,17 +146,39 @@ class Mode(AggregationPrimitive):
         return pd_mode
 
 
-Min = make_agg_primitive(
-    np.min,
-    [Numeric],
-    Numeric,
-    name="Min",
-    stack_on_self=False,
-    description="Finds the minimum non-null value of a numeric feature.")
+class Min(AggregationPrimitive):
+    """Finds the minimum value of a numeric feature.
+
+    Description:
+        Given a list of values, return the minimum value.
+        Ignores `NaN` values.
+
+    Examples:
+        >>> min = Min()
+        >>> min([1, 2, 3, 4, 5, None])
+        1
+    """
+    name = "min"
+    input_types = [Numeric]
+    return_type = Numeric
+    stack_on_self = False
+
+    def get_function(self):
+        return np.min
 
 
 class Max(AggregationPrimitive):
-    """Finds the maximum non-null value of a numeric feature."""
+    """Finds the maximum value of a numeric feature.
+
+    Description:
+        Given a list of values, return the maximum value.
+        Ignores `NaN` values.
+
+    Examples:
+        >>> max = Max()
+        >>> max([1, 2, 3, 4, 5, None])
+        5
+    """
     name = "max"
     input_types = [Numeric]
     return_type = Numeric
@@ -157,7 +189,17 @@ class Max(AggregationPrimitive):
 
 
 class NUnique(AggregationPrimitive):
-    """Returns the number of unique categorical variables."""
+    """Finds the number of unique values.
+
+    Description:
+        Given a list of values, return the number of unique
+        values. Ignores `NaN` values.
+
+    Examples:
+        >>> num_unique = NUnique()
+        >>> num_unique([1, 2, 3, 4, 4, 5, None])
+        5
+    """
     name = "num_unique"
     input_types = [Discrete]
     return_type = Numeric
@@ -176,7 +218,17 @@ class NUnique(AggregationPrimitive):
 
 
 class NumTrue(AggregationPrimitive):
-    """Finds the number of 'True' values in a boolean."""
+    """Finds the number of `True` values.
+
+    Description:
+        Given a list of booleans, return the number
+        of `True` values. Uses `np.sum`. Ignores 'NaN'.
+
+    Examples:
+        >>> num_true = NumTrue()
+        >>> num_true([True, False, True, True, None])
+        3
+    """
     name = "num_true"
     input_types = [Boolean]
     return_type = Numeric
@@ -189,7 +241,19 @@ class NumTrue(AggregationPrimitive):
 
 
 class PercentTrue(AggregationPrimitive):
-    """Finds the percent of 'True' values in a boolean feature."""
+    """Finds the percent of `True` values.
+
+    Description:
+        Given a list of booleans, return the percent
+        of values which are `True` as a decimal. Uses
+        `pd.Series.mean`. `NaN` values are treated as
+        false, adding to the denominator.
+
+    Examples:
+        >>> percent_true = PercentTrue()
+        >>> percent_true([True, False, True, True, None])
+        0.6
+    """
     name = "percent_true"
     input_types = [Boolean]
     return_type = Numeric
@@ -204,7 +268,24 @@ class PercentTrue(AggregationPrimitive):
 
 
 class NMostCommon(AggregationPrimitive):
-    """Finds the N most common elements in a categorical feature."""
+    """Finds the `n` most common elements in a feature.
+
+    Description:
+        Given a list of values, return the `n` values
+        which appear the most frequently. If there are
+        fewer than `n` unique values, the output will be
+        filled with `NaN`.
+
+    Args:
+        n (int): defines "n" in "n most common." Defaults
+            to 3.
+
+    Examples:
+        >>> n_most_common = NMostCommon(n=2)
+        >>> x = ['orange', 'apple', 'orange', 'apple', 'orange', 'grapefruit']
+        >>> n_most_common(x).tolist()
+        ['orange', 'apple']
+    """
     name = "n_most_common"
     input_types = [Discrete]
     return_type = Discrete
@@ -226,13 +307,24 @@ class NMostCommon(AggregationPrimitive):
 class AvgTimeBetween(AggregationPrimitive):
     """Computes the average time between consecutive events.
 
-    Note: equivalent to Mean(Diff(time_index)), but more performant
-    """
+    Description:
+        Given a list of datetimes, return the average time
+        elapsed between consecutive events. If there are fewer
+        than 2 non-null values, return `NaN`.
 
-    # Potentially unnecessary if we add an trans_feat that
-    # calculates the difference between events. DFS
-    # should then calculate the average of that trans_feat
-    # which amounts to AvgTimeBetween
+        Equivalent to Mean(Diff(time_index)), but more performant.
+
+        Potentially unnecessary if we add an trans_feat that
+        calculates the difference between events. DFS should
+        then calculate the average of that trans_feat which
+        amounts to AvgTimeBetween.
+
+    Examples:
+        >>> avg_time_between = AvgTimeBetween(n=2)
+        >>> x = ['orange', 'apple', 'orange', 'apple', 'orange', 'grapefruit']
+        >>> avg_time_between(x).tolist()
+        ['orange', 'apple']
+    """
     name = "avg_time_between"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
