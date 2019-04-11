@@ -21,7 +21,17 @@ from featuretools.variable_types import (
 
 
 class Count(AggregationPrimitive):
-    """Counts the number of non null values."""
+    """Counts the number of values.
+
+    Description:
+        Given a list of values, return the count of values,
+        excluding `NaN`.
+
+    Examples:
+        >>> count = Count()
+        >>> count([1, 2, 3, 4, 5, None])
+        5
+    """
     name = "count"
     input_types = [[Index]]
     return_type = Numeric
@@ -38,7 +48,17 @@ class Count(AggregationPrimitive):
 
 
 class Sum(AggregationPrimitive):
-    """Sums elements of a numeric or boolean feature."""
+    """Sums elements of a numeric or boolean feature.
+
+    Description:
+        Given a list of values, return the sum of values,
+        ignoring `NaN`. Uses `np.sum`.
+
+    Examples:
+        >>> sum = Sum()
+        >>> sum([1, 2, 3, 4, 5, None])
+        15
+    """
     name = "sum"
     input_types = [Numeric]
     return_type = Numeric
@@ -52,8 +72,26 @@ class Sum(AggregationPrimitive):
 
 class Mean(AggregationPrimitive):
     """Computes the average value of a numeric feature.
-       Defaults to not ignoring NaNs when computing mean.
 
+    Description:
+        Given a list of values, return the mean of values.
+        Uses `np.mean`.
+
+    Args:
+        skipna (bool): If this is False and if any value in x is `NaN`,
+            return `NaN`. If this is True, `NaN`s are ignored.
+            Defaults to True to skip NA/null.
+
+    Examples:
+        >>> mean = Mean()
+        >>> mean([1, 2, 3, 4, 5, None])
+        3
+
+        We can also control the way `NaN` values are handled.
+
+        >>> mean = Mean(skipna=False)
+        >>> mean([1, 2, 3, 4, 5, None])
+        nan
     """
     name = "mean"
     input_types = [Numeric]
