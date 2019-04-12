@@ -513,7 +513,7 @@ class TimeSinceLast(AggregationPrimitive):
         >>> times = [datetime(2010, 1, 1, 11, 45, 0),
         ...          datetime(2010, 1, 1, 11, 55, 15),
         ...          datetime(2010, 1, 1, 11, 57, 30)]
-        >>> time_since_last(times, cutoff_time)
+        >>> time_since_last(times, time=cutoff_time)
         150.0
     """
     name = "time_since_last"
@@ -545,7 +545,7 @@ class TimeSinceFirst(AggregationPrimitive):
         >>> times = [datetime(2010, 1, 1, 11, 45, 0),
         ...          datetime(2010, 1, 1, 11, 55, 15),
         ...          datetime(2010, 1, 1, 11, 57, 30)]
-        >>> time_since_first(times, cutoff_time)
+        >>> time_since_first(times, time=cutoff_time)
         900.0
     """
     name = "time_since_first"
