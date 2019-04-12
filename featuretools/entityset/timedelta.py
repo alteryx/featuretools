@@ -30,8 +30,11 @@ class Timedelta(object):
 
     For observation timedeltas, a
 
-    >>> Timedelta(10, "s") # 10 seconds
-    >>> Timedelta(3, "observations", entity='log') # 3 observations of the log entity
+    >>> Timedelta(10, "s").value_in_seconds # 10 seconds
+    10.0
+    >>> three_observations_log = Timedelta(3, "observations", entity='log')
+    >>> three_observations_log.get_name()
+    '3 Observations'
     """
 
     _Observations = "o"
