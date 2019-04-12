@@ -123,10 +123,6 @@ class EntitySet(object):
         Returns:
             :class:`.Entity` : Instance of entity. None if entity doesn't
                 exist.
-
-        Example:
-            >>> my_entityset[entity_id]
-            <Entity: id>
         """
         if entity_id in self.entity_dict:
             return self.entity_dict[entity_id]

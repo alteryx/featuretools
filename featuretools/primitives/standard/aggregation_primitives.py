@@ -5,10 +5,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 
-from ..base.aggregation_primitive_base import (
-    AggregationPrimitive,
-    make_agg_primitive
-)
+from ..base.aggregation_primitive_base import AggregationPrimitive
 
 from featuretools.variable_types import (
     Boolean,
@@ -97,13 +94,25 @@ class Mode(AggregationPrimitive):
         return pd_mode
 
 
-Min = make_agg_primitive(
-    np.min,
-    [Numeric],
-    Numeric,
-    name="Min",
-    stack_on_self=False,
-    description="Finds the minimum non-null value of a numeric feature.")
+class Min(AggregationPrimitive):
+    """Finds the minimum value of a numeric feature.
+
+    Description:
+        Given a list of values, return the minimum value.
+        Ignores `NaN` values.
+
+    Examples:
+        >>> min = Min()
+        >>> min([1, 2, 3, 4, 5, None])
+        1.0
+    """
+    name = "min"
+    input_types = [Numeric]
+    return_type = Numeric
+    stack_on_self = False
+
+    def get_function(self):
+        return np.min
 
 
 class Max(AggregationPrimitive):

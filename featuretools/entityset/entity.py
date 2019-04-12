@@ -202,8 +202,9 @@ class Entity(object):
             RuntimeError : Raises if it cannot convert the underlying data
 
         Examples:
-            >>> es["customer"].convert_variable_type("education_level", vtypes.Categorical, EntitySet)
-                True
+            >>> from featuretools.tests.testing_utils import make_ecommerce_entityset
+            >>> es = make_ecommerce_entityset()
+            >>> es["customers"].convert_variable_type("engagement_level", vtypes.Categorical)
         """
         if convert_data:
             # first, convert the underlying data (or at least try to)
