@@ -150,9 +150,11 @@ class Mode(AggregationPrimitive):
 
 
 min_docstring = """Finds the minimum value of a numeric feature.
+
 Description:
     Given a list of values, return the minimum value.
     Ignores `NaN` values.
+
 Examples:
     >>> min = Min()
     >>> min([1, 2, 3, 4, 5, None])
@@ -363,7 +365,23 @@ class AvgTimeBetween(AggregationPrimitive):
 
 
 class Median(AggregationPrimitive):
-    """Finds the median value of any feature with well-ordered values."""
+    """Finds the median value of a feature.
+
+    Description:
+        Given a list of well-ordered values, return the median.
+        Uses `pd.series.median()`
+
+    Examples:
+        >>> mean = Mean()
+        >>> mean([1, 2, 3, 4, 5, None])
+        3.0
+
+        We can also control the way `NaN` values are handled.
+
+        >>> median = Median(skipna=False)
+        >>> median([1, 2, 3, 4, 5, None])
+        nan
+    """
     name = "median"
     input_types = [Numeric]
     return_type = Numeric
