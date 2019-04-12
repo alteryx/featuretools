@@ -524,7 +524,7 @@ class TimeSinceLast(AggregationPrimitive):
     def get_function(self):
 
         def time_since_last(values, time=None):
-            time_since = time.iloc[0] - values.iloc[-1]
+            time_since = time - values.iloc[-1]
             return time_since.total_seconds()
 
         return time_since_last
