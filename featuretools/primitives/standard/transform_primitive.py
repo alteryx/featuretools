@@ -339,7 +339,18 @@ class NumWords(TransformPrimitive):
 
 
 class TimeSince(TransformPrimitive):
-    """Calculates time since the cutoff time."""
+    """Calculates time from a value to a specified cutoff datetime.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> time_since = TimeSince()
+        >>> times = [datetime(2019, 3, 1, 0, 0, 0, 1),
+        ...          datetime(2019, 3, 1, 0, 0, 1, 0),
+        ...          datetime(2019, 3, 1, 0, 2, 0, 0)]
+        >>> cutoff_time = datetime(2019, 3, 1, 0, 0, 0, 0)
+        >>> time_since(array=times, time=cutoff_time).tolist()
+        [-1000, -1000000000, -120000000000]
+    """
     name = 'time_since'
     input_types = [[DatetimeTimeIndex], [Datetime]]
     return_type = Timedelta
@@ -347,16 +358,22 @@ class TimeSince(TransformPrimitive):
 
     def get_function(self):
         def pd_time_since(array, time):
-            """Calculates time since the cutoff time."""
             return (time - pd.DatetimeIndex(array)).values
         return pd_time_since
 
 
 class DaysSince(TransformPrimitive):
-    """Calculates the number of days between a value and a specified datetime.
+    """Calculates the number of days from a value to a specified datetime.
 
     Examples:
-
+        >>> from datetime import datetime
+        >>> days_since = DaysSince()
+        >>> dates = [datetime(2019, 3, 2, 0),
+        ...          datetime(2019, 3, 10, 12),
+        ...          datetime(2019, 3, 1, 0)]
+        >>> cutoff_date = datetime(2019, 3, 1, 0, 0, 0, 0)
+        >>> days_since(array=dates, time=cutoff_date).tolist()
+        [-1, -10, 0]
     """
     name = "days_since"
     input_types = [DatetimeTimeIndex]
@@ -396,9 +413,35 @@ class IsIn(TransformPrimitive):
 
 
 class Diff(TransformPrimitive):
-    """Compute the difference between the value of a base feature and the previous value.
+    """Compute the difference between the value of a base feature and the
+    previous value.
 
-    If it is a Datetime feature, compute the difference in seconds.
+    Description:
+        Given a list of values and a corresponding list of item ID values,
+        compute the difference from the previous occurrence of the item in
+        the list. If an item is present only once, the result for this item
+        will be nan. Similarly, the result for the first occurrence of an
+        item will always be nan. If the values are datetimes, the output
+        will be a timedelta.
+
+    Examples:
+        >>> diff = Diff()
+        >>> values = [1, 10, 3, 4, 15]
+        >>> labels = ['A', 'A', 'B', 'A', 'B']
+        >>> diff(values, labels).tolist()
+        [nan, 9.0, nan, -6.0, 12.0]
+
+        If values are datetimes, difference will be a timedelta
+
+        >>> from datetime import datetime
+        >>> diff = Diff()
+        >>> values = [datetime(2019, 3, 1, 0, 0, 0),
+        ...          datetime(2019, 3, 1, 0, 1, 0),
+        ...          datetime(2019, 3, 2, 0, 0, 0),
+        ...          datetime(2019, 3, 1, 0, 1, 30)]
+        >>> labels = ['A', 'A', 'B', 'A']
+        >>> diff(values, labels).tolist()
+        [NaT, Timedelta('0 days 00:01:00'), NaT, Timedelta('0 days 00:00:30')]
     """
     name = "diff"
     input_types = [Numeric, Id]
