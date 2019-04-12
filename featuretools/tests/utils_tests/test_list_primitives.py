@@ -28,8 +28,8 @@ def test_list_primitives_order():
 
 
 def test_descriptions():
-    primitives = {NumCharacters: 'Return the number of characters in a given string.',
-                  Day: 'Transform a Datetime feature into the day.',
+    primitives = {NumCharacters: 'Calculates the number of characters in a string.',
+                  Day: 'Determines the day value of a datetime.',
                   Last: 'Returns the last value.',
                   GreaterThan: ''}
     assert _get_descriptions(list(primitives.keys())) == list(primitives.values())
