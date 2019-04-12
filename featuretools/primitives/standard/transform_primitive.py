@@ -580,7 +580,7 @@ class Haversine(TransformPrimitive):
             >>> haversine_km = Haversine(unit='kilometers')
             >>> haversine_km([(42.4, -71.1), (40.0, -122.4)],
             ...           [(40.0, -122.4), (41.2, -96.75)]).tolist()
-            [4234.555176879259, 2161.813694636252]
+            [4234.555176879258, 2161.8136946362515]
     """
     name = 'haversine'
     input_types = [LatLong, LatLong]
