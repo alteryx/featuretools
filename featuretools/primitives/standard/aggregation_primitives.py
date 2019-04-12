@@ -5,10 +5,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 
-from ..base.aggregation_primitive_base import (
-    AggregationPrimitive,
-    make_agg_primitive
-)
+from ..base.aggregation_primitive_base import AggregationPrimitive
 
 from featuretools.variable_types import (
     Boolean,
