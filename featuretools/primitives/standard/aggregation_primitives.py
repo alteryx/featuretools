@@ -5,7 +5,10 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 
-from ..base.aggregation_primitive_base import AggregationPrimitive
+from ..base.aggregation_primitive_base import (
+    AggregationPrimitive,
+    make_agg_primitive
+)
 
 from featuretools.variable_types import (
     Boolean,
@@ -36,7 +39,9 @@ class Count(AggregationPrimitive):
     default_value = 0
 
     def get_function(self):
-        return 'count'
+        def count(x):
+            return x.count()
+        return count
 
     def generate_name(self, base_feature_names, child_entity_id,
                       parent_entity_id, where_str, use_prev_str):
@@ -54,7 +59,7 @@ class Sum(AggregationPrimitive):
     Examples:
         >>> sum = Sum()
         >>> sum([1, 2, 3, 4, 5, None])
-        15
+        15.0
     """
     name = "sum"
     input_types = [Numeric]
@@ -83,7 +88,7 @@ class Mean(AggregationPrimitive):
     Examples:
         >>> mean = Mean()
         >>> mean([1, 2, 3, 4, 5, None])
-        3
+        3.0
 
         We can also control the way `NaN` values are handled.
 
@@ -132,7 +137,7 @@ class Mode(AggregationPrimitive):
     Examples:
         >>> mode = Mode()
         >>> mode([1, 2, 3, 4, 4, 5, None])
-        4
+        4.0
     """
     name = "mode"
     input_types = [Discrete]
@@ -144,25 +149,23 @@ class Mode(AggregationPrimitive):
         return pd_mode
 
 
-class Min(AggregationPrimitive):
-    """Finds the minimum value of a numeric feature.
-
+min_docstring = """Finds the minimum value of a numeric feature.
     Description:
         Given a list of values, return the minimum value.
         Ignores `NaN` values.
-
     Examples:
         >>> min = Min()
         >>> min([1, 2, 3, 4, 5, None])
-        1
-    """
-    name = "min"
-    input_types = [Numeric]
-    return_type = Numeric
-    stack_on_self = False
+        1.0"""
 
-    def get_function(self):
-        return np.min
+
+Min = make_agg_primitive(
+    np.min,
+    [Numeric],
+    Numeric,
+    name="Min",
+    stack_on_self=False,
+    description=min_docstring)
 
 
 class Max(AggregationPrimitive):
@@ -175,7 +178,7 @@ class Max(AggregationPrimitive):
     Examples:
         >>> max = Max()
         >>> max([1, 2, 3, 4, 5, None])
-        5
+        5.0
     """
     name = "max"
     input_types = [Numeric]
@@ -318,10 +321,12 @@ class AvgTimeBetween(AggregationPrimitive):
         amounts to AvgTimeBetween.
 
     Examples:
-        >>> avg_time_between = AvgTimeBetween(n=2)
-        >>> x = ['orange', 'apple', 'orange', 'apple', 'orange', 'grapefruit']
-        >>> avg_time_between(x).tolist()
-        ['orange', 'apple']
+        >>> avg_time_between = AvgTimeBetween()
+        >>> times = [datetime(2010, 1, 1, 11, 45, 0),
+        ...          datetime(2010, 1, 1, 11, 55, 15),
+        ...          datetime(2010, 1, 1, 11, 57, 30)]
+        >>> avg_time_between(times).tolist()
+        375.0
     """
     name = "avg_time_between"
     input_types = [DatetimeTimeIndex]
