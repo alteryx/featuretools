@@ -125,8 +125,16 @@ class EntitySet(object):
                 exist.
 
         Example:
-            >>> my_entityset[entity_id]
-            <Entity: id>
+            >>> from featuretools.tests.testing_utils import make_ecommerce_entityset
+            >>> es = make_ecommerce_entityset()
+            >>> es['cohorts']
+            Entity: cohorts
+              Variables:
+                cohort (dtype: index)
+                cohort_name (dtype: categorical)
+                cohort_end (dtype: datetime_time_index)
+              Shape:
+                (Rows: 2, Columns: 3)
         """
         if entity_id in self.entity_dict:
             return self.entity_dict[entity_id]
