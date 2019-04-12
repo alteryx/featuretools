@@ -207,14 +207,6 @@ class TimeSince(TransformPrimitive):
         return pd_time_since
 
 
-# TimeSince = make_trans_primitive(function=pd_time_since,
-#                                  input_types=,
-#                                  return_type=Timedelta,
-#                                  uses_calc_time=True,
-#                                  description="Calculates time since the cutoff time.",
-#                                  name="time_since")
-
-
 class DaysSince(TransformPrimitive):
     """For each value of the base feature, compute the number of days between it
     and a datetime.
