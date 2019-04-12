@@ -150,13 +150,13 @@ class Mode(AggregationPrimitive):
 
 
 min_docstring = """Finds the minimum value of a numeric feature.
-    Description:
-        Given a list of values, return the minimum value.
-        Ignores `NaN` values.
-    Examples:
-        >>> min = Min()
-        >>> min([1, 2, 3, 4, 5, None])
-        1.0"""
+Description:
+    Given a list of values, return the minimum value.
+    Ignores `NaN` values.
+Examples:
+    >>> min = Min()
+    >>> min([1, 2, 3, 4, 5, None])
+    1.0"""
 
 
 Min = make_agg_primitive(
