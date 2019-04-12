@@ -250,7 +250,7 @@ class PercentTrue(AggregationPrimitive):
         Given a list of booleans, return the percent
         of values which are `True` as a decimal. Uses
         `pd.Series.mean`. `NaN` values are treated as
-        false, adding to the denominator.
+        `False`, adding to the denominator.
 
     Examples:
         >>> percent_true = PercentTrue()
@@ -323,11 +323,12 @@ class AvgTimeBetween(AggregationPrimitive):
         amounts to AvgTimeBetween.
 
     Examples:
+        >>> from datetime import datetime
         >>> avg_time_between = AvgTimeBetween()
         >>> times = [datetime(2010, 1, 1, 11, 45, 0),
         ...          datetime(2010, 1, 1, 11, 55, 15),
         ...          datetime(2010, 1, 1, 11, 57, 30)]
-        >>> avg_time_between(times).tolist()
+        >>> avg_time_between(times)
         375.0
     """
     name = "avg_time_between"
@@ -369,18 +370,12 @@ class Median(AggregationPrimitive):
 
     Description:
         Given a list of well-ordered values, return the median.
-        Uses `pd.series.median()`
+        Uses `pd.series.median`
 
     Examples:
-        >>> mean = Mean()
-        >>> mean([1, 2, 3, 4, 5, None])
-        3.0
-
-        We can also control the way `NaN` values are handled.
-
-        >>> median = Median(skipna=False)
+        >>> median = Median()
         >>> median([1, 2, 3, 4, 5, None])
-        nan
+        3.0
     """
     name = "median"
     input_types = [Numeric]
@@ -391,11 +386,20 @@ class Median(AggregationPrimitive):
 
 
 class Skew(AggregationPrimitive):
-    """Computes the skewness of a data set.
+    """Computes the skewness of a feature.
 
-    For normally distributed data, the skewness should be about 0. A skewness
-    value > 0 means that there is more weight in the left tail of the
-    distribution.
+    Description:
+        Given a list of values, return the skew.
+        Uses `pd.series.skew`
+
+        For normally distributed data, the skewness should be about 0.
+        A skewness value > 0 means that there is more weight in the
+        left tail of the distribution.
+
+    Examples:
+        >>> skew = Skew()
+        >>> skew([1, 2, 3, 4, 5, None])
+        0.0
     """
     name = "skew"
     input_types = [Numeric]
@@ -404,11 +408,22 @@ class Skew(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self):
-        return 'skew'
+        def skew(x):
+            return x.skew()
+        return skew
 
 
 class Std(AggregationPrimitive):
-    """Finds the standard deviation of a numeric feature ignoring null values.
+    """Computes the standard deviation of a feature.
+
+    Description:
+        Given a list of values, return the standard
+        deviation, ignoring `NaN`. Uses `np.std`
+
+    Examples:
+        >>> std = Std()
+        >>> round(std([1, 2, 3, 4, 5, None]), 3)
+        1.414
     """
     name = "std"
     input_types = [Numeric]
@@ -420,7 +435,16 @@ class Std(AggregationPrimitive):
 
 
 class Last(AggregationPrimitive):
-    """Returns the last value."""
+    """Returns the last value.
+
+    Description:
+        Given a list of values, return the last value.
+
+    Examples:
+        >>> last = Last()
+        >>> last([1, 2, 3, 4, 5, None])
+        nan
+    """
     name = "last"
     input_types = [Variable]
     return_type = None
@@ -433,7 +457,17 @@ class Last(AggregationPrimitive):
 
 
 class Any(AggregationPrimitive):
-    """Test if any value is 'True'."""
+    """Test if any value is 'True'.
+
+    Description:
+        Given a list of booleans, return `True` if one or
+        more of the values are `True`.
+
+    Examples:
+        >>> any = Any()
+        >>> any([False, False, False, True])
+        True
+    """
     name = "any"
     input_types = [Boolean]
     return_type = Boolean
@@ -444,7 +478,17 @@ class Any(AggregationPrimitive):
 
 
 class All(AggregationPrimitive):
-    """Test if all values are 'True'."""
+    """Test if all values are 'True'.
+
+    Description:
+        Given a list of booleans, return `True` if all
+        of the values are `True`.
+
+    Examples:
+        >>> all = All()
+        >>> all([False, False, False, True])
+        False
+    """
     name = "all"
     input_types = [Boolean]
     return_type = Boolean
@@ -455,7 +499,23 @@ class All(AggregationPrimitive):
 
 
 class TimeSinceLast(AggregationPrimitive):
-    """Time since last related instance."""
+    """Time since last instance in feature.
+
+    Description:
+        Given a list of datetimes, calculate the
+        time elapsed since the last datetime (in
+        seconds). Uses the instance's set cutoff time.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> time_since_last = TimeSinceLast()
+        >>> cutoff_time = datetime(2010, 1, 1, 12, 0, 0)
+        >>> times = [datetime(2010, 1, 1, 11, 45, 0),
+        ...          datetime(2010, 1, 1, 11, 55, 15),
+        ...          datetime(2010, 1, 1, 11, 57, 30)]
+        >>> time_since_last(times, cutoff_time)
+        150.0
+    """
     name = "time_since_last"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
@@ -464,14 +524,30 @@ class TimeSinceLast(AggregationPrimitive):
     def get_function(self):
 
         def time_since_last(values, time=None):
-            time_since = time - values.iloc[-1]
+            time_since = time.iloc[0] - values.iloc[-1]
             return time_since.total_seconds()
 
         return time_since_last
 
 
 class TimeSinceFirst(AggregationPrimitive):
-    """Time since first related instance."""
+    """Time since first instance in feature.
+
+    Description:
+        Given a list of datetimes, calculate the
+        time elapsed since the first datetime (in
+        seconds). Uses the instance's set cutoff time.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> time_since_first = TimeSinceFirst()
+        >>> cutoff_time = datetime(2010, 1, 1, 12, 0, 0)
+        >>> times = [datetime(2010, 1, 1, 11, 45, 0),
+        ...          datetime(2010, 1, 1, 11, 55, 15),
+        ...          datetime(2010, 1, 1, 11, 57, 30)]
+        >>> time_since_first(times, cutoff_time)
+        900.0
+    """
     name = "time_since_first"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
@@ -480,14 +556,31 @@ class TimeSinceFirst(AggregationPrimitive):
     def get_function(self):
 
         def time_since_first(values, time=None):
-            time_since = time - values.iloc[0]
+            time_since = time.iloc[0] - values.iloc[0]
             return time_since.total_seconds()
 
         return time_since_first
 
 
 class Trend(AggregationPrimitive):
-    """Calculates the slope of the linear trend of variable overtime."""
+    """Calculates the trend of a variable over time.
+
+    Description:
+        Given a list of values and a corresponding list of
+        datetimes, calculate the slope of the linear trend
+        of values.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> trend = Trend()
+        >>> times = [datetime(2010, 1, 1, 11, 45, 0),
+        ...          datetime(2010, 1, 1, 11, 55, 15),
+        ...          datetime(2010, 1, 1, 11, 57, 30),
+        ...          datetime(2010, 1, 1, 11, 12),
+        ...          datetime(2010, 1, 1, 11, 12, 15)]
+        >>> round(trend([1, 2, 3, 4, 5], times), 3)
+        -0.053
+    """
     name = "trend"
     input_types = [Numeric, DatetimeTimeIndex]
     return_type = Numeric
