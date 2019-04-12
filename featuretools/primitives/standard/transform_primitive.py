@@ -348,8 +348,9 @@ class TimeSince(TransformPrimitive):
         ...          datetime(2019, 3, 1, 0, 0, 1, 0),
         ...          datetime(2019, 3, 1, 0, 2, 0, 0)]
         >>> cutoff_time = datetime(2019, 3, 1, 0, 0, 0, 0)
-        >>> time_since(array=times, time=cutoff_time).tolist()
-        [-1000L, -1000000000L, -120000000000L]
+        >>> values = time_since(array=times, time=cutoff_time)
+        >>> list(map(int, values))
+        [-1000, -1000000000, -120000000000]
     """
     name = 'time_since'
     input_types = [[DatetimeTimeIndex], [Datetime]]
