@@ -109,7 +109,6 @@ class CumMin(TransformPrimitive):
 
 
 class CumMax(TransformPrimitive):
-    """Returns the cumulative max after grouping"""
     """Calculates the cumulative maximum over a feature.
 
     Description:
