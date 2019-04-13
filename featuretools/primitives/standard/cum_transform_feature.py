@@ -5,8 +5,19 @@ from featuretools.variable_types import Discrete, Id, Numeric
 
 
 class CumSum(TransformPrimitive):
-    """Returns the cumulative sum after grouping"""
+    """Calculates the cumulative sum over a feature.
 
+    Description:
+        Given a list of values, return the cumulative sum
+        (or running total). There is no set window, so the
+        sum at each point is calculated over all prior
+        values. Ignores `NaN` values.
+
+    Examples:
+        >>> cum_sum = CumSum()
+        >>> cum_sum([1, 2, 3, 4, 5, None]).tolist()
+        [1.0, 3.0, 6.0, 10.0, 15.0, nan]
+    """
     name = "cum_sum"
     input_types = [Numeric]
     return_type = Numeric
@@ -20,8 +31,19 @@ class CumSum(TransformPrimitive):
 
 
 class CumCount(TransformPrimitive):
-    """Returns the cumulative count after grouping"""
+    """Calculates the cumulative count over a feature.
 
+    Description:
+        Given a list of values, return the cumulative count
+        (or running count). There is no set window, so the
+        count at each point is calculated over all prior
+        values. `NaN` values are counted.
+
+    Examples:
+        >>> cum_count = CumCount()
+        >>> cum_count([1, 2, 3, 4, 5, None]).tolist()
+        [1, 2, 3, 4, 5, 6]
+    """
     name = "cum_count"
     input_types = [[Id], [Discrete]]
     return_type = Numeric
@@ -35,8 +57,19 @@ class CumCount(TransformPrimitive):
 
 
 class CumMean(TransformPrimitive):
-    """Returns the cumulative mean after grouping"""
+    """Calculates the cumulative mean over a feature.
 
+    Description:
+        Given a list of values, return the cumulative mean
+        (or running mean). There is no set window, so the
+        mean at each point is calculated over all prior
+        values. `NaN` values are ignored.
+
+    Examples:
+        >>> cum_mean = CumMean()
+        >>> cum_mean([1, 2, 3, 4, 5, None]).tolist()
+        [1.0, 1.5, 2.0, 2.5, 3.0, nan]
+    """
     name = "cum_mean"
     input_types = [Numeric]
     return_type = Numeric
@@ -50,8 +83,19 @@ class CumMean(TransformPrimitive):
 
 
 class CumMin(TransformPrimitive):
-    """Returns the cumulative min after grouping"""
+    """Calculates the cumulative minimum over a feature.
 
+    Description:
+        Given a list of values, return the cumulative min
+        (or running min). There is no set window, so the
+        min at each point is calculated over all prior
+        values. `NaN` values are ignored.
+
+    Examples:
+        >>> cum_min = CumMin()
+        >>> cum_min([1, 2, 3, 4, 5, None]).tolist()
+        [1.0, 1.0, 1.0, 1.0, 1.0, nan]
+    """
     name = "cum_min"
     input_types = [Numeric]
     return_type = Numeric
@@ -66,7 +110,19 @@ class CumMin(TransformPrimitive):
 
 class CumMax(TransformPrimitive):
     """Returns the cumulative max after grouping"""
+    """Calculates the cumulative maximum over a feature.
 
+    Description:
+        Given a list of values, return the cumulative max
+        (or running max). There is no set window, so the
+        max at each point is calculated over all prior
+        values. `NaN` values are ignored.
+
+    Examples:
+        >>> cum_max = CumMax()
+        >>> cum_max([1, 2, 3, 4, 5, None]).tolist()
+        [1.0, 2.0, 3.0, 4.0, 5.0, nan]
+    """
     name = "cum_max"
     input_types = [Numeric]
     return_type = Numeric
