@@ -4,6 +4,7 @@ import pkg_resources
 
 import featuretools
 from featuretools.primitives.utils import get_featuretools_root
+from featuretools.utils.cli_utils import get_sys_info
 
 
 @click.group()
@@ -15,6 +16,12 @@ def cli():
 def info():
     print("Featuretools version: %s" % featuretools.__version__)
     print("Featuretools installation directory: %s" % get_featuretools_root())
+
+    print("\nINSTALLED VERSIONS")
+    print("------------------")
+    sys_info = get_sys_info()
+    for k, stat in sys_info:
+        print("{k}: {stat}".format(k=k, stat=stat))
 
 
 @click.command()
