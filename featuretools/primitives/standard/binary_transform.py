@@ -548,7 +548,7 @@ class DivideNumeric(TransformPrimitive):
 
     Examples:
         >>> divide_numeric = DivideNumeric()
-        >>> divide_numeric([2, 1, 2], [1, 2, 2]).tolist()
+        >>> divide_numeric([2.0, 1.0, 2.0], [1.0, 2.0, 2.0]).tolist()
         [2.0, 0.5, 1.0]
     """
     name = "divide_numeric"
