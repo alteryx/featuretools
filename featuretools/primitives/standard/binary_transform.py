@@ -39,7 +39,7 @@ class GreaterThan(TransformPrimitive):
 
 
 class GreaterThanScalar(TransformPrimitive):
-    """Determines if values are greater than a given value.
+    """Determines if values are greater than a given scalar.
 
     Description:
         Given a list of values and a constant scalar, determine
@@ -93,7 +93,7 @@ class GreaterThanEqualTo(TransformPrimitive):
 
 
 class GreaterThanEqualToScalar(TransformPrimitive):
-    """Determines if values are greater than or equal to a given value.
+    """Determines if values are greater than or equal to a given scalar.
 
     Description:
         Given a list of values and a constant scalar, determine
@@ -147,7 +147,7 @@ class LessThan(TransformPrimitive):
 
 
 class LessThanScalar(TransformPrimitive):
-    """Determines if values are less than a given value.
+    """Determines if values are less than a given scalar.
 
     Description:
         Given a list of values and a constant scalar, determine
@@ -201,7 +201,7 @@ class LessThanEqualTo(TransformPrimitive):
 
 
 class LessThanEqualToScalar(TransformPrimitive):
-    """Determines if values are less than or equal to a given value.
+    """Determines if values are less than or equal to a given scalar.
 
     Description:
         Given a list of values and a constant scalar, determine
@@ -256,7 +256,7 @@ class Equal(TransformPrimitive):
 
 
 class EqualScalar(TransformPrimitive):
-    """Determines if values X are equal to a given value.
+    """Determines if values X are equal to a given scalar.
 
     Description:
         Given a list of values and a constant scalar, determine
@@ -310,7 +310,7 @@ class NotEqual(TransformPrimitive):
 
 
 class NotEqualScalar(TransformPrimitive):
-    """Determines if values X are not equal to a given value.
+    """Determines if values X are not equal to a given scalar.
 
     Description:
         Given a list of values and a constant scalar, determine
@@ -485,7 +485,7 @@ class MultiplyNumeric(TransformPrimitive):
 
     Description:
         Given a list of values X and a list of values
-        Y, determine the product of each value in X 
+        Y, determine the product of each value in X
         with its corresponding value in Y.
 
     Examples:
@@ -538,7 +538,7 @@ class DivideNumeric(TransformPrimitive):
 
     Description:
         Given a list of values X and a list of values
-        Y, determine the quotient of each value in X 
+        Y, determine the quotient of each value in X
         divided by its corresponding value in Y.
 
     Args:
