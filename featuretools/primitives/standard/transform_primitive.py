@@ -5,10 +5,7 @@ from builtins import str
 import numpy as np
 import pandas as pd
 
-from ..base.transform_primitive_base import (
-    TransformPrimitive,
-    make_trans_primitive
-)
+from ..base.transform_primitive_base import TransformPrimitive
 
 from featuretools.variable_types import (
     Boolean,
@@ -196,16 +193,18 @@ class NumWords(TransformPrimitive):
         return word_counter
 
 
-def pd_time_since(array, time):
-    return (time - pd.DatetimeIndex(array)).values
+class TimeSince(TransformPrimitive):
+    """Calculates time since the cutoff time."""
+    name = 'time_since'
+    input_types = [[DatetimeTimeIndex], [Datetime]]
+    return_type = Timedelta
+    uses_calc_time = True
 
-
-TimeSince = make_trans_primitive(function=pd_time_since,
-                                 input_types=[[DatetimeTimeIndex], [Datetime]],
-                                 return_type=Timedelta,
-                                 uses_calc_time=True,
-                                 description="Calculates time since the cutoff time.",
-                                 name="time_since")
+    def get_function(self):
+        def pd_time_since(array, time):
+            """Calculates time since the cutoff time."""
+            return (time - pd.DatetimeIndex(array)).values
+        return pd_time_since
 
 
 class DaysSince(TransformPrimitive):

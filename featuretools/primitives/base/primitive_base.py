@@ -5,6 +5,8 @@ import os
 import numpy as np
 import pandas as pd
 
+from .utils import signature
+
 from featuretools import config
 
 
@@ -35,6 +37,9 @@ class PrimitiveBase(object):
     # (bool) If True will only make one feature per unique set of base features
     commutative = False
 
+    def __init__(self):
+        pass
+
     def __call__(self, *args, **kwargs):
         series_args = [pd.Series(arg) for arg in args]
         try:
@@ -51,3 +56,33 @@ class PrimitiveBase(object):
 
     def get_filepath(self, filename):
         return os.path.join(config.get("primitive_data_folder"), filename)
+
+    def get_args_string(self):
+        strings = []
+        args = signature(self.__class__).parameters.items()
+        for name, arg in args:
+            # assert that arg is attribute of primitive
+            error = '"{}" must be attribute of {}'
+            assert hasattr(self, name), error.format(name, self.__class__.__name__)
+
+            # skip if not a standard argument (e.g. excluding *args and **kwargs)
+            if arg.kind != arg.POSITIONAL_OR_KEYWORD:
+                continue
+
+            value = getattr(self, name)
+            # check if args are the same type
+            if isinstance(value, type(arg.default)):
+                # skip if default value
+                if arg.default == value:
+                    continue
+
+            # format arg to string
+            string = '{}={}'.format(name, str(value))
+            strings.append(string)
+
+        if len(strings) == 0:
+            return ''
+
+        string = ', '.join(strings)
+        string = ', ' + string
+        return string
