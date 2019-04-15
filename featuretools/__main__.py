@@ -40,7 +40,6 @@ for entry_point in pkg_resources.iter_entry_points('featuretools_cli'):
             for name, cmd in loaded.commands.items():
                 cli.add_command(cmd=cmd, name=name)
     except Exception:
-        raise
         pass
 
 if __name__ == "__main__":
