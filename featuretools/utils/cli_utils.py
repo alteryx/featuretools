@@ -1,9 +1,8 @@
-import os
-import sys
-
 import locale
+import os
 import platform
 import struct
+import sys
 
 
 # Modified from here
