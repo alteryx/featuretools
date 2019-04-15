@@ -15,16 +15,16 @@ import featuretools.wrappers
 from . import feature_base
 from .feature_base import AggregationFeature, DirectFeature, Feature, FeatureBase, IdentityFeature, TransformFeature
 
-__version__ = '0.7.0'
+__version__ = '0.7.1'
 
 import pkg_resources
 import sys
 # Call functions registered by other libraries when featuretools is imported
 for entry_point in pkg_resources.iter_entry_points('featuretools_initialize'):
     try:
-        module = entry_point.load()
-        if hasattr(module, 'initialize'):
-            module.initialize()
+        method = entry_point.load()
+        if callable(method):
+            method()
     except Exception:
         pass
 
