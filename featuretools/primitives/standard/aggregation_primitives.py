@@ -49,7 +49,7 @@ class Sum(AggregationPrimitive):
 
     Description:
         Given a list of values, return the sum of values,
-        ignoring `NaN`. Uses `np.sum`.
+        ignoring `NaN`. 
 
     Examples:
         >>> sum = Sum()
@@ -72,8 +72,6 @@ class Mean(AggregationPrimitive):
 
     Description:
         Given a list of values, return the mean of values.
-        Uses `np.mean`.
-
 
     Args:
         skipna (bool): If this is False and if any value in x is `NaN`,
@@ -365,7 +363,6 @@ class Median(AggregationPrimitive):
 
     Description:
         Given a list of well-ordered values, return the median.
-        Uses `pd.series.median`
 
     Examples:
         >>> median = Median()
@@ -410,7 +407,7 @@ class Std(AggregationPrimitive):
 
     Description:
         Given a list of values, return the standard
-        deviation, ignoring `NaN`. Uses `np.std`
+        deviation, ignoring `NaN`.
 
     Examples:
         >>> std = Std()
