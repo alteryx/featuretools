@@ -4,7 +4,7 @@ import pkg_resources
 
 import featuretools
 from featuretools.primitives.utils import get_featuretools_root
-from featuretools.utils.cli_utils import get_installed_packages, get_sys_info
+from featuretools.utils import get_installed_packages, get_sys_info
 
 
 @click.group()
