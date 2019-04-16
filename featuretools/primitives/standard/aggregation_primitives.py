@@ -36,9 +36,7 @@ class Count(AggregationPrimitive):
     default_value = 0
 
     def get_function(self):
-        def count(x):
-            return x.count()
-        return count
+        return 'count'
 
     def generate_name(self, base_feature_names, child_entity_id,
                       parent_entity_id, where_str, use_prev_str):
@@ -387,7 +385,6 @@ class Skew(AggregationPrimitive):
 
     Description:
         Given a list of values, return the skew.
-        Uses `pd.series.skew`
 
         For normally distributed data, the skewness should be about 0.
         A skewness value > 0 means that there is more weight in the
