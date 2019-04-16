@@ -16,15 +16,14 @@ def cli():
 def info():
     print("Featuretools version: %s" % featuretools.__version__)
     print("Featuretools installation directory: %s" % get_featuretools_root())
-
-    print("\nINSTALLED VERSIONS")
-    print("------------------")
+    print("\nSYSTEM INFO")
+    print("-----------")
     sys_info = get_sys_info()
     for k, stat in sys_info:
         print("{k}: {stat}".format(k=k, stat=stat))
 
-    print("")
-
+    print("\nINSTALLED VERSIONS")
+    print("------------------")
     installed_packages = get_installed_packages()
     deps = [
         ("numpy", installed_packages['numpy']),
