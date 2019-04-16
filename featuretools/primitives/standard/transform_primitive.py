@@ -60,8 +60,8 @@ class TimeSincePrevious(TransformPrimitive):
         Given a list of datetimes and a corresponding list of item ID values,
         compute the time in seconds elapsed since the previous occurrence
         of the item in the list. If an item is present only once, the result
-        for this item will be nan. Similarly, the result for the first
-        occurrence of an item will always be nan.
+        for this item will be `NaN`. Similarly, the result for the first
+        occurrence of an item will always be `NaN`.
 
     Examples:
         >>> from datetime import datetime
@@ -421,8 +421,8 @@ class Diff(TransformPrimitive):
         Given a list of values and a corresponding list of item ID values,
         compute the difference from the previous occurrence of the item in
         the list. If an item is present only once, the result for this item
-        will be nan. Similarly, the result for the first occurrence of an
-        item will always be nan. If the values are datetimes, the output
+        will be `NaN`. Similarly, the result for the first occurrence of an
+        item will always be `NaN`. If the values are datetimes, the output
         will be a timedelta.
 
     Examples:
