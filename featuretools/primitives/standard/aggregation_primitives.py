@@ -36,7 +36,9 @@ class Count(AggregationPrimitive):
     default_value = 0
 
     def get_function(self):
-        return 'count'
+        def count(x):
+            return x.count()
+        return count
 
     def generate_name(self, base_feature_names, child_entity_id,
                       parent_entity_id, where_str, use_prev_str):
@@ -399,7 +401,9 @@ class Skew(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self):
-        return 'skew'
+        def skew(x):
+            return x.skew()
+        return skew
 
 
 class Std(AggregationPrimitive):
