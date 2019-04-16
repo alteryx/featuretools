@@ -49,7 +49,7 @@ class Sum(AggregationPrimitive):
 
     Description:
         Given a list of values, return the sum of values,
-        ignoring `NaN`. 
+        ignoring `NaN`.
 
     Examples:
         >>> sum = Sum()
@@ -241,8 +241,8 @@ class PercentTrue(AggregationPrimitive):
 
     Description:
         Given a list of booleans, return the percent
-        of values which are `True` as a decimal. 
-        `NaN` values are treated as `False`, 
+        of values which are `True` as a decimal.
+        `NaN` values are treated as `False`,
         adding to the denominator.
 
     Examples:
