@@ -149,25 +149,25 @@ class Mode(AggregationPrimitive):
         return pd_mode
 
 
-min_docstring = """Finds the minimum value of a numeric feature.
+class Min(AggregationPrimitive):
+    """Finds the minimum value of a numeric feature.
 
-Description:
-    Given a list of values, return the minimum value.
-    Ignores `NaN` values.
+    Description:
+        Given a list of values, return the minimum value.
+        Ignores `NaN` values.
 
-Examples:
-    >>> min = Min()
-    >>> min([1, 2, 3, 4, 5, None])
-    1.0"""
+    Examples:
+        >>> min = Min()
+        >>> min([1, 2, 3, 4, 5, None])
+        1.0
+    """
+    name = "min"
+    input_types = [Numeric]
+    return_type = Numeric
+    stack_on_self = False
 
-
-Min = make_agg_primitive(
-    np.min,
-    [Numeric],
-    Numeric,
-    name="Min",
-    stack_on_self=False,
-    description=min_docstring)
+    def get_function(self):
+        return np.min
 
 
 class Max(AggregationPrimitive):
