@@ -4,6 +4,8 @@ import platform
 import struct
 import sys
 
+import pkg_resources
+
 
 # Modified from here
 # https://github.com/pandas-dev/pandas/blob/d9a037ec4ad0aab0f5bf2ad18a30554c38299e57/pandas/util/_print_versions.py#L11
@@ -31,3 +33,10 @@ def get_sys_info():
         pass
 
     return blob
+
+
+def get_installed_packages():
+    installed_packages = {}
+    for d in pkg_resources.working_set:
+        installed_packages[d.project_name] = d.version
+    return installed_packages

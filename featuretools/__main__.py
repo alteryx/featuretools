@@ -4,7 +4,7 @@ import pkg_resources
 
 import featuretools
 from featuretools.primitives.utils import get_featuretools_root
-from featuretools.utils.cli_utils import get_sys_info
+from featuretools.utils.cli_utils import get_installed_packages, get_sys_info
 
 
 @click.group()
@@ -21,6 +21,22 @@ def info():
     print("------------------")
     sys_info = get_sys_info()
     for k, stat in sys_info:
+        print("{k}: {stat}".format(k=k, stat=stat))
+
+    print("")
+
+    installed_packages = get_installed_packages()
+
+    deps = [
+        ("featuretools", installed_packages['featuretools']),
+        ("pandas", installed_packages['pandas']),
+        ("numpy", installed_packages['numpy']),
+        ("scipy", installed_packages['scipy']),
+        ("pip", installed_packages['pip']),
+        ("setuptools", installed_packages['setuptools']),
+        ("ipython", installed_packages['ipython']),
+    ]
+    for k, stat in deps:
         print("{k}: {stat}".format(k=k, stat=stat))
 
 
