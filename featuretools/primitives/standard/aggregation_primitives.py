@@ -496,7 +496,7 @@ class TimeSinceLast(AggregationPrimitive):
     Description:
         Given a list of datetimes, calculate the
         time elapsed since the last datetime (in
-        seconds). Uses the instance's set cutoff time.
+        seconds). Uses the instance's cutoff time.
 
     Examples:
         >>> from datetime import datetime
@@ -528,7 +528,7 @@ class TimeSinceFirst(AggregationPrimitive):
     Description:
         Given a list of datetimes, calculate the
         time elapsed since the first datetime (in
-        seconds). Uses the instance's set cutoff time.
+        seconds). Uses the instance's cutoff time.
 
     Examples:
         >>> from datetime import datetime
