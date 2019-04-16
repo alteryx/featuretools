@@ -408,9 +408,7 @@ class Skew(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self):
-        def skew(x):
-            return x.skew()
-        return skew
+        return 'skew'
 
 
 class Std(AggregationPrimitive):
