@@ -218,7 +218,7 @@ class NumTrue(AggregationPrimitive):
 
     Description:
         Given a list of booleans, return the number
-        of `True` values. Uses `np.sum`. Ignores 'NaN'.
+        of `True` values. Ignores 'NaN'.
 
     Examples:
         >>> num_true = NumTrue()
@@ -241,9 +241,9 @@ class PercentTrue(AggregationPrimitive):
 
     Description:
         Given a list of booleans, return the percent
-        of values which are `True` as a decimal. Uses
-        `pd.Series.mean`. `NaN` values are treated as
-        `False`, adding to the denominator.
+        of values which are `True` as a decimal. 
+        `NaN` values are treated as `False`, 
+        adding to the denominator.
 
     Examples:
         >>> percent_true = PercentTrue()
