@@ -45,7 +45,7 @@ def info():
         print("{k}: {stat}".format(k=k, stat=stat))
 
 
-@click.command()
+@click.command(name='list-primitives')
 def list_primitives():
     with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.max_colwidth', -1, 'display.width', 1000):
         print(featuretools.list_primitives())
