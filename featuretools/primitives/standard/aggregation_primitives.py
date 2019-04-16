@@ -18,11 +18,7 @@ from featuretools.variable_types import (
 
 
 class Count(AggregationPrimitive):
-    """Counts the number of values.
-
-    Description:
-        Given a list of values, return the count of values,
-        excluding `NaN`.
+    """Determines the total number of values, excluding `NaN`.
 
     Examples:
         >>> count = Count()
@@ -36,9 +32,7 @@ class Count(AggregationPrimitive):
     default_value = 0
 
     def get_function(self):
-        def count(x):
-            return x.count()
-        return count
+        return 'count'
 
     def generate_name(self, base_feature_names, child_entity_id,
                       parent_entity_id, where_str, use_prev_str):
@@ -47,11 +41,7 @@ class Count(AggregationPrimitive):
 
 
 class Sum(AggregationPrimitive):
-    """Sums elements of a numeric or boolean feature.
-
-    Description:
-        Given a list of values, return the sum of values,
-        ignoring `NaN`.
+    """Calculates the total addition, ignoring `NaN`.
 
     Examples:
         >>> sum = Sum()
@@ -70,10 +60,7 @@ class Sum(AggregationPrimitive):
 
 
 class Mean(AggregationPrimitive):
-    """Computes the average value of a numeric feature.
-
-    Description:
-        Given a list of values, return the mean of values.
+    """Computes the average for a list of values.
 
     Args:
         skipna (bool): If this is False and if any value in x is `NaN`,
@@ -122,12 +109,12 @@ class Mean(AggregationPrimitive):
 
 
 class Mode(AggregationPrimitive):
-    """Finds the mode of a feature.
+    """Determines the most commonly repeated value.
 
     Description:
-        Given a list of values, return the mode (or most
-        commonly repeated value in the list). If list is
-        empty, return `NaN`.
+        Given a list of values, returns the value with the
+        highest number of occurences. If list is
+        empty, returns `NaN`.
 
     Examples:
         >>> mode = Mode()
@@ -145,11 +132,7 @@ class Mode(AggregationPrimitive):
 
 
 class Min(AggregationPrimitive):
-    """Finds the minimum value of a numeric feature.
-
-    Description:
-        Given a list of values, return the minimum value.
-        Ignores `NaN` values.
+    """Calculates the smallest value, ignoring `NaN` values.
 
     Examples:
         >>> min = Min()
@@ -166,11 +149,7 @@ class Min(AggregationPrimitive):
 
 
 class Max(AggregationPrimitive):
-    """Finds the maximum value of a numeric feature.
-
-    Description:
-        Given a list of values, return the maximum value.
-        Ignores `NaN` values.
+    """Calculates the highest value, ignoring `NaN` values.
 
     Examples:
         >>> max = Max()
@@ -187,11 +166,7 @@ class Max(AggregationPrimitive):
 
 
 class NUnique(AggregationPrimitive):
-    """Finds the number of unique values.
-
-    Description:
-        Given a list of values, return the number of unique
-        values. Ignores `NaN` values.
+    """Determines the number of distinct values, ignoring `NaN` values.
 
     Examples:
         >>> num_unique = NUnique()
@@ -216,10 +191,10 @@ class NUnique(AggregationPrimitive):
 
 
 class NumTrue(AggregationPrimitive):
-    """Finds the number of `True` values.
+    """Calculates the number of `True` values.
 
     Description:
-        Given a list of booleans, return the number
+        Given a list of booleans, returns the number
         of `True` values. Ignores 'NaN'.
 
     Examples:
@@ -239,7 +214,7 @@ class NumTrue(AggregationPrimitive):
 
 
 class PercentTrue(AggregationPrimitive):
-    """Finds the percent of `True` values.
+    """Determines the percent of `True` values.
 
     Description:
         Given a list of booleans, return the percent
@@ -401,9 +376,7 @@ class Skew(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self):
-        def skew(x):
-            return x.skew()
-        return skew
+        return 'skew'
 
 
 class Std(AggregationPrimitive):
