@@ -26,15 +26,21 @@ def info():
     print("")
 
     installed_packages = get_installed_packages()
-
     deps = [
-        ("featuretools", installed_packages['featuretools']),
-        ("pandas", installed_packages['pandas']),
         ("numpy", installed_packages['numpy']),
-        ("scipy", installed_packages['scipy']),
+        ("pandas", installed_packages['pandas']),
+        ("tqdm", installed_packages['tqdm']),
+        ("toolz", installed_packages['toolz']),
+        ("PyYAML", installed_packages['PyYAML']),
+        ("cloudpickle", installed_packages['cloudpickle']),
+        ("future", installed_packages['future']),
+        ("dask", installed_packages['dask']),
+        ("distributed", installed_packages['distributed']),
+        ("psutil", installed_packages['psutil']),
+        ("Click", installed_packages['Click']),
+        ("scikit-learn", installed_packages['scikit-learn']),
         ("pip", installed_packages['pip']),
         ("setuptools", installed_packages['setuptools']),
-        ("ipython", installed_packages['ipython']),
     ]
     for k, stat in deps:
         print("{k}: {stat}".format(k=k, stat=stat))
