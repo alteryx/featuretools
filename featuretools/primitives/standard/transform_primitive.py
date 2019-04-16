@@ -472,8 +472,8 @@ class Negate(TransformPrimitive):
 
     Examples:
         >>> negate = Negate()
-        >>> negate([1.0, 23.2, 7.0]).tolist()
-        [-1.0, -23.2, -7.0]
+        >>> negate([1.0, 23.2, -7.0]).tolist()
+        [-1.0, -23.2, 7.0]
     """
     name = "negate"
     input_types = [Numeric]
