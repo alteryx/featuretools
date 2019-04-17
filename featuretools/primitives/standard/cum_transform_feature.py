@@ -5,7 +5,7 @@ from featuretools.variable_types import Discrete, Id, Numeric
 
 
 class CumSum(TransformPrimitive):
-    """Calculates the cumulative sum over a feature.
+    """Calculates the cumulative sum.
 
     Description:
         Given a list of values, return the cumulative sum
@@ -32,7 +32,7 @@ class CumSum(TransformPrimitive):
 
 
 class CumCount(TransformPrimitive):
-    """Calculates the cumulative count over a feature.
+    """Calculates the cumulative count.
 
     Description:
         Given a list of values, return the cumulative count
@@ -58,7 +58,7 @@ class CumCount(TransformPrimitive):
 
 
 class CumMean(TransformPrimitive):
-    """Calculates the cumulative mean over a feature.
+    """Calculates the cumulative mean.
 
     Description:
         Given a list of values, return the cumulative mean
@@ -85,7 +85,7 @@ class CumMean(TransformPrimitive):
 
 
 class CumMin(TransformPrimitive):
-    """Calculates the cumulative minimum over a feature.
+    """Calculates the cumulative minimum.
 
     Description:
         Given a list of values, return the cumulative min
@@ -112,7 +112,7 @@ class CumMin(TransformPrimitive):
 
 
 class CumMax(TransformPrimitive):
-    """Calculates the cumulative maximum over a feature.
+    """Calculates the cumulative maximum.
 
     Description:
         Given a list of values, return the cumulative max
