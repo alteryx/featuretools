@@ -15,7 +15,7 @@ from featuretools.variable_types import (
 
 
 class GreaterThan(TransformPrimitive):
-    """Determines if values X are greater than values Y.
+    """Determines if values in one list are greater than another list.
 
     Description:
         Given a list of values X and a list of values Y, determine
@@ -69,7 +69,7 @@ class GreaterThanScalar(TransformPrimitive):
 
 
 class GreaterThanEqualTo(TransformPrimitive):
-    """Determines if values X are greater than or equal to values Y.
+    """Determines if values in one list are greater than or equal to another list.
 
     Description:
         Given a list of values X and a list of values Y, determine
@@ -123,7 +123,7 @@ class GreaterThanEqualToScalar(TransformPrimitive):
 
 
 class LessThan(TransformPrimitive):
-    """Determines if values X are less than values Y.
+    """Determines if values in one list are less than another list.
 
     Description:
         Given a list of values X and a list of values Y, determine
@@ -177,7 +177,7 @@ class LessThanScalar(TransformPrimitive):
 
 
 class LessThanEqualTo(TransformPrimitive):
-    """Determines if values X are less than or equal to values Y.
+    """Determines if values in one list are less than or equal to another list.
 
     Description:
         Given a list of values X and a list of values Y, determine
@@ -231,7 +231,7 @@ class LessThanEqualToScalar(TransformPrimitive):
 
 
 class Equal(TransformPrimitive):
-    """Determines if values X are equal to values Y.
+    """Determines if values in one list are equal to another list.
 
     Description:
         Given a list of values X and a list of values Y, determine
@@ -256,7 +256,7 @@ class Equal(TransformPrimitive):
 
 
 class EqualScalar(TransformPrimitive):
-    """Determines if values X are equal to a given scalar.
+    """Determines if values in a list are equal to a given scalar.
 
     Description:
         Given a list of values and a constant scalar, determine
@@ -285,7 +285,7 @@ class EqualScalar(TransformPrimitive):
 
 
 class NotEqual(TransformPrimitive):
-    """Determines if values X are not equal to values Y.
+    """Determines if values in one list are not equal to another list.
 
     Description:
         Given a list of values X and a list of values Y, determine
@@ -310,7 +310,7 @@ class NotEqual(TransformPrimitive):
 
 
 class NotEqualScalar(TransformPrimitive):
-    """Determines if values X are not equal to a given scalar.
+    """Determines if values in a list are not equal to a given scalar.
 
     Description:
         Given a list of values and a constant scalar, determine
