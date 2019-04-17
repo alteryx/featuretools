@@ -29,7 +29,7 @@ def test_list_primitives_order():
 
 def test_descriptions():
     primitives = {NumCharacters: 'Calculates the number of characters in a string.',
-                  Day: 'Determines the day value of a datetime.',
+                  Day: 'Determines the day of the month from a datetime.',
                   Last: 'Returns the last value.',
                   GreaterThan: ''}
     assert _get_descriptions(list(primitives.keys())) == list(primitives.values())

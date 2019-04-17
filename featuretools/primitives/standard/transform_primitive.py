@@ -94,7 +94,7 @@ class TimeSincePrevious(TransformPrimitive):
 
 
 class Day(TransformPrimitive):
-    """Determines the day value of a datetime.
+    """Determines the day of the month from a datetime.
 
     Examples:
         >>> from datetime import datetime
@@ -325,8 +325,9 @@ class NumWords(TransformPrimitive):
         >>> num_words = NumWords()
         >>> num_words(['This is a string',
         ...            'Two words',
-        ...            'no-spaces']).tolist()
-        [4, 2, 1]
+        ...            'no-spaces',
+        ...            'Also works with sentences. Second sentence!']).tolist()
+        [4, 2, 1, 6]
     """
     name = 'num_words'
     input_types = [Text]
@@ -339,7 +340,7 @@ class NumWords(TransformPrimitive):
 
 
 class TimeSince(TransformPrimitive):
-    """Calculates time from a value to a specified cutoff datetime.
+    """Calculates time in nanoseconds from a value to a specified cutoff datetime.
 
     Examples:
         >>> from datetime import datetime
@@ -513,6 +514,11 @@ class Percentile(TransformPrimitive):
         >>> percentile = Percentile()
         >>> percentile([10, 15, 1, 20]).tolist()
         [0.5, 0.75, 0.25, 1.0]
+
+        Nan values are ignored when determining rank
+
+        >>> percentile([10, 15, 1, None, 20]).tolist()
+        [0.5, 0.75, 0.25, nan, 1.0]
     """
     name = 'percentile'
     uses_full_entity = True
@@ -562,7 +568,7 @@ class Longitude(TransformPrimitive):
 
 
 class Haversine(TransformPrimitive):
-    """Calculate the approximate haversine distance between two LatLong
+    """Calculates the approximate haversine distance between two LatLong
         variable types.
 
         Args:
