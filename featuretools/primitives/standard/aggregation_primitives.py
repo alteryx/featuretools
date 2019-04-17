@@ -171,6 +171,11 @@ class NUnique(AggregationPrimitive):
         >>> num_unique = NUnique()
         >>> num_unique(['red', 'blue', 'green', 'yellow'])
         4
+
+        `NaN` values will be ignored.
+
+        >>> num_unique(['red', 'blue', 'green', 'yellow', None])
+        4
     """
     name = "num_unique"
     input_types = [Discrete]
@@ -190,7 +195,7 @@ class NUnique(AggregationPrimitive):
 
 
 class NumTrue(AggregationPrimitive):
-    """Calculates the number of `True` values.
+    """Counts the number of `True` values.
 
     Description:
         Given a list of booleans, return the number
@@ -328,7 +333,7 @@ class AvgTimeBetween(AggregationPrimitive):
 
 
 class Median(AggregationPrimitive):
-    """Determines the middlemost number in a list of values (sorted).
+    """Determines the middlemost number in a list of values.
 
     Examples:
         >>> median = Median()
@@ -353,8 +358,8 @@ class Skew(AggregationPrimitive):
 
     Examples:
         >>> skew = Skew()
-        >>> skew([1, 2, 3, 4, 5, None])
-        0.0
+        >>> skew([1, 10, 30, None])
+        1.0437603722639681
     """
     name = "skew"
     input_types = [Numeric]
