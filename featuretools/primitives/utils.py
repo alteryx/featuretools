@@ -1,5 +1,4 @@
 import os
-import sys
 from inspect import isclass
 
 import pandas as pd
@@ -8,10 +7,9 @@ from .base import AggregationPrimitive, PrimitiveBase, TransformPrimitive
 
 import featuretools
 
-IS_PY2 = (sys.version_info[0] == 2)
+from featuretools.utils import is_python_2
 
-
-if IS_PY2:
+if is_python_2():
     import imp
 else:
     import importlib.util
@@ -104,7 +102,7 @@ def check_valid_primitive_path(path):
 def load_primitive_from_file(filepath):
     """load primitive objects in a file"""
     module = os.path.basename(filepath)[:-3]
-    if IS_PY2:
+    if is_python_2():
         # for python 2.7
         module = imp.load_source(module, filepath)
     else:
