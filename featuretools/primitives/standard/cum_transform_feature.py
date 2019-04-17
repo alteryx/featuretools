@@ -10,13 +10,14 @@ class CumSum(TransformPrimitive):
     Description:
         Given a list of values, return the cumulative sum
         (or running total). There is no set window, so the
-        sum at each point is calculated over all prior
-        values. Ignores `NaN` values.
+        sum at each point is calculated over all prior values.
+        `NaN` values will return `NaN`, but in the window of a
+        cumulative caluclation, they're ignored.
 
     Examples:
         >>> cum_sum = CumSum()
-        >>> cum_sum([1, 2, 3, 4, 5, None]).tolist()
-        [1.0, 3.0, 6.0, 10.0, 15.0, nan]
+        >>> cum_sum([1, 2, 3, 4, None, 5]).tolist()
+        [1.0, 3.0, 6.0, 10.0, nan, 15.0]
     """
     name = "cum_sum"
     input_types = [Numeric]
@@ -41,7 +42,7 @@ class CumCount(TransformPrimitive):
 
     Examples:
         >>> cum_count = CumCount()
-        >>> cum_count([1, 2, 3, 4, 5, None]).tolist()
+        >>> cum_count([1, 2, 3, 4, None, 5]).tolist()
         [1, 2, 3, 4, 5, 6]
     """
     name = "cum_count"
@@ -62,13 +63,14 @@ class CumMean(TransformPrimitive):
     Description:
         Given a list of values, return the cumulative mean
         (or running mean). There is no set window, so the
-        mean at each point is calculated over all prior
-        values. `NaN` values are ignored.
+        mean at each point is calculated over all prior values.
+        `NaN` values will return `NaN`, but in the window of a
+        cumulative caluclation, they're treated as 0.
 
     Examples:
         >>> cum_mean = CumMean()
-        >>> cum_mean([1, 2, 3, 4, 5, None]).tolist()
-        [1.0, 1.5, 2.0, 2.5, 3.0, nan]
+        >>> cum_mean([1, 2, 3, 4, None, 5]).tolist()
+        [1.0, 1.5, 2.0, 2.5, nan, 2.5]
     """
     name = "cum_mean"
     input_types = [Numeric]
@@ -87,14 +89,15 @@ class CumMin(TransformPrimitive):
 
     Description:
         Given a list of values, return the cumulative min
-        (or running min). There is no set window, so the
-        min at each point is calculated over all prior
-        values. `NaN` values are ignored.
+        (or running min). There is no set window, so the min
+        at each point is calculated over all prior values.
+        `NaN` values will return `NaN`, but in the window of a
+        cumulative caluclation, they're ignored.
 
     Examples:
         >>> cum_min = CumMin()
-        >>> cum_min([1, 2, 3, 4, 5, None]).tolist()
-        [1.0, 1.0, 1.0, 1.0, 1.0, nan]
+        >>> cum_min([1, 2, 3, 4, None, 5]).tolist()
+        [1.0, 1.0, 1.0, 1.0, nan, 1.0]
     """
     name = "cum_min"
     input_types = [Numeric]
@@ -113,14 +116,15 @@ class CumMax(TransformPrimitive):
 
     Description:
         Given a list of values, return the cumulative max
-        (or running max). There is no set window, so the
-        max at each point is calculated over all prior
-        values. `NaN` values are ignored.
+        (or running max). There is no set window, so the max
+        at each point is calculated over all prior values.
+        `NaN` values will return `NaN`, but in the window of a
+        cumulative caluclation, they're ignored.
 
     Examples:
         >>> cum_max = CumMax()
-        >>> cum_max([1, 2, 3, 4, 5, None]).tolist()
-        [1.0, 2.0, 3.0, 4.0, 5.0, nan]
+        >>> cum_max([1, 2, 3, 4, None, 5]).tolist()
+        [1.0, 2.0, 3.0, 4.0, nan, 5.0]
     """
     name = "cum_max"
     input_types = [Numeric]
