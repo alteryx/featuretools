@@ -60,8 +60,8 @@ class TimeSincePrevious(TransformPrimitive):
         Given a list of datetimes and a corresponding list of item ID values,
         compute the time in seconds elapsed since the previous occurrence
         of the item in the list. If an item is present only once, the result
-        for this item will be nan. Similarly, the result for the first
-        occurrence of an item will always be nan.
+        for this item will be `NaN`. Similarly, the result for the first
+        occurrence of an item will always be `NaN`.
 
     Examples:
         >>> from datetime import datetime
@@ -349,7 +349,8 @@ class TimeSince(TransformPrimitive):
         ...          datetime(2019, 3, 1, 0, 0, 1, 0),
         ...          datetime(2019, 3, 1, 0, 2, 0, 0)]
         >>> cutoff_time = datetime(2019, 3, 1, 0, 0, 0, 0)
-        >>> time_since(array=times, time=cutoff_time).tolist()
+        >>> values = time_since(array=times, time=cutoff_time)
+        >>> list(map(int, values))
         [-1000, -1000000000, -120000000000]
     """
     name = 'time_since'
@@ -421,8 +422,8 @@ class Diff(TransformPrimitive):
         Given a list of values and a corresponding list of item ID values,
         compute the difference from the previous occurrence of the item in
         the list. If an item is present only once, the result for this item
-        will be nan. Similarly, the result for the first occurrence of an
-        item will always be nan. If the values are datetimes, the output
+        will be `NaN`. Similarly, the result for the first occurrence of an
+        item will always be `NaN`. If the values are datetimes, the output
         will be a timedelta.
 
     Examples:
@@ -472,8 +473,8 @@ class Negate(TransformPrimitive):
 
     Examples:
         >>> negate = Negate()
-        >>> negate([1.0, 23.2, 7.0]).tolist()
-        [-1.0, -23.2, -7.0]
+        >>> negate([1.0, 23.2, -7.0]).tolist()
+        [-1.0, -23.2, 7.0]
     """
     name = "negate"
     input_types = [Numeric]
@@ -579,14 +580,14 @@ class Haversine(TransformPrimitive):
             >>> haversine = Haversine()
             >>> haversine([(42.4, -71.1), (40.0, -122.4)],
             ...           [(40.0, -122.4), (41.2, -96.75)]).tolist()
-            [2631.23057637972, 1343.2887413585133]
+            [2631.2305763797194, 1343.288741358513]
 
             Output units can be specified
 
             >>> haversine_km = Haversine(unit='kilometers')
             >>> haversine_km([(42.4, -71.1), (40.0, -122.4)],
             ...           [(40.0, -122.4), (41.2, -96.75)]).tolist()
-            [4234.555176879259, 2161.813694636252]
+            [4234.555176879258, 2161.8136946362515]
     """
     name = 'haversine'
     input_types = [LatLong, LatLong]
