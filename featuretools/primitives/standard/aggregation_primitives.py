@@ -32,7 +32,7 @@ class Count(AggregationPrimitive):
     default_value = 0
 
     def get_function(self):
-        return 'count'
+        return pd.Series.count
 
     def generate_name(self, base_feature_names, child_entity_id,
                       parent_entity_id, where_str, use_prev_str):
@@ -63,9 +63,8 @@ class Mean(AggregationPrimitive):
     """Computes the average for a list of values.
 
     Args:
-        skipna (bool): If this is False and if any value in x is `NaN`,
-            return `NaN`. If this is True, `NaN` are ignored.
-            Defaults to True to skip NA/null.
+        skipna (bool): Determines if to use NA/null values. Defaults to
+            True to skip NA/null.
 
     Examples:
         >>> mean = Mean()
@@ -112,14 +111,14 @@ class Mode(AggregationPrimitive):
     """Determines the most commonly repeated value.
 
     Description:
-        Given a list of values, returns the value with the
+        Given a list of values, return the value with the
         highest number of occurences. If list is
-        empty, returns `NaN`.
+        empty, return `NaN`.
 
     Examples:
         >>> mode = Mode()
-        >>> mode([1, 2, 3, 4, 4, 5, None])
-        4.0
+        >>> mode(['red', 'blue', 'green', 'blue'])
+        'blue'
     """
     name = "mode"
     input_types = [Discrete]
@@ -170,8 +169,8 @@ class NUnique(AggregationPrimitive):
 
     Examples:
         >>> num_unique = NUnique()
-        >>> num_unique([1, 2, 3, 4, 4, 5, None])
-        5
+        >>> num_unique(['red', 'blue', 'green', 'yellow'])
+        4
     """
     name = "num_unique"
     input_types = [Discrete]
@@ -194,7 +193,7 @@ class NumTrue(AggregationPrimitive):
     """Calculates the number of `True` values.
 
     Description:
-        Given a list of booleans, returns the number
+        Given a list of booleans, return the number
         of `True` values. Ignores 'NaN'.
 
     Examples:
@@ -241,7 +240,7 @@ class PercentTrue(AggregationPrimitive):
 
 
 class NMostCommon(AggregationPrimitive):
-    """Finds the `n` most common elements in a feature.
+    """Determines the `n` most common elements in a feature.
 
     Description:
         Given a list of values, return the `n` values
@@ -278,19 +277,12 @@ class NMostCommon(AggregationPrimitive):
 
 
 class AvgTimeBetween(AggregationPrimitive):
-    """Computes the average time between consecutive events.
+    """Computes the average number of seconds between consecutive events.
 
     Description:
-        Given a list of datetimes, return the average time
+        Given a list of datetimes, return the average number of seconds
         elapsed between consecutive events. If there are fewer
         than 2 non-null values, return `NaN`.
-
-        Equivalent to Mean(Diff(time_index)), but more performant.
-
-        Potentially unnecessary if we add an trans_feat that
-        calculates the difference between events. DFS should
-        then calculate the average of that trans_feat which
-        amounts to AvgTimeBetween.
 
     Examples:
         >>> from datetime import datetime
@@ -336,14 +328,11 @@ class AvgTimeBetween(AggregationPrimitive):
 
 
 class Median(AggregationPrimitive):
-    """Finds the median value of a feature.
-
-    Description:
-        Given a list of well-ordered values, return the median.
+    """Determines the middlemost number in a list of values (sorted).
 
     Examples:
         >>> median = Median()
-        >>> median([1, 2, 3, 4, 5, None])
+        >>> median([5, 3, 2, 1, 4, None])
         3.0
     """
     name = "median"
@@ -376,7 +365,7 @@ class Skew(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self):
-        return 'skew'
+        return pd.Series.skew
 
 
 class Std(AggregationPrimitive):
@@ -401,10 +390,7 @@ class Std(AggregationPrimitive):
 
 
 class Last(AggregationPrimitive):
-    """Returns the last value.
-
-    Description:
-        Given a list of values, return the last value.
+    """Determines the last value in a list.
 
     Examples:
         >>> last = Last()
@@ -423,7 +409,7 @@ class Last(AggregationPrimitive):
 
 
 class Any(AggregationPrimitive):
-    """Test if any value is 'True'.
+    """Determines if any value is 'True' in a list.
 
     Description:
         Given a list of booleans, return `True` if one or
@@ -444,7 +430,7 @@ class Any(AggregationPrimitive):
 
 
 class All(AggregationPrimitive):
-    """Test if all values are 'True'.
+    """Calculates if all values are 'True'.
 
     Description:
         Given a list of booleans, return `True` if all
@@ -465,7 +451,7 @@ class All(AggregationPrimitive):
 
 
 class TimeSinceLast(AggregationPrimitive):
-    """Time since last instance in feature.
+    """Calculates the time elapsed since the last datetime (in seconds).
 
     Description:
         Given a list of datetimes, calculate the
@@ -497,7 +483,7 @@ class TimeSinceLast(AggregationPrimitive):
 
 
 class TimeSinceFirst(AggregationPrimitive):
-    """Time since first instance in feature.
+    """Calculates the time elapsed since the first datetime (in seconds).
 
     Description:
         Given a list of datetimes, calculate the
