@@ -13,6 +13,7 @@ import pandas.api.types as pdtypes
 from .base_backend import ComputationalBackend
 from .feature_tree import FeatureTree
 
+from featuretools.utils import is_python_2
 from featuretools import variable_types
 from featuretools.exceptions import UnknownFeature
 from featuretools.feature_base import (
@@ -29,6 +30,20 @@ from featuretools.utils.gen_utils import (
 
 warnings.simplefilter('ignore', np.RankWarning)
 warnings.simplefilter("ignore", category=RuntimeWarning)
+
+
+# we don't optimize other functions like sum, mean,
+# median, because the primitive returns numpy variants that are performant
+if is_python_2():
+    pandas_agg_strings = {
+        pd.Series.count.__func__: "count",
+        pd.Series.skew.__func__: "skew",
+    }
+else:
+    pandas_agg_strings = {
+        pd.Series.count: "count",
+        pd.Series.skew: "skew",
+    }
 
 
 class PandasBackend(ComputationalBackend):
@@ -482,7 +497,13 @@ class PandasBackend(ComputationalBackend):
                         to_agg[variable_id] = []
 
                     func = f.get_function()
-                    # funcname used in case f.get_function() returns a string
+
+                    # to optimize the call, we check to see if there is
+                    # a pandas string we can use instead of the method
+                    # https://stackoverflow.com/questions/55731149/use-a-function-instead-of-string-in-pandas-groupby-agg
+                    func = pandas_agg_strings.get(func, func)
+
+                    # funcname used in case func is a string
                     # since strings don't have __name__
                     funcname = func
                     if callable(func):
