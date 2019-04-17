@@ -240,7 +240,7 @@ class PercentTrue(AggregationPrimitive):
 
 
 class NMostCommon(AggregationPrimitive):
-    """Determines the `n` most common elements in a feature.
+    """Determines the `n` most common elements.
 
     Description:
         Given a list of values, return the `n` values
@@ -344,11 +344,9 @@ class Median(AggregationPrimitive):
 
 
 class Skew(AggregationPrimitive):
-    """Computes the skewness of a feature.
+    """Computes the extent to which a distribution differs from a normal distribution.
 
     Description:
-        Given a list of values, return the skew.
-
         For normally distributed data, the skewness should be about 0.
         A skewness value > 0 means that there is more weight in the
         left tail of the distribution.
@@ -369,11 +367,7 @@ class Skew(AggregationPrimitive):
 
 
 class Std(AggregationPrimitive):
-    """Computes the standard deviation of a feature.
-
-    Description:
-        Given a list of values, return the standard
-        deviation, ignoring `NaN`.
+    """Computes the dispersion relative to the mean value, ignoring `NaN`.
 
     Examples:
         >>> std = Std()
@@ -430,7 +424,7 @@ class Any(AggregationPrimitive):
 
 
 class All(AggregationPrimitive):
-    """Calculates if all values are 'True'.
+    """Calculates if all values are 'True' in a list.
 
     Description:
         Given a list of booleans, return `True` if all
