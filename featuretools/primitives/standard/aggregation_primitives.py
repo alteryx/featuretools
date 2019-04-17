@@ -27,6 +27,8 @@ class Count(AggregationPrimitive):
     default_value = 0
 
     def get_function(self):
+        # note: returning pd.Series.nunique errors for python2,
+        # so using this branching code path while we support python2
         if ft.utils.is_python_2():
             return pd.Series.count.__func__
         else:
@@ -262,6 +264,8 @@ class Skew(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self):
+        # note: returning pd.Series.nunique errors for python2,
+        # so using this branching code path while we support python2
         if ft.utils.is_python_2():
             return pd.Series.skew.__func__
         else:
