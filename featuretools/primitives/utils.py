@@ -6,7 +6,6 @@ import pandas as pd
 from .base import AggregationPrimitive, PrimitiveBase, TransformPrimitive
 
 import featuretools
-
 from featuretools.utils import is_python_2
 
 if is_python_2():

@@ -13,7 +13,6 @@ import pandas.api.types as pdtypes
 from .base_backend import ComputationalBackend
 from .feature_tree import FeatureTree
 
-from featuretools.utils import is_python_2
 from featuretools import variable_types
 from featuretools.exceptions import UnknownFeature
 from featuretools.feature_base import (
@@ -23,6 +22,7 @@ from featuretools.feature_base import (
     IdentityFeature,
     TransformFeature
 )
+from featuretools.utils import is_python_2
 from featuretools.utils.gen_utils import (
     get_relationship_variable_id,
     make_tqdm_iterator
