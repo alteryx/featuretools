@@ -157,8 +157,7 @@ class EqualScalar(TransformPrimitive):
 
     def get_function(self):
         def equal_scalar(vals):
-            # case to correct pandas type for comparison
-            return pd.Series(vals).astype(pd.Series([self.value]).dtype) == self.value
+            return pd.Series(vals) == self.value
         return equal_scalar
 
     def generate_name(self, base_feature_names):
@@ -188,8 +187,7 @@ class NotEqualScalar(TransformPrimitive):
 
     def get_function(self):
         def not_equal_scalar(vals):
-            # case to correct pandas type for comparison
-            return pd.Series(vals).astype(pd.Series([self.value]).dtype) != self.value
+            return pd.Series(vals) != self.value
         return not_equal_scalar
 
     def generate_name(self, base_feature_names):
