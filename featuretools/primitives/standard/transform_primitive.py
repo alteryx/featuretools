@@ -415,7 +415,7 @@ class IsIn(TransformPrimitive):
 
 
 class Diff(TransformPrimitive):
-    """Compute the difference between the value of a base feature and the
+    """Compute the difference between the value in a list and the
     previous value.
 
     Description:
@@ -509,7 +509,7 @@ class Not(TransformPrimitive):
 
 
 class Percentile(TransformPrimitive):
-    """Determines the percentile rank for each value of the base feature.
+    """Determines the percentile rank for each value in a list.
 
     Examples:
         >>> percentile = Percentile()
@@ -531,7 +531,7 @@ class Percentile(TransformPrimitive):
 
 
 class Latitude(TransformPrimitive):
-    """Returns the first value of the tuple base feature.
+    """Returns the first tuple value in a list of LatLong tuples.
        For use with the LatLong variable type.
 
     Examples:
@@ -550,7 +550,7 @@ class Latitude(TransformPrimitive):
 
 
 class Longitude(TransformPrimitive):
-    """Returns the second value on the tuple base feature.
+    """Returns the second tuple value in a list of LatLong tuples.
        For use with the LatLong variable type.
 
     Examples:
