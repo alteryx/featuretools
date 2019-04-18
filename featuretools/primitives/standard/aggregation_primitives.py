@@ -7,6 +7,7 @@ import pandas as pd
 
 from ..base.aggregation_primitive_base import AggregationPrimitive
 
+from featuretools.utils import is_python_2
 from featuretools.variable_types import (
     Boolean,
     DatetimeTimeIndex,
@@ -32,7 +33,12 @@ class Count(AggregationPrimitive):
     default_value = 0
 
     def get_function(self):
-        return pd.Series.count
+        # note: returning class instance method errors for python2,
+        # so using this branching code path while we support python2
+        if is_python_2():
+            return pd.Series.count.__func__
+        else:
+            return pd.Series.count
 
     def generate_name(self, base_feature_names, child_entity_id,
                       parent_entity_id, where_str, use_prev_str):
@@ -183,13 +189,10 @@ class NUnique(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self):
-        # note: returning pd.Series.nunique errors for python2,
+        # note: returning class instance method errors for python2,
         # so using this branching code path while we support python2
-        from sys import version_info
-        if version_info.major < 3:
-            def nunique(x):
-                return pd.Series(x).nunique()
-            return nunique
+        if is_python_2():
+            return pd.Series.nunique.__func__
         else:
             return pd.Series.nunique
 
@@ -345,7 +348,7 @@ class Median(AggregationPrimitive):
     return_type = Numeric
 
     def get_function(self):
-        return lambda x: x.median()
+        return np.median
 
 
 class Skew(AggregationPrimitive):
@@ -368,7 +371,12 @@ class Skew(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self):
-        return pd.Series.skew
+        # note: returning class instance method errors for python2,
+        # so using this branching code path while we support python2
+        if is_python_2():
+            return pd.Series.skew.__func__
+        else:
+            return pd.Series.skew
 
 
 class Std(AggregationPrimitive):
