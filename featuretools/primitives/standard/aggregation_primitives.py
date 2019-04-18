@@ -340,7 +340,7 @@ class Median(AggregationPrimitive):
 
     Examples:
         >>> median = Median()
-        >>> median([5, 3, 2, 1, 4, None])
+        >>> median([5, 3, 2, 1, 4])
         3.0
     """
     name = "median"
