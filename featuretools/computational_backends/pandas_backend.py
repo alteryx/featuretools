@@ -32,20 +32,6 @@ warnings.simplefilter('ignore', np.RankWarning)
 warnings.simplefilter("ignore", category=RuntimeWarning)
 
 
-# we don't optimize other functions like sum, mean,
-# median, because the primitive returns numpy variants that are performant
-if is_python_2():
-    pandas_agg_strings = {
-        pd.Series.count.__func__: "count",
-        pd.Series.skew.__func__: "skew",
-    }
-else:
-    pandas_agg_strings = {
-        pd.Series.count: "count",
-        pd.Series.skew: "skew",
-    }
-
-
 class PandasBackend(ComputationalBackend):
 
     def __init__(self, entityset, features):
@@ -498,10 +484,13 @@ class PandasBackend(ComputationalBackend):
 
                     func = f.get_function()
 
-                    # to optimize the call, we check to see if there is
-                    # a pandas string we can use instead of the method
+                    # for some reason, using the string count is significantly
+                    # faster than any method a primitive can return
                     # https://stackoverflow.com/questions/55731149/use-a-function-instead-of-string-in-pandas-groupby-agg
-                    func = pandas_agg_strings.get(func, func)
+                    if is_python_2() and func == pd.Series.count.__func__:
+                        func = "count"
+                    elif func == pd.Series.count:
+                        func = "count"
 
                     # funcname used in case func is a string
                     # since strings don't have __name__
