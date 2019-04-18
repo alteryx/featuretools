@@ -342,9 +342,9 @@ class Median(AggregationPrimitive):
         >>> median = Median()
         >>> median([5, 3, 2, 1, 4])
         3.0
-        
+
         `NaN` values are ignored.
-        
+
         >>> median([5, 3, 2, 1, 4, None])
         3.0
     """
