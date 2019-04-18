@@ -96,8 +96,8 @@ class CumMin(TransformPrimitive):
 
     Examples:
         >>> cum_min = CumMin()
-        >>> cum_min([1, 2, 3, 4, None, 5]).tolist()
-        [1.0, 1.0, 1.0, 1.0, nan, 1.0]
+        >>> cum_min([1, 2, -3, 4, None, 5]).tolist()
+        [1.0, 1.0, -3.0, -3.0, nan, -3.0]
     """
     name = "cum_min"
     input_types = [Numeric]
