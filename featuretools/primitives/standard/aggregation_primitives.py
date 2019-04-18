@@ -342,13 +342,21 @@ class Median(AggregationPrimitive):
         >>> median = Median()
         >>> median([5, 3, 2, 1, 4])
         3.0
+        
+        `NaN` values are ignored.
+        
+        >>> median([5, 3, 2, 1, 4, None])
+        3.0
     """
     name = "median"
     input_types = [Numeric]
     return_type = Numeric
 
     def get_function(self):
-        return np.median
+        if is_python_2():
+            return pd.Series.median.__func__
+        else:
+            return pd.Series.median
 
 
 class Skew(AggregationPrimitive):
