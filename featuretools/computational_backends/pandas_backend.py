@@ -492,17 +492,17 @@ class PandasBackend(ComputationalBackend):
                     elif func == pd.Series.count:
                         func = "count"
 
-                    # funcname used in case func is a string
-                    # since strings don't have __name__
                     funcname = func
                     if callable(func):
                         # if the same function is being applied to the same
                         # variable twice, wrap it in a partial to avoid
                         # duplicate functions
-                        if u"{}-{}".format(variable_id, id(func)) in agg_rename:
-                            func = partial(func)
-                        func.__name__ = str(id(func))
                         funcname = str(id(func))
+                        if u"{}-{}".format(variable_id, funcname) in agg_rename:
+                            func = partial(func)
+                            funcname = str(id(func))
+
+                        func.__name__ = funcname
 
                     to_agg[variable_id].append(func)
                     # this is used below to rename columns that pandas names for us
