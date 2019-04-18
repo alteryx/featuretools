@@ -22,6 +22,7 @@ from featuretools.feature_base import (
     IdentityFeature,
     TransformFeature
 )
+from featuretools.utils import is_python_2
 from featuretools.utils.gen_utils import (
     get_relationship_variable_id,
     make_tqdm_iterator
@@ -482,17 +483,26 @@ class PandasBackend(ComputationalBackend):
                         to_agg[variable_id] = []
 
                     func = f.get_function()
-                    # funcname used in case f.get_function() returns a string
-                    # since strings don't have __name__
+
+                    # for some reason, using the string count is significantly
+                    # faster than any method a primitive can return
+                    # https://stackoverflow.com/questions/55731149/use-a-function-instead-of-string-in-pandas-groupby-agg
+                    if is_python_2() and func == pd.Series.count.__func__:
+                        func = "count"
+                    elif func == pd.Series.count:
+                        func = "count"
+
                     funcname = func
                     if callable(func):
                         # if the same function is being applied to the same
                         # variable twice, wrap it in a partial to avoid
                         # duplicate functions
-                        if u"{}-{}".format(variable_id, id(func)) in agg_rename:
-                            func = partial(func)
-                        func.__name__ = str(id(func))
                         funcname = str(id(func))
+                        if u"{}-{}".format(variable_id, funcname) in agg_rename:
+                            func = partial(func)
+                            funcname = str(id(func))
+
+                        func.__name__ = funcname
 
                     to_agg[variable_id].append(func)
                     # this is used below to rename columns that pandas names for us
