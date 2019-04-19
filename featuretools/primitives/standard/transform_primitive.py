@@ -578,16 +578,18 @@ class Haversine(TransformPrimitive):
 
         Examples:
             >>> haversine = Haversine()
-            >>> haversine([(42.4, -71.1), (40.0, -122.4)],
-            ...           [(40.0, -122.4), (41.2, -96.75)]).tolist()
-            [2631.2305763797194, 1343.288741358513]
+            >>> distances = haversine([(42.4, -71.1), (40.0, -122.4)],
+            ...                       [(40.0, -122.4), (41.2, -96.75)])
+            >>> np.round(distances, 3).tolist()
+            [2631.231, 1343.289]
 
             Output units can be specified
 
             >>> haversine_km = Haversine(unit='kilometers')
-            >>> haversine_km([(42.4, -71.1), (40.0, -122.4)],
-            ...           [(40.0, -122.4), (41.2, -96.75)]).tolist()
-            [4234.555176879258, 2161.8136946362515]
+            >>> distances_km = haversine_km([(42.4, -71.1), (40.0, -122.4)],
+            ...                             [(40.0, -122.4), (41.2, -96.75)])
+            >>> np.round(distances_km, 3).tolist()
+            [4234.555, 2161.814]
     """
     name = 'haversine'
     input_types = [LatLong, LatLong]
