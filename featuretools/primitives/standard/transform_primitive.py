@@ -580,7 +580,7 @@ class Haversine(TransformPrimitive):
             >>> haversine = Haversine()
             >>> haversine([(42.4, -71.1), (40.0, -122.4)],
             ...           [(40.0, -122.4), (41.2, -96.75)]).tolist()
-            [2631.23057637972, 1343.2887413585133]
+            [2631.2305763797194, 1343.288741358513]
 
             Output units can be specified
 
