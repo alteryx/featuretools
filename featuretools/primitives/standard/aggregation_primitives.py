@@ -19,7 +19,13 @@ from featuretools.variable_types import (
 
 
 class Count(AggregationPrimitive):
-    """Counts the number of non null values."""
+    """Determines the total number of values, excluding `NaN`.
+
+    Examples:
+        >>> count = Count()
+        >>> count([1, 2, 3, 4, 5, None])
+        5
+    """
     name = "count"
     input_types = [[Index]]
     return_type = Numeric
@@ -41,7 +47,13 @@ class Count(AggregationPrimitive):
 
 
 class Sum(AggregationPrimitive):
-    """Sums elements of a numeric or boolean feature."""
+    """Calculates the total addition, ignoring `NaN`.
+
+    Examples:
+        >>> sum = Sum()
+        >>> sum([1, 2, 3, 4, 5, None])
+        15.0
+    """
     name = "sum"
     input_types = [Numeric]
     return_type = Numeric
@@ -54,9 +66,22 @@ class Sum(AggregationPrimitive):
 
 
 class Mean(AggregationPrimitive):
-    """Computes the average value of a numeric feature.
-       Defaults to not ignoring NaNs when computing mean.
+    """Computes the average for a list of values.
 
+    Args:
+        skipna (bool): Determines if to use NA/null values. Defaults to
+            True to skip NA/null.
+
+    Examples:
+        >>> mean = Mean()
+        >>> mean([1, 2, 3, 4, 5, None])
+        3.0
+
+        We can also control the way `NaN` values are handled.
+
+        >>> mean = Mean(skipna=False)
+        >>> mean([1, 2, 3, 4, 5, None])
+        nan
     """
     name = "mean"
     input_types = [Numeric]
@@ -89,7 +114,18 @@ class Mean(AggregationPrimitive):
 
 
 class Mode(AggregationPrimitive):
-    """Finds the most common element in a categorical feature."""
+    """Determines the most commonly repeated value.
+
+    Description:
+        Given a list of values, return the value with the
+        highest number of occurences. If list is
+        empty, return `NaN`.
+
+    Examples:
+        >>> mode = Mode()
+        >>> mode(['red', 'blue', 'green', 'blue'])
+        'blue'
+    """
     name = "mode"
     input_types = [Discrete]
     return_type = None
@@ -101,11 +137,7 @@ class Mode(AggregationPrimitive):
 
 
 class Min(AggregationPrimitive):
-    """Finds the minimum value of a numeric feature.
-
-    Description:
-        Given a list of values, return the minimum value.
-        Ignores `NaN` values.
+    """Calculates the smallest value, ignoring `NaN` values.
 
     Examples:
         >>> min = Min()
@@ -122,7 +154,13 @@ class Min(AggregationPrimitive):
 
 
 class Max(AggregationPrimitive):
-    """Finds the maximum non-null value of a numeric feature."""
+    """Calculates the highest value, ignoring `NaN` values.
+
+    Examples:
+        >>> max = Max()
+        >>> max([1, 2, 3, 4, 5, None])
+        5.0
+    """
     name = "max"
     input_types = [Numeric]
     return_type = Numeric
@@ -133,7 +171,18 @@ class Max(AggregationPrimitive):
 
 
 class NUnique(AggregationPrimitive):
-    """Returns the number of unique categorical variables."""
+    """Determines the number of distinct values, ignoring `NaN` values.
+
+    Examples:
+        >>> num_unique = NUnique()
+        >>> num_unique(['red', 'blue', 'green', 'yellow'])
+        4
+
+        `NaN` values will be ignored.
+
+        >>> num_unique(['red', 'blue', 'green', 'yellow', None])
+        4
+    """
     name = "num_unique"
     input_types = [Discrete]
     return_type = Numeric
@@ -149,7 +198,17 @@ class NUnique(AggregationPrimitive):
 
 
 class NumTrue(AggregationPrimitive):
-    """Finds the number of 'True' values in a boolean."""
+    """Counts the number of `True` values.
+
+    Description:
+        Given a list of booleans, return the number
+        of `True` values. Ignores 'NaN'.
+
+    Examples:
+        >>> num_true = NumTrue()
+        >>> num_true([True, False, True, True, None])
+        3
+    """
     name = "num_true"
     input_types = [Boolean]
     return_type = Numeric
@@ -162,7 +221,19 @@ class NumTrue(AggregationPrimitive):
 
 
 class PercentTrue(AggregationPrimitive):
-    """Finds the percent of 'True' values in a boolean feature."""
+    """Determines the percent of `True` values.
+
+    Description:
+        Given a list of booleans, return the percent
+        of values which are `True` as a decimal.
+        `NaN` values are treated as `False`,
+        adding to the denominator.
+
+    Examples:
+        >>> percent_true = PercentTrue()
+        >>> percent_true([True, False, True, True, None])
+        0.6
+    """
     name = "percent_true"
     input_types = [Boolean]
     return_type = Numeric
@@ -177,7 +248,24 @@ class PercentTrue(AggregationPrimitive):
 
 
 class NMostCommon(AggregationPrimitive):
-    """Finds the N most common elements in a categorical feature."""
+    """Determines the `n` most common elements.
+
+    Description:
+        Given a list of values, return the `n` values
+        which appear the most frequently. If there are
+        fewer than `n` unique values, the output will be
+        filled with `NaN`.
+
+    Args:
+        n (int): defines "n" in "n most common." Defaults
+            to 3.
+
+    Examples:
+        >>> n_most_common = NMostCommon(n=2)
+        >>> x = ['orange', 'apple', 'orange', 'apple', 'orange', 'grapefruit']
+        >>> n_most_common(x).tolist()
+        ['orange', 'apple']
+    """
     name = "n_most_common"
     input_types = [Discrete]
     return_type = Discrete
@@ -197,15 +285,22 @@ class NMostCommon(AggregationPrimitive):
 
 
 class AvgTimeBetween(AggregationPrimitive):
-    """Computes the average time between consecutive events.
+    """Computes the average number of seconds between consecutive events.
 
-    Note: equivalent to Mean(Diff(time_index)), but more performant
+    Description:
+        Given a list of datetimes, return the average number of seconds
+        elapsed between consecutive events. If there are fewer
+        than 2 non-null values, return `NaN`.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> avg_time_between = AvgTimeBetween()
+        >>> times = [datetime(2010, 1, 1, 11, 45, 0),
+        ...          datetime(2010, 1, 1, 11, 55, 15),
+        ...          datetime(2010, 1, 1, 11, 57, 30)]
+        >>> avg_time_between(times)
+        375.0
     """
-
-    # Potentially unnecessary if we add an trans_feat that
-    # calculates the difference between events. DFS
-    # should then calculate the average of that trans_feat
-    # which amounts to AvgTimeBetween
     name = "avg_time_between"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
@@ -241,21 +336,41 @@ class AvgTimeBetween(AggregationPrimitive):
 
 
 class Median(AggregationPrimitive):
-    """Finds the median value of any feature with well-ordered values."""
+    """Determines the middlemost number in a list of values.
+
+    Examples:
+        >>> median = Median()
+        >>> median([5, 3, 2, 1, 4])
+        3.0
+
+        `NaN` values are ignored.
+
+        >>> median([5, 3, 2, 1, 4, None])
+        3.0
+    """
     name = "median"
     input_types = [Numeric]
     return_type = Numeric
 
     def get_function(self):
-        return np.median
+        if is_python_2():
+            return pd.Series.median.__func__
+        else:
+            return pd.Series.median
 
 
 class Skew(AggregationPrimitive):
-    """Computes the skewness of a data set.
+    """Computes the extent to which a distribution differs from a normal distribution.
 
-    For normally distributed data, the skewness should be about 0. A skewness
-    value > 0 means that there is more weight in the left tail of the
-    distribution.
+    Description:
+        For normally distributed data, the skewness should be about 0.
+        A skewness value > 0 means that there is more weight in the
+        left tail of the distribution.
+
+    Examples:
+        >>> skew = Skew()
+        >>> skew([1, 10, 30, None])
+        1.0437603722639681
     """
     name = "skew"
     input_types = [Numeric]
@@ -273,7 +388,12 @@ class Skew(AggregationPrimitive):
 
 
 class Std(AggregationPrimitive):
-    """Finds the standard deviation of a numeric feature ignoring null values.
+    """Computes the dispersion relative to the mean value, ignoring `NaN`.
+
+    Examples:
+        >>> std = Std()
+        >>> round(std([1, 2, 3, 4, 5, None]), 3)
+        1.414
     """
     name = "std"
     input_types = [Numeric]
@@ -285,7 +405,13 @@ class Std(AggregationPrimitive):
 
 
 class Last(AggregationPrimitive):
-    """Returns the last value."""
+    """Determines the last value in a list.
+
+    Examples:
+        >>> last = Last()
+        >>> last([1, 2, 3, 4, 5, None])
+        nan
+    """
     name = "last"
     input_types = [Variable]
     return_type = None
@@ -298,7 +424,17 @@ class Last(AggregationPrimitive):
 
 
 class Any(AggregationPrimitive):
-    """Test if any value is 'True'."""
+    """Determines if any value is 'True' in a list.
+
+    Description:
+        Given a list of booleans, return `True` if one or
+        more of the values are `True`.
+
+    Examples:
+        >>> any = Any()
+        >>> any([False, False, False, True])
+        True
+    """
     name = "any"
     input_types = [Boolean]
     return_type = Boolean
@@ -309,7 +445,17 @@ class Any(AggregationPrimitive):
 
 
 class All(AggregationPrimitive):
-    """Test if all values are 'True'."""
+    """Calculates if all values are 'True' in a list.
+
+    Description:
+        Given a list of booleans, return `True` if all
+        of the values are `True`.
+
+    Examples:
+        >>> all = All()
+        >>> all([False, False, False, True])
+        False
+    """
     name = "all"
     input_types = [Boolean]
     return_type = Boolean
@@ -320,7 +466,23 @@ class All(AggregationPrimitive):
 
 
 class TimeSinceLast(AggregationPrimitive):
-    """Time since last related instance."""
+    """Calculates the time elapsed since the last datetime (in seconds).
+
+    Description:
+        Given a list of datetimes, calculate the
+        time elapsed since the last datetime (in
+        seconds). Uses the instance's cutoff time.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> time_since_last = TimeSinceLast()
+        >>> cutoff_time = datetime(2010, 1, 1, 12, 0, 0)
+        >>> times = [datetime(2010, 1, 1, 11, 45, 0),
+        ...          datetime(2010, 1, 1, 11, 55, 15),
+        ...          datetime(2010, 1, 1, 11, 57, 30)]
+        >>> time_since_last(times, time=cutoff_time)
+        150.0
+    """
     name = "time_since_last"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
@@ -336,7 +498,23 @@ class TimeSinceLast(AggregationPrimitive):
 
 
 class TimeSinceFirst(AggregationPrimitive):
-    """Time since first related instance."""
+    """Calculates the time elapsed since the first datetime (in seconds).
+
+    Description:
+        Given a list of datetimes, calculate the
+        time elapsed since the first datetime (in
+        seconds). Uses the instance's cutoff time.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> time_since_first = TimeSinceFirst()
+        >>> cutoff_time = datetime(2010, 1, 1, 12, 0, 0)
+        >>> times = [datetime(2010, 1, 1, 11, 45, 0),
+        ...          datetime(2010, 1, 1, 11, 55, 15),
+        ...          datetime(2010, 1, 1, 11, 57, 30)]
+        >>> time_since_first(times, time=cutoff_time)
+        900.0
+    """
     name = "time_since_first"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
@@ -352,7 +530,24 @@ class TimeSinceFirst(AggregationPrimitive):
 
 
 class Trend(AggregationPrimitive):
-    """Calculates the slope of the linear trend of variable overtime."""
+    """Calculates the trend of a variable over time.
+
+    Description:
+        Given a list of values and a corresponding list of
+        datetimes, calculate the slope of the linear trend
+        of values.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> trend = Trend()
+        >>> times = [datetime(2010, 1, 1, 11, 45, 0),
+        ...          datetime(2010, 1, 1, 11, 55, 15),
+        ...          datetime(2010, 1, 1, 11, 57, 30),
+        ...          datetime(2010, 1, 1, 11, 12),
+        ...          datetime(2010, 1, 1, 11, 12, 15)]
+        >>> round(trend([1, 2, 3, 4, 5], times), 3)
+        -0.053
+    """
     name = "trend"
     input_types = [Numeric, DatetimeTimeIndex]
     return_type = Numeric
