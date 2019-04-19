@@ -339,7 +339,7 @@ class NotEqualScalar(TransformPrimitive):
 
 
 class AddNumeric(TransformPrimitive):
-    """Element-wise addition of two features.
+    """Element-wise addition of two lists.
 
     Description:
         Given a list of values X and a list of values
@@ -392,7 +392,7 @@ class AddNumericScalar(TransformPrimitive):
 
 
 class SubtractNumeric(TransformPrimitive):
-    """Element-wise subtraction of two features.
+    """Element-wise subtraction of two lists.
 
     Description:
         Given a list of values X and a list of values
@@ -481,7 +481,7 @@ class ScalarSubtractNumericFeature(TransformPrimitive):
 
 
 class MultiplyNumeric(TransformPrimitive):
-    """Element-wise multiplication of two features.
+    """Element-wise multiplication of two lists.
 
     Description:
         Given a list of values X and a list of values
@@ -534,7 +534,7 @@ class MultiplyNumericScalar(TransformPrimitive):
 
 
 class DivideNumeric(TransformPrimitive):
-    """Element-wise division of two features.
+    """Element-wise division of two lists.
 
     Description:
         Given a list of values X and a list of values
@@ -623,7 +623,7 @@ class DivideByFeature(TransformPrimitive):
 
 
 class ModuloNumeric(TransformPrimitive):
-    """Element-wise modulo of two features.
+    """Element-wise modulo of two lists.
 
     Description:
         Given a list of values X and a list of values Y,
@@ -705,7 +705,7 @@ class ModuloByFeature(TransformPrimitive):
 
 
 class And(TransformPrimitive):
-    """Element-wise logical AND of two features.
+    """Element-wise logical AND of two lists.
 
     Description:
         Given a list of booleans X and a list of booleans Y,
@@ -730,7 +730,7 @@ class And(TransformPrimitive):
 
 
 class Or(TransformPrimitive):
-    """Element-wise logical OR of two features.
+    """Element-wise logical OR of two lists.
 
     Description:
         Given a list of booleans X and a list of booleans Y,
