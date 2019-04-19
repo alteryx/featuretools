@@ -31,5 +31,5 @@ def test_descriptions():
     primitives = {NumCharacters: 'Calculates the number of characters in a string.',
                   Day: 'Determines the day of the month from a datetime.',
                   Last: 'Determines the last value in a list.',
-                  GreaterThan: ''}
+                  GreaterThan: 'Determines if values in one list are greater than another list.'}
     assert _get_descriptions(list(primitives.keys())) == list(primitives.values())
