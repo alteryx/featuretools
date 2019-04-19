@@ -364,7 +364,7 @@ class AddNumeric(TransformPrimitive):
 
 
 class AddNumericScalar(TransformPrimitive):
-    """Add a scalar to each element in a feature.
+    """Add a scalar to each value in the list.
 
     Description:
         Given a list of numeric values and a scalar, add
@@ -424,7 +424,7 @@ class SubtractNumeric(TransformPrimitive):
 
 
 class SubtractNumericScalar(TransformPrimitive):
-    """Subtract a scalar from each element in a feature.
+    """Subtract a scalar from each element in the list.
 
     Description:
         Given a list of numeric values and a scalar, subtract
@@ -452,7 +452,7 @@ class SubtractNumericScalar(TransformPrimitive):
 
 
 class ScalarSubtractNumericFeature(TransformPrimitive):
-    """Subtract each value in a feature from a given scalar.
+    """Subtract each value in the list from a given scalar.
 
     Description:
         Given a list of numeric values and a scalar, subtract
@@ -506,7 +506,7 @@ class MultiplyNumeric(TransformPrimitive):
 
 
 class MultiplyNumericScalar(TransformPrimitive):
-    """Multiply each element in a feature by a scalar.
+    """Multiply each element in the list by a scalar.
 
     Description:
         Given a list of numeric values and a scalar, multiply
@@ -566,7 +566,7 @@ class DivideNumeric(TransformPrimitive):
 
 
 class DivideNumericScalar(TransformPrimitive):
-    """Divide each element in a feature by a scalar.
+    """Divide each element in the list by a scalar.
 
     Description:
         Given a list of numeric values and a scalar, divide
@@ -594,7 +594,7 @@ class DivideNumericScalar(TransformPrimitive):
 
 
 class DivideByFeature(TransformPrimitive):
-    """Divide a scalar by each value in a feature.
+    """Divide a scalar by each value in the list.
 
     Description:
         Given a list of numeric values and a scalar, divide
@@ -647,7 +647,7 @@ class ModuloNumeric(TransformPrimitive):
 
 
 class ModuloNumericScalar(TransformPrimitive):
-    """Return the modulo of each element in a feature by a scalar.
+    """Return the modulo of each element in the list by a scalar.
 
     Description:
         Given a list of numeric values and a scalar, return
@@ -676,7 +676,7 @@ class ModuloNumericScalar(TransformPrimitive):
 
 
 class ModuloByFeature(TransformPrimitive):
-    """Return the modulo of a scalar by each element in a feature.
+    """Return the modulo of a scalar by each element in the list.
 
     Description:
         Given a list of numeric values and a scalar, return the
