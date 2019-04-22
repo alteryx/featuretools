@@ -6,7 +6,7 @@ git clone https://github.com/Featuretools/featuretools.git /home/circleci/featur
 cd /home/circleci/featuretools
 git checkout "${1}"
 # Remove build artifacts
-rm -rf featuretools/.eggs/ rm -rf featuretools/dist/ rm -rf featuretools/build/
+rm -rf .eggs/ rm -rf dist/ rm -rf build/
 # Create distributions
 python setup.py sdist bdist_wheel
 # Install twine, module used to upload to pypi
