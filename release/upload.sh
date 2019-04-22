@@ -12,5 +12,4 @@ python setup.py sdist bdist_wheel
 # Install twine, module used to upload to pypi
 pip install --user twine
 # Upload to pypi or testpypi
-# To upload to testpypi, run ./upload.sh testpypi instead of ./upload.sh
 python -m twine upload dist/* -r "${2:-pypi}"
