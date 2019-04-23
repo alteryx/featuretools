@@ -55,7 +55,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             not provided
 
         cutoff_time (pd.DataFrame or Datetime): Specifies at which time to calculate
-            the features for each instance.  Can either be a DataFrame with
+            the features for each instance. The resulting feature matrix will use data
+            up to and including the cutoff_time. Can either be a DataFrame with
             'instance_id' and 'time' columns, DataFrame with the name of the
             index variable in the target entity and a time column, or a single
             value to calculate for all instances. If the dataframe has more than two columns, any additional
@@ -401,7 +402,8 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
             for the aggregation feature will be calculated
 
         cutoff_time (pd.DataFrame): specifies what time to calculate
-            the features for each instance at.  A DataFrame with
+            the features for each instance at. The resulting feature matrix will use data
+            up to and including the cutoff_time. A DataFrame with
             'instance_id' and 'time' columns.
 
         window (Timedelta or str): frequency to group instances with similar

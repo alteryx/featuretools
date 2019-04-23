@@ -70,7 +70,7 @@ Let's do a short example. We want to predict whether customers ``1``, ``2`` and 
 
 .. important::
 
-     A **cutoff_time** dataframe is a concise way of passing complicated instructions to Deep Feature Synthesis. For every id-time pair passed in, DFS creates a row of the feature matrix for that id at that time.
+     A **cutoff_time** dataframe is a concise way of passing complicated instructions to Deep Feature Synthesis. For every id-time pair passed in, DFS creates a row of the feature matrix for that id at that time. The cutoff_time is inclusive, so when it's creating the rows, DFS will use all data before and at the cutoff time.
 
 
 In this case, we're making predictions for all three customers at the same time, ``2014-1-1 04:00`` so we set that as the second column. We have also checked that ``1`` and ``2`` will spend $500 while customer ``3`` will not, so we include those labels as a third column.
