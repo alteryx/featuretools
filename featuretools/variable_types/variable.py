@@ -424,7 +424,7 @@ class FilePath(Variable):
 ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
                       Categorical, Text, Ordinal,
                       Boolean, LatLong, ZIPCode, IPAddress,
-                      EmailAddress, URL, PhoneNumber,
+                      FullName, EmailAddress, URL, PhoneNumber,
                       DateOfBirth, CountryCode, SubRegionCode,
                       FilePath]
 
