@@ -12,4 +12,5 @@ python setup.py sdist bdist_wheel
 # Install twine, module used to upload to pypi
 pip install --user twine
 # Upload to pypi or testpypi
+echo "Upoading to ${2:-pypi} . . ."
 python -m twine upload dist/* -r "${2:-pypi}"
