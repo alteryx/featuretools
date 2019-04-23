@@ -66,7 +66,7 @@ For a given :class:`EntitySet <EntitySet>`, there are many possible prediction p
 
 A **cutoff_time** dataframe is a concise way of passing complicated instructions to :func:`Deep Feature Synthesis <dfs>` (DFS). Each row contains a instance id, a time and optionally, a label. For every unique id-time pair, we will create a row of the feature matrix.
 
-Let's do a short example. We want to predict whether customers ``1``, ``2`` and ``3`` will spend $500 after ``04:00`` on January 1 by the end of the day. The ``time`` column emulates the way a human would make a historical prediction. It is an instruction to not use any future information constructing that row even if we have it in our entityset.
+Let's do a short example. We want to predict whether customers ``1``, ``2`` and ``3`` will spend $500 after ``04:00`` on January 1 by the end of the day. The ``time`` column emulates the way a human would make a historical prediction. It is an instruction to not use any future information constructing that row even if we have it in our entityset. Since our cutoff time is ``04:00`` DFS will use data that happened before, or at ``04:00``.
 
 .. important::
 
