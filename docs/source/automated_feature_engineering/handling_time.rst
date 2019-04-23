@@ -64,14 +64,9 @@ Introduction to Cutoff Times
 
 For a given :class:`EntitySet <EntitySet>`, there are many possible prediction problems that you might want to solve. Trying to predict customer purchases an hour in advance uses different data than trying to predict purchases a day in advance. Often, it's desirable to test multiple questions and explore which one you want to use. Featuretools makes that process easier through cutoff times.
 
-A **cutoff_time** dataframe is a concise way of passing complicated instructions to :func:`Deep Feature Synthesis <dfs>` (DFS). Each row contains a instance id, a time and optionally, a label. For every unique id-time pair, we will create a row of the feature matrix.
+A **cutoff_time** specifies the last valid time for data. This allows you to give a cutoff time of 11:59pm on December 31st, and then make predictions for January 1st without leaking data. Since no data from January is available, we can be confident that our training data won't leak data from the future.
 
-Let's do a short example. We want to predict whether customers ``1``, ``2`` and ``3`` will spend $500 after ``04:00`` on January 1 by the end of the day. The ``time`` column emulates the way a human would make a historical prediction. It is an instruction to not use any future information constructing that row even if we have it in our entityset. Since our cutoff time is ``04:00`` DFS will use data that happened before, or at ``04:00``.
-
-.. important::
-
-     A **cutoff_time** dataframe is a concise way of passing complicated instructions to Deep Feature Synthesis. For every id-time pair passed in, DFS creates a row of the feature matrix for that id at that time. The cutoff_time is inclusive, so when it's creating the rows, DFS will use all data before and at the cutoff time.
-
+Let's do a short example with some code. We want to predict whether customers ``1``, ``2`` and ``3`` will spend $500 after ``04:00`` on January 1 by the end of the day. The ``time`` column emulates the way a human would make a historical prediction. It is an instruction to not use any future information constructing that row even if we have it in our entityset. Since our cutoff time is ``04:00`` DFS will use data that happened before, or at ``04:00``.
 
 In this case, we're making predictions for all three customers at the same time, ``2014-1-1 04:00`` so we set that as the second column. We have also checked that ``1`` and ``2`` will spend $500 while customer ``3`` will not, so we include those labels as a third column.
 
