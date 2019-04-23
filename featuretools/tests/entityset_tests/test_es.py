@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import copy
-import os
-import shutil
 from builtins import range
 from datetime import datetime
 
@@ -15,7 +13,6 @@ from ..testing_utils import make_ecommerce_entityset
 import featuretools as ft
 from featuretools import variable_types
 from featuretools.entityset import EntitySet, Relationship
-from featuretools.tests import integration_data
 
 
 @pytest.fixture()
@@ -26,9 +23,9 @@ def entityset():
 def test_operations_invalidate_metadata(entityset):
     new_es = ft.EntitySet(id="test")
     # test metadata gets created on access
-    assert new_es._metadata is None
+    assert new_es._data_description is None
     assert new_es.metadata is not None  # generated after access
-    assert new_es._metadata is not None
+    assert new_es._data_description is not None
 
     new_es.entity_from_dataframe("customers",
                                  entityset["customers"].df,
@@ -36,38 +33,38 @@ def test_operations_invalidate_metadata(entityset):
     new_es.entity_from_dataframe("sessions",
                                  entityset["sessions"].df,
                                  index=entityset["sessions"].index)
-    assert new_es._metadata is None
+    assert new_es._data_description is None
     assert new_es.metadata is not None
-    assert new_es._metadata is not None
+    assert new_es._data_description is not None
 
     r = ft.Relationship(new_es["customers"]["id"],
                         new_es["sessions"]["customer_id"])
     new_es = new_es.add_relationship(r)
-    assert new_es._metadata is None
+    assert new_es._data_description is None
     assert new_es.metadata is not None
-    assert new_es._metadata is not None
+    assert new_es._data_description is not None
 
     new_es = new_es.normalize_entity("customers", "cohort", "cohort")
-    assert new_es._metadata is None
+    assert new_es._data_description is None
     assert new_es.metadata is not None
-    assert new_es._metadata is not None
+    assert new_es._data_description is not None
 
     new_es.add_last_time_indexes()
-    assert new_es._metadata is None
+    assert new_es._data_description is None
     assert new_es.metadata is not None
-    assert new_es._metadata is not None
+    assert new_es._data_description is not None
 
     new_es.add_interesting_values()
-    assert new_es._metadata is None
+    assert new_es._data_description is None
     assert new_es.metadata is not None
-    assert new_es._metadata is not None
+    assert new_es._data_description is not None
 
 
 def test_reset_metadata(entityset):
     assert entityset.metadata is not None
-    assert entityset._metadata is not None
-    entityset.reset_metadata()
-    assert entityset._metadata is None
+    assert entityset._data_description is not None
+    entityset.reset_data_description()
+    assert entityset._data_description is None
 
 
 def test_cannot_readd_relationships_that_already_exists(entityset):
@@ -322,9 +319,12 @@ def test_converts_datetime():
               'time': variable_types.Datetime}
 
     entityset = EntitySet(id='test')
-    entityset._import_from_dataframe(entity_id='test_entity', index='id',
-                                     time_index="time", variable_types=vtypes,
-                                     dataframe=df)
+    entityset.entity_from_dataframe(
+        entity_id='test_entity',
+        index='id',
+        time_index="time",
+        variable_types=vtypes,
+        dataframe=df)
     pd_col = entityset['test_entity'].df['time']
     # assert type(entityset['test_entity']['time']) == variable_types.Datetime
     assert type(pd_col[0]) == pd.Timestamp
@@ -343,8 +343,11 @@ def test_handles_datetime_format():
               'time_no_format': variable_types.Datetime}
 
     entityset = EntitySet(id='test')
-    entityset._import_from_dataframe(entity_id='test_entity', index='id',
-                                     variable_types=vtypes, dataframe=df)
+    entityset.entity_from_dataframe(
+        entity_id='test_entity',
+        index='id',
+        variable_types=vtypes,
+        dataframe=df)
 
     col_format = entityset['test_entity'].df['time_format']
     col_no_format = entityset['test_entity'].df['time_no_format']
@@ -837,6 +840,20 @@ def test_normalize_time_index_from_none(entityset):
     assert entityset['birthdays'].time_index == 'date_of_birth'
 
 
+def test_raise_error_if_dupicate_additional_variables_passed(entityset):
+    error_text = "'additional_variables' contains duplicate variables. All variables must be unique."
+    with pytest.raises(ValueError, match=error_text):
+        entityset.normalize_entity('sessions', 'device_types', 'device_type',
+                                   additional_variables=['device_name', 'device_name'])
+
+
+def test_raise_error_if_dupicate_copy_variables_passed(entityset):
+    error_text = "'copy_variables' contains duplicate variables. All variables must be unique."
+    with pytest.raises(ValueError, match=error_text):
+        entityset.normalize_entity('sessions', 'device_types', 'device_type',
+                                   copy_variables=['device_name', 'device_name'])
+
+
 def test_normalize_entity_copies_variable_types(entityset):
     entityset['log'].convert_variable_type(
         'value', variable_types.Ordinal, convert_data=False)
@@ -899,43 +916,9 @@ def test_secondary_time_index(entityset):
                                new_entity_secondary_time_index='second_ti')
 
     assert (isinstance(entityset['values'].df['second_ti'], pd.Series))
-    assert (entityset['values']['second_ti']._dtype_repr == 'datetime')
+    assert (entityset['values']['second_ti'].type_string == 'datetime')
     assert (entityset['values'].secondary_time_index == {
             'second_ti': ['comments', 'second_ti']})
-
-
-def test_to_pickle(entityset):
-    dirname = os.path.dirname(integration_data.__file__)
-    path = os.path.join(dirname, 'test_entityset.p')
-    if os.path.exists(path):
-        shutil.rmtree(path)
-    entityset.to_pickle(path)
-    new_es = ft.read_pickle(path)
-    assert entityset.__eq__(new_es, deep=True)
-    shutil.rmtree(path)
-
-
-def test_to_parquet(entityset):
-    dirname = os.path.dirname(integration_data.__file__)
-    path = os.path.join(dirname, 'test_entityset.p')
-    if os.path.exists(path):
-        shutil.rmtree(path)
-    entityset.to_parquet(path)
-    new_es = ft.read_parquet(path)
-    assert entityset.__eq__(new_es, deep=True)
-    shutil.rmtree(path)
-
-
-def test_to_parquet_with_lti():
-    entityset = ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
-    dirname = os.path.dirname(integration_data.__file__)
-    path = os.path.join(dirname, 'test_entityset.p')
-    if os.path.exists(path):
-        shutil.rmtree(path)
-    entityset.to_parquet(path)
-    new_es = ft.read_parquet(path)
-    assert entityset.__eq__(new_es, deep=True)
-    shutil.rmtree(path)
 
 
 def test_sizeof(entityset):
@@ -964,16 +947,17 @@ def test_getitem_without_id():
 
 def test_metadata_without_id():
     es = ft.EntitySet()
-    assert es.create_metadata_dict().get('id') is None
+    assert es.metadata.id is None
 
 
-def test_to_pickle_id_none():
-    entityset = ft.EntitySet()
-    dirname = os.path.dirname(integration_data.__file__)
-    path = os.path.join(dirname, 'test_entityset.p')
-    if os.path.exists(path):
-        shutil.rmtree(path)
-    entityset.to_pickle(path)
-    new_es = ft.read_pickle(path)
-    assert entityset.__eq__(new_es, deep=True)
-    shutil.rmtree(path)
+def test_datetime64_conversion():
+    df = pd.DataFrame({'id': [0, 1, 2],
+                       'ints': ['1', '2', '1']})
+    df["time"] = pd.Timestamp.now()
+    df["time"] = df["time"].astype("datetime64[ns, UTC]")
+
+    entityset = EntitySet(id='test')
+    entityset.entity_from_dataframe(entity_id='test_entity', index='id',
+                                    dataframe=df)
+    vtype_time_index = variable_types.variable.DatetimeTimeIndex
+    entityset['test_entity'].convert_variable_type('time', vtype_time_index)

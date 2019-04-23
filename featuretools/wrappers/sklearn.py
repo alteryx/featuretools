@@ -21,14 +21,14 @@ class DFSTransformer(TransformerMixin):
                  agg_primitives=None,
                  trans_primitives=None,
                  allowed_paths=None,
-                 max_depth=None,
+                 max_depth=2,
                  ignore_entities=None,
                  ignore_variables=None,
                  seed_features=None,
                  drop_contains=None,
                  drop_exact=None,
                  where_primitives=None,
-                 max_features=None,
+                 max_features=-1,
                  verbose=False,
                  profile=False):
         """Creates Transformer
@@ -74,7 +74,7 @@ class DFSTransformer(TransformerMixin):
                 specific variables within each entity to blacklist when
                 creating features.
 
-            seed_features (list[:class:`.PrimitiveBase`]): List of manually
+            seed_features (list[:class:`.FeatureBase`]): List of manually
                 defined features to use.
 
             drop_contains (list[str], optional): Drop features

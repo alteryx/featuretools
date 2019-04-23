@@ -4,6 +4,7 @@ import pstats
 import sys
 import warnings
 from datetime import datetime
+from functools import partial
 
 import numpy as np
 import pandas as pd
@@ -14,12 +15,14 @@ from .feature_tree import FeatureTree
 
 from featuretools import variable_types
 from featuretools.exceptions import UnknownFeature
-from featuretools.primitives import (
-    AggregationPrimitive,
+from featuretools.feature_base import (
+    AggregationFeature,
     DirectFeature,
+    GroupByTransformFeature,
     IdentityFeature,
-    TransformPrimitive
+    TransformFeature
 )
+from featuretools.utils import is_python_2
 from featuretools.utils.gen_utils import (
     get_relationship_variable_id,
     make_tqdm_iterator
@@ -103,7 +106,9 @@ class PandasBackend(ComputationalBackend):
                                                  training_window=training_window,
                                                  verbose=verbose)
         large_eframes_by_filter = None
-        if any([f.uses_full_entity for f in self.feature_tree.all_features]):
+        if any([f.primitive.uses_full_entity
+                for f in self.feature_tree.all_features
+                if isinstance(f, (GroupByTransformFeature, TransformFeature))]):
             large_necessary_columns = self.feature_tree.necessary_columns_for_all_values_features
             large_eframes_by_filter = \
                 self.entityset.get_pandas_data_slice(filter_entity_ids=ordered_entities,
@@ -250,12 +255,20 @@ class PandasBackend(ComputationalBackend):
             df = df.append(default_df, sort=True)
 
         df.index.name = self.entityset[self.target_eid].index
-        return df[[feat.get_name() for feat in self.features]]
+        column_list = []
+        for feat in self.features:
+            column_list.extend(feat.get_feature_names())
+        return df[column_list]
 
     def generate_default_df(self, instance_ids, extra_columns=None):
         index_name = self.features[0].entity.index
-        default_row = [f.default_value for f in self.features]
-        default_cols = [f.get_name() for f in self.features]
+        default_row = []
+        default_cols = []
+        for f in self.features:
+            for name in f.get_feature_names():
+                default_cols.append(name)
+                default_row.append(f.default_value)
+
         default_matrix = [default_row] * len(instance_ids)
         default_df = pd.DataFrame(default_matrix,
                                   columns=default_cols,
@@ -268,22 +281,22 @@ class PandasBackend(ComputationalBackend):
         return default_df
 
     def _feature_type_handler(self, f):
-        if isinstance(f, TransformPrimitive):
+        if type(f) == TransformFeature:
             return self._calculate_transform_features
-        elif isinstance(f, DirectFeature):
+        elif type(f) == GroupByTransformFeature:
+            return self._calculate_groupby_features
+        elif type(f) == DirectFeature:
             return self._calculate_direct_features
-        elif isinstance(f, AggregationPrimitive):
+        elif type(f) == AggregationFeature:
             return self._calculate_agg_features
-        elif isinstance(f, IdentityFeature):
+        elif type(f) == IdentityFeature:
             return self._calculate_identity_features
         else:
             raise UnknownFeature(u"{} feature unknown".format(f.__class__))
 
     def _calculate_identity_features(self, features, entity_frames):
         entity_id = features[0].entity.id
-        assert (entity_id in entity_frames and
-                features[0].get_name() in entity_frames[entity_id].columns)
-        return entity_frames[entity_id]
+        return entity_frames[entity_id][[f.get_name() for f in features]]
 
     def _calculate_transform_features(self, features, entity_frames):
         entity_id = features[0].entity.id
@@ -299,22 +312,67 @@ class PandasBackend(ComputationalBackend):
                 continue
 
             # collect only the variables we need for this transformation
-            variable_data = [frame[bf.get_name()].values
+            variable_data = [frame[bf.get_name()]
                              for bf in f.base_features]
 
             feature_func = f.get_function()
             # apply the function to the relevant dataframe slice and add the
             # feature row to the results dataframe.
-            if f.uses_calc_time:
+            if f.primitive.uses_calc_time:
                 values = feature_func(*variable_data, time=self.time_last)
             else:
                 values = feature_func(*variable_data)
 
             # if we don't get just the values, the assignment breaks when indexes don't match
-            if isinstance(values, pd.Series):
-                values = values.values
+            if f.number_output_features > 1:
+                values = [strip_values_if_series(value) for value in values]
+            else:
+                values = [strip_values_if_series(values)]
+            update_feature_columns(f, frame, values)
 
-            frame[f.get_name()] = values
+        return frame
+
+    def _calculate_groupby_features(self, features, entity_frames):
+        entity_id = features[0].entity.id
+        assert len(set([f.entity.id for f in features])) == 1, \
+            "features must share base entity"
+        assert entity_id in entity_frames
+
+        frame = entity_frames[entity_id]
+
+        # handle when no data
+        if frame.shape[0] == 0:
+            for f in features:
+                set_default_column(frame, f)
+            return frame
+
+        groupby = features[0].groupby.get_name()
+        for index, group in frame.groupby(groupby):
+            for f in features:
+                column_names = [bf.get_name() for bf in f.base_features]
+                # exclude the groupby variable from being passed to the function
+                variable_data = [group[name] for name in column_names[:-1]]
+                feature_func = f.get_function()
+
+                # apply the function to the relevant dataframe slice and add the
+                # feature row to the results dataframe.
+                if f.primitive.uses_calc_time:
+                    values = feature_func(*variable_data, time=self.time_last)
+                else:
+                    values = feature_func(*variable_data)
+
+                # make sure index is aligned
+                if isinstance(values, pd.Series):
+                    values.index = variable_data[0].index
+                else:
+                    values = pd.Series(values, index=variable_data[0].index)
+
+                feature_name = f.get_name()
+                if feature_name in frame.columns:
+                    frame[feature_name].update(values)
+                else:
+                    frame[feature_name] = values
+
         return frame
 
     def _calculate_direct_features(self, features, entity_frames):
@@ -341,9 +399,11 @@ class PandasBackend(ComputationalBackend):
             # Sometimes entityset._add_multigenerational_links adds link variables
             # that would ordinarily get calculated as direct features,
             # so we make sure not to attempt to calculate again
-            if f.get_name() in child_df.columns:
-                continue
-            col_map[f.base_features[0].get_name()] = f.get_name()
+            base_names = f.base_features[0].get_feature_names()
+            for name, base_name in zip(f.get_feature_names(), base_names):
+                if name in child_df.columns:
+                    continue
+                col_map[base_name] = name
 
         # merge the identity feature from the parent entity into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
@@ -423,11 +483,26 @@ class PandasBackend(ComputationalBackend):
                         to_agg[variable_id] = []
 
                     func = f.get_function()
+
+                    # for some reason, using the string count is significantly
+                    # faster than any method a primitive can return
+                    # https://stackoverflow.com/questions/55731149/use-a-function-instead-of-string-in-pandas-groupby-agg
+                    if is_python_2() and func == pd.Series.count.__func__:
+                        func = "count"
+                    elif func == pd.Series.count:
+                        func = "count"
+
                     funcname = func
                     if callable(func):
-                        # make sure func has a unique name due to how pandas names aggregations
-                        func.__name__ = f.name
-                        funcname = f.name
+                        # if the same function is being applied to the same
+                        # variable twice, wrap it in a partial to avoid
+                        # duplicate functions
+                        funcname = str(id(func))
+                        if u"{}-{}".format(variable_id, funcname) in agg_rename:
+                            func = partial(func)
+                            funcname = str(id(func))
+
+                        func.__name__ = funcname
 
                     to_agg[variable_id].append(func)
                     # this is used below to rename columns that pandas names for us
@@ -472,23 +547,18 @@ class PandasBackend(ComputationalBackend):
                                  left_index=True, right_index=True, how='left')
 
         # Handle default values
-        # 1. handle non scalar default values
-        iterfeats = [f for f in features
-                     if hasattr(f.default_value, '__iter__')]
-        for f in iterfeats:
-            nulls = pd.isnull(frame[f.get_name()])
-            for ni in nulls[nulls].index:
-                frame.at[ni, f.get_name()] = f.default_value
+        fillna_dict = {}
+        for f in features:
+            feature_defaults = {name: f.default_value
+                                for name in f.get_feature_names()}
+            fillna_dict.update(feature_defaults)
 
-        # 2. handle scalars default values
-        fillna_dict = {f.get_name(): f.default_value for f in features
-                       if f not in iterfeats}
         frame.fillna(fillna_dict, inplace=True)
 
         # convert boolean dtypes to floats as appropriate
         # pandas behavior: https://github.com/pydata/pandas/issues/3752
         for f in features:
-            if (not f.expanding and
+            if (f.number_output_features == 1 and
                     f.variable_type == variable_types.Numeric and
                     frame[f.get_name()].dtype.name in ['object', 'bool']):
                 frame[f.get_name()] = frame[f.get_name()].astype(float)
@@ -497,16 +567,16 @@ class PandasBackend(ComputationalBackend):
 
 
 def _can_agg(feature):
-    assert isinstance(feature, AggregationPrimitive)
+    assert isinstance(feature, AggregationFeature)
     base_features = feature.base_features
     if feature.where is not None:
         base_features = [bf.get_name() for bf in base_features
                          if bf.get_name() != feature.where.get_name()]
 
-    if feature.uses_calc_time:
+    if feature.primitive.uses_calc_time:
         return False
-
-    return len(base_features) == 1 and not feature.expanding
+    single_output = feature.primitive.number_output_features == 1
+    return len(base_features) == 1 and single_output
 
 
 def agg_wrapper(feats, time_last):
@@ -517,18 +587,32 @@ def agg_wrapper(feats, time_last):
             variable_ids = [bf.get_name() for bf in f.base_features]
             args = [df[v] for v in variable_ids]
 
-            if f.uses_calc_time:
-                d[f.get_name()] = func(*args, time=time_last)
+            if f.primitive.uses_calc_time:
+                values = func(*args, time=time_last)
             else:
-                d[f.get_name()] = func(*args)
+                values = func(*args)
+
+            if f.number_output_features == 1:
+                values = [values]
+            update_feature_columns(f, d, values)
 
         return pd.Series(d)
     return wrap
 
 
 def set_default_column(frame, f):
-    default = f.default_value
-    if hasattr(default, '__iter__'):
-        length = frame.shape[0]
-        default = [f.default_value] * length
-    frame[f.get_name()] = default
+    for name in f.get_feature_names():
+        frame[name] = f.default_value
+
+
+def update_feature_columns(feature, data, values):
+    names = feature.get_feature_names()
+    assert len(names) == len(values)
+    for name, value in zip(names, values):
+        data[name] = value
+
+
+def strip_values_if_series(values):
+    if isinstance(values, pd.Series):
+        values = values.values
+    return values

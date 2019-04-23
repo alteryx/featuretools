@@ -73,7 +73,7 @@ For a DataFrame that lists and describes each built-in primitive in Featuretools
 ..  Primitive type              Primitives
 .. ======================       ==================================================
 ..  Aggregation                 min, max, count, sum, std, mean, median, mode,
-..  Datetime transform          minute, second, weekday, weekend, hour, day, week, month, year
+..  Datetime transform          minute, second, weekday, is_weekend, hour, day, week, month, year
 ..  Cumulative transform        cum_count, cum_sum, cum_mean, cum_max, cum_min, diff
 ..  Combine                     is_in, and, or, not
 ..  Transform                   time_since, absolute, percentile
@@ -164,7 +164,6 @@ Next, we need to create a custom primitive from the ``word_count`` function.
                                      return_type=Numeric)
 
 .. ipython :: python
-    :suppress:
 
     from featuretools.tests.testing_utils import make_ecommerce_entityset
     es = make_ecommerce_entityset()

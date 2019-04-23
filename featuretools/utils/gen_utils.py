@@ -40,17 +40,18 @@ def make_tqdm_iterator(**kwargs):
         # from IPython import display
         # capture_stderr = StringIO()
         # with RedirectStdStreams(stderr=capture_stderr):
-            # try:
-                # iterator = tqdm_notebook(**options)
-            # except:
-                # failed = True
-            # else:
-                # failed = False
-                # err_out = capture_stderr.getvalue()
+        # try:
+        # iterator = tqdm_notebook(**options)
+        # except:
+        # failed = True
+        # else:
+        # failed = False
+        # err_out = capture_stderr.getvalue()
         # capture_stderr.close()
-        # if failed or err_out.lower().find("widget javascript not detected") > -1:
-            # display.clear_output(wait=True)
-            # iterator = tqdm(**options)
+        # if failed or err_out.lower().find("widget javascript not detected") \
+        # >-1:
+        # display.clear_output(wait=True)
+        # iterator = tqdm(**options)
         iterator = tqdm(**options)
 
     else:
@@ -77,3 +78,7 @@ def get_relationship_variable_id(path):
         child_link_name = '%s.%s' % (r.parent_entity.id,
                                      parent_link_name)
     return child_link_name
+
+
+def is_python_2():
+    return sys.version_info.major < 3

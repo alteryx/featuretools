@@ -12,7 +12,7 @@ What is Featuretools?
 
 .. image:: images/featuretools-logo.png
    :width: 500 px
-   :alt: Featuertools
+   :alt: Featuretools
    :align: center
 
 **Featuretools** is a framework to perform automated feature engineering. It excels at transforming temporal and relational datasets into feature matrices for machine learning.
@@ -82,7 +82,7 @@ In this dataset we have two relationships
 
 .. note::
 
-    To manage setting up entities and relationships, the :class:`EntitySet <featuretools.EntitySet>` class offer convenient APIs for managing data like this. See :doc:`loading_data/using_entitysets` for more information.
+    To manage setting up entities and relationships, we recommend using the :class:`EntitySet <featuretools.EntitySet>` class which offers convenient APIs for managing data like this. See :doc:`loading_data/using_entitysets` for more information.
 
 
 Run Deep Feature Synthesis
@@ -224,6 +224,7 @@ Table of contents
 * :doc:`help`
 * :doc:`usage_tips/limitations`
 * :doc:`usage_tips/glossary`
+* :doc:`ecosystem`
 * :doc:`api_reference`
 * :doc:`changelog`
 
@@ -234,6 +235,7 @@ Table of contents
    help
    usage_tips/limitations
    usage_tips/glossary
+   ecosystem
    api_reference
    changelog
 

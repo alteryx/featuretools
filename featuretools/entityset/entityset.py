@@ -9,9 +9,9 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_dtype_equal, is_numeric_dtype
 
+from . import deserialize, serialize
 from .entity import Entity
 from .relationship import Relationship
-from .serialization import load_entity_data, write_entityset
 
 import featuretools.variable_types.variable as vtypes
 from featuretools.utils.gen_utils import make_tqdm_iterator
@@ -34,6 +34,7 @@ class EntitySet(object):
         metadata
 
     """
+
     def __init__(self, id=None, entities=None, relationships=None):
         """Creates EntitySet
 
@@ -89,7 +90,7 @@ class EntitySet(object):
             child_variable = self[relationship[2]][relationship[3]]
             self.add_relationship(Relationship(parent_variable,
                                                child_variable))
-        self.reset_metadata()
+        self.reset_data_description()
 
     def __sizeof__(self):
         return sum([entity.__sizeof__() for entity in self.entities])
@@ -122,10 +123,6 @@ class EntitySet(object):
         Returns:
             :class:`.Entity` : Instance of entity. None if entity doesn't
                 exist.
-
-        Example:
-            >>> my_entityset[entity_id]
-            <Entity: id>
         """
         if entity_id in self.entity_dict:
             return self.entity_dict[entity_id]
@@ -137,102 +134,49 @@ class EntitySet(object):
 
     @property
     def metadata(self):
-        '''Version of this EntitySet with all data replaced with empty DataFrames.
+        '''Returns the metadata for this EntitySet. The metadata will be recomputed if it does not exist.'''
+        if self._data_description is None:
+            description = serialize.entityset_to_description(self)
+            self._data_description = deserialize.description_to_entityset(description)
 
-        An EntitySet's metadata is used in many places, for instance,
-        for each feature in a feature list.
-        To prevent using copying the full metadata object to each feature,
-        we generate a new metadata object and check if it's the same as the existing one,
-        and if it is return the existing one. Thus, all features in the feature list
-        would reference the same object, rather than copies. This saves a lot of memory
-        '''
-        if self._metadata is None:
-            self._metadata = self.from_metadata(self.create_metadata_dict(),
-                                                data_root=None)
+        return self._data_description
 
-        return self._metadata
+    def reset_data_description(self):
+        self._data_description = None
 
-    def reset_metadata(self):
-        self._metadata = None
-
-    @property
-    def is_metadata(self):
-        '''Returns True if all of the Entity's contain no data (empty DataFrames).
-        In general, EntitySets with no data are created by accessing the EntitySet.metadata property,
-        which returns a copy of the current EntitySet with all data removed.
-        '''
-        return all(e.df.empty for e in self.entity_dict.values())
-
-    def to_pickle(self, path):
+    def to_pickle(self, path, compression=None):
         '''Write entityset to disk in the pickle format, location specified by `path`.
 
             Args:
-                * entityset: entityset to write to disk
-                * path (str): location on disk to write to (will be created as a directory)
+                path (str): location on disk to write to (will be created as a directory)
+                compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
         '''
-
-        write_entityset(self, path, serialization_method='pickle')
+        serialize.write_data_description(self, path, format='pickle', compression=compression)
         return self
 
-    def to_parquet(self, path):
+    def to_parquet(self, path, engine='auto', compression=None):
         '''Write entityset to disk in the parquet format, location specified by `path`.
 
             Args:
-                * entityset: entityset to write to disk
-                * path (str): location on disk to write to (will be created as a directory)
+                path (str): location on disk to write to (will be created as a directory)
+                engine (str) : Name of the engine to use. Possible values are: {'auto', 'pyarrow', 'fastparquet'}.
+                compression (str) : Name of the compression to use. Possible values are: {'snappy', 'gzip', 'brotli', None}.
         '''
-
-        write_entityset(self, path, serialization_method='parquet')
+        serialize.write_data_description(self, path, format='parquet', engine=engine, compression=compression)
         return self
 
-    def create_metadata_dict(self):
-        return {
-            'id': self.id,
-            'relationships': [{
-                'parent_entity': r.parent_entity.id,
-                'parent_variable': r.parent_variable.id,
-                'child_entity': r.child_entity.id,
-                'child_variable': r.child_variable.id,
-            } for r in self.relationships],
-            'entity_dict': {eid: {
-                'index': e.index,
-                'time_index': e.time_index,
-                'secondary_time_index': e.secondary_time_index,
-                'variables': {
-                    v.id: v.create_metadata_dict()
-                    for v in e.variables
-                },
-                'has_last_time_index': e.last_time_index is not None
-            } for eid, e in self.entity_dict.items()},
-        }
+    def to_csv(self, path, sep=',', encoding='utf-8', engine='python', compression=None):
+        '''Write entityset to disk in the csv format, location specified by `path`.
 
-    @classmethod
-    def from_metadata(cls, metadata, data_root=None):
-        es = EntitySet(metadata['id'])
-        set_last_time_indexes = False
-        for eid, entity in metadata['entity_dict'].items():
-            df, variable_types = cls._load_dummy_entity_data_and_variable_types(entity)
-            if data_root is not None:
-                df = load_entity_data(entity, data_root)
-            es.entity_from_dataframe(eid,
-                                     df,
-                                     index=entity['index'],
-                                     time_index=entity['time_index'],
-                                     secondary_time_index=entity['secondary_time_index'],
-                                     variable_types=variable_types)
-            if entity['has_last_time_index']:
-                set_last_time_indexes = True
-            for vid, v in entity['variables'].items():
-                if v['interesting_values'] and len(v['interesting_values']):
-                    es[eid][vid].interesting_values = v['interesting_values']
-        for rel in metadata['relationships']:
-            es.add_relationship(Relationship(
-                es[rel['parent_entity']][rel['parent_variable']],
-                es[rel['child_entity']][rel['child_variable']],
-            ))
-        if set_last_time_indexes:
-            es.add_last_time_indexes()
-        return es
+            Args:
+                path (str) : Location on disk to write to (will be created as a directory)
+                sep (str) : String of length 1. Field delimiter for the output file.
+                encoding (str) : A string representing the encoding to use in the output file, defaults to 'utf-8'.
+                engine (str) : Name of the engine to use. Possible values are: {'c', 'python'}.
+                compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
+        '''
+        serialize.write_data_description(self, path, format='csv', index=False, sep=sep, encoding=encoding, engine=engine, compression=compression)
+        return self
 
     ###########################################################################
     #   Public getter/setter methods  #########################################
@@ -292,12 +236,12 @@ class EntitySet(object):
         child_v = relationship.child_variable.id
         parent_e = relationship.parent_entity
         parent_v = relationship.parent_variable.id
-        if not isinstance(child_e[child_v], vtypes.Discrete):
+        if not isinstance(child_e[child_v], vtypes.Id):
             child_e.convert_variable_type(variable_id=child_v,
                                           new_type=vtypes.Id,
                                           convert_data=False)
 
-        if not isinstance(parent_e[parent_v], vtypes.Discrete):
+        if not isinstance(parent_e[parent_v], vtypes.Index):
             parent_e.convert_variable_type(variable_id=parent_v,
                                            new_type=vtypes.Index,
                                            convert_data=False)
@@ -318,7 +262,7 @@ class EntitySet(object):
                                         child_v, child_e.id, child_dtype))
 
         self.relationships.append(relationship)
-        self.reset_metadata()
+        self.reset_data_description()
         return self
 
     def get_pandas_data_slice(self, filter_entity_ids, index_eid,
@@ -690,20 +634,27 @@ class EntitySet(object):
                 es["transactions"].df
 
         """
-        return self._import_from_dataframe(entity_id, dataframe.copy(), index=index,
-                                           make_index=make_index,
-                                           time_index=time_index,
-                                           secondary_time_index=secondary_time_index,
-                                           variable_types=variable_types,
-                                           already_sorted=already_sorted)
+        variable_types = variable_types or {}
+        entity = Entity(
+            entity_id,
+            dataframe,
+            self,
+            variable_types=variable_types,
+            index=index,
+            time_index=time_index,
+            secondary_time_index=secondary_time_index,
+            already_sorted=already_sorted,
+            make_index=make_index)
+        self.entity_dict[entity.id] = entity
+        self.reset_data_description()
+        return self
 
     def normalize_entity(self, base_entity_id, new_entity_id, index,
                          additional_variables=None, copy_variables=None,
                          make_time_index=None,
                          make_secondary_time_index=None,
                          new_entity_time_index=None,
-                         new_entity_secondary_time_index=None,
-                         time_index_reduce='first'):
+                         new_entity_secondary_time_index=None):
         """Create a new entity and relationship from unique values of an existing variable.
 
         Args:
@@ -737,11 +688,6 @@ class EntitySet(object):
 
             new_entity_secondary_time_index (str, optional): Rename new entity secondary time index.
 
-            time_index_reduce (str): If making a time_index, choose either
-                the 'first' time or the 'last' time from the associated children instances.
-                If creating a secondary time index, then the primary time index always reduces
-                using 'first', and secondary using 'last'.
-
         """
         base_entity = self.entity_dict[base_entity_id]
         additional_variables = additional_variables or []
@@ -751,9 +697,15 @@ class EntitySet(object):
             raise TypeError("'additional_variables' must be a list, but received type {}"
                             .format(type(additional_variables)))
 
+        if len(additional_variables) != len(set(additional_variables)):
+            raise ValueError("'additional_variables' contains duplicate variables. All variables must be unique.")
+
         if not isinstance(copy_variables, list):
             raise TypeError("'copy_variables' must be a list, but received type {}"
                             .format(type(copy_variables)))
+
+        if len(copy_variables) != len(set(copy_variables)):
+            raise ValueError("'copy_variables' contains duplicate variables. All variables must be unique.")
 
         for v in additional_variables + copy_variables:
             if v == index:
@@ -778,7 +730,7 @@ class EntitySet(object):
         elif make_time_index:
             base_time_index = base_entity.time_index
             if new_entity_time_index is None:
-                new_entity_time_index = "%s_%s_time" % (time_index_reduce, base_entity.id)
+                new_entity_time_index = "first_%s_time" % (base_entity.id)
 
             assert base_entity.time_index is not None, \
                 "Base entity doesn't have time_index defined"
@@ -799,13 +751,11 @@ class EntitySet(object):
             [v for v in copy_variables]
 
         new_entity_df2 = new_entity_df. \
-            drop_duplicates(index, keep=time_index_reduce)[selected_variables]
+            drop_duplicates(index, keep='first')[selected_variables]
 
         if make_time_index:
             new_entity_df2.rename(columns={base_time_index: new_entity_time_index}, inplace=True)
         if make_secondary_time_index:
-            time_index_reduce = 'first'
-
             assert len(make_secondary_time_index) == 1, "Can only provide 1 secondary time index"
             secondary_time_index = list(make_secondary_time_index.keys())[0]
 
@@ -832,12 +782,13 @@ class EntitySet(object):
             ti_cols = [c if c != old_ti_name else secondary_time_index for c in ti_cols]
             make_secondary_time_index = {secondary_time_index: ti_cols}
 
-        self._import_from_dataframe(new_entity_id, new_entity_df,
-                                    index,
-                                    time_index=new_entity_time_index,
-                                    secondary_time_index=make_secondary_time_index,
-                                    last_time_index=None,
-                                    variable_types=transfer_types)
+        self.entity_from_dataframe(
+            new_entity_id,
+            new_entity_df,
+            index,
+            time_index=new_entity_time_index,
+            secondary_time_index=make_secondary_time_index,
+            variable_types=transfer_types)
 
         for v in additional_variables:
             self.entity_dict[base_entity_id].delete_variable(v)
@@ -845,7 +796,7 @@ class EntitySet(object):
         new_entity = self.entity_dict[new_entity_id]
         base_entity.convert_variable_type(base_entity_index, vtypes.Id, convert_data=False)
         self.add_relationship(Relationship(new_entity[index], base_entity[base_entity_index]))
-        self.reset_metadata()
+        self.reset_data_description()
         return self
 
     ###########################################################################
@@ -898,7 +849,7 @@ class EntitySet(object):
                                                recalculate_last_time_indexes=False)
 
         combined_es.add_last_time_indexes(updated_entities=has_last_time_index)
-        self.reset_metadata()
+        self.reset_data_description()
         return combined_es
 
     ###########################################################################
@@ -910,7 +861,7 @@ class EntitySet(object):
         an instance or children of that instance were observed).  Used when
         calculating features using training windows
         Args:
-          * updated_entities (list[str]): List of entity ids to update last_time_index for
+            updated_entities (list[str]): List of entity ids to update last_time_index for
                 (will update all parents of those entities as well)
         """
         # Generate graph of entities to find leaf entities
@@ -1001,7 +952,7 @@ class EntitySet(object):
                     entity.last_time_index.name = 'last_time'
 
             explored.add(entity.id)
-        self.reset_metadata()
+        self.reset_data_description()
 
     ###########################################################################
     #  Other ###############################################
@@ -1020,7 +971,7 @@ class EntitySet(object):
         """
         for entity in self.entities:
             entity.add_interesting_values(max_values=max_values, verbose=verbose)
-        self.reset_metadata()
+        self.reset_data_description()
 
     def related_instances(self, start_entity_id, final_entity_id,
                           instance_ids=None, time_last=None,
@@ -1087,55 +1038,89 @@ class EntitySet(object):
 
         return df
 
+    def plot(self, to_file=None):
+        """
+        Create a UML diagram-ish graph of the EntitySet.
+
+        Args:
+            to_file (str, optional) : Path to where the plot should be saved.
+                If set to None (as by default), the plot will not be saved.
+
+        Returns:
+            graphviz.Digraph : Graph object that can directly be displayed in
+                Jupyter notebooks.
+        """
+        try:
+            import graphviz
+        except ImportError:
+            raise ImportError('Please install graphviz to plot entity sets.' +
+                              ' (See https://docs.featuretools.com/getting_started/install.html for' +
+                              ' details)')
+
+        # Try rendering a dummy graph to see if a working backend is installed
+        try:
+            graphviz.Digraph().pipe()
+        except graphviz.backend.ExecutableNotFound:
+            raise RuntimeError(
+                "To plot entity sets, a graphviz backend is required.\n" +
+                "Install the backend using one of the following commands:\n" +
+                "  Mac OS: brew install graphviz\n" +
+                "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
+                "  Windows: conda install python-graphviz\n" +
+                "  For more details visit: https://docs.featuretools.com/getting_started/install.html"
+            )
+
+        if to_file:
+            # Explicitly cast to str in case a Path object was passed in
+            to_file = str(to_file)
+
+            split_path = to_file.split('.')
+            if len(split_path) < 2:
+                raise ValueError("Please use a file extension like '.pdf'" +
+                                 " so that the format can be inferred")
+
+            format = split_path[-1]
+            valid_formats = graphviz.backend.FORMATS
+            if format not in valid_formats:
+                raise ValueError("Unknown format. Make sure your format is" +
+                                 " amongst the following: %s" % valid_formats)
+        else:
+            format = None
+
+        # Initialize a new directed graph
+        graph = graphviz.Digraph(self.id, format=format,
+                                 graph_attr={'splines': 'ortho'})
+
+        # Draw entities
+        for entity in self.entities:
+            variables_string = '\l'.join([var.id + ' : ' + var.type_string  # noqa: W605
+                                          for var in entity.variables])
+            label = '{%s|%s\l}' % (entity.id, variables_string)  # noqa: W605
+            graph.node(entity.id, shape='record', label=label)
+
+        # Draw relationships
+        for rel in self.relationships:
+            # Display the key only once if is the same for both related entities
+            if rel._parent_variable_id == rel._child_variable_id:
+                label = rel._parent_variable_id
+            else:
+                label = '%s -> %s' % (rel._parent_variable_id,
+                                      rel._child_variable_id)
+
+            graph.edge(rel._child_entity_id, rel._parent_entity_id, xlabel=label)
+
+        if to_file:
+            # Graphviz always appends the format to the file name, so we need to
+            # remove it manually to avoid file names like 'file_name.pdf.pdf'
+            offset = len(format) + 1  # Add 1 for the dot
+            output_path = to_file[:-offset]
+            graph.render(output_path, cleanup=True)
+
+        return graph
+
     ###########################################################################
     #  Private methods  ######################################################
     ###########################################################################
-
-    def _import_from_dataframe(self,
-                               entity_id,
-                               dataframe,
-                               index=None,
-                               variable_types=None,
-                               make_index=False,
-                               time_index=None,
-                               secondary_time_index=None,
-                               last_time_index=None,
-                               already_sorted=False):
-        """
-        Load the data for a specified entity from a pandas dataframe.
-
-        Args:
-            entity_id (str) : Unique id to associate with this entity.
-            dataframe (pd.DataFrame) : Pandas dataframe containing the data.
-            index (str, optional): Name of the variable used to index the entity.
-                If None, take the first column.
-            variable_types (dict[str -> dict[str -> type]]) : Optional mapping of
-                entity_id to variable_types dict with which to initialize an
-                entity's store.
-            make_index (bool, optional) : If True, assume index does not exist as a column in
-                dataframe, and create a new column of that name using integers the (0, len(dataframe)).
-                Otherwise, assume index exists in dataframe.
-            time_index (str, optional) : Name of column to use as a time index for this entity. Must be
-                a Datetime or Numeric dtype.
-            secondary_time_index (str, optional): Name of variable containing
-                time data to use a second time index for the entity.
-            already_sorted (bool, optional) : If True, assumes that input dataframe is already sorted by time.
-                Defaults to False.
-        """
-        variable_types = variable_types or {}
-        entity = Entity(entity_id,
-                        dataframe,
-                        self,
-                        variable_types=variable_types,
-                        index=index,
-                        time_index=time_index,
-                        secondary_time_index=secondary_time_index,
-                        last_time_index=last_time_index,
-                        already_sorted=already_sorted,
-                        make_index=make_index)
-        self.entity_dict[entity.id] = entity
-        self.reset_metadata()
-        return self
 
     def _add_multigenerational_link_vars(self, frames, start_entity_id,
                                          end_entity_id=None, path=None):
@@ -1213,27 +1198,3 @@ class EntitySet(object):
                     frames[child_entity.id] = merge_df.merge(child_df,
                                                              left_on=r.child_variable.id,
                                                              right_on=r.child_variable.id)
-
-    @classmethod
-    def _load_dummy_entity_data_and_variable_types(cls, metadata):
-        variable_types = {}
-        defaults = []
-        columns = []
-        variable_names = {}
-        for elt in dir(vtypes):
-            try:
-                cls = getattr(vtypes, elt)
-                if issubclass(cls, vtypes.Variable):
-                    variable_names[cls._dtype_repr] = cls
-            except TypeError:
-                pass
-        for vid, vmetadata in metadata['variables'].items():
-            if vmetadata['dtype_repr']:
-                vtype = variable_names.get(vmetadata['dtype_repr'], vtypes.Variable)
-                variable_types[vid] = vtype
-                defaults.append(vtypes.DEFAULT_DTYPE_VALUES[vtype._default_pandas_dtype])
-            else:
-                defaults.append(vtypes.DEFAULT_DTYPE_VALUES[object])
-            columns.append(vid)
-        df = pd.DataFrame({c: [d] for c, d in zip(columns, defaults)}).head(0)
-        return df, variable_types

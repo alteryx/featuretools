@@ -36,7 +36,11 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                                       'taco clock'],
                                'department': ["food", "electronics", "health",
                                               "food", "food", "electronics"],
-                               'rating': [3.5, 4.0, 4.5, 1.5, 5.0, 5.0]})
+                               'rating': [3.5, 4.0, 4.5, 1.5, 5.0, 5.0],
+                               'url': ['google.com', 'https://www.featuretools.com/',
+                                       'amazon.com', 'www.featuretools.com', 'bit.ly',
+                                       'featuretools.com/demos/'],
+                               })
     customer_times = {
         'signup_date': [datetime(2011, 4, 8), datetime(2011, 4, 9),
                         datetime(2011, 4, 6)],
@@ -70,15 +74,24 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
         'upgrade_date': customer_times['upgrade_date'],
         'cancel_date': customer_times['cancel_date'],
         'cancel_reason': ["reason_1", "reason_2", "reason_1"],
+        'engagement_level': [1, 3, 2],
+        'email': ['john.smith@example.com', '', 'team@featuretools.com'],
+        'phone_number': ['5555555555', '555-555-5555', '1-(555)-555-5555'],
         'date_of_birth': customer_times['date_of_birth'],
-        'engagement_level': [1, 3, 2]
     })
+
+    ips = ['192.168.0.1', '2001:4860:4860::8888', '0.0.0.0',
+           '192.168.1.1:2869', np.nan, '']
+    filepaths = ['/home/user/docs/Letter.txt', './inthisdir', 'C:\\user\\docs\\Letter.txt',
+                 '~/.rcinfo', '../../greatgrandparent', 'data.json']
 
     session_df = pd.DataFrame({'id': [0, 1, 2, 3, 4, 5],
                                'customer_id': [0, 0, 0, 1, 1, 2],
                                'device_type': [0, 1, 1, 0, 0, 1],
                                'device_name': ['PC', 'Mobile', 'Mobile', 'PC',
-                                               'PC', 'Mobile']})
+                                               'PC', 'Mobile'],
+                               'ip': ips,
+                               'filepath': filepaths, })
 
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
                  [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
@@ -112,7 +125,25 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
 
     latlong = list([(values[i], values_2[i]) for i, _ in enumerate(values)])
     latlong2 = list([(values_2[i], -values[i]) for i, _ in enumerate(values)])
-
+    zipcodes = list(['02116'] * 5 +
+                    ['02116-3899'] * 4 +
+                    ['0'] +
+                    ['1234567890'] * 2 +
+                    ['12345-6789'] * 2 +
+                    [np.nan] +
+                    [''] * 2)
+    countrycodes = list(['US'] * 5 +
+                        ['AL'] * 4 +
+                        [np.nan] * 2 +
+                        [''] * 3 +
+                        ['ALB'] * 2 +
+                        ['USA'])
+    subregioncodes = list(['US-AZ'] * 5 +
+                          ['US-MT'] * 4 +
+                          [np.nan] * 2 +
+                          [''] +
+                          ['UG-219'] * 2 +
+                          ['ZM-06'] * 3)
     log_df = pd.DataFrame({
         'id': range(17),
         'session_id': [0] * 5 + [1] * 4 + [2] * 1 + [3] * 2 + [4] * 3 + [5] * 2,
@@ -124,6 +155,9 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
         'value_2': values_2,
         'latlong': latlong,
         'latlong2': latlong2,
+        'zipcode': zipcodes,
+        'countrycode': countrycodes,
+        'subregioncode': subregioncodes,
         'value_many_nans': values_many_nans,
         'priority_level': [0] * 2 + [1] * 5 + [0] * 6 + [2] * 2 + [1] * 2,
         'purchased': [True] * 11 + [False] * 4 + [True, False],
@@ -227,6 +261,7 @@ def make_variable_types(with_integer_time_index=False):
         'id': variable_types.Categorical,
         'rating': variable_types.Numeric,
         'department': variable_types.Categorical,
+        'url': variable_types.URL,
     }
 
     customer_variable_types = {
@@ -235,29 +270,36 @@ def make_variable_types(with_integer_time_index=False):
         u'région_id': variable_types.Id,
         'loves_ice_cream': variable_types.Boolean,
         'favorite_quote': variable_types.Text,
-        'date_of_birth': variable_types.Datetime,
         'signup_date': variable_types.Datetime,
         'upgrade_date': variable_types.Datetime,
         'cancel_date': variable_types.Datetime,
         'cancel_reason': variable_types.Categorical,
-        'engagement_level': variable_types.Ordinal
+        'engagement_level': variable_types.Ordinal,
+        'email': variable_types.EmailAddress,
+        'phone_number': variable_types.PhoneNumber,
+        'date_of_birth': variable_types.DateOfBirth,
     }
 
     session_variable_types = {
         'id': variable_types.Categorical,
         'customer_id': variable_types.Id,
         'device_type': variable_types.Categorical,
+        'ip': variable_types.IPAddress,
+        'filepath': variable_types.FilePath,
     }
 
     log_variable_types = {
         'id': variable_types.Categorical,
         'session_id': variable_types.Id,
-        'product_id': variable_types.Id,
+        'product_id': variable_types.Categorical,
         'datetime': variable_types.Datetime,
         'value': variable_types.Numeric,
         'value_2': variable_types.Numeric,
         'latlong': variable_types.LatLong,
         'latlong2': variable_types.LatLong,
+        'zipcode': variable_types.ZIPCode,
+        'countrycode': variable_types.CountryCode,
+        'subregioncode': variable_types.SubRegionCode,
         'value_many_nans': variable_types.Numeric,
         'priority_level': variable_types.Ordinal,
         'purchased': variable_types.Boolean,
@@ -330,13 +372,13 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
         if time_index is not None:
             ti_name = time_index['name']
             secondary = time_index['secondary']
-        df = pd.read_csv(filenames[entity], encoding='utf-8')
+        df = pd.read_csv(filenames[entity], encoding='utf-8', engine='python')
         if entity == "customers":
             df["id"] = pd.Categorical(df['id'])
         if entity == 'sessions':
             # This should be changed back when converted to an EntitySet
             df['customer_id'] = pd.Categorical(df['customer_id'])
-        if entity is 'log':
+        if entity == 'log':
             df['latlong'] = df['latlong'].apply(latlong_unstringify)
             df['latlong2'] = df['latlong2'].apply(latlong_unstringify)
 
@@ -349,7 +391,6 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
 
     es.normalize_entity('customers', 'cohorts', 'cohort',
                         additional_variables=['cohort_name'],
-                        time_index_reduce='last',
                         make_time_index=True,
                         new_entity_time_index='cohort_end')
 

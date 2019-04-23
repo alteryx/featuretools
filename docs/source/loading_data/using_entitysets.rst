@@ -31,11 +31,11 @@ And the second dataframe is a list of products involved in those transactions.
 Creating an EntitySet
 ~~~~~~~~~~~~~~~~~~~~~
 
-First, we initialize an EntitySet and give it an ``id``
+First, we initialize an EntitySet. If you'd like to give it name, you can optionally provide an ``id`` to the constructor.
 
 .. ipython:: python
 
-    es = ft.EntitySet()
+    es = ft.EntitySet(id="customer_data")
 
 
 Adding entities
@@ -49,8 +49,13 @@ To get started, we load the transactions dataframe as an entity.
                                   dataframe=transactions_df,
                                   index="transaction_id",
                                   time_index="transaction_time",
-                                  variable_types={"product_id": ft.variable_types.Categorical})
+                                  variable_types={"product_id": ft.variable_types.Categorical,
+                                                  "zip_code": ft.variable_types.ZIPCode})
     es
+
+.. note ::
+
+    You can also display your entity set structure graphically by calling :meth:`.EntitySet.plot`.
 
 This method loads each column in the dataframe in as a variable. We can see the variables in an entity using the code below.
 

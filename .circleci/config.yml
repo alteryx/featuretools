@@ -1,52 +1,93 @@
-version: 2
+version: 2.1
+
+commands:
+  install-packaged-featuretools:
+    description: "install featuretools from source distribution"
+    steps:
+      - run : |
+          source test_env/bin/activate
+          python setup.py sdist
+          FEATURETOOLS_VERSION=$(python setup.py --version)
+          tar -zxvf "dist/featuretools-${FEATURETOOLS_VERSION}.tar.gz"
+          pip install -e "featuretools-${FEATURETOOLS_VERSION}/"
+          pip install -r "featuretools-${FEATURETOOLS_VERSION}/test-requirements.txt"
+  run-packaged-tests:
+    description: "run unit tests on packaged testing files"
+    steps:
+      - run: |
+          source test_env/bin/activate
+          cd "featuretools-$(python setup.py --version)/"
+          pytest
+
 jobs:
-  "python-2.7":
+  "python-27":
     working_directory: ~/featuretools
     docker:
-        - image: themattrix/tox
+      - image: circleci/python:2.7
     steps:
+      - run: sudo apt update && sudo apt install -y graphviz
       - checkout
-      - run: pyenv local 2.7.15
-      - run: make installdeps lint
-      - run: tox -e py27
+      - run: virtualenv test_env && virtualenv dev_env
+      - install-packaged-featuretools
+      - run: source dev_env/bin/activate && make installdeps
+      - run: source dev_env/bin/activate && make lint
+      - run-packaged-tests
 
-  "python-3.5":
+  "python-35":
     working_directory: ~/featuretools
     docker:
-        - image: themattrix/tox
+      - image: circleci/python:3.5
     steps:
+      - run: sudo apt update && sudo apt install -y graphviz
       - checkout
-      - run: pyenv local 3.5.6
-      - run: make installdeps lint
-      - run: tox -e py35
+      - run: virtualenv test_env && virtualenv dev_env
+      - install-packaged-featuretools
+      - run: source dev_env/bin/activate && make installdeps
+      - run: source dev_env/bin/activate && make lint
+      - run-packaged-tests
 
-  "python-3.6":
+  "python-36":
     working_directory: ~/featuretools
     docker:
-        - image: themattrix/tox
+      - image: circleci/python:3.6
     steps:
-      - run: apt update && apt install pandoc -y
+      - run: sudo apt update && sudo apt install -y graphviz pandoc
       - checkout
-      - run: pyenv local 3.6.6
-      - run: make installdeps lint
-      - run: make -C docs/ -e "SPHINXOPTS=-W" clean html
-      - run: tox -e clean,py36 && codecov
+      - run: virtualenv test_env && virtualenv dev_env
+      - install-packaged-featuretools
+      - run: source dev_env/bin/activate && make installdeps
+      - run: source dev_env/bin/activate && make lint
+      - run-packaged-tests
+      - run: source dev_env/bin/activate && make -C docs/ -e "SPHINXOPTS=-W" clean html
 
-  "python-3.7":
+  "python-37":
     working_directory: ~/featuretools
     docker:
-        - image: themattrix/tox
+      - image: circleci/python:3.7
     steps:
+      - run: sudo apt update && sudo apt install -y graphviz
       - checkout
-      - run: pyenv local 3.7.0
-      - run: make installdeps lint
-      - run: tox -e py37
+      - run: virtualenv test_env && virtualenv dev_env
+      - install-packaged-featuretools
+      - run: source dev_env/bin/activate && make installdeps
+      - run: source dev_env/bin/activate && make lint
+      - run: |
+          source test_env/bin/activate
+          pip install "$(cat dev-requirements.txt | grep codecov)"
+          coverage erase
+          FEATURETOOLS_VERSION=$(python setup.py --version)
+          cd "featuretools-${FEATURETOOLS_VERSION}/"
+          coverage erase
+          pytest featuretools/tests --cov=featuretools --cov-config=../.coveragerc
+          cd ../
+          cp "featuretools-${FEATURETOOLS_VERSION}/.coverage" .coverage
+          codecov
 
 workflows:
   version: 2
   test_all_python_versions:
     jobs:
-      - "python-2.7"
-      - "python-3.5"
-      - "python-3.6"
-      - "python-3.7"
+      - "python-27"
+      - "python-35"
+      - "python-36"
+      - "python-37"

@@ -1,48 +1,17 @@
+import os
 from inspect import isclass
 
 import pandas as pd
 
-from .primitive_base import PrimitiveBase
+from .base import AggregationPrimitive, PrimitiveBase, TransformPrimitive
 
-import featuretools.primitives
-from featuretools.utils import is_string
+import featuretools
+from featuretools.utils import is_python_2
 
-try:
-    # python 3.7 deprecated getargspec
-    from inspect import getfullargspec as getargspec
-except ImportError:
-    # python 2.7 - 3.6 backwards compatibility import
-    from inspect import getargspec
-
-
-def apply_dual_op_from_feat(f, array_1, array_2=None):
-    left = f.left
-    right = f.right
-    left_array = array_1
-    if array_2 is not None:
-        right_array = array_2
-    else:
-        right_array = array_1
-    to_op = None
-    other = None
-    if isinstance(left, PrimitiveBase):
-        left = pd.Series(left_array)
-        other = right
-        to_op = left
-        op = f._get_op()
-    if isinstance(right, PrimitiveBase):
-        right = pd.Series(right_array)
-        other = right
-        if to_op is None:
-            other = left
-            to_op = right
-            op = f._get_rop()
-    to_op, other = ensure_compatible_dtype(to_op, other)
-    op = getattr(to_op, op)
-
-    assert op is not None, \
-        "Need at least one feature for dual op, found 2 scalars"
-    return op(other)
+if is_python_2():
+    import imp
+else:
+    import importlib.util
 
 
 def get_aggregation_primitives():
@@ -70,52 +39,90 @@ def get_transform_primitives():
 
 
 def list_primitives():
-    transform_primitives = get_transform_primitives()
-    agg_primitives = get_aggregation_primitives()
-    transform_df = pd.DataFrame({'name': list(transform_primitives.keys()),
-                                 'description': [prim.__doc__.split("\n")[0] for prim in transform_primitives.values()]})
+    trans_names, trans_primitives = _get_names_primitives(get_transform_primitives)
+    transform_df = pd.DataFrame({'name': trans_names,
+                                 'description': _get_descriptions(trans_primitives)})
     transform_df['type'] = 'transform'
-    agg_df = pd.DataFrame({'name': list(agg_primitives.keys()),
-                           'description': [prim.__doc__.split("\n")[0] for prim in agg_primitives.values()]})
+
+    agg_names, agg_primitives = _get_names_primitives(get_aggregation_primitives)
+    agg_df = pd.DataFrame({'name': agg_names,
+                           'description': _get_descriptions(agg_primitives)})
     agg_df['type'] = 'aggregation'
 
     return pd.concat([agg_df, transform_df], ignore_index=True)[['name', 'type', 'description']]
 
 
-def ensure_compatible_dtype(left, right):
-    # Pandas converts dtype to float
-    # if all nans. If the actual values are
-    # strings/objects though, future features
-    # that depend on these values may error
-    # unless we explicitly set the dtype to object
-    if isinstance(left, pd.Series) and isinstance(right, pd.Series):
-        if left.dtype != object and right.dtype == object:
-            left = left.astype(object)
-        elif right.dtype != object and left.dtype == object:
-            right = right.astype(object)
-    elif isinstance(left, pd.Series):
-        if left.dtype != object and is_string(right):
-            left = left.astype(object)
-    elif isinstance(right, pd.Series):
-        if right.dtype != object and is_string(left):
-            right = right.astype(object)
-    return left, right
+def _get_descriptions(primitives):
+    descriptions = []
+    for prim in primitives:
+        description = ''
+        if prim.__doc__ is not None:
+            description = prim.__doc__.split("\n")[0]
+        descriptions.append(description)
+    return descriptions
 
 
-def inspect_function_args(new_class, function, uses_calc_time):
-    # inspect function to see if there are keyword arguments
-    argspec = getargspec(function)
-    kwargs = {}
-    if argspec.defaults is not None:
-        lowest_kwargs_position = len(argspec.args) - len(argspec.defaults)
+def _get_names_primitives(primitive_func):
+    names = []
+    primitives = []
+    for name, primitive in primitive_func().items():
+        names.append(name)
+        primitives.append(primitive)
+    return names, primitives
 
-    for i, arg in enumerate(argspec.args):
-        if arg == 'time':
-            if not uses_calc_time:
-                raise ValueError("'time' is a restricted keyword.  Please"
-                                 " use a different keyword.")
-            else:
-                new_class.uses_calc_time = True
-        if argspec.defaults is not None and i >= lowest_kwargs_position:
-            kwargs[arg] = argspec.defaults[i - lowest_kwargs_position]
-    return new_class, kwargs
+
+def get_featuretools_root():
+    return os.path.dirname(featuretools.__file__)
+
+
+def list_primitive_files(directory):
+    """returns list of files in directory that might contain primitives"""
+    files = os.listdir(directory)
+    keep = []
+    for path in files:
+        if not check_valid_primitive_path(path):
+            continue
+        keep.append(os.path.join(directory, path))
+    return keep
+
+
+def check_valid_primitive_path(path):
+    if os.path.isdir(path):
+        return False
+
+    filename = os.path.basename(path)
+
+    if filename[:2] == "__" or filename[0] == "." or filename[-3:] != ".py":
+        return False
+
+    return True
+
+
+def load_primitive_from_file(filepath):
+    """load primitive objects in a file"""
+    module = os.path.basename(filepath)[:-3]
+    if is_python_2():
+        # for python 2.7
+        module = imp.load_source(module, filepath)
+    else:
+        # TODO: what is the first argument"?
+        # for python >3.5
+        spec = importlib.util.spec_from_file_location(module, filepath)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+    primitives = []
+    for primitive_name in vars(module):
+        primitive_class = getattr(module, primitive_name)
+        if (isclass(primitive_class) and
+                issubclass(primitive_class, PrimitiveBase) and
+                primitive_class not in (AggregationPrimitive,
+                                        TransformPrimitive)):
+            primitives.append((primitive_name, primitive_class))
+
+    if len(primitives) == 0:
+        raise RuntimeError("No primitive defined in file %s" % filepath)
+    elif len(primitives) > 1:
+        raise RuntimeError("More than one primitive defined in file %s" % filepath)
+
+    return primitives[0]

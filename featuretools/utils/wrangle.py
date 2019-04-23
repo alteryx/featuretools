@@ -133,6 +133,9 @@ def _dataframes_equal(df1, df2):
     elif not df1.empty and df2.empty:
         return False
     elif not df1.empty and not df2.empty:
+        for df in [df1, df2]:
+            obj = df.select_dtypes('object').columns
+            df[obj] = df[obj].astype('unicode')
         for c in df1:
             normal_compare = True
             if df1[c].dtype == object:

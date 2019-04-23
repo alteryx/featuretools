@@ -1,122 +1,119 @@
-import pytest
-from pympler.asizeof import asizeof
+from datetime import datetime
 
-from ..testing_utils import make_ecommerce_entityset
+import pandas as pd
+from pytest import raises
 
-from featuretools.primitives import Feature, IdentityFeature, Last, Mode, Sum
-from featuretools.variable_types import Categorical, Datetime, Id, Numeric
-
-
-@pytest.fixture(scope='module')
-def es():
-    return make_ecommerce_entityset()
+from featuretools.primitives import IsNull, Max
+from featuretools.primitives.base import PrimitiveBase, make_agg_primitive
+from featuretools.variable_types import DatetimeTimeIndex, Numeric
 
 
-@pytest.fixture(scope='module')
-def es_numeric():
-    return make_ecommerce_entityset(with_integer_time_index=True)
+def test_call_agg():
+    primitive = Max()
+
+    # the assert is run twice on purpose
+    assert 5 == primitive(range(6))
+    assert 5 == primitive(range(6))
 
 
-def test_copy_features_does_not_copy_entityset(es):
-    agg = Sum(es['log']['value'], es['sessions'])
-    agg_where = Sum(es['log']['value'], es['sessions'],
-                    where=IdentityFeature(es['log']['value']) == 2)
-    agg_use_previous = Sum(es['log']['value'], es['sessions'],
-                           use_previous='4 days')
-    agg_use_previous_where = Sum(es['log']['value'], es['sessions'],
-                                 where=IdentityFeature(es['log']['value']) == 2,
-                                 use_previous='4 days')
-    features = [agg, agg_where, agg_use_previous, agg_use_previous_where]
-    in_memory_size = asizeof(locals())
-    copied = [f.copy() for f in features]
-    new_in_memory_size = asizeof(locals())
-    assert new_in_memory_size < 2 * in_memory_size
-
-    for f, c in zip(features, copied):
-        assert f.entityset
-        assert c.entityset
-        assert id(f.entityset) == id(c.entityset)
-        if f.where:
-            assert c.where
-            assert id(f.where.entityset) == id(c.where.entityset)
-        for bf, bf_c in zip(f.base_features, c.base_features):
-            assert id(bf.entityset) == id(bf_c.entityset)
-            if bf.where:
-                assert bf_c.where
-                assert id(bf.where.entityset) == id(bf_c.where.entityset)
+def test_call_trans():
+    primitive = IsNull()
+    assert pd.Series([False for i in range(6)]).equals(primitive(range(6)))
+    assert pd.Series([False for i in range(6)]).equals(primitive(range(6)))
 
 
-def test_get_dependencies(es):
-    f = Feature(es['log']['value'])
-    agg1 = Sum(f, es['sessions'])
-    agg2 = Sum(agg1, es['customers'])
-    d1 = Feature(agg2, es['sessions'])
-    shallow = d1.get_dependencies(deep=False, ignored=None)
-    deep = d1.get_dependencies(deep=True, ignored=None)
-    ignored = set([agg1.hash()])
-    deep_ignored = d1.get_dependencies(deep=True, ignored=ignored)
-    assert [s.hash() for s in shallow] == [agg2.hash()]
-    assert [d.hash() for d in deep] == [agg2.hash(), agg1.hash(), f.hash()]
-    assert [d.hash() for d in deep_ignored] == [agg2.hash()]
+def test_uses_calc_time():
+    def time_since_last(values, time=None):
+        time_since = time - values.iloc[0]
+        return time_since.total_seconds()
+
+    TimeSinceLast = make_agg_primitive(time_since_last,
+                                       [DatetimeTimeIndex],
+                                       Numeric,
+                                       name="time_since_last",
+                                       uses_calc_time=True)
+    primitive = TimeSinceLast()
+    datetimes = pd.Series([datetime(2015, 6, 7), datetime(2015, 6, 6)])
+    answer = 86400.0
+    assert answer == primitive(datetimes, time=datetime(2015, 6, 8))
 
 
-def test_get_depth(es):
-    es = make_ecommerce_entityset()
-    f = Feature(es['log']['value'])
-    g = Feature(es['log']['value'])
-    agg1 = Last(f, es['sessions'])
-    agg2 = Last(agg1, es['customers'])
-    d1 = Feature(agg2, es['sessions'])
-    d2 = Feature(d1, es['log'])
-    assert d2.get_depth() == 4
-    # Make sure this works if we pass in two of the same
-    # feature. This came up when user supplied duplicates
-    # in the seed_features of DFS.
-    assert d2.get_depth(stop_at=[f, g]) == 4
-    assert d2.get_depth(stop_at=[f, g, agg1]) == 3
-    assert d2.get_depth(stop_at=[f, g, agg1]) == 3
-    assert d2.get_depth(stop_at=[f, g, agg2]) == 2
-    assert d2.get_depth(stop_at=[f, g, d1]) == 1
-    assert d2.get_depth(stop_at=[f, g, d2]) == 0
+def test_call_multiple_args():
+    class TestPrimitive(PrimitiveBase):
+        def get_function(self):
+            def test(x, y):
+                return y
+            return test
+    primitive = TestPrimitive()
+    assert pd.Series([0, 1]).equals(primitive(range(1), range(2)))
+    assert pd.Series([0, 1]).equals(primitive(range(1), range(2)))
 
 
-def test_squared(es):
-    feature = Feature(es['log']['value'])
-    squared = feature * feature
-    assert len(squared.base_features) == 1
-    assert squared.base_features[0].hash() == feature.hash()
+def test_get_function_called_once():
+    class TestPrimitive(PrimitiveBase):
+        def __init__(self):
+            self.get_function_call_count = 0
+
+        def get_function(self):
+            self.get_function_call_count += 1
+
+            def test(x):
+                return x
+            return test
+
+    primitive = TestPrimitive()
+    primitive(range(6))
+    primitive(range(6))
+    assert primitive.get_function_call_count == 1
 
 
-def test_return_type_inference(es):
-    mode = Mode(es["log"]["priority_level"], es["customers"])
-    assert mode.variable_type == es["log"]["priority_level"].__class__
+def test_args_string():
+    class Primitive(PrimitiveBase):
+        def __init__(self, bool=True, int=0, float=None):
+            self.bool = bool
+            self.int = int
+            self.float = float
+
+    primitive = Primitive(bool=True, int=4, float=.1)
+    string = primitive.get_args_string()
+    assert string == ', int=4, float=0.1'
 
 
-def test_return_type_inference_direct_feature(es):
-    mode = Mode(es["log"]["priority_level"], es["customers"])
-    mode_session = Feature(mode, es["sessions"])
-    assert mode_session.variable_type == es["log"]["priority_level"].__class__
+def test_args_string_default():
+    class Primitive(PrimitiveBase):
+        def __init__(self, bool=True, int=0, float=None):
+            self.bool = bool
+            self.int = int
+            self.float = float
+
+    string = Primitive().get_args_string()
+    assert string == ''
 
 
-def test_return_type_inference_datetime_time_index(es):
-    last = Last(es["log"]["datetime"], es["customers"])
-    assert last.variable_type == Datetime
+def test_args_string_mixed():
+    class Primitive(PrimitiveBase):
+        def __init__(self, bool=True, int=0, float=None):
+            self.bool = bool
+            self.int = int
+            self.float = float
+
+    primitive = Primitive(bool=False, int=0)
+    string = primitive.get_args_string()
+    assert string == ', bool=False'
 
 
-def test_return_type_inference_numeric_time_index(es_numeric):
-    last = Last(es_numeric["log"]["datetime"], es_numeric["customers"])
-    assert last.variable_type == Numeric
+def test_args_string_undefined():
+    class Primitive(PrimitiveBase):
+        pass
+
+    string = Primitive().get_args_string()
+    assert string == ''
 
 
-def test_return_type_inference_id(es):
-    # direct features should keep Id variable type
-    direct_id_feature = Feature(es["sessions"]["customer_id"], es["log"])
-    assert direct_id_feature.variable_type == Id
+def test_args_string_error():
+    class Primitive(PrimitiveBase):
+        def __init__(self, bool=True, int=0, float=None):
+            pass
 
-    # aggregations of Id variable types should get converted
-    mode = Mode(es["log"]["session_id"], es["customers"])
-    assert mode.variable_type == Categorical
-
-    # also test direct feature of aggregation
-    mode_direct = Feature(mode, es["sessions"])
-    assert mode_direct.variable_type == Categorical
+    with raises(AssertionError, match='must be attribute'):
+        Primitive(bool=True, int=4, float=.1).get_args_string()

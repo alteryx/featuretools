@@ -2,6 +2,7 @@
 docs/source/generated/
 venv/
 data/
+installed/
 output.csv
 htmlcov/
 .idea/
@@ -15,6 +16,7 @@ featuretools/tests/integration_data/products.gzip
 featuretools/tests/integration_data/regions.gzip
 featuretools/tests/integration_data/sessions.gzip
 featuretools/tests/integration_data/stores.gzip
+*.dirlock
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
