@@ -5,55 +5,28 @@
 Handling Time
 =============
 
-Time is a naturally relevant factor in many predictive modeling problems. Consider the following questions:
+It is difficult to make a feature matrix for historical predictions by hand. You need to set a **time** to make a prediction for every row and then **cut off** any data in your dataset that happens after that time. Then, you can use the remaining valid data for feature engineering.
 
-1. How much revenue will I bring in next month?
-2. What is the expected delay on my next flight?
-3. Will my user purchase an upgrade to their membership?
-
-A good way to estimate how effective you are at predicting revenue would be to see how you would have done predicting it last month or the month before. You would similarly be interested in checking if you were able to predict the delay on your previous flight, or how good you are historically at detecting customers who would upgrade.
-
-However, it is immensely tricky to make a feature matrix by hand for those predictions. To create historical predictions you need to set a **time** to make a prediction for every row and then **cut off** any data in your dataset that happens after that time. Then, you can use the remaining valid data to make any features you like.
-
-Some of the most powerful functionality in Featuretools is the ability to accurately and precisely handle time. To make the most of that functionality, it is necessary to understand how :ref:`provided times <representing-time>` will be used.
+Some of the most powerful functionality in Featuretools is the ability to precisely handle time. To make the most of that functionality, it is necessary to understand how :ref:`provided times <representing-time>` will be used.
 
 Outline
 ---------
-This page is the answer to the question *why should I pay attention to datetimes in my data?* There are two interconnected parts to that answer:
+This page is the answer to the question *why should I pay attention to datetimes in my data?* There are two parts to that answer:
 
 1. What are the implications of setting a :ref:`time index <representing-time>`?
 2. How does Featuretools take in :ref:`predictions <cutoff-time>`?
 
-The first section shows explains how to handle the complexities that can come up when assigning times to your data and the second shows how to use those times to make rows of a feature matrix. While time can be a sticking point for our users, we have found that it's often a useful construct in utilizing data from the real world.
+The first section shows explains how to handle assigning times to your data and the second shows how to use those times to make rows of a feature matrix.
 
 .. _representing-time:
 
 Introduction to the Time Index
 ----------------------------------------------------------
-We'll start with the :func:`Mock Customer <demo.load_mock_customer>` entityset.
-
-.. ipython:: python
-    :suppress:
-
-    pd.options.display.max_columns = 200
-
-.. ipython:: python
-
-    import featuretools as ft
-    es_mc = ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
-    es_mc['transactions'].df.head()
-
-The ``transactions`` entity has one row for every transaction and a ``transaction_time`` for every row. The user has an option to set a **time index** for any entity they create, representing the first time information from the row can be used. In this example, most people would make the reasonable choice to set the ``transaction_time`` as the time index for the ``transactions`` entity. Not every datetime column is a time index, so the choice is not always straightforward. Consider the ``customers`` entity:
-
-.. ipython:: python
-
-    es_mc['customers'].df
-
-Here we have two time columns ``join_date`` and ``date_of_birth``. While either column might be useful for making features, the ``join_date`` should be used as the time index. It represents when the data owner learns about the existence of a given customer. Generically: *the time index is the first time anything from a row can be known to the dataset owner*. Rows are treated as non-existent prior to the time index. 
+The time index describes when a row's data was created. When training machine learning models, we give the model historical data up to some point in time, like a customer's purchase history. Then we ask it to make a prediction for some later point in time, like how much will a customer spend in the next week. In this context, a row's time index is actually the first "time" that the data in a row can be used as historical data.
 
 .. important::
 
-    The **time index** is defined as the first time information from a row can be used. It represents the first time anything from a row can be known to the dataset owner.
+    The **time index** is defined as the first time information from a row can be used. It represents the first time anything from a row can be known.
 
 In databases, information tends to be written after an event has passed. This can be problematic on the machine learning side -- it's often necessary to ignore entire columns to avoid leaking labels. If you're interested in how to safely use those columns, the :ref:`advanced time index <flight-ti>` section below explores how time can used with a dataset from the US Department of Transportation. Before we get there, we're going to show how to make predictions using these time indices.
 
@@ -77,8 +50,16 @@ In this case, we're making predictions for all three customers at the same time,
 
 We will use all of the information between the ``time_index`` of rows ``1``, ``2`` and ``3`` and the prediction time ``04:00 2014-1-1`` to make predictions about what will happen for the rest of the day.
 
+
+.. ipython:: python
+    :suppress:
+
+    pd.options.display.max_columns = 200
+
 .. ipython:: python
 
+    import featuretools as ft
+    es_mc = ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
     ct = pd.DataFrame()
     ct['customer_id'] = [1, 2, 3]
     ct['time'] = pd.to_datetime(['2014-1-1 04:00', 
@@ -122,29 +103,20 @@ That being said, not all columns can be known at our time index six months in ad
 
 In this diagram of a row, we have set the ``time_index`` to the time the flight was scheduled. However, any information about what happens to the flight after it departs is **invalid** for use at that time. If we were to use any of that information prior to when the flight lands, we would be leaking labels. 
 
-While one option would be to remove that data from the entityset, a better option would be to use that data somehow. To that end, it's possible to set a ``secondary_time_index`` which can mark specific columns as available at a later date. The ``secondary_time_index`` of this row is set to the arrival time. 
+While one option would be to remove that data from the entityset, a better option would be to use that data somehow. It's possible to set a ``secondary_time_index`` which can mark specific columns as available at a later date. The ``secondary_time_index`` of this row is set to the arrival time. 
 
 .. image:: ../images/flight_ti_2.png
    :width: 400 px
    :alt: flight secondary time index diagram
    :align: center
 
-By setting a ``secondary_time_index``, we can still use the delay information from a row, but only when they would become known. It's possible to know everything about how a trip went after it has arrived, so we can happily use that information at any time after the flight lands.
+By setting a ``secondary_time_index``, we can still use the delay information from a row, but only when they would become known. It's possible to know everything about how a trip went after it has arrived, so we can use that information at any time after the flight lands.
 
 .. hint::
 
     It's often a good idea to use a secondary time index if your entityset has inline labels. If you know when the label would be valid for use, it's possible to automatically create very predictive features using historical labels.
 
 
-As an exercise, take a minute to think about which of the twenty two columns here can be known at each time index. Which can be known 6 months in advance and which would be better to only learn after the flight lands?
-
-.. ipython:: python
-
-    es_flight['trip_logs']
-
-+ These columns can be known at the ``time_index`` months before the flight: ``trip_log_id``, ``flight_date``, ``scheduled_dep_time``, ``scheduled_elapsed_time``, ``distance``, ``scheduled_arr_time``, ``time_index``, ``flight_id``
-
-+ These only be known at the ``secondary_time_index``, after the flight has completed: ``dep_delay``, ``taxi_out``, ``taxi_in``, ``arr_delay``, ``air_time``, ``carrier_delay``, ``weather_delay``, ``national_airspace_delay``, ``security_delay``, ``late_aircraft_delay``, ``dep_time``, ``arr_time``, ``cancelled``, ``diverted``
 
 An entity can have a third, hidden, time index called the ``last_time_index``. More details for that can be found in the `other temporal workflows <#training-window-and-the-last-time-index>`_ section.
 
@@ -211,7 +183,7 @@ The training window in DFS limits the amount of past data that can be used while
 
 This works well for :class:`entities <Entity>` where an instance occurs at a single point in time. However, sometimes an instance can happen at many points in time.
 
-For example, suppose a customer’s session has multiple transactions which can happen at different points in time. If we are trying to count the number of sessions a user had in a given time period, we often want to count all sessions that were active during the training window. To accomplish this, we need to not only know when a session starts, but when it ends. The last time that an instance appears in the data is stored as the ``last_time_index`` of an entity. We can compare the time index and the last time index of ``sessions``: 
+For example, suppose a customer’s session has multiple transactions which can happen at different points in time. If we are trying to count the number of sessions a user had in a given time period, we often want to count all sessions that were active during the training window. To accomplish this, we need to know when a session starts, and when it ends. The last time that an instance appears in the data is stored as the ``last_time_index`` of an entity. We can compare the time index and the last time index of ``sessions``: 
 
 .. ipython:: python
 
