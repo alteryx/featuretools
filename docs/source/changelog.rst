@@ -2,6 +2,19 @@
 
 Changelog
 ---------
+**v0.7.1** Apr 24, 2019
+    * Automatically generate feature name for controllable primitives (:pr:`481`)
+    * Primitive docstring updates (:pr:`489`, :pr:`492`, :pr:`494`, :pr:`495`)
+    * Change primitive functions that returned strings to return functions (:pr:`499`)
+    * CLI customizable via entrypoints (:pr:`493`)
+    * Improve calculation of aggregation features on grandchildren (:pr:`479`)
+    * Refactor entrypoints to use decorator (:pr:`483`)
+    * Include doctests in testing suite (:pr:`491`)
+    * Documentation updates (:pr:`490`)
+    * Update how standard primitives are imported internally (:pr:`482`)
+
+    Thanks to the folloing people for contributing to this release: :user:`bukosabino`, :user:`CharlesBradshaw`, :user:`glentennis`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`kmax12`, :user:`minkvsky`, :user:`rwedge`, :user:`thehomebrewnerd`
+
 **v0.7.0** Mar 29, 2019
     * Improve Entity Set Serialization (:pr:`361`)
     * Support calling a primitive instance's function directly (:pr:`461`, :pr:`468`)
