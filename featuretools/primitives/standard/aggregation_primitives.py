@@ -170,11 +170,11 @@ class Max(AggregationPrimitive):
         return np.max
 
 
-class NUnique(AggregationPrimitive):
+class NumUnique(AggregationPrimitive):
     """Determines the number of distinct values, ignoring `NaN` values.
 
     Examples:
-        >>> num_unique = NUnique()
+        >>> num_unique = NumUnique()
         >>> num_unique(['red', 'blue', 'green', 'yellow'])
         4
 
