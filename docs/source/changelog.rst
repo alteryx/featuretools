@@ -13,7 +13,7 @@ Changelog
     * Documentation updates (:pr:`490`)
     * Update how standard primitives are imported internally (:pr:`482`)
 
-    Thanks to the folloing people for contributing to this release: :user:`bukosabino`, :user:`CharlesBradshaw`, :user:`glentennis`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`kmax12`, :user:`minkvsky`, :user:`rwedge`, :user:`thehomebrewnerd`
+    Thanks to the following people for contributing to this release: :user:`bukosabino`, :user:`CharlesBradshaw`, :user:`glentennis`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`kmax12`, :user:`minkvsky`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.7.0** Mar 29, 2019
     * Improve Entity Set Serialization (:pr:`361`)
