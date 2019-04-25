@@ -538,6 +538,12 @@ def linear_calculate_chunks(chunks, features, approximate, training_window,
     return feature_matrix
 
 
+def scatter_warning(num_scattered_workers, num_workers):
+    if num_scattered_workers != num_workers:
+        scatter_warning = "EntitySet was only scattered to {} out of {} workers"
+        warnings.warn(scatter_warning.format(num_scattered_workers, num_workers))
+
+
 def parallel_calculate_chunks(chunks, features, approximate, training_window,
                               verbose, save_progress, entityset, n_jobs,
                               no_unapproximated_aggs, cutoff_df_time_var,
@@ -572,10 +578,8 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
         client.replicate([_es, _saved_features])
         num_scattered_workers = len(client.who_has([Future(es_token)]).get(es_token, []))
         num_workers = len(client.scheduler_info()['workers'].values())
-        if num_scattered_workers != num_workers:
-            scatter_warning = "EntitySet was only scattered to {} out of {} workers"
-            warnings.warn(scatter_warning.format(num_scattered_workers, num_workers))
 
+        scatter_warning(num_scattered_workers, num_workers)
         if verbose:
             end = time.time()
             scatter_time = end - start

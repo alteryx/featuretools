@@ -4,6 +4,7 @@ import copy
 import os
 import shutil
 import tempfile
+import warnings
 from builtins import range
 from datetime import datetime
 from itertools import combinations
@@ -19,6 +20,9 @@ from ..testing_utils import MockClient, make_ecommerce_entityset, mock_cluster
 
 import featuretools as ft
 from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
+from featuretools.computational_backends.calculate_feature_matrix import (
+    scatter_warning
+)
 from featuretools.computational_backends.utils import (
     bin_cutoff_times,
     calc_num_per_chunk,
@@ -44,7 +48,17 @@ def int_es():
     return make_ecommerce_entityset(with_integer_time_index=True)
 
 
+def test_scatter_warning():
+    with warnings.catch_warnings(record=True) as w:
+        # Cause all warnings to always be triggered.
+        warnings.simplefilter("always")
+
+        scatter_warning(1, 2)
+        assert len(w) == 1
+
 # TODO test mean ignores nan values
+
+
 def test_calc_feature_matrix(entityset):
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
                  [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
