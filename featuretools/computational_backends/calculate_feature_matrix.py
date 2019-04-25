@@ -582,8 +582,8 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
         scatter_warning(num_scattered_workers, num_workers)
         if verbose:
             end = time.time()
-            scatter_time = end - start
-            scatter_string = "EntitySet scattered to {} workers in {:.3f} seconds"
+            scatter_time = round(end - start)
+            scatter_string = "EntitySet scattered to {} workers in {} seconds"
             print(scatter_string.format(num_scattered_workers, scatter_time))
         # map chunks
         # TODO: consider handling task submission dask kwargs
