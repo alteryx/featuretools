@@ -4,7 +4,6 @@ import copy
 import os
 import shutil
 import tempfile
-import warnings
 from builtins import range
 from datetime import datetime
 from itertools import combinations
