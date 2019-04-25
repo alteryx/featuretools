@@ -53,8 +53,6 @@ def test_scatter_warning():
         scatter_warning(1, 2)
     assert len(record) == 1
 
-# TODO test mean ignores nan values
-
 
 def test_calc_feature_matrix(entityset):
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
