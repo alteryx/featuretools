@@ -114,3 +114,13 @@ Tutorials
 .. _`Tutorial in Japanese`: https://dev.classmethod.jp/machine-learning/yoshim-featuretools-boruta-optuna/
 .. _`Optuna`: https://github.com/pfnet/optuna
 .. _`Boruta`: https://github.com/scikit-learn-contrib/boruta_py
+
+`Building Online Churn Prediction Model using Featuretools`
+===========================================================
+- A video tutorial that shows how to build a churn prediction model using Featuretools along with Spark, XGBoost and Google Cloud Platform.
+.. _`Building Online Churn Prediction Model using Featuretools`: https://youtu.be/ZwwneZ6iU3Y
+
+`Automated Feature Engineering Workshop in Russian`
+===================================================
+- A video tutorial that shows how to predict if an applicant is capable of repaying a loan using Featuretools.
+.. _`Automated Feature Engineering Workshop in Russian`: https://youtu.be/R0-mnamKxqY
