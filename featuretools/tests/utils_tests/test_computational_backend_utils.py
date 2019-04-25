@@ -8,5 +8,5 @@ def test_create_client_and_cluster():
         # Cause all warnings to always be triggered.
         warnings.simplefilter("always")
 
-        create_client_and_cluster(10, 2, {}, 1)
+        create_client_and_cluster(1000, 2, {}, 1)
         assert len(w) == 1
