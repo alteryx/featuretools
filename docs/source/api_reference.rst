@@ -307,6 +307,7 @@ Variable types
     LatLong
     ZIPCode
     IPAddress
+    FullName
     EmailAddress
     URL
     PhoneNumber
