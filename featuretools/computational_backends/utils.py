@@ -214,8 +214,16 @@ def create_client_and_cluster(n_jobs, num_tasks, dask_kwargs, entityset_size):
             diagnostics_port = dask_kwargs['diagnostics_port']
             del dask_kwargs['diagnostics_port']
 
-        workers = n_jobs_to_workers(n_jobs)
-        workers = min(workers, num_tasks)
+        cpu_workers = n_jobs_to_workers(n_jobs)
+        workers = min(cpu_workers, num_tasks)
+        if n_jobs != -1 and workers < n_jobs:
+            warning_string = "{} workers requested, but only {} workers created."
+            warning_string = warning_string.format(n_jobs, workers)
+            if cpu_workers < n_jobs:
+                warning_string += " Not enough cpu cores({}).".format(cpu_workers)
+
+            if num_tasks < n_jobs:
+                warning_string += " Not enough tasks({}).".format(num_tasks)
 
         # Distributed default memory_limit for worker is 'auto'. It calculates worker
         # memory limit as total virtual memory divided by the number
