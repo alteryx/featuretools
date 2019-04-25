@@ -117,9 +117,12 @@ Tutorials
 
 `Building a Churn Prediction Model using Featuretools`_
 =======================================================
-- A video tutorial that shows how to build a churn prediction model using Featuretools along with Spark, XGBoost and Google Cloud Platform.
+- A video tutorial that shows how to build a churn prediction model using Featuretools along with `Spark`_, `XGBoost`_, and `Google Cloud Platform`_.
 
 .. _`Building a Churn Prediction Model using Featuretools`: https://youtu.be/ZwwneZ6iU3Y
+.. _`Spark`: https://spark.apache.org/
+.. _`XGBoost`: https://github.com/dmlc/xgboost
+.. _`Google Cloud Platform`: https://cloud.google.com/
 
 `Automated Feature Engineering Workshop in Russian`_
 ====================================================
