@@ -220,10 +220,11 @@ def create_client_and_cluster(n_jobs, num_tasks, dask_kwargs, entityset_size):
             warning_string = "{} workers requested, but only {} workers created."
             warning_string = warning_string.format(n_jobs, workers)
             if cpu_workers < n_jobs:
-                warning_string += " Not enough cpu cores({}).".format(cpu_workers)
+                warning_string += " Not enough cpu cores ({}).".format(cpu_workers)
 
             if num_tasks < n_jobs:
-                warning_string += " Not enough tasks({}).".format(num_tasks)
+                chunk_warning = " Not enough chunks ({}), consider reducing the chunk size"
+                warning_string += chunk_warning.format(num_tasks)
             warnings.warn(warning_string)
 
         # Distributed default memory_limit for worker is 'auto'. It calculates worker
