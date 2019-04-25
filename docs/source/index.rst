@@ -82,7 +82,7 @@ In this dataset we have two relationships
 
 .. note::
 
-    To manage setting up entities and relationships, the :class:`EntitySet <featuretools.EntitySet>` class offer convenient APIs for managing data like this. See :doc:`loading_data/using_entitysets` for more information.
+    To manage setting up entities and relationships, we recommend using the :class:`EntitySet <featuretools.EntitySet>` class which offers convenient APIs for managing data like this. See :doc:`loading_data/using_entitysets` for more information.
 
 
 Run Deep Feature Synthesis
