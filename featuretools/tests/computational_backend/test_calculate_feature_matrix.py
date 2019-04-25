@@ -49,12 +49,10 @@ def int_es():
 
 
 def test_scatter_warning():
-    with warnings.catch_warnings(record=True) as w:
-        # Cause all warnings to always be triggered.
-        warnings.simplefilter("always")
-
+    match = r'EntitySet was only scattered to .* out of .* workers'
+    with pytest.warns(UserWarning, match=match) as record:
         scatter_warning(1, 2)
-        assert len(w) == 1
+    assert len(record) == 1
 
 # TODO test mean ignores nan values
 
