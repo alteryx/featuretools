@@ -115,10 +115,10 @@ Tutorials
 .. _`Optuna`: https://github.com/pfnet/optuna
 .. _`Boruta`: https://github.com/scikit-learn-contrib/boruta_py
 
-`Building Online Churn Prediction Model using Featuretools`
-===========================================================
+`Building a Churn Prediction Model using Featuretools`
+=======================================================
 - A video tutorial that shows how to build a churn prediction model using Featuretools along with Spark, XGBoost and Google Cloud Platform.
-.. _`Building Online Churn Prediction Model using Featuretools`: https://youtu.be/ZwwneZ6iU3Y
+.. _`Building a Churn Prediction Model using Featuretools`: https://youtu.be/ZwwneZ6iU3Y
 
 `Automated Feature Engineering Workshop in Russian`
 ===================================================
