@@ -14,10 +14,11 @@ class TransformPrimitive(PrimitiveBase):
     uses_full_entity = False
 
     def generate_name(self, base_feature_names):
-        name = u"{}(".format(self.name.upper())
-        name += u", ".join(base_feature_names)
-        name += u")"
-        return name
+        return u"%s(%s%s)" % (
+            self.name.upper(),
+            u", ".join(base_feature_names),
+            self.get_args_string(),
+        )
 
 
 def make_trans_primitive(function, input_types, return_type, name=None,

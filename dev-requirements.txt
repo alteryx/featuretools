@@ -8,6 +8,8 @@ isort==4.3.4
 jupyter==1.0.0
 matplotlib==3.0.2; python_version>'3.4'
 matplotlib==2.2.3; python_version<'3'
+nbconvert==5.4.1
 nbsphinx==0.4.2
-Sphinx==1.8.3
-sphinx_rtd_theme==0.4.2
+Sphinx==2.0.1; python_version>'3.4'
+Sphinx==1.8.5; python_version<'3'
+sphinx_rtd_theme==0.4.3
