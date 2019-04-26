@@ -933,10 +933,14 @@ class TestCreateClientAndCluster(object):
         memory_limit = int(total_memory / float(num_workers))
         assert cluster == (min(cpus, 2), 1, None, memory_limit)
         # jobs > tasks case
-        client, cluster = create_client_and_cluster(n_jobs=10,
-                                                    num_tasks=3,
-                                                    dask_kwargs={'diagnostics_port': 8789},
-                                                    entityset_size=1)
+        match = r'.*workers requested, but only .* workers created'
+        with pytest.warns(UserWarning, match=match) as record:
+            client, cluster = create_client_and_cluster(n_jobs=1000,
+                                                        num_tasks=3,
+                                                        dask_kwargs={'diagnostics_port': 8789},
+                                                        entityset_size=1)
+        assert len(record) == 1
+
         num_workers = min(cpus, 3)
         memory_limit = int(total_memory / float(num_workers))
         assert cluster == (num_workers, 1, 8789, memory_limit)
