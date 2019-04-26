@@ -2,6 +2,71 @@
 
 Changelog
 ---------
+**v0.7.1** Apr 24, 2019
+    * Automatically generate feature name for controllable primitives (:pr:`481`)
+    * Primitive docstring updates (:pr:`489`, :pr:`492`, :pr:`494`, :pr:`495`)
+    * Change primitive functions that returned strings to return functions (:pr:`499`)
+    * CLI customizable via entrypoints (:pr:`493`)
+    * Improve calculation of aggregation features on grandchildren (:pr:`479`)
+    * Refactor entrypoints to use decorator (:pr:`483`)
+    * Include doctests in testing suite (:pr:`491`)
+    * Documentation updates (:pr:`490`)
+    * Update how standard primitives are imported internally (:pr:`482`)
+
+    Thanks to the following people for contributing to this release: :user:`bukosabino`, :user:`CharlesBradshaw`, :user:`glentennis`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`kmax12`, :user:`minkvsky`, :user:`rwedge`, :user:`thehomebrewnerd`
+
+**v0.7.0** Mar 29, 2019
+    * Improve Entity Set Serialization (:pr:`361`)
+    * Support calling a primitive instance's function directly (:pr:`461`, :pr:`468`)
+    * Support other libraries extending featuretools functionality via entrypoints (:pr:`452`)
+    * Remove featuretools install command (:pr:`475`)
+    * Add GroupByTransformFeature (:pr:`455`, :pr:`472`, :pr:`476`)
+    * Update Haversine Primitive (:pr:`435`, :pr:`462`)
+    * Add commutative argument to SubtractNumeric and DivideNumeric primitives (:pr:`457`)
+    * Add FilePath variable_type (:pr:`470`)
+    * Add PhoneNumber, DateOfBirth, URL variable types (:pr:`447`)
+    * Generalize infer_variable_type, convert_variable_data and convert_all_variable_data methods (:pr:`423`)
+    * Documentation updates (:pr:`438`, :pr:`446`, :pr:`458`, :pr:`469`)
+    * Testing updates (:pr:`440`, :pr:`444`, :pr:`445`, :pr:`459`)
+
+    Thanks to the following people for contributing to this release: :user:`bukosabino`, :user:`CharlesBradshaw`, :user:`ColCarroll`, :user:`glentennis`, :user:`grayskripko`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`jrkinley`, :user:`kmax12`, :user:`RogerTangos`, :user:`rwedge`
+
+**Breaking Changes**
+
+* ``ft.dfs`` now has a ``groupby_trans_primitives`` parameter that DFS uses to automatically construct features that group by an ID column and then apply a transform primitive to search group. This change applies to the following primitives: ``CumSum``, ``CumCount``, ``CumMean``, ``CumMin``, and ``CumMax``.
+
+    Previous behavior
+
+    .. code-block:: python
+
+        ft.dfs(entityset=es,
+               target_entity='customers',
+               trans_primitives=["cum_mean"])
+
+    New behavior
+
+    .. code-block:: python
+
+        ft.dfs(entityset=es,
+               target_entity='customers',
+               groupby_trans_primitives=["cum_mean"])
+
+* Related to the above change, cumulative transform features are now defined using a new feature class, ``GroupByTransformFeature``.
+
+    Previous behavior
+
+    .. code-block:: python
+
+        ft.Feature([base_feature, groupby_feature], primitive=CumulativePrimitive)
+
+
+    New behavior
+
+    .. code-block:: python
+
+        ft.Feature(base_feature, groupby=groupby_feature, primitive=CumulativePrimitive)
+
+
 **v0.6.1** Feb 15, 2019
     * Cumulative primitives (:pr:`410`)
     * Entity.query_by_values now preserves row order of underlying data (:pr:`428`)

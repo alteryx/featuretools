@@ -1,5 +1,6 @@
 import copy
 import functools
+import inspect
 
 from .primitive_base import PrimitiveBase
 from .utils import inspect_function_args
@@ -16,18 +17,23 @@ class AggregationPrimitive(PrimitiveBase):
     def generate_name(self, base_feature_names, child_entity_id,
                       parent_entity_id, where_str, use_prev_str):
         base_features_str = ", ".join(base_feature_names)
-        return u"%s(%s.%s%s%s)" % (self.name.upper(),
-                                   child_entity_id,
-                                   base_features_str,
-                                   where_str, use_prev_str)
+        return u"%s(%s.%s%s%s%s)" % (
+            self.name.upper(),
+            child_entity_id,
+            base_features_str,
+            where_str,
+            use_prev_str,
+            self.get_args_string(),
+        )
 
 
 def make_agg_primitive(function, input_types, return_type, name=None,
                        stack_on_self=True, stack_on=None,
                        stack_on_exclude=None, base_of=None,
-                       base_of_exclude=None, description='A custom primitive',
+                       base_of_exclude=None, description=None,
                        cls_attributes=None, uses_calc_time=False,
-                       commutative=False, number_output_features=1):
+                       default_value=None, commutative=False,
+                       number_output_features=1):
     '''Returns a new aggregation primitive class. The primitive infers default
     values by passing in empty data.
 
@@ -65,6 +71,10 @@ def make_agg_primitive(function, input_types, return_type, name=None,
             calculated at will be passed to the function as the keyword
             argument 'time'.
 
+        default_value (Variable): Default value when creating the primitive to
+            avoid the inference step. If no default value if provided, the
+            inference happen.
+
         commutative (bool): If True, will only make one feature per unique set
             of base features.
 
@@ -89,6 +99,10 @@ def make_agg_primitive(function, input_types, return_type, name=None,
                 uses_calc_time=True)
 
     '''
+    if description is None:
+        default_description = 'A custom primitive'
+        doc = inspect.getdoc(function)
+        description = doc if doc is not None else default_description
     cls = {"__doc__": description}
     if cls_attributes is not None:
         cls.update(cls_attributes)
@@ -123,10 +137,14 @@ def make_agg_primitive(function, input_types, return_type, name=None,
         # creates a lambda function that returns function every time
         new_class.get_function = lambda self, f=function: f
 
-    # infers default_value by passing empty data
-    try:
-        new_class.default_value = function(*[[]] * len(input_types))
-    except Exception:
-        pass
+    if default_value is None:
+        # infers default_value by passing empty data
+        try:
+            new_class.default_value = function(*[[]] * len(input_types))
+        except Exception:
+            pass
+    else:
+        # avoiding the inference step
+        new_class.default_value = default_value
 
     return new_class

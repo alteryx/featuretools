@@ -18,9 +18,11 @@ from featuretools.exceptions import UnknownFeature
 from featuretools.feature_base import (
     AggregationFeature,
     DirectFeature,
+    GroupByTransformFeature,
     IdentityFeature,
     TransformFeature
 )
+from featuretools.utils import is_python_2
 from featuretools.utils.gen_utils import (
     get_relationship_variable_id,
     make_tqdm_iterator
@@ -104,7 +106,9 @@ class PandasBackend(ComputationalBackend):
                                                  training_window=training_window,
                                                  verbose=verbose)
         large_eframes_by_filter = None
-        if any([f.primitive.uses_full_entity for f in self.feature_tree.all_features if isinstance(f, TransformFeature)]):
+        if any([f.primitive.uses_full_entity
+                for f in self.feature_tree.all_features
+                if isinstance(f, (GroupByTransformFeature, TransformFeature))]):
             large_necessary_columns = self.feature_tree.necessary_columns_for_all_values_features
             large_eframes_by_filter = \
                 self.entityset.get_pandas_data_slice(filter_entity_ids=ordered_entities,
@@ -277,13 +281,15 @@ class PandasBackend(ComputationalBackend):
         return default_df
 
     def _feature_type_handler(self, f):
-        if isinstance(f, TransformFeature):
+        if type(f) == TransformFeature:
             return self._calculate_transform_features
-        elif isinstance(f, DirectFeature):
+        elif type(f) == GroupByTransformFeature:
+            return self._calculate_groupby_features
+        elif type(f) == DirectFeature:
             return self._calculate_direct_features
-        elif isinstance(f, AggregationFeature):
+        elif type(f) == AggregationFeature:
             return self._calculate_agg_features
-        elif isinstance(f, IdentityFeature):
+        elif type(f) == IdentityFeature:
             return self._calculate_identity_features
         else:
             raise UnknownFeature(u"{} feature unknown".format(f.__class__))
@@ -318,16 +324,54 @@ class PandasBackend(ComputationalBackend):
                 values = feature_func(*variable_data)
 
             # if we don't get just the values, the assignment breaks when indexes don't match
-            def strip_values_if_series(values):
-                if isinstance(values, pd.Series):
-                    values = values.values
-                return values
-
             if f.number_output_features > 1:
                 values = [strip_values_if_series(value) for value in values]
             else:
                 values = [strip_values_if_series(values)]
             update_feature_columns(f, frame, values)
+
+        return frame
+
+    def _calculate_groupby_features(self, features, entity_frames):
+        entity_id = features[0].entity.id
+        assert len(set([f.entity.id for f in features])) == 1, \
+            "features must share base entity"
+        assert entity_id in entity_frames
+
+        frame = entity_frames[entity_id]
+
+        # handle when no data
+        if frame.shape[0] == 0:
+            for f in features:
+                set_default_column(frame, f)
+            return frame
+
+        groupby = features[0].groupby.get_name()
+        for index, group in frame.groupby(groupby):
+            for f in features:
+                column_names = [bf.get_name() for bf in f.base_features]
+                # exclude the groupby variable from being passed to the function
+                variable_data = [group[name] for name in column_names[:-1]]
+                feature_func = f.get_function()
+
+                # apply the function to the relevant dataframe slice and add the
+                # feature row to the results dataframe.
+                if f.primitive.uses_calc_time:
+                    values = feature_func(*variable_data, time=self.time_last)
+                else:
+                    values = feature_func(*variable_data)
+
+                # make sure index is aligned
+                if isinstance(values, pd.Series):
+                    values.index = variable_data[0].index
+                else:
+                    values = pd.Series(values, index=variable_data[0].index)
+
+                feature_name = f.get_name()
+                if feature_name in frame.columns:
+                    frame[feature_name].update(values)
+                else:
+                    frame[feature_name] = values
 
         return frame
 
@@ -439,17 +483,26 @@ class PandasBackend(ComputationalBackend):
                         to_agg[variable_id] = []
 
                     func = f.get_function()
-                    # funcname used in case f.get_function() returns a string
-                    # since strings don't have __name__
+
+                    # for some reason, using the string count is significantly
+                    # faster than any method a primitive can return
+                    # https://stackoverflow.com/questions/55731149/use-a-function-instead-of-string-in-pandas-groupby-agg
+                    if is_python_2() and func == pd.Series.count.__func__:
+                        func = "count"
+                    elif func == pd.Series.count:
+                        func = "count"
+
                     funcname = func
                     if callable(func):
                         # if the same function is being applied to the same
                         # variable twice, wrap it in a partial to avoid
                         # duplicate functions
-                        if u"{}-{}".format(variable_id, id(func)) in agg_rename:
-                            func = partial(func)
-                        func.__name__ = str(id(func))
                         funcname = str(id(func))
+                        if u"{}-{}".format(variable_id, funcname) in agg_rename:
+                            func = partial(func)
+                            funcname = str(id(func))
+
+                        func.__name__ = funcname
 
                     to_agg[variable_id].append(func)
                     # this is used below to rename columns that pandas names for us
@@ -557,3 +610,9 @@ def update_feature_columns(feature, data, values):
     assert len(names) == len(values)
     for name, value in zip(names, values):
         data[name] = value
+
+
+def strip_values_if_series(values):
+    if isinstance(values, pd.Series):
+        values = values.values
+    return values

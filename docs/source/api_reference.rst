@@ -167,7 +167,7 @@ Text Transform Primitives
 Location Transform Primitives
 *****************************
 .. autosummary::
-   :toctree generated/
+   :toctree: generated/
 
    Latitude
    Longitude
@@ -307,12 +307,14 @@ Variable types
     LatLong
     ZIPCode
     IPAddress
+    FullName
     EmailAddress
     URL
     PhoneNumber
     DateOfBirth
     CountryCode
     SubRegionCode
+    FilePath
 
 
 Feature Selection

@@ -78,3 +78,7 @@ def get_relationship_variable_id(path):
         child_link_name = '%s.%s' % (r.parent_entity.id,
                                      parent_link_name)
     return child_link_name
+
+
+def is_python_2():
+    return sys.version_info.major < 3

@@ -12,11 +12,6 @@ from featuretools.primitives import (
     AddNumeric,
     AddNumericScalar,
     Count,
-    CumCount,
-    CumMax,
-    CumMean,
-    CumMin,
-    CumSum,
     Day,
     Diff,
     DivideByFeature,
@@ -410,10 +405,9 @@ def test_haversine(es):
     df = ft.calculate_feature_matrix(entityset=es, features=features,
                                      instance_ids=range(15))
     values = df[haversine.get_name()].values
-    real = [0., 524.15585776, 1043.00845747, 1551.12130243,
-            2042.79840241, 0., 137.86000883, 275.59396684,
-            413.07563177, 0., 0., 524.15585776,
-            0., 739.93819145, 1464.27975511]
+    real = [0, 525.318462, 1045.32190304, 1554.56176802, 2047.3294327, 0,
+            138.16578931, 276.20524822, 413.99185444, 0, 0, 525.318462, 0,
+            741.57941183, 1467.52760175]
     assert len(values) == 15
     assert np.allclose(values, real, atol=0.0001)
 
@@ -423,228 +417,14 @@ def test_haversine(es):
     df = ft.calculate_feature_matrix(entityset=es, features=features,
                                      instance_ids=range(15))
     values = df[haversine.get_name()].values
-    real_km = [0, 845.68234976, 1682.80832898, 2502.60659757, 3295.88714394,
-               0, 222.42578133, 444.64819005, 666.46354463, 0, 0,
-               845.68234976, 0, 1193.82939092, 2362.49490616]
+    real_km = [0, 845.41812212, 1682.2825471, 2501.82467535, 3294.85736668,
+               0, 222.35628593, 444.50926278, 666.25531268, 0, 0,
+               845.41812212, 0, 1193.45638714, 2361.75676089]
     assert len(values) == 15
     assert np.allclose(values, real_km, atol=0.0001)
     error_text = "Invalid unit inches provided. Must be one of"
     with pytest.raises(ValueError, match=error_text):
         Haversine(unit='inches')
-
-
-class TestCumCount:
-
-    primitive = CumCount
-
-    def test_order(self):
-        g = pd.Series(["a", "b", "a"])
-
-        answer = [1, 1, 2]
-
-        function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(g), answer)
-
-    def test_regular(self):
-        g = pd.Series(["a", "b", "a", "c", "d", "b"])
-        answer = [1, 1, 2, 1, 1, 2]
-
-        function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(g), answer)
-
-    def test_discrete(self):
-        g = pd.Series(["a", "b", "a", "c", "d", "b"])
-        answer = [1, 1, 2, 1, 1, 2]
-
-        function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(g), answer)
-
-
-class TestCumSum:
-
-    primitive = CumSum
-
-    def test_order(self):
-        v = pd.Series([1, 2, 2])
-        g = pd.Series(["a", "b", "a"])
-
-        answer = [1, 2, 3]
-
-        function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v, g), answer)
-
-    def test_regular(self):
-        v = pd.Series([101, 102, 103, 104, 105, 106])
-        g = pd.Series(["a", "b", "a", "c", "d", "b"])
-        answer = [101, 102, 204, 104, 105, 208]
-
-        function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v, g), answer)
-
-
-class TestCumMean:
-    primitive = CumMean
-
-    def test_order(self):
-        v = pd.Series([1, 2, 2])
-        g = pd.Series(["a", "b", "a"])
-
-        answer = [1, 2, 1.5]
-
-        function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v, g), answer)
-
-    def test_regular(self):
-        v = pd.Series([101, 102, 103, 104, 105, 106])
-        g = pd.Series(["a", "b", "a", "c", "d", "b"])
-        answer = [101, 102, 102, 104, 105, 104]
-
-        function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v, g), answer)
-
-
-class TestCumMax:
-
-    primitive = CumMax
-
-    def test_order(self):
-        v = pd.Series([1, 2, 2])
-        g = pd.Series(["a", "b", "a"])
-
-        answer = [1, 2, 2]
-
-        function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v, g), answer)
-
-    def test_regular(self):
-        v = pd.Series([101, 102, 103, 104, 105, 106])
-        g = pd.Series(["a", "b", "a", "c", "d", "b"])
-        answer = [101, 102, 103, 104, 105, 106]
-
-        function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v, g), answer)
-
-
-class TestCumMin:
-
-    primitive = CumMin
-
-    def test_order(self):
-        v = pd.Series([1, 2, 2])
-        g = pd.Series(["a", "b", "a"])
-
-        answer = [1, 2, 1]
-
-        function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v, g), answer)
-
-    def test_regular(self):
-        v = pd.Series([101, 102, 103, 104, 105, 106, 100])
-        g = pd.Series(["a", "b", "a", "c", "d", "b", "a"])
-        answer = [101, 102, 101, 104, 105, 102, 100]
-
-        function = self.primitive().get_function()
-        np.testing.assert_array_equal(function(v, g), answer)
-
-
-def test_cum_sum(es):
-    log_value_feat = es['log']['value']
-
-    cum_sum = ft.Feature([log_value_feat, es['log']['session_id']], primitive=CumSum)
-    features = [cum_sum]
-    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-    cvalues = df[cum_sum.get_name()].values
-    assert len(cvalues) == 15
-    cum_sum_values = [0, 5, 15, 30, 50, 0, 1, 3, 6, 0, 0, 5, 0, 7, 21]
-    for i, v in enumerate(cum_sum_values):
-        assert v == cvalues[i]
-
-
-def test_cum_min(es):
-    log_value_feat = es['log']['value']
-    cum_min = ft.Feature([log_value_feat, es['log']['session_id']], primitive=CumMin)
-    features = [cum_min]
-    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-    cvalues = df[cum_min.get_name()].values
-    assert len(cvalues) == 15
-    cum_min_values = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    for i, v in enumerate(cum_min_values):
-        assert v == cvalues[i]
-
-
-def test_cum_max(es):
-    log_value_feat = es['log']['value']
-    cum_max = ft.Feature([log_value_feat, es['log']['session_id']], primitive=CumMax)
-    features = [cum_max]
-    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-    cvalues = df[cum_max.get_name()].values
-    assert len(cvalues) == 15
-    cum_max_values = [0, 5, 10, 15, 20, 0, 1, 2, 3, 0, 0, 5, 0, 7, 14]
-    for i, v in enumerate(cum_max_values):
-        assert v == cvalues[i]
-
-
-def test_cum_sum_group_on_nan(es):
-    log_value_feat = es['log']['value']
-    es['log'].df['product_id'] = (['coke zero'] * 3 + ['car'] * 2 +
-                                  ['toothpaste'] * 3 + ['brown bag'] * 2 +
-                                  ['shoes'] +
-                                  [np.nan] * 4 +
-                                  ['coke_zero'] * 2)
-    cum_sum = ft.Feature([log_value_feat, es['log']['product_id']], primitive=CumSum)
-    features = [cum_sum]
-    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-    cvalues = df[cum_sum.get_name()].values
-    assert len(cvalues) == 15
-    cum_sum_values = [0, 5, 15,
-                      15, 35,
-                      0, 1, 3,
-                      3, 3,
-                      0,
-                      np.nan, np.nan, np.nan, np.nan]
-    for i, v in enumerate(cum_sum_values):
-        if np.isnan(v):
-            assert (np.isnan(cvalues[i]))
-        else:
-            assert v == cvalues[i]
-
-
-def test_cum_handles_uses_full_entity(es):
-    def check(feature):
-        pandas_backend = PandasBackend(es, [feature])
-        df_1 = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2], time_last=None)
-        df_2 = pandas_backend.calculate_all_features(instance_ids=[2, 4], time_last=None)
-
-        # check that the value for instance id 2 matches
-        assert (df_2.loc[2] == df_1.loc[2]).all()
-
-    for primitive in [CumSum, CumMean, CumMax, CumMin]:
-        check(ft.Feature([es['log']['value'], es['log']['session_id']], primitive=primitive))
-
-    check(ft.Feature(es['log']['session_id'], primitive=CumCount))
-
-
-def test_cum_mean(es):
-    log_value_feat = es['log']['value']
-    cum_mean = ft.Feature([log_value_feat, es['log']['session_id']], primitive=CumMean)
-    features = [cum_mean]
-    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-    cvalues = df[cum_mean.get_name()].values
-    assert len(cvalues) == 15
-    cum_mean_values = [0, 2.5, 5, 7.5, 10, 0, .5, 1, 1.5, 0, 0, 2.5, 0, 3.5, 7]
-    for i, v in enumerate(cum_mean_values):
-        assert v == cvalues[i]
-
-
-def test_cum_count(es):
-    cum_count = ft.Feature([es['log']['session_id']], primitive=CumCount)
-    features = [cum_count]
-    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
-    cvalues = df[cum_count.get_name()].values
-    assert len(cvalues) == 15
-    cum_count_values = [1, 2, 3, 4, 5, 1, 2, 3, 4, 1, 1, 2, 1, 2, 3]
-    for i, v in enumerate(cum_count_values):
-        assert v == cvalues[i]
 
 
 def test_text_primitives(es):

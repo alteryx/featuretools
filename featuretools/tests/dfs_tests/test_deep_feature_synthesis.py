@@ -264,6 +264,38 @@ def test_makes_agg_features_with_where(es):
                               'COUNT(log WHERE products.department = food)'))
 
 
+def test_make_groupby_features(es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[],
+                                   groupby_trans_primitives=['cum_sum'])
+    features = dfs_obj.build_features()
+    assert (feature_with_name(features,
+                              "CUM_SUM(value) by session_id"))
+
+
+def test_make_groupby_features_with_agg(es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='cohorts',
+                                   entityset=es,
+                                   agg_primitives=['sum'],
+                                   trans_primitives=[],
+                                   groupby_trans_primitives=['cum_sum'])
+    features = dfs_obj.build_features()
+    agg_on_groupby_name = u"SUM(customers.CUM_SUM(age) by région_id)"
+    assert (feature_with_name(features, agg_on_groupby_name))
+
+
+def test_bad_groupby_feature(es):
+    msg = "Unknown transform primitive max"
+    with pytest.raises(ValueError, match=msg):
+        DeepFeatureSynthesis(target_entity_id='customers',
+                             entityset=es,
+                             agg_primitives=['sum'],
+                             trans_primitives=[],
+                             groupby_trans_primitives=['max'])
+
+
 def test_abides_by_max_depth_param(es):
     for i in [1, 2, 3]:
         dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
@@ -742,8 +774,8 @@ def test_checks_primitives_correct_type(es):
                              trans_primitives=[])
 
     error_text = "Primitive <class \\'featuretools\\.primitives\\.standard\\."\
-                 "aggregation_primitives\\.Last\\'> in trans_primitives is "\
-                 "not a transform primitive"
+                 "aggregation_primitives\\.Last\\'> in trans_primitives or "\
+                 "groupby_trans_primitives is not a transform primitive"
     with pytest.raises(ValueError, match=error_text):
         DeepFeatureSynthesis(target_entity_id="sessions",
                              entityset=es,

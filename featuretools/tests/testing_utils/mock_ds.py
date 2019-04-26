@@ -75,6 +75,7 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
         'cancel_date': customer_times['cancel_date'],
         'cancel_reason': ["reason_1", "reason_2", "reason_1"],
         'engagement_level': [1, 3, 2],
+        'full_name': ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown'],
         'email': ['john.smith@example.com', '', 'team@featuretools.com'],
         'phone_number': ['5555555555', '555-555-5555', '1-(555)-555-5555'],
         'date_of_birth': customer_times['date_of_birth'],
@@ -82,13 +83,16 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
 
     ips = ['192.168.0.1', '2001:4860:4860::8888', '0.0.0.0',
            '192.168.1.1:2869', np.nan, '']
+    filepaths = ['/home/user/docs/Letter.txt', './inthisdir', 'C:\\user\\docs\\Letter.txt',
+                 '~/.rcinfo', '../../greatgrandparent', 'data.json']
 
     session_df = pd.DataFrame({'id': [0, 1, 2, 3, 4, 5],
                                'customer_id': [0, 0, 0, 1, 1, 2],
                                'device_type': [0, 1, 1, 0, 0, 1],
                                'device_name': ['PC', 'Mobile', 'Mobile', 'PC',
                                                'PC', 'Mobile'],
-                               'ip': ips})
+                               'ip': ips,
+                               'filepath': filepaths, })
 
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
                  [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
@@ -272,6 +276,7 @@ def make_variable_types(with_integer_time_index=False):
         'cancel_date': variable_types.Datetime,
         'cancel_reason': variable_types.Categorical,
         'engagement_level': variable_types.Ordinal,
+        'full_name': variable_types.FullName,
         'email': variable_types.EmailAddress,
         'phone_number': variable_types.PhoneNumber,
         'date_of_birth': variable_types.DateOfBirth,
@@ -282,12 +287,13 @@ def make_variable_types(with_integer_time_index=False):
         'customer_id': variable_types.Id,
         'device_type': variable_types.Categorical,
         'ip': variable_types.IPAddress,
+        'filepath': variable_types.FilePath,
     }
 
     log_variable_types = {
         'id': variable_types.Categorical,
         'session_id': variable_types.Id,
-        'product_id': variable_types.Id,
+        'product_id': variable_types.Categorical,
         'datetime': variable_types.Datetime,
         'value': variable_types.Numeric,
         'value_2': variable_types.Numeric,

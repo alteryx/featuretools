@@ -2,22 +2,21 @@ import logging
 from builtins import filter, object, str
 from collections import defaultdict
 
-import featuretools.primitives.api as ftypes
-from featuretools import variable_types
+from featuretools import primitives, variable_types
 from featuretools.feature_base import (
     AggregationFeature,
     DirectFeature,
+    GroupByTransformFeature,
     IdentityFeature,
     TransformFeature
 )
-from featuretools.primitives.api import Discrete
 from featuretools.primitives.base import (
     AggregationPrimitive,
     PrimitiveBase,
     TransformPrimitive
 )
 from featuretools.utils import is_string
-from featuretools.variable_types import Boolean, Numeric
+from featuretools.variable_types import Boolean, Discrete, Id, Numeric
 
 logger = logging.getLogger('featuretools')
 
@@ -46,6 +45,9 @@ class DeepFeatureSynthesis(object):
                 Default:
 
                     ["count"]
+
+            groupby_trans_primitives (list[str or :class:`.primitives.TransformPrimitive`], optional):
+                list of Transform primitives to make GroupByTransformFeatures with
 
             max_depth (int, optional) : maximum allowed depth of features.
                 Default: 2. If -1, no limit.
@@ -85,6 +87,7 @@ class DeepFeatureSynthesis(object):
                  agg_primitives=None,
                  trans_primitives=None,
                  where_primitives=None,
+                 groupby_trans_primitives=None,
                  max_depth=2,
                  max_hlevel=2,
                  max_features=-1,
@@ -129,11 +132,11 @@ class DeepFeatureSynthesis(object):
         self.es = entityset
 
         if agg_primitives is None:
-            agg_primitives = [ftypes.Sum, ftypes.Std, ftypes.Max, ftypes.Skew,
-                              ftypes.Min, ftypes.Mean, ftypes.Count,
-                              ftypes.PercentTrue, ftypes.NUnique, ftypes.Mode]
+            agg_primitives = [primitives.Sum, primitives.Std, primitives.Max, primitives.Skew,
+                              primitives.Min, primitives.Mean, primitives.Count,
+                              primitives.PercentTrue, primitives.NUnique, primitives.Mode]
         self.agg_primitives = []
-        agg_prim_dict = ftypes.get_aggregation_primitives()
+        agg_prim_dict = primitives.get_aggregation_primitives()
         for a in agg_primitives:
             if is_string(a):
                 if a.lower() not in agg_prim_dict:
@@ -148,26 +151,16 @@ class DeepFeatureSynthesis(object):
             self.agg_primitives.append(a)
 
         if trans_primitives is None:
-            trans_primitives = [ftypes.Day, ftypes.Year, ftypes.Month,
-                                ftypes.Weekday, ftypes.Haversine,
-                                ftypes.NumWords, ftypes.NumCharacters]  # ftypes.TimeSince
+            trans_primitives = [primitives.Day, primitives.Year, primitives.Month,
+                                primitives.Weekday, primitives.Haversine,
+                                primitives.NumWords, primitives.NumCharacters]  # primitives.TimeSince
         self.trans_primitives = []
-        trans_prim_dict = ftypes.get_transform_primitives()
         for t in trans_primitives:
-            if is_string(t):
-                if t.lower() not in trans_prim_dict:
-                    raise ValueError("Unknown transform primitive {}. ".format(t),
-                                     "Call ft.primitives.list_primitives() to get",
-                                     " a list of available primitives")
-                t = trans_prim_dict[t.lower()]
-            t = handle_primitive(t)
-            if not isinstance(t, TransformPrimitive):
-                raise ValueError("Primitive {} in trans_primitives is not a "
-                                 "transform primitive".format(type(t)))
+            t = check_trans_primitive(t)
             self.trans_primitives.append(t)
 
         if where_primitives is None:
-            where_primitives = [ftypes.Count]
+            where_primitives = [primitives.Count]
         self.where_primitives = []
         for p in where_primitives:
             if is_string(p):
@@ -179,6 +172,13 @@ class DeepFeatureSynthesis(object):
                 p = prim_obj
             p = handle_primitive(p)
             self.where_primitives.append(p)
+
+        if groupby_trans_primitives is None:
+            groupby_trans_primitives = []
+        self.groupby_trans_primitives = []
+        for p in groupby_trans_primitives:
+            p = check_trans_primitive(p)
+            self.groupby_trans_primitives.append(p)
 
         self.seed_features = seed_features or []
         self.drop_exact = drop_exact or []
@@ -505,6 +505,31 @@ class DeepFeatureSynthesis(object):
                     self._handle_new_feature(all_features=all_features,
                                              new_feature=new_f)
 
+        for groupby_prim in self.groupby_trans_primitives:
+            # Normally input_types is a list of what inputs can be supplied to
+            # the primitive function.  Here we temporarily add `Id` as an extra
+            # item in input_types so that the matching function will also look
+            # for feature columns to group by.
+            input_types = groupby_prim.input_types[:]
+            # if multiple input_types, only use first one for DFS
+            if type(input_types[0]) == list:
+                input_types = input_types[0]
+            input_types.append(Id)
+
+            features = self._features_by_type(all_features=all_features,
+                                              entity=entity,
+                                              max_depth=new_max_depth,
+                                              variable_type=set(input_types))
+            matching_inputs = match(input_types, features,
+                                    commutative=groupby_prim.commutative)
+            for matching_input in matching_inputs:
+                if all(bf.number_output_features == 1 for bf in matching_input):
+                    new_f = GroupByTransformFeature(list(matching_input[:-1]),
+                                                    groupby=matching_input[-1],
+                                                    primitive=groupby_prim)
+                    self._handle_new_feature(all_features=all_features,
+                                             new_feature=new_f)
+
     def _build_forward_features(self, all_features, parent_entity,
                                 child_entity, relationship, max_depth=0):
 
@@ -754,4 +779,21 @@ def handle_primitive(primitive):
     if not isinstance(primitive, PrimitiveBase):
         primitive = primitive()
     assert isinstance(primitive, PrimitiveBase), "must be a primitive"
+    return primitive
+
+
+def check_trans_primitive(primitive):
+    trans_prim_dict = primitives.get_transform_primitives()
+
+    if is_string(primitive):
+        if primitive.lower() not in trans_prim_dict:
+            raise ValueError("Unknown transform primitive {}. ".format(primitive),
+                             "Call ft.primitives.list_primitives() to get",
+                             " a list of available primitives")
+        primitive = trans_prim_dict[primitive.lower()]
+    primitive = handle_primitive(primitive)
+    if not isinstance(primitive, TransformPrimitive):
+        raise ValueError("Primitive {} in trans_primitives or "
+                         "groupby_trans_primitives is not a transform "
+                         "primitive".format(type(primitive)))
     return primitive

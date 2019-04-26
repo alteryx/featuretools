@@ -5,10 +5,7 @@ from builtins import str
 import numpy as np
 import pandas as pd
 
-from ..base.transform_primitive_base import (
-    TransformPrimitive,
-    make_trans_primitive
-)
+from ..base.transform_primitive_base import TransformPrimitive
 
 from featuretools.variable_types import (
     Boolean,
@@ -25,7 +22,13 @@ from featuretools.variable_types import (
 
 
 class IsNull(TransformPrimitive):
-    """For each value of base feature, return 'True' if value is null."""
+    """Determines if a value is null.
+
+    Examples:
+        >>> is_null = IsNull()
+        >>> is_null([1, None, 3]).tolist()
+        [False, True, False]
+    """
     name = "is_null"
     input_types = [Variable]
     return_type = Boolean
@@ -35,7 +38,13 @@ class IsNull(TransformPrimitive):
 
 
 class Absolute(TransformPrimitive):
-    """Absolute value of base feature."""
+    """Computes the absolute value of a number.
+
+    Examples:
+        >>> absolute = Absolute()
+        >>> absolute([3.0, -5.0, -2.4]).tolist()
+        [3.0, 5.0, 2.4]
+    """
     name = "absolute"
     input_types = [Numeric]
     return_type = Numeric
@@ -45,7 +54,27 @@ class Absolute(TransformPrimitive):
 
 
 class TimeSincePrevious(TransformPrimitive):
-    """Compute the time since the previous instance."""
+    """Compute the time in seconds since the previous instance of an entry.
+
+    Description:
+        Given a list of datetimes and a corresponding list of item ID values,
+        compute the time in seconds elapsed since the previous occurrence
+        of the item in the list. If an item is present only once, the result
+        for this item will be `NaN`. Similarly, the result for the first
+        occurrence of an item will always be `NaN`.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> time_since_previous = TimeSincePrevious()
+        >>> dates = [datetime(2019, 3, 1, 0, 0, 0),
+        ...          datetime(2019, 3, 1, 0, 2, 0),
+        ...          datetime(2019, 3, 10, 0, 0, 0),
+        ...          datetime(2019, 3, 1, 0, 2, 30),
+        ...          datetime(2019, 3, 10, 0, 0, 50)]
+        >>> labels = ['A', 'A', 'B', 'A', 'B']
+        >>> time_since_previous(dates, labels).tolist()
+        [nan, 120.0, nan, 30.0, 50.0]
+    """
     name = "time_since_previous"
     input_types = [DatetimeTimeIndex, Id]
     return_type = Numeric
@@ -65,7 +94,17 @@ class TimeSincePrevious(TransformPrimitive):
 
 
 class Day(TransformPrimitive):
-    """Transform a Datetime feature into the day."""
+    """Determines the day of the month from a datetime.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 3, 1),
+        ...          datetime(2019, 3, 3),
+        ...          datetime(2019, 3, 31)]
+        >>> day = Day()
+        >>> day(dates).tolist()
+        [1, 3, 31]
+    """
     name = "day"
     input_types = [Datetime]
     return_type = Ordinal
@@ -77,7 +116,17 @@ class Day(TransformPrimitive):
 
 
 class Hour(TransformPrimitive):
-    """Transform a Datetime feature into the hour."""
+    """Determines the hour value of a datetime.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 3, 1),
+        ...          datetime(2019, 3, 3, 11, 10, 50),
+        ...          datetime(2019, 3, 31, 19, 45, 15)]
+        >>> hour = Hour()
+        >>> hour(dates).tolist()
+        [0, 11, 19]
+    """
     name = "hour"
     input_types = [Datetime]
     return_type = Ordinal
@@ -89,7 +138,17 @@ class Hour(TransformPrimitive):
 
 
 class Second(TransformPrimitive):
-    """Transform a Datetime feature into the second."""
+    """Determines the seconds value of a datetime.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 3, 1),
+        ...          datetime(2019, 3, 3, 11, 10, 50),
+        ...          datetime(2019, 3, 31, 19, 45, 15)]
+        >>> second = Second()
+        >>> second(dates).tolist()
+        [0, 50, 15]
+    """
     name = "second"
     input_types = [Datetime]
     return_type = Numeric
@@ -101,7 +160,17 @@ class Second(TransformPrimitive):
 
 
 class Minute(TransformPrimitive):
-    """Transform a Datetime feature into the "minute."""
+    """Determines the minutes value of a datetime.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 3, 1),
+        ...          datetime(2019, 3, 3, 11, 10, 50),
+        ...          datetime(2019, 3, 31, 19, 45, 15)]
+        >>> minute = Minute()
+        >>> minute(dates).tolist()
+        [0, 10, 45]
+    """
     name = "minute"
     input_types = [Datetime]
     return_type = Numeric
@@ -113,7 +182,22 @@ class Minute(TransformPrimitive):
 
 
 class Week(TransformPrimitive):
-    """Transform a Datetime feature into the week."""
+    """Determines the week of the year from a datetime.
+
+    Description:
+        Returns the week of the year from a datetime value. The first week
+        of the year starts on January 1, and week numbers increment each
+        Monday.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 1, 3),
+        ...          datetime(2019, 6, 17, 11, 10, 50),
+        ...          datetime(2019, 11, 30, 19, 45, 15)]
+        >>> week = Week()
+        >>> week(dates).tolist()
+        [1, 25, 48]
+        """
     name = "week"
     input_types = [Datetime]
     return_type = Ordinal
@@ -125,7 +209,17 @@ class Week(TransformPrimitive):
 
 
 class Month(TransformPrimitive):
-    """Transform a Datetime feature into the  "month."""
+    """Determines the month value of a datetime.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 3, 1),
+        ...          datetime(2019, 6, 17, 11, 10, 50),
+        ...          datetime(2019, 11, 30, 19, 45, 15)]
+        >>> month = Month()
+        >>> month(dates).tolist()
+        [3, 6, 11]
+    """
     name = "month"
     input_types = [Datetime]
     return_type = Ordinal
@@ -137,7 +231,17 @@ class Month(TransformPrimitive):
 
 
 class Year(TransformPrimitive):
-    """Transform a Datetime feature into the year."""
+    """Determines the year value of a datetime.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 3, 1),
+        ...          datetime(2048, 6, 17, 11, 10, 50),
+        ...          datetime(1950, 11, 30, 19, 45, 15)]
+        >>> year = Year()
+        >>> year(dates).tolist()
+        [2019, 2048, 1950]
+    """
     name = "year"
     input_types = [Datetime]
     return_type = Ordinal
@@ -149,7 +253,17 @@ class Year(TransformPrimitive):
 
 
 class IsWeekend(TransformPrimitive):
-    """Transform Datetime feature into the boolean of Weekend."""
+    """Determines if a date falls on a weekend.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 3, 1),
+        ...          datetime(2019, 6, 17, 11, 10, 50),
+        ...          datetime(2019, 11, 30, 19, 45, 15)]
+        >>> is_weekend = IsWeekend()
+        >>> is_weekend(dates).tolist()
+        [False, False, True]
+    """
     name = "is_weekend"
     input_types = [Datetime]
     return_type = Boolean
@@ -161,7 +275,21 @@ class IsWeekend(TransformPrimitive):
 
 
 class Weekday(TransformPrimitive):
-    """Transform a Datetime feature into the weekday."""
+    """Determines the day of the week from a datetime.
+
+    Description:
+        Returns the day of the week from a datetime value. Weeks
+        start on Monday (day 0) and run through Sunday (day 6).
+
+    Examples:
+        >>> from datetime import datetime
+        >>> dates = [datetime(2019, 3, 1),
+        ...          datetime(2019, 6, 17, 11, 10, 50),
+        ...          datetime(2019, 11, 30, 19, 45, 15)]
+        >>> weekday = Weekday()
+        >>> weekday(dates).tolist()
+        [4, 0, 5]
+    """
     name = "weekday"
     input_types = [Datetime]
     return_type = Ordinal
@@ -173,7 +301,14 @@ class Weekday(TransformPrimitive):
 
 
 class NumCharacters(TransformPrimitive):
-    """Return the number of characters in a given string.
+    """Calculates the number of characters in a string.
+
+    Examples:
+        >>> num_characters = NumCharacters()
+        >>> num_characters(['This is a string',
+        ...                 'second item',
+        ...                 'final1']).tolist()
+        [16, 11, 6]
     """
     name = 'num_characters'
     input_types = [Text]
@@ -184,7 +319,15 @@ class NumCharacters(TransformPrimitive):
 
 
 class NumWords(TransformPrimitive):
-    """Returns the number of words in a given string by counting the spaces.
+    """Determines the number of words in a string by counting the spaces.
+
+    Examples:
+        >>> num_words = NumWords()
+        >>> num_words(['This is a string',
+        ...            'Two words',
+        ...            'no-spaces',
+        ...            'Also works with sentences. Second sentence!']).tolist()
+        [4, 2, 1, 6]
     """
     name = 'num_words'
     input_types = [Text]
@@ -196,21 +339,43 @@ class NumWords(TransformPrimitive):
         return word_counter
 
 
-def pd_time_since(array, time):
-    return (time - pd.DatetimeIndex(array)).values
+class TimeSince(TransformPrimitive):
+    """Calculates time in nanoseconds from a value to a specified cutoff datetime.
 
+    Examples:
+        >>> from datetime import datetime
+        >>> time_since = TimeSince()
+        >>> times = [datetime(2019, 3, 1, 0, 0, 0, 1),
+        ...          datetime(2019, 3, 1, 0, 0, 1, 0),
+        ...          datetime(2019, 3, 1, 0, 2, 0, 0)]
+        >>> cutoff_time = datetime(2019, 3, 1, 0, 0, 0, 0)
+        >>> values = time_since(array=times, time=cutoff_time)
+        >>> list(map(int, values))
+        [-1000, -1000000000, -120000000000]
+    """
+    name = 'time_since'
+    input_types = [[DatetimeTimeIndex], [Datetime]]
+    return_type = Timedelta
+    uses_calc_time = True
 
-TimeSince = make_trans_primitive(function=pd_time_since,
-                                 input_types=[[DatetimeTimeIndex], [Datetime]],
-                                 return_type=Timedelta,
-                                 uses_calc_time=True,
-                                 description="Calculates time since the cutoff time.",
-                                 name="time_since")
+    def get_function(self):
+        def pd_time_since(array, time):
+            return (time - pd.DatetimeIndex(array)).values
+        return pd_time_since
 
 
 class DaysSince(TransformPrimitive):
-    """For each value of the base feature, compute the number of days between it
-    and a datetime.
+    """Calculates the number of days from a value to a specified datetime.
+
+    Examples:
+        >>> from datetime import datetime
+        >>> days_since = DaysSince()
+        >>> dates = [datetime(2019, 3, 2, 0),
+        ...          datetime(2019, 3, 10, 12),
+        ...          datetime(2019, 3, 1, 0)]
+        >>> cutoff_date = datetime(2019, 3, 1, 0, 0, 0, 0)
+        >>> days_since(array=dates, time=cutoff_date).tolist()
+        [-1, -10, 0]
     """
     name = "days_since"
     input_types = [DatetimeTimeIndex]
@@ -224,7 +389,13 @@ class DaysSince(TransformPrimitive):
 
 
 class IsIn(TransformPrimitive):
-    """For each value of the base feature, checks whether it is in a provided list.
+    """Determines whether a value is present in a provided list.
+
+    Examples:
+        >>> items = ['string', 10.3, False]
+        >>> is_in = IsIn(list_of_outputs=items)
+        >>> is_in(['string', 10.5, False]).tolist()
+        [True, False, True]
     """
     name = "isin"
     input_types = [Variable]
@@ -244,9 +415,35 @@ class IsIn(TransformPrimitive):
 
 
 class Diff(TransformPrimitive):
-    """Compute the difference between the value of a base feature and the previous value.
+    """Compute the difference between the value in a list and the
+    previous value.
 
-    If it is a Datetime feature, compute the difference in seconds.
+    Description:
+        Given a list of values and a corresponding list of item ID values,
+        compute the difference from the previous occurrence of the item in
+        the list. If an item is present only once, the result for this item
+        will be `NaN`. Similarly, the result for the first occurrence of an
+        item will always be `NaN`. If the values are datetimes, the output
+        will be a timedelta.
+
+    Examples:
+        >>> diff = Diff()
+        >>> values = [1, 10, 3, 4, 15]
+        >>> labels = ['A', 'A', 'B', 'A', 'B']
+        >>> diff(values, labels).tolist()
+        [nan, 9.0, nan, -6.0, 12.0]
+
+        If values are datetimes, difference will be a timedelta
+
+        >>> from datetime import datetime
+        >>> diff = Diff()
+        >>> values = [datetime(2019, 3, 1, 0, 0, 0),
+        ...          datetime(2019, 3, 1, 0, 1, 0),
+        ...          datetime(2019, 3, 2, 0, 0, 0),
+        ...          datetime(2019, 3, 1, 0, 1, 30)]
+        >>> labels = ['A', 'A', 'B', 'A']
+        >>> diff(values, labels).tolist()
+        [NaT, Timedelta('0 days 00:01:00'), NaT, Timedelta('0 days 00:00:30')]
     """
     name = "diff"
     input_types = [Numeric, Id]
@@ -272,6 +469,13 @@ class Diff(TransformPrimitive):
 
 
 class Negate(TransformPrimitive):
+    """Negates a numeric value.
+
+    Examples:
+        >>> negate = Negate()
+        >>> negate([1.0, 23.2, -7.0]).tolist()
+        [-1.0, -23.2, 7.0]
+    """
     name = "negate"
     input_types = [Numeric]
     return_type = Numeric
@@ -286,7 +490,13 @@ class Negate(TransformPrimitive):
 
 
 class Not(TransformPrimitive):
-    """For each value of the base feature, negates the boolean value."""
+    """Negates a boolean value.
+
+    Examples:
+        >>> not_func = Not()
+        >>> not_func([True, True, False]).tolist()
+        [False, False, True]
+    """
     name = "not"
     input_types = [Boolean]
     return_type = Boolean
@@ -299,8 +509,17 @@ class Not(TransformPrimitive):
 
 
 class Percentile(TransformPrimitive):
-    """For each value of the base feature, determines the percentile in
-        relation to the rest of the feature.
+    """Determines the percentile rank for each value in a list.
+
+    Examples:
+        >>> percentile = Percentile()
+        >>> percentile([10, 15, 1, 20]).tolist()
+        [0.5, 0.75, 0.25, 1.0]
+
+        Nan values are ignored when determining rank
+
+        >>> percentile([10, 15, 1, None, 20]).tolist()
+        [0.5, 0.75, 0.25, nan, 1.0]
     """
     name = 'percentile'
     uses_full_entity = True
@@ -312,8 +531,15 @@ class Percentile(TransformPrimitive):
 
 
 class Latitude(TransformPrimitive):
-    """Returns the first value of the tuple base feature.
+    """Returns the first tuple value in a list of LatLong tuples.
        For use with the LatLong variable type.
+
+    Examples:
+        >>> latitude = Latitude()
+        >>> latitude([(42.4, -71.1),
+        ...            (40.0, -122.4),
+        ...            (41.2, -96.75)]).tolist()
+        [42.4, 40.0, 41.2]
     """
     name = 'latitude'
     input_types = [LatLong]
@@ -324,8 +550,15 @@ class Latitude(TransformPrimitive):
 
 
 class Longitude(TransformPrimitive):
-    """Returns the second value on the tuple base feature.
+    """Returns the second tuple value in a list of LatLong tuples.
        For use with the LatLong variable type.
+
+    Examples:
+        >>> longitude = Longitude()
+        >>> longitude([(42.4, -71.1),
+        ...            (40.0, -122.4),
+        ...            (41.2, -96.75)]).tolist()
+        [-71.1, -122.4, -96.75]
     """
     name = 'longitude'
     input_types = [LatLong]
@@ -336,20 +569,27 @@ class Longitude(TransformPrimitive):
 
 
 class Haversine(TransformPrimitive):
-    """Calculate the approximate haversine distance between two LatLong
-        variable types. Defaults to computing in miles.
+    """Calculates the approximate haversine distance between two LatLong
+        variable types.
 
         Args:
             unit (str): Determines the unit value to output. Could
-                be `miles` or `kilometers`. Default is `miles.
+                be `miles` or `kilometers`. Default is `miles`.
 
-        Example:
+        Examples:
+            >>> haversine = Haversine()
+            >>> distances = haversine([(42.4, -71.1), (40.0, -122.4)],
+            ...                       [(40.0, -122.4), (41.2, -96.75)])
+            >>> np.round(distances, 3).tolist()
+            [2631.231, 1343.289]
 
-           .. code-block:: python
+            Output units can be specified
 
-                from featuretools.primitives import Haversine
-                haversine_miles = Haversine(unit='miles')
-
+            >>> haversine_km = Haversine(unit='kilometers')
+            >>> distances_km = haversine_km([(42.4, -71.1), (40.0, -122.4)],
+            ...                             [(40.0, -122.4), (41.2, -96.75)])
+            >>> np.round(distances_km, 3).tolist()
+            [4234.555, 2161.814]
     """
     name = 'haversine'
     input_types = [LatLong, LatLong]
@@ -375,9 +615,9 @@ class Haversine(TransformPrimitive):
             dlat = lat2 - lat1
             a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * \
                 np.cos(lat2) * np.sin(dlon / 2.0)**2
-            radius_earth = 3950
+            radius_earth = 3958.7613
             if self.unit == 'kilometers':
-                radius_earth = 6373
+                radius_earth = 6371.0088
             distance = radius_earth * 2 * np.arcsin(np.sqrt(a))
             return distance
         return haversine
