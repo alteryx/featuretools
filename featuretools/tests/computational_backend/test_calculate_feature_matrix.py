@@ -19,6 +19,9 @@ from ..testing_utils import MockClient, make_ecommerce_entityset, mock_cluster
 
 import featuretools as ft
 from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
+from featuretools.computational_backends.calculate_feature_matrix import (
+    scatter_warning
+)
 from featuretools.computational_backends.utils import (
     bin_cutoff_times,
     calc_num_per_chunk,
@@ -44,7 +47,13 @@ def int_es():
     return make_ecommerce_entityset(with_integer_time_index=True)
 
 
-# TODO test mean ignores nan values
+def test_scatter_warning():
+    match = r'EntitySet was only scattered to .* out of .* workers'
+    with pytest.warns(UserWarning, match=match) as record:
+        scatter_warning(1, 2)
+    assert len(record) == 1
+
+
 def test_calc_feature_matrix(entityset):
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
                  [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
