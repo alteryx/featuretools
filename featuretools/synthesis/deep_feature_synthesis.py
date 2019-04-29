@@ -98,6 +98,12 @@ class DeepFeatureSynthesis(object):
                  drop_contains=None,
                  drop_exact=None,
                  where_stacking_limit=1):
+
+        if target_entity_id not in entityset.entity_dict:
+            es_name = entityset.id or 'entity set'
+            msg = 'Provided target entity %s does not exist in %s' % (target_entity_id, es_name)
+            raise KeyError(msg)
+
         # need to change max_depth and max_hlevel to None because DFs terminates when  <0
         if max_depth == -1:
             max_depth = None
