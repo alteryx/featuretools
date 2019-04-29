@@ -1,5 +1,22 @@
 .. _changelog:
+**v0.8.0** Upcoming
 
+**Breaking Changes**
+
+* ``NUnique`` has now been renamed as ``NumUnique``.
+
+    Previous behavior
+
+    .. code-block:: python
+
+        from featuretools.primitives import NUnique
+
+    New behavior
+
+    .. code-block:: python
+
+        from featuretools.primitives import NumUnique
+        
 Changelog
 ---------
 **v0.7.1** Apr 24, 2019
