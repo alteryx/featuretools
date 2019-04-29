@@ -39,8 +39,8 @@ Before we can update the conda recipe we need an uploaded package for the recipe
         /bin/bash -c "bash /home/circleci/upload.sh v0.7.0rc testpypi"
     ```
 #### Update conda recipe to use testpypi release of featuretools
-In recipe/meta.yaml of feedstock repo:
-1. Change {% set version = "X" } to match new release number (v0.7.0rc1)
+In `recipe/meta.yaml` of feedstock repo:
+1. Change `{% set version = "X" }` to match new release number (v0.7.0rc1)
 2. Update source url - visit https://test.pypi.org/project/featuretools/, find correct release, go to download files page, and copy link location of the tar.gz file
 3. Update source sha256 - click on SHA256 link next to tar.gz to copy it
 4. Update various requirements:
