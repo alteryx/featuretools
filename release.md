@@ -39,19 +39,45 @@ Before we can update the conda recipe we need an uploaded package for the recipe
         /bin/bash -c "bash /home/circleci/upload.sh v0.7.0rc testpypi"
     ```
 #### Update conda recipe to use testpypi release of featuretools
-In `recipe/meta.yaml` of feedstock repo:
-1. Change `{% set version = "X" }` to match new release number (v0.7.0rc1)
-2. Update source url - visit https://test.pypi.org/project/featuretools/, find correct release, go to download files page, and copy link location of the tar.gz file
-3. Update source sha256 - click on SHA256 link next to tar.gz to copy it
-4. Update various requirements:
-    requirements:host in meta.yaml corresponds to setup-requirements.txt
-    requirements:run in meta.yaml corresponds to requiremnts.txt
-    test:requires in meta.yaml correpsond to test-requirements.txt
+Fields to update in `recipe/meta.yaml` of feedstock repo:
+* Set the new release number (e.g. v0.7.0rc1)
+    ```
+    {% set version = "0.7.0rc1" %}
+    ```
+* Source fields
+    * url - visit https://test.pypi.org/project/featuretools/, find correct release, go to download files page, and copy link location of the tar.gz file
+    * sha256 - click on SHA256 link next to tar.gz to copy it
+    ```
+    source:
+      url: https://test-files.pythonhosted.org/packages/e9/79/4fc79465159f6700c1f7b9cf7403b9e455b40e659f3c979ce282f2eb9bf2/featuretools-0.7.1rc1.tar.gz
+      sha256: d9d542172d50b00c6a7154577b8a0ba5f1f500e3f940d83c9e46b4d4a36bf57a
+   ```
+* setup-requirements.txt dependencies go here
+    ```
+    requirements:
+      host:
+        - pip
+        - python
+    ```
+* requirements.txt dependencies go here
+    ```
+    requirements:
+      run:
+        - click
+        - cloupickle
+    ```
+* test-requirements.txt dependencies go here
+    ```
+    test:
+      requires:
+        - fastparquet
+        - mock
+    ```
 
 #### Test building the conda package locally
 1. Install conda
-    1. If using pyenv, pyenv install miniconda3-latest
-    2. Otherwise use [conda docs](https://conda.io/projects/conda/en/latest/user-guide/install/index.html)
+    1. If using pyenv, `pyenv install miniconda3-latest`
+    2. Otherwise follow instructions in [conda docs](https://conda.io/projects/conda/en/latest/user-guide/install/index.html)
 2. Install conda-build package
     ```bash
     conda install conda-build
@@ -71,7 +97,7 @@ In `recipe/meta.yaml` of feedstock repo:
     conda-smithy rerender --commit auto
     ```
 3. Make a PR on conda-forge/featuretools-feedstock from the forked repo and let CI tests run - indicate that this pr should not be merged
-4. After the tests pass, close the PR
+4. After the tests pass, close the PR without merging
 
 ## Create featuretools release on github
 #### Create release branch
@@ -90,7 +116,7 @@ In `recipe/meta.yaml` of feedstock repo:
     cf98910 Update how standard primitives are imported internally (#482)
     c30d842 v0.7.0 (#477)
     ```
-2. Copy all the commits since the past release into a new entry in `docs/source/changelog.rst
+2. Copy all the commits since the past release into a new entry in `docs/source/changelog.rst`
     ```
     **v0.7.1** Apr 12, 2019
         * Automatically generate name for controllable primitives (#481)
@@ -146,5 +172,5 @@ python source/upload.py --root
 ## Release on conda-forge
 1. Release featuretools on PyPI
 1. Wait for bot to create new PR in conda-forge/featuretools-feedstock
-2. Update requirements in recipe/meta.yaml (bot should have handled version and source links on its own)
+2. Update requirements in `recipe/meta.yaml` (bot should have handled version and source links on its own)
 3. After tests pass, merge the PR
