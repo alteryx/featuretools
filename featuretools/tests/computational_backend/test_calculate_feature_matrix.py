@@ -698,6 +698,21 @@ def test_cutoff_time_extra_columns(entityset):
     assert (fm_2['label'] == true_series).all()
 
 
+def test_instances_after_cutoff_time_removed(entityset):
+    es = entityset
+
+    property_feature = ft.Feature(entityset['log']['id'], parent_entity=entityset['customers'], primitive=Count)
+    cutoff_time = datetime(2011, 4, 8)
+    fm = calculate_feature_matrix([property_feature],
+                                  es,
+                                  cutoff_time=cutoff_time,
+                                  cutoff_time_in_index=True)
+
+    # Customer with id 1 should be removed
+    actual_ids = [id for (id, _) in fm.index]
+    assert actual_ids == [0, 2]
+
+
 def test_cfm_returns_original_time_indexes(entityset):
     es = entityset
 
