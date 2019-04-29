@@ -100,7 +100,7 @@ Aggregation Primitives
     AvgTimeBetween
     TimeSinceLast
     TimeSinceFirst
-    NUnique
+    NumUnique
     PercentTrue
     All
     Any
