@@ -1,5 +1,11 @@
 .. _changelog:
-**v0.8.0** Upcoming
+
+Changelog
+---------
+**v0.8.0** Pre-Release
+    * PR
+
+    Thanks to the following people for contributing to this release:
 
 **Breaking Changes**
 
@@ -16,9 +22,7 @@
     .. code-block:: python
 
         from featuretools.primitives import NumUnique
-        
-Changelog
----------
+
 **v0.7.1** Apr 24, 2019
     * Automatically generate feature name for controllable primitives (:pr:`481`)
     * Primitive docstring updates (:pr:`489`, :pr:`492`, :pr:`494`, :pr:`495`)
