@@ -121,6 +121,25 @@ def test_only_makes_supplied_agg_feat(es):
     assert len(other_agg_features) == 0
 
 
+def test_error_for_missing_target_entity(es):
+    error_text = 'Provided target entity missing_entity does not exist in ecommerce'
+    with pytest.raises(KeyError, match=error_text):
+        DeepFeatureSynthesis(target_entity_id='missing_entity',
+                             entityset=es,
+                             agg_primitives=[Last],
+                             trans_primitives=[],
+                             ignore_entities=['log'])
+
+    es_without_id = ft.EntitySet()
+    error_text = 'Provided target entity missing_entity does not exist in entity set'
+    with pytest.raises(KeyError, match=error_text):
+        DeepFeatureSynthesis(target_entity_id='missing_entity',
+                             entityset=es_without_id,
+                             agg_primitives=[Last],
+                             trans_primitives=[],
+                             ignore_entities=['log'])
+
+
 def test_ignores_entities(es):
     error_text = 'ignore_entities must be a list'
     with pytest.raises(TypeError, match=error_text):

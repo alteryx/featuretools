@@ -126,7 +126,8 @@ class EntitySet(object):
         """
         if entity_id in self.entity_dict:
             return self.entity_dict[entity_id]
-        raise KeyError('Entity %s does not exist in %s' % (entity_id, self.id))
+        name = self.id or "entity set"
+        raise KeyError('Entity %s does not exist in %s' % (entity_id, name))
 
     @property
     def entities(self):
