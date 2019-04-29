@@ -3,7 +3,7 @@
 
 **Breaking Changes**
 
-* ``NUnique`` has now been renamed as ``NumUnique``.
+* ``NUnique`` has been renamed to ``NumUnique``.
 
     Previous behavior
 
