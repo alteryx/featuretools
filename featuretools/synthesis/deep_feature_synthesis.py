@@ -140,7 +140,7 @@ class DeepFeatureSynthesis(object):
         if agg_primitives is None:
             agg_primitives = [primitives.Sum, primitives.Std, primitives.Max, primitives.Skew,
                               primitives.Min, primitives.Mean, primitives.Count,
-                              primitives.PercentTrue, primitives.NUnique, primitives.Mode]
+                              primitives.PercentTrue, primitives.NumUnique, primitives.Mode]
         self.agg_primitives = []
         agg_prim_dict = primitives.get_aggregation_primitives()
         for a in agg_primitives:
