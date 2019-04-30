@@ -100,7 +100,7 @@ Aggregation Primitives
     AvgTimeBetween
     TimeSinceLast
     TimeSinceFirst
-    NUnique
+    NumUnique
     PercentTrue
     All
     Any
@@ -167,7 +167,7 @@ Text Transform Primitives
 Location Transform Primitives
 *****************************
 .. autosummary::
-   :toctree generated/
+   :toctree: generated/
 
    Latitude
    Longitude

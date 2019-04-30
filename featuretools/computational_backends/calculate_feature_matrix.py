@@ -5,6 +5,7 @@ import logging
 import os
 import shutil
 import time
+import warnings
 from builtins import zip
 from collections import defaultdict
 from datetime import datetime
@@ -540,11 +541,17 @@ def linear_calculate_chunks(chunks, features, approximate, training_window,
     return feature_matrix
 
 
+def scatter_warning(num_scattered_workers, num_workers):
+    if num_scattered_workers != num_workers:
+        scatter_warning = "EntitySet was only scattered to {} out of {} workers"
+        warnings.warn(scatter_warning.format(num_scattered_workers, num_workers))
+
+
 def parallel_calculate_chunks(chunks, features, approximate, training_window,
                               verbose, save_progress, entityset, n_jobs,
                               no_unapproximated_aggs, cutoff_df_time_var,
                               target_time, pass_columns, dask_kwargs=None):
-    from distributed import as_completed
+    from distributed import as_completed, Future
     from dask.base import tokenize
 
     client = None
@@ -572,12 +579,15 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
         pickled_feats = cloudpickle.dumps(features)
         _saved_features = client.scatter(pickled_feats)
         client.replicate([_es, _saved_features])
+        num_scattered_workers = len(client.who_has([Future(es_token)]).get(es_token, []))
+        num_workers = len(client.scheduler_info()['workers'].values())
+
+        scatter_warning(num_scattered_workers, num_workers)
         if verbose:
             end = time.time()
-            scatter_time = end - start
-            scatter_string = "EntitySet scattered to workers in {:.3f} seconds"
-            print(scatter_string.format(scatter_time))
-
+            scatter_time = round(end - start)
+            scatter_string = "EntitySet scattered to {} workers in {} seconds"
+            print(scatter_string.format(num_scattered_workers, scatter_time))
         # map chunks
         # TODO: consider handling task submission dask kwargs
         _chunks = client.map(calculate_chunk,
