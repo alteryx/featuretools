@@ -90,22 +90,22 @@ def load_flight(month_filter=None,
 
 def make_es(data):
     es = ft.EntitySet('Flight Data')
-    labely_columns = ['arr_delay', 'dep_delay', 'carrier_delay', 'weather_delay',
-                      'national_airspace_delay', 'security_delay',
-                      'late_aircraft_delay', 'cancelled', 'diverted',
-                      'taxi_in', 'taxi_out', 'air_time', 'dep_time']
+    arr_time_columns = ['arr_delay', 'dep_delay', 'carrier_delay', 'weather_delay',
+                        'national_airspace_delay', 'security_delay',
+                        'late_aircraft_delay', 'canceled', 'diverted',
+                        'taxi_in', 'taxi_out', 'air_time', 'dep_time']
 
     variable_types = {'flight_num': vtypes.Categorical,
                       'distance_group': vtypes.Ordinal,
-                      'cancelled': vtypes.Boolean,
+                      'canceled': vtypes.Boolean,
                       'diverted': vtypes.Boolean}
 
     es.entity_from_dataframe('trip_logs',
                              data,
                              index='trip_log_id',
                              make_index=True,
-                             time_index='time_index',
-                             secondary_time_index={'arr_time': labely_columns},
+                             time_index='date_scheduled',
+                             secondary_time_index={'arr_time': arr_time_columns},
                              variable_types=variable_types)
 
     es.normalize_entity('trip_logs', 'flights', 'flight_id',
@@ -134,7 +134,8 @@ def _clean_data(data):
                                             'crs_elapsed_time': 'scheduled_elapsed_time',
                                             'nas_delay': 'national_airspace_delay',
                                             'origin_city_name': 'origin_city',
-                                            'dest_city_name': 'dest_city'})
+                                            'dest_city_name': 'dest_city',
+                                            'cancelled': 'canceled'})
 
     # Combine strings like 0130 (1:30 AM) with dates (2017-01-01)
     clean_data['scheduled_dep_time'] = clean_data['scheduled_dep_time'].apply(lambda x: str(x)) + clean_data['flight_date'].astype('str')
@@ -148,7 +149,7 @@ def _clean_data(data):
     clean_data = _reconstruct_times(clean_data)
 
     # Create a time index 6 months before scheduled_dep
-    clean_data.loc[:, 'time_index'] = clean_data['scheduled_dep_time'] - \
+    clean_data.loc[:, 'date_scheduled'] = clean_data['scheduled_dep_time'] - \
         pd.Timedelta('120d')
 
     # A null entry for a delay means no delay
@@ -163,13 +164,34 @@ def _clean_data(data):
     clean_data.loc[:, 'flight_id'] = clean_data['carrier'] + '-' + \
         clean_data['flight_num'].apply(lambda x: str(x)) + ':' + clean_data['origin'] + '->' + clean_data['dest']
 
+    column_order = [
+        'flight_id',
+        'flight_num',
+        'date_scheduled',
+        'scheduled_dep_time',
+        'scheduled_arr_time',
+        'carrier',
+        'origin', 'origin_city', 'origin_state',
+        'dest', 'dest_city', 'dest_state',
+        'distance_group',
+        'dep_time',
+        'arr_time',
+        'dep_delay', 'taxi_out', 'taxi_in', 'arr_delay',
+        'diverted', 'scheduled_elapsed_time', 'air_time', 'distance',
+        'carrier_delay', 'weather_delay',
+        'national_airspace_delay', 'security_delay', 'late_aircraft_delay',
+        'canceled'
+    ]
+
+    clean_data = clean_data[column_order]
+
     return clean_data
 
 
 def _fill_labels(clean_data):
     labely_columns = ['arr_delay', 'dep_delay', 'carrier_delay', 'weather_delay',
                       'national_airspace_delay', 'security_delay',
-                      'late_aircraft_delay', 'cancelled', 'diverted',
+                      'late_aircraft_delay', 'canceled', 'diverted',
                       'taxi_in', 'taxi_out', 'air_time']
     for col in labely_columns:
         clean_data.loc[:, col] = clean_data[col].fillna(0)

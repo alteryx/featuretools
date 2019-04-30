@@ -117,9 +117,10 @@ def dfs(entities=None,
             where the second index is the cutoff time (first is instance id).
             DataFrame will be sorted by (time, instance_id).
 
-        training_window (Timedelta, optional):
-            Window defining how much older than the cutoff time data
-            can be to be included when calculating the feature. If None, all older data is used.
+        training_window (Timedelta or str, optional):
+            Window defining how much time before the cutoff time data
+            can be used when calculating features. If ``None`` , all data before cutoff time is used.
+            Defaults to ``None``.
 
         approximate (Timedelta): Bucket size to group instances with similar
             cutoff times by for features with costly calculations. For example,

@@ -77,9 +77,10 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             where the second index is the cutoff time (first is instance id).
             DataFrame will be sorted by (time, instance_id).
 
-        training_window (Timedelta, optional):
-            Window defining how much older than the cutoff time data
-            can be to be included when calculating the feature. If None, all older data is used.
+        training_window (Timedelta or str, optional):
+            Window defining how much time before the cutoff time data
+            can be used when calculating features. If ``None``, all data before cutoff time is used.
+            Defaults to ``None``.
 
         approximate (Timedelta or str): Frequency to group instances with similar
             cutoff times by for features with costly calculations. For example,
