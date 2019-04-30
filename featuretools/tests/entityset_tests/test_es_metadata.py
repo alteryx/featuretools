@@ -3,7 +3,7 @@ import pytest
 
 from ..testing_utils import make_ecommerce_entityset
 
-from featuretools import Relationship, variable_types
+from featuretools import EntitySet, Relationship, variable_types
 
 
 @pytest.fixture
@@ -131,6 +131,11 @@ def test_raise_key_error_missing_entity(es):
     error_text = "Entity this entity doesn't exist does not exist in ecommerce"
     with pytest.raises(KeyError, match=error_text):
         es["this entity doesn't exist"]
+
+    es_without_id = EntitySet()
+    error_text = "Entity this entity doesn't exist does not exist in entity set"
+    with pytest.raises(KeyError, match=error_text):
+        es_without_id["this entity doesn't exist"]
 
 
 def test_add_parent_not_index_variable(es):

@@ -31,11 +31,11 @@ And the second dataframe is a list of products involved in those transactions.
 Creating an EntitySet
 ~~~~~~~~~~~~~~~~~~~~~
 
-First, we initialize an EntitySet and give it an ``id``
+First, we initialize an EntitySet. If you'd like to give it name, you can optionally provide an ``id`` to the constructor.
 
 .. ipython:: python
 
-    es = ft.EntitySet()
+    es = ft.EntitySet(id="customer_data")
 
 
 Adding entities
