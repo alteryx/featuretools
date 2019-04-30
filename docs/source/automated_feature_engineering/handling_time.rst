@@ -131,6 +131,9 @@ For example, a customer's session has multiple transactions which can happen at 
 
 Featuretools can automatically add last time indexes to every :class:`Entity` in an :class:`Entityset` by running ``EntitySet.add_last_time_indexes()``. If a ``last_time_index`` has been set, Featuretools will check to see if the ``last_time_index`` is after the start of the training window. That, combined with the cutoff time, allows DFS to discover which data is relevant for a given training window.
 
+
+.. _approximate:
+
 Approximating features by rounding cutoff time
 ----------------------------------------------
 
