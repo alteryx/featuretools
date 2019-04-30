@@ -318,7 +318,7 @@ def test_groupby_no_data(es):
                                      features=[last_feat],
                                      cutoff_time=pd.Timestamp("2011-04-08"))
     cvalues = df[last_feat.get_name()].values
-    assert len(cvalues) == 3
+    assert len(cvalues) == 2
     assert all([pd.isnull(value) for value in cvalues])
 
 
