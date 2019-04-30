@@ -501,9 +501,7 @@ class Entity(object):
 
         return out_vals
 
-    def _handle_time(self, df, time_last=None,
-                     training_window=None,
-                     columns=None):
+    def _handle_time(self, df, time_last=None, training_window=None):
         """
         Filter a dataframe for all instances before time_last.
         If this entity does not have a time index, return the original
