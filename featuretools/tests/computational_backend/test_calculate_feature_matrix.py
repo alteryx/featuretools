@@ -713,6 +713,23 @@ def test_instances_after_cutoff_time_removed(entityset):
     assert actual_ids == [0, 2]
 
 
+def test_instances_with_id_kept_after_cutoff(entityset):
+    es = entityset
+
+    property_feature = ft.Feature(entityset['log']['id'], parent_entity=entityset['customers'], primitive=Count)
+    cutoff_time = datetime(2011, 4, 8)
+    fm = calculate_feature_matrix([property_feature],
+                                  es,
+                                  instance_ids=[0, 1, 2],
+                                  cutoff_time=cutoff_time,
+                                  cutoff_time_in_index=True)
+
+    # Customer #1 is after cutoff, but since it is included in instance_ids it
+    # should be kept.
+    actual_ids = [id for (id, _) in fm.index]
+    assert actual_ids == [0, 1, 2]
+
+
 def test_cfm_returns_original_time_indexes(entityset):
     es = entityset
 
