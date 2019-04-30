@@ -1,9 +1,9 @@
 # Release Process
 ## Test conda-forge release
-Conda releases of featuretools rely on pypi's hosted featuretools packages.  Since we cannot reupload featuretools to pypi using the same version number, it is important ensure the version we upload works with conda so that we don't have to immediately release a new version of featuretools or skip supporting conda for one release cycle.  We can test if a featuretools release will run on conda by uploading a release candidate version of featuretools to PyPI's test server and building a conda version of featuretools based on the test servers' featuretools package.
+Conda releases of featuretools rely on PyPI's hosted featuretools packages. Since we cannot reupload featuretools to PyPI using the same version number, it is important ensure the version we upload works with conda so that we don't have to immediately release a new version of featuretools or skip supporting conda for one release cycle.  We can test if a featuretools release will run on conda by uploading a release candidate version of featuretools to PyPI's test server and building a conda version of featuretools based on the test servers' featuretools package.
 
 #### Set up fork of our conda-forge repo
-Branches on the conda-forge featuretools repo are automatically built and the package uploaded to conda-forge, so to test a release without uploading to conda-forge we need to fork into a separate repo and develop there. 
+Branches on the conda-forge featuretools repo are automatically built and the package uploaded to conda-forge, so to test a release without uploading to conda-forge we need to fork into a separate repo and develop there.
 1. Fork conda-forge/featuretools-feedstock: visit https://github.com/conda-forge/featuretools-feedstock and click fork
 2. Clone forked repo locally
 3. Add conda-forge repo as the 'upstream' repository
@@ -126,7 +126,7 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
     In order for the documentation to build with proper links, we need to use special syntax to link to github users and pull requests.
     ```rst
         * Automatically generate name for controllable primitives (:pr:`481`)
-        
+
         Thanks to :user:`kmax12` for contributing to this release
     ```
     Confusing commit descriptions should be updated and commits related to the same feature can be grouped together.  Testing updates and documentation updates can be simplified into one commit each, unless a change deserves its own description.
@@ -138,7 +138,7 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
         Thanks to the following people for contributing to this release: :user:`user1`, :user:`user2`, :user:`user3`
     ```
 #### Create Release PR
-A [release pr](https://github.com/Featuretools/featuretools/pull/507) should have the version number as the title and the changelog updates as the PR body text.  The contributors line is not necessary.  The special docs syntax needs to be reverted back to `#547` style for PR links.
+A [release pr](https://github.com/Featuretools/featuretools/pull/507) should have the version number as the title and the changelog updates as the PR body text. The contributors line is not necessary. The special docs syntax needs to be reverted back to `#547` style for PR links.
 
 #### Create Github Release
 After the release pull request has been merged into the master branch, it is time draft the github release. [Example release](https://github.com/Featuretools/featuretools/releases/tag/v0.7.1)
