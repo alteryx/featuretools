@@ -5,7 +5,7 @@
 Handling Time
 =============
 
-When performing feature engineering with temporal data, it is paramount to carefully select the data that is used for calculations. By annotating :term:`entities <entity>` with a **time index** column and providing a **cutoff time** during feature calculation, Featuretools will automatically pass only data up to that point in time into any calculations.
+When performing feature engineering with temporal data, it is paramount to carefully select the data that is used for calculations. By annotating :term:`entities <entity>` with a **time index** column and providing a **cutoff time** during feature calculation, Featuretools will automatically filter out data after that point in time before running any calculations.
 
 What is a Time Index?
 ---------------------
@@ -62,7 +62,7 @@ We pass the cutoff time to :func:`featuretools.dfs` or :func:`featuretools.calcu
     fm
 
 
-Even though the entityset contains the complete history for each customer, only data from before the cutoff time was used to calculate the features above.
+Even though the entityset contains the complete history for each customer, only data with a time index up to and including the cutoff time was used to calculate the features above.
 
 Using a Cutoff Time DataFrame
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -161,7 +161,7 @@ Secondary Time Index
 
 It is sometimes that case that information in a dataset is updated or added after a row has been created. This means that certain columns may actually become known after the time index for a row. Rather than drop those columns to avoid leaking information, we can create a secondary time index to indicate when those columns become known.
 
-The :func:`Flights <demo.load_flight>` entityset is a good example of a dataset where columns values in row become known at different times. Each trip is recorded in a ``trip_logs`` entity, and has many times associated to it.
+The :func:`Flights <demo.load_flight>` entityset is a good example of a dataset where columns values in a row become known at different times. Each trip is recorded in the ``trip_logs`` entity, and has many times associated to it.
 
 .. ipython:: python
 
@@ -170,7 +170,7 @@ The :func:`Flights <demo.load_flight>` entityset is a good example of a dataset 
     es_flight['trip_logs'].df.head(3)
 
 
-For every log item the time index is ``date_scheduled``. At this time, we know the scheduled departure and arrival times, as well as what route will be flown. However, we don't know the rest of the information about the actual departure/arrival times and the details of any delay at this time. However, it's possible to know everything about how a trip went after it has arrived, so we can use that information at any time after the flight lands.
+For every trip log the time index is ``date_scheduled``, which is when the airline decided on the scheduled departure and arrival times, as well as what route will be flown. We don't know the rest of the information about the actual departure/arrival times and the details of any delay at this time. However, it's possible to know everything about how a trip went after it has arrived, so we can use that information at any time after the flight lands.
 
 Using secondary time index, we can indicate to Featuretools which columns in our flight logs are known at the date the flight was scheduled and which are known at the time the flight lands.
 
@@ -179,7 +179,7 @@ Using secondary time index, we can indicate to Featuretools which columns in our
    :alt: flight secondary time index diagram
    :align: center
 
-In Featuretools, we set the secondary time index when creating the entity like this::
+In Featuretools, we set the secondary time index when creating the entity to be the the arrival time like this::
 
     es = ft.EntitySet('Flight Data')
     arr_time_columns = ['arr_delay', 'dep_delay', 'carrier_delay', 'weather_delay',
@@ -243,7 +243,7 @@ Let's understand this output
 
 1. A row was made for every id-time pair in ``ct_flight``, which is returned as the index of the feature matrix.
 
-2. The output, and label, were sorted by the passed in ``time`` column. Because of the sorting, it's often helpful to pass in a label with the cutoff time dataframe so that it will remain sorted in the same way as the feature matrix. Any additional columns past the ``id`` and ``cutoff_time`` will not be used for making features.
+2. The output was sorted by cutoff time. Because of the sorting, it's often helpful to pass in a label with the cutoff time dataframe so that it will remain sorted in the same way as the feature matrix. Any additional columns past the ``id`` and ``cutoff_time`` will not be used for making features.
 
 3. The column ``flights.MAX(trip_logs.arr_delay)`` is not always defined. It can only have real values when there are historical flights to aggregate. Notice that for trip ``14``, there wasn't historical data when we made the feature a month in advance, but there were flights to aggregate when we shortened it to 5 days. These are powerful features that are often excluded in manual processes because of how hard they are to make.
 
