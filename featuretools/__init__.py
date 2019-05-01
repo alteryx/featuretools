@@ -10,6 +10,7 @@ from .computational_backends.api import *
 from . import tests
 from .utils.pickle_utils import *
 from .utils.time_utils import *
+from .utils.cli_utils import show_info
 import featuretools.demo
 import featuretools.wrappers
 from . import feature_base
