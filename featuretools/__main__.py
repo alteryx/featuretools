@@ -3,7 +3,6 @@ import pandas as pd
 import pkg_resources
 
 import featuretools
-from featuretools.primitives.utils import get_featuretools_root
 from featuretools.utils import show_info
 
 
@@ -14,7 +13,6 @@ def cli():
 
 @click.command()
 def info():
-    print("Featuretools installation directory: %s" % get_featuretools_root())
     show_info()
 
 

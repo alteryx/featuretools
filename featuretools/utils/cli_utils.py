@@ -7,9 +7,13 @@ import sys
 import pkg_resources
 
 import featuretools
+from featuretools.primitives.utils import get_featuretools_root
 
 
 def show_info():
+    print("Featuretools version: %s" % featuretools.__version__)
+    print("Featuretools installation directory: %s" % get_featuretools_root())
+
     print("\nSYSTEM INFO")
     print("-----------")
     sys_info = get_sys_info()
@@ -21,7 +25,6 @@ def show_info():
     installed_packages = get_installed_packages()
 
     deps = [
-        ("featuretools", featuretools.__version__),
         ("numpy", installed_packages['numpy']),
         ("pandas", installed_packages['pandas']),
         ("tqdm", installed_packages['tqdm']),
