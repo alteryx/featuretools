@@ -7,7 +7,6 @@ import sys
 import pkg_resources
 
 import featuretools
-from featuretools.primitives.utils import get_featuretools_root
 
 
 def show_info():
@@ -77,3 +76,7 @@ def get_installed_packages():
     for d in pkg_resources.working_set:
         installed_packages[d.project_name] = d.version
     return installed_packages
+
+
+def get_featuretools_root():
+    return os.path.dirname(featuretools.__file__)
