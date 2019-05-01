@@ -4,10 +4,10 @@ import pytest
 
 from featuretools.primitives.base import PrimitiveBase
 from featuretools.primitives.utils import (
-    get_featuretools_root,
     list_primitive_files,
     load_primitive_from_file
 )
+from featuretools.utils import get_featuretools_root
 
 
 @pytest.fixture(scope='module')
