@@ -179,6 +179,9 @@ class EntitySet(object):
         serialize.write_data_description(self, path, format='csv', index=False, sep=sep, encoding=encoding, engine=engine, compression=compression)
         return self
 
+    def to_dictionary(self):
+        return serialize.entityset_to_description(self)
+
     ###########################################################################
     #   Public getter/setter methods  #########################################
     ###########################################################################

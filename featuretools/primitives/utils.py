@@ -126,3 +126,32 @@ def load_primitive_from_file(filepath):
         raise RuntimeError("More than one primitive defined in file %s" % filepath)
 
     return primitives[0]
+
+
+def serialize_primitive(primitive):
+    args_dict = {name: val for name, val in primitive.get_arguments()}
+    cls = type(primitive)
+    return {
+        'type': cls.__name__,
+        'module': cls.__module__,
+        'arguments': args_dict,
+    }
+
+
+def deserialize_primitive(primitive_dict):
+    class_name = primitive_dict['type']
+    module = primitive_dict['module']
+    cls = _find_primitive_class(class_name, module, PrimitiveBase)
+
+    arguments = primitive_dict['arguments']
+    return cls(**arguments)
+
+
+def _find_primitive_class(class_name, module, current_class):
+    if current_class.__name__ == class_name and current_class.__module__ == module:
+        return current_class
+    else:
+        for cls in current_class.__subclasses__():
+            found = _find_primitive_class(class_name, module, cls)
+            if found:
+                return found

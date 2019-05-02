@@ -15,6 +15,7 @@ from featuretools.primitives import (
     Last,
     TransformPrimitive
 )
+from featuretools.primitives.utils import serialize_primitive
 from featuretools.variable_types import DatetimeTimeIndex, Numeric
 
 
@@ -350,3 +351,23 @@ def test_groupby_uses_calc_time(es):
 
     for x, y in zip(df[time_since_product.get_name()], answers):
         assert ((pd.isnull(x) and pd.isnull(y)) or x == y)
+
+
+def test_serialization(es):
+    value = ft.IdentityFeature(es['log']['value'])
+    zip = ft.IdentityFeature(es['log']['zipcode'])
+    primitive = CumSum()
+    groupby = ft.feature_base.GroupByTransformFeature(value, primitive, zip)
+
+    dictionary = {
+        'base_features': [value.unique_name()],
+        'primitive': serialize_primitive(primitive),
+        'groupby': zip.unique_name(),
+    }
+
+    assert dictionary == groupby.get_arguments()
+    dependencies = {
+        value.unique_name(): value,
+        zip.unique_name(): zip,
+    }
+    assert groupby == ft.feature_base.GroupByTransformFeature .from_dictionary(dictionary, es, dependencies)

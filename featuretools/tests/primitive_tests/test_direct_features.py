@@ -4,6 +4,7 @@ import pytest
 
 from ..testing_utils import make_ecommerce_entityset
 
+import featuretools as ft
 from featuretools.computational_backends import PandasBackend
 from featuretools.feature_base import DirectFeature, Feature
 from featuretools.primitives import (
@@ -150,3 +151,17 @@ def test_direct_features_of_multi_output_agg_primitives(es):
             else:
                 assert ((pd.isnull(value) and pd.isnull(row[j])) or
                         value == row[j])
+
+
+def test_serialization(es):
+    value = ft.IdentityFeature(es['log']['value'])
+    direct = ft.DirectFeature(value, es['log'])
+
+    dictionary = {
+        'base_feature': value.unique_name(),
+        'child_entity_id': 'log',
+    }
+
+    assert dictionary == direct.get_arguments()
+    assert direct == ft.DirectFeature.from_dictionary(dictionary, es,
+                                                      {value.unique_name(): value})
