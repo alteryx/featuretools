@@ -422,11 +422,11 @@ class FilePath(Variable):
 
 
 ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
-                      Categorical, Text, Ordinal,
+                      Categorical, Text, Ordinal, Discrete,
                       Boolean, LatLong, ZIPCode, IPAddress,
                       FullName, EmailAddress, URL, PhoneNumber,
                       DateOfBirth, CountryCode, SubRegionCode,
-                      FilePath]
+                      FilePath, DatetimeTimeIndex]
 
 
 DEFAULT_DTYPE_VALUES = {
