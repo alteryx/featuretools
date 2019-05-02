@@ -6,8 +6,7 @@ import pkg_resources
 for entry_point in pkg_resources.iter_entry_points('featuretools_primitives'):
     try:
         loaded = entry_point.load()
-        if hasattr(loaded, 'primitives'):
-            for name, obj in loaded.primitives.items():
-                globals()[name] = obj
+        for primitive in loaded:
+            globals()[primitive.__name__] = primitive
     except Exception:
         pass
