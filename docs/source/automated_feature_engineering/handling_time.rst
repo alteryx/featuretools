@@ -5,12 +5,12 @@
 Handling Time
 =============
 
-When performing feature engineering with temporal data, it is paramount to carefully select the data that is used for calculations. By annotating :term:`entities <entity>` with a **time index** column and providing a **cutoff time** during feature calculation, Featuretools will automatically filter out data after that point in time before running any calculations.
+When performing feature engineering with temporal data, carefully selecting the data that is used for any calculation is paramount. By annotating :term:`entities <entity>` with a **time index** column and providing a **cutoff time** during feature calculation, Featuretools will automatically filter out any data after that point in time before running any calculations.
 
-What is a Time Index?
----------------------
+What is the Time Index?
+-----------------------
 
-A time index is the column in the data that specifies when data in each row became known. For example, let's examine a table of customer transactions
+The time index is the column in the data that specifies when the data in each row became known. For example, let's examine a table of customer transactions:
 
 .. ipython:: python
     :suppress:
@@ -23,7 +23,7 @@ A time index is the column in the data that specifies when data in each row beca
     es = ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
     es['transactions'].df.head()
 
-In this table, there is one row for every transaction and a ``transaction_time`` column that specifies when the transaction took place. This means ``transaction_time`` is the time index because it indicates when the information in each row became known and can be used for feature calculations.
+In this table, there is one row for every transaction and a ``transaction_time`` column that specifies when the transaction took place. This means that ``transaction_time`` is the time index because it indicates when the information in each row became known and available for feature calculations.
 
 However, not every datetime column is a time index. Consider the ``customers`` entity:
 
@@ -31,26 +31,26 @@ However, not every datetime column is a time index. Consider the ``customers`` e
 
     es['customers'].df
 
-Here we have two time columns ``join_date`` and ``date_of_birth``. While either column might be useful for making features, the ``join_date`` should be used as the time index because it indicates when a customer was first available in the dataset.
+Here, we have two time columns, ``join_date`` and ``date_of_birth``. While either column might be useful for making features, the ``join_date`` should be used as the time index because it indicates when that customer first became available in the dataset.
 
 .. important::
 
-    The **time index** is defined as the first time information from a row can be used. If a cutoff time is specified when calculating features, rows that have a later value for the time index are automatically ignored.
+    The **time index** is defined as the first time that any information from a row can be used. If a cutoff time is specified when calculating features, rows that have a later value for the time index are automatically ignored.
 
 .. _cutoff-time:
 
 What is the Cutoff Time?
 ------------------------
-The **cutoff_time** specifies the last point in time data can be used for a feature calculation. Any data after this point in time will be filtered out before calculating features.
+The **cutoff_time** specifies the last point in time that a row’s data can be used for a feature calculation. Any data after this point in time will be filtered out before calculating features.
 
-For example, let's consider a dataset of timestamped customer transactions where we want to predict whether customers ``1``, ``2`` and ``3`` will spend $500 between ``04:00`` on January 1 and the end of the day. When building features for this prediction problem, we need to ensure no data after ``04:00`` is used in our calculations.
+For example, let's consider a dataset of timestamped customer transactions, where we want to predict whether customers ``1``, ``2`` and ``3`` will spend $500 between ``04:00`` on January 1 and the end of the day. When building features for this prediction problem, we need to ensure that no data after ``04:00`` is used in our calculations.
 
 .. image:: ../images/retail_ct.png
    :width: 400 px
    :alt: retail cutoff time diagram
    :align: center
 
-We pass the cutoff time to :func:`featuretools.dfs` or :func:`featuretools.calculate_feature_matrix` using the ``cutoff_time`` argument like this
+We pass the cutoff time to :func:`featuretools.dfs` or :func:`featuretools.calculate_feature_matrix` using the ``cutoff_time`` argument like this:
 
 .. ipython:: python
 
@@ -62,16 +62,16 @@ We pass the cutoff time to :func:`featuretools.dfs` or :func:`featuretools.calcu
     fm
 
 
-Even though the entityset contains the complete history for each customer, only data with a time index up to and including the cutoff time was used to calculate the features above.
+Even though the entityset contains the complete transaction history for each customer, only data with a time index up to and including the cutoff time was used to calculate the features above.
 
 Using a Cutoff Time DataFrame
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Often times, the training examples for machine learning will come from different points in time. To specify a unique cutoff time for each row of the resulting feature matrix, we can pass a dataframe where the first column is the instance id and the second column is the corresponding cutoff time.
+Oftentimes, the training examples for machine learning will come from different points in time. To specify a unique cutoff time for each row of the resulting feature matrix, we can pass a dataframe where the first column is the instance id and the second column is the corresponding cutoff time.
 
 .. note::
 
-    Only the first two columns are used to calculate features. Any additional columns passed through are appended to the resulting feature matrix. This is typically used to pass through machine learning labels to ensure they stay aligned with the feature matrix.
+    Only the first two columns are used to calculate features. Any additional columns passed through are appended to the resulting feature matrix. This is typically used to pass through machine learning labels to ensure that they stay aligned with the feature matrix.
 
 .. ipython:: python
 
@@ -89,14 +89,14 @@ Often times, the training examples for machine learning will come from different
                           cutoff_time_in_index=True)
     fm
 
-We can now see that every row of the feature matrix is calculated at the corresponding time in the cutoff time dataframe. Because we calculate each row at different time, it is possible to have a customer repeat. In this case, we calculated the feature vector for customer 1 at both ``04:00`` and ``08:00``.
+We can now see that every row of the feature matrix is calculated at the corresponding time in the cutoff time dataframe. Because we calculate each row at a different time, it is possible to have a repeat customer. In this case, we calculated the feature vector for customer 1 at both ``04:00`` and ``08:00``.
 
 Training Window
 ---------------
 
-By default, all data up to and including the cutoff time is used. We can restrict the amount of historical data selected for calculations using a "training window".
+By default, all data up to and including the cutoff time is used. We can restrict the amount of historical data that is selected for calculations using a "training window."
 
-Here's an example of using two hour training window:
+Here's an example of using a two hour training window:
 
 .. ipython:: python
 
@@ -109,7 +109,7 @@ Here's an example of using two hour training window:
     window_fm
 
 
-We can see that that the counts for the same feature are lower after we shortened the training window
+We can see that that the counts for the same feature are lower after we shorten the training window:
 
 .. ipython:: python
 
@@ -120,9 +120,9 @@ We can see that that the counts for the same feature are lower after we shortene
 
 Setting a Last Time Index
 -------------------------
-The training window in Featuretools limits the amount of past data that can be used while calculating a particular feature vector. A row in the entity is filtered out if the value of its time index is either before or after the training window. This works for entities where an row occurs at a single point in time. However, sometimes a row can exist for a duration.
+The training window in Featuretools limits the amount of past data that can be used while calculating a particular feature vector. A row in the entity is filtered out if the value of its time index is either before or after the training window. This works for entities where a row occurs at a single point in time. However, a row can sometimes exist for a duration.
 
-For example, a customer's session has multiple transactions which can happen at different points in time. If we are trying to count the number of sessions a user had in a given time period, we often want to count all sessions that had *any* transaction during the training window. To accomplish this, we need to not only know when a session starts, but when it ends. The last time that an instance appears in the data is stored as the ``last_time_index`` of an :class:`Entity`. We can compare the time index and the last time index of the ``sessions`` entity above:
+For example, a customer's session has multiple transactions which can happen at different points in time. If we are trying to count the number of sessions a user has in a given time period, we often want to count all the sessions that had *any* transaction during the training window. To accomplish this, we need to not only know when a session starts, but also when it ends. The last time that an instance appears in the data is stored as the ``last_time_index`` of an :class:`Entity`. We can compare the time index and the last time index of the ``sessions`` entity above:
 
 .. ipython:: python
 
@@ -131,21 +131,20 @@ For example, a customer's session has multiple transactions which can happen at 
 
 Featuretools can automatically add last time indexes to every :class:`Entity` in an :class:`Entityset` by running ``EntitySet.add_last_time_indexes()``. If a ``last_time_index`` has been set, Featuretools will check to see if the ``last_time_index`` is after the start of the training window. That, combined with the cutoff time, allows DFS to discover which data is relevant for a given training window.
 
-
 .. _approximate:
 
-Approximating features by rounding cutoff time
-----------------------------------------------
+Approximating Features by Rounding Cutoff Times
+-----------------------------------------------
 
-For each unique cutoff time, Featuretools much perform operations to select valid data for computation. If there are a large number of unique cutoff times relative to the number of instances for which we are calculating features, the time spent filter data can begin to add up. By reducing the number of unique cutoff times, we minimize the overhead from searching for and extracting data for feature calculations.
+For each unique cutoff time, Featuretools must perform operations to select the data that’s valid for computations. If there are a large number of unique cutoff times relative to the number of instances for which we are calculating features, the time spent filtering data can add up. By reducing the number of unique cutoff times, we minimize the overhead from searching for and extracting data for feature calculations.
 
-One way to decrease the number of unique cutoff times is to round cutoff times to an nearby earlier point in time. An earlier cutoff time is always valid for predictive modeling — it just means we’re not using some of the data we could potentially use while calculating that feature. In that way, we gain computational speed by losing some information.
+One way to decrease the number of unique cutoff times is to round cutoff times to an earlier point in time. An earlier cutoff time is always valid for predictive modeling — it just means we’re not using some of the data we could potentially use while calculating that feature. So, we gain computational speed by losing a small amount of information.
 
-To understand when approximation is useful, consider calculating features for a model to predict fraudulent credit card transactions. In this case, an important feature might be, "the average transaction amount for this card in the past". While this value can change every time there is a new transaction, updating it less frequently might not impact accuracy.
+To understand when an approximation is useful, consider calculating features for a model to predict fraudulent credit card transactions. In this case, an important feature might be, "the average transaction amount for this card in the past". While this value can change every time there is a new transaction, updating it less frequently might not impact accuracy.
 
 .. note::
 
-    The bank BBVA used approximation when building a predictive model for credit card fraud using Featuretools. For more details, see the "Real-time deployment considerations" section of the `white paper <https://arxiv.org/pdf/1710.07709.pdf>`_ describing the work.
+    The bank BBVA used approximation when building a predictive model for credit card fraud using Featuretools. For more details, see the "Real-time deployment considerations" section of the `white paper <https://arxiv.org/pdf/1710.07709.pdf>`_ describing the work involved.
 
 The frequency of approximation is controlled using the ``approximate`` parameter to :func:`featuretools.dfs` or :func:`featuretools.calculate_feature_matrix`. For example, the following code would approximate aggregation features at 1 day intervals::
 
@@ -162,9 +161,9 @@ In this computation, features that can be approximated will be calculated at 1 d
 Secondary Time Index
 --------------------
 
-It is sometimes that case that information in a dataset is updated or added after a row has been created. This means that certain columns may actually become known after the time index for a row. Rather than drop those columns to avoid leaking information, we can create a secondary time index to indicate when those columns become known.
+It is sometimes the case that information in a dataset is updated or added after a row has been created. This means that certain columns may actually become known after the time index for a row. Rather than drop those columns to avoid leaking information, we can create a secondary time index to indicate when those columns become known.
 
-The :func:`Flights <demo.load_flight>` entityset is a good example of a dataset where columns values in a row become known at different times. Each trip is recorded in the ``trip_logs`` entity, and has many times associated to it.
+The :func:`Flights <demo.load_flight>` entityset is a good example of a dataset where column values in a row become known at different times. Each trip is recorded in the ``trip_logs`` entity, and has many times associated with it.
 
 .. ipython:: python
 
@@ -173,16 +172,16 @@ The :func:`Flights <demo.load_flight>` entityset is a good example of a dataset 
     es_flight['trip_logs'].df.head(3)
 
 
-For every trip log the time index is ``date_scheduled``, which is when the airline decided on the scheduled departure and arrival times, as well as what route will be flown. We don't know the rest of the information about the actual departure/arrival times and the details of any delay at this time. However, it's possible to know everything about how a trip went after it has arrived, so we can use that information at any time after the flight lands.
+For every trip log, the time index is ``date_scheduled``, which is when the airline decided on the scheduled departure and arrival times, as well as what route will be flown. We don't know the rest of the information about the actual departure/arrival times and the details of any delay at this time. However, it is possible to know everything about how a trip went after it has arrived, so we can use that information at any time after the flight lands.
 
-Using secondary time index, we can indicate to Featuretools which columns in our flight logs are known at the date the flight was scheduled and which are known at the time the flight lands.
+Using a secondary time index, we can indicate to Featuretools which columns in our flight logs are known at the time the flight is scheduled, plus which are known at the time the flight lands.
 
 .. image:: ../images/flight_ti_2.png
    :width: 400 px
    :alt: flight secondary time index diagram
    :align: center
 
-In Featuretools, we set the secondary time index when creating the entity to be the the arrival time like this::
+In Featuretools, when creating the entity, we set the secondary time index to be the arrival time like this::
 
     es = ft.EntitySet('Flight Data')
     arr_time_columns = ['arr_delay', 'dep_delay', 'carrier_delay', 'weather_delay',
@@ -206,11 +205,11 @@ By setting a secondary time index, we can still use the delay information from a
 .. _flight-ct:
 
 Flight Predictions
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
-Let's make features at some varying times in the flight example described above. Trip ``14`` is a flight from CLT to PHX on January 31 2017 and trip ``92`` is a flight from PIT to DFW on January 1. We can set any cutoff time before the flight is scheduled to depart, emulating how we would make the prediction at that point in time.
+Let's make some features at varying times using the flight example described above. Trip ``14`` is a flight from CLT to PHX on January 31, 2017 and trip ``92`` is a flight from PIT to DFW on January 1. We can set any cutoff time before the flight is scheduled to depart, emulating how we would make the prediction at that point in time.
 
-We set two cutoff times for trip ``14`` at two different times: one which is more than a month before the flight and another which is only 5 days before. For trip ``92``, we'll only set one cutoff time three days before it is scheduled to leave.
+We set two cutoff times for trip ``14`` at two different times: one which is more than a month before the flight and another which is only 5 days before. For trip ``92``, we'll only set one cutoff time, three days before it is scheduled to leave.
 
 .. image:: ../images/flight_ct.png
    :width: 500 px
@@ -229,7 +228,7 @@ Our cutoff time dataframe looks like this:
     ct_flight['label'] = [True, True, False]
     ct_flight
 
-Now, let's calculate the feature matrix
+Now, let's calculate the feature matrix:
 
 .. ipython:: python
 
@@ -242,13 +241,13 @@ Now, let's calculate the feature matrix
     fm[['flight_id', 'label', 'flights.MAX(trip_logs.arr_delay)', 'MONTH(scheduled_dep_time)']]
 
 
-Let's understand this output
+Let's understand the output:
 
 1. A row was made for every id-time pair in ``ct_flight``, which is returned as the index of the feature matrix.
 
-2. The output was sorted by cutoff time. Because of the sorting, it's often helpful to pass in a label with the cutoff time dataframe so that it will remain sorted in the same way as the feature matrix. Any additional columns past the ``id`` and ``cutoff_time`` will not be used for making features.
+2. The output was sorted by cutoff time. Because of the sorting, it's often helpful to pass in a label with the cutoff time dataframe so that it will remain sorted in the same fashion as the feature matrix. Any additional columns beyond ``id`` and ``cutoff_time`` will not be used for making features.
 
-3. The column ``flights.MAX(trip_logs.arr_delay)`` is not always defined. It can only have real values when there are historical flights to aggregate. Notice that for trip ``14``, there wasn't historical data when we made the feature a month in advance, but there were flights to aggregate when we shortened it to 5 days. These are powerful features that are often excluded in manual processes because of how hard they are to make.
+3. The column ``flights.MAX(trip_logs.arr_delay)`` is not always defined. It can only have any real values when there are historical flights to aggregate. Notice that, for trip ``14``, there wasn't any historical data when we made the feature a month in advance, but there **were** flights to aggregate when we shortened it to 5 days. These are powerful features that are often excluded in manual processes because of how hard they are to make.
 
 
 Creating and Flattening a Feature Tensor
@@ -289,5 +288,3 @@ Then passing in ``window_size='1h'`` and ``num_windows=2`` makes one row an hour
                           cutoff_time=temporal_cutoffs,
                           cutoff_time_in_index=True)
     fm
-
-
