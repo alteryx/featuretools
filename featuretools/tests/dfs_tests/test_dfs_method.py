@@ -50,7 +50,7 @@ def test_accepts_single_cutoff_time(entities, relationships):
                                    relationships=relationships,
                                    target_entity="transactions",
                                    cutoff_time=20)
-    assert len(feature_matrix.index) == 6
+    assert len(feature_matrix.index) == 5
     assert len(feature_matrix.columns) == len(features)
 
 
