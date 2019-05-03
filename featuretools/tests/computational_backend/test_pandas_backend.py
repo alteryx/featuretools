@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
 
-from ..testing_utils import make_ecommerce_entityset
+from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
 from featuretools import Timedelta
