@@ -230,7 +230,8 @@ class Entity(object):
             time_last (pd.TimeStamp) : Query data up to and including this
                 time. Only applies if entity has a time index.
             training_window (Timedelta, optional):
-                Data older than time_last by more than this will be ignored
+                Window defining how much time before the cutoff time data
+                can be used when calculating features. If None, all data before cutoff time is used.
 
         Returns:
             pd.DataFrame : instances that match constraints with ids in order of underlying dataframe

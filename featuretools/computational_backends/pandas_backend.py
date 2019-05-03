@@ -60,8 +60,8 @@ class PandasBackend(ComputationalBackend):
             time_last (pd.Timestamp): Last allowed time. Data from exactly this
                 time not allowed.
 
-            training_window (Timedelta, optional): Data older than
-                time_last by more than this will be ignored.
+            training_window (Timedelta, optional): Window defining how much time before the cutoff time data
+                can be used when calculating features. If None, all data before cutoff time is used.
 
             profile (bool): Enable profiler if True.
 
