@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from ..testing_utils import make_ecommerce_entityset
+from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 from featuretools import EntitySet, calculate_feature_matrix, dfs
 from featuretools.feature_base import Feature, IdentityFeature
