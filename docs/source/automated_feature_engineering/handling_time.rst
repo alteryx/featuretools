@@ -5,7 +5,7 @@
 Handling Time
 =============
 
-When performing feature engineering with temporal data, carefully selecting the data that is used for any calculation is paramount. By annotating :term:`entities <entity>` with a **time index** column and providing a **cutoff time** during feature calculation, Featuretools will automatically filter out any data after that point in time before running any calculations.
+When performing feature engineering with temporal data, carefully selecting the data that is used for any calculation is paramount. By annotating :term:`entities <entity>` with a **time index** column and providing a **cutoff time** during feature calculation, Featuretools will automatically filter out any data after the cutoff time before running any calculations.
 
 What is the Time Index?
 -----------------------
