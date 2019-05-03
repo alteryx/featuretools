@@ -13,6 +13,7 @@ for entry_point in pkg_resources.iter_entry_points('featuretools_primitives'):
     try:
         loaded = entry_point.load()
         for primitive in loaded:
-            globals()[primitive.__name__] = primitive
+            if issubclass(primitive, (AggregationPrimitive, TransformPrimitive)):
+                globals()[primitive.__name__] = primitive
     except Exception:
         pass
