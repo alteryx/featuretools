@@ -2,8 +2,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ..testing_utils import make_ecommerce_entityset
-
 from featuretools.computational_backends import PandasBackend
 from featuretools.feature_base import DirectFeature, Feature
 from featuretools.primitives import (
@@ -17,6 +15,7 @@ from featuretools.primitives import (
     Year
 )
 from featuretools.synthesis import dfs
+from featuretools.tests.testing_utils import make_ecommerce_entityset
 from featuretools.variable_types import Categorical, Datetime, Numeric
 
 

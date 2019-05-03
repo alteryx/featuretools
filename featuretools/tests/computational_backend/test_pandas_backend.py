@@ -7,8 +7,6 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
 
-from featuretools.tests.testing_utils import make_ecommerce_entityset
-
 import featuretools as ft
 from featuretools import Timedelta
 from featuretools.computational_backends.pandas_backend import PandasBackend
@@ -31,6 +29,7 @@ from featuretools.primitives import (  # NMostCommon,
     Trend
 )
 from featuretools.primitives.base import AggregationPrimitive
+from featuretools.tests.testing_utils import make_ecommerce_entityset
 from featuretools.variable_types import Numeric
 
 

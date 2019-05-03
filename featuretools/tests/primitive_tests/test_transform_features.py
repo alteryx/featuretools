@@ -3,8 +3,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ..testing_utils import make_ecommerce_entityset
-
 import featuretools as ft
 from featuretools.computational_backends import PandasBackend
 from featuretools.primitives import (
@@ -52,6 +50,7 @@ from featuretools.primitives import (
 )
 from featuretools.primitives.base import make_trans_primitive
 from featuretools.synthesis.deep_feature_synthesis import match
+from featuretools.tests.testing_utils import make_ecommerce_entityset
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
 

@@ -3,12 +3,11 @@ import os.path
 import pytest
 from pympler.asizeof import asizeof
 
-from ..testing_utils import make_ecommerce_entityset
-
 import featuretools as ft
 from featuretools import config
 from featuretools.feature_base import IdentityFeature
 from featuretools.primitives import Last, Mode, Sum
+from featuretools.tests.testing_utils import make_ecommerce_entityset
 from featuretools.variable_types import Categorical, Datetime, Id, Numeric
 
 

@@ -7,8 +7,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ..testing_utils import feature_with_name, make_ecommerce_entityset
-
 import featuretools as ft
 from featuretools.primitives import (  # NMostCommon,
     Count,
@@ -28,6 +26,10 @@ from featuretools.synthesis.deep_feature_synthesis import (
     DeepFeatureSynthesis,
     check_stacking,
     match
+)
+from featuretools.tests.testing_utils import (
+    feature_with_name,
+    make_ecommerce_entityset
 )
 from featuretools.variable_types import (
     Datetime,

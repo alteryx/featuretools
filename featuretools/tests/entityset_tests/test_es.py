@@ -8,11 +8,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ..testing_utils import make_ecommerce_entityset
-
 import featuretools as ft
 from featuretools import variable_types
 from featuretools.entityset import EntitySet, Relationship
+from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
 @pytest.fixture()

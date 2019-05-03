@@ -1,12 +1,11 @@
 import pandas as pd
 import pytest
 
-from featuretools.tests.testing_utils import make_ecommerce_entityset
-
 from featuretools import EntitySet, calculate_feature_matrix, dfs
 from featuretools.feature_base import Feature, IdentityFeature
 from featuretools.primitives import NMostCommon
 from featuretools.synthesis import encode_features
+from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
 @pytest.fixture(scope='module')

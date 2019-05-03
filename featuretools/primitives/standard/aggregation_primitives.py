@@ -5,8 +5,9 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 
-from ..base.aggregation_primitive_base import AggregationPrimitive
-
+from featuretools.primitives.base.aggregation_primitive_base import (
+    AggregationPrimitive
+)
 from featuretools.utils import is_python_2
 from featuretools.variable_types import (
     Boolean,

@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import pytest
 
-from ..testing_utils import make_ecommerce_entityset
-
 from featuretools import EntitySet, Relationship, variable_types
+from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
 @pytest.fixture

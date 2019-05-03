@@ -1,8 +1,7 @@
 import pytest
 
-from ..testing_utils import make_ecommerce_entityset
-
 import featuretools as ft
+from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; CumSum,
     AddNumeric,
