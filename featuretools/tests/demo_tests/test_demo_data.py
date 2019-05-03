@@ -25,6 +25,6 @@ def test_load_flight():
                      return_single_table=False, nrows=1000)
 
     entity_names = ['airports', 'flights', 'trip_logs', 'airlines']
-    realvals = [(11, 3), (13, 9), (103, 22), (1, 1)]
+    realvals = [(11, 3), (13, 9), (103, 21), (1, 1)]
     for i, name in enumerate(entity_names):
         assert es[name].shape == realvals[i]

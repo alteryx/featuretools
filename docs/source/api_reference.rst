@@ -185,7 +185,7 @@ Feature methods
 
 Feature calculation
 ~~~~~~~~~~~~~~~~~~~~
-.. currentmodule:: featuretools.computational_backends
+.. currentmodule:: featuretools
 .. autosummary::
     :toctree: generated/
 
@@ -194,7 +194,7 @@ Feature calculation
 
 Feature encoding
 ~~~~~~~~~~~~~~~~~
-.. currentmodule:: featuretools.synthesis
+.. currentmodule:: featuretools
 .. autosummary::
     :toctree: generated/
 
