@@ -15,7 +15,7 @@ import psutil
 import pytest
 from distributed.utils_test import cluster
 
-from ..testing_utils import MockClient, make_ecommerce_entityset, mock_cluster
+from featuretools.tests.testing_utils import MockClient, make_ecommerce_entityset, mock_cluster
 
 import featuretools as ft
 from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
