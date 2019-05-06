@@ -1,9 +1,8 @@
 import pandas as pd
 
-from .deep_feature_synthesis import DeepFeatureSynthesis
-
 from featuretools.computational_backends import calculate_feature_matrix
 from featuretools.entityset import EntitySet
+from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
 from featuretools.utils import entry_point
 
 
