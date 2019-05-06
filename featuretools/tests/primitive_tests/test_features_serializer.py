@@ -3,6 +3,7 @@ import pytest
 from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
+from featuretools.entityset.deserialize import description_to_entityset
 from featuretools.feature_base.features_serializer import FeaturesSerializer
 
 SCHEMA_VERSION = "1.0.0"
@@ -26,7 +27,8 @@ def test_single_feature(es):
             feature.unique_name(): _feature_dict(feature)
         }
     }
-    assert expected == serializer.to_dict()
+
+    _compare_feature_dicts(expected, serializer.to_dict())
 
 
 def test_base_features_in_list(es):
@@ -46,7 +48,7 @@ def test_base_features_in_list(es):
         }
     }
 
-    assert expected == serializer.to_dict()
+    _compare_feature_dicts(expected, serializer.to_dict())
 
 
 def test_base_features_not_in_list(es):
@@ -69,11 +71,7 @@ def test_base_features_not_in_list(es):
         }
     }
 
-    assert expected == serializer.to_dict()
-
-
-def test_raise_if_features_dont_share_entityset(es):
-    pass
+    _compare_feature_dicts(expected, serializer.to_dict())
 
 
 def test_where_feature_dependency(es):
@@ -96,7 +94,17 @@ def test_where_feature_dependency(es):
         }
     }
 
-    assert expected == serializer.to_dict()
+    _compare_feature_dicts(expected, serializer.to_dict())
+
+
+def _compare_feature_dicts(a, b):
+    # We can't compare entityset dictionaries because variable lists are not
+    # guaranteed to be in the same order.
+    es_a = description_to_entityset(a.pop('entityset'))
+    es_b = description_to_entityset(b.pop('entityset'))
+    assert es_a == es_b
+
+    assert a == b
 
 
 def _feature_dict(feature):
