@@ -406,9 +406,18 @@ class Entity(object):
         Remove variable from entity's dataframe and from
         self.variables
         """
-        self.df.drop(variable_id, axis=1, inplace=True)
-        v = self._get_variable(variable_id)
-        self.variables.remove(v)
+        self.delete_variables([variable_id])
+
+    def delete_variables(self, variable_ids):
+        """
+        Remove variables from entity's dataframe and from
+        self.variables
+        """
+        self.df.drop(variable_ids, axis=1, inplace=True)
+
+        for v_id in variable_ids:
+            v = self._get_variable(v_id)
+            self.variables.remove(v)
 
     def set_time_index(self, variable_id, already_sorted=False):
         # check time type
