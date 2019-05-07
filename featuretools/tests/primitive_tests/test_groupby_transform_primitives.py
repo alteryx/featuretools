@@ -355,19 +355,19 @@ def test_groupby_uses_calc_time(es):
 
 def test_serialization(es):
     value = ft.IdentityFeature(es['log']['value'])
-    zip = ft.IdentityFeature(es['log']['zipcode'])
+    zipcode = ft.IdentityFeature(es['log']['zipcode'])
     primitive = CumSum()
-    groupby = ft.feature_base.GroupByTransformFeature(value, primitive, zip)
+    groupby = ft.feature_base.GroupByTransformFeature(value, primitive, zipcode)
 
     dictionary = {
         'base_features': [value.unique_name()],
         'primitive': serialize_primitive(primitive),
-        'groupby': zip.unique_name(),
+        'groupby': zipcode.unique_name(),
     }
 
     assert dictionary == groupby.get_arguments()
     dependencies = {
         value.unique_name(): value,
-        zip.unique_name(): zip,
+        zipcode.unique_name(): zipcode,
     }
-    assert groupby == ft.feature_base.GroupByTransformFeature .from_dictionary(dictionary, es, dependencies)
+    assert groupby == ft.feature_base.GroupByTransformFeature.from_dictionary(dictionary, es, dependencies)

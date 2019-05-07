@@ -47,10 +47,21 @@ def load_features(filepath):
 
 
 class FeaturesDeserializer(object):
+    FEATURE_CLASSES = {
+        'AggregationFeature': AggregationFeature,
+        'DirectFeature': DirectFeature,
+        'Feature': Feature,
+        'FeatureBase': FeatureBase,
+        'GroupByTransformFeature': GroupByTransformFeature,
+        'IdentityFeature': IdentityFeature,
+        'TransformFeature': TransformFeature,
+    }
+
     def __init__(self, features_dict):
         self.features_dict = features_dict
-        self._check_version()
+        self._check_schema_version()
         self.entityset = deserialize_es(features_dict['entityset'])
+        self._deserialized_features = {}  # name -> feature
 
     @classmethod
     def load(cls, filepath):
@@ -61,46 +72,31 @@ class FeaturesDeserializer(object):
 
     def to_list(self):
         feature_names = self.features_dict['feature_list']
-        deserialized = {}  # Dictionary of all features deserialized so far.
-        return [self._deserialize_feature(name, deserialized) for name in feature_names]
+        return [self._deserialize_feature(name) for name in feature_names]
 
-    def _deserialize_feature(self, feature_name, deserialized):
-        if feature_name in deserialized:
-            return deserialized[feature_name]
+    def _deserialize_feature(self, feature_name):
+        if feature_name in self._deserialized_features:
+            return self._deserialized_features[feature_name]
 
         feature_dict = self.features_dict['feature_definitions'][feature_name]
         dependencies_list = feature_dict['dependencies']
 
         # Collect dependencies into a dictionary of name -> feature.
-        dependencies = {dependency: self._deserialize_feature(dependency, deserialized)
+        dependencies = {dependency: self._deserialize_feature(dependency)
                         for dependency in dependencies_list}
 
-        cls = self._feature_class(feature_dict['type'])
+        type = feature_dict['type']
+        cls = self.FEATURE_CLASSES.get(type)
+        if not cls:
+            raise RuntimeError('Unrecognized feature type %s' % type)
+
         args = feature_dict['arguments']
         feature = cls.from_dictionary(args, self.entityset, dependencies)
 
-        deserialized[feature_name] = feature
+        self._deserialized_features[feature_name] = feature
         return feature
 
-    def _feature_class(self, class_name):
-        if class_name == 'AggregationFeature':
-            return AggregationFeature
-        elif class_name == 'DirectFeature':
-            return DirectFeature
-        elif class_name == 'Feature':
-            return Feature
-        elif class_name == 'FeatureBase':
-            return FeatureBase
-        elif class_name == 'GroupByTransformFeature':
-            return GroupByTransformFeature
-        elif class_name == 'IdentityFeature':
-            return IdentityFeature
-        elif class_name == 'TransformFeature':
-            return TransformFeature
-        else:
-            raise Exception("Unrecognized feature type")
-
-    def _check_version(self):
+    def _check_schema_version(self):
         current = SCHEMA_VERSION.split('.')
         saved = self.features_dict['schema_version'].split('.')
         error_text = ('Unable to load features. The schema version of the saved '

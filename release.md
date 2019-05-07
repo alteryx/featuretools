@@ -28,7 +28,7 @@ Before we can update the conda recipe we need an uploaded package for the recipe
     ```bash
     git checkout -b v0.7.0rc
     ```
-2. Update version number in `setup.py` and `featuretools/__init__.py` to v0.7.0rc1 and push branch to repo
+2. Update version number in `setup.py` and `featuretools/version.py` to v0.7.0rc1 and push branch to repo
 3. Upload release candidate to test.pypi.org
     ```bash
     docker run \
@@ -102,7 +102,7 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
 ## Create featuretools release on github
 #### Create release branch
 1. Branch off of master and name the branch the release version number (e.g. v0.7.1)
-2. Bump verison number in `setup.py`, and `featuretools/__init__.py`
+2. Bump verison number in `setup.py`, and `featuretools/version.py`
 
 #### Update changelog
 1. Grab commit history since last release

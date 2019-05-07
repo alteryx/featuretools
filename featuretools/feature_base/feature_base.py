@@ -55,7 +55,7 @@ class FeatureBase(object):
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies):
-        raise NotImplementedError("Must define copy on FeatureBase subclass")
+        raise NotImplementedError("Must define from_dictionary on FeatureBase subclass")
 
     def rename(self, name):
         """Rename Feature, returns copy"""
@@ -199,7 +199,7 @@ class FeatureBase(object):
         return self.primitive.default_value
 
     def get_arguments(self):
-        raise NotImplementedError("Must define copy on FeatureBase subclass")
+        raise NotImplementedError("Must define get_arguments on FeatureBase subclass")
 
     def _handle_binary_comparision(self, other, Primitive, PrimitiveScalar):
         if isinstance(other, FeatureBase):

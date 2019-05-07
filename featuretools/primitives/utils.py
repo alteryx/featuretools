@@ -142,6 +142,9 @@ def deserialize_primitive(primitive_dict):
     class_name = primitive_dict['type']
     module = primitive_dict['module']
     cls = _find_primitive_class(class_name, module, PrimitiveBase)
+    if not cls:
+        raise RuntimeError('Primitive "%s" in module "%s" not found' %
+                           (class_name, module))
 
     arguments = primitive_dict['arguments']
     return cls(**arguments)

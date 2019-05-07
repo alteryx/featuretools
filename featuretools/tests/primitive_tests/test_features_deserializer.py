@@ -7,7 +7,7 @@ from featuretools.feature_base.features_deserializer import (
     FeaturesDeserializer
 )
 
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = '1.0.0'
 
 
 @pytest.fixture(scope='module')
@@ -34,20 +34,20 @@ def test_single_feature(es):
 
 def test_base_features_in_list(es):
     value = ft.IdentityFeature(es['log']['value'])
-    max = ft.AggregationFeature(value, es['sessions'], ft.primitives.Max)
+    max_feat = ft.AggregationFeature(value, es['sessions'], ft.primitives.Max)
     dictionary = {
         'ft_version': ft.__version__,
         'schema_version': SCHEMA_VERSION,
         'entityset': es.to_dictionary(),
-        'feature_list': [max.unique_name(), value.unique_name()],
+        'feature_list': [max_feat.unique_name(), value.unique_name()],
         'feature_definitions': {
-            max.unique_name(): _feature_dict(max),
+            max_feat.unique_name(): _feature_dict(max_feat),
             value.unique_name(): _feature_dict(value),
         }
     }
     deserializer = FeaturesDeserializer(dictionary)
 
-    expected = [max, value]
+    expected = [max_feat, value]
     assert expected == deserializer.to_list()
 
 
@@ -55,21 +55,21 @@ def test_base_features_not_in_list(es):
     value = ft.IdentityFeature(es['log']['value'])
     value_x2 = ft.TransformFeature(value,
                                    ft.primitives.MultiplyNumericScalar(value=2))
-    max = ft.AggregationFeature(value_x2, es['sessions'], ft.primitives.Max)
+    max_feat = ft.AggregationFeature(value_x2, es['sessions'], ft.primitives.Max)
     dictionary = {
         'ft_version': ft.__version__,
         'schema_version': SCHEMA_VERSION,
         'entityset': es.to_dictionary(),
-        'feature_list': [max.unique_name()],
+        'feature_list': [max_feat.unique_name()],
         'feature_definitions': {
-            max.unique_name(): _feature_dict(max),
+            max_feat.unique_name(): _feature_dict(max_feat),
             value_x2.unique_name(): _feature_dict(value_x2),
             value.unique_name(): _feature_dict(value),
         }
     }
     deserializer = FeaturesDeserializer(dictionary)
 
-    expected = [max]
+    expected = [max_feat]
     assert expected == deserializer.to_list()
 
 

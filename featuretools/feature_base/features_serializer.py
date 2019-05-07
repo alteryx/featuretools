@@ -47,10 +47,12 @@ def save_features(features, filepath):
 class FeaturesSerializer(object):
     def __init__(self, feature_list):
         self.feature_list = feature_list
+        self._features_dict = None
 
     def to_dict(self):
         names_list = [feat.unique_name() for feat in self.feature_list]
         es = self.feature_list[0].entityset
+
         return {
             'schema_version': SCHEMA_VERSION,
             'ft_version': ft_version,
@@ -65,17 +67,18 @@ class FeaturesSerializer(object):
             json.dump(features_dict, f)
 
     def _feature_definitions(self):
-        all_features = {}
+        if not self._features_dict:
+            self._features_dict = {}
 
-        for feature in self.feature_list:
-            all_features[feature.unique_name()] = self._serialize_feature(feature)
+            for feature in self.feature_list:
+                self._features_dict[feature.unique_name()] = self._serialize_feature(feature)
 
-            for dependency in feature.get_dependencies(deep=True):
-                name = dependency.unique_name()
-                if name not in all_features:
-                    all_features[name] = self._serialize_feature(dependency)
+                for dependency in feature.get_dependencies(deep=True):
+                    name = dependency.unique_name()
+                    if name not in self._features_dict:
+                        self._features_dict[name] = self._serialize_feature(dependency)
 
-        return all_features
+        return self._features_dict
 
     def _serialize_feature(self, feature):
         return {
