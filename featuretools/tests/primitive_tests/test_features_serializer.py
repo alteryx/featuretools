@@ -24,7 +24,7 @@ def test_single_feature(es):
         'entityset': es.to_dictionary(),
         'feature_list': [feature.unique_name()],
         'feature_definitions': {
-            feature.unique_name(): _feature_dict(feature)
+            feature.unique_name(): feature.to_dictionary()
         }
     }
 
@@ -43,8 +43,8 @@ def test_base_features_in_list(es):
         'entityset': es.to_dictionary(),
         'feature_list': [max.unique_name(), value.unique_name()],
         'feature_definitions': {
-            max.unique_name(): _feature_dict(max),
-            value.unique_name(): _feature_dict(value),
+            max.unique_name(): max.to_dictionary(),
+            value.unique_name(): value.to_dictionary(),
         }
     }
 
@@ -65,9 +65,9 @@ def test_base_features_not_in_list(es):
         'entityset': es.to_dictionary(),
         'feature_list': [max.unique_name()],
         'feature_definitions': {
-            max.unique_name(): _feature_dict(max),
-            value_x2.unique_name(): _feature_dict(value_x2),
-            value.unique_name(): _feature_dict(value),
+            max.unique_name(): max.to_dictionary(),
+            value_x2.unique_name(): value_x2.to_dictionary(),
+            value.unique_name(): value.to_dictionary(),
         }
     }
 
@@ -88,9 +88,9 @@ def test_where_feature_dependency(es):
         'entityset': es.to_dictionary(),
         'feature_list': [max.unique_name()],
         'feature_definitions': {
-            max.unique_name(): _feature_dict(max),
-            value.unique_name(): _feature_dict(value),
-            is_purchased.unique_name(): _feature_dict(is_purchased),
+            max.unique_name(): max.to_dictionary(),
+            value.unique_name(): value.to_dictionary(),
+            is_purchased.unique_name(): is_purchased.to_dictionary(),
         }
     }
 
@@ -105,11 +105,3 @@ def _compare_feature_dicts(a, b):
     assert es_a == es_b
 
     assert a == b
-
-
-def _feature_dict(feature):
-    return {
-        'type': type(feature).__name__,
-        'dependencies': [dep.unique_name() for dep in feature.get_dependencies()],
-        'arguments': feature.get_arguments()
-    }

@@ -6,8 +6,7 @@ import featuretools as ft
 from featuretools.feature_base.features_deserializer import (
     FeaturesDeserializer
 )
-
-SCHEMA_VERSION = '1.0.0'
+from featuretools.feature_base.features_serializer import SCHEMA_VERSION
 
 
 @pytest.fixture(scope='module')
@@ -23,7 +22,7 @@ def test_single_feature(es):
         'entityset': es.to_dictionary(),
         'feature_list': [feature.unique_name()],
         'feature_definitions': {
-            feature.unique_name(): _feature_dict(feature)
+            feature.unique_name(): feature.to_dictionary()
         }
     }
     deserializer = FeaturesDeserializer(dictionary)
@@ -41,8 +40,8 @@ def test_base_features_in_list(es):
         'entityset': es.to_dictionary(),
         'feature_list': [max_feat.unique_name(), value.unique_name()],
         'feature_definitions': {
-            max_feat.unique_name(): _feature_dict(max_feat),
-            value.unique_name(): _feature_dict(value),
+            max_feat.unique_name(): max_feat.to_dictionary(),
+            value.unique_name(): value.to_dictionary(),
         }
     }
     deserializer = FeaturesDeserializer(dictionary)
@@ -62,9 +61,9 @@ def test_base_features_not_in_list(es):
         'entityset': es.to_dictionary(),
         'feature_list': [max_feat.unique_name()],
         'feature_definitions': {
-            max_feat.unique_name(): _feature_dict(max_feat),
-            value_x2.unique_name(): _feature_dict(value_x2),
-            value.unique_name(): _feature_dict(value),
+            max_feat.unique_name(): max_feat.to_dictionary(),
+            value_x2.unique_name(): value_x2.to_dictionary(),
+            value.unique_name(): value.to_dictionary(),
         }
     }
     deserializer = FeaturesDeserializer(dictionary)
@@ -104,11 +103,3 @@ def test_later_schema_version(es):
     test_version(major - 1, minor + 1, patch, raises=False)
     test_version(major - 1, minor, patch + 1, raises=False)
     test_version(major, minor - 1, patch + 1, raises=False)
-
-
-def _feature_dict(feature):
-    return {
-        'type': type(feature).__name__,
-        'dependencies': [dep.unique_name() for dep in feature.get_dependencies()],
-        'arguments': feature.get_arguments()
-    }

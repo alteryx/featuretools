@@ -71,18 +71,17 @@ class FeaturesSerializer(object):
             self._features_dict = {}
 
             for feature in self.feature_list:
-                self._features_dict[feature.unique_name()] = self._serialize_feature(feature)
-
-                for dependency in feature.get_dependencies(deep=True):
-                    name = dependency.unique_name()
-                    if name not in self._features_dict:
-                        self._features_dict[name] = self._serialize_feature(dependency)
+                self._serialize_feature(feature)
 
         return self._features_dict
 
     def _serialize_feature(self, feature):
-        return {
-            'type': type(feature).__name__,
-            'dependencies': [dep.unique_name() for dep in feature.get_dependencies()],
-            'arguments': feature.get_arguments(),
-        }
+        name = feature.unique_name()
+
+        if name not in self._features_dict:
+            self._features_dict[feature.unique_name()] = feature.to_dictionary()
+
+            for dependency in feature.get_dependencies(deep=True):
+                name = dependency.unique_name()
+                if name not in self._features_dict:
+                    self._features_dict[name] = dependency.to_dictionary()

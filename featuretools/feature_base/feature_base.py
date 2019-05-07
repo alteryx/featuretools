@@ -201,6 +201,13 @@ class FeatureBase(object):
     def get_arguments(self):
         raise NotImplementedError("Must define get_arguments on FeatureBase subclass")
 
+    def to_dictionary(self):
+        return {
+            'type': type(self).__name__,
+            'dependencies': [dep.unique_name() for dep in self.get_dependencies()],
+            'arguments': self.get_arguments(),
+        }
+
     def _handle_binary_comparision(self, other, Primitive, PrimitiveScalar):
         if isinstance(other, FeatureBase):
             return Feature([self, other], primitive=Primitive)
