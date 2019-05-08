@@ -401,13 +401,6 @@ class Entity(object):
 
         self.entityset.reset_data_description()
 
-    def delete_variable(self, variable_id):
-        """
-        Remove variable from entity's dataframe and from
-        self.variables
-        """
-        self.delete_variables([variable_id])
-
     def delete_variables(self, variable_ids):
         """
         Remove variables from entity's dataframe and from
