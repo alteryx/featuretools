@@ -149,15 +149,17 @@ def deserialize_primitive(primitive_dict, class_cache=None):
     """
     class_name = primitive_dict['type']
     module = primitive_dict['module']
-
-    if class_cache and (class_name, module) in class_cache:
-        cls = class_cache[(class_name, module)]
+    cache_key = (class_name, module)
+    if class_cache and cache_key in class_cache:
+        cls = class_cache[cache_key]
     else:
         # Search all descendants of PrimitiveBase for the class.
         cls = _find_class_in_descendants(class_name, module, PrimitiveBase)
         if not cls:
             raise RuntimeError('Primitive "%s" in module "%s" not found' %
                                (class_name, module))
+        if class_cache:
+            class_cache[cache_key] = cls
 
     arguments = primitive_dict['arguments']
     return cls(**arguments)
