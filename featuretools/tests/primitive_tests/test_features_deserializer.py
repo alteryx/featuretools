@@ -103,3 +103,24 @@ def test_later_schema_version(es):
     test_version(major - 1, minor + 1, patch, raises=False)
     test_version(major - 1, minor, patch + 1, raises=False)
     test_version(major, minor - 1, patch + 1, raises=False)
+
+
+def test_unknown_feature_type(es):
+    dictionary = {
+        'ft_version': ft.__version__,
+        'schema_version': SCHEMA_VERSION,
+        'entityset': es.to_dictionary(),
+        'feature_list': ['feature_1'],
+        'feature_definitions': {
+            'feature_1': {
+                'type': 'FakeFeature',
+                'dependencies': [],
+                'arguments': {}
+            }
+        }
+    }
+
+    deserializer = FeaturesDeserializer(dictionary)
+
+    with pytest.raises(RuntimeError, match='Unrecognized feature type FakeFeature'):
+        deserializer.to_list()
