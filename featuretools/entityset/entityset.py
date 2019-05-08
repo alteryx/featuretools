@@ -794,8 +794,7 @@ class EntitySet(object):
             secondary_time_index=make_secondary_time_index,
             variable_types=transfer_types)
 
-        for v in additional_variables:
-            self.entity_dict[base_entity_id].delete_variable(v)
+        self.entity_dict[base_entity_id].delete_variables(additional_variables)
 
         new_entity = self.entity_dict[new_entity_id]
         base_entity.convert_variable_type(base_entity_index, vtypes.Id, convert_data=False)
