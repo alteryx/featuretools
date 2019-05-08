@@ -1,7 +1,5 @@
 import json
 
-from featuretools.utils.gen_utils import is_python_2
-
 from .feature_base import (
     AggregationFeature,
     DirectFeature,
@@ -15,6 +13,7 @@ from .features_serializer import SCHEMA_VERSION
 
 from featuretools.entityset.deserialize import \
     description_to_entityset as deserialize_es
+from featuretools.utils.gen_utils import is_python_2
 
 if is_python_2():
     from itertools import izip_longest as zip_longest
