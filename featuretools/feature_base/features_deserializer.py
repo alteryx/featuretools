@@ -62,6 +62,7 @@ class FeaturesDeserializer(object):
         self._check_schema_version()
         self.entityset = deserialize_es(features_dict['entityset'])
         self._deserialized_features = {}  # name -> feature
+        self._primitives_cache = {}
 
     @classmethod
     def load(cls, filepath):
@@ -91,7 +92,8 @@ class FeaturesDeserializer(object):
             raise RuntimeError('Unrecognized feature type %s' % type)
 
         args = feature_dict['arguments']
-        feature = cls.from_dictionary(args, self.entityset, dependencies)
+        feature = cls.from_dictionary(args, self.entityset, dependencies,
+                                      self._primitives_cache)
 
         self._deserialized_features[feature_name] = feature
         return feature

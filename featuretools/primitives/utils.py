@@ -129,6 +129,7 @@ def load_primitive_from_file(filepath):
 
 
 def serialize_primitive(primitive):
+    """build a dictionary with the data necessary to construct the given primitive"""
     args_dict = {name: val for name, val in primitive.get_arguments()}
     cls = type(primitive)
     return {
@@ -138,23 +139,39 @@ def serialize_primitive(primitive):
     }
 
 
-def deserialize_primitive(primitive_dict):
+def deserialize_primitive(primitive_dict, class_cache=None):
+    """
+    Construct a primitive from the given dictionary (output from
+    serialize_primitive).
+
+    class_cache: A dictionary where the keys are tuples of (class_name, module_name)
+    and the keys are the corresponding to primitive classes.
+    """
     class_name = primitive_dict['type']
     module = primitive_dict['module']
-    cls = _find_primitive_class(class_name, module, PrimitiveBase)
-    if not cls:
-        raise RuntimeError('Primitive "%s" in module "%s" not found' %
-                           (class_name, module))
+
+    if class_cache and (class_name, module) in class_cache:
+        cls = class_cache[(class_name, module)]
+    else:
+        # Search all descendants of PrimitiveBase for the class.
+        cls = _find_class_in_descendants(class_name, module, PrimitiveBase)
+        if not cls:
+            raise RuntimeError('Primitive "%s" in module "%s" not found' %
+                               (class_name, module))
 
     arguments = primitive_dict['arguments']
     return cls(**arguments)
 
 
-def _find_primitive_class(class_name, module, current_class):
+def _find_class_in_descendants(class_name, module, current_class):
+    """
+    Recursively search the descendants of current_class for a class with the
+    given name, belonging to the given module.
+    """
     if current_class.__name__ == class_name and current_class.__module__ == module:
         return current_class
     else:
         for cls in current_class.__subclasses__():
-            found = _find_primitive_class(class_name, module, cls)
+            found = _find_class_in_descendants(class_name, module, cls)
             if found:
                 return found
