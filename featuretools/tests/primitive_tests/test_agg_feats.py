@@ -24,7 +24,10 @@ from featuretools.primitives.base import (
     AggregationPrimitive,
     make_agg_primitive
 )
-from featuretools.primitives.utils import serialize_primitive
+from featuretools.primitives.utils import (
+    PrimitivesDeserializer,
+    serialize_primitive
+)
 from featuretools.synthesis.deep_feature_synthesis import (
     DeepFeatureSynthesis,
     check_stacking,
@@ -241,6 +244,7 @@ def test_init_and_name(es):
 
 
 def test_serialization(es):
+    primitives_deserializer = PrimitivesDeserializer()
     value = ft.IdentityFeature(es['log']['value'])
     primitive = ft.primitives.Max()
     max1 = ft.AggregationFeature(value, es['sessions'], primitive)
@@ -254,8 +258,10 @@ def test_serialization(es):
     }
 
     assert dictionary == max1.get_arguments()
-    assert max1 == ft.AggregationFeature.from_dictionary(dictionary, es,
-                                                         {value.unique_name(): value})
+    assert max1 == \
+        ft.AggregationFeature.from_dictionary(dictionary, es,
+                                              {value.unique_name(): value},
+                                              primitives_deserializer)
 
     is_purchased = ft.IdentityFeature(es['log']['purchased'])
     use_previous = ft.Timedelta(3, 'd')
@@ -275,7 +281,9 @@ def test_serialization(es):
         value.unique_name(): value,
         is_purchased.unique_name(): is_purchased
     }
-    assert max2 == ft.AggregationFeature.from_dictionary(dictionary, es, dependencies)
+    assert max2 == \
+        ft.AggregationFeature.from_dictionary(dictionary, es, dependencies,
+                                              primitives_deserializer)
 
 
 def test_time_since_last(es):

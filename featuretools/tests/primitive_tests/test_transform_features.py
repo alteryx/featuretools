@@ -51,7 +51,10 @@ from featuretools.primitives import (
     get_transform_primitives
 )
 from featuretools.primitives.base import make_trans_primitive
-from featuretools.primitives.utils import serialize_primitive
+from featuretools.primitives.utils import (
+    PrimitivesDeserializer,
+    serialize_primitive
+)
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
@@ -109,8 +112,10 @@ def test_serialization(es):
     }
 
     assert dictionary == value_x2.get_arguments()
-    assert value_x2 == ft.TransformFeature.from_dictionary(dictionary, es,
-                                                           {value.unique_name(): value})
+    assert value_x2 == \
+        ft.TransformFeature.from_dictionary(dictionary, es,
+                                            {value.unique_name(): value},
+                                            PrimitivesDeserializer())
 
 
 def test_make_trans_feat(es):

@@ -3,6 +3,7 @@ import pytest
 from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
+from featuretools.primitives.utils import PrimitivesDeserializer
 
 
 @pytest.fixture
@@ -19,4 +20,5 @@ def test_serialization(es):
     }
 
     assert dictionary == value.get_arguments()
-    assert value == ft.IdentityFeature.from_dictionary(dictionary, es, {})
+    assert value == ft.IdentityFeature.from_dictionary(dictionary, es, {},
+                                                       PrimitivesDeserializer)

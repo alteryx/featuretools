@@ -17,6 +17,7 @@ from featuretools.primitives import (
     TransformPrimitive,
     Year
 )
+from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools.synthesis import dfs
 from featuretools.variable_types import Categorical, Datetime, Numeric
 
@@ -163,5 +164,7 @@ def test_serialization(es):
     }
 
     assert dictionary == direct.get_arguments()
-    assert direct == ft.DirectFeature.from_dictionary(dictionary, es,
-                                                      {value.unique_name(): value})
+    assert direct == \
+        ft.DirectFeature.from_dictionary(dictionary, es,
+                                         {value.unique_name(): value},
+                                         PrimitivesDeserializer())

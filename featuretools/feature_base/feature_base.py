@@ -6,10 +6,7 @@ from featuretools.primitives.base import (
     PrimitiveBase,
     TransformPrimitive
 )
-from featuretools.primitives.utils import (
-    deserialize_primitive,
-    serialize_primitive
-)
+from featuretools.primitives.utils import serialize_primitive
 from featuretools.utils.wrangle import (
     _check_time_against_column,
     _check_timedelta
@@ -54,7 +51,7 @@ class FeatureBase(object):
                                            "type requirements")
 
     @classmethod
-    def from_dictionary(cls, arguments, entityset, dependencies, primitive_cache=None):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         raise NotImplementedError("Must define from_dictionary on FeatureBase subclass")
 
     def rename(self, name):
@@ -336,7 +333,7 @@ class IdentityFeature(FeatureBase):
         super(IdentityFeature, self).__init__(variable.entity, [], primitive=PrimitiveBase)
 
     @classmethod
-    def from_dictionary(cls, arguments, entityset, dependencies, primitive_cache=None):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         entity_id = arguments['entity_id']
         variable_id = arguments['variable_id']
         variable = entityset[entity_id][variable_id]
@@ -375,7 +372,7 @@ class DirectFeature(FeatureBase):
         super(DirectFeature, self).__init__(child_entity, [base_feature], primitive=PrimitiveBase)
 
     @classmethod
-    def from_dictionary(cls, arguments, entityset, dependencies, primitive_cache=None):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         base_feature = dependencies[arguments['base_feature']]
         child_entity = entityset[arguments['child_entity_id']]
         return cls(base_feature, child_entity)
@@ -460,10 +457,10 @@ class AggregationFeature(FeatureBase):
                                                  primitive=primitive)
 
     @classmethod
-    def from_dictionary(cls, arguments, entityset, dependencies, primitive_cache=None):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         base_features = [dependencies[name] for name in arguments['base_features']]
         parent_entity = entityset[arguments['parent_entity_id']]
-        primitive = deserialize_primitive(arguments['primitive'], primitive_cache)
+        primitive = primitives_deserializer.deserialize_primitive(arguments['primitive'])
 
         use_previous_data = arguments['use_previous']
         use_previous = use_previous_data and Timedelta.from_dictionary(use_previous_data)
@@ -527,9 +524,9 @@ class TransformFeature(FeatureBase):
                                                base_features, primitive=primitive)
 
     @classmethod
-    def from_dictionary(cls, arguments, entityset, dependencies, primitive_cache=None):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         base_features = [dependencies[name] for name in arguments['base_features']]
-        primitive = deserialize_primitive(arguments['primitive'], primitive_cache)
+        primitive = primitives_deserializer.deserialize_primitive(arguments['primitive'])
         return cls(base_features, primitive)
 
     def copy(self):
@@ -561,9 +558,9 @@ class GroupByTransformFeature(TransformFeature):
                                                       primitive=primitive)
 
     @classmethod
-    def from_dictionary(cls, arguments, entityset, dependencies, primitive_cache=None):
+    def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         base_features = [dependencies[name] for name in arguments['base_features']]
-        primitive = deserialize_primitive(arguments['primitive'], primitive_cache)
+        primitive = primitives_deserializer.deserialize_primitive(arguments['primitive'])
         groupby = dependencies[arguments['groupby']]
         return cls(base_features, primitive, groupby)
 

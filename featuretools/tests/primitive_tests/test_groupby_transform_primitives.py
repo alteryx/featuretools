@@ -15,7 +15,10 @@ from featuretools.primitives import (
     Last,
     TransformPrimitive
 )
-from featuretools.primitives.utils import serialize_primitive
+from featuretools.primitives.utils import (
+    PrimitivesDeserializer,
+    serialize_primitive
+)
 from featuretools.variable_types import DatetimeTimeIndex, Numeric
 
 
@@ -370,4 +373,7 @@ def test_serialization(es):
         value.unique_name(): value,
         zipcode.unique_name(): zipcode,
     }
-    assert groupby == ft.feature_base.GroupByTransformFeature.from_dictionary(dictionary, es, dependencies)
+    assert groupby == \
+        ft.feature_base.GroupByTransformFeature.from_dictionary(dictionary, es,
+                                                                dependencies,
+                                                                PrimitivesDeserializer())

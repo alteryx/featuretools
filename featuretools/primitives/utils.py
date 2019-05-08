@@ -139,44 +139,55 @@ def serialize_primitive(primitive):
     }
 
 
-def deserialize_primitive(primitive_dict, class_cache=None):
+class PrimitivesDeserializer(object):
     """
-    Construct a primitive from the given dictionary (output from
-    serialize_primitive).
-
-    class_cache: A dictionary where the keys are tuples of (class_name, module_name)
-    and the keys are the corresponding to primitive classes.
+    This class wraps a cache and a generator which iterates over all primitive
+    classes. When deserializing a primitive if it is not in the cache then we
+    iterate until it is found, adding every seen class to the cache. When
+    deseriazing the next primitive the iteration resumes where it left off. This
+    means that we never visit a class more than once.
     """
-    class_name = primitive_dict['type']
-    module = primitive_dict['module']
-    cache_key = (class_name, module)
-    if class_cache and cache_key in class_cache:
-        cls = class_cache[cache_key]
-    else:
-        # Search all descendants of PrimitiveBase for the class.
-        cls = _find_class_in_descendants(class_name, module, PrimitiveBase,
-                                         class_cache)
-        if not cls:
-            raise RuntimeError('Primitive "%s" in module "%s" not found' %
-                               (class_name, module))
+    def __init__(self):
+        self.class_cache = {}  # (class_name, module_name) -> class
+        self.primitive_classes = _descendants(PrimitiveBase)
 
-    arguments = primitive_dict['arguments']
-    return cls(**arguments)
+    def deserialize_primitive(self, primitive_dict):
+        """
+        Construct a primitive from the given dictionary (output from
+        serialize_primitive).
+        """
+        class_name = primitive_dict['type']
+        module_name = primitive_dict['module']
+        cache_key = (class_name, module_name)
+
+        if cache_key in self.class_cache:
+            cls = self.class_cache[cache_key]
+        else:
+            cls = self._find_class_in_descendants(cache_key)
+
+            if not cls:
+                raise RuntimeError('Primitive "%s" in module "%s" not found' %
+                                   (class_name, module_name))
+
+        arguments = primitive_dict['arguments']
+        return cls(**arguments)
+
+    def _find_class_in_descendants(self, search_key):
+        for cls in self.primitive_classes:
+            cls_key = (cls.__name__, cls.__module__)
+            self.class_cache[cls_key] = cls
+
+            if cls_key == search_key:
+                return cls
 
 
-def _find_class_in_descendants(class_name, module, current_class, class_cache=None):
+def _descendants(cls):
     """
-    Recursively search the descendants of current_class for a class with the
-    given name, belonging to the given module.
+    A generator which yields all descendant classes of the given class
+    (including the given class).
     """
-    if class_cache:
-        key = (current_class.__name__, current_class.__module__)
-        class_cache[key] = current_class
+    yield cls
 
-    if current_class.__name__ == class_name and current_class.__module__ == module:
-        return current_class
-    else:
-        for cls in current_class.__subclasses__():
-            found = _find_class_in_descendants(class_name, module, cls)
-            if found:
-                return found
+    for sub in cls.__subclasses__():
+        for c in _descendants(sub):
+            yield c

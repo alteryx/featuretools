@@ -13,6 +13,7 @@ from .features_serializer import SCHEMA_VERSION
 
 from featuretools.entityset.deserialize import \
     description_to_entityset as deserialize_es
+from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools.utils.gen_utils import is_python_2
 
 if is_python_2():
@@ -68,7 +69,7 @@ class FeaturesDeserializer(object):
         self._check_schema_version()
         self.entityset = deserialize_es(features_dict['entityset'])
         self._deserialized_features = {}  # name -> feature
-        self._primitives_cache = {}
+        self._primitives_deserializer = PrimitivesDeserializer()
 
     @classmethod
     def load(cls, filepath):
@@ -99,7 +100,7 @@ class FeaturesDeserializer(object):
 
         args = feature_dict['arguments']
         feature = cls.from_dictionary(args, self.entityset, dependencies,
-                                      self._primitives_cache)
+                                      self._primitives_deserializer)
 
         self._deserialized_features[feature_name] = feature
         return feature
