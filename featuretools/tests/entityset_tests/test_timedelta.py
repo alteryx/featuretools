@@ -174,3 +174,23 @@ def test_deltas_year():
     with pytest.raises(ValueError, match=error_text) as excinfo:
         add_td(start_list, 2, 'M')
     assert 'Invalid Unit' in str(excinfo)
+
+
+def test_serialization():
+    times = [
+        Timedelta(1, unit='w'),
+        Timedelta(3, unit='d', inclusive=True),
+        Timedelta(5, unit='o', entity='log'),
+    ]
+
+    dictionaries = [
+        {'value': 1, 'unit': 'w', 'entity_id': None, 'inclusive': False},
+        {'value': 3, 'unit': 'd', 'entity_id': None, 'inclusive': True},
+        {'value': 5, 'unit': 'o', 'entity_id': 'log', 'inclusive': False},
+    ]
+
+    for td, expected in zip(times, dictionaries):
+        assert expected == td.get_arguments()
+
+    for expected, dictionary in zip(times, dictionaries):
+        assert expected == Timedelta.from_dictionary(dictionary)
