@@ -122,5 +122,54 @@ def test_unknown_feature_type(es):
 
     deserializer = FeaturesDeserializer(dictionary)
 
-    with pytest.raises(RuntimeError, match='Unrecognized feature type FakeFeature'):
+    with pytest.raises(RuntimeError, match='Unrecognized feature type "FakeFeature"'):
         deserializer.to_list()
+
+
+def test_unknown_primitive_type(es):
+    value = ft.IdentityFeature(es['log']['value'])
+    max_feat = ft.AggregationFeature(value, es['sessions'], ft.primitives.Max)
+    max_dict = max_feat.to_dictionary()
+    max_dict['arguments']['primitive']['type'] = 'FakePrimitive'
+    dictionary = {
+        'ft_version': ft.__version__,
+        'schema_version': SCHEMA_VERSION,
+        'entityset': es.to_dictionary(),
+        'feature_list': [max_feat.unique_name(), value.unique_name()],
+        'feature_definitions': {
+            max_feat.unique_name(): max_dict,
+            value.unique_name(): value.to_dictionary(),
+        }
+    }
+    deserializer = FeaturesDeserializer(dictionary)
+
+    with pytest.raises(RuntimeError) as excinfo:
+        deserializer.to_list()
+
+    error_text = ('Primitive "FakePrimitive" in module "%s" not found' %
+                  ft.primitives.Max.__module__)
+    assert error_text == str(excinfo.value)
+
+
+def test_unknown_primitive_module(es):
+    value = ft.IdentityFeature(es['log']['value'])
+    max_feat = ft.AggregationFeature(value, es['sessions'], ft.primitives.Max)
+    max_dict = max_feat.to_dictionary()
+    max_dict['arguments']['primitive']['module'] = 'fake.module'
+    dictionary = {
+        'ft_version': ft.__version__,
+        'schema_version': SCHEMA_VERSION,
+        'entityset': es.to_dictionary(),
+        'feature_list': [max_feat.unique_name(), value.unique_name()],
+        'feature_definitions': {
+            max_feat.unique_name(): max_dict,
+            value.unique_name(): value.to_dictionary(),
+        }
+    }
+    deserializer = FeaturesDeserializer(dictionary)
+
+    with pytest.raises(RuntimeError) as excinfo:
+        deserializer.to_list()
+
+    error_text = 'Primitive "Max" in module "fake.module" not found'
+    assert error_text == str(excinfo.value)

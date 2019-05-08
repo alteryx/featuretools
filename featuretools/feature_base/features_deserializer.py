@@ -95,7 +95,7 @@ class FeaturesDeserializer(object):
         type = feature_dict['type']
         cls = self.FEATURE_CLASSES.get(type)
         if not cls:
-            raise RuntimeError('Unrecognized feature type %s' % type)
+            raise RuntimeError('Unrecognized feature type "%s"' % type)
 
         args = feature_dict['arguments']
         feature = cls.from_dictionary(args, self.entityset, dependencies,
