@@ -33,17 +33,17 @@ def test_single_feature(es):
 
 def test_base_features_in_list(es):
     value = ft.IdentityFeature(es['log']['value'])
-    max = ft.AggregationFeature(value, es['sessions'], ft.primitives.Max)
-    features = [max, value]
+    max_feature = ft.AggregationFeature(value, es['sessions'], ft.primitives.Max)
+    features = [max_feature, value]
     serializer = FeaturesSerializer(features)
 
     expected = {
         'ft_version': ft.__version__,
         'schema_version': SCHEMA_VERSION,
         'entityset': es.to_dictionary(),
-        'feature_list': [max.unique_name(), value.unique_name()],
+        'feature_list': [max_feature.unique_name(), value.unique_name()],
         'feature_definitions': {
-            max.unique_name(): max.to_dictionary(),
+            max_feature.unique_name(): max_feature.to_dictionary(),
             value.unique_name(): value.to_dictionary(),
         }
     }
@@ -55,17 +55,17 @@ def test_base_features_not_in_list(es):
     value = ft.IdentityFeature(es['log']['value'])
     value_x2 = ft.TransformFeature(value,
                                    ft.primitives.MultiplyNumericScalar(value=2))
-    max = ft.AggregationFeature(value_x2, es['sessions'], ft.primitives.Max)
-    features = [max]
+    max_feature = ft.AggregationFeature(value_x2, es['sessions'], ft.primitives.Max)
+    features = [max_feature]
     serializer = FeaturesSerializer(features)
 
     expected = {
         'ft_version': ft.__version__,
         'schema_version': SCHEMA_VERSION,
         'entityset': es.to_dictionary(),
-        'feature_list': [max.unique_name()],
+        'feature_list': [max_feature.unique_name()],
         'feature_definitions': {
-            max.unique_name(): max.to_dictionary(),
+            max_feature.unique_name(): max_feature.to_dictionary(),
             value_x2.unique_name(): value_x2.to_dictionary(),
             value.unique_name(): value.to_dictionary(),
         }
@@ -77,18 +77,18 @@ def test_base_features_not_in_list(es):
 def test_where_feature_dependency(es):
     value = ft.IdentityFeature(es['log']['value'])
     is_purchased = ft.IdentityFeature(es['log']['purchased'])
-    max = ft.AggregationFeature(value, es['sessions'], ft.primitives.Max,
-                                where=is_purchased)
-    features = [max]
+    max_feature = ft.AggregationFeature(value, es['sessions'], ft.primitives.Max,
+                                        where=is_purchased)
+    features = [max_feature]
     serializer = FeaturesSerializer(features)
 
     expected = {
         'ft_version': ft.__version__,
         'schema_version': SCHEMA_VERSION,
         'entityset': es.to_dictionary(),
-        'feature_list': [max.unique_name()],
+        'feature_list': [max_feature.unique_name()],
         'feature_definitions': {
-            max.unique_name(): max.to_dictionary(),
+            max_feature.unique_name(): max_feature.to_dictionary(),
             value.unique_name(): value.to_dictionary(),
             is_purchased.unique_name(): is_purchased.to_dictionary(),
         }
