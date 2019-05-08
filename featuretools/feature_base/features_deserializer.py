@@ -1,5 +1,7 @@
 import json
 
+from featuretools.utils.gen_utils import is_python_2
+
 from .feature_base import (
     AggregationFeature,
     DirectFeature,
@@ -13,6 +15,11 @@ from .features_serializer import SCHEMA_VERSION
 
 from featuretools.entityset.deserialize import \
     description_to_entityset as deserialize_es
+
+if is_python_2():
+    from itertools import izip_longest as zip_longest
+else:
+    from itertools import zip_longest
 
 
 def load_features(filepath):
@@ -106,7 +113,8 @@ class FeaturesDeserializer(object):
                       'You may need to upgrade featuretools.'
                       % (self.features_dict['schema_version'], SCHEMA_VERSION))
 
-        if current[0] < saved[0] or (
-           current[0] == saved[0] and ((current[1] < saved[1]) or (
-                                       current[1] == saved[1] and current[2] < saved[2]))):
-            raise RuntimeError(error_text)
+        for c_num, s_num in zip_longest(current, saved, fillvalue=0):
+            if c_num > s_num:
+                break
+            elif c_num < s_num:
+                raise RuntimeError(error_text)
