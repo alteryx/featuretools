@@ -729,12 +729,17 @@ class EntitySet(object):
             make_time_index = True
 
         if isinstance(make_time_index, str):
+            # Set the new time index to make_time_index.
             base_time_index = make_time_index
             new_entity_time_index = make_time_index
+            already_sorted = (new_entity_time_index == base_entity.time_index)
         elif make_time_index:
+            # Create a new time index based on the base entity time index.
             base_time_index = base_entity.time_index
             if new_entity_time_index is None:
                 new_entity_time_index = "first_%s_time" % (base_entity.id)
+
+            already_sorted = True
 
             assert base_entity.time_index is not None, \
                 "Base entity doesn't have time_index defined"
@@ -745,6 +750,7 @@ class EntitySet(object):
             transfer_types[new_entity_time_index] = type(base_entity[base_entity.time_index])
         else:
             new_entity_time_index = None
+            already_sorted = False
 
         selected_variables = [index] +\
             [v for v in additional_variables] +\
@@ -786,7 +792,7 @@ class EntitySet(object):
             new_entity_id,
             new_entity_df,
             index,
-            already_sorted=(new_entity_time_index == base_entity.time_index),
+            already_sorted=already_sorted,
             time_index=new_entity_time_index,
             secondary_time_index=make_secondary_time_index,
             variable_types=transfer_types)
