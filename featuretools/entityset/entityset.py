@@ -730,7 +730,7 @@ class EntitySet(object):
 
         if isinstance(make_time_index, str):
             base_time_index = make_time_index
-            new_entity_time_index = base_entity[make_time_index].id
+            new_entity_time_index = make_time_index
         elif make_time_index:
             base_time_index = base_entity.time_index
             if new_entity_time_index is None:
@@ -743,10 +743,6 @@ class EntitySet(object):
                 copy_variables.append(base_time_index)
 
             transfer_types[new_entity_time_index] = type(base_entity[base_entity.time_index])
-
-            new_entity_df.sort_values([base_time_index, base_entity.index],
-                                      kind="mergesort",
-                                      inplace=True)
         else:
             new_entity_time_index = None
 
@@ -790,6 +786,7 @@ class EntitySet(object):
             new_entity_id,
             new_entity_df,
             index,
+            already_sorted=(new_entity_time_index == base_entity.time_index),
             time_index=new_entity_time_index,
             secondary_time_index=make_secondary_time_index,
             variable_types=transfer_types)
