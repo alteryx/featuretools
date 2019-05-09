@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import pytest
 
 import featuretools as ft
 from featuretools.computational_backends import PandasBackend

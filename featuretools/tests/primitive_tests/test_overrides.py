@@ -1,5 +1,3 @@
-import pytest
-
 import featuretools as ft
 
 from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; CumSum,

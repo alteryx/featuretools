@@ -1,6 +1,5 @@
 import os
 
-import pytest
 from pympler.asizeof import asizeof
 
 import featuretools as ft
