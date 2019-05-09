@@ -248,7 +248,7 @@ class DeepFeatureSynthesis(object):
 
         # sanity check for duplicate features
         hashes = [f.hash() for f in new_features]
-        assert len(set([f for f in hashes if hashes.count(f) > 1])) == 0, \
+        assert len(hashes) == len(set(hashes)), \
             'Multiple features with same name' + \
             str(set([f for f in hashes if hashes.count(f) > 1]))
 
