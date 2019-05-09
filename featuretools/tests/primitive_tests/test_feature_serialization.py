@@ -3,17 +3,10 @@ import os
 import pytest
 from pympler.asizeof import asizeof
 
-from ..testing_utils import make_ecommerce_entityset
-
 import featuretools as ft
 from featuretools.primitives import make_agg_primitive
 from featuretools.utils.pickle_utils import save_obj_pickle
 from featuretools.variable_types import Numeric
-
-
-@pytest.fixture(scope='module')
-def es():
-    return make_ecommerce_entityset()
 
 
 def test_pickle_features(es):
