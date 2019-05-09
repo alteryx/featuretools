@@ -3,23 +3,11 @@ import os.path
 import pytest
 from pympler.asizeof import asizeof
 
-from ..testing_utils import make_ecommerce_entityset
-
 import featuretools as ft
 from featuretools import config
 from featuretools.feature_base import IdentityFeature
 from featuretools.primitives import Last, Mode, Sum
 from featuretools.variable_types import Categorical, Datetime, Id, Numeric
-
-
-@pytest.fixture(scope='module')
-def es():
-    return make_ecommerce_entityset()
-
-
-@pytest.fixture(scope='module')
-def es_numeric():
-    return make_ecommerce_entityset(with_integer_time_index=True)
 
 
 def test_copy_features_does_not_copy_entityset(es):
@@ -53,7 +41,6 @@ def test_get_dependencies(es):
 
 
 def test_get_depth(es):
-    es = make_ecommerce_entityset()
     f = ft.Feature(es['log']['value'])
     g = ft.Feature(es['log']['value'])
     agg1 = ft.Feature(f, parent_entity=es['sessions'], primitive=Last)
@@ -95,8 +82,8 @@ def test_return_type_inference_datetime_time_index(es):
     assert last.variable_type == Datetime
 
 
-def test_return_type_inference_numeric_time_index(es_numeric):
-    last = ft.Feature(es_numeric["log"]["datetime"], parent_entity=es_numeric["customers"], primitive=Last)
+def test_return_type_inference_numeric_time_index(int_es):
+    last = ft.Feature(int_es["log"]["datetime"], parent_entity=int_es["customers"], primitive=Last)
     assert last.variable_type == Numeric
 
 
