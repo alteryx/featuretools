@@ -4,18 +4,11 @@ import pandas as pd
 import pytest
 from distributed.utils_test import cluster
 
-from ..testing_utils import make_ecommerce_entityset
-
 from featuretools.primitives import Max, Mean, Min, Sum
 from featuretools.synthesis import dfs
 
 
-@pytest.fixture(scope='module')
-def es():
-    return make_ecommerce_entityset()
-
-
-@pytest.fixture(scope='module')
+@pytest.fixture()
 def entities():
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
@@ -29,7 +22,7 @@ def entities():
     return entities
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture()
 def relationships():
     return [("cards", "id", "transactions", "card_id")]
 
