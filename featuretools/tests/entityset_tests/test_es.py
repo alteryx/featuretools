@@ -838,6 +838,7 @@ def test_normalize_time_index_from_none(entityset):
     entityset['customers'].time_index = None
     entityset.normalize_entity('customers', 'birthdays', 'date_of_birth', make_time_index='date_of_birth')
     assert entityset['birthdays'].time_index == 'date_of_birth'
+    assert entityset['birthdays'].df['date_of_birth'].is_monotonic_increasing
 
 
 def test_raise_error_if_dupicate_additional_variables_passed(entityset):
@@ -898,13 +899,15 @@ def test_make_time_index_keeps_original_sorting():
 
 
 def test_normalize_entity_new_time_index(entityset):
+    new_time_index = 'value_time'
     entityset.normalize_entity('log', 'values', 'value',
                                make_time_index=True,
-                               new_entity_time_index="value_time")
+                               new_entity_time_index=new_time_index)
 
-    assert entityset['values'].time_index == 'value_time'
-    assert 'value_time' in entityset['values'].df.columns
+    assert entityset['values'].time_index == new_time_index
+    assert new_time_index in entityset['values'].df.columns
     assert len(entityset['values'].df.columns) == 2
+    assert entityset['values'].df[new_time_index].is_monotonic_increasing
 
 
 def test_secondary_time_index(entityset):
