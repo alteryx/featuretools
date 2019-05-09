@@ -2,8 +2,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ..testing_utils import make_ecommerce_entityset
-
 from featuretools.computational_backends import PandasBackend
 from featuretools.feature_base import DirectFeature, Feature
 from featuretools.primitives import (
@@ -18,11 +16,6 @@ from featuretools.primitives import (
 )
 from featuretools.synthesis import dfs
 from featuretools.variable_types import Categorical, Datetime, Numeric
-
-
-@pytest.fixture(scope='module')
-def es():
-    return make_ecommerce_entityset()
 
 
 def test_direct_from_identity(es):
