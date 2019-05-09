@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ..testing_utils import feature_with_name, make_ecommerce_entityset
+from ..testing_utils import feature_with_name
 
 import featuretools as ft
 from featuretools.primitives import (  # NMostCommon,
@@ -37,11 +37,6 @@ from featuretools.variable_types import (
     Numeric,
     Variable
 )
-
-
-@pytest.fixture(scope='module')
-def es():
-    return make_ecommerce_entityset()
 
 
 @pytest.fixture
