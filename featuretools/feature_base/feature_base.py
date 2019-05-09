@@ -64,9 +64,9 @@ class FeatureBase(object):
         raise NotImplementedError("Must define copy on FeatureBase subclass")
 
     def get_name(self):
-        if self._name is not None:
-            return self._name
-        return self.generate_name()
+        if not self._name:
+            self._name = self.generate_name()
+        return self._name
 
     def get_feature_names(self):
         n = self.number_output_features
