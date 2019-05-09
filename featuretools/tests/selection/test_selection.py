@@ -7,7 +7,7 @@ from featuretools.selection import remove_low_information_features
 from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture()
 def feature_matrix():
     feature_matrix = pd.DataFrame({'test': [0, 1, 2],
                                    'no_null': [np.nan, 0, 0],
@@ -19,9 +19,8 @@ def feature_matrix():
     return feature_matrix
 
 
-@pytest.fixture(scope='module')
-def es(feature_matrix):
-    es = make_ecommerce_entityset()
+@pytest.fixture()
+def test_es(es, feature_matrix):
     es.entity_from_dataframe('test', feature_matrix, index='test')
     return es
 
@@ -33,8 +32,8 @@ def test_remove_low_information_feature_names(feature_matrix):
     assert 'all_null' not in feature_matrix.columns
 
 
-def test_remove_low_information_features(es, feature_matrix):
-    features = [Feature(v) for v in es['test'].variables]
+def test_remove_low_information_features(test_es, feature_matrix):
+    features = [Feature(v) for v in test_es['test'].variables]
     feature_matrix, features = remove_low_information_features(feature_matrix,
                                                                features)
     assert feature_matrix.shape == (3, 5)
