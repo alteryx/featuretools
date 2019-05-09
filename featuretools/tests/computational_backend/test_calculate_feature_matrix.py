@@ -311,9 +311,9 @@ def test_training_window_recent_time_index(es):
         'age': [73],
         u'région_id': ['United States'],
         'cohort': [1],
-        'cancel_reason': ["I am finally awake!!"],
+        'cancel_reason': ["Lost interest"],
         'loves_ice_cream': [True],
-        'favorite_quote': ["Who is John Galt?"],
+        'favorite_quote': ["Don't look back. Something might be gaining on you."],
         'signup_date': [datetime(2011, 4, 10)],
         'upgrade_date': [datetime(2011, 4, 12)],
         'cancel_date': [datetime(2011, 5, 13)],
@@ -482,7 +482,7 @@ def test_approximate_dfeat_of_dfeat_of_agg_on_target(es):
 
 
 def test_empty_path_approximate_full(es):
-    es['sessions'].df['customer_id'] = [np.nan, np.nan, np.nan, 1, 1, 2]
+    es['sessions'].df['customer_id'] = pd.Series([np.nan, np.nan, np.nan, 1, 1, 2], dtype="category")
     agg_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
     agg_feat2 = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Sum)
     dfeat = DirectFeature(agg_feat2, es['sessions'])
