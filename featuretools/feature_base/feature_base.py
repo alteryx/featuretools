@@ -24,8 +24,6 @@ from featuretools.variable_types import (
 
 
 class FeatureBase(object):
-    _name = None
-
     def __init__(self, entity, base_features, primitive):
         """Base class for all features
 
@@ -46,6 +44,8 @@ class FeatureBase(object):
         if not isinstance(primitive, PrimitiveBase):
             primitive = primitive()
         self.primitive = primitive
+
+        self._name = None
 
         assert self._check_input_types(), ("Provided inputs don't match input "
                                            "type requirements")
