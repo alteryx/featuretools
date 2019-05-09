@@ -3,8 +3,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ..testing_utils import make_ecommerce_entityset
-
 import featuretools as ft
 from featuretools.computational_backends import PandasBackend
 from featuretools.primitives import (
@@ -53,18 +51,6 @@ from featuretools.primitives import (
 from featuretools.primitives.base import make_trans_primitive
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
-
-
-# some tests change the entityset values, so we have to create it fresh
-# for each test (rather than setting scope='module')
-@pytest.fixture
-def es():
-    return make_ecommerce_entityset()
-
-
-@pytest.fixture(scope='module')
-def int_es():
-    return make_ecommerce_entityset(with_integer_time_index=True)
 
 
 def test_init_and_name(es):
