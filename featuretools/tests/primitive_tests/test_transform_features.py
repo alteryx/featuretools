@@ -49,6 +49,10 @@ from featuretools.primitives import (
     get_transform_primitives
 )
 from featuretools.primitives.base import make_trans_primitive
+from featuretools.primitives.utils import (
+    PrimitivesDeserializer,
+    serialize_primitive
+)
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
@@ -81,6 +85,23 @@ def test_init_and_name(es):
             # try to get name and calculate
             instance.get_name()
             ft.calculate_feature_matrix([instance], entityset=es).head(5)
+
+
+def test_serialization(es):
+    value = ft.IdentityFeature(es['log']['value'])
+    primitive = ft.primitives.MultiplyNumericScalar(value=2)
+    value_x2 = ft.TransformFeature(value, primitive)
+
+    dictionary = {
+        'base_features': [value.unique_name()],
+        'primitive': serialize_primitive(primitive),
+    }
+
+    assert dictionary == value_x2.get_arguments()
+    assert value_x2 == \
+        ft.TransformFeature.from_dictionary(dictionary, es,
+                                            {value.unique_name(): value},
+                                            PrimitivesDeserializer())
 
 
 def test_make_trans_feat(es):

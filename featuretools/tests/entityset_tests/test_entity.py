@@ -105,3 +105,15 @@ def test_query_by_values_returns_rows_in_given_order():
                                   })
     query = es['test'].query_by_values(['b', 'a'], variable_id='value')
     assert np.array_equal(query['id'], [1, 3, 4, 5])
+
+
+def test_delete_variables(es):
+    entity = es['customers']
+    to_delete = ['age', 'cohort', 'email']
+    entity.delete_variables(to_delete)
+
+    variable_names = [v.id for v in entity.variables]
+
+    for var in to_delete:
+        assert var not in variable_names
+        assert var not in entity.df

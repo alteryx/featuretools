@@ -126,3 +126,68 @@ def load_primitive_from_file(filepath):
         raise RuntimeError("More than one primitive defined in file %s" % filepath)
 
     return primitives[0]
+
+
+def serialize_primitive(primitive):
+    """build a dictionary with the data necessary to construct the given primitive"""
+    args_dict = {name: val for name, val in primitive.get_arguments()}
+    cls = type(primitive)
+    return {
+        'type': cls.__name__,
+        'module': cls.__module__,
+        'arguments': args_dict,
+    }
+
+
+class PrimitivesDeserializer(object):
+    """
+    This class wraps a cache and a generator which iterates over all primitive
+    classes. When deserializing a primitive if it is not in the cache then we
+    iterate until it is found, adding every seen class to the cache. When
+    deseriazing the next primitive the iteration resumes where it left off. This
+    means that we never visit a class more than once.
+    """
+    def __init__(self):
+        self.class_cache = {}  # (class_name, module_name) -> class
+        self.primitive_classes = _descendants(PrimitiveBase)
+
+    def deserialize_primitive(self, primitive_dict):
+        """
+        Construct a primitive from the given dictionary (output from
+        serialize_primitive).
+        """
+        class_name = primitive_dict['type']
+        module_name = primitive_dict['module']
+        cache_key = (class_name, module_name)
+
+        if cache_key in self.class_cache:
+            cls = self.class_cache[cache_key]
+        else:
+            cls = self._find_class_in_descendants(cache_key)
+
+            if not cls:
+                raise RuntimeError('Primitive "%s" in module "%s" not found' %
+                                   (class_name, module_name))
+
+        arguments = primitive_dict['arguments']
+        return cls(**arguments)
+
+    def _find_class_in_descendants(self, search_key):
+        for cls in self.primitive_classes:
+            cls_key = (cls.__name__, cls.__module__)
+            self.class_cache[cls_key] = cls
+
+            if cls_key == search_key:
+                return cls
+
+
+def _descendants(cls):
+    """
+    A generator which yields all descendant classes of the given class
+    (including the given class).
+    """
+    yield cls
+
+    for sub in cls.__subclasses__():
+        for c in _descendants(sub):
+            yield c

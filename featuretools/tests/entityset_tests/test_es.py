@@ -830,6 +830,7 @@ def test_normalize_time_index_from_none(es):
     es['customers'].time_index = None
     es.normalize_entity('customers', 'birthdays', 'date_of_birth', make_time_index='date_of_birth')
     assert es['birthdays'].time_index == 'date_of_birth'
+    assert es['birthdays'].df['date_of_birth'].is_monotonic_increasing
 
 
 def test_raise_error_if_dupicate_additional_variables_passed(es):
@@ -890,13 +891,15 @@ def test_make_time_index_keeps_original_sorting():
 
 
 def test_normalize_entity_new_time_index(es):
+    new_time_index = 'value_time'
     es.normalize_entity('log', 'values', 'value',
-                        make_time_index=True,
-                        new_entity_time_index="value_time")
+                               make_time_index=True,
+                               new_entity_time_index=new_time_index)
 
-    assert es['values'].time_index == 'value_time'
-    assert 'value_time' in es['values'].df.columns
+    assert es['values'].time_index == new_time_index
+    assert new_time_index in es['values'].df.columns
     assert len(es['values'].df.columns) == 2
+    assert es['values'].df[new_time_index].is_monotonic_increasing
 
 
 def test_secondary_time_index(es):

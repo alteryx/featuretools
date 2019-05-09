@@ -129,3 +129,13 @@ def test_set_data_path(es):
     # Ensure path was reset
     config.set({key: orig_path})
     assert config.get(key) == orig_path
+
+
+def test_to_dictionary(es):
+    direct_feature = ft.Feature(es["sessions"]["customer_id"], es["log"])
+    expected = {
+        'type': 'DirectFeature',
+        'dependencies': [feat.unique_name() for feat in direct_feature.get_dependencies()],
+        'arguments': direct_feature.get_arguments()
+    }
+    assert expected == direct_feature.to_dictionary()
