@@ -5,7 +5,7 @@ import copy
 import pandas as pd
 import pytest
 
-from ..testing_utils import feature_with_name, make_ecommerce_entityset
+from ..testing_utils import feature_with_name
 
 import featuretools as ft
 from featuretools.feature_base import (
@@ -29,32 +29,6 @@ from featuretools.primitives import (  # CumMean,
     TimeSincePrevious
 )
 from featuretools.synthesis import DeepFeatureSynthesis
-
-
-@pytest.fixture(scope='module')
-def es():
-    return make_ecommerce_entityset()
-
-
-@pytest.fixture(scope='module')
-def entities():
-    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
-    transactions_df = pd.DataFrame({
-        "id": [1, 2, 3, 4, 5, 6],
-        "card_id": [1, 2, 1, 3, 4, 5],
-        "transaction_time": [10, 12, 13, 20, 21, 20],
-        "fraud": [True, False, True, False, True, True]
-    })
-    entities = {
-        "cards": (cards_df, "id"),
-        "transactions": (transactions_df, "id", "transaction_time")
-    }
-    return entities
-
-
-@pytest.fixture(scope='module')
-def relationships():
-    return [("cards", "id", "transactions", "card_id")]
 
 
 def test_makes_agg_features_from_str(es):
