@@ -1,5 +1,5 @@
 import logging
-from builtins import filter, object, str
+from builtins import filter, object
 from collections import defaultdict
 
 from featuretools import primitives, variable_types
@@ -245,12 +245,6 @@ class DeepFeatureSynthesis(object):
                     f.variable_type, vt) for vt in return_variable_types)]
 
         new_features = list(filter(filt, new_features))
-
-        # sanity check for duplicate features
-        hashes = [f.hash() for f in new_features]
-        assert len(set([f for f in hashes if hashes.count(f) > 1])) == 0, \
-            'Multiple features with same name' + \
-            str(set([f for f in hashes if hashes.count(f) > 1]))
 
         new_features.sort(key=lambda f: f.get_depth())
 
