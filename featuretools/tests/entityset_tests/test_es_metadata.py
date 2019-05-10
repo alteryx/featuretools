@@ -4,7 +4,7 @@ import pytest
 from featuretools import EntitySet, Relationship, variable_types
 
 
-def test_cannot_read_relationships_that_already_exists(es):
+def test_cannot_re_add_relationships_that_already_exists(es):
     before_len = len(es.relationships)
     es.add_relationship(es.relationships[0])
     after_len = len(es.relationships)

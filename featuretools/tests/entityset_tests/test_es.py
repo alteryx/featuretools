@@ -60,7 +60,7 @@ def test_reset_metadata(es):
     assert es._data_description is None
 
 
-def test_cannot_read_relationships_that_already_exists(es):
+def test_cannot_re_add_relationships_that_already_exists(es):
     before_len = len(es.relationships)
     es.add_relationship(es.relationships[0])
     after_len = len(es.relationships)
