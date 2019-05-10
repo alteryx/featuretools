@@ -1,8 +1,5 @@
 import numpy as np
 import pandas as pd
-import pytest
-
-from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
 from featuretools.computational_backends import PandasBackend
@@ -20,11 +17,6 @@ from featuretools.primitives.utils import (
     serialize_primitive
 )
 from featuretools.variable_types import DatetimeTimeIndex, Numeric
-
-
-@pytest.fixture
-def es():
-    return make_ecommerce_entityset()
 
 
 class TestCumCount:

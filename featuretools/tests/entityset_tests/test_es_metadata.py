@@ -1,17 +1,10 @@
 # -*- coding: utf-8 -*-
 import pytest
 
-from ..testing_utils import make_ecommerce_entityset
-
 from featuretools import EntitySet, Relationship, variable_types
 
 
-@pytest.fixture
-def es():
-    return make_ecommerce_entityset()
-
-
-def test_cannot_readd_relationships_that_already_exists(es):
+def test_cannot_re_add_relationships_that_already_exists(es):
     before_len = len(es.relationships)
     es.add_relationship(es.relationships[0])
     after_len = len(es.relationships)

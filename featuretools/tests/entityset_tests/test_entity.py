@@ -5,15 +5,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ..testing_utils import make_ecommerce_entityset
-
 import featuretools as ft
 from featuretools import variable_types
-
-
-@pytest.fixture
-def es():
-    return make_ecommerce_entityset()
 
 
 def test_enforces_variable_id_is_str(es):

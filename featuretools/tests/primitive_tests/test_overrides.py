@@ -1,7 +1,3 @@
-import pytest
-
-from ..testing_utils import make_ecommerce_entityset
-
 import featuretools as ft
 
 from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; CumSum,
@@ -34,11 +30,6 @@ from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; 
     SubtractNumericScalar,
     Sum
 )
-
-
-@pytest.fixture
-def es():
-    return make_ecommerce_entityset()
 
 
 def test_overrides(es):
