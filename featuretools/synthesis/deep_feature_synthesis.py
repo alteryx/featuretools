@@ -1,4 +1,5 @@
 import logging
+from builtins import filter, object
 from collections import defaultdict
 
 from featuretools import primitives, variable_types
