@@ -8,7 +8,7 @@ from featuretools.primitives import Max, Mean, Min, Sum
 from featuretools.synthesis import dfs
 
 
-@pytest.fixture()
+@pytest.fixture
 def entities():
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
@@ -22,7 +22,7 @@ def entities():
     return entities
 
 
-@pytest.fixture()
+@pytest.fixture
 def relationships():
     return [("cards", "id", "transactions", "card_id")]
 

@@ -6,7 +6,7 @@ from featuretools import Feature
 from featuretools.selection import remove_low_information_features
 
 
-@pytest.fixture()
+@pytest.fixture
 def feature_matrix():
     feature_matrix = pd.DataFrame({'test': [0, 1, 2],
                                    'no_null': [np.nan, 0, 0],
@@ -18,7 +18,7 @@ def feature_matrix():
     return feature_matrix
 
 
-@pytest.fixture()
+@pytest.fixture
 def test_es(es, feature_matrix):
     es.entity_from_dataframe('test', feature_matrix, index='test')
     return es

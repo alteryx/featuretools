@@ -10,17 +10,17 @@ from featuretools.primitives.utils import (
 )
 
 
-@pytest.fixture()
+@pytest.fixture
 def this_dir():
     return os.path.dirname(os.path.abspath(__file__))
 
 
-@pytest.fixture()
+@pytest.fixture
 def primitives_to_install_dir(this_dir):
     return os.path.join(this_dir, "primitives_to_install")
 
 
-@pytest.fixture()
+@pytest.fixture
 def bad_primitives_files_dir(this_dir):
     return os.path.join(this_dir, "bad_primitive_files")
 
