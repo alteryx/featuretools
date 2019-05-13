@@ -1,6 +1,8 @@
 import json
 
-from .feature_base import (
+from featuretools.entityset.deserialize import \
+    description_to_entityset as deserialize_es
+from featuretools.feature_base.feature_base import (
     AggregationFeature,
     DirectFeature,
     Feature,
@@ -9,9 +11,6 @@ from .feature_base import (
     IdentityFeature,
     TransformFeature
 )
-
-from featuretools.entityset.deserialize import \
-    description_to_entityset as deserialize_es
 from featuretools.feature_base.features_serializer import SCHEMA_VERSION
 from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools.utils.gen_utils import is_python_2
