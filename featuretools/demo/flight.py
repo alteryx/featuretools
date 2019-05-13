@@ -60,7 +60,7 @@ def load_flight(month_filter=None,
     filename, csv_length = get_flight_filename(demo=demo)
 
     print('Downloading data ...')
-    s3_url = "https://api.featurelabs.com/datasets/{}".format(filename)
+    s3_url = "https://api.featurelabs.com/datasets/{}?version={}".format(filename, ft.__version__)
 
     chunksize = math.ceil(csv_length / 99)
     pd.options.display.max_columns = 200

@@ -59,8 +59,8 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
 
 '''
     es = ft.EntitySet(id)
-    csv_s3_gz = "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv.gz"
-    csv_s3 = "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv"
+    csv_s3_gz = "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv.gz?version=" + ft.__version__
+    csv_s3 = "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv?version=" + ft.__version__
     # Try to read in gz compressed file
     try:
         df = pd.read_csv(csv_s3_gz,
