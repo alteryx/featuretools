@@ -12,10 +12,10 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
     changed the column names, converted the ``customer_id``
     to a unique fake ``customer_name``, dropped duplicates,
     added columns for ``total`` and ``cancelled`` and
-    converted amounts from GBP to USD. You can download the modified CSV `from S3 in gz compressed (7 MB)
-    <"https://s3.amazonaws.com/featuretools-static/online-retail-logs-2018-08-28.csv.gz">`_
+    converted amounts from GBP to USD. You can download the modified CSV `in gz compressed (7 MB)
+    <"https://api.featurelabs.com/demo_datasets/retail.csv.gz">`_
     or `uncompressed (43 MB)
-    <"https://s3.amazonaws.com/featuretools-static/online-retail-logs-2018-08-28.csv">`_ formats.
+    <"https://api.featurelabs.com/demo_datasets/retail.csv">`_ formats.
 
     Args:
         id (str):  Id to assign to EntitySet.
@@ -59,8 +59,8 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
 
 '''
     es = ft.EntitySet(id)
-    csv_s3_gz = "https://s3.amazonaws.com/featuretools-static/" + RETAIL_CSV + ".csv.gz"
-    csv_s3 = "https://s3.amazonaws.com/featuretools-static/" + RETAIL_CSV + ".csv"
+    csv_s3_gz = "https://api.featurelabs.com/demo_datasets/retail.csv.gz"
+    csv_s3 = "https://api.featurelabs.com/demo_datasets/retail.csv"
     # Try to read in gz compressed file
     try:
         df = pd.read_csv(csv_s3_gz,
@@ -97,6 +97,3 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
     es.add_last_time_indexes()
 
     return es
-
-
-RETAIL_CSV = "online-retail-logs-2018-08-28"
