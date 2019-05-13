@@ -1,6 +1,6 @@
 import pytest
 
-from .testing_utils import make_ecommerce_entityset
+from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
 @pytest.fixture

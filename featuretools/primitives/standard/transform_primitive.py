@@ -5,8 +5,9 @@ from builtins import str
 import numpy as np
 import pandas as pd
 
-from ..base.transform_primitive_base import TransformPrimitive
-
+from featuretools.primitives.base.transform_primitive_base import (
+    TransformPrimitive
+)
 from featuretools.variable_types import (
     Boolean,
     Datetime,

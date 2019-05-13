@@ -9,11 +9,10 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_dtype_equal, is_numeric_dtype
 
-from . import deserialize, serialize
-from .entity import Entity
-from .relationship import Relationship
-
 import featuretools.variable_types.variable as vtypes
+from featuretools.entityset import deserialize, serialize
+from featuretools.entityset.entity import Entity
+from featuretools.entityset.relationship import Relationship
 from featuretools.utils.gen_utils import make_tqdm_iterator
 
 pd.options.mode.chained_assignment = None  # default='warn'

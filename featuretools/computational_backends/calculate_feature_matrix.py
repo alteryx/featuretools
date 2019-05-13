@@ -14,8 +14,8 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 
-from .pandas_backend import PandasBackend
-from .utils import (
+from featuretools.computational_backends.pandas_backend import PandasBackend
+from featuretools.computational_backends.utils import (
     bin_cutoff_times,
     calc_num_per_chunk,
     create_client_and_cluster,
@@ -24,7 +24,6 @@ from .utils import (
     get_next_chunk,
     save_csv_decorator
 )
-
 from featuretools.feature_base import AggregationFeature, FeatureBase
 from featuretools.utils.gen_utils import (
     get_relationship_variable_id,

@@ -2,7 +2,7 @@ import json
 import os
 import shutil
 
-from .. import variable_types
+from featuretools import variable_types
 
 FORMATS = ['csv', 'pickle', 'parquet']
 VARIABLE_TYPES = {
