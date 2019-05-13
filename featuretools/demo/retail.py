@@ -13,9 +13,9 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
     to a unique fake ``customer_name``, dropped duplicates,
     added columns for ``total`` and ``cancelled`` and
     converted amounts from GBP to USD. You can download the modified CSV `in gz compressed (7 MB)
-    <"https://api.featurelabs.com/demo_datasets/retail.csv.gz">`_
+    <"https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv.gz">`_
     or `uncompressed (43 MB)
-    <"https://api.featurelabs.com/demo_datasets/retail.csv">`_ formats.
+    <"https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv">`_ formats.
 
     Args:
         id (str):  Id to assign to EntitySet.
@@ -59,8 +59,8 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
 
 '''
     es = ft.EntitySet(id)
-    csv_s3_gz = "https://api.featurelabs.com/demo_datasets/retail.csv.gz"
-    csv_s3 = "https://api.featurelabs.com/demo_datasets/retail.csv"
+    csv_s3_gz = "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv.gz"
+    csv_s3 = "https://api.featurelabs.com/datasets/online-retail-logs-2018-08-28.csv"
     # Try to read in gz compressed file
     try:
         df = pd.read_csv(csv_s3_gz,
