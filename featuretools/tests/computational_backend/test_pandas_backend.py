@@ -537,11 +537,11 @@ def test_handles_primitive_function_name_uniqueness(es):
 
             return my_function
 
-        def generate_name(self, base_feature_names, child_entity_id,
+        def generate_name(self, base_feature_names, relationship_path_name,
                           parent_entity_id, where_str, use_prev_str):
             base_features_str = ", ".join(base_feature_names)
             return u"%s(%s.%s%s%s, n=%s)" % (self.name.upper(),
-                                             child_entity_id,
+                                             relationship_path_name,
                                              base_features_str,
                                              where_str, use_prev_str, self.n)
 

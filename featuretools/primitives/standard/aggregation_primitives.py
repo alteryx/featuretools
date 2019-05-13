@@ -41,9 +41,9 @@ class Count(AggregationPrimitive):
         else:
             return pd.Series.count
 
-    def generate_name(self, base_feature_names, child_entity_id,
+    def generate_name(self, base_feature_names, relationship_path_name,
                       parent_entity_id, where_str, use_prev_str):
-        return u"COUNT(%s%s%s)" % (child_entity_id,
+        return u"COUNT(%s%s%s)" % (relationship_path_name,
                                    where_str, use_prev_str)
 
 
@@ -100,14 +100,14 @@ class Mean(AggregationPrimitive):
             return np.mean(series.values)
         return mean
 
-    def generate_name(self, base_feature_names, child_entity_id,
+    def generate_name(self, base_feature_names, relationship_path_name,
                       parent_entity_id, where_str, use_prev_str):
         skipna = ""
         if not self.skipna:
             skipna = ", skipna=False"
         base_features_str = ", ".join(base_feature_names)
         return u"%s(%s.%s%s%s%s)" % (self.name.upper(),
-                                     child_entity_id,
+                                     relationship_path_name,
                                      base_features_str,
                                      where_str,
                                      use_prev_str,

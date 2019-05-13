@@ -99,9 +99,9 @@ def test_count_null_and_make_agg_primitive(es):
 
         return values.count()
 
-    def count_generate_name(self, base_feature_names, child_entity_id,
+    def count_generate_name(self, base_feature_names, relationship_path_name,
                             parent_entity_id, where_str, use_prev_str):
-        return u"COUNT(%s%s%s)" % (child_entity_id,
+        return u"COUNT(%s%s%s)" % (relationship_path_name,
                                    where_str,
                                    use_prev_str)
 
@@ -237,15 +237,91 @@ def test_init_and_name(es):
                 ft.calculate_feature_matrix([instance], entityset=es).head(5)
 
 
+def test_invalid_init_args(diamond_es):
+    error_text = 'parent_entity or relationship_path must be provided'
+    with pytest.raises(AssertionError, match=error_text):
+        ft.AggregationFeature(diamond_es['transactions']['amount'], ft.primitives.Mean)
+
+    transaction_relationships = diamond_es.get_forward_relationships('transactions')
+    transaction_to_store = next(r for r in transaction_relationships
+                                if r.parent_entity.id == 'stores')
+    error_text = 'parent_entity must match first relationship in path'
+    with pytest.raises(AssertionError, match=error_text):
+        ft.AggregationFeature(diamond_es['transactions']['amount'], ft.primitives.Mean,
+                              parent_entity=diamond_es['customers'],
+                              relationship_path=[transaction_to_store])
+
+    store_to_region = diamond_es.get_forward_relationships('stores')[0]
+    error_text = 'Base feature must be defined on the entity at the end of relationship_path'
+    with pytest.raises(AssertionError, match=error_text):
+        ft.AggregationFeature(diamond_es['transactions']['amount'], ft.primitives.Mean,
+                              parent_entity=diamond_es['regions'],
+                              relationship_path=[store_to_region])
+
+
+def test_init_with_multiple_possible_paths(diamond_es):
+    error_text = "There are multiple possible paths to the base entity. " \
+                 "You must specify a relationship path."
+    with pytest.raises(RuntimeError, match=error_text):
+        ft.AggregationFeature(diamond_es['transactions']['amount'], ft.primitives.Mean,
+                              parent_entity=diamond_es['regions'])
+
+    transaction_relationships = diamond_es.get_forward_relationships('transactions')
+    transaction_to_customer = next(r for r in transaction_relationships
+                                   if r.parent_entity.id == 'customers')
+    customer_to_region = diamond_es.get_forward_relationships('customers')[0]
+    # Does not raise if path specified.
+    ft.AggregationFeature(diamond_es['transactions']['amount'], ft.primitives.Mean,
+                          parent_entity=diamond_es['regions'],
+                          relationship_path=[customer_to_region, transaction_to_customer])
+
+
+def test_init_with_single_possible_path(diamond_es):
+    # This uses diamond_es to test that there being a cycle somewhere in the
+    # graph doesn't cause an error.
+    feat = ft.AggregationFeature(diamond_es['transactions']['amount'], ft.primitives.Mean,
+                                 parent_entity=diamond_es['customers'])
+    transaction_relationships = diamond_es.get_forward_relationships('transactions')
+    transaction_to_customer = next(r for r in transaction_relationships
+                                   if r.parent_entity.id == 'customers')
+    assert feat.relationship_path == [transaction_to_customer]
+
+
+def test_init_with_no_path(diamond_es):
+    error_text = 'No path from "transactions" to "customers" found.'
+    with pytest.raises(RuntimeError, match=error_text):
+        ft.AggregationFeature(diamond_es['customers']['name'], ft.primitives.Count,
+                              parent_entity=diamond_es['transactions'])
+
+    error_text = 'No path from "transactions" to "transactions" found.'
+    with pytest.raises(RuntimeError, match=error_text):
+        ft.AggregationFeature(diamond_es['transactions']['amount'], ft.primitives.Mean,
+                              parent_entity=diamond_es['transactions'])
+
+
+def test_name_with_multiple_possible_paths(diamond_es):
+    transaction_relationships = diamond_es.get_forward_relationships('transactions')
+    transaction_to_customer = next(r for r in transaction_relationships
+                                   if r.parent_entity.id == 'customers')
+    customer_to_region = diamond_es.get_forward_relationships('customers')[0]
+    # Does not raise if path specified.
+    feat = ft.AggregationFeature(diamond_es['transactions']['amount'], ft.primitives.Mean,
+                                 parent_entity=diamond_es['regions'],
+                                 relationship_path=[customer_to_region, transaction_to_customer])
+
+    assert feat.get_name() == "MEAN(customers.transactions.amount)"
+
+
 def test_serialization(es):
     primitives_deserializer = PrimitivesDeserializer()
     value = ft.IdentityFeature(es['log']['value'])
     primitive = ft.primitives.Max()
-    max1 = ft.AggregationFeature(value, es['sessions'], primitive)
+    max1 = ft.AggregationFeature(value, primitive, parent_entity=es['customers'])
 
+    path = es.find_backward_path('customers', 'log')
     dictionary = {
         'base_features': [value.unique_name()],
-        'parent_entity_id': 'sessions',
+        'relationship_path': [r.get_arguments() for r in path],
         'primitive': serialize_primitive(primitive),
         'where': None,
         'use_previous': None,
@@ -259,12 +335,12 @@ def test_serialization(es):
 
     is_purchased = ft.IdentityFeature(es['log']['purchased'])
     use_previous = ft.Timedelta(3, 'd')
-    max2 = ft.AggregationFeature(value, es['sessions'], primitive,
+    max2 = ft.AggregationFeature(value, primitive, parent_entity=es['customers'],
                                  where=is_purchased, use_previous=use_previous)
 
     dictionary = {
         'base_features': [value.unique_name()],
-        'parent_entity_id': 'sessions',
+        'relationship_path': [r.get_arguments() for r in path],
         'primitive': serialize_primitive(primitive),
         'where': is_purchased.unique_name(),
         'use_previous': use_previous.get_arguments(),

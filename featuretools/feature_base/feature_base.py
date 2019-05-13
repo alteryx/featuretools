@@ -1,6 +1,6 @@
 from builtins import zip
 
-from featuretools import Timedelta, primitives
+from featuretools import Relationship, Timedelta, primitives
 from featuretools.primitives.base import (
     AggregationPrimitive,
     PrimitiveBase,
@@ -366,16 +366,41 @@ class DirectFeature(FeatureBase):
     input_types = [Variable]
     return_type = None
 
-    def __init__(self, base_feature, child_entity):
+    def __init__(self, base_feature, child_entity=None, relationship_path=None):
+        """relationship_path is a forward path from child to parent."""
         base_feature = _check_feature(base_feature)
+
         self.parent_entity = base_feature.entity
+
+        if relationship_path:
+            first_child = relationship_path[0].child_entity
+            if child_entity:
+                assert child_entity == first_child, \
+                    'child_entity must match the first relationship'
+            else:
+                child_entity = first_child
+
+            assert self.parent_entity == relationship_path[-1].parent_entity, \
+                'Base feature must be defined on the entity at the end of relationship_path'
+
+            self._is_unique_path = \
+                bool(_find_unique_forward_path(child_entity, self.parent_entity))
+        if not relationship_path:
+            assert child_entity, 'child_entity or relationship_path must be provided'
+
+            relationship_path = _find_path(child_entity, self.parent_entity,
+                                           backward=False)
+            self._is_unique_path = True
+
+        self.relationship_path = relationship_path
         super(DirectFeature, self).__init__(child_entity, [base_feature], primitive=PrimitiveBase)
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         base_feature = dependencies[arguments['base_feature']]
-        child_entity = entityset[arguments['child_entity_id']]
-        return cls(base_feature, child_entity)
+        relationship_path = [Relationship.from_dictionary(r, entityset)
+                             for r in arguments['relationship_path']]
+        return cls(base_feature, relationship_path=relationship_path)
 
     @property
     def variable(self):
@@ -398,7 +423,12 @@ class DirectFeature(FeatureBase):
         return self.base_features[0].variable_type
 
     def generate_name(self):
-        return u"%s.%s" % (self.parent_entity.id,
+        if self._is_unique_path:
+            relationship_path_name = self.parent_entity.id
+        else:
+            relationship_names = [r.parent_name() for r in self.relationship_path]
+            relationship_path_name = '.'.join(relationship_names)
+        return u"%s.%s" % (relationship_path_name,
                            self.base_features[0].get_name())
 
     def get_feature_names(self):
@@ -408,7 +438,7 @@ class DirectFeature(FeatureBase):
     def get_arguments(self):
         return {
             'base_feature': self.base_features[0].unique_name(),
-            'child_entity_id': self.entity_id
+            'relationship_path': [r.get_arguments() for r in self.relationship_path]
         }
 
 
@@ -421,8 +451,9 @@ class AggregationFeature(FeatureBase):
     # each time point during calculation
     use_previous = None
 
-    def __init__(self, base_features, parent_entity, primitive, use_previous=None,
-                 where=None):
+    def __init__(self, base_features, primitive,
+                 relationship_path=None, parent_entity=None,
+                 use_previous=None, where=None):
         if hasattr(base_features, '__iter__'):
             base_features = [_check_feature(bf) for bf in base_features]
             msg = "all base features must share the same entity"
@@ -431,6 +462,29 @@ class AggregationFeature(FeatureBase):
             base_features = [_check_feature(base_features)]
 
         self.child_entity = base_features[0].entity
+
+        if relationship_path:
+            first_parent = relationship_path[0].parent_entity
+            if parent_entity:
+                assert parent_entity == first_parent, \
+                    'parent_entity must match first relationship in path.'
+            else:
+                parent_entity = first_parent
+
+            assert self.child_entity == relationship_path[-1].child_entity, \
+                'Base feature must be defined on the entity at the end of relationship_path'
+
+            self._is_unique_path = \
+                bool(_find_unique_forward_path(self.child_entity, parent_entity))
+        else:
+            assert parent_entity, "parent_entity or relationship_path must be provided."
+            # Try to find path from parent to base feature
+            relationship_path = _find_path(parent_entity, self.child_entity,
+                                           backward=True)
+            self._is_unique_path = True
+
+        self.relationship_path = relationship_path
+
         self.parent_entity = parent_entity.entityset.metadata[parent_entity.id]
 
         if where is not None:
@@ -459,7 +513,8 @@ class AggregationFeature(FeatureBase):
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         base_features = [dependencies[name] for name in arguments['base_features']]
-        parent_entity = entityset[arguments['parent_entity_id']]
+        relationship_path = [Relationship.from_dictionary(r, entityset)
+                             for r in arguments['relationship_path']]
         primitive = primitives_deserializer.deserialize_primitive(arguments['primitive'])
 
         use_previous_data = arguments['use_previous']
@@ -468,7 +523,7 @@ class AggregationFeature(FeatureBase):
         where_name = arguments['where']
         where = where_name and dependencies[where_name]
 
-        return cls(base_features, parent_entity, primitive,
+        return cls(base_features, primitive, relationship_path=relationship_path,
                    use_previous=use_previous, where=where)
 
     def copy(self):
@@ -490,8 +545,13 @@ class AggregationFeature(FeatureBase):
         return use_prev_str
 
     def generate_name(self):
+        if self._is_unique_path:
+            relationship_path_name = self.child_entity.id
+        else:
+            relationship_names = [r.child_name() for r in self.relationship_path]
+            relationship_path_name = '.'.join(relationship_names)
         return self.primitive.generate_name(base_feature_names=[bf.get_name() for bf in self.base_features],
-                                            child_entity_id=self.child_entity.id,
+                                            relationship_path_name=relationship_path_name,
                                             parent_entity_id=self.parent_entity.id,
                                             where_str=self._where_str(),
                                             use_prev_str=self._use_prev_str())
@@ -499,7 +559,7 @@ class AggregationFeature(FeatureBase):
     def get_arguments(self):
         return {
             'base_features': [feat.unique_name() for feat in self.base_features],
-            'parent_entity_id': self.parent_entity.id,
+            'relationship_path': [r.get_arguments() for r in self.relationship_path],
             'primitive': serialize_primitive(self.primitive),
             'where': self.where and self.where.unique_name(),
             'use_previous': self.use_previous and self.use_previous.get_arguments(),
@@ -626,3 +686,93 @@ def _check_feature(feature):
         return feature
 
     raise Exception("Not a feature")
+
+
+def _find_path(start_entity, end_entity, backward=False):
+    """
+    Finds a path of relationships between parent and child.
+    If backward then it follows backward relationships instead of forward.
+    Raises if there is no path or multiple possible paths.
+    """
+    if backward:
+        search_start = end_entity
+        search_end = start_entity
+    else:
+        search_start = start_entity
+        search_end = end_entity
+
+    path = _find_unique_forward_path(search_start, search_end)
+
+    if path is None:
+        raise RuntimeError('No path from "%s" to "%s" found.'
+                           % (start_entity.id, end_entity.id))
+    elif path is False:
+        message = "There are multiple possible paths to the base entity. " \
+                  "You must specify a relationship path."
+        raise RuntimeError(message)
+    elif backward:
+        return path[::-1]
+    else:
+        return path
+
+
+def _find_unique_forward_path(start_entity, end_entity):
+    """
+    Find a path of forward relationships between the two entities.
+    Return False if there are multiple possible paths.
+    """
+    es = start_entity.entityset
+
+    path = None  # If we don't find a path.
+
+    # Entity ids that we have visited in the graph.
+    # We track these so that we don't get stuck in a loop.
+    visited = set()
+
+    # entity ids that we have visited multiple times.
+    # This means that there are multiple paths to these entities.
+    visited_multiple = set()
+
+    # Entity ids from which we know there is a path to the end entity.
+    in_path = set()
+
+    for entity, entity_path in _depth_first_search(start_entity, es, []):
+        # Skip the start_entity.
+        if not entity_path:
+            continue
+
+        if entity.id in in_path:
+            # We have found a second path to entity, and entity has a path to
+            # search_end.
+            return False
+
+        if entity.id in visited:
+            visited_multiple.add(entity.id)
+
+        visited.add(entity.id)
+
+        if entity == end_entity:
+            # Mark each entity in path as in_path
+            for r in entity_path:
+                parent_id = r.parent_entity.id
+                if parent_id in visited_multiple:
+                    # We have found a path from parent to search_end, and we
+                    # already know that there are multiple paths to parent.
+                    return False
+                in_path.add(parent_id)
+
+            # Store the path, to be returned if no other path is detected.
+            path = entity_path
+
+    return path
+
+
+def _depth_first_search(start_entity, es, path):
+    """Generator which yields all entities connected through forward relationships."""
+    yield start_entity, path
+
+    for relationship in es.get_forward_relationships(start_entity.id):
+        next = relationship.parent_entity
+        new_path = path + [relationship]
+        for entity, entity_path in _depth_first_search(next, es, new_path):
+            yield entity, entity_path
