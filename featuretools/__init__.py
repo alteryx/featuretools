@@ -8,14 +8,12 @@ from .synthesis.api import *
 from .primitives import list_primitives
 from .computational_backends.api import *
 from . import tests
-from .utils.pickle_utils import *
 from .utils.time_utils import *
+from .version import __version__
 import featuretools.demo
 import featuretools.wrappers
 from . import feature_base
-from .feature_base import AggregationFeature, DirectFeature, Feature, FeatureBase, IdentityFeature, TransformFeature
-
-__version__ = '0.7.1'
+from .feature_base import AggregationFeature, DirectFeature, Feature, FeatureBase, IdentityFeature, TransformFeature, save_features, load_features
 
 import pkg_resources
 import sys

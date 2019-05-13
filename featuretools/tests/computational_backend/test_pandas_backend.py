@@ -33,20 +33,15 @@ from featuretools.tests.testing_utils import make_ecommerce_entityset
 from featuretools.variable_types import Numeric
 
 
-@pytest.fixture(scope='module')
-def entityset():
-    return make_ecommerce_entityset()
-
-
 @pytest.fixture
-def backend(entityset):
+def backend(es):
     def inner(features):
-        return PandasBackend(entityset, features)
+        return PandasBackend(es, features)
     return inner
 
 
-def test_make_identity(entityset, backend):
-    f = IdentityFeature(entityset['log']['datetime'])
+def test_make_identity(es, backend):
+    f = IdentityFeature(es['log']['datetime'])
 
     pandas_backend = backend([f])
     df = pandas_backend.calculate_all_features(instance_ids=[0],
@@ -55,9 +50,9 @@ def test_make_identity(entityset, backend):
     assert (v == datetime(2011, 4, 9, 10, 30, 0))
 
 
-def test_make_dfeat(entityset, backend):
-    f = DirectFeature(entityset['customers']['age'],
-                      child_entity=entityset['sessions'])
+def test_make_dfeat(es, backend):
+    f = DirectFeature(es['customers']['age'],
+                      child_entity=es['sessions'])
 
     pandas_backend = backend([f])
     df = pandas_backend.calculate_all_features(instance_ids=[0],
@@ -66,8 +61,8 @@ def test_make_dfeat(entityset, backend):
     assert (v == 33)
 
 
-def test_make_agg_feat_of_identity_variable(entityset, backend):
-    agg_feat = ft.Feature(entityset['log']['value'], parent_entity=entityset['sessions'], primitive=Sum)
+def test_make_agg_feat_of_identity_variable(es, backend):
+    agg_feat = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum)
 
     pandas_backend = backend([agg_feat])
     df = pandas_backend.calculate_all_features(instance_ids=[0],
@@ -76,8 +71,8 @@ def test_make_agg_feat_of_identity_variable(entityset, backend):
     assert (v == 50)
 
 
-def test_make_agg_feat_of_identity_index_variable(entityset, backend):
-    agg_feat = ft.Feature(entityset['log']['id'], parent_entity=entityset['sessions'], primitive=Count)
+def test_make_agg_feat_of_identity_index_variable(es, backend):
+    agg_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
 
     pandas_backend = backend([agg_feat])
     df = pandas_backend.calculate_all_features(instance_ids=[0],
@@ -86,10 +81,10 @@ def test_make_agg_feat_of_identity_index_variable(entityset, backend):
     assert (v == 5)
 
 
-def test_make_agg_feat_where_count(entityset, backend):
-    agg_feat = ft.Feature(entityset['log']['id'],
-                          parent_entity=entityset['sessions'],
-                          where=IdentityFeature(entityset['log']['product_id']) == 'coke zero',
+def test_make_agg_feat_where_count(es, backend):
+    agg_feat = ft.Feature(es['log']['id'],
+                          parent_entity=es['sessions'],
+                          where=IdentityFeature(es['log']['product_id']) == 'coke zero',
                           primitive=Count)
 
     pandas_backend = backend([agg_feat])
@@ -100,9 +95,9 @@ def test_make_agg_feat_where_count(entityset, backend):
     assert (v == 3)
 
 
-def test_make_agg_feat_using_prev_time(entityset, backend):
-    agg_feat = ft.Feature(entityset['log']['id'],
-                          parent_entity=entityset['sessions'],
+def test_make_agg_feat_using_prev_time(es, backend):
+    agg_feat = ft.Feature(es['log']['id'],
+                          parent_entity=es['sessions'],
                           use_previous=Timedelta(10, 's'),
                           primitive=Count)
 
@@ -120,17 +115,17 @@ def test_make_agg_feat_using_prev_time(entityset, backend):
     assert (v == 1)
 
 
-def test_make_agg_feat_using_prev_n_events(entityset, backend):
-    agg_feat_1 = ft.Feature(entityset['log']['value'],
-                            parent_entity=entityset['sessions'],
+def test_make_agg_feat_using_prev_n_events(es, backend):
+    agg_feat_1 = ft.Feature(es['log']['value'],
+                            parent_entity=es['sessions'],
                             use_previous=Timedelta(1, 'observations',
-                                                   entity=entityset['log']),
+                                                   entity=es['log']),
                             primitive=Min)
 
-    agg_feat_2 = ft.Feature(entityset['log']['value'],
-                            parent_entity=entityset['sessions'],
+    agg_feat_2 = ft.Feature(es['log']['value'],
+                            parent_entity=es['sessions'],
                             use_previous=Timedelta(3, 'observations',
-                                                   entity=entityset['log']),
+                                                   entity=es['log']),
                             primitive=Min)
 
     assert agg_feat_1.get_name() != agg_feat_2.get_name(), \
@@ -155,16 +150,16 @@ def test_make_agg_feat_using_prev_n_events(entityset, backend):
     assert v2 == 10
 
 
-def test_make_agg_feat_multiple_dtypes(entityset, backend):
-    compare_prod = IdentityFeature(entityset['log']['product_id']) == 'coke zero'
+def test_make_agg_feat_multiple_dtypes(es, backend):
+    compare_prod = IdentityFeature(es['log']['product_id']) == 'coke zero'
 
-    agg_feat = ft.Feature(entityset['log']['id'],
-                          parent_entity=entityset['sessions'],
+    agg_feat = ft.Feature(es['log']['id'],
+                          parent_entity=es['sessions'],
                           where=compare_prod,
                           primitive=Count)
 
-    agg_feat2 = ft.Feature(entityset['log']['product_id'],
-                           parent_entity=entityset['sessions'],
+    agg_feat2 = ft.Feature(es['log']['product_id'],
+                           parent_entity=es['sessions'],
                            where=compare_prod,
                            primitive=Mode)
 
@@ -178,17 +173,17 @@ def test_make_agg_feat_multiple_dtypes(entityset, backend):
     assert (v2 == 'coke zero')
 
 
-def test_make_agg_feat_where_different_identity_feat(entityset, backend):
+def test_make_agg_feat_where_different_identity_feat(es, backend):
     feats = []
     where_cmps = [LessThanScalar, GreaterThanScalar, LessThanEqualToScalar,
                   GreaterThanEqualToScalar, EqualScalar, NotEqualScalar]
     for where_cmp in where_cmps:
-        feats.append(ft.Feature(entityset['log']['id'],
-                                parent_entity=entityset['sessions'],
-                                where=ft.Feature(entityset['log']['datetime'], primitive=where_cmp(datetime(2011, 4, 10, 10, 40, 1))),
+        feats.append(ft.Feature(es['log']['id'],
+                                parent_entity=es['sessions'],
+                                where=ft.Feature(es['log']['datetime'], primitive=where_cmp(datetime(2011, 4, 10, 10, 40, 1))),
                                 primitive=Count))
 
-    df = ft.calculate_feature_matrix(entityset=entityset, features=feats, instance_ids=[0, 1, 2, 3])
+    df = ft.calculate_feature_matrix(entityset=es, features=feats, instance_ids=[0, 1, 2, 3])
 
     for i, where_cmp in enumerate(where_cmps):
         name = feats[i].get_name()
@@ -226,8 +221,8 @@ def test_make_agg_feat_where_different_identity_feat(entityset, backend):
             assert (v3 == 1)
 
 
-def test_make_agg_feat_of_grandchild_entity(entityset, backend):
-    agg_feat = ft.Feature(entityset['log']['id'], parent_entity=entityset['customers'], primitive=Count)
+def test_make_agg_feat_of_grandchild_entity(es, backend):
+    agg_feat = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
 
     pandas_backend = backend([agg_feat])
     df = pandas_backend.calculate_all_features(instance_ids=[0],
@@ -236,16 +231,16 @@ def test_make_agg_feat_of_grandchild_entity(entityset, backend):
     assert (v == 10)
 
 
-def test_make_agg_feat_where_count_feat(entityset, backend):
+def test_make_agg_feat_where_count_feat(es, backend):
     """
     Feature we're creating is:
     Number of sessions for each customer where the
     number of logs in the session is less than 3
     """
-    log_count_feat = ft.Feature(entityset['log']['id'], parent_entity=entityset['sessions'], primitive=Count)
+    log_count_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
 
-    feat = ft.Feature(entityset['sessions']['id'],
-                      parent_entity=entityset['customers'],
+    feat = ft.Feature(es['sessions']['id'],
+                      parent_entity=es['customers'],
                       where=log_count_feat > 1,
                       primitive=Count)
 
@@ -259,17 +254,17 @@ def test_make_agg_feat_where_count_feat(entityset, backend):
     assert (v1 == 2)
 
 
-def test_make_compare_feat(entityset, backend):
+def test_make_compare_feat(es, backend):
     """
     Feature we're creating is:
     Number of sessions for each customer where the
     number of logs in the session is less than 3
     """
-    log_count_feat = ft.Feature(entityset['log']['id'], parent_entity=entityset['sessions'], primitive=Count)
+    log_count_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
 
-    mean_agg_feat = ft.Feature(log_count_feat, parent_entity=entityset['customers'], primitive=Mean)
+    mean_agg_feat = ft.Feature(log_count_feat, parent_entity=es['customers'], primitive=Mean)
 
-    mean_feat = DirectFeature(mean_agg_feat, child_entity=entityset['sessions'])
+    mean_feat = DirectFeature(mean_agg_feat, child_entity=es['sessions'])
 
     feat = log_count_feat > mean_feat
 
@@ -284,19 +279,19 @@ def test_make_compare_feat(entityset, backend):
     assert not v2
 
 
-def test_make_agg_feat_where_count_and_device_type_feat(entityset, backend):
+def test_make_agg_feat_where_count_and_device_type_feat(es, backend):
     """
     Feature we're creating is:
     Number of sessions for each customer where the
     number of logs in the session is less than 3
     """
-    log_count_feat = ft.Feature(entityset['log']['id'], parent_entity=entityset['sessions'], primitive=Count)
+    log_count_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
 
     compare_count = log_count_feat == 1
-    compare_device_type = IdentityFeature(entityset['sessions']['device_type']) == 1
+    compare_device_type = IdentityFeature(es['sessions']['device_type']) == 1
     and_feat = ft.Feature([compare_count, compare_device_type], primitive=And)
-    feat = ft.Feature(entityset['sessions']['id'],
-                      parent_entity=entityset['customers'],
+    feat = ft.Feature(es['sessions']['id'],
+                      parent_entity=es['customers'],
                       where=and_feat,
                       primitive=Count)
 
@@ -308,19 +303,19 @@ def test_make_agg_feat_where_count_and_device_type_feat(entityset, backend):
     assert (instances[0] == 1)
 
 
-def test_make_agg_feat_where_count_or_device_type_feat(entityset, backend):
+def test_make_agg_feat_where_count_or_device_type_feat(es, backend):
     """
     Feature we're creating is:
     Number of sessions for each customer where the
     number of logs in the session is less than 3
     """
-    log_count_feat = ft.Feature(entityset['log']['id'], parent_entity=entityset['sessions'], primitive=Count)
+    log_count_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
 
     compare_count = log_count_feat > 1
-    compare_device_type = IdentityFeature(entityset['sessions']['device_type']) == 1
+    compare_device_type = IdentityFeature(es['sessions']['device_type']) == 1
     or_feat = compare_count.OR(compare_device_type)
-    feat = ft.Feature(entityset['sessions']['id'],
-                      parent_entity=entityset['customers'],
+    feat = ft.Feature(es['sessions']['id'],
+                      parent_entity=es['customers'],
                       where=or_feat,
                       primitive=Count)
 
@@ -332,10 +327,10 @@ def test_make_agg_feat_where_count_or_device_type_feat(entityset, backend):
     assert (instances[0] == 3)
 
 
-def test_make_agg_feat_of_agg_feat(entityset, backend):
-    log_count_feat = ft.Feature(entityset['log']['id'], parent_entity=entityset['sessions'], primitive=Count)
+def test_make_agg_feat_of_agg_feat(es, backend):
+    log_count_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
 
-    customer_sum_feat = ft.Feature(log_count_feat, parent_entity=entityset['customers'], primitive=Sum)
+    customer_sum_feat = ft.Feature(log_count_feat, parent_entity=es['customers'], primitive=Sum)
 
     pandas_backend = backend([customer_sum_feat])
     df = pandas_backend.calculate_all_features(instance_ids=[0],
@@ -344,7 +339,7 @@ def test_make_agg_feat_of_agg_feat(entityset, backend):
     assert (v == 10)
 
 
-def test_make_dfeat_of_agg_feat_on_self(entityset, backend):
+def test_make_dfeat_of_agg_feat_on_self(es, backend):
     """
     The graph looks like this:
 
@@ -356,9 +351,9 @@ def test_make_dfeat_of_agg_feat_on_self(entityset, backend):
 
     We're trying to calculate a DFeat from C to R on an agg_feat of R on C.
     """
-    customer_count_feat = ft.Feature(entityset['customers']['id'], parent_entity=entityset[u'régions'], primitive=Count)
+    customer_count_feat = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count)
 
-    num_customers_feat = DirectFeature(customer_count_feat, child_entity=entityset['customers'])
+    num_customers_feat = DirectFeature(customer_count_feat, child_entity=es['customers'])
 
     pandas_backend = backend([num_customers_feat])
     df = pandas_backend.calculate_all_features(instance_ids=[0],
@@ -367,7 +362,7 @@ def test_make_dfeat_of_agg_feat_on_self(entityset, backend):
     assert (v == 3)
 
 
-def test_make_dfeat_of_agg_feat_through_parent(entityset, backend):
+def test_make_dfeat_of_agg_feat_through_parent(es, backend):
     """
     The graph looks like this:
 
@@ -379,11 +374,11 @@ def test_make_dfeat_of_agg_feat_through_parent(entityset, backend):
 
     We're trying to calculate a DFeat from C to R on an agg_feat of R on S.
     """
-    store_id_feat = IdentityFeature(entityset['stores']['id'])
+    store_id_feat = IdentityFeature(es['stores']['id'])
 
-    store_count_feat = ft.Feature(store_id_feat, parent_entity=entityset[u'régions'], primitive=Count)
+    store_count_feat = ft.Feature(store_id_feat, parent_entity=es[u'régions'], primitive=Count)
 
-    num_stores_feat = DirectFeature(store_count_feat, child_entity=entityset['customers'])
+    num_stores_feat = DirectFeature(store_count_feat, child_entity=es['customers'])
 
     pandas_backend = backend([num_stores_feat])
     df = pandas_backend.calculate_all_features(instance_ids=[0],
@@ -392,7 +387,7 @@ def test_make_dfeat_of_agg_feat_through_parent(entityset, backend):
     assert (v == 3)
 
 
-def test_make_deep_agg_feat_of_dfeat_of_agg_feat(entityset, backend):
+def test_make_deep_agg_feat_of_dfeat_of_agg_feat(es, backend):
     """
     The graph looks like this (higher implies parent):
 
@@ -405,12 +400,12 @@ def test_make_deep_agg_feat_of_dfeat_of_agg_feat(entityset, backend):
     We're trying to calculate a DFeat from L to P on an agg_feat of P on L, and
     then aggregate it with another agg_feat of C on L.
     """
-    log_count_feat = ft.Feature(entityset['log']['id'], parent_entity=entityset['products'], primitive=Count)
+    log_count_feat = ft.Feature(es['log']['id'], parent_entity=es['products'], primitive=Count)
 
     product_purchases_feat = DirectFeature(log_count_feat,
-                                           child_entity=entityset['log'])
+                                           child_entity=es['log'])
 
-    purchase_popularity = ft.Feature(product_purchases_feat, parent_entity=entityset['customers'], primitive=Mean)
+    purchase_popularity = ft.Feature(product_purchases_feat, parent_entity=es['customers'], primitive=Mean)
 
     pandas_backend = backend([purchase_popularity])
     df = pandas_backend.calculate_all_features(instance_ids=[0],
@@ -419,14 +414,14 @@ def test_make_deep_agg_feat_of_dfeat_of_agg_feat(entityset, backend):
     assert (v == 38.0 / 10.0)
 
 
-def test_deep_agg_feat_chain(entityset, backend):
+def test_deep_agg_feat_chain(es, backend):
     """
     Agg feat of agg feat:
         region.Mean(customer.Count(Log))
     """
-    customer_count_feat = ft.Feature(entityset['log']['id'], parent_entity=entityset['customers'], primitive=Count)
+    customer_count_feat = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
 
-    region_avg_feat = ft.Feature(customer_count_feat, parent_entity=entityset[u'régions'], primitive=Mean)
+    region_avg_feat = ft.Feature(customer_count_feat, parent_entity=es[u'régions'], primitive=Mean)
 
     pandas_backend = backend([region_avg_feat])
     df = pandas_backend.calculate_all_features(instance_ids=['United States'],
@@ -435,9 +430,9 @@ def test_deep_agg_feat_chain(entityset, backend):
     assert (v == 17 / 3.)
 
 
-def test_topn(entityset, backend):
-    topn = ft.Feature(entityset['log']['product_id'],
-                      parent_entity=entityset['customers'],
+def test_topn(es, backend):
+    topn = ft.Feature(es['log']['product_id'],
+                      parent_entity=es['customers'],
                       primitive=NMostCommon(n=2))
     pandas_backend = backend([topn])
 
@@ -459,9 +454,9 @@ def test_topn(entityset, backend):
                 assert (pd.isnull(i1) and pd.isnull(i2)) or (i1 == i2)
 
 
-def test_trend(entityset, backend):
-    trend = ft.Feature([entityset['log']['value'], entityset['log']['datetime']],
-                       parent_entity=entityset['customers'],
+def test_trend(es, backend):
+    trend = ft.Feature([es['log']['value'], es['log']['datetime']],
+                       parent_entity=es['customers'],
                        primitive=Trend)
     pandas_backend = backend([trend])
 
@@ -473,8 +468,8 @@ def test_trend(entityset, backend):
     np.testing.assert_almost_equal(df[trend.get_name()].values.tolist(), true_results, decimal=5)
 
 
-def test_direct_squared(entityset, backend):
-    feature = IdentityFeature(entityset['log']['value'])
+def test_direct_squared(es, backend):
+    feature = IdentityFeature(es['log']['value'])
     squared = feature * feature
     pandas_backend = backend([feature, squared])
     df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2],
@@ -483,8 +478,8 @@ def test_direct_squared(entityset, backend):
         assert (row[0] * row[0]) == row[1]
 
 
-def test_agg_empty_child(entityset, backend):
-    customer_count_feat = ft.Feature(entityset['log']['id'], parent_entity=entityset['customers'], primitive=Count)
+def test_agg_empty_child(es, backend):
+    customer_count_feat = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
     pandas_backend = backend([customer_count_feat])
 
     # time last before the customer had any events, so child frame is empty
@@ -528,7 +523,7 @@ def test_empty_child_dataframe():
     assert_array_equal(fm2[names], [[0, np.nan]])
 
 
-def test_handles_primitive_function_name_uniqueness(entityset):
+def test_handles_primitive_function_name_uniqueness(es):
     class SumTimesN(AggregationPrimitive):
         name = "sum_times_n"
         input_types = [Numeric]
@@ -552,35 +547,35 @@ def test_handles_primitive_function_name_uniqueness(entityset):
                                              where_str, use_prev_str, self.n)
 
     # works as expected
-    f1 = ft.Feature(entityset["log"]["value"],
-                    parent_entity=entityset["customers"],
+    f1 = ft.Feature(es["log"]["value"],
+                    parent_entity=es["customers"],
                     primitive=SumTimesN(n=1))
-    fm = ft.calculate_feature_matrix(features=[f1], entityset=entityset)
+    fm = ft.calculate_feature_matrix(features=[f1], entityset=es)
     value_sum = pd.Series([56, 26, 0])
     assert all(fm[f1.get_name()].sort_index() == value_sum)
 
     # works as expected
-    f2 = ft.Feature(entityset["log"]["value"],
-                    parent_entity=entityset["customers"],
+    f2 = ft.Feature(es["log"]["value"],
+                    parent_entity=es["customers"],
                     primitive=SumTimesN(n=2))
-    fm = ft.calculate_feature_matrix(features=[f2], entityset=entityset)
+    fm = ft.calculate_feature_matrix(features=[f2], entityset=es)
     double_value_sum = pd.Series([112, 52, 0])
     assert all(fm[f2.get_name()].sort_index() == double_value_sum)
 
     # same primitive, same variable, different args
-    fm = ft.calculate_feature_matrix(features=[f1, f2], entityset=entityset)
+    fm = ft.calculate_feature_matrix(features=[f1, f2], entityset=es)
     assert all(fm[f1.get_name()].sort_index() == value_sum)
     assert all(fm[f2.get_name()].sort_index() == double_value_sum)
 
     # different primtives, same function returned by get_function,
     # different base features
-    f3 = ft.Feature(entityset["log"]["value"],
-                    parent_entity=entityset["customers"],
+    f3 = ft.Feature(es["log"]["value"],
+                    parent_entity=es["customers"],
                     primitive=Sum)
-    f4 = ft.Feature(entityset["log"]["purchased"],
-                    parent_entity=entityset["customers"],
+    f4 = ft.Feature(es["log"]["purchased"],
+                    parent_entity=es["customers"],
                     primitive=NumTrue)
-    fm = ft.calculate_feature_matrix(features=[f3, f4], entityset=entityset)
+    fm = ft.calculate_feature_matrix(features=[f3, f4], entityset=es)
     purchased_sum = pd.Series([10, 1, 1])
     assert all(fm[f3.get_name()].sort_index() == value_sum)
     assert all(fm[f4.get_name()].sort_index() == purchased_sum)\
@@ -624,16 +619,16 @@ def test_handles_primitive_function_name_uniqueness(entityset):
         def get_function(self):
             return np.sum
 
-    f5 = ft.Feature(entityset["log"]["value"],
-                    parent_entity=entityset["customers"],
+    f5 = ft.Feature(es["log"]["value"],
+                    parent_entity=es["customers"],
                     primitive=Sum1)
-    f6 = ft.Feature(entityset["log"]["value"],
-                    parent_entity=entityset["customers"],
+    f6 = ft.Feature(es["log"]["value"],
+                    parent_entity=es["customers"],
                     primitive=Sum2)
-    f7 = ft.Feature(entityset["log"]["value"],
-                    parent_entity=entityset["customers"],
+    f7 = ft.Feature(es["log"]["value"],
+                    parent_entity=es["customers"],
                     primitive=Sum3)
-    fm = ft.calculate_feature_matrix(features=[f5, f6, f7], entityset=entityset)
+    fm = ft.calculate_feature_matrix(features=[f5, f6, f7], entityset=es)
     assert all(fm[f5.get_name()].sort_index() == value_sum)
     assert all(fm[f6.get_name()].sort_index() == value_sum)
     assert all(fm[f7.get_name()].sort_index() == value_sum)

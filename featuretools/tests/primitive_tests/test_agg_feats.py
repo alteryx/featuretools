@@ -22,14 +22,17 @@ from featuretools.primitives.base import (
     AggregationPrimitive,
     make_agg_primitive
 )
+from featuretools.primitives.utils import (
+    PrimitivesDeserializer,
+    serialize_primitive
+)
 from featuretools.synthesis.deep_feature_synthesis import (
     DeepFeatureSynthesis,
     check_stacking,
     match
 )
 from featuretools.tests.testing_utils import (
-    feature_with_name,
-    make_ecommerce_entityset
+    feature_with_name
 )
 from featuretools.variable_types import (
     Datetime,
@@ -39,11 +42,6 @@ from featuretools.variable_types import (
     Numeric,
     Variable
 )
-
-
-@pytest.fixture(scope='module')
-def es():
-    return make_ecommerce_entityset()
 
 
 @pytest.fixture
@@ -239,6 +237,49 @@ def test_init_and_name(es):
                 # try to get name and calculate
                 instance.get_name()
                 ft.calculate_feature_matrix([instance], entityset=es).head(5)
+
+
+def test_serialization(es):
+    primitives_deserializer = PrimitivesDeserializer()
+    value = ft.IdentityFeature(es['log']['value'])
+    primitive = ft.primitives.Max()
+    max1 = ft.AggregationFeature(value, es['sessions'], primitive)
+
+    dictionary = {
+        'base_features': [value.unique_name()],
+        'parent_entity_id': 'sessions',
+        'primitive': serialize_primitive(primitive),
+        'where': None,
+        'use_previous': None,
+    }
+
+    assert dictionary == max1.get_arguments()
+    assert max1 == \
+        ft.AggregationFeature.from_dictionary(dictionary, es,
+                                              {value.unique_name(): value},
+                                              primitives_deserializer)
+
+    is_purchased = ft.IdentityFeature(es['log']['purchased'])
+    use_previous = ft.Timedelta(3, 'd')
+    max2 = ft.AggregationFeature(value, es['sessions'], primitive,
+                                 where=is_purchased, use_previous=use_previous)
+
+    dictionary = {
+        'base_features': [value.unique_name()],
+        'parent_entity_id': 'sessions',
+        'primitive': serialize_primitive(primitive),
+        'where': is_purchased.unique_name(),
+        'use_previous': use_previous.get_arguments(),
+    }
+
+    assert dictionary == max2.get_arguments()
+    dependencies = {
+        value.unique_name(): value,
+        is_purchased.unique_name(): is_purchased
+    }
+    assert max2 == \
+        ft.AggregationFeature.from_dictionary(dictionary, es, dependencies,
+                                              primitives_deserializer)
 
 
 def test_time_since_last(es):

@@ -9,12 +9,7 @@ from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
-@pytest.fixture(scope='module')
-def es():
-    return make_ecommerce_entityset()
-
-
-@pytest.fixture(scope='module')
+@pytest.fixture
 def entities():
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
@@ -28,7 +23,7 @@ def entities():
     return entities
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def relationships():
     return [("cards", "id", "transactions", "card_id")]
 

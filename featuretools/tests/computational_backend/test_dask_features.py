@@ -4,10 +4,8 @@ from dask.base import tokenize
 from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
-def test_tokenize_entityset():
-    es = make_ecommerce_entityset()
+def test_tokenize_entityset(es, int_es):
     dupe = make_ecommerce_entityset()
-    int_es = make_ecommerce_entityset(with_integer_time_index=True)
 
     # check identitcal entitysets hash to same token
     assert tokenize(es) == tokenize(dupe)
