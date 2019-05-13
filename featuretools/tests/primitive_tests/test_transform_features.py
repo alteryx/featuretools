@@ -54,7 +54,6 @@ from featuretools.primitives.utils import (
     serialize_primitive
 )
 from featuretools.synthesis.deep_feature_synthesis import match
-from featuretools.tests.testing_utils import make_ecommerce_entityset
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
 

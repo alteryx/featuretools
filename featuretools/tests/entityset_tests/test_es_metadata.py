@@ -2,7 +2,6 @@
 import pytest
 
 from featuretools import EntitySet, Relationship, variable_types
-from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
 def test_cannot_re_add_relationships_that_already_exists(es):

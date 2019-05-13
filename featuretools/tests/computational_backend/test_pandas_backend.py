@@ -29,7 +29,6 @@ from featuretools.primitives import (  # NMostCommon,
     Trend
 )
 from featuretools.primitives.base import AggregationPrimitive
-from featuretools.tests.testing_utils import make_ecommerce_entityset
 from featuretools.variable_types import Numeric
 
 

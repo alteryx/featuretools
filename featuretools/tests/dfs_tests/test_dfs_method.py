@@ -6,7 +6,6 @@ from distributed.utils_test import cluster
 
 from featuretools.primitives import Max, Mean, Min, Sum
 from featuretools.synthesis import dfs
-from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
 @pytest.fixture

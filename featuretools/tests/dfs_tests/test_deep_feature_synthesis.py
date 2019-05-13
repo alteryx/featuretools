@@ -27,9 +27,7 @@ from featuretools.primitives import (  # CumMean,
     TimeSincePrevious
 )
 from featuretools.synthesis import DeepFeatureSynthesis
-from featuretools.tests.testing_utils import (
-    feature_with_name,
-)
+from featuretools.tests.testing_utils import feature_with_name
 
 
 def test_makes_agg_features_from_str(es):

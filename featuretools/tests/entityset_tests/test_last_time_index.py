@@ -4,7 +4,6 @@ import pandas as pd
 import pytest
 
 from featuretools import Relationship
-from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
 @pytest.fixture

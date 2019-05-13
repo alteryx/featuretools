@@ -31,9 +31,7 @@ from featuretools.synthesis.deep_feature_synthesis import (
     check_stacking,
     match
 )
-from featuretools.tests.testing_utils import (
-    feature_with_name
-)
+from featuretools.tests.testing_utils import feature_with_name
 from featuretools.variable_types import (
     Datetime,
     DatetimeTimeIndex,

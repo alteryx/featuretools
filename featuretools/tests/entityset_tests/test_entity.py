@@ -7,7 +7,6 @@ import pytest
 
 import featuretools as ft
 from featuretools import variable_types
-from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
 def test_enforces_variable_id_is_str(es):

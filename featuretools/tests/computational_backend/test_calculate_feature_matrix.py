@@ -32,10 +32,7 @@ from featuretools.feature_base import (
     IdentityFeature
 )
 from featuretools.primitives import Count, Max, Min, Percentile, Sum
-from featuretools.tests.testing_utils import (
-    MockClient,
-    mock_cluster
-)
+from featuretools.tests.testing_utils import MockClient, mock_cluster
 
 
 def test_scatter_warning():

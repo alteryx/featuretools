@@ -2,7 +2,6 @@ import pandas as pd
 import pytest
 
 from featuretools import dfs
-from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
 class MockEntryPoint(object):

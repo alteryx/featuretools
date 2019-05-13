@@ -11,7 +11,6 @@ import pytest
 import featuretools as ft
 from featuretools import variable_types
 from featuretools.entityset import EntitySet, Relationship
-from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
 def test_operations_invalidate_metadata(es):
