@@ -71,6 +71,6 @@ For a similar partition and distribute implementation using Apache Spark with Py
 
 Feature Labs
 ------------
-`Feature Labs <https://www.featurelabs.com>`_ provides tools and support to organizations that want to scale their usage of Featuretools. More information is available `here <https://www.featurelabs.com/featuretools>`_.
+`Feature Labs <https://www.featurelabs.com>`_ provides tools and support to organizations that want to scale their usage of Featuretools. More information is available `here <https://www.featurelabs.com/featuretools>`__.
 
-If you would like to test `Feature Labs APIs <https://docs.featurelabs.com/>`_ for running Featuretools natively on Apache Spark or Dask, please let us know `here <https://forms.gle/TtFTH5QKM4gZtu7U7>`_.
+If you would like to test `Feature Labs APIs <https://docs.featurelabs.com/>`_ for running Featuretools natively on Apache Spark or Dask, please let us know `here <https://forms.gle/TtFTH5QKM4gZtu7U7>`__.
