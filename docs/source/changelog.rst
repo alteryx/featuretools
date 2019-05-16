@@ -2,10 +2,28 @@
 
 Changelog
 ---------
-**v0.8.0** Pre-Release
-    * PR
+**v0.8.0** May XX, 2019
+    * Rename NUnique to NumUnique (#510)
+    * Serialize features as JSON (#532)
+    * Drop all variables at once in `normalize_entity` (#533)
+    * Remove unnecessary sorting from normalize_entity (#535)
+    * Features cache their names (#536)
+    * Only calculate features for instances before cutoff (#523)
+    * Remove all relative imports (#530)
+    * Added FullName Variable Type (#506)
+    * Add error message when target entity does not exist (#520)
+    * Remove duplicate features check in DFS (#538)
+    * featuretools_primitives entry point expects list of primitive classes (#529)
+    * Update ALL_VARIABLE_TYPES list (#526)
+    * More Informative N Jobs Prints and Warnings (#511)
+    * Update sklearn version requirements (#541)
+    * Update Makefile (#519)
+    * Remove unused parameter in Entity._handle_time (#524)
+    * Remove build_ext code from setup.py (#513)
+    * Documentation updates (#512, #514, #515, #521, #522, #527)
+    * Testing updates (#509, #516, #517, #539)
 
-    Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release: @bphi, @CharlesBradshaw, @CJStadler, @glentennis, @gsheni, @kmax12, @rwedge
 
 **Breaking Changes**
 
