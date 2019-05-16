@@ -1,7 +1,9 @@
+import urllib.request
+
+import pytest
+
 from featuretools.demo import load_flight, load_mock_customer, load_retail
 from featuretools.synthesis import dfs
-import urllib.request
-import pytest
 
 
 @pytest.fixture
