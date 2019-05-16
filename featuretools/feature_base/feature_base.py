@@ -383,12 +383,16 @@ class DirectFeature(FeatureBase):
             assert self.parent_entity == relationship_path[-1].parent_entity, \
                 'Base feature must be defined on the entity at the end of relationship_path'
 
-            self._is_unique_path = \
-                bool(_find_unique_forward_path(child_entity, self.parent_entity))
+            path = _find_unique_forward_path(child_entity.id,
+                                             self.parent_entity.id,
+                                             child_entity.entityset)
+            self._is_unique_path = bool(path)
         if not relationship_path:
             assert child_entity, 'child_entity or relationship_path must be provided'
 
-            relationship_path = _find_path(child_entity, self.parent_entity,
+            relationship_path = _find_path(child_entity.id,
+                                           self.parent_entity.id,
+                                           child_entity.entityset,
                                            backward=False)
             self._is_unique_path = True
 
@@ -474,12 +478,16 @@ class AggregationFeature(FeatureBase):
             assert self.child_entity == relationship_path[-1].child_entity, \
                 'Base feature must be defined on the entity at the end of relationship_path'
 
-            self._is_unique_path = \
-                bool(_find_unique_forward_path(self.child_entity, parent_entity))
+            path = _find_unique_forward_path(self.child_entity.id,
+                                             parent_entity.id,
+                                             parent_entity.entityset)
+            self._is_unique_path = bool(path)
         else:
             assert parent_entity, "parent_entity or relationship_path must be provided."
             # Try to find path from parent to base feature
-            relationship_path = _find_path(parent_entity, self.child_entity,
+            relationship_path = _find_path(parent_entity.id,
+                                           self.child_entity.id,
+                                           parent_entity.entityset,
                                            backward=True)
             self._is_unique_path = True
 
@@ -688,24 +696,24 @@ def _check_feature(feature):
     raise Exception("Not a feature")
 
 
-def _find_path(start_entity, end_entity, backward=False):
+def _find_path(start_entity_id, end_entity_id, es, backward=False):
     """
     Finds a path of relationships between parent and child.
     If backward then it follows backward relationships instead of forward.
     Raises if there is no path or multiple possible paths.
     """
     if backward:
-        search_start = end_entity
-        search_end = start_entity
+        search_start = end_entity_id
+        search_end = start_entity_id
     else:
-        search_start = start_entity
-        search_end = end_entity
+        search_start = start_entity_id
+        search_end = end_entity_id
 
-    path = _find_unique_forward_path(search_start, search_end)
+    path = _find_unique_forward_path(search_start, search_end, es)
 
     if path is None:
         raise RuntimeError('No path from "%s" to "%s" found.'
-                           % (start_entity.id, end_entity.id))
+                           % (start_entity_id, end_entity_id))
     elif path is False:
         message = "There are multiple possible paths to the base entity. " \
                   "You must specify a relationship path."
@@ -716,13 +724,11 @@ def _find_path(start_entity, end_entity, backward=False):
         return path
 
 
-def _find_unique_forward_path(start_entity, end_entity):
+def _find_unique_forward_path(start_entity_id, end_entity_id, es):
     """
     Find a path of forward relationships between the two entities.
     Return False if there are multiple possible paths.
     """
-    es = start_entity.entityset
-
     path = None  # If we don't find a path.
 
     # Entity ids that we have visited in the graph.
@@ -738,22 +744,22 @@ def _find_unique_forward_path(start_entity, end_entity):
 
     # Pass visited_multiple so that we stop recursing once we've visited a node
     # multiple times.
-    for entity, entity_path in _depth_first_search(start_entity, es, visited_multiple, []):
+    for entity_id, entity_path in _depth_first_search(start_entity_id, es, visited_multiple, []):
         # Skip the start_entity.
         if not entity_path:
             continue
 
-        if entity.id in in_path:
+        if entity_id in in_path:
             # We have found a second path to entity, and entity has a path to
             # search_end.
             return False
 
-        if entity.id in visited:
-            visited_multiple.add(entity.id)
+        if entity_id in visited:
+            visited_multiple.add(entity_id)
         else:
-            visited.add(entity.id)
+            visited.add(entity_id)
 
-        if entity == end_entity:
+        if entity_id == end_entity_id:
             # Mark each entity in path as in_path
             for r in entity_path:
                 parent_id = r.parent_entity.id
@@ -769,15 +775,15 @@ def _find_unique_forward_path(start_entity, end_entity):
     return path
 
 
-def _depth_first_search(start_entity, es, done_entities, path):
+def _depth_first_search(start_entity_id, es, done_entities, path):
     """Generator which yields all entities connected through forward relationships."""
-    if start_entity.id in done_entities:
+    if start_entity_id in done_entities:
         return
 
-    yield start_entity, path
+    yield start_entity_id, path
 
-    for relationship in es.get_forward_relationships(start_entity.id):
-        next = relationship.parent_entity
+    for relationship in es.get_forward_relationships(start_entity_id):
+        next = relationship.parent_entity.id
         new_path = path + [relationship]
-        for entity, entity_path in _depth_first_search(next, es, done_entities, new_path):
-            yield entity, entity_path
+        for entity_id, entity_path in _depth_first_search(next, es, done_entities, new_path):
+            yield entity_id, entity_path
