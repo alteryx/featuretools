@@ -1,4 +1,8 @@
-import urllib.request
+try:
+    import urllib.request as urllib2
+except ImportError:
+    import urllib2
+
 
 import pytest
 
@@ -8,12 +12,12 @@ from featuretools.synthesis import dfs
 
 @pytest.fixture(autouse=True)
 def set_testing_headers():
-    opener = urllib.request.build_opener()
+    opener = urllib2.build_opener()
     opener.addheaders = [('Testing', 'True')]
-    urllib.request.install_opener(opener)
+    urllib2.install_opener(opener)
 
 
-def test_load_retail_diff(fix_headers):
+def test_load_retail_diff(set_testing_headers):
     nrows = 10
     es_first = load_retail(nrows=nrows)
     assert es_first['order_products'].df.shape[0] == nrows
@@ -22,14 +26,14 @@ def test_load_retail_diff(fix_headers):
     assert es_second['order_products'].df.shape[0] == nrows_second
 
 
-def test_mock_customer(fix_headers):
+def test_mock_customer(set_testing_headers):
     es = load_mock_customer(return_entityset=True)
     fm, fl = dfs(entityset=es, target_entity="customers", max_depth=3)
     for feature in fl:
         assert feature.get_name() in fm.columns
 
 
-def test_load_flight(fix_headers):
+def test_load_flight(set_testing_headers):
     es = load_flight(month_filter=[1],
                      categorical_filter={'origin_city': ['Charlotte, NC']},
                      return_single_table=False, nrows=1000)
