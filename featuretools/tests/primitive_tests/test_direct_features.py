@@ -183,6 +183,24 @@ def test_direct_with_multiple_possible_paths(diamond_es):
     assert feat.get_name() == 'customers.regions.name'
 
 
+def test_direct_with_loop():
+    # This tests the case where we first find that there are multiple paths to a
+    # node, and then that there is a path from that node to the end node.
+    employee_df = pd.DataFrame({'id': [0], 'manager_id': [0], 'company_id': [0]})
+    company_df = pd.DataFrame({'id': [0], 'name': ['A']})
+    entities = {'employees': (employee_df, 'id'), 'companies': (company_df, 'id')}
+    relationships = [
+        ('employees', 'id', 'employees', 'manager_id'),
+        ('companies', 'id', 'employees', 'company_id')
+    ]
+    es = ft.EntitySet(entities=entities, relationships=relationships)
+
+    error_text = "There are multiple possible paths to the base entity. " \
+                 "You must specify a relationship path."
+    with pytest.raises(RuntimeError, match=error_text):
+        ft.DirectFeature(es['companies']['name'], child_entity=es['employees'])
+
+
 def test_direct_with_single_possible_path(diamond_es):
     # This uses diamond_es to test that there being a cycle somewhere in the
     # graph doesn't cause an error.

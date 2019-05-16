@@ -736,7 +736,9 @@ def _find_unique_forward_path(start_entity, end_entity):
     # Entity ids from which we know there is a path to the end entity.
     in_path = set()
 
-    for entity, entity_path in _depth_first_search(start_entity, es, []):
+    # Pass visited_multiple so that we stop recursing once we've visited a node
+    # multiple times.
+    for entity, entity_path in _depth_first_search(start_entity, es, visited_multiple, []):
         # Skip the start_entity.
         if not entity_path:
             continue
@@ -748,8 +750,8 @@ def _find_unique_forward_path(start_entity, end_entity):
 
         if entity.id in visited:
             visited_multiple.add(entity.id)
-
-        visited.add(entity.id)
+        else:
+            visited.add(entity.id)
 
         if entity == end_entity:
             # Mark each entity in path as in_path
@@ -767,12 +769,15 @@ def _find_unique_forward_path(start_entity, end_entity):
     return path
 
 
-def _depth_first_search(start_entity, es, path):
+def _depth_first_search(start_entity, es, done_entities, path):
     """Generator which yields all entities connected through forward relationships."""
+    if start_entity.id in done_entities:
+        return
+
     yield start_entity, path
 
     for relationship in es.get_forward_relationships(start_entity.id):
         next = relationship.parent_entity
         new_path = path + [relationship]
-        for entity, entity_path in _depth_first_search(next, es, new_path):
+        for entity, entity_path in _depth_first_search(next, es, done_entities, new_path):
             yield entity, entity_path
