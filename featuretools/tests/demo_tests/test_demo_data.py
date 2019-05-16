@@ -6,8 +6,8 @@ from featuretools.demo import load_flight, load_mock_customer, load_retail
 from featuretools.synthesis import dfs
 
 
-@pytest.fixture
-def fix_headers():
+@pytest.fixture(autouse=True)
+def set_testing_headers():
     opener = urllib.request.build_opener()
     opener.addheaders = [('Testing', 'True')]
     urllib.request.install_opener(opener)
