@@ -1,13 +1,13 @@
-try:
-    import urllib.request as urllib2
-except ImportError:
-    import urllib2
-
-
 import pytest
 
 from featuretools.demo import load_flight, load_mock_customer, load_retail
 from featuretools.synthesis import dfs
+from featuretools.utils.gen_utils import is_python_2
+
+if is_python_2():
+    import urllib2
+else:
+    import urllib.request as urllib2
 
 
 @pytest.fixture(autouse=True)
