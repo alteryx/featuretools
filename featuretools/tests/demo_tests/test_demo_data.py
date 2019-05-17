@@ -12,7 +12,6 @@ else:
 
 @pytest.fixture(autouse=True)
 def set_testing_headers():
-    print('set_testing_headers')
     opener = urllib2.build_opener()
     opener.addheaders = [('Testing', 'True')]
     urllib2.install_opener(opener)
