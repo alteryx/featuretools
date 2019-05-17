@@ -5,15 +5,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ..testing_utils import make_ecommerce_entityset
-
 import featuretools as ft
 from featuretools import variable_types
-
-
-@pytest.fixture
-def es():
-    return make_ecommerce_entityset()
 
 
 def test_enforces_variable_id_is_str(es):
@@ -76,10 +69,10 @@ def test_update_data(es):
         es['customers'].update_data(df.drop(columns=['cohort']))
     assert 'Updated dataframe is missing new cohort column' in str(excinfo)
 
-    error_text = 'Updated dataframe contains 15 columns, expecting 14'
+    error_text = 'Updated dataframe contains 16 columns, expecting 15'
     with pytest.raises(ValueError, match=error_text) as excinfo:
         es['customers'].update_data(df)
-    assert 'Updated dataframe contains 15 columns, expecting 14' in str(excinfo)
+    assert 'Updated dataframe contains 16 columns, expecting 15' in str(excinfo)
 
     # test already_sorted on entity without time index
     df = es["sessions"].df.copy(deep=True)
@@ -112,3 +105,15 @@ def test_query_by_values_returns_rows_in_given_order():
                                   })
     query = es['test'].query_by_values(['b', 'a'], variable_id='value')
     assert np.array_equal(query['id'], [1, 3, 4, 5])
+
+
+def test_delete_variables(es):
+    entity = es['customers']
+    to_delete = ['age', 'cohort', 'email']
+    entity.delete_variables(to_delete)
+
+    variable_names = [v.id for v in entity.variables]
+
+    for var in to_delete:
+        assert var not in variable_names
+        assert var not in entity.df

@@ -1,11 +1,12 @@
 from builtins import zip
 
-from featuretools import primitives
+from featuretools import Timedelta, primitives
 from featuretools.primitives.base import (
     AggregationPrimitive,
     PrimitiveBase,
     TransformPrimitive
 )
+from featuretools.primitives.utils import serialize_primitive
 from featuretools.utils.wrangle import (
     _check_time_against_column,
     _check_timedelta
@@ -23,8 +24,6 @@ from featuretools.variable_types import (
 
 
 class FeatureBase(object):
-    _name = None
-
     def __init__(self, entity, base_features, primitive):
         """Base class for all features
 
@@ -46,8 +45,14 @@ class FeatureBase(object):
             primitive = primitive()
         self.primitive = primitive
 
+        self._name = None
+
         assert self._check_input_types(), ("Provided inputs don't match input "
                                            "type requirements")
+
+    @classmethod
+    def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
+        raise NotImplementedError("Must define from_dictionary on FeatureBase subclass")
 
     def rename(self, name):
         """Rename Feature, returns copy"""
@@ -59,9 +64,9 @@ class FeatureBase(object):
         raise NotImplementedError("Must define copy on FeatureBase subclass")
 
     def get_name(self):
-        if self._name is not None:
-            return self._name
-        return self.generate_name()
+        if not self._name:
+            self._name = self.generate_name()
+        return self._name
 
     def get_feature_names(self):
         n = self.number_output_features
@@ -190,6 +195,16 @@ class FeatureBase(object):
     def default_value(self):
         return self.primitive.default_value
 
+    def get_arguments(self):
+        raise NotImplementedError("Must define get_arguments on FeatureBase subclass")
+
+    def to_dictionary(self):
+        return {
+            'type': type(self).__name__,
+            'dependencies': [dep.unique_name() for dep in self.get_dependencies()],
+            'arguments': self.get_arguments(),
+        }
+
     def _handle_binary_comparision(self, other, Primitive, PrimitiveScalar):
         if isinstance(other, FeatureBase):
             return Feature([self, other], primitive=Primitive)
@@ -304,6 +319,9 @@ class FeatureBase(object):
     def __invert__(self):
         return self.NOT()
 
+    def unique_name(self):
+        return u"%s.%s" % (self.entity_id, self.get_name())
+
 
 class IdentityFeature(FeatureBase):
     """Feature for entity that is equivalent to underlying variable"""
@@ -314,6 +332,13 @@ class IdentityFeature(FeatureBase):
         self.return_type = type(variable)
         super(IdentityFeature, self).__init__(variable.entity, [], primitive=PrimitiveBase)
 
+    @classmethod
+    def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
+        entity_id = arguments['entity_id']
+        variable_id = arguments['variable_id']
+        variable = entityset[entity_id][variable_id]
+        return cls(variable)
+
     def copy(self):
         """Return copy of feature"""
         return IdentityFeature(self.variable)
@@ -323,6 +348,12 @@ class IdentityFeature(FeatureBase):
 
     def get_depth(self, stop_at=None):
         return 0
+
+    def get_arguments(self):
+        return {
+            'variable_id': self.variable.id,
+            'entity_id': self.variable.entity_id,
+        }
 
     @property
     def variable_type(self):
@@ -339,6 +370,12 @@ class DirectFeature(FeatureBase):
         base_feature = _check_feature(base_feature)
         self.parent_entity = base_feature.entity
         super(DirectFeature, self).__init__(child_entity, [base_feature], primitive=PrimitiveBase)
+
+    @classmethod
+    def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
+        base_feature = dependencies[arguments['base_feature']]
+        child_entity = entityset[arguments['child_entity_id']]
+        return cls(base_feature, child_entity)
 
     @property
     def variable(self):
@@ -367,6 +404,12 @@ class DirectFeature(FeatureBase):
     def get_feature_names(self):
         return [u"%s.%s" % (self.parent_entity.id, base_name)
                 for base_name in self.base_features[0].get_feature_names()]
+
+    def get_arguments(self):
+        return {
+            'base_feature': self.base_features[0].unique_name(),
+            'child_entity_id': self.entity_id
+        }
 
 
 class AggregationFeature(FeatureBase):
@@ -413,6 +456,21 @@ class AggregationFeature(FeatureBase):
                                                  base_features,
                                                  primitive=primitive)
 
+    @classmethod
+    def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
+        base_features = [dependencies[name] for name in arguments['base_features']]
+        parent_entity = entityset[arguments['parent_entity_id']]
+        primitive = primitives_deserializer.deserialize_primitive(arguments['primitive'])
+
+        use_previous_data = arguments['use_previous']
+        use_previous = use_previous_data and Timedelta.from_dictionary(use_previous_data)
+
+        where_name = arguments['where']
+        where = where_name and dependencies[where_name]
+
+        return cls(base_features, parent_entity, primitive,
+                   use_previous=use_previous, where=where)
+
     def copy(self):
         return AggregationFeature(self.base_features, parent_entity=self.parent_entity,
                                   primitive=self.primitive, use_previous=self.use_previous, where=self.where)
@@ -438,6 +496,15 @@ class AggregationFeature(FeatureBase):
                                             where_str=self._where_str(),
                                             use_prev_str=self._use_prev_str())
 
+    def get_arguments(self):
+        return {
+            'base_features': [feat.unique_name() for feat in self.base_features],
+            'parent_entity_id': self.parent_entity.id,
+            'primitive': serialize_primitive(self.primitive),
+            'where': self.where and self.where.unique_name(),
+            'use_previous': self.use_previous and self.use_previous.get_arguments(),
+        }
+
 
 class TransformFeature(FeatureBase):
     def __init__(self, base_features, primitive):
@@ -456,11 +523,23 @@ class TransformFeature(FeatureBase):
         super(TransformFeature, self).__init__(base_features[0].entity,
                                                base_features, primitive=primitive)
 
+    @classmethod
+    def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
+        base_features = [dependencies[name] for name in arguments['base_features']]
+        primitive = primitives_deserializer.deserialize_primitive(arguments['primitive'])
+        return cls(base_features, primitive)
+
     def copy(self):
         return TransformFeature(self.base_features, self.primitive)
 
     def generate_name(self):
         return self.primitive.generate_name(base_feature_names=[bf.get_name() for bf in self.base_features])
+
+    def get_arguments(self):
+        return {
+            'base_features': [feat.unique_name() for feat in self.base_features],
+            'primitive': serialize_primitive(self.primitive)
+        }
 
 
 class GroupByTransformFeature(TransformFeature):
@@ -478,6 +557,13 @@ class GroupByTransformFeature(TransformFeature):
         super(GroupByTransformFeature, self).__init__(base_features,
                                                       primitive=primitive)
 
+    @classmethod
+    def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
+        base_features = [dependencies[name] for name in arguments['base_features']]
+        primitive = primitives_deserializer.deserialize_primitive(arguments['primitive'])
+        groupby = dependencies[arguments['groupby']]
+        return cls(base_features, primitive, groupby)
+
     def copy(self):
         # the groupby feature is appended to base_features in the __init__
         # so here we separate them again
@@ -491,6 +577,16 @@ class GroupByTransformFeature(TransformFeature):
         base_names = [bf.get_name() for bf in self.base_features[:-1]]
         _name = self.primitive.generate_name(base_names)
         return u"{} by {}".format(_name, self.groupby.get_name())
+
+    def get_arguments(self):
+        # Do not include groupby in base_features.
+        feature_names = [feat.unique_name() for feat in self.base_features
+                         if feat.unique_name() != self.groupby.unique_name()]
+        return {
+            'base_features': feature_names,
+            'primitive': serialize_primitive(self.primitive),
+            'groupby': self.groupby.unique_name(),
+        }
 
 
 class Feature(object):

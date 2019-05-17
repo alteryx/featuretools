@@ -3,8 +3,8 @@ import os
 
 import pandas as pd
 
-from .relationship import Relationship
-from .serialize import FORMATS, VARIABLE_TYPES
+from featuretools.entityset.relationship import Relationship
+from featuretools.entityset.serialize import FORMATS, VARIABLE_TYPES
 
 
 def description_to_variable(description, entity=None):
@@ -76,7 +76,7 @@ def description_to_entityset(description, **kwargs):
     Returns:
         entityset (EntitySet) : Instance of :class:`.EntitySet`.
     '''
-    from .entityset import EntitySet
+    from featuretools.entityset import EntitySet
     # If data description was not read from disk, path is None.
     path = description.get('path')
     entityset = EntitySet(description['id'])

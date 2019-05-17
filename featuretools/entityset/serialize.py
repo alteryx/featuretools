@@ -2,13 +2,34 @@ import json
 import os
 import shutil
 
-from .. import variable_types
+from featuretools import variable_types
 
 FORMATS = ['csv', 'pickle', 'parquet']
 VARIABLE_TYPES = {
     str(getattr(variable_types, type).type_string): getattr(variable_types, type) for type in dir(variable_types)
     if hasattr(getattr(variable_types, type), 'type_string')
 }
+
+
+def normalize_timezones(entity):
+    '''Normalize timezones for each datetime series in entity.
+
+    Args:
+        entity (Entity) : Instance of :class:`.Entity`.
+
+    Returns:
+        entity (Entity) : Instance of :class:`.Entity` with normalized timezones.
+    '''
+    for column in entity.df:
+        if 'datetime' not in str(entity.df[column].dtype):
+            continue
+
+        if entity.df[column].dt.tz is None:
+            continue
+
+        entity.df[column] = entity.df[column].dt.tz_convert(None)
+
+    return entity
 
 
 def entity_to_description(entity):
@@ -20,6 +41,7 @@ def entity_to_description(entity):
     Returns:
         dictionary (dict) : Description of :class:`.Entity`.
     '''
+    entity = normalize_timezones(entity)
     index = entity.df.columns.isin([variable.id for variable in entity.variables])
     dtypes = entity.df[entity.df.columns[index]].dtypes.astype(str).to_dict()
     description = {

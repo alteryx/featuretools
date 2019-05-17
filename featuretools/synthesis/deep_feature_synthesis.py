@@ -1,5 +1,5 @@
 import logging
-from builtins import filter, object, str
+from builtins import filter, object
 from collections import defaultdict
 
 from featuretools import primitives, variable_types
@@ -98,6 +98,12 @@ class DeepFeatureSynthesis(object):
                  drop_contains=None,
                  drop_exact=None,
                  where_stacking_limit=1):
+
+        if target_entity_id not in entityset.entity_dict:
+            es_name = entityset.id or 'entity set'
+            msg = 'Provided target entity %s does not exist in %s' % (target_entity_id, es_name)
+            raise KeyError(msg)
+
         # need to change max_depth and max_hlevel to None because DFs terminates when  <0
         if max_depth == -1:
             max_depth = None
@@ -134,7 +140,7 @@ class DeepFeatureSynthesis(object):
         if agg_primitives is None:
             agg_primitives = [primitives.Sum, primitives.Std, primitives.Max, primitives.Skew,
                               primitives.Min, primitives.Mean, primitives.Count,
-                              primitives.PercentTrue, primitives.NUnique, primitives.Mode]
+                              primitives.PercentTrue, primitives.NumUnique, primitives.Mode]
         self.agg_primitives = []
         agg_prim_dict = primitives.get_aggregation_primitives()
         for a in agg_primitives:
@@ -239,12 +245,6 @@ class DeepFeatureSynthesis(object):
                     f.variable_type, vt) for vt in return_variable_types)]
 
         new_features = list(filter(filt, new_features))
-
-        # sanity check for duplicate features
-        hashes = [f.hash() for f in new_features]
-        assert len(set([f for f in hashes if hashes.count(f) > 1])) == 0, \
-            'Multiple features with same name' + \
-            str(set([f for f in hashes if hashes.count(f) > 1]))
 
         new_features.sort(key=lambda f: f.get_depth())
 

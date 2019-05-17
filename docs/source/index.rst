@@ -88,7 +88,7 @@ In this dataset we have two relationships
 Run Deep Feature Synthesis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A minimal input to DFS is a set of entities, a list of relationships, and the "target_entity" to calculate features for. The ouput of DFS is a feature matrix and the corresponding list of feature defintions.
+A minimal input to DFS is a set of entities, a list of relationships, and the "target_entity" to calculate features for. The ouput of DFS is a feature matrix and the corresponding list of feature definitions.
 
 Let's first create a feature matrix for each customer in the data
 

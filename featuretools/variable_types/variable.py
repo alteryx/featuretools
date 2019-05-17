@@ -358,9 +358,17 @@ class IPAddress(Variable):
     _default_pandas_dtype = str
 
 
+class FullName(Variable):
+    """Represents a person's full name. May consist of a
+    first name, last name, and a title.
+    """
+    type_string = "full_name"
+    _default_pandas_dtype = str
+
+
 class EmailAddress(Variable):
     """Represents an email box to which email message are sent.
-    Consits of a local-part, an @ symbol, and a domain.
+    Consists of a local-part, an @ symbol, and a domain.
     """
     type_string = "email"
     _default_pandas_dtype = str
@@ -414,11 +422,11 @@ class FilePath(Variable):
 
 
 ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
-                      Categorical, Text, Ordinal,
+                      Categorical, Text, Ordinal, Discrete,
                       Boolean, LatLong, ZIPCode, IPAddress,
-                      EmailAddress, URL, PhoneNumber,
+                      FullName, EmailAddress, URL, PhoneNumber,
                       DateOfBirth, CountryCode, SubRegionCode,
-                      FilePath]
+                      FilePath, DatetimeTimeIndex]
 
 
 DEFAULT_DTYPE_VALUES = {

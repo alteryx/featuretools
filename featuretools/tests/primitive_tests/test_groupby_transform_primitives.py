@@ -1,8 +1,5 @@
 import numpy as np
 import pandas as pd
-import pytest
-
-from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
 from featuretools.computational_backends import PandasBackend
@@ -15,12 +12,11 @@ from featuretools.primitives import (
     Last,
     TransformPrimitive
 )
+from featuretools.primitives.utils import (
+    PrimitivesDeserializer,
+    serialize_primitive
+)
 from featuretools.variable_types import DatetimeTimeIndex, Numeric
-
-
-@pytest.fixture
-def es():
-    return make_ecommerce_entityset()
 
 
 class TestCumCount:
@@ -318,7 +314,7 @@ def test_groupby_no_data(es):
                                      features=[last_feat],
                                      cutoff_time=pd.Timestamp("2011-04-08"))
     cvalues = df[last_feat.get_name()].values
-    assert len(cvalues) == 3
+    assert len(cvalues) == 2
     assert all([pd.isnull(value) for value in cvalues])
 
 
@@ -350,3 +346,26 @@ def test_groupby_uses_calc_time(es):
 
     for x, y in zip(df[time_since_product.get_name()], answers):
         assert ((pd.isnull(x) and pd.isnull(y)) or x == y)
+
+
+def test_serialization(es):
+    value = ft.IdentityFeature(es['log']['value'])
+    zipcode = ft.IdentityFeature(es['log']['zipcode'])
+    primitive = CumSum()
+    groupby = ft.feature_base.GroupByTransformFeature(value, primitive, zipcode)
+
+    dictionary = {
+        'base_features': [value.unique_name()],
+        'primitive': serialize_primitive(primitive),
+        'groupby': zipcode.unique_name(),
+    }
+
+    assert dictionary == groupby.get_arguments()
+    dependencies = {
+        value.unique_name(): value,
+        zipcode.unique_name(): zipcode,
+    }
+    assert groupby == \
+        ft.feature_base.GroupByTransformFeature.from_dictionary(dictionary, es,
+                                                                dependencies,
+                                                                PrimitivesDeserializer())

@@ -100,7 +100,7 @@ Aggregation Primitives
     AvgTimeBetween
     TimeSinceLast
     TimeSinceFirst
-    NUnique
+    NumUnique
     PercentTrue
     All
     Any
@@ -167,7 +167,7 @@ Text Transform Primitives
 Location Transform Primitives
 *****************************
 .. autosummary::
-   :toctree generated/
+   :toctree: generated/
 
    Latitude
    Longitude
@@ -185,7 +185,7 @@ Feature methods
 
 Feature calculation
 ~~~~~~~~~~~~~~~~~~~~
-.. currentmodule:: featuretools.computational_backends
+.. currentmodule:: featuretools
 .. autosummary::
     :toctree: generated/
 
@@ -194,7 +194,7 @@ Feature calculation
 
 Feature encoding
 ~~~~~~~~~~~~~~~~~
-.. currentmodule:: featuretools.synthesis
+.. currentmodule:: featuretools
 .. autosummary::
     :toctree: generated/
 
@@ -307,6 +307,7 @@ Variable types
     LatLong
     ZIPCode
     IPAddress
+    FullName
     EmailAddress
     URL
     PhoneNumber

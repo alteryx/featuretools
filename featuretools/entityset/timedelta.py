@@ -106,6 +106,13 @@ class Timedelta(object):
         self.inclusive = inclusive
 
     @classmethod
+    def from_dictionary(cls, dictionary):
+        return cls(dictionary['value'],
+                   unit=dictionary['unit'],
+                   entity=dictionary['entity_id'],
+                   inclusive=dictionary['inclusive'])
+
+    @classmethod
     def make_singular(cls, s):
         if len(s) > 1 and s.endswith('s'):
             return s[:-1]
@@ -166,6 +173,20 @@ class Timedelta(object):
             return pd_td.total_seconds()
         else:
             return None
+
+    def get_arguments(self):
+        return {
+            'value': self._original_value(),
+            'unit': self._original_unit or self.unit,
+            'entity_id': self.entity,
+            'inclusive': self.inclusive,
+        }
+
+    def _original_value(self):
+        if self._original_unit:
+            return self.value / self._convert_to_days[self._original_unit]
+        else:
+            return self.value
 
     def is_absolute(self):
         return self.unit != self._Observations

@@ -10,10 +10,11 @@ import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
 
-from .base_backend import ComputationalBackend
-from .feature_tree import FeatureTree
-
 from featuretools import variable_types
+from featuretools.computational_backends.base_backend import (
+    ComputationalBackend
+)
+from featuretools.computational_backends.feature_tree import FeatureTree
 from featuretools.exceptions import UnknownFeature
 from featuretools.feature_base import (
     AggregationFeature,
@@ -60,8 +61,8 @@ class PandasBackend(ComputationalBackend):
             time_last (pd.Timestamp): Last allowed time. Data from exactly this
                 time not allowed.
 
-            training_window (Timedelta, optional): Data older than
-                time_last by more than this will be ignored.
+            training_window (Timedelta, optional): Window defining how much time before the cutoff time data
+                can be used when calculating features. If None, all data before cutoff time is used.
 
             profile (bool): Enable profiler if True.
 

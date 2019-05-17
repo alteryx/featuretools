@@ -4,8 +4,6 @@ import logging
 from builtins import object
 from collections import defaultdict
 
-from ..utils import gen_utils as utils
-
 from featuretools import variable_types
 from featuretools.feature_base import (
     AggregationFeature,
@@ -13,6 +11,7 @@ from featuretools.feature_base import (
     IdentityFeature,
     TransformFeature
 )
+from featuretools.utils import gen_utils as utils
 
 logger = logging.getLogger('featuretools.computational_backend')
 

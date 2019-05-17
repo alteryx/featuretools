@@ -16,6 +16,10 @@ Glossary
     variable
         Equivalent to a column in a relational database. Represented by the :class:`.Variable` class.
 
+
+    cutoff time
+        The last point in time data is allowed to be used when calculating a feature
+
     entity
         Equivalent to a table in relational database. Represented by the :class:`.Entity` class.
 

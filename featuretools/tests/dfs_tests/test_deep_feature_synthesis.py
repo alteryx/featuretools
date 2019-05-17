@@ -5,8 +5,6 @@ import copy
 import pandas as pd
 import pytest
 
-from ..testing_utils import feature_with_name, make_ecommerce_entityset
-
 import featuretools as ft
 from featuretools.feature_base import (
     AggregationFeature,
@@ -29,32 +27,7 @@ from featuretools.primitives import (  # CumMean,
     TimeSincePrevious
 )
 from featuretools.synthesis import DeepFeatureSynthesis
-
-
-@pytest.fixture(scope='module')
-def es():
-    return make_ecommerce_entityset()
-
-
-@pytest.fixture(scope='module')
-def entities():
-    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
-    transactions_df = pd.DataFrame({
-        "id": [1, 2, 3, 4, 5, 6],
-        "card_id": [1, 2, 1, 3, 4, 5],
-        "transaction_time": [10, 12, 13, 20, 21, 20],
-        "fraud": [True, False, True, False, True, True]
-    })
-    entities = {
-        "cards": (cards_df, "id"),
-        "transactions": (transactions_df, "id", "transaction_time")
-    }
-    return entities
-
-
-@pytest.fixture(scope='module')
-def relationships():
-    return [("cards", "id", "transactions", "card_id")]
+from featuretools.tests.testing_utils import feature_with_name
 
 
 def test_makes_agg_features_from_str(es):
@@ -119,6 +92,25 @@ def test_only_makes_supplied_agg_feat(es):
 
     other_agg_features = find_other_agg_features(features)
     assert len(other_agg_features) == 0
+
+
+def test_error_for_missing_target_entity(es):
+    error_text = 'Provided target entity missing_entity does not exist in ecommerce'
+    with pytest.raises(KeyError, match=error_text):
+        DeepFeatureSynthesis(target_entity_id='missing_entity',
+                             entityset=es,
+                             agg_primitives=[Last],
+                             trans_primitives=[],
+                             ignore_entities=['log'])
+
+    es_without_id = ft.EntitySet()
+    error_text = 'Provided target entity missing_entity does not exist in entity set'
+    with pytest.raises(KeyError, match=error_text):
+        DeepFeatureSynthesis(target_entity_id='missing_entity',
+                             entityset=es_without_id,
+                             agg_primitives=[Last],
+                             trans_primitives=[],
+                             ignore_entities=['log'])
 
 
 def test_ignores_entities(es):
