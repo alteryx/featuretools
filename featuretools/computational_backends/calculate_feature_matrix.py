@@ -340,17 +340,16 @@ def calculate_chunk(chunk, features, approximate, training_window,
 
             grouped = group.groupby(cutoff_df_time_var, sort=True)
 
-        for _time_last_to_calc, group in grouped:
+        for time_last, group in grouped:
             # sort group by instance id
             ids = group['instance_id'].sort_values().values
-            time_last = group[cutoff_df_time_var].iloc[0]
             if no_unapproximated_aggs and approximate is not None:
                 window = None
             else:
                 window = training_window
 
-            # calculate values for those instances at time _time_last_to_calc
-            _feature_matrix = calc_results(_time_last_to_calc,
+            # calculate values for those instances at time time_last
+            _feature_matrix = calc_results(time_last,
                                            ids,
                                            precalculated_features=precalculated_features,
                                            training_window=window)
