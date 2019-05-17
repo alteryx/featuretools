@@ -57,15 +57,15 @@ def load_flight(month_filter=None,
                 flights.dest -> airports.dest
     '''
 
-    key, csv_length = make_flight_pathname(demo=demo)
+    filename, csv_length = get_flight_filename(demo=demo)
 
-    print('Downloading data from s3...')
-    bucket_name = 'featuretools-static'
-    s3_url = "https://s3.amazonaws.com/{}/{}".format(bucket_name, key)
+    print('Downloading data ...')
+    url = "https://api.featurelabs.com/datasets/{}?version={}".format(filename, ft.__version__)
 
     chunksize = math.ceil(csv_length / 99)
     pd.options.display.max_columns = 200
-    iter_csv = pd.read_csv(s3_url,
+    iter_csv = pd.read_csv(url,
+                           compression='zip',
                            iterator=True,
                            nrows=nrows,
                            chunksize=chunksize)
@@ -243,17 +243,15 @@ def convert(name):
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 
-def make_flight_pathname(demo=True):
+def get_flight_filename(demo=True):
     if demo:
         filename = SMALL_FLIGHT_CSV
-        key = 'bots_flight_data_2017/' + filename
         rows = 860457
     else:
         filename = BIG_FLIGHT_CSV
-        key = 'bots_flight_data_2017/' + filename
         rows = 5162742
 
-    return key, rows
+    return filename, rows
 
 
 SMALL_FLIGHT_CSV = 'data_2017_jan_feb.csv.zip'
