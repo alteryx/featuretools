@@ -449,34 +449,26 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
                                             target_entity.id,
                                             cutoffs_with_approx_e_ids[target_instance_colname])
 
-        target_entity_frames = \
-            entityset.get_pandas_data_slice(target_entity.id,
-                                            target_entity.id,
-                                            cutoffs_with_approx_e_ids[target_instance_colname])
+        path = entityset.find_path(approx_entity_id, target_entity.id)
+        rvar = get_relationship_variable_id(path)
+        parent_instance_frame = approx_entity_frames[target_entity.id]
+        cutoffs_with_approx_e_ids[rvar] = \
+            cutoffs_with_approx_e_ids.merge(parent_instance_frame[[rvar]],
+                                            left_on=target_index_var,
+                                            right_index=True,
+                                            how='left')[rvar].values
+        new_approx_entity_index_var = rvar
 
-        if approx_entity_frames or target_entity_frames:
-            path = entityset.find_path(approx_entity_id, target_entity.id)
-            rvar = get_relationship_variable_id(path)
-            parent_instance_frame = approx_entity_frames[target_entity.id]
-            cutoffs_with_approx_e_ids[rvar] = \
-                cutoffs_with_approx_e_ids.merge(parent_instance_frame[[rvar]],
-                                                left_on=target_index_var,
-                                                right_index=True,
-                                                how='left')[rvar].values
-            new_approx_entity_index_var = rvar
+        # Select only columns we care about
+        columns_we_want = [target_instance_colname,
+                           new_approx_entity_index_var,
+                           cutoff_df_time_var,
+                           target_time_colname]
 
-            # Select only columns we care about
-            columns_we_want = [target_instance_colname,
-                               new_approx_entity_index_var,
-                               cutoff_df_time_var,
-                               target_time_colname]
-
-            cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids[columns_we_want]
-            cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids.drop_duplicates()
-            cutoffs_with_approx_e_ids.dropna(subset=[new_approx_entity_index_var],
-                                             inplace=True)
-        else:
-            cutoffs_with_approx_e_ids = pd.DataFrame()
+        cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids[columns_we_want]
+        cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids.drop_duplicates()
+        cutoffs_with_approx_e_ids.dropna(subset=[new_approx_entity_index_var],
+                                         inplace=True)
 
         if cutoffs_with_approx_e_ids.empty:
             approx_fms_by_entity = gen_empty_approx_features_df(approx_features)
