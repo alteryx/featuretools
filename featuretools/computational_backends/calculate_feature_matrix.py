@@ -444,14 +444,20 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
     for approx_entity_id, approx_features in to_approximate.items():
         # Gather associated instance_ids from the approximate entity
         cutoffs_with_approx_e_ids = approx_cutoffs.copy()
-        frames = entityset.get_pandas_data_slice([approx_entity_id, target_entity.id],
-                                                 target_entity.id,
-                                                 cutoffs_with_approx_e_ids[target_instance_colname])
+        approx_entity_frames = \
+            entityset.get_pandas_data_slice(approx_entity_id,
+                                            target_entity.id,
+                                            cutoffs_with_approx_e_ids[target_instance_colname])
 
-        if frames is not None:
+        target_entity_frames = \
+            entityset.get_pandas_data_slice(target_entity.id,
+                                            target_entity.id,
+                                            cutoffs_with_approx_e_ids[target_instance_colname])
+
+        if approx_entity_frames or target_entity_frames:
             path = entityset.find_path(approx_entity_id, target_entity.id)
             rvar = get_relationship_variable_id(path)
-            parent_instance_frame = frames[approx_entity_id][target_entity.id]
+            parent_instance_frame = approx_entity_frames[target_entity.id]
             cutoffs_with_approx_e_ids[rvar] = \
                 cutoffs_with_approx_e_ids.merge(parent_instance_frame[[rvar]],
                                                 left_on=target_index_var,

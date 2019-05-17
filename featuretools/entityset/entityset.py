@@ -13,7 +13,6 @@ import featuretools.variable_types.variable as vtypes
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.entity import Entity
 from featuretools.entityset.relationship import Relationship
-from featuretools.utils.gen_utils import make_tqdm_iterator
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
@@ -268,7 +267,7 @@ class EntitySet(object):
         self.reset_data_description()
         return self
 
-    def get_pandas_data_slice(self, filter_entity_ids, index_eid,
+    def get_pandas_data_slice(self, filter_eid, index_eid,
                               instances, entity_columns=None,
                               time_last=None, training_window=None,
                               verbose=False):
@@ -276,76 +275,59 @@ class EntitySet(object):
         Get the slice of data related to the supplied instances of the index
         entity.
         """
-        eframes_by_filter = {}
+        # get the instances of the top-level entity linked by our instances
+        toplevel_slice = self.related_instances(start_entity_id=index_eid,
+                                                final_entity_id=filter_eid,
+                                                instance_ids=instances,
+                                                time_last=time_last,
+                                                training_window=training_window)
 
-        if verbose:
-            iterator = make_tqdm_iterator(iterable=filter_entity_ids,
-                                          desc="Gathering relevant data",
-                                          unit="entity")
-        else:
-            iterator = filter_entity_ids
-        # gather frames for each child, for each parent
-        for filter_eid in iterator:
-            # get the instances of the top-level entity linked by our instances
-            toplevel_slice = self.related_instances(start_entity_id=index_eid,
-                                                    final_entity_id=filter_eid,
-                                                    instance_ids=instances,
-                                                    time_last=time_last,
-                                                    training_window=training_window)
+        eframes = {filter_eid: toplevel_slice}
 
-            eframes = {filter_eid: toplevel_slice}
+        # Do a breadth-first search of the relationship tree rooted at this
+        # entity, filling out eframes for each entity we hit on the way.
+        r_queue = self.get_backward_relationships(filter_eid)
+        while r_queue:
+            r = r_queue.pop(0)
+            child_eid = r.child_variable.entity.id
+            child_columns = None
+            if entity_columns is not None and child_eid not in entity_columns:
+                # entity_columns specifies which columns to extract
+                # if it skips a relationship (specifies child and grandparent columns)
+                # we need to at least add the ids of the intermediate entity
+                child_columns = [v.id for v in self[child_eid].variables
+                                 if isinstance(v, (vtypes.Index, vtypes.Id,
+                                                   vtypes.TimeIndex))]
+            elif entity_columns is not None:
+                child_columns = entity_columns[child_eid]
 
-            # Do a bredth-first search of the relationship tree rooted at this
-            # entity, filling out eframes for each entity we hit on the way.
-            r_queue = self.get_backward_relationships(filter_eid)
-            while r_queue:
-                r = r_queue.pop(0)
-                child_eid = r.child_variable.entity.id
-                child_columns = None
-                if entity_columns is not None and child_eid not in entity_columns:
-                    # entity_columns specifies which columns to extract
-                    # if it skips a relationship (specifies child and grandparent columns)
-                    # we need to at least add the ids of the intermediate entity
-                    child_columns = [v.id for v in self[child_eid].variables
-                                     if isinstance(v, (vtypes.Index, vtypes.Id,
-                                                       vtypes.TimeIndex))]
-                elif entity_columns is not None:
-                    child_columns = entity_columns[child_eid]
+            parent_eid = r.parent_variable.entity.id
 
-                parent_eid = r.parent_variable.entity.id
+            # If we've already seen this child, this is a diamond graph and
+            # we don't know what to do
+            if child_eid in eframes:
+                raise RuntimeError('Diamond graph detected!')
 
-                # If we've already seen this child, this is a diamond graph and
-                # we don't know what to do
-                if child_eid in eframes:
-                    raise RuntimeError('Diamond graph detected!')
+            # Add this child's children to the queue
+            r_queue += self.get_backward_relationships(child_eid)
 
-                # Add this child's children to the queue
-                r_queue += self.get_backward_relationships(child_eid)
+            # Query the child of the current backwards relationship for the
+            # instances we want
+            instance_vals = eframes[parent_eid][r.parent_variable.id]
+            eframes[child_eid] =\
+                self.entity_dict[child_eid].query_by_values(
+                    instance_vals,
+                    variable_id=r.child_variable.id,
+                    columns=child_columns,
+                    time_last=time_last,
+                    training_window=training_window)
 
-                # Query the child of the current backwards relationship for the
-                # instances we want
-                instance_vals = eframes[parent_eid][r.parent_variable.id]
-                eframes[child_eid] =\
-                    self.entity_dict[child_eid].query_by_values(
-                        instance_vals,
-                        variable_id=r.child_variable.id,
-                        columns=child_columns,
-                        time_last=time_last,
-                        training_window=training_window)
-
-                # add link variables to this dataframe in order to link it to its
-                # (grand)parents
-                self._add_multigenerational_link_vars(frames=eframes,
-                                                      start_entity_id=filter_eid,
-                                                      end_entity_id=child_eid)
-
-            eframes_by_filter[filter_eid] = eframes
-
-        # If there are no instances of *this* entity in the index, return None
-        if eframes_by_filter[index_eid][index_eid].shape[0] == 0:
-            return None
-
-        return eframes_by_filter
+            # add link variables to this dataframe in order to link it to its
+            # (grand)parents
+            self._add_multigenerational_link_vars(frames=eframes,
+                                                  start_entity_id=filter_eid,
+                                                  end_entity_id=child_eid)
+        return eframes
 
     ###########################################################################
     #   Relationship access/helper methods  ###################################
