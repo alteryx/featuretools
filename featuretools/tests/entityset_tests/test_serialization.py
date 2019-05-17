@@ -5,7 +5,12 @@ import pandas as pd
 import pytest
 
 from featuretools.demo import load_mock_customer
-from featuretools.entityset import EntitySet, deserialize, serialize, read_entityset
+from featuretools.entityset import (
+    EntitySet,
+    deserialize,
+    read_entityset,
+    serialize
+)
 from featuretools.tests import integration_data
 
 CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
