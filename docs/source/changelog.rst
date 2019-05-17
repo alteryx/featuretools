@@ -2,28 +2,29 @@
 
 Changelog
 ---------
-**v0.8.0** May XX, 2019
-    * Rename NUnique to NumUnique (#510)
-    * Serialize features as JSON (#532)
-    * Drop all variables at once in `normalize_entity` (#533)
-    * Remove unnecessary sorting from normalize_entity (#535)
-    * Features cache their names (#536)
-    * Only calculate features for instances before cutoff (#523)
-    * Remove all relative imports (#530)
-    * Added FullName Variable Type (#506)
-    * Add error message when target entity does not exist (#520)
-    * Remove duplicate features check in DFS (#538)
-    * featuretools_primitives entry point expects list of primitive classes (#529)
-    * Update ALL_VARIABLE_TYPES list (#526)
-    * More Informative N Jobs Prints and Warnings (#511)
-    * Update sklearn version requirements (#541)
-    * Update Makefile (#519)
-    * Remove unused parameter in Entity._handle_time (#524)
-    * Remove build_ext code from setup.py (#513)
-    * Documentation updates (#512, #514, #515, #521, #522, #527)
-    * Testing updates (#509, #516, #517, #539)
+**v0.8.0** May 17, 2019
+    * Rename NUnique to NumUnique (:pr:`510`)
+    * Serialize features as JSON (:pr:`532`)
+    * Drop all variables at once in normalize_entity (:pr:`533`)
+    * Remove unnecessary sorting from normalize_entity (:pr:`535`)
+    * Features cache their names (:pr:`536`)
+    * Only calculate features for instances before cutoff (:pr:`523`)
+    * Remove all relative imports (:pr:`530`)
+    * Added FullName Variable Type (:pr:`506`)
+    * Add error message when target entity does not exist (:pr:`520`)
+    * New demo links (:pr:`542`)
+    * Remove duplicate features check in DFS (:pr:`538`)
+    * featuretools_primitives entry point expects list of primitive classes (:pr:`529`)
+    * Update ALL_VARIABLE_TYPES list (:pr:`526`)
+    * More Informative N Jobs Prints and Warnings (:pr:`511`)
+    * Update sklearn version requirements (:pr:`541`)
+    * Update Makefile (:pr:`519`)
+    * Remove unused parameter in Entity._handle_time (:pr:`524`)
+    * Remove build_ext code from setup.py (:pr:`513`)
+    * Documentation updates (:pr:`512`, :pr:`514`, :pr:`515`, :pr:`521`, :pr:`522`, :pr:`527`, :pr:`545`)
+    * Testing updates (:pr:`509`, :pr:`516`, :pr:`517`, :pr:`539`)
 
-    Thanks to the following people for contributing to this release: @bphi, @CharlesBradshaw, @CJStadler, @glentennis, @gsheni, @kmax12, @rwedge
+    Thanks to the following people for contributing to this release: :user:`bphi`, :user:`CharlesBradshaw`, :user:`CJStadler`, :user:`glentennis`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`
 
 **Breaking Changes**
 
