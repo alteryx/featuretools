@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from ...demo import load_mock_customer
-from ...entityset import EntitySet, deserialize, serialize
+from ...entityset import EntitySet, deserialize, serialize, read_entityset
 from ...tests import integration_data
 from ..testing_utils import make_ecommerce_entityset
 
@@ -84,12 +84,18 @@ def test_empty_dataframe(entityset):
 
 
 def test_empty_dataframe_tz():
+    path = "/tmp/test"
     timezones = ['UTC', 'CET', 'EST', 'HST']
     for tz in timezones:
         es = EntitySet()
         df = pd.DataFrame({"time": pd.date_range("1/1/2019", "1/10/2019", tz=tz)})
         es.entity_from_dataframe(entity_id="test", index="id", dataframe=df)
         assert es.metadata['test'].df.empty
+
+        es.to_csv(path)
+        es2 = read_entityset(path)
+        assert es2["test"].df["time"].dtype == es["test"].df["time"].dtype
+
 
 
 def test_to_csv(entityset):
