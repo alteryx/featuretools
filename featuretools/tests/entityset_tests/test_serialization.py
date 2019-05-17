@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from featuretools.demo import load_mock_customer
-from featuretools.entityset import EntitySet, deserialize, serialize
+from featuretools.entityset import EntitySet, deserialize, serialize, read_entityset
 from featuretools.tests import integration_data
 
 CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
@@ -75,6 +75,20 @@ def test_empty_dataframe(es):
         description = serialize.entity_to_description(entity)
         dataframe = deserialize.empty_dataframe(description)
         assert dataframe.empty
+
+
+def test_empty_dataframe_tz():
+    path = os.path.join(CACHE, 'es')
+    for tz in ['UTC', 'CET', 'EST', 'HST']:
+        es = EntitySet()
+        df = pd.DataFrame({"time": pd.date_range("1/1/2019", "1/10/2019", tz=tz)})
+        es.entity_from_dataframe(entity_id="test", index="id", dataframe=df)
+        assert es.metadata['test'].df.empty
+
+        es.to_csv(path)
+        es2 = read_entityset(path)
+        assert es2["test"].df["time"].dtype == es["test"].df["time"].dtype
+        shutil.rmtree(path)
 
 
 def test_to_csv(es):

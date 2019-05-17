@@ -11,6 +11,27 @@ VARIABLE_TYPES = {
 }
 
 
+def normalize_timezones(entity):
+    '''Normalize timezones for each datetime series in entity.
+
+    Args:
+        entity (Entity) : Instance of :class:`.Entity`.
+
+    Returns:
+        entity (Entity) : Instance of :class:`.Entity` with normalized timezones.
+    '''
+    for column in entity.df:
+        if 'datetime' not in str(entity.df[column].dtype):
+            continue
+
+        if entity.df[column].dt.tz is None:
+            continue
+
+        entity.df[column] = entity.df[column].dt.tz_convert(None)
+
+    return entity
+
+
 def entity_to_description(entity):
     '''Serialize entity to data description.
 
@@ -20,6 +41,7 @@ def entity_to_description(entity):
     Returns:
         dictionary (dict) : Description of :class:`.Entity`.
     '''
+    entity = normalize_timezones(entity)
     index = entity.df.columns.isin([variable.id for variable in entity.variables])
     dtypes = entity.df[entity.df.columns[index]].dtypes.astype(str).to_dict()
     description = {
