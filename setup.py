@@ -8,7 +8,7 @@ with open(path.join(dirname, 'README.md')) as f:
 
 setup(
     name='featuretools',
-    version='0.7.1',
+    version='0.8.0',
     packages=find_packages(),
     description='a framework for automated feature engineering',
     url='http://featuretools.com',
