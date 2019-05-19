@@ -264,6 +264,21 @@ def test_cutoff_time_binning():
         assert binned_cutoff_times['time'][i] == labels[i]
 
 
+def test_cutoff_time_columns_order(es):
+    property_feature = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
+    times = [datetime(2011, 4, 10), datetime(2011, 4, 11), datetime(2011, 4, 7)]
+    cutoff_time = pd.DataFrame({'dummy_col_1':[1,2,3],
+                                'instance_id': [0, 1, 2],
+                                'dummy_col_2':[True, False, False],
+                                'time': times})
+    feature_matrix = calculate_feature_matrix([property_feature],
+                                              es,
+                                              cutoff_time=cutoff_time)
+
+    labels = [0, 10, 5]
+    assert (feature_matrix[property_feature.get_name()] == labels).values.all()
+
+
 def test_training_window(es):
     property_feature = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
     top_level_agg = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count)
