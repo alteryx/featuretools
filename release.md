@@ -157,8 +157,8 @@ After the release pull request has been merged into the master branch, it is tim
     docker run \
         --rm \
         -it \
-        -v /path/to/upload.sh:/home/circleci/upload.sh \
-        circleci/python:3
+        -v /absolute/path/to/upload.sh:/home/circleci/upload.sh \
+        circleci/python:3 \
         /bin/bash -c "bash /home/circleci/upload.sh tags/release_tag"
     ```
 
