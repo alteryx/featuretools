@@ -153,6 +153,8 @@ After the release pull request has been merged into the master branch, it is tim
     docker pull circleci/python:3
     ```
 2. Run upload script
+    * Replace `/absolute/path/to/upload.sh` with the actual path
+    * Replace the "release_tag" part of `tags/release_tag` with the actual tag
     ```bash
     docker run \
         --rm \
