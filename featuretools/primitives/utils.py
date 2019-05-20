@@ -150,6 +150,7 @@ class PrimitivesDeserializer(object):
     deseriazing the next primitive the iteration resumes where it left off. This
     means that we never visit a class more than once.
     """
+
     def __init__(self):
         self.class_cache = {}  # (class_name, module_name) -> class
         self.primitive_classes = _descendants(PrimitiveBase)
