@@ -715,6 +715,14 @@ class EntitySet(object):
             if v == index:
                 raise ValueError("Not copying {} as both index and variable".format(v))
                 break
+
+        if isinstance(make_time_index, str):
+            if make_time_index not in base_entity.df.columns:
+                raise ValueError("'make_time_index' must be a variable in the base frame")
+            elif make_time_index not in additional_variables + copy_variables + [index
+            ]:
+                raise ValueError("'make_time_index' must be a variable specified in 'additional_variables' or 'copy_variables'")
+
         new_index = index
 
         transfer_types = {}
