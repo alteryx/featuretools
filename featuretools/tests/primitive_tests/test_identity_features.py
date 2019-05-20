@@ -2,6 +2,11 @@ import featuretools as ft
 from featuretools.primitives.utils import PrimitivesDeserializer
 
 
+def test_relationship_path(es):
+    value = ft.IdentityFeature(es['log']['value'])
+    assert value.relationship_path == []
+
+
 def test_serialization(es):
     value = ft.IdentityFeature(es['log']['value'])
 

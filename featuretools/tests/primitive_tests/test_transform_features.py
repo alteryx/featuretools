@@ -87,6 +87,12 @@ def test_init_and_name(es):
             ft.calculate_feature_matrix([instance], entityset=es).head(5)
 
 
+def test_relationship_path(es):
+    f = ft.TransformFeature(es['log']['datetime'], Hour)
+
+    assert f.relationship_path == []
+
+
 def test_serialization(es):
     value = ft.IdentityFeature(es['log']['value'])
     primitive = ft.primitives.MultiplyNumericScalar(value=2)

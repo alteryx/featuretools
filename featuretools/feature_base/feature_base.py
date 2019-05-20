@@ -24,7 +24,7 @@ from featuretools.variable_types import (
 
 
 class FeatureBase(object):
-    def __init__(self, entity, base_features, primitive):
+    def __init__(self, entity, base_features, relationship_path, primitive):
         """Base class for all features
 
         Args:
@@ -44,6 +44,8 @@ class FeatureBase(object):
         if not isinstance(primitive, PrimitiveBase):
             primitive = primitive()
         self.primitive = primitive
+
+        self.relationship_path = relationship_path
 
         self._name = None
 
@@ -330,7 +332,7 @@ class IdentityFeature(FeatureBase):
         entity_id = variable.entity_id
         self.variable = variable.entityset.metadata[entity_id][variable.id]
         self.return_type = type(variable)
-        super(IdentityFeature, self).__init__(variable.entity, [], primitive=PrimitiveBase)
+        super(IdentityFeature, self).__init__(variable.entity, [], [], primitive=PrimitiveBase)
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
@@ -396,8 +398,8 @@ class DirectFeature(FeatureBase):
                                            backward=False)
             self._is_unique_path = True
 
-        self.relationship_path = relationship_path
-        super(DirectFeature, self).__init__(child_entity, [base_feature], primitive=PrimitiveBase)
+        super(DirectFeature, self).__init__(child_entity, [base_feature], relationship_path,
+                                            primitive=PrimitiveBase)
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
@@ -491,8 +493,6 @@ class AggregationFeature(FeatureBase):
                                            backward=True)
             self._is_unique_path = True
 
-        self.relationship_path = relationship_path
-
         self.parent_entity = parent_entity.entityset.metadata[parent_entity.id]
 
         if where is not None:
@@ -516,6 +516,7 @@ class AggregationFeature(FeatureBase):
 
         super(AggregationFeature, self).__init__(parent_entity,
                                                  base_features,
+                                                 relationship_path,
                                                  primitive=primitive)
 
     @classmethod
@@ -589,7 +590,9 @@ class TransformFeature(FeatureBase):
         assert all(bf.number_output_features == 1 for bf in base_features)
 
         super(TransformFeature, self).__init__(base_features[0].entity,
-                                               base_features, primitive=primitive)
+                                               base_features,
+                                               [],
+                                               primitive=primitive)
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
