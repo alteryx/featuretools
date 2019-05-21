@@ -24,9 +24,7 @@ commands:
       - run: |
           virtualenv test_ft_complete_env
           source test_ft_complete_env/bin/activate
-          python setup.py sdist
           FEATURETOOLS_VERSION=$(python setup.py --version)
-          tar -zxvf "dist/featuretools-${FEATURETOOLS_VERSION}.tar.gz"
           pip install -e "featuretools-${FEATURETOOLS_VERSION}/[complete]"
           python -c "import featuretools_tsfresh_primitives"
           python -c "import featuretools_update_checker"
