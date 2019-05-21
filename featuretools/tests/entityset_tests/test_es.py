@@ -819,7 +819,7 @@ def test_normalize_entity(es):
         es.normalize_entity('sessions', 'device_types', 'device_type',
                             make_time_index="nonextistent")
 
-    error_text = "'make_time_index' must specified in 'additional_variables', 'copy_variables', or 'index'"
+    error_text = "'make_time_index' must specified in 'additional_variables', 'copy_variables'"
     with pytest.raises(ValueError, match=error_text):
         es.normalize_entity('sessions', 'device_types', 'device_type',
                             make_time_index='ip')
@@ -838,7 +838,7 @@ def test_normalize_entity(es):
 
 def test_normalize_time_index_from_none(es):
     es['customers'].time_index = None
-    es.normalize_entity('customers', 'birthdays', 'date_of_birth', make_time_index='date_of_birth')
+    es.normalize_entity('customers', 'birthdays', 'id', copy_variables=['date_of_birth'], make_time_index='date_of_birth')
     assert es['birthdays'].time_index == 'date_of_birth'
     assert es['birthdays'].df['date_of_birth'].is_monotonic_increasing
 
