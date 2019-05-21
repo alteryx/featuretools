@@ -28,8 +28,8 @@ commands:
           FEATURETOOLS_VERSION=$(python setup.py --version)
           tar -zxvf "dist/featuretools-${FEATURETOOLS_VERSION}.tar.gz"
           pip install -e "featuretools-${FEATURETOOLS_VERSION}/[complete]"
-          python -c "from featuretools.tsfresh import AggAutocorrelation, Mean"
-          python -c "from featuretools_update_checker.utils import get_response_json"
+          python -c "import featuretools_tsfresh_primitives"
+          python -c "import featuretools_update_checker"
 
 jobs:
   "python-27":
