@@ -18,6 +18,15 @@ commands:
           source test_env/bin/activate
           cd "featuretools-$(python setup.py --version)/"
           pytest
+  install-ft-complete-and-run-import-tests:
+    description: "run unit tests on packaged testing files"
+    steps:
+      - run: |
+          virtualenv test_ft_complete_env
+          source test_ft_complete_env/bin/activate
+          pip install "featuretools[complete]"
+          python -c "from featuretools.tsfresh import AggAutocorrelation, Mean"
+          python -c "from featuretools_update_checker.utils import get_response_json"
 
 jobs:
   "python-27":
@@ -32,6 +41,7 @@ jobs:
       - run: source dev_env/bin/activate && make installdeps
       - run: source dev_env/bin/activate && make lint
       - run-packaged-tests
+      - install-ft-complete-and-run-import-tests
 
   "python-35":
     working_directory: ~/featuretools
@@ -45,6 +55,7 @@ jobs:
       - run: source dev_env/bin/activate && make installdeps
       - run: source dev_env/bin/activate && make lint
       - run-packaged-tests
+      - install-ft-complete-and-run-import-tests
 
   "python-36":
     working_directory: ~/featuretools
@@ -58,6 +69,7 @@ jobs:
       - run: source dev_env/bin/activate && make installdeps
       - run: source dev_env/bin/activate && make lint
       - run-packaged-tests
+      - install-ft-complete-and-run-import-tests
       - run: source dev_env/bin/activate && make -C docs/ -e "SPHINXOPTS=-W" clean html
 
   "python-37":
@@ -71,6 +83,7 @@ jobs:
       - install-packaged-featuretools
       - run: source dev_env/bin/activate && make installdeps
       - run: source dev_env/bin/activate && make lint
+      - install-ft-complete-and-run-import-tests
       - run: |
           source test_env/bin/activate
           pip install "$(cat dev-requirements.txt | grep codecov)"
