@@ -1,3 +1,15 @@
+def relationship_path_name(path, is_forward):
+    def direction_name(r):
+        if is_forward:
+            return r.parent_name
+        else:
+            return r.child_name
+
+    relationship_names = [direction_name(r) for r in path]
+
+    return '.'.join(relationship_names)
+
+
 class Relationship(object):
     """Class to represent an relationship between entities
 

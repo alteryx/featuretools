@@ -1,7 +1,6 @@
 import copy
-import itertools
 import logging
-from builtins import object, range, zip
+from builtins import object, range
 from collections import defaultdict
 
 import cloudpickle
@@ -1161,59 +1160,46 @@ class EntitySet(object):
         assert start_entity_id is not None
         if path is None:
             assert end_entity_id is not None
-            path = self.find_path(start_entity_id, end_entity_id)
+            path = next(self.find_backward_paths(start_entity_id, end_entity_id))
 
-        directions = self.path_relationships(path, start_entity_id)
-        relationship_directions = list(zip(directions, path))
-        groups = itertools.groupby(relationship_directions, key=lambda k: k[0])
+        # generate a list of all sub-paths which have at least 2
+        # relationships
+        sub_paths = [path[i:] for i in range(len(path) - 1)]
 
-        # each group is a contiguous series of backward relationships on `path`
-        for key, group in groups:
-            if key != 'backward':
-                continue
+        for sub_path in sub_paths:
+            # pop off the first relationship: this one already has a
+            # direct variable link, but we'll need to remember its link
+            # variable name for later.
+            r = sub_path.pop(0)
+            child_link_name = r.child_variable.id
 
-            # extract the path again
-            chain = [g[1] for g in group]
+            # step through each deep relationship of the subpath
+            for r in sub_path:
+                parent_entity = r.parent_entity
+                child_entity = r.child_entity
+                parent_df = frames[parent_entity.id]
+                child_df = frames[child_entity.id]
 
-            # generate a list of all sub-paths which have at least 2
-            # relationships
-            rel_chains = [chain[i:] for i in range(len(chain) - 1)]
+                # generate the link variable name
+                parent_link_name = child_link_name
+                child_link_name = '%s.%s' % (parent_entity.id,
+                                             parent_link_name)
+                if child_link_name in child_df.columns:
+                    continue
 
-            # loop over all subpaths
-            for chain in rel_chains:
-                # pop off the first relationship: this one already has a
-                # direct variable link, but we'll need to remember its link
-                # variable name for later.
-                r = chain.pop(0)
-                child_link_name = r.child_variable.id
+                # print('    adding link var %s to entity %s' % (child_link_name,
+                #                                                child_entity.id))
 
-                # step through each deep relationship of the subpath
-                for r in chain:
-                    parent_entity = r.parent_entity
-                    child_entity = r.child_entity
-                    parent_df = frames[parent_entity.id]
-                    child_df = frames[child_entity.id]
+                # create an intermediate dataframe which shares a column
+                # with the child dataframe and has a column with the
+                # original parent's id.
+                col_map = {r.parent_variable.id: r.child_variable.id,
+                           parent_link_name: child_link_name}
+                merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
 
-                    # generate the link variable name
-                    parent_link_name = child_link_name
-                    child_link_name = '%s.%s' % (parent_entity.id,
-                                                 parent_link_name)
-                    if child_link_name in child_df.columns:
-                        continue
+                merge_df.index.name = None  # change index name for merge
 
-                    # print 'adding link var %s to entity %s' % (child_link_name,
-                    #                                            child_entity.id)
-
-                    # create an intermediate dataframe which shares a column
-                    # with the child dataframe and has a column with the
-                    # original parent's id.
-                    col_map = {r.parent_variable.id: r.child_variable.id,
-                               parent_link_name: child_link_name}
-                    merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
-
-                    merge_df.index.name = None  # change index name for merge
-
-                    # merge the dataframe, adding the link variable to the child
-                    frames[child_entity.id] = merge_df.merge(child_df,
-                                                             left_on=r.child_variable.id,
-                                                             right_on=r.child_variable.id)
+                # merge the dataframe, adding the link variable to the child
+                frames[child_entity.id] = merge_df.merge(child_df,
+                                                         left_on=r.child_variable.id,
+                                                         right_on=r.child_variable.id)

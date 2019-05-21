@@ -68,7 +68,6 @@ class PandasBackend(ComputationalBackend):
 
         """
         assert len(instance_ids) > 0, "0 instance ids provided"
-        self.instance_ids = instance_ids
 
         self.time_last = time_last
         if self.time_last is None:
@@ -163,44 +162,9 @@ class PandasBackend(ComputationalBackend):
                     if large_necessary_columns and finished_eid in large_finished_entities:
                         large_entity_frames[finished_eid] = large_finished_entities[finished_eid]
 
-            if filter_eid in self.feature_tree.ordered_feature_groups:
-                for group in self.feature_tree.ordered_feature_groups[filter_eid]:
-                    test_feature = group[0]
-                    entity_id = test_feature.entity.id
-
-                    input_frames_type = self.feature_tree.input_frames_type(test_feature)
-
-                    input_frames = large_entity_frames
-                    if input_frames_type == "subset_entity_frames":
-                        input_frames = entity_frames
-
-                    handler = self._feature_type_handler(test_feature)
-                    result_frame = handler(group, input_frames)
-
-                    output_frames_type = self.feature_tree.output_frames_type(test_feature)
-                    if output_frames_type in ['full_and_subset_entity_frames', 'subset_entity_frames']:
-                        index = entity_frames[entity_id].index
-                        # If result_frame came from a uses_full_entity feature,
-                        # and the input was large_entity_frames,
-                        # then it's possible it doesn't contain some of the features
-                        # in the output entity_frames
-                        # We thus need to concatenate the existing frame with the result frame,
-                        # making sure not to duplicate any columns
-                        _result_frame = result_frame.reindex(index)
-                        cols_to_keep = [c for c in _result_frame.columns
-                                        if c not in entity_frames[entity_id].columns]
-                        entity_frames[entity_id] = pd.concat([entity_frames[entity_id],
-                                                              _result_frame[cols_to_keep]],
-                                                             axis=1)
-
-                    if output_frames_type in ['full_and_subset_entity_frames', 'full_entity_frames']:
-                        index = large_entity_frames[entity_id].index
-                        _result_frame = result_frame.reindex(index)
-                        cols_to_keep = [c for c in _result_frame.columns
-                                        if c not in large_entity_frames[entity_id].columns]
-                        large_entity_frames[entity_id] = pd.concat([large_entity_frames[entity_id],
-                                                                    _result_frame[cols_to_keep]],
-                                                                   axis=1)
+            for group in self.feature_tree.ordered_feature_groups[filter_eid]:
+                self._calculate_feature_group(group, entity_frames,
+                                              large_entity_frames)
 
             finished_entities[filter_eid] = entity_frames[filter_eid]
             if large_entity_frames:
@@ -252,6 +216,48 @@ class PandasBackend(ComputationalBackend):
                 if c not in default_df.columns:
                     default_df[c] = [np.nan] * len(instance_ids)
         return default_df
+
+    def _calculate_feature_group(self, group, entity_frames, large_entity_frames):
+        """
+        Calculate the features in group and update entity_frames and/or
+        large_entity_frames with the results.
+        """
+        test_feature = group[0]
+        entity_id = test_feature.entity.id
+
+        input_frames_type = self.feature_tree.input_frames_type(test_feature)
+
+        input_frames = large_entity_frames
+        if input_frames_type == "subset_entity_frames":
+            input_frames = entity_frames
+
+        handler = self._feature_type_handler(test_feature)
+        result_frame = handler(group, input_frames)
+
+        output_frames_type = self.feature_tree.output_frames_type(test_feature)
+        if output_frames_type in ['full_and_subset_entity_frames', 'subset_entity_frames']:
+            index = entity_frames[entity_id].index
+            # If result_frame came from a uses_full_entity feature,
+            # and the input was large_entity_frames,
+            # then it's possible it doesn't contain some of the features
+            # in the output entity_frames
+            # We thus need to concatenate the existing frame with the result frame,
+            # making sure not to duplicate any columns
+            _result_frame = result_frame.reindex(index)
+            cols_to_keep = [c for c in _result_frame.columns
+                            if c not in entity_frames[entity_id].columns]
+            entity_frames[entity_id] = pd.concat([entity_frames[entity_id],
+                                                  _result_frame[cols_to_keep]],
+                                                 axis=1)
+
+        if output_frames_type in ['full_and_subset_entity_frames', 'full_entity_frames']:
+            index = large_entity_frames[entity_id].index
+            _result_frame = result_frame.reindex(index)
+            cols_to_keep = [c for c in _result_frame.columns
+                            if c not in large_entity_frames[entity_id].columns]
+            large_entity_frames[entity_id] = pd.concat([large_entity_frames[entity_id],
+                                                        _result_frame[cols_to_keep]],
+                                                       axis=1)
 
     def _feature_type_handler(self, f):
         if type(f) == TransformFeature:
@@ -352,10 +358,9 @@ class PandasBackend(ComputationalBackend):
 
         assert entity_id in entity_frames and parent_entity_id in entity_frames
 
-        paths = self.entityset.find_forward_paths(entity_id, parent_entity_id)
-        path = next(paths)
+        path = features[0].relationship_path
         assert len(path) == 1, \
-            "Error calculating DirectFeatures, len(path) > 1"
+            "Error calculating DirectFeatures, len(path) != 1"
 
         parent_df = entity_frames[parent_entity_id]
         child_df = entity_frames[entity_id]
@@ -418,9 +423,7 @@ class PandasBackend(ComputationalBackend):
             for f in features:
                 frame[f.get_name()] = np.nan
         else:
-            relationship_paths = self.entityset.find_backward_paths(entity.id,
-                                                                    child_entity.id)
-            relationship_path = next(relationship_paths)
+            relationship_path = test_feature.relationship_path
 
             groupby_var = get_relationship_variable_id(relationship_path)
 

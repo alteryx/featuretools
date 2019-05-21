@@ -29,8 +29,11 @@ class FeatureTree(object):
         # self.feature_hashes is a list of hashes of each feature
         self.feature_hashes = set([f.hash() for f in features])
 
-        # maps a hash of each feature to the actual feature.
+        # Maps a hash of each feature to the actual feature. This is necessary
+        # because features do not support equality and so cannot be used as
+        # dictionary keys.
         hash_to_feature_map = {f.hash(): f for f in features}
+
         feature_dependencies = {}
         feature_dependents = defaultdict(set)
         for f in features:
@@ -43,9 +46,6 @@ class FeatureTree(object):
                 feature_dependencies[dep.hash()] = subdeps
                 for sd in subdeps:
                     feature_dependents[sd.hash()].add(dep.hash())
-        # turn values which were hashes of features into the features themselves
-        # (note that they were hashes to prevent checking equality of feature objects,
-        #  which is not currently an allowed operation)
 
         # self.feature_dependents and self.feature_dependencies are the same DAG
         # with reversed cardinality
@@ -63,9 +63,10 @@ class FeatureTree(object):
         self.all_features = list(hash_to_feature_map.values())
         self._find_necessary_columns()
 
-        self._generate_feature_tree(features)
-        self._order_entities()
-        self._order_feature_groups()
+        self.top_level_entity_features = self._generate_top_level_entity_features()
+        self.entity_dependencies = self._get_entity_dependencies()
+        self.ordered_entities = self._order_entities()
+        self.ordered_feature_groups = self._order_feature_groups()
 
     def _find_necessary_columns(self):
         # TODO: Can try to remove columns that are only used in the
@@ -105,22 +106,30 @@ class FeatureTree(object):
         self.necessary_columns_for_all_values_features = {
             eid: list(cols) for eid, cols in self.necessary_columns_for_all_values_features.items()}
 
-    def _generate_feature_tree(self, features):
+    def _generate_top_level_entity_features(self):
         """
-        Given a set of features for a target entity, build a tree linking
-        top-level entities in the entityset to the features that need to be
-        calculated on each.
-        """
-        # build a set of all features, including top-level features and
-        # dependencies.
-        self.top_level_features = defaultdict(list)
+        Returns a dictionary mapping top level entitys (by id) to the features
+        defined on them.
 
-        # find top-level features and index them by entity id.
+        Top level entities are those which are referenced by any feature through
+        a forward path.
+        """
+        top_level_entities = set([self.target_eid])
         for f in self.all_features:
-            _, num_forward = self.entityset.find_path(self.target_eid, f.entity.id,
-                                                      include_num_forward=True)
-            if num_forward or f.entity.id == self.target_eid:
-                self.top_level_features[f.entity.id].append(f)
+            through_forward_path = f.relationship_path and \
+                f.relationship_path[0].child_entity.id == f.entity.id
+
+            if through_forward_path:
+                parent_id = f.relationship_path[-1].parent_entity.id
+                top_level_entities.add(parent_id)
+
+        # Collect the features for each top level entity.
+        entity_features = defaultdict(list)
+        for f in self.all_features:
+            if f.entity.id in top_level_entities:
+                entity_features[f.entity.id].append(f)
+
+        return entity_features
 
     def _order_entities(self):
         """
@@ -128,22 +137,40 @@ class FeatureTree(object):
         The resulting order allows each entity to be calculated after all of its
         dependencies.
         """
-        entity_deps = defaultdict(set)
-        for e, features in self.top_level_features.items():
-            # iterate over all dependency features of the top-level features on
-            # this entity. If any of these are themselves top-level features, add
-            # their entities as dependencies of the current entity.
-            deps = {g.hash(): g for f in features
-                    for g in self.feature_dependencies[f.hash()]}
-            for d in deps.values():
-                _, num_forward = self.entityset.find_path(e, d.entity.id,
-                                                          include_num_forward=True)
-                if num_forward > 0:
-                    entity_deps[e].add(d.entity.id)
+        return utils.topsort([self.target_eid], lambda e: self.entity_dependencies[e])
 
-        # Do a top-sort on the new entity DAG
-        self.ordered_entities = utils.topsort([self.target_eid],
-                                              lambda e: entity_deps[e])
+    def _get_entity_dependencies(self):
+        """
+        Construct a dictionary mapping entities to the entities they depend on,
+        representing a DAG.
+        """
+        dependencies = defaultdict(set)
+
+        # For each top level entity iterate through its features and their
+        # dependencies to find other top level entities.
+        for eid, top_features in self.top_level_entity_features.items():
+            # Collect features on the entity and their dependencies.
+            # Using a dictionary to prevent duplicates.
+            all_entity_features = {f.hash(): f for f in top_features}
+            for f in top_features:
+                for d in self.feature_dependencies[f.hash()]:
+                    all_entity_features[d.hash()] = d
+
+            # For each feature, if it has a forward path add the parent entity
+            # to the dependencies.
+            for f in all_entity_features.values():
+                through_forward_path = f.relationship_path and \
+                    f.relationship_path[0].child_entity.id == f.entity.id
+
+                if through_forward_path:
+                    parent_id = f.relationship_path[-1].parent_entity.id
+
+                    # The parent may not be a top level entity if it has no
+                    # features to calculate (because they are ignored).
+                    if parent_id in self.top_level_entity_features:
+                        dependencies[eid].add(parent_id)
+
+        return dependencies
 
     def _order_feature_groups(self):
         """
@@ -155,8 +182,9 @@ class FeatureTree(object):
         features which can be passed into the feature calculation functions in
         PandasBackend directly.
         """
-        self.ordered_feature_groups = {}
-        for entity_id in self.top_level_features:
+        ordered_feature_groups = {}
+
+        for entity_id in self.top_level_entity_features:
             all_features, feature_depth = self._get_feature_depths(entity_id)
 
             def key_func(f):
@@ -176,7 +204,9 @@ class FeatureTree(object):
             feature_groups = [list(g) for _, g in
                               itertools.groupby(sort_feats, key=key_func)]
 
-            self.ordered_feature_groups[entity_id] = feature_groups
+            ordered_feature_groups[entity_id] = feature_groups
+
+        return ordered_feature_groups
 
     def _get_feature_depths(self, entity_id):
         """
@@ -186,21 +216,17 @@ class FeatureTree(object):
         features = {}
         order = defaultdict(int)
         out = {}
-        queue = list(self.top_level_features[entity_id])
+        queue = list(self.top_level_entity_features[entity_id])
         while queue:
-            # Get the next feature and make sure it's in the dict
+            # Get the next feature.
             f = queue.pop(0)
 
-            # stop looking if the feature we've hit is on another top-level
-            # entity which is not a descendant of the current one. In this case,
-            # we know we won't need to calculate this feature explicitly
-            # because it should be handled by the other entity; we can treat it
-            # like an identity feature.
-            if f.entity.id in self.top_level_features.keys() and \
-                    f.entity.id != entity_id and not \
-                    next(self.entityset.find_backward_paths(start_entity_id=entity_id,
-                                                            goal_entity_id=f.entity.id),
-                         None):
+            # Stop looking if the feature we've hit is on another top-level
+            # entity which is a dependency of the current one. In this case,
+            # we know this feature will be calculated before the features for
+            # the current entity, so from the perspective of the current entity
+            # it can be treated like an identity feature.
+            if f.entity.id in self.entity_dependencies[entity_id]:
                 continue
 
             # otherwise, add this feature to the output dict

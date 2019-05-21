@@ -1,6 +1,11 @@
 from builtins import zip
 
-from featuretools import Relationship, Timedelta, primitives
+from featuretools import (
+    Relationship,
+    Timedelta,
+    primitives,
+    relationship_path_name
+)
 from featuretools.primitives.base import (
     AggregationPrimitive,
     PrimitiveBase,
@@ -435,12 +440,10 @@ class DirectFeature(FeatureBase):
 
     def generate_name(self):
         if self._path_is_unique:
-            relationship_path_name = self.parent_entity.id
+            path_name = self.parent_entity.id
         else:
-            relationship_names = [r.parent_name for r in self.relationship_path]
-            relationship_path_name = '.'.join(relationship_names)
-        return u"%s.%s" % (relationship_path_name,
-                           self.base_features[0].get_name())
+            path_name = relationship_path_name(self.relationship_path, True)
+        return u"%s.%s" % (path_name, self.base_features[0].get_name())
 
     def get_feature_names(self):
         return [u"%s.%s" % (self.parent_entity.id, base_name)
@@ -564,12 +567,11 @@ class AggregationFeature(FeatureBase):
 
     def generate_name(self):
         if self._path_is_unique:
-            relationship_path_name = self.child_entity.id
+            path_name = self.child_entity.id
         else:
-            relationship_names = [r.child_name for r in self.relationship_path]
-            relationship_path_name = '.'.join(relationship_names)
+            path_name = relationship_path_name(self.relationship_path, False)
         return self.primitive.generate_name(base_feature_names=[bf.get_name() for bf in self.base_features],
-                                            relationship_path_name=relationship_path_name,
+                                            relationship_path_name=path_name,
                                             parent_entity_id=self.parent_entity.id,
                                             where_str=self._where_str(),
                                             use_prev_str=self._use_prev_str())
