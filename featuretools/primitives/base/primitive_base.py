@@ -5,9 +5,8 @@ import os
 import numpy as np
 import pandas as pd
 
-from .utils import signature
-
 from featuretools import config
+from featuretools.primitives.base.utils import signature
 
 
 class PrimitiveBase(object):

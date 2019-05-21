@@ -1,7 +1,7 @@
 import pandas as pd
 from dask.base import tokenize
 
-from ..testing_utils import make_ecommerce_entityset
+from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
 def test_tokenize_entityset(es, int_es):

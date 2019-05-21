@@ -4,9 +4,9 @@ import shutil
 import pandas as pd
 import pytest
 
-from ...demo import load_mock_customer
-from ...entityset import EntitySet, deserialize, serialize
-from ...tests import integration_data
+from featuretools.demo import load_mock_customer
+from featuretools.entityset import EntitySet, deserialize, serialize
+from featuretools.tests import integration_data
 
 CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
 

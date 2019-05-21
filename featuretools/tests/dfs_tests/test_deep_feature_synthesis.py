@@ -5,8 +5,6 @@ import copy
 import pandas as pd
 import pytest
 
-from ..testing_utils import feature_with_name
-
 import featuretools as ft
 from featuretools.feature_base import (
     AggregationFeature,
@@ -29,6 +27,7 @@ from featuretools.primitives import (  # CumMean,
     TimeSincePrevious
 )
 from featuretools.synthesis import DeepFeatureSynthesis
+from featuretools.tests.testing_utils import feature_with_name
 
 
 def test_makes_agg_features_from_str(es):

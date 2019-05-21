@@ -14,8 +14,8 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 
-from .pandas_backend import PandasBackend
-from .utils import (
+from featuretools.computational_backends.pandas_backend import PandasBackend
+from featuretools.computational_backends.utils import (
     bin_cutoff_times,
     calc_num_per_chunk,
     create_client_and_cluster,
@@ -24,7 +24,6 @@ from .utils import (
     get_next_chunk,
     save_csv_decorator
 )
-
 from featuretools.feature_base import AggregationFeature, FeatureBase
 from featuretools.utils.gen_utils import (
     get_relationship_variable_id,
@@ -341,17 +340,16 @@ def calculate_chunk(chunk, features, approximate, training_window,
 
             grouped = group.groupby(cutoff_df_time_var, sort=True)
 
-        for _time_last_to_calc, group in grouped:
+        for time_last, group in grouped:
             # sort group by instance id
             ids = group['instance_id'].sort_values().values
-            time_last = group[cutoff_df_time_var].iloc[0]
             if no_unapproximated_aggs and approximate is not None:
                 window = None
             else:
                 window = training_window
 
-            # calculate values for those instances at time _time_last_to_calc
-            _feature_matrix = calc_results(_time_last_to_calc,
+            # calculate values for those instances at time time_last
+            _feature_matrix = calc_results(time_last,
                                            ids,
                                            precalculated_features=precalculated_features,
                                            training_window=window)

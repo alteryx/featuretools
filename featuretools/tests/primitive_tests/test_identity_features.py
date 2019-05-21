@@ -1,14 +1,5 @@
-import pytest
-
-from ..testing_utils import make_ecommerce_entityset
-
 import featuretools as ft
 from featuretools.primitives.utils import PrimitivesDeserializer
-
-
-@pytest.fixture
-def es():
-    return make_ecommerce_entityset()
 
 
 def test_serialization(es):

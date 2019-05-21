@@ -8,9 +8,8 @@ import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
 
-from .timedelta import Timedelta
-
 from featuretools import variable_types as vtypes
+from featuretools.entityset.timedelta import Timedelta
 from featuretools.utils import is_string
 from featuretools.utils.entity_utils import (
     col_is_datetime,

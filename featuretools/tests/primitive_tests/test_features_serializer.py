@@ -1,17 +1,8 @@
-import pytest
-
-from ..testing_utils import make_ecommerce_entityset
-
 import featuretools as ft
 from featuretools.entityset.deserialize import description_to_entityset
 from featuretools.feature_base.features_serializer import FeaturesSerializer
 
 SCHEMA_VERSION = "1.0.0"
-
-
-@pytest.fixture(scope='module')
-def es():
-    return make_ecommerce_entityset()
 
 
 def test_single_feature(es):

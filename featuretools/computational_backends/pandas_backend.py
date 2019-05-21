@@ -10,10 +10,11 @@ import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
 
-from .base_backend import ComputationalBackend
-from .feature_tree import FeatureTree
-
 from featuretools import variable_types
+from featuretools.computational_backends.base_backend import (
+    ComputationalBackend
+)
+from featuretools.computational_backends.feature_tree import FeatureTree
 from featuretools.exceptions import UnknownFeature
 from featuretools.feature_base import (
     AggregationFeature,

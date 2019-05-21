@@ -7,8 +7,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ..testing_utils import feature_with_name
-
 import featuretools as ft
 from featuretools.primitives import (  # NMostCommon,
     Count,
@@ -33,6 +31,7 @@ from featuretools.synthesis.deep_feature_synthesis import (
     check_stacking,
     match
 )
+from featuretools.tests.testing_utils import feature_with_name
 from featuretools.variable_types import (
     Datetime,
     DatetimeTimeIndex,
