@@ -24,7 +24,10 @@ commands:
       - run: |
           virtualenv test_ft_complete_env
           source test_ft_complete_env/bin/activate
-          pip install "featuretools[complete]"
+          python setup.py sdist
+          FEATURETOOLS_VERSION=$(python setup.py --version)
+          tar -zxvf "dist/featuretools-${FEATURETOOLS_VERSION}.tar.gz"
+          pip install -e "featuretools-${FEATURETOOLS_VERSION}/[complete]"
           python -c "from featuretools.tsfresh import AggAutocorrelation, Mean"
           python -c "from featuretools_update_checker.utils import get_response_json"
 
