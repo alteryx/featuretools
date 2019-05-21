@@ -838,8 +838,8 @@ def test_normalize_entity(es):
 
 def test_normalize_time_index_from_none(es):
     es['customers'].time_index = None
-    es.normalize_entity('customers', 'birthdays', 'id', copy_variables=['date_of_birth'], make_time_index='date_of_birth')
-    assert es['birthdays'].time_index == 'date_of_birth'
+    es.normalize_entity('customers', 'birthdays', 'date_of_birth')
+    assert es['birthdays'].time_index is None
     assert es['birthdays'].df['date_of_birth'].is_monotonic_increasing
 
 
