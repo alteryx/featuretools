@@ -22,8 +22,7 @@ commands:
     description: "install featuretools[complete]"
     steps:
       - run: |
-          virtualenv test_ft_complete_env
-          source test_ft_complete_env/bin/activate
+          virtualenv test_ft_complete_env && source test_ft_complete_env/bin/activate
           FEATURETOOLS_VERSION=$(python setup.py --version)
           pip install -e "featuretools-${FEATURETOOLS_VERSION}/[complete]"
   run-import-tests:
