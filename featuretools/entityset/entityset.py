@@ -14,6 +14,7 @@ from .entity import Entity
 from .relationship import Relationship
 
 import featuretools.variable_types.variable as vtypes
+from featuretools.utils import is_string
 from featuretools.utils.gen_utils import make_tqdm_iterator
 
 pd.options.mode.chained_assignment = None  # default='warn'
@@ -715,12 +716,11 @@ class EntitySet(object):
             if v == index:
                 raise ValueError("Not copying {} as both index and variable".format(v))
                 break
-
-        if isinstance(make_time_index, str):
+        if is_string(make_time_index):
             if make_time_index not in base_entity.df.columns:
                 raise ValueError("'make_time_index' must be a variable in the base frame")
             elif make_time_index not in additional_variables + copy_variables + [index]:
-                raise ValueError("'make_time_index' must be a variable specified in 'additional_variables' or 'copy_variables'")
+                raise ValueError("'make_time_index' must specified in 'additional_variables', 'copy_variables', or 'index'")
 
         new_index = index
 

@@ -819,7 +819,7 @@ def test_normalize_entity(es):
         es.normalize_entity('sessions', 'device_types', 'device_type',
                             make_time_index="nonextistent")
 
-    error_text = "'make_time_index' must be a variable specified in 'additional_variables' or 'copy_variables'"
+    error_text = "'make_time_index' must specified in 'additional_variables', 'copy_variables', or 'index'"
     with pytest.raises(ValueError, match=error_text):
         es.normalize_entity('sessions', 'device_types', 'device_type',
                             make_time_index='ip')
