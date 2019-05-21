@@ -18,16 +18,22 @@ commands:
           source test_env/bin/activate
           cd "featuretools-$(python setup.py --version)/"
           pytest
-  install-ft-complete-and-run-import-tests:
-    description: "run unit tests on packaged testing files"
+  install-ft-complete:
+    description: "install featuretools[complete]"
     steps:
       - run: |
           virtualenv test_ft_complete_env
           source test_ft_complete_env/bin/activate
           FEATURETOOLS_VERSION=$(python setup.py --version)
           pip install -e "featuretools-${FEATURETOOLS_VERSION}/[complete]"
+  run-import-tests:
+    description: "testing imports of add-ons"
+    steps:
+      - run: |
+          source test_ft_complete_env/bin/activate
           python -c "import featuretools_tsfresh_primitives"
           python -c "import featuretools_update_checker"
+          python -c "import featuretools.tsfresh"
 
 jobs:
   "python-27":
@@ -42,7 +48,8 @@ jobs:
       - run: source dev_env/bin/activate && make installdeps
       - run: source dev_env/bin/activate && make lint
       - run-packaged-tests
-      - install-ft-complete-and-run-import-tests
+      - install-ft-complete
+      - run-import-tests
 
   "python-35":
     working_directory: ~/featuretools
@@ -56,7 +63,8 @@ jobs:
       - run: source dev_env/bin/activate && make installdeps
       - run: source dev_env/bin/activate && make lint
       - run-packaged-tests
-      - install-ft-complete-and-run-import-tests
+      - install-ft-complete
+      - run-import-tests
 
   "python-36":
     working_directory: ~/featuretools
@@ -70,7 +78,8 @@ jobs:
       - run: source dev_env/bin/activate && make installdeps
       - run: source dev_env/bin/activate && make lint
       - run-packaged-tests
-      - install-ft-complete-and-run-import-tests
+      - install-ft-complete
+      - run-import-tests
       - run: source dev_env/bin/activate && make -C docs/ -e "SPHINXOPTS=-W" clean html
 
   "python-37":
@@ -84,7 +93,8 @@ jobs:
       - install-packaged-featuretools
       - run: source dev_env/bin/activate && make installdeps
       - run: source dev_env/bin/activate && make lint
-      - install-ft-complete-and-run-import-tests
+      - install-ft-complete
+      - run-import-tests
       - run: |
           source test_env/bin/activate
           pip install "$(cat dev-requirements.txt | grep codecov)"
