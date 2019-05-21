@@ -33,7 +33,6 @@ commands:
           source test_ft_complete_env/bin/activate
           python -c "import featuretools_tsfresh_primitives"
           python -c "import featuretools_update_checker"
-          python -c "import featuretools.tsfresh"
 
 jobs:
   "python-27":
