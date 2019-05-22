@@ -8,6 +8,7 @@ import pandas as pd
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
 )
+from featuretools.utils import convert_time_units
 from featuretools.variable_types import (
     Boolean,
     Datetime,
@@ -341,7 +342,12 @@ class NumWords(TransformPrimitive):
 
 
 class TimeSince(TransformPrimitive):
-    """Calculates time in nanoseconds from a value to a specified cutoff datetime.
+    """Calculates time in seconds from a value to a specified cutoff datetime.
+
+    Args:
+        unit (str): Defines the unit of time to count from.
+            Defaults to Seconds. Acceptable values:
+            years, months, days, hours, minutes, seconds, milliseconds, nanoseconds
 
     Examples:
         >>> from datetime import datetime
@@ -352,6 +358,17 @@ class TimeSince(TransformPrimitive):
         >>> cutoff_time = datetime(2019, 3, 1, 0, 0, 0, 0)
         >>> values = time_since(array=times, time=cutoff_time)
         >>> list(map(int, values))
+        [0, -1, -120]
+
+        Change output to nanoseconds
+        >>> from datetime import datetime
+        >>> time_since_nano = TimeSince(unit='nanoseconds')
+        >>> times = [datetime(2019, 3, 1, 0, 0, 0, 1),
+        ...          datetime(2019, 3, 1, 0, 0, 1, 0),
+        ...          datetime(2019, 3, 1, 0, 2, 0, 0)]
+        >>> cutoff_time = datetime(2019, 3, 1, 0, 0, 0, 0)
+        >>> values = time_since_nano(array=times, time=cutoff_time)
+        >>> list(map(lambda x: int(round(x)), values))
         [-1000, -1000000000, -120000000000]
     """
     name = 'time_since'
@@ -359,9 +376,12 @@ class TimeSince(TransformPrimitive):
     return_type = Timedelta
     uses_calc_time = True
 
+    def __init__(self, unit="seconds"):
+        self.unit = unit.lower()
+
     def get_function(self):
         def pd_time_since(array, time):
-            return (time - pd.DatetimeIndex(array)).values
+            return convert_time_units((time - pd.DatetimeIndex(array)).total_seconds(), self.unit)
         return pd_time_since
 
 
