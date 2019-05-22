@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import pytest
+import pandas as pd
+import featuretools as ft
 
 from featuretools import EntitySet, Relationship, variable_types
 
@@ -97,6 +99,17 @@ def test_find_forward_paths_multiple(diamond_es):
     assert r1.parent_entity.id == 'customers'
     assert r2.child_entity.id == 'customers'
     assert r2.parent_entity.id == 'regions'
+
+
+def test_find_forward_paths_ignores_loops():
+    employee_df = pd.DataFrame({'id': [0], 'manager_id': [0]})
+    entities = {'employees': (employee_df, 'id')}
+    relationships = [('employees', 'id', 'employees', 'manager_id')]
+    es = ft.EntitySet(entities=entities, relationships=relationships)
+
+    paths = list(es.find_forward_paths('employees', 'employees'))
+    assert len(paths) == 1
+    assert paths[0] == []
 
 
 def test_find_backward_paths(es):
