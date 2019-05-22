@@ -1173,7 +1173,8 @@ def test_no_data_for_cutoff_time():
 
 
 def test_instances_not_in_data(es):
-    instances = list(range(20, 30))
+    last_instance = max(es['log'].df.index.values)
+    instances = list(range(last_instance + 1, last_instance + 11))
     identity_feature = IdentityFeature(es['log']['value'])
     property_feature = identity_feature > 10
     agg_feat = AggregationFeature(es['log']['value'],
