@@ -373,7 +373,7 @@ class TimeSince(TransformPrimitive):
         >>> cutoff_time = datetime(2019, 3, 1, 0, 0, 0, 0)
         >>> values = time_since_nano(array=times, time=cutoff_time)
         >>> list(map(round, values))
-        [-1000, -1000000000, -120000000000]
+        [-1000.0, -1000000000.0, -120000000000.0]
     """
     name = 'time_since'
     input_types = [[DatetimeTimeIndex], [Datetime]]
