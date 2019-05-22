@@ -46,13 +46,6 @@ def test_entity_descriptions(es):
         assert entity.__eq__(_entity, deep=True)
 
 
-def test_relationship_descriptions(es):
-    for relationship in es.relationships:
-        description = serialize.relationship_to_description(relationship)
-        _relationship = deserialize.description_to_relationship(description, es)
-        assert relationship.__eq__(_relationship)
-
-
 def test_entityset_description(es):
     description = serialize.entityset_to_description(es)
     _es = deserialize.description_to_entityset(description)

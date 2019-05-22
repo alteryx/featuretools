@@ -48,5 +48,5 @@ def test_serialization(es):
         'child_entity_id': 'log',
         'child_variable_id': 'session_id',
     }
-    assert relationship.get_arguments() == dictionary
+    assert relationship.to_dictionary() == dictionary
     assert ft.Relationship.from_dictionary(dictionary, es) == relationship

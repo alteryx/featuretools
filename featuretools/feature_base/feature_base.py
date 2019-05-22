@@ -444,7 +444,7 @@ class DirectFeature(FeatureBase):
     def get_arguments(self):
         return {
             'base_feature': self.base_features[0].unique_name(),
-            'relationship_path': [r.get_arguments() for r in self.relationship_path]
+            'relationship_path': [r.to_dictionary() for r in self.relationship_path]
         }
 
 
@@ -568,7 +568,7 @@ class AggregationFeature(FeatureBase):
     def get_arguments(self):
         return {
             'base_features': [feat.unique_name() for feat in self.base_features],
-            'relationship_path': [r.get_arguments() for r in self.relationship_path],
+            'relationship_path': [r.to_dictionary() for r in self.relationship_path],
             'primitive': serialize_primitive(self.primitive),
             'where': self.where and self.where.unique_name(),
             'use_previous': self.use_previous and self.use_previous.get_arguments(),

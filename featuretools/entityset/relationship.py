@@ -88,7 +88,7 @@ class Relationship(object):
         else:
             return '%s[%s]' % (self._child_entity_id, self._child_variable_id)
 
-    def get_arguments(self):
+    def to_dictionary(self):
         return {
             'parent_entity_id': self._parent_entity_id,
             'child_entity_id': self._child_entity_id,

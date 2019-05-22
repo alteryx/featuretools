@@ -233,7 +233,7 @@ def test_serialization(es):
                            if r.parent_entity.id == 'products')
     dictionary = {
         'base_feature': value.unique_name(),
-        'relationship_path': [log_to_products.get_arguments()],
+        'relationship_path': [log_to_products.to_dictionary()],
     }
 
     assert dictionary == direct.get_arguments()
