@@ -53,10 +53,10 @@ def make_temporal_cutoffs(instance_ids,
 def convert_time_units(secs,
                        unit):
     '''
-    Converts a time specified in nanoseconds to a time in the given units
+    Converts a time specified in seconds to a time in the given units
 
     Args:
-        secs (integer): number of nanoseconds. This function will convert the units of this number.
+        secs (integer): number of seconds. This function will convert the units of this number.
         unit(str): units to be converted to.
             acceptable values: year, month, day, hour, minute, second, millisecond, nanosecond
     '''
