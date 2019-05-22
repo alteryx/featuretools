@@ -332,7 +332,10 @@ class IdentityFeature(FeatureBase):
         entity_id = variable.entity_id
         self.variable = variable.entityset.metadata[entity_id][variable.id]
         self.return_type = type(variable)
-        super(IdentityFeature, self).__init__(variable.entity, [], [], primitive=PrimitiveBase)
+        super(IdentityFeature, self).__init__(entity=variable.entity,
+                                              base_features=[],
+                                              relationship_path=[],
+                                              primitive=PrimitiveBase)
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
@@ -398,7 +401,9 @@ class DirectFeature(FeatureBase):
                                            backward=False)
             self._is_unique_path = True
 
-        super(DirectFeature, self).__init__(child_entity, [base_feature], relationship_path,
+        super(DirectFeature, self).__init__(entity=child_entity,
+                                            base_features=[base_feature],
+                                            relationship_path=relationship_path,
                                             primitive=PrimitiveBase)
 
     @classmethod
@@ -514,9 +519,9 @@ class AggregationFeature(FeatureBase):
                                             "on entities with a time index")
             assert _check_time_against_column(self.use_previous, time_col)
 
-        super(AggregationFeature, self).__init__(parent_entity,
-                                                 base_features,
-                                                 relationship_path,
+        super(AggregationFeature, self).__init__(entity=parent_entity,
+                                                 base_features=base_features,
+                                                 relationship_path=relationship_path,
                                                  primitive=primitive)
 
     @classmethod
@@ -589,9 +594,9 @@ class TransformFeature(FeatureBase):
         # R TODO handle stacking on sub-features
         assert all(bf.number_output_features == 1 for bf in base_features)
 
-        super(TransformFeature, self).__init__(base_features[0].entity,
-                                               base_features,
-                                               [],
+        super(TransformFeature, self).__init__(entity=base_features[0].entity,
+                                               base_features=base_features,
+                                               relationship_path=[],
                                                primitive=primitive)
 
     @classmethod
@@ -625,7 +630,7 @@ class GroupByTransformFeature(TransformFeature):
         else:
             base_features = [base_features, groupby]
 
-        super(GroupByTransformFeature, self).__init__(base_features,
+        super(GroupByTransformFeature, self).__init__(base_features=base_features,
                                                       primitive=primitive)
 
     @classmethod
