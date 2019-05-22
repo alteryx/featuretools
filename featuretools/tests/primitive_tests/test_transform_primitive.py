@@ -18,7 +18,7 @@ def test_time_since():
 
     time_since = TimeSince(unit='nanoseconds')
     values = time_since(array=times, time=cutoff_time)
-    assert(list(map(int, values)) == [-1000, -999999999, -120000000000])
+    assert(list(map(round, values)) == [-1000, -1000000000, -120000000000])
 
     time_since = TimeSince(unit='milliseconds')
     values = time_since(array=times, time=cutoff_time)

@@ -476,7 +476,8 @@ class TimeSinceLast(AggregationPrimitive):
 
     Args:
         unit (str): Defines the unit of time to count from.
-            Defaults to Seconds.
+            Defaults to seconds. Acceptable values:
+            years, months, days, hours, minutes, seconds, milliseconds, nanoseconds
 
     Examples:
         >>> from datetime import datetime
@@ -523,6 +524,11 @@ class TimeSinceFirst(AggregationPrimitive):
         time elapsed since the first datetime (in
         seconds). Uses the instance's cutoff time.
 
+    Args:
+        unit (str): Defines the unit of time to count from.
+            Defaults to seconds. Acceptable values:
+            years, months, days, hours, minutes, seconds, milliseconds, nanoseconds
+
     Examples:
         >>> from datetime import datetime
         >>> time_since_first = TimeSinceFirst()
@@ -532,6 +538,16 @@ class TimeSinceFirst(AggregationPrimitive):
         ...          datetime(2010, 1, 1, 11, 57, 30)]
         >>> time_since_first(times, time=cutoff_time)
         900.0
+
+        >>> from datetime import datetime
+        >>> time_since_first = TimeSinceFirst(unit = "minutes")
+        >>> cutoff_time = datetime(2010, 1, 1, 12, 0, 0)
+        >>> times = [datetime(2010, 1, 1, 11, 45, 0),
+        ...          datetime(2010, 1, 1, 11, 55, 15),
+        ...          datetime(2010, 1, 1, 11, 57, 30)]
+        >>> time_since_first(times, time=cutoff_time)
+        15.0
+
     """
     name = "time_since_first"
     input_types = [DatetimeTimeIndex]

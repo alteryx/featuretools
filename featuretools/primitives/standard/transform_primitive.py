@@ -372,7 +372,7 @@ class TimeSince(TransformPrimitive):
         ...          datetime(2019, 3, 1, 0, 2, 0, 0)]
         >>> cutoff_time = datetime(2019, 3, 1, 0, 0, 0, 0)
         >>> values = time_since_nano(array=times, time=cutoff_time)
-        >>> list(map(int, values))
+        >>> list(map(round, values))
         [-1000, -1000000000, -120000000000]
     """
     name = 'time_since'
@@ -385,7 +385,6 @@ class TimeSince(TransformPrimitive):
 
     def get_function(self):
         def pd_time_since(array, time):
-            print((time - pd.DatetimeIndex(array)).total_seconds())
             return convert_time_units((time - pd.DatetimeIndex(array)).total_seconds(), self.unit)
         return pd_time_since
 

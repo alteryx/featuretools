@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 
@@ -72,4 +71,4 @@ def convert_time_units(secs,
     if unit not in unit_divs:
         raise ValueError("Invalid unit given, make sure it is plural")
 
-    return np.rint(secs / (unit_divs[unit]))
+    return secs / (unit_divs[unit])
