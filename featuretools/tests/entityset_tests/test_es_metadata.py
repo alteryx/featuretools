@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-import pytest
 import pandas as pd
-import featuretools as ft
+import pytest
 
+import featuretools as ft
 from featuretools import EntitySet, Relationship, variable_types
 
 
