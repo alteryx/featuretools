@@ -70,34 +70,43 @@ def test_base_features_not_in_list(es):
 def test_later_schema_version(es):
     def test_version(major, minor, patch, raises=True):
         version = '.'.join([str(v) for v in [major, minor, patch]])
-        dictionary = {
-            'ft_version': ft.__version__,
-            'schema_version': version,
-            'entityset': es.to_dictionary(),
-            'feature_list': [],
-            'feature_definitions': {}
-        }
-
-        error_text = ('Unable to load features. The schema version of the saved '
-                      'features (%s) is greater than the latest supported (%s). '
-                      'You may need to upgrade featuretools.'
-                      % (version, SCHEMA_VERSION))
-
         if raises:
-            with pytest.raises(RuntimeError) as excinfo:
-                FeaturesDeserializer(dictionary)
-
-            assert error_text == str(excinfo.value)
+            error_text = ('Unable to load features. The schema version of the saved '
+                          'features (%s) is greater than the latest supported (%s). '
+                          'You may need to upgrade featuretools.'
+                          % (version, SCHEMA_VERSION))
         else:
-            FeaturesDeserializer(dictionary)
+            error_text = None
+
+        _check_schema_version(version, es, error_text)
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
+
     test_version(major + 1, minor, patch)
     test_version(major, minor + 1, patch)
     test_version(major, minor, patch + 1)
-    test_version(major - 1, minor + 1, patch, raises=False)
-    test_version(major - 1, minor, patch + 1, raises=False)
     test_version(major, minor - 1, patch + 1, raises=False)
+
+
+def test_earlier_schema_version(es):
+    def test_version(major, minor, patch, raises=True):
+        version = '.'.join([str(v) for v in [major, minor, patch]])
+
+        if raises:
+            error_text = ('Unable to load features. The schema version of the '
+                          'saved features (%s) is no longer supported by this '
+                          'version of featuretools.'
+                          % (version))
+        else:
+            error_text = None
+
+        _check_schema_version(version, es, error_text)
+
+    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
+
+    test_version(major - 1, minor, patch)
+    test_version(major, minor - 1, patch, raises=False)
+    test_version(major, minor, patch - 1, raises=False)
 
 
 def test_unknown_feature_type(es):
@@ -170,3 +179,21 @@ def test_unknown_primitive_module(es):
 
     error_text = 'Primitive "Max" in module "fake.module" not found'
     assert error_text == str(excinfo.value)
+
+
+def _check_schema_version(version, es, error_text):
+    dictionary = {
+        'ft_version': ft.__version__,
+        'schema_version': version,
+        'entityset': es.to_dictionary(),
+        'feature_list': [],
+        'feature_definitions': {}
+    }
+
+    if error_text:
+        with pytest.raises(RuntimeError) as excinfo:
+            FeaturesDeserializer(dictionary)
+
+        assert error_text == str(excinfo.value)
+    else:
+        FeaturesDeserializer(dictionary)
