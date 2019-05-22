@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 
@@ -58,7 +59,7 @@ def convert_time_units(secs,
     Args:
         secs (integer): number of seconds. This function will convert the units of this number.
         unit(str): units to be converted to.
-            acceptable values: year, month, day, hour, minute, second, millisecond, nanosecond
+            acceptable values: years, months, days, hours, minutes, seconds, milliseconds, nanoseconds
     '''
     unit_divs = {'years': 31540000,
                  'months': 2628000,
@@ -71,4 +72,4 @@ def convert_time_units(secs,
     if unit not in unit_divs:
         raise ValueError("Invalid unit given, make sure it is plural")
 
-    return (secs / (unit_divs[unit]))
+    return np.rint(secs / (unit_divs[unit]))

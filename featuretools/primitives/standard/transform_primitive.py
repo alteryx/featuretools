@@ -93,6 +93,11 @@ class TimeSincePrevious(TransformPrimitive):
             grouped_df = grouped_df.groupby(groupby).diff()
             return grouped_df[bf_name].apply(lambda x: x.total_seconds())
         return pd_diff
+        # def pd_diff(base_array):
+        #     bf_name = 'base_feature'
+        #     df = pd.DataFrame.from_dict({bf_name: base_array}).diff()
+        #     return df[bf_name].apply(lambda x: x.total_seconds())
+        return pd_diff
 
 
 class Day(TransformPrimitive):
@@ -368,7 +373,7 @@ class TimeSince(TransformPrimitive):
         >>> cutoff_time = datetime(2019, 3, 1, 0, 0, 0, 0)
         >>> values = time_since_nano(array=times, time=cutoff_time)
         >>> list(map(int, values))
-        [-1000, -999999999, -120000000000]
+        [-1000, -1000000000, -120000000000]
     """
     name = 'time_since'
     input_types = [[DatetimeTimeIndex], [Datetime]]
@@ -380,6 +385,7 @@ class TimeSince(TransformPrimitive):
 
     def get_function(self):
         def pd_time_since(array, time):
+            print((time - pd.DatetimeIndex(array)).total_seconds())
             return convert_time_units((time - pd.DatetimeIndex(array)).total_seconds(), self.unit)
         return pd_time_since
 
