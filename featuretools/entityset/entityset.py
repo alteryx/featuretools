@@ -13,6 +13,7 @@ import featuretools.variable_types.variable as vtypes
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.entity import Entity
 from featuretools.entityset.relationship import Relationship
+from featuretools.utils import is_string
 from featuretools.utils.gen_utils import make_tqdm_iterator
 
 pd.options.mode.chained_assignment = None  # default='warn'
@@ -726,6 +727,12 @@ class EntitySet(object):
             if v == index:
                 raise ValueError("Not copying {} as both index and variable".format(v))
                 break
+        if is_string(make_time_index):
+            if make_time_index not in base_entity.df.columns:
+                raise ValueError("'make_time_index' must be a variable in the base entity")
+            elif make_time_index not in additional_variables + copy_variables:
+                raise ValueError("'make_time_index' must specified in 'additional_variables' or 'copy_variables'")
+
         new_index = index
 
         transfer_types = {}
