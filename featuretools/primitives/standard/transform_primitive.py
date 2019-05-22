@@ -93,11 +93,6 @@ class TimeSincePrevious(TransformPrimitive):
             grouped_df = grouped_df.groupby(groupby).diff()
             return grouped_df[bf_name].apply(lambda x: x.total_seconds())
         return pd_diff
-        # def pd_diff(base_array):
-        #     bf_name = 'base_feature'
-        #     df = pd.DataFrame.from_dict({bf_name: base_array}).diff()
-        #     return df[bf_name].apply(lambda x: x.total_seconds())
-        return pd_diff
 
 
 class Day(TransformPrimitive):
