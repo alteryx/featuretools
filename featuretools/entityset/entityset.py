@@ -370,8 +370,8 @@ class EntitySet(object):
                 returns a tuple of (relationship_list, forward_distance).
 
         See Also:
-            :func:`EntitySet.find_forward_path`
-            :func:`EntitySet.find_backward_path`
+            :func:`EntitySet.find_forward_paths`
+            :func:`EntitySet.find_backward_paths`
         """
         if start_entity_id == goal_entity_id:
             if include_num_forward:
