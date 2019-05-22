@@ -28,15 +28,15 @@ def games_es(home_games_es):
 def test_names_when_multiple_relationships_between_entities(games_es):
     relationship = ft.Relationship(games_es['teams']['id'],
                                    games_es['games']['home_team_id'])
-    assert relationship.child_name() == 'games[home_team_id]'
-    assert relationship.parent_name() == 'teams[home_team_id]'
+    assert relationship.child_name == 'games[home_team_id]'
+    assert relationship.parent_name == 'teams[home_team_id]'
 
 
 def test_names_when_no_other_relationship_between_entities(home_games_es):
     relationship = ft.Relationship(home_games_es['teams']['id'],
                                    home_games_es['games']['home_team_id'])
-    assert relationship.child_name() == 'games'
-    assert relationship.parent_name() == 'teams'
+    assert relationship.child_name == 'games'
+    assert relationship.parent_name == 'teams'
 
 
 def test_serialization(es):

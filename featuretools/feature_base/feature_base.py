@@ -437,7 +437,7 @@ class DirectFeature(FeatureBase):
         if self._is_unique_path:
             relationship_path_name = self.parent_entity.id
         else:
-            relationship_names = [r.parent_name() for r in self.relationship_path]
+            relationship_names = [r.parent_name for r in self.relationship_path]
             relationship_path_name = '.'.join(relationship_names)
         return u"%s.%s" % (relationship_path_name,
                            self.base_features[0].get_name())
@@ -562,7 +562,7 @@ class AggregationFeature(FeatureBase):
         if self._is_unique_path:
             relationship_path_name = self.child_entity.id
         else:
-            relationship_names = [r.child_name() for r in self.relationship_path]
+            relationship_names = [r.child_name for r in self.relationship_path]
             relationship_path_name = '.'.join(relationship_names)
         return self.primitive.generate_name(base_feature_names=[bf.get_name() for bf in self.base_features],
                                             relationship_path_name=relationship_path_name,

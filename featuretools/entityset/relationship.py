@@ -74,6 +74,7 @@ class Relationship(object):
         """Instance of variable in child entity"""
         return self.child_entity[self._child_variable_id]
 
+    @property
     def parent_name(self):
         """The name of the parent, relative to the child."""
         if self._is_unique():
@@ -81,6 +82,7 @@ class Relationship(object):
         else:
             return '%s[%s]' % (self._parent_entity_id, self._child_variable_id)
 
+    @property
     def child_name(self):
         """The name of the child, relative to the parent."""
         if self._is_unique():
