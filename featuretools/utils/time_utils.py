@@ -48,3 +48,27 @@ def make_temporal_cutoffs(instance_ids,
         to_add['instance_id'] = [_id] * len(to_add['time'])
         out.append(to_add)
     return pd.concat(out).reset_index(drop=True)
+
+
+def convert_time_units(secs,
+                       unit):
+    '''
+    Converts a time specified in nanoseconds to a time in the given units
+
+    Args:
+        secs (integer): number of nanoseconds. This function will convert the units of this number.
+        unit(str): units to be converted to.
+            acceptable values: year, month, day, hour, minute, second, millisecond, nanosecond
+    '''
+    unit_divs = {'years': 31540000,
+                 'months': 2628000,
+                 'days': 86400,
+                 'hours': 3600,
+                 'minutes': 60,
+                 'seconds': 1,
+                 'milliseconds': 0.001,
+                 'nanoseconds': 0.000000001}
+    if unit not in unit_divs:
+        raise ValueError("Invalid unit given, make sure it is plural")
+
+    return (secs / (unit_divs[unit]))
