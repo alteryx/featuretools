@@ -67,8 +67,11 @@ def test_get_backward_relationships(es):
     assert relationships[0].child_entity.id == 'sessions'
 
 
-def test_find_forward_path(es):
-    path = es.find_forward_path('log', 'customers')
+def test_find_forward_paths(es):
+    paths = list(es.find_forward_paths('log', 'customers'))
+    assert len(paths) == 1
+
+    path = paths[0]
 
     assert len(path) == 2
     assert path[0].child_entity.id == 'log'
@@ -77,14 +80,55 @@ def test_find_forward_path(es):
     assert path[1].parent_entity.id == 'customers'
 
 
-def test_find_backward_path(es):
-    path = es.find_backward_path('customers', 'log')
+def test_find_forward_paths_multiple(diamond_es):
+    paths = list(diamond_es.find_forward_paths('transactions', 'regions'))
+    assert len(paths) == 2
+
+    path1, path2 = paths
+
+    r1, r2 = path1
+    assert r1.child_entity.id == 'transactions'
+    assert r1.parent_entity.id == 'stores'
+    assert r2.child_entity.id == 'stores'
+    assert r2.parent_entity.id == 'regions'
+
+    r1, r2 = path2
+    assert r1.child_entity.id == 'transactions'
+    assert r1.parent_entity.id == 'customers'
+    assert r2.child_entity.id == 'customers'
+    assert r2.parent_entity.id == 'regions'
+
+
+def test_find_backward_paths(es):
+    paths = list(es.find_backward_paths('customers', 'log'))
+    assert len(paths) == 1
+
+    path = paths[0]
 
     assert len(path) == 2
     assert path[0].child_entity.id == 'sessions'
     assert path[0].parent_entity.id == 'customers'
     assert path[1].child_entity.id == 'log'
     assert path[1].parent_entity.id == 'sessions'
+
+
+def test_find_backward_paths_multiple(diamond_es):
+    paths = list(diamond_es.find_backward_paths('regions', 'transactions'))
+    assert len(paths) == 2
+
+    path1, path2 = paths
+
+    r1, r2 = path1
+    assert r1.child_entity.id == 'stores'
+    assert r1.parent_entity.id == 'regions'
+    assert r2.child_entity.id == 'transactions'
+    assert r2.parent_entity.id == 'stores'
+
+    r1, r2 = path2
+    assert r1.child_entity.id == 'customers'
+    assert r1.parent_entity.id == 'regions'
+    assert r2.child_entity.id == 'transactions'
+    assert r2.parent_entity.id == 'customers'
 
 
 def test_find_path(es):

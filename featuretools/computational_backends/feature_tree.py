@@ -198,8 +198,9 @@ class FeatureTree(object):
             # like an identity feature.
             if f.entity.id in self.top_level_features.keys() and \
                     f.entity.id != entity_id and not \
-                    self.entityset.find_backward_path(start_entity_id=entity_id,
-                                                      goal_entity_id=f.entity.id):
+                    next(self.entityset.find_backward_paths(start_entity_id=entity_id,
+                                                            goal_entity_id=f.entity.id),
+                         None):
                 continue
 
             # otherwise, add this feature to the output dict

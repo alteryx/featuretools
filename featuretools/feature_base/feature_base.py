@@ -388,17 +388,15 @@ class DirectFeature(FeatureBase):
             assert self.parent_entity == relationship_path[-1].parent_entity, \
                 'Base feature must be defined on the entity at the end of relationship_path'
 
-            path = _find_unique_forward_path(child_entity.id,
-                                             self.parent_entity.id,
-                                             child_entity.entityset)
-            self._is_unique_path = bool(path)
+            self._is_unique_path = _is_unique_forward_path(child_entity.id,
+                                                           self.parent_entity.id,
+                                                           child_entity.entityset)
         if not relationship_path:
             assert child_entity, 'child_entity or relationship_path must be provided'
 
             relationship_path = _find_path(child_entity.id,
                                            self.parent_entity.id,
-                                           child_entity.entityset,
-                                           backward=False)
+                                           child_entity.entityset)
             self._is_unique_path = True
 
         super(DirectFeature, self).__init__(entity=child_entity,
@@ -485,13 +483,11 @@ class AggregationFeature(FeatureBase):
             assert self.child_entity == relationship_path[-1].child_entity, \
                 'Base feature must be defined on the entity at the end of relationship_path'
 
-            path = _find_unique_forward_path(self.child_entity.id,
-                                             parent_entity.id,
-                                             parent_entity.entityset)
-            self._is_unique_path = bool(path)
+            self._is_unique_path = _is_unique_forward_path(self.child_entity.id,
+                                                           parent_entity.id,
+                                                           parent_entity.entityset)
         else:
             assert parent_entity, "parent_entity or relationship_path must be provided."
-            # Try to find path from parent to base feature
             relationship_path = _find_path(parent_entity.id,
                                            self.child_entity.id,
                                            parent_entity.entityset,
@@ -706,92 +702,35 @@ def _check_feature(feature):
 
 def _find_path(start_entity_id, end_entity_id, es, backward=False):
     """
-    Finds a path of relationships between parent and child.
-    If backward then it follows backward relationships instead of forward.
+    Finds a path of relationships between start and end.
     Raises if there is no path or multiple possible paths.
     """
     if backward:
-        search_start = end_entity_id
-        search_end = start_entity_id
+        paths = es.find_backward_paths(start_entity_id, end_entity_id)
     else:
-        search_start = start_entity_id
-        search_end = end_entity_id
+        paths = es.find_forward_paths(start_entity_id, end_entity_id)
 
-    path = _find_unique_forward_path(search_start, search_end, es)
+    path = next(paths, None)
 
-    if path is None:
+    if not path:
         raise RuntimeError('No path from "%s" to "%s" found.'
                            % (start_entity_id, end_entity_id))
-    elif path is False:
+    # Check for another path.
+    elif next(paths, None):
         message = "There are multiple possible paths to the base entity. " \
                   "You must specify a relationship path."
         raise RuntimeError(message)
-    elif backward:
-        return path[::-1]
     else:
         return path
 
 
-def _find_unique_forward_path(start_entity_id, end_entity_id, es):
+def _is_unique_forward_path(start_entity_id, end_entity_id, es):
     """
-    Find a path of forward relationships between the two entities.
-    Return False if there are multiple possible paths.
+    Is the path from start to end unique?
     """
-    path = None  # If we don't find a path.
+    paths = es.find_forward_paths(start_entity_id, end_entity_id)
 
-    # Entity ids that we have visited in the graph.
-    # We track these so that we don't get stuck in a loop.
-    visited = set()
+    next(paths)
+    second_path = next(paths, None)
 
-    # entity ids that we have visited multiple times.
-    # This means that there are multiple paths to these entities.
-    visited_multiple = set()
-
-    # Entity ids from which we know there is a path to the end entity.
-    in_path = set()
-
-    # Pass visited_multiple so that we stop recursing once we've visited a node
-    # multiple times.
-    for entity_id, entity_path in _depth_first_search(start_entity_id, es, visited_multiple, []):
-        # Skip the start_entity.
-        if not entity_path:
-            continue
-
-        if entity_id in in_path:
-            # We have found a second path to entity, and entity has a path to
-            # search_end.
-            return False
-
-        if entity_id in visited:
-            visited_multiple.add(entity_id)
-        else:
-            visited.add(entity_id)
-
-        if entity_id == end_entity_id:
-            # Mark each entity in path as in_path
-            for r in entity_path:
-                parent_id = r.parent_entity.id
-                if parent_id in visited_multiple:
-                    # We have found a path from parent to search_end, and we
-                    # already know that there are multiple paths to parent.
-                    return False
-                in_path.add(parent_id)
-
-            # Store the path, to be returned if no other path is detected.
-            path = entity_path
-
-    return path
-
-
-def _depth_first_search(start_entity_id, es, done_entities, path):
-    """Generator which yields all entities connected through forward relationships."""
-    if start_entity_id in done_entities:
-        return
-
-    yield start_entity_id, path
-
-    for relationship in es.get_forward_relationships(start_entity_id):
-        next = relationship.parent_entity.id
-        new_path = path + [relationship]
-        for entity_id, entity_path in _depth_first_search(next, es, done_entities, new_path):
-            yield entity_id, entity_path
+    return not second_path

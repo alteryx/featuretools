@@ -318,7 +318,7 @@ def test_serialization(es):
     primitive = ft.primitives.Max()
     max1 = ft.AggregationFeature(value, primitive, parent_entity=es['customers'])
 
-    path = es.find_backward_path('customers', 'log')
+    path = next(es.find_backward_paths('customers', 'log'))
     dictionary = {
         'base_features': [value.unique_name()],
         'relationship_path': [r.to_dictionary() for r in path],
