@@ -148,6 +148,7 @@ Table of contents
 **Getting Started**
 
 * :doc:`getting_started/install`
+* :doc:`getting_started/featuretools_enterprise`
 * :doc:`loading_data/using_entitysets`
 * :doc:`automated_feature_engineering/afe`
 * :doc:`automated_feature_engineering/primitives`
@@ -160,6 +161,7 @@ Table of contents
 
    self
    getting_started/install
+   getting_started/featuretools_enterprise
    loading_data/using_entitysets
    automated_feature_engineering/afe
    automated_feature_engineering/primitives
