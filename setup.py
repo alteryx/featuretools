@@ -6,6 +6,12 @@ dirname = path.abspath(path.dirname(__file__))
 with open(path.join(dirname, 'README.md')) as f:
     long_description = f.read()
 
+extras_require = {
+  'tsfresh': ['featuretools-tsfresh-primitives >= 0.1.0'],
+  'update_checker': ['featuretools-update-checker >= 1.0.0'],
+}
+extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
+
 setup(
     name='featuretools',
     version='0.8.0',
@@ -29,6 +35,7 @@ setup(
     python_requires='>=2.7, <4',
     test_suite='featuretools/tests',
     tests_require=open('test-requirements.txt').readlines(),
+    extras_require=extras_require,
     keywords='feature engineering data science machine learning',
     include_package_data=True,
     entry_points={

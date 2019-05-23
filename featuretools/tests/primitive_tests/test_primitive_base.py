@@ -24,9 +24,12 @@ def test_call_trans():
 
 def test_uses_calc_time():
     primitive = TimeSinceLast()
+    primitive_h = TimeSinceLast(unit="hours")
     datetimes = pd.Series([datetime(2015, 6, 6), datetime(2015, 6, 7)])
     answer = 86400.0
+    answer_h = 24.0
     assert answer == primitive(datetimes, time=datetime(2015, 6, 8))
+    assert answer_h == primitive_h(datetimes, time=datetime(2015, 6, 8))
 
 
 def test_call_multiple_args():
