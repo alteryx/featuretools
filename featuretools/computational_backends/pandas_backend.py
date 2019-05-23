@@ -88,8 +88,12 @@ class PandasBackend(ComputationalBackend):
 
         if precalculated_features is None:
             precalculated_features = {}
-        # Access the index to get the filtered data we need
+
         target_entity = self.entityset[self.target_eid]
+
+        if not target_entity.df.index.isin(instance_ids).any():
+            return self.generate_default_df(instance_ids=instance_ids)
+
         if ignored:
             # TODO: Just want to remove entities if don't have any (sub)features defined
             # on them anymore, rather than recreating
