@@ -79,9 +79,8 @@ class TimeSincePrevious(TransformPrimitive):
 
     def get_function(self):
         def pd_diff(base_array):
-            bf_name = 'base_feature'
-            df = pd.DataFrame.from_dict({bf_name: base_array}).diff()
-            return df[bf_name].apply(lambda x: x.total_seconds())
+            ser = pd.Series(base_array).diff()
+            return ser.apply(lambda x: x.total_seconds())
         return pd_diff
 
 
@@ -336,8 +335,6 @@ class TimeSince(TransformPrimitive):
 
     Args:
         unit (str): Defines the unit of time to count from.
-
-            Defaults to Seconds.
             Defaults to Seconds. Acceptable values:
             years, months, days, hours, minutes, seconds, milliseconds, nanoseconds
 
@@ -459,12 +456,7 @@ class Diff(TransformPrimitive):
 
     def get_function(self):
         def pd_diff(base_array):
-            bf_name = 'base_feature'
-            df = pd.DataFrame.from_dict({bf_name: base_array}).diff()
-            try:
-                return df[bf_name]
-            except KeyError:
-                return pd.Series([np.nan] * len(base_array))
+            return pd.Series(base_array).diff()
         return pd_diff
 
 

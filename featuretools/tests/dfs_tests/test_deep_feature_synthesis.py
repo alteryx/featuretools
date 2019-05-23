@@ -175,21 +175,21 @@ def test_handles_diff_entity_groupby(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
                                    agg_primitives=[],
-                                   trans_primitives=[Diff])
+                                   groupby_trans_primitives=[Diff])
 
     features = dfs_obj.build_features()
-    assert (feature_with_name(features, 'DIFF(value)'))
-    assert (feature_with_name(features, 'DIFF(value_many_nans)'))
+    assert (feature_with_name(features, 'DIFF(value) by session_id'))
+    assert (feature_with_name(features, 'DIFF(value) by product_id'))
 
 
 def test_handles_time_since_previous_entity_groupby(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
                                    agg_primitives=[],
-                                   trans_primitives=[TimeSincePrevious])
+                                   groupby_trans_primitives=[TimeSincePrevious])
 
     features = dfs_obj.build_features()
-    assert (feature_with_name(features, 'TIME_SINCE_PREVIOUS(datetime)'))
+    assert (feature_with_name(features, 'TIME_SINCE_PREVIOUS(datetime) by session_id'))
 
 # M TODO
 # def test_handles_cumsum_entity_groupby(es):
