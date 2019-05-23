@@ -55,7 +55,12 @@ class Absolute(TransformPrimitive):
 
 
 class TimeSincePrevious(TransformPrimitive):
-    """Compute the time in seconds since the previous entry in a list.
+    """Compute the time since the previous entry in a list.
+
+    Args:
+        unit (str): Defines the unit of time to count from.
+            Defaults to Seconds. Acceptable values:
+            years, months, days, hours, minutes, seconds, milliseconds, nanoseconds
 
     Description:
         Given a list of datetimes, compute the time in seconds elapsed since
@@ -77,9 +82,12 @@ class TimeSincePrevious(TransformPrimitive):
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
 
+    def __init__(self, unit="seconds"):
+        self.unit = unit.lower()
+
     def get_function(self):
         def pd_diff(values):
-            return values.diff().apply(lambda x: x.total_seconds())
+            return convert_time_units(values.diff().apply(lambda x: x.total_seconds()), self.unit)
         return pd_diff
 
 
@@ -330,7 +338,7 @@ class NumWords(TransformPrimitive):
 
 
 class TimeSince(TransformPrimitive):
-    """Calculates time in seconds from a value to a specified cutoff datetime.
+    """Calculates time from a value to a specified cutoff datetime.
 
     Args:
         unit (str): Defines the unit of time to count from.
@@ -438,16 +446,6 @@ class Diff(TransformPrimitive):
         >>> values = [1, 10, 3, 4, 15]
         >>> diff(values).tolist()
         [nan, 9.0, -7.0, 1.0, 11.0]
-
-        If values are datetimes, difference will be a timedelta
-
-        >>> from datetime import datetime
-        >>> diff = Diff()
-        >>> values = [datetime(2019, 3, 1, 0, 0, 0),
-        ...          datetime(2019, 3, 1, 0, 1, 0),
-        ...          datetime(2019, 3, 1, 0, 1, 30)]
-        >>> diff(values).tolist()
-        [NaT, Timedelta('0 days 00:01:00'), Timedelta('0 days 00:00:30')]
     """
     name = "diff"
     input_types = [Numeric]
