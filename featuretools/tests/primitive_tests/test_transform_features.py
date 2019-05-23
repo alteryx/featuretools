@@ -116,26 +116,37 @@ def test_make_trans_feat(es):
 
 def test_diff(es):
     value = ft.Feature(es['log']['value'])
-    diff1 = ft.Feature([value], primitive=Diff)
+    customer_id_feat = ft.Feature(es['sessions']['customer_id'], entity=es['log'])
+    diff1 = ft.Feature(value, groupby=es['log']['session_id'], primitive=Diff)
+    diff2 = ft.Feature(value, groupby=customer_id_feat, primitive=Diff)
 
-    pandas_backend = PandasBackend(es, [diff1])
+    pandas_backend = PandasBackend(es, [diff1, diff2])
     df = pandas_backend.calculate_all_features(instance_ids=range(15),
                                                time_last=None)
 
     val1 = df[diff1.get_name()].values.tolist()
-    correct_vals = [np.nan, 5, 5, 5, 5, -20, 1, 1, 1, -3, 0, 5, -5, 7, 7]
+    val2 = df[diff2.get_name()].values.tolist()
+    correct_vals1 = [
+        np.nan, 5, 5, 5, 5, np.nan, 1, 1, 1, np.nan, np.nan, 5, np.nan, 7, 7
+    ]
+    correct_vals2 = [np.nan, 5, 5, 5, 5, -20, 1, 1, 1, -3, np.nan, 5, -5, 7, 7]
     for i, v in enumerate(val1):
         v1 = val1[i]
         if np.isnan(v1):
-            assert (np.isnan(correct_vals[i]))
+            assert (np.isnan(correct_vals1[i]))
         else:
-            assert v1 == correct_vals[i]
+            assert v1 == correct_vals1[i]
+        v2 = val2[i]
+        if np.isnan(v2):
+            assert (np.isnan(correct_vals2[i]))
+        else:
+            assert v2 == correct_vals2[i]
 
 
 def test_diff_single_value(es):
-    diff = ft.Feature([es['stores']['num_square_feet']], primitive=Diff)
+    diff = ft.Feature(es['stores']['num_square_feet'], groupby=es['stores'][u'région_id'], primitive=Diff)
     pandas_backend = PandasBackend(es, [diff])
-    df = pandas_backend.calculate_all_features(instance_ids=[5],
+    df = pandas_backend.calculate_all_features(instance_ids=[1],
                                                time_last=None)
     assert df.shape[0] == 1
     assert df[diff.get_name()].dropna().shape[0] == 0
@@ -514,14 +525,14 @@ def test_isin_feat_custom(es):
 
 def test_isnull_feat(es):
     value = ft.Feature(es['log']['value'])
-    diff = ft.Feature([value], primitive=Diff)
+    diff = ft.Feature(value, groupby=es['log']['session_id'], primitive=Diff)
     isnull = ft.Feature(diff, primitive=IsNull)
     features = [isnull]
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
     # correct_vals_diff = [
     #     np.nan, 5, 5, 5, 5, np.nan, 1, 1, 1, np.nan, np.nan, 5, np.nan, 7, 7]
-    correct_vals = [True, False, False, False, False, False, False, False,
-                    False, False, True, False, False, False, False]
+    correct_vals = [True, False, False, False, False, True, False, False,
+                    False, True, True, False, True, False, False]
     values = df[isnull.get_name()].values.tolist()
     assert correct_vals == values
 
