@@ -336,7 +336,10 @@ class TimeSince(TransformPrimitive):
 
     Args:
         unit (str): Defines the unit of time to count from.
+
             Defaults to Seconds.
+            Defaults to Seconds. Acceptable values:
+            years, months, days, hours, minutes, seconds, milliseconds, nanoseconds
 
     Examples:
         >>> from datetime import datetime
