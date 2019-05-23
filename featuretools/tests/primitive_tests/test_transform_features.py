@@ -146,7 +146,7 @@ def test_diff(es):
 def test_diff_single_value(es):
     diff = ft.Feature(es['stores']['num_square_feet'], groupby=es['stores'][u'région_id'], primitive=Diff)
     pandas_backend = PandasBackend(es, [diff])
-    df = pandas_backend.calculate_all_features(instance_ids=[1],
+    df = pandas_backend.calculate_all_features(instance_ids=[5],
                                                time_last=None)
     assert df.shape[0] == 1
     assert df[diff.get_name()].dropna().shape[0] == 0
