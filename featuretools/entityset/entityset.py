@@ -270,8 +270,7 @@ class EntitySet(object):
 
     def get_pandas_data_slice(self, filter_eid, index_eid,
                               instances, entity_columns=None,
-                              time_last=None, training_window=None,
-                              verbose=False):
+                              time_last=None, training_window=None):
         """
         Get the slice of data related to the supplied instances of the index
         entity.

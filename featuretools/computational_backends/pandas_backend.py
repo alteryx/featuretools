@@ -1,7 +1,6 @@
 import cProfile
 import os
 import pstats
-import sys
 import warnings
 from datetime import datetime
 from functools import partial
@@ -24,10 +23,7 @@ from featuretools.feature_base import (
     TransformFeature
 )
 from featuretools.utils import is_python_2
-from featuretools.utils.gen_utils import (
-    get_relationship_variable_id,
-    make_tqdm_iterator
-)
+from featuretools.utils.gen_utils import get_relationship_variable_id
 
 warnings.simplefilter('ignore', np.RankWarning)
 warnings.simplefilter("ignore", category=RuntimeWarning)
@@ -49,8 +45,7 @@ class PandasBackend(ComputationalBackend):
 
     def calculate_all_features(self, instance_ids, time_last,
                                training_window=None, profile=False,
-                               precalculated_features=None, ignored=None,
-                               verbose=False):
+                               precalculated_features=None, ignored=None):
         """
         Given a list of instance ids and features with a shared time window,
         generate and return a mapping of instance -> feature values.
@@ -65,8 +60,6 @@ class PandasBackend(ComputationalBackend):
                 can be used when calculating features. If None, all data before cutoff time is used.
 
             profile (bool): Enable profiler if True.
-
-            verbose (bool): Print output progress if True.
 
         Returns:
             pd.DataFrame : Pandas DataFrame of calculated feature values.
@@ -110,15 +103,6 @@ class PandasBackend(ComputationalBackend):
 
         # Iterate over the top-level entities (filter entities) in sorted order
         # and calculate all relevant features under each one.
-        if verbose:
-            total_groups_to_compute = sum(len(group)
-                                          for group in self.feature_tree.ordered_feature_groups.values())
-
-            pbar = make_tqdm_iterator(total=total_groups_to_compute,
-                                      desc="Computing features",
-                                      unit="feature group")
-            if verbose:
-                pbar.update(0)
 
         # entity_id -> df
         finished_entities = {}
@@ -140,8 +124,7 @@ class PandasBackend(ComputationalBackend):
                                                      instances=instance_ids,
                                                      entity_columns=necessary_columns,
                                                      time_last=time_last,
-                                                     training_window=training_window,
-                                                     verbose=verbose)
+                                                     training_window=training_window)
             large_entity_frames = None
             if large_necessary_columns:
                 large_entity_frames = \
@@ -150,8 +133,7 @@ class PandasBackend(ComputationalBackend):
                                                          instances=None,
                                                          entity_columns=large_necessary_columns,
                                                          time_last=time_last,
-                                                         training_window=training_window,
-                                                         verbose=verbose)
+                                                         training_window=training_window)
 
             # Populate entity_frames with precalculated features
             if filter_eid in precalculated_features:
@@ -181,9 +163,6 @@ class PandasBackend(ComputationalBackend):
 
             if filter_eid in self.feature_tree.ordered_feature_groups:
                 for group in self.feature_tree.ordered_feature_groups[filter_eid]:
-                    if verbose:
-                        pbar.set_postfix({'running': 0})
-
                     test_feature = group[0]
                     entity_id = test_feature.entity.id
 
@@ -221,18 +200,9 @@ class PandasBackend(ComputationalBackend):
                                                                     _result_frame[cols_to_keep]],
                                                                    axis=1)
 
-                    if verbose:
-                        pbar.update(1)
-
             finished_entities[filter_eid] = entity_frames[filter_eid]
             if large_entity_frames:
                 large_finished_entities[filter_eid] = large_entity_frames[filter_eid]
-
-        if verbose:
-            pbar.set_postfix({'running': 0})
-            pbar.refresh()
-            sys.stdout.flush()
-            pbar.close()
 
         # debugging
         if profile:
