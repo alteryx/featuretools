@@ -84,9 +84,6 @@ class PandasBackend(ComputationalBackend):
 
         target_entity = self.entityset[self.target_eid]
 
-        if not target_entity.df.index.isin(instance_ids).any():
-            return self.generate_default_df(instance_ids=instance_ids)
-
         if ignored:
             # TODO: Just want to remove entities if don't have any (sub)features defined
             # on them anymore, rather than recreating
@@ -125,6 +122,10 @@ class PandasBackend(ComputationalBackend):
                                                      entity_columns=necessary_columns,
                                                      time_last=time_last,
                                                      training_window=training_window)
+
+            if filter_eid == self.target_eid and entity_frames[self.target_eid].empty:
+                return self.generate_default_df(instance_ids=instance_ids)
+
             large_entity_frames = None
             if large_necessary_columns:
                 large_entity_frames = \
