@@ -78,9 +78,8 @@ class TimeSincePrevious(TransformPrimitive):
     return_type = Numeric
 
     def get_function(self):
-        def pd_diff(base_array):
-            ser = pd.Series(base_array).diff()
-            return ser.apply(lambda x: x.total_seconds())
+        def pd_diff(values):
+            return values.diff().apply(lambda x: x.total_seconds())
         return pd_diff
 
 
@@ -455,8 +454,8 @@ class Diff(TransformPrimitive):
     return_type = Numeric
 
     def get_function(self):
-        def pd_diff(base_array):
-            return pd.Series(base_array).diff()
+        def pd_diff(values):
+            return values.diff()
         return pd_diff
 
 
