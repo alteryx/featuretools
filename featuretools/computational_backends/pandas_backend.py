@@ -312,10 +312,11 @@ class PandasBackend(ComputationalBackend):
 
         frame = entity_frames[entity_id]
 
+        for f in features:
+            set_default_column(frame, f)
+
         # handle when no data
         if frame.shape[0] == 0:
-            for f in features:
-                set_default_column(frame, f)
             return frame
 
         groupby = features[0].groupby.get_name()
@@ -340,10 +341,7 @@ class PandasBackend(ComputationalBackend):
                     values = pd.Series(values, index=variable_data[0].index)
 
                 feature_name = f.get_name()
-                if feature_name in frame.columns:
-                    frame[feature_name].update(values)
-                else:
-                    frame[feature_name] = values
+                frame[feature_name].update(values)
 
         return frame
 
