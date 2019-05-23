@@ -711,22 +711,17 @@ def test_related_instances_all_cutoff_time_same_entity(es):
 
 
 def test_get_pandas_slice(es):
-    def slice_for(filter_eid):
-        return es.get_pandas_data_slice(filter_eid=filter_eid,
-                                        index_eid='customers',
-                                        instances=[0])
-
-    assert set(slice_for('products').keys()), set(['products', 'log'])
-    assert set(slice_for('customers').keys()) == set(
+    assert set(_slice_for(es, 'products').keys()), set(['products', 'log'])
+    assert set(_slice_for(es, 'customers').keys()) == set(
         ['customers', 'sessions', 'log'])
-    assert set(slice_for(u'régions').keys()) == set(
+    assert set(_slice_for(es, u'régions').keys()) == set(
         [u'régions', 'stores', 'customers', 'sessions', 'log'])
 
     # make sure different subsets of the log are included in each filtering
-    assert set(slice_for('customers')['log']['id'].values) == set(range(10))
-    assert set(slice_for('products')['log']['id'].values) == set(
+    assert set(_slice_for(es, 'customers')['log']['id'].values) == set(range(10))
+    assert set(_slice_for(es, 'products')['log']['id'].values) == set(
         list(range(10)) + list(range(11, 15)))
-    assert set(slice_for(u'régions')['log']['id'].values) == set(range(17))
+    assert set(_slice_for(es, u'régions')['log']['id'].values) == set(range(17))
 
 
 def test_get_pandas_slice_times(es):
@@ -736,15 +731,9 @@ def test_get_pandas_slice_times(es):
     start = np.datetime64(datetime(2011, 4, 1))
     end = np.datetime64(datetime(2011, 4, 9, 10, 31, 10))
 
-    def slice_for(filter_eid):
-        return es.get_pandas_data_slice(filter_eid=filter_eid,
-                                        index_eid='customers',
-                                        instances=[0],
-                                        time_last=end)
-
     # make sure no times outside range are included in any frames
     for eid in filter_eids:
-        result = slice_for(eid)
+        result = _slice_for(es, eid, time_last=end)
         for t in result['log']['datetime'].values:
             assert t >= start and t < end
 
@@ -760,15 +749,9 @@ def test_get_pandas_slice_times_include(es):
     start = np.datetime64(datetime(2011, 4, 1))
     end = np.datetime64(datetime(2011, 4, 9, 10, 31, 10))
 
-    def slice_for(filter_eid):
-        return es.get_pandas_data_slice(filter_eid=filter_eid,
-                                        index_eid='customers',
-                                        instances=[0],
-                                        time_last=end)
-
     # make sure no times outside range are included in any frames
     for eid in filter_eids:
-        result = slice_for(eid)
+        result = _slice_for(es, eid, time_last=end)
         for t in result['log']['datetime'].values:
             assert t >= start and t <= end
 
@@ -971,3 +954,10 @@ def test_datetime64_conversion():
     es.entity_from_dataframe(entity_id='test_entity', index='id', dataframe=df)
     vtype_time_index = variable_types.variable.DatetimeTimeIndex
     es['test_entity'].convert_variable_type('time', vtype_time_index)
+
+
+def _slice_for(es, filter_eid, time_last=None):
+    return es.get_pandas_data_slice(filter_eid=filter_eid,
+                                    index_eid='customers',
+                                    instances=[0],
+                                    time_last=time_last)
