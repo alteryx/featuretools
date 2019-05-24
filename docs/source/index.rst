@@ -148,7 +148,6 @@ Table of contents
 **Getting Started**
 
 * :doc:`getting_started/install`
-* :doc:`getting_started/featuretools_enterprise`
 * :doc:`loading_data/using_entitysets`
 * :doc:`automated_feature_engineering/afe`
 * :doc:`automated_feature_engineering/primitives`
@@ -161,7 +160,6 @@ Table of contents
 
    self
    getting_started/install
-   getting_started/featuretools_enterprise
    loading_data/using_entitysets
    automated_feature_engineering/afe
    automated_feature_engineering/primitives
@@ -224,6 +222,7 @@ Table of contents
 **Resources and References**
 
 * :doc:`help`
+* :doc:`featuretools_enterprise`
 * :doc:`usage_tips/limitations`
 * :doc:`usage_tips/glossary`
 * :doc:`ecosystem`
@@ -235,6 +234,7 @@ Table of contents
    :caption: Resources and References
 
    help
+   featuretools_enterprise
    usage_tips/limitations
    usage_tips/glossary
    ecosystem
