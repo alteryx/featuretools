@@ -1,7 +1,6 @@
 import cProfile
 import os
 import pstats
-import sys
 import warnings
 from datetime import datetime
 from functools import partial
@@ -24,10 +23,7 @@ from featuretools.feature_base import (
     TransformFeature
 )
 from featuretools.utils import is_python_2
-from featuretools.utils.gen_utils import (
-    get_relationship_variable_id,
-    make_tqdm_iterator
-)
+from featuretools.utils.gen_utils import get_relationship_variable_id
 
 warnings.simplefilter('ignore', np.RankWarning)
 warnings.simplefilter("ignore", category=RuntimeWarning)
@@ -49,8 +45,7 @@ class PandasBackend(ComputationalBackend):
 
     def calculate_all_features(self, instance_ids, time_last,
                                training_window=None, profile=False,
-                               precalculated_features=None, ignored=None,
-                               verbose=False):
+                               precalculated_features=None, ignored=None):
         """
         Given a list of instance ids and features with a shared time window,
         generate and return a mapping of instance -> feature values.
@@ -65,8 +60,6 @@ class PandasBackend(ComputationalBackend):
                 can be used when calculating features. If None, all data before cutoff time is used.
 
             profile (bool): Enable profiler if True.
-
-            verbose (bool): Print output progress if True.
 
         Returns:
             pd.DataFrame : Pandas DataFrame of calculated feature values.
@@ -88,8 +81,9 @@ class PandasBackend(ComputationalBackend):
 
         if precalculated_features is None:
             precalculated_features = {}
-        # Access the index to get the filtered data we need
+
         target_entity = self.entityset[self.target_eid]
+
         if ignored:
             # TODO: Just want to remove entities if don't have any (sub)features defined
             # on them anymore, rather than recreating
@@ -98,94 +92,78 @@ class PandasBackend(ComputationalBackend):
             ordered_entities = self.feature_tree.ordered_entities
 
         necessary_columns = self.feature_tree.necessary_columns
-        eframes_by_filter = \
-            self.entityset.get_pandas_data_slice(filter_entity_ids=ordered_entities,
-                                                 index_eid=self.target_eid,
-                                                 instances=instance_ids,
-                                                 entity_columns=necessary_columns,
-                                                 time_last=time_last,
-                                                 training_window=training_window,
-                                                 verbose=verbose)
-        large_eframes_by_filter = None
+        large_necessary_columns = None
         if any([f.primitive.uses_full_entity
                 for f in self.feature_tree.all_features
                 if isinstance(f, (GroupByTransformFeature, TransformFeature))]):
             large_necessary_columns = self.feature_tree.necessary_columns_for_all_values_features
-            large_eframes_by_filter = \
-                self.entityset.get_pandas_data_slice(filter_entity_ids=ordered_entities,
-                                                     index_eid=self.target_eid,
-                                                     instances=None,
-                                                     entity_columns=large_necessary_columns,
-                                                     time_last=time_last,
-                                                     training_window=training_window,
-                                                     verbose=verbose)
-
-        # Handle an empty time slice by returning a dataframe with defaults
-        if eframes_by_filter is None:
-            return self.generate_default_df(instance_ids=instance_ids)
-
-        finished_entity_ids = []
-        # Populate entity_frames with precalculated features
-        if len(precalculated_features) > 0:
-            for entity_id, precalc_feature_values in precalculated_features.items():
-                if entity_id in eframes_by_filter:
-                    frame = eframes_by_filter[entity_id][entity_id]
-                    eframes_by_filter[entity_id][entity_id] = pd.merge(frame,
-                                                                       precalc_feature_values,
-                                                                       left_index=True,
-                                                                       right_index=True)
-                else:
-                    # Only features we're taking from this entity
-                    # are precomputed
-                    # Make sure the id variable is a column as well as an index
-                    entity_id_var = self.entityset[entity_id].index
-                    precalc_feature_values[entity_id_var] = precalc_feature_values.index.values
-                    eframes_by_filter[entity_id] = {entity_id: precalc_feature_values}
-                    finished_entity_ids.append(entity_id)
 
         # Iterate over the top-level entities (filter entities) in sorted order
         # and calculate all relevant features under each one.
-        if verbose:
-            total_groups_to_compute = sum(len(group)
-                                          for group in self.feature_tree.ordered_feature_groups.values())
 
-            pbar = make_tqdm_iterator(total=total_groups_to_compute,
-                                      desc="Computing features",
-                                      unit="feature group")
-            if verbose:
-                pbar.update(0)
+        # entity_id -> df
+        finished_entities = {}
+        large_finished_entities = {}
+
+        for entity_id, precalc_feature_values in precalculated_features.items():
+            if entity_id not in ordered_entities:
+                # Only features we're taking from this entity
+                # are precomputed
+                # Make sure the id variable is a column as well as an index
+                entity_id_var = self.entityset[entity_id].index
+                precalc_feature_values[entity_id_var] = precalc_feature_values.index.values
+                finished_entities[entity_id] = precalc_feature_values
 
         for filter_eid in ordered_entities:
-            entity_frames = eframes_by_filter[filter_eid]
+            entity_frames = \
+                self.entityset.get_pandas_data_slice(filter_eid=filter_eid,
+                                                     index_eid=self.target_eid,
+                                                     instances=instance_ids,
+                                                     entity_columns=necessary_columns,
+                                                     time_last=time_last,
+                                                     training_window=training_window)
+
+            if filter_eid == self.target_eid and entity_frames[self.target_eid].empty:
+                return self.generate_default_df(instance_ids=instance_ids)
+
             large_entity_frames = None
-            if large_eframes_by_filter is not None:
-                large_entity_frames = large_eframes_by_filter[filter_eid]
+            if large_necessary_columns:
+                large_entity_frames = \
+                    self.entityset.get_pandas_data_slice(filter_eid=filter_eid,
+                                                         index_eid=self.target_eid,
+                                                         instances=None,
+                                                         entity_columns=large_necessary_columns,
+                                                         time_last=time_last,
+                                                         training_window=training_window)
+
+            # Populate entity_frames with precalculated features
+            if filter_eid in precalculated_features:
+                precalc_feature_values = precalculated_features[filter_eid]
+                entity_frames[filter_eid] = pd.merge(entity_frames[filter_eid],
+                                                     precalc_feature_values,
+                                                     left_index=True,
+                                                     right_index=True)
 
             # update the current set of entity frames with the computed features
             # from previously finished entities
-            for eid in finished_entity_ids:
+            for finished_eid, finished_frame in finished_entities.items():
                 # only include this frame if it's not from a descendent entity:
                 # descendent entity frames will have to be re-calculated.
                 # TODO: this check might not be necessary, depending on our
                 # constraints
                 if not self.entityset.find_backward_path(start_entity_id=filter_eid,
-                                                         goal_entity_id=eid):
-                    entity_frames[eid] = eframes_by_filter[eid][eid]
+                                                         goal_entity_id=finished_eid):
+                    entity_frames[finished_eid] = finished_frame
                     # TODO: look this over again
                     # precalculated features will only be placed in entity_frames,
                     # and it's possible that that they are the only features computed
                     # for an entity. In this case, the entity won't be present in
-                    # large_eframes_by_filter. The relevant lines that this case passes
-                    # through are 136-143
-                    if (large_eframes_by_filter is not None and
-                            eid in large_eframes_by_filter and eid in large_eframes_by_filter[eid]):
-                        large_entity_frames[eid] = large_eframes_by_filter[eid][eid]
+                    # large_eframes_by_filter.
+                    if large_necessary_columns and finished_eid in large_finished_entities:
+                        large_entity_frames[finished_eid] = large_finished_entities[finished_eid]
 
             if filter_eid in self.feature_tree.ordered_feature_groups:
                 for group in self.feature_tree.ordered_feature_groups[filter_eid]:
-                    if verbose:
-                        pbar.set_postfix({'running': 0})
-
                     test_feature = group[0]
                     entity_id = test_feature.entity.id
 
@@ -223,16 +201,9 @@ class PandasBackend(ComputationalBackend):
                                                                     _result_frame[cols_to_keep]],
                                                                    axis=1)
 
-                    if verbose:
-                        pbar.update(1)
-
-            finished_entity_ids.append(filter_eid)
-
-        if verbose:
-            pbar.set_postfix({'running': 0})
-            pbar.refresh()
-            sys.stdout.flush()
-            pbar.close()
+            finished_entities[filter_eid] = entity_frames[filter_eid]
+            if large_entity_frames:
+                large_finished_entities[filter_eid] = large_entity_frames[filter_eid]
 
         # debugging
         if profile:
@@ -245,7 +216,7 @@ class PandasBackend(ComputationalBackend):
                                    list(instance_ids)[0]), 'w') as f:
                 pstats.Stats(pr, stream=f).strip_dirs().sort_stats("cumulative", "tottime").print_stats()
 
-        df = eframes_by_filter[self.target_eid][self.target_eid]
+        df = finished_entities[self.target_eid]
 
         # fill in empty rows with default values
         missing_ids = [i for i in instance_ids if i not in
@@ -341,10 +312,11 @@ class PandasBackend(ComputationalBackend):
 
         frame = entity_frames[entity_id]
 
+        for f in features:
+            set_default_column(frame, f)
+
         # handle when no data
         if frame.shape[0] == 0:
-            for f in features:
-                set_default_column(frame, f)
             return frame
 
         groupby = features[0].groupby.get_name()
@@ -369,10 +341,7 @@ class PandasBackend(ComputationalBackend):
                     values = pd.Series(values, index=variable_data[0].index)
 
                 feature_name = f.get_name()
-                if feature_name in frame.columns:
-                    frame[feature_name].update(values)
-                else:
-                    frame[feature_name] = values
+                frame[feature_name].update(values)
 
         return frame
 

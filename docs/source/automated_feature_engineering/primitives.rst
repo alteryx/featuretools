@@ -45,11 +45,11 @@ A second advantage of primitives is that they can be used to quickly enumerate m
                                           agg_primitives=["mean", "max", "min", "std", "skew"],
                                           trans_primitives=["time_since_previous"])
 
-    feature_matrix[["MEAN(sessions.time_since_previous_by_customer_id)",
-                    "MAX(sessions.time_since_previous_by_customer_id)",
-                    "MIN(sessions.time_since_previous_by_customer_id)",
-                    "STD(sessions.time_since_previous_by_customer_id)",
-                    "SKEW(sessions.time_since_previous_by_customer_id)"]]
+    feature_matrix[["MEAN(sessions.TIME_SINCE_PREVIOUS(session_start))",
+                    "MAX(sessions.TIME_SINCE_PREVIOUS(session_start))",
+                    "MIN(sessions.TIME_SINCE_PREVIOUS(session_start))",
+                    "STD(sessions.TIME_SINCE_PREVIOUS(session_start))",
+                    "SKEW(sessions.TIME_SINCE_PREVIOUS(session_start))"]]
 
 
 

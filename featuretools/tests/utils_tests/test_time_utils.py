@@ -1,8 +1,10 @@
 from itertools import chain
 
+import numpy as np
 import pandas as pd
+import pytest
 
-from featuretools.utils import make_temporal_cutoffs
+from featuretools.utils import convert_time_units, make_temporal_cutoffs
 
 
 def test_make_temporal_cutoffs():
@@ -74,3 +76,14 @@ def test_make_temporal_cutoffs():
         assert computed == actual
     for computed, actual in zip(temporal_cutoffs_by_nw_start['time'], actual_times):
         assert computed == actual
+
+
+def test_convert_time_units():
+    units = {'years': 31540000, 'months': 2628000, 'days': 86400, 'hours': 3600, 'minutes': 60, 'seconds': 1, 'milliseconds': 0.001, 'nanoseconds': 0.000000001}
+    for each in units:
+        assert (convert_time_units(units[each] * 2, each) == 2)
+        assert np.isclose(convert_time_units(float(units[each] * 2), each), 2)
+
+    error_text = "Invalid unit given, make sure it is plural"
+    with pytest.raises(ValueError, match=error_text):
+        convert_time_units("jnkwjgn", 10)
