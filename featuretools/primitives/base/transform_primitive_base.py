@@ -9,9 +9,6 @@ from featuretools.primitives.base.utils import inspect_function_args
 class TransformPrimitive(PrimitiveBase):
     """Feature for entity that is a based off one or more other features
         in that entity."""
-    # (bool) If True, feature function depends on all values of entity
-    #   (and will receive these values as input, regardless of specified instance ids)
-    uses_full_entity = False
 
     def generate_name(self, base_feature_names):
         return u"%s(%s%s)" % (

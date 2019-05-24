@@ -174,20 +174,19 @@ def test_direct_with_invalid_init_args(diamond_es):
                          relationship_path=[transaction_to_store])
 
 
-def test_direct_with_multiple_possible_paths(diamond_es):
+def test_direct_with_multiple_possible_paths(games_es):
     error_text = "There are multiple possible paths to the base entity. " \
                  "You must specify a relationship path."
     with pytest.raises(RuntimeError, match=error_text):
-        ft.DirectFeature(diamond_es['regions']['name'], diamond_es['transactions'])
+        ft.DirectFeature(games_es['teams']['name'], games_es['games'])
 
-    transaction_relationships = diamond_es.get_forward_relationships('transactions')
-    transaction_to_customer = next(r for r in transaction_relationships
-                                   if r.parent_entity.id == 'customers')
-    customer_to_region = diamond_es.get_forward_relationships('customers')[0]
     # Does not raise if path specified.
-    feat = ft.DirectFeature(diamond_es['regions']['name'], diamond_es['transactions'],
-                            relationship_path=[transaction_to_customer, customer_to_region])
-    assert feat.get_name() == 'customers.regions.name'
+    relationship = next(r for r in games_es.get_forward_relationships('games')
+                        if r.child_variable.id == 'home_team_id')
+    feat = ft.DirectFeature(games_es['teams']['name'], games_es['games'],
+                            relationship_path=[relationship])
+    assert feat.relationship_path_name() == 'teams[home_team_id]'
+    assert feat.get_name() == 'teams[home_team_id].name'
 
 
 def test_direct_with_single_possible_path(diamond_es):

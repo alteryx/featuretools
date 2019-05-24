@@ -106,7 +106,7 @@ class FeatureBase(object):
 
         if ignored is None:
             ignored = set([])
-        deps = [d for d in deps if d.hash() not in ignored]
+        deps = [d for d in deps if d.unique_name() not in ignored]
 
         if deep:
             for dep in deps[:]:  # copy so we don't modify list we iterate over
@@ -118,13 +118,12 @@ class FeatureBase(object):
     def get_depth(self, stop_at=None):
         """Returns depth of feature"""
         max_depth = 0
-        stop_at_hash = set()
+        stop_at_set = set()
         if stop_at is not None:
-            stop_at_hash = set([i.hash() for i in stop_at])
-        if (stop_at is not None and
-                self.hash() in stop_at_hash):
-            return 0
-        for dep in self.get_dependencies(deep=True, ignored=stop_at_hash):
+            stop_at_set = set([i.unique_name() for i in stop_at])
+            if self.unique_name() in stop_at_set:
+                return 0
+        for dep in self.get_dependencies(deep=True, ignored=stop_at_set):
             max_depth = max(dep.get_depth(stop_at=stop_at),
                             max_depth)
         return max_depth + 1
@@ -327,7 +326,10 @@ class FeatureBase(object):
         return self.NOT()
 
     def unique_name(self):
-        return u"%s.%s" % (self.entity_id, self.get_name())
+        return u"%s: %s" % (self.entity_id, self.get_name())
+
+    def relationship_path_name(self):
+        return ''
 
 
 class IdentityFeature(FeatureBase):
@@ -375,6 +377,8 @@ class DirectFeature(FeatureBase):
         a feature value from a parent entity"""
     input_types = [Variable]
     return_type = None
+    # Direct features are applied through forward relationship paths.
+    path_is_forward = True
 
     def __init__(self, base_feature, child_entity, relationship_path=None):
         """relationship_path is a forward path from child to parent."""
@@ -439,14 +443,10 @@ class DirectFeature(FeatureBase):
         return self.base_features[0].variable_type
 
     def generate_name(self):
-        if self._path_is_unique:
-            path_name = self.parent_entity.id
-        else:
-            path_name = relationship_path_name(self.relationship_path, True)
-        return u"%s.%s" % (path_name, self.base_features[0].get_name())
+        return self._name_from_base(self.base_features[0].get_name())
 
     def get_feature_names(self):
-        return [u"%s.%s" % (self.parent_entity.id, base_name)
+        return [self._name_from_base(base_name)
                 for base_name in self.base_features[0].get_feature_names()]
 
     def get_arguments(self):
@@ -454,6 +454,15 @@ class DirectFeature(FeatureBase):
             'base_feature': self.base_features[0].unique_name(),
             'relationship_path': [r.to_dictionary() for r in self.relationship_path]
         }
+
+    def relationship_path_name(self):
+        if self._path_is_unique:
+            return self.parent_entity.id
+        else:
+            return relationship_path_name(self.relationship_path, self.path_is_forward)
+
+    def _name_from_base(self, base_name):
+        return u"%s.%s" % (self.relationship_path_name(), base_name)
 
 
 class AggregationFeature(FeatureBase):
@@ -464,6 +473,8 @@ class AggregationFeature(FeatureBase):
     #: (str or :class:`.Timedelta`): Use only some amount of previous data from
     # each time point during calculation
     use_previous = None
+    # Aggregation features are applied through backward relationship paths.
+    path_is_forward = False
 
     def __init__(self, base_features, parent_entity, primitive,
                  relationship_path=None, use_previous=None, where=None):
@@ -566,12 +577,8 @@ class AggregationFeature(FeatureBase):
         return use_prev_str
 
     def generate_name(self):
-        if self._path_is_unique:
-            path_name = self.child_entity.id
-        else:
-            path_name = relationship_path_name(self.relationship_path, False)
         return self.primitive.generate_name(base_feature_names=[bf.get_name() for bf in self.base_features],
-                                            relationship_path_name=path_name,
+                                            relationship_path_name=self.relationship_path_name(),
                                             parent_entity_id=self.parent_entity.id,
                                             where_str=self._where_str(),
                                             use_prev_str=self._use_prev_str())
@@ -584,6 +591,12 @@ class AggregationFeature(FeatureBase):
             'where': self.where and self.where.unique_name(),
             'use_previous': self.use_previous and self.use_previous.get_arguments(),
         }
+
+    def relationship_path_name(self):
+        if self._path_is_unique:
+            return self.child_entity.id
+        else:
+            return relationship_path_name(self.relationship_path, self.path_is_forward)
 
 
 class TransformFeature(FeatureBase):

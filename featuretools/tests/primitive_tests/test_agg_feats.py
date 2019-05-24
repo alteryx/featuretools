@@ -314,6 +314,7 @@ def test_name_with_multiple_possible_paths(diamond_es):
                                  relationship_path=[customer_to_region, transaction_to_customer])
 
     assert feat.get_name() == "MEAN(customers.transactions.amount)"
+    assert feat.relationship_path_name() == 'customers.transactions'
 
 
 def test_copy(games_es):

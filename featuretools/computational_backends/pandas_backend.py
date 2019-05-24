@@ -13,7 +13,7 @@ from featuretools import variable_types
 from featuretools.computational_backends.base_backend import (
     ComputationalBackend
 )
-from featuretools.computational_backends.feature_tree import FeatureTree
+from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.exceptions import UnknownFeature
 from featuretools.feature_base import (
     AggregationFeature,
@@ -22,7 +22,7 @@ from featuretools.feature_base import (
     IdentityFeature,
     TransformFeature
 )
-from featuretools.utils import is_python_2
+from featuretools.utils import Trie, is_python_2
 from featuretools.utils.gen_utils import get_relationship_variable_id
 
 warnings.simplefilter('ignore', np.RankWarning)
@@ -38,7 +38,7 @@ class PandasBackend(ComputationalBackend):
         self.entityset = entityset
         self.target_eid = features[0].entity.id
         self.features = features
-        self.feature_tree = FeatureTree(entityset, features)
+        self.feature_set = FeatureSet(entityset, features)
 
     def __sizeof__(self):
         return self.entityset.__sizeof__()
@@ -61,6 +61,11 @@ class PandasBackend(ComputationalBackend):
 
             profile (bool): Enable profiler if True.
 
+            ignored (set[int]): Unique names of precalculated features.
+
+            precalculated_features (dict[str -> pd.DataFrame]): Maps entity ids
+                to dataframes containing precalculated features.
+
         Returns:
             pd.DataFrame : Pandas DataFrame of calculated feature values.
                 Indexed by instance_ids. Columns in same order as features
@@ -81,94 +86,30 @@ class PandasBackend(ComputationalBackend):
         if precalculated_features is None:
             precalculated_features = {}
 
-        target_entity = self.entityset[self.target_eid]
+        feature_trie = self.feature_set.feature_trie
 
-        if ignored:
-            # TODO: Just want to remove entities if don't have any (sub)features defined
-            # on them anymore, rather than recreating
-            ordered_entities = FeatureTree(self.entityset, self.features, ignored=ignored).ordered_entities
-        else:
-            ordered_entities = self.feature_tree.ordered_entities
+        df_trie = Trie()
 
-        necessary_columns = self.feature_tree.necessary_columns
-        large_necessary_columns = None
-        if any([f.primitive.uses_full_entity
-                for f in self.feature_tree.all_features
-                if isinstance(f, (GroupByTransformFeature, TransformFeature))]):
-            large_necessary_columns = self.feature_tree.necessary_columns_for_all_values_features
-
-        # Iterate over the top-level entities (filter entities) in sorted order
-        # and calculate all relevant features under each one.
-
-        # entity_id -> df
-        finished_entities = {}
-        large_finished_entities = {}
-
+        # Make sure precalculated features have id variable.
+        # TODO: is this necessary?
         for entity_id, precalc_feature_values in precalculated_features.items():
-            if entity_id not in ordered_entities:
-                # Only features we're taking from this entity
-                # are precomputed
-                # Make sure the id variable is a column as well as an index
-                entity_id_var = self.entityset[entity_id].index
+            entity_id_var = self.entityset[entity_id].index
+            if entity_id_var not in precalc_feature_values:
                 precalc_feature_values[entity_id_var] = precalc_feature_values.index.values
-                finished_entities[entity_id] = precalc_feature_values
+                precalculated_features[entity_id] = precalc_feature_values
 
-        for filter_eid in ordered_entities:
-            entity_frames = \
-                self.entityset.get_pandas_data_slice(filter_eid=filter_eid,
-                                                     index_eid=self.target_eid,
-                                                     instances=instance_ids,
-                                                     entity_columns=necessary_columns,
-                                                     time_last=time_last,
-                                                     training_window=training_window)
-
-            if filter_eid == self.target_eid and entity_frames[self.target_eid].empty:
-                return self.generate_default_df(instance_ids=instance_ids)
-
-            large_entity_frames = None
-            if large_necessary_columns:
-                large_entity_frames = \
-                    self.entityset.get_pandas_data_slice(filter_eid=filter_eid,
-                                                         index_eid=self.target_eid,
-                                                         instances=None,
-                                                         entity_columns=large_necessary_columns,
-                                                         time_last=time_last,
-                                                         training_window=training_window)
-
-            # Populate entity_frames with precalculated features
-            if filter_eid in precalculated_features:
-                precalc_feature_values = precalculated_features[filter_eid]
-                entity_frames[filter_eid] = pd.merge(entity_frames[filter_eid],
-                                                     precalc_feature_values,
-                                                     left_index=True,
-                                                     right_index=True)
-
-            # update the current set of entity frames with the computed features
-            # from previously finished entities
-            for finished_eid, finished_frame in finished_entities.items():
-                # only include this frame if it's not from a descendent entity:
-                # descendent entity frames will have to be re-calculated.
-                # TODO: this check might not be necessary, depending on our
-                # constraints
-                paths = self.entityset.find_backward_paths(start_entity_id=filter_eid,
-                                                           goal_entity_id=finished_eid)
-                if not next(paths, None):
-                    entity_frames[finished_eid] = finished_frame
-                    # TODO: look this over again
-                    # precalculated features will only be placed in entity_frames,
-                    # and it's possible that that they are the only features computed
-                    # for an entity. In this case, the entity won't be present in
-                    # large_eframes_by_filter.
-                    if large_necessary_columns and finished_eid in large_finished_entities:
-                        large_entity_frames[finished_eid] = large_finished_entities[finished_eid]
-
-            for group in self.feature_tree.ordered_feature_groups[filter_eid]:
-                self._calculate_feature_group(group, entity_frames,
-                                              large_entity_frames)
-
-            finished_entities[filter_eid] = entity_frames[filter_eid]
-            if large_entity_frames:
-                large_finished_entities[filter_eid] = large_entity_frames[filter_eid]
+        target_entity = self.entityset[self.target_eid]
+        self._calculate_features_on_trie(entity=target_entity,
+                                         feature_trie=feature_trie,
+                                         df_trie=df_trie,
+                                         path=[],
+                                         filter_variable=target_entity.index,
+                                         filter_values=instance_ids,
+                                         time_last=time_last,
+                                         training_window=training_window,
+                                         precalculated_features=precalculated_features,
+                                         parent_link_variables=[],
+                                         ignored=ignored)
 
         # debugging
         if profile:
@@ -181,7 +122,10 @@ class PandasBackend(ComputationalBackend):
                                    list(instance_ids)[0]), 'w') as f:
                 pstats.Stats(pr, stream=f).strip_dirs().sort_stats("cumulative", "tottime").print_stats()
 
-        df = finished_entities[self.target_eid]
+        df = df_trie[[]]
+
+        if df.empty:
+            return self.generate_default_df(instance_ids=instance_ids)
 
         # fill in empty rows with default values
         missing_ids = [i for i in instance_ids if i not in
@@ -196,6 +140,131 @@ class PandasBackend(ComputationalBackend):
         for feat in self.features:
             column_list.extend(feat.get_feature_names())
         return df[column_list]
+
+    def _calculate_features_on_trie(self, entity, feature_trie, df_trie, path,
+                                    filter_variable, filter_values, time_last,
+                                    training_window, precalculated_features,
+                                    parent_link_variables, ignored, parent_df=None):
+        """
+        Generate dataframes with features calculated for this node of the trie,
+        and all descendant nodes. The dataframes will be stored in df_trie.
+
+        feature_trie: the trie with sets of features to calculate.
+        df_trie: a parallel trie for storing dataframes.
+        path: a list of (is_forward, relationship) from the root to this
+            sub-trie.
+        """
+        features = (self.feature_set.features_by_name[fname] for fname in feature_trie[[]])
+        need_all_rows = any(f.primitive.uses_full_entity for f in features)
+        if need_all_rows:
+            query_values = None
+            query_variable = None
+        else:
+            query_values = filter_values
+            query_variable = filter_variable
+
+        df = entity.query_by_values(query_values,
+                                    variable_id=query_variable,
+                                    columns=self.feature_set.necessary_columns[path],
+                                    time_last=time_last,
+                                    training_window=training_window)
+
+        # If the last edge was backward, copy the parent's link variables to
+        # this entity's dataframe.
+        if path:
+            is_forward, relationship = path[-1]
+            if not is_forward:
+                df, link_variables = self._add_link_vars(df, parent_df, relationship,
+                                                         parent_link_variables)
+
+                link_variables.append(relationship.child_variable.id)
+            else:
+                link_variables = []
+        else:
+            link_variables = []
+
+        # Recurse on children.
+        for edge, sub_trie in feature_trie.children():
+            is_forward, relationship = edge
+            if is_forward:
+                sub_entity = relationship.parent_entity
+                sub_filter_variable = relationship.parent_variable.id
+                sub_filter_values = df[relationship.child_variable.id]
+            else:
+                sub_entity = relationship.child_entity
+                sub_filter_variable = relationship.child_variable.id
+                sub_filter_values = df[relationship.parent_variable.id]
+
+            sub_df_trie = df_trie.get_node([edge])
+            self._calculate_features_on_trie(entity=sub_entity,
+                                             feature_trie=sub_trie,
+                                             df_trie=sub_df_trie,
+                                             path=path + [edge],
+                                             filter_variable=sub_filter_variable,
+                                             filter_values=sub_filter_values,
+                                             time_last=time_last,
+                                             training_window=training_window,
+                                             precalculated_features=precalculated_features,
+                                             parent_link_variables=link_variables,
+                                             parent_df=df,
+                                             ignored=ignored)
+
+        # Add any precalculated features.
+        if entity.id in precalculated_features:
+            precalc_feature_values = precalculated_features[entity.id]
+            # Left outer merge to keep all rows of df.
+            df = df.merge(precalc_feature_values,
+                          how='left',
+                          left_index=True,
+                          right_index=True,
+                          suffixes=('', '_precalculated'))
+
+        df_trie[[]] = df
+        feature_names = feature_trie[[]]
+        if ignored:
+            feature_names -= ignored
+        feature_groups = self.feature_set.group_features(feature_names)
+        for group in feature_groups:
+            df = self._calculate_feature_group(group, df_trie)
+            df_trie[[]] = df
+
+        # If we used all rows, filter the df to those that we actually need.
+        if need_all_rows:
+            df = df[df[filter_variable].isin(filter_values)]
+            df_trie[[]] = df
+
+    def _add_link_vars(self, child_df, parent_df, relationship, parent_link_variables):
+        """
+        Copy the parent_link_variables to the df, extending the names.
+
+        Return the updated df and the new link variable names.
+        """
+        if not parent_link_variables:
+            return child_df, []
+
+        relationship_name = relationship.parent_name
+        variables = ['%s.%s' % (relationship_name, var) for var in parent_link_variables]
+
+        # create an intermediate dataframe which shares a column
+        # with the child dataframe and has a column with the
+        # original parent's id.
+        col_map = {relationship.parent_variable.id: relationship.child_variable.id}
+        for child_var, parent_var in zip(variables, parent_link_variables):
+            col_map[parent_var] = child_var
+
+        merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
+
+        merge_df.index.name = None  # change index name for merge
+
+        # Merge the dataframe, adding the link variable to the child.
+        # Left outer join so that all rows in child are kept (if it contains
+        # all rows of the entity then there may not be corresponding rows in the
+        # parent_df).
+        df = child_df.merge(merge_df,
+                            how='left',
+                            left_on=relationship.child_variable.id,
+                            right_on=relationship.child_variable.id)
+        return df, variables
 
     def generate_default_df(self, instance_ids, extra_columns=None):
         index_name = self.features[0].entity.index
@@ -217,47 +286,15 @@ class PandasBackend(ComputationalBackend):
                     default_df[c] = [np.nan] * len(instance_ids)
         return default_df
 
-    def _calculate_feature_group(self, group, entity_frames, large_entity_frames):
+    def _calculate_feature_group(self, group, df_trie):
         """
-        Calculate the features in group and update entity_frames and/or
-        large_entity_frames with the results.
+        Calculate the features in group and update the root of df_trie with the
+        result
         """
         test_feature = group[0]
-        entity_id = test_feature.entity.id
-
-        input_frames_type = self.feature_tree.input_frames_type(test_feature)
-
-        input_frames = large_entity_frames
-        if input_frames_type == "subset_entity_frames":
-            input_frames = entity_frames
-
         handler = self._feature_type_handler(test_feature)
-        result_frame = handler(group, input_frames)
 
-        output_frames_type = self.feature_tree.output_frames_type(test_feature)
-        if output_frames_type in ['full_and_subset_entity_frames', 'subset_entity_frames']:
-            index = entity_frames[entity_id].index
-            # If result_frame came from a uses_full_entity feature,
-            # and the input was large_entity_frames,
-            # then it's possible it doesn't contain some of the features
-            # in the output entity_frames
-            # We thus need to concatenate the existing frame with the result frame,
-            # making sure not to duplicate any columns
-            _result_frame = result_frame.reindex(index)
-            cols_to_keep = [c for c in _result_frame.columns
-                            if c not in entity_frames[entity_id].columns]
-            entity_frames[entity_id] = pd.concat([entity_frames[entity_id],
-                                                  _result_frame[cols_to_keep]],
-                                                 axis=1)
-
-        if output_frames_type in ['full_and_subset_entity_frames', 'full_entity_frames']:
-            index = large_entity_frames[entity_id].index
-            _result_frame = result_frame.reindex(index)
-            cols_to_keep = [c for c in _result_frame.columns
-                            if c not in large_entity_frames[entity_id].columns]
-            large_entity_frames[entity_id] = pd.concat([large_entity_frames[entity_id],
-                                                        _result_frame[cols_to_keep]],
-                                                       axis=1)
+        return handler(group, df_trie)
 
     def _feature_type_handler(self, f):
         if type(f) == TransformFeature:
@@ -273,17 +310,18 @@ class PandasBackend(ComputationalBackend):
         else:
             raise UnknownFeature(u"{} feature unknown".format(f.__class__))
 
-    def _calculate_identity_features(self, features, entity_frames):
-        entity_id = features[0].entity.id
-        return entity_frames[entity_id][[f.get_name() for f in features]]
+    def _calculate_identity_features(self, features, df_trie):
+        df = df_trie[[]]
 
-    def _calculate_transform_features(self, features, entity_frames):
-        entity_id = features[0].entity.id
-        assert len(set([f.entity.id for f in features])) == 1, \
-            "features must share base entity"
-        assert entity_id in entity_frames
+        for f in features:
+            assert f.get_name() in df, (
+                'Column "%s" missing frome dataframe' % f.get_name())
 
-        frame = entity_frames[entity_id]
+        return df
+
+    def _calculate_transform_features(self, features, df_trie):
+        frame = df_trie[[]]
+
         for f in features:
             # handle when no data
             if frame.shape[0] == 0:
@@ -311,13 +349,8 @@ class PandasBackend(ComputationalBackend):
 
         return frame
 
-    def _calculate_groupby_features(self, features, entity_frames):
-        entity_id = features[0].entity.id
-        assert len(set([f.entity.id for f in features])) == 1, \
-            "features must share base entity"
-        assert entity_id in entity_frames
-
-        frame = entity_frames[entity_id]
+    def _calculate_groupby_features(self, features, df_trie):
+        frame = df_trie[[]]
 
         for f in features:
             set_default_column(frame, f)
@@ -352,26 +385,22 @@ class PandasBackend(ComputationalBackend):
 
         return frame
 
-    def _calculate_direct_features(self, features, entity_frames):
-        entity_id = features[0].entity.id
-        parent_entity_id = features[0].parent_entity.id
-
-        assert entity_id in entity_frames and parent_entity_id in entity_frames
-
+    def _calculate_direct_features(self, features, df_trie):
         path = features[0].relationship_path
         assert len(path) == 1, \
             "Error calculating DirectFeatures, len(path) != 1"
 
-        parent_df = entity_frames[parent_entity_id]
-        child_df = entity_frames[entity_id]
-        merge_var = path[0].child_variable.id
+        relationship = path[0]
+        child_df = df_trie[[]]
+        parent_df = df_trie[[(True, relationship)]]
+        merge_var = relationship.child_variable.id
 
         # generate a mapping of old column names (in the parent entity) to
         # new column names (in the child entity) for the merge
-        col_map = {path[0].parent_variable.id: merge_var}
+        col_map = {relationship.parent_variable.id: merge_var}
         index_as_feature = None
         for f in features:
-            if f.base_features[0].get_name() == path[0].parent_variable.id:
+            if f.base_features[0].get_name() == relationship.parent_variable.id:
                 index_as_feature = f
             # Sometimes entityset._add_multigenerational_links adds link variables
             # that would ordinarily get calculated as direct features,
@@ -390,21 +419,19 @@ class PandasBackend(ComputationalBackend):
         else:
             merge_df.set_index(merge_var, inplace=True)
 
-        new_df = pd.merge(left=child_df, right=merge_df,
-                          left_on=merge_var, right_index=True,
-                          how='left')
+        new_df = child_df.merge(merge_df, left_on=merge_var, right_index=True,
+                                how='left')
 
         return new_df
 
-    def _calculate_agg_features(self, features, entity_frames):
+    def _calculate_agg_features(self, features, df_trie):
         test_feature = features[0]
-        entity = test_feature.entity
         child_entity = test_feature.base_features[0].entity
 
-        assert entity.id in entity_frames and child_entity.id in entity_frames
+        frame = df_trie[[]]
 
-        frame = entity_frames[entity.id]
-        base_frame = entity_frames[child_entity.id]
+        path = [(False, r) for r in test_feature.relationship_path]
+        base_frame = df_trie[path]
         # Sometimes approximate features get computed in a previous filter frame
         # and put in the current one dynamically,
         # so there may be existing features here

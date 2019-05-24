@@ -32,7 +32,7 @@ def test_get_dependencies(es):
     d1 = ft.Feature(agg2, es['sessions'])
     shallow = d1.get_dependencies(deep=False, ignored=None)
     deep = d1.get_dependencies(deep=True, ignored=None)
-    ignored = set([agg1.hash()])
+    ignored = set([agg1.unique_name()])
     deep_ignored = d1.get_dependencies(deep=True, ignored=ignored)
     assert [s.hash() for s in shallow] == [agg2.hash()]
     assert [d.hash() for d in deep] == [agg2.hash(), agg1.hash(), f.hash()]

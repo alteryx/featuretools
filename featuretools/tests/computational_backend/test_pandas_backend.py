@@ -488,6 +488,56 @@ def test_agg_empty_child(es, backend):
     assert df["COUNT(log)"].iloc[0] == 0
 
 
+def test_diamond_entityset(diamond_es):
+    es = diamond_es
+
+    def get_relationship(child, parent):
+        return next(r for r in es.relationships
+                    if r.child_entity.id == child and r.parent_entity.id == parent)
+
+    c_to_r = get_relationship('customers', 'regions')
+    t_to_c = get_relationship('transactions', 'customers')
+    s_to_r = get_relationship('stores', 'regions')
+    t_to_s = get_relationship('transactions', 'stores')
+
+    amount = ft.IdentityFeature(es['transactions']['amount'])
+    through_customers = ft.AggregationFeature(amount, es['regions'],
+                                              primitive=ft.primitives.Sum,
+                                              relationship_path=[c_to_r, t_to_c])
+    through_stores = ft.AggregationFeature(amount, es['regions'],
+                                           primitive=ft.primitives.Sum,
+                                           relationship_path=[s_to_r, t_to_s])
+
+    pandas_backend = PandasBackend(es, [through_customers, through_stores])
+    df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2],
+                                               time_last=datetime(2011, 4, 8))
+    assert (df['SUM(stores.transactions.amount)'] == [94, 261, 128]).all()
+    assert (df['SUM(customers.transactions.amount)'] == [72, 411, 0]).all()
+
+
+def test_two_relationships_to_single_entity(games_es):
+    es = games_es
+    home_team, away_team = es.relationships
+    mean_at_home = ft.AggregationFeature(es['games']['home_team_score'],
+                                         es['teams'],
+                                         relationship_path=[home_team],
+                                         primitive=ft.primitives.Mean)
+    mean_at_away = ft.AggregationFeature(es['games']['away_team_score'],
+                                         es['teams'],
+                                         relationship_path=[away_team],
+                                         primitive=ft.primitives.Mean)
+    home_team_mean = ft.DirectFeature(mean_at_home, es['games'],
+                                      relationship_path=[home_team])
+    away_team_mean = ft.DirectFeature(mean_at_away, es['games'],
+                                      relationship_path=[away_team])
+
+    pandas_backend = PandasBackend(es, [home_team_mean, away_team_mean])
+    df = pandas_backend.calculate_all_features(instance_ids=range(3),
+                                               time_last=datetime(2011, 8, 28))
+    assert (df[home_team_mean.get_name()] == [1.5, 1.5, 2.5]).all()
+    assert (df[away_team_mean.get_name()] == [1, 0.5, 2]).all()
+
+
 def test_empty_child_dataframe():
     parent_df = pd.DataFrame({"id": [1]})
     child_df = pd.DataFrame({"id": [1, 2, 3],
