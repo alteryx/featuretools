@@ -123,8 +123,8 @@ def test_make_trans_feat(es):
 def test_diff(es):
     value = ft.Feature(es['log']['value'])
     customer_id_feat = ft.Feature(es['sessions']['customer_id'], entity=es['log'])
-    diff1 = ft.Feature([value, es['log']['session_id']], primitive=Diff)
-    diff2 = ft.Feature([value, customer_id_feat], primitive=Diff)
+    diff1 = ft.Feature(value, groupby=es['log']['session_id'], primitive=Diff)
+    diff2 = ft.Feature(value, groupby=customer_id_feat, primitive=Diff)
 
     pandas_backend = PandasBackend(es, [diff1, diff2])
     df = pandas_backend.calculate_all_features(instance_ids=range(15),
@@ -150,7 +150,7 @@ def test_diff(es):
 
 
 def test_diff_single_value(es):
-    diff = ft.Feature([es['stores']['num_square_feet'], es['stores'][u'région_id']], primitive=Diff)
+    diff = ft.Feature(es['stores']['num_square_feet'], groupby=es['stores'][u'région_id'], primitive=Diff)
     pandas_backend = PandasBackend(es, [diff])
     df = pandas_backend.calculate_all_features(instance_ids=[5],
                                                time_last=None)
@@ -328,8 +328,8 @@ def test_arithmetic_of_direct(es):
 
 # P TODO: rewrite this  test
 def test_arithmetic_of_transform(es):
-    diff1 = ft.Feature([es['log']['value'], es['log']['product_id']], primitive=Diff)
-    diff2 = ft.Feature([es['log']['value_2'], es['log']['product_id']], primitive=Diff)
+    diff1 = ft.Feature([es['log']['value']], primitive=Diff)
+    diff2 = ft.Feature([es['log']['value_2']], primitive=Diff)
 
     to_test = [(AddNumeric, [np.nan, 14., -7., 3.]),
                (SubtractNumeric, [np.nan, 6., -3., 1.]),
@@ -531,7 +531,7 @@ def test_isin_feat_custom(es):
 
 def test_isnull_feat(es):
     value = ft.Feature(es['log']['value'])
-    diff = ft.Feature([value, es['log']['session_id']], primitive=Diff)
+    diff = ft.Feature(value, groupby=es['log']['session_id'], primitive=Diff)
     isnull = ft.Feature(diff, primitive=IsNull)
     features = [isnull]
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
