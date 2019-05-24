@@ -711,24 +711,17 @@ def test_related_instances_all_cutoff_time_same_entity(es):
 
 
 def test_get_pandas_slice(es):
-    filter_eids = ['products', u'régions', 'customers']
-    result = es.get_pandas_data_slice(filter_entity_ids=filter_eids,
-                                      index_eid='customers',
-                                      instances=[0])
-
-    # make sure all necessary filter frames are present
-    assert set(result.keys()) == set(filter_eids)
-    assert set(result['products'].keys()), set(['products', 'log'])
-    assert set(result['customers'].keys()) == set(
+    assert set(_slice_for(es, 'products').keys()), set(['products', 'log'])
+    assert set(_slice_for(es, 'customers').keys()) == set(
         ['customers', 'sessions', 'log'])
-    assert set(result[u'régions'].keys()) == set(
+    assert set(_slice_for(es, u'régions').keys()) == set(
         [u'régions', 'stores', 'customers', 'sessions', 'log'])
 
     # make sure different subsets of the log are included in each filtering
-    assert set(result['customers']['log']['id'].values) == set(range(10))
-    assert set(result['products']['log']['id'].values) == set(
+    assert set(_slice_for(es, 'customers')['log']['id'].values) == set(range(10))
+    assert set(_slice_for(es, 'products')['log']['id'].values) == set(
         list(range(10)) + list(range(11, 15)))
-    assert set(result[u'régions']['log']['id'].values) == set(range(17))
+    assert set(_slice_for(es, u'régions')['log']['id'].values) == set(range(17))
 
 
 def test_get_pandas_slice_times(es):
@@ -737,19 +730,16 @@ def test_get_pandas_slice_times(es):
     filter_eids = ['products', u'régions', 'customers']
     start = np.datetime64(datetime(2011, 4, 1))
     end = np.datetime64(datetime(2011, 4, 9, 10, 31, 10))
-    result = es.get_pandas_data_slice(filter_entity_ids=filter_eids,
-                                      index_eid='customers',
-                                      instances=[0],
-                                      time_last=end)
 
     # make sure no times outside range are included in any frames
     for eid in filter_eids:
-        for t in result[eid]['log']['datetime'].values:
+        result = _slice_for(es, eid, time_last=end)
+        for t in result['log']['datetime'].values:
             assert t >= start and t < end
 
         # the instance ids should be the same for all filters
         for i in range(7):
-            assert i in result[eid]['log']['id'].values
+            assert i in result['log']['id'].values
 
 
 def test_get_pandas_slice_times_include(es):
@@ -758,33 +748,30 @@ def test_get_pandas_slice_times_include(es):
     filter_eids = ['products', u'régions', 'customers']
     start = np.datetime64(datetime(2011, 4, 1))
     end = np.datetime64(datetime(2011, 4, 9, 10, 31, 10))
-    result = es.get_pandas_data_slice(filter_entity_ids=filter_eids,
-                                      index_eid='customers',
-                                      instances=[0],
-                                      time_last=end)
 
     # make sure no times outside range are included in any frames
     for eid in filter_eids:
-        for t in result[eid]['log']['datetime'].values:
+        result = _slice_for(es, eid, time_last=end)
+        for t in result['log']['datetime'].values:
             assert t >= start and t <= end
 
         # the instance ids should be the same for all filters
         for i in range(7):
-            assert i in result[eid]['log']['id'].values
+            assert i in result['log']['id'].values
 
 
 def test_get_pandas_slice_secondary_index(es):
-    filter_eids = ['products', u'régions', 'customers']
     # this date is before the cancel date of customers 1 and 2
     end = np.datetime64(datetime(2011, 10, 1))
     all_instances = [0, 1, 2]
-    result = es.get_pandas_data_slice(filter_entity_ids=filter_eids,
+
+    result = es.get_pandas_data_slice(filter_eid='customers',
                                       index_eid='customers',
                                       instances=all_instances,
                                       time_last=end)
 
     # only customer 0 should have values from these columns
-    customers_df = result["customers"]["customers"]
+    customers_df = result["customers"]
     for col in ["cancel_date", "cancel_reason"]:
         nulls = customers_df.iloc[all_instances][col].isnull() == [
             False, True, True]
@@ -967,3 +954,10 @@ def test_datetime64_conversion():
     es.entity_from_dataframe(entity_id='test_entity', index='id', dataframe=df)
     vtype_time_index = variable_types.variable.DatetimeTimeIndex
     es['test_entity'].convert_variable_type('time', vtype_time_index)
+
+
+def _slice_for(es, filter_eid, time_last=None):
+    return es.get_pandas_data_slice(filter_eid=filter_eid,
+                                    index_eid='customers',
+                                    instances=[0],
+                                    time_last=time_last)
