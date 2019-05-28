@@ -14,21 +14,18 @@ def test_pickle_features(es):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     filepath = os.path.join(dir_path, 'test_feature')
 
-    # ft.save_features(features, '/path/to/save/to.txt')
     ft.save_features(features_original, filepath)
     features_deserializedA = ft.load_features(filepath)
     assert os.path.getsize(filepath) < asizeof(es)
     os.remove(filepath)
 
-    # ft.save_features(features, f)
-    f = open(filepath, "w")
-    ft.save_features(features_original, f)
-    f.close()
+    with open(filepath, "w") as f:
+        ft.save_features(features_original, f)
+        f.close()
     features_deserializedB = ft.load_features(open(filepath))
     assert os.path.getsize(filepath) < asizeof(es)
     os.remove(filepath)
 
-    # test for save_features(features)
     features = ft.save_features(features_original)
     features_deserializedC = ft.load_features(features)
     assert asizeof(features) < asizeof(es)
@@ -55,21 +52,18 @@ def test_pickle_features_with_custom_primitive(es):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     filepath = os.path.join(dir_path, 'test_feature')
 
-    # ft.save_features(features, '/path/to/save/to.txt')
     ft.save_features(features_original, filepath)
     features_deserializedA = ft.load_features(filepath)
     assert os.path.getsize(filepath) < asizeof(es)
     os.remove(filepath)
 
-    # ft.save_features(features, f)
-    f = open(filepath, "w")
-    ft.save_features(features_original, f)
-    f.close()
+    with open(filepath, "w") as f:
+        ft.save_features(features_original, f)
+        f.close()
     features_deserializedB = ft.load_features(open(filepath))
     assert os.path.getsize(filepath) < asizeof(es)
     os.remove(filepath)
 
-    # test for save_features(features)
     features = ft.save_features(features_original)
     features_deserializedC = ft.load_features(features)
     assert asizeof(features) < asizeof(es)
