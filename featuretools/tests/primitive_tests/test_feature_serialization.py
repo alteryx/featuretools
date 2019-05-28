@@ -39,6 +39,7 @@ def test_pickle_features(es):
             assert feat_1.unique_name() == feat_2.unique_name()
             assert feat_1.entityset == feat_2.entityset
 
+
 def test_pickle_features_with_custom_primitive(es):
     NewMax = make_agg_primitive(
         lambda x: max(x),
@@ -78,4 +79,3 @@ def test_pickle_features_with_custom_primitive(es):
         for feat_1, feat_2 in zip(features_original, features_deserialized):
             assert feat_1.unique_name() == feat_2.unique_name()
             assert feat_1.entityset == feat_2.entityset
-

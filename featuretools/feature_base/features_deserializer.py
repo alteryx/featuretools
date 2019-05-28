@@ -89,7 +89,6 @@ class FeaturesDeserializer(object):
             return cls(features_dict)
         return cls(json.load(features))
 
-
     def to_list(self):
         feature_names = self.features_dict['feature_list']
         return [self._deserialize_feature(name) for name in feature_names]
