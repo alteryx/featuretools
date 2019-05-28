@@ -427,7 +427,8 @@ class DirectFeature(FeatureBase):
 
     def copy(self):
         """Return copy of feature"""
-        return DirectFeature(self.base_features[0], self.entity)
+        return DirectFeature(self.base_features[0], self.entity,
+                             relationship_path=self.relationship_path)
 
     @property
     def variable_type(self):
@@ -542,8 +543,12 @@ class AggregationFeature(FeatureBase):
                    use_previous=use_previous, where=where)
 
     def copy(self):
-        return AggregationFeature(self.base_features, parent_entity=self.parent_entity,
-                                  primitive=self.primitive, use_previous=self.use_previous, where=self.where)
+        return AggregationFeature(self.base_features,
+                                  parent_entity=self.parent_entity,
+                                  relationship_path=self.relationship_path,
+                                  primitive=self.primitive,
+                                  use_previous=self.use_previous,
+                                  where=self.where)
 
     def _where_str(self):
         if self.where is not None:

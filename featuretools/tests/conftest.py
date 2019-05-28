@@ -56,11 +56,16 @@ def diamond_es():
 
 @pytest.fixture
 def home_games_es():
-    teams = pd.DataFrame({'id': range(3)})
+    teams = pd.DataFrame({
+        'id': range(3),
+        'name': ['Breakers', 'Spirit', 'Thorns']
+    })
     games = pd.DataFrame({
         'id': range(5),
         'home_team_id': [2, 2, 1, 0, 1],
         'away_team_id': [1, 0, 2, 1, 0],
+        'home_team_score': [3, 0, 1, 0, 4],
+        'away_team_score': [2, 1, 2, 0, 0]
     })
     entities = {'teams': (teams, 'id'), 'games': (games, 'id')}
     relationships = [('teams', 'id', 'games', 'home_team_id')]

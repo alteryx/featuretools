@@ -316,6 +316,20 @@ def test_name_with_multiple_possible_paths(diamond_es):
     assert feat.get_name() == "MEAN(customers.transactions.amount)"
 
 
+def test_copy(games_es):
+    home_games = next(r for r in games_es.relationships
+                      if r.child_variable.id == 'home_team_id')
+    feat = ft.AggregationFeature(games_es['games']['home_team_score'],
+                                 games_es['teams'],
+                                 relationship_path=[home_games],
+                                 primitive=ft.primitives.Mean)
+    copied = feat.copy()
+    assert copied.entity == feat.entity
+    assert copied.base_features == feat.base_features
+    assert copied.relationship_path == feat.relationship_path
+    assert copied.primitive == feat.primitive
+
+
 def test_serialization(es):
     primitives_deserializer = PrimitivesDeserializer()
     value = ft.IdentityFeature(es['log']['value'])

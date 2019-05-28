@@ -55,6 +55,17 @@ def test_direct_rename(es):
     assert feat.entity == copy_feat.entity
 
 
+def test_direct_copy(games_es):
+    home_team = next(r for r in games_es.relationships
+                     if r.child_variable.id == 'home_team_id')
+    feat = DirectFeature(games_es['teams']['name'], games_es['games'],
+                         relationship_path=[home_team])
+    copied = feat.copy()
+    assert copied.entity == feat.entity
+    assert copied.base_features == feat.base_features
+    assert copied.relationship_path == feat.relationship_path
+
+
 def test_direct_of_multi_output_transform_feat(es):
     class TestTime(TransformPrimitive):
         name = "test_time"
