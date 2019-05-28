@@ -82,7 +82,7 @@ def test_find_forward_paths(es):
     assert path[1].parent_entity.id == 'customers'
 
 
-def test_find_forward_paths_multiple(diamond_es):
+def test_find_forward_paths_multiple_paths(diamond_es):
     paths = list(diamond_es.find_forward_paths('transactions', 'regions'))
     assert len(paths) == 2
 
@@ -99,6 +99,27 @@ def test_find_forward_paths_multiple(diamond_es):
     assert r1.parent_entity.id == 'customers'
     assert r2.child_entity.id == 'customers'
     assert r2.parent_entity.id == 'regions'
+
+
+def test_find_forward_paths_multiple_relationships(games_es):
+    paths = list(games_es.find_forward_paths('games', 'teams'))
+    assert len(paths) == 2
+
+    path1, path2 = paths
+    assert len(path1) == 1
+    assert len(path2) == 1
+    r1 = path1[0]
+    r2 = path2[0]
+
+    assert r1.child_entity.id == 'games'
+    assert r2.child_entity.id == 'games'
+    assert r1.parent_entity.id == 'teams'
+    assert r2.parent_entity.id == 'teams'
+
+    assert r1.child_variable.id == 'home_team_id'
+    assert r2.child_variable.id == 'away_team_id'
+    assert r1.parent_variable.id == 'id'
+    assert r2.parent_variable.id == 'id'
 
 
 def test_find_forward_paths_ignores_loops():
@@ -125,7 +146,7 @@ def test_find_backward_paths(es):
     assert path[1].parent_entity.id == 'sessions'
 
 
-def test_find_backward_paths_multiple(diamond_es):
+def test_find_backward_paths_multiple_paths(diamond_es):
     paths = list(diamond_es.find_backward_paths('regions', 'transactions'))
     assert len(paths) == 2
 
@@ -142,6 +163,27 @@ def test_find_backward_paths_multiple(diamond_es):
     assert r1.parent_entity.id == 'regions'
     assert r2.child_entity.id == 'transactions'
     assert r2.parent_entity.id == 'customers'
+
+
+def test_find_backward_paths_multiple_relationships(games_es):
+    paths = list(games_es.find_backward_paths('teams', 'games'))
+    assert len(paths) == 2
+
+    path1, path2 = paths
+    assert len(path1) == 1
+    assert len(path2) == 1
+    r1 = path1[0]
+    r2 = path2[0]
+
+    assert r1.child_entity.id == 'games'
+    assert r2.child_entity.id == 'games'
+    assert r1.parent_entity.id == 'teams'
+    assert r2.parent_entity.id == 'teams'
+
+    assert r1.child_variable.id == 'home_team_id'
+    assert r2.child_variable.id == 'away_team_id'
+    assert r1.parent_variable.id == 'id'
+    assert r2.parent_variable.id == 'id'
 
 
 def test_find_path(es):

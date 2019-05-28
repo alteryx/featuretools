@@ -52,3 +52,24 @@ def diamond_es():
     return ft.EntitySet(id='ecommerce_diamond',
                         entities=entities,
                         relationships=relationships)
+
+
+@pytest.fixture
+def home_games_es():
+    teams = pd.DataFrame({'id': range(3)})
+    games = pd.DataFrame({
+        'id': range(5),
+        'home_team_id': [2, 2, 1, 0, 1],
+        'away_team_id': [1, 0, 2, 1, 0],
+    })
+    entities = {'teams': (teams, 'id'), 'games': (games, 'id')}
+    relationships = [('teams', 'id', 'games', 'home_team_id')]
+    return ft.EntitySet(entities=entities,
+                        relationships=relationships)
+
+
+@pytest.fixture
+def games_es(home_games_es):
+    away_team = ft.Relationship(home_games_es['teams']['id'],
+                                home_games_es['games']['away_team_id'])
+    return home_games_es.add_relationship(away_team)
