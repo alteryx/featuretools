@@ -69,6 +69,9 @@ jobs:
     docker:
       - image: circleci/python:3.6
     steps:
+      - run: echo "${CIRCLE_COMPARE_URL}"
+      - run: echo "${CIRCLE_PR_NUMBER}"
+      - run: echo "${CIRCLE_PULL_REQUEST}"
       - run: sudo apt update && sudo apt install -y graphviz pandoc
       - checkout
       - run: virtualenv test_env && virtualenv dev_env
