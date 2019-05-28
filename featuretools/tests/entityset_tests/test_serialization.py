@@ -126,4 +126,3 @@ def test_to_pickle_id_none():
     new_es = deserialize.read_entityset(path)
     assert es.__eq__(new_es, deep=True)
     shutil.rmtree(path)
-
