@@ -21,7 +21,6 @@ def test_pickle_features(es):
 
     with open(filepath, "w") as f:
         ft.save_features(features_original, f)
-        f.close()
     features_deserializedB = ft.load_features(open(filepath))
     assert os.path.getsize(filepath) < asizeof(es)
     os.remove(filepath)
@@ -59,7 +58,6 @@ def test_pickle_features_with_custom_primitive(es):
 
     with open(filepath, "w") as f:
         ft.save_features(features_original, f)
-        f.close()
     features_deserializedB = ft.load_features(open(filepath))
     assert os.path.getsize(filepath) < asizeof(es)
     os.remove(filepath)

@@ -5,14 +5,14 @@ from featuretools.version import __version__ as ft_version
 SCHEMA_VERSION = "1.0.0"
 
 
-def save_features(features, file=None):
+def save_features(features, location=None):
     """Saves the features list as JSON to a specified filepath, writes to an open file, or
     returns the serialized features as a JSON string. If no file provided, returns a string.
 
     Args:
         features (list[:class:`.FeatureBase`]): List of Feature definitions.
 
-        file (str or :class:`.FileObject, optional): The location of where to save
+        location (str or :class:`.FileObject, optional): The location of where to save
             the features list which must include the name of the file,
             or a writeable file handle to write to.
             Default: None
@@ -49,7 +49,7 @@ def save_features(features, file=None):
     .. seealso::
         :func:`.load_features`
     """
-    return FeaturesSerializer(features).save(file)
+    return FeaturesSerializer(features).save(location)
 
 
 class FeaturesSerializer(object):
@@ -69,15 +69,15 @@ class FeaturesSerializer(object):
             'feature_definitions': self._feature_definitions(),
         }
 
-    def save(self, file):
+    def save(self, location):
         features_dict = self.to_dict()
-        if file is None:
+        if location is None:
             return json.dumps(features_dict)
-        if isinstance(file, str):
-            f = open(file, "w")
+        if isinstance(location, str):
+            with open(location, "w") as f:
+                json.dump(features_dict, f)
         else:
-            f = file
-        json.dump(features_dict, f)
+            json.dump(features_dict, location)
 
     def _feature_definitions(self):
         if not self._features_dict:
