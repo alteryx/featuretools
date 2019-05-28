@@ -77,7 +77,7 @@ def test_empty_dataframe(es):
         assert dataframe.empty
 
 
-def test_to_csv(es):
+def :
     path = os.path.join(CACHE, 'es')
     try:
         shutil.rmtree(path)
