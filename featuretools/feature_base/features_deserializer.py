@@ -21,12 +21,13 @@ else:
     from itertools import zip_longest
 
 
-def load_features(filepath):
-    """Loads the features from a filepath.
+def load_features(features):
+    """Loads the features from a filepath, an open file, or a JSON formatted string.
 
     Args:
-        filepath (str): The location of where features has been saved.
-            This must include the name of the file.
+        features (str or :class:`.FileObject): The location of where features has
+        been saved which this must include the name of the file, or a JSON formatted
+        string, or a readable file handle where the features have been saved.
 
     Returns:
         features (list[:class:`.FeatureBase`]): Feature definitions list.
@@ -46,10 +47,17 @@ def load_features(filepath):
 
             filepath = os.path.join('/Home/features/', 'list')
             ft.load_features(filepath)
+
+            f = open(filepath, 'r')
+            ft.load_features(f)
+
+            feature_str = f.read()
+            ft.load_features(feature_str)
+
     .. seealso::
         :func:`.save_features`
     """
-    return FeaturesDeserializer.load(filepath).to_list()
+    return FeaturesDeserializer.load(features).to_list()
 
 
 class FeaturesDeserializer(object):
@@ -71,11 +79,16 @@ class FeaturesDeserializer(object):
         self._primitives_deserializer = PrimitivesDeserializer()
 
     @classmethod
-    def load(cls, filepath):
-        with open(filepath, 'r') as f:
-            features_dict = json.load(f)
+    def load(cls, features):
+        if isinstance(features, str):
+            try:
+                f = open(features, 'r')
+                features_dict = json.load(f)
+            except OSError:
+                features_dict = json.loads(features)
+            return cls(features_dict)
+        return cls(json.load(features))
 
-        return cls(features_dict)
 
     def to_list(self):
         feature_names = self.features_dict['feature_list']
