@@ -79,6 +79,10 @@ def test_empty_dataframe(es):
 
 def test_to_csv(es):
     path = os.path.join(CACHE, 'es')
+    try:
+        shutil.rmtree(path)
+    except OSError:
+        pass
     os.makedirs(path)
     es.to_csv(path, encoding='utf-8', engine='python')
     new_es = deserialize.read_entityset(path)
@@ -122,3 +126,4 @@ def test_to_pickle_id_none():
     new_es = deserialize.read_entityset(path)
     assert es.__eq__(new_es, deep=True)
     shutil.rmtree(path)
+
