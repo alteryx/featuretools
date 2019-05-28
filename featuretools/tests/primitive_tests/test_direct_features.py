@@ -148,10 +148,6 @@ def test_direct_features_of_multi_output_agg_primitives(es):
 
 
 def test_direct_with_invalid_init_args(diamond_es):
-    error_text = 'child_entity or relationship_path must be provided'
-    with pytest.raises(AssertionError, match=error_text):
-        ft.DirectFeature(diamond_es['regions']['name'])
-
     customer_to_region = diamond_es.get_forward_relationships('customers')[0]
     error_text = 'child_entity must match the first relationship'
     with pytest.raises(AssertionError, match=error_text):

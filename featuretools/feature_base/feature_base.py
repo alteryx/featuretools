@@ -371,13 +371,13 @@ class DirectFeature(FeatureBase):
     input_types = [Variable]
     return_type = None
 
-    def __init__(self, base_feature, child_entity=None, relationship_path=None):
+    def __init__(self, base_feature, child_entity, relationship_path=None):
         """relationship_path is a forward path from child to parent."""
         base_feature = _check_feature(base_feature)
 
         self.parent_entity = base_feature.entity
 
-        child_entity, relationship_path, self._is_unique_path = \
+        relationship_path, self._is_unique_path = \
             self._handle_relationship_path(child_entity, relationship_path)
 
         super(DirectFeature, self).__init__(entity=child_entity,
@@ -388,11 +388,8 @@ class DirectFeature(FeatureBase):
     def _handle_relationship_path(self, child_entity, relationship_path):
         if relationship_path:
             first_child = relationship_path[0].child_entity
-            if child_entity:
-                assert child_entity == first_child, \
-                    'child_entity must match the first relationship'
-            else:
-                child_entity = first_child
+            assert child_entity == first_child, \
+                'child_entity must match the first relationship'
 
             assert self.parent_entity == relationship_path[-1].parent_entity, \
                 'Base feature must be defined on the entity at the end of relationship_path'
@@ -401,21 +398,20 @@ class DirectFeature(FeatureBase):
                                                      self.parent_entity.id,
                                                      child_entity.entityset)
         if not relationship_path:
-            assert child_entity, 'child_entity or relationship_path must be provided'
-
             relationship_path = _find_path(child_entity.id,
                                            self.parent_entity.id,
                                            child_entity.entityset)
             is_unique_path = True
 
-        return child_entity, relationship_path, is_unique_path
+        return relationship_path, is_unique_path
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         base_feature = dependencies[arguments['base_feature']]
         relationship_path = [Relationship.from_dictionary(r, entityset)
                              for r in arguments['relationship_path']]
-        return cls(base_feature, relationship_path=relationship_path)
+        child_entity = relationship_path[0].child_entity
+        return cls(base_feature, child_entity, relationship_path=relationship_path)
 
     @property
     def variable(self):
@@ -477,7 +473,7 @@ class AggregationFeature(FeatureBase):
 
         self.child_entity = base_features[0].entity
 
-        parent_entity, relationship_path, self._is_unique_path = \
+        relationship_path, self._is_unique_path = \
             self._handle_relationship_path(parent_entity, relationship_path)
 
         self.parent_entity = parent_entity.entityset.metadata[parent_entity.id]
@@ -509,11 +505,8 @@ class AggregationFeature(FeatureBase):
     def _handle_relationship_path(self, parent_entity, relationship_path):
         if relationship_path:
             first_parent = relationship_path[0].parent_entity
-            if parent_entity:
-                assert parent_entity == first_parent, \
-                    'parent_entity must match first relationship in path.'
-            else:
-                parent_entity = first_parent
+            assert parent_entity == first_parent, \
+                'parent_entity must match first relationship in path.'
 
             assert self.child_entity == relationship_path[-1].child_entity, \
                 'Base feature must be defined on the entity at the end of relationship_path'
@@ -528,7 +521,7 @@ class AggregationFeature(FeatureBase):
                                            backward=True)
             is_unique_path = True
 
-        return parent_entity, relationship_path, is_unique_path
+        return relationship_path, is_unique_path
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
