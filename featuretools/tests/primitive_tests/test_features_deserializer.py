@@ -26,8 +26,7 @@ def test_single_feature(es):
 
 def test_base_features_in_list(es):
     value = ft.IdentityFeature(es['log']['value'])
-    max_feat = ft.AggregationFeature(value, ft.primitives.Max,
-                                     parent_entity=es['sessions'])
+    max_feat = ft.AggregationFeature(value, es['sessions'], ft.primitives.Max)
     dictionary = {
         'ft_version': ft.__version__,
         'schema_version': SCHEMA_VERSION,
@@ -48,8 +47,7 @@ def test_base_features_not_in_list(es):
     value = ft.IdentityFeature(es['log']['value'])
     value_x2 = ft.TransformFeature(value,
                                    ft.primitives.MultiplyNumericScalar(value=2))
-    max_feat = ft.AggregationFeature(value_x2, ft.primitives.Max,
-                                     parent_entity=es['sessions'])
+    max_feat = ft.AggregationFeature(value_x2, es['sessions'], ft.primitives.Max)
     dictionary = {
         'ft_version': ft.__version__,
         'schema_version': SCHEMA_VERSION,
@@ -132,8 +130,7 @@ def test_unknown_feature_type(es):
 
 def test_unknown_primitive_type(es):
     value = ft.IdentityFeature(es['log']['value'])
-    max_feat = ft.AggregationFeature(value, ft.primitives.Max,
-                                     parent_entity=es['sessions'])
+    max_feat = ft.AggregationFeature(value, es['sessions'], ft.primitives.Max)
     max_dict = max_feat.to_dictionary()
     max_dict['arguments']['primitive']['type'] = 'FakePrimitive'
     dictionary = {
@@ -158,8 +155,7 @@ def test_unknown_primitive_type(es):
 
 def test_unknown_primitive_module(es):
     value = ft.IdentityFeature(es['log']['value'])
-    max_feat = ft.AggregationFeature(value, ft.primitives.Max,
-                                     parent_entity=es['sessions'])
+    max_feat = ft.AggregationFeature(value, es['sessions'], ft.primitives.Max)
     max_dict = max_feat.to_dictionary()
     max_dict['arguments']['primitive']['module'] = 'fake.module'
     dictionary = {

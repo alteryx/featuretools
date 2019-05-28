@@ -24,8 +24,7 @@ def test_single_feature(es):
 
 def test_base_features_in_list(es):
     value = ft.IdentityFeature(es['log']['value'])
-    max_feature = ft.AggregationFeature(value, ft.primitives.Max,
-                                        parent_entity=es['sessions'])
+    max_feature = ft.AggregationFeature(value, es['sessions'], ft.primitives.Max)
     features = [max_feature, value]
     serializer = FeaturesSerializer(features)
 
@@ -47,8 +46,7 @@ def test_base_features_not_in_list(es):
     value = ft.IdentityFeature(es['log']['value'])
     value_x2 = ft.TransformFeature(value,
                                    ft.primitives.MultiplyNumericScalar(value=2))
-    max_feature = ft.AggregationFeature(value_x2, ft.primitives.Max,
-                                        parent_entity=es['sessions'])
+    max_feature = ft.AggregationFeature(value_x2, es['sessions'], ft.primitives.Max)
     features = [max_feature]
     serializer = FeaturesSerializer(features)
 
@@ -70,8 +68,7 @@ def test_base_features_not_in_list(es):
 def test_where_feature_dependency(es):
     value = ft.IdentityFeature(es['log']['value'])
     is_purchased = ft.IdentityFeature(es['log']['purchased'])
-    max_feature = ft.AggregationFeature(value, ft.primitives.Max,
-                                        parent_entity=es['sessions'],
+    max_feature = ft.AggregationFeature(value, es['sessions'], ft.primitives.Max,
                                         where=is_purchased)
     features = [max_feature]
     serializer = FeaturesSerializer(features)

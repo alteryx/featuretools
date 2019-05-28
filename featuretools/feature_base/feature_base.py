@@ -460,9 +460,8 @@ class AggregationFeature(FeatureBase):
     # each time point during calculation
     use_previous = None
 
-    def __init__(self, base_features, primitive,
-                 relationship_path=None, parent_entity=None,
-                 use_previous=None, where=None):
+    def __init__(self, base_features, parent_entity, primitive,
+                 relationship_path=None, use_previous=None, where=None):
         if hasattr(base_features, '__iter__'):
             base_features = [_check_feature(bf) for bf in base_features]
             msg = "all base features must share the same entity"
@@ -525,6 +524,8 @@ class AggregationFeature(FeatureBase):
         base_features = [dependencies[name] for name in arguments['base_features']]
         relationship_path = [Relationship.from_dictionary(r, entityset)
                              for r in arguments['relationship_path']]
+        parent_entity = relationship_path[0].parent_entity
+
         primitive = primitives_deserializer.deserialize_primitive(arguments['primitive'])
 
         use_previous_data = arguments['use_previous']
@@ -533,7 +534,7 @@ class AggregationFeature(FeatureBase):
         where_name = arguments['where']
         where = where_name and dependencies[where_name]
 
-        return cls(base_features, primitive, relationship_path=relationship_path,
+        return cls(base_features, parent_entity, primitive, relationship_path=relationship_path,
                    use_previous=use_previous, where=where)
 
     def copy(self):
