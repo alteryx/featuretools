@@ -463,10 +463,11 @@ class EntitySet(object):
         yield start_entity_id, []
 
         for relationship in self.get_forward_relationships(start_entity_id):
-            next = relationship.parent_entity.id
+            next_entity = relationship.parent_entity.id
             # Copy seen entities for each next node to allow multiple paths (but
             # not cycles).
-            for sub_entity_id, sub_path in self._forward_entity_paths(next, seen_entities.copy()):
+            descendants = self._forward_entity_paths(next_entity, seen_entities.copy())
+            for sub_entity_id, sub_path in descendants:
                 yield sub_entity_id, [relationship] + sub_path
 
     def get_forward_entities(self, entity_id, deep=False):
