@@ -565,6 +565,19 @@ class EntitySet(object):
                 prev_entity = r.parent_variable.entity.id
         return rels
 
+    def has_unique_forward_path(self, start_entity_id, end_entity_id):
+        """
+        Is the forward path from start to end unique?
+
+        This will raise if there is no such path.
+        """
+        paths = self.find_forward_paths(start_entity_id, end_entity_id)
+
+        next(paths)
+        second_path = next(paths, None)
+
+        return not second_path
+
     ###########################################################################
     #  Entity creation methods  ##############################################
     ###########################################################################

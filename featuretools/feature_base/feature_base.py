@@ -377,7 +377,7 @@ class DirectFeature(FeatureBase):
 
         self.parent_entity = base_feature.entity
 
-        relationship_path, self._is_unique_path = \
+        relationship_path, self._path_is_unique = \
             self._handle_relationship_path(child_entity, relationship_path)
 
         super(DirectFeature, self).__init__(entity=child_entity,
@@ -394,16 +394,16 @@ class DirectFeature(FeatureBase):
             assert self.parent_entity == relationship_path[-1].parent_entity, \
                 'Base feature must be defined on the entity at the end of relationship_path'
 
-            is_unique_path = _is_unique_forward_path(child_entity.id,
-                                                     self.parent_entity.id,
-                                                     child_entity.entityset)
+            path_is_unique = child_entity.entityset \
+                .has_unique_forward_path(child_entity.id, self.parent_entity.id)
+
         if not relationship_path:
             relationship_path = _find_path(child_entity.id,
                                            self.parent_entity.id,
                                            child_entity.entityset)
-            is_unique_path = True
+            path_is_unique = True
 
-        return relationship_path, is_unique_path
+        return relationship_path, path_is_unique
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
@@ -434,7 +434,7 @@ class DirectFeature(FeatureBase):
         return self.base_features[0].variable_type
 
     def generate_name(self):
-        if self._is_unique_path:
+        if self._path_is_unique:
             relationship_path_name = self.parent_entity.id
         else:
             relationship_names = [r.parent_name for r in self.relationship_path]
@@ -473,7 +473,7 @@ class AggregationFeature(FeatureBase):
 
         self.child_entity = base_features[0].entity
 
-        relationship_path, self._is_unique_path = \
+        relationship_path, self._path_is_unique = \
             self._handle_relationship_path(parent_entity, relationship_path)
 
         self.parent_entity = parent_entity.entityset.metadata[parent_entity.id]
@@ -511,17 +511,17 @@ class AggregationFeature(FeatureBase):
             assert self.child_entity == relationship_path[-1].child_entity, \
                 'Base feature must be defined on the entity at the end of relationship_path'
 
-            is_unique_path = _is_unique_forward_path(self.child_entity.id,
-                                                     parent_entity.id,
-                                                     parent_entity.entityset)
+            path_is_unique = parent_entity.entityset \
+                .has_unique_forward_path(self.child_entity.id, parent_entity.id)
+
         else:
             relationship_path = _find_path(parent_entity.id,
                                            self.child_entity.id,
                                            parent_entity.entityset,
                                            backward=True)
-            is_unique_path = True
+            path_is_unique = True
 
-        return relationship_path, is_unique_path
+        return relationship_path, path_is_unique
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
@@ -560,7 +560,7 @@ class AggregationFeature(FeatureBase):
         return use_prev_str
 
     def generate_name(self):
-        if self._is_unique_path:
+        if self._path_is_unique:
             relationship_path_name = self.child_entity.id
         else:
             relationship_names = [r.child_name for r in self.relationship_path]
@@ -727,15 +727,3 @@ def _find_path(start_entity_id, end_entity_id, es, backward=False):
         raise RuntimeError(message)
     else:
         return path
-
-
-def _is_unique_forward_path(start_entity_id, end_entity_id, es):
-    """
-    Is the path from start to end unique?
-    """
-    paths = es.find_forward_paths(start_entity_id, end_entity_id)
-
-    next(paths)
-    second_path = next(paths, None)
-
-    return not second_path

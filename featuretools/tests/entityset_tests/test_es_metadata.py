@@ -177,6 +177,11 @@ def test_find_path_no_path_found(es):
         es.find_path('products', 'customers')
 
 
+def test_has_unique_path(diamond_es):
+    assert diamond_es.has_unique_forward_path('customers', 'regions')
+    assert not diamond_es.has_unique_forward_path('transactions', 'regions')
+
+
 def test_raise_key_error_missing_entity(es):
     error_text = "Entity this entity doesn't exist does not exist in ecommerce"
     with pytest.raises(KeyError, match=error_text):
