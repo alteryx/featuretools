@@ -1,3 +1,4 @@
+
 import os
 
 from pympler.asizeof import asizeof
@@ -13,17 +14,30 @@ def test_pickle_features(es):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     filepath = os.path.join(dir_path, 'test_feature')
 
+    # ft.save_features(features, '/path/to/save/to.txt')
     ft.save_features(features_original, filepath)
-    features_deserialized = ft.load_features(filepath)
-    for feat_1, feat_2 in zip(features_original, features_deserialized):
-        assert feat_1.unique_name() == feat_2.unique_name()
-        assert feat_1.entityset == feat_2.entityset
-
-    # file is smaller than entityset in memory
+    features_deserializedA = ft.load_features(filepath)
     assert os.path.getsize(filepath) < asizeof(es)
-
     os.remove(filepath)
 
+    # ft.save_features(features, f)
+    f = open(filepath, "w")
+    ft.save_features(features_original, f)
+    f.close()
+    features_deserializedB = ft.load_features(open(filepath))
+    assert os.path.getsize(filepath) < asizeof(es)
+    os.remove(filepath)
+
+    # test for save_features(features)
+    features = ft.save_features(features_original)
+    features_deserializedC = ft.load_features(features)
+    assert asizeof(features) < asizeof(es)
+
+    features_deserialized_options = [features_deserializedA, features_deserializedB, features_deserializedC]
+    for features_deserialized in features_deserialized_options:
+        for feat_1, feat_2 in zip(features_original, features_deserialized):
+            assert feat_1.unique_name() == feat_2.unique_name()
+            assert feat_1.entityset == feat_2.entityset
 
 def test_pickle_features_with_custom_primitive(es):
     NewMax = make_agg_primitive(
@@ -40,13 +54,28 @@ def test_pickle_features_with_custom_primitive(es):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     filepath = os.path.join(dir_path, 'test_feature')
 
+    # ft.save_features(features, '/path/to/save/to.txt')
     ft.save_features(features_original, filepath)
-    features_deserialized = ft.load_features(filepath)
-    for feat_1, feat_2 in zip(features_original, features_deserialized):
-        assert feat_1.unique_name() == feat_2.unique_name()
-        assert feat_1.entityset == feat_2.entityset
-
-    # file is smaller than entityset in memory
+    features_deserializedA = ft.load_features(filepath)
     assert os.path.getsize(filepath) < asizeof(es)
-
     os.remove(filepath)
+
+    # ft.save_features(features, f)
+    f = open(filepath, "w")
+    ft.save_features(features_original, f)
+    f.close()
+    features_deserializedB = ft.load_features(open(filepath))
+    assert os.path.getsize(filepath) < asizeof(es)
+    os.remove(filepath)
+
+    # test for save_features(features)
+    features = ft.save_features(features_original)
+    features_deserializedC = ft.load_features(features)
+    assert asizeof(features) < asizeof(es)
+
+    features_deserialized_options = [features_deserializedA, features_deserializedB, features_deserializedC]
+    for features_deserialized in features_deserialized_options:
+        for feat_1, feat_2 in zip(features_original, features_deserialized):
+            assert feat_1.unique_name() == feat_2.unique_name()
+            assert feat_1.entityset == feat_2.entityset
+
