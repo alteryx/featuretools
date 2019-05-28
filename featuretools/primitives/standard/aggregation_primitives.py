@@ -100,19 +100,6 @@ class Mean(AggregationPrimitive):
             return np.mean(series.values)
         return mean
 
-    def generate_name(self, base_feature_names, relationship_path_name,
-                      parent_entity_id, where_str, use_prev_str):
-        skipna = ""
-        if not self.skipna:
-            skipna = ", skipna=False"
-        base_features_str = ", ".join(base_feature_names)
-        return u"%s(%s.%s%s%s%s)" % (self.name.upper(),
-                                     relationship_path_name,
-                                     base_features_str,
-                                     where_str,
-                                     use_prev_str,
-                                     skipna)
-
 
 class Mode(AggregationPrimitive):
     """Determines the most commonly repeated value.
