@@ -256,8 +256,8 @@ EntitySet query methods
     :toctree: generated/
 
     EntitySet.__getitem__
-    EntitySet.find_backward_path
-    EntitySet.find_forward_path
+    EntitySet.find_backward_paths
+    EntitySet.find_forward_paths
     EntitySet.get_forward_entities
     EntitySet.get_backward_entities
 

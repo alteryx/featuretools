@@ -352,8 +352,8 @@ class EntitySet(object):
                 returns a tuple of (relationship_list, forward_distance).
 
         See Also:
-            :func:`EntitySet.find_forward_path`
-            :func:`EntitySet.find_backward_path`
+            :func:`EntitySet.find_forward_paths`
+            :func:`EntitySet.find_backward_paths`
         """
         if start_entity_id == goal_entity_id:
             if include_num_forward:
@@ -410,52 +410,65 @@ class EntitySet(object):
         e = "No path from {} to {}. Check that all entities are connected by relationships".format(start_entity_id, goal_entity_id)
         raise ValueError(e)
 
-    def find_forward_path(self, start_entity_id, goal_entity_id):
-        """Find a forward path between a start and goal entity
+    def find_forward_paths(self, start_entity_id, goal_entity_id):
+        """
+        Generator which yields all forward paths between a start and goal
+        entity. Does not include paths which contain cycles.
 
         Args:
             start_entity_id (str) : id of entity to start the search from
             goal_entity_id  (str) : if of entity to find forward path to
 
-        Returns:
-            List of relationships that go from start entity to goal
-                entity. None is return if no path exists
-
         See Also:
-            :func:`BaseEntitySet.find_backward_path`
+            :func:`BaseEntitySet.find_backward_paths`
             :func:`BaseEntitySet.find_path`
         """
+        for sub_entity_id, path in self._forward_entity_paths(start_entity_id):
+            if sub_entity_id == goal_entity_id:
+                yield path
 
-        if start_entity_id == goal_entity_id:
-            return []
-
-        for r in self.get_forward_relationships(start_entity_id):
-            new_path = self.find_forward_path(
-                r.parent_entity.id, goal_entity_id)
-            if new_path is not None:
-                return [r] + new_path
-
-        return None
-
-    def find_backward_path(self, start_entity_id, goal_entity_id):
-        """Find a backward path between a start and goal entity
+    def find_backward_paths(self, start_entity_id, goal_entity_id):
+        """
+        Generator which yields all backward paths between a start and goal
+        entity. Does not include paths which contain cycles.
 
         Args:
             start_entity_id (str) : Id of entity to start the search from.
             goal_entity_id  (str) : Id of entity to find backward path to.
 
         See Also:
-            :func:`BaseEntitySet.find_forward_path`
+            :func:`BaseEntitySet.find_forward_paths`
             :func:`BaseEntitySet.find_path`
-
-        Returns:
-            List of relationship that go from start entity to goal entity. None
-            is returned if no path exists.
         """
-        forward_path = self.find_forward_path(goal_entity_id, start_entity_id)
-        if forward_path is not None:
-            return forward_path[::-1]
-        return None
+        for path in self.find_forward_paths(goal_entity_id, start_entity_id):
+            # Reverse path
+            yield path[::-1]
+
+    def _forward_entity_paths(self, start_entity_id, seen_entities=None):
+        """
+        Generator which yields the ids of all entities connected through forward
+        relationships, and the path taken to each. An entity will be yielded
+        multiple times if there are multiple paths to it.
+
+        Implemented using depth first search.
+        """
+        if seen_entities is None:
+            seen_entities = set()
+
+        if start_entity_id in seen_entities:
+            return
+
+        seen_entities.add(start_entity_id)
+
+        yield start_entity_id, []
+
+        for relationship in self.get_forward_relationships(start_entity_id):
+            next_entity = relationship.parent_entity.id
+            # Copy seen entities for each next node to allow multiple paths (but
+            # not cycles).
+            descendants = self._forward_entity_paths(next_entity, seen_entities.copy())
+            for sub_entity_id, sub_path in descendants:
+                yield sub_entity_id, [relationship] + sub_path
 
     def get_forward_entities(self, entity_id, deep=False):
         """Get entities that are in a forward relationship with entity
@@ -552,6 +565,19 @@ class EntitySet(object):
                 rels.append('forward')
                 prev_entity = r.parent_variable.entity.id
         return rels
+
+    def has_unique_forward_path(self, start_entity_id, end_entity_id):
+        """
+        Is the forward path from start to end unique?
+
+        This will raise if there is no such path.
+        """
+        paths = self.find_forward_paths(start_entity_id, end_entity_id)
+
+        next(paths)
+        second_path = next(paths, None)
+
+        return not second_path
 
     ###########################################################################
     #  Entity creation methods  ##############################################
