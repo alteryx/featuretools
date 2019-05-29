@@ -49,23 +49,6 @@ def description_to_entity(description, entityset, path=None):
         variable_types=variable_types)
 
 
-def description_to_relationship(description, entityset):
-    '''Deserialize parent and child variables from relationship description.
-
-    Args:
-        description (dict) : Description of :class:`.Relationship`.
-        entityset (EntitySet) : Instance of :class:`.EntitySet` containing parent and child variables.
-
-    Returns:
-        item (tuple(Variable, Variable)) : Tuple containing parent and child variables.
-    '''
-    entity, variable = description['parent']
-    parent = entityset[entity][variable]
-    entity, variable = description['child']
-    child = entityset[entity][variable]
-    return Relationship(parent, child)
-
-
 def description_to_entityset(description, **kwargs):
     '''Deserialize entityset from data description.
 
@@ -90,7 +73,7 @@ def description_to_entityset(description, **kwargs):
             last_time_index.append(entity['id'])
 
     for relationship in description['relationships']:
-        relationship = description_to_relationship(relationship, entityset)
+        relationship = Relationship.from_dictionary(relationship, entityset)
         entityset.add_relationship(relationship)
 
     if len(last_time_index):

@@ -151,8 +151,9 @@ class PandasBackend(ComputationalBackend):
                 # descendent entity frames will have to be re-calculated.
                 # TODO: this check might not be necessary, depending on our
                 # constraints
-                if not self.entityset.find_backward_path(start_entity_id=filter_eid,
-                                                         goal_entity_id=finished_eid):
+                paths = self.entityset.find_backward_paths(start_entity_id=filter_eid,
+                                                           goal_entity_id=finished_eid)
+                if not next(paths, None):
                     entity_frames[finished_eid] = finished_frame
                     # TODO: look this over again
                     # precalculated features will only be placed in entity_frames,
@@ -351,7 +352,8 @@ class PandasBackend(ComputationalBackend):
 
         assert entity_id in entity_frames and parent_entity_id in entity_frames
 
-        path = self.entityset.find_forward_path(entity_id, parent_entity_id)
+        paths = self.entityset.find_forward_paths(entity_id, parent_entity_id)
+        path = next(paths)
         assert len(path) == 1, \
             "Error calculating DirectFeatures, len(path) > 1"
 
@@ -416,8 +418,9 @@ class PandasBackend(ComputationalBackend):
             for f in features:
                 frame[f.get_name()] = np.nan
         else:
-            relationship_path = self.entityset.find_backward_path(entity.id,
-                                                                  child_entity.id)
+            relationship_paths = self.entityset.find_backward_paths(entity.id,
+                                                                    child_entity.id)
+            relationship_path = next(relationship_paths)
 
             groupby_var = get_relationship_variable_id(relationship_path)
 
