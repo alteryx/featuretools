@@ -47,11 +47,10 @@ few simple guidelines:
     feel free to send an email to help@featuretools.com.
 
 
-Paid support
-------------
+Commercial support
+-------------------
 
-Featuretools is an open source project that was created by the developers at
-`Feature Labs <https://www.featurelabs.com>`_. In combination with the previous options, Feature Labs does
-offer paid training and support for you or your business,
-`please get in touch <https://www.featurelabs.com/contact.html>`_.
+Featuretools Enterprise offers expert support from the creators and core developers of Featuretools. Whether you need help getting a project off the ground or scaling Featuretools usage across your organization, we’ll provide our expertise to help you build the best machine learning models possible. More information can be found `here <https://www.featurelabs.com/featuretools/>`__.
+
+
 
