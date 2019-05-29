@@ -62,7 +62,10 @@ def test_entityset_description(es):
 @pytest.fixture
 def path_management():
     path = os.path.join(CACHE, 'es')
-    os.makedirs(path)
+    try:
+        os.makedirs(path)
+    except (OSError, IOError):
+        pass
     yield path
     shutil.rmtree(path)
 
