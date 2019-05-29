@@ -396,8 +396,7 @@ class DirectFeature(FeatureBase):
 
             path_is_unique = child_entity.entityset \
                 .has_unique_forward_path(child_entity.id, self.parent_entity.id)
-
-        if not relationship_path:
+        else:
             relationship_path = _find_path(child_entity.id,
                                            self.parent_entity.id,
                                            child_entity.entityset)
@@ -514,7 +513,6 @@ class AggregationFeature(FeatureBase):
 
             path_is_unique = parent_entity.entityset \
                 .has_unique_forward_path(self.child_entity.id, parent_entity.id)
-
         else:
             relationship_path = _find_path(parent_entity.id,
                                            self.child_entity.id,
