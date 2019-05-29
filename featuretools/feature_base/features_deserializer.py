@@ -118,11 +118,20 @@ class FeaturesDeserializer(object):
 
     def _check_schema_version(self):
         current = SCHEMA_VERSION.split('.')
-        saved = self.features_dict['schema_version'].split('.')
+        version_string = self.features_dict['schema_version']
+        saved = version_string.split('.')
+
+        # Check if saved has older major version.
+        if current[0] > saved[0]:
+            raise RuntimeError('Unable to load features. The schema version '
+                               'of the saved features (%s) is no longer '
+                               'supported by this version of featuretools.'
+                               % version_string)
+
         error_text = ('Unable to load features. The schema version of the saved '
                       'features (%s) is greater than the latest supported (%s). '
                       'You may need to upgrade featuretools.'
-                      % (self.features_dict['schema_version'], SCHEMA_VERSION))
+                      % (version_string, SCHEMA_VERSION))
 
         for c_num, s_num in zip_longest(current, saved, fillvalue=0):
             if c_num > s_num:

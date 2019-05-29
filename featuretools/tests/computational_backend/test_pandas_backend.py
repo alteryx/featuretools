@@ -537,14 +537,6 @@ def test_handles_primitive_function_name_uniqueness(es):
 
             return my_function
 
-        def generate_name(self, base_feature_names, child_entity_id,
-                          parent_entity_id, where_str, use_prev_str):
-            base_features_str = ", ".join(base_feature_names)
-            return u"%s(%s.%s%s%s, n=%s)" % (self.name.upper(),
-                                             child_entity_id,
-                                             base_features_str,
-                                             where_str, use_prev_str, self.n)
-
     # works as expected
     f1 = ft.Feature(es["log"]["value"],
                     parent_entity=es["customers"],
