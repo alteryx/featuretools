@@ -25,7 +25,7 @@ def load_features(features):
     """Loads the features from a filepath, an open file, or a JSON formatted string.
 
     Args:
-        features (str or :class:`.FileObject): The location of where features has
+        features (str or :class:`.FileObject`): The location of where features has
         been saved which this must include the name of the file, or a JSON formatted
         string, or a readable file handle where the features have been saved.
 
