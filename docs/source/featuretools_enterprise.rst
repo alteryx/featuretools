@@ -10,7 +10,7 @@ Feature primitives are the building blocks of Featuretools. They define individu
 
 Spark and Dask
 --------------
-Looking to easily scale Featuretools to bigger datasets or integrate it into your existing infrastructure? Whether it’s on-premise or in the cloud, you can run Featuretools Enterprise with Apache Spark and Dask. We have yet to encounter a dataset that is too large to handle.
+Looking to easily scale Featuretools to bigger datasets or integrate it into your existing big data infrastructure? Whether it’s on-premise or in the cloud, you can run Featuretools Enterprise with Apache Spark and Dask. We have yet to encounter a dataset that is too large to handle.
 
 
 Expert Support
