@@ -59,7 +59,7 @@ def path_management():
     try:
         os.makedirs(path)
     except OSError as e:
-        if e.errno != errno.EEXIST:
+        if e.errno != errno.EEXIST:  # EEXIST corresponds to FileExistsError
             raise e
     yield path
     shutil.rmtree(path)
