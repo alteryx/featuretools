@@ -12,7 +12,7 @@ def save_features(features, location=None):
     Args:
         features (list[:class:`.FeatureBase`]): List of Feature definitions.
 
-        location (str or :class:`.FileObject, optional): The location of where to save
+        location (str or :class:`.FileObject`, optional): The location of where to save
             the features list which must include the name of the file,
             or a writeable file handle to write to.
             Default: None
