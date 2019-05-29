@@ -16,6 +16,7 @@ Changelog
         * Update docker command in release.md (:pr:`552`)
     * Testing Changes
         * Test calculating features with instances that aren't in data (:pr:`559`)
+        * Add changelog check to CI (:pr:`570`)
 
     Thanks to the following people for contributing to this release:
     :user:`CJStadler`, :user:`ctduffy`, :user:`gsheni`, :user:`rwedge`
