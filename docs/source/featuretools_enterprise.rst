@@ -16,7 +16,7 @@ Looking to easily scale Featuretools to bigger datasets or integrate it into you
 Expert Support
 --------------
 
-All subscriptions come with guidance from the creators and core developers of Featuretools. Whether you need help getting a project off the ground or scaling Featuretools usage across your organization, we’ll be there to help you build the best machine learning models possible.
+All subscriptions come with guidance from the creators and core developers of Featuretools. Whether you need help getting a project off the ground or scaling Featuretools usage across your organization, we’ll provide our expertise to help you build the best machine learning models possible.
 
 
 
