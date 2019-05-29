@@ -110,7 +110,7 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - run: cat docs/source/changelog.rst | grep ':pr:\`${CIRCLE_PULL_REQUEST##https://github.com/Featuretools/featuretools/pull/}\`'
+      - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/Featuretools/featuretools/pull/}\`"
 
 workflows:
   version: 2
