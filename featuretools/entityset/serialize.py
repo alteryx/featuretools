@@ -42,21 +42,6 @@ def entity_to_description(entity):
     return description
 
 
-def relationship_to_description(relationship):
-    '''Serialize entityset relationship to data description.
-
-    Args:
-        relationship (Relationship) : Instance of :class:`.Relationship`.
-
-    Returns:
-        description (dict) : Description of :class:`.Relationship`.
-    '''
-    return {
-        'parent': [relationship.parent_entity.id, relationship.parent_variable.id],
-        'child': [relationship.child_entity.id, relationship.child_variable.id],
-    }
-
-
 def entityset_to_description(entityset):
     '''Serialize entityset to data description.
 
@@ -67,7 +52,7 @@ def entityset_to_description(entityset):
         description (dict) : Description of :class:`.EntitySet`.
     '''
     entities = {entity.id: entity_to_description(entity) for entity in entityset.entities}
-    relationships = [relationship_to_description(relationship) for relationship in entityset.relationships]
+    relationships = [relationship.to_dictionary() for relationship in entityset.relationships]
     data_description = {
         'id': entityset.id,
         'entities': entities,

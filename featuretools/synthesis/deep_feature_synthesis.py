@@ -579,8 +579,9 @@ class DeepFeatureSynthesis(object):
                                               variable_type=set(input_types))
 
             # remove features in relationship path
-            relationship_path = self.es.find_backward_path(parent_entity.id,
-                                                           child_entity.id)
+            relationship_paths = self.es.find_backward_paths(parent_entity.id,
+                                                             child_entity.id)
+            relationship_path = next(relationship_paths)
 
             features = [f for f in features if not self._feature_in_relationship_path(
                 relationship_path, f)]
