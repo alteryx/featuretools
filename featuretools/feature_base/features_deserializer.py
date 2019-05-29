@@ -82,10 +82,10 @@ class FeaturesDeserializer(object):
     def load(cls, features):
         if isinstance(features, str):
             try:
+                features_dict = json.loads(features)
+            except ValueError:
                 with open(features, 'r') as f:
                     features_dict = json.load(f)
-            except (OSError, IOError):
-                features_dict = json.loads(features)
             return cls(features_dict)
         return cls(json.load(features))
 
