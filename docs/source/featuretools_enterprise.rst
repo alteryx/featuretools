@@ -26,4 +26,4 @@ Early access
 The team at Feature Labs is always working on the next big thing. With a subscription to Featuretools Enterprise, you can test and provide feedback on new tools and automation technologies before they are released.
 
 
-Visit `Feature Labs <https://www.featurelabs.com/featuretools/>`__ to learn more about Featuretools Enterprise.
+Visit `featurelabs.com <https://www.featurelabs.com/featuretools/>`__ to learn more about Featuretools Enterprise.
