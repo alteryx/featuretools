@@ -110,13 +110,7 @@ jobs:
       - image: circleci/python:3.7
     steps:
       - checkout
-      - run: |
-          echo "${CIRCLE_PULL_REQUEST}"
-          PR_NUMBER="${CIRCLE_PULL_REQUEST##https://github.com/Featuretools/featuretools/pull/}"
-          echo "${PR_NUMBER}"
-          PR_COUNT="$(cat docs/source/changelog.rst | grep ':pr:\`${PR_NUMBER}\`')"
-          echo "${PR_COUNT}"
-          python -c "assert ${PR_COUNT} > 0"
+      - run: cat docs/source/changelog.rst | grep ':pr:\`${CIRCLE_PULL_REQUEST##https://github.com/Featuretools/featuretools/pull/}\`'
 
 workflows:
   version: 2
