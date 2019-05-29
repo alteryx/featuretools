@@ -111,8 +111,8 @@ jobs:
     steps:
       - checkout
       - run: |
-          PR_NUMBER = "${CIRCLECI_PULL_REQUEST##https://github.com/Featuretools/featuretools/pull/}"
-          PR_COUNT = "$(cat docs/source/changelog.rst | grep ':pr:\`${PR_NUMBER}\`')"
+          PR_NUMBER="${CIRCLECI_PULL_REQUEST##https://github.com/Featuretools/featuretools/pull/}"
+          PR_COUNT="$(cat docs/source/changelog.rst | grep ':pr:\`${PR_NUMBER}\`')"
           python -c "assert ${PR_COUNT} > 0"
 
 workflows:
