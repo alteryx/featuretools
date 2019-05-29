@@ -1,4 +1,5 @@
 import os
+import errno
 import shutil
 
 import pandas as pd
@@ -7,6 +8,7 @@ import pytest
 from featuretools.demo import load_mock_customer
 from featuretools.entityset import EntitySet, deserialize, serialize
 from featuretools.tests import integration_data
+
 
 CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
 
@@ -64,8 +66,9 @@ def path_management():
     path = os.path.join(CACHE, 'es')
     try:
         os.makedirs(path)
-    except (OSError, IOError):
-        pass
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise e
     yield path
     shutil.rmtree(path)
 
