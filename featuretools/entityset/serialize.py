@@ -2,13 +2,24 @@ import json
 import os
 import shutil
 
-from featuretools import variable_types
+# from featuretools import variable_types
+from featuretools.variable_types import Variable
+
+
+def find_subclasses(cls):
+    yield cls
+    for sub in cls.__subclasses__():
+        for c in find_subclasses(sub):
+            yield c
+
 
 FORMATS = ['csv', 'pickle', 'parquet']
-VARIABLE_TYPES = {
-    str(getattr(variable_types, type).type_string): getattr(variable_types, type) for type in dir(variable_types)
-    if hasattr(getattr(variable_types, type), 'type_string')
-}
+VARIABLE_TYPES = {str(type.type_string): type for type in find_subclasses(Variable) if hasattr(type, 'type_string')}
+
+# VARIABLE_TYPES = {
+#     str(getattr(variable_types, type).type_string): getattr(variable_types, type) for type in dir(variable_types)
+#     if hasattr(getattr(variable_types, type), 'type_string')
+# }
 
 
 def entity_to_description(entity):
