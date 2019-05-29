@@ -107,12 +107,15 @@ jobs:
   "check-changelog":
     working_directory: ~/featuretools
     docker:
-      - image: busybox
+      - image: circleci/python:3.7
     steps:
       - checkout
       - run: |
+          echo "${CIRCLECI_PULL_REQUEST}"
           PR_NUMBER="${CIRCLECI_PULL_REQUEST##https://github.com/Featuretools/featuretools/pull/}"
+          echo "${PR_NUMBER}"
           PR_COUNT="$(cat docs/source/changelog.rst | grep ':pr:\`${PR_NUMBER}\`')"
+          echo "${PR_COUNT}"
           python -c "assert ${PR_COUNT} > 0"
 
 workflows:
