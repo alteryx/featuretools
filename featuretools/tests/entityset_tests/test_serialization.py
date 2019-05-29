@@ -1,5 +1,5 @@
-import os
 import errno
+import os
 import shutil
 
 import pandas as pd
@@ -8,7 +8,6 @@ import pytest
 from featuretools.demo import load_mock_customer
 from featuretools.entityset import EntitySet, deserialize, serialize
 from featuretools.tests import integration_data
-
 
 CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
 
