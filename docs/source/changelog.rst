@@ -2,6 +2,24 @@
 
 Changelog
 ---------
+**v0.9.0** May XX, 2019
+    * Enhancements
+        * Add unit parameter to timesince primitives (:pr:`558`)
+        * Add ability to install optional add on libraries (:pr:`551`)
+    * Fixes
+        * Normalize_entity specifies error when 'make_time_index' is an invalid string (:pr:`550`)
+        * Remove unecessary time_last variable (:pr:`546`)
+    * Changes
+        * Refactor get_pandas_data_slice to take single entity (:pr:`547`)
+        * Updates TimeSincePrevious and Diff Primitives (:pr:`561`)
+    * Documentation Changes
+        * Update docker command in release.md (:pr:`552`)
+    * Testing Changes
+        * Test calculating features with instances that aren't in data (:pr:`559`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`CJStadler`, :user:`ctduffy`, :user:`gsheni`, :user:`rwedge`
+
 **v0.8.0** May 17, 2019
     * Rename NUnique to NumUnique (:pr:`510`)
     * Serialize features as JSON (:pr:`532`)
