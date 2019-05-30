@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 
 import featuretools as ft
 from featuretools.computational_backends import PandasBackend
@@ -52,6 +53,17 @@ def test_direct_rename(es):
     assert feat.get_name() != copy_feat.get_name()
     assert feat.base_features[0].generate_name() == copy_feat.base_features[0].generate_name()
     assert feat.entity == copy_feat.entity
+
+
+def test_direct_copy(games_es):
+    home_team = next(r for r in games_es.relationships
+                     if r.child_variable.id == 'home_team_id')
+    feat = DirectFeature(games_es['teams']['name'], games_es['games'],
+                         relationship_path=[home_team])
+    copied = feat.copy()
+    assert copied.entity == feat.entity
+    assert copied.base_features == feat.base_features
+    assert copied.relationship_path == feat.relationship_path
 
 
 def test_direct_of_multi_output_transform_feat(es):
@@ -146,13 +158,71 @@ def test_direct_features_of_multi_output_agg_primitives(es):
                         value == row[j])
 
 
+def test_direct_with_invalid_init_args(diamond_es):
+    customer_to_region = diamond_es.get_forward_relationships('customers')[0]
+    error_text = 'child_entity must match the first relationship'
+    with pytest.raises(AssertionError, match=error_text):
+        ft.DirectFeature(diamond_es['regions']['name'], diamond_es['stores'],
+                         relationship_path=[customer_to_region])
+
+    transaction_relationships = diamond_es.get_forward_relationships('transactions')
+    transaction_to_store = next(r for r in transaction_relationships
+                                if r.parent_entity.id == 'stores')
+    error_text = 'Base feature must be defined on the entity at the end of relationship_path'
+    with pytest.raises(AssertionError, match=error_text):
+        ft.DirectFeature(diamond_es['regions']['name'], diamond_es['transactions'],
+                         relationship_path=[transaction_to_store])
+
+
+def test_direct_with_multiple_possible_paths(diamond_es):
+    error_text = "There are multiple possible paths to the base entity. " \
+                 "You must specify a relationship path."
+    with pytest.raises(RuntimeError, match=error_text):
+        ft.DirectFeature(diamond_es['regions']['name'], diamond_es['transactions'])
+
+    transaction_relationships = diamond_es.get_forward_relationships('transactions')
+    transaction_to_customer = next(r for r in transaction_relationships
+                                   if r.parent_entity.id == 'customers')
+    customer_to_region = diamond_es.get_forward_relationships('customers')[0]
+    # Does not raise if path specified.
+    feat = ft.DirectFeature(diamond_es['regions']['name'], diamond_es['transactions'],
+                            relationship_path=[transaction_to_customer, customer_to_region])
+    assert feat.get_name() == 'customers.regions.name'
+
+
+def test_direct_with_single_possible_path(diamond_es):
+    # This uses diamond_es to test that there being a cycle somewhere in the
+    # graph doesn't cause an error.
+    feat = ft.DirectFeature(diamond_es['customers']['name'], diamond_es['transactions'])
+    relationships = diamond_es.get_forward_relationships('transactions')
+    relationship = next(r for r in relationships if r.parent_entity.id == 'customers')
+    assert feat.relationship_path == [relationship]
+
+
+def test_get_name_skips_relationships_when_single_possible_path(es):
+    feat = ft.DirectFeature(es['customers']['age'], es['log'])
+    assert feat.get_name() == 'customers.age'
+
+
+def test_direct_with_no_path(diamond_es):
+    error_text = 'No path from "regions" to "customers" found.'
+    with pytest.raises(RuntimeError, match=error_text):
+        ft.DirectFeature(diamond_es['customers']['name'], diamond_es['regions'])
+
+    error_text = 'No path from "customers" to "customers" found.'
+    with pytest.raises(RuntimeError, match=error_text):
+        ft.DirectFeature(diamond_es['customers']['name'], diamond_es['customers'])
+
+
 def test_serialization(es):
-    value = ft.IdentityFeature(es['log']['value'])
+    value = ft.IdentityFeature(es['products']['rating'])
     direct = ft.DirectFeature(value, es['log'])
 
+    log_to_products = next(r for r in es.get_forward_relationships('log')
+                           if r.parent_entity.id == 'products')
     dictionary = {
         'base_feature': value.unique_name(),
-        'child_entity_id': 'log',
+        'relationship_path': [log_to_products.to_dictionary()],
     }
 
     assert dictionary == direct.get_arguments()

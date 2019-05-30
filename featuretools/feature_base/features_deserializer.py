@@ -21,12 +21,13 @@ else:
     from itertools import zip_longest
 
 
-def load_features(filepath):
-    """Loads the features from a filepath.
+def load_features(features):
+    """Loads the features from a filepath, an open file, or a JSON formatted string.
 
     Args:
-        filepath (str): The location of where features has been saved.
-            This must include the name of the file.
+        features (str or :class:`.FileObject`): The location of where features has
+        been saved which this must include the name of the file, or a JSON formatted
+        string, or a readable file handle where the features have been saved.
 
     Returns:
         features (list[:class:`.FeatureBase`]): Feature definitions list.
@@ -46,10 +47,17 @@ def load_features(filepath):
 
             filepath = os.path.join('/Home/features/', 'list')
             ft.load_features(filepath)
+
+            f = open(filepath, 'r')
+            ft.load_features(f)
+
+            feature_str = f.read()
+            ft.load_features(feature_str)
+
     .. seealso::
         :func:`.save_features`
     """
-    return FeaturesDeserializer.load(filepath).to_list()
+    return FeaturesDeserializer.load(features).to_list()
 
 
 class FeaturesDeserializer(object):
@@ -71,11 +79,15 @@ class FeaturesDeserializer(object):
         self._primitives_deserializer = PrimitivesDeserializer()
 
     @classmethod
-    def load(cls, filepath):
-        with open(filepath, 'r') as f:
-            features_dict = json.load(f)
-
-        return cls(features_dict)
+    def load(cls, features):
+        if isinstance(features, str):
+            try:
+                features_dict = json.loads(features)
+            except ValueError:
+                with open(features, 'r') as f:
+                    features_dict = json.load(f)
+            return cls(features_dict)
+        return cls(json.load(features))
 
     def to_list(self):
         feature_names = self.features_dict['feature_list']
@@ -106,11 +118,20 @@ class FeaturesDeserializer(object):
 
     def _check_schema_version(self):
         current = SCHEMA_VERSION.split('.')
-        saved = self.features_dict['schema_version'].split('.')
+        version_string = self.features_dict['schema_version']
+        saved = version_string.split('.')
+
+        # Check if saved has older major version.
+        if current[0] > saved[0]:
+            raise RuntimeError('Unable to load features. The schema version '
+                               'of the saved features (%s) is no longer '
+                               'supported by this version of featuretools.'
+                               % version_string)
+
         error_text = ('Unable to load features. The schema version of the saved '
                       'features (%s) is greater than the latest supported (%s). '
                       'You may need to upgrade featuretools.'
-                      % (self.features_dict['schema_version'], SCHEMA_VERSION))
+                      % (version_string, SCHEMA_VERSION))
 
         for c_num, s_num in zip_longest(current, saved, fillvalue=0):
             if c_num > s_num:
