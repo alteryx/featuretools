@@ -8,20 +8,26 @@ import pytest
 from featuretools.demo import load_mock_customer
 from featuretools.entityset import EntitySet, deserialize, serialize
 from featuretools.tests import integration_data
-from featuretools.variable_types.variable import Categorical, Index, TimeIndex
+from featuretools.variable_types.variable import (
+    Categorical,
+    Index,
+    TimeIndex,
+    find_variable_types
+)
 
 CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
 
 
 def test_all_variable_descriptions():
+    variable_types = find_variable_types()
     es = EntitySet()
-    dataframe = pd.DataFrame(columns=list(serialize.VARIABLE_TYPES))
+    dataframe = pd.DataFrame(columns=list(variable_types))
     es.entity_from_dataframe(
         'variable_types',
         dataframe,
         index='index',
         time_index='datetime_time_index',
-        variable_types=serialize.VARIABLE_TYPES,
+        variable_types=variable_types,
     )
     entity = es['variable_types']
     for variable in entity.variables:

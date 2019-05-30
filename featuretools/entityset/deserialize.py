@@ -4,7 +4,8 @@ import os
 import pandas as pd
 
 from featuretools.entityset.relationship import Relationship
-from featuretools.entityset.serialize import FORMATS, find_variable_types
+from featuretools.entityset.serialize import FORMATS
+from featuretools.variable_types.variable import find_variable_types
 
 
 def description_to_variable(description, entity=None):

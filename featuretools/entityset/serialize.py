@@ -2,16 +2,7 @@ import json
 import os
 import shutil
 
-from featuretools.utils.gen_utils import find_descendents
-from featuretools.variable_types import Variable
-
-
-def find_variable_types():
-    return {str(vtype.type_string): vtype for vtype in find_descendents(Variable) if hasattr(vtype, 'type_string')}
-
-
 FORMATS = ['csv', 'pickle', 'parquet']
-VARIABLE_TYPES = find_variable_types()
 
 
 def entity_to_description(entity):
