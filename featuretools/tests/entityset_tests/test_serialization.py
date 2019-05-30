@@ -27,7 +27,6 @@ def test_all_variable_descriptions():
     for variable in entity.variables:
         description = variable.to_data_description()
         _variable = deserialize.description_to_variable(description, entity=entity)
-        print(_variable)
         assert variable.__eq__(_variable)
 
 

@@ -14,7 +14,7 @@ def find_subclasses(cls):
 
 
 def find_variable_types():
-    return {str(type.type_string): type for type in find_subclasses(Variable) if hasattr(type, 'type_string')}
+    return {str(vtype.type_string): vtype for vtype in find_subclasses(Variable) if hasattr(vtype, 'type_string')}
 
 
 FORMATS = ['csv', 'pickle', 'parquet']
