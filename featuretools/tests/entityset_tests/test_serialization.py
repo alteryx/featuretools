@@ -7,6 +7,7 @@ import pytest
 from featuretools.demo import load_mock_customer
 from featuretools.entityset import EntitySet, deserialize, serialize
 from featuretools.tests import integration_data
+from featuretools.variable_types.variable import Categorical, TimeIndex
 
 CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
 
@@ -22,6 +23,24 @@ def test_all_variable_descriptions():
         variable_types=serialize.VARIABLE_TYPES,
     )
     entity = es['variable_types']
+    for variable in entity.variables:
+        description = variable.to_data_description()
+        _variable = deserialize.description_to_variable(description, entity=entity)
+        print(_variable)
+        assert variable.__eq__(_variable)
+
+
+def test_custom_variable_descriptions():
+
+    class ItemList(Categorical):
+        type_string = "item_list"
+        _default_pandas_dtype = list
+
+    es = EntitySet()
+    variables = {'item_list': ItemList, 'time_index': TimeIndex}
+    dataframe = pd.DataFrame(columns=list(variables))
+    es.entity_from_dataframe('custom_variable', dataframe, index='index', time_index='time_index', variable_types=variables)
+    entity = es['custom_variable']
     for variable in entity.variables:
         description = variable.to_data_description()
         _variable = deserialize.description_to_variable(description, entity=entity)

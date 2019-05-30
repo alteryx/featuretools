@@ -4,7 +4,7 @@ import os
 import pandas as pd
 
 from featuretools.entityset.relationship import Relationship
-from featuretools.entityset.serialize import FORMATS, VARIABLE_TYPES
+from featuretools.entityset.serialize import FORMATS, find_variable_types
 
 
 def description_to_variable(description, entity=None):
@@ -17,9 +17,10 @@ def description_to_variable(description, entity=None):
     Returns:
         variable (Variable) : Returns :class:`.Variable`.
     '''
+    variable_types = find_variable_types()
     is_type_string = isinstance(description['type'], str)
     type = description['type'] if is_type_string else description['type'].pop('value')
-    variable = VARIABLE_TYPES.get(type, VARIABLE_TYPES.get('None'))
+    variable = variable_types.get(type, variable_types.get('None'))
     if entity is not None:
         kwargs = {} if is_type_string else description['type']
         variable = variable(description['id'], entity, **kwargs)

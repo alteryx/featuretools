@@ -13,13 +13,12 @@ def find_subclasses(cls):
             yield c
 
 
-FORMATS = ['csv', 'pickle', 'parquet']
-VARIABLE_TYPES = {str(type.type_string): type for type in find_subclasses(Variable) if hasattr(type, 'type_string')}
+def find_variable_types():
+    return {str(type.type_string): type for type in find_subclasses(Variable) if hasattr(type, 'type_string')}
 
-# VARIABLE_TYPES = {
-#     str(getattr(variable_types, type).type_string): getattr(variable_types, type) for type in dir(variable_types)
-#     if hasattr(getattr(variable_types, type), 'type_string')
-# }
+
+FORMATS = ['csv', 'pickle', 'parquet']
+VARIABLE_TYPES = find_variable_types()
 
 
 def entity_to_description(entity):
