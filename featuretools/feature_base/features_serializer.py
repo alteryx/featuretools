@@ -14,7 +14,8 @@ def save_features(features, location=None):
 
         location (str or :class:`.FileObject`, optional): The location of where to save
             the features list which must include the name of the file,
-            or a writeable file handle to write to.
+            or a writeable file handle to write to. If location is None, will return a JSON string
+            of the serialized features.
             Default: None
 
     Note:
