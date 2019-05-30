@@ -5,14 +5,18 @@ from featuretools.version import __version__ as ft_version
 SCHEMA_VERSION = "2.0.0"
 
 
-def save_features(features, filepath):
-    """Saves the features list as JSON to a specificed filepath.
+def save_features(features, location=None):
+    """Saves the features list as JSON to a specified filepath, writes to an open file, or
+    returns the serialized features as a JSON string. If no file provided, returns a string.
 
     Args:
         features (list[:class:`.FeatureBase`]): List of Feature definitions.
 
-        filepath (str): The location of where to save the features list. This
-            must include the name of the file.
+        location (str or :class:`.FileObject`, optional): The location of where to save
+            the features list which must include the name of the file,
+            or a writeable file handle to write to. If location is None, will return a JSON string
+            of the serialized features.
+            Default: None
 
     Note:
         Features saved in one version of Featuretools are not guaranteed to work in another.
@@ -38,10 +42,15 @@ def save_features(features, filepath):
 
             filepath = os.path.join('/Home/features/', 'list')
             ft.save_features(features, filepath)
+
+            f = open(filepath, 'w')
+            ft.save_features(features, f)
+
+            features_str = ft.save_features(features)
     .. seealso::
         :func:`.load_features`
     """
-    FeaturesSerializer(features).save(filepath)
+    return FeaturesSerializer(features).save(location)
 
 
 class FeaturesSerializer(object):
@@ -61,10 +70,15 @@ class FeaturesSerializer(object):
             'feature_definitions': self._feature_definitions(),
         }
 
-    def save(self, filepath):
+    def save(self, location):
         features_dict = self.to_dict()
-        with open(filepath, "w") as f:
-            json.dump(features_dict, f)
+        if location is None:
+            return json.dumps(features_dict)
+        if isinstance(location, str):
+            with open(location, "w") as f:
+                json.dump(features_dict, f)
+        else:
+            json.dump(features_dict, location)
 
     def _feature_definitions(self):
         if not self._features_dict:
