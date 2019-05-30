@@ -20,7 +20,7 @@ def description_to_variable(description, entity=None):
     variable_types = find_variable_types()
     is_type_string = isinstance(description['type'], str)
     type = description['type'] if is_type_string else description['type'].pop('value')
-    variable = variable_types.get(type, variable_types.get('None'))
+    variable = variable_types.get(type, variable_types.get('None'))  # 'None' will return the Unknown variable type
     if entity is not None:
         kwargs = {} if is_type_string else description['type']
         variable = variable(description['id'], entity, **kwargs)

@@ -2,19 +2,12 @@ import json
 import os
 import shutil
 
-# from featuretools import variable_types
+from featuretools.utils.gen_utils import find_descendents
 from featuretools.variable_types import Variable
 
 
-def find_subclasses(cls):
-    yield cls
-    for sub in cls.__subclasses__():
-        for c in find_subclasses(sub):
-            yield c
-
-
 def find_variable_types():
-    return {str(vtype.type_string): vtype for vtype in find_subclasses(Variable) if hasattr(vtype, 'type_string')}
+    return {str(vtype.type_string): vtype for vtype in find_descendents(Variable) if hasattr(vtype, 'type_string')}
 
 
 FORMATS = ['csv', 'pickle', 'parquet']
