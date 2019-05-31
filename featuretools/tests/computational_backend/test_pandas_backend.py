@@ -527,9 +527,9 @@ def test_two_relationships_to_single_entity(games_es):
                                          relationship_path=[away_team],
                                          primitive=ft.primitives.Mean)
     home_team_mean = ft.DirectFeature(mean_at_home, es['games'],
-                                      relationship_path=[home_team])
+                                      relationship=home_team)
     away_team_mean = ft.DirectFeature(mean_at_away, es['games'],
-                                      relationship_path=[away_team])
+                                      relationship=away_team)
 
     pandas_backend = PandasBackend(es, [home_team_mean, away_team_mean])
     df = pandas_backend.calculate_all_features(instance_ids=range(3),

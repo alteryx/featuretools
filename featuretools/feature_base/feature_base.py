@@ -380,46 +380,51 @@ class DirectFeature(FeatureBase):
     # Direct features are applied through forward relationship paths.
     path_is_forward = True
 
-    def __init__(self, base_feature, child_entity, relationship_path=None):
+    def __init__(self, base_feature, child_entity, relationship=None):
         """relationship_path is a forward path from child to parent."""
         base_feature = _check_feature(base_feature)
 
         self.parent_entity = base_feature.entity
 
-        relationship_path, self._path_is_unique = \
-            self._handle_relationship_path(child_entity, relationship_path)
+        relationship = self._handle_relationship(child_entity, relationship)
 
         super(DirectFeature, self).__init__(entity=child_entity,
                                             base_features=[base_feature],
-                                            relationship_path=relationship_path,
+                                            relationship_path=[relationship],
                                             primitive=PrimitiveBase)
 
-    def _handle_relationship_path(self, child_entity, relationship_path):
-        if relationship_path:
-            first_child = relationship_path[0].child_entity
-            assert child_entity == first_child, \
-                'child_entity must match the first relationship'
+    def _handle_relationship(self, child_entity, relationship):
+        if relationship:
+            relationship_child = relationship.child_entity
+            assert child_entity == relationship_child, \
+                'child_entity must be the relationship child entity'
 
-            assert self.parent_entity == relationship_path[-1].parent_entity, \
-                'Base feature must be defined on the entity at the end of relationship_path'
-
-            path_is_unique = child_entity.entityset \
-                .has_unique_forward_path(child_entity.id, self.parent_entity.id)
+            assert self.parent_entity == relationship.parent_entity, \
+                'Base feature must be defined on the relationship parent entity'
         else:
-            relationship_path = _find_path(child_entity.id,
-                                           self.parent_entity.id,
-                                           child_entity.entityset)
-            path_is_unique = True
+            child_relationships = child_entity.entityset.get_forward_relationships(child_entity.id)
+            possible_relationships = (r for r in child_relationships
+                                      if r.parent_entity.id == self.parent_entity.id)
+            relationship = next(possible_relationships, None)
 
-        return relationship_path, path_is_unique
+            if not relationship:
+                raise RuntimeError('No relationship from "%s" to "%s" found.'
+                                   % (child_entity.id, self.parent_entity.id))
+
+            # Check for another path.
+            elif next(possible_relationships, None):
+                message = "There are multiple relationships to the base entity. " \
+                          "You must specify a relationship."
+                raise RuntimeError(message)
+
+        return relationship
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         base_feature = dependencies[arguments['base_feature']]
-        relationship_path = [Relationship.from_dictionary(r, entityset)
-                             for r in arguments['relationship_path']]
-        child_entity = relationship_path[0].child_entity
-        return cls(base_feature, child_entity, relationship_path=relationship_path)
+        relationship = Relationship.from_dictionary(arguments['relationship'], entityset)
+        child_entity = relationship.child_entity
+        return cls(base_feature, child_entity, relationship=relationship)
 
     @property
     def variable(self):
@@ -436,7 +441,7 @@ class DirectFeature(FeatureBase):
     def copy(self):
         """Return copy of feature"""
         return DirectFeature(self.base_features[0], self.entity,
-                             relationship_path=self.relationship_path)
+                             relationship=self.relationship_path[0])
 
     @property
     def variable_type(self):
@@ -452,14 +457,11 @@ class DirectFeature(FeatureBase):
     def get_arguments(self):
         return {
             'base_feature': self.base_features[0].unique_name(),
-            'relationship_path': [r.to_dictionary() for r in self.relationship_path]
+            'relationship': self.relationship_path[0].to_dictionary(),
         }
 
     def relationship_path_name(self):
-        if self._path_is_unique:
-            return self.parent_entity.id
-        else:
-            return relationship_path_name(self.relationship_path, self.path_is_forward)
+        return relationship_path_name(self.relationship_path, self.path_is_forward)
 
     def _name_from_base(self, base_name):
         return u"%s.%s" % (self.relationship_path_name(), base_name)
@@ -528,10 +530,19 @@ class AggregationFeature(FeatureBase):
             path_is_unique = parent_entity.entityset \
                 .has_unique_forward_path(self.child_entity.id, parent_entity.id)
         else:
-            relationship_path = _find_path(parent_entity.id,
-                                           self.child_entity.id,
-                                           parent_entity.entityset,
-                                           backward=True)
+            paths = parent_entity.entityset \
+                .find_backward_paths(parent_entity.id, self.child_entity.id)
+            relationship_path = next(paths, None)
+
+            if not relationship_path:
+                raise RuntimeError('No backward path from "%s" to "%s" found.'
+                                   % (parent_entity.id, self.child_entity.id))
+            # Check for another path.
+            elif next(paths, None):
+                message = "There are multiple possible paths to the base entity. " \
+                          "You must specify a relationship path."
+                raise RuntimeError(message)
+
             path_is_unique = True
 
         return relationship_path, path_is_unique
@@ -721,27 +732,3 @@ def _check_feature(feature):
         return feature
 
     raise Exception("Not a feature")
-
-
-def _find_path(start_entity_id, end_entity_id, es, backward=False):
-    """
-    Finds a path of relationships between start and end.
-    Raises if there is no path or multiple possible paths.
-    """
-    if backward:
-        paths = es.find_backward_paths(start_entity_id, end_entity_id)
-    else:
-        paths = es.find_forward_paths(start_entity_id, end_entity_id)
-
-    path = next(paths, None)
-
-    if not path:
-        raise RuntimeError('No path from "%s" to "%s" found.'
-                           % (start_entity_id, end_entity_id))
-    # Check for another path.
-    elif next(paths, None):
-        message = "There are multiple possible paths to the base entity. " \
-                  "You must specify a relationship path."
-        raise RuntimeError(message)
-    else:
-        return path

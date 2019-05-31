@@ -12,7 +12,7 @@ def test_feature_trie(diamond_es):
 
     country_name = ft.IdentityFeature(es['countries']['name'])
     direct_name = ft.DirectFeature(country_name, es['regions'],
-                                   relationship_path=[r_to_country])
+                                   relationship=r_to_country)
     amount = ft.IdentityFeature(es['transactions']['amount'])
     through_customers = ft.AggregationFeature(amount, es['regions'],
                                               primitive=ft.primitives.Mean,
@@ -51,7 +51,7 @@ def test_necessary_columns(diamond_es):
 
     country_name = ft.IdentityFeature(es['countries']['name'])
     direct_name = ft.DirectFeature(country_name, es['regions'],
-                                   relationship_path=[r_to_country])
+                                   relationship=r_to_country)
     amount = ft.IdentityFeature(es['transactions']['amount'])
     through_customers = ft.AggregationFeature(amount, es['regions'],
                                               primitive=ft.primitives.Mean,

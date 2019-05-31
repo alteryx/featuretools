@@ -289,13 +289,13 @@ def test_init_with_single_possible_path(diamond_es):
 
 
 def test_init_with_no_path(diamond_es):
-    error_text = 'No path from "transactions" to "customers" found.'
+    error_text = 'No backward path from "transactions" to "customers" found.'
     with pytest.raises(RuntimeError, match=error_text):
         ft.AggregationFeature(diamond_es['customers']['name'],
                               diamond_es['transactions'],
                               ft.primitives.Count)
 
-    error_text = 'No path from "transactions" to "transactions" found.'
+    error_text = 'No backward path from "transactions" to "transactions" found.'
     with pytest.raises(RuntimeError, match=error_text):
         ft.AggregationFeature(diamond_es['transactions']['amount'],
                               diamond_es['transactions'],
