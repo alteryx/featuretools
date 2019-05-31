@@ -4,6 +4,7 @@ import pytest
 
 import featuretools as ft
 from featuretools import EntitySet, Relationship, variable_types
+from featuretools.tests.testing_utils import backward_path
 
 
 def test_cannot_re_add_relationships_that_already_exists(es):
@@ -30,7 +31,8 @@ def test_get_forward_entities(es):
 
 def test_get_backward_entities(es):
     entities = es.get_backward_entities('sessions')
-    assert entities == set(['log'])
+    path_to_log = backward_path(es, ['sessions', 'log'])
+    assert list(entities) == [('log', path_to_log)]
 
 
 def test_get_forward_entities_deep(es):
@@ -40,7 +42,9 @@ def test_get_forward_entities_deep(es):
 
 def test_get_backward_entities_deep(es):
     entities = es.get_backward_entities('customers', deep=True)
-    assert entities == set(['log', 'sessions'])
+    path_to_log = backward_path(es, ['customers', 'sessions', 'log'])
+    path_to_sessions = backward_path(es, ['customers', 'sessions'])
+    assert list(entities) == [('sessions', path_to_sessions), ('log', path_to_log)]
 
 
 def test_get_forward_relationships(es):

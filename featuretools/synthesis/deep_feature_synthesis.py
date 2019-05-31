@@ -3,6 +3,7 @@ from builtins import filter, object
 from collections import defaultdict
 
 from featuretools import primitives, variable_types
+from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import (
     AggregationFeature,
     DirectFeature,
@@ -299,7 +300,7 @@ class DeepFeatureSynthesis(object):
         """
 
         backward_entities = self.es.get_backward_entities(entity.id)
-        backward_entities = [b_id for b_id in backward_entities
+        backward_entities = [b_id for b_id, _ in backward_entities
                              if b_id not in self.ignore_entities]
         for b_entity_id in backward_entities:
             # if in path, we've already built features
@@ -319,13 +320,8 @@ class DeepFeatureSynthesis(object):
         """
         Step 2 - Create agg_feat features for all deep backward relationships
         """
-
-        # search for deep relationships of that passed the traversal filter
-        build_entities = list(backward_entities)
-        for b_id in backward_entities:
-            build_entities += self.es.get_backward_entities(b_id, deep=True)
-
-        for b_entity_id in build_entities:
+        backward_entities = self.es.get_backward_entities(entity.id, deep=True)
+        for b_entity_id, relationship_path in backward_entities:
             if b_entity_id in self.ignore_entities:
                 continue
             if self.allowed_paths and tuple(entity_path + [b_entity_id]) not in self.allowed_paths:
@@ -333,7 +329,8 @@ class DeepFeatureSynthesis(object):
             self._build_agg_features(parent_entity=self.es[entity.id],
                                      child_entity=self.es[b_entity_id],
                                      all_features=all_features,
-                                     max_depth=max_depth)
+                                     max_depth=max_depth,
+                                     relationship_path=relationship_path)
 
         """
         Step 3 - Create Transform features
@@ -409,12 +406,12 @@ class DeepFeatureSynthesis(object):
                 self._max_hlevel(new_feature) > self.max_hlevel):
             return
         entity_id = new_feature.entity.id
-        if new_feature.hash() in all_features[entity_id]:
+        if new_feature.unique_name() in all_features[entity_id]:
             return
             raise Exception("DFS runtime error: tried to add feature %s"
-                            " more than once" % (new_feature.get_name()))
+                            " more than once" % (new_feature.unique_name()))
 
-        all_features[entity_id][new_feature.hash()] = new_feature
+        all_features[entity_id][new_feature.unique_name()] = new_feature
 
     def _add_identity_features(self, all_features, entity):
         """converts all variables from the given entity into features
@@ -542,8 +539,10 @@ class DeepFeatureSynthesis(object):
             max_depth=max_depth,
             variable_type=variable_types.PandasTypes._all)
 
+        relationship_path = RelationshipPath([(True, relationship)])
+
         for f in features:
-            if self._feature_in_relationship_path([relationship], f):
+            if self._feature_in_relationship_path(relationship_path, f):
                 continue
 
             # limits allowing direct features of agg_feats with where clauses
@@ -553,13 +552,13 @@ class DeepFeatureSynthesis(object):
                     if isinstance(feat, AggregationFeature) and feat.where is not None:
                         continue
 
-            new_f = DirectFeature(f, child_entity)
+            new_f = DirectFeature(f, child_entity, relationship=relationship)
 
             self._handle_new_feature(all_features=all_features,
                                      new_feature=new_f)
 
-    def _build_agg_features(self, all_features,
-                            parent_entity, child_entity, max_depth=0):
+    def _build_agg_features(self, all_features, parent_entity, child_entity,
+                            max_depth, relationship_path):
         if max_depth is not None and max_depth < 0:
             return
 
@@ -579,12 +578,8 @@ class DeepFeatureSynthesis(object):
                                               variable_type=set(input_types))
 
             # remove features in relationship path
-            relationship_paths = self.es.find_backward_paths(parent_entity.id,
-                                                             child_entity.id)
-            relationship_path = next(relationship_paths)
-
-            features = [f for f in features if not self._feature_in_relationship_path(
-                relationship_path, f)]
+            features = [f for f in features
+                        if not self._feature_in_relationship_path(relationship_path, f)]
             matching_inputs = match(input_types, features,
                                     commutative=agg_prim.commutative)
             wheres = list(self.where_clauses[child_entity.id])
@@ -594,6 +589,7 @@ class DeepFeatureSynthesis(object):
                     continue
                 new_f = AggregationFeature(matching_input,
                                            parent_entity=parent_entity,
+                                           relationship_path=relationship_path,
                                            primitive=agg_prim)
                 self._handle_new_feature(new_f, all_features)
 
@@ -619,12 +615,13 @@ class DeepFeatureSynthesis(object):
 
                 for where in wheres:
                     # limits the where feats so they are different than base feats
-                    base_hashes = [f.hash() for f in new_f.base_features]
-                    if any([base_feat.hash() in base_hashes for base_feat in where.base_features]):
+                    base_names = [f.unique_name() for f in new_f.base_features]
+                    if any([base_feat.unique_name() in base_names for base_feat in where.base_features]):
                         continue
 
                     new_f = AggregationFeature(matching_input,
                                                parent_entity=parent_entity,
+                                               relationship_path=relationship_path,
                                                where=where,
                                                primitive=agg_prim)
 
@@ -659,7 +656,7 @@ class DeepFeatureSynthesis(object):
         if not isinstance(feature, IdentityFeature):
             return False
 
-        for relationship in relationship_path:
+        for _, relationship in relationship_path:
             if relationship.child_entity.id == feature.entity.id and \
                relationship.child_variable.id == feature.variable.id:
                 return True
@@ -752,7 +749,7 @@ def match(input_types, features, replace=False, commutative=False):
         copy = features[:]
 
         if not replace:
-            copy = [c for c in copy if c.hash() != m.hash()]
+            copy = [c for c in copy if c.unique_name() != m.unique_name()]
 
         rest = match(input_types[1:], copy, replace)
         for r in rest:

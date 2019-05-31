@@ -11,7 +11,7 @@ from pandas.api.types import is_dtype_equal, is_numeric_dtype
 import featuretools.variable_types.variable as vtypes
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.entity import Entity
-from featuretools.entityset.relationship import Relationship
+from featuretools.entityset.relationship import Relationship, RelationshipPath
 from featuretools.utils import is_string
 
 pd.options.mode.chained_assignment = None  # default='warn'
@@ -439,26 +439,24 @@ class EntitySet(object):
         return set(parents)
 
     def get_backward_entities(self, entity_id, deep=False):
-        """Get entities that are in a backward relationship with entity
+        """
+        Get entities that are in a backward relationship with entity
 
         Args:
-            entity_id (str) - Id entity of entity to search from.
-            deep (bool) - If True, recursively find backward entities.
+            entity_id (str): Id entity of entity to search from.
+            depth (int): The depth to search to. 1 means only get the direct
+                children of the given entity.
 
-        Returns:
-            Set of each :class:`.Entity` in a backward relationship.
+        Yields a tuple of (descendent_id, path from entity_id to descendant).
         """
-        children = [r.child_entity.id for r in
-                    self.get_backward_relationships(entity_id)]
-        if deep:
-            children_deep = set([])
-            for p in children:
-                children_deep.add(p)
-                to_add = self.get_backward_entities(p, deep=True)
-                children_deep = children_deep.union(to_add)
+        for relationship in self.get_backward_relationships(entity_id):
+            child_eid = relationship.child_entity.id
+            direct_path = RelationshipPath([(False, relationship)])
+            yield child_eid, direct_path
 
-            children = children_deep
-        return set(children)
+            sub_entities = self.get_backward_entities(child_eid, deep=deep)
+            for sub_eid, path in sub_entities:
+                yield sub_eid, direct_path + path
 
     def get_forward_relationships(self, entity_id):
         """Get relationships where entity "entity_id" is the child
