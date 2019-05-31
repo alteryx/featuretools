@@ -538,6 +538,29 @@ def test_two_relationships_to_single_entity(games_es):
     assert (df[away_team_mean.get_name()] == [1, 0.5, 2]).all()
 
 
+def test_entityset_with_self_loop(self_loop_es):
+    # This doesn't work because we think there is a unique path because we
+    # ignore cycles.
+    es = self_loop_es
+    r = es.relationships[0]
+    direct_reports = ft.AggregationFeature(es['employees']['id'], es['employees'],
+                                           relationship_path=[r],
+                                           primitive=ft.primitives.Count)
+    two_level_reports = ft.AggregationFeature(es['employees']['id'], es['employees'],
+                                              relationship_path=[r, r],
+                                              primitive=ft.primitives.Count)
+    all_reports = direct_reports + two_level_reports
+    managers_reports = ft.DirectFeature(all_reports, es['employees'],
+                                        relationship=r)
+
+    pandas_backend = PandasBackend(es, [managers_reports])
+    df = pandas_backend.calculate_all_features(instance_ids=[1, 2, 3],
+                                               time_last=datetime(2011, 8, 28))
+    # Note that 6 is greater than the number of employees. Employee 0 is double
+    # counted because they are their own direct report.
+    assert (df[managers_reports.get_name()] == [6, 2, 6]).all()
+
+
 def test_empty_child_dataframe():
     parent_df = pd.DataFrame({"id": [1]})
     child_df = pd.DataFrame({"id": [1, 2, 3],
