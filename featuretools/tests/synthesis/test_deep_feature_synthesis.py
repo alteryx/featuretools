@@ -747,3 +747,14 @@ def test_checks_primitives_correct_type(es):
                              entityset=es,
                              agg_primitives=[],
                              trans_primitives=[Last])
+
+
+def test_makes_agg_features_along_multiple_paths(diamond_es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='regions',
+                                   entityset=diamond_es,
+                                   agg_primitives=['mean'],
+                                   trans_primitives=[])
+
+    features = dfs_obj.build_features()
+    assert feature_with_name(features, 'MEAN(customers.transactions.amount)')
+    assert feature_with_name(features, 'MEAN(stores.transactions.amount)')

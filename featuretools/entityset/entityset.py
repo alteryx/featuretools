@@ -438,27 +438,28 @@ class EntitySet(object):
 
         return set(parents)
 
-    def get_backward_entities(self, entity_id, deep=False):
-        """Get entities that are in a backward relationship with entity
+    def get_backward_entities(self, entity_id, depth=1):
+        """
+        Get entities that are in a backward relationship with entity
 
         Args:
-            entity_id (str) - Id entity of entity to search from.
-            deep (bool) - If True, recursively find backward entities.
+            entity_id (str): Id entity of entity to search from.
+            depth (int): The depth to search to. 1 means only get the direct
+                children of the given entity.
 
-        Returns:
-            Set of each :class:`.Entity` in a backward relationship.
+        Yields a tuple of (descendent_id, path from entity_id to descendant).
         """
-        children = [r.child_entity.id for r in
-                    self.get_backward_relationships(entity_id)]
-        if deep:
-            children_deep = set([])
-            for p in children:
-                children_deep.add(p)
-                to_add = self.get_backward_entities(p, deep=True)
-                children_deep = children_deep.union(to_add)
+        if depth is not None and depth < 1:
+            return
 
-            children = children_deep
-        return set(children)
+        for relationship in self.get_backward_relationships(entity_id):
+            child_eid = relationship.child_entity.id
+            yield child_eid, [relationship]
+
+            new_depth = depth and depth - 1
+            sub_entities = self.get_backward_entities(child_eid, depth=new_depth)
+            for sub_eid, path in sub_entities:
+                yield sub_eid, [relationship] + path
 
     def get_forward_relationships(self, entity_id):
         """Get relationships where entity "entity_id" is the child
