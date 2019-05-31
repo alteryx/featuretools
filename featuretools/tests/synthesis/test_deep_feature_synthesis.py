@@ -758,3 +758,20 @@ def test_makes_agg_features_along_multiple_paths(diamond_es):
     features = dfs_obj.build_features()
     assert feature_with_name(features, 'MEAN(customers.transactions.amount)')
     assert feature_with_name(features, 'MEAN(stores.transactions.amount)')
+
+
+def test_makes_direct_features_along_multiple_paths(games_es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='games',
+                                   entityset=games_es,
+                                   agg_primitives=['mean'],
+                                   trans_primitives=[])
+
+    features = dfs_obj.build_features()
+
+    teams = ['home', 'away']
+    for forward in teams:
+        for backward in teams:
+            for var in teams:
+                f = 'teams[%s_team_id].MEAN(games[%s_team_id].%s_team_score)' \
+                    % (forward, backward, var)
+                assert feature_with_name(features, f)

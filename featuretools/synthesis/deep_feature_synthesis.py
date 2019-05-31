@@ -549,7 +549,7 @@ class DeepFeatureSynthesis(object):
                     if isinstance(feat, AggregationFeature) and feat.where is not None:
                         continue
 
-            new_f = DirectFeature(f, child_entity)
+            new_f = DirectFeature(f, child_entity, relationship=relationship)
 
             self._handle_new_feature(all_features=all_features,
                                      new_feature=new_f)
