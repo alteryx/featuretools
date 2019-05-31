@@ -140,7 +140,7 @@ class FeatureSet(object):
         """
         order = defaultdict(int)
         depths = {}
-        queue = features.copy()
+        queue = features[:]
         while queue:
             # Get the next feature.
             f = queue.pop(0)
