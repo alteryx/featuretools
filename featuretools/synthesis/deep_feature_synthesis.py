@@ -409,12 +409,12 @@ class DeepFeatureSynthesis(object):
                 self._max_hlevel(new_feature) > self.max_hlevel):
             return
         entity_id = new_feature.entity.id
-        if new_feature.hash() in all_features[entity_id]:
+        if new_feature.unique_name() in all_features[entity_id]:
             return
             raise Exception("DFS runtime error: tried to add feature %s"
-                            " more than once" % (new_feature.get_name()))
+                            " more than once" % (new_feature.unique_name()))
 
-        all_features[entity_id][new_feature.hash()] = new_feature
+        all_features[entity_id][new_feature.unique_name()] = new_feature
 
     def _add_identity_features(self, all_features, entity):
         """converts all variables from the given entity into features
@@ -619,8 +619,8 @@ class DeepFeatureSynthesis(object):
 
                 for where in wheres:
                     # limits the where feats so they are different than base feats
-                    base_hashes = [f.hash() for f in new_f.base_features]
-                    if any([base_feat.hash() in base_hashes for base_feat in where.base_features]):
+                    base_names = [f.unique_name() for f in new_f.base_features]
+                    if any([base_feat.unique_name() in base_names for base_feat in where.base_features]):
                         continue
 
                     new_f = AggregationFeature(matching_input,
@@ -752,7 +752,7 @@ def match(input_types, features, replace=False, commutative=False):
         copy = features[:]
 
         if not replace:
-            copy = [c for c in copy if c.hash() != m.hash()]
+            copy = [c for c in copy if c.unique_name() != m.unique_name()]
 
         rest = match(input_types[1:], copy, replace)
         for r in rest:
