@@ -129,6 +129,7 @@ General Transform Primitives
     :toctree: generated/
 
     Absolute
+    Percentile
     TimeSince
 
 Datetime Transform Primitives
