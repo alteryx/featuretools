@@ -58,6 +58,10 @@ class DeepFeatureSynthesis(object):
             max_features (int, optional) : Cap the number of generated features to
                 this number. If -1, no limit.
 
+            max_relationship_depth (int, optional) : The maximum number of
+                relationships that will be traversed. Defaults to max_depth. If
+                -1, no limit.
+
             allowed_paths (list[list[str]], optional): Allowed entity paths to make
                 features for. If None, use all paths.
 
@@ -91,6 +95,7 @@ class DeepFeatureSynthesis(object):
                  max_depth=2,
                  max_hlevel=2,
                  max_features=-1,
+                 max_relationship_depth=None,
                  allowed_paths=None,
                  ignore_entities=None,
                  ignore_variables=None,
@@ -108,6 +113,12 @@ class DeepFeatureSynthesis(object):
         if max_depth == -1:
             max_depth = None
         self.max_depth = max_depth
+
+        if max_relationship_depth is None:
+            max_relationship_depth = max_depth
+        elif max_relationship_depth == -1:
+            max_relationship_depth = None
+        self.max_relationship_depth = max_relationship_depth
 
         if max_hlevel == -1:
             max_hlevel = None
@@ -223,8 +234,9 @@ class DeepFeatureSynthesis(object):
             msg = "return_variable_types must be a list, or 'all'"
             assert isinstance(return_variable_types, list), msg
 
-        self._run_dfs(self.es[self.target_entity_id], [],
-                      all_features, max_depth=self.max_depth)
+        self._run_dfs(self.es[self.target_entity_id], [], all_features,
+                      max_depth=self.max_depth,
+                      max_relationship_depth=self.max_relationship_depth)
 
         new_features = list(all_features[self.target_entity_id].values())
 
@@ -278,7 +290,8 @@ class DeepFeatureSynthesis(object):
 
         return f_keep
 
-    def _run_dfs(self, entity, entity_path, all_features, max_depth):
+    def _run_dfs(self, entity, entity_path, all_features, max_depth,
+                 max_relationship_depth):
         """
         create features for the provided entity
 
@@ -289,6 +302,8 @@ class DeepFeatureSynthesis(object):
                 Dict containing a dict for each entity. Each nested dict
                 has features as values with their ids as keys.
             max_depth (int) : Maximum allowed depth of features.
+            max_relationship_depth (int): Maximum number of relationships to
+                traverse.
         """
         if max_depth is not None and max_depth < 0:
             return
@@ -302,24 +317,25 @@ class DeepFeatureSynthesis(object):
         backward_entities = [b_id for b_id, _ in backward_entities
                              if b_id not in self.ignore_entities]
         for b_entity_id in backward_entities:
-            # if in path, we've already built features
-            if b_entity_id in entity_path:
-                continue
-
             if self.allowed_paths and tuple(entity_path + [b_entity_id]) not in self.allowed_paths:
                 continue
             new_max_depth = None
             if max_depth is not None:
                 new_max_depth = max_depth - 1
+            new_max_relationship_depth = None
+            if max_relationship_depth is not None:
+                new_max_relationship_depth = max_relationship_depth - 1
             self._run_dfs(entity=self.es[b_entity_id],
                           entity_path=list(entity_path),
                           all_features=all_features,
-                          max_depth=new_max_depth)
+                          max_depth=new_max_depth,
+                          max_relationship_depth=new_max_relationship_depth)
 
         """
         Step 2 - Create agg_feat features for all deep backward relationships
         """
-        backward_entities = self.es.get_backward_entities(entity.id, depth=max_depth)
+        backward_entities = self.es.get_backward_entities(entity.id,
+                                                          depth=max_relationship_depth)
         for b_entity_id, path in backward_entities:
             if b_entity_id in self.ignore_entities:
                 continue
@@ -355,10 +371,14 @@ class DeepFeatureSynthesis(object):
             new_max_depth = None
             if max_depth is not None:
                 new_max_depth = max_depth - 1
+            new_max_relationship_depth = None
+            if max_relationship_depth is not None:
+                new_max_relationship_depth = max_relationship_depth - 1
             self._run_dfs(entity=self.es[f_entity_id],
                           entity_path=list(entity_path),
                           all_features=all_features,
-                          max_depth=new_max_depth)
+                          max_depth=new_max_depth,
+                          max_relationship_depth=new_max_relationship_depth)
 
         """
         Step 5 - Create dfeat features for forward relationships

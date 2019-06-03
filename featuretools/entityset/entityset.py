@@ -444,8 +444,9 @@ class EntitySet(object):
 
         Args:
             entity_id (str): Id entity of entity to search from.
-            depth (int): The depth to search to. 1 means only get the direct
-                children of the given entity.
+            depth (int, optional): The maximum number of relationships to
+                traverse. Defaults to 1, meaning only get the direct children of
+                the given entity. If None, do not limit.
 
         Yields a tuple of (descendent_id, path from entity_id to descendant).
         """
