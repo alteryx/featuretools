@@ -15,7 +15,7 @@ Changelog
         * Updates TimeSincePrevious and Diff Primitives (:pr:`561`)
     * Documentation Changes
         * Add Featuretools Enterprise to documentation (:pr:`563`)
-        * Miscellaneous changes (:pr:`552`)
+        * Miscellaneous changes (:pr:`552`, :pr:`573`)
     * Testing Changes
         * Miscellaneous changes (:pr:`559`, :pr:`569`, :pr:`570`)
 
