@@ -77,7 +77,8 @@ def test_makes_count(es):
     dfs = DeepFeatureSynthesis(target_entity_id='sessions',
                                entityset=es,
                                agg_primitives=[Count],
-                               trans_primitives=[])
+                               trans_primitives=[],
+                               max_relationship_depth=3)
 
     features = dfs.build_features()
     assert feature_with_name(features, 'device_type')
@@ -566,7 +567,8 @@ def test_makes_numtrue(es):
     dfs = DeepFeatureSynthesis(target_entity_id='sessions',
                                entityset=es,
                                agg_primitives=[NumTrue],
-                               trans_primitives=[])
+                               trans_primitives=[],
+                               max_relationship_depth=3)
     features = dfs.build_features()
     assert feature_with_name(features, 'customers.NUM_TRUE(log.purchased)')
     assert feature_with_name(features, 'NUM_TRUE(log.purchased)')

@@ -563,7 +563,8 @@ def test_dfeats_where(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
                                    agg_primitives=[Count],
-                                   trans_primitives=[])
+                                   trans_primitives=[],
+                                   max_relationship_depth=3)
 
     features = dfs_obj.build_features()
 
