@@ -29,7 +29,7 @@ def test_get_forward_entities(es):
 
 
 def test_get_backward_entities(es):
-    entities = es.get_backward_entities('sessions')
+    entities = set(e for e, _ in es.get_backward_entities('sessions'))
     assert entities == set(['log'])
 
 
@@ -39,7 +39,7 @@ def test_get_forward_entities_deep(es):
 
 
 def test_get_backward_entities_deep(es):
-    entities = es.get_backward_entities('customers', deep=True)
+    entities = set(e for e, _ in es.get_backward_entities('customers', depth=None))
     assert entities == set(['log', 'sessions'])
 
 
