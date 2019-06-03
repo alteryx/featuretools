@@ -104,7 +104,7 @@ jobs:
           cd ../
           cp "featuretools-${FEATURETOOLS_VERSION}/.coverage" .coverage
           codecov
-  "check-changelog":
+  "changelog_updated":
     working_directory: ~/featuretools
     docker:
       - image: circleci/python:3.7
@@ -120,6 +120,6 @@ workflows:
       - "python-35"
       - "python-36"
       - "python-37"
-  check_changelog:
+  changelog_updated:
     jobs:
-      - "check-changelog"
+      - "changelog_updated"
