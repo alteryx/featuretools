@@ -10,9 +10,14 @@ import pytest
 
 import featuretools as ft
 from featuretools import variable_types
-from featuretools.entityset import EntitySet, Relationship, deserialize, serialize
-
+from featuretools.entityset import (
+    EntitySet,
+    Relationship,
+    deserialize,
+    serialize
+)
 from featuretools.entityset.serialize import SCHEMA_VERSION
+
 
 def test_operations_invalidate_metadata(es):
     new_es = ft.EntitySet(id="test")
