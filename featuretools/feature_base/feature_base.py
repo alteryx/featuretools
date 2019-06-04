@@ -342,9 +342,7 @@ class IdentityFeature(FeatureBase):
         entity_id = arguments['entity_id']
         variable_id = arguments['variable_id']
         variable = entityset[entity_id][variable_id]
-        cls_variable = cls(variable)
-        cls_variable._name = arguments['name']
-        return cls_variable
+        return cls(variable).rename(arguments['name'])
 
     def copy(self):
         """Return copy of feature"""
