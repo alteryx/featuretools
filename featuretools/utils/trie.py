@@ -1,10 +1,31 @@
 class Trie(object):
     """
     A trie (prefix tree) where the keys are lists of hashable objects.
+
+    It behaves similarly to a dictionary, except that the keys are lists.
+
+    Examples:
+        .. code-block:: python
+
+            from featuretools.utils import Trie
+
+            trie = Trie(default=str)
+
+            # Set a value
+            trie[[1, 2, 3]] = '123'
+
+            # Get a value
+            assert trie[[1, 2, 3]] == '123'
+
+            # Overwrite a value
+            trie[[1, 2, 3]] = 'updated'
+            assert trie[[1, 2, 3]] == 'updated'
+
+            # Getting a key that has not been set returns the default value.
+            assert trie[[1, 2]] == ''
     """
     def __init__(self, default=lambda: None):
         """
-        root_value: The value for the root node.
         default: A function returning the value to use for new nodes.
         """
         self._value = default()
@@ -15,13 +36,42 @@ class Trie(object):
         """
         A list of pairs of the edges from this node and the nodes they point
         to.
+
+        Examples:
+            .. code-block:: python
+
+                from featuretools.utils import Trie
+
+                trie = Trie()
+                trie[[1, 2]] = '12'
+                trie[[3]] = '3'
+
+                children = trie.children()
+                first_edge, first_child = children[0]
+                second_edge, second_child = children[1]
+
+                assert (first_edge, first_child[[]]) == (1, None)
+                assert (second_edge, second_child[[]]) == (3, '3')
         """
-        return self._children.items()
+        return list(self._children.items())
 
     def get_node(self, path):
         """
         Get the sub-trie at the given path. If it does not yet exist initialize
         it with the default value.
+
+        Examples:
+            .. code-block:: python
+
+                from featuretools.utils import Trie
+
+                t = Trie()
+
+                t[[1, 2, 3]] = '123'
+                t[[1, 2, 4]] = '124'
+                sub = t.get_node([1, 2])
+                assert sub[[3]] == '123'
+                assert sub[[4]] == '124'
         """
         if path:
             first = path[0]
