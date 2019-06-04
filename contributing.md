@@ -61,7 +61,7 @@ Before starting major work, you should touch base with the maintainers of Featur
     * Documentation Changes
     * Testing Changes
 
-Documentation or testing changes rarely warrant an individual changelog entry; the PR number can be added to their respective "Miscellaneous changes" entries.
+   Documentation or testing changes rarely warrant an individual changelog entry; the PR number can be added to their respective "Miscellaneous changes" entries.
 * We will review your changes, and you will most likely be asked to make additional changes before it is finally ready to merge. However, once it's reviewed by a maintainer of Featuretools, passes continuous integration, we will merge it, and you will have successfully contributed to Featuretools!
 
 ## Report issues
