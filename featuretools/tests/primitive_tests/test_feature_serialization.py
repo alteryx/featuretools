@@ -3,6 +3,10 @@ import os
 from pympler.asizeof import asizeof
 
 import featuretools as ft
+from featuretools.feature_base.features_deserializer import (
+    FeaturesDeserializer
+)
+from featuretools.feature_base.features_serializer import FeaturesSerializer
 from featuretools.primitives import make_agg_primitive
 from featuretools.variable_types import Numeric
 
@@ -51,3 +55,24 @@ def test_pickle_features_with_custom_primitive(es):
 
     assert any([isinstance(feat.primitive, NewMax) for feat in features_original])
     pickle_features_test_helper(asizeof(es), features_original)
+
+
+def test_serialized_renamed_features(es):
+    original = ft.IdentityFeature(es['log']['value'])
+    assert original.get_name() == 'value'
+
+    renamed = original.rename('MyFeature')
+    assert renamed.get_name() == 'MyFeature'
+
+    serializer = FeaturesSerializer([renamed])
+    serialized = serializer.to_dict()
+    dictionary = {
+        'name': 'MyFeature',
+        'entity_id': 'log',
+        'variable_id': 'value',
+    }
+    assert dictionary == serialized['feature_definitions']['log.MyFeature']['arguments']
+
+    deserializer = FeaturesDeserializer(serialized)
+    deserialized = deserializer.to_list()[0]
+    assert deserialized.get_name() == 'MyFeature'

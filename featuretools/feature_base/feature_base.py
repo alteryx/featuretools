@@ -342,7 +342,9 @@ class IdentityFeature(FeatureBase):
         entity_id = arguments['entity_id']
         variable_id = arguments['variable_id']
         variable = entityset[entity_id][variable_id]
-        return cls(variable)
+        cls_variable = cls(variable)
+        cls_variable._name = arguments['name']
+        return cls_variable
 
     def copy(self):
         """Return copy of feature"""
@@ -356,6 +358,7 @@ class IdentityFeature(FeatureBase):
 
     def get_arguments(self):
         return {
+            'name': self._name,
             'variable_id': self.variable.id,
             'entity_id': self.variable.entity_id,
         }
