@@ -4,13 +4,13 @@
 Featuretools External Ecosystem
 ===============================
 
-New projects are regularly being built on top of Featuretools. On this page, we have a list of libraries, use cases / demos, and tutorials that leverage Featuretools. If you would like to add a project, please contact us or submit a pull request on `GitHub`_.
+New projects are regularly being built on top of Featuretools, highlighting the importance of automated feature engineering. On this page, we have a list of libraries, use cases / demos, and tutorials that leverage Featuretools. If you would like to add a project, please contact us or submit a pull request on `GitHub`_.
 
 .. _`GitHub`: https://github.com/Featuretools/featuretools
 
 .. note::
 
-    Each project is built and maintained by a third party not affiliated with Featuretools. We are proud and excited to share their work, but we cannot endorse or provide support for the tools on this page.
+    We are proud and excited to share the work of people using Featuretools, but we cannot endorse or provide support for the tools on this page.
 
 ---------
 Libraries
