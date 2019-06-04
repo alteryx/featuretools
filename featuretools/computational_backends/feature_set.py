@@ -48,7 +48,6 @@ class FeatureSet(object):
             for fname, f in self.features_by_name.items()}
 
         self.feature_trie = self._build_feature_trie()
-        self.necessary_columns = self._find_necessary_columns()
 
     def _build_feature_trie(self):
         """
@@ -74,38 +73,6 @@ class FeatureSet(object):
 
         for dep_feat in f.get_dependencies():
             self._add_feature_to_trie(sub_trie, dep_feat, sub_path)
-
-    def _find_necessary_columns(self):
-        # TODO: Can try to remove columns that are only used in the
-        # intermediate large_entity_frames from self.necessary_columns
-        # TODO: Can try to only keep Id/Index/DatetimeTimeIndex if actually
-        # used for features
-        necessary_columns = Trie(default=set)
-
-        for path, feature_names in self.feature_trie:
-            if path:
-                is_forward, relationship = path[-1]
-                if is_forward:
-                    eid = relationship.parent_entity.id
-                else:
-                    eid = relationship.child_entity.id
-            else:
-                eid = self.target_eid
-
-            entity = self.entityset[eid]
-
-            # We have to keep all Id columns because we don't know what forward
-            # relationships will come from this node.
-            index_columns = {v.id for v in entity.variables
-                             if isinstance(v, (variable_types.Index,
-                                               variable_types.Id,
-                                               variable_types.TimeIndex))}
-            features = (self.features_by_name[fname] for fname in feature_names)
-            feature_columns = {f.variable.id for f in features
-                               if isinstance(f, IdentityFeature)}
-            necessary_columns[path] = index_columns | feature_columns
-
-        return necessary_columns
 
     def group_features(self, feature_names):
         """

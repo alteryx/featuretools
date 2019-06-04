@@ -154,7 +154,7 @@ class PandasBackend(ComputationalBackend):
         path: a list of (is_forward, relationship) from the root to this
             sub-trie.
         """
-        features = (self.feature_set.features_by_name[fname] for fname in feature_trie[[]])
+        features = [self.feature_set.features_by_name[fname] for fname in feature_trie[[]]]
         need_all_rows = any(f.primitive.uses_full_entity for f in features)
         if need_all_rows:
             query_values = None
@@ -164,9 +164,10 @@ class PandasBackend(ComputationalBackend):
             query_variable = filter_variable
 
         entity = self.entityset[entity_id]
+        columns = _necessary_columns(entity, features)
         df = entity.query_by_values(query_values,
                                     variable_id=query_variable,
-                                    columns=self.feature_set.necessary_columns[path],
+                                    columns=columns,
                                     time_last=time_last,
                                     training_window=training_window)
 
@@ -565,6 +566,18 @@ class PandasBackend(ComputationalBackend):
                 frame[f.get_name()] = frame[f.get_name()].astype(float)
 
         return frame
+
+
+def _necessary_columns(entity, features):
+    # We have to keep all Id columns because we don't know what forward
+    # relationships will come from this node.
+    index_columns = {v.id for v in entity.variables
+                     if isinstance(v, (variable_types.Index,
+                                       variable_types.Id,
+                                       variable_types.TimeIndex))}
+    feature_columns = {f.variable.id for f in features
+                       if isinstance(f, IdentityFeature)}
+    return index_columns | feature_columns
 
 
 def _can_agg(feature):
