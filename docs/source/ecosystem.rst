@@ -12,23 +12,7 @@ On this page, we have a list of libraries, use cases / demos, and tutorials that
 ---------
 Libraries
 ---------
-`Featuretools for R`_
-=====================
-- An R interface to the Python module Featuretools.
 
-.. _`Featuretools for R`: https://github.com/magnusfurugard/featuretoolsR
-
-`Featuretools for Spark`_
-=========================
-- Featuretools4S is a Python library written to scale Featuretools with Spark, making it capable of generating features for billions of rows of data.
-
-.. note::
-
-    For more information on using Featuretools with `Spark`_, see this `tutorial`_.
-
-.. _`Featuretools for Spark`: https://github.com/pan5431333/featuretools4s
-.. _`tutorial`: https://blog.featurelabs.com/featuretools-on-spark-2/
-.. _`Spark`: https://spark.apache.org/
 
 `MLBlocks`_
 ===========
