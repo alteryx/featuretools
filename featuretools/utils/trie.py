@@ -29,7 +29,7 @@ class Trie(object):
         default: A function returning the value to use for new nodes.
         """
         self._value = default()
-        self._children = {}  # TODO: should this be OrderedDict?
+        self._children = {}
         self._default = default
 
     def children(self):
@@ -98,7 +98,7 @@ class Trie(object):
 
     def __iter__(self, stack=None):
         """
-        An iterator over the paths and values of the Trie.
+        Iterate over all values in the trie. Yields tuples of (path, value).
 
         Implemented using depth first search.
         """
@@ -109,7 +109,7 @@ class Trie(object):
         for relationship, sub_trie in self.children():
             stack.append(relationship)
 
-            for value in sub_trie.__iter__(stack):
-                yield(value)
+            for path_and_value in sub_trie.__iter__(stack):
+                yield(path_and_value)
 
             stack.pop()
