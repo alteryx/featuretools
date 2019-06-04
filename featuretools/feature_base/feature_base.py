@@ -452,7 +452,7 @@ class DirectFeature(FeatureBase):
     def get_arguments(self):
         return {
             'base_feature': self.base_features[0].unique_name(),
-            'relationship_path': [r.to_dictionary() for r in self.relationship_path]
+            'relationship_path': [r.to_dictionary() for r in self.relationship_path],
         }
 
 
@@ -466,7 +466,7 @@ class AggregationFeature(FeatureBase):
     use_previous = None
 
     def __init__(self, base_features, parent_entity, primitive,
-                 relationship_path=None, use_previous=None, where=None):
+                 relationship_path=None, use_previous=None, where=None, name=None):
         if hasattr(base_features, '__iter__'):
             base_features = [_check_feature(bf) for bf in base_features]
             msg = "all base features must share the same entity"
@@ -504,6 +504,8 @@ class AggregationFeature(FeatureBase):
                                                  base_features=base_features,
                                                  relationship_path=relationship_path,
                                                  primitive=primitive)
+        if name is not None:
+            self._name = name
 
     def _handle_relationship_path(self, parent_entity, relationship_path):
         if relationship_path:
@@ -541,7 +543,7 @@ class AggregationFeature(FeatureBase):
         where = where_name and dependencies[where_name]
 
         return cls(base_features, parent_entity, primitive, relationship_path=relationship_path,
-                   use_previous=use_previous, where=where)
+                   use_previous=use_previous, where=where, name=arguments['name'])
 
     def copy(self):
         return AggregationFeature(self.base_features,
@@ -579,6 +581,7 @@ class AggregationFeature(FeatureBase):
 
     def get_arguments(self):
         return {
+            'name': self._name,
             'base_features': [feat.unique_name() for feat in self.base_features],
             'relationship_path': [r.to_dictionary() for r in self.relationship_path],
             'primitive': serialize_primitive(self.primitive),
