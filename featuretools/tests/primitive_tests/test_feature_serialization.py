@@ -66,7 +66,6 @@ def test_serialized_renamed_features(es):
 
     serializer = FeaturesSerializer([renamed])
     serialized = serializer.to_dict()
-
     dictionary = {
         'name': 'MyFeature',
         'entity_id': 'log',
