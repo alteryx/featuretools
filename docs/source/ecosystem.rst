@@ -1,34 +1,21 @@
 :description: A list of libraries, use cases / demos, and tutorials that leverage Featuretools
 
-======================
-Featuretools Ecosystem
-======================
-New projects are regularly being built on top of Featuretools. These projects not only validate the importance of feature engineering, but also provide additional functionality outside the scope of the Featuretools library.
+===============================
+Featuretools External Ecosystem
+===============================
 
-On this page, we have a list of libraries, use cases / demos, and tutorials that leverage Featuretools. It is far from an exhaustive list. If you would like to add a project, please contact us or submit a pull request on `GitHub`_.
+New projects are regularly being built on top of Featuretools, highlighting the importance of automated feature engineering. On this page, we have a list of libraries, use cases / demos, and tutorials that leverage Featuretools. If you would like to add a project, please contact us or submit a pull request on `GitHub`_.
 
 .. _`GitHub`: https://github.com/Featuretools/featuretools
+
+.. note::
+
+    We are proud and excited to share the work of people using Featuretools, but we cannot endorse or provide support for the tools on this page.
 
 ---------
 Libraries
 ---------
-`Featuretools for R`_
-=====================
-- An R interface to the Python module Featuretools.
 
-.. _`Featuretools for R`: https://github.com/magnusfurugard/featuretoolsR
-
-`Featuretools for Spark`_
-=========================
-- Featuretools4S is a Python library written to scale Featuretools with Spark, making it capable of generating features for billions of rows of data.
-
-.. note::
-
-    For more information on using Featuretools with `Spark`_, see this `tutorial`_.
-
-.. _`Featuretools for Spark`: https://github.com/pan5431333/featuretools4s
-.. _`tutorial`: https://blog.featurelabs.com/featuretools-on-spark-2/
-.. _`Spark`: https://spark.apache.org/
 
 `MLBlocks`_
 ===========
