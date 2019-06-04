@@ -591,7 +591,7 @@ class AggregationFeature(FeatureBase):
 
 
 class TransformFeature(FeatureBase):
-    def __init__(self, base_features, primitive):
+    def __init__(self, base_features, primitive, name=None):
         # Any edits made to this method should also be made to the
         # new_class_init method in make_trans_primitive
         if hasattr(base_features, '__iter__'):
@@ -608,12 +608,15 @@ class TransformFeature(FeatureBase):
                                                base_features=base_features,
                                                relationship_path=[],
                                                primitive=primitive)
+        if name is not None:
+            self._name = name
+
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         base_features = [dependencies[name] for name in arguments['base_features']]
         primitive = primitives_deserializer.deserialize_primitive(arguments['primitive'])
-        return cls(base_features, primitive)
+        return cls(base_features, primitive, arguments['name'])
 
     def copy(self):
         return TransformFeature(self.base_features, self.primitive)
@@ -623,6 +626,7 @@ class TransformFeature(FeatureBase):
 
     def get_arguments(self):
         return {
+            'name': self._name,
             'base_features': [feat.unique_name() for feat in self.base_features],
             'primitive': serialize_primitive(self.primitive)
         }
