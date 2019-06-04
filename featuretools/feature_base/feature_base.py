@@ -374,7 +374,7 @@ class DirectFeature(FeatureBase):
     input_types = [Variable]
     return_type = None
 
-    def __init__(self, base_feature, child_entity, relationship_path=None):
+    def __init__(self, base_feature, child_entity, relationship_path=None, name=None):
         """relationship_path is a forward path from child to parent."""
         base_feature = _check_feature(base_feature)
 
@@ -387,6 +387,9 @@ class DirectFeature(FeatureBase):
                                             base_features=[base_feature],
                                             relationship_path=relationship_path,
                                             primitive=PrimitiveBase)
+        
+        if name is not None:
+            self._name = name
 
     def _handle_relationship_path(self, child_entity, relationship_path):
         if relationship_path:
@@ -413,7 +416,7 @@ class DirectFeature(FeatureBase):
         relationship_path = [Relationship.from_dictionary(r, entityset)
                              for r in arguments['relationship_path']]
         child_entity = relationship_path[0].child_entity
-        return cls(base_feature, child_entity, relationship_path=relationship_path)
+        return cls(base_feature, child_entity, relationship_path=relationship_path, name=arguments['name'])
 
     @property
     def variable(self):
@@ -451,6 +454,7 @@ class DirectFeature(FeatureBase):
 
     def get_arguments(self):
         return {
+            'name': self._name,
             'base_feature': self.base_features[0].unique_name(),
             'relationship_path': [r.to_dictionary() for r in self.relationship_path],
         }
