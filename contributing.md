@@ -54,7 +54,14 @@ Before starting major work, you should touch base with the maintainers of Featur
 #### 3. Submit your Pull Request
 
 * Once your changes are ready to be submitted, make sure to push your changes to GitHub before creating a pull request. Create a pull request, and our continuous integration will run automatically.
-* Update the "Future Release" section of the changelog (`docs/source/changelog.rst`) to include your pull request and add your github username to the list of contributors.  Add a description of your PR to the subsection that most closely matches your contribution. "Enhancements" are new features or additions to Featuretools.  "Fixes" refers to things like bugfixes or adding more descriptive error messages.  "Changes" refers to modifications to an existing part of Featuretools.  "Documentation Changes" and "Testing Changes" rarely warrant a changelog entry and the PR number can be added to their respective "Misellaneous changes" entries.
+* Update the "Future Release" section of the changelog (`docs/source/changelog.rst`) to include your pull request and add your github username to the list of contributors.  Add a description of your PR to the subsection that most closely matches your contribution:
+    * Enhancements: new features or additions to Featuretools.
+    * Fixes: things like bugfixes or adding more descriptive error messages.
+    * Changes: modifications to an existing part of Featuretools.
+    * Documentation Changes
+    * Testing Changes
+
+Documentation or testing changes rarely warrant an individual changelog entry; the PR number can be added to their respective "Miscellaneous changes" entries.
 * We will review your changes, and you will most likely be asked to make additional changes before it is finally ready to merge. However, once it's reviewed by a maintainer of Featuretools, passes continuous integration, we will merge it, and you will have successfully contributed to Featuretools!
 
 ## Report issues
