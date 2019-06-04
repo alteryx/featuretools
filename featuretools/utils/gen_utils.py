@@ -82,3 +82,17 @@ def get_relationship_variable_id(path):
 
 def is_python_2():
     return sys.version_info.major < 3
+
+
+def find_descendents(cls):
+    """
+    A generator which yields all descendent classes of the given class
+    (including the given class)
+
+    Args:
+        cls (Class): the class to find descendents of
+    """
+    yield cls
+    for sub in cls.__subclasses__():
+        for c in find_descendents(sub):
+            yield c
