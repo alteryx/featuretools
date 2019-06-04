@@ -10,8 +10,9 @@ import pytest
 
 import featuretools as ft
 from featuretools import variable_types
-from featuretools.entityset import EntitySet, Relationship
+from featuretools.entityset import EntitySet, Relationship, deserialize, serialize
 
+from featuretools.entityset.serialize import SCHEMA_VERSION
 
 def test_operations_invalidate_metadata(es):
     new_es = ft.EntitySet(id="test")
@@ -961,3 +962,37 @@ def _slice_for(es, filter_eid, time_last=None):
                                     index_eid='customers',
                                     instances=[0],
                                     time_last=time_last)
+
+
+def test_later_schema_version(es):
+    def test_version(major, minor, patch, raises=True):
+        version = '.'.join([str(v) for v in [major, minor, patch]])
+        entities = {entity.id: serialize.entity_to_description(entity) for entity in es.entities}
+        relationships = [relationship.to_dictionary() for relationship in es.relationships]
+        dictionary = {
+            'schema_version': version,
+            'id': es.id,
+            'entities': entities,
+            'relationships': relationships,
+        }
+
+        error_text = ('Unable to load features. The schema version of the saved '
+                      'features (%s) is greater than the latest supported (%s). '
+                      'You may need to upgrade featuretools.'
+                      % (version, SCHEMA_VERSION))
+
+        if raises:
+            with pytest.raises(RuntimeError) as excinfo:
+                deserialize.description_to_entityset(dictionary)
+
+            assert error_text == str(excinfo.value)
+        else:
+            deserialize.description_to_entityset(dictionary)
+
+    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
+    test_version(major + 1, minor, patch)
+    test_version(major, minor + 1, patch)
+    test_version(major, minor, patch + 1)
+    test_version(major - 1, minor + 1, patch, raises=False)
+    test_version(major - 1, minor, patch + 1, raises=False)
+    test_version(major, minor - 1, patch + 1, raises=False)

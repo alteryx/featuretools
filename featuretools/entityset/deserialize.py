@@ -3,8 +3,16 @@ import os
 
 import pandas as pd
 
+from .serialize import SCHEMA_VERSION
+
 from featuretools.entityset.relationship import Relationship
 from featuretools.entityset.serialize import FORMATS, VARIABLE_TYPES
+from featuretools.utils.gen_utils import is_python_2
+
+if is_python_2():
+    from itertools import izip_longest as zip_longest
+else:
+    from itertools import zip_longest
 
 
 def description_to_variable(description, entity=None):
@@ -59,6 +67,19 @@ def description_to_entityset(description, **kwargs):
     Returns:
         entityset (EntitySet) : Instance of :class:`.EntitySet`.
     '''
+    current = SCHEMA_VERSION.split('.')
+    saved = description.get('schema_version').split('.')
+    error_text = ('Unable to load features. The schema version of the saved '
+                  'features (%s) is greater than the latest supported (%s). '
+                  'You may need to upgrade featuretools.'
+                  % (description.get('schema_version'), SCHEMA_VERSION))
+
+    for c_num, s_num in zip_longest(current, saved, fillvalue=0):
+        if c_num > s_num:
+            break
+        elif c_num < s_num:
+            raise RuntimeError(error_text)
+
     from featuretools.entityset import EntitySet
     # If data description was not read from disk, path is None.
     path = description.get('path')
