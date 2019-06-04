@@ -387,7 +387,7 @@ class DirectFeature(FeatureBase):
                                             base_features=[base_feature],
                                             relationship_path=relationship_path,
                                             primitive=PrimitiveBase)
-        
+
         if name is not None:
             self._name = name
 
@@ -615,7 +615,6 @@ class TransformFeature(FeatureBase):
         if name is not None:
             self._name = name
 
-
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         base_features = [dependencies[name] for name in arguments['base_features']]
@@ -650,7 +649,7 @@ class GroupByTransformFeature(TransformFeature):
 
         super(GroupByTransformFeature, self).__init__(base_features=base_features,
                                                       primitive=primitive)
-        
+
         if name is not None:
             self._name = name
 

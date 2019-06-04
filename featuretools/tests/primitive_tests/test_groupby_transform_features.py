@@ -1,9 +1,10 @@
 import featuretools as ft
-from featuretools.primitives import (
-    CumSum,
+from featuretools.feature_base.features_deserializer import (
+    FeaturesDeserializer
 )
 from featuretools.feature_base.features_serializer import FeaturesSerializer
-from featuretools.feature_base.features_deserializer import FeaturesDeserializer
+from featuretools.primitives import CumSum
+
 
 def test_rename_serialization(es):
     value = ft.IdentityFeature(es['log']['value'])

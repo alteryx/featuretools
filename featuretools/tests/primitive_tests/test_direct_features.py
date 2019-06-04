@@ -5,6 +5,10 @@ import pytest
 import featuretools as ft
 from featuretools.computational_backends import PandasBackend
 from featuretools.feature_base import DirectFeature, Feature
+from featuretools.feature_base.features_deserializer import (
+    FeaturesDeserializer
+)
+from featuretools.feature_base.features_serializer import FeaturesSerializer
 from featuretools.primitives import (
     AggregationPrimitive,
     Day,
@@ -18,8 +22,6 @@ from featuretools.primitives import (
 from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools.synthesis import dfs
 from featuretools.variable_types import Categorical, Datetime, Numeric
-from featuretools.feature_base.features_serializer import FeaturesSerializer
-from featuretools.feature_base.features_deserializer import FeaturesDeserializer
 
 
 def test_direct_from_identity(es):
@@ -223,6 +225,7 @@ def test_serialization(es):
     log_to_products = next(r for r in es.get_forward_relationships('log')
                            if r.parent_entity.id == 'products')
     dictionary = {
+        'name': None,
         'base_feature': value.unique_name(),
         'relationship_path': [log_to_products.to_dictionary()],
     }
@@ -233,6 +236,7 @@ def test_serialization(es):
                                          {value.unique_name(): value},
                                          PrimitivesDeserializer())
 
+
 def test_rename_serialization(es):
     original = ft.DirectFeature(es['customers']['age'], es['log'])
     assert original.get_name() == 'customers.age'
@@ -240,9 +244,9 @@ def test_rename_serialization(es):
     renamed = original.rename('MyFeature')
     assert renamed.get_name() == 'MyFeature'
 
-    serializer =  FeaturesSerializer([renamed])
+    serializer = FeaturesSerializer([renamed])
     serialized = serializer.to_dict()
 
     deserializer = FeaturesDeserializer(serialized)
     deserialized = deserializer.to_list()[0]
-    assert deserialized.get_name() == 'MyFeature'    
+    assert deserialized.get_name() == 'MyFeature'

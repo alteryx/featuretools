@@ -5,6 +5,10 @@ import pytest
 
 import featuretools as ft
 from featuretools.computational_backends import PandasBackend
+from featuretools.feature_base.features_deserializer import (
+    FeaturesDeserializer
+)
+from featuretools.feature_base.features_serializer import FeaturesSerializer
 from featuretools.primitives import (
     Absolute,
     AddNumeric,
@@ -55,8 +59,7 @@ from featuretools.primitives.utils import (
 )
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
-from featuretools.feature_base.features_serializer import FeaturesSerializer
-from featuretools.feature_base.features_deserializer import FeaturesDeserializer
+
 
 def test_init_and_name(es):
     log = es['log']
@@ -100,6 +103,7 @@ def test_serialization(es):
     value_x2 = ft.TransformFeature(value, primitive)
 
     dictionary = {
+        'name': None,
         'base_features': [value.unique_name()],
         'primitive': serialize_primitive(primitive),
     }

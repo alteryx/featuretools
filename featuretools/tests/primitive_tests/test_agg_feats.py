@@ -8,6 +8,10 @@ import pandas as pd
 import pytest
 
 import featuretools as ft
+from featuretools.feature_base.features_deserializer import (
+    FeaturesDeserializer
+)
+from featuretools.feature_base.features_serializer import FeaturesSerializer
 from featuretools.primitives import (  # NMostCommon,
     Count,
     Mean,
@@ -40,8 +44,6 @@ from featuretools.variable_types import (
     Numeric,
     Variable
 )
-from featuretools.feature_base.features_serializer import FeaturesSerializer
-from featuretools.feature_base.features_deserializer import FeaturesDeserializer
 
 
 @pytest.fixture
@@ -340,6 +342,7 @@ def test_serialization(es):
 
     path = next(es.find_backward_paths('customers', 'log'))
     dictionary = {
+        'name': None,
         'base_features': [value.unique_name()],
         'relationship_path': [r.to_dictionary() for r in path],
         'primitive': serialize_primitive(primitive),
@@ -359,6 +362,7 @@ def test_serialization(es):
                                  where=is_purchased, use_previous=use_previous)
 
     dictionary = {
+        'name': None,
         'base_features': [value.unique_name()],
         'relationship_path': [r.to_dictionary() for r in path],
         'primitive': serialize_primitive(primitive),
@@ -620,5 +624,3 @@ def test_rename_serialization(es):
     deserializer = FeaturesDeserializer(serialized)
     deserialized = deserializer.to_list()[0]
     assert deserialized.get_name() == 'MyFeature'
-
-    
