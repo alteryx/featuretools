@@ -595,6 +595,17 @@ def test_empty_child_dataframe():
     assert_array_equal(fm2[names], [[0, np.nan]])
 
 
+def test_with_features_built_from_es_metadata(es):
+    metadata = es.metadata
+    agg_feat = ft.Feature(metadata['log']['id'], parent_entity=metadata['customers'], primitive=Count)
+
+    pandas_backend = PandasBackend(es, [agg_feat])
+    df = pandas_backend.calculate_all_features(instance_ids=[0],
+                                               time_last=None)
+    v = df[agg_feat.get_name()][0]
+    assert (v == 10)
+
+
 def test_handles_primitive_function_name_uniqueness(es):
     class SumTimesN(AggregationPrimitive):
         name = "sum_times_n"

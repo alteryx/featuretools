@@ -99,7 +99,7 @@ class PandasBackend(ComputationalBackend):
                 precalculated_features[entity_id] = precalc_feature_values
 
         target_entity = self.entityset[self.target_eid]
-        self._calculate_features_on_trie(entity=target_entity,
+        self._calculate_features_on_trie(entity_id=self.target_eid,
                                          feature_trie=feature_trie,
                                          df_trie=df_trie,
                                          path=[],
@@ -141,7 +141,7 @@ class PandasBackend(ComputationalBackend):
             column_list.extend(feat.get_feature_names())
         return df[column_list]
 
-    def _calculate_features_on_trie(self, entity, feature_trie, df_trie, path,
+    def _calculate_features_on_trie(self, entity_id, feature_trie, df_trie, path,
                                     filter_variable, filter_values, time_last,
                                     training_window, precalculated_features,
                                     parent_link_variables, ignored, parent_df=None):
@@ -163,7 +163,7 @@ class PandasBackend(ComputationalBackend):
             query_values = filter_values
             query_variable = filter_variable
 
-        df = entity.query_by_values(query_values,
+        df = self.entityset[entity_id].query_by_values(query_values,
                                     variable_id=query_variable,
                                     columns=self.feature_set.necessary_columns[path],
                                     time_last=time_last,
@@ -187,16 +187,16 @@ class PandasBackend(ComputationalBackend):
         for edge, sub_trie in feature_trie.children():
             is_forward, relationship = edge
             if is_forward:
-                sub_entity = relationship.parent_entity
+                sub_entity = relationship.parent_entity.id
                 sub_filter_variable = relationship.parent_variable.id
                 sub_filter_values = df[relationship.child_variable.id]
             else:
-                sub_entity = relationship.child_entity
+                sub_entity = relationship.child_entity.id
                 sub_filter_variable = relationship.child_variable.id
                 sub_filter_values = df[relationship.parent_variable.id]
 
             sub_df_trie = df_trie.get_node([edge])
-            self._calculate_features_on_trie(entity=sub_entity,
+            self._calculate_features_on_trie(entity_id=sub_entity,
                                              feature_trie=sub_trie,
                                              df_trie=sub_df_trie,
                                              path=path + [edge],
@@ -210,8 +210,8 @@ class PandasBackend(ComputationalBackend):
                                              ignored=ignored)
 
         # Add any precalculated features.
-        if entity.id in precalculated_features:
-            precalc_feature_values = precalculated_features[entity.id]
+        if entity_id in precalculated_features:
+            precalc_feature_values = precalculated_features[entity_id]
             # Left outer merge to keep all rows of df.
             df = df.merge(precalc_feature_values,
                           how='left',
