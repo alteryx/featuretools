@@ -328,7 +328,7 @@ class FeatureBase(object):
 class IdentityFeature(FeatureBase):
     """Feature for entity that is equivalent to underlying variable"""
 
-    def __init__(self, variable):
+    def __init__(self, variable, name=None):
         entity_id = variable.entity_id
         self.variable = variable.entityset.metadata[entity_id][variable.id]
         self.return_type = type(variable)
@@ -336,13 +336,15 @@ class IdentityFeature(FeatureBase):
                                               base_features=[],
                                               relationship_path=[],
                                               primitive=PrimitiveBase)
+        if name is not None:
+            self._name = name
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         entity_id = arguments['entity_id']
         variable_id = arguments['variable_id']
         variable = entityset[entity_id][variable_id]
-        return cls(variable).rename(arguments['name'])
+        return cls(variable, arguments['name'])
 
     def copy(self):
         """Return copy of feature"""
