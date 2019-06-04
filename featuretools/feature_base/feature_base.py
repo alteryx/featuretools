@@ -637,7 +637,7 @@ class TransformFeature(FeatureBase):
 
 
 class GroupByTransformFeature(TransformFeature):
-    def __init__(self, base_features, primitive, groupby):
+    def __init__(self, base_features, primitive, groupby, name=None):
         if not isinstance(groupby, FeatureBase):
             groupby = IdentityFeature(groupby)
         assert issubclass(groupby.variable_type, Discrete)
@@ -650,13 +650,16 @@ class GroupByTransformFeature(TransformFeature):
 
         super(GroupByTransformFeature, self).__init__(base_features=base_features,
                                                       primitive=primitive)
+        
+        if name is not None:
+            self._name = name
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         base_features = [dependencies[name] for name in arguments['base_features']]
         primitive = primitives_deserializer.deserialize_primitive(arguments['primitive'])
         groupby = dependencies[arguments['groupby']]
-        return cls(base_features, primitive, groupby)
+        return cls(base_features, primitive, groupby, arguments['name'])
 
     def copy(self):
         # the groupby feature is appended to base_features in the __init__
@@ -677,6 +680,7 @@ class GroupByTransformFeature(TransformFeature):
         feature_names = [feat.unique_name() for feat in self.base_features
                          if feat.unique_name() != self.groupby.unique_name()]
         return {
+            'name': self._name,
             'base_features': feature_names,
             'primitive': serialize_primitive(self.primitive),
             'groupby': self.groupby.unique_name(),
