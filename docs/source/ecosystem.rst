@@ -1,13 +1,16 @@
 :description: A list of libraries, use cases / demos, and tutorials that leverage Featuretools
 
-======================
-Featuretools Ecosystem
-======================
-New projects are regularly being built on top of Featuretools. These projects not only validate the importance of feature engineering, but also provide additional functionality outside the scope of the Featuretools library.
+===============================
+Featuretools External Ecosystem
+===============================
 
-On this page, we have a list of libraries, use cases / demos, and tutorials that leverage Featuretools. It is far from an exhaustive list. If you would like to add a project, please contact us or submit a pull request on `GitHub`_.
+New projects are regularly being built on top of Featuretools. On this page, we have a list of libraries, use cases / demos, and tutorials that leverage Featuretools. If you would like to add a project, please contact us or submit a pull request on `GitHub`_.
 
 .. _`GitHub`: https://github.com/Featuretools/featuretools
+
+.. note::
+
+    Each project is built and maintained by a third party not affiliated with Featuretools. We are proud and excited to share their work, but we cannot endorse or provide support for the tools on this page.
 
 ---------
 Libraries
