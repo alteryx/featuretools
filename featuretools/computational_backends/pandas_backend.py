@@ -163,7 +163,8 @@ class PandasBackend(ComputationalBackend):
             query_values = filter_values
             query_variable = filter_variable
 
-        df = self.entityset[entity_id].query_by_values(query_values,
+        entity = self.entityset[entity_id]
+        df = entity.query_by_values(query_values,
                                     variable_id=query_variable,
                                     columns=self.feature_set.necessary_columns[path],
                                     time_last=time_last,
@@ -171,6 +172,7 @@ class PandasBackend(ComputationalBackend):
 
         # If the last edge was backward, copy the parent's link variables to
         # this entity's dataframe.
+        link_variables = []
         if path:
             is_forward, relationship = path[-1]
             if not is_forward:
@@ -178,10 +180,6 @@ class PandasBackend(ComputationalBackend):
                                                          parent_link_variables)
 
                 link_variables.append(relationship.child_variable.id)
-            else:
-                link_variables = []
-        else:
-            link_variables = []
 
         # Recurse on children.
         for edge, sub_trie in feature_trie.children():
