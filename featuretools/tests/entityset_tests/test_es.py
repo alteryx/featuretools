@@ -985,6 +985,7 @@ def test_same_index_values():
                              dataframe=transactions_df)
 
     with pytest.raises(ValueError, match=error_text):
-        es.normalize_entity("entity", "new_entity",
-                            "first_entity_time",
+        es.normalize_entity(base_entity_id="entity",
+                            new_entity_id="new_entity",
+                            index="first_entity_time",
                             make_time_index=True)
