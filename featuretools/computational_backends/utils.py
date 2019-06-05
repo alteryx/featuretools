@@ -3,7 +3,6 @@
 import logging
 import os
 import warnings
-from collections import defaultdict
 from functools import wraps
 
 import numpy as np
@@ -12,7 +11,9 @@ import psutil
 from distributed import Client, LocalCluster
 from pandas.tseries.frequencies import to_offset
 
+from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, DirectFeature
+from featuretools.utils import Trie
 from featuretools.utils.wrangle import _check_timedelta
 
 logger = logging.getLogger('featuretools.computational_backend')
@@ -66,31 +67,37 @@ def datetime_round(dt, freq, round_up=False):
 
 
 def gather_approximate_features(features, backend):
-    approximate_by_entity = defaultdict(list)
-    approximate_feature_set = set([])
+    # A trie where the edges are RelationshipPaths and the nodes contain lists
+    # of features.
+    approximate_feature_trie = Trie(default=list, path_constructor=RelationshipPath)
+
+    # A set of feature names.
+    approximate_feature_set = set()
+
     for feature in features:
         if backend.feature_set.uses_full_entity(feature, check_dependents=True):
             continue
+
         if isinstance(feature, DirectFeature):
+            path = feature.relationship_path
             base_feature = feature.base_features[0]
-            while not isinstance(base_feature, AggregationFeature):
-                if isinstance(base_feature, DirectFeature):
-                    base_feature = base_feature.base_features[0]
-                else:
-                    break
+
+            while isinstance(base_feature, DirectFeature):
+                path = path + base_feature.relationship_path
+                base_feature = base_feature.base_features[0]
+
             if isinstance(base_feature, AggregationFeature):
-                approx_entity = base_feature.entity.id
-                approximate_by_entity[approx_entity].append(base_feature)
+                feature_list = approximate_feature_trie.get_node(path).value
+                feature_list.append(base_feature)
                 approximate_feature_set.add(base_feature.unique_name())
-    return approximate_by_entity, approximate_feature_set
+
+    return approximate_feature_trie, approximate_feature_set
 
 
 def gen_empty_approx_features_df(approx_features):
-    approx_entity_id = approx_features[0].entity.id
     df = pd.DataFrame(columns=[f.get_name() for f in approx_features])
     df.index.name = approx_features[0].entity.index
-    approx_fms_by_entity = {approx_entity_id: df}
-    return approx_fms_by_entity
+    return df
 
 
 def calc_num_per_chunk(chunk_size, shape):

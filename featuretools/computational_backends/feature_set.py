@@ -3,6 +3,7 @@ import logging
 from builtins import object
 from collections import defaultdict
 
+from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import (
     AggregationFeature,
     GroupByTransformFeature,
@@ -47,7 +48,7 @@ class FeatureSet(object):
         """
         Construct a trie mapping RelationshipPaths to sets of feature names.
         """
-        feature_trie = Trie(default=set)
+        feature_trie = Trie(default=set, path_constructor=RelationshipPath)
 
         for f in self.target_features:
             self._add_feature_to_trie(feature_trie, f, [])

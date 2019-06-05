@@ -126,6 +126,10 @@ class RelationshipPath(object):
 
         return '.'.join(relationship_names)
 
+    def __add__(self, other):
+        return RelationshipPath(self._relationships_with_direction +
+                                other._relationships_with_direction)
+
     def __getitem__(self, index):
         return self._relationships_with_direction[index]
 

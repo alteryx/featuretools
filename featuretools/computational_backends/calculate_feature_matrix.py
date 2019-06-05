@@ -7,7 +7,6 @@ import shutil
 import time
 import warnings
 from builtins import zip
-from collections import defaultdict
 from datetime import datetime
 
 import cloudpickle
@@ -24,11 +23,10 @@ from featuretools.computational_backends.utils import (
     get_next_chunk,
     save_csv_decorator
 )
+from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, FeatureBase
-from featuretools.utils.gen_utils import (
-    get_relationship_variable_id,
-    make_tqdm_iterator
-)
+from featuretools.utils import Trie
+from featuretools.utils.gen_utils import make_tqdm_iterator
 from featuretools.utils.wrangle import _check_time_type
 from featuretools.variable_types import (
     DatetimeTimeIndex,
@@ -186,11 +184,10 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     dtype = entityset[target_entity.id].df[target_entity.index].dtype
     cutoff_time["instance_id"] = cutoff_time["instance_id"].astype(dtype)
 
-    # Get dictionary of features to approximate
+    # Get features to approximate
     if approximate is not None:
-        to_approximate, all_approx_feature_set = gather_approximate_features(features, backend)
+        _, all_approx_feature_set = gather_approximate_features(features, backend)
     else:
-        to_approximate = defaultdict(list)
         all_approx_feature_set = None
 
     # Check if there are any non-approximated aggregation features
@@ -204,8 +201,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
         deps = feature.get_dependencies(deep=True, ignored=all_approx_feature_set)
         for dependency in deps:
-            if (isinstance(dependency, AggregationFeature) and
-                    dependency not in to_approximate[dependency.entity.id]):
+            if isinstance(dependency, AggregationFeature):
                 no_unapproximated_aggs = False
                 break
 
@@ -304,7 +300,7 @@ def calculate_chunk(chunk, features, approximate, training_window,
     for _, group in chunk.groupby(cutoff_df_time_var):
         # if approximating, calculate the approximate features
         if approximate is not None:
-            precalculated_features, all_approx_feature_set = approximate_features(
+            precalculated_features_trie, all_approx_feature_set = approximate_features(
                 features,
                 group,
                 window=approximate,
@@ -313,7 +309,7 @@ def calculate_chunk(chunk, features, approximate, training_window,
                 training_window=training_window,
             )
         else:
-            precalculated_features = None
+            precalculated_features_trie = None
             all_approx_feature_set = None
 
         @save_csv_decorator(save_progress)
@@ -329,7 +325,7 @@ def calculate_chunk(chunk, features, approximate, training_window,
             grouped = [[chunk_time, group]]
         else:
             # if approximated features, set cutoff_time to unbinned time
-            if precalculated_features is not None:
+            if precalculated_features_trie is not None:
                 group[cutoff_df_time_var] = group[target_time]
 
             grouped = group.groupby(cutoff_df_time_var, sort=True)
@@ -345,7 +341,7 @@ def calculate_chunk(chunk, features, approximate, training_window,
             # calculate values for those instances at time time_last
             _feature_matrix = calc_results(time_last,
                                            ids,
-                                           precalculated_features=precalculated_features,
+                                           precalculated_features=precalculated_features_trie,
                                            training_window=window)
 
             id_name = _feature_matrix.index.name
@@ -416,12 +412,12 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
 
         save_progress (str, optional): path to save intermediate computational results
     '''
-    approx_fms_by_entity = {}
+    approx_fms_trie = Trie(path_constructor=RelationshipPath)
     all_approx_feature_set = None
     target_entity = features[0].entity
     target_index_var = target_entity.index
 
-    to_approximate, all_approx_feature_set = gather_approximate_features(features, backend)
+    approximate_feature_trie, all_approx_feature_set = gather_approximate_features(features, backend)
 
     target_time_colname = 'target_time'
     cutoff_time[target_time_colname] = cutoff_time['time']
@@ -432,23 +428,11 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
     cutoff_df_instance_var = 'instance_id'
     # should this order be by dependencies so that calculate_feature_matrix
     # doesn't skip approximating something?
-    for approx_entity_id, approx_features in to_approximate.items():
-        # Gather associated instance_ids from the approximate entity
-        cutoffs_with_approx_e_ids = approx_cutoffs.copy()
-        approx_entity_frames = \
-            entityset.get_pandas_data_slice(approx_entity_id,
-                                            target_entity.id,
-                                            cutoffs_with_approx_e_ids[target_instance_colname])
-
-        path = entityset.find_path(approx_entity_id, target_entity.id)
-        rvar = get_relationship_variable_id([(True, r) for r in path])
-        parent_instance_frame = approx_entity_frames[target_entity.id]
-        cutoffs_with_approx_e_ids[rvar] = \
-            cutoffs_with_approx_e_ids.merge(parent_instance_frame[[rvar]],
-                                            left_on=target_index_var,
-                                            right_index=True,
-                                            how='left')[rvar].values
-        new_approx_entity_index_var = rvar
+    for relationship_path, approx_features in approximate_feature_trie:
+        if not approx_features:
+            continue
+        cutoffs_with_approx_e_ids, new_approx_entity_index_var = \
+            _add_approx_entity_index_var(entityset, target_entity.id, approx_cutoffs.copy(), relationship_path)
 
         # Select only columns we care about
         columns_we_want = [target_instance_colname,
@@ -462,26 +446,25 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
                                          inplace=True)
 
         if cutoffs_with_approx_e_ids.empty:
-            approx_fms_by_entity = gen_empty_approx_features_df(approx_features)
-            continue
+            approx_fm = gen_empty_approx_features_df(approx_features)
+        else:
+            cutoffs_with_approx_e_ids.sort_values([cutoff_df_time_var,
+                                                   new_approx_entity_index_var], inplace=True)
+            # CFM assumes specific column names for cutoff_time argument
+            rename = {new_approx_entity_index_var: cutoff_df_instance_var}
+            cutoff_time_to_pass = cutoffs_with_approx_e_ids.rename(columns=rename)
+            cutoff_time_to_pass = cutoff_time_to_pass[[cutoff_df_instance_var, cutoff_df_time_var]]
 
-        cutoffs_with_approx_e_ids.sort_values([cutoff_df_time_var,
-                                               new_approx_entity_index_var], inplace=True)
-        # CFM assumes specific column names for cutoff_time argument
-        rename = {new_approx_entity_index_var: cutoff_df_instance_var}
-        cutoff_time_to_pass = cutoffs_with_approx_e_ids.rename(columns=rename)
-        cutoff_time_to_pass = cutoff_time_to_pass[[cutoff_df_instance_var, cutoff_df_time_var]]
+            cutoff_time_to_pass.drop_duplicates(inplace=True)
+            approx_fm = calculate_feature_matrix(approx_features,
+                                                 entityset,
+                                                 cutoff_time=cutoff_time_to_pass,
+                                                 training_window=training_window,
+                                                 approximate=None,
+                                                 cutoff_time_in_index=False,
+                                                 chunk_size=cutoff_time_to_pass.shape[0])
 
-        cutoff_time_to_pass.drop_duplicates(inplace=True)
-        approx_fm = calculate_feature_matrix(approx_features,
-                                             entityset,
-                                             cutoff_time=cutoff_time_to_pass,
-                                             training_window=training_window,
-                                             approximate=None,
-                                             cutoff_time_in_index=False,
-                                             chunk_size=cutoff_time_to_pass.shape[0])
-
-        approx_fms_by_entity[approx_entity_id] = approx_fm
+        approx_fms_trie.get_node(relationship_path).value = approx_fm
 
     # Include entity because we only want to ignore features that
     # are base_features/dependencies of the top level entity we're
@@ -494,7 +477,7 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
     # Unless we signify to only ignore it as a dependency of
     # a feature defined on customers, we would ignore computing it
     # and pandas_backend would error
-    return approx_fms_by_entity, all_approx_feature_set
+    return approx_fms_trie, all_approx_feature_set
 
 
 def linear_calculate_chunks(chunks, features, approximate, training_window,
@@ -617,3 +600,26 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
             client.close()
 
     return feature_matrix
+
+
+def _add_approx_entity_index_var(es, target_entity_id, cutoffs, path):
+    """
+    For each relationship in the path, add its child_variable to the cutoff df.
+    """
+    last_child_var = 'instance_id'
+    last_parent_var = es[target_entity_id].index
+    for _, relationship in path:
+        child_vars = [last_parent_var, relationship.child_variable.id]
+        child_df = es[relationship.child_entity.id].df[child_vars]
+        new_var_name = '%s.%s' % (last_child_var, relationship.child_variable.id)
+        to_rename = {relationship.child_variable.id: new_var_name}
+        child_df = child_df.rename(columns=to_rename)
+
+        cutoffs = cutoffs.merge(child_df,
+                                left_on=last_child_var,
+                                right_on=last_parent_var,
+                                suffixes=('', '_right'))
+        last_child_var = new_var_name
+        last_parent_var = relationship.parent_variable.id
+
+    return cutoffs, new_var_name

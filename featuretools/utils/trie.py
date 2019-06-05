@@ -2,7 +2,8 @@ class Trie(object):
     """
     A trie (prefix tree) where the keys are sequences of hashable objects.
 
-    It behaves similarly to a dictionary, except that the keys are lists.
+    It behaves similarly to a dictionary, except that the keys can be lists or
+    other sequences.
 
     Examples:
         .. code-block:: python
@@ -24,13 +25,16 @@ class Trie(object):
             # Getting a key that has not been set returns the default value.
             assert trie[[1, 2]] == ''
     """
-    def __init__(self, default=lambda: None):
+    def __init__(self, default=lambda: None, path_constructor=list):
         """
         default: A function returning the value to use for new nodes.
+        path_constructor: A function which constructs a path from a list. The
+            path type must support addition (concatenation).
         """
         self._value = default()
         self._children = {}
         self._default = default
+        self._path_constructor = path_constructor
 
     @property
     def value(self):
@@ -88,27 +92,25 @@ class Trie(object):
             if first in self._children:
                 sub_trie = self._children[first]
             else:
-                sub_trie = Trie(default=self._default)
+                sub_trie = Trie(default=self._default,
+                                path_constructor=self._path_constructor)
                 self._children[first] = sub_trie
 
             return sub_trie.get_node(rest)
         else:
             return self
 
-    def __iter__(self, stack=None):
+    def __iter__(self):
         """
         Iterate over all values in the trie. Yields tuples of (path, value).
 
         Implemented using depth first search.
         """
-        stack = stack or []
+        yield(self._path_constructor([]), self._value)
 
-        yield(stack, self._value)
+        for key, sub_trie in self.children():
+            path_to_children = self._path_constructor([key])
 
-        for relationship, sub_trie in self.children():
-            stack.append(relationship)
-
-            for path_and_value in sub_trie.__iter__(stack):
-                yield(path_and_value)
-
-            stack.pop()
+            for sub_path, value in sub_trie:
+                path = path_to_children + sub_path
+                yield path, value

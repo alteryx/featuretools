@@ -32,16 +32,16 @@ def test_setting_and_getting():
 
 
 def test_iteration():
-    t = Trie(default=lambda: 'default')
+    t = Trie(default=lambda: 'default', path_constructor=tuple)
 
-    t.get_node([1, 2, 3]).value = '123'
-    t.get_node([1, 2, 4]).value = '124'
+    t.get_node((1, 2, 3)).value = '123'
+    t.get_node((1, 2, 4)).value = '124'
     expected = [
-        ([], 'default'),
-        ([1], 'default'),
-        ([1, 2], 'default'),
-        ([1, 2, 3], '123'),
-        ([1, 2, 4], '124'),
+        ((), 'default'),
+        ((1,), 'default'),
+        ((1, 2), 'default'),
+        ((1, 2, 3), '123'),
+        ((1, 2, 4), '124'),
     ]
 
     for i, value in enumerate(t):

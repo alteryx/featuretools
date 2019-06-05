@@ -11,6 +11,7 @@ from featuretools.computational_backends.base_backend import (
     ComputationalBackend
 )
 from featuretools.computational_backends.feature_set import FeatureSet
+from featuretools.entityset.relationship import RelationshipPath
 from featuretools.exceptions import UnknownFeature
 from featuretools.feature_base import (
     AggregationFeature,
@@ -57,9 +58,8 @@ class PandasBackend(ComputationalBackend):
 
             ignored (set[int]): Unique names of precalculated features.
 
-            precalculated_features (dict[str -> pd.DataFrame]): Maps entity ids
-                to dataframes containing precalculated features.
-
+            precalculated_features (Trie[RelationshipPath -> pd.DataFrame]):
+                Maps RelationshipPaths to dataframes of precalculated_features
         Returns:
             pd.DataFrame : Pandas DataFrame of calculated feature values.
                 Indexed by instance_ids. Columns in same order as features
@@ -91,15 +91,7 @@ class _FeaturesCalculator(object):
         self.time_last = time_last
 
         if precalculated_features is None:
-            precalculated_features = {}
-
-        # Make sure precalculated features have id variable.
-        # TODO: is this necessary?
-        for entity_id, precalc_feature_values in precalculated_features.items():
-            entity_id_var = self.entityset[entity_id].index
-            if entity_id_var not in precalc_feature_values:
-                precalc_feature_values[entity_id_var] = precalc_feature_values.index.values
-                precalculated_features[entity_id] = precalc_feature_values
+            precalculated_features = Trie(path_constructor=RelationshipPath)
 
         self.precalculated_features = precalculated_features
 
@@ -124,12 +116,13 @@ class _FeaturesCalculator(object):
 
         feature_trie = self.feature_set.feature_trie
 
-        df_trie = Trie()
+        df_trie = Trie(path_constructor=RelationshipPath)
 
         target_entity = self.entityset[self.target_eid]
         self._calculate_features_for_entity(entity_id=self.target_eid,
                                             feature_trie=feature_trie,
                                             df_trie=df_trie,
+                                            precalculated_trie=self.precalculated_features,
                                             filter_variable=target_entity.index,
                                             filter_values=instance_ids)
 
@@ -155,6 +148,7 @@ class _FeaturesCalculator(object):
         return df[column_list]
 
     def _calculate_features_for_entity(self, entity_id, feature_trie, df_trie,
+                                       precalculated_trie,
                                        filter_variable, filter_values,
                                        parent_data=None):
         """
@@ -169,6 +163,10 @@ class _FeaturesCalculator(object):
 
             df_trie (Trie): a parallel trie for storing dataframes. The
                 dataframe with features calculated will be placed in the root.
+
+            precalculated_trie (Trie): a parallel trie containing dataframes
+                with precalculated features. The dataframe for this entity will
+                be at the root.
 
             filter_variable (str): The name of the variable to filter this
                 dataframe by.
@@ -251,10 +249,12 @@ class _FeaturesCalculator(object):
                 parent_data = (relationship, new_ancestor_relationship_variables, df)
 
             sub_df_trie = df_trie.get_node([edge])
+            sub_precalc_trie = precalculated_trie.get_node([edge])
             self._calculate_features_for_entity(
                 entity_id=sub_entity,
                 feature_trie=sub_trie,
                 df_trie=sub_df_trie,
+                precalculated_trie=sub_precalc_trie,
                 filter_variable=sub_filter_variable,
                 filter_values=sub_filter_values,
                 parent_data=parent_data)
@@ -265,10 +265,10 @@ class _FeaturesCalculator(object):
         # by the above recursive calls, and their results stored in df_trie.
 
         # Add any precalculated features.
-        if entity_id in self.precalculated_features:
-            precalc_feature_values = self.precalculated_features[entity_id]
+        precalculated_features_df = precalculated_trie.value
+        if precalculated_features_df is not None:
             # Left outer merge to keep all rows of df.
-            df = df.merge(precalc_feature_values,
+            df = df.merge(precalculated_features_df,
                           how='left',
                           left_index=True,
                           right_index=True,
