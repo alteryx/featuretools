@@ -544,11 +544,6 @@ class EntitySet(object):
         """
         return [r for r in self.relationships if r.parent_entity.id == entity_id]
 
-    def _is_backward_relationship(self, rel, prev_ent):
-        if prev_ent == rel.parent_entity.id:
-            return True
-        return False
-
     def has_unique_forward_path(self, start_entity_id, end_entity_id):
         """
         Is the forward path from start to end unique?
