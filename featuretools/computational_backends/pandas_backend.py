@@ -193,6 +193,10 @@ class _FeaturesCalculator(object):
             parent_df (pd.DataFrame): The data for the parent entity. Only
                 required if ancestor_relationship_variables is present.
         """
+
+        # Step 1: Get a dataframe for the given entity, filtered by the given
+        # conditions.
+
         features = [self.feature_set.features_by_name[fname] for fname in feature_trie[[]]]
         need_all_rows = any(f.primitive.uses_full_entity for f in features)
         if need_all_rows:
@@ -210,19 +214,22 @@ class _FeaturesCalculator(object):
                                     time_last=self.time_last,
                                     training_window=self.training_window)
 
+        # Step 2: Add variables to the dataframe linking it to all ancestors.
+
         new_ancestor_relationship_variables = []
         if parent_relationship:
-            # Copy the parent's link variables to this entity's dataframe.
             if ancestor_relationship_variables:
                 assert parent_df is not None
 
                 df, new_ancestor_relationship_variables = self._add_ancestor_relationship_variables(
                     df, parent_df, ancestor_relationship_variables, parent_relationship)
 
-            # Add the variable linking this entity to its parent.
+            # Add the variable linking this entity to its parent, so that
+            # descendants get linked to the parent.
             new_ancestor_relationship_variables.append(parent_relationship.child_variable.id)
 
-        # Recurse on children.
+        # Step 3: Recurse on children.
+
         for edge, sub_trie in feature_trie.children():
             is_forward, relationship = edge
             if is_forward:
@@ -245,6 +252,11 @@ class _FeaturesCalculator(object):
                 ancestor_relationship_variables=(not is_forward) and new_ancestor_relationship_variables,
                 parent_df=(not is_forward) and df)
 
+        # Step 4: Calculate the features for this entity.
+        #
+        # All dependencies of the features for this entity have been calculated
+        # by the above recursive calls, and their results stored in df_trie.
+
         # Add any precalculated features.
         if entity_id in self.precalculated_features:
             precalc_feature_values = self.precalculated_features[entity_id]
@@ -255,13 +267,25 @@ class _FeaturesCalculator(object):
                           right_index=True,
                           suffixes=('', '_precalculated'))
 
-        df_trie[[]] = df
         feature_names = feature_trie[[]]
         if self.ignored:
             feature_names -= self.ignored
+
+        # Group the features so that each group can be calculated together.
+        # The groups must also be in topological order (if A is a transform of B
+        # then B must be in a group before A).
         feature_groups = self.feature_set.group_features(feature_names)
+
+        # Store the df for this entity in df_trie so it can be accessed when
+        # calculating each feature group.
+        df_trie[[]] = df
+
         for group in feature_groups:
-            df = self._calculate_feature_group(group, df_trie)
+            handler = self._feature_type_handler(group[0])
+            df = handler(group, df_trie)
+
+            # Update df_trie so that subsequent calculations can use the result
+            # of this one.
             df_trie[[]] = df
 
         # If we used all rows, filter the df to those that we actually need.
@@ -331,16 +355,6 @@ class _FeaturesCalculator(object):
                 if c not in default_df.columns:
                     default_df[c] = [np.nan] * len(instance_ids)
         return default_df
-
-    def _calculate_feature_group(self, group, df_trie):
-        """
-        Calculate the features in group and update the root of df_trie with the
-        result
-        """
-        test_feature = group[0]
-        handler = self._feature_type_handler(test_feature)
-
-        return handler(group, df_trie)
 
     def _feature_type_handler(self, f):
         if type(f) == TransformFeature:
