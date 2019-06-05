@@ -159,7 +159,7 @@ class _FeaturesCalculator(object):
     def _calculate_features_on_trie(self, entity_id, feature_trie, df_trie,
                                     filter_variable, filter_values,
                                     parent_relationship=None,
-                                    parent_link_variables=None,
+                                    ancestor_relationship_variables=None,
                                     parent_df=None):
         """
         Generate dataframes with features calculated for this node of the trie,
@@ -185,13 +185,13 @@ class _FeaturesCalculator(object):
                 forward relationship from this entity to its parent, or else
                 None.
 
-            parent_link_variables (list[str]): The names of variables which link
-                the parent entity to its ancestors. These variables will be
-                copied into the dataframe for this entity so that it is also
-                linked to all ancestors.
+            ancestor_relationship_variables (list[str]): The names of variables
+                which link the parent entity to its ancestors. These variables
+                will be copied into the dataframe for this entity so that it is
+                also linked to all ancestors.
 
             parent_df (pd.DataFrame): The data for the parent entity. Only
-                required if parent_link_variables is present.
+                required if ancestor_relationship_variables is present.
         """
         features = [self.feature_set.features_by_name[fname] for fname in feature_trie[[]]]
         need_all_rows = any(f.primitive.uses_full_entity for f in features)
@@ -210,18 +210,17 @@ class _FeaturesCalculator(object):
                                     time_last=self.time_last,
                                     training_window=self.training_window)
 
-        link_variables = []
+        new_ancestor_relationship_variables = []
         if parent_relationship:
             # Copy the parent's link variables to this entity's dataframe.
-            if parent_link_variables:
+            if ancestor_relationship_variables:
                 assert parent_df is not None
 
-                df, link_variables = self._add_link_vars(df, parent_df,
-                                                         parent_link_variables,
-                                                         parent_relationship)
+                df, new_ancestor_relationship_variables = self._add_ancestor_relationship_variables(
+                    df, parent_df, ancestor_relationship_variables, parent_relationship)
 
             # Add the variable linking this entity to its parent.
-            link_variables.append(parent_relationship.child_variable.id)
+            new_ancestor_relationship_variables.append(parent_relationship.child_variable.id)
 
         # Recurse on children.
         for edge, sub_trie in feature_trie.children():
@@ -236,14 +235,15 @@ class _FeaturesCalculator(object):
                 sub_filter_values = df[relationship.parent_variable.id]
 
             sub_df_trie = df_trie.get_node([edge])
-            self._calculate_features_on_trie(entity_id=sub_entity,
-                                             feature_trie=sub_trie,
-                                             df_trie=sub_df_trie,
-                                             filter_variable=sub_filter_variable,
-                                             filter_values=sub_filter_values,
-                                             parent_relationship=(not is_forward) and relationship,
-                                             parent_link_variables=(not is_forward) and link_variables,
-                                             parent_df=(not is_forward) and df)
+            self._calculate_features_on_trie(
+                entity_id=sub_entity,
+                feature_trie=sub_trie,
+                df_trie=sub_df_trie,
+                filter_variable=sub_filter_variable,
+                filter_values=sub_filter_values,
+                parent_relationship=(not is_forward) and relationship,
+                ancestor_relationship_variables=(not is_forward) and new_ancestor_relationship_variables,
+                parent_df=(not is_forward) and df)
 
         # Add any precalculated features.
         if entity_id in self.precalculated_features:
@@ -269,37 +269,39 @@ class _FeaturesCalculator(object):
             df = df[df[filter_variable].isin(filter_values)]
             df_trie[[]] = df
 
-    def _add_link_vars(self, child_df, parent_df, parent_link_variables, relationship):
+    def _add_ancestor_relationship_variables(self, child_df, parent_df,
+                                             ancestor_relationship_variables,
+                                             relationship):
         """
-        Merge parent_link_variables from parent_df into child_df, adding a prefix to
+        Merge ancestor_relationship_variables from parent_df into child_df, adding a prefix to
         each column name specifying the relationship.
 
-        Return the updated df and the new link variable names.
+        Return the updated df and the new relationship variable names.
 
         Args:
-            child_df (pd.DataFrame): The dataframe to add link variables to.
-            parent_df (pd.DataFrame): The dataframe to copy link variables from.
-            parent_link_variables (list[str]): The names of link variables in the
-                parent_df to copy into child_df.
+            child_df (pd.DataFrame): The dataframe to add relationship variables to.
+            parent_df (pd.DataFrame): The dataframe to copy relationship variables from.
+            ancestor_relationship_variables (list[str]): The names of
+                relationship variables in the parent_df to copy into child_df.
             relationship (Relationship): the relationship through which the
                 child is connected to the parent.
         """
         relationship_name = relationship.parent_name
-        child_link_variables = ['%s.%s' % (relationship_name, var)
-                                for var in parent_link_variables]
+        new_relationship_variables = ['%s.%s' % (relationship_name, var)
+                                      for var in ancestor_relationship_variables]
 
         # create an intermediate dataframe which shares a column
         # with the child dataframe and has a column with the
         # original parent's id.
         col_map = {relationship.parent_variable.id: relationship.child_variable.id}
-        for child_var, parent_var in zip(child_link_variables, parent_link_variables):
+        for child_var, parent_var in zip(new_relationship_variables, ancestor_relationship_variables):
             col_map[parent_var] = child_var
 
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
 
         merge_df.index.name = None  # change index name for merge
 
-        # Merge the dataframe, adding the link variable to the child.
+        # Merge the dataframe, adding the relationship variables to the child.
         # Left outer join so that all rows in child are kept (if it contains
         # all rows of the entity then there may not be corresponding rows in the
         # parent_df).
@@ -308,7 +310,7 @@ class _FeaturesCalculator(object):
                             left_on=relationship.child_variable.id,
                             right_on=relationship.child_variable.id)
 
-        return df, child_link_variables
+        return df, new_relationship_variables
 
     def generate_default_df(self, instance_ids, extra_columns=None):
         default_row = []
@@ -446,9 +448,6 @@ class _FeaturesCalculator(object):
         for f in features:
             if f.base_features[0].get_name() == relationship.parent_variable.id:
                 index_as_feature = f
-            # Sometimes entityset._add_multigenerational_links adds link variables
-            # that would ordinarily get calculated as direct features,
-            # so we make sure not to attempt to calculate again
             base_names = f.base_features[0].get_feature_names()
             for name, base_name in zip(f.get_feature_names(), base_names):
                 if name in child_df.columns:
