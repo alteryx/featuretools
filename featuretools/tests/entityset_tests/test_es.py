@@ -981,8 +981,8 @@ def test_later_schema_version(es):
             'relationships': relationships,
         }
 
-        error_text = ('Unable to load features. The schema version of the saved '
-                      'features (%s) is greater than the latest supported (%s). '
+        error_text = ('Unable to load entityset. The schema version of the saved '
+                      'entityset (%s) is greater than the latest supported (%s). '
                       'You may need to upgrade featuretools.'
                       % (version, SCHEMA_VERSION))
 
@@ -994,10 +994,10 @@ def test_later_schema_version(es):
         else:
             deserialize.description_to_entityset(dictionary)
 
-        major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
-        test_version(major + 1, minor, patch)
-        test_version(major, minor + 1, patch)
-        test_version(major, minor, patch + 1)
-        test_version(major - 1, minor + 1, patch, raises=False)
-        test_version(major - 1, minor, patch + 1, raises=False)
-        test_version(major, minor - 1, patch + 1, raises=False)
+    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
+    test_version(major + 1, minor, patch)
+    test_version(major, minor + 1, patch)
+    test_version(major, minor, patch + 1)
+    test_version(major - 1, minor + 1, patch, raises=False)
+    test_version(major - 1, minor, patch + 1, raises=False)
+    test_version(major, minor - 1, patch + 1, raises=False)
