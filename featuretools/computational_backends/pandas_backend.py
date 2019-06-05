@@ -37,7 +37,6 @@ class PandasBackend(ComputationalBackend):
 
         self.entityset = entityset
         self.target_eid = features[0].entity.id
-        self.features = features
         self.feature_set = FeatureSet(entityset, features)
 
     def __sizeof__(self):
@@ -72,23 +71,27 @@ class PandasBackend(ComputationalBackend):
                 passed in.
 
         """
-        assert len(instance_ids) > 0, "0 instance ids provided"
+        calculator = _FeaturesCalculator(self.target_eid, self.entityset,
+                                         self.feature_set, time_last, training_window,
+                                         precalculated_features, ignored)
+        return calculator.run(instance_ids, profile)
 
+
+class _FeaturesCalculator(object):
+    """
+    A helper class to hold data that is shared across recursive calls.
+    """
+    def __init__(self, target_eid, entityset, feature_set, time_last,
+                 training_window, precalculated_features, ignored):
+        self.target_eid = target_eid
+        self.entityset = entityset
+        self.feature_set = feature_set
         self.time_last = time_last
-        if self.time_last is None:
-            self.time_last = datetime.now()
-
-        # For debugging
-        if profile:
-            pr = cProfile.Profile()
-            pr.enable()
+        self.training_window = training_window
+        self.ignored = ignored
 
         if precalculated_features is None:
             precalculated_features = {}
-
-        feature_trie = self.feature_set.feature_trie
-
-        df_trie = Trie()
 
         # Make sure precalculated features have id variable.
         # TODO: is this necessary?
@@ -98,16 +101,30 @@ class PandasBackend(ComputationalBackend):
                 precalc_feature_values[entity_id_var] = precalc_feature_values.index.values
                 precalculated_features[entity_id] = precalc_feature_values
 
+        self.precalculated_features = precalculated_features
+
+    def run(self, instance_ids, profile):
+        assert len(instance_ids) > 0, "0 instance ids provided"
+
+        self.time_last = self.time_last
+        if self.time_last is None:
+            self.time_last = datetime.now()
+
+        # For debugging
+        if profile:
+            pr = cProfile.Profile()
+            pr.enable()
+
+        feature_trie = self.feature_set.feature_trie
+
+        df_trie = Trie()
+
         target_entity = self.entityset[self.target_eid]
         self._calculate_features_on_trie(entity_id=self.target_eid,
                                          feature_trie=feature_trie,
                                          df_trie=df_trie,
                                          filter_variable=target_entity.index,
-                                         filter_values=instance_ids,
-                                         time_last=time_last,
-                                         training_window=training_window,
-                                         precalculated_features=precalculated_features,
-                                         ignored=ignored)
+                                         filter_values=instance_ids)
 
         # debugging
         if profile:
@@ -135,14 +152,12 @@ class PandasBackend(ComputationalBackend):
 
         df.index.name = self.entityset[self.target_eid].index
         column_list = []
-        for feat in self.features:
+        for feat in self.feature_set.target_features:
             column_list.extend(feat.get_feature_names())
         return df[column_list]
 
     def _calculate_features_on_trie(self, entity_id, feature_trie, df_trie,
                                     filter_variable, filter_values,
-                                    training_window, precalculated_features,
-                                    time_last, ignored,
                                     parent_relationship=None,
                                     parent_link_variables=None,
                                     parent_df=None):
@@ -192,8 +207,8 @@ class PandasBackend(ComputationalBackend):
         df = entity.query_by_values(query_values,
                                     variable_id=query_variable,
                                     columns=columns,
-                                    time_last=time_last,
-                                    training_window=training_window)
+                                    time_last=self.time_last,
+                                    training_window=self.training_window)
 
         link_variables = []
         if parent_relationship:
@@ -228,15 +243,11 @@ class PandasBackend(ComputationalBackend):
                                              filter_values=sub_filter_values,
                                              parent_relationship=(not is_forward) and relationship,
                                              parent_link_variables=(not is_forward) and link_variables,
-                                             parent_df=(not is_forward) and df,
-                                             time_last=time_last,
-                                             training_window=training_window,
-                                             precalculated_features=precalculated_features,
-                                             ignored=ignored)
+                                             parent_df=(not is_forward) and df)
 
         # Add any precalculated features.
-        if entity_id in precalculated_features:
-            precalc_feature_values = precalculated_features[entity_id]
+        if entity_id in self.precalculated_features:
+            precalc_feature_values = self.precalculated_features[entity_id]
             # Left outer merge to keep all rows of df.
             df = df.merge(precalc_feature_values,
                           how='left',
@@ -246,8 +257,8 @@ class PandasBackend(ComputationalBackend):
 
         df_trie[[]] = df
         feature_names = feature_trie[[]]
-        if ignored:
-            feature_names -= ignored
+        if self.ignored:
+            feature_names -= self.ignored
         feature_groups = self.feature_set.group_features(feature_names)
         for group in feature_groups:
             df = self._calculate_feature_group(group, df_trie)
@@ -300,10 +311,9 @@ class PandasBackend(ComputationalBackend):
         return df, child_link_variables
 
     def generate_default_df(self, instance_ids, extra_columns=None):
-        index_name = self.features[0].entity.index
         default_row = []
         default_cols = []
-        for f in self.features:
+        for f in self.feature_set.target_features:
             for name in f.get_feature_names():
                 default_cols.append(name)
                 default_row.append(f.default_value)
@@ -312,6 +322,7 @@ class PandasBackend(ComputationalBackend):
         default_df = pd.DataFrame(default_matrix,
                                   columns=default_cols,
                                   index=instance_ids)
+        index_name = self.entityset[self.target_eid].index
         default_df.index.name = index_name
         if extra_columns is not None:
             for c in extra_columns:
