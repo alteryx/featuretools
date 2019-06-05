@@ -3,11 +3,9 @@ import logging
 from builtins import object
 from collections import defaultdict
 
-from featuretools import variable_types
 from featuretools.feature_base import (
     AggregationFeature,
     GroupByTransformFeature,
-    IdentityFeature,
     TransformFeature
 )
 from featuretools.utils import Trie
