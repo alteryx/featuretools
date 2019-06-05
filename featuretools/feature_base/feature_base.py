@@ -338,7 +338,6 @@ class IdentityFeature(FeatureBase):
                                               primitive=PrimitiveBase,
                                               name=name)
 
-
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         entity_id = arguments['entity_id']
@@ -388,7 +387,6 @@ class DirectFeature(FeatureBase):
                                             relationship_path=relationship_path,
                                             primitive=PrimitiveBase,
                                             name=name)
-
 
     def _handle_relationship_path(self, child_entity, relationship_path):
         if relationship_path:
@@ -509,7 +507,6 @@ class AggregationFeature(FeatureBase):
                                                  primitive=primitive,
                                                  name=name)
 
-
     def _handle_relationship_path(self, parent_entity, relationship_path):
         if relationship_path:
             first_parent = relationship_path[0].parent_entity
@@ -613,7 +610,6 @@ class TransformFeature(FeatureBase):
                                                primitive=primitive,
                                                name=name)
 
-
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         base_features = [dependencies[name] for name in arguments['base_features']]
@@ -649,7 +645,6 @@ class GroupByTransformFeature(TransformFeature):
         super(GroupByTransformFeature, self).__init__(base_features=base_features,
                                                       primitive=primitive,
                                                       name=name)
-
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):

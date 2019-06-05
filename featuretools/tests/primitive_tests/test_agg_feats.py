@@ -8,10 +8,6 @@ import pandas as pd
 import pytest
 
 import featuretools as ft
-from featuretools.feature_base.features_deserializer import (
-    FeaturesDeserializer
-)
-from featuretools.feature_base.features_serializer import FeaturesSerializer
 from featuretools.primitives import (  # NMostCommon,
     Count,
     Mean,

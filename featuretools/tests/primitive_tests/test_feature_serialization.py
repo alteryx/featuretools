@@ -7,7 +7,7 @@ from featuretools.feature_base.features_deserializer import (
     FeaturesDeserializer
 )
 from featuretools.feature_base.features_serializer import FeaturesSerializer
-from featuretools.primitives import make_agg_primitive, CumSum
+from featuretools.primitives import CumSum, make_agg_primitive
 from featuretools.variable_types import Numeric
 
 
