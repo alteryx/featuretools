@@ -79,7 +79,8 @@ class PandasBackend(ComputationalBackend):
 
 class _FeaturesCalculator(object):
     """
-    A helper class to hold data that is shared across recursive calls.
+    A helper class to hold data that is shared across recursive calls of
+    _calculate_features_on_trie.
     """
     def __init__(self, target_eid, entityset, feature_set, time_last,
                  training_window, precalculated_features, ignored):
@@ -137,6 +138,8 @@ class _FeaturesCalculator(object):
                                    list(instance_ids)[0]), 'w') as f:
                 pstats.Stats(pr, stream=f).strip_dirs().sort_stats("cumulative", "tottime").print_stats()
 
+        # The dataframe for the target entity should be stored at the root of
+        # df_trie.
         df = df_trie[[]]
 
         if df.empty:
@@ -276,22 +279,18 @@ class _FeaturesCalculator(object):
         # then B must be in a group before A).
         feature_groups = self.feature_set.group_features(feature_names)
 
-        # Store the df for this entity in df_trie so it can be accessed when
-        # calculating each feature group.
-        df_trie[[]] = df
-
         for group in feature_groups:
-            handler = self._feature_type_handler(group[0])
-            df = handler(group, df_trie)
-
-            # Update df_trie so that subsequent calculations can use the result
-            # of this one.
-            df_trie[[]] = df
+            representative_feature = group[0]
+            handler = self._feature_type_handler(representative_feature)
+            df = handler(group, df, df_trie)
 
         # If we used all rows, filter the df to those that we actually need.
         if need_all_rows:
             df = df[df[filter_variable].isin(filter_values)]
-            df_trie[[]] = df
+
+        # Step 5: Store the dataframe for this entity at the root of df_trie, so
+        # that it can be accessed by the caller.
+        df_trie[[]] = df
 
     def _add_ancestor_relationship_variables(self, child_df, parent_df,
                                              ancestor_relationship_variables,
@@ -370,18 +369,14 @@ class _FeaturesCalculator(object):
         else:
             raise UnknownFeature(u"{} feature unknown".format(f.__class__))
 
-    def _calculate_identity_features(self, features, df_trie):
-        df = df_trie[[]]
-
+    def _calculate_identity_features(self, features, df, _df_trie):
         for f in features:
             assert f.get_name() in df, (
                 'Column "%s" missing frome dataframe' % f.get_name())
 
         return df
 
-    def _calculate_transform_features(self, features, df_trie):
-        frame = df_trie[[]]
-
+    def _calculate_transform_features(self, features, frame, _df_trie):
         for f in features:
             # handle when no data
             if frame.shape[0] == 0:
@@ -409,9 +404,7 @@ class _FeaturesCalculator(object):
 
         return frame
 
-    def _calculate_groupby_features(self, features, df_trie):
-        frame = df_trie[[]]
-
+    def _calculate_groupby_features(self, features, frame, _df_trie):
         for f in features:
             set_default_column(frame, f)
 
@@ -445,13 +438,12 @@ class _FeaturesCalculator(object):
 
         return frame
 
-    def _calculate_direct_features(self, features, df_trie):
+    def _calculate_direct_features(self, features, child_df, df_trie):
         path = features[0].relationship_path
         assert len(path) == 1, \
             "Error calculating DirectFeatures, len(path) != 1"
 
         relationship = path[0]
-        child_df = df_trie[[]]
         parent_df = df_trie[[(True, relationship)]]
         merge_var = relationship.child_variable.id
 
@@ -481,11 +473,9 @@ class _FeaturesCalculator(object):
 
         return new_df
 
-    def _calculate_agg_features(self, features, df_trie):
+    def _calculate_agg_features(self, features, frame, df_trie):
         test_feature = features[0]
         child_entity = test_feature.base_features[0].entity
-
-        frame = df_trie[[]]
 
         path = [(False, r) for r in test_feature.relationship_path]
         base_frame = df_trie[path]
