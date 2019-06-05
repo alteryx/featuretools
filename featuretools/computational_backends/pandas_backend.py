@@ -102,13 +102,11 @@ class PandasBackend(ComputationalBackend):
         self._calculate_features_on_trie(entity_id=self.target_eid,
                                          feature_trie=feature_trie,
                                          df_trie=df_trie,
-                                         path=[],
                                          filter_variable=target_entity.index,
                                          filter_values=instance_ids,
                                          time_last=time_last,
                                          training_window=training_window,
                                          precalculated_features=precalculated_features,
-                                         parent_link_variables=[],
                                          ignored=ignored)
 
         # debugging
@@ -141,27 +139,53 @@ class PandasBackend(ComputationalBackend):
             column_list.extend(feat.get_feature_names())
         return df[column_list]
 
-    def _calculate_features_on_trie(self, entity_id, feature_trie, df_trie, path,
-                                    filter_variable, filter_values, time_last,
+    def _calculate_features_on_trie(self, entity_id, feature_trie, df_trie,
+                                    filter_variable, filter_values,
                                     training_window, precalculated_features,
-                                    parent_link_variables, ignored, parent_df=None):
+                                    time_last, ignored,
+                                    parent_relationship=None,
+                                    parent_link_variables=None,
+                                    parent_df=None):
         """
         Generate dataframes with features calculated for this node of the trie,
         and all descendant nodes. The dataframes will be stored in df_trie.
 
-        feature_trie: the trie with sets of features to calculate.
-        df_trie: a parallel trie for storing dataframes.
-        path: a list of (is_forward, relationship) from the root to this
-            sub-trie.
+        Args:
+            entity_id (str): The name of the entity to calculate features for.
+
+            feature_trie (Trie): the trie with sets of features to calculate.
+                The root contains features for the given entity.
+
+            df_trie (Trie): a parallel trie for storing dataframes. The
+                dataframe with features calculated will be placed in the root.
+
+            filter_variable (str): The name of the variable to filter this
+                dataframe by.
+
+            filter_values (pd.Series): The values to filter the filter_variable
+                to.
+
+            parent_relationship (Relationship): The relationship through which
+                this entity is linked to its parent in the trie. Should be a
+                forward relationship from this entity to its parent, or else
+                None.
+
+            parent_link_variables (list[str]): The names of variables which link
+                the parent entity to its ancestors. These variables will be
+                copied into the dataframe for this entity so that it is also
+                linked to all ancestors.
+
+            parent_df (pd.DataFrame): The data for the parent entity. Only
+                required if parent_link_variables is present.
         """
         features = [self.feature_set.features_by_name[fname] for fname in feature_trie[[]]]
         need_all_rows = any(f.primitive.uses_full_entity for f in features)
         if need_all_rows:
-            query_values = None
             query_variable = None
+            query_values = None
         else:
-            query_values = filter_values
             query_variable = filter_variable
+            query_values = filter_values
 
         entity = self.entityset[entity_id]
         columns = _necessary_columns(entity, features)
@@ -171,16 +195,18 @@ class PandasBackend(ComputationalBackend):
                                     time_last=time_last,
                                     training_window=training_window)
 
-        # If the last edge was backward, copy the parent's link variables to
-        # this entity's dataframe.
         link_variables = []
-        if path:
-            is_forward, relationship = path[-1]
-            if not is_forward:
-                df, link_variables = self._add_link_vars(df, parent_df, relationship,
-                                                         parent_link_variables)
+        if parent_relationship:
+            # Copy the parent's link variables to this entity's dataframe.
+            if parent_link_variables:
+                assert parent_df is not None
 
-                link_variables.append(relationship.child_variable.id)
+                df, link_variables = self._add_link_vars(df, parent_df,
+                                                         parent_link_variables,
+                                                         parent_relationship)
+
+            # Add the variable linking this entity to its parent.
+            link_variables.append(parent_relationship.child_variable.id)
 
         # Recurse on children.
         for edge, sub_trie in feature_trie.children():
@@ -198,14 +224,14 @@ class PandasBackend(ComputationalBackend):
             self._calculate_features_on_trie(entity_id=sub_entity,
                                              feature_trie=sub_trie,
                                              df_trie=sub_df_trie,
-                                             path=path + [edge],
                                              filter_variable=sub_filter_variable,
                                              filter_values=sub_filter_values,
+                                             parent_relationship=(not is_forward) and relationship,
+                                             parent_link_variables=(not is_forward) and link_variables,
+                                             parent_df=(not is_forward) and df,
                                              time_last=time_last,
                                              training_window=training_window,
                                              precalculated_features=precalculated_features,
-                                             parent_link_variables=link_variables,
-                                             parent_df=df,
                                              ignored=ignored)
 
         # Add any precalculated features.
@@ -232,23 +258,30 @@ class PandasBackend(ComputationalBackend):
             df = df[df[filter_variable].isin(filter_values)]
             df_trie[[]] = df
 
-    def _add_link_vars(self, child_df, parent_df, relationship, parent_link_variables):
+    def _add_link_vars(self, child_df, parent_df, parent_link_variables, relationship):
         """
-        Copy the parent_link_variables to the df, extending the names.
+        Merge parent_link_variables from parent_df into child_df, adding a prefix to
+        each column name specifying the relationship.
 
         Return the updated df and the new link variable names.
-        """
-        if not parent_link_variables:
-            return child_df, []
 
+        Args:
+            child_df (pd.DataFrame): The dataframe to add link variables to.
+            parent_df (pd.DataFrame): The dataframe to copy link variables from.
+            parent_link_variables (list[str]): The names of link variables in the
+                parent_df to copy into child_df.
+            relationship (Relationship): the relationship through which the
+                child is connected to the parent.
+        """
         relationship_name = relationship.parent_name
-        variables = ['%s.%s' % (relationship_name, var) for var in parent_link_variables]
+        child_link_variables = ['%s.%s' % (relationship_name, var)
+                                for var in parent_link_variables]
 
         # create an intermediate dataframe which shares a column
         # with the child dataframe and has a column with the
         # original parent's id.
         col_map = {relationship.parent_variable.id: relationship.child_variable.id}
-        for child_var, parent_var in zip(variables, parent_link_variables):
+        for child_var, parent_var in zip(child_link_variables, parent_link_variables):
             col_map[parent_var] = child_var
 
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
@@ -263,7 +296,8 @@ class PandasBackend(ComputationalBackend):
                             how='left',
                             left_on=relationship.child_variable.id,
                             right_on=relationship.child_variable.id)
-        return df, variables
+
+        return df, child_link_variables
 
     def generate_default_df(self, instance_ids, extra_columns=None):
         index_name = self.features[0].entity.index
