@@ -122,7 +122,7 @@ workflows:
       - "python-37"
   changelog_updated:
     jobs:
-      - "changelog_updated"
+      - changelog_updated:
           filters:
             branches:
               ignore: /^skip-changelog-ci-check-on-master?/
