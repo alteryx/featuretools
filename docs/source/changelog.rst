@@ -22,7 +22,7 @@ Changelog
         * Miscellaneous changes (:pr:`559`, :pr:`569`, :pr:`570`, :pr:`574`, :pr:`584`)
 
     Thanks to the following people for contributing to this release:
-    :user: `alexjwang`, :user:`allisonportis`, :user:`CJStadler`, :user:`ctduffy`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`
+    :user:`alexjwang`, :user:`allisonportis`, :user:`CJStadler`, :user:`ctduffy`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`
 
 **v0.8.0** May 17, 2019
     * Rename NUnique to NumUnique (:pr:`510`)
