@@ -52,6 +52,9 @@ class FeatureSet(object):
     def _build_feature_trie(self):
         """
         Construct a Trie mapping relationship paths to sets of features.
+
+        The edges of the tree are tuples of (is_forward (bool), relationship).
+        The values are sets of feature.unique_name
         """
         feature_trie = Trie(default=set)
 
@@ -61,10 +64,6 @@ class FeatureSet(object):
         return feature_trie
 
     def _add_feature_to_trie(self, trie, f, path):
-        """
-        Returns a trie where the edges are tuples of (is_forward, relationship)
-        and the nodes contain lists of features
-        """
         sub_trie = trie.get_node(path)
         sub_trie[[]].add(f.unique_name())
         sub_path = f.relationship_path
