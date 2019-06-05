@@ -86,7 +86,6 @@ class FeatureSet(object):
                     _get_use_previous(f),
                     _get_where(f),
                     f.primitive.uses_full_entity,
-                    self._output_frames_type(f),
                     _get_groupby(f))
 
         # Sort the list of features by the complex key function above, then
@@ -127,38 +126,13 @@ class FeatureSet(object):
             return True
         return self._dependent_uses_full_entity(feature)
 
-# These functions are used for sorting and grouping features
-
-    def _output_frames_type(self, f):
-        is_output = f.unique_name() in self.target_feature_names
-        dependent_uses_full_entity = self._dependent_uses_full_entity(f)
-        dependent_has_subset_input = any([(not isinstance(d, TransformFeature) or
-                                           (not d.primitive.uses_full_entity and
-                                            d.unique_name() in self.target_feature_names))
-                                          for d in self.feature_dependents[f.unique_name()]])
-        # If the feature is one in which the user requested as
-        # an output (meaning it's part of the input feature list
-        # to calculate_feature_matrix), or a dependent feature
-        # takes the subset entity_frames as input, then we need
-        # to subselect the output based on the desired instance ids
-        # and place in the return data frame.
-        if dependent_uses_full_entity and is_output:
-            return 'full_and_subset_entity_frames'
-        elif dependent_uses_full_entity and dependent_has_subset_input:
-            return 'full_and_subset_entity_frames'
-        elif dependent_uses_full_entity:
-            return 'full_entity_frames'
-        # If the feature itself does not require all the instance values
-        # or no dependent features do, then we
-        # subselect the output
-        # to only desired instances
-        return 'subset_entity_frames'
-
     def _dependent_uses_full_entity(self, feature):
         for d in self.feature_dependents[feature.unique_name()]:
             if isinstance(d, TransformFeature) and d.primitive.uses_full_entity:
                 return True
         return False
+
+# These functions are used for sorting and grouping features
 
 
 def _get_use_previous(f):
