@@ -125,4 +125,4 @@ workflows:
       - changelog_updated:
           filters:
             branches:
-              ignore: /^skip-changelog-ci-check-on-master?/
+              ignore: /^master?/
