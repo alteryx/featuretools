@@ -9,7 +9,7 @@ from featuretools.primitives.base import (
     PrimitiveBase,
     TransformPrimitive
 )
-from featuretools.utils import is_python_2
+from featuretools.utils.gen_utils import find_descendents, is_python_2
 
 if is_python_2():
     import imp
@@ -153,7 +153,7 @@ class PrimitivesDeserializer(object):
 
     def __init__(self):
         self.class_cache = {}  # (class_name, module_name) -> class
-        self.primitive_classes = _descendants(PrimitiveBase)
+        self.primitive_classes = find_descendents(PrimitiveBase)
 
     def deserialize_primitive(self, primitive_dict):
         """
@@ -183,15 +183,3 @@ class PrimitivesDeserializer(object):
 
             if cls_key == search_key:
                 return cls
-
-
-def _descendants(cls):
-    """
-    A generator which yields all descendant classes of the given class
-    (including the given class).
-    """
-    yield cls
-
-    for sub in cls.__subclasses__():
-        for c in _descendants(sub):
-            yield c
