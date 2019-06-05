@@ -87,9 +87,13 @@ class _FeaturesCalculator(object):
         self.target_eid = target_eid
         self.entityset = entityset
         self.feature_set = feature_set
-        self.time_last = time_last
         self.training_window = training_window
         self.ignored = ignored
+
+        if time_last is None:
+            time_last = datetime.now()
+
+        self.time_last = time_last
 
         if precalculated_features is None:
             precalculated_features = {}
@@ -105,11 +109,23 @@ class _FeaturesCalculator(object):
         self.precalculated_features = precalculated_features
 
     def run(self, instance_ids, profile):
-        assert len(instance_ids) > 0, "0 instance ids provided"
+        """
+        Calculate values of features for the given instances of the target
+        entity.
 
-        self.time_last = self.time_last
-        if self.time_last is None:
-            self.time_last = datetime.now()
+        Summary of algorithm:
+        1. Construct a trie where the edges are relationships and each node
+            contains a set of features for a single entity. See
+            FeatureSet._build_feature_trie.
+        2. Initialize a trie for storing dataframes.
+        3. Traverse the trie using depth first search. At each node calculate
+            the features and store the resulting dataframe in the dataframe
+            trie (so that its values can be used by features which depend on
+            these features). See _calculate_features_for_entity.
+        4. Get the dataframe at the root of the trie (for the target entity) and
+            return the columns corresponding to the requested features.
+        """
+        assert len(instance_ids) > 0, "0 instance ids provided"
 
         # For debugging
         if profile:
