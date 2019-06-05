@@ -646,6 +646,10 @@ class EntitySet(object):
 
         """
         variable_types = variable_types or {}
+
+        if time_index is not None and time_index == index:
+            raise ValueError("time_index and index cannot be the same value, %s" % (index))
+
         entity = Entity(
             entity_id,
             dataframe,
@@ -764,6 +768,9 @@ class EntitySet(object):
         else:
             new_entity_time_index = None
             already_sorted = False
+
+        if new_entity_time_index is not None and new_entity_time_index == index:
+            raise ValueError("time_index and index cannot be the same value, %s" % (index))
 
         selected_variables = [index] +\
             [v for v in additional_variables] +\

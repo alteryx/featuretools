@@ -961,3 +961,30 @@ def _slice_for(es, filter_eid, time_last=None):
                                     index_eid='customers',
                                     instances=[0],
                                     time_last=time_last)
+
+
+def test_same_index_values():
+    transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                                    "session_id": [1, 2, 1, 3, 4, 5],
+                                    "amount": [100.40, 20.63, 33.32, 13.12, 67.22, 1.00],
+                                    "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s"),
+                                    "fraud": [True, False, True, False, True, True],
+                                    "first_entity_time": [1, 2, 3, 5, 6, 6]})
+    es = ft.EntitySet("example")
+
+    error_text = "time_index and index cannot be the same value"
+    with pytest.raises(ValueError, match=error_text):
+        es.entity_from_dataframe(entity_id="entity",
+                                 index="id",
+                                 time_index="id",
+                                 dataframe=transactions_df)
+
+    es.entity_from_dataframe(entity_id="entity",
+                             index="id",
+                             time_index="transaction_time",
+                             dataframe=transactions_df)
+
+    with pytest.raises(ValueError, match=error_text):
+        es.normalize_entity("entity", "new_entity",
+                            "first_entity_time",
+                            make_time_index=True)
