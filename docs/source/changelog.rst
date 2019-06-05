@@ -10,6 +10,7 @@ Changelog
         * Support custom variable types (:pr:`571`)
     * Fixes
         * Normalize_entity specifies error when 'make_time_index' is an invalid string (:pr:`550`)
+        * Renamed features have names correctly serialized (:pr:`585`)
     * Changes
         * Refactor get_pandas_data_slice to take single entity (:pr:`547`)
         * Updates TimeSincePrevious and Diff Primitives (:pr:`561`)
@@ -21,7 +22,7 @@ Changelog
         * Miscellaneous changes (:pr:`559`, :pr:`569`, :pr:`570`, :pr:`574`, :pr:`584`)
 
     Thanks to the following people for contributing to this release:
-    :user:`allisonportis`, :user:`CJStadler`, :user:`ctduffy`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`
+    :user: `alexjwang`, :user:`allisonportis`, :user:`CJStadler`, :user:`ctduffy`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`
 
 **v0.8.0** May 17, 2019
     * Rename NUnique to NumUnique (:pr:`510`)
