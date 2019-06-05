@@ -80,7 +80,7 @@ class PandasBackend(ComputationalBackend):
 class _FeaturesCalculator(object):
     """
     A helper class to hold data that is shared across recursive calls of
-    _calculate_features_on_trie.
+    _calculate_features_for_entity.
     """
     def __init__(self, target_eid, entityset, feature_set, time_last,
                  training_window, precalculated_features, ignored):
@@ -121,11 +121,11 @@ class _FeaturesCalculator(object):
         df_trie = Trie()
 
         target_entity = self.entityset[self.target_eid]
-        self._calculate_features_on_trie(entity_id=self.target_eid,
-                                         feature_trie=feature_trie,
-                                         df_trie=df_trie,
-                                         filter_variable=target_entity.index,
-                                         filter_values=instance_ids)
+        self._calculate_features_for_entity(entity_id=self.target_eid,
+                                            feature_trie=feature_trie,
+                                            df_trie=df_trie,
+                                            filter_variable=target_entity.index,
+                                            filter_values=instance_ids)
 
         # debugging
         if profile:
@@ -159,11 +159,11 @@ class _FeaturesCalculator(object):
             column_list.extend(feat.get_feature_names())
         return df[column_list]
 
-    def _calculate_features_on_trie(self, entity_id, feature_trie, df_trie,
-                                    filter_variable, filter_values,
-                                    parent_relationship=None,
-                                    ancestor_relationship_variables=None,
-                                    parent_df=None):
+    def _calculate_features_for_entity(self, entity_id, feature_trie, df_trie,
+                                       filter_variable, filter_values,
+                                       parent_relationship=None,
+                                       ancestor_relationship_variables=None,
+                                       parent_df=None):
         """
         Generate dataframes with features calculated for this node of the trie,
         and all descendant nodes. The dataframes will be stored in df_trie.
@@ -245,7 +245,7 @@ class _FeaturesCalculator(object):
                 sub_filter_values = df[relationship.parent_variable.id]
 
             sub_df_trie = df_trie.get_node([edge])
-            self._calculate_features_on_trie(
+            self._calculate_features_for_entity(
                 entity_id=sub_entity,
                 feature_trie=sub_trie,
                 df_trie=sub_df_trie,
