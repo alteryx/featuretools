@@ -104,6 +104,13 @@ jobs:
           cd ../
           cp "featuretools-${FEATURETOOLS_VERSION}/.coverage" .coverage
           codecov
+  "changelog_updated":
+    working_directory: ~/featuretools
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+      - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/Featuretools/featuretools/pull/}\`"
 
 workflows:
   version: 2
@@ -113,3 +120,6 @@ workflows:
       - "python-35"
       - "python-36"
       - "python-37"
+  changelog_updated:
+    jobs:
+      - "changelog_updated"
