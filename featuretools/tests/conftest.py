@@ -86,15 +86,3 @@ def games_es(home_games_es):
     away_team = ft.Relationship(home_games_es['teams']['id'],
                                 home_games_es['games']['away_team_id'])
     return home_games_es.add_relationship(away_team)
-
-
-@pytest.fixture
-def self_loop_es():
-    employees = pd.DataFrame({
-        'id': range(5),
-        'manager_id': [0, 0, 1, 0, 1],
-        'age': [47, 52, 42, 35, 26],
-    })
-    relationships = [('employees', 'id', 'employees', 'manager_id')]
-    return ft.EntitySet(entities={'employees': (employees, 'id')},
-                        relationships=relationships)

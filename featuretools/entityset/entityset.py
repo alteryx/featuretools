@@ -549,22 +549,6 @@ class EntitySet(object):
             return True
         return False
 
-    def path_relationships(self, path, start_entity_id):
-        """
-        Generate a list of the strings "forward" or "backward" corresponding to
-        the direction of the relationship at each point in `path`.
-        """
-        prev_entity = start_entity_id
-        rels = []
-        for r in path:
-            if self._is_backward_relationship(r, prev_entity):
-                rels.append('backward')
-                prev_entity = r.child_variable.entity.id
-            else:
-                rels.append('forward')
-                prev_entity = r.parent_variable.entity.id
-        return rels
-
     def has_unique_forward_path(self, start_entity_id, end_entity_id):
         """
         Is the forward path from start to end unique?
