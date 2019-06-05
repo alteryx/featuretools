@@ -7,7 +7,7 @@ from featuretools.feature_base.features_deserializer import (
     FeaturesDeserializer
 )
 from featuretools.feature_base.features_serializer import FeaturesSerializer
-from featuretools.primitives import make_agg_primitive
+from featuretools.primitives import make_agg_primitive, CumSum
 from featuretools.variable_types import Numeric
 
 
@@ -58,21 +58,39 @@ def test_pickle_features_with_custom_primitive(es):
 
 
 def test_serialized_renamed_features(es):
-    original = ft.IdentityFeature(es['log']['value'])
-    assert original.get_name() == 'value'
+    def serialize_name_unchanged(original):
+        renamed = original.rename('MyFeature')
+        assert renamed.get_name() == 'MyFeature'
 
-    renamed = original.rename('MyFeature')
-    assert renamed.get_name() == 'MyFeature'
+        serializer = FeaturesSerializer([renamed])
+        serialized = serializer.to_dict()
 
-    serializer = FeaturesSerializer([renamed])
-    serialized = serializer.to_dict()
-    dictionary = {
-        'name': 'MyFeature',
-        'entity_id': 'log',
-        'variable_id': 'value',
-    }
-    assert dictionary == serialized['feature_definitions']['log.MyFeature']['arguments']
+        deserializer = FeaturesDeserializer(serialized)
+        deserialized = deserializer.to_list()[0]
+        assert deserialized.get_name() == 'MyFeature'
 
-    deserializer = FeaturesDeserializer(serialized)
-    deserialized = deserializer.to_list()[0]
-    assert deserialized.get_name() == 'MyFeature'
+    identity_original = ft.IdentityFeature(es['log']['value'])
+    assert identity_original.get_name() == 'value'
+
+    value = ft.IdentityFeature(es['log']['value'])
+
+    primitive = ft.primitives.Max()
+    agg_original = ft.AggregationFeature(value, es['customers'], primitive)
+    assert agg_original.get_name() == 'MAX(log.value)'
+
+    direct_original = ft.DirectFeature(es['customers']['age'], es['log'])
+    assert direct_original.get_name() == 'customers.age'
+
+    primitive = ft.primitives.MultiplyNumericScalar(value=2)
+    transform_original = ft.TransformFeature(value, primitive)
+    assert transform_original.get_name() == 'value * 2'
+
+    zipcode = ft.IdentityFeature(es['log']['zipcode'])
+    primitive = CumSum()
+    groupby_original = ft.feature_base.GroupByTransformFeature(value, primitive, zipcode)
+    assert groupby_original.get_name() == 'CUM_SUM(value) by zipcode'
+
+    feature_type_list = [identity_original, agg_original, direct_original, transform_original, groupby_original]
+
+    for feature_type in feature_type_list:
+        serialize_name_unchanged(feature_type)

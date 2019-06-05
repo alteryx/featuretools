@@ -859,20 +859,3 @@ def test_get_filepath(es):
     assert fm["MOD4(value)"][0] == 0
     assert fm["MOD4(value)"][14] == 2
     assert pd.isnull(fm["MOD4(value)"][15])
-
-
-def test_rename_serialization(es):
-    value = ft.IdentityFeature(es['log']['value'])
-    primitive = ft.primitives.MultiplyNumericScalar(value=2)
-    transform_x2 = ft.TransformFeature(value, primitive)
-    assert transform_x2.get_name() == 'value * 2'
-
-    renamed = transform_x2.rename('MyFeature')
-    assert renamed.get_name() == 'MyFeature'
-
-    serializer = FeaturesSerializer([renamed])
-    serialized = serializer.to_dict()
-
-    deserializer = FeaturesDeserializer(serialized)
-    deserialized = deserializer.to_list()[0]
-    assert deserialized.get_name() == 'MyFeature'
