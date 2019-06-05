@@ -24,7 +24,7 @@ from featuretools.variable_types import (
 
 
 class FeatureBase(object):
-    def __init__(self, entity, base_features, relationship_path, primitive):
+    def __init__(self, entity, base_features, relationship_path, primitive, name=None):
         """Base class for all features
 
         Args:
@@ -47,7 +47,7 @@ class FeatureBase(object):
 
         self.relationship_path = relationship_path
 
-        self._name = None
+        self._name = name
 
         assert self._check_input_types(), ("Provided inputs don't match input "
                                            "type requirements")
@@ -335,16 +335,15 @@ class IdentityFeature(FeatureBase):
         super(IdentityFeature, self).__init__(entity=variable.entity,
                                               base_features=[],
                                               relationship_path=[],
-                                              primitive=PrimitiveBase)
-        if name is not None:
-            self._name = name
+                                              primitive=PrimitiveBase,
+                                              name=name)
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         entity_id = arguments['entity_id']
         variable_id = arguments['variable_id']
         variable = entityset[entity_id][variable_id]
-        return cls(variable, arguments['name'])
+        return cls(variable=variable, name=arguments['name'])
 
     def copy(self):
         """Return copy of feature"""
@@ -386,10 +385,9 @@ class DirectFeature(FeatureBase):
         super(DirectFeature, self).__init__(entity=child_entity,
                                             base_features=[base_feature],
                                             relationship_path=relationship_path,
-                                            primitive=PrimitiveBase)
+                                            primitive=PrimitiveBase,
+                                            name=name)
 
-        if name is not None:
-            self._name = name
 
     def _handle_relationship_path(self, child_entity, relationship_path):
         if relationship_path:
@@ -507,9 +505,9 @@ class AggregationFeature(FeatureBase):
         super(AggregationFeature, self).__init__(entity=parent_entity,
                                                  base_features=base_features,
                                                  relationship_path=relationship_path,
-                                                 primitive=primitive)
-        if name is not None:
-            self._name = name
+                                                 primitive=primitive,
+                                                 name=name)
+
 
     def _handle_relationship_path(self, parent_entity, relationship_path):
         if relationship_path:
@@ -611,15 +609,15 @@ class TransformFeature(FeatureBase):
         super(TransformFeature, self).__init__(entity=base_features[0].entity,
                                                base_features=base_features,
                                                relationship_path=[],
-                                               primitive=primitive)
-        if name is not None:
-            self._name = name
+                                               primitive=primitive,
+                                               name=name)
+
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         base_features = [dependencies[name] for name in arguments['base_features']]
         primitive = primitives_deserializer.deserialize_primitive(arguments['primitive'])
-        return cls(base_features, primitive, arguments['name'])
+        return cls(base_features=base_features, primitive=primitive, name=arguments['name'])
 
     def copy(self):
         return TransformFeature(self.base_features, self.primitive)
@@ -648,17 +646,16 @@ class GroupByTransformFeature(TransformFeature):
             base_features = [base_features, groupby]
 
         super(GroupByTransformFeature, self).__init__(base_features=base_features,
-                                                      primitive=primitive)
+                                                      primitive=primitive,
+                                                      name=name)
 
-        if name is not None:
-            self._name = name
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         base_features = [dependencies[name] for name in arguments['base_features']]
         primitive = primitives_deserializer.deserialize_primitive(arguments['primitive'])
         groupby = dependencies[arguments['groupby']]
-        return cls(base_features, primitive, groupby, arguments['name'])
+        return cls(base_features=base_features, primitive=primitive, groupby=groupby, name=arguments['name'])
 
     def copy(self):
         # the groupby feature is appended to base_features in the __init__

@@ -235,18 +235,3 @@ def test_serialization(es):
         ft.DirectFeature.from_dictionary(dictionary, es,
                                          {value.unique_name(): value},
                                          PrimitivesDeserializer())
-
-
-def test_rename_serialization(es):
-    original = ft.DirectFeature(es['customers']['age'], es['log'])
-    assert original.get_name() == 'customers.age'
-
-    renamed = original.rename('MyFeature')
-    assert renamed.get_name() == 'MyFeature'
-
-    serializer = FeaturesSerializer([renamed])
-    serialized = serializer.to_dict()
-
-    deserializer = FeaturesDeserializer(serialized)
-    deserialized = deserializer.to_list()[0]
-    assert deserialized.get_name() == 'MyFeature'

@@ -607,20 +607,3 @@ def test_make_three_most_common(es):
         else:
             for i1, i2 in zip(true_results.iloc[i], df.iloc[i]):
                 assert (pd.isnull(i1) and pd.isnull(i2)) or (i1 == i2)
-
-
-def test_rename_serialization(es):
-    value = ft.IdentityFeature(es['log']['value'])
-    primitive = ft.primitives.Max()
-    agg1 = ft.AggregationFeature(value, es['customers'], primitive)
-    assert agg1.get_name() == 'MAX(log.value)'
-
-    renamed = agg1.rename('MyFeature')
-    assert renamed.get_name() == 'MyFeature'
-
-    serializer = FeaturesSerializer([renamed])
-    serialized = serializer.to_dict()
-
-    deserializer = FeaturesDeserializer(serialized)
-    deserialized = deserializer.to_list()[0]
-    assert deserialized.get_name() == 'MyFeature'
