@@ -10,7 +10,7 @@ Changelog
         * Support custom variable types (:pr:`571`)
     * Fixes
         * Normalize_entity specifies error when 'make_time_index' is an invalid string (:pr:`550`)
-        * Schema version added for entityset serialization (:pr: `586`)
+        * Schema version added for entityset serialization (:pr:`586`)
     * Changes
         * Refactor get_pandas_data_slice to take single entity (:pr:`547`)
         * Updates TimeSincePrevious and Diff Primitives (:pr:`561`)
