@@ -537,7 +537,8 @@ def test_stacking_where_primitives(es):
 
 
 def test_no_allow_where(es):
-    Count.allow_where = False
+    with pytest.raises(AttributeError):
+        Count.allow_where
 
 
 def test_where_different_base_feats(es):
