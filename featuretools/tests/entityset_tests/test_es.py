@@ -974,15 +974,15 @@ def test_later_schema_version(es):
         version = '.'.join([str(v) for v in [major, minor, patch]])
         if raises:
             error_text = ('Unable to load entityset. The schema version of the saved '
-                    'entityset (%s) is greater than the latest supported (%s). '
-                    'You may need to upgrade featuretools.'
-                    % (version, SCHEMA_VERSION))
+                          'entityset (%s) is greater than the latest supported (%s). '
+                          'You may need to upgrade featuretools.'
+                          % (version, SCHEMA_VERSION))
         else:
             error_text = None
-        
+
         _check_schema_version(version, es, error_text)
 
-    major, minor, patch=[int(s) for s in SCHEMA_VERSION.split('.')]
+    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
     test_version(major + 1, minor, patch)
     test_version(major, minor + 1, patch)
@@ -992,18 +992,18 @@ def test_later_schema_version(es):
 
 def test_earlier_schema_version(es):
     def test_version(major, minor, patch, raises=True):
-        version='.'.join([str(v) for v in [major, minor, patch]])
+        version = '.'.join([str(v) for v in [major, minor, patch]])
         if raises:
-            error_text=('Unable to load entityset. The schema version of the '
-                'saved entityset (%s) is no longer supported by this '
-                'version of featuretools.'
-                % (version))
+            error_text = ('Unable to load entityset. The schema version of the '
+                          'saved entityset (%s) is no longer supported by this '
+                          'version of featuretools.'
+                          % (version))
         else:
-            error_text=None
-        
+            error_text = None
+
         _check_schema_version(version, es, error_text)
 
-    major, minor, patch=[int(s) for s in SCHEMA_VERSION.split('.')]
+    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
     test_version(major - 1, minor, patch)
     test_version(major, minor - 1, patch, raises=False)
@@ -1011,9 +1011,9 @@ def test_earlier_schema_version(es):
 
 
 def _check_schema_version(version, es, error_text):
-    entities={entity.id: serialize.entity_to_description(entity) for entity in es.entities}
-    relationships=[relationship.to_dictionary() for relationship in es.relationships]
-    dictionary={
+    entities = {entity.id: serialize.entity_to_description(entity) for entity in es.entities}
+    relationships = [relationship.to_dictionary() for relationship in es.relationships]
+    dictionary = {
         'schema_version': version,
         'id': es.id,
         'entities': entities,

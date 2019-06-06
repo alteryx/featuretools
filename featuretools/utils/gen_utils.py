@@ -108,7 +108,7 @@ def check_schema_version(cls, cls_type):
         if cls_type == 'entityset':
             from featuretools.entityset.serialize import SCHEMA_VERSION
             version_string = cls.get('schema_version')
-        elif cls_type == 'feature':
+        elif cls_type == 'features':
             from featuretools.feature_base.features_serializer import SCHEMA_VERSION
             version_string = cls.features_dict['schema_version']
 
@@ -120,10 +120,10 @@ def check_schema_version(cls, cls_type):
                               'You may need to upgrade featuretools.'
                               % (cls_type, cls_type, version_string, SCHEMA_VERSION))
         for c_num, s_num in zip_longest(current, saved, fillvalue=0):
-                if c_num > s_num:
-                    break
-                elif c_num < s_num:
-                    raise RuntimeError(error_text_upgrade)
+            if c_num > s_num:
+                break
+            elif c_num < s_num:
+                raise RuntimeError(error_text_upgrade)
 
         error_text_outdated = ('Unable to load %s. The schema version '
                                'of the saved %s (%s) is no longer '
