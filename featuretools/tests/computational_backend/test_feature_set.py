@@ -33,7 +33,7 @@ def test_feature_trie(diamond_es):
     feature_set = FeatureSet(es, features)
     trie = feature_set.feature_trie
 
-    assert trie.get_node([]).value == {f.unique_name() for f in features}
+    assert trie.value == {f.unique_name() for f in features}
     assert trie.get_node([(True, r_to_country)]).value == {country_name.unique_name()}
     assert trie.get_node([(False, c_to_r)]).value == {negation.unique_name(), customers_mean.unique_name()}
     assert trie.get_node([(False, s_to_r)]).value == set()
