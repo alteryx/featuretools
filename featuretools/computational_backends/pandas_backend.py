@@ -223,7 +223,7 @@ class _FeaturesCalculator(object):
         # conditions.
 
         features = [self.feature_set.features_by_name[fname] for fname in feature_trie.value]
-        need_all_rows = any(f.primitive.uses_full_entity for f in features)
+        need_all_rows = any(self.feature_set.uses_full_entity(f) for f in features)
         if need_all_rows:
             query_variable = None
             query_values = None

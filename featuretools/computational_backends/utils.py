@@ -69,7 +69,7 @@ def gather_approximate_features(features, backend):
     approximate_by_entity = defaultdict(list)
     approximate_feature_set = set([])
     for feature in features:
-        if backend.feature_set.uses_full_entity(feature):
+        if backend.feature_set.uses_full_entity(feature, check_dependents=True):
             continue
         if isinstance(feature, DirectFeature):
             base_feature = feature.base_features[0]

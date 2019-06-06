@@ -35,9 +35,6 @@ class PrimitiveBase(object):
     base_of_exclude = None
     # (bool) If True will only make one feature per unique set of base features
     commutative = False
-    # (bool) If True, feature function depends on all values of entity
-    # (and will receive these values as input, regardless of specified instance ids)
-    uses_full_entity = False
 
     def __init__(self):
         pass

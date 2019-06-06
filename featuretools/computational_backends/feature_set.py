@@ -75,7 +75,7 @@ class FeatureSet(object):
                     str(f.__class__),
                     _get_use_previous(f),
                     _get_where(f),
-                    f.primitive.uses_full_entity,
+                    self.uses_full_entity(f),
                     _get_groupby(f))
 
         # Sort the list of features by the complex key function above, then
@@ -110,11 +110,10 @@ class FeatureSet(object):
 
         return depths
 
-    def uses_full_entity(self, feature):
-        if (isinstance(feature, (GroupByTransformFeature, TransformFeature)) and
-                feature.primitive.uses_full_entity):
+    def uses_full_entity(self, feature, check_dependents=False):
+        if isinstance(feature, TransformFeature) and feature.primitive.uses_full_entity:
             return True
-        return self._dependent_uses_full_entity(feature)
+        return check_dependents and self._dependent_uses_full_entity(feature)
 
     def _dependent_uses_full_entity(self, feature):
         for d in self.feature_dependents[feature.unique_name()]:
