@@ -493,10 +493,6 @@ def test_agg_empty_child(es, backend):
 def test_diamond_entityset(diamond_es):
     es = diamond_es
 
-    def get_relationship(child, parent):
-        return next(r for r in es.relationships
-                    if r.child_entity.id == child and r.parent_entity.id == parent)
-
     amount = ft.IdentityFeature(es['transactions']['amount'])
     path = backward_path(es, ['regions', 'customers', 'transactions'])
     through_customers = ft.AggregationFeature(amount, es['regions'],
