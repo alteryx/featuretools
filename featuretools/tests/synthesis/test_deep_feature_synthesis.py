@@ -536,6 +536,10 @@ def test_stacking_where_primitives(es):
     assert len(stacked_where_limit_2_feats) > 0
 
 
+def test_no_allow_where(es):
+    Count.allow_where = False
+
+
 def test_where_different_base_feats(es):
     es = copy.deepcopy(es)
     es['sessions']['device_type'].interesting_values = [0]
