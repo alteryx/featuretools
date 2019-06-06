@@ -1,11 +1,7 @@
 from builtins import zip
 
-from featuretools import (
-    Relationship,
-    Timedelta,
-    primitives,
-    relationship_path_name
-)
+from featuretools import Relationship, Timedelta, primitives
+from featuretools.entityset.relationship import RelationshipPath
 from featuretools.primitives.base import (
     AggregationPrimitive,
     PrimitiveBase,
@@ -35,6 +31,8 @@ class FeatureBase(object):
         Args:
             entity (Entity): entity this feature is being calculated for
             base_features (list[FeatureBase]): list of base features for primitive
+            relationship_path (RelationshipPath): path from this entity to the
+                entity of the base features.
             primitive (:class:`.PrimitiveBase`): primitive to calculate. if not initialized when passed, gets initialized with no arguments
         """
         assert all(isinstance(f, FeatureBase) for f in base_features), \
@@ -329,7 +327,7 @@ class FeatureBase(object):
         return u"%s: %s" % (self.entity_id, self.get_name())
 
     def relationship_path_name(self):
-        return ''
+        return self.relationship_path.name
 
 
 class IdentityFeature(FeatureBase):
@@ -341,7 +339,7 @@ class IdentityFeature(FeatureBase):
         self.return_type = type(variable)
         super(IdentityFeature, self).__init__(entity=variable.entity,
                                               base_features=[],
-                                              relationship_path=[],
+                                              relationship_path=RelationshipPath([]),
                                               primitive=PrimitiveBase)
 
     @classmethod
@@ -377,11 +375,8 @@ class DirectFeature(FeatureBase):
         a feature value from a parent entity"""
     input_types = [Variable]
     return_type = None
-    # Direct features are applied through forward relationship paths.
-    path_is_forward = True
 
     def __init__(self, base_feature, child_entity, relationship=None):
-        """relationship_path is a forward path from child to parent."""
         base_feature = _check_feature(base_feature)
 
         self.parent_entity = base_feature.entity
@@ -390,7 +385,7 @@ class DirectFeature(FeatureBase):
 
         super(DirectFeature, self).__init__(entity=child_entity,
                                             base_features=[base_feature],
-                                            relationship_path=[relationship],
+                                            relationship_path=RelationshipPath([(True, relationship)]),
                                             primitive=PrimitiveBase)
 
     def _handle_relationship(self, child_entity, relationship):
@@ -440,8 +435,9 @@ class DirectFeature(FeatureBase):
 
     def copy(self):
         """Return copy of feature"""
+        _is_forward, relationship = self.relationship_path[0]
         return DirectFeature(self.base_features[0], self.entity,
-                             relationship=self.relationship_path[0])
+                             relationship=relationship)
 
     @property
     def variable_type(self):
@@ -455,13 +451,11 @@ class DirectFeature(FeatureBase):
                 for base_name in self.base_features[0].get_feature_names()]
 
     def get_arguments(self):
+        _is_forward, relationship = self.relationship_path[0]
         return {
             'base_feature': self.base_features[0].unique_name(),
-            'relationship': self.relationship_path[0].to_dictionary(),
+            'relationship': relationship.to_dictionary(),
         }
-
-    def relationship_path_name(self):
-        return relationship_path_name(self.relationship_path, self.path_is_forward)
 
     def _name_from_base(self, base_name):
         return u"%s.%s" % (self.relationship_path_name(), base_name)
@@ -475,8 +469,6 @@ class AggregationFeature(FeatureBase):
     #: (str or :class:`.Timedelta`): Use only some amount of previous data from
     # each time point during calculation
     use_previous = None
-    # Aggregation features are applied through backward relationship paths.
-    path_is_forward = False
 
     def __init__(self, base_features, parent_entity, primitive,
                  relationship_path=None, use_previous=None, where=None):
@@ -520,11 +512,16 @@ class AggregationFeature(FeatureBase):
 
     def _handle_relationship_path(self, parent_entity, relationship_path):
         if relationship_path:
-            first_parent = relationship_path[0].parent_entity
+            assert all(not is_forward for is_forward, _r in relationship_path), \
+                'All relationships in path must be backward'
+
+            _is_forward, first_relationship = relationship_path[0]
+            first_parent = first_relationship.parent_entity
             assert parent_entity == first_parent, \
                 'parent_entity must match first relationship in path.'
 
-            assert self.child_entity == relationship_path[-1].child_entity, \
+            _is_forward, last_relationship = relationship_path[-1]
+            assert self.child_entity == last_relationship.child_entity, \
                 'Base feature must be defined on the entity at the end of relationship_path'
 
             path_is_unique = parent_entity.entityset \
@@ -532,9 +529,9 @@ class AggregationFeature(FeatureBase):
         else:
             paths = parent_entity.entityset \
                 .find_backward_paths(parent_entity.id, self.child_entity.id)
-            relationship_path = next(paths, None)
+            first_path = next(paths, None)
 
-            if not relationship_path:
+            if not first_path:
                 raise RuntimeError('No backward path from "%s" to "%s" found.'
                                    % (parent_entity.id, self.child_entity.id))
             # Check for another path.
@@ -543,6 +540,7 @@ class AggregationFeature(FeatureBase):
                           "You must specify a relationship path."
                 raise RuntimeError(message)
 
+            relationship_path = RelationshipPath([(False, r) for r in first_path])
             path_is_unique = True
 
         return relationship_path, path_is_unique
@@ -553,6 +551,7 @@ class AggregationFeature(FeatureBase):
         relationship_path = [Relationship.from_dictionary(r, entityset)
                              for r in arguments['relationship_path']]
         parent_entity = relationship_path[0].parent_entity
+        relationship_path = [(False, r) for r in relationship_path]
 
         primitive = primitives_deserializer.deserialize_primitive(arguments['primitive'])
 
@@ -597,7 +596,7 @@ class AggregationFeature(FeatureBase):
     def get_arguments(self):
         return {
             'base_features': [feat.unique_name() for feat in self.base_features],
-            'relationship_path': [r.to_dictionary() for r in self.relationship_path],
+            'relationship_path': [r.to_dictionary() for _, r in self.relationship_path],
             'primitive': serialize_primitive(self.primitive),
             'where': self.where and self.where.unique_name(),
             'use_previous': self.use_previous and self.use_previous.get_arguments(),
@@ -607,7 +606,7 @@ class AggregationFeature(FeatureBase):
         if self._path_is_unique:
             return self.child_entity.id
         else:
-            return relationship_path_name(self.relationship_path, self.path_is_forward)
+            return self.relationship_path.name
 
 
 class TransformFeature(FeatureBase):
@@ -626,7 +625,7 @@ class TransformFeature(FeatureBase):
 
         super(TransformFeature, self).__init__(entity=base_features[0].entity,
                                                base_features=base_features,
-                                               relationship_path=[],
+                                               relationship_path=RelationshipPath([]),
                                                primitive=primitive)
 
     @classmethod

@@ -449,7 +449,7 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
                                             cutoffs_with_approx_e_ids[target_instance_colname])
 
         path = entityset.find_path(approx_entity_id, target_entity.id)
-        rvar = get_relationship_variable_id(path)
+        rvar = get_relationship_variable_id([(True, r) for r in path])
         parent_instance_frame = approx_entity_frames[target_entity.id]
         cutoffs_with_approx_e_ids[rvar] = \
             cutoffs_with_approx_e_ids.merge(parent_instance_frame[[rvar]],

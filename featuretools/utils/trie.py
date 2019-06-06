@@ -1,6 +1,6 @@
 class Trie(object):
     """
-    A trie (prefix tree) where the keys are lists of hashable objects.
+    A trie (prefix tree) where the keys are sequences of hashable objects.
 
     It behaves similarly to a dictionary, except that the keys are lists.
 

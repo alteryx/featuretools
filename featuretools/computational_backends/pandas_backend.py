@@ -468,8 +468,8 @@ class _FeaturesCalculator(object):
         assert len(path) == 1, \
             "Error calculating DirectFeatures, len(path) != 1"
 
-        relationship = path[0]
-        parent_df = df_trie.get_node([(True, relationship)]).value
+        parent_df = df_trie.get_node([path[0]]).value
+        _is_forward, relationship = path[0]
         merge_var = relationship.child_variable.id
 
         # generate a mapping of old column names (in the parent entity) to
@@ -502,8 +502,7 @@ class _FeaturesCalculator(object):
         test_feature = features[0]
         child_entity = test_feature.base_features[0].entity
 
-        path = [(False, r) for r in test_feature.relationship_path]
-        base_frame = df_trie.get_node(path).value
+        base_frame = df_trie.get_node(test_feature.relationship_path).value
         # Sometimes approximate features get computed in a previous filter frame
         # and put in the current one dynamically,
         # so there may be existing features here

@@ -90,7 +90,7 @@ def test_init_and_name(es):
 def test_relationship_path(es):
     f = ft.TransformFeature(es['log']['datetime'], Hour)
 
-    assert f.relationship_path == []
+    assert len(f.relationship_path) == 0
 
 
 def test_serialization(es):

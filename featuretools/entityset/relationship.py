@@ -1,15 +1,3 @@
-def relationship_path_name(path, is_forward):
-    def direction_name(r):
-        if is_forward:
-            return r.parent_name
-        else:
-            return r.child_name
-
-    relationship_names = [direction_name(r) for r in path]
-
-    return '.'.join(relationship_names)
-
-
 class Relationship(object):
     """Class to represent an relationship between entities
 
@@ -125,3 +113,36 @@ class Relationship(object):
         assert n > 0, 'This relationship is missing from the entityset'
 
         return n == 1
+
+
+class RelationshipPath(object):
+    def __init__(self, relationships_with_direction):
+        self._relationships_with_direction = relationships_with_direction
+
+    @property
+    def name(self):
+        relationship_names = [_direction_name(is_forward, r)
+                              for is_forward, r in self._relationships_with_direction]
+
+        return '.'.join(relationship_names)
+
+    def __getitem__(self, index):
+        return self._relationships_with_direction[index]
+
+    def __iter__(self):
+        for is_forward, relationship in self._relationships_with_direction:
+            yield is_forward, relationship
+
+    def __len__(self):
+        return len(self._relationships_with_direction)
+
+    def __eq__(self, other):
+        return isinstance(other, RelationshipPath) and \
+            self._relationships_with_direction == other._relationships_with_direction
+
+
+def _direction_name(is_forward, relationship):
+    if is_forward:
+        return relationship.parent_name
+    else:
+        return relationship.child_name

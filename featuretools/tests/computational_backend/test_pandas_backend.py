@@ -10,6 +10,7 @@ from numpy.testing import assert_array_equal
 import featuretools as ft
 from featuretools import Timedelta
 from featuretools.computational_backends.pandas_backend import PandasBackend
+from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import DirectFeature, IdentityFeature
 from featuretools.primitives import (  # NMostCommon,
     And,
@@ -29,6 +30,7 @@ from featuretools.primitives import (  # NMostCommon,
     Trend
 )
 from featuretools.primitives.base import AggregationPrimitive
+from featuretools.tests.testing_utils import backward_path
 from featuretools.variable_types import Numeric
 
 
@@ -495,18 +497,15 @@ def test_diamond_entityset(diamond_es):
         return next(r for r in es.relationships
                     if r.child_entity.id == child and r.parent_entity.id == parent)
 
-    c_to_r = get_relationship('customers', 'regions')
-    t_to_c = get_relationship('transactions', 'customers')
-    s_to_r = get_relationship('stores', 'regions')
-    t_to_s = get_relationship('transactions', 'stores')
-
     amount = ft.IdentityFeature(es['transactions']['amount'])
+    path = backward_path(es, ['regions', 'customers', 'transactions'])
     through_customers = ft.AggregationFeature(amount, es['regions'],
                                               primitive=ft.primitives.Sum,
-                                              relationship_path=[c_to_r, t_to_c])
+                                              relationship_path=path)
+    path = backward_path(es, ['regions', 'stores', 'transactions'])
     through_stores = ft.AggregationFeature(amount, es['regions'],
                                            primitive=ft.primitives.Sum,
-                                           relationship_path=[s_to_r, t_to_s])
+                                           relationship_path=path)
 
     pandas_backend = PandasBackend(es, [through_customers, through_stores])
     df = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2],
@@ -518,13 +517,15 @@ def test_diamond_entityset(diamond_es):
 def test_two_relationships_to_single_entity(games_es):
     es = games_es
     home_team, away_team = es.relationships
+    path = RelationshipPath([(False, home_team)])
     mean_at_home = ft.AggregationFeature(es['games']['home_team_score'],
                                          es['teams'],
-                                         relationship_path=[home_team],
+                                         relationship_path=path,
                                          primitive=ft.primitives.Mean)
+    path = RelationshipPath([(False, away_team)])
     mean_at_away = ft.AggregationFeature(es['games']['away_team_score'],
                                          es['teams'],
-                                         relationship_path=[away_team],
+                                         relationship_path=path,
                                          primitive=ft.primitives.Mean)
     home_team_mean = ft.DirectFeature(mean_at_home, es['games'],
                                       relationship=home_team)

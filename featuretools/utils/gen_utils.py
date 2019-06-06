@@ -55,10 +55,11 @@ def is_string(test_value):
     return isinstance(test_value, python_string)
 
 
+# TODO: Can this be removed and replaced with path.name?
 def get_relationship_variable_id(path):
-    r = path[0]
+    _, r = path[0]
     child_link_name = r.child_variable.id
-    for r in path[1:]:
+    for _, r in path[1:]:
         parent_link_name = child_link_name
         child_link_name = '%s.%s' % (r.parent_entity.id,
                                      parent_link_name)

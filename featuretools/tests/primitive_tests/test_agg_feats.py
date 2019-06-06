@@ -8,6 +8,7 @@ import pandas as pd
 import pytest
 
 import featuretools as ft
+from featuretools.entityset.relationship import RelationshipPath
 from featuretools.primitives import (  # NMostCommon,
     Count,
     Mean,
@@ -31,7 +32,7 @@ from featuretools.synthesis.deep_feature_synthesis import (
     check_stacking,
     match
 )
-from featuretools.tests.testing_utils import feature_with_name
+from featuretools.tests.testing_utils import backward_path, feature_with_name
 from featuretools.variable_types import (
     Datetime,
     DatetimeTimeIndex,
@@ -238,23 +239,31 @@ def test_init_and_name(es):
 
 
 def test_invalid_init_args(diamond_es):
-    transaction_relationships = diamond_es.get_forward_relationships('transactions')
-    transaction_to_store = next(r for r in transaction_relationships
-                                if r.parent_entity.id == 'stores')
     error_text = 'parent_entity must match first relationship in path'
     with pytest.raises(AssertionError, match=error_text):
+        path = backward_path(diamond_es, ['stores', 'transactions'])
         ft.AggregationFeature(diamond_es['transactions']['amount'],
                               diamond_es['customers'],
                               ft.primitives.Mean,
-                              relationship_path=[transaction_to_store])
+                              relationship_path=path)
 
-    store_to_region = diamond_es.get_forward_relationships('stores')[0]
     error_text = 'Base feature must be defined on the entity at the end of relationship_path'
     with pytest.raises(AssertionError, match=error_text):
+        path = backward_path(diamond_es, ['regions', 'stores'])
         ft.AggregationFeature(diamond_es['transactions']['amount'],
                               diamond_es['regions'],
                               ft.primitives.Mean,
-                              relationship_path=[store_to_region])
+                              relationship_path=path)
+
+    error_text = 'All relationships in path must be backward'
+    with pytest.raises(AssertionError, match=error_text):
+        backward = backward_path(diamond_es, ['customers', 'transactions'])
+        forward = RelationshipPath([(True, r) for _, r in backward])
+        path = RelationshipPath(list(forward) + list(backward))
+        ft.AggregationFeature(diamond_es['transactions']['amount'],
+                              diamond_es['transactions'],
+                              ft.primitives.Mean,
+                              relationship_path=path)
 
 
 def test_init_with_multiple_possible_paths(diamond_es):
@@ -265,15 +274,12 @@ def test_init_with_multiple_possible_paths(diamond_es):
                               diamond_es['regions'],
                               ft.primitives.Mean)
 
-    transaction_relationships = diamond_es.get_forward_relationships('transactions')
-    transaction_to_customer = next(r for r in transaction_relationships
-                                   if r.parent_entity.id == 'customers')
-    customer_to_region = diamond_es.get_forward_relationships('customers')[0]
     # Does not raise if path specified.
+    path = backward_path(diamond_es, ['regions', 'customers', 'transactions'])
     ft.AggregationFeature(diamond_es['transactions']['amount'],
                           diamond_es['regions'],
                           ft.primitives.Mean,
-                          relationship_path=[customer_to_region, transaction_to_customer])
+                          relationship_path=path)
 
 
 def test_init_with_single_possible_path(diamond_es):
@@ -282,10 +288,8 @@ def test_init_with_single_possible_path(diamond_es):
     feat = ft.AggregationFeature(diamond_es['transactions']['amount'],
                                  diamond_es['customers'],
                                  ft.primitives.Mean)
-    transaction_relationships = diamond_es.get_forward_relationships('transactions')
-    transaction_to_customer = next(r for r in transaction_relationships
-                                   if r.parent_entity.id == 'customers')
-    assert feat.relationship_path == [transaction_to_customer]
+    expected_path = backward_path(diamond_es, ['customers', 'transactions'])
+    assert feat.relationship_path == expected_path
 
 
 def test_init_with_no_path(diamond_es):
@@ -303,15 +307,11 @@ def test_init_with_no_path(diamond_es):
 
 
 def test_name_with_multiple_possible_paths(diamond_es):
-    transaction_relationships = diamond_es.get_forward_relationships('transactions')
-    transaction_to_customer = next(r for r in transaction_relationships
-                                   if r.parent_entity.id == 'customers')
-    customer_to_region = diamond_es.get_forward_relationships('customers')[0]
-    # Does not raise if path specified.
+    path = backward_path(diamond_es, ['regions', 'customers', 'transactions'])
     feat = ft.AggregationFeature(diamond_es['transactions']['amount'],
                                  diamond_es['regions'],
                                  ft.primitives.Mean,
-                                 relationship_path=[customer_to_region, transaction_to_customer])
+                                 relationship_path=path)
 
     assert feat.get_name() == "MEAN(customers.transactions.amount)"
     assert feat.relationship_path_name() == 'customers.transactions'
@@ -320,9 +320,10 @@ def test_name_with_multiple_possible_paths(diamond_es):
 def test_copy(games_es):
     home_games = next(r for r in games_es.relationships
                       if r.child_variable.id == 'home_team_id')
+    path = RelationshipPath([(False, home_games)])
     feat = ft.AggregationFeature(games_es['games']['home_team_score'],
                                  games_es['teams'],
-                                 relationship_path=[home_games],
+                                 relationship_path=path,
                                  primitive=ft.primitives.Mean)
     copied = feat.copy()
     assert copied.entity == feat.entity

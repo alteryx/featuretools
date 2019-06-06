@@ -2,5 +2,5 @@
 from .deserialize import read_entityset
 from .entity import Entity
 from .entityset import EntitySet
-from .relationship import Relationship, relationship_path_name
+from .relationship import Relationship
 from .timedelta import Timedelta
