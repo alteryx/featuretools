@@ -49,7 +49,7 @@ def test_direct_rename(es):
     feat = DirectFeature(base_feature=es['sessions']['device_type'],
                          child_entity=es['log'])
     copy_feat = feat.rename("session_test")
-    assert feat.hash() != copy_feat.hash()
+    assert feat.unique_name() != copy_feat.unique_name()
     assert feat.get_name() != copy_feat.get_name()
     assert feat.base_features[0].generate_name() == copy_feat.base_features[0].generate_name()
     assert feat.entity == copy_feat.entity

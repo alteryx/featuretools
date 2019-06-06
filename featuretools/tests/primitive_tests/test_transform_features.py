@@ -802,7 +802,7 @@ def test_make_transform_multiple_output_features(es):
     # check no feature stacked on new primitive
     for feature in fl:
         for base_feature in feature.base_features:
-            assert base_feature.hash() != join_time_split.hash()
+            assert base_feature.unique_name() != join_time_split.unique_name()
 
 
 def test_tranform_stack_agg(es):

@@ -298,7 +298,7 @@ def test_rename(es):
                            groupby=es['log']['session_id'],
                            primitive=CumCount)
     copy_feat = cum_count.rename("rename_test")
-    assert cum_count.hash() != copy_feat.hash()
+    assert cum_count.unique_name() != copy_feat.unique_name()
     assert cum_count.get_name() != copy_feat.get_name()
     assert all([x.generate_name() == y.generate_name() for x, y
                 in zip(cum_count.base_features, copy_feat.base_features)])
