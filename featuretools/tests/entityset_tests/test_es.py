@@ -965,10 +965,7 @@ def _slice_for(es, filter_eid, time_last=None):
 
 def test_same_index_values():
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
-                                    "session_id": [1, 2, 1, 3, 4, 5],
-                                    "amount": [100.40, 20.63, 33.32, 13.12, 67.22, 1.00],
                                     "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s"),
-                                    "fraud": [True, False, True, False, True, True],
                                     "first_entity_time": [1, 2, 3, 5, 6, 6]})
     es = ft.EntitySet("example")
 
