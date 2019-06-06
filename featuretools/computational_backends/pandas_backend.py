@@ -156,7 +156,7 @@ class _FeaturesCalculator(object):
 
         # The dataframe for the target entity should be stored at the root of
         # df_trie.
-        df = df_trie[[]]
+        df = df_trie.value
 
         if df.empty:
             return self.generate_default_df(instance_ids=instance_ids)
@@ -216,7 +216,7 @@ class _FeaturesCalculator(object):
         # Step 1: Get a dataframe for the given entity, filtered by the given
         # conditions.
 
-        features = [self.feature_set.features_by_name[fname] for fname in feature_trie[[]]]
+        features = [self.feature_set.features_by_name[fname] for fname in feature_trie.value]
         need_all_rows = any(f.primitive.uses_full_entity for f in features)
         if need_all_rows:
             query_variable = None
@@ -286,7 +286,7 @@ class _FeaturesCalculator(object):
                           right_index=True,
                           suffixes=('', '_precalculated'))
 
-        feature_names = feature_trie[[]]
+        feature_names = feature_trie.value
         if self.ignored:
             feature_names -= self.ignored
 
@@ -306,7 +306,7 @@ class _FeaturesCalculator(object):
 
         # Step 5: Store the dataframe for this entity at the root of df_trie, so
         # that it can be accessed by the caller.
-        df_trie[[]] = df
+        df_trie.value = df
 
     def _add_ancestor_relationship_variables(self, child_df, parent_df,
                                              ancestor_relationship_variables,
@@ -460,7 +460,7 @@ class _FeaturesCalculator(object):
             "Error calculating DirectFeatures, len(path) != 1"
 
         relationship = path[0]
-        parent_df = df_trie[[(True, relationship)]]
+        parent_df = df_trie.get_node([(True, relationship)]).value
         merge_var = relationship.child_variable.id
 
         # generate a mapping of old column names (in the parent entity) to
@@ -494,7 +494,7 @@ class _FeaturesCalculator(object):
         child_entity = test_feature.base_features[0].entity
 
         path = [(False, r) for r in test_feature.relationship_path]
-        base_frame = df_trie[path]
+        base_frame = df_trie.get_node(path).value
         # Sometimes approximate features get computed in a previous filter frame
         # and put in the current one dynamically,
         # so there may be existing features here

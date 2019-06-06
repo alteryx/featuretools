@@ -32,6 +32,14 @@ class Trie(object):
         self._children = {}
         self._default = default
 
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, v):
+        self._value = v
+
     def children(self):
         """
         A list of pairs of the edges from this node and the nodes they point
@@ -86,15 +94,6 @@ class Trie(object):
             return sub_trie.get_node(rest)
         else:
             return self
-
-    def __getitem__(self, path):
-        """Get the value at the given path."""
-        return self.get_node(path)._value
-
-    def __setitem__(self, path, value):
-        """Update the value at the given path."""
-        sub_trie = self.get_node(path)
-        sub_trie._value = value
 
     def __iter__(self, stack=None):
         """

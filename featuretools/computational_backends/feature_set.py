@@ -63,7 +63,7 @@ class FeatureSet(object):
 
     def _add_feature_to_trie(self, trie, f, path):
         sub_trie = trie.get_node(path)
-        sub_trie[[]].add(f.unique_name())
+        sub_trie.value.add(f.unique_name())
         sub_path = f.relationship_path
         if sub_path:
             sub_path = [(f.path_is_forward, r) for r in sub_path]
