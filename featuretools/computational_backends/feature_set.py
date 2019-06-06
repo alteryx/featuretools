@@ -14,15 +14,11 @@ logger = logging.getLogger('featuretools.computational_backend')
 
 
 class FeatureSet(object):
-    def __init__(self, entityset, features, ignored=None):
+    def __init__(self, entityset, features):
         self.entityset = entityset
         self.target_eid = features[0].entity.id
         self.target_features = features
         self.target_feature_names = {f.unique_name() for f in features}
-        if ignored is None:
-            self.ignored = set([])
-        else:
-            self.ignored = ignored
 
         # Maps the unique name of each feature to the actual feature. This is necessary
         # because features do not support equality and so cannot be used as
@@ -32,11 +28,11 @@ class FeatureSet(object):
 
         feature_dependents = defaultdict(set)
         for f in features:
-            deps = f.get_dependencies(deep=True, ignored=ignored)
+            deps = f.get_dependencies(deep=True)
             for dep in deps:
                 feature_dependents[dep.unique_name()].add(f.unique_name())
                 self.features_by_name[dep.unique_name()] = dep
-                subdeps = dep.get_dependencies(deep=True, ignored=ignored)
+                subdeps = dep.get_dependencies(deep=True)
                 for sd in subdeps:
                     feature_dependents[sd.unique_name()].add(dep.unique_name())
 
@@ -112,7 +108,7 @@ class FeatureSet(object):
 
             # Only look at dependencies if they are on the same entity.
             if not f.relationship_path:
-                dependencies = f.get_dependencies(ignored=self.ignored)
+                dependencies = f.get_dependencies()
                 for dep in dependencies:
                     order[dep.unique_name()] = \
                         min(order[f.unique_name()] - 1, order[dep.unique_name()])
