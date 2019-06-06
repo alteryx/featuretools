@@ -981,7 +981,7 @@ def test_later_schema_version(es):
             'relationships': relationships,
         }
 
-        error_text = ('Unable to load entityset. The schema version of the saved '
+        error_text_upgrade = ('Unable to load entityset. The schema version of the saved '
                       'entityset (%s) is greater than the latest supported (%s). '
                       'You may need to upgrade featuretools.'
                       % (version, SCHEMA_VERSION))
@@ -989,8 +989,7 @@ def test_later_schema_version(es):
         if raises:
             with pytest.raises(RuntimeError) as excinfo:
                 deserialize.description_to_entityset(dictionary)
-
-            assert error_text == str(excinfo.value)
+            assert error_text_upgrade == str(excinfo.value)
         else:
             deserialize.description_to_entityset(dictionary)
 
