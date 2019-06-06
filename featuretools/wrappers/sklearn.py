@@ -29,8 +29,7 @@ class DFSTransformer(TransformerMixin):
                  drop_exact=None,
                  where_primitives=None,
                  max_features=-1,
-                 verbose=False,
-                 profile=False):
+                 verbose=False):
         """Creates Transformer
 
         Args:
@@ -94,8 +93,6 @@ class DFSTransformer(TransformerMixin):
             max_features (int, optional) : Cap the number of generated features
                     to this number. If -1, no limit.
 
-            profile (bool, optional): Enables profiling if True.
-
         Example:
             .. ipython:: python
 
@@ -154,7 +151,6 @@ class DFSTransformer(TransformerMixin):
         self.where_primitives = where_primitives
         self.max_features = max_features
         self.verbose = verbose
-        self.profile = profile
 
     def fit(self, cuttof_time_ids, y=None):
         """Wrapper for DFS
@@ -233,8 +229,7 @@ class DFSTransformer(TransformerMixin):
                 instance_ids=cuttof_time_ids,
                 entities=self.entities,
                 relationships=self.relationships,
-                verbose=self.verbose,
-                profile=self.profile)
+                verbose=self.verbose)
             X_transformed = X_transformed.loc[cuttof_time_ids]
         elif isinstance(cuttof_time_ids, pd.DataFrame):
             ct = cuttof_time_ids
@@ -244,8 +239,7 @@ class DFSTransformer(TransformerMixin):
                 cutoff_time=cuttof_time_ids,
                 entities=self.entities,
                 relationships=self.relationships,
-                verbose=self.verbose,
-                profile=self.profile)
+                verbose=self.verbose)
             X_transformed = X_transformed.loc[ct[ct.columns[0]]]
         else:
             raise TypeError('instance_ids must be a list or pd.DataFrame')
@@ -269,6 +263,5 @@ class DFSTransformer(TransformerMixin):
             'where_primitives': self.where_primitives,
             'max_features': self.max_features,
             'verbose': self.verbose,
-            'profile': self.profile
         }
         return out

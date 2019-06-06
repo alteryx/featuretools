@@ -44,8 +44,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                              cutoff_time_in_index=False,
                              training_window=None, approximate=None,
                              save_progress=None, verbose=False,
-                             chunk_size=None, n_jobs=1, dask_kwargs=None,
-                             profile=False):
+                             chunk_size=None, n_jobs=1, dask_kwargs=None):
     """Calculates a matrix for a given set of instance ids and calculation times.
 
     Args:
@@ -89,8 +88,6 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
         verbose (bool, optional): Print progress info. The time granularity is
             per chunk.
-
-        profile (bool, optional): Enables profiling if True.
 
         chunk_size (int or float or None or "cutoff time"): Number of rows of
             output feature matrix to calculate at time. If passed an integer
@@ -262,7 +259,6 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                                  features=features,
                                                  approximate=approximate,
                                                  training_window=training_window,
-                                                 profile=profile,
                                                  verbose=verbose,
                                                  save_progress=save_progress,
                                                  entityset=entityset,
@@ -284,7 +280,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
 
 def calculate_chunk(chunk, features, approximate, training_window,
-                    profile, verbose, save_progress,
+                    verbose, save_progress,
                     no_unapproximated_aggs, cutoff_df_time_var, target_time,
                     pass_columns, backend=None, entityset=None):
     if not isinstance(features, list):
@@ -315,7 +311,6 @@ def calculate_chunk(chunk, features, approximate, training_window,
                 entityset=backend.entityset,
                 backend=backend,
                 training_window=training_window,
-                profile=profile
             )
         else:
             precalculated_features = None
@@ -326,8 +321,7 @@ def calculate_chunk(chunk, features, approximate, training_window,
             matrix = backend.calculate_all_features(ids, time_last,
                                                     training_window=training_window,
                                                     precalculated_features=precalculated_features,
-                                                    ignored=all_approx_feature_set,
-                                                    profile=profile)
+                                                    ignored=all_approx_feature_set)
             return matrix
 
         # if all aggregations have been approximated, can calculate all together
@@ -387,7 +381,7 @@ def calculate_chunk(chunk, features, approximate, training_window,
 
 
 def approximate_features(features, cutoff_time, window, entityset, backend,
-                         training_window=None, profile=None):
+                         training_window=None):
     '''Given a list of features and cutoff_times to be passed to
     calculate_feature_matrix, calculates approximate values of some features
     to speed up calculations.  Cutoff times are sorted into
@@ -419,8 +413,6 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
         training_window (`Timedelta`, optional):
             Window defining how much older than the cutoff time data
             can be to be included when calculating the feature. If None, all older data is used.
-
-        profile (bool, optional): Enables profiling if True
 
         save_progress (str, optional): path to save intermediate computational results
     '''
@@ -487,8 +479,7 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
                                              training_window=training_window,
                                              approximate=None,
                                              cutoff_time_in_index=False,
-                                             chunk_size=cutoff_time_to_pass.shape[0],
-                                             profile=profile)
+                                             chunk_size=cutoff_time_to_pass.shape[0])
 
         approx_fms_by_entity[approx_entity_id] = approx_fm
 
@@ -507,7 +498,7 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
 
 
 def linear_calculate_chunks(chunks, features, approximate, training_window,
-                            profile, verbose, save_progress, entityset,
+                            verbose, save_progress, entityset,
                             no_unapproximated_aggs, cutoff_df_time_var,
                             target_time, pass_columns):
     backend = PandasBackend(entityset, features)
@@ -525,7 +516,7 @@ def linear_calculate_chunks(chunks, features, approximate, training_window,
     for chunk in chunks:
         _feature_matrix = calculate_chunk(chunk, features, approximate,
                                           training_window,
-                                          profile, verbose,
+                                          verbose,
                                           save_progress,
                                           no_unapproximated_aggs,
                                           cutoff_df_time_var,
@@ -595,7 +586,6 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
                              entityset=_es,
                              approximate=approximate,
                              training_window=training_window,
-                             profile=False,
                              verbose=False,
                              save_progress=save_progress,
                              no_unapproximated_aggs=no_unapproximated_aggs,

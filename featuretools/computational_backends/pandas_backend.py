@@ -1,6 +1,3 @@
-import cProfile
-import os
-import pstats
 import warnings
 from datetime import datetime
 from functools import partial
@@ -43,7 +40,7 @@ class PandasBackend(ComputationalBackend):
         return self.entityset.__sizeof__()
 
     def calculate_all_features(self, instance_ids, time_last,
-                               training_window=None, profile=False,
+                               training_window=None,
                                precalculated_features=None, ignored=None):
         """
         Given a list of instance ids and features with a shared time window,
@@ -57,8 +54,6 @@ class PandasBackend(ComputationalBackend):
 
             training_window (Timedelta, optional): Window defining how much time before the cutoff time data
                 can be used when calculating features. If None, all data before cutoff time is used.
-
-            profile (bool): Enable profiler if True.
 
             ignored (set[int]): Unique names of precalculated features.
 
@@ -74,7 +69,7 @@ class PandasBackend(ComputationalBackend):
         calculator = _FeaturesCalculator(self.target_eid, self.entityset,
                                          self.feature_set, time_last, training_window,
                                          precalculated_features, ignored)
-        return calculator.run(instance_ids, profile)
+        return calculator.run(instance_ids)
 
 
 class _FeaturesCalculator(object):
@@ -108,7 +103,7 @@ class _FeaturesCalculator(object):
 
         self.precalculated_features = precalculated_features
 
-    def run(self, instance_ids, profile):
+    def run(self, instance_ids):
         """
         Calculate values of features for the given instances of the target
         entity.
@@ -127,11 +122,6 @@ class _FeaturesCalculator(object):
         """
         assert len(instance_ids) > 0, "0 instance ids provided"
 
-        # For debugging
-        if profile:
-            pr = cProfile.Profile()
-            pr.enable()
-
         feature_trie = self.feature_set.feature_trie
 
         df_trie = Trie()
@@ -142,17 +132,6 @@ class _FeaturesCalculator(object):
                                             df_trie=df_trie,
                                             filter_variable=target_entity.index,
                                             filter_values=instance_ids)
-
-        # debugging
-        if profile:
-            pr.disable()
-            ROOT_DIR = os.path.expanduser("~")
-            prof_folder_path = os.path.join(ROOT_DIR, 'prof')
-            if not os.path.exists(prof_folder_path):
-                os.mkdir(prof_folder_path)
-            with open(os.path.join(prof_folder_path, 'inst-%s.log' %
-                                   list(instance_ids)[0]), 'w') as f:
-                pstats.Stats(pr, stream=f).strip_dirs().sort_stats("cumulative", "tottime").print_stats()
 
         # The dataframe for the target entity should be stored at the root of
         # df_trie.
