@@ -177,9 +177,7 @@ class _FeaturesCalculator(object):
 
     def _calculate_features_for_entity(self, entity_id, feature_trie, df_trie,
                                        filter_variable, filter_values,
-                                       parent_relationship=None,
-                                       ancestor_relationship_variables=None,
-                                       parent_df=None):
+                                       parent_data=None):
         """
         Generate dataframes with features calculated for this node of the trie,
         and all descendant nodes. The dataframes will be stored in df_trie.
@@ -198,6 +196,14 @@ class _FeaturesCalculator(object):
 
             filter_values (pd.Series): The values to filter the filter_variable
                 to.
+
+            parent_data (tuple[Relationship, list[str], pd.DataFrame]): Data
+                related to the parent of this trie. This will only be present if
+                the relationship points from this entity to the parent entity. A
+                3 tuple of (parent_relationship,
+                ancestor_relationship_variables, parent_df).
+                ancestor_relationship_variables is the names of variables which
+                link the parent entity to its ancestors.
 
             parent_relationship (Relationship): The relationship through which
                 this entity is linked to its parent in the trie. Should be a
@@ -236,7 +242,10 @@ class _FeaturesCalculator(object):
         # Step 2: Add variables to the dataframe linking it to all ancestors.
 
         new_ancestor_relationship_variables = []
-        if parent_relationship:
+        if parent_data:
+            parent_relationship, ancestor_relationship_variables, parent_df = \
+                parent_data
+
             if ancestor_relationship_variables:
                 assert parent_df is not None
 
@@ -255,10 +264,12 @@ class _FeaturesCalculator(object):
                 sub_entity = relationship.parent_entity.id
                 sub_filter_variable = relationship.parent_variable.id
                 sub_filter_values = df[relationship.child_variable.id]
+                parent_data = None
             else:
                 sub_entity = relationship.child_entity.id
                 sub_filter_variable = relationship.child_variable.id
                 sub_filter_values = df[relationship.parent_variable.id]
+                parent_data = (relationship, new_ancestor_relationship_variables, df)
 
             sub_df_trie = df_trie.get_node([edge])
             self._calculate_features_for_entity(
@@ -267,9 +278,7 @@ class _FeaturesCalculator(object):
                 df_trie=sub_df_trie,
                 filter_variable=sub_filter_variable,
                 filter_values=sub_filter_values,
-                parent_relationship=(not is_forward) and relationship,
-                ancestor_relationship_variables=(not is_forward) and new_ancestor_relationship_variables,
-                parent_df=(not is_forward) and df)
+                parent_data=parent_data)
 
         # Step 4: Calculate the features for this entity.
         #
