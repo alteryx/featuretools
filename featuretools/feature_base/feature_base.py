@@ -413,7 +413,7 @@ class DirectFeature(FeatureBase):
         relationship_path = [Relationship.from_dictionary(r, entityset)
                              for r in arguments['relationship_path']]
         child_entity = relationship_path[0].child_entity
-        return cls(base_feature, child_entity, relationship_path=relationship_path, name=arguments['name'])
+        return cls(base_feature=base_feature, child_entity=child_entity, relationship_path=relationship_path, name=arguments['name'])
 
     @property
     def variable(self):
@@ -542,7 +542,7 @@ class AggregationFeature(FeatureBase):
         where_name = arguments['where']
         where = where_name and dependencies[where_name]
 
-        return cls(base_features, parent_entity, primitive, relationship_path=relationship_path,
+        return cls(base_features=base_features, parent_entity=parent_entity, primitive=primitive, relationship_path=relationship_path,
                    use_previous=use_previous, where=where, name=arguments['name'])
 
     def copy(self):
