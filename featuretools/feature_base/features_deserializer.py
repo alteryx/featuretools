@@ -14,6 +14,7 @@ from featuretools.feature_base.feature_base import (
 from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools.utils.gen_utils import check_schema_version
 
+
 def load_features(features):
     """Loads the features from a filepath, an open file, or a JSON formatted string.
 
@@ -110,4 +111,4 @@ class FeaturesDeserializer(object):
         return feature
 
     def _check_schema_version(self):
-        check_schema_version(self, 'feature')
+        check_schema_version(self, 'features')

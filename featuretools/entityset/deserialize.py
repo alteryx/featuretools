@@ -5,9 +5,9 @@ import pandas as pd
 
 from featuretools.entityset.relationship import Relationship
 from featuretools.entityset.serialize import FORMATS
+from featuretools.utils.gen_utils import check_schema_version
 from featuretools.variable_types.variable import find_variable_types
 
-from featuretools.utils.gen_utils import check_schema_version
 
 def description_to_variable(description, entity=None):
     '''Deserialize variable from variable description.

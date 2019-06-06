@@ -97,6 +97,7 @@ def find_descendents(cls):
         for c in find_descendents(sub):
             yield c
 
+
 def check_schema_version(cls, cls_type):
     if is_string(cls_type):
         if is_python_2():
@@ -115,9 +116,9 @@ def check_schema_version(cls, cls_type):
         saved = version_string.split('.')
 
         error_text_upgrade = ('Unable to load %s. The schema version of the saved '
-                        '%s (%s) is greater than the latest supported (%s). '
-                        'You may need to upgrade featuretools.'
-                        % (cls_type, cls_type, version_string, SCHEMA_VERSION))
+                              '%s (%s) is greater than the latest supported (%s). '
+                              'You may need to upgrade featuretools.'
+                              % (cls_type, cls_type, version_string, SCHEMA_VERSION))
         for c_num, s_num in zip_longest(current, saved, fillvalue=0):
                 if c_num > s_num:
                     break
@@ -125,10 +126,9 @@ def check_schema_version(cls, cls_type):
                     raise RuntimeError(error_text_upgrade)
 
         error_text_outdated = ('Unable to load %s. The schema version '
-                                'of the saved %s (%s) is no longer '
-                                'supported by this version of featuretools.'
-                                % (cls_type, cls_type, version_string))
+                               'of the saved %s (%s) is no longer '
+                               'supported by this version of featuretools.'
+                               % (cls_type, cls_type, version_string))
         # Check if saved has older major version.
         if current[0] > saved[0]:
             raise RuntimeError(error_text_outdated)
-
