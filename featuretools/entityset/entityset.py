@@ -648,7 +648,7 @@ class EntitySet(object):
         variable_types = variable_types or {}
 
         if time_index is not None and time_index == index:
-            raise ValueError("time_index and index cannot be the same value, %s %s" % (time_index, index))
+            raise ValueError("time_index and index cannot be the same value, %s" % (time_index))
 
         entity = Entity(
             entity_id,
