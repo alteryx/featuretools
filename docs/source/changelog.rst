@@ -11,6 +11,7 @@ Changelog
     * Fixes
         * Normalize_entity specifies error when 'make_time_index' is an invalid string (:pr:`550`)
         * Removed all mentions of allow_where (:pr:`587`, :pr:`588`)
+        * Removed unused variable in normalize entity (:pr:`589`)
     * Changes
         * Refactor get_pandas_data_slice to take single entity (:pr:`547`)
         * Updates TimeSincePrevious and Diff Primitives (:pr:`561`)
@@ -19,7 +20,7 @@ Changelog
         * Add Featuretools Enterprise to documentation (:pr:`563`)
         * Miscellaneous changes (:pr:`552`, :pr:`573`, :pr:`577`)
     * Testing Changes
-        * Miscellaneous changes (:pr:`559`, :pr:`569`, :pr:`570`, :pr:`574`, :pr:`584`)
+        * Miscellaneous changes (:pr:`559`, :pr:`569`, :pr:`570`, :pr:`574`, :pr:`584`, :pr:`590`)
 
     Thanks to the following people for contributing to this release:
     :user:`alexjwang`, :user:`allisonportis`, :user:`CJStadler`, :user:`ctduffy`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`
