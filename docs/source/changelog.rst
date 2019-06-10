@@ -20,7 +20,7 @@ Changelog
         * Add Featuretools Enterprise to documentation (:pr:`563`)
         * Miscellaneous changes (:pr:`552`, :pr:`573`, :pr:`577`)
     * Testing Changes
-        * Miscellaneous changes (:pr:`559`, :pr:`569`, :pr:`570`, :pr:`574`, :pr:`584`)
+        * Miscellaneous changes (:pr:`559`, :pr:`569`, :pr:`570`, :pr:`574`, :pr:`584`, :pr:`590`)
 
     Thanks to the following people for contributing to this release:
     :user:`alexjwang`, :user:`allisonportis`, :user:`CJStadler`, :user:`ctduffy`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`
