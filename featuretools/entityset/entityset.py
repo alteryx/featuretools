@@ -770,7 +770,7 @@ class EntitySet(object):
             already_sorted = False
 
         if new_entity_time_index is not None and new_entity_time_index == index:
-            raise ValueError("time_index and index cannot be the same value, %s %s" % (new_entity_time_index, index))
+            raise ValueError("time_index and index cannot be the same value, %s" % (new_entity_time_index))
 
         selected_variables = [index] +\
             [v for v in additional_variables] +\
