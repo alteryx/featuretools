@@ -814,6 +814,7 @@ def test_normalize_entity(es):
 
 
 def test_normalize_entity_new_time_index_error_check(es):
+    es_copy = copy.deepcopy(es)
     error_text = "'make_time_index' must be a variable in the base entity"
     with pytest.raises(ValueError, match=error_text):
         es.normalize_entity(base_entity_id='customers',
@@ -831,8 +832,16 @@ def test_normalize_entity_new_time_index_error_check(es):
     es.normalize_entity(base_entity_id='customers',
                         new_entity_id='cancellations',
                         index='cancel_reason',
+                        make_time_index='cancel_date',
                         additional_variables=['cancel_date'],
-                        make_time_index='cancel_date')
+                        copy_variables=[])
+    es = es_copy
+    es.normalize_entity(base_entity_id='customers',
+                        new_entity_id='cancellations',
+                        index='cancel_reason',
+                        make_time_index='cancel_date',
+                        additional_variables=[],
+                        copy_variables=['cancel_date'])
 
 
 def test_normalize_time_index_from_none(es):
