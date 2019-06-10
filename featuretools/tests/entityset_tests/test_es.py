@@ -801,16 +801,6 @@ def test_normalize_entity(es):
         es.normalize_entity('sessions', 'device_types', 'device_type',
                             copy_variables='log')
 
-    error_text = "'make_time_index' must be a variable in the base entity"
-    with pytest.raises(ValueError, match=error_text):
-        es.normalize_entity('sessions', 'device_types', 'device_type',
-                            make_time_index="nonextistent")
-
-    error_text = "'make_time_index' must specified in 'additional_variables' or 'copy_variables'"
-    with pytest.raises(ValueError, match=error_text):
-        es.normalize_entity('sessions', 'device_types', 'device_type',
-                            make_time_index='ip')
-
     es.normalize_entity('sessions', 'device_types', 'device_type',
                         additional_variables=['device_name'],
                         make_time_index=False)
@@ -821,6 +811,28 @@ def test_normalize_entity(es):
     assert 'device_name' in es['device_types'].df.columns
     assert 'device_name' not in es['sessions'].df.columns
     assert 'device_type' in es['device_types'].df.columns
+
+
+def test_normalize_entity_new_time_index_error_check(es):
+    error_text = "'make_time_index' must be a variable in the base entity"
+    with pytest.raises(ValueError, match=error_text):
+        es.normalize_entity(base_entity_id='customers',
+                            new_entity_id='cancellations',
+                            index='cancel_reason',
+                            make_time_index="non-extistent")
+
+    error_text = "'make_time_index' must specified in 'additional_variables' or 'copy_variables'"
+    with pytest.raises(ValueError, match=error_text):
+        es.normalize_entity(base_entity_id='customers',
+                            new_entity_id='cancellations',
+                            index='cancel_reason',
+                            make_time_index='cancel_date')
+
+    es.normalize_entity(base_entity_id='customers',
+                        new_entity_id='cancellations',
+                        index='cancel_reason',
+                        additional_variables=['cancel_date'],
+                        make_time_index='cancel_date')
 
 
 def test_normalize_time_index_from_none(es):
