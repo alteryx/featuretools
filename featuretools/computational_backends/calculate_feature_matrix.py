@@ -415,14 +415,11 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
     approx_fms_trie = Trie(path_constructor=RelationshipPath)
     all_approx_feature_set = None
     target_entity = features[0].entity
-    target_index_var = target_entity.index
 
     approximate_feature_trie, all_approx_feature_set = gather_approximate_features(features, backend)
 
     target_time_colname = 'target_time'
     cutoff_time[target_time_colname] = cutoff_time['time']
-    target_instance_colname = target_index_var
-    cutoff_time[target_instance_colname] = cutoff_time['instance_id']
     approx_cutoffs = bin_cutoff_times(cutoff_time.copy(), window)
     cutoff_df_time_var = 'time'
     cutoff_df_instance_var = 'instance_id'
@@ -435,8 +432,7 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
             _add_approx_entity_index_var(entityset, target_entity.id, approx_cutoffs.copy(), relationship_path)
 
         # Select only columns we care about
-        columns_we_want = [target_instance_colname,
-                           new_approx_entity_index_var,
+        columns_we_want = [new_approx_entity_index_var,
                            cutoff_df_time_var,
                            target_time_colname]
 
@@ -604,21 +600,30 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
 
 def _add_approx_entity_index_var(es, target_entity_id, cutoffs, path):
     """
-    For each relationship in the path, add its child_variable to the cutoff df.
+    Add a variable to the cutoff df linking it to the entity at the end of the
+    path.
+
+    Return the updated cutoff df and the name of this variable. The name will
+    consist of the variables which were joined through.
     """
     last_child_var = 'instance_id'
     last_parent_var = es[target_entity_id].index
+
     for _, relationship in path:
         child_vars = [last_parent_var, relationship.child_variable.id]
         child_df = es[relationship.child_entity.id].df[child_vars]
+
+        # Rename relationship.child_variable to include the variables we have
+        # joined through.
         new_var_name = '%s.%s' % (last_child_var, relationship.child_variable.id)
         to_rename = {relationship.child_variable.id: new_var_name}
         child_df = child_df.rename(columns=to_rename)
 
         cutoffs = cutoffs.merge(child_df,
                                 left_on=last_child_var,
-                                right_on=last_parent_var,
-                                suffixes=('', '_right'))
+                                right_on=last_parent_var)
+
+        # These will be used in the next iteration.
         last_child_var = new_var_name
         last_parent_var = relationship.parent_variable.id
 
