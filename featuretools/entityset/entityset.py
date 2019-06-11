@@ -706,10 +706,8 @@ class EntitySet(object):
             elif make_time_index not in additional_variables + copy_variables:
                 raise ValueError("'make_time_index' must specified in 'additional_variables' or 'copy_variables'")
 
-        new_index = index
-
         transfer_types = {}
-        transfer_types[new_index] = type(base_entity[index])
+        transfer_types[index] = type(base_entity[index])
         for v in additional_variables + copy_variables:
             transfer_types[v] = type(base_entity[v])
 
