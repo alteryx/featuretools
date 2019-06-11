@@ -7,10 +7,6 @@ import pandas as pd
 import pandas.api.types as pdtypes
 
 from featuretools import variable_types
-from featuretools.computational_backends.base_backend import (
-    ComputationalBackend
-)
-from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.exceptions import UnknownFeature
 from featuretools.feature_base import (
@@ -27,59 +23,37 @@ warnings.simplefilter('ignore', np.RankWarning)
 warnings.simplefilter("ignore", category=RuntimeWarning)
 
 
-class PandasBackend(ComputationalBackend):
-
-    def __init__(self, entityset, features):
-        assert len(set(f.entity.id for f in features)) == 1, \
-            "Features must all be defined on the same entity"
-
-        self.entityset = entityset
-        self.target_eid = features[0].entity.id
-        self.feature_set = FeatureSet(entityset, features)
-
-    def __sizeof__(self):
-        return self.entityset.__sizeof__()
-
-    def calculate_all_features(self, instance_ids, time_last,
-                               training_window=None,
-                               precalculated_features=None, ignored=None):
-        """
-        Given a list of instance ids and features with a shared time window,
-        generate and return a mapping of instance -> feature values.
-
-        Args:
-            instance_ids (list): List of instance id for which to build features.
-
-            time_last (pd.Timestamp): Last allowed time. Data from exactly this
-                time not allowed.
-
-            training_window (Timedelta, optional): Window defining how much time before the cutoff time data
-                can be used when calculating features. If None, all data before cutoff time is used.
-
-            ignored (set[int]): Unique names of precalculated features.
-
-            precalculated_features (Trie[RelationshipPath -> pd.DataFrame]):
-                Maps RelationshipPaths to dataframes of precalculated_features
-        Returns:
-            pd.DataFrame : Pandas DataFrame of calculated feature values.
-                Indexed by instance_ids. Columns in same order as features
-                passed in.
-
-        """
-        calculator = _FeaturesCalculator(self.target_eid, self.entityset,
-                                         self.feature_set, time_last, training_window,
-                                         precalculated_features, ignored)
-        return calculator.run(instance_ids)
-
-
-class _FeaturesCalculator(object):
+class FeaturesCalculator(object):
     """
     A helper class to hold data that is shared across recursive calls of
     _calculate_features_for_entity.
+
+    Given a list of instance ids and features with a shared time window,
+    generate and return a mapping of instance -> feature values.
+
+    Args:
+        feature_set (FeatureSet): TODO
+
+        instance_ids (list): List of instance id for which to build features.
+
+        time_last (pd.Timestamp, optional): Last allowed time. Data from exactly this
+            time not allowed.
+
+        training_window (Timedelta, optional): Window defining how much time before the cutoff time data
+            can be used when calculating features. If None, all data before cutoff time is used.
+
+        ignored (set[int], optional): Unique names of precalculated features.
+
+        precalculated_features (Trie[RelationshipPath -> pd.DataFrame], optional):
+            Maps RelationshipPaths to dataframes of precalculated_features
+    Returns:
+        pd.DataFrame : Pandas DataFrame of calculated feature values.
+            Indexed by instance_ids. Columns in same order as features
+            passed in.
+
     """
-    def __init__(self, target_eid, entityset, feature_set, time_last,
-                 training_window, precalculated_features, ignored):
-        self.target_eid = target_eid
+    def __init__(self, entityset, feature_set, time_last=None,
+                 training_window=None, precalculated_features=None, ignored=None):
         self.entityset = entityset
         self.feature_set = feature_set
         self.training_window = training_window
@@ -118,8 +92,8 @@ class _FeaturesCalculator(object):
 
         df_trie = Trie(path_constructor=RelationshipPath)
 
-        target_entity = self.entityset[self.target_eid]
-        self._calculate_features_for_entity(entity_id=self.target_eid,
+        target_entity = self.entityset[self.feature_set.target_eid]
+        self._calculate_features_for_entity(entity_id=self.feature_set.target_eid,
                                             feature_trie=feature_trie,
                                             df_trie=df_trie,
                                             precalculated_trie=self.precalculated_features,
@@ -141,7 +115,7 @@ class _FeaturesCalculator(object):
                                                   extra_columns=df.columns)
             df = df.append(default_df, sort=True)
 
-        df.index.name = self.entityset[self.target_eid].index
+        df.index.name = self.entityset[self.feature_set.target_eid].index
         column_list = []
         for feat in self.feature_set.target_features:
             column_list.extend(feat.get_feature_names())
@@ -351,7 +325,7 @@ class _FeaturesCalculator(object):
         default_df = pd.DataFrame(default_matrix,
                                   columns=default_cols,
                                   index=instance_ids)
-        index_name = self.entityset[self.target_eid].index
+        index_name = self.entityset[self.feature_set.target_eid].index
         default_df.index.name = index_name
         if extra_columns is not None:
             for c in extra_columns:

@@ -3,7 +3,10 @@ import pandas as pd
 import pytest
 
 import featuretools as ft
-from featuretools.computational_backends import PandasBackend
+from featuretools.computational_backends.feature_set import FeatureSet
+from featuretools.computational_backends.features_calculator import (
+    FeaturesCalculator
+)
 from featuretools.feature_base import DirectFeature, Feature
 from featuretools.primitives import (
     AggregationPrimitive,
@@ -24,9 +27,9 @@ def test_direct_from_identity(es):
     device = es['sessions']['device_type']
     d = DirectFeature(base_feature=device, child_entity=es['log'])
 
-    pandas_backend = PandasBackend(es, [d])
-    df = pandas_backend.calculate_all_features(instance_ids=[0, 5],
-                                               time_last=None)
+    feature_set = FeatureSet([d])
+    calculator = FeaturesCalculator(es, feature_set=feature_set, time_last=None)
+    df = calculator.run([0, 5])
     v = df[d.get_name()].tolist()
     assert v == [0, 1]
 
@@ -37,9 +40,9 @@ def test_direct_from_variable(es):
     d = DirectFeature(base_feature=device,
                       child_entity=es['log'])
 
-    pandas_backend = PandasBackend(es, [d])
-    df = pandas_backend.calculate_all_features(instance_ids=[0, 5],
-                                               time_last=None)
+    feature_set = FeatureSet([d])
+    calculator = FeaturesCalculator(es, feature_set=feature_set, time_last=None)
+    df = calculator.run([0, 5])
     v = df[d.get_name()].tolist()
     assert v == [0, 1]
 

@@ -30,7 +30,7 @@ def test_feature_trie(diamond_es):
 
     features = [direct_name, through_customers, through_stores, mean_of_mean]
 
-    feature_set = FeatureSet(es, features)
+    feature_set = FeatureSet(features)
     trie = feature_set.feature_trie
 
     assert trie.value == {f.unique_name() for f in features}

@@ -13,7 +13,10 @@ import cloudpickle
 import numpy as np
 import pandas as pd
 
-from featuretools.computational_backends.pandas_backend import PandasBackend
+from featuretools.computational_backends.feature_set import FeatureSet
+from featuretools.computational_backends.features_calculator import (
+    FeaturesCalculator
+)
 from featuretools.computational_backends.utils import (
     bin_cutoff_times,
     calc_num_per_chunk,
@@ -176,7 +179,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     if _check_time_type(cutoff_time['time'].iloc[0]) is None:
         raise ValueError("cutoff_time time values must be datetime or numeric")
 
-    backend = PandasBackend(entityset, features)
+    feature_set = FeatureSet(features)
 
     # make sure dtype of instance_id in cutoff time
     # is same as column it references
@@ -186,7 +189,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     # Get features to approximate
     if approximate is not None:
-        _, all_approx_feature_set = gather_approximate_features(features, backend)
+        _, all_approx_feature_set = gather_approximate_features(feature_set)
     else:
         all_approx_feature_set = None
 
@@ -238,7 +241,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     if n_jobs != 1 or dask_kwargs is not None:
         feature_matrix = parallel_calculate_chunks(chunks=chunks,
-                                                   features=features,
+                                                   feature_set=feature_set,
                                                    approximate=approximate,
                                                    training_window=training_window,
                                                    verbose=verbose,
@@ -252,7 +255,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                                    dask_kwargs=dask_kwargs or {})
     else:
         feature_matrix = linear_calculate_chunks(chunks=chunks,
-                                                 features=features,
+                                                 feature_set=feature_set,
                                                  approximate=approximate,
                                                  training_window=training_window,
                                                  verbose=verbose,
@@ -275,22 +278,14 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     return feature_matrix
 
 
-def calculate_chunk(chunk, features, approximate, training_window,
+def calculate_chunk(chunk, feature_set, entityset, approximate, training_window,
                     verbose, save_progress,
                     no_unapproximated_aggs, cutoff_df_time_var, target_time,
-                    pass_columns, backend=None, entityset=None):
-    if not isinstance(features, list):
-        features = cloudpickle.loads(features)
-
-    assert entityset is not None or backend is not None, "Must provide either"\
-        " entityset or backend to calculate_chunk"
-    if entityset is None:
-        entityset = backend.entityset
-    if backend is None:
-        backend = PandasBackend(entityset, features)
+                    pass_columns):
+    if not isinstance(feature_set, FeatureSet):
+        feature_set = cloudpickle.loads(feature_set)
 
     feature_matrix = []
-    entityset = backend.entityset
     if no_unapproximated_aggs and approximate is not None:
         if entityset.time_type == NumericTimeIndex:
             chunk_time = np.inf
@@ -301,11 +296,10 @@ def calculate_chunk(chunk, features, approximate, training_window,
         # if approximating, calculate the approximate features
         if approximate is not None:
             precalculated_features_trie, all_approx_feature_set = approximate_features(
-                features,
                 group,
                 window=approximate,
-                entityset=backend.entityset,
-                backend=backend,
+                entityset=entityset,
+                feature_set=feature_set,
                 training_window=training_window,
             )
         else:
@@ -314,10 +308,14 @@ def calculate_chunk(chunk, features, approximate, training_window,
 
         @save_csv_decorator(save_progress)
         def calc_results(time_last, ids, precalculated_features=None, training_window=None):
-            matrix = backend.calculate_all_features(ids, time_last,
-                                                    training_window=training_window,
-                                                    precalculated_features=precalculated_features,
-                                                    ignored=all_approx_feature_set)
+            calculator = FeaturesCalculator(entityset,
+                                            feature_set,
+                                            time_last,
+                                            training_window=training_window,
+                                            precalculated_features=precalculated_features,
+                                            ignored=all_approx_feature_set)
+
+            matrix = calculator.run(ids)
             return matrix
 
         # if all aggregations have been approximated, can calculate all together
@@ -376,9 +374,9 @@ def calculate_chunk(chunk, features, approximate, training_window,
     return feature_matrix
 
 
-def approximate_features(features, cutoff_time, window, entityset, backend,
+def approximate_features(cutoff_time, window, entityset, feature_set,
                          training_window=None):
-    '''Given a list of features and cutoff_times to be passed to
+    '''Given a set of features and cutoff_times to be passed to
     calculate_feature_matrix, calculates approximate values of some features
     to speed up calculations.  Cutoff times are sorted into
     window-sized buckets and the approximate feature values are only calculated
@@ -390,10 +388,6 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
         approximate these features on other top-level entities
 
     Args:
-        features (list[:class:`.FeatureBase`]): if these features are dependent
-            on aggregation features on the prediction, the approximate values
-            for the aggregation feature will be calculated
-
         cutoff_time (pd.DataFrame): specifies what time to calculate
             the features for each instance at. The resulting feature matrix will use data
             up to and including the cutoff_time. A DataFrame with
@@ -406,6 +400,8 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
 
         entityset (:class:`.EntitySet`): An already initialized entityset.
 
+        feature_set (:class:`.FeatureSet`): The features to be calculated.
+
         training_window (`Timedelta`, optional):
             Window defining how much older than the cutoff time data
             can be to be included when calculating the feature. If None, all older data is used.
@@ -414,9 +410,9 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
     '''
     approx_fms_trie = Trie(path_constructor=RelationshipPath)
     all_approx_feature_set = None
-    target_entity = features[0].entity
 
-    approximate_feature_trie, all_approx_feature_set = gather_approximate_features(features, backend)
+    approximate_feature_trie, all_approx_feature_set = \
+        gather_approximate_features(feature_set)
 
     target_time_colname = 'target_time'
     cutoff_time[target_time_colname] = cutoff_time['time']
@@ -429,7 +425,8 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
         if not approx_features:
             continue
         cutoffs_with_approx_e_ids, new_approx_entity_index_var = \
-            _add_approx_entity_index_var(entityset, target_entity.id, approx_cutoffs.copy(), relationship_path)
+            _add_approx_entity_index_var(entityset, feature_set.target_eid,
+                                         approx_cutoffs.copy(), relationship_path)
 
         # Select only columns we care about
         columns_we_want = [new_approx_entity_index_var,
@@ -472,15 +469,14 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
     # as a first class feature in the feature matrix.
     # Unless we signify to only ignore it as a dependency of
     # a feature defined on customers, we would ignore computing it
-    # and pandas_backend would error
+    # and FeaturesCalculator would error
     return approx_fms_trie, all_approx_feature_set
 
 
-def linear_calculate_chunks(chunks, features, approximate, training_window,
+def linear_calculate_chunks(chunks, feature_set, approximate, training_window,
                             verbose, save_progress, entityset,
                             no_unapproximated_aggs, cutoff_df_time_var,
                             target_time, pass_columns):
-    backend = PandasBackend(entityset, features)
     feature_matrix = []
 
     # if verbose, create progess bar
@@ -493,14 +489,13 @@ def linear_calculate_chunks(chunks, features, approximate, training_window,
                                     bar_format=pbar_string)
 
     for chunk in chunks:
-        _feature_matrix = calculate_chunk(chunk, features, approximate,
+        _feature_matrix = calculate_chunk(chunk, feature_set, entityset, approximate,
                                           training_window,
                                           verbose,
                                           save_progress,
                                           no_unapproximated_aggs,
                                           cutoff_df_time_var,
-                                          target_time, pass_columns,
-                                          backend=backend)
+                                          target_time, pass_columns)
         feature_matrix.append(_feature_matrix)
         # Do a manual garbage collection in case objects from calculate_chunk
         # weren't collected automatically
@@ -516,7 +511,7 @@ def scatter_warning(num_scattered_workers, num_workers):
         warnings.warn(scatter_warning.format(num_scattered_workers, num_workers))
 
 
-def parallel_calculate_chunks(chunks, features, approximate, training_window,
+def parallel_calculate_chunks(chunks, feature_set, approximate, training_window,
                               verbose, save_progress, entityset, n_jobs,
                               no_unapproximated_aggs, cutoff_df_time_var,
                               target_time, pass_columns, dask_kwargs=None):
@@ -545,7 +540,7 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
             client.publish_dataset(**{_es.key: _es})
 
         # save features to a tempfile and scatter it
-        pickled_feats = cloudpickle.dumps(features)
+        pickled_feats = cloudpickle.dumps(feature_set)
         _saved_features = client.scatter(pickled_feats)
         client.replicate([_es, _saved_features])
         num_scattered_workers = len(client.who_has([Future(es_token)]).get(es_token, []))
@@ -561,7 +556,7 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
         # TODO: consider handling task submission dask kwargs
         _chunks = client.map(calculate_chunk,
                              chunks,
-                             features=_saved_features,
+                             feature_set=_saved_features,
                              entityset=_es,
                              approximate=approximate,
                              training_window=training_window,

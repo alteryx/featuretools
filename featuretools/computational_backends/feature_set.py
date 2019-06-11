@@ -15,8 +15,7 @@ logger = logging.getLogger('featuretools.computational_backend')
 
 
 class FeatureSet(object):
-    def __init__(self, entityset, features):
-        self.entityset = entityset
+    def __init__(self, features):
         self.target_eid = features[0].entity.id
         self.target_features = features
         self.target_feature_names = {f.unique_name() for f in features}

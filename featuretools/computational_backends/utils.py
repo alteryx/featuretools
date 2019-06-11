@@ -66,7 +66,7 @@ def datetime_round(dt, freq, round_up=False):
     return pd.DatetimeIndex(((round_f(dt.asi8 / freq)) * freq).astype(np.int64))
 
 
-def gather_approximate_features(features, backend):
+def gather_approximate_features(feature_set):
     # A trie where the edges are RelationshipPaths and the nodes contain lists
     # of features.
     approximate_feature_trie = Trie(default=list, path_constructor=RelationshipPath)
@@ -74,8 +74,8 @@ def gather_approximate_features(features, backend):
     # A set of feature names.
     approximate_feature_set = set()
 
-    for feature in features:
-        if backend.feature_set.uses_full_entity(feature, check_dependents=True):
+    for feature in feature_set.target_features:
+        if feature_set.uses_full_entity(feature, check_dependents=True):
             continue
 
         if isinstance(feature, DirectFeature):

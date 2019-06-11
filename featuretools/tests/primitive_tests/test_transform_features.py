@@ -4,7 +4,10 @@ import pandas as pd
 import pytest
 
 import featuretools as ft
-from featuretools.computational_backends import PandasBackend
+from featuretools.computational_backends.feature_set import FeatureSet
+from featuretools.computational_backends.features_calculator import (
+    FeaturesCalculator
+)
 from featuretools.primitives import (
     Absolute,
     AddNumeric,
@@ -113,9 +116,9 @@ def test_serialization(es):
 def test_make_trans_feat(es):
     f = ft.Feature(es['log']['datetime'], primitive=Hour)
 
-    pandas_backend = PandasBackend(es, [f])
-    df = pandas_backend.calculate_all_features(instance_ids=[0],
-                                               time_last=None)
+    feature_set = FeatureSet([f])
+    calculator = FeaturesCalculator(es, feature_set=feature_set)
+    df = calculator.run([0])
     v = df[f.get_name()][0]
     assert v == 10
 
@@ -126,9 +129,9 @@ def test_diff(es):
     diff1 = ft.Feature(value, groupby=es['log']['session_id'], primitive=Diff)
     diff2 = ft.Feature(value, groupby=customer_id_feat, primitive=Diff)
 
-    pandas_backend = PandasBackend(es, [diff1, diff2])
-    df = pandas_backend.calculate_all_features(instance_ids=range(15),
-                                               time_last=None)
+    feature_set = FeatureSet([diff1, diff2])
+    calculator = FeaturesCalculator(es, feature_set=feature_set)
+    df = calculator.run(range(15))
 
     val1 = df[diff1.get_name()].values.tolist()
     val2 = df[diff2.get_name()].values.tolist()
@@ -151,9 +154,9 @@ def test_diff(es):
 
 def test_diff_single_value(es):
     diff = ft.Feature(es['stores']['num_square_feet'], groupby=es['stores'][u'région_id'], primitive=Diff)
-    pandas_backend = PandasBackend(es, [diff])
-    df = pandas_backend.calculate_all_features(instance_ids=[5],
-                                               time_last=None)
+    feature_set = FeatureSet([diff])
+    calculator = FeaturesCalculator(es, feature_set=feature_set)
+    df = calculator.run([5])
     assert df.shape[0] == 1
     assert df[diff.get_name()].dropna().shape[0] == 0
 
@@ -340,9 +343,9 @@ def test_arithmetic_of_transform(es):
     for test in to_test:
         features.append(ft.Feature([diff1, diff2], primitive=test[0]()))
 
-    pandas_backend = PandasBackend(es, features)
-    df = pandas_backend.calculate_all_features(instance_ids=[0, 2, 11, 13],
-                                               time_last=None)
+    feature_set = FeatureSet(features)
+    calculator = FeaturesCalculator(es, feature_set=feature_set)
+    df = calculator.run([0, 2, 11, 13])
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert np.isnan(v.pop(0))
@@ -546,8 +549,9 @@ def test_isnull_feat(es):
 def test_percentile(es):
     v = ft.Feature(es['log']['value'])
     p = ft.Feature(v, primitive=Percentile)
-    pandas_backend = PandasBackend(es, [p])
-    df = pandas_backend.calculate_all_features(range(10, 17), None)
+    feature_set = FeatureSet([p])
+    calculator = FeaturesCalculator(es, feature_set)
+    df = calculator.run(range(10, 17))
     true = es['log'].df[v.get_name()].rank(pct=True)
     true = true.loc[range(10, 17)]
     for t, a in zip(true.values, df[p.get_name()].values):
@@ -558,8 +562,9 @@ def test_dependent_percentile(es):
     v = ft.Feature(es['log']['value'])
     p = ft.Feature(v, primitive=Percentile)
     p2 = ft.Feature(p - 1, primitive=Percentile)
-    pandas_backend = PandasBackend(es, [p, p2])
-    df = pandas_backend.calculate_all_features(range(10, 17), None)
+    feature_set = FeatureSet([p, p2])
+    calculator = FeaturesCalculator(es, feature_set)
+    df = calculator.run(range(10, 17))
     true = es['log'].df[v.get_name()].rank(pct=True)
     true = true.loc[range(10, 17)]
     for t, a in zip(true.values, df[p.get_name()].values):
@@ -570,9 +575,9 @@ def test_agg_percentile(es):
     v = ft.Feature(es['log']['value'])
     p = ft.Feature(v, primitive=Percentile)
     agg = ft.Feature(p, parent_entity=es['sessions'], primitive=Sum)
-    pandas_backend = PandasBackend(es, [agg])
-    df = pandas_backend.calculate_all_features([0, 1], None)
-
+    feature_set = FeatureSet([agg])
+    calculator = FeaturesCalculator(es, feature_set)
+    df = calculator.run([0, 1])
     log_vals = es['log'].df[[v.get_name(), 'session_id']]
     log_vals['percentile'] = log_vals[v.get_name()].rank(pct=True)
     true_p = log_vals.groupby('session_id')['percentile'].sum()[[0, 1]]
@@ -585,8 +590,9 @@ def test_percentile_agg_percentile(es):
     p = ft.Feature(v, primitive=Percentile)
     agg = ft.Feature(p, parent_entity=es['sessions'], primitive=Sum)
     pagg = ft.Feature(agg, primitive=Percentile)
-    pandas_backend = PandasBackend(es, [pagg])
-    df = pandas_backend.calculate_all_features([0, 1], None)
+    feature_set = FeatureSet([pagg])
+    calculator = FeaturesCalculator(es, feature_set)
+    df = calculator.run([0, 1])
 
     log_vals = es['log'].df[[v.get_name(), 'session_id']]
     log_vals['percentile'] = log_vals[v.get_name()].rank(pct=True)
@@ -601,8 +607,9 @@ def test_percentile_agg(es):
     v = ft.Feature(es['log']['value'])
     agg = ft.Feature(v, parent_entity=es['sessions'], primitive=Sum)
     pagg = ft.Feature(agg, primitive=Percentile)
-    pandas_backend = PandasBackend(es, [pagg])
-    df = pandas_backend.calculate_all_features([0, 1], None)
+    feature_set = FeatureSet([pagg])
+    calculator = FeaturesCalculator(es, feature_set)
+    df = calculator.run([0, 1])
 
     log_vals = es['log'].df[[v.get_name(), 'session_id']]
     true_p = log_vals.groupby('session_id')[v.get_name()].sum().fillna(0)
@@ -616,8 +623,9 @@ def test_direct_percentile(es):
     v = ft.Feature(es['customers']['age'])
     p = ft.Feature(v, primitive=Percentile)
     d = ft.Feature(p, es['sessions'])
-    pandas_backend = PandasBackend(es, [d])
-    df = pandas_backend.calculate_all_features([0, 1], None)
+    feature_set = FeatureSet([d])
+    calculator = FeaturesCalculator(es, feature_set)
+    df = calculator.run([0, 1])
 
     cust_vals = es['customers'].df[[v.get_name()]]
     cust_vals['percentile'] = cust_vals[v.get_name()].rank(pct=True)
@@ -631,8 +639,9 @@ def test_direct_agg_percentile(es):
     p = ft.Feature(v, primitive=Percentile)
     agg = ft.Feature(p, parent_entity=es['customers'], primitive=Sum)
     d = ft.Feature(agg, es['sessions'])
-    pandas_backend = PandasBackend(es, [d])
-    df = pandas_backend.calculate_all_features([0, 1], None)
+    feature_set = FeatureSet([d])
+    calculator = FeaturesCalculator(es, feature_set)
+    df = calculator.run([0, 1])
 
     log_vals = es['log'].df[[v.get_name(), 'session_id']]
     log_vals['percentile'] = log_vals[v.get_name()].rank(pct=True)
@@ -646,9 +655,9 @@ def test_direct_agg_percentile(es):
 def test_percentile_with_cutoff(es):
     v = ft.Feature(es['log']['value'])
     p = ft.Feature(v, primitive=Percentile)
-    pandas_backend = PandasBackend(es, [p])
-    df = pandas_backend.calculate_all_features(
-        [2], pd.Timestamp('2011/04/09 10:30:13'))
+    feature_set = FeatureSet([p])
+    calculator = FeaturesCalculator(es, feature_set, pd.Timestamp('2011/04/09 10:30:13'))
+    df = calculator.run([2])
     assert df[p.get_name()].tolist()[0] == 1.0
 
 
@@ -659,40 +668,13 @@ def test_two_kinds_of_dependents(es):
     p = ft.Feature(agg, primitive=Percentile)
     g = ft.Feature(agg, primitive=Absolute)
     agg2 = ft.Feature(v, parent_entity=es['sessions'], where=product == 'coke zero', primitive=Sum)
-    # Adding this feature in tests line 218 in pandas_backend
-    # where we remove columns in result_frame that already exist
-    # in the output entity_frames in preparation for pd.concat
-    # In a prior version, this failed because we changed the result_frame
-    # variable itself, rather than making a new variable _result_frame.
-    # When len(output_frames) > 1, the second iteration won't have
-    # all the necessary columns because they were removed in the first
     agg3 = ft.Feature(agg2, parent_entity=es['customers'], primitive=Sum)
-    pandas_backend = PandasBackend(es, [p, g, agg3])
-    df = pandas_backend.calculate_all_features([0, 1], None)
+    feature_set = FeatureSet([p, g, agg3])
+    calculator = FeaturesCalculator(es, feature_set)
+    df = calculator.run([0, 1])
     assert df[p.get_name()].tolist() == [2. / 3, 1.0]
     assert df[g.get_name()].tolist() == [15, 26]
 
-
-# P TODO: reimplement like
-# def test_like_feat(es):
-#     like = Like(es['log']['product_id'], "coke")
-#     features = [like]
-#     pandas_backend = PandasBackend(es, features)
-#     df = pandas_backend.calculate_all_features(range(5), None)
-#     true = [True, True, True, False, False]
-#     v = df[like.get_name()].values.tolist()
-#     assert true == v
-
-
-# P TODO: reimplement like
-# def test_like_feat_other_syntax(es):
-#     like = ft.Feature(es['log']['product_id']).LIKE("coke")
-#     features = [like]
-#     pandas_backend = PandasBackend(es, features)
-#     df = pandas_backend.calculate_all_features(range(5), None)
-#     true = [True, True, True, False, False]
-#     v = df[like.get_name()].values.tolist()
-#     assert true == v
 
 def test_make_transform_restricts_time_keyword():
     make_trans_primitive(
