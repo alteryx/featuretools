@@ -273,8 +273,6 @@ def test_training_window(es):
     top_level_agg = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count)
 
     # make sure features that have a direct to a higher level agg
-    # so we have multiple "filter eids" in get_pandas_data_slice,
-    # and we go through the loop to pull data with a training_window param more than once
     dagg = DirectFeature(top_level_agg, es['customers'])
 
     # for now, warns if last_time_index not present
