@@ -1,6 +1,6 @@
 import copy
 import logging
-from builtins import object, range
+from builtins import object
 from collections import defaultdict
 
 import cloudpickle
