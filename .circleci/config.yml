@@ -41,9 +41,6 @@ commands:
   lint:
     description: "run linter test"
     steps:
-      - run: |
-          source venv/bin/activate
-          pip install -r unpacked_sdist/dev-requirements.txt
       - run: source venv/bin/activate && make lint
 
 jobs:
@@ -125,6 +122,20 @@ jobs:
     steps:
       - checkout
       - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/Featuretools/featuretools/pull/}\`"
+  "Install dev requirements":
+    working_directory: ~/featuretools
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - attach_workspace:
+          at: ~/featuretools
+      - run: |
+          source venv/bin/activate
+          pip install -r unpacked_sdist/dev-requirements.txt
+      - persist_to_workspace:
+          root: ~/featuretools
+          paths:
+            - venv
 
 workflows:
   version: 2
@@ -139,10 +150,10 @@ workflows:
             - "Install Featuretools"
       - "Run Linter":
           requires:
-            - "Install Featuretools"
+            - "Install dev requirements"
       - "Build Docs":
           requires:
-            - "Install Featuretools"
+            - "Install dev requirements"
       - "Install featuretools extras":
           requires:
             - "Package Featuretools"
