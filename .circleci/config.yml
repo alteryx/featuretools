@@ -38,7 +38,7 @@ commands:
           python -c "import featuretools_tsfresh_primitives"
           python -c "import featuretools_update_checker"
   lint:
-    description "run linter test"
+    description: "run linter test"
     steps:
       - run: |
           source venv/bin/activate
