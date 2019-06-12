@@ -122,6 +122,7 @@ jobs:
     steps:
       - checkout
       - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/Featuretools/featuretools/pull/}\`"
+
   "Install dev requirements":
     working_directory: ~/featuretools
     docker:
