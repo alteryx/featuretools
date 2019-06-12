@@ -76,7 +76,7 @@ jobs:
     docker:
       - image: circleci/python:3.7
     steps:
-      - run: sudo apt update && sudo apt install -y graphviz pandoc
+      - run: sudo apt update && sudo apt install -y graphviz
       - checkout
       - attach_workspace:
           at: ~/featuretools
@@ -97,6 +97,7 @@ jobs:
     docker:
       - image: circleci/python:3.7
     steps:
+      - run: sudo apt update && sudo apt install -y pandoc
       - checkout
       - attach_workspace:
           at: ~/featuretools
