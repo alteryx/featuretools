@@ -6,7 +6,7 @@ executors:
     parameters:
       image_tag:
         type: string
-        default: "2.7"
+        default: "3.7"
     docker:
       - image: circleci/python:<< parameters.image_tag >>
 
@@ -54,12 +54,12 @@ commands:
       - run: source venv/bin/activate && make lint
 
 jobs:
-  "Package Featuretools":
+  package_featuretools:
     working_directory: ~/featuretools
     parameters:
       image_tag:
         type: string
-        default: "2.7"
+        default: "3.7"
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -71,10 +71,15 @@ jobs:
           paths:
             - unpacked_sdist
 
-  "Install Featuretools":
+  install_ft:
     working_directory: ~/featuretools
-    docker:
-      - image: circleci/python:3.7
+    parameters:
+      image_tag:
+        type: string
+        default: "3.7"
+    executor:
+      name: python
+      image_tag: << parameters.image_tag >>
     steps:
       - checkout
       - attach_workspace:
@@ -86,10 +91,15 @@ jobs:
           paths:
             - venv
 
-  "Run Unit Tests":
+  unit_tests:
     working_directory: ~/featuretools
-    docker:
-      - image: circleci/python:3.7
+    parameters:
+      image_tag:
+        type: string
+        default: "3.7"
+    executor:
+      name: python
+      image_tag: << parameters.image_tag >>
     steps:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
@@ -97,17 +107,22 @@ jobs:
           at: ~/featuretools
       - run-packaged-tests
 
-  "Run Linter":
+  lint_test:
     working_directory: ~/featuretools
-    docker:
-      - image: circleci/python:3.7
+    parameters:
+      image_tag:
+        type: string
+        default: "3.7"
+    executor:
+      name: python
+      image_tag: << parameters.image_tag >>
     steps:
       - checkout
       - attach_workspace:
           at: ~/featuretools
       - lint
 
-  "Build Docs":
+  build_docs:
     working_directory: ~/featuretools
     docker:
       - image: circleci/python:3.7
@@ -120,10 +135,15 @@ jobs:
           source venv/bin/activate
           make -C docs/ -e "SPHINXOPTS=-W" clean html
 
-  "Install featuretools extras":
+  install_ft_complete:
     working_directory: ~/featuretools
-    docker:
-      - image: circleci/python:3.7
+    parameters:
+      image_tag:
+        type: string
+        default: "3.7"
+    executor:
+      name: python
+      image_tag: << parameters.image_tag >>
     steps:
       - checkout
       - attach_workspace:
@@ -131,18 +151,23 @@ jobs:
       - install-ft-complete
       - run-import-tests
 
-  "Changelog Updated":
+  changelog_updated:
     working_directory: ~/featuretools
     docker:
-      - image: circleci/python:3.7
+      - image: busybox:latest
     steps:
       - checkout
       - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/Featuretools/featuretools/pull/}\`"
 
-  "Install dev requirements":
+  install_dev_reqs:
     working_directory: ~/featuretools
-    docker:
-      - image: circleci/python:3.7
+    parameters:
+      image_tag:
+        type: string
+        default: "3.7"
+    executor:
+      name: python
+      image_tag: << parameters.image_tag >>
     steps:
       - attach_workspace:
           at: ~/featuretools
@@ -158,27 +183,118 @@ workflows:
   version: 2
   test_all_python_versions:
     jobs:
-      - "Package Featuretools":
-          image_tag: "3.7"
-      - "Install Featuretools":
+      - package_featuretools:
+          name: "py27 package featuretools"
+          image_tag: "2.7"
+      - package_featuretools:
+          name: "py35 package featuretools"
+          image_tag: "3.5"
+      - package_featuretools:
+          name: "py36 package featuretools"
+          image_tag: "3.6"
+      - package_featuretools:
+          name: "py37 package featuretools"
+      - install_ft:
+          name: "py27 install featuretools"
+          image_tag: "2.7"
           requires:
-            - "Package Featuretools"
-      - "Run Unit Tests":
+            - "py27 package featuretools"
+      - install_ft:
+          name: "py35 install featuretools"
+          image_tag: "3.5"
           requires:
-            - "Install Featuretools"
-      - "Install dev requirements":
+            - "py35 package featuretools"
+      - install_ft:
+          name: "py36 install featuretools"
+          image_tag: "3.6"
           requires:
-            - "Install Featuretools"
-      - "Run Linter":
+            - "py36 package featuretools"
+      - install_ft:
+          name: "py37 install featuretools"
           requires:
-            - "Install dev requirements"
-      - "Build Docs":
+            - "py37 package featuretools"
+      - unit_tests:
+          name: "py27 unit tests"
+          image_tag: "2.7"
           requires:
-            - "Install dev requirements"
-      - "Install featuretools extras":
+            - "py27 install featuretools"
+      - unit_tests:
+          name: "py35 unit tests"
+          image_tag: "3.5"
           requires:
-            - "Package Featuretools"
-      - "Changelog Updated":
+            - "py35 install featuretools"
+      - unit_tests:
+          name: "py36 unit tests"
+          image_tag: "3.6"
+          requires:
+            - "py36 install featuretools"
+      - unit_tests:
+          name: "py37 unit tests"
+          requires:
+            - "py37 install featuretools"
+      - install_dev_reqs:
+          name: "py27 install dev reqs"
+          image_tag: "2.7"
+          requires:
+            - "py27 install featuretools"
+      - install_dev_reqs:
+          name: "py35 install dev reqs"
+          image_tag: "3.5"
+          requires:
+            - "py35 install featuretools"
+      - install_dev_reqs:
+          name: "py36 install dev reqs"
+          image_tag: "3.6"
+          requires:
+            - "py36 install featuretools"
+      - install_dev_reqs:
+          name: "py37 install dev reqs"
+          requires:
+            - "py37 install featuretools"
+      - lint_test:
+          name: "py27 lint test"
+          image_tag: "2.7"
+          requires:
+            - "py27 install dev reqs"
+      - lint_test:
+          name: "py35 lint test"
+          image_tag: "3.5"
+          requires:
+            - "py35 install dev reqs"
+      - lint_test:
+          name: "py36 lint test"
+          image_tag: "3.6"
+          requires:
+            - "py36 install dev reqs"
+      - lint_test:
+          name: "py37 lint test"
+          requires:
+            - "py37 install dev reqs"
+      - build_docs:
+          name: "build docs"
+          requires:
+            - "py37 install dev reqs"
+      - install_ft_complete:
+          name: "py27 install featuretools complete test"
+          image_tag: "2.7"
+          requires:
+            - "py27 package featuretools"
+      - install_ft_complete:
+          name: "py35 install featuretools complete test"
+          image_tag: "3.5"
+          requires:
+            - "py35 package featuretools"
+      - install_ft_complete:
+          name: "py36 install featuretools complete test"
+          image_tag: "3.6"
+          requires:
+            - "py36 package featuretools"
+      - install_ft_complete:
+          name: "py37 install featuretools complete test"
+          requires:
+            - "py37 package featuretools"
+      - changelog_updated:
+          name: "changelog updated"
           filters:
             branches:
               ignore: /^master?/
