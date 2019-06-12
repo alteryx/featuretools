@@ -709,18 +709,6 @@ def test_related_instances_all_cutoff_time_same_entity(es):
     assert result['id'].values.tolist() == list(range(5))
 
 
-def test_add_link_vars(es):
-    eframes = {e_id: es[e_id].df
-               for e_id in ["log", "sessions", "customers", u"régions"]}
-
-    es._add_multigenerational_link_vars(frames=eframes,
-                                        start_entity_id=u'régions',
-                                        end_entity_id='log')
-
-    assert 'sessions.customer_id' in eframes['log'].columns
-    assert u'sessions.customers.région_id' in eframes['log'].columns
-
-
 def test_normalize_entity(es):
     error_text = "'additional_variables' must be a list, but received type.*"
     with pytest.raises(TypeError, match=error_text):
