@@ -657,58 +657,6 @@ def test_checks_time_type_setting_secondary_time_index(es):
         card_es['transactions'].set_secondary_time_index({'fraud': ['fraud']})
 
 
-def test_related_instances_backward(es):
-    result = es.related_instances(
-        start_entity_id=u'régions', final_entity_id='log',
-        instance_ids=['United States'])
-
-    col = es['log'].df['id'].values
-    assert len(result['id'].values) == len(col)
-    assert set(result['id'].values) == set(col)
-
-    result = es.related_instances(
-        start_entity_id=u'régions', final_entity_id='log',
-        instance_ids=['Mexico'])
-
-    assert len(result['id'].values) == 0
-
-
-def test_related_instances_forward(es):
-    result = es.related_instances(
-        start_entity_id='log', final_entity_id=u'régions',
-        instance_ids=[0, 1])
-
-    assert len(result['id'].values) == 1
-    assert result['id'].values[0] == 'United States'
-
-
-def test_related_instances_mixed_path(es):
-    result = es.related_instances(
-        start_entity_id='customers', final_entity_id='products',
-        instance_ids=[1])
-    related = ["Haribo sugar-free gummy bears", "coke zero"]
-    assert set(related) == set(result['id'].values)
-
-
-def test_related_instances_all(es):
-    # test querying across the entityset
-    result = es.related_instances(
-        start_entity_id='customers', final_entity_id='products',
-        instance_ids=None)
-
-    for p in es['products'].df['id'].values:
-        assert p in result['id'].values
-
-
-def test_related_instances_all_cutoff_time_same_entity(es):
-    # test querying across the entityset
-    result = es.related_instances(
-        start_entity_id='log', final_entity_id='log',
-        instance_ids=None, time_last=pd.Timestamp('2011/04/09 10:30:31'))
-
-    assert result['id'].values.tolist() == list(range(5))
-
-
 def test_normalize_entity(es):
     error_text = "'additional_variables' must be a list, but received type.*"
     with pytest.raises(TypeError, match=error_text):
