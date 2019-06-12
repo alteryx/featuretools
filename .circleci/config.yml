@@ -1,5 +1,15 @@
 version: 2.1
 
+executors:
+  # Can set image tag in job / workflow
+  python:
+    parameters:
+      image_tag:
+        type: string
+        default: "2.7"
+    docker:
+      - image: circleci/python:<< parameters.image_tag >>
+
 commands:
   unpackage-featuretools:
     description: "create featuretools source distribution and unpack it"
@@ -46,8 +56,13 @@ commands:
 jobs:
   "Package Featuretools":
     working_directory: ~/featuretools
-    docker:
-      - image: circleci/python:3.7
+    parameters:
+      image_tag:
+        type: string
+        default: "2.7"
+    executor:
+      name: python
+      image_tag: << parameters.image_tag >>
     steps:
       - checkout
       - unpackage-featuretools
@@ -143,7 +158,8 @@ workflows:
   version: 2
   test_all_python_versions:
     jobs:
-      - "Package Featuretools"
+      - "Package Featuretools":
+          image_tag: "3.7"
       - "Install Featuretools":
           requires:
             - "Package Featuretools"
