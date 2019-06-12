@@ -1,110 +1,123 @@
 version: 2.1
 
 commands:
-  install-packaged-featuretools:
+  unpackage-featuretools:
+    description: "create featuretools source distribution and unpack it"
+    steps:
+      - run: |
+          python setup.py sdist
+          FT_VERSION=$(python setup.py --version)
+          tar -zxvf "dist/featuretools-${FT_VERSION}.tar.gz"
+          mv "featuretools-${FT_VERSION}" unpacked_dist
+  install-featuretools:
     description: "install featuretools from source distribution"
     steps:
       - run : |
-          source test_env/bin/activate
-          python setup.py sdist
-          FEATURETOOLS_VERSION=$(python setup.py --version)
-          tar -zxvf "dist/featuretools-${FEATURETOOLS_VERSION}.tar.gz"
-          pip install -e "featuretools-${FEATURETOOLS_VERSION}/"
-          pip install -r "featuretools-${FEATURETOOLS_VERSION}/test-requirements.txt"
+          source venv/bin/activate
+          pip install -e unpacked_dist/
+          pip install -r unpacked_dist/test-requirements.txt
   run-packaged-tests:
     description: "run unit tests on packaged testing files"
     steps:
       - run: |
-          source test_env/bin/activate
-          cd "featuretools-$(python setup.py --version)/"
+          source venv/bin/activate
+          cd unpacked_dist
           pytest
   install-ft-complete:
     description: "install featuretools[complete]"
     steps:
       - run: |
-          virtualenv test_ft_complete_env && source test_ft_complete_env/bin/activate
-          FEATURETOOLS_VERSION=$(python setup.py --version)
-          pip install -e "featuretools-${FEATURETOOLS_VERSION}/[complete]"
+          virtualenv venv
+          source venv/bin/activate
+          pip install -e unpacked_dist/[complete]
   run-import-tests:
     description: "testing imports of add-ons"
     steps:
       - run: |
-          source test_ft_complete_env/bin/activate
+          source venv/bin/activate
           python -c "import featuretools_tsfresh_primitives"
           python -c "import featuretools_update_checker"
+  lint:
+    description "run linter test"
+    steps:
+      - run: |
+          source venv/bin/activate
+          pip install -r unpacked_dist/dev-requirements.txt
+      - run: source venv/bin/activate && make lint
 
 jobs:
-  "python-27":
-    working_directory: ~/featuretools
-    docker:
-      - image: circleci/python:2.7
-    steps:
-      - run: sudo apt update && sudo apt install -y graphviz
-      - checkout
-      - run: virtualenv test_env && virtualenv dev_env
-      - install-packaged-featuretools
-      - run: source dev_env/bin/activate && make installdeps
-      - run: source dev_env/bin/activate && make lint
-      - run-packaged-tests
-      - install-ft-complete
-      - run-import-tests
-
-  "python-35":
-    working_directory: ~/featuretools
-    docker:
-      - image: circleci/python:3.5
-    steps:
-      - run: sudo apt update && sudo apt install -y graphviz
-      - checkout
-      - run: virtualenv test_env && virtualenv dev_env
-      - install-packaged-featuretools
-      - run: source dev_env/bin/activate && make installdeps
-      - run: source dev_env/bin/activate && make lint
-      - run-packaged-tests
-      - install-ft-complete
-      - run-import-tests
-
-  "python-36":
-    working_directory: ~/featuretools
-    docker:
-      - image: circleci/python:3.6
-    steps:
-      - run: sudo apt update && sudo apt install -y graphviz pandoc
-      - checkout
-      - run: virtualenv test_env && virtualenv dev_env
-      - install-packaged-featuretools
-      - run: source dev_env/bin/activate && make installdeps
-      - run: source dev_env/bin/activate && make lint
-      - run-packaged-tests
-      - install-ft-complete
-      - run-import-tests
-      - run: source dev_env/bin/activate && make -C docs/ -e "SPHINXOPTS=-W" clean html
-
-  "python-37":
+  "PY37: Package Featuretools":
     working_directory: ~/featuretools
     docker:
       - image: circleci/python:3.7
     steps:
-      - run: sudo apt update && sudo apt install -y graphviz
       - checkout
-      - run: virtualenv test_env && virtualenv dev_env
+      - unpackage-featuretools
+      - persist_to_workspace:
+          root: ~/featuretools
+          paths:
+            - unpacked_sdist
+
+  "PY37: Install Featuretools":
+    working_directory: ~/featuretools
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/featuretools
+      - run: virtualenv venv
       - install-packaged-featuretools
-      - run: source dev_env/bin/activate && make installdeps
-      - run: source dev_env/bin/activate && make lint
+      - persist_to_workspace:
+          root: ~/featuretools
+          paths:
+            - venv
+
+  "PY37: Run Unit Tests":
+    working_directory: ~/featuretools
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - run: sudo apt update && sudo apt install -y graphviz pandoc
+      - checkout
+      - attach_workspace:
+          at: ~/featuretools
+      - run-packaged-tests
+
+  "PY37: Run Linter":
+    working_directory: ~/featuretools
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/featuretools
+      - lint
+
+  "PY37: Build Docs":
+    working_directory: ~/featuretools
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/featuretools
+      - run: |
+          source venv/bin/activate
+          make -C docs/ -e "SPHINXOPTS=-W" clean html
+
+  "PY37: Install featuretools[complete]":
+    working_directory: ~/featuretools
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/featuretools
       - install-ft-complete
       - run-import-tests
-      - run: |
-          source test_env/bin/activate
-          pip install "$(cat dev-requirements.txt | grep codecov)"
-          coverage erase
-          FEATURETOOLS_VERSION=$(python setup.py --version)
-          cd "featuretools-${FEATURETOOLS_VERSION}/"
-          coverage erase
-          pytest featuretools/tests --cov=featuretools --cov-config=../.coveragerc
-          cd ../
-          cp "featuretools-${FEATURETOOLS_VERSION}/.coverage" .coverage
-          codecov
-  "changelog_updated":
+
+  "Changelog Updated":
     working_directory: ~/featuretools
     docker:
       - image: circleci/python:3.7
@@ -116,13 +129,23 @@ workflows:
   version: 2
   test_all_python_versions:
     jobs:
-      - "python-27"
-      - "python-35"
-      - "python-36"
-      - "python-37"
-  changelog_updated:
-    jobs:
-      - changelog_updated:
+      - "PY37: Package Featuretools"
+      - "PY37: Install Featuretools":
+          requires:
+            - "PY37: Package Featuretools"
+      - "PY37: Run Unit Tests":
+          requires:
+            - "PY37: Install Featuretools"
+      - "PY37: Run Linter":
+          requires:
+            - "PY37: Install Featuretools"
+      - "PY37: Build Docs":
+          requires:
+            - "PY37: Install Featuretools"
+      - "PY37: Install featuretools[complete]":
+          requires:
+            - "PY37: Package Featuretools"
+      - "Changelog Updated":
           filters:
             branches:
               ignore: /^master?/
