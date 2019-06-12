@@ -46,7 +46,7 @@ commands:
       - run: source venv/bin/activate && make lint
 
 jobs:
-  "PY37: Package Featuretools":
+  "Package Featuretools":
     working_directory: ~/featuretools
     docker:
       - image: circleci/python:3.7
@@ -58,7 +58,7 @@ jobs:
           paths:
             - unpacked_sdist
 
-  "PY37: Install Featuretools":
+  "Install Featuretools":
     working_directory: ~/featuretools
     docker:
       - image: circleci/python:3.7
@@ -73,7 +73,7 @@ jobs:
           paths:
             - venv
 
-  "PY37: Run Unit Tests":
+  "Run Unit Tests":
     working_directory: ~/featuretools
     docker:
       - image: circleci/python:3.7
@@ -84,7 +84,7 @@ jobs:
           at: ~/featuretools
       - run-packaged-tests
 
-  "PY37: Run Linter":
+  "Run Linter":
     working_directory: ~/featuretools
     docker:
       - image: circleci/python:3.7
@@ -94,7 +94,7 @@ jobs:
           at: ~/featuretools
       - lint
 
-  "PY37: Build Docs":
+  "Build Docs":
     working_directory: ~/featuretools
     docker:
       - image: circleci/python:3.7
@@ -106,7 +106,7 @@ jobs:
           source venv/bin/activate
           make -C docs/ -e "SPHINXOPTS=-W" clean html
 
-  "PY37: Install featuretools[complete]":
+  "Install featuretools extras":
     working_directory: ~/featuretools
     docker:
       - image: circleci/python:3.7
@@ -129,22 +129,22 @@ workflows:
   version: 2
   test_all_python_versions:
     jobs:
-      - "PY37: Package Featuretools"
-      - "PY37: Install Featuretools":
+      - "Package Featuretools"
+      - "Install Featuretools":
           requires:
-            - "PY37: Package Featuretools"
-      - "PY37: Run Unit Tests":
+            - "Package Featuretools"
+      - "Run Unit Tests":
           requires:
-            - "PY37: Install Featuretools"
-      - "PY37: Run Linter":
+            - "Install Featuretools"
+      - "Run Linter":
           requires:
-            - "PY37: Install Featuretools"
-      - "PY37: Build Docs":
+            - "Install Featuretools"
+      - "Build Docs":
           requires:
-            - "PY37: Install Featuretools"
-      - "PY37: Install featuretools[complete]":
+            - "Install Featuretools"
+      - "Install featuretools extras":
           requires:
-            - "PY37: Package Featuretools"
+            - "Package Featuretools"
       - "Changelog Updated":
           filters:
             branches:
