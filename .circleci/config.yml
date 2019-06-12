@@ -9,6 +9,7 @@ commands:
           FT_VERSION=$(python setup.py --version)
           tar -zxvf "dist/featuretools-${FT_VERSION}.tar.gz"
           mv "featuretools-${FT_VERSION}" unpacked_dist
+          echo $(ls)
   install-featuretools:
     description: "install featuretools from source distribution"
     steps:
