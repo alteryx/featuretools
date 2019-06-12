@@ -67,7 +67,7 @@ jobs:
       - attach_workspace:
           at: ~/featuretools
       - run: virtualenv venv
-      - install-packaged-featuretools
+      - install-featuretools
       - persist_to_workspace:
           root: ~/featuretools
           paths:
