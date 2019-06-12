@@ -149,6 +149,9 @@ workflows:
       - "Run Unit Tests":
           requires:
             - "Install Featuretools"
+      - "Install dev requirements"
+          requires:
+            - "Install Featuretools"
       - "Run Linter":
           requires:
             - "Install dev requirements"
