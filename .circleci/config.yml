@@ -218,25 +218,6 @@ workflows:
           name: "py37 unit tests"
           requires:
             - "py37 install featuretools"
-      - install_dev_reqs:
-          name: "py27 install featuretools"
-          image_tag: "2.7"
-          requires:
-            - "py27 install featuretools"
-      - install_dev_reqs:
-          name: "py35 install featuretools"
-          image_tag: "3.5"
-          requires:
-            - "py35 install featuretools"
-      - install_dev_reqs:
-          name: "py36 install featuretools"
-          image_tag: "3.6"
-          requires:
-            - "py36 install featuretools"
-      - install_dev_reqs:
-          name: "py37 install featuretools"
-          requires:
-            - "py37 install featuretools"
       - lint_test:
           name: "py27 lint test"
           image_tag: "2.7"
