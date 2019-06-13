@@ -536,32 +536,6 @@ def test_stacking_where_primitives(es):
     assert len(stacked_where_limit_2_feats) > 0
 
 
-def test_allow_where(es):
-    es = copy.deepcopy(es)
-    es['sessions']['device_type'].interesting_values = [0]
-    Count.allow_where = False
-    kwargs = dict(
-        target_entity_id='customers',
-        entityset=es,
-        agg_primitives=[Count, Last],
-        max_depth=3,
-    )
-    dfs_constrained = DeepFeatureSynthesis(where_primitives=[Count, Last],
-                                           **kwargs)
-    features = dfs_constrained.build_features()
-
-    # change it back after building features
-    Count.allow_where = True
-
-    where_feats = [f for f in features
-                   if isinstance(f, AggregationFeature) and f.where is not None]
-
-    assert len([f for f in where_feats
-                if isinstance(f.primitive, Last)]) > 0
-    assert len([f for f in where_feats
-                if isinstance(f.primitive, Count)]) == 0
-
-
 def test_where_different_base_feats(es):
     es = copy.deepcopy(es)
     es['sessions']['device_type'].interesting_values = [0]
