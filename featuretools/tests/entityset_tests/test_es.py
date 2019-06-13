@@ -1047,6 +1047,8 @@ def _check_schema_version(version, es, error_text):
         assert error_text == str(excinfo.value)
     else:
         deserialize.description_to_entityset(dictionary)
+
+
 def test_same_index_values():
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                                     "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s"),
