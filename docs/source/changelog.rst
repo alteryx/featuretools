@@ -20,7 +20,7 @@ Changelog
         * Remove unecessary time_last variable (:pr:`546`)
     * Documentation Changes
         * Add Featuretools Enterprise to documentation (:pr:`563`)
-        * Miscellaneous changes (:pr:`552`, :pr:`573`, :pr:`577`)
+        * Miscellaneous changes (:pr:`552`, :pr:`573`, :pr:`577`, :pr:`599`)
     * Testing Changes
         * Miscellaneous changes (:pr:`559`, :pr:`569`, :pr:`570`, :pr:`574`, :pr:`584`, :pr:`590`)
 
