@@ -597,10 +597,6 @@ class DeepFeatureSynthesis(object):
                                            primitive=agg_prim)
                 self._handle_new_feature(new_f, all_features)
 
-                # Obey allow where
-                if not agg_prim.allow_where:
-                    continue
-
                 # limit the stacking of where features
                 # count up the the number of where features
                 # in this feature and its dependencies

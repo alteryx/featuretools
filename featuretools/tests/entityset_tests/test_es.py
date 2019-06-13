@@ -807,16 +807,6 @@ def test_normalize_entity(es):
         es.normalize_entity('sessions', 'device_types', 'device_type',
                             copy_variables='log')
 
-    error_text = "'make_time_index' must be a variable in the base entity"
-    with pytest.raises(ValueError, match=error_text):
-        es.normalize_entity('sessions', 'device_types', 'device_type',
-                            make_time_index="nonextistent")
-
-    error_text = "'make_time_index' must specified in 'additional_variables' or 'copy_variables'"
-    with pytest.raises(ValueError, match=error_text):
-        es.normalize_entity('sessions', 'device_types', 'device_type',
-                            make_time_index='ip')
-
     es.normalize_entity('sessions', 'device_types', 'device_type',
                         additional_variables=['device_name'],
                         make_time_index=False)
@@ -827,6 +817,37 @@ def test_normalize_entity(es):
     assert 'device_name' in es['device_types'].df.columns
     assert 'device_name' not in es['sessions'].df.columns
     assert 'device_type' in es['device_types'].df.columns
+
+
+def test_normalize_entity_new_time_index_error_check(es):
+    es_copy = copy.deepcopy(es)
+    error_text = "'make_time_index' must be a variable in the base entity"
+    with pytest.raises(ValueError, match=error_text):
+        es.normalize_entity(base_entity_id='customers',
+                            new_entity_id='cancellations',
+                            index='cancel_reason',
+                            make_time_index="non-existent")
+
+    error_text = "'make_time_index' must specified in 'additional_variables' or 'copy_variables'"
+    with pytest.raises(ValueError, match=error_text):
+        es.normalize_entity(base_entity_id='customers',
+                            new_entity_id='cancellations',
+                            index='cancel_reason',
+                            make_time_index='cancel_date')
+
+    es.normalize_entity(base_entity_id='customers',
+                        new_entity_id='cancellations',
+                        index='cancel_reason',
+                        make_time_index='cancel_date',
+                        additional_variables=['cancel_date'],
+                        copy_variables=[])
+    es = es_copy
+    es.normalize_entity(base_entity_id='customers',
+                        new_entity_id='cancellations',
+                        index='cancel_reason',
+                        make_time_index='cancel_date',
+                        additional_variables=[],
+                        copy_variables=['cancel_date'])
 
 
 def test_normalize_time_index_from_none(es):
@@ -1026,3 +1047,26 @@ def _check_schema_version(version, es, error_text):
         assert error_text == str(excinfo.value)
     else:
         deserialize.description_to_entityset(dictionary)
+def test_same_index_values():
+    transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                                    "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s"),
+                                    "first_entity_time": [1, 2, 3, 5, 6, 6]})
+    es = ft.EntitySet("example")
+
+    error_text = "time_index and index cannot be the same value"
+    with pytest.raises(ValueError, match=error_text):
+        es.entity_from_dataframe(entity_id="entity",
+                                 index="id",
+                                 time_index="id",
+                                 dataframe=transactions_df)
+
+    es.entity_from_dataframe(entity_id="entity",
+                             index="id",
+                             time_index="transaction_time",
+                             dataframe=transactions_df)
+
+    with pytest.raises(ValueError, match=error_text):
+        es.normalize_entity(base_entity_id="entity",
+                            new_entity_id="new_entity",
+                            index="first_entity_time",
+                            make_time_index=True)

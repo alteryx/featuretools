@@ -221,6 +221,7 @@ def test_serialization(es):
     log_to_products = next(r for r in es.get_forward_relationships('log')
                            if r.parent_entity.id == 'products')
     dictionary = {
+        'name': None,
         'base_feature': value.unique_name(),
         'relationship_path': [log_to_products.to_dictionary()],
     }

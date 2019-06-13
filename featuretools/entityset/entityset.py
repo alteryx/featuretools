@@ -646,6 +646,10 @@ class EntitySet(object):
 
         """
         variable_types = variable_types or {}
+
+        if time_index is not None and time_index == index:
+            raise ValueError("time_index and index cannot be the same value, %s" % (time_index))
+
         entity = Entity(
             entity_id,
             dataframe,
@@ -728,10 +732,8 @@ class EntitySet(object):
             elif make_time_index not in additional_variables + copy_variables:
                 raise ValueError("'make_time_index' must specified in 'additional_variables' or 'copy_variables'")
 
-        new_index = index
-
         transfer_types = {}
-        transfer_types[new_index] = type(base_entity[index])
+        transfer_types[index] = type(base_entity[index])
         for v in additional_variables + copy_variables:
             transfer_types[v] = type(base_entity[v])
 
@@ -764,6 +766,9 @@ class EntitySet(object):
         else:
             new_entity_time_index = None
             already_sorted = False
+
+        if new_entity_time_index is not None and new_entity_time_index == index:
+            raise ValueError("time_index and index cannot be the same value, %s" % (new_entity_time_index))
 
         selected_variables = [index] +\
             [v for v in additional_variables] +\
