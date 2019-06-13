@@ -181,10 +181,24 @@ workflows:
           requires:
             - "py37 install featuretools"
       - lint_test:
+          name: "py27 lint test"
+          image_tag: "2.7"
+          requires:
+            - "py27 install featuretools"
+      - lint_test:
+          name: "py35 lint test"
+          image_tag: "3.5"
+          requires:
+            - "py35 install featuretools"
+      - lint_test:
           name: "py36 lint test"
           image_tag: "3.6"
           requires:
             - "py36 install featuretools"
+      - lint_test:
+          name: "py37 lint test"
+          requires:
+            - "py37 install featuretools"
       - build_docs:
           name: "build docs"
           requires:
