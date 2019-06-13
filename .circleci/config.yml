@@ -1,7 +1,6 @@
 version: 2.1
 
 executors:
-  # Can set image tag in job / workflow
   python:
     parameters:
       image_tag:
@@ -11,22 +10,6 @@ executors:
       - image: circleci/python:<< parameters.image_tag >>
 
 commands:
-  unpackage-featuretools:
-    description: "create featuretools source distribution and unpack it"
-    steps:
-      - run: |
-          python setup.py sdist
-          FT_VERSION=$(python setup.py --version)
-          tar -zxvf "dist/featuretools-${FT_VERSION}.tar.gz"
-          mv "featuretools-${FT_VERSION}" unpacked_sdist
-          echo $(ls)
-  install-featuretools:
-    description: "install featuretools from source distribution"
-    steps:
-      - run : |
-          source venv/bin/activate
-          pip install -e unpacked_sdist/
-          pip install -r unpacked_sdist/test-requirements.txt
   run-packaged-tests:
     description: "run unit tests on packaged testing files"
     steps:
@@ -34,24 +17,6 @@ commands:
           source venv/bin/activate
           cd unpacked_sdist
           pytest
-  install-ft-complete:
-    description: "install featuretools[complete]"
-    steps:
-      - run: |
-          virtualenv venv
-          source venv/bin/activate
-          pip install -e unpacked_sdist/[complete]
-  run-import-tests:
-    description: "testing imports of add-ons"
-    steps:
-      - run: |
-          source venv/bin/activate
-          python -c "import featuretools_tsfresh_primitives"
-          python -c "import featuretools_update_checker"
-  lint:
-    description: "run linter test"
-    steps:
-      - run: source venv/bin/activate && make lint
 
 jobs:
   package_featuretools:
@@ -65,7 +30,11 @@ jobs:
       image_tag: << parameters.image_tag >>
     steps:
       - checkout
-      - unpackage-featuretools
+      - run: |
+          python setup.py sdist
+          FT_VERSION=$(python setup.py --version)
+          tar -zxvf "dist/featuretools-${FT_VERSION}.tar.gz"
+          mv "featuretools-${FT_VERSION}" unpacked_sdist
       - persist_to_workspace:
           root: ~/featuretools
           paths:
@@ -84,8 +53,11 @@ jobs:
       - checkout
       - attach_workspace:
           at: ~/featuretools
-      - run: virtualenv venv
-      - install-featuretools
+      - run : |
+          virtualenv venv
+          source venv/bin/activate
+          pip install -e unpacked_sdist/
+          pip install -r unpacked_sdist/test-requirements.txt
       - persist_to_workspace:
           root: ~/featuretools
           paths:
@@ -123,7 +95,7 @@ jobs:
       - run: |
           source venv/bin/activate
           pip install -r unpacked_sdist/dev-requirements.txt
-      - lint
+      - run: source venv/bin/activate && make lint
 
   build_docs:
     working_directory: ~/featuretools
@@ -154,8 +126,14 @@ jobs:
       - checkout
       - attach_workspace:
           at: ~/featuretools
-      - install-ft-complete
-      - run-import-tests
+      - run: |
+          virtualenv venv
+          source venv/bin/activate
+          pip install -e unpacked_sdist/[complete]
+      - run: |
+          source venv/bin/activate
+          python -c "import featuretools_tsfresh_primitives"
+          python -c "import featuretools_update_checker"
 
   changelog_updated:
     working_directory: ~/featuretools
