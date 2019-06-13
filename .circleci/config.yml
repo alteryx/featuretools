@@ -9,15 +9,6 @@ executors:
     docker:
       - image: circleci/python:<< parameters.image_tag >>
 
-commands:
-  run-packaged-tests:
-    description: "run unit tests on packaged testing files"
-    steps:
-      - run: |
-          source venv/bin/activate
-          cd unpacked_sdist
-          pytest
-
 jobs:
   package_featuretools:
     working_directory: ~/featuretools
@@ -69,6 +60,9 @@ jobs:
       image_tag:
         type: string
         default: "3.7"
+      codecov:
+        type: boolean
+        default: false
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -77,7 +71,26 @@ jobs:
       - checkout
       - attach_workspace:
           at: ~/featuretools
-      - run-packaged-tests
+      - when:
+          condition: << parameters.codecov >>
+          steps:
+            - run: |
+              source venv/bin/activate
+              pip install "$(cat dev-requirements.txt | grep codecov)"
+              coverage erase
+              cd unpacked_sdist/
+              coverage erase
+              pytest featuretools/tests --cov=featuretools --cov-config=../.coveragerc
+              cd ../
+              cp unpacked_sdist/.coverage .coverage
+              codecov
+      - unless:
+          condition: << parameters.codecov >>
+          steps:
+            - run: |
+                source venv/bin/activate
+                cd unpacked_sdist
+                pytest
 
   lint_test:
     working_directory: ~/featuretools
@@ -194,6 +207,7 @@ workflows:
             - "py36 install featuretools"
       - unit_tests:
           name: "py37 unit tests"
+          codecov: true
           requires:
             - "py37 install featuretools"
       - lint_test:
