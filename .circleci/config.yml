@@ -75,15 +75,15 @@ jobs:
           condition: << parameters.codecov >>
           steps:
             - run: |
-              source venv/bin/activate
-              pip install "$(cat dev-requirements.txt | grep codecov)"
-              coverage erase
-              cd unpacked_sdist/
-              coverage erase
-              pytest featuretools/tests --cov=featuretools --cov-config=../.coveragerc
-              cd ../
-              cp unpacked_sdist/.coverage .coverage
-              codecov
+                source venv/bin/activate
+                pip install "$(cat dev-requirements.txt | grep codecov)"
+                coverage erase
+                cd unpacked_sdist/
+                coverage erase
+                pytest featuretools/tests --cov=featuretools --cov-config=../.coveragerc
+                cd ../
+                cp unpacked_sdist/.coverage .coverage
+                codecov
       - unless:
           condition: << parameters.codecov >>
           steps:
