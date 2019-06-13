@@ -9,28 +9,16 @@ executors:
     docker:
       - image: circleci/python:<< parameters.image_tag >>
 
-jobs:
+commands:
   package_featuretools:
-    working_directory: ~/featuretools
-    parameters:
-      image_tag:
-        type: string
-        default: "3.7"
-    executor:
-      name: python
-      image_tag: << parameters.image_tag >>
     steps:
-      - checkout
       - run: |
           python setup.py sdist
           FT_VERSION=$(python setup.py --version)
           tar -zxvf "dist/featuretools-${FT_VERSION}.tar.gz"
           mv "featuretools-${FT_VERSION}" unpacked_sdist
-      - persist_to_workspace:
-          root: ~/featuretools
-          paths:
-            - unpacked_sdist
 
+jobs:
   install_ft:
     working_directory: ~/featuretools
     parameters:
@@ -44,6 +32,7 @@ jobs:
       - checkout
       - attach_workspace:
           at: ~/featuretools
+      - package_featuretools
       - run : |
           virtualenv venv
           source venv/bin/activate
@@ -53,6 +42,7 @@ jobs:
           root: ~/featuretools
           paths:
             - venv
+            - unpacked_sdist
 
   unit_tests:
     working_directory: ~/featuretools
@@ -137,8 +127,7 @@ jobs:
       image_tag: << parameters.image_tag >>
     steps:
       - checkout
-      - attach_workspace:
-          at: ~/featuretools
+      - package_featuretools
       - run: |
           virtualenv venv
           source venv/bin/activate
@@ -160,36 +149,17 @@ workflows:
   version: 2
   test_all_python_versions:
     jobs:
-      - package_featuretools:
-          name: "py27 package featuretools"
-          image_tag: "2.7"
-      - package_featuretools:
-          name: "py35 package featuretools"
-          image_tag: "3.5"
-      - package_featuretools:
-          name: "py36 package featuretools"
-          image_tag: "3.6"
-      - package_featuretools:
-          name: "py37 package featuretools"
       - install_ft:
           name: "py27 install featuretools"
           image_tag: "2.7"
-          requires:
-            - "py27 package featuretools"
       - install_ft:
           name: "py35 install featuretools"
           image_tag: "3.5"
-          requires:
-            - "py35 package featuretools"
       - install_ft:
           name: "py36 install featuretools"
           image_tag: "3.6"
-          requires:
-            - "py36 package featuretools"
       - install_ft:
           name: "py37 install featuretools"
-          requires:
-            - "py37 package featuretools"
       - unit_tests:
           name: "py27 unit tests"
           image_tag: "2.7"
@@ -236,22 +206,14 @@ workflows:
       - install_ft_complete:
           name: "py27 install featuretools complete test"
           image_tag: "2.7"
-          requires:
-            - "py27 package featuretools"
       - install_ft_complete:
           name: "py35 install featuretools complete test"
           image_tag: "3.5"
-          requires:
-            - "py35 package featuretools"
       - install_ft_complete:
           name: "py36 install featuretools complete test"
           image_tag: "3.6"
-          requires:
-            - "py36 package featuretools"
       - install_ft_complete:
           name: "py37 install featuretools complete test"
-          requires:
-            - "py37 package featuretools"
       - changelog_updated:
           name: "changelog updated"
           filters:
