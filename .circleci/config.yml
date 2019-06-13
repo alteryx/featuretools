@@ -173,6 +173,7 @@ workflows:
       - unit_tests:
           name: "py36 unit tests"
           image_tag: "3.6"
+          codecov: true
           requires:
             - "py36 install featuretools"
       - unit_tests:
