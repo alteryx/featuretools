@@ -62,12 +62,11 @@ class FeatureSet(object):
         for dep_feat in f.get_dependencies():
             self._add_feature_to_trie(sub_trie, dep_feat, f.relationship_path)
 
-    def group_features(self, feature_names):
+    def group_features(self, features):
         """
         Topologically sort the given features, then group by path,
         feature type, use_previous, and where.
         """
-        features = [self.features_by_name[name] for name in feature_names]
         depths = self._get_feature_depths(features)
 
         def key_func(f):
