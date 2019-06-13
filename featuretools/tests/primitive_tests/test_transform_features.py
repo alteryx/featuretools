@@ -99,6 +99,7 @@ def test_serialization(es):
     value_x2 = ft.TransformFeature(value, primitive)
 
     dictionary = {
+        'name': None,
         'base_features': [value.unique_name()],
         'primitive': serialize_primitive(primitive),
     }

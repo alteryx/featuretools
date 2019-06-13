@@ -355,6 +355,7 @@ def test_serialization(es):
     groupby = ft.feature_base.GroupByTransformFeature(value, primitive, zipcode)
 
     dictionary = {
+        'name': None,
         'base_features': [value.unique_name()],
         'primitive': serialize_primitive(primitive),
         'groupby': zipcode.unique_name(),
