@@ -55,7 +55,6 @@ def is_string(test_value):
     return isinstance(test_value, python_string)
 
 
-# TODO: Can this be removed and replaced with path.name?
 def get_relationship_variable_id(path):
     _, r = path[0]
     child_link_name = r.child_variable.id

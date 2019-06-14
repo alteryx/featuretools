@@ -30,7 +30,7 @@ def test_feature_trie_without_needs_full_entity(diamond_es):
 
     features = [direct_name, through_customers, through_stores, mean_of_mean]
 
-    feature_set = FeatureSet(es, features)
+    feature_set = FeatureSet(features)
     trie = feature_set.feature_trie
 
     assert trie.value == \
@@ -64,7 +64,7 @@ def test_feature_trie_with_needs_full_entity(diamond_es):
                                          relationship_path=path_through_stores)
 
     features = [agg, trans_of_agg, agg_of_trans]
-    feature_set = FeatureSet(es, features)
+    feature_set = FeatureSet(features)
     trie = feature_set.feature_trie
 
     assert trie.value == \
@@ -87,7 +87,7 @@ def test_feature_trie_with_needs_full_entity_direct(es):
     trans = ft.TransformFeature(direct, ft.primitives.CumSum)
 
     features = [trans, agg]
-    feature_set = FeatureSet(es, features)
+    feature_set = FeatureSet(features)
     trie = feature_set.feature_trie
 
     assert trie.value == \
