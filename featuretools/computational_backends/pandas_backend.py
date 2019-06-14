@@ -153,7 +153,6 @@ class _FeaturesCalculator(object):
                                        full_entity_df_trie,
                                        precalculated_trie,
                                        filter_variable, filter_values,
-                                       ancestor_uses_full_entity=False,
                                        parent_data=None):
         """
         Generate dataframes with features calculated for this node of the trie,
@@ -266,7 +265,6 @@ class _FeaturesCalculator(object):
                 precalculated_trie=sub_precalc_trie,
                 filter_variable=sub_filter_variable,
                 filter_values=sub_filter_values,
-                ancestor_uses_full_entity=need_full_entity,
                 parent_data=parent_data)
 
         # Step 4: Calculate the features for this entity.
