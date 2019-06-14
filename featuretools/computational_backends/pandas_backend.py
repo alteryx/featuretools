@@ -56,7 +56,7 @@ class PandasBackend(ComputationalBackend):
             training_window (Timedelta, optional): Window defining how much time before the cutoff time data
                 can be used when calculating features. If None, all data before cutoff time is used.
 
-            ignored (set[int]): Unique names of precalculated features.
+            ignored (set[str]): Unique names of precalculated features.
 
             precalculated_features (Trie[RelationshipPath -> pd.DataFrame]):
                 Maps RelationshipPaths to dataframes of precalculated_features
@@ -117,13 +117,13 @@ class _FeaturesCalculator(object):
         feature_trie = self.feature_set.feature_trie
 
         df_trie = Trie(path_constructor=RelationshipPath)
-        large_df_trie = Trie(path_constructor=RelationshipPath)
+        full_entity_df_trie = Trie(path_constructor=RelationshipPath)
 
         target_entity = self.entityset[self.target_eid]
         self._calculate_features_for_entity(entity_id=self.target_eid,
                                             feature_trie=feature_trie,
                                             df_trie=df_trie,
-                                            large_df_trie=large_df_trie,
+                                            full_entity_df_trie=full_entity_df_trie,
                                             precalculated_trie=self.precalculated_features,
                                             filter_variable=target_entity.index,
                                             filter_values=instance_ids)
@@ -150,9 +150,10 @@ class _FeaturesCalculator(object):
         return df[column_list]
 
     def _calculate_features_for_entity(self, entity_id, feature_trie, df_trie,
-                                       large_df_trie,
+                                       full_entity_df_trie,
                                        precalculated_trie,
                                        filter_variable, filter_values,
+                                       ancestor_uses_full_entity=False,
                                        parent_data=None):
         """
         Generate dataframes with features calculated for this node of the trie,
@@ -167,7 +168,7 @@ class _FeaturesCalculator(object):
             df_trie (Trie): a parallel trie for storing dataframes. The
                 dataframe with features calculated will be placed in the root.
 
-            large_df_trie (Trie): a trie storing dataframes will all entity
+            full_entity_df_trie (Trie): a trie storing dataframes will all entity
                 rows, for features that are uses_full_entity.
 
             precalculated_trie (Trie): a parallel trie containing dataframes
@@ -187,40 +188,22 @@ class _FeaturesCalculator(object):
                 ancestor_relationship_variables, parent_df).
                 ancestor_relationship_variables is the names of variables which
                 link the parent entity to its ancestors.
-
-            parent_relationship (Relationship): The relationship through which
-                this entity is linked to its parent in the trie. Should be a
-                forward relationship from this entity to its parent, or else
-                None.
-
-            ancestor_relationship_variables (list[str]): The names of variables
-                which link the parent entity to its ancestors. These variables
-                will be copied into the dataframe for this entity so that it is
-                also linked to all ancestors.
-
-            parent_df (pd.DataFrame): The data for the parent entity. Only
-                required if ancestor_relationship_variables is present.
         """
 
         # Step 1: Get a dataframe for the given entity, filtered by the given
         # conditions.
 
-        features = [self.feature_set.features_by_name[fname] for fname in feature_trie.value]
+        need_full_entity, full_entity_features, not_full_entity_features = feature_trie.value
+        if self.ignored:
+            full_entity_features -= self.ignored
+            not_full_entity_features -= self.ignored
+
+        all_features = full_entity_features | not_full_entity_features
         entity = self.entityset[entity_id]
-        columns = _necessary_columns(entity, features)
+        columns = self._necessary_columns(entity, all_features)
 
-        # Group features by uses_full_entity
-        full_entity_features = []
-        not_full_entity_features = []
-        for f in features:
-            if self.feature_set.uses_full_entity(f, check_dependents=True):
-                full_entity_features.append(f)
-            else:
-                not_full_entity_features.append(f)
-
-        # If there are features that use the full entity then don't filter by
-        # filter_values.
-        if full_entity_features:
+        # If we need the full entity then don't filter by filter_values.
+        if need_full_entity:
             query_variable = None
             query_values = None
         else:
@@ -262,7 +245,7 @@ class _FeaturesCalculator(object):
                 sub_filter_variable = relationship.child_variable.id
 
                 # Pass filtered values, even if we are using a full df.
-                if full_entity_features:
+                if need_full_entity:
                     filtered_df = df[df[filter_variable].isin(filter_values)]
                 else:
                     filtered_df = df
@@ -273,16 +256,17 @@ class _FeaturesCalculator(object):
                                df)
 
             sub_df_trie = df_trie.get_node([edge])
-            sub_large_df_trie = large_df_trie.get_node([edge])
+            sub_full_entity_df_trie = full_entity_df_trie.get_node([edge])
             sub_precalc_trie = precalculated_trie.get_node([edge])
             self._calculate_features_for_entity(
                 entity_id=sub_entity,
                 feature_trie=sub_trie,
                 df_trie=sub_df_trie,
-                large_df_trie=sub_large_df_trie,
+                full_entity_df_trie=sub_full_entity_df_trie,
                 precalculated_trie=sub_precalc_trie,
                 filter_variable=sub_filter_variable,
                 filter_values=sub_filter_values,
+                ancestor_uses_full_entity=need_full_entity,
                 parent_data=parent_data)
 
         # Step 4: Calculate the features for this entity.
@@ -300,18 +284,14 @@ class _FeaturesCalculator(object):
                           right_index=True,
                           suffixes=('', '_precalculated'))
 
-        feature_names = feature_trie.value
-        if self.ignored:
-            feature_names -= self.ignored
-
         # First, calculate any features that require the full entity. These can
         # be calculated first because all of their dependents are included in
-        # full_entity_features (See FeatureSet.uses_full_entity).
-        if full_entity_features:
-            df = self._calculate_features(df, large_df_trie, full_entity_features)
+        # full_entity_features.
+        if need_full_entity:
+            df = self._calculate_features(df, full_entity_df_trie, full_entity_features)
 
-            # Store large df.
-            large_df_trie.value = df
+            # Store full entity df.
+            full_entity_df_trie.value = df
 
             # Filter df so that features that don't require the full entity are
             # only calculated on the necessary instances.
@@ -659,17 +639,18 @@ class _FeaturesCalculator(object):
 
         return frame
 
-
-def _necessary_columns(entity, features):
-    # We have to keep all Id columns because we don't know what forward
-    # relationships will come from this node.
-    index_columns = {v.id for v in entity.variables
-                     if isinstance(v, (variable_types.Index,
-                                       variable_types.Id,
-                                       variable_types.TimeIndex))}
-    feature_columns = {f.variable.id for f in features
-                       if isinstance(f, IdentityFeature)}
-    return index_columns | feature_columns
+    def _necessary_columns(self, entity, feature_names):
+        # We have to keep all Id columns because we don't know what forward
+        # relationships will come from this node.
+        index_columns = {v.id for v in entity.variables
+                         if isinstance(v, (variable_types.Index,
+                                           variable_types.Id,
+                                           variable_types.TimeIndex))}
+        features = [self.feature_set.features_by_name[name]
+                    for name in feature_names]
+        feature_columns = {f.variable.id for f in features
+                           if isinstance(f, IdentityFeature)}
+        return index_columns | feature_columns
 
 
 def _can_agg(feature):

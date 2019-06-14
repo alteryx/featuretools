@@ -46,27 +46,56 @@ class FeatureSet(object):
 
     def _build_feature_trie(self):
         """
-        Construct a trie mapping RelationshipPaths to sets of feature names.
+        Construct a trie mapping RelationshipPaths to a tuple of
+        (bool, set[str], set[str]). The bool represents whether the full
+        entity df is needed at that node, the first set contains the names of
+        features which are needed on the full entity, and the second set
+        contains the names of the rest of the features
         """
-        feature_trie = Trie(default=set, path_constructor=RelationshipPath)
+        feature_trie = Trie(default=lambda: (False, set(), set()),
+                            path_constructor=RelationshipPath)
 
         for f in self.target_features:
-            self._add_feature_to_trie(feature_trie, f, [])
+            self._add_feature_to_trie(feature_trie, f)
 
         return feature_trie
 
-    def _add_feature_to_trie(self, trie, f, path):
-        sub_trie = trie.get_node(path)
-        sub_trie.value.add(f.unique_name())
+    def _add_feature_to_trie(self, trie, feature, ancestor_needs_full_entity=False):
+        node_needs_full_entity, full_features, not_full_features = trie.value
+        needs_full_entity = ancestor_needs_full_entity or self.uses_full_entity(feature)
 
-        for dep_feat in f.get_dependencies():
-            self._add_feature_to_trie(sub_trie, dep_feat, f.relationship_path)
+        name = feature.unique_name()
 
-    def group_features(self, features):
+        if needs_full_entity:
+            full_features.add(name)
+            if name in not_full_features:
+                not_full_features.remove(name)
+
+            # Update needs_full_entity for this node.
+            trie.value = (True, full_features, not_full_features)
+
+            # Set every node in relationship path to needs_full_entity.
+            sub_trie = trie
+            for edge in feature.relationship_path:
+                sub_trie = sub_trie.get_node([edge])
+                (_, f1, f2) = sub_trie.value
+                sub_trie.value = (True, f1, f2)
+        else:
+            if name not in full_features:
+                not_full_features.add(name)
+
+            sub_trie = trie.get_node(feature.relationship_path)
+
+        for dep_feat in feature.get_dependencies():
+            self._add_feature_to_trie(sub_trie, dep_feat,
+                                      ancestor_needs_full_entity=needs_full_entity)
+
+    def group_features(self, feature_names):
         """
         Topologically sort the given features, then group by path,
         feature type, use_previous, and where.
         """
+        features = [self.features_by_name[name] for name in feature_names]
         depths = self._get_feature_depths(features)
 
         def key_func(f):
