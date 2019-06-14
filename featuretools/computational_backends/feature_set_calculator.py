@@ -25,33 +25,25 @@ warnings.simplefilter("ignore", category=RuntimeWarning)
 
 class FeatureSetCalculator(object):
     """
-    TODO
-    Given a list of instance ids and features with a shared time window,
-    generate and return a mapping of instance -> feature values.
-
-    Args:
-        feature_set (FeatureSet): TODO
-
-        instance_ids (list): List of instance id for which to build features.
-
-        time_last (pd.Timestamp, optional): Last allowed time. Data from exactly this
-            time not allowed.
-
-        training_window (Timedelta, optional): Window defining how much time before the cutoff time data
-            can be used when calculating features. If None, all data before cutoff time is used.
-
-        ignored (set[int], optional): Unique names of precalculated features.
-
-        precalculated_features (Trie[RelationshipPath -> pd.DataFrame], optional):
-            Maps RelationshipPaths to dataframes of precalculated_features
-    Returns:
-        pd.DataFrame : Pandas DataFrame of calculated feature values.
-            Indexed by instance_ids. Columns in same order as features
-            passed in.
-
+    Calculates the values of a set of features for given instance ids.
     """
     def __init__(self, entityset, feature_set, time_last=None,
                  training_window=None, precalculated_features=None, ignored=None):
+        """
+        Args:
+            feature_set (FeatureSet): The features to calculate values for.
+
+            time_last (pd.Timestamp, optional): Last allowed time. Data from exactly this
+                time not allowed.
+
+            training_window (Timedelta, optional): Window defining how much time before the cutoff time data
+                can be used when calculating features. If None, all data before cutoff time is used.
+
+            precalculated_features (Trie[RelationshipPath -> pd.DataFrame], optional):
+                Maps RelationshipPaths to dataframes of precalculated_features
+
+            ignored (set[int], optional): Unique names of precalculated features.
+        """
         self.entityset = entityset
         self.feature_set = feature_set
         self.training_window = training_window
@@ -83,6 +75,14 @@ class FeatureSetCalculator(object):
             these features). See _calculate_features_for_entity.
         4. Get the dataframe at the root of the trie (for the target entity) and
             return the columns corresponding to the requested features.
+
+        Args:
+            instance_ids (list): List of instance id for which to build features.
+
+        Returns:
+            pd.DataFrame : Pandas DataFrame of calculated feature values.
+                Indexed by instance_ids. Columns in same order as features
+                passed in.
         """
         assert len(instance_ids) > 0, "0 instance ids provided"
 
