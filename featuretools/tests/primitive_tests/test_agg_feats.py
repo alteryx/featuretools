@@ -340,6 +340,7 @@ def test_serialization(es):
 
     path = next(es.find_backward_paths('customers', 'log'))
     dictionary = {
+        'name': None,
         'base_features': [value.unique_name()],
         'relationship_path': [r.to_dictionary() for r in path],
         'primitive': serialize_primitive(primitive),
@@ -359,6 +360,7 @@ def test_serialization(es):
                                  where=is_purchased, use_previous=use_previous)
 
     dictionary = {
+        'name': None,
         'base_features': [value.unique_name()],
         'relationship_path': [r.to_dictionary() for r in path],
         'primitive': serialize_primitive(primitive),

@@ -11,14 +11,8 @@ from featuretools.feature_base.feature_base import (
     IdentityFeature,
     TransformFeature
 )
-from featuretools.feature_base.features_serializer import SCHEMA_VERSION
 from featuretools.primitives.utils import PrimitivesDeserializer
-from featuretools.utils.gen_utils import is_python_2
-
-if is_python_2():
-    from itertools import izip_longest as zip_longest
-else:
-    from itertools import zip_longest
+from featuretools.utils.gen_utils import check_schema_version
 
 
 def load_features(features):
@@ -117,24 +111,4 @@ class FeaturesDeserializer(object):
         return feature
 
     def _check_schema_version(self):
-        current = SCHEMA_VERSION.split('.')
-        version_string = self.features_dict['schema_version']
-        saved = version_string.split('.')
-
-        # Check if saved has older major version.
-        if current[0] > saved[0]:
-            raise RuntimeError('Unable to load features. The schema version '
-                               'of the saved features (%s) is no longer '
-                               'supported by this version of featuretools.'
-                               % version_string)
-
-        error_text = ('Unable to load features. The schema version of the saved '
-                      'features (%s) is greater than the latest supported (%s). '
-                      'You may need to upgrade featuretools.'
-                      % (version_string, SCHEMA_VERSION))
-
-        for c_num, s_num in zip_longest(current, saved, fillvalue=0):
-            if c_num > s_num:
-                break
-            elif c_num < s_num:
-                raise RuntimeError(error_text)
+        check_schema_version(self, 'features')
