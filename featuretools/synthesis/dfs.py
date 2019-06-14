@@ -69,7 +69,7 @@ def dfs(entities=None,
         agg_primitives (list[str or AggregationPrimitive], optional): List of Aggregation
             Feature types to apply.
 
-                Default: ["sum", "std", "max", "skew", "min", "mean", "count", "percent_true", "n_unique", "mode"]
+                Default: ["sum", "std", "max", "skew", "min", "mean", "count", "percent_true", "num_unique", "mode"]
 
         trans_primitives (list[str or TransformPrimitive], optional):
             List of Transform Feature functions to apply.
