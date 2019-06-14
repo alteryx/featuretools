@@ -5,6 +5,7 @@ import pandas as pd
 
 from featuretools.entityset.relationship import Relationship
 from featuretools.entityset.serialize import FORMATS
+from featuretools.utils.gen_utils import check_schema_version
 from featuretools.variable_types.variable import find_variable_types
 
 
@@ -61,6 +62,8 @@ def description_to_entityset(description, **kwargs):
     Returns:
         entityset (EntitySet) : Instance of :class:`.EntitySet`.
     '''
+    check_schema_version(description, 'entityset')
+
     from featuretools.entityset import EntitySet
     # If data description was not read from disk, path is None.
     path = description.get('path')

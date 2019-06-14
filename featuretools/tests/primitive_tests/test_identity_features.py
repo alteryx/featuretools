@@ -11,6 +11,7 @@ def test_serialization(es):
     value = ft.IdentityFeature(es['log']['value'])
 
     dictionary = {
+        'name': None,
         'entity_id': 'log',
         'variable_id': 'value',
     }

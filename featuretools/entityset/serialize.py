@@ -3,6 +3,7 @@ import os
 import shutil
 
 FORMATS = ['csv', 'pickle', 'parquet']
+SCHEMA_VERSION = "1.0.0"
 
 
 def entity_to_description(entity):
@@ -48,6 +49,7 @@ def entityset_to_description(entityset):
     entities = {entity.id: entity_to_description(entity) for entity in entityset.entities}
     relationships = [relationship.to_dictionary() for relationship in entityset.relationships]
     data_description = {
+        'schema_version': SCHEMA_VERSION,
         'id': entityset.id,
         'entities': entities,
         'relationships': relationships,

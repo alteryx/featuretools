@@ -10,6 +10,8 @@ Changelog
         * Support custom variable types (:pr:`571`)
     * Fixes
         * Normalize_entity specifies error when 'make_time_index' is an invalid string (:pr:`550`)
+        * Schema version added for entityset serialization (:pr:`586`)
+        * Renamed features have names correctly serialized (:pr:`585`)
         * Improved error message for index/time_index being the same column in normalize_entity and entity_from_dataframe (:pr:`583`)
         * Removed all mentions of allow_where (:pr:`587`, :pr:`588`)
         * Removed unused variable in normalize entity (:pr:`589`)
@@ -19,7 +21,7 @@ Changelog
         * Remove unecessary time_last variable (:pr:`546`)
     * Documentation Changes
         * Add Featuretools Enterprise to documentation (:pr:`563`)
-        * Miscellaneous changes (:pr:`552`, :pr:`573`, :pr:`577`)
+        * Miscellaneous changes (:pr:`552`, :pr:`573`, :pr:`577`, :pr:`599`)
     * Testing Changes
         * Miscellaneous changes (:pr:`559`, :pr:`569`, :pr:`570`, :pr:`574`, :pr:`584`, :pr:`590`. :pr:`595`)
 
