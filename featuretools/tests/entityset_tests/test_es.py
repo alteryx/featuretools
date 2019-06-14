@@ -9,7 +9,13 @@ import pytest
 
 import featuretools as ft
 from featuretools import variable_types
-from featuretools.entityset import EntitySet, Relationship
+from featuretools.entityset import (
+    EntitySet,
+    Relationship,
+    deserialize,
+    serialize
+)
+from featuretools.entityset.serialize import SCHEMA_VERSION
 
 
 def test_operations_invalidate_metadata(es):
@@ -842,6 +848,65 @@ def test_datetime64_conversion():
     es.entity_from_dataframe(entity_id='test_entity', index='id', dataframe=df)
     vtype_time_index = variable_types.variable.DatetimeTimeIndex
     es['test_entity'].convert_variable_type('time', vtype_time_index)
+
+
+def test_later_schema_version(es):
+    def test_version(major, minor, patch, raises=True):
+        version = '.'.join([str(v) for v in [major, minor, patch]])
+        if raises:
+            error_text = ('Unable to load entityset. The schema version of the saved '
+                          'entityset (%s) is greater than the latest supported (%s). '
+                          'You may need to upgrade featuretools.'
+                          % (version, SCHEMA_VERSION))
+        else:
+            error_text = None
+
+        _check_schema_version(version, es, error_text)
+
+    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
+
+    test_version(major + 1, minor, patch)
+    test_version(major, minor + 1, patch)
+    test_version(major, minor, patch + 1)
+    test_version(major, minor - 1, patch + 1, raises=False)
+
+
+def test_earlier_schema_version(es):
+    def test_version(major, minor, patch, raises=True):
+        version = '.'.join([str(v) for v in [major, minor, patch]])
+        if raises:
+            error_text = ('Unable to load entityset. The schema version of the '
+                          'saved entityset (%s) is no longer supported by this '
+                          'version of featuretools.'
+                          % (version))
+        else:
+            error_text = None
+
+        _check_schema_version(version, es, error_text)
+
+    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
+
+    test_version(major - 1, minor, patch)
+    test_version(major, minor - 1, patch, raises=False)
+    test_version(major, minor, patch - 1, raises=False)
+
+
+def _check_schema_version(version, es, error_text):
+    entities = {entity.id: serialize.entity_to_description(entity) for entity in es.entities}
+    relationships = [relationship.to_dictionary() for relationship in es.relationships]
+    dictionary = {
+        'schema_version': version,
+        'id': es.id,
+        'entities': entities,
+        'relationships': relationships,
+    }
+
+    if error_text:
+        with pytest.raises(RuntimeError) as excinfo:
+            deserialize.description_to_entityset(dictionary)
+        assert error_text == str(excinfo.value)
+    else:
+        deserialize.description_to_entityset(dictionary)
 
 
 def test_same_index_values():

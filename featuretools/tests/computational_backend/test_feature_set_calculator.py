@@ -17,6 +17,7 @@ from featuretools.feature_base import DirectFeature, IdentityFeature
 from featuretools.primitives import (  # NMostCommon,
     And,
     Count,
+    CumSum,
     EqualScalar,
     GreaterThanEqualToScalar,
     GreaterThanScalar,
@@ -71,6 +72,21 @@ def test_make_agg_feat_of_identity_variable(es):
     df = calculator.run([0])
     v = df[agg_feat.get_name()][0]
     assert (v == 50)
+
+
+def test_full_entity_trans_of_agg(es):
+    agg_feat = ft.Feature(es['log']['value'], parent_entity=es['customers'],
+                          primitive=Sum)
+    trans_feat = ft.Feature(agg_feat, primitive=CumSum)
+
+    feature_set = FeatureSet([trans_feat])
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
+    df = calculator.run([1])
+
+    v = df[trans_feat.get_name()][1]
+    assert v == 82
 
 
 def test_make_agg_feat_of_identity_index_variable(es):
