@@ -296,10 +296,10 @@ def calculate_chunk(chunk, feature_set, entityset, approximate, training_window,
         # if approximating, calculate the approximate features
         if approximate is not None:
             precalculated_features_trie, all_approx_feature_set = approximate_features(
+                feature_set,
                 group,
                 window=approximate,
                 entityset=entityset,
-                feature_set=feature_set,
                 training_window=training_window,
             )
         else:
@@ -374,7 +374,7 @@ def calculate_chunk(chunk, feature_set, entityset, approximate, training_window,
     return feature_matrix
 
 
-def approximate_features(cutoff_time, window, entityset, feature_set,
+def approximate_features(feature_set, cutoff_time, window, entityset,
                          training_window=None):
     '''Given a set of features and cutoff_times to be passed to
     calculate_feature_matrix, calculates approximate values of some features
