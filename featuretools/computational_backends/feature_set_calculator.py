@@ -23,11 +23,9 @@ warnings.simplefilter('ignore', np.RankWarning)
 warnings.simplefilter("ignore", category=RuntimeWarning)
 
 
-class FeaturesCalculator(object):
+class FeatureSetCalculator(object):
     """
-    A helper class to hold data that is shared across recursive calls of
-    _calculate_features_for_entity.
-
+    TODO
     Given a list of instance ids and features with a shared time window,
     generate and return a mapping of instance -> feature values.
 

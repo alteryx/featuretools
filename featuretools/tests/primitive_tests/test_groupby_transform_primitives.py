@@ -3,8 +3,8 @@ import pandas as pd
 
 import featuretools as ft
 from featuretools.computational_backends.feature_set import FeatureSet
-from featuretools.computational_backends.features_calculator import (
-    FeaturesCalculator
+from featuretools.computational_backends.feature_set_calculator import (
+    FeatureSetCalculator
 )
 from featuretools.primitives import (
     CumCount,
@@ -257,7 +257,7 @@ def test_cum_sum_numpy_group_on_nan(es):
 def test_cum_handles_uses_full_entity(es):
     def check(feature):
         feature_set = FeatureSet([feature])
-        calculator = FeaturesCalculator(es, feature_set=feature_set, time_last=None)
+        calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
         df_1 = calculator.run([0, 1, 2])
         df_2 = calculator.run([2, 4])
 

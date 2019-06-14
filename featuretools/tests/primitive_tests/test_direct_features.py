@@ -4,8 +4,8 @@ import pytest
 
 import featuretools as ft
 from featuretools.computational_backends.feature_set import FeatureSet
-from featuretools.computational_backends.features_calculator import (
-    FeaturesCalculator
+from featuretools.computational_backends.feature_set_calculator import (
+    FeatureSetCalculator
 )
 from featuretools.feature_base import DirectFeature, Feature
 from featuretools.primitives import (
@@ -28,7 +28,7 @@ def test_direct_from_identity(es):
     d = DirectFeature(base_feature=device, child_entity=es['log'])
 
     feature_set = FeatureSet([d])
-    calculator = FeaturesCalculator(es, feature_set=feature_set, time_last=None)
+    calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
     df = calculator.run([0, 5])
     v = df[d.get_name()].tolist()
     assert v == [0, 1]
@@ -41,7 +41,7 @@ def test_direct_from_variable(es):
                       child_entity=es['log'])
 
     feature_set = FeatureSet([d])
-    calculator = FeaturesCalculator(es, feature_set=feature_set, time_last=None)
+    calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
     df = calculator.run([0, 5])
     v = df[d.get_name()].tolist()
     assert v == [0, 1]

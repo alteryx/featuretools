@@ -9,8 +9,8 @@ from numpy.testing import assert_array_equal
 import featuretools as ft
 from featuretools import Timedelta
 from featuretools.computational_backends.feature_set import FeatureSet
-from featuretools.computational_backends.features_calculator import (
-    FeaturesCalculator
+from featuretools.computational_backends.feature_set_calculator import (
+    FeatureSetCalculator
 )
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import DirectFeature, IdentityFeature
@@ -40,9 +40,9 @@ def test_make_identity(es):
     f = IdentityFeature(es['log']['datetime'])
 
     feature_set = FeatureSet([f])
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run([0])
     v = df[f.get_name()][0]
     assert (v == datetime(2011, 4, 9, 10, 30, 0))
@@ -53,9 +53,9 @@ def test_make_dfeat(es):
                       child_entity=es['sessions'])
 
     feature_set = FeatureSet([f])
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run([0])
     v = df[f.get_name()][0]
     assert (v == 33)
@@ -65,9 +65,9 @@ def test_make_agg_feat_of_identity_variable(es):
     agg_feat = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum)
 
     feature_set = FeatureSet([agg_feat])
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run([0])
     v = df[agg_feat.get_name()][0]
     assert (v == 50)
@@ -77,9 +77,9 @@ def test_make_agg_feat_of_identity_index_variable(es):
     agg_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
 
     feature_set = FeatureSet([agg_feat])
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run([0])
     v = df[agg_feat.get_name()][0]
     assert (v == 5)
@@ -92,9 +92,9 @@ def test_make_agg_feat_where_count(es):
                           primitive=Count)
 
     feature_set = FeatureSet([agg_feat])
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run([0])
 
     v = df[agg_feat.get_name()][0]
@@ -108,17 +108,17 @@ def test_make_agg_feat_using_prev_time(es):
                           primitive=Count)
 
     feature_set = FeatureSet([agg_feat])
-    calculator = FeaturesCalculator(es,
-                                    time_last=datetime(2011, 4, 9, 10, 30, 10),
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=datetime(2011, 4, 9, 10, 30, 10),
+                                      feature_set=feature_set)
     df = calculator.run([0])
 
     v = df[agg_feat.get_name()][0]
     assert (v == 2)
 
-    calculator = FeaturesCalculator(es,
-                                    time_last=datetime(2011, 4, 9, 10, 30, 30),
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=datetime(2011, 4, 9, 10, 30, 30),
+                                      feature_set=feature_set)
     df = calculator.run([0])
 
     v = df[agg_feat.get_name()][0]
@@ -142,9 +142,9 @@ def test_make_agg_feat_using_prev_n_events(es):
         'Features should have different names based on use_previous'
 
     feature_set = FeatureSet([agg_feat_1, agg_feat_2])
-    calculator = FeaturesCalculator(es,
-                                    time_last=datetime(2011, 4, 9, 10, 30, 6),
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=datetime(2011, 4, 9, 10, 30, 6),
+                                      feature_set=feature_set)
     df = calculator.run([0])
 
     # time_last is included by default
@@ -153,9 +153,9 @@ def test_make_agg_feat_using_prev_n_events(es):
     assert v1 == 5
     assert v2 == 0
 
-    calculator = FeaturesCalculator(es,
-                                    time_last=datetime(2011, 4, 9, 10, 30, 30),
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=datetime(2011, 4, 9, 10, 30, 30),
+                                      feature_set=feature_set)
     df = calculator.run([0])
 
     v1 = df[agg_feat_1.get_name()][0]
@@ -178,9 +178,9 @@ def test_make_agg_feat_multiple_dtypes(es):
                            primitive=Mode)
 
     feature_set = FeatureSet([agg_feat, agg_feat2])
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run([0])
 
     v = df[agg_feat.get_name()][0]
@@ -241,9 +241,9 @@ def test_make_agg_feat_of_grandchild_entity(es):
     agg_feat = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
 
     feature_set = FeatureSet([agg_feat])
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run([0])
     v = df[agg_feat.get_name()][0]
     assert (v == 10)
@@ -263,9 +263,9 @@ def test_make_agg_feat_where_count_feat(es):
                       primitive=Count)
 
     feature_set = FeatureSet([feat])
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run([0, 1])
     name = feat.get_name()
     instances = df[name]
@@ -289,9 +289,9 @@ def test_make_compare_feat(es):
     feat = log_count_feat > mean_feat
 
     feature_set = FeatureSet([feat])
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run([0, 1, 2])
     name = feat.get_name()
     instances = df[name]
@@ -318,9 +318,9 @@ def test_make_agg_feat_where_count_and_device_type_feat(es):
                       primitive=Count)
 
     feature_set = FeatureSet([feat])
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run([0])
     name = feat.get_name()
     instances = df[name]
@@ -344,9 +344,9 @@ def test_make_agg_feat_where_count_or_device_type_feat(es):
                       primitive=Count)
 
     feature_set = FeatureSet([feat])
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run([0])
     name = feat.get_name()
     instances = df[name]
@@ -359,9 +359,9 @@ def test_make_agg_feat_of_agg_feat(es):
     customer_sum_feat = ft.Feature(log_count_feat, parent_entity=es['customers'], primitive=Sum)
 
     feature_set = FeatureSet([customer_sum_feat])
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run([0])
     v = df[customer_sum_feat.get_name()][0]
     assert (v == 10)
@@ -384,9 +384,9 @@ def test_make_dfeat_of_agg_feat_on_self(es):
     num_customers_feat = DirectFeature(customer_count_feat, child_entity=es['customers'])
 
     feature_set = FeatureSet([num_customers_feat])
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run([0])
     v = df[num_customers_feat.get_name()][0]
     assert (v == 3)
@@ -411,9 +411,9 @@ def test_make_dfeat_of_agg_feat_through_parent(es):
     num_stores_feat = DirectFeature(store_count_feat, child_entity=es['customers'])
 
     feature_set = FeatureSet([num_stores_feat])
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run([0])
     v = df[num_stores_feat.get_name()][0]
     assert (v == 3)
@@ -440,9 +440,9 @@ def test_make_deep_agg_feat_of_dfeat_of_agg_feat(es):
     purchase_popularity = ft.Feature(product_purchases_feat, parent_entity=es['customers'], primitive=Mean)
 
     feature_set = FeatureSet([purchase_popularity])
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run([0])
     v = df[purchase_popularity.get_name()][0]
     assert (v == 38.0 / 10.0)
@@ -458,9 +458,9 @@ def test_deep_agg_feat_chain(es):
     region_avg_feat = ft.Feature(customer_count_feat, parent_entity=es[u'régions'], primitive=Mean)
 
     feature_set = FeatureSet([region_avg_feat])
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run(['United States'])
     v = df[region_avg_feat.get_name()][0]
     assert (v == 17 / 3.)
@@ -472,9 +472,9 @@ def test_topn(es):
                       primitive=NMostCommon(n=2))
     feature_set = FeatureSet([topn])
 
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run([0, 1, 2])
 
     true_results = pd.DataFrame([
@@ -498,9 +498,9 @@ def test_trend(es):
                        primitive=Trend)
     feature_set = FeatureSet([trend])
 
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run([0, 1, 2])
 
     true_results = [-0.812730, 4.870378, np.nan]
@@ -512,9 +512,9 @@ def test_direct_squared(es):
     feature = IdentityFeature(es['log']['value'])
     squared = feature * feature
     feature_set = FeatureSet([feature, squared])
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run([0, 1, 2])
     for i, row in df.iterrows():
         assert (row[0] * row[0]) == row[1]
@@ -525,9 +525,9 @@ def test_agg_empty_child(es):
     feature_set = FeatureSet([customer_count_feat])
 
     # time last before the customer had any events, so child frame is empty
-    calculator = FeaturesCalculator(es,
-                                    time_last=datetime(2011, 4, 8),
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=datetime(2011, 4, 8),
+                                      feature_set=feature_set)
     df = calculator.run([0])
 
     assert df["COUNT(log)"].iloc[0] == 0
@@ -547,9 +547,9 @@ def test_diamond_entityset(diamond_es):
                                            relationship_path=path)
 
     feature_set = FeatureSet([through_customers, through_stores])
-    calculator = FeaturesCalculator(es,
-                                    time_last=datetime(2011, 4, 8),
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=datetime(2011, 4, 8),
+                                      feature_set=feature_set)
     df = calculator.run([0, 1, 2])
     assert (df['SUM(stores.transactions.amount)'] == [94, 261, 128]).all()
     assert (df['SUM(customers.transactions.amount)'] == [72, 411, 0]).all()
@@ -574,9 +574,9 @@ def test_two_relationships_to_single_entity(games_es):
                                       relationship=away_team)
 
     feature_set = FeatureSet([home_team_mean, away_team_mean])
-    calculator = FeaturesCalculator(es,
-                                    time_last=datetime(2011, 8, 28),
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=datetime(2011, 8, 28),
+                                      feature_set=feature_set)
     df = calculator.run(range(3))
     assert (df[home_team_mean.get_name()] == [1.5, 1.5, 2.5]).all()
     assert (df[away_team_mean.get_name()] == [1, 0.5, 2]).all()
@@ -621,9 +621,9 @@ def test_with_features_built_from_es_metadata(es):
     agg_feat = ft.Feature(metadata['log']['id'], parent_entity=metadata['customers'], primitive=Count)
 
     feature_set = FeatureSet([agg_feat])
-    calculator = FeaturesCalculator(es,
-                                    time_last=None,
-                                    feature_set=feature_set)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
     df = calculator.run([0])
     v = df[agg_feat.get_name()][0]
     assert (v == 10)

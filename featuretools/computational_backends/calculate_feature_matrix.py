@@ -14,8 +14,8 @@ import numpy as np
 import pandas as pd
 
 from featuretools.computational_backends.feature_set import FeatureSet
-from featuretools.computational_backends.features_calculator import (
-    FeaturesCalculator
+from featuretools.computational_backends.feature_set_calculator import (
+    FeatureSetCalculator
 )
 from featuretools.computational_backends.utils import (
     bin_cutoff_times,
@@ -308,12 +308,12 @@ def calculate_chunk(chunk, feature_set, entityset, approximate, training_window,
 
         @save_csv_decorator(save_progress)
         def calc_results(time_last, ids, precalculated_features=None, training_window=None):
-            calculator = FeaturesCalculator(entityset,
-                                            feature_set,
-                                            time_last,
-                                            training_window=training_window,
-                                            precalculated_features=precalculated_features,
-                                            ignored=all_approx_feature_set)
+            calculator = FeatureSetCalculator(entityset,
+                                              feature_set,
+                                              time_last,
+                                              training_window=training_window,
+                                              precalculated_features=precalculated_features,
+                                              ignored=all_approx_feature_set)
 
             matrix = calculator.run(ids)
             return matrix
@@ -469,7 +469,7 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
     # as a first class feature in the feature matrix.
     # Unless we signify to only ignore it as a dependency of
     # a feature defined on customers, we would ignore computing it
-    # and FeaturesCalculator would error
+    # and FeatureSetCalculator would error
     return approx_fms_trie, all_approx_feature_set
 
 
