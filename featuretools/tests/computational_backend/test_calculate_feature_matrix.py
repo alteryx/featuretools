@@ -32,7 +32,11 @@ from featuretools.feature_base import (
     IdentityFeature
 )
 from featuretools.primitives import Count, Max, Min, Percentile, Sum
-from featuretools.tests.testing_utils import MockClient, mock_cluster
+from featuretools.tests.testing_utils import (
+    MockClient,
+    backward_path,
+    mock_cluster
+)
 
 
 def test_scatter_warning():
@@ -269,8 +273,6 @@ def test_training_window(es):
     top_level_agg = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count)
 
     # make sure features that have a direct to a higher level agg
-    # so we have multiple "filter eids" in get_pandas_data_slice,
-    # and we go through the loop to pull data with a training_window param more than once
     dagg = DirectFeature(top_level_agg, es['customers'])
 
     # for now, warns if last_time_index not present
@@ -368,6 +370,24 @@ def test_approximate_multiple_instances_per_cutoff_time(es):
                                               chunk_size="cutoff time")
     assert feature_matrix.shape[0] == 2
     assert feature_matrix[agg_feat.get_name()].tolist() == [5, 1]
+
+
+def test_approximate_with_multiple_paths(diamond_es):
+    es = diamond_es
+    path = backward_path(es, ['regions', 'customers', 'transactions'])
+    agg_feat = ft.AggregationFeature(es['transactions']['id'],
+                                     parent_entity=es['regions'],
+                                     relationship_path=path,
+                                     primitive=Count)
+    dfeat = DirectFeature(agg_feat, es['customers'])
+    times = [datetime(2011, 4, 9, 10, 31, 19), datetime(2011, 4, 9, 11, 0, 0)]
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 2]})
+    feature_matrix = calculate_feature_matrix([dfeat],
+                                              es,
+                                              approximate=Timedelta(1, 'week'),
+                                              cutoff_time=cutoff_time,
+                                              chunk_size="cutoff time")
+    assert feature_matrix[dfeat.get_name()].tolist() == [6, 2]
 
 
 def test_approximate_dfeat_of_agg_on_target(es):

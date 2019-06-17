@@ -6,7 +6,6 @@ from toolz import merge
 import featuretools as ft
 from featuretools.entityset import Timedelta
 from featuretools.entityset.timedelta import add_td
-from featuretools.exceptions import NotEnoughData
 from featuretools.primitives import Count  # , SlidingMean
 from featuretools.utils.wrangle import _check_timedelta
 
@@ -23,48 +22,22 @@ def test_timedelta_equality():
 
 
 def test_delta_with_observations(es):
-    df = es.related_instances('customers', 'log', 0)
-    all_times = df['datetime'].sort_values().tolist()
-
-    # 4 observation delta
-    four_delta = Timedelta(4, 'observations', 'log')('customers',
-                                                     instance_id=0,
-                                                     entityset=es)
+    four_delta = Timedelta(4, 'observations', 'log')
+    assert not four_delta.is_absolute()
+    assert four_delta.value == 4
 
     neg_four_delta = -four_delta
-    # first plus 4 obs is fifth
-    assert all_times[0] + four_delta == all_times[4]
-    # using negative
-    assert all_times[0] - neg_four_delta == all_times[4]
-
-    # fifth minus 4 obs is first
-    assert all_times[4] - four_delta == all_times[0]
-    # using negative
-    assert all_times[4] + neg_four_delta == all_times[0]
-
-    # Test 0 observations
-    zero_delta = Timedelta(0, 'observations', 'log')('customers',
-                                                     instance_id=0,
-                                                     entityset=es)
-    neg_zero_delta = -zero_delta
-    assert all_times[0] + zero_delta == all_times[0]
-    assert all_times[0] - zero_delta == all_times[0]
-    assert all_times[0] + neg_zero_delta == all_times[0]
-    assert all_times[0] - neg_zero_delta == all_times[0]
-
-    # Errors when trying to add or subtract more observations than available
-    large_delta = Timedelta(99999, 'observations', 'log')('customers',
-                                                          instance_id=0,
-                                                          entityset=es)
-    with pytest.raises(NotEnoughData):
-        all_times[0] + large_delta
-    with pytest.raises(NotEnoughData):
-        all_times[0] - large_delta
+    assert not neg_four_delta.is_absolute()
+    assert neg_four_delta.value == -4
 
 
 def test_delta_with_time_unit_matches_pandas(es):
-    df = es.related_instances('customers', 'log', 0)
-    all_times = df['datetime'].sort_values().tolist()
+    customer_id = 0
+    sessions_df = es['sessions'].df
+    sessions_df = sessions_df[sessions_df['customer_id'] == customer_id]
+    log_df = es['log'].df
+    log_df = log_df[log_df['session_id'].isin(sessions_df['id'])]
+    all_times = log_df['datetime'].sort_values().tolist()
 
     # 4 observation delta
     value = 4
@@ -145,8 +118,12 @@ def test_feature_takes_timedelta_string(es):
 
 
 def test_deltas_week(es):
-    df = es.related_instances('customers', 'log', 0)
-    all_times = df['datetime'].sort_values().tolist()
+    customer_id = 0
+    sessions_df = es['sessions'].df
+    sessions_df = sessions_df[sessions_df['customer_id'] == customer_id]
+    log_df = es['log'].df
+    log_df = log_df[log_df['session_id'].isin(sessions_df['id'])]
+    all_times = log_df['datetime'].sort_values().tolist()
     delta_week = Timedelta(1, "w")
     delta_days = Timedelta(7, "d")
 

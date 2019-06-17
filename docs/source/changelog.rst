@@ -8,6 +8,7 @@ Changelog
         * Add ability to install optional add on libraries (:pr:`551`)
         * Load and save features from open files and strings (:pr:`566`)
         * Support custom variable types (:pr:`571`)
+        * Support entitysets which have multiple paths between two entities (:pr:`572`, :pr:`544`)
     * Fixes
         * Normalize_entity specifies error when 'make_time_index' is an invalid string (:pr:`550`)
         * Schema version added for entityset serialization (:pr:`586`)

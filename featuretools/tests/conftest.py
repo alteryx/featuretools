@@ -17,13 +17,19 @@ def int_es():
 
 @pytest.fixture
 def diamond_es():
+    countries_df = pd.DataFrame({
+        'id': range(2),
+        'name': ['US', 'Canada']
+    })
     regions_df = pd.DataFrame({
         'id': range(3),
-        'name': ['Northeast', 'Midwest', 'South'],
+        'country_id': [0, 0, 1],
+        'name': ['Northeast', 'South', 'Quebec'],
     })
     stores_df = pd.DataFrame({
         'id': range(5),
         'region_id': [0, 1, 2, 2, 1],
+        'square_ft': [2000, 3000, 1500, 2500, 2700],
     })
     customers_df = pd.DataFrame({
         'id': range(5),
@@ -38,12 +44,14 @@ def diamond_es():
     })
 
     entities = {
+        'countries': (countries_df, 'id'),
         'regions': (regions_df, 'id'),
         'stores': (stores_df, 'id'),
         'customers': (customers_df, 'id'),
         'transactions': (transactions_df, 'id'),
     }
     relationships = [
+        ('countries', 'id', 'regions', 'country_id'),
         ('regions', 'id', 'stores', 'region_id'),
         ('regions', 'id', 'customers', 'region_id'),
         ('stores', 'id', 'transactions', 'store_id'),

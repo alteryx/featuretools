@@ -1,7 +1,6 @@
 import copy
-import itertools
 import logging
-from builtins import object, range, zip
+from builtins import object
 from collections import defaultdict
 
 import cloudpickle
@@ -268,67 +267,6 @@ class EntitySet(object):
         self.reset_data_description()
         return self
 
-    def get_pandas_data_slice(self, filter_eid, index_eid,
-                              instances, entity_columns=None,
-                              time_last=None, training_window=None):
-        """
-        Get the slice of data related to the supplied instances of the index
-        entity.
-        """
-        # get the instances of the top-level entity linked by our instances
-        toplevel_slice = self.related_instances(start_entity_id=index_eid,
-                                                final_entity_id=filter_eid,
-                                                instance_ids=instances,
-                                                time_last=time_last,
-                                                training_window=training_window)
-
-        eframes = {filter_eid: toplevel_slice}
-
-        # Do a breadth-first search of the relationship tree rooted at this
-        # entity, filling out eframes for each entity we hit on the way.
-        r_queue = self.get_backward_relationships(filter_eid)
-        while r_queue:
-            r = r_queue.pop(0)
-            child_eid = r.child_variable.entity.id
-            child_columns = None
-            if entity_columns is not None and child_eid not in entity_columns:
-                # entity_columns specifies which columns to extract
-                # if it skips a relationship (specifies child and grandparent columns)
-                # we need to at least add the ids of the intermediate entity
-                child_columns = [v.id for v in self[child_eid].variables
-                                 if isinstance(v, (vtypes.Index, vtypes.Id,
-                                                   vtypes.TimeIndex))]
-            elif entity_columns is not None:
-                child_columns = entity_columns[child_eid]
-
-            parent_eid = r.parent_variable.entity.id
-
-            # If we've already seen this child, this is a diamond graph and
-            # we don't know what to do
-            if child_eid in eframes:
-                raise RuntimeError('Diamond graph detected!')
-
-            # Add this child's children to the queue
-            r_queue += self.get_backward_relationships(child_eid)
-
-            # Query the child of the current backwards relationship for the
-            # instances we want
-            instance_vals = eframes[parent_eid][r.parent_variable.id]
-            eframes[child_eid] =\
-                self.entity_dict[child_eid].query_by_values(
-                    instance_vals,
-                    variable_id=r.child_variable.id,
-                    columns=child_columns,
-                    time_last=time_last,
-                    training_window=training_window)
-
-            # add link variables to this dataframe in order to link it to its
-            # (grand)parents
-            self._add_multigenerational_link_vars(frames=eframes,
-                                                  start_entity_id=filter_eid,
-                                                  end_entity_id=child_eid)
-        return eframes
-
     ###########################################################################
     #   Relationship access/helper methods  ###################################
     ###########################################################################
@@ -544,27 +482,6 @@ class EntitySet(object):
             list[:class:`.Relationship`]: list of backward relationships
         """
         return [r for r in self.relationships if r.parent_entity.id == entity_id]
-
-    def _is_backward_relationship(self, rel, prev_ent):
-        if prev_ent == rel.parent_entity.id:
-            return True
-        return False
-
-    def path_relationships(self, path, start_entity_id):
-        """
-        Generate a list of the strings "forward" or "backward" corresponding to
-        the direction of the relationship at each point in `path`.
-        """
-        prev_entity = start_entity_id
-        rels = []
-        for r in path:
-            if self._is_backward_relationship(r, prev_entity):
-                rels.append('backward')
-                prev_entity = r.child_variable.entity.id
-            else:
-                rels.append('forward')
-                prev_entity = r.parent_variable.entity.id
-        return rels
 
     def has_unique_forward_path(self, start_entity_id, end_entity_id):
         """
@@ -997,71 +914,6 @@ class EntitySet(object):
             entity.add_interesting_values(max_values=max_values, verbose=verbose)
         self.reset_data_description()
 
-    def related_instances(self, start_entity_id, final_entity_id,
-                          instance_ids=None, time_last=None,
-                          training_window=None):
-        """
-        Filter out all but relevant information from dataframes along path
-        from start_entity_id to final_entity_id,
-        exclude data if it does not lie within  and time_last
-
-        Args:
-            start_entity_id (str) : Id of start entity.
-            final_entity_id (str) : Id of final entity.
-            instance_ids (list[str]) : List of start entity instance ids from
-                which to find related instances in final entity.
-            time_last (pd.TimeStamp) :  Latest allowed time.
-
-        Returns:
-            pd.DataFrame : Dataframe of related instances on the final_entity_id
-        """
-        # Load the filtered dataframe for the first entity
-        window = training_window
-        start_estore = self.entity_dict[start_entity_id]
-        # This check might be brittle
-        if instance_ids is not None and not hasattr(instance_ids, '__iter__'):
-            instance_ids = [instance_ids]
-
-        df = start_estore.query_by_values(instance_vals=instance_ids,
-                                          time_last=time_last,
-                                          training_window=window)
-        # if we're querying on a path that's not actually a path, just return
-        # the relevant slice of the entityset
-        if start_entity_id == final_entity_id:
-            return df
-
-        # get relationship path from start to end entity
-        path = self.find_path(start_entity_id, final_entity_id)
-        if path is None or len(path) == 0:
-            return pd.DataFrame()
-
-        prev_entity_id = start_entity_id
-
-        # Walk down the path of entities and take related instances at each step
-        for i, r in enumerate(path):
-            if r.child_entity.id == prev_entity_id:
-                new_entity_id = r.parent_entity.id
-                rvar_old = r.child_variable.id
-                rvar_new = r.parent_variable.id
-            else:
-                new_entity_id = r.child_entity.id
-                rvar_old = r.parent_variable.id
-                rvar_new = r.child_variable.id
-
-            all_ids = df[rvar_old]
-
-            # filter the next entity by the values found in the previous
-            # entity's relationship column
-            entity_store = self.entity_dict[new_entity_id]
-            df = entity_store.query_by_values(all_ids,
-                                              variable_id=rvar_new,
-                                              time_last=time_last,
-                                              training_window=window)
-
-            prev_entity_id = new_entity_id
-
-        return df
-
     def plot(self, to_file=None):
         """
         Create a UML diagram-ish graph of the EntitySet.
@@ -1141,84 +993,3 @@ class EntitySet(object):
             graph.render(output_path, cleanup=True)
 
         return graph
-
-    ###########################################################################
-    #  Private methods  ######################################################
-    ###########################################################################
-
-    def _add_multigenerational_link_vars(self, frames, start_entity_id,
-                                         end_entity_id=None, path=None):
-        """
-        Add multi-generational link variables to entity dataframes in order to
-        keep track of deep relationships.
-
-        For example: if entity 'grandparent' has_many of entity 'parent' which
-        has_many of entity 'child', and parent is related to grandparent by
-        variable 'grandparent_id', add a column to child called
-        'parent.grandparent_id' so that child instances can be grouped by
-        grandparent_id as well.
-
-        This function adds link variables to all relationships along the
-        provided path.
-        """
-
-        # caller can pass either a path or a start/end entity pair
-        assert start_entity_id is not None
-        if path is None:
-            assert end_entity_id is not None
-            path = self.find_path(start_entity_id, end_entity_id)
-
-        directions = self.path_relationships(path, start_entity_id)
-        relationship_directions = list(zip(directions, path))
-        groups = itertools.groupby(relationship_directions, key=lambda k: k[0])
-
-        # each group is a contiguous series of backward relationships on `path`
-        for key, group in groups:
-            if key != 'backward':
-                continue
-
-            # extract the path again
-            chain = [g[1] for g in group]
-
-            # generate a list of all sub-paths which have at least 2
-            # relationships
-            rel_chains = [chain[i:] for i in range(len(chain) - 1)]
-
-            # loop over all subpaths
-            for chain in rel_chains:
-                # pop off the first relationship: this one already has a
-                # direct variable link, but we'll need to remember its link
-                # variable name for later.
-                r = chain.pop(0)
-                child_link_name = r.child_variable.id
-
-                # step through each deep relationship of the subpath
-                for r in chain:
-                    parent_entity = r.parent_entity
-                    child_entity = r.child_entity
-                    parent_df = frames[parent_entity.id]
-                    child_df = frames[child_entity.id]
-
-                    # generate the link variable name
-                    parent_link_name = child_link_name
-                    child_link_name = '%s.%s' % (parent_entity.id,
-                                                 parent_link_name)
-                    if child_link_name in child_df.columns:
-                        continue
-
-                    # print 'adding link var %s to entity %s' % (child_link_name,
-                    #                                            child_entity.id)
-
-                    # create an intermediate dataframe which shares a column
-                    # with the child dataframe and has a column with the
-                    # original parent's id.
-                    col_map = {r.parent_variable.id: r.child_variable.id,
-                               parent_link_name: child_link_name}
-                    merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
-
-                    merge_df.index.name = None  # change index name for merge
-
-                    # merge the dataframe, adding the link variable to the child
-                    frames[child_entity.id] = merge_df.merge(child_df,
-                                                             left_on=r.child_variable.id,
-                                                             right_on=r.child_variable.id)

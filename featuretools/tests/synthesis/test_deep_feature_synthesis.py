@@ -549,12 +549,12 @@ def test_where_different_base_feats(es):
     )
     dfs_unconstrained = DeepFeatureSynthesis(**kwargs)
     features = dfs_unconstrained.build_features()
-    where_feats = [f.hash() for f in features
+    where_feats = [f.unique_name() for f in features
                    if isinstance(f, AggregationFeature) and f.where is not None]
-    not_where_feats = [f.hash() for f in features
+    not_where_feats = [f.unique_name() for f in features
                        if isinstance(f, AggregationFeature) and f.where is None]
-    for hashed in not_where_feats:
-        assert hashed not in where_feats
+    for name in not_where_feats:
+        assert name not in where_feats
 
 
 def test_dfeats_where(es):

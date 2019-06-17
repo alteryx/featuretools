@@ -4,7 +4,6 @@ import copy
 from builtins import range
 from datetime import datetime
 
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -664,138 +663,6 @@ def test_checks_time_type_setting_secondary_time_index(es):
         card_es['transactions'].set_secondary_time_index({'fraud': ['fraud']})
 
 
-def test_related_instances_backward(es):
-    result = es.related_instances(
-        start_entity_id=u'régions', final_entity_id='log',
-        instance_ids=['United States'])
-
-    col = es['log'].df['id'].values
-    assert len(result['id'].values) == len(col)
-    assert set(result['id'].values) == set(col)
-
-    result = es.related_instances(
-        start_entity_id=u'régions', final_entity_id='log',
-        instance_ids=['Mexico'])
-
-    assert len(result['id'].values) == 0
-
-
-def test_related_instances_forward(es):
-    result = es.related_instances(
-        start_entity_id='log', final_entity_id=u'régions',
-        instance_ids=[0, 1])
-
-    assert len(result['id'].values) == 1
-    assert result['id'].values[0] == 'United States'
-
-
-def test_related_instances_mixed_path(es):
-    result = es.related_instances(
-        start_entity_id='customers', final_entity_id='products',
-        instance_ids=[1])
-    related = ["Haribo sugar-free gummy bears", "coke zero"]
-    assert set(related) == set(result['id'].values)
-
-
-def test_related_instances_all(es):
-    # test querying across the entityset
-    result = es.related_instances(
-        start_entity_id='customers', final_entity_id='products',
-        instance_ids=None)
-
-    for p in es['products'].df['id'].values:
-        assert p in result['id'].values
-
-
-def test_related_instances_all_cutoff_time_same_entity(es):
-    # test querying across the entityset
-    result = es.related_instances(
-        start_entity_id='log', final_entity_id='log',
-        instance_ids=None, time_last=pd.Timestamp('2011/04/09 10:30:31'))
-
-    assert result['id'].values.tolist() == list(range(5))
-
-
-def test_get_pandas_slice(es):
-    assert set(_slice_for(es, 'products').keys()), set(['products', 'log'])
-    assert set(_slice_for(es, 'customers').keys()) == set(
-        ['customers', 'sessions', 'log'])
-    assert set(_slice_for(es, u'régions').keys()) == set(
-        [u'régions', 'stores', 'customers', 'sessions', 'log'])
-
-    # make sure different subsets of the log are included in each filtering
-    assert set(_slice_for(es, 'customers')['log']['id'].values) == set(range(10))
-    assert set(_slice_for(es, 'products')['log']['id'].values) == set(
-        list(range(10)) + list(range(11, 15)))
-    assert set(_slice_for(es, u'régions')['log']['id'].values) == set(range(17))
-
-
-def test_get_pandas_slice_times(es):
-    # todo these test used to use time first time last. i remvoed and it
-    # still passes,but we should double check this okay
-    filter_eids = ['products', u'régions', 'customers']
-    start = np.datetime64(datetime(2011, 4, 1))
-    end = np.datetime64(datetime(2011, 4, 9, 10, 31, 10))
-
-    # make sure no times outside range are included in any frames
-    for eid in filter_eids:
-        result = _slice_for(es, eid, time_last=end)
-        for t in result['log']['datetime'].values:
-            assert t >= start and t < end
-
-        # the instance ids should be the same for all filters
-        for i in range(7):
-            assert i in result['log']['id'].values
-
-
-def test_get_pandas_slice_times_include(es):
-    # todo these test used to use time first time last. i remvoed and it
-    # still passes,but we should double check this okay
-    filter_eids = ['products', u'régions', 'customers']
-    start = np.datetime64(datetime(2011, 4, 1))
-    end = np.datetime64(datetime(2011, 4, 9, 10, 31, 10))
-
-    # make sure no times outside range are included in any frames
-    for eid in filter_eids:
-        result = _slice_for(es, eid, time_last=end)
-        for t in result['log']['datetime'].values:
-            assert t >= start and t <= end
-
-        # the instance ids should be the same for all filters
-        for i in range(7):
-            assert i in result['log']['id'].values
-
-
-def test_get_pandas_slice_secondary_index(es):
-    # this date is before the cancel date of customers 1 and 2
-    end = np.datetime64(datetime(2011, 10, 1))
-    all_instances = [0, 1, 2]
-
-    result = es.get_pandas_data_slice(filter_eid='customers',
-                                      index_eid='customers',
-                                      instances=all_instances,
-                                      time_last=end)
-
-    # only customer 0 should have values from these columns
-    customers_df = result["customers"]
-    for col in ["cancel_date", "cancel_reason"]:
-        nulls = customers_df.iloc[all_instances][col].isnull() == [
-            False, True, True]
-        assert nulls.all(), "Some instance has data it shouldn't for column %s" % col
-
-
-def test_add_link_vars(es):
-    eframes = {e_id: es[e_id].df
-               for e_id in ["log", "sessions", "customers", u"régions"]}
-
-    es._add_multigenerational_link_vars(frames=eframes,
-                                        start_entity_id=u'régions',
-                                        end_entity_id='log')
-
-    assert 'sessions.customer_id' in eframes['log'].columns
-    assert u'sessions.customers.région_id' in eframes['log'].columns
-
-
 def test_normalize_entity(es):
     error_text = "'additional_variables' must be a list, but received type.*"
     with pytest.raises(TypeError, match=error_text):
@@ -981,13 +848,6 @@ def test_datetime64_conversion():
     es.entity_from_dataframe(entity_id='test_entity', index='id', dataframe=df)
     vtype_time_index = variable_types.variable.DatetimeTimeIndex
     es['test_entity'].convert_variable_type('time', vtype_time_index)
-
-
-def _slice_for(es, filter_eid, time_last=None):
-    return es.get_pandas_data_slice(filter_eid=filter_eid,
-                                    index_eid='customers',
-                                    instances=[0],
-                                    time_last=time_last)
 
 
 def test_later_schema_version(es):
