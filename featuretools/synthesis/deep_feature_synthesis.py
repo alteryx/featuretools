@@ -3,6 +3,7 @@ from builtins import filter, object
 from collections import defaultdict
 
 from featuretools import primitives, variable_types
+from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import (
     AggregationFeature,
     DirectFeature,
@@ -547,8 +548,10 @@ class DeepFeatureSynthesis(object):
             max_depth=max_depth,
             variable_type=variable_types.PandasTypes._all)
 
+        path = RelationshipPath([(True, relationship)])
+
         for f in features:
-            if self._feature_in_relationship_path([relationship], f):
+            if self._feature_in_relationship_path(path, f):
                 continue
 
             # limits allowing direct features of agg_feats with where clauses
@@ -660,7 +663,7 @@ class DeepFeatureSynthesis(object):
         if not isinstance(feature, IdentityFeature):
             return False
 
-        for relationship in relationship_path:
+        for _, relationship in relationship_path:
             if relationship.child_entity.id == feature.entity.id and \
                relationship.child_variable.id == feature.variable.id:
                 return True

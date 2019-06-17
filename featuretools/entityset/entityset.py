@@ -11,7 +11,7 @@ from pandas.api.types import is_dtype_equal, is_numeric_dtype
 import featuretools.variable_types.variable as vtypes
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.entity import Entity
-from featuretools.entityset.relationship import Relationship
+from featuretools.entityset.relationship import Relationship, RelationshipPath
 from featuretools.utils import is_string
 
 pd.options.mode.chained_assignment = None  # default='warn'
@@ -455,12 +455,13 @@ class EntitySet(object):
 
         for relationship in self.get_backward_relationships(entity_id):
             child_eid = relationship.child_entity.id
-            yield child_eid, [relationship]
+            direct_path = RelationshipPath([(False, relationship)])
+            yield child_eid, direct_path
 
             new_depth = depth and depth - 1
             sub_entities = self.get_backward_entities(child_eid, depth=new_depth)
             for sub_eid, path in sub_entities:
-                yield sub_eid, [relationship] + path
+                yield sub_eid, direct_path + path
 
     def get_forward_relationships(self, entity_id):
         """Get relationships where entity "entity_id" is the child
