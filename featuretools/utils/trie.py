@@ -7,23 +7,22 @@ class Trie(object):
 
     Examples:
         .. code-block:: python
-
             from featuretools.utils import Trie
 
             trie = Trie(default=str)
 
             # Set a value
-            trie[[1, 2, 3]] = '123'
+            trie.get_node([1, 2, 3]).value = '123'
 
             # Get a value
-            assert trie[[1, 2, 3]] == '123'
+            assert trie.get_node([1, 2, 3]).value == '123'
 
             # Overwrite a value
-            trie[[1, 2, 3]] = 'updated'
-            assert trie[[1, 2, 3]] == 'updated'
+            trie.get_node([1, 2, 3]).value = 'updated'
+            assert trie.get_node([1, 2, 3]).value == 'updated'
 
             # Getting a key that has not been set returns the default value.
-            assert trie[[1, 2]] == ''
+            assert trie.get_node([1, 2]).value == ''
     """
     def __init__(self, default=lambda: None, path_constructor=list):
         """
@@ -31,18 +30,10 @@ class Trie(object):
         path_constructor: A function which constructs a path from a list. The
             path type must support addition (concatenation).
         """
-        self._value = default()
+        self.value = default()
         self._children = {}
         self._default = default
         self._path_constructor = path_constructor
-
-    @property
-    def value(self):
-        return self._value
-
-    @value.setter
-    def value(self, v):
-        self._value = v
 
     def children(self):
         """
@@ -55,15 +46,15 @@ class Trie(object):
                 from featuretools.utils import Trie
 
                 trie = Trie()
-                trie[[1, 2]] = '12'
-                trie[[3]] = '3'
+                trie.get_node([1, 2]).value = '12'
+                trie.get_node([3]).value = '3'
 
                 children = trie.children()
                 first_edge, first_child = children[0]
                 second_edge, second_child = children[1]
 
-                assert (first_edge, first_child[[]]) == (1, None)
-                assert (second_edge, second_child[[]]) == (3, '3')
+                assert (first_edge, first_child.get_node([]).value) == (1, None)
+                assert (second_edge, second_child.get_node([]).value) == (3, '3')
         """
         return list(self._children.items())
 
@@ -79,11 +70,11 @@ class Trie(object):
 
                 t = Trie()
 
-                t[[1, 2, 3]] = '123'
-                t[[1, 2, 4]] = '124'
+                t.get_node([1, 2, 3]).value = '123'
+                t.get_node([1, 2, 4]).value = '124'
                 sub = t.get_node([1, 2])
-                assert sub[[3]] == '123'
-                assert sub[[4]] == '124'
+                assert sub.get_node([3]).value == '123'
+                assert sub.get_node([4]).value == '124'
         """
         if path:
             first = path[0]
@@ -106,7 +97,7 @@ class Trie(object):
 
         Implemented using depth first search.
         """
-        yield(self._path_constructor([]), self._value)
+        yield self._path_constructor([]), self.value
 
         for key, sub_trie in self.children():
             path_to_children = self._path_constructor([key])
