@@ -2,44 +2,48 @@ import locale
 import os
 import platform
 import struct
+import subprocess
 import sys
 
 import pkg_resources
 
 import featuretools
 
+deps = ["numpy", "pandas", "tqdm", "toolz", "PyYAML", "cloudpickle",
+        "future", "dask", "distributed", "psutil", "Click",
+        "scikit-learn", "pip", "setuptools"]
+
 
 def show_info():
+    subprocess.run(["featuretools", "info"])
+
+
+def print_info():
     print("Featuretools version: %s" % featuretools.__version__)
     print("Featuretools installation directory: %s" % get_featuretools_root())
+    print_sys_info()
+    print_deps(deps)
 
+
+def print_sys_info():
     print("\nSYSTEM INFO")
     print("-----------")
     sys_info = get_sys_info()
     for k, stat in sys_info:
         print("{k}: {stat}".format(k=k, stat=stat))
 
+
+def print_deps(dependencies):
     print("\nINSTALLED VERSIONS")
     print("------------------")
     installed_packages = get_installed_packages()
 
-    deps = [
-        ("numpy", installed_packages['numpy']),
-        ("pandas", installed_packages['pandas']),
-        ("tqdm", installed_packages['tqdm']),
-        ("toolz", installed_packages['toolz']),
-        ("PyYAML", installed_packages['PyYAML']),
-        ("cloudpickle", installed_packages['cloudpickle']),
-        ("future", installed_packages['future']),
-        ("dask", installed_packages['dask']),
-        ("distributed", installed_packages['distributed']),
-        ("psutil", installed_packages['psutil']),
-        ("Click", installed_packages['Click']),
-        ("scikit-learn", installed_packages['scikit-learn']),
-        ("pip", installed_packages['pip']),
-        ("setuptools", installed_packages['setuptools']),
-    ]
-    for k, stat in deps:
+    package_dep = []
+    for x in dependencies:
+        # prevents uninstalled deps from being printed
+        if x in installed_packages:
+            package_dep.append((x, installed_packages[x]))
+    for k, stat in package_dep:
         print("{k}: {stat}".format(k=k, stat=stat))
 
 

@@ -3,7 +3,7 @@ import pandas as pd
 import pkg_resources
 
 import featuretools
-from featuretools.utils import show_info
+from featuretools.utils.cli_utils import print_info
 
 
 @click.group()
@@ -13,7 +13,7 @@ def cli():
 
 @click.command()
 def info():
-    show_info()
+    print_info()
 
 
 @click.command(name='list-primitives')
@@ -32,6 +32,7 @@ for entry_point in pkg_resources.iter_entry_points('featuretools_cli'):
             for name, cmd in loaded.commands.items():
                 cli.add_command(cmd=cmd, name=name)
     except Exception:
+        raise
         pass
 
 if __name__ == "__main__":
