@@ -210,9 +210,6 @@ class DeepFeatureSynthesis(object):
                 (shallow first).
         """
         all_features = {}
-        for e in self.es.entities:
-            if e not in self.ignore_entities:
-                all_features[e.id] = {}
 
         self.where_clauses = defaultdict(set)
 
@@ -294,6 +291,8 @@ class DeepFeatureSynthesis(object):
         if max_depth is not None and max_depth < 0:
             return
 
+        all_features[entity.id] = {}
+
         entity_path.append(entity.id)
         """
         Step 1 - Recursively build features for each entity in a backward relationship
@@ -303,6 +302,9 @@ class DeepFeatureSynthesis(object):
         backward_entities = [b_id for b_id, _ in backward_entities
                              if b_id not in self.ignore_entities]
         for b_entity_id in backward_entities:
+            if b_entity_id in all_features:
+                continue
+
             # if in path, we've already built features
             if b_entity_id in entity_path:
                 continue
@@ -346,6 +348,9 @@ class DeepFeatureSynthesis(object):
                             if f_id not in self.ignore_entities]
 
         for f_entity_id in forward_entities:
+            if f_entity_id in all_features:
+                continue
+
             # if in path, we've already built features
             if f_entity_id in entity_path:
                 continue
@@ -633,6 +638,9 @@ class DeepFeatureSynthesis(object):
         selected_features = []
 
         if max_depth is not None and max_depth < 0:
+            return selected_features
+
+        if entity.id not in all_features:
             return selected_features
 
         for feat in all_features[entity.id]:
