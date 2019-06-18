@@ -4,7 +4,7 @@ import pytest
 
 import featuretools as ft
 from featuretools import EntitySet, Relationship, variable_types
-from featuretools.tests.testing_utils import backward_path
+from featuretools.tests.testing_utils import backward_path, forward_path
 
 
 def test_cannot_re_add_relationships_that_already_exists(es):
@@ -26,7 +26,9 @@ def test_add_relationships_convert_type(es):
 
 def test_get_forward_entities(es):
     entities = es.get_forward_entities('log')
-    assert entities == set(['sessions', 'products'])
+    path_to_sessions = forward_path(es, ['log', 'sessions'])
+    path_to_products = forward_path(es, ['log', 'products'])
+    assert list(entities) == [('sessions', path_to_sessions), ('products', path_to_products)]
 
 
 def test_get_backward_entities(es):
@@ -36,8 +38,19 @@ def test_get_backward_entities(es):
 
 
 def test_get_forward_entities_deep(es):
-    entities = es.get_forward_entities('log', 'deep')
-    assert entities == set(['sessions', 'customers', 'products', u'régions', 'cohorts'])
+    entities = es.get_forward_entities('log', deep=True)
+    path_to_sessions = forward_path(es, ['log', 'sessions'])
+    path_to_products = forward_path(es, ['log', 'products'])
+    path_to_customers = forward_path(es, ['log', 'sessions', 'customers'])
+    path_to_regions = forward_path(es, ['log', 'sessions', 'customers', u'régions'])
+    path_to_cohorts = forward_path(es, ['log', 'sessions', 'customers', 'cohorts'])
+    assert list(entities) == [
+        ('sessions', path_to_sessions),
+        ('customers', path_to_customers),
+        ('cohorts', path_to_cohorts),
+        (u'régions', path_to_regions),
+        ('products', path_to_products),
+    ]
 
 
 def test_get_backward_entities_deep(es):

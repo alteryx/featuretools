@@ -409,34 +409,25 @@ class EntitySet(object):
                 yield sub_entity_id, [relationship] + sub_path
 
     def get_forward_entities(self, entity_id, deep=False):
-        """Get entities that are in a forward relationship with entity
+        """
+        Get entities that are in a forward relationship with entity
 
         Args:
-            entity_id (str) - Id entity of entity to search from.
-            deep (bool) - if True, recursively find forward entities.
+            entity_id (str): Id entity of entity to search from.
+            depth (int): The depth to search to. 1 means only get the direct
+                children of the given entity.
 
-        Returns:
-            Set of entity IDs in a forward relationship with the passed in
-            entity.
+        Yields a tuple of (descendent_id, path from entity_id to descendant).
         """
-        parents = [r.parent_entity.id for r in
-                   self.get_forward_relationships(entity_id)]
+        for relationship in self.get_forward_relationships(entity_id):
+            parent_eid = relationship.parent_entity.id
+            direct_path = RelationshipPath([(True, relationship)])
+            yield parent_eid, direct_path
 
-        if deep:
-            parents_deep = set([])
-            for p in parents:
-                parents_deep.add(p)
-
-                # no loops that are typically caused by one to one relationships
-                if entity_id in self.get_forward_entities(p):
-                    continue
-
-                to_add = self.get_forward_entities(p, deep=True)
-                parents_deep = parents_deep.union(to_add)
-
-            parents = parents_deep
-
-        return set(parents)
+            if deep:
+                sub_entities = self.get_forward_entities(parent_eid, deep=True)
+                for sub_eid, path in sub_entities:
+                    yield sub_eid, direct_path + path
 
     def get_backward_entities(self, entity_id, deep=False):
         """
@@ -822,7 +813,7 @@ class EntitySet(object):
                     continue
                 parents.add(e)
 
-                for parent_id in self.get_forward_entities(e):
+                for parent_id, _ in self.get_forward_entities(e):
                     parent_queue.append(parent_id)
 
             queue = [self[p] for p in parents]

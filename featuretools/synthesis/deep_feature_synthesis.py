@@ -221,7 +221,7 @@ class DeepFeatureSynthesis(object):
             msg = "return_variable_types must be a list, or 'all'"
             assert isinstance(return_variable_types, list), msg
 
-        self._run_dfs(self.es[self.target_entity_id], [],
+        self._run_dfs(self.es[self.target_entity_id], RelationshipPath([]),
                       all_features, max_depth=self.max_depth)
 
         new_features = list(all_features[self.target_entity_id].values())
@@ -276,13 +276,13 @@ class DeepFeatureSynthesis(object):
 
         return f_keep
 
-    def _run_dfs(self, entity, entity_path, all_features, max_depth):
+    def _run_dfs(self, entity, relationship_path, all_features, max_depth):
         """
         create features for the provided entity
 
         Args:
             entity (Entity): Entity for which to create features.
-            entity_path (list[str]): List of entity ids.
+            relationship_path (RelationshipPath): The path to this entity.
             all_features (dict[Entity.id -> dict[str -> BaseFeature]]):
                 Dict containing a dict for each entity. Each nested dict
                 has features as values with their ids as keys.
@@ -293,29 +293,27 @@ class DeepFeatureSynthesis(object):
 
         all_features[entity.id] = {}
 
-        entity_path.append(entity.id)
         """
         Step 1 - Recursively build features for each entity in a backward relationship
         """
 
         backward_entities = self.es.get_backward_entities(entity.id)
-        backward_entities = [b_id for b_id, _ in backward_entities
-                             if b_id not in self.ignore_entities]
-        for b_entity_id in backward_entities:
+        for b_entity_id, sub_relationship_path in backward_entities:
             if b_entity_id in all_features:
                 continue
 
-            # if in path, we've already built features
-            if b_entity_id in entity_path:
+            if b_entity_id in self.ignore_entities:
                 continue
 
-            if self.allowed_paths and tuple(entity_path + [b_entity_id]) not in self.allowed_paths:
+            new_path = relationship_path + sub_relationship_path
+            if self.allowed_paths and tuple(new_path.entities()) not in self.allowed_paths:
                 continue
+
             new_max_depth = None
             if max_depth is not None:
                 new_max_depth = max_depth - 1
             self._run_dfs(entity=self.es[b_entity_id],
-                          entity_path=list(entity_path),
+                          relationship_path=new_path,
                           all_features=all_features,
                           max_depth=new_max_depth)
 
@@ -323,16 +321,19 @@ class DeepFeatureSynthesis(object):
         Step 2 - Create agg_feat features for all deep backward relationships
         """
         backward_entities = self.es.get_backward_entities(entity.id, deep=True)
-        for b_entity_id, relationship_path in backward_entities:
+        for b_entity_id, sub_relationship_path in backward_entities:
             if b_entity_id in self.ignore_entities:
                 continue
-            if self.allowed_paths and tuple(entity_path + [b_entity_id]) not in self.allowed_paths:
+
+            new_path = relationship_path + sub_relationship_path
+            if self.allowed_paths and tuple(new_path.entities()) not in self.allowed_paths:
                 continue
+
             self._build_agg_features(parent_entity=self.es[entity.id],
                                      child_entity=self.es[b_entity_id],
                                      all_features=all_features,
                                      max_depth=max_depth,
-                                     relationship_path=relationship_path)
+                                     relationship_path=sub_relationship_path)
 
         """
         Step 3 - Create Transform features
@@ -344,44 +345,40 @@ class DeepFeatureSynthesis(object):
         Step 4 - Recursively build features for each entity in a forward relationship
         """
         forward_entities = self.es.get_forward_entities(entity.id)
-        forward_entities = [f_id for f_id in forward_entities
-                            if f_id not in self.ignore_entities]
-
-        for f_entity_id in forward_entities:
+        for f_entity_id, sub_relationship_path in forward_entities:
             if f_entity_id in all_features:
                 continue
 
-            # if in path, we've already built features
-            if f_entity_id in entity_path:
+            if f_entity_id in self.ignore_entities:
                 continue
 
-            if self.allowed_paths and tuple(entity_path + [f_entity_id]) not in self.allowed_paths:
+            new_path = relationship_path + sub_relationship_path
+            if self.allowed_paths and tuple(new_path.entities()) not in self.allowed_paths:
                 continue
 
             new_max_depth = None
             if max_depth is not None:
                 new_max_depth = max_depth - 1
             self._run_dfs(entity=self.es[f_entity_id],
-                          entity_path=list(entity_path),
+                          relationship_path=new_path,
                           all_features=all_features,
                           max_depth=new_max_depth)
 
         """
         Step 5 - Create dfeat features for forward relationships
         """
-        # get forward relationship involving forward entities
-        forward = [r for r in self.es.get_forward_relationships(entity.id)
-                   if r.parent_entity.id in forward_entities and
-                   r.parent_entity.id not in self.ignore_entities]
-
-        for r in forward:
-            if self.allowed_paths and tuple(entity_path + [r.parent_entity.id]) not in self.allowed_paths:
+        forward_entities = self.es.get_forward_entities(entity.id)
+        for f_entity_id, sub_relationship_path in forward_entities:
+            if f_entity_id in self.ignore_entities:
                 continue
+
+            new_path = relationship_path + sub_relationship_path
+            if self.allowed_paths and tuple(new_path.entities()) not in self.allowed_paths:
+                continue
+
             self._build_forward_features(
                 all_features=all_features,
-                parent_entity=r.parent_entity,
-                child_entity=r.child_entity,
-                relationship=r,
+                relationship_path=sub_relationship_path,
                 max_depth=max_depth)
 
         # now that all  features are added, build where clauses
@@ -532,19 +529,19 @@ class DeepFeatureSynthesis(object):
                     self._handle_new_feature(all_features=all_features,
                                              new_feature=new_f)
 
-    def _build_forward_features(self, all_features, parent_entity,
-                                child_entity, relationship, max_depth=0):
-
+    def _build_forward_features(self, all_features, relationship_path, max_depth=0):
         if max_depth is not None and max_depth < 0:
             return
+
+        _, relationship = relationship_path[0]
+        child_entity = relationship.child_entity
+        parent_entity = relationship.parent_entity
 
         features = self._features_by_type(
             all_features=all_features,
             entity=parent_entity,
             max_depth=max_depth,
             variable_type=variable_types.PandasTypes._all)
-
-        relationship_path = RelationshipPath([(True, relationship)])
 
         for f in features:
             if self._feature_in_relationship_path(relationship_path, f):
