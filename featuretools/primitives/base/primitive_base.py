@@ -5,9 +5,8 @@ import os
 import numpy as np
 import pandas as pd
 
-from .utils import signature
-
 from featuretools import config
+from featuretools.primitives.base.utils import signature
 
 
 class PrimitiveBase(object):
@@ -23,8 +22,6 @@ class PrimitiveBase(object):
     #: (bool): True if feature needs to know what the current calculation time
     # is (provided to computational backend as "time_last")
     uses_calc_time = False
-    #: (bool): If True, allow where clauses in DFS
-    allow_where = False
     #: (int): Maximum number of features in the largest chain proceeding
     # downward from this feature's base features.
     max_stack_depth = None
@@ -59,6 +56,21 @@ class PrimitiveBase(object):
 
     def get_args_string(self):
         strings = []
+        for name, value in self.get_arguments():
+            # format arg to string
+            string = '{}={}'.format(name, str(value))
+            strings.append(string)
+
+        if len(strings) == 0:
+            return ''
+
+        string = ', '.join(strings)
+        string = ', ' + string
+        return string
+
+    def get_arguments(self):
+        values = []
+
         args = signature(self.__class__).parameters.items()
         for name, arg in args:
             # assert that arg is attribute of primitive
@@ -76,13 +88,6 @@ class PrimitiveBase(object):
                 if arg.default == value:
                     continue
 
-            # format arg to string
-            string = '{}={}'.format(name, str(value))
-            strings.append(string)
+            values.append((name, value))
 
-        if len(strings) == 0:
-            return ''
-
-        string = ', '.join(strings)
-        string = ', ' + string
-        return string
+        return values

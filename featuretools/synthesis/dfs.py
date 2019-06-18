@@ -1,9 +1,8 @@
 import pandas as pd
 
-from .deep_feature_synthesis import DeepFeatureSynthesis
-
 from featuretools.computational_backends import calculate_feature_matrix
 from featuretools.entityset import EntitySet
+from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
 from featuretools.utils import entry_point
 
 
@@ -55,7 +54,8 @@ def dfs(entities=None,
         target_entity (str): Entity id of entity on which to make predictions.
 
         cutoff_time (pd.DataFrame or Datetime): Specifies times at which to
-            calculate each instance. Can either be a DataFrame with
+            calculate each instance. The resulting feature matrix will use data
+            up to and including the cutoff_time. Can either be a DataFrame with
             'instance_id' and 'time' columns, a DataFrame with the name of the
             index variable in the target entity and a time column, a
             list of values, or a single
@@ -69,7 +69,7 @@ def dfs(entities=None,
         agg_primitives (list[str or AggregationPrimitive], optional): List of Aggregation
             Feature types to apply.
 
-                Default: ["sum", "std", "max", "skew", "min", "mean", "count", "percent_true", "n_unique", "mode"]
+                Default: ["sum", "std", "max", "skew", "min", "mean", "count", "percent_true", "num_unique", "mode"]
 
         trans_primitives (list[str or TransformPrimitive], optional):
             List of Transform Feature functions to apply.
@@ -116,9 +116,10 @@ def dfs(entities=None,
             where the second index is the cutoff time (first is instance id).
             DataFrame will be sorted by (time, instance_id).
 
-        training_window (Timedelta, optional):
-            Window defining how much older than the cutoff time data
-            can be to be included when calculating the feature. If None, all older data is used.
+        training_window (Timedelta or str, optional):
+            Window defining how much time before the cutoff time data
+            can be used when calculating features. If ``None`` , all data before cutoff time is used.
+            Defaults to ``None``.
 
         approximate (Timedelta): Bucket size to group instances with similar
             cutoff times by for features with costly calculations. For example,

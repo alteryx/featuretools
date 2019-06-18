@@ -3,8 +3,10 @@ import os
 
 import pandas as pd
 
-from .relationship import Relationship
-from .serialize import FORMATS, VARIABLE_TYPES
+from featuretools.entityset.relationship import Relationship
+from featuretools.entityset.serialize import FORMATS
+from featuretools.utils.gen_utils import check_schema_version
+from featuretools.variable_types.variable import find_variable_types
 
 
 def description_to_variable(description, entity=None):
@@ -17,9 +19,10 @@ def description_to_variable(description, entity=None):
     Returns:
         variable (Variable) : Returns :class:`.Variable`.
     '''
+    variable_types = find_variable_types()
     is_type_string = isinstance(description['type'], str)
     type = description['type'] if is_type_string else description['type'].pop('value')
-    variable = VARIABLE_TYPES.get(type, VARIABLE_TYPES.get('None'))
+    variable = variable_types.get(type, variable_types.get('None'))  # 'None' will return the Unknown variable type
     if entity is not None:
         kwargs = {} if is_type_string else description['type']
         variable = variable(description['id'], entity, **kwargs)
@@ -49,23 +52,6 @@ def description_to_entity(description, entityset, path=None):
         variable_types=variable_types)
 
 
-def description_to_relationship(description, entityset):
-    '''Deserialize parent and child variables from relationship description.
-
-    Args:
-        description (dict) : Description of :class:`.Relationship`.
-        entityset (EntitySet) : Instance of :class:`.EntitySet` containing parent and child variables.
-
-    Returns:
-        item (tuple(Variable, Variable)) : Tuple containing parent and child variables.
-    '''
-    entity, variable = description['parent']
-    parent = entityset[entity][variable]
-    entity, variable = description['child']
-    child = entityset[entity][variable]
-    return Relationship(parent, child)
-
-
 def description_to_entityset(description, **kwargs):
     '''Deserialize entityset from data description.
 
@@ -76,7 +62,9 @@ def description_to_entityset(description, **kwargs):
     Returns:
         entityset (EntitySet) : Instance of :class:`.EntitySet`.
     '''
-    from .entityset import EntitySet
+    check_schema_version(description, 'entityset')
+
+    from featuretools.entityset import EntitySet
     # If data description was not read from disk, path is None.
     path = description.get('path')
     entityset = EntitySet(description['id'])
@@ -90,7 +78,7 @@ def description_to_entityset(description, **kwargs):
             last_time_index.append(entity['id'])
 
     for relationship in description['relationships']:
-        relationship = description_to_relationship(relationship, entityset)
+        relationship = Relationship.from_dictionary(relationship, entityset)
         entityset.add_relationship(relationship)
 
     if len(last_time_index):

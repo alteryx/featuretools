@@ -1,17 +1,12 @@
 # -*- coding: utf-8 -*-
+import pandas as pd
 import pytest
 
-from ..testing_utils import make_ecommerce_entityset
-
+import featuretools as ft
 from featuretools import EntitySet, Relationship, variable_types
 
 
-@pytest.fixture
-def es():
-    return make_ecommerce_entityset()
-
-
-def test_cannot_readd_relationships_that_already_exists(es):
+def test_cannot_re_add_relationships_that_already_exists(es):
     before_len = len(es.relationships)
     es.add_relationship(es.relationships[0])
     after_len = len(es.relationships)
@@ -74,8 +69,11 @@ def test_get_backward_relationships(es):
     assert relationships[0].child_entity.id == 'sessions'
 
 
-def test_find_forward_path(es):
-    path = es.find_forward_path('log', 'customers')
+def test_find_forward_paths(es):
+    paths = list(es.find_forward_paths('log', 'customers'))
+    assert len(paths) == 1
+
+    path = paths[0]
 
     assert len(path) == 2
     assert path[0].child_entity.id == 'log'
@@ -84,14 +82,108 @@ def test_find_forward_path(es):
     assert path[1].parent_entity.id == 'customers'
 
 
-def test_find_backward_path(es):
-    path = es.find_backward_path('customers', 'log')
+def test_find_forward_paths_multiple_paths(diamond_es):
+    paths = list(diamond_es.find_forward_paths('transactions', 'regions'))
+    assert len(paths) == 2
+
+    path1, path2 = paths
+
+    r1, r2 = path1
+    assert r1.child_entity.id == 'transactions'
+    assert r1.parent_entity.id == 'stores'
+    assert r2.child_entity.id == 'stores'
+    assert r2.parent_entity.id == 'regions'
+
+    r1, r2 = path2
+    assert r1.child_entity.id == 'transactions'
+    assert r1.parent_entity.id == 'customers'
+    assert r2.child_entity.id == 'customers'
+    assert r2.parent_entity.id == 'regions'
+
+
+def test_find_forward_paths_multiple_relationships(games_es):
+    paths = list(games_es.find_forward_paths('games', 'teams'))
+    assert len(paths) == 2
+
+    path1, path2 = paths
+    assert len(path1) == 1
+    assert len(path2) == 1
+    r1 = path1[0]
+    r2 = path2[0]
+
+    assert r1.child_entity.id == 'games'
+    assert r2.child_entity.id == 'games'
+    assert r1.parent_entity.id == 'teams'
+    assert r2.parent_entity.id == 'teams'
+
+    assert r1.child_variable.id == 'home_team_id'
+    assert r2.child_variable.id == 'away_team_id'
+    assert r1.parent_variable.id == 'id'
+    assert r2.parent_variable.id == 'id'
+
+
+def test_find_forward_paths_ignores_loops():
+    employee_df = pd.DataFrame({'id': [0], 'manager_id': [0]})
+    entities = {'employees': (employee_df, 'id')}
+    relationships = [('employees', 'id', 'employees', 'manager_id')]
+    es = ft.EntitySet(entities=entities, relationships=relationships)
+
+    paths = list(es.find_forward_paths('employees', 'employees'))
+    assert len(paths) == 1
+    assert paths[0] == []
+
+
+def test_find_backward_paths(es):
+    paths = list(es.find_backward_paths('customers', 'log'))
+    assert len(paths) == 1
+
+    path = paths[0]
 
     assert len(path) == 2
     assert path[0].child_entity.id == 'sessions'
     assert path[0].parent_entity.id == 'customers'
     assert path[1].child_entity.id == 'log'
     assert path[1].parent_entity.id == 'sessions'
+
+
+def test_find_backward_paths_multiple_paths(diamond_es):
+    paths = list(diamond_es.find_backward_paths('regions', 'transactions'))
+    assert len(paths) == 2
+
+    path1, path2 = paths
+
+    r1, r2 = path1
+    assert r1.child_entity.id == 'stores'
+    assert r1.parent_entity.id == 'regions'
+    assert r2.child_entity.id == 'transactions'
+    assert r2.parent_entity.id == 'stores'
+
+    r1, r2 = path2
+    assert r1.child_entity.id == 'customers'
+    assert r1.parent_entity.id == 'regions'
+    assert r2.child_entity.id == 'transactions'
+    assert r2.parent_entity.id == 'customers'
+
+
+def test_find_backward_paths_multiple_relationships(games_es):
+    paths = list(games_es.find_backward_paths('teams', 'games'))
+    assert len(paths) == 2
+
+    path1, path2 = paths
+    assert len(path1) == 1
+    assert len(path2) == 1
+    r1 = path1[0]
+    r2 = path2[0]
+
+    assert r1.child_entity.id == 'games'
+    assert r2.child_entity.id == 'games'
+    assert r1.parent_entity.id == 'teams'
+    assert r2.parent_entity.id == 'teams'
+
+    assert r1.child_variable.id == 'home_team_id'
+    assert r2.child_variable.id == 'away_team_id'
+    assert r1.parent_variable.id == 'id'
+    assert r2.parent_variable.id == 'id'
 
 
 def test_find_path(es):
@@ -125,6 +217,11 @@ def test_find_path_no_path_found(es):
     error_text = "No path from products to customers. Check that all entities are connected by relationships"
     with pytest.raises(ValueError, match=error_text):
         es.find_path('products', 'customers')
+
+
+def test_has_unique_path(diamond_es):
+    assert diamond_es.has_unique_forward_path('customers', 'regions')
+    assert not diamond_es.has_unique_forward_path('transactions', 'regions')
 
 
 def test_raise_key_error_missing_entity(es):

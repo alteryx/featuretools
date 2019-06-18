@@ -28,7 +28,7 @@ Before we can update the conda recipe we need an uploaded package for the recipe
     ```bash
     git checkout -b v0.7.0rc
     ```
-2. Update version number in `setup.py` and `featuretools/__init__.py` to v0.7.0rc1 and push branch to repo
+2. Update version number in `setup.py`, `featuretools/version.py`, `featuretools/tests/test_version.py` to v0.7.0rc1 and push branch to repo
 3. Upload release candidate to test.pypi.org
     ```bash
     docker run \
@@ -102,7 +102,7 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
 ## Create featuretools release on github
 #### Create release branch
 1. Branch off of master and name the branch the release version number (e.g. v0.7.1)
-2. Bump verison number in `setup.py`, and `featuretools/__init__.py`
+2. Bump verison number in `setup.py`, `featuretools/version.py`, and `featuretools/tests/test_version.py`.
 
 #### Update changelog
 1. Grab commit history since last release
@@ -153,12 +153,14 @@ After the release pull request has been merged into the master branch, it is tim
     docker pull circleci/python:3
     ```
 2. Run upload script
+    * Replace `/absolute/path/to/upload.sh` with the actual path
+    * Replace the "release_tag" part of `tags/release_tag` with the actual tag
     ```bash
     docker run \
         --rm \
         -it \
-        -v /path/to/upload.sh:/home/circleci/upload.sh \
-        circleci/python:3
+        -v /absolute/path/to/upload.sh:/home/circleci/upload.sh \
+        circleci/python:3 \
         /bin/bash -c "bash /home/circleci/upload.sh tags/release_tag"
     ```
 

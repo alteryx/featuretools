@@ -4,18 +4,11 @@ import pandas as pd
 import pytest
 from distributed.utils_test import cluster
 
-from ..testing_utils import make_ecommerce_entityset
-
 from featuretools.primitives import Max, Mean, Min, Sum
 from featuretools.synthesis import dfs
 
 
-@pytest.fixture(scope='module')
-def es():
-    return make_ecommerce_entityset()
-
-
-@pytest.fixture(scope='module')
+@pytest.fixture
 def entities():
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
@@ -29,7 +22,7 @@ def entities():
     return entities
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def relationships():
     return [("cards", "id", "transactions", "card_id")]
 
@@ -143,7 +136,7 @@ def test_dask_kwargs(entities, relationships):
                                            cutoff_time=cutoff_times_df,
                                            dask_kwargs=dask_kwargs)
 
-    assert all(f1.hash() == f2.hash() for f1, f2 in zip(features, features_2))
+    assert all(f1.unique_name() == f2.unique_name() for f1, f2 in zip(features, features_2))
     for column in feature_matrix:
         for x, y in zip(feature_matrix[column], feature_matrix_2[column]):
             assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))

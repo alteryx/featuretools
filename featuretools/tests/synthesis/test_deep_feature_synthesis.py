@@ -5,8 +5,6 @@ import copy
 import pandas as pd
 import pytest
 
-from ..testing_utils import feature_with_name, make_ecommerce_entityset
-
 import featuretools as ft
 from featuretools.feature_base import (
     AggregationFeature,
@@ -29,32 +27,7 @@ from featuretools.primitives import (  # CumMean,
     TimeSincePrevious
 )
 from featuretools.synthesis import DeepFeatureSynthesis
-
-
-@pytest.fixture(scope='module')
-def es():
-    return make_ecommerce_entityset()
-
-
-@pytest.fixture(scope='module')
-def entities():
-    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
-    transactions_df = pd.DataFrame({
-        "id": [1, 2, 3, 4, 5, 6],
-        "card_id": [1, 2, 1, 3, 4, 5],
-        "transaction_time": [10, 12, 13, 20, 21, 20],
-        "fraud": [True, False, True, False, True, True]
-    })
-    entities = {
-        "cards": (cards_df, "id"),
-        "transactions": (transactions_df, "id", "transaction_time")
-    }
-    return entities
-
-
-@pytest.fixture(scope='module')
-def relationships():
-    return [("cards", "id", "transactions", "card_id")]
+from featuretools.tests.testing_utils import feature_with_name
 
 
 def test_makes_agg_features_from_str(es):
@@ -202,21 +175,21 @@ def test_handles_diff_entity_groupby(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
                                    agg_primitives=[],
-                                   trans_primitives=[Diff])
+                                   groupby_trans_primitives=[Diff])
 
     features = dfs_obj.build_features()
-    assert (feature_with_name(features, 'DIFF(value by session_id)'))
-    assert (feature_with_name(features, 'DIFF(value by product_id)'))
+    assert (feature_with_name(features, 'DIFF(value) by session_id'))
+    assert (feature_with_name(features, 'DIFF(value) by product_id'))
 
 
 def test_handles_time_since_previous_entity_groupby(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
                                    agg_primitives=[],
-                                   trans_primitives=[TimeSincePrevious])
+                                   groupby_trans_primitives=[TimeSincePrevious])
 
     features = dfs_obj.build_features()
-    assert (feature_with_name(features, 'time_since_previous_by_session_id'))
+    assert (feature_with_name(features, 'TIME_SINCE_PREVIOUS(datetime) by session_id'))
 
 # M TODO
 # def test_handles_cumsum_entity_groupby(es):
@@ -563,32 +536,6 @@ def test_stacking_where_primitives(es):
     assert len(stacked_where_limit_2_feats) > 0
 
 
-def test_allow_where(es):
-    es = copy.deepcopy(es)
-    es['sessions']['device_type'].interesting_values = [0]
-    Count.allow_where = False
-    kwargs = dict(
-        target_entity_id='customers',
-        entityset=es,
-        agg_primitives=[Count, Last],
-        max_depth=3,
-    )
-    dfs_constrained = DeepFeatureSynthesis(where_primitives=[Count, Last],
-                                           **kwargs)
-    features = dfs_constrained.build_features()
-
-    # change it back after building features
-    Count.allow_where = True
-
-    where_feats = [f for f in features
-                   if isinstance(f, AggregationFeature) and f.where is not None]
-
-    assert len([f for f in where_feats
-                if isinstance(f.primitive, Last)]) > 0
-    assert len([f for f in where_feats
-                if isinstance(f.primitive, Count)]) == 0
-
-
 def test_where_different_base_feats(es):
     es = copy.deepcopy(es)
     es['sessions']['device_type'].interesting_values = [0]
@@ -602,12 +549,12 @@ def test_where_different_base_feats(es):
     )
     dfs_unconstrained = DeepFeatureSynthesis(**kwargs)
     features = dfs_unconstrained.build_features()
-    where_feats = [f.hash() for f in features
+    where_feats = [f.unique_name() for f in features
                    if isinstance(f, AggregationFeature) and f.where is not None]
-    not_where_feats = [f.hash() for f in features
+    not_where_feats = [f.unique_name() for f in features
                        if isinstance(f, AggregationFeature) and f.where is None]
-    for hashed in not_where_feats:
-        assert hashed not in where_feats
+    for name in not_where_feats:
+        assert name not in where_feats
 
 
 def test_dfeats_where(es):

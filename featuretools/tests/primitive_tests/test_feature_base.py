@@ -1,25 +1,12 @@
 import os.path
 
-import pytest
 from pympler.asizeof import asizeof
-
-from ..testing_utils import make_ecommerce_entityset
 
 import featuretools as ft
 from featuretools import config
 from featuretools.feature_base import IdentityFeature
 from featuretools.primitives import Last, Mode, Sum
 from featuretools.variable_types import Categorical, Datetime, Id, Numeric
-
-
-@pytest.fixture(scope='module')
-def es():
-    return make_ecommerce_entityset()
-
-
-@pytest.fixture(scope='module')
-def es_numeric():
-    return make_ecommerce_entityset(with_integer_time_index=True)
 
 
 def test_copy_features_does_not_copy_entityset(es):
@@ -45,15 +32,14 @@ def test_get_dependencies(es):
     d1 = ft.Feature(agg2, es['sessions'])
     shallow = d1.get_dependencies(deep=False, ignored=None)
     deep = d1.get_dependencies(deep=True, ignored=None)
-    ignored = set([agg1.hash()])
+    ignored = set([agg1.unique_name()])
     deep_ignored = d1.get_dependencies(deep=True, ignored=ignored)
-    assert [s.hash() for s in shallow] == [agg2.hash()]
-    assert [d.hash() for d in deep] == [agg2.hash(), agg1.hash(), f.hash()]
-    assert [d.hash() for d in deep_ignored] == [agg2.hash()]
+    assert [s.unique_name() for s in shallow] == [agg2.unique_name()]
+    assert [d.unique_name() for d in deep] == [agg2.unique_name(), agg1.unique_name(), f.unique_name()]
+    assert [d.unique_name() for d in deep_ignored] == [agg2.unique_name()]
 
 
 def test_get_depth(es):
-    es = make_ecommerce_entityset()
     f = ft.Feature(es['log']['value'])
     g = ft.Feature(es['log']['value'])
     agg1 = ft.Feature(f, parent_entity=es['sessions'], primitive=Last)
@@ -76,7 +62,7 @@ def test_squared(es):
     feature = ft.Feature(es['log']['value'])
     squared = feature * feature
     assert len(squared.base_features) == 2
-    assert squared.base_features[0].hash() == squared.base_features[1].hash()
+    assert squared.base_features[0].unique_name() == squared.base_features[1].unique_name()
 
 
 def test_return_type_inference(es):
@@ -95,8 +81,8 @@ def test_return_type_inference_datetime_time_index(es):
     assert last.variable_type == Datetime
 
 
-def test_return_type_inference_numeric_time_index(es_numeric):
-    last = ft.Feature(es_numeric["log"]["datetime"], parent_entity=es_numeric["customers"], primitive=Last)
+def test_return_type_inference_numeric_time_index(int_es):
+    last = ft.Feature(int_es["log"]["datetime"], parent_entity=int_es["customers"], primitive=Last)
     assert last.variable_type == Numeric
 
 
@@ -142,3 +128,13 @@ def test_set_data_path(es):
     # Ensure path was reset
     config.set({key: orig_path})
     assert config.get(key) == orig_path
+
+
+def test_to_dictionary(es):
+    direct_feature = ft.Feature(es["sessions"]["customer_id"], es["log"])
+    expected = {
+        'type': 'DirectFeature',
+        'dependencies': [feat.unique_name() for feat in direct_feature.get_dependencies()],
+        'arguments': direct_feature.get_arguments()
+    }
+    assert expected == direct_feature.to_dictionary()

@@ -106,6 +106,13 @@ class Timedelta(object):
         self.inclusive = inclusive
 
     @classmethod
+    def from_dictionary(cls, dictionary):
+        return cls(dictionary['value'],
+                   unit=dictionary['unit'],
+                   entity=dictionary['entity_id'],
+                   inclusive=dictionary['inclusive'])
+
+    @classmethod
     def make_singular(cls, s):
         if len(s) > 1 and s.endswith('s'):
             return s[:-1]
@@ -167,39 +174,26 @@ class Timedelta(object):
         else:
             return None
 
+    def get_arguments(self):
+        return {
+            'value': self._original_value(),
+            'unit': self._original_unit or self.unit,
+            'entity_id': self.entity,
+            'inclusive': self.inclusive,
+        }
+
+    def _original_value(self):
+        if self._original_unit:
+            return self.value / self._convert_to_days[self._original_unit]
+        else:
+            return self.value
+
     def is_absolute(self):
         return self.unit != self._Observations
 
     def __neg__(self):
         """Negate the timedelta"""
         return Timedelta(-self.value, self.unit, self.entity, self.data)
-
-    def __call__(self, parent_entity, instance_id, entityset, inclusive=False):
-        """
-        Args:
-            parent_entity (str) : Id of parent entity, from which our entity
-                will be filtered.
-            instance_id (str, int) : Instance ID on the parent entity used to
-                select ids on this entity.
-            entityset (BaseEntitySet) : Associated entityset from which to access data.
-            inclusive (bool, optional]) : If True, include events that are
-                exactly timedelta distance away from the original time/observation.
-
-        Returns:
-            :class:`Timedelta`
-        """
-        # this only does anything if our unit is 'observations.'
-        if self.unit != self._Observations:
-            return self
-
-        time_index = entityset.entity_dict[self.entity].time_index
-        data = entityset.related_instances(parent_entity, self.entity,
-                                           [instance_id])[time_index]
-        self.inclusive = inclusive
-
-        # return copy with this info set
-        return Timedelta(self.value, self.unit, self.entity, data,
-                         inclusive=inclusive)
 
     def __radd__(self, time):
         """Add the Timedelta to a timestamp value"""

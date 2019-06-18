@@ -2,10 +2,56 @@
 
 Changelog
 ---------
-**v0.8.0** Pre-Release
-    * PR
+**Future Release**
+    * Enhancements
+        * Add unit parameter to timesince primitives (:pr:`558`)
+        * Add ability to install optional add on libraries (:pr:`551`)
+        * Load and save features from open files and strings (:pr:`566`)
+        * Support custom variable types (:pr:`571`)
+        * Support entitysets which have multiple paths between two entities (:pr:`572`, :pr:`544`)
+    * Fixes
+        * Normalize_entity specifies error when 'make_time_index' is an invalid string (:pr:`550`)
+        * Schema version added for entityset serialization (:pr:`586`)
+        * Renamed features have names correctly serialized (:pr:`585`)
+        * Improved error message for index/time_index being the same column in normalize_entity and entity_from_dataframe (:pr:`583`)
+        * Removed all mentions of allow_where (:pr:`587`, :pr:`588`)
+        * Removed unused variable in normalize entity (:pr:`589`)
+    * Changes
+        * Refactor get_pandas_data_slice to take single entity (:pr:`547`)
+        * Updates TimeSincePrevious and Diff Primitives (:pr:`561`)
+        * Remove unecessary time_last variable (:pr:`546`)
+    * Documentation Changes
+        * Add Featuretools Enterprise to documentation (:pr:`563`)
+        * Miscellaneous changes (:pr:`552`, :pr:`573`, :pr:`577`, :pr:`599`)
+    * Testing Changes
+        * Miscellaneous changes (:pr:`559`, :pr:`569`, :pr:`570`, :pr:`574`, :pr:`584`, :pr:`590`)
 
     Thanks to the following people for contributing to this release:
+    :user:`alexjwang`, :user:`allisonportis`, :user:`CJStadler`, :user:`ctduffy`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`
+
+**v0.8.0** May 17, 2019
+    * Rename NUnique to NumUnique (:pr:`510`)
+    * Serialize features as JSON (:pr:`532`)
+    * Drop all variables at once in normalize_entity (:pr:`533`)
+    * Remove unnecessary sorting from normalize_entity (:pr:`535`)
+    * Features cache their names (:pr:`536`)
+    * Only calculate features for instances before cutoff (:pr:`523`)
+    * Remove all relative imports (:pr:`530`)
+    * Added FullName Variable Type (:pr:`506`)
+    * Add error message when target entity does not exist (:pr:`520`)
+    * New demo links (:pr:`542`)
+    * Remove duplicate features check in DFS (:pr:`538`)
+    * featuretools_primitives entry point expects list of primitive classes (:pr:`529`)
+    * Update ALL_VARIABLE_TYPES list (:pr:`526`)
+    * More Informative N Jobs Prints and Warnings (:pr:`511`)
+    * Update sklearn version requirements (:pr:`541`)
+    * Update Makefile (:pr:`519`)
+    * Remove unused parameter in Entity._handle_time (:pr:`524`)
+    * Remove build_ext code from setup.py (:pr:`513`)
+    * Documentation updates (:pr:`512`, :pr:`514`, :pr:`515`, :pr:`521`, :pr:`522`, :pr:`527`, :pr:`545`)
+    * Testing updates (:pr:`509`, :pr:`516`, :pr:`517`, :pr:`539`)
+
+    Thanks to the following people for contributing to this release: :user:`bphi`, :user:`CharlesBradshaw`, :user:`CJStadler`, :user:`glentennis`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`
 
 **Breaking Changes**
 

@@ -7,15 +7,17 @@ import shutil
 import time
 import warnings
 from builtins import zip
-from collections import defaultdict
 from datetime import datetime
 
 import cloudpickle
 import numpy as np
 import pandas as pd
 
-from .pandas_backend import PandasBackend
-from .utils import (
+from featuretools.computational_backends.feature_set import FeatureSet
+from featuretools.computational_backends.feature_set_calculator import (
+    FeatureSetCalculator
+)
+from featuretools.computational_backends.utils import (
     bin_cutoff_times,
     calc_num_per_chunk,
     create_client_and_cluster,
@@ -24,12 +26,10 @@ from .utils import (
     get_next_chunk,
     save_csv_decorator
 )
-
+from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, FeatureBase
-from featuretools.utils.gen_utils import (
-    get_relationship_variable_id,
-    make_tqdm_iterator
-)
+from featuretools.utils import Trie
+from featuretools.utils.gen_utils import make_tqdm_iterator
 from featuretools.utils.wrangle import _check_time_type
 from featuretools.variable_types import (
     DatetimeTimeIndex,
@@ -45,8 +45,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                              cutoff_time_in_index=False,
                              training_window=None, approximate=None,
                              save_progress=None, verbose=False,
-                             chunk_size=None, n_jobs=1, dask_kwargs=None,
-                             profile=False):
+                             chunk_size=None, n_jobs=1, dask_kwargs=None):
     """Calculates a matrix for a given set of instance ids and calculation times.
 
     Args:
@@ -56,7 +55,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             not provided
 
         cutoff_time (pd.DataFrame or Datetime): Specifies at which time to calculate
-            the features for each instance.  Can either be a DataFrame with
+            the features for each instance. The resulting feature matrix will use data
+            up to and including the cutoff_time. Can either be a DataFrame with
             'instance_id' and 'time' columns, DataFrame with the name of the
             index variable in the target entity and a time column, or a single
             value to calculate for all instances. If the dataframe has more than two columns, any additional
@@ -77,9 +77,10 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             where the second index is the cutoff time (first is instance id).
             DataFrame will be sorted by (time, instance_id).
 
-        training_window (Timedelta, optional):
-            Window defining how much older than the cutoff time data
-            can be to be included when calculating the feature. If None, all older data is used.
+        training_window (Timedelta or str, optional):
+            Window defining how much time before the cutoff time data
+            can be used when calculating features. If ``None``, all data before cutoff time is used.
+            Defaults to ``None``.
 
         approximate (Timedelta or str): Frequency to group instances with similar
             cutoff times by for features with costly calculations. For example,
@@ -88,8 +89,6 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
         verbose (bool, optional): Print progress info. The time granularity is
             per chunk.
-
-        profile (bool, optional): Enables profiling if True.
 
         chunk_size (int or float or None or "cutoff time"): Number of rows of
             output feature matrix to calculate at time. If passed an integer
@@ -180,7 +179,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     if _check_time_type(cutoff_time['time'].iloc[0]) is None:
         raise ValueError("cutoff_time time values must be datetime or numeric")
 
-    backend = PandasBackend(entityset, features)
+    feature_set = FeatureSet(features)
 
     # make sure dtype of instance_id in cutoff time
     # is same as column it references
@@ -188,11 +187,10 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     dtype = entityset[target_entity.id].df[target_entity.index].dtype
     cutoff_time["instance_id"] = cutoff_time["instance_id"].astype(dtype)
 
-    # Get dictionary of features to approximate
+    # Get features to approximate
     if approximate is not None:
-        to_approximate, all_approx_feature_set = gather_approximate_features(features, backend)
+        _, all_approx_feature_set = gather_approximate_features(feature_set)
     else:
-        to_approximate = defaultdict(list)
         all_approx_feature_set = None
 
     # Check if there are any non-approximated aggregation features
@@ -206,8 +204,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
         deps = feature.get_dependencies(deep=True, ignored=all_approx_feature_set)
         for dependency in deps:
-            if (isinstance(dependency, AggregationFeature) and
-                    dependency not in to_approximate[dependency.entity.id]):
+            if isinstance(dependency, AggregationFeature):
                 no_unapproximated_aggs = False
                 break
 
@@ -244,7 +241,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     if n_jobs != 1 or dask_kwargs is not None:
         feature_matrix = parallel_calculate_chunks(chunks=chunks,
-                                                   features=features,
+                                                   feature_set=feature_set,
                                                    approximate=approximate,
                                                    training_window=training_window,
                                                    verbose=verbose,
@@ -258,10 +255,9 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                                    dask_kwargs=dask_kwargs or {})
     else:
         feature_matrix = linear_calculate_chunks(chunks=chunks,
-                                                 features=features,
+                                                 feature_set=feature_set,
                                                  approximate=approximate,
                                                  training_window=training_window,
-                                                 profile=profile,
                                                  verbose=verbose,
                                                  save_progress=save_progress,
                                                  entityset=entityset,
@@ -282,22 +278,14 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     return feature_matrix
 
 
-def calculate_chunk(chunk, features, approximate, training_window,
-                    profile, verbose, save_progress,
+def calculate_chunk(chunk, feature_set, entityset, approximate, training_window,
+                    verbose, save_progress,
                     no_unapproximated_aggs, cutoff_df_time_var, target_time,
-                    pass_columns, backend=None, entityset=None):
-    if not isinstance(features, list):
-        features = cloudpickle.loads(features)
-
-    assert entityset is not None or backend is not None, "Must provide either"\
-        " entityset or backend to calculate_chunk"
-    if entityset is None:
-        entityset = backend.entityset
-    if backend is None:
-        backend = PandasBackend(entityset, features)
+                    pass_columns):
+    if not isinstance(feature_set, FeatureSet):
+        feature_set = cloudpickle.loads(feature_set)
 
     feature_matrix = []
-    entityset = backend.entityset
     if no_unapproximated_aggs and approximate is not None:
         if entityset.time_type == NumericTimeIndex:
             chunk_time = np.inf
@@ -307,26 +295,27 @@ def calculate_chunk(chunk, features, approximate, training_window,
     for _, group in chunk.groupby(cutoff_df_time_var):
         # if approximating, calculate the approximate features
         if approximate is not None:
-            precalculated_features, all_approx_feature_set = approximate_features(
-                features,
+            precalculated_features_trie, all_approx_feature_set = approximate_features(
+                feature_set,
                 group,
                 window=approximate,
-                entityset=backend.entityset,
-                backend=backend,
+                entityset=entityset,
                 training_window=training_window,
-                profile=profile
             )
         else:
-            precalculated_features = None
+            precalculated_features_trie = None
             all_approx_feature_set = None
 
         @save_csv_decorator(save_progress)
         def calc_results(time_last, ids, precalculated_features=None, training_window=None):
-            matrix = backend.calculate_all_features(ids, time_last,
-                                                    training_window=training_window,
-                                                    precalculated_features=precalculated_features,
-                                                    ignored=all_approx_feature_set,
-                                                    profile=profile)
+            calculator = FeatureSetCalculator(entityset,
+                                              feature_set,
+                                              time_last,
+                                              training_window=training_window,
+                                              precalculated_features=precalculated_features,
+                                              ignored=all_approx_feature_set)
+
+            matrix = calculator.run(ids)
             return matrix
 
         # if all aggregations have been approximated, can calculate all together
@@ -334,24 +323,23 @@ def calculate_chunk(chunk, features, approximate, training_window,
             grouped = [[chunk_time, group]]
         else:
             # if approximated features, set cutoff_time to unbinned time
-            if precalculated_features is not None:
+            if precalculated_features_trie is not None:
                 group[cutoff_df_time_var] = group[target_time]
 
             grouped = group.groupby(cutoff_df_time_var, sort=True)
 
-        for _time_last_to_calc, group in grouped:
+        for time_last, group in grouped:
             # sort group by instance id
             ids = group['instance_id'].sort_values().values
-            time_last = group[cutoff_df_time_var].iloc[0]
             if no_unapproximated_aggs and approximate is not None:
                 window = None
             else:
                 window = training_window
 
-            # calculate values for those instances at time _time_last_to_calc
-            _feature_matrix = calc_results(_time_last_to_calc,
+            # calculate values for those instances at time time_last
+            _feature_matrix = calc_results(time_last,
                                            ids,
-                                           precalculated_features=precalculated_features,
+                                           precalculated_features=precalculated_features_trie,
                                            training_window=window)
 
             id_name = _feature_matrix.index.name
@@ -386,9 +374,9 @@ def calculate_chunk(chunk, features, approximate, training_window,
     return feature_matrix
 
 
-def approximate_features(features, cutoff_time, window, entityset, backend,
-                         training_window=None, profile=None):
-    '''Given a list of features and cutoff_times to be passed to
+def approximate_features(feature_set, cutoff_time, window, entityset,
+                         training_window=None):
+    '''Given a set of features and cutoff_times to be passed to
     calculate_feature_matrix, calculates approximate values of some features
     to speed up calculations.  Cutoff times are sorted into
     window-sized buckets and the approximate feature values are only calculated
@@ -400,12 +388,9 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
         approximate these features on other top-level entities
 
     Args:
-        features (list[:class:`.FeatureBase`]): if these features are dependent
-            on aggregation features on the prediction, the approximate values
-            for the aggregation feature will be calculated
-
         cutoff_time (pd.DataFrame): specifies what time to calculate
-            the features for each instance at.  A DataFrame with
+            the features for each instance at. The resulting feature matrix will use data
+            up to and including the cutoff_time. A DataFrame with
             'instance_id' and 'time' columns.
 
         window (Timedelta or str): frequency to group instances with similar
@@ -415,83 +400,64 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
 
         entityset (:class:`.EntitySet`): An already initialized entityset.
 
+        feature_set (:class:`.FeatureSet`): The features to be calculated.
+
         training_window (`Timedelta`, optional):
             Window defining how much older than the cutoff time data
             can be to be included when calculating the feature. If None, all older data is used.
 
-        profile (bool, optional): Enables profiling if True
-
         save_progress (str, optional): path to save intermediate computational results
     '''
-    approx_fms_by_entity = {}
+    approx_fms_trie = Trie(path_constructor=RelationshipPath)
     all_approx_feature_set = None
-    target_entity = features[0].entity
-    target_index_var = target_entity.index
 
-    to_approximate, all_approx_feature_set = gather_approximate_features(features, backend)
+    approximate_feature_trie, all_approx_feature_set = \
+        gather_approximate_features(feature_set)
 
     target_time_colname = 'target_time'
     cutoff_time[target_time_colname] = cutoff_time['time']
-    target_instance_colname = target_index_var
-    cutoff_time[target_instance_colname] = cutoff_time['instance_id']
     approx_cutoffs = bin_cutoff_times(cutoff_time.copy(), window)
     cutoff_df_time_var = 'time'
     cutoff_df_instance_var = 'instance_id'
     # should this order be by dependencies so that calculate_feature_matrix
     # doesn't skip approximating something?
-    for approx_entity_id, approx_features in to_approximate.items():
-        # Gather associated instance_ids from the approximate entity
-        cutoffs_with_approx_e_ids = approx_cutoffs.copy()
-        frames = entityset.get_pandas_data_slice([approx_entity_id, target_entity.id],
-                                                 target_entity.id,
-                                                 cutoffs_with_approx_e_ids[target_instance_colname])
+    for relationship_path, approx_features in approximate_feature_trie:
+        if not approx_features:
+            continue
+        cutoffs_with_approx_e_ids, new_approx_entity_index_var = \
+            _add_approx_entity_index_var(entityset, feature_set.target_eid,
+                                         approx_cutoffs.copy(), relationship_path)
 
-        if frames is not None:
-            path = entityset.find_path(approx_entity_id, target_entity.id)
-            rvar = get_relationship_variable_id(path)
-            parent_instance_frame = frames[approx_entity_id][target_entity.id]
-            cutoffs_with_approx_e_ids[rvar] = \
-                cutoffs_with_approx_e_ids.merge(parent_instance_frame[[rvar]],
-                                                left_on=target_index_var,
-                                                right_index=True,
-                                                how='left')[rvar].values
-            new_approx_entity_index_var = rvar
+        # Select only columns we care about
+        columns_we_want = [new_approx_entity_index_var,
+                           cutoff_df_time_var,
+                           target_time_colname]
 
-            # Select only columns we care about
-            columns_we_want = [target_instance_colname,
-                               new_approx_entity_index_var,
-                               cutoff_df_time_var,
-                               target_time_colname]
-
-            cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids[columns_we_want]
-            cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids.drop_duplicates()
-            cutoffs_with_approx_e_ids.dropna(subset=[new_approx_entity_index_var],
-                                             inplace=True)
-        else:
-            cutoffs_with_approx_e_ids = pd.DataFrame()
+        cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids[columns_we_want]
+        cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids.drop_duplicates()
+        cutoffs_with_approx_e_ids.dropna(subset=[new_approx_entity_index_var],
+                                         inplace=True)
 
         if cutoffs_with_approx_e_ids.empty:
-            approx_fms_by_entity = gen_empty_approx_features_df(approx_features)
-            continue
+            approx_fm = gen_empty_approx_features_df(approx_features)
+        else:
+            cutoffs_with_approx_e_ids.sort_values([cutoff_df_time_var,
+                                                   new_approx_entity_index_var], inplace=True)
+            # CFM assumes specific column names for cutoff_time argument
+            rename = {new_approx_entity_index_var: cutoff_df_instance_var}
+            cutoff_time_to_pass = cutoffs_with_approx_e_ids.rename(columns=rename)
+            cutoff_time_to_pass = cutoff_time_to_pass[[cutoff_df_instance_var, cutoff_df_time_var]]
 
-        cutoffs_with_approx_e_ids.sort_values([cutoff_df_time_var,
-                                               new_approx_entity_index_var], inplace=True)
-        # CFM assumes specific column names for cutoff_time argument
-        rename = {new_approx_entity_index_var: cutoff_df_instance_var}
-        cutoff_time_to_pass = cutoffs_with_approx_e_ids.rename(columns=rename)
-        cutoff_time_to_pass = cutoff_time_to_pass[[cutoff_df_instance_var, cutoff_df_time_var]]
+            cutoff_time_to_pass.drop_duplicates(inplace=True)
+            approx_fm = calculate_feature_matrix(approx_features,
+                                                 entityset,
+                                                 cutoff_time=cutoff_time_to_pass,
+                                                 training_window=training_window,
+                                                 approximate=None,
+                                                 cutoff_time_in_index=False,
+                                                 chunk_size=cutoff_time_to_pass.shape[0])
 
-        cutoff_time_to_pass.drop_duplicates(inplace=True)
-        approx_fm = calculate_feature_matrix(approx_features,
-                                             entityset,
-                                             cutoff_time=cutoff_time_to_pass,
-                                             training_window=training_window,
-                                             approximate=None,
-                                             cutoff_time_in_index=False,
-                                             chunk_size=cutoff_time_to_pass.shape[0],
-                                             profile=profile)
-
-        approx_fms_by_entity[approx_entity_id] = approx_fm
+        approx_fms_trie.get_node(relationship_path).value = approx_fm
 
     # Include entity because we only want to ignore features that
     # are base_features/dependencies of the top level entity we're
@@ -503,15 +469,14 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
     # as a first class feature in the feature matrix.
     # Unless we signify to only ignore it as a dependency of
     # a feature defined on customers, we would ignore computing it
-    # and pandas_backend would error
-    return approx_fms_by_entity, all_approx_feature_set
+    # and FeatureSetCalculator would error
+    return approx_fms_trie, all_approx_feature_set
 
 
-def linear_calculate_chunks(chunks, features, approximate, training_window,
-                            profile, verbose, save_progress, entityset,
+def linear_calculate_chunks(chunks, feature_set, approximate, training_window,
+                            verbose, save_progress, entityset,
                             no_unapproximated_aggs, cutoff_df_time_var,
                             target_time, pass_columns):
-    backend = PandasBackend(entityset, features)
     feature_matrix = []
 
     # if verbose, create progess bar
@@ -524,14 +489,13 @@ def linear_calculate_chunks(chunks, features, approximate, training_window,
                                     bar_format=pbar_string)
 
     for chunk in chunks:
-        _feature_matrix = calculate_chunk(chunk, features, approximate,
+        _feature_matrix = calculate_chunk(chunk, feature_set, entityset, approximate,
                                           training_window,
-                                          profile, verbose,
+                                          verbose,
                                           save_progress,
                                           no_unapproximated_aggs,
                                           cutoff_df_time_var,
-                                          target_time, pass_columns,
-                                          backend=backend)
+                                          target_time, pass_columns)
         feature_matrix.append(_feature_matrix)
         # Do a manual garbage collection in case objects from calculate_chunk
         # weren't collected automatically
@@ -547,7 +511,7 @@ def scatter_warning(num_scattered_workers, num_workers):
         warnings.warn(scatter_warning.format(num_scattered_workers, num_workers))
 
 
-def parallel_calculate_chunks(chunks, features, approximate, training_window,
+def parallel_calculate_chunks(chunks, feature_set, approximate, training_window,
                               verbose, save_progress, entityset, n_jobs,
                               no_unapproximated_aggs, cutoff_df_time_var,
                               target_time, pass_columns, dask_kwargs=None):
@@ -576,7 +540,7 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
             client.publish_dataset(**{_es.key: _es})
 
         # save features to a tempfile and scatter it
-        pickled_feats = cloudpickle.dumps(features)
+        pickled_feats = cloudpickle.dumps(feature_set)
         _saved_features = client.scatter(pickled_feats)
         client.replicate([_es, _saved_features])
         num_scattered_workers = len(client.who_has([Future(es_token)]).get(es_token, []))
@@ -592,11 +556,10 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
         # TODO: consider handling task submission dask kwargs
         _chunks = client.map(calculate_chunk,
                              chunks,
-                             features=_saved_features,
+                             feature_set=_saved_features,
                              entityset=_es,
                              approximate=approximate,
                              training_window=training_window,
-                             profile=False,
                              verbose=False,
                              save_progress=save_progress,
                              no_unapproximated_aggs=no_unapproximated_aggs,
@@ -628,3 +591,35 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
             client.close()
 
     return feature_matrix
+
+
+def _add_approx_entity_index_var(es, target_entity_id, cutoffs, path):
+    """
+    Add a variable to the cutoff df linking it to the entity at the end of the
+    path.
+
+    Return the updated cutoff df and the name of this variable. The name will
+    consist of the variables which were joined through.
+    """
+    last_child_var = 'instance_id'
+    last_parent_var = es[target_entity_id].index
+
+    for _, relationship in path:
+        child_vars = [last_parent_var, relationship.child_variable.id]
+        child_df = es[relationship.child_entity.id].df[child_vars]
+
+        # Rename relationship.child_variable to include the variables we have
+        # joined through.
+        new_var_name = '%s.%s' % (last_child_var, relationship.child_variable.id)
+        to_rename = {relationship.child_variable.id: new_var_name}
+        child_df = child_df.rename(columns=to_rename)
+
+        cutoffs = cutoffs.merge(child_df,
+                                left_on=last_child_var,
+                                right_on=last_parent_var)
+
+        # These will be used in the next iteration.
+        last_child_var = new_var_name
+        last_parent_var = relationship.parent_variable.id
+
+    return cutoffs, new_var_name

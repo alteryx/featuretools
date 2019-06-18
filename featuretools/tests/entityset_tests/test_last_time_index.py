@@ -1,26 +1,17 @@
-import copy
 from datetime import datetime
 
 import pandas as pd
 import pytest
 
-from ..testing_utils import make_ecommerce_entityset
-
 from featuretools import Relationship
 
 
 @pytest.fixture
-def entityset():
-    return make_ecommerce_entityset()
-
-
-@pytest.fixture
-def values_es(entityset):
-    new_es = copy.deepcopy(entityset)
-    new_es.normalize_entity('log', 'values', 'value',
-                            make_time_index=True,
-                            new_entity_time_index="value_time")
-    return new_es
+def values_es(es):
+    es.normalize_entity('log', 'values', 'value',
+                        make_time_index=True,
+                        new_entity_time_index="value_time")
+    return es
 
 
 @pytest.fixture
@@ -68,27 +59,27 @@ def wishlist_df():
 
 
 @pytest.fixture
-def extra_session_df(entityset):
+def extra_session_df(es):
     row_values = {'customer_id': 2,
                   'device_name': 'PC',
                   'device_type': 0,
                   'id': 6}
     row = pd.DataFrame(row_values, index=pd.Index([6], name='id'))
-    df = entityset['sessions'].df.append(row, sort=True).sort_index()
+    df = es['sessions'].df.append(row, sort=True).sort_index()
     return df
 
 
 class TestLastTimeIndex(object):
-    def test_leaf(self, entityset):
-        entityset.add_last_time_indexes()
-        log = entityset['log']
+    def test_leaf(self, es):
+        es.add_last_time_indexes()
+        log = es['log']
         assert len(log.last_time_index) == 17
         for v1, v2 in zip(log.last_time_index, log.df['datetime']):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
-    def test_leaf_no_time_index(self, entityset):
-        entityset.add_last_time_indexes()
-        stores = entityset['stores']
+    def test_leaf_no_time_index(self, es):
+        es.add_last_time_indexes()
+        stores = es['stores']
         true_lti = pd.Series([None for x in range(6)], dtype='datetime64[ns]')
         assert len(true_lti) == len(stores.last_time_index)
         for v1, v2 in zip(stores.last_time_index, true_lti):
@@ -127,23 +118,23 @@ class TestLastTimeIndex(object):
         for v1, v2 in zip(sorted_lti, true_values_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
-    def test_parent_no_time_index(self, entityset, true_sessions_lti):
+    def test_parent_no_time_index(self, es, true_sessions_lti):
         # test entity without time index and all instances have children
-        entityset.add_last_time_indexes()
-        sessions = entityset['sessions']
+        es.add_last_time_indexes()
+        sessions = es['sessions']
         assert len(sessions.last_time_index) == 6
         sorted_lti = sessions.last_time_index.sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
-    def test_parent_no_time_index_missing(self, entityset, extra_session_df,
+    def test_parent_no_time_index_missing(self, es, extra_session_df,
                                           true_sessions_lti):
         # test entity without time index and not all instance have children
-        sessions = entityset['sessions']
+        sessions = es['sessions']
 
         # add session instance with no associated log instances
         sessions.update_data(extra_session_df)
-        entityset.add_last_time_indexes()
+        es.add_last_time_indexes()
         # since sessions has no time index, default value is NaT
         true_sessions_lti[6] = pd.NaT
 
@@ -152,19 +143,19 @@ class TestLastTimeIndex(object):
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
-    def test_multiple_children(self, entityset, wishlist_df,
+    def test_multiple_children(self, es, wishlist_df,
                                true_sessions_lti):
         # test all instances in both children
-        entityset.entity_from_dataframe(entity_id="wishlist_log",
-                                        dataframe=wishlist_df,
-                                        index='id',
-                                        make_index=True,
-                                        time_index='datetime')
-        relationship = Relationship(entityset['sessions']['id'],
-                                    entityset['wishlist_log']['session_id'])
-        entityset.add_relationship(relationship)
-        entityset.add_last_time_indexes()
-        sessions = entityset['sessions']
+        es.entity_from_dataframe(entity_id="wishlist_log",
+                                 dataframe=wishlist_df,
+                                 index='id',
+                                 make_index=True,
+                                 time_index='datetime')
+        relationship = Relationship(es['sessions']['id'],
+                                    es['wishlist_log']['session_id'])
+        es.add_relationship(relationship)
+        es.add_last_time_indexes()
+        sessions = es['sessions']
         # wishlist df has more recent events for two session ids
         true_sessions_lti[1] = pd.Timestamp("2011-4-9 10:31:30")
         true_sessions_lti[3] = pd.Timestamp("2011-4-10 10:41:00")
@@ -174,22 +165,22 @@ class TestLastTimeIndex(object):
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
-    def test_multiple_children_right_missing(self, entityset, wishlist_df,
+    def test_multiple_children_right_missing(self, es, wishlist_df,
                                              true_sessions_lti):
         # test all instances in left child
-        sessions = entityset['sessions']
+        sessions = es['sessions']
 
         # drop wishlist instance related to id 3 so it's only in log
         wishlist_df.drop(4, inplace=True)
-        entityset.entity_from_dataframe(entity_id="wishlist_log",
-                                        dataframe=wishlist_df,
-                                        index='id',
-                                        make_index=True,
-                                        time_index='datetime')
-        relationship = Relationship(entityset['sessions']['id'],
-                                    entityset['wishlist_log']['session_id'])
-        entityset.add_relationship(relationship)
-        entityset.add_last_time_indexes()
+        es.entity_from_dataframe(entity_id="wishlist_log",
+                                 dataframe=wishlist_df,
+                                 index='id',
+                                 make_index=True,
+                                 time_index='datetime')
+        relationship = Relationship(es['sessions']['id'],
+                                    es['wishlist_log']['session_id'])
+        es.add_relationship(relationship)
+        es.add_last_time_indexes()
 
         # now only session id 1 has newer event in wishlist_log
         true_sessions_lti[1] = pd.Timestamp("2011-4-9 10:31:30")
@@ -199,10 +190,10 @@ class TestLastTimeIndex(object):
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
-    def test_multiple_children_left_missing(self, entityset, extra_session_df,
+    def test_multiple_children_left_missing(self, es, extra_session_df,
                                             wishlist_df, true_sessions_lti):
         # test all instances in right child
-        sessions = entityset['sessions']
+        sessions = es['sessions']
 
         # add row to sessions so not all session instances are in log
         sessions.update_data(extra_session_df)
@@ -213,15 +204,15 @@ class TestLastTimeIndex(object):
                       'product_id': 'toothpaste'}
         row = pd.DataFrame(row_values, index=pd.RangeIndex(start=7, stop=8))
         df = wishlist_df.append(row)
-        entityset.entity_from_dataframe(entity_id="wishlist_log",
-                                        dataframe=df,
-                                        index='id',
-                                        make_index=True,
-                                        time_index='datetime')
-        relationship = Relationship(entityset['sessions']['id'],
-                                    entityset['wishlist_log']['session_id'])
-        entityset.add_relationship(relationship)
-        entityset.add_last_time_indexes()
+        es.entity_from_dataframe(entity_id="wishlist_log",
+                                 dataframe=df,
+                                 index='id',
+                                 make_index=True,
+                                 time_index='datetime')
+        relationship = Relationship(es['sessions']['id'],
+                                    es['wishlist_log']['session_id'])
+        es.add_relationship(relationship)
+        es.add_last_time_indexes()
 
         # now wishlist_log has newer events for 3 session ids
         true_sessions_lti[1] = pd.Timestamp("2011-4-9 10:31:30")
@@ -233,10 +224,10 @@ class TestLastTimeIndex(object):
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
-    def test_multiple_children_all_combined(self, entityset, extra_session_df,
+    def test_multiple_children_all_combined(self, es, extra_session_df,
                                             wishlist_df, true_sessions_lti):
         # test some instances in right, some in left, all when combined
-        sessions = entityset['sessions']
+        sessions = es['sessions']
 
         # add row to sessions so not all session instances are in log
         sessions.update_data(extra_session_df)
@@ -250,15 +241,15 @@ class TestLastTimeIndex(object):
 
         # drop instance 4 so wishlist_log does not have session id 3 instance
         df.drop(4, inplace=True)
-        entityset.entity_from_dataframe(entity_id="wishlist_log",
-                                        dataframe=df,
-                                        index='id',
-                                        make_index=True,
-                                        time_index='datetime')
-        relationship = Relationship(entityset['sessions']['id'],
-                                    entityset['wishlist_log']['session_id'])
-        entityset.add_relationship(relationship)
-        entityset.add_last_time_indexes()
+        es.entity_from_dataframe(entity_id="wishlist_log",
+                                 dataframe=df,
+                                 index='id',
+                                 make_index=True,
+                                 time_index='datetime')
+        relationship = Relationship(es['sessions']['id'],
+                                    es['wishlist_log']['session_id'])
+        es.add_relationship(relationship)
+        es.add_last_time_indexes()
 
         # wishlist has newer events for 2 sessions
         true_sessions_lti[1] = pd.Timestamp("2011-4-9 10:31:30")
@@ -269,24 +260,24 @@ class TestLastTimeIndex(object):
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
-    def test_multiple_children_both_missing(self, entityset, extra_session_df,
+    def test_multiple_children_both_missing(self, es, extra_session_df,
                                             wishlist_df, true_sessions_lti):
         # test all instances in neither child
-        sessions = entityset['sessions']
+        sessions = es['sessions']
 
         # add row to sessions to create session with no events
         sessions.update_data(extra_session_df)
 
-        entityset.entity_from_dataframe(entity_id="wishlist_log",
-                                        dataframe=wishlist_df,
-                                        index='id',
-                                        make_index=True,
-                                        time_index='datetime')
-        relationship = Relationship(entityset['sessions']['id'],
-                                    entityset['wishlist_log']['session_id'])
-        entityset.add_relationship(relationship)
-        entityset.add_last_time_indexes()
-        sessions = entityset['sessions']
+        es.entity_from_dataframe(entity_id="wishlist_log",
+                                 dataframe=wishlist_df,
+                                 index='id',
+                                 make_index=True,
+                                 time_index='datetime')
+        relationship = Relationship(es['sessions']['id'],
+                                    es['wishlist_log']['session_id'])
+        es.add_relationship(relationship)
+        es.add_last_time_indexes()
+        sessions = es['sessions']
 
         # wishlist has 2 newer events and one is NaT
         true_sessions_lti[1] = pd.Timestamp("2011-4-9 10:31:30")
@@ -298,20 +289,20 @@ class TestLastTimeIndex(object):
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
-    def test_grandparent(self, entityset):
+    def test_grandparent(self, es):
         # test sorting by time works correctly across several generations
-        log = entityset["log"]
-        customers = entityset["customers"]
+        log = es["log"]
+        customers = es["customers"]
 
         # For one user, change a log event to be newer than the user's normal
         # last time index. This event should be from a different session than
         # the current last time index.
         log.df['datetime'][5] = pd.Timestamp("2011-4-09 10:40:01")
         log.df = (log.df.set_index('datetime', append=True)
-                     .sort_index(level=[1, 0], kind="mergesort")
-                     .reset_index('datetime', drop=False))
+                  .sort_index(level=[1, 0], kind="mergesort")
+                  .reset_index('datetime', drop=False))
         log.update_data(log.df)
-        entityset.add_last_time_indexes()
+        es.add_last_time_indexes()
 
         true_customers_lti = pd.Series([datetime(2011, 4, 9, 10, 40, 1),
                                         datetime(2011, 4, 10, 10, 41, 6),

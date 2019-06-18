@@ -1,5 +1,5 @@
 import logging
-from builtins import filter, object, str
+from builtins import filter, object
 from collections import defaultdict
 
 from featuretools import primitives, variable_types
@@ -245,12 +245,6 @@ class DeepFeatureSynthesis(object):
                     f.variable_type, vt) for vt in return_variable_types)]
 
         new_features = list(filter(filt, new_features))
-
-        # sanity check for duplicate features
-        hashes = [f.hash() for f in new_features]
-        assert len(set([f for f in hashes if hashes.count(f) > 1])) == 0, \
-            'Multiple features with same name' + \
-            str(set([f for f in hashes if hashes.count(f) > 1]))
 
         new_features.sort(key=lambda f: f.get_depth())
 
@@ -585,8 +579,9 @@ class DeepFeatureSynthesis(object):
                                               variable_type=set(input_types))
 
             # remove features in relationship path
-            relationship_path = self.es.find_backward_path(parent_entity.id,
-                                                           child_entity.id)
+            relationship_paths = self.es.find_backward_paths(parent_entity.id,
+                                                             child_entity.id)
+            relationship_path = next(relationship_paths)
 
             features = [f for f in features if not self._feature_in_relationship_path(
                 relationship_path, f)]
@@ -601,10 +596,6 @@ class DeepFeatureSynthesis(object):
                                            parent_entity=parent_entity,
                                            primitive=agg_prim)
                 self._handle_new_feature(new_f, all_features)
-
-                # Obey allow where
-                if not agg_prim.allow_where:
-                    continue
 
                 # limit the stacking of where features
                 # count up the the number of where features

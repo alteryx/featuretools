@@ -5,9 +5,10 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 
-from ..base.aggregation_primitive_base import AggregationPrimitive
-
-from featuretools.utils import is_python_2
+from featuretools.primitives.base.aggregation_primitive_base import (
+    AggregationPrimitive
+)
+from featuretools.utils import convert_time_units, is_python_2
 from featuretools.variable_types import (
     Boolean,
     DatetimeTimeIndex,
@@ -40,9 +41,9 @@ class Count(AggregationPrimitive):
         else:
             return pd.Series.count
 
-    def generate_name(self, base_feature_names, child_entity_id,
+    def generate_name(self, base_feature_names, relationship_path_name,
                       parent_entity_id, where_str, use_prev_str):
-        return u"COUNT(%s%s%s)" % (child_entity_id,
+        return u"COUNT(%s%s%s)" % (relationship_path_name,
                                    where_str, use_prev_str)
 
 
@@ -98,19 +99,6 @@ class Mean(AggregationPrimitive):
         def mean(series):
             return np.mean(series.values)
         return mean
-
-    def generate_name(self, base_feature_names, child_entity_id,
-                      parent_entity_id, where_str, use_prev_str):
-        skipna = ""
-        if not self.skipna:
-            skipna = ", skipna=False"
-        base_features_str = ", ".join(base_feature_names)
-        return u"%s(%s.%s%s%s%s)" % (self.name.upper(),
-                                     child_entity_id,
-                                     base_features_str,
-                                     where_str,
-                                     use_prev_str,
-                                     skipna)
 
 
 class Mode(AggregationPrimitive):
@@ -466,12 +454,17 @@ class All(AggregationPrimitive):
 
 
 class TimeSinceLast(AggregationPrimitive):
-    """Calculates the time elapsed since the last datetime (in seconds).
+    """Calculates the time elapsed since the last datetime (default in seconds).
 
     Description:
         Given a list of datetimes, calculate the
-        time elapsed since the last datetime (in
+        time elapsed since the last datetime (default in
         seconds). Uses the instance's cutoff time.
+
+    Args:
+        unit (str): Defines the unit of time to count from.
+            Defaults to seconds. Acceptable values:
+            years, months, days, hours, minutes, seconds, milliseconds, nanoseconds
 
     Examples:
         >>> from datetime import datetime
@@ -482,17 +475,30 @@ class TimeSinceLast(AggregationPrimitive):
         ...          datetime(2010, 1, 1, 11, 57, 30)]
         >>> time_since_last(times, time=cutoff_time)
         150.0
+
+        >>> from datetime import datetime
+        >>> time_since_last = TimeSinceLast(unit = "minutes")
+        >>> cutoff_time = datetime(2010, 1, 1, 12, 0, 0)
+        >>> times = [datetime(2010, 1, 1, 11, 45, 0),
+        ...          datetime(2010, 1, 1, 11, 55, 15),
+        ...          datetime(2010, 1, 1, 11, 57, 30)]
+        >>> time_since_last(times, time=cutoff_time)
+        2.5
+
     """
     name = "time_since_last"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
     uses_calc_time = True
 
+    def __init__(self, unit="seconds"):
+        self.unit = unit.lower()
+
     def get_function(self):
 
         def time_since_last(values, time=None):
             time_since = time - values.iloc[-1]
-            return time_since.total_seconds()
+            return convert_time_units(time_since.total_seconds(), self.unit)
 
         return time_since_last
 
@@ -505,6 +511,11 @@ class TimeSinceFirst(AggregationPrimitive):
         time elapsed since the first datetime (in
         seconds). Uses the instance's cutoff time.
 
+    Args:
+        unit (str): Defines the unit of time to count from.
+            Defaults to seconds. Acceptable values:
+            years, months, days, hours, minutes, seconds, milliseconds, nanoseconds
+
     Examples:
         >>> from datetime import datetime
         >>> time_since_first = TimeSinceFirst()
@@ -514,17 +525,30 @@ class TimeSinceFirst(AggregationPrimitive):
         ...          datetime(2010, 1, 1, 11, 57, 30)]
         >>> time_since_first(times, time=cutoff_time)
         900.0
+
+        >>> from datetime import datetime
+        >>> time_since_first = TimeSinceFirst(unit = "minutes")
+        >>> cutoff_time = datetime(2010, 1, 1, 12, 0, 0)
+        >>> times = [datetime(2010, 1, 1, 11, 45, 0),
+        ...          datetime(2010, 1, 1, 11, 55, 15),
+        ...          datetime(2010, 1, 1, 11, 57, 30)]
+        >>> time_since_first(times, time=cutoff_time)
+        15.0
+
     """
     name = "time_since_first"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
     uses_calc_time = True
 
+    def __init__(self, unit="seconds"):
+        self.unit = unit.lower()
+
     def get_function(self):
 
         def time_since_first(values, time=None):
             time_since = time - values.iloc[0]
-            return time_since.total_seconds()
+            return convert_time_units(time_since.total_seconds(), self.unit)
 
         return time_since_first
 
