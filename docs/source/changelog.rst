@@ -16,6 +16,7 @@ Changelog
         * Improved error message for index/time_index being the same column in normalize_entity and entity_from_dataframe (:pr:`583`)
         * Removed all mentions of allow_where (:pr:`587`, :pr:`588`)
         * Removed unused variable in normalize entity (:pr:`589`)
+        * Change type of features calculated on Index features to Categorical (:pr:`602`)
     * Changes
         * Refactor get_pandas_data_slice to take single entity (:pr:`547`)
         * Updates TimeSincePrevious and Diff Primitives (:pr:`561`)
