@@ -30,9 +30,9 @@ def test_get_forward_entities(es):
 
 
 def test_get_backward_entities(es):
-    entities = es.get_backward_entities('sessions')
-    path_to_log = backward_path(es, ['sessions', 'log'])
-    assert list(entities) == [('log', path_to_log)]
+    entities = es.get_backward_entities('customers')
+    path_to_sessions = backward_path(es, ['customers', 'sessions'])
+    assert list(entities) == [('sessions', path_to_sessions)]
 
 
 def test_get_forward_entities_deep(es):

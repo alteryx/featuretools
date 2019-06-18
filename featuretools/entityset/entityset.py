@@ -454,9 +454,10 @@ class EntitySet(object):
             direct_path = RelationshipPath([(False, relationship)])
             yield child_eid, direct_path
 
-            sub_entities = self.get_backward_entities(child_eid, deep=deep)
-            for sub_eid, path in sub_entities:
-                yield sub_eid, direct_path + path
+            if deep:
+                sub_entities = self.get_backward_entities(child_eid, deep=True)
+                for sub_eid, path in sub_entities:
+                    yield sub_eid, direct_path + path
 
     def get_forward_relationships(self, entity_id):
         """Get relationships where entity "entity_id" is the child
