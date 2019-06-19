@@ -9,8 +9,10 @@ Changelog
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Run doc tests (:pr:`612`)
 
     Thanks to the following people for contributing to this release:
+    :user:`CJStadler`
 
 **v0.9.0** June 19, 2019
     * Enhancements
