@@ -53,9 +53,6 @@ class DeepFeatureSynthesis(object):
             max_depth (int, optional) : maximum allowed depth of features.
                 Default: 2. If -1, no limit.
 
-            max_hlevel (int, optional) :  #TODO how to document.
-                Default: 2. If -1, no limit.
-
             max_features (int, optional) : Cap the number of generated features to
                 this number. If -1, no limit.
 
@@ -90,7 +87,6 @@ class DeepFeatureSynthesis(object):
                  where_primitives=None,
                  groupby_trans_primitives=None,
                  max_depth=2,
-                 max_hlevel=2,
                  max_features=-1,
                  allowed_paths=None,
                  ignore_entities=None,
@@ -105,14 +101,10 @@ class DeepFeatureSynthesis(object):
             msg = 'Provided target entity %s does not exist in %s' % (target_entity_id, es_name)
             raise KeyError(msg)
 
-        # need to change max_depth and max_hlevel to None because DFs terminates when  <0
+        # need to change max_depth to None because DFs terminates when  <0
         if max_depth == -1:
             max_depth = None
         self.max_depth = max_depth
-
-        if max_hlevel == -1:
-            max_hlevel = None
-        self.max_hlevel = max_hlevel
 
         self.max_features = max_features
 
@@ -401,9 +393,6 @@ class DeepFeatureSynthesis(object):
         Raises:
             Exception: Attempted to add a single feature multiple times
         """
-        if (self.max_hlevel is not None and
-                self._max_hlevel(new_feature) > self.max_hlevel):
-            return
         entity_id = new_feature.entity.id
         name = new_feature.unique_name()
 
@@ -648,15 +637,10 @@ class DeepFeatureSynthesis(object):
             if (variable_type == variable_types.PandasTypes._all or
                     f.variable_type == variable_type or
                     any(issubclass(f.variable_type, vt) for vt in variable_type)):
-                if ((max_depth is None or self._get_depth(f) <= max_depth) and
-                        (self.max_hlevel is None or
-                         self._max_hlevel(f) <= self.max_hlevel)):
+                if max_depth is None or f.get_depth(stop_at=self.seed_features) <= max_depth:
                     selected_features.append(f)
 
         return selected_features
-
-    def _get_depth(self, f):
-        return f.get_depth(stop_at=self.seed_features)
 
     def _feature_in_relationship_path(self, relationship_path, feature):
         # must be identity feature to be in the relationship path
@@ -673,24 +657,6 @@ class DeepFeatureSynthesis(object):
                 return True
 
         return False
-
-    def _max_hlevel(self, f):
-        # for each base_feat along each path in f,
-        # if base_feat is a direct_feature of an agg_primitive
-        # determine aggfeat's hlevel
-        # return max hlevel
-        deps = [f] + f.get_dependencies(deep=True)
-        hlevel = 0
-        for d in deps:
-            if isinstance(d, DirectFeature) and \
-                    isinstance(d.base_features[0], AggregationFeature):
-
-                assert d.parent_entity.id == d.base_features[0].entity.id
-                path, new_hlevel = self.es.find_path(self.target_entity_id,
-                                                     d.parent_entity.id,
-                                                     include_num_forward=True)
-                hlevel = max(hlevel, new_hlevel)
-        return hlevel
 
 
 def check_stacking(primitive, inputs):

@@ -271,83 +271,6 @@ class EntitySet(object):
     #   Relationship access/helper methods  ###################################
     ###########################################################################
 
-    def find_path(self, start_entity_id, goal_entity_id,
-                  include_num_forward=False):
-        """Find a path in the entityset represented as a DAG
-           between start_entity and goal_entity
-
-        Args:
-            start_entity_id (str) : Id of entity to start the search from.
-            goal_entity_id  (str) : Id of entity to find forward path to.
-            include_num_forward (bool) : If True, return number of forward
-                relationships in path if the path ends on a forward
-                relationship, otherwise return 0.
-
-        Returns:
-            List of relationships that go from start entity to goal
-                entity. None is returned if no path exists.
-            If include_num_forward is True,
-                returns a tuple of (relationship_list, forward_distance).
-
-        See Also:
-            :func:`EntitySet.find_forward_paths`
-            :func:`EntitySet.find_backward_paths`
-        """
-        if start_entity_id == goal_entity_id:
-            if include_num_forward:
-                return [], 0
-            else:
-                return []
-
-        # Search for path using BFS to get the shortest path.
-        # Start by initializing the queue with all relationships from start entity
-        queue = [[r] for r in self.get_forward_relationships(start_entity_id)] + \
-                [[r] for r in self.get_backward_relationships(start_entity_id)]
-        visited = set([start_entity_id])
-
-        while len(queue) > 0:
-            # get first path from queue
-            current_path = queue.pop(0)
-
-            # last entity in path will be which ever one we haven't visited
-            if current_path[-1].parent_entity.id not in visited:
-                next_entity_id = current_path[-1].parent_entity.id
-            elif current_path[-1].child_entity.id not in visited:
-                next_entity_id = current_path[-1].child_entity.id
-            else:
-                # if we've visited both, we don't need to explore this path further
-                continue
-
-            # we've found a path to goal
-            if next_entity_id == goal_entity_id:
-                if include_num_forward:
-                    # count the number of forward relationships along this path
-                    # starting from beginning
-                    check_entity = start_entity_id
-                    num_forward = 0
-                    for r in current_path:
-                        # if the current entity we're checking is a child, that means the
-                        # relationship is a forward and the next entity to check is the parent
-                        if r.child_entity.id == check_entity:
-                            num_forward += 1
-                            check_entity = r.parent_entity.id
-                        else:
-                            check_entity = r.child_entity.id
-
-                    return current_path, num_forward
-                else:
-                    return current_path
-
-            next_relationships = self.get_forward_relationships(next_entity_id)
-            next_relationships += self.get_backward_relationships(next_entity_id)
-
-            for r in next_relationships:
-                queue.append(current_path + [r])
-
-            visited.add(next_entity_id)
-        e = "No path from {} to {}. Check that all entities are connected by relationships".format(start_entity_id, goal_entity_id)
-        raise ValueError(e)
-
     def find_forward_paths(self, start_entity_id, goal_entity_id):
         """
         Generator which yields all forward paths between a start and goal
@@ -359,7 +282,6 @@ class EntitySet(object):
 
         See Also:
             :func:`BaseEntitySet.find_backward_paths`
-            :func:`BaseEntitySet.find_path`
         """
         for sub_entity_id, path in self._forward_entity_paths(start_entity_id):
             if sub_entity_id == goal_entity_id:
@@ -376,7 +298,6 @@ class EntitySet(object):
 
         See Also:
             :func:`BaseEntitySet.find_forward_paths`
-            :func:`BaseEntitySet.find_path`
         """
         for path in self.find_forward_paths(goal_entity_id, start_entity_id):
             # Reverse path
