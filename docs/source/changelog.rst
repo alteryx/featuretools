@@ -4,7 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
-        * Speedup groupby transform calculations (:pr:`558`)
+        * Speedup groupby transform calculations (:pr:`609`)
     * Fixes
     * Changes
     * Documentation Changes
