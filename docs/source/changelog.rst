@@ -2,7 +2,7 @@
 
 Changelog
 ---------
-**Future Release**
+**v0.9.0** June 19, 2019
     * Enhancements
         * Add unit parameter to timesince primitives (:pr:`558`)
         * Add ability to install optional add on libraries (:pr:`551`)
