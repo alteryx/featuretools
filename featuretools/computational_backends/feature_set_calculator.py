@@ -441,7 +441,6 @@ class FeatureSetCalculator(object):
 
             # Note
             # more efficient in pandas to concat and update only once
-            frame[f.get_name()].update(pd.concat(feature_vals))
             if feature_vals:
                 frame[f.get_name()].update(pd.concat(feature_vals))
 
