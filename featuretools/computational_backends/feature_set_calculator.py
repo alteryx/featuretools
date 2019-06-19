@@ -408,11 +408,9 @@ class FeatureSetCalculator(object):
         if frame.shape[0] == 0:
             return frame
 
-
-
         groupby = features[0].groupby.get_name()
         grouped = frame.groupby(groupby)
-        groups = frame[groupby].unique()
+        groups = frame[groupby].unique() # get all the unique group name to iterate over later
 
         all_features = {}
         for f in features:
@@ -438,10 +436,9 @@ class FeatureSetCalculator(object):
 
                 feature_vals.append(values)
 
-            all_features[f.get_name()] = pd.concat(feature_vals)
-
-        # update for all features in this group
-        frame.update(all_features)
+            # Note
+            # more efficient in pandas to concat and update only once
+            frame[f.get_name()].update(pd.concat(feature_vals))
 
         return frame
 
