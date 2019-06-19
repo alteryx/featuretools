@@ -408,14 +408,19 @@ class FeatureSetCalculator(object):
         if frame.shape[0] == 0:
             return frame
 
-        groupby = features[0].groupby.get_name()
-        for index, group in frame.groupby(groupby):
-            group_features = {}
 
-            for f in features:
+
+        groupby = features[0].groupby.get_name()
+        grouped = frame.groupby(groupby)
+        groups = frame[groupby].unique()
+
+        all_features = {}
+        for f in features:
+            feature_vals = []
+            for group in groups:
                 column_names = [bf.get_name() for bf in f.base_features]
                 # exclude the groupby variable from being passed to the function
-                variable_data = [group[name] for name in column_names[:-1]]
+                variable_data = [grouped[name].get_group(group) for name in column_names[:-1]]
                 feature_func = f.get_function()
 
                 # apply the function to the relevant dataframe slice and add the
@@ -431,11 +436,12 @@ class FeatureSetCalculator(object):
                 else:
                     values = pd.Series(values, index=variable_data[0].index)
 
-                feature_name = f.get_name()
-                group_features[feature_name] = values
+                feature_vals.append(values)
 
-            # update for all features in this group
-            frame.update(group_features)
+            all_features[f.get_name()] = pd.concat(feature_vals)
+
+        # update for all features in this group
+        frame.update(all_features)
 
         return frame
 
