@@ -166,6 +166,7 @@ Table of contents
    guides/deployment
    guides/exporting_feature_matrix
    guides/advanced_custom_primitives
+   guides/frequently_asked_questions
 
 .. toctree::
    :maxdepth: 1
