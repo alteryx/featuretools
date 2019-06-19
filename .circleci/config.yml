@@ -17,7 +17,7 @@ commands:
       - run: |
           source test_env/bin/activate
           cd "featuretools-$(python setup.py --version)/"
-          pytest
+          pytest featuretools/
   install-ft-complete:
     description: "install featuretools[complete]"
     steps:
@@ -100,7 +100,7 @@ jobs:
           FEATURETOOLS_VERSION=$(python setup.py --version)
           cd "featuretools-${FEATURETOOLS_VERSION}/"
           coverage erase
-          pytest featuretools/tests --cov=featuretools --cov-config=../.coveragerc
+          pytest featuretools/ --cov=featuretools --cov-config=../.coveragerc
           cd ../
           cp "featuretools-${FEATURETOOLS_VERSION}/.coverage" .coverage
           codecov
