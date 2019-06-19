@@ -5,6 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
     * Fixes
+      * Change type of features calculated on Index features to Categorical (:pr:`602`)
     * Changes
     * Documentation Changes
     * Testing Changes

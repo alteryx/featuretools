@@ -76,6 +76,11 @@ def test_return_type_inference_direct_feature(es):
     assert mode_session.variable_type == es["log"]["priority_level"].__class__
 
 
+def test_return_type_inference_index(es):
+    last = ft.Feature(es["log"]["id"], parent_entity=es["customers"], primitive=Last)
+    assert last.variable_type == Categorical
+
+
 def test_return_type_inference_datetime_time_index(es):
     last = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=Last)
     assert last.variable_type == Datetime
