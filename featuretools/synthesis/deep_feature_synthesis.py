@@ -637,13 +637,10 @@ class DeepFeatureSynthesis(object):
             if (variable_type == variable_types.PandasTypes._all or
                     f.variable_type == variable_type or
                     any(issubclass(f.variable_type, vt) for vt in variable_type)):
-                if max_depth is None or self._get_depth(f) <= max_depth:
+                if max_depth is None or f.get_depth(stop_at=self.seed_features) <= max_depth:
                     selected_features.append(f)
 
         return selected_features
-
-    def _get_depth(self, f):
-        return f.get_depth(stop_at=self.seed_features)
 
     def _feature_in_relationship_path(self, relationship_path, feature):
         # must be identity feature to be in the relationship path
