@@ -20,6 +20,7 @@ Changelog
         * Refactor get_pandas_data_slice to take single entity (:pr:`547`)
         * Updates TimeSincePrevious and Diff Primitives (:pr:`561`)
         * Remove unecessary time_last variable (:pr:`546`)
+        * Remove max_hlevel from DeepFeatureSynthesis (:pr:`608`)
     * Documentation Changes
         * Add Featuretools Enterprise to documentation (:pr:`563`)
         * Miscellaneous changes (:pr:`552`, :pr:`573`, :pr:`577`, :pr:`599`)
