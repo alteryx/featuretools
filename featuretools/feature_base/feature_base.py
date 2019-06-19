@@ -18,6 +18,7 @@ from featuretools.variable_types import (
     DatetimeTimeIndex,
     Discrete,
     Id,
+    Index,
     Numeric,
     NumericTimeIndex,
     Variable
@@ -185,6 +186,8 @@ class FeatureBase(object):
                 variable_type = Datetime
             elif variable_type == NumericTimeIndex:
                 variable_type = Numeric
+            elif variable_type == Index:
+                variable_type = Categorical
 
             # direct features should keep the Id return type, but all other features should get
             # converted to Categorical
