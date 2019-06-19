@@ -410,9 +410,8 @@ class FeatureSetCalculator(object):
 
         groupby = features[0].groupby.get_name()
         grouped = frame.groupby(groupby)
-        groups = frame[groupby].unique() # get all the unique group name to iterate over later
+        groups = frame[groupby].unique()  # get all the unique group name to iterate over later
 
-        all_features = {}
         for f in features:
             feature_vals = []
             for group in groups:
