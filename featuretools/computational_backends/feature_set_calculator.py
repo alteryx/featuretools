@@ -27,6 +27,7 @@ class FeatureSetCalculator(object):
     """
     Calculates the values of a set of features for given instance ids.
     """
+
     def __init__(self, entityset, feature_set, time_last=None,
                  training_window=None, precalculated_features=None, ignored=None):
         """

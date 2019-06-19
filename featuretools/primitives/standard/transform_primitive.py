@@ -17,7 +17,6 @@ from featuretools.variable_types import (
     Numeric,
     Ordinal,
     Text,
-    Timedelta,
     Variable
 )
 
@@ -369,7 +368,7 @@ class TimeSince(TransformPrimitive):
     """
     name = 'time_since'
     input_types = [[DatetimeTimeIndex], [Datetime]]
-    return_type = Timedelta
+    return_type = Numeric
     uses_calc_time = True
 
     def __init__(self, unit="seconds"):

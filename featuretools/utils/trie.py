@@ -24,6 +24,7 @@ class Trie(object):
             # Getting a key that has not been set returns the default value.
             assert trie.get_node([1, 2]).value == ''
     """
+
     def __init__(self, default=lambda: None, path_constructor=list):
         """
         default: A function returning the value to use for new nodes.

@@ -74,10 +74,6 @@ def _get_names_primitives(primitive_func):
     return names, primitives
 
 
-def get_featuretools_root():
-    return os.path.dirname(featuretools.__file__)
-
-
 def list_primitive_files(directory):
     """returns list of files in directory that might contain primitives"""
     files = os.listdir(directory)
