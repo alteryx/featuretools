@@ -4,8 +4,9 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
-        * Speedup groupby transform calculations (:pr:`558`)
+        * Speedup groupby transform calculations (:pr:`609`)
     * Fixes
+      * Change type of features calculated on Index features to Categorical (:pr:`602`)
     * Changes
     * Documentation Changes
     * Testing Changes
