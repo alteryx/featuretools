@@ -415,6 +415,10 @@ class FeatureSetCalculator(object):
         for f in features:
             feature_vals = []
             for group in groups:
+                # skip null key if it exists
+                if pd.isnull(group):
+                    continue
+
                 column_names = [bf.get_name() for bf in f.base_features]
                 # exclude the groupby variable from being passed to the function
                 variable_data = [grouped[name].get_group(group) for name in column_names[:-1]]
