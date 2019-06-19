@@ -465,9 +465,6 @@ class DeepFeatureSynthesis(object):
 
           entity (Entity): Entity to calculate features for.
         """
-        if max_depth is not None and max_depth < 0:
-            return
-
         new_max_depth = None
         if max_depth is not None:
             new_max_depth = max_depth - 1
@@ -521,9 +518,6 @@ class DeepFeatureSynthesis(object):
                                              new_feature=new_f)
 
     def _build_forward_features(self, all_features, relationship_path, max_depth=0):
-        if max_depth is not None and max_depth < 0:
-            return
-
         _, relationship = relationship_path[0]
         child_entity = relationship.child_entity
         parent_entity = relationship.parent_entity
@@ -552,9 +546,6 @@ class DeepFeatureSynthesis(object):
 
     def _build_agg_features(self, all_features, parent_entity, child_entity,
                             max_depth, relationship_path):
-        if max_depth is not None and max_depth < 0:
-            return
-
         new_max_depth = None
         if max_depth is not None:
             new_max_depth = max_depth - 1
