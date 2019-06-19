@@ -575,39 +575,6 @@ def test_dfeats_where(es):
         features, 'COUNT(log WHERE products.department = electronics)'))
 
 
-def test_max_hlevel(es):
-    kwargs = dict(
-        target_entity_id='log',
-        entityset=es,
-        agg_primitives=[Count, Last],
-        trans_primitives=[Hour],
-        max_depth=-1,
-    )
-
-    dfs_h_n1 = DeepFeatureSynthesis(max_hlevel=-1, **kwargs)
-    dfs_h_0 = DeepFeatureSynthesis(max_hlevel=0, **kwargs)
-    dfs_h_1 = DeepFeatureSynthesis(max_hlevel=1, **kwargs)
-    feats_n1 = dfs_h_n1.build_features()
-    feats_n1 = [f.get_name() for f in feats_n1]
-    feats_0 = dfs_h_0.build_features()
-    feats_0 = [f.get_name() for f in feats_0]
-    feats_1 = dfs_h_1.build_features()
-    feats_1 = [f.get_name() for f in feats_1]
-
-    customer_log = ft.Feature(es['log']['value'], parent_entity=es['customers'], primitive=Last)
-    session_log = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Last)
-    log_customer_log = ft.Feature(ft.Feature(customer_log, es["sessions"]), es['log'])
-    log_session_log = ft.Feature(session_log, es['log'])
-    assert log_customer_log.get_name() in feats_n1
-    assert log_session_log.get_name() in feats_n1
-
-    assert log_customer_log.get_name() not in feats_1
-    assert log_session_log.get_name() in feats_1
-
-    assert log_customer_log.get_name() not in feats_0
-    assert log_session_log.get_name() not in feats_0
-
-
 def test_commutative(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
