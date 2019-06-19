@@ -203,39 +203,6 @@ def test_find_backward_paths_multiple_relationships(games_es):
     assert r2.parent_variable.id == 'id'
 
 
-def test_find_path(es):
-    path, forward = es.find_path('products', 'customers',
-                                 include_num_forward=True)
-
-    assert len(path) == 3
-    assert forward == 2
-    assert path[0].child_entity.id == 'log'
-    assert path[0].parent_entity.id == 'products'
-    assert path[1].child_entity.id == 'log'
-    assert path[1].parent_entity.id == 'sessions'
-    assert path[2].child_entity.id == 'sessions'
-    assert path[2].parent_entity.id == 'customers'
-
-
-def test_find_path_same_entity(es):
-    path, forward = es.find_path('products', 'products',
-                                 include_num_forward=True)
-    assert len(path) == 0
-    assert forward == 0
-
-    # also test include_num_forward==False
-    path = es.find_path('products', 'products',
-                        include_num_forward=False)
-    assert len(path) == 0
-
-
-def test_find_path_no_path_found(es):
-    es.relationships = []
-    error_text = "No path from products to customers. Check that all entities are connected by relationships"
-    with pytest.raises(ValueError, match=error_text):
-        es.find_path('products', 'customers')
-
-
 def test_has_unique_path(diamond_es):
     assert diamond_es.has_unique_forward_path('customers', 'regions')
     assert not diamond_es.has_unique_forward_path('transactions', 'regions')
