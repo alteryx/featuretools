@@ -4,11 +4,21 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+      * Generate features along all paths when there are multiple paths between entities (:pr:`600`)
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+
+**v0.9.0** June 19, 2019
+    * Enhancements
         * Add unit parameter to timesince primitives (:pr:`558`)
         * Add ability to install optional add on libraries (:pr:`551`)
         * Load and save features from open files and strings (:pr:`566`)
         * Support custom variable types (:pr:`571`)
-        * Support entitysets which have multiple paths between two entities (:pr:`544`, :pr:`572`, :pr:`600`)
+        * Support entitysets which have multiple paths between two entities (:pr:`572`, :pr:`544`)
         * Added show_info function, more output information added to CLI `featuretools info` (:pr:`525`)
     * Fixes
         * Normalize_entity specifies error when 'make_time_index' is an invalid string (:pr:`550`)
