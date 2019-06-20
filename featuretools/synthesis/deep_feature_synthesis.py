@@ -291,6 +291,7 @@ class DeepFeatureSynthesis(object):
 
         backward_entities = self.es.get_backward_entities(entity.id)
         for b_entity_id, sub_relationship_path in backward_entities:
+            # Skip if we've already created features for this entity.
             if b_entity_id in all_features:
                 continue
 
@@ -338,6 +339,7 @@ class DeepFeatureSynthesis(object):
         """
         forward_entities = self.es.get_forward_entities(entity.id)
         for f_entity_id, sub_relationship_path in forward_entities:
+            # Skip if we've already created features for this entity.
             if f_entity_id in all_features:
                 continue
 
