@@ -5,10 +5,11 @@ Changelog
 **Future Release**
     * Enhancements
     * Fixes
-      * Change type of features calculated on Index features to Categorical (:pr:`602`)
+        * Change type of features calculated on Index features to Categorical (:pr:`602`)
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Miscellaneous changes (:pr:`595`)
 
     Thanks to the following people for contributing to this release:
 
@@ -36,7 +37,7 @@ Changelog
         * Add Featuretools Enterprise to documentation (:pr:`563`)
         * Miscellaneous changes (:pr:`552`, :pr:`573`, :pr:`577`, :pr:`599`)
     * Testing Changes
-        * Miscellaneous changes (:pr:`559`, :pr:`569`, :pr:`570`, :pr:`574`, :pr:`584`, :pr:`590`. :pr:`595`)
+        * Miscellaneous changes (:pr:`559`, :pr:`569`, :pr:`570`, :pr:`574`, :pr:`584`, :pr:`590`)
 
     Thanks to the following people for contributing to this release:
     :user:`alexjwang`, :user:`allisonportis`, :user:`CJStadler`, :user:`ctduffy`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`
