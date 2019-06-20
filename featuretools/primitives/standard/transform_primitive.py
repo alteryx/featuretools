@@ -356,6 +356,7 @@ class TimeSince(TransformPrimitive):
         [0, -1, -120]
 
         Change output to nanoseconds
+
         >>> from datetime import datetime
         >>> time_since_nano = TimeSince(unit='nanoseconds')
         >>> times = [datetime(2019, 3, 1, 0, 0, 0, 1),
