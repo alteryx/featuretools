@@ -4,7 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
-        * Generate features along all paths when there are multiple paths between entities (:pr:`600`)
+        * Generate features along all paths when there are multiple paths between entities (:pr:`600`, :pr:`608`)
     * Fixes
         * Change type of features calculated on Index features to Categorical (:pr:`602`)
     * Changes
