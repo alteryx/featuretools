@@ -2,7 +2,10 @@ import numpy as np
 import pandas as pd
 
 import featuretools as ft
-from featuretools.computational_backends import PandasBackend
+from featuretools.computational_backends.feature_set import FeatureSet
+from featuretools.computational_backends.feature_set_calculator import (
+    FeatureSetCalculator
+)
 from featuretools.primitives import (
     CumCount,
     CumMax,
@@ -253,9 +256,10 @@ def test_cum_sum_numpy_group_on_nan(es):
 
 def test_cum_handles_uses_full_entity(es):
     def check(feature):
-        pandas_backend = PandasBackend(es, [feature])
-        df_1 = pandas_backend.calculate_all_features(instance_ids=[0, 1, 2], time_last=None)
-        df_2 = pandas_backend.calculate_all_features(instance_ids=[2, 4], time_last=None)
+        feature_set = FeatureSet([feature])
+        calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
+        df_1 = calculator.run([0, 1, 2])
+        df_2 = calculator.run([2, 4])
 
         # check that the value for instance id 2 matches
         assert (df_2.loc[2] == df_1.loc[2]).all()
@@ -298,7 +302,7 @@ def test_rename(es):
                            groupby=es['log']['session_id'],
                            primitive=CumCount)
     copy_feat = cum_count.rename("rename_test")
-    assert cum_count.hash() != copy_feat.hash()
+    assert cum_count.unique_name() != copy_feat.unique_name()
     assert cum_count.get_name() != copy_feat.get_name()
     assert all([x.generate_name() == y.generate_name() for x, y
                 in zip(cum_count.base_features, copy_feat.base_features)])

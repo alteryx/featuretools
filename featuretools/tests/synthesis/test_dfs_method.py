@@ -136,7 +136,7 @@ def test_dask_kwargs(entities, relationships):
                                            cutoff_time=cutoff_times_df,
                                            dask_kwargs=dask_kwargs)
 
-    assert all(f1.hash() == f2.hash() for f1, f2 in zip(features, features_2))
+    assert all(f1.unique_name() == f2.unique_name() for f1, f2 in zip(features, features_2))
     for column in feature_matrix:
         for x, y in zip(feature_matrix[column], feature_matrix_2[column]):
             assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))

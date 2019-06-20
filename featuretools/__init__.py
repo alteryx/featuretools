@@ -9,6 +9,7 @@ from .primitives import list_primitives
 from .computational_backends.api import *
 from . import tests
 from .utils.time_utils import *
+from .utils.cli_utils import show_info
 from .version import __version__
 import featuretools.demo
 import featuretools.wrappers

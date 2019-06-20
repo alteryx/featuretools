@@ -17,6 +17,7 @@ featuretools/tests/integration_data/regions.gzip
 featuretools/tests/integration_data/sessions.gzip
 featuretools/tests/integration_data/stores.gzip
 *.dirlock
+*.~lock*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
