@@ -8,6 +8,7 @@ Changelog
         * Select columns of dataframe using a list (:pr:`615`)
         * Change type of features calculated on Index features to Categorical (:pr:`602`)
     * Changes
+        * Remove unused variance_selection.py file (:pr:`613`)
     * Documentation Changes
     * Testing Changes
 
