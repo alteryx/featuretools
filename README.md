@@ -23,11 +23,31 @@
 ## Installation
 Install with pip
 
-	python -m pip install featuretools
+  python -m pip install featuretools
 
 or from the Conda-forge channel on [conda](https://anaconda.org/conda-forge/featuretools):
 
-	conda install -c conda-forge featuretools
+  conda install -c conda-forge featuretools
+
+### Add-ons
+
+You can install add-ons individually or all at once by running
+
+```
+python -m pip install featuretools[complete]
+```
+
+**Update checker** - Receive automatic notifications of new Featuretools releases
+
+```
+python -m pip install featuretools[update_checker]
+```
+
+**TSFresh Primitives** - Use 60+ primitives from [tsfresh](https://tsfresh.readthedocs.io/en/latest/>) within Featuretools
+
+```
+python -m pip install featuretools[tsfresh]
+```
 
 ## Example
 Below is an example of using Deep Feature Synthesis (DFS) to perform automated feature engineering. In this example, we apply DFS to a multi-table dataset consisting of timestamped customer transactions.
@@ -116,4 +136,3 @@ BibTeX entry:
 </a>
 
 Featuretools is an open source project created by [Feature Labs](https://www.featurelabs.com/). To see the other open source projects we're working on visit Feature Labs [Open Source](https://www.featurelabs.com/open). If building impactful data science pipelines is important to you or your business, please [get in touch](https://www.featurelabs.com/contact/).
-

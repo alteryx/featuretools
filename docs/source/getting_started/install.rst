@@ -1,9 +1,6 @@
 Install
 *******
 
-Pip and Conda
----------------
-
 Featuretools is available for Python 2.7, 3.5, and 3.6. The recommended way to install Featuretools is using ``pip`` or ``conda``::
 
     python -m pip install featuretools
@@ -12,25 +9,46 @@ or from the Conda-forge channel on `anaconda.org <https://anaconda.org/conda-for
 
     conda install -c conda-forge featuretools
 
-.. note ::
 
-    In order to use :meth:`EntitySet.plot <featuretools.entityset.EntitySet.plot>` you will need to install the graphviz library.
+Add-ons
+--------
+You can install add-ons individually or all at once by running::
 
-    Conda users:
-        conda install python-graphviz
+    python -m pip install featuretools[complete]
 
-    Ubuntu:
-        sudo apt-get install graphviz
+Update checker:
+    Receive automatic notifications of new Featuretools releases::
 
-        pip install graphviz
+        python -m pip install featuretools[update_checker]
 
-    Mac OS:
-        brew install graphviz
+TSFresh Primitives:
+    Use 60+ primitives from `tsfresh <https://tsfresh.readthedocs.io/en/latest/>`__ in Featuretools::
 
-        pip install graphviz
+        python -m pip install featuretools[tsfresh]
 
-    Windows:
-        conda install python-graphviz
+
+Installing Graphviz
+-------------------
+
+In order to use :meth:`EntitySet.plot <featuretools.entityset.EntitySet.plot>` you will need to install the graphviz library.
+
+Conda users::
+
+    conda install python-graphviz
+
+Ubuntu::
+
+    sudo apt-get install graphviz
+    pip install graphviz
+
+Mac OS::
+
+    brew install graphviz
+    pip install graphviz
+
+Windows::
+
+    conda install python-graphviz
 
 
 Install from Source
