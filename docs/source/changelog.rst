@@ -8,6 +8,7 @@ Changelog
       * Change type of features calculated on Index features to Categorical (:pr:`602`)
     * Changes
     * Documentation Changes
+        * Add installation instructions for add-on libraries (:pr:`617`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
