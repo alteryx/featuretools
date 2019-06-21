@@ -43,7 +43,7 @@ python -m pip install featuretools[complete]
 python -m pip install featuretools[update_checker]
 ```
 
-**TSFresh Primitives** - Use 60+ primitives from [tsfresh](https://tsfresh.readthedocs.io/en/latest/>) within Featuretools
+**TSFresh Primitives** - Use 60+ primitives from [tsfresh](https://tsfresh.readthedocs.io/en/latest/) within Featuretools
 
 ```
 python -m pip install featuretools[tsfresh]
