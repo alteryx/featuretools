@@ -10,6 +10,7 @@ Changelog
         * Change type of features calculated on Index features to Categorical (:pr:`602`)
     * Changes
         * Remove unused variance_selection.py file (:pr:`613`)
+        * Remove Timedelta data param (:pr:`619`)
     * Documentation Changes
     * Testing Changes
         * Miscellaneous changes (:pr:`612`)
