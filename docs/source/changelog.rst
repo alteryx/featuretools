@@ -11,7 +11,7 @@ Changelog
         * Remove unused variance_selection.py file (:pr:`613`)
     * Documentation Changes
     * Testing Changes
-        * Run doc tests (:pr:`612`)
+        * Miscellaneous changes (:pr:`612`)
 
     Thanks to the following people for contributing to this release:
     :user:`CJStadler`
