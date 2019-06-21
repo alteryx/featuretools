@@ -35,6 +35,24 @@ def test_relationship_path_name(es):
     assert RelationshipPath(mixed_path).name == 'sessions.log'
 
 
+def test_relationship_path_entities(es):
+    assert list(RelationshipPath([]).entities()) == []
+
+    log_to_sessions = Relationship(es['sessions']['id'],
+                                   es['log']['session_id'])
+    sessions_to_customers = Relationship(es['customers']['id'],
+                                         es['sessions']['customer_id'])
+
+    forward_path = [(True, log_to_sessions), (True, sessions_to_customers)]
+    assert list(RelationshipPath(forward_path).entities()) == ['log', 'sessions', 'customers']
+
+    backward_path = [(False, sessions_to_customers), (False, log_to_sessions)]
+    assert list(RelationshipPath(backward_path).entities()) == ['customers', 'sessions', 'log']
+
+    mixed_path = [(True, log_to_sessions), (False, log_to_sessions)]
+    assert list(RelationshipPath(mixed_path).entities()) == ['log', 'sessions', 'log']
+
+
 def test_names_when_multiple_relationships_between_entities(games_es):
     relationship = Relationship(games_es['teams']['id'],
                                 games_es['games']['home_team_id'])

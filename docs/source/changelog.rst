@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Generate features along all paths when there are multiple paths between entities (:pr:`600`, :pr:`608`)
     * Fixes
         * Select columns of dataframe using a list (:pr:`615`)
         * Change type of features calculated on Index features to Categorical (:pr:`602`)
