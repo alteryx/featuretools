@@ -617,11 +617,11 @@ class FeatureSetCalculator(object):
                          if isinstance(v, (variable_types.Index,
                                            variable_types.Id,
                                            variable_types.TimeIndex))}
-        features = [self.feature_set.features_by_name[name]
-                    for name in feature_names]
+        features = (self.feature_set.features_by_name[name]
+                    for name in feature_names)
         feature_columns = {f.variable.id for f in features
                            if isinstance(f, IdentityFeature)}
-        return index_columns | feature_columns
+        return list(index_columns | feature_columns)
 
 
 def _can_agg(feature):
