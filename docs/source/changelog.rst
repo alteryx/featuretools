@@ -5,13 +5,16 @@ Changelog
 **Future Release**
     * Enhancements
     * Fixes
+        * Select columns of dataframe using a list (:pr:`615`)
         * Change type of features calculated on Index features to Categorical (:pr:`602`)
     * Changes
+        * Remove unused variance_selection.py file (:pr:`613`)
     * Documentation Changes
     * Testing Changes
-        * Miscellaneous changes (:pr:`595`)
+        * Miscellaneous changes (:pr:`595`, :pr:`612`)
 
     Thanks to the following people for contributing to this release:
+    :user:`CJStadler`, :user:`rwedge`
 
 **v0.9.0** June 19, 2019
     * Enhancements
