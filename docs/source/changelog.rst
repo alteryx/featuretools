@@ -9,7 +9,7 @@ Changelog
         * Select columns of dataframe using a list (:pr:`615`)
         * Change type of features calculated on Index features to Categorical (:pr:`602`)
         * Fix bug in encode_features that created duplicate columns of
-          features with multiple outputs (:pr:`#622`)
+          features with multiple outputs (:pr:`622`)
     * Changes
         * Remove unused variance_selection.py file (:pr:`613`)
         * Remove Timedelta data param (:pr:`619`)
