@@ -13,10 +13,10 @@ Changelog
         * Remove Timedelta data param (:pr:`619`)
     * Documentation Changes
     * Testing Changes
-        * Miscellaneous changes (:pr:`612`)
+        * Miscellaneous changes (:pr:`595`, :pr:`612`)
 
     Thanks to the following people for contributing to this release:
-    :user:`CJStadler`
+    :user:`CJStadler`, :user:`rwedge`
 
 **v0.9.0** June 19, 2019
     * Enhancements
