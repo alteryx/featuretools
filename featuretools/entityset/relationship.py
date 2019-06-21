@@ -126,6 +126,22 @@ class RelationshipPath(object):
 
         return '.'.join(relationship_names)
 
+    def entities(self):
+        if self:
+            # Yield first entity.
+            is_forward, relationship = self[0]
+            if is_forward:
+                yield relationship.child_entity.id
+            else:
+                yield relationship.parent_entity.id
+
+        # Yield the entity pointed to by each relationship.
+        for is_forward, relationship in self:
+            if is_forward:
+                yield relationship.parent_entity.id
+            else:
+                yield relationship.child_entity.id
+
     def __add__(self, other):
         return RelationshipPath(self._relationships_with_direction +
                                 other._relationships_with_direction)

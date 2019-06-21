@@ -575,39 +575,6 @@ def test_dfeats_where(es):
         features, 'COUNT(log WHERE products.department = electronics)'))
 
 
-def test_max_hlevel(es):
-    kwargs = dict(
-        target_entity_id='log',
-        entityset=es,
-        agg_primitives=[Count, Last],
-        trans_primitives=[Hour],
-        max_depth=-1,
-    )
-
-    dfs_h_n1 = DeepFeatureSynthesis(max_hlevel=-1, **kwargs)
-    dfs_h_0 = DeepFeatureSynthesis(max_hlevel=0, **kwargs)
-    dfs_h_1 = DeepFeatureSynthesis(max_hlevel=1, **kwargs)
-    feats_n1 = dfs_h_n1.build_features()
-    feats_n1 = [f.get_name() for f in feats_n1]
-    feats_0 = dfs_h_0.build_features()
-    feats_0 = [f.get_name() for f in feats_0]
-    feats_1 = dfs_h_1.build_features()
-    feats_1 = [f.get_name() for f in feats_1]
-
-    customer_log = ft.Feature(es['log']['value'], parent_entity=es['customers'], primitive=Last)
-    session_log = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Last)
-    log_customer_log = ft.Feature(ft.Feature(customer_log, es["sessions"]), es['log'])
-    log_session_log = ft.Feature(session_log, es['log'])
-    assert log_customer_log.get_name() in feats_n1
-    assert log_session_log.get_name() in feats_n1
-
-    assert log_customer_log.get_name() not in feats_1
-    assert log_session_log.get_name() in feats_1
-
-    assert log_customer_log.get_name() not in feats_0
-    assert log_session_log.get_name() not in feats_0
-
-
 def test_commutative(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
@@ -747,3 +714,31 @@ def test_checks_primitives_correct_type(es):
                              entityset=es,
                              agg_primitives=[],
                              trans_primitives=[Last])
+
+
+def test_makes_agg_features_along_multiple_paths(diamond_es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='regions',
+                                   entityset=diamond_es,
+                                   agg_primitives=['mean'],
+                                   trans_primitives=[])
+
+    features = dfs_obj.build_features()
+    assert feature_with_name(features, 'MEAN(customers.transactions.amount)')
+    assert feature_with_name(features, 'MEAN(stores.transactions.amount)')
+
+
+def test_makes_direct_features_along_multiple_paths(games_es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='games',
+                                   entityset=games_es,
+                                   agg_primitives=['mean'],
+                                   trans_primitives=[])
+
+    features = dfs_obj.build_features()
+
+    teams = ['home', 'away']
+    for forward in teams:
+        for backward in teams:
+            for var in teams:
+                f = 'teams[%s_team_id].MEAN(games[%s_team_id].%s_team_score)' \
+                    % (forward, backward, var)
+                assert feature_with_name(features, f)
