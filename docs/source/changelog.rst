@@ -12,6 +12,7 @@ Changelog
         * Remove unused variance_selection.py file (:pr:`613`)
         * Remove Timedelta data param (:pr:`619`)
     * Documentation Changes
+        * Added Frequently Asked Questions notebook (:pr:`620`)
     * Testing Changes
         * Miscellaneous changes (:pr:`595`, :pr:`612`)
 
