@@ -17,7 +17,7 @@ Changelog
         * Miscellaneous changes (:pr:`595`, :pr:`612`)
 
     Thanks to the following people for contributing to this release:
-    :user:`CJStadler`, :user:`rwedge`
+    :user:`CJStadler`, :user:`rwedge`, :user:`gsheni`
 
 **v0.9.0** June 19, 2019
     * Enhancements
