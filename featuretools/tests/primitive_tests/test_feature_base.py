@@ -32,11 +32,11 @@ def test_get_dependencies(es):
     d1 = ft.Feature(agg2, es['sessions'])
     shallow = d1.get_dependencies(deep=False, ignored=None)
     deep = d1.get_dependencies(deep=True, ignored=None)
-    ignored = set([agg1.hash()])
+    ignored = set([agg1.unique_name()])
     deep_ignored = d1.get_dependencies(deep=True, ignored=ignored)
-    assert [s.hash() for s in shallow] == [agg2.hash()]
-    assert [d.hash() for d in deep] == [agg2.hash(), agg1.hash(), f.hash()]
-    assert [d.hash() for d in deep_ignored] == [agg2.hash()]
+    assert [s.unique_name() for s in shallow] == [agg2.unique_name()]
+    assert [d.unique_name() for d in deep] == [agg2.unique_name(), agg1.unique_name(), f.unique_name()]
+    assert [d.unique_name() for d in deep_ignored] == [agg2.unique_name()]
 
 
 def test_get_depth(es):
@@ -62,7 +62,7 @@ def test_squared(es):
     feature = ft.Feature(es['log']['value'])
     squared = feature * feature
     assert len(squared.base_features) == 2
-    assert squared.base_features[0].hash() == squared.base_features[1].hash()
+    assert squared.base_features[0].unique_name() == squared.base_features[1].unique_name()
 
 
 def test_return_type_inference(es):
@@ -74,6 +74,11 @@ def test_return_type_inference_direct_feature(es):
     mode = ft.Feature(es["log"]["priority_level"], parent_entity=es["customers"], primitive=Mode)
     mode_session = ft.Feature(mode, es["sessions"])
     assert mode_session.variable_type == es["log"]["priority_level"].__class__
+
+
+def test_return_type_inference_index(es):
+    last = ft.Feature(es["log"]["id"], parent_entity=es["customers"], primitive=Last)
+    assert last.variable_type == Categorical
 
 
 def test_return_type_inference_datetime_time_index(es):

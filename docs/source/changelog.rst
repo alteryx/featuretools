@@ -4,10 +4,28 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Generate features along all paths when there are multiple paths between entities (:pr:`600`, :pr:`608`)
+    * Fixes
+        * Select columns of dataframe using a list (:pr:`615`)
+        * Change type of features calculated on Index features to Categorical (:pr:`602`)
+    * Changes
+        * Remove unused variance_selection.py file (:pr:`613`)
+        * Remove Timedelta data param (:pr:`619`)
+    * Documentation Changes
+    * Testing Changes
+        * Miscellaneous changes (:pr:`595`, :pr:`612`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`CJStadler`, :user:`rwedge`
+
+**v0.9.0** June 19, 2019
+    * Enhancements
         * Add unit parameter to timesince primitives (:pr:`558`)
         * Add ability to install optional add on libraries (:pr:`551`)
         * Load and save features from open files and strings (:pr:`566`)
         * Support custom variable types (:pr:`571`)
+        * Support entitysets which have multiple paths between two entities (:pr:`572`, :pr:`544`)
+        * Added show_info function, more output information added to CLI `featuretools info` (:pr:`525`)
     * Fixes
         * Normalize_entity specifies error when 'make_time_index' is an invalid string (:pr:`550`)
         * Schema version added for entityset serialization (:pr:`586`)
@@ -15,6 +33,7 @@ Changelog
         * Improved error message for index/time_index being the same column in normalize_entity and entity_from_dataframe (:pr:`583`)
         * Removed all mentions of allow_where (:pr:`587`, :pr:`588`)
         * Removed unused variable in normalize entity (:pr:`589`)
+        * Change time since return type to numeric (:pr:`606`)
     * Changes
         * Refactor get_pandas_data_slice to take single entity (:pr:`547`)
         * Updates TimeSincePrevious and Diff Primitives (:pr:`561`)

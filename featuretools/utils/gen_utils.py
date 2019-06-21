@@ -3,21 +3,6 @@ import sys
 from tqdm import tqdm
 
 
-def topsort(nodes, depfunc):
-    queue = nodes[:]
-    ordered = []
-    while queue:
-        next_n = queue.pop(0)
-        for dep in depfunc(next_n):
-            if dep in ordered:
-                ordered.remove(dep)
-            queue.append(dep)
-        if next_n in ordered:
-            ordered.remove(next_n)
-        ordered.append(next_n)
-    return ordered[::-1]
-
-
 def session_type():
     if 'IPython' not in sys.modules:
         # IPython hasn't been imported, definitely not
@@ -71,9 +56,9 @@ def is_string(test_value):
 
 
 def get_relationship_variable_id(path):
-    r = path[0]
+    _, r = path[0]
     child_link_name = r.child_variable.id
-    for r in path[1:]:
+    for _, r in path[1:]:
         parent_link_name = child_link_name
         child_link_name = '%s.%s' % (r.parent_entity.id,
                                      parent_link_name)

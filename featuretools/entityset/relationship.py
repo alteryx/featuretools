@@ -54,6 +54,12 @@ class Relationship(object):
             self._parent_variable_id == other._parent_variable_id and \
             self._child_variable_id == other._child_variable_id
 
+    def __hash__(self):
+        return hash((self._parent_entity_id,
+                     self._child_entity_id,
+                     self._parent_variable_id,
+                     self._child_variable_id))
+
     @property
     def parent_entity(self):
         """Parent entity object"""
@@ -107,3 +113,56 @@ class Relationship(object):
         assert n > 0, 'This relationship is missing from the entityset'
 
         return n == 1
+
+
+class RelationshipPath(object):
+    def __init__(self, relationships_with_direction):
+        self._relationships_with_direction = relationships_with_direction
+
+    @property
+    def name(self):
+        relationship_names = [_direction_name(is_forward, r)
+                              for is_forward, r in self._relationships_with_direction]
+
+        return '.'.join(relationship_names)
+
+    def entities(self):
+        if self:
+            # Yield first entity.
+            is_forward, relationship = self[0]
+            if is_forward:
+                yield relationship.child_entity.id
+            else:
+                yield relationship.parent_entity.id
+
+        # Yield the entity pointed to by each relationship.
+        for is_forward, relationship in self:
+            if is_forward:
+                yield relationship.parent_entity.id
+            else:
+                yield relationship.child_entity.id
+
+    def __add__(self, other):
+        return RelationshipPath(self._relationships_with_direction +
+                                other._relationships_with_direction)
+
+    def __getitem__(self, index):
+        return self._relationships_with_direction[index]
+
+    def __iter__(self):
+        for is_forward, relationship in self._relationships_with_direction:
+            yield is_forward, relationship
+
+    def __len__(self):
+        return len(self._relationships_with_direction)
+
+    def __eq__(self, other):
+        return isinstance(other, RelationshipPath) and \
+            self._relationships_with_direction == other._relationships_with_direction
+
+
+def _direction_name(is_forward, relationship):
+    if is_forward:
+        return relationship.parent_name
+    else:
+        return relationship.child_name

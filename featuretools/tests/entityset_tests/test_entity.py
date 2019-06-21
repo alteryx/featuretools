@@ -107,6 +107,17 @@ def test_query_by_values_returns_rows_in_given_order():
     assert np.array_equal(query['id'], [1, 3, 4, 5])
 
 
+def test_query_by_values_secondary_time_index(es):
+    end = np.datetime64(datetime(2011, 10, 1))
+    all_instances = [0, 1, 2]
+    result = es['customers'].query_by_values(all_instances, time_last=end)
+
+    for col in ["cancel_date", "cancel_reason"]:
+        nulls = result.iloc[all_instances][col].isnull() == [
+            False, True, True]
+        assert nulls.all(), "Some instance has data it shouldn't for column %s" % col
+
+
 def test_delete_variables(es):
     entity = es['customers']
     to_delete = ['age', 'cohort', 'email']

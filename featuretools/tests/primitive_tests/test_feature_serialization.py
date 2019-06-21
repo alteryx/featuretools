@@ -78,7 +78,7 @@ def test_serialized_renamed_features(es):
     agg_original = ft.AggregationFeature(value, es['customers'], primitive)
     assert agg_original.get_name() == 'MAX(log.value)'
 
-    direct_original = ft.DirectFeature(es['customers']['age'], es['log'])
+    direct_original = ft.DirectFeature(es['customers']['age'], es['sessions'])
     assert direct_original.get_name() == 'customers.age'
 
     primitive = ft.primitives.MultiplyNumericScalar(value=2)
