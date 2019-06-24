@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
-from featuretools.exceptions import NotEnoughData
 from featuretools.utils import is_string
 
 
@@ -63,7 +62,7 @@ class Timedelta(object):
 
     _readable_to_unit = {v.lower(): k for k, v in _readable_units.items()}
 
-    def __init__(self, value, unit=None, entity=None, data=None, inclusive=False):
+    def __init__(self, value, unit=None, entity=None, inclusive=False):
         """
         Args:
             value (float, str) : Value of timedelta, or string providing
@@ -71,8 +70,6 @@ class Timedelta(object):
             unit (str) : Unit of time delta.
             entity (str, optional) : Entity id to use if unit equals
                 "observations".
-            data (pd.Series, optional) : series of timestamps to use
-                with observations. Can be calculated later.
             inclusive (bool, optional) : if True, include events that are
                 exactly timedelta distance away from the original time/observation
         """
@@ -101,7 +98,6 @@ class Timedelta(object):
             raise Exception("Must define entity to use %s as unit" % (unit))
 
         self.entity = entity
-        self.data = data
 
         self.inclusive = inclusive
 
@@ -193,7 +189,7 @@ class Timedelta(object):
 
     def __neg__(self):
         """Negate the timedelta"""
-        return Timedelta(-self.value, self.unit, self.entity, self.data)
+        return Timedelta(-self.value, self.unit, self.entity)
 
     def __radd__(self, time):
         """Add the Timedelta to a timestamp value"""
@@ -220,18 +216,6 @@ class Timedelta(object):
         elif self.unit != self._Observations:
             return add_td(time, -1 * value, self.unit)
 
-        assert self.data is not None, "Must call timedelta with data"
-
-        # reverse because we want to count backwards when we subtract
-        if self.inclusive:
-            all_times = self.data[self.data <= time].tolist()[::-1]
-        else:
-            all_times = self.data[self.data < time].tolist()[::-1]
-        if self.unit == self._Observations:
-            if len(all_times) < value:
-                raise NotEnoughData()
-            return all_times[value - 1]
-
         raise Exception("Invalid unit")
 
     def _do_add(self, time, value):
@@ -242,15 +226,6 @@ class Timedelta(object):
             return time + value
         elif self.unit not in [self._Observations]:
             return add_td(time, value, self.unit)
-
-        assert self.data is not None, "Must call timedelta with data"
-
-        all_times = self.data[self.data > time].tolist()
-        if self.unit == self._Observations:
-            if len(all_times) < value:
-                raise NotEnoughData()
-
-            return all_times[value - 1]
 
         raise Exception("Invalid unit")
 

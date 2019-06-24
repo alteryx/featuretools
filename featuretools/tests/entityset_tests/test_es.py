@@ -122,11 +122,6 @@ def test_query_by_id_with_time(es):
     assert df['id'].get_values().tolist() == [0, 1, 2]
 
 
-def test_get_forward_entities_deep(es):
-    entities = es.get_forward_entities('log', 'deep')
-    assert entities == set(['sessions', 'customers', 'products', u'régions', 'cohorts'])
-
-
 def test_query_by_variable_with_time(es):
     df = es['log'].query_by_values(
         instance_vals=[0, 1, 2], variable_id='session_id',
