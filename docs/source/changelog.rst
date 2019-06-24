@@ -6,6 +6,7 @@ Changelog
     * Enhancements
         * Speedup groupby transform calculations (:pr:`609`)
         * Generate features along all paths when there are multiple paths between entities (:pr:`600`, :pr:`608`)
+        * Generate transform features of direct features (:pr:`623`)
     * Fixes
         * Select columns of dataframe using a list (:pr:`615`)
         * Change type of features calculated on Index features to Categorical (:pr:`602`)
@@ -17,7 +18,7 @@ Changelog
         * Miscellaneous changes (:pr:`595`, :pr:`612`)
 
     Thanks to the following people for contributing to this release:
-    :user:`CJStadler`, :user:`kmax12`, :user:`rwedge`
+    :user:`CJStadler`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`
 
 **v0.9.0** June 19, 2019
     * Enhancements
