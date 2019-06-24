@@ -24,7 +24,9 @@ from featuretools.primitives import (  # CumMean,
     NMostCommon,
     NotEqual,
     Sum,
-    TimeSincePrevious
+    TimeSincePrevious,
+    TimeSince,
+    Equal,
 )
 from featuretools.synthesis import DeepFeatureSynthesis
 from featuretools.tests.testing_utils import feature_with_name
@@ -742,3 +744,42 @@ def test_makes_direct_features_along_multiple_paths(games_es):
                 f = 'teams[%s_team_id].MEAN(games[%s_team_id].%s_team_score)' \
                     % (forward, backward, var)
                 assert feature_with_name(features, f)
+
+
+def test_does_not_make_trans_of_single_direct_feature(es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=['weekday'],
+                                   max_depth=2)
+
+    features = dfs_obj.build_features()
+
+    assert not feature_with_name(features, 'WEEKDAY(customers.signup_date)')
+    assert feature_with_name(features, 'customers.WEEKDAY(signup_date)')
+
+
+def test_makes_trans_of_multiple_direct_features(diamond_es):
+    es = diamond_es
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='transactions',
+                                   entityset=es,
+                                   agg_primitives=['mean'],
+                                   trans_primitives=[Equal],
+                                   max_depth=4)
+
+    features = dfs_obj.build_features()
+
+    # Make trans of direct and non-direct
+    assert feature_with_name(features, 'amount = stores.MEAN(transactions.amount)')
+
+    # Make trans of direct features on different entities
+    assert feature_with_name(features, 'customers.MEAN(transactions.amount) = stores.square_ft')
+
+    # Make trans of direct features on same entity with different paths.
+    assert feature_with_name(features, 'customers.regions.name = stores.regions.name')
+
+    # Don't make trans of direct features with same path.
+    assert not feature_with_name(features, 'stores.square_ft = stores.MEAN(transactions.amount)')
+    assert not feature_with_name(features, 'stores.MEAN(transactions.amount) = stores.square_ft')
+    # The naming of the below is confusing but this is a direct feature of a transform.
+    assert feature_with_name(features, 'stores.MEAN(transactions.amount) = square_ft')
