@@ -17,6 +17,7 @@ from featuretools.primitives import (  # CumMean,
     AddNumeric,
     Count,
     Diff,
+    Equal,
     Hour,
     IsIn,
     Last,
@@ -24,9 +25,7 @@ from featuretools.primitives import (  # CumMean,
     NMostCommon,
     NotEqual,
     Sum,
-    TimeSincePrevious,
-    TimeSince,
-    Equal,
+    TimeSincePrevious
 )
 from featuretools.synthesis import DeepFeatureSynthesis
 from featuretools.tests.testing_utils import feature_with_name
