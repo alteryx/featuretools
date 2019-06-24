@@ -584,18 +584,18 @@ def test_commutative(es):
                                    trans_primitives=[AddNumeric],
                                    max_depth=3)
     feats = dfs_obj.build_features()
-    num_add_feats = 0
-    num_add_as_base_feat = 0
 
-    for feat in feats:
-        if isinstance(feat.primitive, AddNumeric):
-            num_add_feats += 1
-        for base_feat in feat.base_features:
-            if isinstance(base_feat.primitive, AddNumeric):
-                num_add_as_base_feat += 1
+    add_feats = [f for f in feats if isinstance(f.primitive, AddNumeric)]
 
-    assert num_add_feats == 27
-    assert num_add_as_base_feat == 12
+    # Check that there are no two AddNumeric features with the same base
+    # features.
+    unordered_args = set()
+    for f in add_feats:
+        arg1, arg2 = f.base_features
+        args_set = frozenset({arg1.unique_name(), arg2.unique_name()})
+        unordered_args.add(args_set)
+
+    assert len(add_feats) == len(unordered_args)
 
 
 def test_transform_consistency():
