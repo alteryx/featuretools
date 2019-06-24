@@ -485,13 +485,10 @@ class DeepFeatureSynthesis(object):
             matching_inputs = match(input_types, features,
                                     commutative=trans_prim.commutative)
 
-            # filter matching_inputs to avoid duplicating problem when assign dfeat to trans_prim
-            def filt_trans(matching_input):
-                # as long as the original features are not all dfeat, the trans_prim
-                # can generate brand new features instead of duplicate ones
-                return not all(isinstance(ftr, DirectFeature) for ftr in matching_input)
-
-            matching_inputs = set(filter(filt_trans, matching_inputs))
+            # Don't create trans features of inputs which are all direct
+            # features with the same relationship_path.
+            matching_inputs = {inputs for inputs in matching_inputs
+                               if not _all_direct_and_same_path(inputs)}
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
                     new_f = TransformFeature(matching_input,
@@ -762,3 +759,18 @@ def check_trans_primitive(primitive):
                          "groupby_trans_primitives is not a transform "
                          "primitive".format(type(primitive)))
     return primitive
+
+
+def _all_direct_and_same_path(input_features):
+    return all(isinstance(f, DirectFeature) for f in input_features) and \
+        _features_have_same_path(input_features)
+
+
+def _features_have_same_path(input_features):
+    path = input_features[0].relationship_path
+
+    for f in input_features[1:]:
+        if f.relationship_path != path:
+            return False
+
+    return True
