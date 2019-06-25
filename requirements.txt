@@ -5,6 +5,8 @@ toolz>=0.8.2
 pyyaml>=3.12
 cloudpickle>=0.4.0
 future>=0.16.0
+distributed<2.0.0; python_version < '3'
+distributed>=1.28.1; python_version >= '3'
 dask<2.0.0; python_version < '3'
 dask>=1.1.0; python_version >= '3'
 distributed>=1.24.2
