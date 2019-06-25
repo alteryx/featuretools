@@ -9,6 +9,7 @@ Changelog
     * Fixes
         * Select columns of dataframe using a list (:pr:`615`)
         * Change type of features calculated on Index features to Categorical (:pr:`602`)
+        * Specify Dask version in requirements for python 2 (:pr:`627`)
     * Changes
         * Remove unused variance_selection.py file (:pr:`613`)
         * Remove Timedelta data param (:pr:`619`)
