@@ -9,6 +9,7 @@ Changelog
     * Fixes
         * Select columns of dataframe using a list (:pr:`615`)
         * Change type of features calculated on Index features to Categorical (:pr:`602`)
+        * Keep dataframe sorted by time during feature calculation (:pr:`626`)
     * Changes
         * Remove unused variance_selection.py file (:pr:`613`)
         * Remove Timedelta data param (:pr:`619`)
