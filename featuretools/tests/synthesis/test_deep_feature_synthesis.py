@@ -780,5 +780,6 @@ def test_makes_trans_of_multiple_direct_features(diamond_es):
     # Don't make trans of direct features with same path.
     assert not feature_with_name(features, 'stores.square_ft = stores.MEAN(transactions.amount)')
     assert not feature_with_name(features, 'stores.MEAN(transactions.amount) = stores.square_ft')
+
     # The naming of the below is confusing but this is a direct feature of a transform.
     assert feature_with_name(features, 'stores.MEAN(transactions.amount) = square_ft')

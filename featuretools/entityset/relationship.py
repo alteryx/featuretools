@@ -160,6 +160,9 @@ class RelationshipPath(object):
         return isinstance(other, RelationshipPath) and \
             self._relationships_with_direction == other._relationships_with_direction
 
+    def __ne__(self, other):
+        return not self == other
+
 
 def _direction_name(is_forward, relationship):
     if is_forward:
