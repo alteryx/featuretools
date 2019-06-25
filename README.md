@@ -62,7 +62,7 @@ Below is an example of using Deep Feature Synthesis (DFS) to perform automated f
 >> es.plot()
 ```
 
-![Entity Set](/docs/source/images/entity_set.png?raw=true "Entity Set")
+<img src="/docs/source/images/entity_set.png?raw=true" width="350">
 
 Featuretools can automatically create a single table of features for any "target entity"
 ```python
@@ -94,7 +94,7 @@ For more examples of how to use Featuretools, check out our [demos](https://www.
 
 ## Testing & Development
 
-The Featuretools community welcomes pull requests. Instructions for testing and development are avialable [here.](https://docs.featuretools.com/getting_started/install.html#development)
+The Featuretools community welcomes pull requests. Instructions for testing and development are available [here.](https://docs.featuretools.com/getting_started/install.html#development)
 
 ## Support
 The Featuretools community is happy to provide support to users of Featuretools. Project support can be found in four places depending on the type of question:
