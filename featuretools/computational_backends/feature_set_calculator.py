@@ -409,11 +409,19 @@ class FeatureSetCalculator(object):
             return frame
 
         groupby = features[0].groupby.get_name()
-        for index, group in frame.groupby(groupby):
-            for f in features:
+        grouped = frame.groupby(groupby)
+        groups = frame[groupby].unique()  # get all the unique group name to iterate over later
+
+        for f in features:
+            feature_vals = []
+            for group in groups:
+                # skip null key if it exists
+                if pd.isnull(group):
+                    continue
+
                 column_names = [bf.get_name() for bf in f.base_features]
                 # exclude the groupby variable from being passed to the function
-                variable_data = [group[name] for name in column_names[:-1]]
+                variable_data = [grouped[name].get_group(group) for name in column_names[:-1]]
                 feature_func = f.get_function()
 
                 # apply the function to the relevant dataframe slice and add the
@@ -429,8 +437,12 @@ class FeatureSetCalculator(object):
                 else:
                     values = pd.Series(values, index=variable_data[0].index)
 
-                feature_name = f.get_name()
-                frame[feature_name].update(values)
+                feature_vals.append(values)
+
+            # Note
+            # more efficient in pandas to concat and update only once
+            if feature_vals:
+                frame[f.get_name()].update(pd.concat(feature_vals))
 
         return frame
 

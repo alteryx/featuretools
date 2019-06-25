@@ -4,17 +4,22 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Speedup groupby transform calculations (:pr:`609`)
+        * Generate features along all paths when there are multiple paths between entities (:pr:`600`, :pr:`608`)
     * Fixes
         * Select columns of dataframe using a list (:pr:`615`)
         * Change type of features calculated on Index features to Categorical (:pr:`602`)
+        * Specify Dask version in requirements for python 2 (:pr:`627`)
     * Changes
         * Remove unused variance_selection.py file (:pr:`613`)
+        * Remove Timedelta data param (:pr:`619`)
     * Documentation Changes
         * Add installation instructions for add-on libraries (:pr:`617`)
     * Testing Changes
+        * Miscellaneous changes (:pr:`595`, :pr:`612`)
 
     Thanks to the following people for contributing to this release:
-    :user:`CJStadler`
+    :user:`CJStadler`, :user:`kmax12`, :user:`rwedge`
 
 **v0.9.0** June 19, 2019
     * Enhancements

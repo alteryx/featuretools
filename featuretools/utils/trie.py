@@ -6,23 +6,20 @@ class Trie(object):
     other sequences.
 
     Examples:
-        .. code-block:: python
-            from featuretools.utils import Trie
-
-            trie = Trie(default=str)
-
-            # Set a value
-            trie.get_node([1, 2, 3]).value = '123'
-
-            # Get a value
-            assert trie.get_node([1, 2, 3]).value == '123'
-
-            # Overwrite a value
-            trie.get_node([1, 2, 3]).value = 'updated'
-            assert trie.get_node([1, 2, 3]).value == 'updated'
-
-            # Getting a key that has not been set returns the default value.
-            assert trie.get_node([1, 2]).value == ''
+        >>> from featuretools.utils import Trie
+        >>> trie = Trie(default=str)
+        >>> # Set a value
+        >>> trie.get_node([1, 2, 3]).value = '123'
+        >>> # Get a value
+        >>> trie.get_node([1, 2, 3]).value
+        '123'
+        >>> # Overwrite a value
+        >>> trie.get_node([1, 2, 3]).value = 'updated'
+        >>> trie.get_node([1, 2, 3]).value
+        'updated'
+        >>> # Getting a key that has not been set returns the default value.
+        >>> trie.get_node([1, 2]).value
+        ''
     """
 
     def __init__(self, default=lambda: None, path_constructor=list):
@@ -42,20 +39,21 @@ class Trie(object):
         to.
 
         Examples:
-            .. code-block:: python
-
-                from featuretools.utils import Trie
-
-                trie = Trie()
-                trie.get_node([1, 2]).value = '12'
-                trie.get_node([3]).value = '3'
-
-                children = trie.children()
-                first_edge, first_child = children[0]
-                second_edge, second_child = children[1]
-
-                assert (first_edge, first_child.get_node([]).value) == (1, None)
-                assert (second_edge, second_child.get_node([]).value) == (3, '3')
+            >>> from featuretools.utils import Trie
+            >>> trie = Trie(default=str)
+            >>> trie.get_node([1, 2]).value = '12'
+            >>> trie.get_node([3]).value = '3'
+            >>> children = trie.children()
+            >>> first_edge, first_child = children[0]
+            >>> first_edge
+            1
+            >>> first_child.value
+            ''
+            >>> second_edge, second_child = children[1]
+            >>> second_edge
+            3
+            >>> second_child.value
+            '3'
         """
         return list(self._children.items())
 
@@ -65,17 +63,15 @@ class Trie(object):
         it with the default value.
 
         Examples:
-            .. code-block:: python
-
-                from featuretools.utils import Trie
-
-                t = Trie()
-
-                t.get_node([1, 2, 3]).value = '123'
-                t.get_node([1, 2, 4]).value = '124'
-                sub = t.get_node([1, 2])
-                assert sub.get_node([3]).value == '123'
-                assert sub.get_node([4]).value == '124'
+            >>> from featuretools.utils import Trie
+            >>> t = Trie()
+            >>> t.get_node([1, 2, 3]).value = '123'
+            >>> t.get_node([1, 2, 4]).value = '124'
+            >>> sub = t.get_node([1, 2])
+            >>> sub.get_node([3]).value
+            '123'
+            >>> sub.get_node([4]).value
+            '124'
         """
         if path:
             first = path[0]

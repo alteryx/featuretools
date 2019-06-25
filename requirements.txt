@@ -5,8 +5,10 @@ toolz>=0.8.2
 pyyaml>=3.12
 cloudpickle>=0.4.0
 future>=0.16.0
-dask>=1.1.0
-distributed>=1.24.2
+distributed<2.0.0; python_version < '3'
+distributed>=1.24.2; python_version >= '3'
+dask<2.0.0; python_version < '3'
+dask>=1.1.0; python_version >= '3'
 psutil>=5.4.8
 click>=7.0.0
 scikit-learn>=0.20.0,<0.21; python_version < '3'

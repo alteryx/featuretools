@@ -11,7 +11,7 @@ from pandas.api.types import is_dtype_equal, is_numeric_dtype
 import featuretools.variable_types.variable as vtypes
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.entity import Entity
-from featuretools.entityset.relationship import Relationship
+from featuretools.entityset.relationship import Relationship, RelationshipPath
 from featuretools.utils import is_string
 
 pd.options.mode.chained_assignment = None  # default='warn'
@@ -271,83 +271,6 @@ class EntitySet(object):
     #   Relationship access/helper methods  ###################################
     ###########################################################################
 
-    def find_path(self, start_entity_id, goal_entity_id,
-                  include_num_forward=False):
-        """Find a path in the entityset represented as a DAG
-           between start_entity and goal_entity
-
-        Args:
-            start_entity_id (str) : Id of entity to start the search from.
-            goal_entity_id  (str) : Id of entity to find forward path to.
-            include_num_forward (bool) : If True, return number of forward
-                relationships in path if the path ends on a forward
-                relationship, otherwise return 0.
-
-        Returns:
-            List of relationships that go from start entity to goal
-                entity. None is returned if no path exists.
-            If include_num_forward is True,
-                returns a tuple of (relationship_list, forward_distance).
-
-        See Also:
-            :func:`EntitySet.find_forward_paths`
-            :func:`EntitySet.find_backward_paths`
-        """
-        if start_entity_id == goal_entity_id:
-            if include_num_forward:
-                return [], 0
-            else:
-                return []
-
-        # Search for path using BFS to get the shortest path.
-        # Start by initializing the queue with all relationships from start entity
-        queue = [[r] for r in self.get_forward_relationships(start_entity_id)] + \
-                [[r] for r in self.get_backward_relationships(start_entity_id)]
-        visited = set([start_entity_id])
-
-        while len(queue) > 0:
-            # get first path from queue
-            current_path = queue.pop(0)
-
-            # last entity in path will be which ever one we haven't visited
-            if current_path[-1].parent_entity.id not in visited:
-                next_entity_id = current_path[-1].parent_entity.id
-            elif current_path[-1].child_entity.id not in visited:
-                next_entity_id = current_path[-1].child_entity.id
-            else:
-                # if we've visited both, we don't need to explore this path further
-                continue
-
-            # we've found a path to goal
-            if next_entity_id == goal_entity_id:
-                if include_num_forward:
-                    # count the number of forward relationships along this path
-                    # starting from beginning
-                    check_entity = start_entity_id
-                    num_forward = 0
-                    for r in current_path:
-                        # if the current entity we're checking is a child, that means the
-                        # relationship is a forward and the next entity to check is the parent
-                        if r.child_entity.id == check_entity:
-                            num_forward += 1
-                            check_entity = r.parent_entity.id
-                        else:
-                            check_entity = r.child_entity.id
-
-                    return current_path, num_forward
-                else:
-                    return current_path
-
-            next_relationships = self.get_forward_relationships(next_entity_id)
-            next_relationships += self.get_backward_relationships(next_entity_id)
-
-            for r in next_relationships:
-                queue.append(current_path + [r])
-
-            visited.add(next_entity_id)
-        e = "No path from {} to {}. Check that all entities are connected by relationships".format(start_entity_id, goal_entity_id)
-        raise ValueError(e)
-
     def find_forward_paths(self, start_entity_id, goal_entity_id):
         """
         Generator which yields all forward paths between a start and goal
@@ -359,7 +282,6 @@ class EntitySet(object):
 
         See Also:
             :func:`BaseEntitySet.find_backward_paths`
-            :func:`BaseEntitySet.find_path`
         """
         for sub_entity_id, path in self._forward_entity_paths(start_entity_id):
             if sub_entity_id == goal_entity_id:
@@ -376,7 +298,6 @@ class EntitySet(object):
 
         See Also:
             :func:`BaseEntitySet.find_forward_paths`
-            :func:`BaseEntitySet.find_path`
         """
         for path in self.find_forward_paths(goal_entity_id, start_entity_id):
             # Reverse path
@@ -409,56 +330,44 @@ class EntitySet(object):
                 yield sub_entity_id, [relationship] + sub_path
 
     def get_forward_entities(self, entity_id, deep=False):
-        """Get entities that are in a forward relationship with entity
+        """
+        Get entities that are in a forward relationship with entity
 
         Args:
-            entity_id (str) - Id entity of entity to search from.
-            deep (bool) - if True, recursively find forward entities.
+            entity_id (str): Id entity of entity to search from.
+            deep (bool): if True, recursively find forward entities.
 
-        Returns:
-            Set of entity IDs in a forward relationship with the passed in
-            entity.
+        Yields a tuple of (descendent_id, path from entity_id to descendant).
         """
-        parents = [r.parent_entity.id for r in
-                   self.get_forward_relationships(entity_id)]
+        for relationship in self.get_forward_relationships(entity_id):
+            parent_eid = relationship.parent_entity.id
+            direct_path = RelationshipPath([(True, relationship)])
+            yield parent_eid, direct_path
 
-        if deep:
-            parents_deep = set([])
-            for p in parents:
-                parents_deep.add(p)
-
-                # no loops that are typically caused by one to one relationships
-                if entity_id in self.get_forward_entities(p):
-                    continue
-
-                to_add = self.get_forward_entities(p, deep=True)
-                parents_deep = parents_deep.union(to_add)
-
-            parents = parents_deep
-
-        return set(parents)
+            if deep:
+                sub_entities = self.get_forward_entities(parent_eid, deep=True)
+                for sub_eid, path in sub_entities:
+                    yield sub_eid, direct_path + path
 
     def get_backward_entities(self, entity_id, deep=False):
-        """Get entities that are in a backward relationship with entity
+        """
+        Get entities that are in a backward relationship with entity
 
         Args:
-            entity_id (str) - Id entity of entity to search from.
-            deep (bool) - If True, recursively find backward entities.
+            entity_id (str): Id entity of entity to search from.
+            deep (bool): if True, recursively find backward entities.
 
-        Returns:
-            Set of each :class:`.Entity` in a backward relationship.
+        Yields a tuple of (descendent_id, path from entity_id to descendant).
         """
-        children = [r.child_entity.id for r in
-                    self.get_backward_relationships(entity_id)]
-        if deep:
-            children_deep = set([])
-            for p in children:
-                children_deep.add(p)
-                to_add = self.get_backward_entities(p, deep=True)
-                children_deep = children_deep.union(to_add)
+        for relationship in self.get_backward_relationships(entity_id):
+            child_eid = relationship.child_entity.id
+            direct_path = RelationshipPath([(False, relationship)])
+            yield child_eid, direct_path
 
-            children = children_deep
-        return set(children)
+            if deep:
+                sub_entities = self.get_backward_entities(child_eid, deep=True)
+                for sub_eid, path in sub_entities:
+                    yield sub_eid, direct_path + path
 
     def get_forward_relationships(self, entity_id):
         """Get relationships where entity "entity_id" is the child
@@ -823,7 +732,7 @@ class EntitySet(object):
                     continue
                 parents.add(e)
 
-                for parent_id in self.get_forward_entities(e):
+                for parent_id, _ in self.get_forward_entities(e):
                     parent_queue.append(parent_id)
 
             queue = [self[p] for p in parents]
