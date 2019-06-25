@@ -59,20 +59,10 @@ Below is an example of using Deep Feature Synthesis (DFS) to perform automated f
 ```python
 >> import featuretools as ft
 >> es = ft.demo.load_mock_customer(return_entityset=True)
->> es
+>> es.plot()
 ```
-```
-Entityset: transactions
-  Entities:
-    customers (shape = [5, 3])
-    sessions (shape = [35, 4])
-    products (shape = [5, 2])
-    transactions (shape = [500, 5])
-  Relationships:
-    transactions.product_id -> products.product_id
-    transactions.session_id -> sessions.session_id
-    sessions.customer_id -> customers.customer_id
-```
+
+![Entity Set](/docs/source/images/entity_set.png?raw=true "Entity Set")
 
 Featuretools can automatically create a single table of features for any "target entity"
 ```python
