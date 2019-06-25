@@ -499,12 +499,15 @@ def test_topn(es):
         ['taco clock', np.nan]
     ])
     assert ([name in df.columns for name in topn.get_feature_names()])
+
     for i in range(df.shape[0]):
+        true = true_results.loc[i]
+        actual = df.loc[i]
         if i == 0:
             # coke zero and toothpase have same number of occurrences
-            assert set(true_results.loc[i].values) == set(df.loc[i].values)
+            assert set(true.values) == set(actual.values)
         else:
-            for i1, i2 in zip(true_results.loc[i], df.iloc[i]):
+            for i1, i2 in zip(true, actual):
                 assert (pd.isnull(i1) and pd.isnull(i2)) or (i1 == i2)
 
 
@@ -746,3 +749,17 @@ def test_handles_primitive_function_name_uniqueness(es):
     assert all(fm[f5.get_name()].sort_index() == value_sum)
     assert all(fm[f6.get_name()].sort_index() == value_sum)
     assert all(fm[f7.get_name()].sort_index() == value_sum)
+
+
+def test_returns_order_of_instance_ids(es):
+    feature_set = FeatureSet([ft.Feature(es['customers']['age'])])
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
+
+    instance_ids = [0, 1, 2]
+    assert list(es['customers'].df['id']) != instance_ids
+
+    df = calculator.run(instance_ids)
+
+    assert list(df.index) == instance_ids

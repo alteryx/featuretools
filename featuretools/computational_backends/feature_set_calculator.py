@@ -118,6 +118,10 @@ class FeatureSetCalculator(object):
 
         df.index.name = self.entityset[self.feature_set.target_eid].index
         column_list = []
+
+        # Order by instance_ids
+        df = df.reindex(_unique_list(instance_ids))
+
         for feat in self.feature_set.target_features:
             column_list.extend(feat.get_feature_names())
         return df[column_list]
@@ -686,3 +690,13 @@ def strip_values_if_series(values):
     if isinstance(values, pd.Series):
         values = values.values
     return values
+
+
+def _unique_list(l):
+    seen = set()
+    unique = []
+    for x in l:
+        if x not in seen:
+            seen.add(x)
+            unique.append(x)
+    return unique
