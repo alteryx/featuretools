@@ -23,11 +23,15 @@
 ## Installation
 Install with pip
 
-  python -m pip install featuretools
+```
+python -m pip install featuretools
+```
 
 or from the Conda-forge channel on [conda](https://anaconda.org/conda-forge/featuretools):
 
-  conda install -c conda-forge featuretools
+```
+conda install -c conda-forge featuretools
+```
 
 ### Add-ons
 
