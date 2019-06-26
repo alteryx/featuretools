@@ -30,6 +30,7 @@ TSFresh Primitives:
 
 
 .. _graphviz:
+
 Installing Graphviz
 -------------------
 
