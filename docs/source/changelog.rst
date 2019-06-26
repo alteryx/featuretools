@@ -9,6 +9,7 @@ Changelog
     * Fixes
         * Select columns of dataframe using a list (:pr:`615`)
         * Change type of features calculated on Index features to Categorical (:pr:`602`)
+        * Filter dataframes through forward relationships (:pr:`625`)
         * Specify Dask version in requirements for python 2 (:pr:`627`)
     * Changes
         * Remove unused variance_selection.py file (:pr:`613`)
@@ -18,7 +19,7 @@ Changelog
         * Miscellaneous changes (:pr:`595`, :pr:`612`)
 
     Thanks to the following people for contributing to this release:
-    :user:`CJStadler`, :user:`kmax12`, :user:`rwedge`
+    :user:`CJStadler`, :user:`kmax12`, :user:`rwedge`, :user:`gsheni`
 
 **v0.9.0** June 19, 2019
     * Enhancements
