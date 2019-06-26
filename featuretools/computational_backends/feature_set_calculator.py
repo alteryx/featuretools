@@ -120,7 +120,7 @@ class FeatureSetCalculator(object):
         column_list = []
 
         # Order by instance_ids
-        df = df.reindex(pd.unique(instance_ids))
+        df = df.reindex(list(pd.unique(instance_ids)))
 
         for feat in self.feature_set.target_features:
             column_list.extend(feat.get_feature_names())
