@@ -14,7 +14,7 @@ or from the Conda-forge channel on `anaconda.org <https://anaconda.org/conda-for
 
 Add-ons
 --------
-You can install add-ons individually orit all at once by running::
+You can install add-ons individually or all at once by running::
 
     python -m pip install featuretools[complete]
 
