@@ -78,7 +78,8 @@ class FeatureSetCalculator(object):
             return the columns corresponding to the requested features.
 
         Args:
-            instance_ids (list): List of instance id for which to build features.
+            instance_ids (np.ndarray or pd.Categorical): Instance ids for which
+                to build features.
 
         Returns:
             pd.DataFrame : Pandas DataFrame of calculated feature values.
@@ -120,7 +121,10 @@ class FeatureSetCalculator(object):
         column_list = []
 
         # Order by instance_ids
-        df = df.reindex(list(pd.unique(instance_ids)))
+        unique_instance_ids = pd.unique(instance_ids)
+        # pd.unique changes the dtype for Categorical, so reset it.
+        unique_instance_ids = unique_instance_ids.astype(instance_ids.dtype)
+        df = df.reindex(unique_instance_ids)
 
         for feat in self.feature_set.target_features:
             column_list.extend(feat.get_feature_names())
