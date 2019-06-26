@@ -205,22 +205,22 @@ class FeatureSetCalculator(object):
 
         # Step 3: Recurse on children.
 
+        # Pass filtered values, even if we are using a full df.
+        if need_full_entity:
+            filtered_df = df[df[filter_variable].isin(filter_values)]
+        else:
+            filtered_df = df
+
         for edge, sub_trie in feature_trie.children():
             is_forward, relationship = edge
             if is_forward:
                 sub_entity = relationship.parent_entity.id
                 sub_filter_variable = relationship.parent_variable.id
-                sub_filter_values = df[relationship.child_variable.id]
+                sub_filter_values = filtered_df[relationship.child_variable.id]
                 parent_data = None
             else:
                 sub_entity = relationship.child_entity.id
                 sub_filter_variable = relationship.child_variable.id
-
-                # Pass filtered values, even if we are using a full df.
-                if need_full_entity:
-                    filtered_df = df[df[filter_variable].isin(filter_values)]
-                else:
-                    filtered_df = df
                 sub_filter_values = filtered_df[relationship.parent_variable.id]
 
                 parent_data = (relationship,
