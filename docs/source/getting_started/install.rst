@@ -10,7 +10,7 @@ or from the Conda-forge channel on `anaconda.org <https://anaconda.org/conda-for
     conda install -c conda-forge featuretools
 
 
-.... _addons:
+.. _addons:
 
 Add-ons
 --------
@@ -29,6 +29,7 @@ TSFresh Primitives:
         python -m pip install featuretools[tsfresh]
 
 
+.. _graphviz:
 Installing Graphviz
 -------------------
 

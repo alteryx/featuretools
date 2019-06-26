@@ -14,7 +14,7 @@ Conversation happens in the following places:
 2.  **Feature requests** can be made on the `Feature Request Board <http://feedback.featurelabs.com>`__.
 3.  **Bug reports** are managed on the `GitHub issue
     tracker`_.
-4.  **Chat** occurs on at `Slack`_. Please do not post general usage questions and bug reports
+4.  **Chat** occurs on `Slack`_. Please do not post general usage questions and bug reports
     on Slack. Instead people should use Stack Overflow or GitHub.
 5.  **Everything else, core developers** can be reached at help@featuretools.com.
 
@@ -45,7 +45,7 @@ few simple guidelines:
     your problem.
 
 4.  **Sharing data privately**: If you have data that you can't share publicly,
-    feel free to send an email to help@featuretools.com.
+    feel free to send an email to help@featurelabs.com.
 
 
 Commercial support
