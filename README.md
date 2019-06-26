@@ -23,11 +23,35 @@
 ## Installation
 Install with pip
 
-	python -m pip install featuretools
+```
+python -m pip install featuretools
+```
 
 or from the Conda-forge channel on [conda](https://anaconda.org/conda-forge/featuretools):
 
-	conda install -c conda-forge featuretools
+```
+conda install -c conda-forge featuretools
+```
+
+### Add-ons
+
+You can install add-ons individually or all at once by running
+
+```
+python -m pip install featuretools[complete]
+```
+
+**Update checker** - Receive automatic notifications of new Featuretools releases
+
+```
+python -m pip install featuretools[update_checker]
+```
+
+**TSFresh Primitives** - Use 60+ primitives from [tsfresh](https://tsfresh.readthedocs.io/en/latest/) within Featuretools
+
+```
+python -m pip install featuretools[tsfresh]
+```
 
 ## Example
 Below is an example of using Deep Feature Synthesis (DFS) to perform automated feature engineering. In this example, we apply DFS to a multi-table dataset consisting of timestamped customer transactions.
@@ -35,20 +59,10 @@ Below is an example of using Deep Feature Synthesis (DFS) to perform automated f
 ```python
 >> import featuretools as ft
 >> es = ft.demo.load_mock_customer(return_entityset=True)
->> es
+>> es.plot()
 ```
-```
-Entityset: transactions
-  Entities:
-    customers (shape = [5, 3])
-    sessions (shape = [35, 4])
-    products (shape = [5, 2])
-    transactions (shape = [500, 5])
-  Relationships:
-    transactions.product_id -> products.product_id
-    transactions.session_id -> sessions.session_id
-    sessions.customer_id -> customers.customer_id
-```
+
+<img src="/docs/source/images/entity_set.png?raw=true" width="350">
 
 Featuretools can automatically create a single table of features for any "target entity"
 ```python
@@ -80,7 +94,7 @@ For more examples of how to use Featuretools, check out our [demos](https://www.
 
 ## Testing & Development
 
-The Featuretools community welcomes pull requests. Instructions for testing and development are avialable [here.](https://docs.featuretools.com/getting_started/install.html#development)
+The Featuretools community welcomes pull requests. Instructions for testing and development are available [here.](https://docs.featuretools.com/getting_started/install.html#development)
 
 ## Support
 The Featuretools community is happy to provide support to users of Featuretools. Project support can be found in four places depending on the type of question:
@@ -116,4 +130,3 @@ BibTeX entry:
 </a>
 
 Featuretools is an open source project created by [Feature Labs](https://www.featurelabs.com/). To see the other open source projects we're working on visit Feature Labs [Open Source](https://www.featurelabs.com/open). If building impactful data science pipelines is important to you or your business, please [get in touch](https://www.featurelabs.com/contact/).
-
