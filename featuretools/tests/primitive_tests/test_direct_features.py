@@ -29,7 +29,7 @@ def test_direct_from_identity(es):
 
     feature_set = FeatureSet([d])
     calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
-    df = calculator.run([0, 5])
+    df = calculator.run(np.array([0, 5]))
     v = df[d.get_name()].tolist()
     assert v == [0, 1]
 
@@ -42,7 +42,7 @@ def test_direct_from_variable(es):
 
     feature_set = FeatureSet([d])
     calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
-    df = calculator.run([0, 5])
+    df = calculator.run(np.array([0, 5]))
     v = df[d.get_name()].tolist()
     assert v == [0, 1]
 
