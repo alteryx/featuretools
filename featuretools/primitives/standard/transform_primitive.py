@@ -381,30 +381,6 @@ class TimeSince(TransformPrimitive):
         return pd_time_since
 
 
-class DaysSince(TransformPrimitive):
-    """Calculates the number of days from a value to a specified datetime.
-
-    Examples:
-        >>> from datetime import datetime
-        >>> days_since = DaysSince()
-        >>> dates = [datetime(2019, 3, 2, 0),
-        ...          datetime(2019, 3, 10, 12),
-        ...          datetime(2019, 3, 1, 0)]
-        >>> cutoff_date = datetime(2019, 3, 1, 0, 0, 0, 0)
-        >>> days_since(array=dates, time=cutoff_date).tolist()
-        [-1, -10, 0]
-    """
-    name = "days_since"
-    input_types = [DatetimeTimeIndex]
-    return_type = Numeric
-    uses_calc_time = True
-
-    def get_function(self):
-        def pd_days_since(array, time):
-            return (time - pd.DatetimeIndex(array)).days
-        return pd_days_since
-
-
 class IsIn(TransformPrimitive):
     """Determines whether a value is present in a provided list.
 

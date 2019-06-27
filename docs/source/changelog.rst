@@ -15,13 +15,14 @@ Changelog
     * Changes
         * Remove unused variance_selection.py file (:pr:`613`)
         * Remove Timedelta data param (:pr:`619`)
+        * Remove DaysSince primitive (:pr:`628`)
     * Documentation Changes
         * Add installation instructions for add-on libraries (:pr:`617`)
     * Testing Changes
         * Miscellaneous changes (:pr:`595`, :pr:`612`)
 
     Thanks to the following people for contributing to this release:
-    :user:`CJStadler`, :user:`kmax12`, :user:`rwedge`, :user:`gsheni`
+    :user:`CJStadler`, :user:`kmax12`, :user:`rwedge`, :user:`gsheni`, :user:`kkleidal`
 
 **v0.9.0** June 19, 2019
     * Enhancements
