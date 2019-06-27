@@ -34,11 +34,11 @@ Now let's build some features definitions using DFS. Because we have categorical
     feature_matrix_enc
 
 
-Now, we can use :meth:`featuretools.save_features` to save a list features.
+Now, we can use :meth:`featuretools.save_features` to save a list features to a json file
 
 .. ipython:: python
 
-    ft.save_features(features_enc, "feature_definitions")
+    ft.save_features(features_enc, "feature_definitions.json")
 
 
 
@@ -49,13 +49,13 @@ We can use :meth:`featuretools.load_features` to read in a list of saved feature
 
 .. ipython:: python
 
-    saved_features = ft.load_features('feature_definitions')
+    saved_features = ft.load_features('feature_definitions.json')
 
 .. ipython:: python
     :suppress:
 
     import os
-    os.remove("feature_definitions")
+    os.remove("feature_definitions.json")
 
 
 After we load the features back in, we can calculate the feature matrix.

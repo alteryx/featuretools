@@ -39,7 +39,7 @@ def load_features(features):
 
         .. code-block:: python
 
-            filepath = os.path.join('/Home/features/', 'list')
+            filepath = os.path.join('/Home/features/', 'list.json')
             ft.load_features(filepath)
 
             f = open(filepath, 'r')

@@ -10,12 +10,13 @@ Discussion
 
 Conversation happens in the following places:
 
-1.  **General Usage questions** are directed to `StackOverflow`_ with the #featuretools tag.
-2.  **Bug reports and feature requests** are managed on the `GitHub issue
+1.  **General usage questions** are directed to `StackOverflow`_ with the #featuretools tag.
+2.  **Feature requests** can be made on the `Feature Request Board <http://feedback.featurelabs.com>`__.
+3.  **Bug reports** are managed on the `GitHub issue
     tracker`_.
-3.  **Chat** occurs on at `Slack`_. Please do not post general usage questions and bug reports
-    on Slack. Instead people should use Stack Overflow or GitHub.
-4.  **Everything else, core developers** can be reached at help@featuretools.com.
+4.  **Chat** and collaboration within the community occurs on `Slack`_. For general usage questions, please post on
+    Stack Overflow where answers are more searchable by other users.
+5.  **Everything else, core developers** can be reached at help@featuretools.com.
 
 .. _`StackOverflow`: http://stackoverflow.com/questions/tagged/featuretools
 .. _`Github issue tracker`: https://github.com/featuretools/featuretools/issues
@@ -44,7 +45,7 @@ few simple guidelines:
     your problem.
 
 4.  **Sharing data privately**: If you have data that you can't share publicly,
-    feel free to send an email to help@featuretools.com.
+    feel free to send an email to help@featurelabs.com.
 
 
 Commercial support
