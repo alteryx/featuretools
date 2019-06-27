@@ -235,6 +235,9 @@ class Entity(object):
         Returns:
             pd.DataFrame : instances that match constraints with ids in order of underlying dataframe
         """
+        if not variable_id:
+            variable_id = self.index
+
         instance_vals = self._vals_to_series(instance_vals, variable_id)
 
         training_window = _check_timedelta(training_window)
@@ -248,10 +251,6 @@ class Entity(object):
 
         elif instance_vals.shape[0] == 0:
             df = self.df.head(0)
-
-        elif variable_id is None or variable_id == self.index:
-            df = self.df.reindex(instance_vals)
-            df.dropna(subset=[self.index], inplace=True)
 
         else:
             df = self.df[self.df[variable_id].isin(instance_vals)]

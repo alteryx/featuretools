@@ -258,8 +258,8 @@ def test_cum_handles_uses_full_entity(es):
     def check(feature):
         feature_set = FeatureSet([feature])
         calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
-        df_1 = calculator.run([0, 1, 2])
-        df_2 = calculator.run([2, 4])
+        df_1 = calculator.run(np.array([0, 1, 2]))
+        df_2 = calculator.run(np.array([2, 4]))
 
         # check that the value for instance id 2 matches
         assert (df_2.loc[2] == df_1.loc[2]).all()
