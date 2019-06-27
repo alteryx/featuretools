@@ -11,6 +11,7 @@ Changelog
         * Change type of features calculated on Index features to Categorical (:pr:`602`)
         * Filter dataframes through forward relationships (:pr:`625`)
         * Specify Dask version in requirements for python 2 (:pr:`627`)
+        * Keep dataframe sorted by time during feature calculation (:pr:`626`)
     * Changes
         * Remove unused variance_selection.py file (:pr:`613`)
         * Remove Timedelta data param (:pr:`619`)
