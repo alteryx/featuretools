@@ -834,12 +834,13 @@ class EntitySet(object):
         Returns:
             graphviz.Digraph : Graph object that can directly be displayed in
                 Jupyter notebooks.
+
         """
         try:
             import graphviz
         except ImportError:
             raise ImportError('Please install graphviz to plot entity sets.' +
-                              ' (See https://docs.featuretools.com/getting_started/install.html for' +
+                              ' (See https://docs.featuretools.com/getting_started/install.html#installing-graphviz for' +
                               ' details)')
 
         # Try rendering a dummy graph to see if a working backend is installed
