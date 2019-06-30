@@ -60,7 +60,10 @@ class FeatureSetCalculator(object):
 
         self.precalculated_features = precalculated_features
 
-    def run(self, instance_ids):
+        # total number of features (including dependencies) to be calculate
+        self.num_features = len(feature_set.features_by_name.values())
+
+    def run(self, instance_ids, progress_callback=None):
         """
         Calculate values of features for the given instances of the target
         entity.
@@ -100,7 +103,8 @@ class FeatureSetCalculator(object):
                                             full_entity_df_trie=full_entity_df_trie,
                                             precalculated_trie=self.precalculated_features,
                                             filter_variable=target_entity.index,
-                                            filter_values=instance_ids)
+                                            filter_values=instance_ids,
+                                            progress_callback=progress_callback)
 
         # The dataframe for the target entity should be stored at the root of
         # df_trie.
@@ -134,7 +138,8 @@ class FeatureSetCalculator(object):
                                        full_entity_df_trie,
                                        precalculated_trie,
                                        filter_variable, filter_values,
-                                       parent_data=None):
+                                       parent_data=None,
+                                       progress_callback=None):
         """
         Generate dataframes with features calculated for this node of the trie,
         and all descendant nodes. The dataframes will be stored in df_trie.
@@ -267,7 +272,7 @@ class FeatureSetCalculator(object):
         # be calculated first because all of their dependents are included in
         # full_entity_features.
         if need_full_entity:
-            df = self._calculate_features(df, full_entity_df_trie, full_entity_features)
+            df = self._calculate_features(df, full_entity_df_trie, full_entity_features, progress_callback)
 
             # Store full entity df.
             full_entity_df_trie.value = df
@@ -277,13 +282,13 @@ class FeatureSetCalculator(object):
             df = df[df[filter_variable].isin(filter_values)]
 
         # Calculate all features that don't require the full entity.
-        df = self._calculate_features(df, df_trie, not_full_entity_features)
+        df = self._calculate_features(df, df_trie, not_full_entity_features, progress_callback)
 
         # Step 5: Store the dataframe for this entity at the root of df_trie, so
         # that it can be accessed by the caller.
         df_trie.value = df
 
-    def _calculate_features(self, df, df_trie, features):
+    def _calculate_features(self, df, df_trie, features, progress_callback):
         # Group the features so that each group can be calculated together.
         # The groups must also be in topological order (if A is a transform of B
         # then B must be in a group before A).
@@ -293,6 +298,9 @@ class FeatureSetCalculator(object):
             representative_feature = group[0]
             handler = self._feature_type_handler(representative_feature)
             df = handler(group, df, df_trie)
+
+            if progress_callback:
+                progress_callback(len(group) / self.num_features)
 
         return df
 

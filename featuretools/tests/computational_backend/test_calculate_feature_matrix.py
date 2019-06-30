@@ -21,9 +21,7 @@ from featuretools.computational_backends.calculate_feature_matrix import (
 )
 from featuretools.computational_backends.utils import (
     bin_cutoff_times,
-    calc_num_per_chunk,
     create_client_and_cluster,
-    get_next_chunk,
     n_jobs_to_workers
 )
 from featuretools.feature_base import (
@@ -770,92 +768,6 @@ def test_cfm_returns_original_time_indexes(es):
     time_level_vals = fm3.index.get_level_values(1).values
     assert (instance_level_vals == sorted_df['instance_id'].values).all()
     assert (time_level_vals == sorted_df['time'].values).all()
-
-
-def test_calculating_number_per_chunk():
-    cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-08 10:30:00')
-                                       for x in range(200)],
-                              'instance_id': [0 for x in range(200)]})
-
-    singleton = pd.DataFrame({'time': [pd.Timestamp('2011-04-08 10:30:00')],
-                              'instance_id': [0]})
-    shape = cutoff_df.shape
-
-    error_text = "chunk_size must be None, a float between 0 and 1,a positive integer, or the string 'cutoff time'"
-    with pytest.raises(ValueError, match=error_text):
-        calc_num_per_chunk(-1, shape)
-
-    with pytest.raises(ValueError, match=error_text):
-        calc_num_per_chunk("test", shape)
-
-    with pytest.raises(ValueError, match=error_text):
-        calc_num_per_chunk(2.5, shape)
-
-    with pytest.warns(UserWarning):
-        assert calc_num_per_chunk(201, shape) == 200
-
-    assert calc_num_per_chunk(200, shape) == 200
-    assert calc_num_per_chunk(11, shape) == 11
-    assert calc_num_per_chunk(.7, shape) == 140
-    assert calc_num_per_chunk(.6749, shape) == 134
-    assert calc_num_per_chunk(.6751, shape) == 135
-    assert calc_num_per_chunk(None, shape) == 20
-    assert calc_num_per_chunk("cutoff time", shape) == "cutoff time"
-    assert calc_num_per_chunk(1, shape) == 1
-    assert calc_num_per_chunk(.5, singleton.shape) == 1
-    assert calc_num_per_chunk(None, singleton.shape) == 10
-
-
-def test_get_next_chunk():
-    times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
-                 [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
-                 [datetime(2011, 4, 9, 10, 40, 0)] +
-                 [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
-                 [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
-                 [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
-    cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
-    chunks = [chunk for chunk in get_next_chunk(cutoff_time, 'time', 4)]
-    assert len(chunks) == 5
-
-    # test when a cutoff time is larger than a chunk
-    times = list([datetime(2011, 4, 9, 10, 30, 6) for i in range(5)] +
-                 [datetime(2011, 4, 9, 10, 31, 9) for i in range(4)] +
-                 [datetime(2011, 4, 9, 10, 40, 0)] +
-                 [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
-                 [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
-                 [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
-    cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
-    chunks = [chunk for chunk in get_next_chunk(cutoff_time, 'time', 4)]
-    assert len(chunks) == 5
-    # largest cutoff time handled first
-    largest = pd.Series([datetime(2011, 4, 9, 10, 30, 6) for i in range(4)])
-    assert (chunks[0]['time'] == largest).all()
-    # additional part of cutoff time added to another chunk
-    assert (chunks[2]['time'] == times[4]).any()
-
-    # test when cutoff_time is smaller than num_per_chunk
-    chunks = [chunk for chunk in get_next_chunk(cutoff_time, 'time', 18)]
-    assert len(chunks) == 1
-
-
-def test_verbose_cutoff_time_chunks(es):
-    times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
-                 [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
-                 [datetime(2011, 4, 9, 10, 40, 0)] +
-                 [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
-                 [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
-                 [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
-    labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
-    cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
-    property_feature = IdentityFeature(es['log']['value']) > 10
-
-    feature_matrix = calculate_feature_matrix([property_feature],
-                                              es,
-                                              cutoff_time=cutoff_time,
-                                              chunk_size="cutoff time",
-                                              verbose=True)
-
-    assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 
 def test_dask_kwargs(es):
