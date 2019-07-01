@@ -2,7 +2,6 @@
 
 import pandas as pd
 import pytest
-from distributed.utils_test import cluster
 
 from featuretools.primitives import Max, Mean, Min, Sum
 from featuretools.synthesis import dfs
@@ -121,6 +120,7 @@ def test_features_only(entities, relationships):
 
 
 def test_dask_kwargs(entities, relationships):
+    from distributed.utils_test import cluster
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
                                     "time": [10, 12, 15]})
     feature_matrix, features = dfs(entities=entities,

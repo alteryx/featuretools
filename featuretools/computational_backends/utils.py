@@ -8,7 +8,6 @@ from functools import wraps
 import numpy as np
 import pandas as pd
 import psutil
-from distributed import Client, LocalCluster
 from pandas.tseries.frequencies import to_offset
 
 from featuretools.entityset.relationship import RelationshipPath
@@ -210,6 +209,7 @@ def n_jobs_to_workers(n_jobs):
 
 
 def create_client_and_cluster(n_jobs, num_tasks, dask_kwargs, entityset_size):
+    from distributed import Client, LocalCluster
     cluster = None
     if 'cluster' in dask_kwargs:
         cluster = dask_kwargs['cluster']
