@@ -299,10 +299,8 @@ class FeatureSetCalculator(object):
         for group in feature_groups:
             representative_feature = group[0]
             handler = self._feature_type_handler(representative_feature)
-            df = handler(group, df, df_trie)
 
-            if progress_callback:
-                progress_callback(len(group) / self.num_features)
+            df = handler(group, df, df_trie, progress_callback)
 
         return df
 
@@ -383,14 +381,17 @@ class FeatureSetCalculator(object):
         else:
             raise UnknownFeature(u"{} feature unknown".format(f.__class__))
 
-    def _calculate_identity_features(self, features, df, _df_trie):
+    def _calculate_identity_features(self, features, df, _df_trie, progress_callback):
         for f in features:
             assert f.get_name() in df, (
                 'Column "%s" missing frome dataframe' % f.get_name())
 
+        if progress_callback:
+            progress_callback(len(features) / self.num_features)
+
         return df
 
-    def _calculate_transform_features(self, features, frame, _df_trie):
+    def _calculate_transform_features(self, features, frame, _df_trie, progress_callback):
         for f in features:
             # handle when no data
             if frame.shape[0] == 0:
@@ -416,9 +417,12 @@ class FeatureSetCalculator(object):
                 values = [strip_values_if_series(values)]
             update_feature_columns(f, frame, values)
 
+            if progress_callback:
+                progress_callback(1 / self.num_features)
+
         return frame
 
-    def _calculate_groupby_features(self, features, frame, _df_trie):
+    def _calculate_groupby_features(self, features, frame, _df_trie, progress_callback):
         for f in features:
             set_default_column(frame, f)
 
@@ -462,9 +466,12 @@ class FeatureSetCalculator(object):
             if feature_vals:
                 frame[f.get_name()].update(pd.concat(feature_vals))
 
+            if progress_callback:
+                progress_callback(1 / self.num_features)
+
         return frame
 
-    def _calculate_direct_features(self, features, child_df, df_trie):
+    def _calculate_direct_features(self, features, child_df, df_trie, progress_callback):
         path = features[0].relationship_path
         assert len(path) == 1, \
             "Error calculating DirectFeatures, len(path) != 1"
@@ -497,9 +504,12 @@ class FeatureSetCalculator(object):
         new_df = child_df.merge(merge_df, left_on=merge_var, right_index=True,
                                 how='left')
 
+        if progress_callback:
+            progress_callback(len(features) / self.num_features)
+
         return new_df
 
-    def _calculate_agg_features(self, features, frame, df_trie):
+    def _calculate_agg_features(self, features, frame, df_trie, progress_callback):
         test_feature = features[0]
         child_entity = test_feature.base_features[0].entity
 
@@ -599,6 +609,9 @@ class FeatureSetCalculator(object):
                                  left_index=True,
                                  right_index=True, how='left')
 
+                if progress_callback:
+                    progress_callback(len(to_apply) / self.num_features)
+
             # Apply the aggregate functions to generate a new dataframe, and merge
             # it with the existing one
             if len(to_agg):
@@ -620,6 +633,9 @@ class FeatureSetCalculator(object):
 
                 frame = pd.merge(left=frame, right=to_merge,
                                  left_index=True, right_index=True, how='left')
+
+                if progress_callback:
+                    progress_callback(len(to_agg) / self.num_features)
 
         # Handle default values
         fillna_dict = {}
