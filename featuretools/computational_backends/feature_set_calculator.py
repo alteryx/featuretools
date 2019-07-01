@@ -84,6 +84,8 @@ class FeatureSetCalculator(object):
             instance_ids (np.ndarray or pd.Categorical): Instance ids for which
                 to build features.
 
+            progress_callback (callable): function to be called with incremental progress updates
+
         Returns:
             pd.DataFrame : Pandas DataFrame of calculated feature values.
                 Indexed by instance_ids. Columns in same order as features

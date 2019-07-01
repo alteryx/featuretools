@@ -364,8 +364,7 @@ def test_approximate_multiple_instances_per_cutoff_time(es):
     feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
                                               es,
                                               approximate=Timedelta(1, 'week'),
-                                              cutoff_time=cutoff_time,
-                                              chunk_size="cutoff time")
+                                              cutoff_time=cutoff_time)
     assert feature_matrix.shape[0] == 2
     assert feature_matrix[agg_feat.get_name()].tolist() == [5, 1]
 
@@ -383,8 +382,7 @@ def test_approximate_with_multiple_paths(diamond_es):
     feature_matrix = calculate_feature_matrix([dfeat],
                                               es,
                                               approximate=Timedelta(1, 'week'),
-                                              cutoff_time=cutoff_time,
-                                              chunk_size="cutoff time")
+                                              cutoff_time=cutoff_time)
     assert feature_matrix[dfeat.get_name()].tolist() == [6, 2]
 
 

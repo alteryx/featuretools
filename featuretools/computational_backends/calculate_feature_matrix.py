@@ -87,15 +87,14 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         verbose (bool, optional): Print progress info. The time granularity is
             per chunk.
 
-        chunk_size (int or float or None): Number of rows of
+        chunk_size (int or float or None): maximum number of rows of
             output feature matrix to calculate at time. If passed an integer
             greater than 0, will try to use that many rows per chunk. If passed
             a float value between 0 and 1 sets the chunk size to that
-            percentage of all instances. If passed the string "cutoff time",
-            rows are split per cutoff time.
+            percentage of all instances. if None, and n_jobs > ` it will be set to 1/n_jobs
 
         n_jobs (int, optional): number of parallel processes to use when
-            calculating feature matrix
+            calculating feature matrix.
 
         dask_kwargs (dict, optional): Dictionary of keyword arguments to be
             passed when creating the dask client and scheduler. Even if n_jobs
@@ -221,8 +220,11 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     else:
         cutoff_time_to_pass = cutoff_time
 
+    chunk_size = _handle_chunk_size(chunk_size, cutoff_time)
+
     if n_jobs != 1 or dask_kwargs is not None:
         feature_matrix = parallel_calculate_chunks(cutoff_time=cutoff_time_to_pass,
+                                                   chunk_size=chunk_size,
                                                    feature_set=feature_set,
                                                    approximate=approximate,
                                                    training_window=training_window,
@@ -237,6 +239,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                                    dask_kwargs=dask_kwargs or {})
     else:
         feature_matrix = calculate_chunk(cutoff_time=cutoff_time_to_pass,
+                                         chunk_size=chunk_size,
                                          feature_set=feature_set,
                                          approximate=approximate,
                                          training_window=training_window,
@@ -260,7 +263,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     return feature_matrix
 
 
-def calculate_chunk(cutoff_time, feature_set, entityset, approximate, training_window,
+def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate, training_window,
                     verbose, save_progress,
                     no_unapproximated_aggs, cutoff_df_time_var, target_time,
                     pass_columns):
@@ -273,10 +276,10 @@ def calculate_chunk(cutoff_time, feature_set, entityset, approximate, training_w
     if verbose:
         pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
                        "Progress: {l_bar}{bar}")
+
         t = make_tqdm_iterator(total=cutoff_time.shape[0] * 1.05, bar_format=pbar_string)
 
     feature_matrix = []
-    x = {"a": 0}
     if no_unapproximated_aggs and approximate is not None:
         if entityset.time_type == NumericTimeIndex:
             chunk_time = np.inf
@@ -297,21 +300,19 @@ def calculate_chunk(cutoff_time, feature_set, entityset, approximate, training_w
             precalculated_features_trie = None
             all_approx_feature_set = None
 
-        progress_callback = None
-        if verbose:
-            def progress_callback(done, x=x):
-                update = done * group.shape[0]
-                t.update(update)
-
         @save_csv_decorator(save_progress)
         def calc_results(time_last, ids, precalculated_features=None, training_window=None):
+            def progress_callback(done):
+                t.update(done * group.shape[0])
+
             calculator = FeatureSetCalculator(entityset,
                                               feature_set,
                                               time_last,
                                               training_window=training_window,
                                               precalculated_features=precalculated_features,
                                               ignored=all_approx_feature_set)
-            matrix = calculator.run(ids, progress_callback=progress_callback)
+
+            matrix = calculator.run(ids, progress_callback=(verbose and progress_callback))
             return matrix
 
         # if all aggregations have been approximated, can calculate all together
@@ -323,6 +324,9 @@ def calculate_chunk(cutoff_time, feature_set, entityset, approximate, training_w
                 group[cutoff_df_time_var] = group[target_time]
 
             inner_grouped = group.groupby(cutoff_df_time_var, sort=True)
+
+        if chunk_size is not None:
+            inner_grouped = chunk_dataframe_groups(inner_grouped, chunk_size)
 
         for time_last, group in inner_grouped:
             # sort group by instance id
@@ -479,14 +483,18 @@ def scatter_warning(num_scattered_workers, num_workers):
         warnings.warn(scatter_warning.format(num_scattered_workers, num_workers))
 
 
-def parallel_calculate_chunks(cutoff_time, feature_set, approximate, training_window,
+def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate, training_window,
                               verbose, save_progress, entityset, n_jobs,
                               no_unapproximated_aggs, cutoff_df_time_var,
                               target_time, pass_columns, dask_kwargs=None):
     from distributed import as_completed, Future
     from dask.base import tokenize
 
-    chunks = [group for _, group in cutoff_time.groupby(cutoff_df_time_var)]
+    chunks = cutoff_time.groupby(cutoff_df_time_var)
+    if chunk_size:
+        chunks = chunk_dataframe_groups(chunks, chunk_size)
+
+    chunks = [df for _, df in chunks]
 
     client = None
     cluster = None
@@ -527,6 +535,7 @@ def parallel_calculate_chunks(cutoff_time, feature_set, approximate, training_wi
         _chunks = client.map(calculate_chunk,
                              chunks,
                              feature_set=_saved_features,
+                             chunk_size=None,
                              entityset=_es,
                              approximate=approximate,
                              training_window=training_window,
@@ -547,7 +556,7 @@ def parallel_calculate_chunks(cutoff_time, feature_set, approximate, training_wi
         for batch in iterator:
             results = client.gather(batch)
             for result in results:
-                feature_matrix += result
+                feature_matrix += [result]
                 if verbose:
                     pbar.update()
         if verbose:
@@ -595,3 +604,17 @@ def _add_approx_entity_index_var(es, target_entity_id, cutoffs, path):
         last_parent_var = relationship.parent_variable.id
 
     return cutoffs, new_var_name
+
+
+def chunk_dataframe_groups(grouped, chunk_size):
+    for group_key, group_df in grouped:
+        for i in range(0, len(group_df), chunk_size):
+            yield group_key, group_df.iloc[i:i + chunk_size]
+
+
+def _handle_chunk_size(chunk_size, cutoff_time):
+    if chunk_size is not None:
+        assert chunk_size > 0, "Chunk size must be greater than 0"
+        if chunk_size < 1:
+            chunk_size = int(chunk_size * cutoff_time.shape[0])
+    return chunk_size
