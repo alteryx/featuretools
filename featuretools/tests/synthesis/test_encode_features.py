@@ -135,6 +135,7 @@ def test_encode_features_topn(es):
     features_enc, feature_defs_enc = encode_features(features,
                                                      feature_defs,
                                                      include_unknown=True)
-    assert topn.hash() in [feat.hash() for feat in feature_defs_enc]
+    assert topn.unique_name() in [feat.unique_name() for feat in feature_defs_enc]
     for name in topn.get_feature_names():
         assert name in features_enc.columns
+        assert features_enc.columns.tolist().count(name) == 1
