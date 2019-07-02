@@ -12,6 +12,8 @@ Changelog
         * Filter dataframes through forward relationships (:pr:`625`)
         * Specify Dask version in requirements for python 2 (:pr:`627`)
         * Keep dataframe sorted by time during feature calculation (:pr:`626`)
+        * Fix bug in encode_features that created duplicate columns of
+          features with multiple outputs (:pr:`622`)
     * Changes
         * Remove unused variance_selection.py file (:pr:`613`)
         * Remove Timedelta data param (:pr:`619`)
