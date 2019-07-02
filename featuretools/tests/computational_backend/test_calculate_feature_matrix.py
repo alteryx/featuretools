@@ -922,7 +922,8 @@ class TestCreateClientAndCluster(object):
 
         def mock_get_client_cluster():
             return MockClient, mock_cluster
-        monkeypatch.setattr(utils, "get_client_cluster", mock_get_client_cluster)
+        monkeypatch.setattr(utils, "get_client_cluster",
+                            mock_get_client_cluster)
         # cluster in dask_kwargs case
         client, cluster = create_client_and_cluster(n_jobs=2,
                                                     num_tasks=3,
@@ -932,6 +933,7 @@ class TestCreateClientAndCluster(object):
 
     def test_cluster_creation(self, monkeypatch):
         from featuretools.computational_backends import utils
+
         total_memory = psutil.virtual_memory().total
 
         def mock_get_client_cluster():
@@ -973,13 +975,14 @@ class TestCreateClientAndCluster(object):
         assert cluster == (num_workers, 1, 8789, 1000)
 
     def test_not_enough_memory(self, monkeypatch):
+        from featuretools.computational_backends import utils
+
         total_memory = psutil.virtual_memory().total
-        monkeypatch.setitem(create_client_and_cluster.__globals__,
-                            'LocalCluster',
-                            mock_cluster)
-        monkeypatch.setitem(create_client_and_cluster.__globals__,
-                            'Client',
-                            MockClient)
+
+        def mock_get_client_cluster():
+            return MockClient, mock_cluster
+        monkeypatch.setattr(utils, "get_client_cluster",
+                            mock_get_client_cluster)
         # errors if not enough memory for each worker to store the entityset
         with pytest.raises(ValueError, match=''):
             create_client_and_cluster(n_jobs=1,
