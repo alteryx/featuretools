@@ -209,7 +209,7 @@ def n_jobs_to_workers(n_jobs):
 
 
 def create_client_and_cluster(n_jobs, num_tasks, dask_kwargs, entityset_size):
-    from distributed import Client, LocalCluster
+    Client, LocalCluster = get_client_cluster()
 
     cluster = None
     if 'cluster' in dask_kwargs:
@@ -279,3 +279,8 @@ def create_client_and_cluster(n_jobs, num_tasks, dask_kwargs, entityset_size):
             warned_of_memory = True
 
     return client, cluster
+
+
+def get_client_cluster():
+    from distributed import Client, LocalCluster
+    return Client, LocalCluster

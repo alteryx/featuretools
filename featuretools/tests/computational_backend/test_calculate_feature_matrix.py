@@ -22,6 +22,7 @@ from featuretools.computational_backends.utils import (
     bin_cutoff_times,
     calc_num_per_chunk,
     create_client_and_cluster,
+    get_client_cluster,
     get_next_chunk,
     n_jobs_to_workers
 )
@@ -918,13 +919,11 @@ def test_dask_persisted_es(es, capsys):
 
 class TestCreateClientAndCluster(object):
     def test_user_cluster_as_string(self, monkeypatch):
-        monkeypatch.setitem(create_client_and_cluster.__globals__,
-                            'LocalCluster',
-                            mock_cluster)
-        monkeypatch.setitem(create_client_and_cluster.__globals__,
-                            'Client',
-                            MockClient)
+        from featuretools.computational_backends import utils
 
+        def mock_get_client_cluster():
+            return MockClient, mock_cluster
+        monkeypatch.setattr(utils, "get_client_cluster", mock_get_client_cluster)
         # cluster in dask_kwargs case
         client, cluster = create_client_and_cluster(n_jobs=2,
                                                     num_tasks=3,
@@ -933,13 +932,12 @@ class TestCreateClientAndCluster(object):
         assert cluster == 'tcp://127.0.0.1:54321'
 
     def test_cluster_creation(self, monkeypatch):
+        from featuretools.computational_backends import utils
         total_memory = psutil.virtual_memory().total
-        monkeypatch.setitem(create_client_and_cluster.__globals__,
-                            'LocalCluster',
-                            mock_cluster)
-        monkeypatch.setitem(create_client_and_cluster.__globals__,
-                            'Client',
-                            MockClient)
+
+        def mock_get_client_cluster():
+            return MockClient, mock_cluster
+        monkeypatch.setattr(utils, "get_client_cluster", mock_get_client_cluster)
         try:
             cpus = len(psutil.Process().cpu_affinity())
         except AttributeError:
