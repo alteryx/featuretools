@@ -40,7 +40,7 @@ def save_features(features, location=None):
 
             features = [f1, f2, f3]
 
-            filepath = os.path.join('/Home/features/', 'list')
+            filepath = os.path.join('/Home/features/', 'list.json')
             ft.save_features(features, filepath)
 
             f = open(filepath, 'w')

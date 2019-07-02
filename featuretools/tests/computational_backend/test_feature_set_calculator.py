@@ -44,7 +44,7 @@ def test_make_identity(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([0])
+    df = calculator.run(np.array([0]))
     v = df[f.get_name()][0]
     assert (v == datetime(2011, 4, 9, 10, 30, 0))
 
@@ -57,7 +57,7 @@ def test_make_dfeat(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([0])
+    df = calculator.run(np.array([0]))
     v = df[f.get_name()][0]
     assert (v == 33)
 
@@ -69,7 +69,7 @@ def test_make_agg_feat_of_identity_variable(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([0])
+    df = calculator.run(np.array([0]))
     v = df[agg_feat.get_name()][0]
     assert (v == 50)
 
@@ -83,7 +83,7 @@ def test_full_entity_trans_of_agg(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([1])
+    df = calculator.run(np.array([1]))
 
     v = df[trans_feat.get_name()][1]
     assert v == 82
@@ -96,7 +96,7 @@ def test_make_agg_feat_of_identity_index_variable(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([0])
+    df = calculator.run(np.array([0]))
     v = df[agg_feat.get_name()][0]
     assert (v == 5)
 
@@ -111,7 +111,7 @@ def test_make_agg_feat_where_count(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([0])
+    df = calculator.run(np.array([0]))
 
     v = df[agg_feat.get_name()][0]
     assert (v == 3)
@@ -127,7 +127,7 @@ def test_make_agg_feat_using_prev_time(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=datetime(2011, 4, 9, 10, 30, 10),
                                       feature_set=feature_set)
-    df = calculator.run([0])
+    df = calculator.run(np.array([0]))
 
     v = df[agg_feat.get_name()][0]
     assert (v == 2)
@@ -135,7 +135,7 @@ def test_make_agg_feat_using_prev_time(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=datetime(2011, 4, 9, 10, 30, 30),
                                       feature_set=feature_set)
-    df = calculator.run([0])
+    df = calculator.run(np.array([0]))
 
     v = df[agg_feat.get_name()][0]
     assert (v == 1)
@@ -161,7 +161,7 @@ def test_make_agg_feat_using_prev_n_events(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=datetime(2011, 4, 9, 10, 30, 6),
                                       feature_set=feature_set)
-    df = calculator.run([0])
+    df = calculator.run(np.array([0]))
 
     # time_last is included by default
     v1 = df[agg_feat_1.get_name()][0]
@@ -172,7 +172,7 @@ def test_make_agg_feat_using_prev_n_events(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=datetime(2011, 4, 9, 10, 30, 30),
                                       feature_set=feature_set)
-    df = calculator.run([0])
+    df = calculator.run(np.array([0]))
 
     v1 = df[agg_feat_1.get_name()][0]
     v2 = df[agg_feat_2.get_name()][0]
@@ -197,7 +197,7 @@ def test_make_agg_feat_multiple_dtypes(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([0])
+    df = calculator.run(np.array([0]))
 
     v = df[agg_feat.get_name()][0]
     v2 = df[agg_feat2.get_name()][0]
@@ -260,7 +260,7 @@ def test_make_agg_feat_of_grandchild_entity(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([0])
+    df = calculator.run(np.array([0]))
     v = df[agg_feat.get_name()][0]
     assert (v == 10)
 
@@ -282,7 +282,7 @@ def test_make_agg_feat_where_count_feat(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([0, 1])
+    df = calculator.run(np.array([0, 1]))
     name = feat.get_name()
     instances = df[name]
     v0, v1 = instances[0:2]
@@ -308,7 +308,7 @@ def test_make_compare_feat(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([0, 1, 2])
+    df = calculator.run(np.array([0, 1, 2]))
     name = feat.get_name()
     instances = df[name]
     v0, v1, v2 = instances[0:3]
@@ -337,7 +337,7 @@ def test_make_agg_feat_where_count_and_device_type_feat(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([0])
+    df = calculator.run(np.array([0]))
     name = feat.get_name()
     instances = df[name]
     assert (instances[0] == 1)
@@ -363,7 +363,7 @@ def test_make_agg_feat_where_count_or_device_type_feat(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([0])
+    df = calculator.run(np.array([0]))
     name = feat.get_name()
     instances = df[name]
     assert (instances[0] == 3)
@@ -378,7 +378,7 @@ def test_make_agg_feat_of_agg_feat(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([0])
+    df = calculator.run(np.array([0]))
     v = df[customer_sum_feat.get_name()][0]
     assert (v == 10)
 
@@ -403,7 +403,7 @@ def test_make_dfeat_of_agg_feat_on_self(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([0])
+    df = calculator.run(np.array([0]))
     v = df[num_customers_feat.get_name()][0]
     assert (v == 3)
 
@@ -430,7 +430,7 @@ def test_make_dfeat_of_agg_feat_through_parent(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([0])
+    df = calculator.run(np.array([0]))
     v = df[num_stores_feat.get_name()][0]
     assert (v == 3)
 
@@ -459,7 +459,7 @@ def test_make_deep_agg_feat_of_dfeat_of_agg_feat(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([0])
+    df = calculator.run(np.array([0]))
     v = df[purchase_popularity.get_name()][0]
     assert (v == 38.0 / 10.0)
 
@@ -477,7 +477,7 @@ def test_deep_agg_feat_chain(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run(['United States'])
+    df = calculator.run(np.array(['United States']))
     v = df[region_avg_feat.get_name()][0]
     assert (v == 17 / 3.)
 
@@ -491,7 +491,7 @@ def test_topn(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([0, 1, 2])
+    df = calculator.run(np.array([0, 1, 2]))
 
     true_results = pd.DataFrame([
         ['toothpaste', 'coke zero'],
@@ -499,12 +499,15 @@ def test_topn(es):
         ['taco clock', np.nan]
     ])
     assert ([name in df.columns for name in topn.get_feature_names()])
+
     for i in range(df.shape[0]):
+        true = true_results.loc[i]
+        actual = df.loc[i]
         if i == 0:
             # coke zero and toothpase have same number of occurrences
-            assert set(true_results.loc[i].values) == set(df.loc[i].values)
+            assert set(true.values) == set(actual.values)
         else:
-            for i1, i2 in zip(true_results.loc[i], df.iloc[i]):
+            for i1, i2 in zip(true, actual):
                 assert (pd.isnull(i1) and pd.isnull(i2)) or (i1 == i2)
 
 
@@ -517,7 +520,7 @@ def test_trend(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([0, 1, 2])
+    df = calculator.run(np.array([0, 1, 2]))
 
     true_results = [-0.812730, 4.870378, np.nan]
 
@@ -531,7 +534,7 @@ def test_direct_squared(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([0, 1, 2])
+    df = calculator.run(np.array([0, 1, 2]))
     for i, row in df.iterrows():
         assert (row[0] * row[0]) == row[1]
 
@@ -544,7 +547,7 @@ def test_agg_empty_child(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=datetime(2011, 4, 8),
                                       feature_set=feature_set)
-    df = calculator.run([0])
+    df = calculator.run(np.array([0]))
 
     assert df["COUNT(log)"].iloc[0] == 0
 
@@ -566,7 +569,7 @@ def test_diamond_entityset(diamond_es):
     calculator = FeatureSetCalculator(es,
                                       time_last=datetime(2011, 4, 8),
                                       feature_set=feature_set)
-    df = calculator.run([0, 1, 2])
+    df = calculator.run(np.array([0, 1, 2]))
     assert (df['SUM(stores.transactions.amount)'] == [94, 261, 128]).all()
     assert (df['SUM(customers.transactions.amount)'] == [72, 411, 0]).all()
 
@@ -593,7 +596,7 @@ def test_two_relationships_to_single_entity(games_es):
     calculator = FeatureSetCalculator(es,
                                       time_last=datetime(2011, 8, 28),
                                       feature_set=feature_set)
-    df = calculator.run(range(3))
+    df = calculator.run(np.array(range(3)))
     assert (df[home_team_mean.get_name()] == [1.5, 1.5, 2.5]).all()
     assert (df[away_team_mean.get_name()] == [1, 0.5, 2]).all()
 
@@ -640,7 +643,7 @@ def test_with_features_built_from_es_metadata(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run([0])
+    df = calculator.run(np.array([0]))
     v = df[agg_feat.get_name()][0]
     assert (v == 10)
 
@@ -746,3 +749,17 @@ def test_handles_primitive_function_name_uniqueness(es):
     assert all(fm[f5.get_name()].sort_index() == value_sum)
     assert all(fm[f6.get_name()].sort_index() == value_sum)
     assert all(fm[f7.get_name()].sort_index() == value_sum)
+
+
+def test_returns_order_of_instance_ids(es):
+    feature_set = FeatureSet([ft.Feature(es['customers']['age'])])
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
+
+    instance_ids = [0, 1, 2]
+    assert list(es['customers'].df['id']) != instance_ids
+
+    df = calculator.run(np.array(instance_ids))
+
+    assert list(df.index) == instance_ids

@@ -113,8 +113,7 @@ def test_query_by_values_secondary_time_index(es):
     result = es['customers'].query_by_values(all_instances, time_last=end)
 
     for col in ["cancel_date", "cancel_reason"]:
-        nulls = result.iloc[all_instances][col].isnull() == [
-            False, True, True]
+        nulls = result.loc[all_instances][col].isnull() == [False, True, True]
         assert nulls.all(), "Some instance has data it shouldn't for column %s" % col
 
 
