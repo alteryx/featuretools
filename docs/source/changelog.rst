@@ -16,6 +16,7 @@ Changelog
         * Remove unused variance_selection.py file (:pr:`613`)
         * Remove Timedelta data param (:pr:`619`)
         * Remove DaysSince primitive (:pr:`628`)
+        * Moved dask, distributed imports (:pr:`634`)
     * Documentation Changes
         * Add installation instructions for add-on libraries (:pr:`617`)
     * Testing Changes
