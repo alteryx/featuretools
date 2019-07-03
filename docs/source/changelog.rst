@@ -20,13 +20,13 @@ Changelog
         * Remove DaysSince primitive (:pr:`628`)
     * Documentation Changes
         * Add installation instructions for add-on libraries (:pr:`617`)
-        * Miscellaneous changes (:pr:`632`)
         * Clarification of Multi Output Feature Creation (:pr: `638`)
+        * Miscellaneous changes (:pr:`632`)
     * Testing Changes
         * Miscellaneous changes (:pr:`595`, :pr:`612`)
 
     Thanks to the following people for contributing to this release:
-    :user:`CJStadler`, :user:`kmax12`, :user:`rwedge`, :user:`gsheni`, :user:`kkleidal`
+    :user:`CJStadler`, :user:`kmax12`, :user:`rwedge`, :user:`gsheni`, :user:`kkleidal`, :user:`ctduffy`
 
 **v0.9.0** June 19, 2019
     * Enhancements
