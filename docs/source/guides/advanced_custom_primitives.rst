@@ -54,8 +54,8 @@ Passing in ``string="test"`` as a keyword argument when initializing the `String
     feature_matrix.columns
     feature_matrix[['STD(log.STRING_COUNT(comments, "the"))', 'SUM(log.STRING_COUNT(comments, "the"))', 'MEAN(log.STRING_COUNT(comments, "the"))']]
 
-Functions With Multiple Output Rows
-===================================
+Features with Multiple Outputs
+=======================================
 .. ipython:: python
     :suppress:
 
@@ -74,7 +74,9 @@ With the make\_primitive functions, it is possible to have multiple columns outp
         # this is a naive implementation used for clarity
         upper = np.array([len(re.findall('[A-Z]', i)) for i in array])
         lower = np.array([len(re.findall('[a-z]', i)) for i in array])
-        return np.append([upper], [lower], axis=0)
+        ret = np.append([upper], [lower], axis=0)
+        print("Output array: \n", ret)
+        return ret
 
 In order to have multiple output columns, we have to use the ``num_output_features`` attribute when creating the primitive using the ``make_trans_primitive`` function.
 
@@ -93,6 +95,10 @@ Passing in ``string="test"`` as a keyword argument when initializing the `String
     from featuretools.tests.testing_utils import make_ecommerce_entityset
 
     es = make_ecommerce_entityset()
+
+When we call dfs on this entityset we can see that the construction of the output is such that there are 2 rows and 3 columns, where each column refers to a different quote, and each row corresponds to one of the output features.
+
+.. ipython:: python
 
     feature_matrix, features = ft.dfs(entityset=es,
                                       target_entity="sessions",
