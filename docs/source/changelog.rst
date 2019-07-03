@@ -2,6 +2,18 @@
 
 Changelog
 ---------
+**Future Release**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+        * Miscellaneous changes (:pr:`641`)
+    * Testing Changes
+        * Miscellaneous changes ()
+
+    Thanks to the following people for contributing to this release:
+    :user:`rwedge`
+
 **v0.9.1 July 3, 2019**
     * Enhancements
         * Speedup groupby transform calculations (:pr:`609`)
