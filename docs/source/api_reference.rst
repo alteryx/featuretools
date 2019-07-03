@@ -156,6 +156,11 @@ Cumulative Transform Primitives
 
     Diff
     TimeSincePrevious
+    CumCount
+    CumSum
+    CumMean
+    CumMin
+    CumMax
 
 Text Transform Primitives
 *************************
