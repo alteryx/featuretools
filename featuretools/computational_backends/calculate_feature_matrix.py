@@ -272,12 +272,14 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
     feature_matrix = []
 
-    # if verbose, create progess bar
-    if verbose:
-        pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
-                       "Progress: {l_bar}{bar}")
+    pbar_string = ("Elapsed: {elapsed} | "
+                   "Progress: {l_bar}{bar}")
 
-        t = make_tqdm_iterator(total=cutoff_time.shape[0] * 1.05, bar_format=pbar_string)
+    pbar_string_remaining = pbar_string + ("| Remaining: {remaining}")
+
+    # make total 5% higher to alot time for wrapping up at end
+    total_rows = cutoff_time.shape[0]
+    t = make_tqdm_iterator(total=total_rows * 1.05, bar_format=pbar_string, disable=(not verbose))
 
     feature_matrix = []
     if no_unapproximated_aggs and approximate is not None:
@@ -329,6 +331,10 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
             inner_grouped = chunk_dataframe_groups(inner_grouped, chunk_size)
 
         for time_last, group in inner_grouped:
+            if len(feature_matrix) == 1:
+                t.bar_format = pbar_string_remaining
+                t.refresh()
+
             # sort group by instance id
             ids = group['instance_id'].sort_values().values
             if no_unapproximated_aggs and approximate is not None:
@@ -372,8 +378,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
     feature_matrix = pd.concat(feature_matrix)
 
-    if verbose:
-        t.close()
+    t.update(t.total - t.n)
 
     return feature_matrix
 

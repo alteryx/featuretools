@@ -203,8 +203,11 @@ class FeatureSetCalculator(object):
                                     time_last=self.time_last,
                                     training_window=self.training_window)
 
-        # Step 2: Add variables to the dataframe linking it to all ancestors.
+        # call to update timer
+        if progress_callback:
+            progress_callback(0)
 
+        # Step 2: Add variables to the dataframe linking it to all ancestors.
         new_ancestor_relationship_variables = []
         if parent_data:
             parent_relationship, ancestor_relationship_variables, parent_df = \
@@ -217,6 +220,10 @@ class FeatureSetCalculator(object):
             # Add the variable linking this entity to its parent, so that
             # descendants get linked to the parent.
             new_ancestor_relationship_variables.append(parent_relationship.child_variable.id)
+
+        # call to update timer
+        if progress_callback:
+            progress_callback(0)
 
         # Step 3: Recurse on children.
 
@@ -253,7 +260,8 @@ class FeatureSetCalculator(object):
                 precalculated_trie=sub_precalc_trie,
                 filter_variable=sub_filter_variable,
                 filter_values=sub_filter_values,
-                parent_data=parent_data)
+                parent_data=parent_data,
+                progress_callback=progress_callback)
 
         # Step 4: Calculate the features for this entity.
         #
@@ -269,6 +277,10 @@ class FeatureSetCalculator(object):
                           left_index=True,
                           right_index=True,
                           suffixes=('', '_precalculated'))
+
+        # call to update timer
+        if progress_callback:
+            progress_callback(0)
 
         # First, calculate any features that require the full entity. These can
         # be calculated first because all of their dependents are included in
@@ -396,6 +408,10 @@ class FeatureSetCalculator(object):
             # handle when no data
             if frame.shape[0] == 0:
                 set_default_column(frame, f)
+
+                if progress_callback:
+                    progress_callback(1 / self.num_features)
+
                 continue
 
             # collect only the variables we need for this transformation
@@ -428,6 +444,9 @@ class FeatureSetCalculator(object):
 
         # handle when no data
         if frame.shape[0] == 0:
+            if progress_callback:
+                progress_callback(len(features) / self.num_features)
+
             return frame
 
         groupby = features[0].groupby.get_name()
@@ -520,6 +539,9 @@ class FeatureSetCalculator(object):
         features = [f for f in features if f.get_name()
                     not in frame.columns]
         if not len(features):
+            if progress_callback:
+                progress_callback(len(features) / self.num_features)
+
             return frame
 
         # handle where
@@ -635,7 +657,8 @@ class FeatureSetCalculator(object):
                                  left_index=True, right_index=True, how='left')
 
                 if progress_callback:
-                    progress_callback(len(to_agg) / self.num_features)
+                    # determine number of features that were just merged
+                    progress_callback(len(to_merge.columns) / self.num_features)
 
         # Handle default values
         fillna_dict = {}
