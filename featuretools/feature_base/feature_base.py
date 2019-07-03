@@ -397,10 +397,10 @@ class DirectFeature(FeatureBase):
     def _handle_relationship(self, child_entity, relationship):
         if relationship:
             relationship_child = relationship.child_entity
-            assert child_entity == relationship_child, \
+            assert child_entity.id == relationship_child.id, \
                 'child_entity must be the relationship child entity'
 
-            assert self.parent_entity == relationship.parent_entity, \
+            assert self.parent_entity.id == relationship.parent_entity.id, \
                 'Base feature must be defined on the relationship parent entity'
         else:
             child_relationships = child_entity.entityset.get_forward_relationships(child_entity.id)

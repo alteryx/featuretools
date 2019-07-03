@@ -14,12 +14,14 @@ Changelog
         * Keep dataframe sorted by time during feature calculation (:pr:`626`)
         * Fix bug in encode_features that created duplicate columns of
           features with multiple outputs (:pr:`622`)
+        * Fix performance regression in DFS (:pr:`637`)
     * Changes
         * Remove unused variance_selection.py file (:pr:`613`)
         * Remove Timedelta data param (:pr:`619`)
         * Remove DaysSince primitive (:pr:`628`)
     * Documentation Changes
         * Add installation instructions for add-on libraries (:pr:`617`)
+        * Miscellaneous changes (:pr:`632`)
     * Testing Changes
         * Miscellaneous changes (:pr:`595`, :pr:`612`)
 
