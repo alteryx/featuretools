@@ -7,7 +7,7 @@ Changelog
     * Fixes
     * Changes
     * Documentation Changes
-        * Miscellaneous changes ()
+        * Miscellaneous changes (:pr:`641`)
     * Testing Changes
         * Miscellaneous changes ()
 
