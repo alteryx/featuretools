@@ -21,6 +21,7 @@ Changelog
         * Moved dask, distributed imports (:pr:`634`)
     * Documentation Changes
         * Add installation instructions for add-on libraries (:pr:`617`)
+        * Miscellaneous changes (:pr:`632`)
     * Testing Changes
         * Miscellaneous changes (:pr:`595`, :pr:`612`)
 
