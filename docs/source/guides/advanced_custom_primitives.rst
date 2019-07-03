@@ -54,6 +54,53 @@ Passing in ``string="test"`` as a keyword argument when initializing the `String
     feature_matrix.columns
     feature_matrix[['STD(log.STRING_COUNT(comments, "the"))', 'SUM(log.STRING_COUNT(comments, "the"))', 'MEAN(log.STRING_COUNT(comments, "the"))']]
 
+Functions With Multiple Output Rows
+===================================
+.. ipython:: python
+    :suppress:
+
+    import featuretools as ft
+    import numpy as np
+    import re
+    from featuretools.primitives import make_trans_primitive
+    from featuretools.variable_types import Text, Numeric
+
+With the make\_primitive functions, it is possible to have multiple columns output from a single feature. In order to do that however, the output must be formatted in as an array or series with a row for each output feature and a column for each row that it is calculated on. For example, if you had a feature called ``case_count`` that, for each given text, output the number of uppercase and the number of lowercase letters, then the primitive would return two columns for each row, or text given, formatted as two rows. One row corresponding to the number of lowercase letters and one corresponding to the number of uppercase letters, with a column corresponding to each given text. Below you can see this example in action, as well as the proper way to specify the multiple output features in the ``make_trans_primitive`` function.
+
+.. ipython:: python
+
+    def case_count(array):
+        '''Return the count of upper case and lower case letters in text'''
+        # this is a naive implementation used for clarity
+        upper = np.array([len(re.findall('[A-Z]', i)) for i in array])
+        lower = np.array([len(re.findall('[a-z]', i)) for i in array])
+        return np.append([upper], [lower], axis=0)
+
+In order to have multiple output columns, we have to use the ``num_output_features`` attribute when creating the primitive using the ``make_trans_primitive`` function.
+
+.. ipython:: python
+
+    CaseCount = make_trans_primitive(function=case_count,
+                                       input_types=[Text],
+                                       return_type=Numeric,
+                                       number_output_features=2)
+
+
+Passing in ``string="test"`` as a keyword argument when initializing the `StringCount` primitive will make "test" the value used for string when ``string_count`` is called to calculate the feature values.  Now we use this primitive to define features and calculate the feature values.
+
+.. ipython:: python
+
+    from featuretools.tests.testing_utils import make_ecommerce_entityset
+
+    es = make_ecommerce_entityset()
+
+    feature_matrix, features = ft.dfs(entityset=es,
+                                      target_entity="sessions",
+                                      agg_primitives=[],
+                                      trans_primitives=[CaseCount])
+    feature_matrix.columns
+    feature_matrix[['customers.CASE_COUNT(favorite_quote)__0', 'customers.CASE_COUNT(favorite_quote)__1']]
+
 .. Primitives That Use External Data Files
 .. =======================================
 .. Some primitives require external data files in order to perform their computation. For example, imagine a primitive that uses a pre-trained sentiment classifier to classify text. Here is how that would be implemented
