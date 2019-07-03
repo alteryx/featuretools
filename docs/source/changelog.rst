@@ -21,6 +21,7 @@ Changelog
     * Documentation Changes
         * Add installation instructions for add-on libraries (:pr:`617`)
         * Miscellaneous changes (:pr:`632`)
+        * Clarification of Multi Output Feature Creation (:pr: `638`)
     * Testing Changes
         * Miscellaneous changes (:pr:`595`, :pr:`612`)
 
