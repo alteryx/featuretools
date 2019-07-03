@@ -2,7 +2,7 @@
 
 Changelog
 ---------
-**Future Release**
+**v0.9.1 July 3, 2019**
     * Enhancements
         * Speedup groupby transform calculations (:pr:`609`)
         * Generate features along all paths when there are multiple paths between entities (:pr:`600`, :pr:`608`)
@@ -25,7 +25,8 @@ Changelog
         * Miscellaneous changes (:pr:`595`, :pr:`612`)
 
     Thanks to the following people for contributing to this release:
-    :user:`CJStadler`, :user:`kmax12`, :user:`rwedge`, :user:`gsheni`, :user:`kkleidal`
+    :user:`CJStadler`, :user:`gsheni`, :user:`kkleidal`, :user:`kmax12`,
+    :user:`rwedge`
 
 **v0.9.0** June 19, 2019
     * Enhancements
