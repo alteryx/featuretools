@@ -20,7 +20,7 @@ Changelog
         * Remove DaysSince primitive (:pr:`628`)
     * Documentation Changes
         * Add installation instructions for add-on libraries (:pr:`617`)
-        * Miscellaneous changes (:pr:`632`)
+        * Miscellaneous changes (:pr:`632`, :pr:`639`)
     * Testing Changes
         * Miscellaneous changes (:pr:`595`, :pr:`612`)
 
