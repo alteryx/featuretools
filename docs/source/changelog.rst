@@ -4,6 +4,18 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+        * Miscellaneous changes (:pr:`641`)
+    * Testing Changes
+        * Miscellaneous changes ()
+
+    Thanks to the following people for contributing to this release:
+    :user:`rwedge`
+
+**v0.9.1 July 3, 2019**
+    * Enhancements
         * Speedup groupby transform calculations (:pr:`609`)
         * Generate features along all paths when there are multiple paths between entities (:pr:`600`, :pr:`608`)
     * Fixes
@@ -21,12 +33,13 @@ Changelog
         * Moved dask, distributed imports (:pr:`634`)
     * Documentation Changes
         * Add installation instructions for add-on libraries (:pr:`617`)
-        * Miscellaneous changes (:pr:`632`)
+        * Miscellaneous changes (:pr:`632`, :pr:`639`)
     * Testing Changes
         * Miscellaneous changes (:pr:`595`, :pr:`612`)
 
     Thanks to the following people for contributing to this release:
-    :user:`CJStadler`, :user:`kmax12`, :user:`rwedge`, :user:`gsheni`, :user:`kkleidal`
+    :user:`CJStadler`, :user:`gsheni`, :user:`kkleidal`, :user:`kmax12`,
+    :user:`rwedge`
 
 **v0.9.0** June 19, 2019
     * Enhancements
