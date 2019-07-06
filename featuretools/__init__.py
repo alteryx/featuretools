@@ -14,7 +14,7 @@ from .version import __version__
 import featuretools.demo
 import featuretools.wrappers
 from . import feature_base
-from .feature_base import AggregationFeature, DirectFeature, Feature, FeatureBase, IdentityFeature, TransformFeature, save_features, load_features
+from .feature_base import AggregationFeature, DirectFeature, Feature, FeatureBase, IdentityFeature, TransformFeature, GroupByTransformFeature, save_features, load_features
 
 import pkg_resources
 import sys
