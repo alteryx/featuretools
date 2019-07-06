@@ -15,6 +15,7 @@ import pytest
 
 import featuretools as ft
 from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
+from featuretools.computational_backends import utils
 from featuretools.computational_backends.calculate_feature_matrix import (
     scatter_warning
 )
@@ -32,9 +33,8 @@ from featuretools.feature_base import (
 )
 from featuretools.primitives import Count, Max, Min, Percentile, Sum
 from featuretools.tests.testing_utils import (
-    MockClient,
     backward_path,
-    mock_cluster
+    get_mock_client_cluster
 )
 
 
@@ -918,12 +918,8 @@ def test_dask_persisted_es(es, capsys):
 
 class TestCreateClientAndCluster(object):
     def test_user_cluster_as_string(self, monkeypatch):
-        from featuretools.computational_backends import utils
-
-        def mock_get_client_cluster():
-            return MockClient, mock_cluster
         monkeypatch.setattr(utils, "get_client_cluster",
-                            mock_get_client_cluster)
+                            get_mock_client_cluster)
         # cluster in dask_kwargs case
         client, cluster = create_client_and_cluster(n_jobs=2,
                                                     num_tasks=3,
@@ -932,13 +928,9 @@ class TestCreateClientAndCluster(object):
         assert cluster == 'tcp://127.0.0.1:54321'
 
     def test_cluster_creation(self, monkeypatch):
-        from featuretools.computational_backends import utils
-
         total_memory = psutil.virtual_memory().total
-
-        def mock_get_client_cluster():
-            return MockClient, mock_cluster
-        monkeypatch.setattr(utils, "get_client_cluster", mock_get_client_cluster)
+        monkeypatch.setattr(utils, "get_client_cluster",
+                            get_mock_client_cluster)
         try:
             cpus = len(psutil.Process().cpu_affinity())
         except AttributeError:
@@ -975,14 +967,9 @@ class TestCreateClientAndCluster(object):
         assert cluster == (num_workers, 1, 8789, 1000)
 
     def test_not_enough_memory(self, monkeypatch):
-        from featuretools.computational_backends import utils
-
         total_memory = psutil.virtual_memory().total
-
-        def mock_get_client_cluster():
-            return MockClient, mock_cluster
         monkeypatch.setattr(utils, "get_client_cluster",
-                            mock_get_client_cluster)
+                            get_mock_client_cluster)
         # errors if not enough memory for each worker to store the entityset
         with pytest.raises(ValueError, match=''):
             create_client_and_cluster(n_jobs=1,
