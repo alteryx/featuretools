@@ -65,7 +65,9 @@ Features with Multiple Outputs
     from featuretools.primitives import make_trans_primitive
     from featuretools.variable_types import Text, Numeric
 
-With the make\_primitive functions, it is possible to have multiple columns output from a single feature. In order to do that however, the output must be formatted in as an array or series with a row for each output feature and a column for each row that it is calculated on. For example, if you had a feature called ``case_count`` that, for each given text, output the number of uppercase and the number of lowercase letters, then the primitive would return two columns for each row, or text given, formatted as two rows. One row corresponding to the number of lowercase letters and one corresponding to the number of uppercase letters, with a column corresponding to each given text. Below you can see this example in action, as well as the proper way to specify the multiple output features in the ``make_trans_primitive`` function.
+With the ``make_primitive`` functions, it is possible to have multiple columns output from a single feature. In order to do that, the output must be formatted as a list of arrays/series where each item in the list corresponds to an output from the primitive. In each of these list items (either arrays or series), there must be one element for each input element.
+
+Take, for example, a primitive called ``case_count``. For each given string, this primitive outputs the number of uppercase and the number of lowercase letters. So, this primitive must return a list with 2 elements, one corresponding to the number of lowercase letters and one corresponding to the number of uppercase letters. Each element in the list is a series/array having the same number of elements as the number of input strings. Below you can see this example in action, as well as the proper way to specify multiple outputs in the ``make_trans_primitive`` function.
 
 .. ipython:: python
 
@@ -74,11 +76,10 @@ With the make\_primitive functions, it is possible to have multiple columns outp
         # this is a naive implementation used for clarity
         upper = np.array([len(re.findall('[A-Z]', i)) for i in array])
         lower = np.array([len(re.findall('[a-z]', i)) for i in array])
-        ret = np.append([upper], [lower], axis=0)
-        print("Output array: \n", ret)
+        ret = [upper,lower]
         return ret
 
-In order to have multiple output columns, we have to use the ``num_output_features`` attribute when creating the primitive using the ``make_trans_primitive`` function.
+We must use the ``num_output_features`` attribute to specify the number of outputs when creating the primitive using the ``make_trans_primitive`` function.
 
 .. ipython:: python
 
@@ -87,16 +88,9 @@ In order to have multiple output columns, we have to use the ``num_output_featur
                                        return_type=Numeric,
                                        number_output_features=2)
 
-
-Passing in ``string="test"`` as a keyword argument when initializing the `StringCount` primitive will make "test" the value used for string when ``string_count`` is called to calculate the feature values.  Now we use this primitive to define features and calculate the feature values.
-
-.. ipython:: python
-
-    from featuretools.tests.testing_utils import make_ecommerce_entityset
-
     es = make_ecommerce_entityset()
 
-When we call dfs on this entityset we can see that the construction of the output is such that there are 2 rows and 3 columns, where each column refers to a different quote, and each row corresponds to one of the output features.
+When we call ``dfs`` on this entityset, there are 6 instances (one for each of the strings in the dataset) of our two created features in this feature matrix.
 
 .. ipython:: python
 
