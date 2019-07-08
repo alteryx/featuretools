@@ -5,6 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
     * Fixes
+        * Fix performance regression in DFS (:pr:`637`)
     * Changes
         * Moved dask, distributed imports (:pr:`634`)
     * Documentation Changes
@@ -15,6 +16,7 @@ Changelog
 
     Thanks to the following people for contributing to this release:
     :user:`ayushpatidar`
+
 
 **v0.9.1 July 3, 2019**
     * Enhancements
