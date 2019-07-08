@@ -74,7 +74,7 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
             assert fname in X.columns, (
                 "Feature %s not found in feature matrix" % (fname)
             )
-        feature_names.append(fname)
+            feature_names.append(fname)
 
     extra_columns = [col for col in X.columns if col not in feature_names]
 

@@ -4,25 +4,44 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Generate transform features of direct features (:pr:`623`)
+    * Fixes
+        * Fix performance regression in DFS (:pr:`637`)
+    * Changes
+        * Moved dask, distributed imports (:pr:`634`)
+    * Documentation Changes
+        * Miscellaneous changes (:pr:`641`)
+    * Testing Changes
+        * Miscellaneous changes ()
+
+    Thanks to the following people for contributing to this release:
+    :user:`rwedge`, :user:`gsheni`, :user:`CJStadler`, :user:`zhxt95`
+
+**v0.9.1 July 3, 2019**
+    * Enhancements
         * Speedup groupby transform calculations (:pr:`609`)
         * Generate features along all paths when there are multiple paths between entities (:pr:`600`, :pr:`608`)
-        * Generate transform features of direct features (:pr:`623`)
     * Fixes
         * Select columns of dataframe using a list (:pr:`615`)
         * Change type of features calculated on Index features to Categorical (:pr:`602`)
         * Filter dataframes through forward relationships (:pr:`625`)
         * Specify Dask version in requirements for python 2 (:pr:`627`)
         * Keep dataframe sorted by time during feature calculation (:pr:`626`)
+        * Fix bug in encode_features that created duplicate columns of
+          features with multiple outputs (:pr:`622`)
     * Changes
         * Remove unused variance_selection.py file (:pr:`613`)
         * Remove Timedelta data param (:pr:`619`)
+        * Remove DaysSince primitive (:pr:`628`)
     * Documentation Changes
         * Add installation instructions for add-on libraries (:pr:`617`)
+        * Miscellaneous changes (:pr:`632`, :pr:`639`)
     * Testing Changes
         * Miscellaneous changes (:pr:`595`, :pr:`612`)
 
     Thanks to the following people for contributing to this release:
-    :user:`CJStadler`, :user:`kmax12`, :user:`rwedge`, :user:`gsheni`, :user:`zhxt95`
+    :user:`CJStadler`, :user:`gsheni`, :user:`kkleidal`, :user:`kmax12`,
+    :user:`rwedge`
 
 **v0.9.0** June 19, 2019
     * Enhancements

@@ -108,7 +108,8 @@ class Relationship(object):
         """Is there any other relationship with same parent and child entities?"""
         es = self.child_entity.entityset
         relationships = es.get_forward_relationships(self._child_entity_id)
-        n = len([r for r in relationships if r.parent_entity == self.parent_entity])
+        n = len([r for r in relationships
+                 if r._parent_entity_id == self._parent_entity_id])
 
         assert n > 0, 'This relationship is missing from the entityset'
 
