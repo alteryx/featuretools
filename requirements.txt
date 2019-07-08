@@ -1,5 +1,5 @@
 numpy>=1.13.3
-pandas>=0.23.0
+pandas>=0.25.0rc0
 tqdm>=4.19.2
 toolz>=0.8.2
 pyyaml>=3.12
