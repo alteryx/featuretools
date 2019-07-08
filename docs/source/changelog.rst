@@ -4,6 +4,22 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+    * Fixes
+        * Fix performance regression in DFS (:pr:`637`)
+    * Changes
+        * Moved dask, distributed imports (:pr:`634`)
+    * Documentation Changes
+        * Miscellaneous changes (:pr:`641`)
+        * Modified doc_string of top_n in encoding (:pr:`648`)
+    * Testing Changes
+        * Miscellaneous changes ()
+
+    Thanks to the following people for contributing to this release:
+    :user:`ayushpatidar`
+
+
+**v0.9.1 July 3, 2019**
+    * Enhancements
         * Speedup groupby transform calculations (:pr:`609`)
         * Generate features along all paths when there are multiple paths between entities (:pr:`600`, :pr:`608`)
     * Fixes
@@ -21,7 +37,7 @@ Changelog
     * Documentation Changes
         * Add installation instructions for add-on libraries (:pr:`617`)
         * Clarification of Multi Output Feature Creation (:pr:`638`)
-        * Miscellaneous changes (:pr:`632`)
+        * Miscellaneous changes (:pr:`632`, :pr:`639`)
     * Testing Changes
         * Miscellaneous changes (:pr:`595`, :pr:`612`)
 

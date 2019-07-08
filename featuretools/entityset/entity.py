@@ -117,9 +117,8 @@ class Entity(object):
             return False
         if len(self.variables) != len(other.variables):
             return False
-        for v in self.variables:
-            if v not in other.variables:
-                return False
+        if set(self.variables) != set(other.variables):
+            return False
         if deep:
             if self.last_time_index is None and other.last_time_index is not None:
                 return False

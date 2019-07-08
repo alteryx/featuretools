@@ -16,6 +16,7 @@ featuretools/tests/integration_data/products.gzip
 featuretools/tests/integration_data/regions.gzip
 featuretools/tests/integration_data/sessions.gzip
 featuretools/tests/integration_data/stores.gzip
+dask-worker-space/*
 *.dirlock
 *.~lock*
 

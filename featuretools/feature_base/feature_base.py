@@ -397,10 +397,10 @@ class DirectFeature(FeatureBase):
     def _handle_relationship(self, child_entity, relationship):
         if relationship:
             relationship_child = relationship.child_entity
-            assert child_entity == relationship_child, \
+            assert child_entity.id == relationship_child.id, \
                 'child_entity must be the relationship child entity'
 
-            assert self.parent_entity == relationship.parent_entity, \
+            assert self.parent_entity.id == relationship.parent_entity.id, \
                 'Base feature must be defined on the relationship parent entity'
         else:
             child_relationships = child_entity.entityset.get_forward_relationships(child_entity.id)
@@ -528,11 +528,11 @@ class AggregationFeature(FeatureBase):
 
             _is_forward, first_relationship = relationship_path[0]
             first_parent = first_relationship.parent_entity
-            assert parent_entity == first_parent, \
+            assert parent_entity.id == first_parent.id, \
                 'parent_entity must match first relationship in path.'
 
             _is_forward, last_relationship = relationship_path[-1]
-            assert self.child_entity == last_relationship.child_entity, \
+            assert self.child_entity.id == last_relationship.child_entity.id, \
                 'Base feature must be defined on the entity at the end of relationship_path'
 
             path_is_unique = parent_entity.entityset \
