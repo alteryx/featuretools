@@ -8,11 +8,12 @@ Changelog
     * Changes
     * Documentation Changes
         * Miscellaneous changes (:pr:`641`)
+        * Added FAQ (:pr:`620`)
     * Testing Changes
         * Miscellaneous changes ()
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`
+    :user:`rwedge`, :user:`gsheni`
 
 **v0.9.1 July 3, 2019**
     * Enhancements
