@@ -8,11 +8,12 @@ Changelog
     * Changes
     * Documentation Changes
         * Miscellaneous changes (:pr:`641`)
+        *Modified doc_string of top_n in encoding.
     * Testing Changes
         * Miscellaneous changes ()
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`
+    :user:`ayushpatidar`
 
 **v0.9.1 July 3, 2019**
     * Enhancements
