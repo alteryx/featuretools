@@ -1,3 +1,4 @@
+
 import logging
 
 import pandas as pd
@@ -9,7 +10,7 @@ logger = logging.getLogger('featuretools')
 
 
 def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
-                    to_encode=None, inplace=False, verbose=False):
+                    to_encode=None, inplace=False, verbose=False, drop_first=False):
     """Encode categorical features
 
         Args:
@@ -23,6 +24,9 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
                 defaults to encode all necessary features.
             inplace (bool): Encode feature_matrix in place. Defaults to False.
             verbose (str): Print progress info.
+            drop_first (bool): Whether to get l-1 dummies out of l categorical
+                    levels by removing the first level.
+                    defaults to False
 
         Returns:
             (pd.Dataframe, list) : encoded feature_matrix, encoded features
@@ -61,6 +65,10 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
                 fm_encoded, f_encoded = ft.encode_features(feature_matrix, features,
                                                            to_encode=['purchased'])
                 f_encoded
+
+                fm_encoded, f_encoded = ft.encode_features(feature_matrix, features,
+                                                           drop_first=True)
+                f_encoded
     """
     if inplace:
         X = feature_matrix
@@ -71,9 +79,7 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
     feature_names = []
     for feature in features:
         for fname in feature.get_feature_names():
-            assert fname in X.columns, (
-                "Feature %s not found in feature matrix" % (fname)
-            )
+            assert fname in X.columns, ("Feature %s not found in feature matrix" % (fname))
             feature_names.append(fname)
 
     extra_columns = [col for col in X.columns if col not in feature_names]
@@ -113,7 +119,14 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
         val_counts = val_counts.sort_values([f.get_name(), index_name],
                                             ascending=False)
         val_counts.set_index(index_name, inplace=True)
-        unique = val_counts.head(top_n).index.tolist()
+        select_n = top_n
+        if drop_first:
+            if len(val_counts) != 1:
+                if len(val_counts) > top_n:
+                    select_n = len(val_counts) - 1
+                else:
+                    select_n = top_n - 1
+        unique = val_counts.head(select_n).index.tolist()
         for label in unique:
             add = f == label
             encoded.append(add)
