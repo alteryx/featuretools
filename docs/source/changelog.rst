@@ -6,6 +6,7 @@ Changelog
     * Enhancements
     * Fixes
     * Changes
+        * Moved dask, distributed imports (:pr:`634`)
     * Documentation Changes
         * Miscellaneous changes (:pr:`641`)
         * Added FAQ (:pr:`620`)
