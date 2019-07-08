@@ -9,7 +9,7 @@ Changelog
         * Moved dask, distributed imports (:pr:`634`)
     * Documentation Changes
         * Miscellaneous changes (:pr:`641`)
-        *Modified doc_string of top_n in encoding.
+        *Modified doc_string of top_n in encoding (:pr:`648`)
     * Testing Changes
         * Miscellaneous changes ()
 
