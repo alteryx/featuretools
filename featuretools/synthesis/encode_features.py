@@ -16,7 +16,7 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
         Args:
             feature_matrix (pd.DataFrame): Dataframe of features.
             features (list[PrimitiveBase]): Feature definitions in feature_matrix.
-            top_n (pd.DataFrame): Number of top values to include.
+            top_n (int): Number of top values to include.
             include_unknown (pd.DataFrame): Add feature encoding an unknown class.
                 defaults to True
             to_encode (list[str]): List of feature names to encode.
