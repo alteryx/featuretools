@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 import psutil
 import pytest
+from distributed.utils_test import cluster
 
 import featuretools as ft
 from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
@@ -858,7 +859,6 @@ def test_verbose_cutoff_time_chunks(es):
 
 
 def test_dask_kwargs(es):
-    from distributed.utils_test import cluster
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
                  [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
                  [datetime(2011, 4, 9, 10, 40, 0)] +
@@ -883,7 +883,6 @@ def test_dask_kwargs(es):
 
 
 def test_dask_persisted_es(es, capsys):
-    from distributed.utils_test import cluster
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
                  [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
                  [datetime(2011, 4, 9, 10, 40, 0)] +

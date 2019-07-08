@@ -282,5 +282,8 @@ def create_client_and_cluster(n_jobs, num_tasks, dask_kwargs, entityset_size):
 
 
 def get_client_cluster():
+    """
+    Separated out the imports to make it easier to mock during testing
+    """
     from distributed import Client, LocalCluster
     return Client, LocalCluster

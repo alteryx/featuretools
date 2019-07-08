@@ -6,13 +6,14 @@ Changelog
     * Enhancements
     * Fixes
     * Changes
+        * Moved dask, distributed imports (:pr:`634`)
     * Documentation Changes
         * Miscellaneous changes (:pr:`641`)
     * Testing Changes
         * Miscellaneous changes ()
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`
+    :user:`rwedge`, :user:`gsheni`,
 
 **v0.9.1 July 3, 2019**
     * Enhancements
@@ -30,7 +31,6 @@ Changelog
         * Remove unused variance_selection.py file (:pr:`613`)
         * Remove Timedelta data param (:pr:`619`)
         * Remove DaysSince primitive (:pr:`628`)
-        * Moved dask, distributed imports (:pr:`634`)
     * Documentation Changes
         * Add installation instructions for add-on libraries (:pr:`617`)
         * Miscellaneous changes (:pr:`632`, :pr:`639`)
