@@ -14,7 +14,7 @@ Changelog
         * Miscellaneous changes ()
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`, :user:`gsheni`, :user:`CJStadler
+    :user:`rwedge`, :user:`gsheni`, :user:`CJStadler`
 
 **v0.9.1 July 3, 2019**
     * Enhancements
