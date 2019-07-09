@@ -364,7 +364,7 @@ def test_seed_features(es):
     assert session_agg.get_name() in [f.get_name() for f in features]
 
 
-def test_seed_features_added_with_identity_features(es):
+def test_does_not_make_agg_of_direct_of_target_entity(es):
     count_sessions = ft.Feature(es['sessions']["id"], parent_entity=es['customers'], primitive=Count)
     dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
                                    entityset=es,
@@ -376,6 +376,7 @@ def test_seed_features_added_with_identity_features(es):
     # this feature is meaningless because customers.COUNT(sessions) is already defined on
     # the customers entity
     assert not feature_with_name(features, 'LAST(sessions.customers.COUNT(sessions))')
+    assert not feature_with_name(features, 'LAST(sessions.customers.age)')
 
 
 def test_dfs_builds_on_seed_features_more_than_max_depth(es):
@@ -728,7 +729,7 @@ def test_makes_agg_features_along_multiple_paths(diamond_es):
     assert feature_with_name(features, 'MEAN(stores.transactions.amount)')
 
 
-def test_makes_direct_features_along_multiple_paths(games_es):
+def test_makes_direct_features_through_multiple_relationships(games_es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='games',
                                    entityset=games_es,
                                    agg_primitives=['mean'],
@@ -743,6 +744,18 @@ def test_makes_direct_features_along_multiple_paths(games_es):
                 f = 'teams[%s_team_id].MEAN(games[%s_team_id].%s_team_score)' \
                     % (forward, backward, var)
                 assert feature_with_name(features, f)
+
+
+def test_makes_direct_features_along_multiple_paths(diamond_es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='transactions',
+                                   entityset=diamond_es,
+                                   max_depth=3,
+                                   agg_primitives=[],
+                                   trans_primitives=[])
+
+    features = dfs_obj.build_features()
+    assert feature_with_name(features, 'customers.regions.name')
+    assert feature_with_name(features, 'stores.regions.name')
 
 
 def test_does_not_make_trans_of_single_direct_feature(es):

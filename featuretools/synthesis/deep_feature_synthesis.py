@@ -329,12 +329,6 @@ class DeepFeatureSynthesis(object):
                                      max_depth=max_depth,
                                      relationship_path=sub_relationship_path)
 
-        # add seed features, if any, for dfs to build on top of
-        for f in self.seed_features:
-            if f.entity.id == entity.id:
-                self._handle_new_feature(all_features=all_features,
-                                         new_feature=f)
-
         """
         Step 3 - Recursively build features for each entity in a forward relationship
         """
@@ -431,6 +425,12 @@ class DeepFeatureSynthesis(object):
             new_f = IdentityFeature(variable=v)
             self._handle_new_feature(all_features=all_features,
                                      new_feature=new_f)
+
+        # add seed features, if any, for dfs to build on top of
+        for f in self.seed_features:
+            if f.entity.id == entity.id:
+                self._handle_new_feature(all_features=all_features,
+                                         new_feature=f)
 
     def _build_where_clauses(self, all_features, entity):
         """Traverses all identity features and creates a Compare for
@@ -564,6 +564,10 @@ class DeepFeatureSynthesis(object):
                                               entity=child_entity,
                                               max_depth=new_max_depth,
                                               variable_type=set(input_types))
+
+            # Remove direct features of parent_entity
+            features = (f for f in features
+                        if not _direct_of_entity(f, parent_entity))
 
             # remove features in relationship path
             features = [f for f in features
@@ -774,3 +778,8 @@ def _features_have_same_path(input_features):
             return False
 
     return True
+
+
+def _direct_of_entity(feature, parent_entity):
+    return isinstance(feature, DirectFeature) \
+        and feature.parent_entity.id == parent_entity.id
