@@ -220,7 +220,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     else:
         cutoff_time_to_pass = cutoff_time
 
-    chunk_size = _handle_chunk_size(chunk_size, cutoff_time)
+    chunk_size = _handle_chunk_size(chunk_size, cutoff_time.shape[0])
 
     if n_jobs != 1 or dask_kwargs is not None:
         feature_matrix = parallel_calculate_chunks(cutoff_time=cutoff_time_to_pass,
@@ -272,14 +272,12 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
     feature_matrix = []
 
-    pbar_string = ("Elapsed: {elapsed} | "
-                   "Progress: {l_bar}{bar}")
-
-    pbar_string_remaining = pbar_string + ("| Remaining: {remaining}")
+    pbar_format = "Elapsed: {elapsed} | Progress: {l_bar}{bar}"
+    pbar_format_remaining = pbar_format + "| Remaining: {remaining}"
 
     # make total 5% higher to alot time for wrapping up at end
     total_rows = cutoff_time.shape[0]
-    t = make_tqdm_iterator(total=total_rows * 1.05, bar_format=pbar_string, disable=(not verbose))
+    t = make_tqdm_iterator(total=total_rows * 1.05, bar_format=pbar_format, disable=(not verbose))
 
     feature_matrix = []
     if no_unapproximated_aggs and approximate is not None:
@@ -332,7 +330,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
         for time_last, group in inner_grouped:
             if len(feature_matrix) == 1:
-                t.bar_format = pbar_string_remaining
+                t.bar_format = pbar_format_remaining
                 t.refresh()
 
             # sort group by instance id
@@ -378,6 +376,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
     feature_matrix = pd.concat(feature_matrix)
 
+    # force to 100% since we saved last 5 percent
     t.update(t.total - t.n)
 
     return feature_matrix
@@ -617,9 +616,9 @@ def chunk_dataframe_groups(grouped, chunk_size):
             yield group_key, group_df.iloc[i:i + chunk_size]
 
 
-def _handle_chunk_size(chunk_size, cutoff_time):
+def _handle_chunk_size(chunk_size, total_size):
     if chunk_size is not None:
         assert chunk_size > 0, "Chunk size must be greater than 0"
         if chunk_size < 1:
-            chunk_size = int(chunk_size * cutoff_time.shape[0])
+            chunk_size = int(chunk_size * total_size)
     return chunk_size

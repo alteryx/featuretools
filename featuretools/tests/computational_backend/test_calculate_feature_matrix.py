@@ -17,7 +17,8 @@ from distributed.utils_test import cluster
 import featuretools as ft
 from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
 from featuretools.computational_backends.calculate_feature_matrix import (
-    scatter_warning
+    scatter_warning,
+    _handle_chunk_size
 )
 from featuretools.computational_backends.utils import (
     bin_cutoff_times,
@@ -1164,3 +1165,25 @@ def test_some_instances_not_in_data(es):
     assert all(fm.index.values == index_answer)
     for x, y in zip(fm.columns, [ifeat_answer, prop_answer, dfeat_answer]):
         np.testing.assert_array_equal(fm[x], y)
+
+
+def test_handle_chunk_size():
+  total_size = 1000
+
+  # user provides no chunk size
+  assert _handle_chunk_size(None, total_size) is None
+
+  # user provides fractional size
+  assert _handle_chunk_size(.1, total_size) == total_size*.1
+
+  # user provides absolute size
+  assert _handle_chunk_size(1, total_size) == 1
+  assert _handle_chunk_size(100, total_size) == 100
+
+  # test invalid cases
+  with pytest.raises(AssertionError, match="Chunk size must be greater than 0"):
+      _handle_chunk_size(0, total_size)
+
+  with pytest.raises(AssertionError, match="Chunk size must be greater than 0"):
+      _handle_chunk_size(-1, total_size)
+
