@@ -1,4 +1,3 @@
-
 import logging
 
 import pandas as pd
@@ -121,11 +120,9 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
         val_counts.set_index(index_name, inplace=True)
         select_n = top_n
         if drop_first:
-            if len(val_counts) != 1:
-                if len(val_counts) > top_n:
-                    select_n = len(val_counts) - 1
-                else:
-                    select_n = top_n - 1
+            if len(val_counts) != 1 or top_n != 1:
+                select_n = min(len(val_counts), top_n)
+                select_n = select_n - 1
         unique = val_counts.head(select_n).index.tolist()
         for label in unique:
             add = f == label
