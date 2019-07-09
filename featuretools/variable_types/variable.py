@@ -43,6 +43,9 @@ class Variable(object):
             self.id == other.id and \
             self.entity_id == other.entity_id
 
+    def __hash__(self):
+        return hash((self.id, self.entity_id))
+
     def __repr__(self):
         ret = u"<Variable: {} (dtype = {})>".format(self.name, self.type_string)
 
