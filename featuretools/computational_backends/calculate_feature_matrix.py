@@ -275,9 +275,12 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
     pbar_format = "Elapsed: {elapsed} | Progress: {l_bar}{bar}"
     pbar_format_remaining = pbar_format + "| Remaining: {remaining}"
 
-    # make total 5% higher to alot time for wrapping up at end
-    total_rows = cutoff_time.shape[0]
-    t = make_tqdm_iterator(total=total_rows * 1.05, bar_format=pbar_format, disable=(not verbose))
+    # make total 5% higher to allot time for wrapping up at end
+    t = make_tqdm_iterator(
+        total=cutoff_time.shape[0] * 1.05,
+        bar_format=pbar_format,
+        disable=(not verbose)
+    )
 
     feature_matrix = []
     if no_unapproximated_aggs and approximate is not None:
@@ -326,7 +329,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
             inner_grouped = group.groupby(cutoff_df_time_var, sort=True)
 
         if chunk_size is not None:
-            inner_grouped = chunk_dataframe_groups(inner_grouped, chunk_size)
+            inner_grouped = _chunk_dataframe_groups(inner_grouped, chunk_size)
 
         for time_last, group in inner_grouped:
             if len(feature_matrix) == 1:
@@ -496,7 +499,7 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
 
     chunks = cutoff_time.groupby(cutoff_df_time_var)
     if chunk_size:
-        chunks = chunk_dataframe_groups(chunks, chunk_size)
+        chunks = _chunk_dataframe_groups(chunks, chunk_size)
 
     chunks = [df for _, df in chunks]
 
@@ -610,7 +613,8 @@ def _add_approx_entity_index_var(es, target_entity_id, cutoffs, path):
     return cutoffs, new_var_name
 
 
-def chunk_dataframe_groups(grouped, chunk_size):
+def _chunk_dataframe_groups(grouped, chunk_size):
+    """chunks a grouped dataframe into groups no larger than chunk_size"""
     for group_key, group_df in grouped:
         for i in range(0, len(group_df), chunk_size):
             yield group_key, group_df.iloc[i:i + chunk_size]

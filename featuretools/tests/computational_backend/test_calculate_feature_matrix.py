@@ -17,8 +17,9 @@ from distributed.utils_test import cluster
 import featuretools as ft
 from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
 from featuretools.computational_backends.calculate_feature_matrix import (
-    scatter_warning,
-    _handle_chunk_size
+    _chunk_dataframe_groups,
+    _handle_chunk_size,
+    scatter_warning
 )
 from featuretools.computational_backends.utils import (
     bin_cutoff_times,
@@ -1168,22 +1169,42 @@ def test_some_instances_not_in_data(es):
 
 
 def test_handle_chunk_size():
-  total_size = 1000
+    total_size = 1000
 
-  # user provides no chunk size
-  assert _handle_chunk_size(None, total_size) is None
+    # user provides no chunk size
+    assert _handle_chunk_size(None, total_size) is None
 
-  # user provides fractional size
-  assert _handle_chunk_size(.1, total_size) == total_size*.1
+    # user provides fractional size
+    assert _handle_chunk_size(.1, total_size) == total_size * .1
 
-  # user provides absolute size
-  assert _handle_chunk_size(1, total_size) == 1
-  assert _handle_chunk_size(100, total_size) == 100
+    # user provides absolute size
+    assert _handle_chunk_size(1, total_size) == 1
+    assert _handle_chunk_size(100, total_size) == 100
 
-  # test invalid cases
-  with pytest.raises(AssertionError, match="Chunk size must be greater than 0"):
-      _handle_chunk_size(0, total_size)
+    # test invalid cases
+    with pytest.raises(AssertionError, match="Chunk size must be greater than 0"):
+        _handle_chunk_size(0, total_size)
 
-  with pytest.raises(AssertionError, match="Chunk size must be greater than 0"):
-      _handle_chunk_size(-1, total_size)
+    with pytest.raises(AssertionError, match="Chunk size must be greater than 0"):
+        _handle_chunk_size(-1, total_size)
 
+
+def test_chunk_dataframe_groups():
+    df = pd.DataFrame({
+        "group": [1, 1, 1, 1, 2, 2, 3]
+    })
+
+    grouped = df.groupby("group")
+    chunked_grouped = _chunk_dataframe_groups(grouped, 2)
+
+    # test group larger than chunk size gets split up
+    first = next(chunked_grouped)
+    assert first[0] == 1 and first[1].shape[0] == 2
+    second = next(chunked_grouped)
+    assert second[0] == 1 and second[1].shape[0] == 2
+
+    # test that equal to and less than chunk size stays together
+    third = next(chunked_grouped)
+    assert third[0] == 2 and third[1].shape[0] == 2
+    fourth = next(chunked_grouped)
+    assert fourth[0] == 3 and fourth[1].shape[0] == 1
