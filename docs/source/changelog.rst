@@ -11,7 +11,7 @@ Changelog
     * Documentation Changes
         * Miscellaneous changes (:pr:`641`)
         * Modified doc_string of top_n in encoding (:pr:`648`)
-        * Hyperlinked ComposeML (:pr:`635`)
+        * Hyperlinked ComposeML (:pr:`653`)
     * Testing Changes
         * Miscellaneous changes ()
 
