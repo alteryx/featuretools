@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+    * Added drop_first as param in encode_features (:pr:`647`)
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
     * Changes
