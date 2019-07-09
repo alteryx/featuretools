@@ -10,4 +10,4 @@ If you would like to test `Feature Labs APIs <https://docs.featurelabs.com/>`_ f
 Bring your own labels
 *********************
 
-If you are doing supervised machine learning, you must supply your own labels and cutoff times.
+If you are doing supervised machine learning, you must supply your own labels and cutoff times. To automate this process, checkout `ComposeML <http://compose.ml>`_ which is an open source project for automatically generating labels with cutoff times.
