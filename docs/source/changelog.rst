@@ -11,11 +11,13 @@ Changelog
         * Moved dask, distributed imports (:pr:`634`)
     * Documentation Changes
         * Miscellaneous changes (:pr:`641`)
+        * Modified doc_string of top_n in encoding (:pr:`648`)
     * Testing Changes
         * Miscellaneous changes ()
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`, :user:`gsheni`, :user:`CJStadler`, :user:`zhxt95`
+    :user:`rwedge`, :user:`gsheni`, :user:`CJStadler`, :user:`zhxt95`,
+    :user:`ayushpatidar`
 
 **v0.9.1 July 3, 2019**
     * Enhancements
