@@ -535,7 +535,6 @@ class FeatureSetCalculator(object):
                     not in frame.columns]
         if not len(features):
             progress_callback(len(features) / self.num_features)
-
             return frame
 
         # handle where
