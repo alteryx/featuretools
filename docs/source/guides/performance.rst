@@ -18,14 +18,13 @@ If you have many unique cutoff times, it is often worthwhile to figure out how t
 
 Adjust chunk size
 -----------------
-When Featuretools calculates a feature matrix, it groups the rows by cutoff time to compute at once. The `chunk_size` parameter limits the maximum number of rows that will be grouped together.
+When Featuretools calculates a feature matrix, it groups the rows by their cutoff time to compute at once. The `chunk_size` parameter limits the maximum number of rows that will be grouped and then calculated together.
 
-By default, there is no limit to the number of rows that will be calculated at once for a particular cutoff time. If you are using parallel processing, the chunk size is set to be 1 / n_jobs, to ensure the computation can be spread across available workers. Normally this behavior is okay, but if the resulting feature matrix has only a few cutoff times it can lead to higher memory usage or limited parallelism (if `n_jobs > 1`).
+By default, there is no limit to the number of rows that will be calculated at once for a particular cutoff time unless you are using parallel processing in which case the chunk size is set to be 1 / n_jobs, to ensure the computation can be spread across available workers. Normally this behavior is okay, but if the resulting feature matrix has only a few cutoff times it can lead to higher memory usage or limited parallelism (if `n_jobs > 1`).
 
 By setting a cutoff time, we can limit the maximum number of rows in each group to specific number or a percentage of the overall data
 
-
-We can control chunk size using the ``chunk_size`` argument to ``dfs`` or ``calculate_feature_matrix``.
+We can control chunk size using the ``chunk_size`` argument to ``dfs`` or ``calculate_feature_matrix``::
 
     # use 100 rows per chunk
     feature_matrix, features_list = ft.dfs(entityset=es,
@@ -41,7 +40,7 @@ We can also set chunk size to be a percentage of total rows::
                                            chunk_size=.05)
 
 
-This can result in lower peak memory usage during calculation a group of rows or greater opportunity for parallelism.
+The smaller chunk size may result in lower peak memory usage during calculation a group of rows or greater opportunity for parallelism.
 
 
 Partition and Distribute Data
