@@ -18,7 +18,6 @@ Changelog
     Thanks to the following people for contributing to this release:
     :user:`ayushpatidar`, :user:`kmax12`
 
-
 **v0.9.1 July 3, 2019**
     * Enhancements
         * Speedup groupby transform calculations (:pr:`609`)
