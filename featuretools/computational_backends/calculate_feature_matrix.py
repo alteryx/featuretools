@@ -36,6 +36,9 @@ from featuretools.variable_types import (
 
 logger = logging.getLogger('featuretools.computational_backend')
 
+PBAR_FORMAT = "Elapsed: {elapsed} | Progress: {l_bar}{bar}"
+PBAR_FORMAT_REMAINING = PBAR_FORMAT + "| Remaining: {remaining}"
+
 
 def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instance_ids=None,
                              entities=None, relationships=None,
@@ -222,6 +225,15 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     chunk_size = _handle_chunk_size(chunk_size, cutoff_time.shape[0])
 
+
+    # make total 5% higher to allot time for wrapping up at end
+    progress_bar = make_tqdm_iterator(
+        total=cutoff_time.shape[0] * 1.05,
+        smoothing=.05,  # arbitrary selection close to 0, which would be no smoothing
+        bar_format=PBAR_FORMAT,
+        disable=(not verbose)
+    )
+
     if n_jobs != 1 or dask_kwargs is not None:
         feature_matrix = parallel_calculate_chunks(cutoff_time=cutoff_time_to_pass,
                                                    chunk_size=chunk_size,
@@ -236,6 +248,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                                    cutoff_df_time_var=cutoff_df_time_var,
                                                    target_time=target_time,
                                                    pass_columns=pass_columns,
+                                                   progress_bar=progress_bar,
                                                    dask_kwargs=dask_kwargs or {})
     else:
         feature_matrix = calculate_chunk(cutoff_time=cutoff_time_to_pass,
@@ -249,9 +262,9 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                          no_unapproximated_aggs=no_unapproximated_aggs,
                                          cutoff_df_time_var=cutoff_df_time_var,
                                          target_time=target_time,
-                                         pass_columns=pass_columns)
+                                         pass_columns=pass_columns,
+                                         progress_bar=progress_bar)
 
-    #
 
     feature_matrix.sort_index(level='time', kind='mergesort', inplace=True)
     if not cutoff_time_in_index:
@@ -260,27 +273,20 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     if save_progress and os.path.exists(os.path.join(save_progress, 'temp')):
         shutil.rmtree(os.path.join(save_progress, 'temp'))
 
+    # force to 100% since we saved last 5 percent
+    progress_bar.update(progress_bar.total - progress_bar.n)
+
     return feature_matrix
 
 
 def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate, training_window,
                     verbose, save_progress,
                     no_unapproximated_aggs, cutoff_df_time_var, target_time,
-                    pass_columns):
+                    pass_columns, progress_bar):
     if not isinstance(feature_set, FeatureSet):
         feature_set = cloudpickle.loads(feature_set)
 
     feature_matrix = []
-
-    pbar_format = "Elapsed: {elapsed} | Progress: {l_bar}{bar}"
-    pbar_format_remaining = pbar_format + "| Remaining: {remaining}"
-
-    # make total 5% higher to allot time for wrapping up at end
-    t = make_tqdm_iterator(
-        total=cutoff_time.shape[0] * 1.05,
-        bar_format=pbar_format,
-        disable=(not verbose)
-    )
 
     feature_matrix = []
     if no_unapproximated_aggs and approximate is not None:
@@ -305,8 +311,8 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
         @save_csv_decorator(save_progress)
         def calc_results(time_last, ids, precalculated_features=None, training_window=None):
-            def progress_callback(done):
-                t.update(done * group.shape[0])
+            def progress_callback(done, a={"a": 0}):
+                progress_bar.update(done * group.shape[0])
 
             calculator = FeatureSetCalculator(entityset,
                                               feature_set,
@@ -333,8 +339,8 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
         for time_last, group in inner_grouped:
             if len(feature_matrix) == 1:
-                t.bar_format = pbar_format_remaining
-                t.refresh()
+                progress_bar.bar_format = PBAR_FORMAT_REMAINING
+                progress_bar.refresh()
 
             # sort group by instance id
             ids = group['instance_id'].sort_values().values
@@ -378,9 +384,6 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
             feature_matrix.append(_feature_matrix)
 
     feature_matrix = pd.concat(feature_matrix)
-
-    # force to 100% since we saved last 5 percent
-    t.update(t.total - t.n)
 
     return feature_matrix
 
@@ -493,11 +496,15 @@ def scatter_warning(num_scattered_workers, num_workers):
 def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate, training_window,
                               verbose, save_progress, entityset, n_jobs,
                               no_unapproximated_aggs, cutoff_df_time_var,
-                              target_time, pass_columns, dask_kwargs=None):
+                              target_time, pass_columns, progress_bar, dask_kwargs=None):
     from distributed import as_completed, Future
     from dask.base import tokenize
 
+    progress_bar.bar_format = PBAR_FORMAT_REMAINING
+    progress_bar.refresh()
+
     chunks = cutoff_time.groupby(cutoff_df_time_var)
+
     if chunk_size:
         chunks = _chunk_dataframe_groups(chunks, chunk_size)
 
@@ -518,7 +525,7 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
         if es_token in client.list_datasets():
             if verbose:
                 msg = "Using EntitySet persisted on the cluster as dataset {}"
-                print(msg.format(es_token))
+                progress_bar.write(msg.format(es_token))
             _es = client.get_dataset(es_token)
         else:
             _es = client.scatter([entityset])[0]
@@ -535,8 +542,9 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
         if verbose:
             end = time.time()
             scatter_time = round(end - start)
+            progress_bar.reset() #reset timer after scatter for better time remaining estimates
             scatter_string = "EntitySet scattered to {} workers in {} seconds"
-            print(scatter_string.format(num_scattered_workers, scatter_time))
+            progress_bar.write(scatter_string.format(num_scattered_workers, scatter_time))
         # map chunks
         # TODO: consider handling task submission dask kwargs
         _chunks = client.map(calculate_chunk,
@@ -551,23 +559,18 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
                              no_unapproximated_aggs=no_unapproximated_aggs,
                              cutoff_df_time_var=cutoff_df_time_var,
                              target_time=target_time,
-                             pass_columns=pass_columns)
+                             pass_columns=pass_columns,
+                             progress_bar=None)
 
         feature_matrix = []
         iterator = as_completed(_chunks).batches()
-        if verbose:
-            pbar_str = ("Elapsed: {elapsed} | Remaining: {remaining} | "
-                        "Progress: {l_bar}{bar}| "
-                        "Calculated: {n}/{total} chunks")
-            pbar = make_tqdm_iterator(total=len(_chunks), bar_format=pbar_str)
         for batch in iterator:
             results = client.gather(batch)
             for result in results:
                 feature_matrix += [result]
                 if verbose:
-                    pbar.update()
-        if verbose:
-            pbar.close()
+                    progress_bar.update(result.shape[0])
+
     except Exception:
         raise
     finally:

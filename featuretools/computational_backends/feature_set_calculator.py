@@ -311,7 +311,6 @@ class FeatureSetCalculator(object):
         for group in feature_groups:
             representative_feature = group[0]
             handler = self._feature_type_handler(representative_feature)
-
             df = handler(group, df, df_trie, progress_callback)
 
         return df
@@ -553,6 +552,7 @@ class FeatureSetCalculator(object):
         if base_frame.empty:
             for f in features:
                 frame[f.get_name()] = np.nan
+                progress_callback(1 / self.num_features)
         else:
             relationship_path = test_feature.relationship_path
 
