@@ -16,6 +16,7 @@ from distributed.utils_test import cluster
 
 import featuretools as ft
 from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
+from featuretools.computational_backends import utils
 from featuretools.computational_backends.calculate_feature_matrix import (
     _chunk_dataframe_groups,
     _handle_chunk_size,
@@ -33,9 +34,8 @@ from featuretools.feature_base import (
 )
 from featuretools.primitives import Count, Max, Min, Percentile, Sum
 from featuretools.tests.testing_utils import (
-    MockClient,
     backward_path,
-    mock_cluster
+    get_mock_client_cluster
 )
 
 
@@ -829,13 +829,8 @@ def test_dask_persisted_es(es, capsys):
 
 class TestCreateClientAndCluster(object):
     def test_user_cluster_as_string(self, monkeypatch):
-        monkeypatch.setitem(create_client_and_cluster.__globals__,
-                            'LocalCluster',
-                            mock_cluster)
-        monkeypatch.setitem(create_client_and_cluster.__globals__,
-                            'Client',
-                            MockClient)
-
+        monkeypatch.setattr(utils, "get_client_cluster",
+                            get_mock_client_cluster)
         # cluster in dask_kwargs case
         client, cluster = create_client_and_cluster(n_jobs=2,
                                                     dask_kwargs={'cluster': 'tcp://127.0.0.1:54321'},
@@ -844,12 +839,8 @@ class TestCreateClientAndCluster(object):
 
     def test_cluster_creation(self, monkeypatch):
         total_memory = psutil.virtual_memory().total
-        monkeypatch.setitem(create_client_and_cluster.__globals__,
-                            'LocalCluster',
-                            mock_cluster)
-        monkeypatch.setitem(create_client_and_cluster.__globals__,
-                            'Client',
-                            MockClient)
+        monkeypatch.setattr(utils, "get_client_cluster",
+                            get_mock_client_cluster)
         try:
             cpus = len(psutil.Process().cpu_affinity())
         except AttributeError:
@@ -884,12 +875,8 @@ class TestCreateClientAndCluster(object):
 
     def test_not_enough_memory(self, monkeypatch):
         total_memory = psutil.virtual_memory().total
-        monkeypatch.setitem(create_client_and_cluster.__globals__,
-                            'LocalCluster',
-                            mock_cluster)
-        monkeypatch.setitem(create_client_and_cluster.__globals__,
-                            'Client',
-                            MockClient)
+        monkeypatch.setattr(utils, "get_client_cluster",
+                            get_mock_client_cluster)
         # errors if not enough memory for each worker to store the entityset
         with pytest.raises(ValueError, match=''):
             create_client_and_cluster(n_jobs=1,
