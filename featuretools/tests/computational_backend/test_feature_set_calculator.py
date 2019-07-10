@@ -763,3 +763,27 @@ def test_returns_order_of_instance_ids(es):
     df = calculator.run(np.array(instance_ids))
 
     assert list(df.index) == instance_ids
+
+
+def test_calls_progress_callback(es):
+    # call with all feature types. make sure progress callback calls sum to 1
+    identity = ft.Feature(es['customers']['age'])
+    direct = ft.Feature(es['cohorts']['cohort_name'], es['customers'])
+    agg = ft.Feature(es["sessions"]["id"], parent_entity=es['customers'], primitive=Count)
+    trans = ft.Feature(agg, primitive=CumSum)
+    groupby_trans = ft.Feature(agg, primitive=CumSum, groupby=es["customers"]["cohort"])
+    all_features = [identity, direct, agg, trans, groupby_trans]
+
+    feature_set = FeatureSet(all_features)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
+
+    total = {"total": 0}
+
+    def mock_progress_call_back(update, total=total):
+        total["total"] += update
+
+    instance_ids = [0, 1, 2]
+    df = calculator.run(np.array(instance_ids), mock_progress_call_back)
+    assert np.isclose(total["total"], 1)
