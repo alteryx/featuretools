@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Update chunk size behavior and give more frequent progress bar updates (:pr:`631`)
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
     * Changes
@@ -15,7 +16,7 @@ Changelog
         * Miscellaneous changes ()
 
     Thanks to the following people for contributing to this release:
-    :user:`ayushpatidar`
+    :user:`ayushpatidar`, :user:`kmax12`
 
 
 **v0.9.1 July 3, 2019**
