@@ -240,7 +240,6 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                                    feature_set=feature_set,
                                                    approximate=approximate,
                                                    training_window=training_window,
-                                                   verbose=verbose,
                                                    save_progress=save_progress,
                                                    entityset=entityset,
                                                    n_jobs=n_jobs,
@@ -256,7 +255,6 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                          feature_set=feature_set,
                                          approximate=approximate,
                                          training_window=training_window,
-                                         verbose=verbose,
                                          save_progress=save_progress,
                                          entityset=entityset,
                                          no_unapproximated_aggs=no_unapproximated_aggs,
@@ -279,9 +277,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
 
 def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate, training_window,
-                    verbose, save_progress,
-                    no_unapproximated_aggs, cutoff_df_time_var, target_time,
-                    pass_columns, progress_bar):
+                    save_progress, no_unapproximated_aggs, cutoff_df_time_var, target_time,
+                    pass_columns, progress_bar=None):
     if not isinstance(feature_set, FeatureSet):
         feature_set = cloudpickle.loads(feature_set)
 
@@ -310,8 +307,12 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
         @save_csv_decorator(save_progress)
         def calc_results(time_last, ids, precalculated_features=None, training_window=None):
-            def progress_callback(done, a={"a": 0}):
-                progress_bar.update(done * group.shape[0])
+
+            progress_callback = None
+
+            if progress_bar is not None:
+                def progress_callback(done):
+                    progress_bar.update(done * group.shape[0])
 
             calculator = FeatureSetCalculator(entityset,
                                               feature_set,
@@ -320,7 +321,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                                               precalculated_features=precalculated_features,
                                               ignored=all_approx_feature_set)
 
-            matrix = calculator.run(ids, progress_callback=(verbose and progress_callback))
+            matrix = calculator.run(ids, progress_callback=progress_callback)
             return matrix
 
         # if all aggregations have been approximated, can calculate all together
@@ -493,9 +494,9 @@ def scatter_warning(num_scattered_workers, num_workers):
 
 
 def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate, training_window,
-                              verbose, save_progress, entityset, n_jobs,
-                              no_unapproximated_aggs, cutoff_df_time_var,
-                              target_time, pass_columns, progress_bar, dask_kwargs=None):
+                              save_progress, entityset, n_jobs, no_unapproximated_aggs,
+                              cutoff_df_time_var, target_time, pass_columns,
+                              progress_bar, dask_kwargs=None):
     from distributed import as_completed, Future
     from dask.base import tokenize
 
@@ -510,13 +511,11 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
                                                     entityset_size=entityset.__sizeof__())
         # scatter the entityset
         # denote future with leading underscore
-        if verbose:
-            start = time.time()
+        start = time.time()
         es_token = "EntitySet-{}".format(tokenize(entityset))
         if es_token in client.list_datasets():
-            if verbose:
-                msg = "Using EntitySet persisted on the cluster as dataset {}"
-                progress_bar.write(msg.format(es_token))
+            msg = "Using EntitySet persisted on the cluster as dataset {}"
+            progress_bar.write(msg.format(es_token))
             _es = client.get_dataset(es_token)
         else:
             _es = client.scatter([entityset])[0]
@@ -544,12 +543,15 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
             progress_bar.write(warning_string)
 
         scatter_warning(num_scattered_workers, num_workers)
-        if verbose:
-            end = time.time()
-            scatter_time = round(end - start)
-            progress_bar.reset()  # reset timer after scatter for better time remaining estimates
-            scatter_string = "EntitySet scattered to {} workers in {} seconds"
-            progress_bar.write(scatter_string.format(num_scattered_workers, scatter_time))
+        end = time.time()
+        scatter_time = round(end - start)
+
+        # if enabled, reset timer after scatter for better time remaining estimates
+        if not progress_bar.disable:
+            progress_bar.reset()
+
+        scatter_string = "EntitySet scattered to {} workers in {} seconds"
+        progress_bar.write(scatter_string.format(num_scattered_workers, scatter_time))
         # map chunks
         # TODO: consider handling task submission dask kwargs
         _chunks = client.map(calculate_chunk,
@@ -559,7 +561,6 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
                              entityset=_es,
                              approximate=approximate,
                              training_window=training_window,
-                             verbose=False,
                              save_progress=save_progress,
                              no_unapproximated_aggs=no_unapproximated_aggs,
                              cutoff_df_time_var=cutoff_df_time_var,
@@ -573,8 +574,7 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
             results = client.gather(batch)
             for result in results:
                 feature_matrix += [result]
-                if verbose:
-                    progress_bar.update(result.shape[0])
+                progress_bar.update(result.shape[0])
 
     except Exception:
         raise

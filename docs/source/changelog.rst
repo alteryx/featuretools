@@ -4,7 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
-        * Update chunk size behavior and give more frequent progress bar updates (:pr:`631`)
+        * Give more frequent progress bar updates and update chunk size behavior (:pr:`631`)
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
     * Changes

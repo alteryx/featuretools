@@ -93,6 +93,9 @@ class FeatureSetCalculator(object):
         """
         assert len(instance_ids) > 0, "0 instance ids provided"
 
+        if progress_callback is None:
+            progress_callback = lambda x: x
+
         feature_trie = self.feature_set.feature_trie
 
         df_trie = Trie(path_constructor=RelationshipPath)
@@ -204,8 +207,7 @@ class FeatureSetCalculator(object):
                                     training_window=self.training_window)
 
         # call to update timer
-        if progress_callback:
-            progress_callback(0)
+        progress_callback(0)
 
         # Step 2: Add variables to the dataframe linking it to all ancestors.
         new_ancestor_relationship_variables = []
@@ -222,8 +224,7 @@ class FeatureSetCalculator(object):
             new_ancestor_relationship_variables.append(parent_relationship.child_variable.id)
 
         # call to update timer
-        if progress_callback:
-            progress_callback(0)
+        progress_callback(0)
 
         # Step 3: Recurse on children.
 
@@ -279,8 +280,7 @@ class FeatureSetCalculator(object):
                           suffixes=('', '_precalculated'))
 
         # call to update timer
-        if progress_callback:
-            progress_callback(0)
+        progress_callback(0)
 
         # First, calculate any features that require the full entity. These can
         # be calculated first because all of their dependents are included in
@@ -397,8 +397,7 @@ class FeatureSetCalculator(object):
             assert f.get_name() in df, (
                 'Column "%s" missing frome dataframe' % f.get_name())
 
-        if progress_callback:
-            progress_callback(len(features) / self.num_features)
+        progress_callback(len(features) / self.num_features)
 
         return df
 
@@ -408,8 +407,7 @@ class FeatureSetCalculator(object):
             if frame.shape[0] == 0:
                 set_default_column(frame, f)
 
-                if progress_callback:
-                    progress_callback(1 / self.num_features)
+                progress_callback(1 / self.num_features)
 
                 continue
 
@@ -432,8 +430,7 @@ class FeatureSetCalculator(object):
                 values = [strip_values_if_series(values)]
             update_feature_columns(f, frame, values)
 
-            if progress_callback:
-                progress_callback(1 / self.num_features)
+            progress_callback(1 / self.num_features)
 
         return frame
 
@@ -443,8 +440,7 @@ class FeatureSetCalculator(object):
 
         # handle when no data
         if frame.shape[0] == 0:
-            if progress_callback:
-                progress_callback(len(features) / self.num_features)
+            progress_callback(len(features) / self.num_features)
 
             return frame
 
@@ -484,8 +480,7 @@ class FeatureSetCalculator(object):
             if feature_vals:
                 frame[f.get_name()].update(pd.concat(feature_vals))
 
-            if progress_callback:
-                progress_callback(1 / self.num_features)
+            progress_callback(1 / self.num_features)
 
         return frame
 
@@ -522,8 +517,7 @@ class FeatureSetCalculator(object):
         new_df = child_df.merge(merge_df, left_on=merge_var, right_index=True,
                                 how='left')
 
-        if progress_callback:
-            progress_callback(len(features) / self.num_features)
+        progress_callback(len(features) / self.num_features)
 
         return new_df
 
@@ -538,8 +532,7 @@ class FeatureSetCalculator(object):
         features = [f for f in features if f.get_name()
                     not in frame.columns]
         if not len(features):
-            if progress_callback:
-                progress_callback(len(features) / self.num_features)
+            progress_callback(len(features) / self.num_features)
 
             return frame
 
@@ -552,8 +545,7 @@ class FeatureSetCalculator(object):
         if base_frame.empty:
             for f in features:
                 frame[f.get_name()] = np.nan
-                if progress_callback:
-                    progress_callback(1 / self.num_features)
+                progress_callback(1 / self.num_features)
         else:
             relationship_path = test_feature.relationship_path
 
@@ -632,8 +624,7 @@ class FeatureSetCalculator(object):
                                  left_index=True,
                                  right_index=True, how='left')
 
-                if progress_callback:
-                    progress_callback(len(to_apply) / self.num_features)
+                progress_callback(len(to_apply) / self.num_features)
 
             # Apply the aggregate functions to generate a new dataframe, and merge
             # it with the existing one
@@ -657,9 +648,8 @@ class FeatureSetCalculator(object):
                 frame = pd.merge(left=frame, right=to_merge,
                                  left_index=True, right_index=True, how='left')
 
-                if progress_callback:
-                    # determine number of features that were just merged
-                    progress_callback(len(to_merge.columns) / self.num_features)
+                # determine number of features that were just merged
+                progress_callback(len(to_merge.columns) / self.num_features)
 
         # Handle default values
         fillna_dict = {}
