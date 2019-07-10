@@ -12,11 +12,13 @@ Changelog
     * Documentation Changes
         * Miscellaneous changes (:pr:`641`)
         * Modified doc_string of top_n in encoding (:pr:`648`)
+        * Hyperlinked ComposeML (:pr:`653`)
     * Testing Changes
         * Miscellaneous changes ()
 
     Thanks to the following people for contributing to this release:
-    :user:`ayushpatidar`, :user:`kmax12`
+    :user:`ayushpatidar`, :user:`jeff-hernandez`, :user:`kmax12`
+
 
 **v0.9.1 July 3, 2019**
     * Enhancements
