@@ -94,7 +94,9 @@ class FeatureSetCalculator(object):
         assert len(instance_ids) > 0, "0 instance ids provided"
 
         if progress_callback is None:
-            progress_callback = lambda x: x
+            # do nothing for the progress call back if not provided
+            def progress_callback(*args):
+                pass
 
         feature_trie = self.feature_set.feature_trie
 
