@@ -838,7 +838,6 @@ class TestCreateClientAndCluster(object):
 
         # cluster in dask_kwargs case
         client, cluster = create_client_and_cluster(n_jobs=2,
-                                                    num_tasks=3,
                                                     dask_kwargs={'cluster': 'tcp://127.0.0.1:54321'},
                                                     entityset_size=1)
         assert cluster == 'tcp://127.0.0.1:54321'
@@ -858,7 +857,6 @@ class TestCreateClientAndCluster(object):
 
         # jobs < tasks case
         client, cluster = create_client_and_cluster(n_jobs=2,
-                                                    num_tasks=3,
                                                     dask_kwargs={},
                                                     entityset_size=1)
         num_workers = min(cpus, 2)
@@ -868,18 +866,16 @@ class TestCreateClientAndCluster(object):
         match = r'.*workers requested, but only .* workers created'
         with pytest.warns(UserWarning, match=match) as record:
             client, cluster = create_client_and_cluster(n_jobs=1000,
-                                                        num_tasks=3,
                                                         dask_kwargs={'diagnostics_port': 8789},
                                                         entityset_size=1)
         assert len(record) == 1
 
-        num_workers = min(cpus, 3)
+        num_workers = cpus
         memory_limit = int(total_memory / float(num_workers))
         assert cluster == (num_workers, 1, 8789, memory_limit)
 
         # dask_kwargs sets memory limit
         client, cluster = create_client_and_cluster(n_jobs=2,
-                                                    num_tasks=3,
                                                     dask_kwargs={'diagnostics_port': 8789,
                                                                  'memory_limit': 1000},
                                                     entityset_size=1)
@@ -897,13 +893,11 @@ class TestCreateClientAndCluster(object):
         # errors if not enough memory for each worker to store the entityset
         with pytest.raises(ValueError, match=''):
             create_client_and_cluster(n_jobs=1,
-                                      num_tasks=5,
                                       dask_kwargs={},
                                       entityset_size=total_memory * 2)
 
         # does not error even if worker memory is less than 2x entityset size
         create_client_and_cluster(n_jobs=1,
-                                  num_tasks=5,
                                   dask_kwargs={},
                                   entityset_size=total_memory * .75)
 
@@ -1169,17 +1163,20 @@ def test_some_instances_not_in_data(es):
 
 
 def test_handle_chunk_size():
-    total_size = 1000
+    total_size = 100
 
     # user provides no chunk size
     assert _handle_chunk_size(None, total_size) is None
 
     # user provides fractional size
     assert _handle_chunk_size(.1, total_size) == total_size * .1
+    assert _handle_chunk_size(.001, total_size) == 1  # rounds up
+    assert _handle_chunk_size(.345, total_size) == 35  # rounds up
 
     # user provides absolute size
     assert _handle_chunk_size(1, total_size) == 1
     assert _handle_chunk_size(100, total_size) == 100
+    assert isinstance(_handle_chunk_size(100.0, total_size), int)
 
     # test invalid cases
     with pytest.raises(AssertionError, match="Chunk size must be greater than 0"):

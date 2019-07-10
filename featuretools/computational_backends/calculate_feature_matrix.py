@@ -1,6 +1,7 @@
 from __future__ import division
 
 import logging
+import math
 import os
 import shutil
 import time
@@ -94,7 +95,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             output feature matrix to calculate at time. If passed an integer
             greater than 0, will try to use that many rows per chunk. If passed
             a float value between 0 and 1 sets the chunk size to that
-            percentage of all instances. if None, and n_jobs > ` it will be set to 1/n_jobs
+            percentage of all rows. if None, and n_jobs > 1 it will be set to 1/n_jobs
 
         n_jobs (int, optional): number of parallel processes to use when
             calculating feature matrix.
@@ -225,7 +226,6 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     chunk_size = _handle_chunk_size(chunk_size, cutoff_time.shape[0])
 
-
     # make total 5% higher to allot time for wrapping up at end
     progress_bar = make_tqdm_iterator(
         total=cutoff_time.shape[0] * 1.05,
@@ -264,7 +264,6 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                          target_time=target_time,
                                          pass_columns=pass_columns,
                                          progress_bar=progress_bar)
-
 
     feature_matrix.sort_index(level='time', kind='mergesort', inplace=True)
     if not cutoff_time_in_index:
@@ -503,18 +502,10 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
     progress_bar.bar_format = PBAR_FORMAT_REMAINING
     progress_bar.refresh()
 
-    chunks = cutoff_time.groupby(cutoff_df_time_var)
-
-    if chunk_size:
-        chunks = _chunk_dataframe_groups(chunks, chunk_size)
-
-    chunks = [df for _, df in chunks]
-
     client = None
     cluster = None
     try:
         client, cluster = create_client_and_cluster(n_jobs=n_jobs,
-                                                    num_tasks=len(chunks),
                                                     dask_kwargs=dask_kwargs,
                                                     entityset_size=entityset.__sizeof__())
         # scatter the entityset
@@ -538,11 +529,25 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
         num_scattered_workers = len(client.who_has([Future(es_token)]).get(es_token, []))
         num_workers = len(client.scheduler_info()['workers'].values())
 
+        chunks = cutoff_time.groupby(cutoff_df_time_var)
+
+        if not chunk_size:
+            chunk_size = _handle_chunk_size(1.0 / num_workers, cutoff_time.shape[0])
+
+        chunks = _chunk_dataframe_groups(chunks, chunk_size)
+
+        chunks = [df for _, df in chunks]
+
+        if len(chunks) < num_workers:
+            chunk_warning = "Fewer chunks ({}), than workers ({}) consider reducing the chunk size"
+            warning_string = chunk_warning.format(len(chunks), num_workers)
+            progress_bar.write(warning_string)
+
         scatter_warning(num_scattered_workers, num_workers)
         if verbose:
             end = time.time()
             scatter_time = round(end - start)
-            progress_bar.reset() #reset timer after scatter for better time remaining estimates
+            progress_bar.reset()  # reset timer after scatter for better time remaining estimates
             scatter_string = "EntitySet scattered to {} workers in {} seconds"
             progress_bar.write(scatter_string.format(num_scattered_workers, scatter_time))
         # map chunks
@@ -626,6 +631,10 @@ def _chunk_dataframe_groups(grouped, chunk_size):
 def _handle_chunk_size(chunk_size, total_size):
     if chunk_size is not None:
         assert chunk_size > 0, "Chunk size must be greater than 0"
+
         if chunk_size < 1:
-            chunk_size = int(chunk_size * total_size)
+            chunk_size = math.ceil(chunk_size * total_size)
+
+        chunk_size = int(chunk_size)
+
     return chunk_size

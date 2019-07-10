@@ -117,7 +117,7 @@ def n_jobs_to_workers(n_jobs):
     return workers
 
 
-def create_client_and_cluster(n_jobs, num_tasks, dask_kwargs, entityset_size):
+def create_client_and_cluster(n_jobs, dask_kwargs, entityset_size):
     cluster = None
     if 'cluster' in dask_kwargs:
         cluster = dask_kwargs['cluster']
@@ -129,17 +129,10 @@ def create_client_and_cluster(n_jobs, num_tasks, dask_kwargs, entityset_size):
             diagnostics_port = dask_kwargs['diagnostics_port']
             del dask_kwargs['diagnostics_port']
 
-        cpu_workers = n_jobs_to_workers(n_jobs)
-        workers = min(cpu_workers, num_tasks)
+        workers = n_jobs_to_workers(n_jobs)
         if n_jobs != -1 and workers < n_jobs:
             warning_string = "{} workers requested, but only {} workers created."
             warning_string = warning_string.format(n_jobs, workers)
-            if cpu_workers < n_jobs:
-                warning_string += " Not enough cpu cores ({}).".format(cpu_workers)
-
-            if num_tasks < n_jobs:
-                chunk_warning = " Not enough chunks ({}), consider reducing the chunk size"
-                warning_string += chunk_warning.format(num_tasks)
             warnings.warn(warning_string)
 
         # Distributed default memory_limit for worker is 'auto'. It calculates worker
@@ -162,7 +155,7 @@ def create_client_and_cluster(n_jobs, num_tasks, dask_kwargs, entityset_size):
                                memory_limit=memory_limit,
                                **dask_kwargs)
 
-        # if cluster has bokeh port, notify user if unxepected port number
+        # if cluster has bokeh port, notify user if unexpected port number
         if diagnostics_port is not None:
             if hasattr(cluster, 'scheduler') and cluster.scheduler:
                 info = cluster.scheduler.identity()

@@ -552,7 +552,8 @@ class FeatureSetCalculator(object):
         if base_frame.empty:
             for f in features:
                 frame[f.get_name()] = np.nan
-                progress_callback(1 / self.num_features)
+                if progress_callback:
+                    progress_callback(1 / self.num_features)
         else:
             relationship_path = test_feature.relationship_path
 
