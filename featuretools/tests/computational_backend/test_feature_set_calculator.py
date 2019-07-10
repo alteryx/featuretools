@@ -779,11 +779,16 @@ def test_calls_progress_callback(es):
                                       time_last=None,
                                       feature_set=feature_set)
 
-    total = {"total": 0}
+    class MockProgressCallback:
+        def __init__(self):
+            self.total = 0
 
-    def mock_progress_call_back(update, total=total):
-        total["total"] += update
+        def __call__(self, update):
+            self.total += update
+
+    mock_progress_callback = MockProgressCallback()
 
     instance_ids = [0, 1, 2]
-    df = calculator.run(np.array(instance_ids), mock_progress_call_back)
-    assert np.isclose(total["total"], 1)
+    calculator.run(np.array(instance_ids), mock_progress_callback)
+
+    assert np.isclose(mock_progress_callback.total, 1)
