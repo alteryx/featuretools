@@ -5,7 +5,7 @@ executors:
     parameters:
       image_tag:
         type: string
-        default: "3.7"
+        default: "3.7.3"
     docker:
       - image: circleci/python:<< parameters.image_tag >>
 
