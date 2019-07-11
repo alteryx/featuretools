@@ -45,13 +45,8 @@ jobs:
             - unpacked_sdist
   run_pp:
     working_directory: ~/featuretools
-    parameters:
-      image_tag:
-        type: string
-        default: "3.7.3"
-    executor:
-      name: python
-      image_tag: << parameters.image_tag >>
+    docker:
+      - image: busybox:latest
     steps:
       - checkout
       - run:
