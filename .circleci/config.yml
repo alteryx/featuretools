@@ -44,9 +44,8 @@ jobs:
             - venv
             - unpacked_sdist
   run_pp:
-    working_directory: ~/featuretools
     docker:
-      - image: busybox:latest
+      - image: circleci/buildpack-deps:curl
     steps:
       - run:
           name: "Triger PP tests"
