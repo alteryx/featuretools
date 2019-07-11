@@ -14,7 +14,8 @@ Changelog
         * Hyperlinked ComposeML (:pr:`653`)
         * Added FAQ (:pr:`620`)
     * Testing Changes
-        * Miscellaneous changes (:pr:`680`)
+        * Add trigger test for PP (:pr:`680`)
+        * Miscellaneous changes ()
 
     Thanks to the following people for contributing to this release:
     :user:`ayushpatidar`, :user:`jeff-hernandez`, :user:`gsheni`
