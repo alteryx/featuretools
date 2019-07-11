@@ -49,7 +49,7 @@ jobs:
       - checkout
       - run:
           name: "Triger PP tests"
-          command: "curl -u ${CIRCLE_API_KEY}: -d build_parameters[CIRCLE_JOB]=python-35 https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
+          command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-35 https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
 
   unit_tests:
     working_directory: ~/featuretools
