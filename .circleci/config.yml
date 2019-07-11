@@ -236,6 +236,7 @@ workflows:
               ignore: /^master?/
       - run_pp:
           name: "run pp tests"
-          # branches:
-          #   only:
-          #     - master
+          filters:
+            branches:
+              only:
+                - master
