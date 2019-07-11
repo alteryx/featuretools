@@ -581,6 +581,7 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
     finally:
         if 'cluster' not in dask_kwargs and cluster is not None:
             cluster.close()
+
         if client is not None:
             client.close()
 

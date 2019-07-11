@@ -910,6 +910,19 @@ def test_parallel_failure_raises_correct_error(es):
                                  approximate='1 hour')
 
 
+def test_warning_not_enough_chunks(es, capsys):
+    property_feature = IdentityFeature(es['log']['value']) > 10
+
+    # this doesn't test that output is correct
+    # but it at least hits the line of code that will write the warning
+    # to make sure it doesn't error
+    calculate_feature_matrix([property_feature],
+                             entityset=es,
+                             chunk_size=.5,
+                             verbose=True,
+                             n_jobs=3)
+
+
 def test_n_jobs():
     try:
         cpus = len(psutil.Process().cpu_affinity())
