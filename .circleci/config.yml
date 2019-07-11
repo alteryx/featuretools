@@ -106,6 +106,7 @@ jobs:
       - image: circleci/python:3.7.3
     steps:
       - run: sudo apt update && sudo apt install -y pandoc
+      - run: sudo apt install -y graphviz
       - checkout
       - attach_workspace:
           at: ~/featuretools

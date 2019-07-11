@@ -167,12 +167,12 @@ Table of contents
    guides/deployment
    guides/exporting_feature_matrix
    guides/advanced_custom_primitives
-   guides/frequently_asked_questions
 
 .. toctree::
    :maxdepth: 1
    :caption: Resources and References
 
+   guides/frequently_asked_questions
    help
    featuretools_enterprise
    usage_tips/limitations
