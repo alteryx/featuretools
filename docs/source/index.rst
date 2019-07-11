@@ -171,6 +171,7 @@ Table of contents
    :maxdepth: 1
    :caption: Resources and References
 
+   frequently_asked_questions
    help
    featuretools_enterprise
    usage_tips/limitations
