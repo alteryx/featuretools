@@ -165,7 +165,6 @@ Table of contents
    guides/performance
    guides/parallel
    guides/deployment
-   guides/exporting_feature_matrix
    guides/advanced_custom_primitives
 
 .. toctree::
