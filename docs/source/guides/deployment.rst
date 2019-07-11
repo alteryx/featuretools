@@ -68,3 +68,29 @@ After we load the features back in, we can calculate the feature matrix.
 As you can see above, we have the exact same features as before, but calculated on using our test data.
 
 
+Exporting Feature Matrix
+*************************
+
+Save as csv
+~~~~~~~~~~~
+The feature matrix is a pandas dataframe that we can save to disk
+
+.. ipython:: python
+
+    feature_matrix.to_csv("feature_matrix.csv")
+
+We can also read it back in as follows:
+
+.. ipython:: python
+
+    saved_fm = pd.read_csv("feature_matrix.csv", index_col="customer_id")
+    saved_fm
+
+
+.. ipython:: python
+    :suppress:
+
+    import os
+    os.remove("feature_matrix.csv")
+
+
