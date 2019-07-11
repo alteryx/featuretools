@@ -272,6 +272,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     # force to 100% since we saved last 5 percent
     progress_bar.update(progress_bar.total - progress_bar.n)
+    progress_bar.close()
     progress_bar.refresh()
 
     return feature_matrix
