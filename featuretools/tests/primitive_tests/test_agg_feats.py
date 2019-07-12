@@ -615,5 +615,4 @@ def _assert_agg_feats_equal(f1, f2):
     assert f1.child_entity.id == f2.child_entity.id
     assert f1.parent_entity.id == f2.parent_entity.id
     assert f1.relationship_path == f2.relationship_path
-    assert f1.primitive == f2.primitive
     assert f1.use_previous == f2.use_previous
