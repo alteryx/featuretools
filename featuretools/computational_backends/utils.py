@@ -66,11 +66,11 @@ def datetime_round(dt, freq, round_up=False):
 
 
 def gather_approximate_features(feature_set):
-    # A trie where the edges are RelationshipPaths and the nodes contain lists
-    # of features.
-    approximate_feature_trie = Trie(default=list, path_constructor=RelationshipPath)
+    # A trie where the edges are RelationshipPaths and the nodes contain sets of
+    # feature names.
+    approximate_feature_trie = Trie(default=set, path_constructor=RelationshipPath)
 
-    # A set of feature names.
+    # A set of all approximated feature names.
     approximate_feature_set = set()
 
     for feature in feature_set.target_features:
@@ -86,8 +86,8 @@ def gather_approximate_features(feature_set):
                 base_feature = base_feature.base_features[0]
 
             if isinstance(base_feature, AggregationFeature):
-                feature_list = approximate_feature_trie.get_node(path).value
-                feature_list.append(base_feature)
+                node_feature_set = approximate_feature_trie.get_node(path).value
+                node_feature_set.add(base_feature.unique_name())
                 approximate_feature_set.add(base_feature.unique_name())
 
     return approximate_feature_trie, approximate_feature_set

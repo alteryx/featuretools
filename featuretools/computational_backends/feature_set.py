@@ -15,10 +15,15 @@ logger = logging.getLogger('featuretools.computational_backend')
 
 
 class FeatureSet(object):
-    def __init__(self, features):
+    def __init__(self, features, ignored_feature_trie=None):
         self.target_eid = features[0].entity.id
         self.target_features = features
         self.target_feature_names = {f.unique_name() for f in features}
+
+        if not ignored_feature_trie:
+            ignored_feature_trie = Trie(default=list,
+                                        path_constructor=RelationshipPath)
+        self.ignored_feature_trie = ignored_feature_trie
 
         # Maps the unique name of each feature to the actual feature. This is necessary
         # because features do not support equality and so cannot be used as
@@ -41,7 +46,14 @@ class FeatureSet(object):
             fname: [self.features_by_name[dname] for dname in feature_dependents[fname]]
             for fname, f in self.features_by_name.items()}
 
-        self.feature_trie = self._build_feature_trie()
+        self._feature_trie = None
+
+    @property
+    def feature_trie(self):
+        if not self._feature_trie:
+            self._feature_trie = self._build_feature_trie()
+
+        return self._feature_trie
 
     def _build_feature_trie(self):
         """
@@ -55,15 +67,23 @@ class FeatureSet(object):
                             path_constructor=RelationshipPath)
 
         for f in self.target_features:
-            self._add_feature_to_trie(feature_trie, f)
+            self._add_feature_to_trie(feature_trie,
+                                      f,
+                                      self.ignored_feature_trie)
 
         return feature_trie
 
-    def _add_feature_to_trie(self, trie, feature, ancestor_needs_full_entity=False):
+    def _add_feature_to_trie(self, trie, feature, ignored_feature_trie,
+                             ancestor_needs_full_entity=False):
         node_needs_full_entity, full_features, not_full_features = trie.value
         needs_full_entity = ancestor_needs_full_entity or self.uses_full_entity(feature)
 
         name = feature.unique_name()
+
+        # If this feature is ignored then don't add it or any of its
+        # dependencies.
+        if name in ignored_feature_trie.value:
+            return
 
         if needs_full_entity:
             full_features.add(name)
@@ -85,8 +105,10 @@ class FeatureSet(object):
 
             sub_trie = trie.get_node(feature.relationship_path)
 
+        sub_ignored_trie = ignored_feature_trie.get_node(feature.relationship_path)
+
         for dep_feat in feature.get_dependencies():
-            self._add_feature_to_trie(sub_trie, dep_feat,
+            self._add_feature_to_trie(sub_trie, dep_feat, sub_ignored_trie,
                                       ancestor_needs_full_entity=needs_full_entity)
 
     def group_features(self, feature_names):
