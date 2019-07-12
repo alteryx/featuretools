@@ -6,6 +6,7 @@ Changelog
     * Enhancements
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
+        * Fix deserialization of feature relationship path (:pr:`665`)
     * Changes
         * Moved dask, distributed imports (:pr:`634`)
     * Documentation Changes
@@ -18,7 +19,7 @@ Changelog
         * Miscellaneous changes ()
 
     Thanks to the following people for contributing to this release:
-    :user:`ayushpatidar`, :user:`jeff-hernandez`, :user:`gsheni`
+    :user:`ayushpatidar`, :user:`jeff-hernandez`, :user:`gsheni`, :user:`CJStadler`
 
 
 **v0.9.1 July 3, 2019**
