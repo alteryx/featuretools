@@ -65,7 +65,7 @@ After we load the features back in, we can calculate the feature matrix.
     feature_matrix = ft.calculate_feature_matrix(saved_features, es_test)
     feature_matrix
 
-As you can see above, we have the exact same features as before, but calculated on using our test data.
+As you can see above, we have the exact same features as before, but calculated using the test data.
 
 
 Exporting Feature Matrix
