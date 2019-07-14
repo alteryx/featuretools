@@ -7,16 +7,20 @@ Changelog
     * Added drop_first as param in encode_features (:pr:`647`)
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
+        * Fix deserialization of feature relationship path (:pr:`665`)
     * Changes
         * Moved dask, distributed imports (:pr:`634`)
     * Documentation Changes
         * Miscellaneous changes (:pr:`641`)
         * Modified doc_string of top_n in encoding (:pr:`648`)
+        * Hyperlinked ComposeML (:pr:`653`)
+        * Added FAQ (:pr:`620`)
     * Testing Changes
+        * Add trigger test for premium primitives (:pr:`660`)
         * Miscellaneous changes ()
 
     Thanks to the following people for contributing to this release:
-    :user:`ayushpatidar`
+    :user:`ayushpatidar`, :user:`jeff-hernandez`, :user:`gsheni`, :user:`CJStadler`
 
 
 **v0.9.1 July 3, 2019**
@@ -37,13 +41,13 @@ Changelog
         * Remove DaysSince primitive (:pr:`628`)
     * Documentation Changes
         * Add installation instructions for add-on libraries (:pr:`617`)
+        * Clarification of Multi Output Feature Creation (:pr:`638`)
         * Miscellaneous changes (:pr:`632`, :pr:`639`)
     * Testing Changes
         * Miscellaneous changes (:pr:`595`, :pr:`612`)
 
     Thanks to the following people for contributing to this release:
-    :user:`CJStadler`, :user:`gsheni`, :user:`kkleidal`, :user:`kmax12`,
-    :user:`rwedge`
+    :user:`CJStadler`, :user:`kmax12`, :user:`rwedge`, :user:`gsheni`, :user:`kkleidal`, :user:`ctduffy`
 
 **v0.9.0** June 19, 2019
     * Enhancements

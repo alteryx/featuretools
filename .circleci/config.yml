@@ -5,7 +5,7 @@ executors:
     parameters:
       image_tag:
         type: string
-        default: "3.7"
+        default: "3.7.3"
     docker:
       - image: circleci/python:<< parameters.image_tag >>
 
@@ -24,7 +24,7 @@ jobs:
     parameters:
       image_tag:
         type: string
-        default: "3.7"
+        default: "3.7.3"
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -43,13 +43,20 @@ jobs:
           paths:
             - venv
             - unpacked_sdist
+  run_pp:
+    docker:
+      - image: circleci/buildpack-deps:curl
+    steps:
+      - run:
+          name: "Triger PP tests"
+          command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-35 https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
 
   unit_tests:
     working_directory: ~/featuretools
     parameters:
       image_tag:
         type: string
-        default: "3.7"
+        default: "3.7.3"
       codecov:
         type: boolean
         default: false
@@ -87,7 +94,7 @@ jobs:
     parameters:
       image_tag:
         type: string
-        default: "3.7"
+        default: "3.7.3"
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -103,9 +110,10 @@ jobs:
   build_docs:
     working_directory: ~/featuretools
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.7.3
     steps:
       - run: sudo apt update && sudo apt install -y pandoc
+      - run: sudo apt install -y graphviz
       - checkout
       - attach_workspace:
           at: ~/featuretools
@@ -121,7 +129,7 @@ jobs:
     parameters:
       image_tag:
         type: string
-        default: "3.7"
+        default: "3.7.3"
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -219,3 +227,9 @@ workflows:
           filters:
             branches:
               ignore: /^master?/
+      - run_pp:
+          name: "run pp tests"
+          filters:
+            branches:
+              only:
+                - master
