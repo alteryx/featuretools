@@ -9,7 +9,7 @@ logger = logging.getLogger('featuretools')
 
 
 def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
-                    to_encode=None, inplace=False, verbose=False, drop_first=False):
+                    to_encode=None, inplace=False, drop_first=False, verbose=False):
     """Encode categorical features
 
         Args:
@@ -22,10 +22,10 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
                 features not in this list are unencoded in the output matrix
                 defaults to encode all necessary features.
             inplace (bool): Encode feature_matrix in place. Defaults to False.
-            verbose (str): Print progress info.
             drop_first (bool): Whether to get k-1 dummies out of k categorical
                     levels by removing the first level.
                     defaults to False
+            verbose (str): Print progress info.
 
         Returns:
             (pd.Dataframe, list) : encoded feature_matrix, encoded features
