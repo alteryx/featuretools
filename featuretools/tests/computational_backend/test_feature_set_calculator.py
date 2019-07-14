@@ -383,6 +383,54 @@ def test_make_agg_feat_of_agg_feat(es):
     assert (v == 10)
 
 
+def test_make_3_stacked_agg_feats():
+    """
+    Tests stacking 3 agg features.
+
+    The test specifically uses non numeric indices to test how ancestor variables are handled
+    as dataframes are merged together
+
+    """
+    df = pd.DataFrame({
+        "id": ["a", "b", "c", "d", "e"],
+        "e1": ["h", "h", "i", "i", "j"],
+        "e2": ["x", "x", "y", "y", "x"],
+        "e3": ["z", "z", "z", "z", "z"],
+        "val": [1, 1, 1, 1, 1]
+    })
+
+    es = ft.EntitySet()
+    es.entity_from_dataframe(dataframe=df,
+                             index="id",
+                             entity_id="e0")
+
+    es.normalize_entity(base_entity_id="e0",
+                        new_entity_id="e1",
+                        index="e1",
+                        additional_variables=["e2", "e3"])
+
+    es.normalize_entity(base_entity_id="e1",
+                        new_entity_id="e2",
+                        index="e2",
+                        additional_variables=["e3"])
+
+    es.normalize_entity(base_entity_id="e2",
+                        new_entity_id="e3",
+                        index="e3")
+
+    sum_1 = ft.Feature(es["e0"]["val"], parent_entity=es["e1"], primitive=Sum)
+    sum_2 = ft.Feature(sum_1, parent_entity=es["e2"], primitive=Sum)
+    sum_3 = ft.Feature(sum_2, parent_entity=es["e3"], primitive=Sum)
+
+    feature_set = FeatureSet([sum_3])
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
+    df = calculator.run(np.array(["z"]))
+    v = df[sum_3.get_name()][0]
+    assert (v == 5)
+
+
 def test_make_dfeat_of_agg_feat_on_self(es):
     """
     The graph looks like this:
