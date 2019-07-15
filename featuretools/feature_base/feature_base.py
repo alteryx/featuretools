@@ -562,7 +562,7 @@ class AggregationFeature(FeatureBase):
         relationship_path = [Relationship.from_dictionary(r, entityset)
                              for r in arguments['relationship_path']]
         parent_entity = relationship_path[0].parent_entity
-        relationship_path = [(False, r) for r in relationship_path]
+        relationship_path = RelationshipPath([(False, r) for r in relationship_path])
 
         primitive = primitives_deserializer.deserialize_primitive(arguments['primitive'])
 

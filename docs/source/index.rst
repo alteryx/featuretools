@@ -165,13 +165,13 @@ Table of contents
    guides/performance
    guides/parallel
    guides/deployment
-   guides/exporting_feature_matrix
    guides/advanced_custom_primitives
 
 .. toctree::
    :maxdepth: 1
    :caption: Resources and References
 
+   frequently_asked_questions
    help
    featuretools_enterprise
    usage_tips/limitations

@@ -5,20 +5,23 @@ Changelog
 **Future Release**
     * Enhancements
         * Give more frequent progress bar updates and update chunk size behavior (:pr:`631`)
+        * Added drop_first as param in encode_features (:pr:`647`)
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
+        * Fix deserialization of feature relationship path (:pr:`665`)
     * Changes
         * Moved dask, distributed imports (:pr:`634`)
     * Documentation Changes
-        * Miscellaneous changes (:pr:`641`)
+        * Miscellaneous changes (:pr:`641`, :pr:`658`)
         * Modified doc_string of top_n in encoding (:pr:`648`)
         * Hyperlinked ComposeML (:pr:`653`)
+        * Added FAQ (:pr:`620`)
     * Testing Changes
+        * Add trigger test for premium primitives (:pr:`660`)
         * Miscellaneous changes ()
 
     Thanks to the following people for contributing to this release:
-    :user:`ayushpatidar`, :user:`jeff-hernandez`, :user:`kmax12`
-
+    :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`kmax12`
 
 **v0.9.1 July 3, 2019**
     * Enhancements

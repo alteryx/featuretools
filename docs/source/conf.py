@@ -316,7 +316,7 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
 
-nbsphinx_execute = 'never'
+nbsphinx_execute = 'auto'
 
 extlinks = {
     'issue': ('https://github.com/featuretools/featuretools/issues/%s', 'GH#'),
