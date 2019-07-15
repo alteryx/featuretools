@@ -13,14 +13,14 @@ Each row in a feature matrix created by Featuretools is calculated at a specific
 
     Featuretools is very precise in how it deals with time. For more information, see :doc:`/automated_feature_engineering/handling_time`.
 
-If you have many unique cutoff times, it is often worthwhile to figure out how to have fewer. This can be done manually by figuring out which unique times are necessary for your prediction problem or automatically using :ref:`approximate <approximate>`.
+If there are many unique cutoff times, it is often worthwhile to figure out how to have fewer. This can be done manually by figuring out which unique times are necessary for the prediction problem or automatically using :ref:`approximate <approximate>`.
 
 
 Adjust chunk size
 -----------------
-When Featuretools calculates a feature matrix, it groups the rows by their cutoff time to compute at once. The `chunk_size` parameter limits the maximum number of rows that will be grouped and then calculated together.
+Featuretools calculates rows with the same cutoff simultaneously. The `chunk_size` parameter limits the maximum number of rows that will be grouped and then calculated together.
 
-By default, there is no limit to the number of rows that will be calculated at once for a particular cutoff time unless you are using parallel processing in which case the chunk size is set to be 1 / n_jobs, to ensure the computation can be spread across available workers. Normally this behavior is okay, but if the resulting feature matrix has only a few cutoff times it can lead to higher memory usage or limited parallelism (if `n_jobs > 1`).
+By default, there is no limit to the number of rows that will be calculated at once for a particular cutoff time unless you are using parallel processing in which case the chunk size is set to be ``1 / n_jobs`` to ensure the computation can be spread across available workers. Normally this behavior is works well, but if the resulting feature matrix has only a few cutoff times it can lead to high memory usage or limited parallelism (if `n_jobs > 1`).
 
 By setting a cutoff time, we can limit the maximum number of rows in each group to specific number or a percentage of the overall data
 
