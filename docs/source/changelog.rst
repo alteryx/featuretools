@@ -17,6 +17,7 @@ Changelog
         * Added FAQ (:pr:`620`)
     * Testing Changes
         * Add trigger test for premium primitives (:pr:`660`)
+        * Add release tests premium primitives (:pr:`669`)
         * Miscellaneous changes ()
 
     Thanks to the following people for contributing to this release:
