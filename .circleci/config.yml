@@ -50,6 +50,15 @@ jobs:
       - run:
           name: "Triger PP tests"
           command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-35 https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
+      - run:
+          name: "Triger PP tests"
+          command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-27 https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
+      - run:
+          name: "Triger PP tests"
+          command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-35-ft-release https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
+      - run:
+          name: "Triger PP tests"
+          command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-27-ft-release https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
 
   unit_tests:
     working_directory: ~/featuretools
