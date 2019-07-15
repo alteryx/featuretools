@@ -40,7 +40,7 @@ We can also set chunk size to be a percentage of total rows::
                                            chunk_size=.05)
 
 
-The smaller chunk size may result in lower peak memory usage during calculation a group of rows or greater opportunity for parallelism.
+The smaller chunk size may result in lower peak memory usage during the calculation of a group of rows (due to fewer intermediate calculations store in memory) or greater opportunity for parallelism.
 
 
 Partition and Distribute Data
