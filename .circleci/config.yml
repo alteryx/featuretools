@@ -5,7 +5,7 @@ executors:
     parameters:
       image_tag:
         type: string
-        default: "3.7.3"
+        default: "3.7"
     docker:
       - image: circleci/python:<< parameters.image_tag >>
 
@@ -24,7 +24,7 @@ jobs:
     parameters:
       image_tag:
         type: string
-        default: "3.7.3"
+        default: "3.7"
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -69,7 +69,7 @@ jobs:
     parameters:
       image_tag:
         type: string
-        default: "3.7.3"
+        default: "3.7"
       codecov:
         type: boolean
         default: false
@@ -107,7 +107,7 @@ jobs:
     parameters:
       image_tag:
         type: string
-        default: "3.7.3"
+        default: "3.7"
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -123,7 +123,7 @@ jobs:
   build_docs:
     working_directory: ~/featuretools
     docker:
-      - image: circleci/python:3.7.3
+      - image: circleci/python:3.7
     steps:
       - run: sudo apt update && sudo apt install -y pandoc
       - run: sudo apt install -y graphviz
@@ -142,7 +142,7 @@ jobs:
     parameters:
       image_tag:
         type: string
-        default: "3.7.3"
+        default: "3.7"
     executor:
       name: python
       image_tag: << parameters.image_tag >>
