@@ -16,8 +16,7 @@ Changelog
         * Hyperlinked ComposeML (:pr:`653`)
         * Added FAQ (:pr:`620`)
     * Testing Changes
-        * Add trigger test for premium primitives (:pr:`660`)
-        * Add release tests premium primitives (:pr:`669`)
+        * Add master, and release tests for premium primitives (:pr:`660`, :pr:`669`)
         * Miscellaneous changes (:pr:`672`)
 
     Thanks to the following people for contributing to this release:
