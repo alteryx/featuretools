@@ -16,10 +16,6 @@ The time index is the column in the data that specifies when the data in each ro
     :suppress:
 
     pd.options.display.max_columns = 200
-    import urllib.request as urllib2
-    opener = urllib2.build_opener()
-    opener.addheaders = [('Testing', 'True')]
-    urllib2.install_opener(opener)
 
 
 .. ipython:: python
@@ -170,11 +166,23 @@ It is sometimes the case that information in a dataset is updated or added after
 
 The :func:`Flights <demo.load_flight>` entityset is a good example of a dataset where column values in a row become known at different times. Each trip is recorded in the ``trip_logs`` entity, and has many times associated with it.
 
-.. .. ipython:: python
+.. ipython:: python
+    :suppress:
 
-..     es_flight = ft.demo.load_flight(nrows=100)
-..     es_flight
-..     es_flight['trip_logs'].df.head(3)
+    import urllib.request as urllib2
+    opener = urllib2.build_opener()
+    opener.addheaders = [('Testing', 'True')]
+    urllib2.install_opener(opener)
+
+.. ipython:: python
+
+    import urllib.request as urllib2
+    opener = urllib2.build_opener()
+    opener.addheaders = [('Testing', 'True')]
+    urllib2.install_opener(opener)
+    es_flight = ft.demo.load_flight(nrows=100)
+    es_flight
+    es_flight['trip_logs'].df.head(3)
 
 
 For every trip log, the time index is ``date_scheduled``, which is when the airline decided on the scheduled departure and arrival times, as well as what route will be flown. We don't know the rest of the information about the actual departure/arrival times and the details of any delay at this time. However, it is possible to know everything about how a trip went after it has arrived, so we can use that information at any time after the flight lands.
@@ -235,15 +243,15 @@ Our cutoff time dataframe looks like this:
 
 Now, let's calculate the feature matrix:
 
-.. .. ipython:: python
+.. ipython:: python
 
-..     fm, features = ft.dfs(entityset=es_flight,
-..                           target_entity='trip_logs',
-..                           cutoff_time=ct_flight,
-..                           cutoff_time_in_index=True,
-..                           agg_primitives=["max"],
-..                           trans_primitives=["month"],)
-..     fm[['flight_id', 'label', 'flights.MAX(trip_logs.arr_delay)', 'MONTH(scheduled_dep_time)']]
+    fm, features = ft.dfs(entityset=es_flight,
+                          target_entity='trip_logs',
+                          cutoff_time=ct_flight,
+                          cutoff_time_in_index=True,
+                          agg_primitives=["max"],
+                          trans_primitives=["month"],)
+    fm[['flight_id', 'label', 'flights.MAX(trip_logs.arr_delay)', 'MONTH(scheduled_dep_time)']]
 
 
 Let's understand the output:
