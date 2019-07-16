@@ -18,7 +18,7 @@ Changelog
     * Testing Changes
         * Add trigger test for premium primitives (:pr:`660`)
         * Add release tests premium primitives (:pr:`669`)
-        * Miscellaneous changes ()
+        * Miscellaneous changes (:pr:`672`)
 
     Thanks to the following people for contributing to this release:
     :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`kmax12`

@@ -153,10 +153,13 @@ jobs:
           virtualenv venv
           source venv/bin/activate
           pip install -e unpacked_sdist/[complete]
-      - run: |
-          source venv/bin/activate
-          python -c "import featuretools_tsfresh_primitives"
-          python -c "import featuretools_update_checker"
+      - run:
+          command: |
+            source venv/bin/activate
+            python -c "import featuretools_tsfresh_primitives"
+            python -c "import featuretools_update_checker"
+          environment:
+            FEATURETOOLS_UPDATE_CHECKER: False
 
   changelog_updated:
     working_directory: ~/featuretools
