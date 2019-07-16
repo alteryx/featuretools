@@ -43,13 +43,26 @@ jobs:
           paths:
             - venv
             - unpacked_sdist
-  run_pp:
+  run_premium_primitives_tests_on_master:
     docker:
       - image: circleci/buildpack-deps:curl
     steps:
       - run:
-          name: "Triger PP tests"
+          name: "Trigger premium primitives tests for python 3.5"
           command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-35 https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
+      - run:
+          name: "Trigger premium primitives tests for python 2.7"
+          command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-27 https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
+  run_premium_primitives_tests_on_release:
+    docker:
+      - image: circleci/buildpack-deps:curl
+    steps:
+      - run:
+          name: "Trigger premium primitives tests for python 3.5 release"
+          command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-35-ft-release https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
+      - run:
+          name: "Trigger premium primitives tests for python 2.7 release"
+          command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-27-ft-release https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
 
   unit_tests:
     working_directory: ~/featuretools
@@ -230,9 +243,16 @@ workflows:
           filters:
             branches:
               ignore: /^master?/
-      - run_pp:
-          name: "run pp tests"
+      - run_premium_primitives_tests_on_master:
+          name: "run premium primitives tests on master"
           filters:
             branches:
               only:
                 - master
+      - run_premium_primitives_tests_on_release:
+          name: "run premium primitives tests on release"
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v\d+\.\d+\.\d+$/
