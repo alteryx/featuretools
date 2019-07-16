@@ -176,10 +176,6 @@ The :func:`Flights <demo.load_flight>` entityset is a good example of a dataset 
 
 .. ipython:: python
 
-    import urllib.request as urllib2
-    opener = urllib2.build_opener()
-    opener.addheaders = [('Testing', 'True')]
-    urllib2.install_opener(opener)
     es_flight = ft.demo.load_flight(nrows=100)
     es_flight
     es_flight['trip_logs'].df.head(3)
