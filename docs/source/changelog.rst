@@ -17,8 +17,8 @@ Changelog
         * Added FAQ (:pr:`620`)
         * Fixed FAQ question with multiple question marks (:pr:`673`)
     * Testing Changes
-        * Add trigger test for premium primitives (:pr:`660`)
-        * Miscellaneous changes ()
+        * Add master, and release tests for premium primitives (:pr:`660`, :pr:`669`)
+        * Miscellaneous changes (:pr:`672`)
 
     Thanks to the following people for contributing to this release:
     :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`kmax12`
