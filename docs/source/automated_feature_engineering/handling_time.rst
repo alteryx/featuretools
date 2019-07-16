@@ -17,7 +17,6 @@ The time index is the column in the data that specifies when the data in each ro
 
     pd.options.display.max_columns = 200
 
-
 .. ipython:: python
 
     import featuretools as ft
