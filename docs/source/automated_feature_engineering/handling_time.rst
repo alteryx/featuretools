@@ -16,6 +16,11 @@ The time index is the column in the data that specifies when the data in each ro
     :suppress:
 
     pd.options.display.max_columns = 200
+    import urllib.request as urllib2
+    opener = urllib2.build_opener()
+    opener.addheaders = [('Testing', 'True')]
+    urllib2.install_opener(opener)
+
 
 .. ipython:: python
 
