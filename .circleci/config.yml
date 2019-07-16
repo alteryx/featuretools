@@ -48,20 +48,20 @@ jobs:
       - image: circleci/buildpack-deps:curl
     steps:
       - run:
-          name: "Triger premium primitives tests for python 3.5"
+          name: "Trigger premium primitives tests for python 3.5"
           command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-35 https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
       - run:
-          name: "Triger premium primitives tests for python 2.7"
+          name: "Trigger premium primitives tests for python 2.7"
           command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-27 https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
   run_premium_primitives_tests_on_release:
     docker:
       - image: circleci/buildpack-deps:curl
     steps:
       - run:
-          name: "Triger premium primitives tests for python 3.5 release"
+          name: "Trigger premium primitives tests for python 3.5 release"
           command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-35-ft-release https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
       - run:
-          name: "Triger premium primitives tests for python 2.7 release"
+          name: "Trigger premium primitives tests for python 2.7 release"
           command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-27-ft-release https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
 
   unit_tests:
