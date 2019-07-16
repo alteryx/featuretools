@@ -15,6 +15,7 @@ Changelog
         * Modified doc_string of top_n in encoding (:pr:`648`)
         * Hyperlinked ComposeML (:pr:`653`)
         * Added FAQ (:pr:`620`)
+        * Fixed FAQ question with multiple question marks (:pr:`673`)
     * Testing Changes
         * Add master, and release tests for premium primitives (:pr:`660`, :pr:`669`)
         * Miscellaneous changes (:pr:`672`)
