@@ -8,6 +8,7 @@ Changelog
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
         * Fix deserialization of feature relationship path (:pr:`665`)
+        * Fix variable types modify in Entity init (:pr:`675`)
     * Changes
         * Moved dask, distributed imports (:pr:`634`)
     * Documentation Changes
