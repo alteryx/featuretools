@@ -128,6 +128,7 @@ def test_delete_variables(es):
         assert var not in variable_names
         assert var not in entity.df
 
+
 def test_variable_types_copy():
     df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                        "transaction_time": [10, 12, 13, 20, 21, 20],
