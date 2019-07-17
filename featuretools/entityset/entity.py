@@ -285,7 +285,7 @@ class Entity(object):
                 that each map to a list of columns that depend on that secondary time
         """
         variables = []
-        variable_types = variable_types or {}
+        variable_types = variable_types.copy() or {}
         if index not in variable_types:
             variable_types[index] = vtypes.Index
 
