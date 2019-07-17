@@ -127,3 +127,19 @@ def test_delete_variables(es):
     for var in to_delete:
         assert var not in variable_names
         assert var not in entity.df
+
+
+def test_variable_types_unmodified():
+    df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                       "transaction_time": [10, 12, 13, 20, 21, 20],
+                       "fraud": [True, False, False, False, True, True]})
+
+    es = ft.EntitySet()
+    variable_types = {'fraud': ft.variable_types.Boolean}
+    old_variable_types = variable_types.copy()
+    es.entity_from_dataframe(entity_id="transactions",
+                             dataframe=df,
+                             index='id',
+                             time_index='transaction_time',
+                             variable_types=variable_types)
+    assert old_variable_types == variable_types
