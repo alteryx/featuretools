@@ -11,6 +11,7 @@ Changelog
         * Fix deserialization of feature relationship path (:pr:`665`)
     * Changes
         * Moved dask, distributed imports (:pr:`634`)
+        * Change feature calculation to return in order of instance ids provided (:pr:`676`)
     * Documentation Changes
         * Miscellaneous changes (:pr:`641`, :pr:`658`)
         * Modified doc_string of top_n in encoding (:pr:`648`)
