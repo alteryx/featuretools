@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 from numpy.testing import assert_array_equal
 
+import pytest
+
 import featuretools as ft
 from featuretools import Timedelta
 from featuretools.computational_backends.feature_set import FeatureSet
@@ -767,15 +769,17 @@ def test_returns_order_of_instance_ids(es):
 
 
 def test_precalculated_features(es):
+    error_msg = 'This primitive should never be used because the features are precalculated'
+
     class ErrorPrim(AggregationPrimitive):
-        name = "error"
+        """A primitive whose function raises an error."""
+        name = "error_prim"
         input_types = [Numeric]
         return_type = Numeric
 
         def get_function(self):
             def error(s):
-                raise RuntimeError('This primitive should never be used '
-                                   'because the features are precalculated')
+                raise RuntimeError(error_msg)
             return error
 
     value = ft.Feature(es['log']['value'])
@@ -799,7 +803,6 @@ def test_precalculated_features(es):
     precalculated_fm_trie.get_node(direct.relationship_path).value = parent_fm
 
     calculator = FeatureSetCalculator(es,
-                                      time_last=None,
                                       feature_set=feature_set,
                                       precalculated_features=precalculated_fm_trie)
 
@@ -807,3 +810,7 @@ def test_precalculated_features(es):
     fm = calculator.run(np.array(instance_ids))
 
     assert list(fm[direct.get_name()]) == [values[0], values[0], values[1], values[2]]
+
+    # Calculating without precalculated features should error.
+    with pytest.raises(RuntimeError, match=error_msg):
+        FeatureSetCalculator(es, feature_set=FeatureSet([direct])).run(instance_ids)
