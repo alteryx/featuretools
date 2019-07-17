@@ -130,7 +130,6 @@ def test_delete_variables(es):
 
 def test_variable_types_copy():
     df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
-                       "card_id": [1, 2, 1, 3, 4, 5],
                        "transaction_time": [10, 12, 13, 20, 21, 20],
                        "fraud": [True, False, False, False, True, True]})
 
@@ -143,5 +142,3 @@ def test_variable_types_copy():
                              time_index='transaction_time',
                              variable_types=variable_types)
     assert old_variable_types == variable_types
-    print(old_variable_types)
-    print(variable_types)
