@@ -4,9 +4,8 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
-from numpy.testing import assert_array_equal
-
 import pytest
+from numpy.testing import assert_array_equal
 
 import featuretools as ft
 from featuretools import Timedelta
