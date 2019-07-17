@@ -81,14 +81,10 @@ def test_approximate_features(entities, relationships):
     direct_agg_feat_name = 'cards.PERCENT_TRUE(transactions.fraud)'
     assert len(feature_matrix.index) == 6
     assert len(feature_matrix.columns) == len(features)
-    truth_index = pd.MultiIndex.from_arrays([[1, 3, 1, 5, 3, 6],
-                                             [11, 16, 16, 26, 17, 22]],
-                                            names=('id', 'time'))
-    truth_values = pd.Series(data=[1.0, 0.5, 0.5, 1.0, 0.5, 1.0],
-                             index=truth_index)
-    truth_values.sort_index(level='time', kind='mergesort', inplace=True)
 
-    assert (feature_matrix[direct_agg_feat_name] == truth_values).all()
+    truth_values = pd.Series(data=[1.0, 0.5, 0.5, 1.0, 0.5, 1.0])
+
+    assert (feature_matrix[direct_agg_feat_name] == truth_values.values).all()
 
 
 def test_all_variables(entities, relationships):
