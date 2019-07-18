@@ -165,7 +165,7 @@ class RelationshipPath(object):
         if self._relationships_with_direction:
             path = '%s.%s' % (next(self.entities()), self.name)
         else:
-            path = 'empty'
+            path = '[]'
         return '<RelationshipPath %s>' % path
 
 
