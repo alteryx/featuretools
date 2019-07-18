@@ -338,7 +338,7 @@ class FeatureSetCalculator(object):
                             right_on=relationship.child_variable.id)
 
         # ensure index is maintained
-        df = df.set_index(relationship.child_entity.index, drop=False)
+        df.set_index(relationship.child_entity.index, drop=False, inplace=True)
 
         return df, new_relationship_variables
 
