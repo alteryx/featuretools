@@ -29,7 +29,7 @@ class FeatureSetCalculator(object):
     """
 
     def __init__(self, entityset, feature_set, time_last=None,
-                 training_window=None, precalculated_features=None, ignored=None):
+                 training_window=None, precalculated_features=None):
         """
         Args:
             feature_set (FeatureSet): The features to calculate values for.
@@ -43,12 +43,10 @@ class FeatureSetCalculator(object):
             precalculated_features (Trie[RelationshipPath -> pd.DataFrame]):
                 Maps RelationshipPaths to dataframes of precalculated_features
 
-            ignored (set[str], optional): Unique names of precalculated features.
         """
         self.entityset = entityset
         self.feature_set = feature_set
         self.training_window = training_window
-        self.ignored = ignored
 
         if time_last is None:
             time_last = datetime.now()
@@ -169,14 +167,10 @@ class FeatureSetCalculator(object):
                 ancestor_relationship_variables is the names of variables which
                 link the parent entity to its ancestors.
         """
-
         # Step 1: Get a dataframe for the given entity, filtered by the given
         # conditions.
 
         need_full_entity, full_entity_features, not_full_entity_features = feature_trie.value
-        if self.ignored:
-            full_entity_features -= self.ignored
-            not_full_entity_features -= self.ignored
 
         all_features = full_entity_features | not_full_entity_features
         entity = self.entityset[entity_id]
