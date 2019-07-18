@@ -189,12 +189,11 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     # Get features to approximate
     if approximate is not None:
-        approximate_feature_trie, all_approx_feature_set = gather_approximate_features(feature_set)
+        approximate_feature_trie = gather_approximate_features(feature_set)
         # Make a new FeatureSet that ignores approximated features
         feature_set = FeatureSet(features, ignored_feature_trie=approximate_feature_trie)
     else:
         approximate_feature_trie = None
-        all_approx_feature_set = None
 
     # Check if there are any non-approximated aggregation features
     no_unapproximated_aggs = True
@@ -205,7 +204,11 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             no_unapproximated_aggs = False
             break
 
-        deps = feature.get_dependencies(deep=True, ignored=all_approx_feature_set)
+        if approximate_feature_trie:
+            all_approx_features = {f for _, feats in approximate_feature_trie for f in feats}
+        else:
+            all_approx_features = set()
+        deps = feature.get_dependencies(deep=True, ignored=all_approx_features)
         for dependency in deps:
             if isinstance(dependency, AggregationFeature):
                 no_unapproximated_aggs = False
