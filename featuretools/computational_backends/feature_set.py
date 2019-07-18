@@ -15,7 +15,19 @@ logger = logging.getLogger('featuretools.computational_backend')
 
 
 class FeatureSet(object):
+    """
+    Represents an immutable set of features to be calculated for a single entity, and their
+    dependencies.
+    """
     def __init__(self, features, ignored_feature_trie=None):
+        """
+        Args:
+            features (list[Feature]): Features of the target entity.
+            ignored_feature_trie (Trie[RelationshipPath, set[str]], optional): Dependency features
+                to ignore, mapped by relationship path. For example, if one of the target features
+                is a direct feature of a feature A and A is included in ignored_feature_trie then
+                neither A nor its dependencies will appear in FeatureSet.feature_trie.
+        """
         self.target_eid = features[0].entity.id
         self.target_features = features
         self.target_feature_names = {f.unique_name() for f in features}
@@ -50,6 +62,19 @@ class FeatureSet(object):
 
     @property
     def feature_trie(self):
+        """
+        The target features and their dependencies organized into a trie, by relationship path.
+        This is built once when it is first called (to avoid building it if it is not needed) and
+        then used for all subsequent calls.
+
+        The edges of the trie are RelationshipPaths and the values are tuples of
+        (bool, set[str], set[str]). The bool represents whether the full entity df is needed at
+        that node, the first set contains the names of features which are needed on the full
+        entity, and the second set contains the names of the rest of the features
+
+        Returns:
+            Trie[RelationshipPath, (bool, set[str], set[str])]
+        """
         if not self._feature_trie:
             self._feature_trie = self._build_feature_trie()
 
@@ -57,11 +82,7 @@ class FeatureSet(object):
 
     def _build_feature_trie(self):
         """
-        Construct a trie mapping RelationshipPaths to a tuple of
-        (bool, set[str], set[str]). The bool represents whether the full
-        entity df is needed at that node, the first set contains the names of
-        features which are needed on the full entity, and the second set
-        contains the names of the rest of the features
+        Build the feature trie by adding the target features and their dependencies recursively.
         """
         feature_trie = Trie(default=lambda: (False, set(), set()),
                             path_constructor=RelationshipPath)
@@ -75,16 +96,20 @@ class FeatureSet(object):
 
     def _add_feature_to_trie(self, trie, feature, ignored_feature_trie,
                              ancestor_needs_full_entity=False):
+        """
+        Add the given feature to the root of the trie, and recurse on its dependencies. If it is in
+        ignored_feature_trie then it will not be added and we will not recurse on its dependencies.
+        """
         node_needs_full_entity, full_features, not_full_features = trie.value
         needs_full_entity = ancestor_needs_full_entity or self.uses_full_entity(feature)
 
         name = feature.unique_name()
 
-        # If this feature is ignored then don't add it or any of its
-        # dependencies.
+        # If this feature is ignored then don't add it or any of its dependencies.
         if name in ignored_feature_trie.value:
             return
 
+        # Add the feature to one of the sets, depending on whether it needs the full entity.
         if needs_full_entity:
             full_features.add(name)
             if name in not_full_features:
