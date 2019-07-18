@@ -793,7 +793,7 @@ def test_precalculated_features(es):
     # Set up a FeatureSet which knows which features are precalculated.
     precalculated_feature_trie = Trie(default=set, path_constructor=RelationshipPath)
     precalculated_feature_trie.get_node(direct.relationship_path).value.add(agg2.unique_name())
-    feature_set = FeatureSet([direct], ignored_feature_trie=precalculated_feature_trie)
+    feature_set = FeatureSet([direct], approximate_feature_trie=precalculated_feature_trie)
 
     # Fake precalculated data.
     values = [0, 1, 2]

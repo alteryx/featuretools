@@ -108,7 +108,7 @@ def test_feature_trie_with_needs_full_entity_direct(es):
         (True, {value.unique_name()}, set())
 
 
-def test_feature_trie_with_ignored_features(es):
+def test_feature_trie_ignores_approximate_features(es):
     value = ft.IdentityFeature(es['log']['value'],)
     agg = ft.AggregationFeature(value, es['sessions'],
                                 primitive=ft.primitives.Mean)
@@ -117,9 +117,9 @@ def test_feature_trie_with_ignored_features(es):
     direct = ft.DirectFeature(agg_of_agg, es['sessions'])
     features = [direct, agg]
 
-    ignored_features = Trie(default=list, path_constructor=RelationshipPath)
-    ignored_features.get_node(direct.relationship_path).value = [agg_of_agg]
-    feature_set = FeatureSet(features, ignored_feature_trie=ignored_features)
+    approximate_feature_trie = Trie(default=list, path_constructor=RelationshipPath)
+    approximate_feature_trie.get_node(direct.relationship_path).value = [agg_of_agg]
+    feature_set = FeatureSet(features, approximate_feature_trie=approximate_feature_trie)
     trie = feature_set.feature_trie
 
     # Since agg_of_agg is ignored it and its dependencies should not be in the

@@ -191,9 +191,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     if approximate is not None:
         approximate_feature_trie = gather_approximate_features(feature_set)
         # Make a new FeatureSet that ignores approximated features
-        feature_set = FeatureSet(features, ignored_feature_trie=approximate_feature_trie)
-    else:
-        approximate_feature_trie = None
+        feature_set = FeatureSet(features, approximate_feature_trie=approximate_feature_trie)
 
     # Check if there are any non-approximated aggregation features
     no_unapproximated_aggs = True
@@ -204,8 +202,9 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             no_unapproximated_aggs = False
             break
 
-        if approximate_feature_trie:
-            all_approx_features = {f for _, feats in approximate_feature_trie for f in feats}
+        if approximate is not None:
+            all_approx_features = {f for _, feats in feature_set.approximate_feature_trie
+                                   for f in feats}
         else:
             all_approx_features = set()
         deps = feature.get_dependencies(deep=True, ignored=all_approx_features)
@@ -249,7 +248,6 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         feature_matrix = parallel_calculate_chunks(chunks=chunks,
                                                    feature_set=feature_set,
                                                    approximate=approximate,
-                                                   approximate_feature_trie=approximate_feature_trie,
                                                    training_window=training_window,
                                                    verbose=verbose,
                                                    save_progress=save_progress,
@@ -264,7 +262,6 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         feature_matrix = linear_calculate_chunks(chunks=chunks,
                                                  feature_set=feature_set,
                                                  approximate=approximate,
-                                                 approximate_feature_trie=approximate_feature_trie,
                                                  training_window=training_window,
                                                  verbose=verbose,
                                                  save_progress=save_progress,
@@ -289,7 +286,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 def calculate_chunk(chunk, feature_set, entityset, approximate, training_window,
                     verbose, save_progress,
                     no_unapproximated_aggs, cutoff_df_time_var, target_time,
-                    pass_columns, approximate_feature_trie):
+                    pass_columns):
     if not isinstance(feature_set, FeatureSet):
         feature_set = cloudpickle.loads(feature_set)
 
@@ -306,7 +303,6 @@ def calculate_chunk(chunk, feature_set, entityset, approximate, training_window,
             precalculated_features_trie = approximate_features(
                 feature_set,
                 group,
-                approximate_feature_trie=approximate_feature_trie,
                 window=approximate,
                 entityset=entityset,
                 training_window=training_window,
@@ -382,7 +378,6 @@ def calculate_chunk(chunk, feature_set, entityset, approximate, training_window,
 
 
 def approximate_features(feature_set, cutoff_time, window, entityset,
-                         approximate_feature_trie,
                          training_window=None):
     '''Given a set of features and cutoff_times to be passed to
     calculate_feature_matrix, calculates approximate values of some features
@@ -425,7 +420,7 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
     cutoff_df_instance_var = 'instance_id'
     # should this order be by dependencies so that calculate_feature_matrix
     # doesn't skip approximating something?
-    for relationship_path, approx_feature_names in approximate_feature_trie:
+    for relationship_path, approx_feature_names in feature_set.approximate_feature_trie:
         if not approx_feature_names:
             continue
 
@@ -472,7 +467,7 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
 def linear_calculate_chunks(chunks, feature_set, approximate, training_window,
                             verbose, save_progress, entityset,
                             no_unapproximated_aggs, cutoff_df_time_var,
-                            target_time, pass_columns, approximate_feature_trie):
+                            target_time, pass_columns):
     feature_matrix = []
 
     # if verbose, create progess bar
@@ -492,8 +487,7 @@ def linear_calculate_chunks(chunks, feature_set, approximate, training_window,
                                           save_progress,
                                           no_unapproximated_aggs,
                                           cutoff_df_time_var,
-                                          target_time, pass_columns,
-                                          approximate_feature_trie)
+                                          target_time, pass_columns)
         feature_matrix.append(_feature_matrix)
         # Do a manual garbage collection in case objects from calculate_chunk
         # weren't collected automatically
@@ -512,7 +506,7 @@ def scatter_warning(num_scattered_workers, num_workers):
 def parallel_calculate_chunks(chunks, feature_set, approximate, training_window,
                               verbose, save_progress, entityset, n_jobs,
                               no_unapproximated_aggs, cutoff_df_time_var,
-                              target_time, pass_columns, approximate_feature_trie,
+                              target_time, pass_columns,
                               dask_kwargs=None):
     from distributed import as_completed, Future
     from dask.base import tokenize
@@ -558,7 +552,6 @@ def parallel_calculate_chunks(chunks, feature_set, approximate, training_window,
                              feature_set=_saved_features,
                              entityset=_es,
                              approximate=approximate,
-                             approximate_feature_trie=approximate_feature_trie,
                              training_window=training_window,
                              verbose=False,
                              save_progress=save_progress,
