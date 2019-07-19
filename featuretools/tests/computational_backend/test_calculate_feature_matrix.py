@@ -101,6 +101,14 @@ def test_calc_feature_matrix(es):
                                                   entityset=es,
                                                   cutoff_time=cutoff_times_dup)
 
+    cutoff_reordered = cutoff_time.iloc[[-1, 10, 1]]  # 3 ids not ordered by cutoff time
+    feature_matrix = calculate_feature_matrix([property_feature],
+                                              es,
+                                              cutoff_time=cutoff_reordered,
+                                              verbose=True)
+
+    assert all(feature_matrix.index == cutoff_reordered["id"].values)
+
 
 def test_cfm_approximate_correct_ordering():
     trips = {

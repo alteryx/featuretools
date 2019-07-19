@@ -268,6 +268,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                          pass_columns=pass_columns,
                                          progress_bar=progress_bar)
 
+    # ensure rows are sorted by input order
     feature_matrix = feature_matrix.reindex(cutoff_time[["instance_id", "time"]])
 
     if not cutoff_time_in_index:
