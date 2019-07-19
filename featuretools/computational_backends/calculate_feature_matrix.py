@@ -180,19 +180,19 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     if _check_time_type(cutoff_time['time'].iloc[0]) is None:
         raise ValueError("cutoff_time time values must be datetime or numeric")
 
-    feature_set = FeatureSet(features)
-
     # make sure dtype of instance_id in cutoff time
     # is same as column it references
     target_entity = features[0].entity
     dtype = entityset[target_entity.id].df[target_entity.index].dtype
     cutoff_time["instance_id"] = cutoff_time["instance_id"].astype(dtype)
 
+    feature_set = FeatureSet(features)
+
     # Get features to approximate
     if approximate is not None:
-        _, all_approx_feature_set = gather_approximate_features(feature_set)
-    else:
-        all_approx_feature_set = None
+        approximate_feature_trie = gather_approximate_features(feature_set)
+        # Make a new FeatureSet that ignores approximated features
+        feature_set = FeatureSet(features, approximate_feature_trie=approximate_feature_trie)
 
     # Check if there are any non-approximated aggregation features
     no_unapproximated_aggs = True
@@ -203,7 +203,12 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             no_unapproximated_aggs = False
             break
 
-        deps = feature.get_dependencies(deep=True, ignored=all_approx_feature_set)
+        if approximate is not None:
+            all_approx_features = {f for _, feats in feature_set.approximate_feature_trie
+                                   for f in feats}
+        else:
+            all_approx_features = set()
+        deps = feature.get_dependencies(deep=True, ignored=all_approx_features)
         for dependency in deps:
             if isinstance(dependency, AggregationFeature):
                 no_unapproximated_aggs = False
@@ -297,7 +302,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
     for _, group in cutoff_time.groupby(cutoff_df_time_var):
         # if approximating, calculate the approximate features
         if approximate is not None:
-            precalculated_features_trie, all_approx_feature_set = approximate_features(
+            precalculated_features_trie = approximate_features(
                 feature_set,
                 group,
                 window=approximate,
@@ -306,7 +311,6 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
             )
         else:
             precalculated_features_trie = None
-            all_approx_feature_set = None
 
         @save_csv_decorator(save_progress)
         def calc_results(time_last, ids, precalculated_features=None, training_window=None):
@@ -321,8 +325,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                                               feature_set,
                                               time_last,
                                               training_window=training_window,
-                                              precalculated_features=precalculated_features,
-                                              ignored=all_approx_feature_set)
+                                              precalculated_features=precalculated_features)
 
             matrix = calculator.run(ids, progress_callback=progress_callback)
             return matrix
@@ -426,10 +429,6 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
         save_progress (str, optional): path to save intermediate computational results
     '''
     approx_fms_trie = Trie(path_constructor=RelationshipPath)
-    all_approx_feature_set = None
-
-    approximate_feature_trie, all_approx_feature_set = \
-        gather_approximate_features(feature_set)
 
     target_time_colname = 'target_time'
     cutoff_time[target_time_colname] = cutoff_time['time']
@@ -438,9 +437,10 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
     cutoff_df_instance_var = 'instance_id'
     # should this order be by dependencies so that calculate_feature_matrix
     # doesn't skip approximating something?
-    for relationship_path, approx_features in approximate_feature_trie:
-        if not approx_features:
+    for relationship_path, approx_feature_names in feature_set.approximate_feature_trie:
+        if not approx_feature_names:
             continue
+
         cutoffs_with_approx_e_ids, new_approx_entity_index_var = \
             _add_approx_entity_index_var(entityset, feature_set.target_eid,
                                          approx_cutoffs.copy(), relationship_path)
@@ -455,6 +455,8 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
         cutoffs_with_approx_e_ids.dropna(subset=[new_approx_entity_index_var],
                                          inplace=True)
 
+        approx_features = [feature_set.features_by_name[name]
+                           for name in approx_feature_names]
         if cutoffs_with_approx_e_ids.empty:
             approx_fm = gen_empty_approx_features_df(approx_features)
         else:
@@ -476,18 +478,7 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
 
         approx_fms_trie.get_node(relationship_path).value = approx_fm
 
-    # Include entity because we only want to ignore features that
-    # are base_features/dependencies of the top level entity we're
-    # approximating.
-    # For instance, if target entity is sessions, and we're
-    # approximating customers.COUNT(sessions.COUNT(log.value)),
-    # we could also just want the feature COUNT(log.value)
-    # defined on sessions
-    # as a first class feature in the feature matrix.
-    # Unless we signify to only ignore it as a dependency of
-    # a feature defined on customers, we would ignore computing it
-    # and FeatureSetCalculator would error
-    return approx_fms_trie, all_approx_feature_set
+    return approx_fms_trie
 
 
 def scatter_warning(num_scattered_workers, num_workers):

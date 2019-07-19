@@ -18,15 +18,11 @@ If there are many unique cutoff times, it is often worthwhile to figure out how 
 
 Adjust chunk size
 -----------------
-Featuretools calculates rows with the same cutoff simultaneously. The `chunk_size` parameter limits the maximum number of rows that will be grouped and then calculated together.
+By default, Featuretools calculates rows with the same cutoff time simultaneously. The `chunk_size` parameter limits the maximum number of rows that will be grouped and then calculated together. If calculation is done using parallel processing, the default chunk size is set to be ``1 / n_jobs`` to ensure the computation can be spread across available workers. Normally, this behavior works well, but if there are only a few unique cutoff times it can lead to higher peak memory usage (due to more intermediate calculations stored in memory) or limited parallelism (if the number of chunks is less than `n_jobs`).
 
-By default, there is no limit to the number of rows that will be calculated at once for a particular cutoff time unless you are using parallel processing in which case the chunk size is set to be ``1 / n_jobs`` to ensure the computation can be spread across available workers. Normally this behavior is works well, but if the resulting feature matrix has only a few cutoff times it can lead to high memory usage or limited parallelism (if `n_jobs > 1`).
+By setting ``chunk_size``, we can limit the maximum number of rows in each group to specific number or a percentage of the overall data when calling ``ft.dfs`` or ``ft.calculate_feature_matrix``::
 
-By setting a cutoff time, we can limit the maximum number of rows in each group to specific number or a percentage of the overall data
-
-We can control chunk size using the ``chunk_size`` argument to ``dfs`` or ``calculate_feature_matrix``::
-
-    # use 100 rows per chunk
+    # use maximum  100 rows per chunk
     feature_matrix, features_list = ft.dfs(entityset=es,
                                            target_entity="customers",
                                            chunk_size=100)
@@ -34,13 +30,10 @@ We can control chunk size using the ``chunk_size`` argument to ``dfs`` or ``calc
 
 We can also set chunk size to be a percentage of total rows::
 
-    # use 5% of rows per chunk
+    # use maximum 5% of all rows per chunk
     feature_matrix, features_list = ft.dfs(entityset=es,
                                            target_entity="customers",
                                            chunk_size=.05)
-
-
-The smaller chunk size may result in lower peak memory usage during the calculation of a group of rows (due to fewer intermediate calculations store in memory) or greater opportunity for parallelism.
 
 
 Partition and Distribute Data
