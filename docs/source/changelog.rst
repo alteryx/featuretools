@@ -8,13 +8,17 @@ Changelog
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
         * Fix deserialization of feature relationship path (:pr:`665`)
+        * Set index after adding ancestor relationship variables (:pr:`668`)
+        * Fix user-supplied variable_types modification in Entity init (:pr:`675`)
+        * Don't calculate dependencies of unnecessary features (:pr:`667`)
     * Changes
         * Moved dask, distributed imports (:pr:`634`)
     * Documentation Changes
         * Miscellaneous changes (:pr:`641`, :pr:`658`)
         * Modified doc_string of top_n in encoding (:pr:`648`)
         * Hyperlinked ComposeML (:pr:`653`)
-        * Added FAQ (:pr:`620`)
+        * Added FAQ (:pr:`620`, :pr:`677`)
+        * Fixed FAQ question with multiple question marks (:pr:`673`)
     * Testing Changes
         * Add master, and release tests for premium primitives (:pr:`660`, :pr:`669`)
         * Miscellaneous changes (:pr:`672`)

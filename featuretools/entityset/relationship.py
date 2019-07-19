@@ -161,6 +161,13 @@ class RelationshipPath(object):
         return isinstance(other, RelationshipPath) and \
             self._relationships_with_direction == other._relationships_with_direction
 
+    def __repr__(self):
+        if self._relationships_with_direction:
+            path = '%s.%s' % (next(self.entities()), self.name)
+        else:
+            path = '[]'
+        return '<RelationshipPath %s>' % path
+
 
 def _direction_name(is_forward, relationship):
     if is_forward:
