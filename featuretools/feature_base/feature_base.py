@@ -26,7 +26,7 @@ from featuretools.variable_types import (
 
 
 class FeatureBase(object):
-    def __init__(self, entity, base_features, relationship_path, primitive, name=None):
+    def __init__(self, entity, base_features, relationship_path, primitive, name=None, names=None):
         """Base class for all features
 
         Args:
@@ -53,6 +53,8 @@ class FeatureBase(object):
 
         self._name = name
 
+        self._names = names
+
         assert self._check_input_types(), ("Provided inputs don't match input "
                                            "type requirements")
 
@@ -76,9 +78,9 @@ class FeatureBase(object):
 
     def get_names(self):
         n = self.number_output_features
-        if not self._name or not type(self._name) == list:
-            self._name = [self.generate_name() + "__{}".format(i) for i in range(n)]
-        return self._name
+        if not self._names:
+            self._names = [self.generate_name() + "__{}".format(i) for i in range(n)]
+        return self._names
 
     def get_feature_names(self):
         n = self.number_output_features

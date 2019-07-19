@@ -493,20 +493,9 @@ class FeatureSetCalculator(object):
         # Sometimes approximate features get computed in a previous filter frame
         # and put in the current one dynamically,
         # so there may be existing features here
-        for f in features:
-            features_li = []
-            if type(f.get_name()) == list:
-                for i in f:
-                    if i not in frame.columns:
-                        features_li.append(i)
-            else:
-                if f not in frame.columns:
-                    features_li.append(f)
-
-        # features = [f for f in features if f.get_name()
-        #             not in frame.columns]
-
-        if not len(features_li):
+        features = [f for f in features if f.get_name()
+                    not in frame.columns]
+        if not len(features):
             return frame
 
         # handle where
@@ -516,7 +505,7 @@ class FeatureSetCalculator(object):
 
         # when no child data, just add all the features to frame with nan
         if base_frame.empty:
-            for f in features_li:
+            for f in features:
                 frame[f.get_name()] = np.nan
         else:
             relationship_path = test_feature.relationship_path
@@ -547,7 +536,7 @@ class FeatureSetCalculator(object):
             to_apply = set()
             # apply multivariable and time-dependent features as we find them, and
             # save aggregable features for later
-            for f in features_li:
+            for f in features:
                 if _can_agg(f):
                     variable_id = f.base_features[0].get_name()
 
@@ -620,7 +609,7 @@ class FeatureSetCalculator(object):
 
         # Handle default values
         fillna_dict = {}
-        for f in features_li:
+        for f in features:
             feature_defaults = {name: f.default_value
                                 for name in f.get_feature_names()}
             fillna_dict.update(feature_defaults)
@@ -629,7 +618,7 @@ class FeatureSetCalculator(object):
 
         # convert boolean dtypes to floats as appropriate
         # pandas behavior: https://github.com/pydata/pandas/issues/3752
-        for f in features_li:
+        for f in features:
             if (f.number_output_features == 1 and
                     f.variable_type == variable_types.Numeric and
                     frame[f.get_name()].dtype.name in ['object', 'bool']):
