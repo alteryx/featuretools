@@ -1,6 +1,8 @@
 import featuretools as ft
 from featuretools.computational_backends.feature_set import FeatureSet
+from featuretools.entityset.relationship import RelationshipPath
 from featuretools.tests.testing_utils import backward_path
+from featuretools.utils import Trie
 
 
 def test_feature_trie_without_needs_full_entity(diamond_es):
@@ -104,3 +106,28 @@ def test_feature_trie_with_needs_full_entity_direct(es):
 
     assert child_through_parent_node.get_node(agg.relationship_path).value == \
         (True, {value.unique_name()}, set())
+
+
+def test_feature_trie_ignores_approximate_features(es):
+    value = ft.IdentityFeature(es['log']['value'],)
+    agg = ft.AggregationFeature(value, es['sessions'],
+                                primitive=ft.primitives.Mean)
+    agg_of_agg = ft.AggregationFeature(agg, es['customers'],
+                                       primitive=ft.primitives.Sum)
+    direct = ft.DirectFeature(agg_of_agg, es['sessions'])
+    features = [direct, agg]
+
+    approximate_feature_trie = Trie(default=list, path_constructor=RelationshipPath)
+    approximate_feature_trie.get_node(direct.relationship_path).value = [agg_of_agg]
+    feature_set = FeatureSet(features, approximate_feature_trie=approximate_feature_trie)
+    trie = feature_set.feature_trie
+
+    # Since agg_of_agg is ignored it and its dependencies should not be in the
+    # trie.
+    sub_trie = trie.get_node(direct.relationship_path)
+    for _path, (_, _, features) in sub_trie:
+        assert not features
+
+    assert trie.value == (False, set(), {direct.unique_name(), agg.unique_name()})
+    assert trie.get_node(agg.relationship_path).value == \
+        (False, set(), {value.unique_name()})

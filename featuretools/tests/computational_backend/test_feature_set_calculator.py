@@ -4,6 +4,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+import pytest
 from numpy.testing import assert_array_equal
 
 import featuretools as ft
@@ -34,6 +35,7 @@ from featuretools.primitives import (  # NMostCommon,
 )
 from featuretools.primitives.base import AggregationPrimitive
 from featuretools.tests.testing_utils import backward_path
+from featuretools.utils import Trie
 from featuretools.variable_types import Numeric
 
 
@@ -381,6 +383,54 @@ def test_make_agg_feat_of_agg_feat(es):
     df = calculator.run(np.array([0]))
     v = df[customer_sum_feat.get_name()][0]
     assert (v == 10)
+
+
+def test_make_3_stacked_agg_feats():
+    """
+    Tests stacking 3 agg features.
+
+    The test specifically uses non numeric indices to test how ancestor variables are handled
+    as dataframes are merged together
+
+    """
+    df = pd.DataFrame({
+        "id": ["a", "b", "c", "d", "e"],
+        "e1": ["h", "h", "i", "i", "j"],
+        "e2": ["x", "x", "y", "y", "x"],
+        "e3": ["z", "z", "z", "z", "z"],
+        "val": [1, 1, 1, 1, 1]
+    })
+
+    es = ft.EntitySet()
+    es.entity_from_dataframe(dataframe=df,
+                             index="id",
+                             entity_id="e0")
+
+    es.normalize_entity(base_entity_id="e0",
+                        new_entity_id="e1",
+                        index="e1",
+                        additional_variables=["e2", "e3"])
+
+    es.normalize_entity(base_entity_id="e1",
+                        new_entity_id="e2",
+                        index="e2",
+                        additional_variables=["e3"])
+
+    es.normalize_entity(base_entity_id="e2",
+                        new_entity_id="e3",
+                        index="e3")
+
+    sum_1 = ft.Feature(es["e0"]["val"], parent_entity=es["e1"], primitive=Sum)
+    sum_2 = ft.Feature(sum_1, parent_entity=es["e2"], primitive=Sum)
+    sum_3 = ft.Feature(sum_2, parent_entity=es["e3"], primitive=Sum)
+
+    feature_set = FeatureSet([sum_3])
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
+    df = calculator.run(np.array(["z"]))
+    v = df[sum_3.get_name()][0]
+    assert (v == 5)
 
 
 def test_make_dfeat_of_agg_feat_on_self(es):
@@ -763,3 +813,51 @@ def test_returns_order_of_instance_ids(es):
     df = calculator.run(np.array(instance_ids))
 
     assert list(df.index) == instance_ids
+
+
+def test_precalculated_features(es):
+    error_msg = 'This primitive should never be used because the features are precalculated'
+
+    class ErrorPrim(AggregationPrimitive):
+        """A primitive whose function raises an error."""
+        name = "error_prim"
+        input_types = [Numeric]
+        return_type = Numeric
+
+        def get_function(self):
+            def error(s):
+                raise RuntimeError(error_msg)
+            return error
+
+    value = ft.Feature(es['log']['value'])
+    agg = ft.Feature(value,
+                     parent_entity=es['sessions'],
+                     primitive=ErrorPrim)
+    agg2 = ft.Feature(agg,
+                      parent_entity=es['customers'],
+                      primitive=ErrorPrim)
+    direct = ft.Feature(agg2, entity=es['sessions'])
+
+    # Set up a FeatureSet which knows which features are precalculated.
+    precalculated_feature_trie = Trie(default=set, path_constructor=RelationshipPath)
+    precalculated_feature_trie.get_node(direct.relationship_path).value.add(agg2.unique_name())
+    feature_set = FeatureSet([direct], approximate_feature_trie=precalculated_feature_trie)
+
+    # Fake precalculated data.
+    values = [0, 1, 2]
+    parent_fm = pd.DataFrame({agg2.get_name(): values})
+    precalculated_fm_trie = Trie(path_constructor=RelationshipPath)
+    precalculated_fm_trie.get_node(direct.relationship_path).value = parent_fm
+
+    calculator = FeatureSetCalculator(es,
+                                      feature_set=feature_set,
+                                      precalculated_features=precalculated_fm_trie)
+
+    instance_ids = [0, 2, 3, 5]
+    fm = calculator.run(np.array(instance_ids))
+
+    assert list(fm[direct.get_name()]) == [values[0], values[0], values[1], values[2]]
+
+    # Calculating without precalculated features should error.
+    with pytest.raises(RuntimeError, match=error_msg):
+        FeatureSetCalculator(es, feature_set=FeatureSet([direct])).run(instance_ids)
