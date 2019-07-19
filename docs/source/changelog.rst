@@ -8,6 +8,7 @@ Changelog
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
         * Fix deserialization of feature relationship path (:pr:`665`)
+        * Set index after adding ancestor relationship variables (:pr:`668`)
         * Fix user-supplied variable_types modification in Entity init (:pr:`675`)
         * Don't calculate dependencies of unnecessary features (:pr:`667`)
     * Changes
