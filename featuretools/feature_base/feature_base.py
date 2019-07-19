@@ -74,12 +74,18 @@ class FeatureBase(object):
             self._name = self.generate_name()
         return self._name
 
+    def get_names(self):
+        n = self.number_output_features
+        if not self._name or not type(self._name) == list:
+            self._name = [self.generate_name() + "__{}".format(i) for i in range(n)]
+        return self._name
+
     def get_feature_names(self):
         n = self.number_output_features
         if n == 1:
             names = [self.get_name()]
         else:
-            names = [self.get_name() + "__{}".format(i) for i in range(n)]
+            names = self.get_names()
         return names
 
     def get_function(self):
