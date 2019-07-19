@@ -349,10 +349,11 @@ def test_serialization(es):
     }
 
     assert dictionary == max1.get_arguments()
-    assert max1 == \
-        ft.AggregationFeature.from_dictionary(dictionary, es,
-                                              {value.unique_name(): value},
-                                              primitives_deserializer)
+    deserialized = ft.AggregationFeature.from_dictionary(dictionary,
+                                                         es,
+                                                         {value.unique_name(): value},
+                                                         primitives_deserializer)
+    _assert_agg_feats_equal(max1, deserialized)
 
     is_purchased = ft.IdentityFeature(es['log']['purchased'])
     use_previous = ft.Timedelta(3, 'd')
@@ -373,9 +374,11 @@ def test_serialization(es):
         value.unique_name(): value,
         is_purchased.unique_name(): is_purchased
     }
-    assert max2 == \
-        ft.AggregationFeature.from_dictionary(dictionary, es, dependencies,
-                                              primitives_deserializer)
+    deserialized = ft.AggregationFeature.from_dictionary(dictionary,
+                                                         es,
+                                                         dependencies,
+                                                         primitives_deserializer)
+    _assert_agg_feats_equal(max2, deserialized)
 
 
 def test_time_since_last(es):
@@ -605,3 +608,11 @@ def test_make_three_most_common(es):
         else:
             for i1, i2 in zip(true_results.iloc[i], df.iloc[i]):
                 assert (pd.isnull(i1) and pd.isnull(i2)) or (i1 == i2)
+
+
+def _assert_agg_feats_equal(f1, f2):
+    assert f1.unique_name() == f2.unique_name()
+    assert f1.child_entity.id == f2.child_entity.id
+    assert f1.parent_entity.id == f2.parent_entity.id
+    assert f1.relationship_path == f2.relationship_path
+    assert f1.use_previous == f2.use_previous
