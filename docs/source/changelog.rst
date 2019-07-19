@@ -21,10 +21,11 @@ Changelog
         * Fixed FAQ question with multiple question marks (:pr:`673`)
     * Testing Changes
         * Add master, and release tests for premium primitives (:pr:`660`, :pr:`669`)
-        * Miscellaneous changes (:pr:`672`)
+        * Miscellaneous changes (:pr:`672`, :pr:`674`)
 
     Thanks to the following people for contributing to this release:
-    :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`kmax12`
+    :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`,
+    :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`
 
 
 **v0.9.1 July 3, 2019**
