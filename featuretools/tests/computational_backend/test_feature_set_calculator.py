@@ -4,6 +4,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+import pytest
 from numpy.testing import assert_array_equal
 
 import featuretools as ft
@@ -35,6 +36,7 @@ from featuretools.primitives import (  # NMostCommon,
 )
 from featuretools.primitives.base import AggregationPrimitive
 from featuretools.tests.testing_utils import backward_path
+from featuretools.utils import Trie
 from featuretools.variable_types import Numeric
 
 
@@ -805,3 +807,51 @@ def test_calls_progress_callback(es):
     calculator.run(np.array(instance_ids), mock_progress_callback)
 
     assert np.isclose(mock_progress_callback.total, 1)
+
+
+def test_precalculated_features(es):
+    error_msg = 'This primitive should never be used because the features are precalculated'
+
+    class ErrorPrim(AggregationPrimitive):
+        """A primitive whose function raises an error."""
+        name = "error_prim"
+        input_types = [Numeric]
+        return_type = Numeric
+
+        def get_function(self):
+            def error(s):
+                raise RuntimeError(error_msg)
+            return error
+
+    value = ft.Feature(es['log']['value'])
+    agg = ft.Feature(value,
+                     parent_entity=es['sessions'],
+                     primitive=ErrorPrim)
+    agg2 = ft.Feature(agg,
+                      parent_entity=es['customers'],
+                      primitive=ErrorPrim)
+    direct = ft.Feature(agg2, entity=es['sessions'])
+
+    # Set up a FeatureSet which knows which features are precalculated.
+    precalculated_feature_trie = Trie(default=set, path_constructor=RelationshipPath)
+    precalculated_feature_trie.get_node(direct.relationship_path).value.add(agg2.unique_name())
+    feature_set = FeatureSet([direct], approximate_feature_trie=precalculated_feature_trie)
+
+    # Fake precalculated data.
+    values = [0, 1, 2]
+    parent_fm = pd.DataFrame({agg2.get_name(): values})
+    precalculated_fm_trie = Trie(path_constructor=RelationshipPath)
+    precalculated_fm_trie.get_node(direct.relationship_path).value = parent_fm
+
+    calculator = FeatureSetCalculator(es,
+                                      feature_set=feature_set,
+                                      precalculated_features=precalculated_fm_trie)
+
+    instance_ids = [0, 2, 3, 5]
+    fm = calculator.run(np.array(instance_ids))
+
+    assert list(fm[direct.get_name()]) == [values[0], values[0], values[1], values[2]]
+
+    # Calculating without precalculated features should error.
+    with pytest.raises(RuntimeError, match=error_msg):
+        FeatureSetCalculator(es, feature_set=FeatureSet([direct])).run(instance_ids)

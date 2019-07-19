@@ -15,10 +15,28 @@ logger = logging.getLogger('featuretools.computational_backend')
 
 
 class FeatureSet(object):
-    def __init__(self, features):
+    """
+    Represents an immutable set of features to be calculated for a single entity, and their
+    dependencies.
+    """
+    def __init__(self, features, approximate_feature_trie=None):
+        """
+        Args:
+            features (list[Feature]): Features of the target entity.
+            approximate_feature_trie (Trie[RelationshipPath, set[str]], optional): Dependency
+                features to ignore because they have already been approximated. For example, if
+                one of the target features is a direct feature of a feature A and A is included in
+                approximate_feature_trie then neither A nor its dependencies will appear in
+                FeatureSet.feature_trie.
+        """
         self.target_eid = features[0].entity.id
         self.target_features = features
         self.target_feature_names = {f.unique_name() for f in features}
+
+        if not approximate_feature_trie:
+            approximate_feature_trie = Trie(default=list,
+                                            path_constructor=RelationshipPath)
+        self.approximate_feature_trie = approximate_feature_trie
 
         # Maps the unique name of each feature to the actual feature. This is necessary
         # because features do not support equality and so cannot be used as
@@ -41,30 +59,58 @@ class FeatureSet(object):
             fname: [self.features_by_name[dname] for dname in feature_dependents[fname]]
             for fname, f in self.features_by_name.items()}
 
-        self.feature_trie = self._build_feature_trie()
+        self._feature_trie = None
+
+    @property
+    def feature_trie(self):
+        """
+        The target features and their dependencies organized into a trie by relationship path.
+        This is built once when it is first called (to avoid building it if it is not needed) and
+        then used for all subsequent calls.
+
+        The edges of the trie are RelationshipPaths and the values are tuples of
+        (bool, set[str], set[str]). The bool represents whether the full entity df is needed at
+        that node, the first set contains the names of features which are needed on the full
+        entity, and the second set contains the names of the rest of the features
+
+        Returns:
+            Trie[RelationshipPath, (bool, set[str], set[str])]
+        """
+        if not self._feature_trie:
+            self._feature_trie = self._build_feature_trie()
+
+        return self._feature_trie
 
     def _build_feature_trie(self):
         """
-        Construct a trie mapping RelationshipPaths to a tuple of
-        (bool, set[str], set[str]). The bool represents whether the full
-        entity df is needed at that node, the first set contains the names of
-        features which are needed on the full entity, and the second set
-        contains the names of the rest of the features
+        Build the feature trie by adding the target features and their dependencies recursively.
         """
         feature_trie = Trie(default=lambda: (False, set(), set()),
                             path_constructor=RelationshipPath)
 
         for f in self.target_features:
-            self._add_feature_to_trie(feature_trie, f)
+            self._add_feature_to_trie(feature_trie,
+                                      f,
+                                      self.approximate_feature_trie)
 
         return feature_trie
 
-    def _add_feature_to_trie(self, trie, feature, ancestor_needs_full_entity=False):
+    def _add_feature_to_trie(self, trie, feature, approximate_feature_trie,
+                             ancestor_needs_full_entity=False):
+        """
+        Add the given feature to the root of the trie, and recurse on its dependencies. If it is in
+        approximate_feature_trie then it will not be added and we will not recurse on its dependencies.
+        """
         node_needs_full_entity, full_features, not_full_features = trie.value
         needs_full_entity = ancestor_needs_full_entity or self.uses_full_entity(feature)
 
         name = feature.unique_name()
 
+        # If this feature is ignored then don't add it or any of its dependencies.
+        if name in approximate_feature_trie.value:
+            return
+
+        # Add the feature to one of the sets, depending on whether it needs the full entity.
         if needs_full_entity:
             full_features.add(name)
             if name in not_full_features:
@@ -85,8 +131,10 @@ class FeatureSet(object):
 
             sub_trie = trie.get_node(feature.relationship_path)
 
+        sub_ignored_trie = approximate_feature_trie.get_node(feature.relationship_path)
+
         for dep_feat in feature.get_dependencies():
-            self._add_feature_to_trie(sub_trie, dep_feat,
+            self._add_feature_to_trie(sub_trie, dep_feat, sub_ignored_trie,
                                       ancestor_needs_full_entity=needs_full_entity)
 
     def group_features(self, feature_names):

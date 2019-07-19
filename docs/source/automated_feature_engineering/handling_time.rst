@@ -166,6 +166,14 @@ It is sometimes the case that information in a dataset is updated or added after
 The :func:`Flights <demo.load_flight>` entityset is a good example of a dataset where column values in a row become known at different times. Each trip is recorded in the ``trip_logs`` entity, and has many times associated with it.
 
 .. ipython:: python
+    :suppress:
+
+    import urllib.request as urllib2
+    opener = urllib2.build_opener()
+    opener.addheaders = [('Testing', 'True')]
+    urllib2.install_opener(opener)
+
+.. ipython:: python
 
     es_flight = ft.demo.load_flight(nrows=100)
     es_flight
