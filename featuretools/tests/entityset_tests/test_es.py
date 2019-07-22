@@ -789,6 +789,7 @@ def test_normalize_entity_new_time_index(es):
     assert len(es['values'].df.columns) == 2
     assert es['values'].df[new_time_index].is_monotonic_increasing
 
+
 def test_normalize_entity_same_index(es):
     transactions_df = pd.DataFrame({"id": [1, 2, 3],
                                     "transaction_time": pd.date_range(start="10:00", periods=3, freq="10s"),
@@ -805,6 +806,7 @@ def test_normalize_entity_same_index(es):
                             new_entity_id="new_entity",
                             index="id",
                             make_time_index=True)
+
 
 def test_secondary_time_index(es):
     es.normalize_entity('log', 'values', 'value',
