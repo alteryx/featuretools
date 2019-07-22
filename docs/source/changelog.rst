@@ -11,6 +11,7 @@ Changelog
         * Set index after adding ancestor relationship variables (:pr:`668`)
         * Fix user-supplied variable_types modification in Entity init (:pr:`675`)
         * Don't calculate dependencies of unnecessary features (:pr:`667`)
+        * Normalize entity same index as base entity #681 (:pr:`681`)
     * Changes
         * Moved dask, distributed imports (:pr:`634`)
     * Documentation Changes
