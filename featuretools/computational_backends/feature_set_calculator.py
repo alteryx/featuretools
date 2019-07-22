@@ -352,6 +352,9 @@ class FeatureSetCalculator(object):
                             left_on=relationship.child_variable.id,
                             right_on=relationship.child_variable.id)
 
+        # ensure index is maintained
+        df.set_index(relationship.child_entity.index, drop=False, inplace=True)
+
         return df, new_relationship_variables
 
     def generate_default_df(self, instance_ids, extra_columns=None):
