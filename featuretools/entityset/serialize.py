@@ -2,6 +2,8 @@ import json
 import os
 import shutil
 
+from smart_open import open
+
 FORMATS = ['csv', 'pickle', 'parquet']
 SCHEMA_VERSION = "1.0.0"
 

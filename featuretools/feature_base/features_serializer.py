@@ -1,5 +1,7 @@
 import json
 
+from smart_open import open
+
 from featuretools.version import __version__ as ft_version
 
 SCHEMA_VERSION = "3.0.0"
