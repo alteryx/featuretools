@@ -1,5 +1,7 @@
 import json
 
+from smart_open import open
+
 from featuretools.entityset.deserialize import \
     description_to_entityset as deserialize_es
 from featuretools.feature_base.feature_base import (

@@ -2,6 +2,7 @@ import json
 import os
 
 import pandas as pd
+from smart_open import open
 
 from featuretools.entityset.relationship import Relationship
 from featuretools.entityset.serialize import FORMATS
