@@ -444,6 +444,7 @@ def test_concat_entitysets(es):
     es_1 = copy.deepcopy(es)
     es_2 = copy.deepcopy(es)
 
+    # map of what rows to take from es_1 and es_2 for each entity
     emap = {
         'log': [list(range(10)) + [14, 15, 16], list(range(10, 14)) + [15, 16]],
         'sessions': [[0, 1, 2, 5], [1, 3, 4, 5]],
@@ -480,7 +481,7 @@ def test_concat_entitysets(es):
     assert old_es_1.__eq__(es_1, deep=True)
     assert old_es_2.__eq__(es_2, deep=True)
 
-    assert es_3.__eq__(es, deep=True)
+    assert es_3.__eq__(es)
     for entity in es.entities:
         df = es[entity.id].df.sort_index()
         df_3 = es_3[entity.id].df.sort_index()
