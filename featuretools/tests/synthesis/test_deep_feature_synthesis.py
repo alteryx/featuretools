@@ -796,3 +796,14 @@ def test_makes_trans_of_multiple_direct_features(diamond_es):
 
     # The naming of the below is confusing but this is a direct feature of a transform.
     assert feature_with_name(features, 'stores.MEAN(transactions.amount) = square_ft')
+
+
+def test_makes_direct_of_agg_of_trans_on_target(es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
+                                   entityset=es,
+                                   agg_primitives=['mean'],
+                                   trans_primitives=[Absolute],
+                                   max_depth=3)
+
+    features = dfs_obj.build_features()
+    assert feature_with_name(features, 'sessions.MEAN(log.ABSOLUTE(value))')

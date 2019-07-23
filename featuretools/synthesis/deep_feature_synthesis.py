@@ -285,9 +285,13 @@ class DeepFeatureSynthesis(object):
 
         all_features[entity.id] = {}
 
-        self._add_identity_features(all_features, entity)
         """
-        Step 1 - Recursively build features for each entity in a backward relationship
+        Step 1 - Create identity features
+        """
+        self._add_identity_features(all_features, entity)
+
+        """
+        Step 2 - Recursively build features for each entity in a backward relationship
         """
 
         backward_entities = self.es.get_backward_entities(entity.id)
@@ -312,7 +316,7 @@ class DeepFeatureSynthesis(object):
                           max_depth=new_max_depth)
 
         """
-        Step 2 - Create agg_feat features for all deep backward relationships
+        Step 3 - Create aggregation features for all deep backward relationships
         """
         backward_entities = self.es.get_backward_entities(entity.id, deep=True)
         for b_entity_id, sub_relationship_path in backward_entities:
@@ -330,7 +334,12 @@ class DeepFeatureSynthesis(object):
                                      relationship_path=sub_relationship_path)
 
         """
-        Step 3 - Recursively build features for each entity in a forward relationship
+        Step 4 - Create transform features of identity and aggregation features
+        """
+        self._build_transform_features(all_features, entity, max_depth=max_depth)
+
+        """
+        Step 5 - Recursively build features for each entity in a forward relationship
         """
         forward_entities = self.es.get_forward_entities(entity.id)
         for f_entity_id, sub_relationship_path in forward_entities:
@@ -354,7 +363,7 @@ class DeepFeatureSynthesis(object):
                           max_depth=new_max_depth)
 
         """
-        Step 4 - Create dfeat features for forward relationships
+        Step 6 - Create direct features for forward relationships
         """
         forward_entities = self.es.get_forward_entities(entity.id)
         for f_entity_id, sub_relationship_path in forward_entities:
@@ -371,9 +380,9 @@ class DeepFeatureSynthesis(object):
                 max_depth=max_depth)
 
         """
-        Step 5 - Create Transform features
+        Step 7 - Create transform features of direct features
         """
-        self._build_transform_features(all_features, entity, max_depth=max_depth)
+        self._build_transform_features(all_features, entity, max_depth=max_depth, direct_only=True)
 
         # now that all  features are added, build where clauses
         self._build_where_clauses(all_features, entity)
@@ -457,7 +466,7 @@ class DeepFeatureSynthesis(object):
             for val in variable.interesting_values:
                 self.where_clauses[entity.id].add(feat == val)
 
-    def _build_transform_features(self, all_features, entity, max_depth=0):
+    def _build_transform_features(self, all_features, entity, max_depth=0, direct_only=False):
         """Creates trans_features for all the variables in an entity
 
         Args:
@@ -477,18 +486,9 @@ class DeepFeatureSynthesis(object):
             if type(input_types[0]) == list:
                 input_types = input_types[0]
 
-            features = self._features_by_type(all_features=all_features,
-                                              entity=entity,
-                                              max_depth=new_max_depth,
-                                              variable_type=set(input_types))
+            matching_inputs = self._get_matching_inputs(all_features, entity, new_max_depth,
+                                                        input_types, trans_prim, direct_only)
 
-            matching_inputs = match(input_types, features,
-                                    commutative=trans_prim.commutative)
-
-            # Don't create trans features of inputs which are all direct
-            # features with the same relationship_path.
-            matching_inputs = {inputs for inputs in matching_inputs
-                               if not _all_direct_and_same_path(inputs)}
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
                     new_f = TransformFeature(matching_input,
@@ -507,12 +507,9 @@ class DeepFeatureSynthesis(object):
                 input_types = input_types[0]
             input_types.append(Id)
 
-            features = self._features_by_type(all_features=all_features,
-                                              entity=entity,
-                                              max_depth=new_max_depth,
-                                              variable_type=set(input_types))
-            matching_inputs = match(input_types, features,
-                                    commutative=groupby_prim.commutative)
+            matching_inputs = self._get_matching_inputs(all_features, entity, new_max_depth,
+                                                        input_types, groupby_prim, direct_only)
+
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
                     new_f = GroupByTransformFeature(list(matching_input[:-1]),
@@ -656,6 +653,28 @@ class DeepFeatureSynthesis(object):
                 return True
 
         return False
+
+    def _get_matching_inputs(self, all_features, entity, max_depth, input_types,
+                             primitive, direct_only):
+        features = self._features_by_type(all_features=all_features,
+                                          entity=entity,
+                                          max_depth=max_depth,
+                                          variable_type=set(input_types))
+
+        matching_inputs = match(input_types, features,
+                                commutative=primitive.commutative)
+
+        if direct_only:
+            # Only include inputs for which at least one input is a DirectFeature
+            matching_inputs = [inputs for inputs in matching_inputs
+                               if any(isinstance(f, DirectFeature) for f in inputs)]
+
+            # Don't create trans features of inputs which are all direct
+            # features with the same relationship_path.
+            matching_inputs = {inputs for inputs in matching_inputs
+                               if not _all_direct_and_same_path(inputs)}
+
+        return matching_inputs
 
 
 def check_stacking(primitive, inputs):
