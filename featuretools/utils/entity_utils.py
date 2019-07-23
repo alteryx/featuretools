@@ -56,11 +56,10 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
                 # catch cases where object dtype cannot be interpreted as a string
                 try:
                     avg_length = sample.str.len().mean()
+                    if avg_length > 50:
+                        inferred_type = vtypes.Text
                 except AttributeError:
                     pass
-
-                if avg_length > 50:
-                    inferred_type = vtypes.Text
 
         elif df[variable].dtype == "bool":
             inferred_type = vtypes.Boolean
