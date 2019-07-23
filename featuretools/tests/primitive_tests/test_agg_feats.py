@@ -9,7 +9,8 @@ import pytest
 
 import featuretools as ft
 from featuretools.entityset.relationship import RelationshipPath
-from featuretools.primitives import (  # NMostCommon,
+from featuretools.primitives import (
+    NMostCommon,
     Count,
     Mean,
     Median,
@@ -598,7 +599,7 @@ def test_make_three_most_common(es):
         ['coke zero', 'Haribo sugar-free gummy bears', np.nan],
         ['taco clock', np.nan, np.nan]
     ])
-    df = fm[["PD_TOP3(log.product_id)__%s" % i for i in range(3)]]
+    df = fm[["PD_TOP3(log.product_id)[%s]" % i for i in range(3)]]
     for i in range(df.shape[0]):
         if i == 0:
             # coke zero and toothpaste have same number of occurrences
@@ -608,6 +609,21 @@ def test_make_three_most_common(es):
         else:
             for i1, i2 in zip(true_results.iloc[i], df.iloc[i]):
                 assert (pd.isnull(i1) and pd.isnull(i2)) or (i1 == i2)
+
+def test_stacking_multi(es):
+    threecommon = NMostCommon(3)
+    import pdb
+    pdb.set_trace()
+    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=threecommon)
+
+    stacked = ft.Feature(tc, parent_entity=es['customers'], primitive=Sum)
+
+    fm, feat = ft.dfs(entityset=es,
+                      target_entity="customers",
+                      seed_features = tc
+                      )
+
+    assert(1==1)
 
 
 def _assert_agg_feats_equal(f1, f2):

@@ -37,6 +37,13 @@ class PrimitiveBase(object):
     def __init__(self):
         pass
 
+    def __get_item__(self, n):
+        msg = "cannot access slice from single output feature"
+        assert(self.number_output_features > 1), msg
+        msg = "cannot access instance of feature that is not between 0 and " + str(n-1)
+        assert(self.number_output_features < n), msg
+        return
+
     def __call__(self, *args, **kwargs):
         series_args = [pd.Series(arg) for arg in args]
         try:

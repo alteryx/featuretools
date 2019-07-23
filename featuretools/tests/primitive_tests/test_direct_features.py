@@ -150,7 +150,7 @@ def test_direct_features_of_multi_output_agg_primitives(es):
             true_result_rows.append(session_data[i])
             count -= 1
 
-    tempname = "sessions.N_MOST_COMMON_CATEGORICAL(log.product_id)__%s"
+    tempname = "sessions.N_MOST_COMMON_CATEGORICAL(log.product_id)[%s]"
     for i, row in enumerate(true_result_rows):
         for j in range(3):
             value = fm[tempname % (j)][i]

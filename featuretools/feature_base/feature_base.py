@@ -79,7 +79,7 @@ class FeatureBase(object):
     def get_names(self):
         n = self.number_output_features
         if not self._names:
-            self._names = [self.generate_name() + "__{}".format(i) for i in range(n)]
+            self._names = [self.generate_name() + "[{}]".format(i) for i in range(n)]
         return self._names
 
     def get_feature_names(self):
@@ -641,7 +641,7 @@ class TransformFeature(FeatureBase):
             base_features = [_check_feature(base_features)]
 
         # R TODO handle stacking on sub-features
-        assert all(bf.number_output_features == 1 for bf in base_features)
+        # assert all(bf.number_output_features == 1 for bf in base_features)
 
         super(TransformFeature, self).__init__(entity=base_features[0].entity,
                                                base_features=base_features,
@@ -746,6 +746,28 @@ class Feature(object):
             return TransformFeature(base, primitive=primitive)
 
         raise Exception("Unrecognized feature initialization")
+
+class MultiOutputFeatCol(object):
+    """
+    Class to access specific multi output feature column
+    """
+    def __init__(self, multi_feature, n):
+        #should take in a feature ie <Feature: n_most_common> and the specific
+        #output number, (0:n-1), and then get_feature_names should return the
+        #name of the specific output column that corresponds to it
+        self.multi_feature = multi_feature
+        self.num_output_parent = multi_feature.number_output_features
+        self.n = n
+
+        msg = "cannot access slice from single output feature"
+        assert(self.num_output_parent > 1), msg
+        msg = "cannot access instance of feature that is not between 0 and " + str(n-1)
+        assert(self.num_output_parent < n), msg
+
+    def get_feature_names(self):
+        #want to return name of column
+        return [self.multi_feature + "[" + str(self.n) +"]"]
+
 
 
 def _check_feature(feature):

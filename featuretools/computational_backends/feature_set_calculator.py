@@ -472,6 +472,7 @@ class FeatureSetCalculator(object):
                 if name in child_df.columns:
                     continue
                 col_map[base_name] = name
+
         # merge the identity feature from the parent entity into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
         if index_as_feature is not None:
@@ -488,13 +489,19 @@ class FeatureSetCalculator(object):
     def _calculate_agg_features(self, features, frame, df_trie):
         test_feature = features[0]
         child_entity = test_feature.base_features[0].entity
-
         base_frame = df_trie.get_node(test_feature.relationship_path).value
         # Sometimes approximate features get computed in a previous filter frame
         # and put in the current one dynamically,
         # so there may be existing features here
-        features = [f for f in features if f.get_name()
-                    not in frame.columns]
+        fl = []
+        for f in features:
+            for ind in f.get_feature_names():
+                if ind not in frame.columns:
+                    fl.append(f)
+                    break
+        features = fl
+        import pdb
+        pdb.set_trace()
         if not len(features):
             return frame
 
@@ -665,6 +672,7 @@ def agg_wrapper(feats, time_last):
                 values = func(*args, time=time_last)
             else:
                 values = func(*args)
+
             if f.number_output_features == 1:
                 values = [values]
             update_feature_columns(f, d, values)
