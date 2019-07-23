@@ -21,13 +21,16 @@ def test_infer_variable_types():
                        'boolean': [True, False, True],
                        'date': ['3/11/2000', '3/12/2000', '3/13/2000'],
                        'integers': [1, 2, 1],
-                       'integers_category': [1, 2, 1]})
+                       'link_var': [1, 2, 1],
+                       'integers_category': [1, 2, 1],
+                       'integers_object_dtype': [1, 2, 1]})
 
     df['integers_category'] = df['integers_category'].astype('category')
+    df['integers_object_dtype'] = df['integers_object_dtype'].astype('object')
     variable_types = ['id']
 
     inferred_variable_types = infer_variable_types(df=df,
-                                                   link_vars=[],
+                                                   link_vars=["link_var"],
                                                    variable_types=variable_types,
                                                    time_index=None,
                                                    secondary_time_index={})
@@ -41,7 +44,9 @@ def test_infer_variable_types():
     assert inferred_variable_types['boolean'] == vtypes.Boolean
     assert inferred_variable_types['date'] == vtypes.Datetime
     assert inferred_variable_types['integers'] == vtypes.Numeric
+    assert inferred_variable_types['link_var'] == vtypes.Categorical
     assert inferred_variable_types['integers_category'] == vtypes.Categorical
+    assert inferred_variable_types['integers_object_dtype'] == vtypes.Categorical
 
 
 def test_convert_all_variable_data():
