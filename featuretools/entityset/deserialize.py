@@ -1,5 +1,9 @@
 import json
+from pathlib import Path
 import os
+import tarfile
+import tempfile
+import urllib
 
 import pandas as pd
 from smart_open import open
@@ -141,10 +145,11 @@ def read_data_description(path):
         Returns:
             description (dict) : Description of :class:`.EntitySet`.
     '''
+
     path = os.path.abspath(path)
     assert os.path.exists(path), '"{}" does not exist'.format(path)
     file = os.path.join(path, 'data_description.json')
-    with open(file, 'r') as file:
+    with open(file, 'rb') as file:
         description = json.load(file)
     description['path'] = path
     return description
@@ -157,5 +162,22 @@ def read_entityset(path, **kwargs):
             path (str): Directory on disk to read `data_description.json`.
             kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
     '''
-    data_description = read_data_description(path)
-    return description_to_entityset(data_description, **kwargs)
+    if(is_url(path)):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            file_name = Path(path).name + ".tar"
+            file_path = os.path.join(tmpdir, file_name)
+            with open(path, "rb") as fin:
+                with open(file_path, 'wb') as fout:
+                    for line in fin:
+                        fout.write(line)
+            tar = tarfile.open(str(file_path))
+            tar.extractall(path=tmpdir)
+            data_description = read_data_description(tmpdir)
+            return description_to_entityset(data_description, **kwargs)
+    else:
+        data_description = read_data_description(path)
+        return description_to_entityset(data_description, **kwargs)
+
+
+def is_url(string):
+    return urllib.parse.urlparse(string).scheme in ('http', 'https', "s3")
