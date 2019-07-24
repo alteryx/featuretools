@@ -6,7 +6,8 @@ import boto3
 from moto import mock_s3
 import pandas as pd
 import pytest
-import smart_open as open
+import tarfile
+from smart_open import open
 
 from featuretools.demo import load_mock_customer
 from featuretools.entityset import EntitySet, deserialize, serialize
@@ -19,6 +20,8 @@ from featuretools.variable_types.variable import (
 )
 
 CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
+BUCKET_NAME = "test-bucket"
+WRITE_KEY_NAME = "test-key"
 
 
 def test_all_variable_descriptions():
@@ -142,20 +145,50 @@ def test_to_pickle_id_none(path_management):
     new_es = deserialize.read_entityset(path_management)
     assert es.__eq__(new_es, deep=True)
 
-
-BUCKET_NAME = "test-bucket"
-WRITE_KEY_NAME = "test-key"
-
-
 @mock_s3
-def test_serialize_url(es):
+def test_serialize_s3_csv(es):
     boto3.resource('s3').create_bucket(Bucket=BUCKET_NAME)
 
     url = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
     es.to_csv(url, encoding='utf-8', engine='python')
-    # output = list(open.smart_open("s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME), "rb"))
-    # print(output)
-    #get and deserialize and check
+    new_es = deserialize.read_entityset(url)
+    assert es.__eq__(new_es, deep=True)
+
+    s3 = boto3.resource('s3')
+    try:
+        for key in boto3.resource('s3').Bucket(BUCKET_NAME).objects.all():
+            key.delete()
+        s3.Bucket(BUCKET_NAME).delete()
+    except s3.meta.client.exceptions.NoSuchBucket:
+        pass
+
+
+@mock_s3
+def test_serialize_s3_pickle(es):
+    boto3.resource('s3').create_bucket(Bucket=BUCKET_NAME)
+
+    url = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
+    es.to_pickle(url)
+    new_es = deserialize.read_entityset(url)
+    assert es.__eq__(new_es, deep=True)
+
+    s3 = boto3.resource('s3')
+    try:
+        for key in boto3.resource('s3').Bucket(BUCKET_NAME).objects.all():
+            key.delete()
+        s3.Bucket(BUCKET_NAME).delete()
+    except s3.meta.client.exceptions.NoSuchBucket:
+        pass
+
+
+@mock_s3
+def test_serialize_s3_parquet(es):
+    boto3.resource('s3').create_bucket(Bucket=BUCKET_NAME)
+
+    url = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
+    es.to_parquet(url)
+    new_es = deserialize.read_entityset(url)
+    assert es.__eq__(new_es, deep=True)
 
     s3 = boto3.resource('s3')
     try:
