@@ -125,11 +125,12 @@ def write_data_description(entityset, path, **kwargs):
             file_name = "es-{date:%Y-%m-%d_%H:%M:%S}".format(date=datetime.datetime.now())
             file_path = os.path.join(tmpdir, file_name)
             tar = tarfile.open(str(file_path) + ".tar", 'w')
-            tar.add(str(tmpdir), arcname=file_name)
+            tar.add(str(tmpdir) + '/data_description.json', arcname='data_description.json')
+            tar.add(str(tmpdir) + '/data', arcname='/data')
             tar.close()
             tar = tarfile.open(str(file_path) + ".tar")
-            with open(file_path + ".tar", 'r') as fin:
-                with open(path, 'w') as fout:
+            with open(file_path + ".tar", 'rb') as fin:
+                with open(path, 'wb') as fout:
                     for line in fin:
                         fout.write(line)
     else:
