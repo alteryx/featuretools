@@ -1,6 +1,9 @@
+import datetime
 import json
 import os
 import shutil
+import tempfile
+import urllib
 
 from smart_open import open
 
@@ -107,15 +110,36 @@ def write_data_description(entityset, path, **kwargs):
         path (str) : Location on disk to write `data_description.json` and entity data.
         kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
     '''
-    path = os.path.abspath(path)
-    if os.path.exists(path):
-        shutil.rmtree(path)
-    for dirname in [path, os.path.join(path, 'data')]:
-        os.makedirs(dirname)
-    description = entityset_to_description(entityset)
-    for entity in entityset.entities:
-        loading_info = write_entity_data(entity, path, **kwargs)
-        description['entities'][entity.id]['loading_info'].update(loading_info)
-    file = os.path.join(path, 'data_description.json')
-    with open(file, 'w') as file:
-        json.dump(description, file)
+    if is_url(path):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            os.makedirs(os.path.join(tmpdir, 'data'))
+            description = entityset_to_description(entityset)
+            for entity in entityset.entities:
+                loading_info = write_entity_data(entity, tmpdir, **kwargs)
+                description['entities'][entity.id]['loading_info'].update(loading_info)
+            file = os.path.join(tmpdir, 'data_description.json')
+            with open(file, 'w') as file:
+                json.dump(description, file)
+            file_name = "es-{date:%Y-%m-%d_%H:%M:%S}.tar".format(data=datetime.datetime.now())
+            shutil.make_archive(file_name, format='tar', root_dir=tmpdir)
+            with open(os.path.join(tmpdir, file_name)) as fin:
+                with open(path, 'w') as fout:
+                    for line in fin:
+                        fout.write(line)
+    else:
+        path = os.path.abspath(path)
+        if os.path.exists(path):
+            shutil.rmtree(path)
+        for dirname in [path, os.path.join(path, 'data')]:
+            os.makedirs(dirname)
+        description = entityset_to_description(entityset)
+        for entity in entityset.entities:
+            loading_info = write_entity_data(entity, path, **kwargs)
+            description['entities'][entity.id]['loading_info'].update(loading_info)
+        file = os.path.join(path, 'data_description.json')
+        with open(file, 'w') as file:
+            json.dump(description, file)
+
+
+def is_url(string):
+    return urllib.parse.urlparse(string).scheme in ('http', 'https')
