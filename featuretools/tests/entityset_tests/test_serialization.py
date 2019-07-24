@@ -3,11 +3,9 @@ import os
 import shutil
 
 import boto3
-from moto import mock_s3
 import pandas as pd
 import pytest
-import tarfile
-from smart_open import open
+from moto import mock_s3
 
 from featuretools.demo import load_mock_customer
 from featuretools.entityset import EntitySet, deserialize, serialize
@@ -144,6 +142,7 @@ def test_to_pickle_id_none(path_management):
     es.to_pickle(path_management)
     new_es = deserialize.read_entityset(path_management)
     assert es.__eq__(new_es, deep=True)
+
 
 @mock_s3
 def test_serialize_s3_csv(es):
