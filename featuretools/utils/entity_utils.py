@@ -67,6 +67,9 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
         elif pdtypes.is_categorical_dtype(df[variable].dtype):
             inferred_type = vtypes.Categorical
 
+        elif pdtypes.is_numeric_dtype(df[variable].dtype):
+            inferred_type = vtypes.Numeric
+
         elif col_is_datetime(df[variable]):
             inferred_type = vtypes.Datetime
 
