@@ -2,8 +2,11 @@ import errno
 import os
 import shutil
 
+import boto3
+from moto import mock_s3
 import pandas as pd
 import pytest
+import smart_open as open
 
 from featuretools.demo import load_mock_customer
 from featuretools.entityset import EntitySet, deserialize, serialize
@@ -138,3 +141,26 @@ def test_to_pickle_id_none(path_management):
     es.to_pickle(path_management)
     new_es = deserialize.read_entityset(path_management)
     assert es.__eq__(new_es, deep=True)
+
+
+BUCKET_NAME = "test-bucket"
+WRITE_KEY_NAME = "test-key"
+
+
+@mock_s3
+def test_serialize_url(es):
+    boto3.resource('s3').create_bucket(Bucket=BUCKET_NAME)
+
+    url = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
+    es.to_csv(url, encoding='utf-8', engine='python')
+    # output = list(open.smart_open("s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME), "rb"))
+    # print(output)
+    #get and deserialize and check
+
+    s3 = boto3.resource('s3')
+    try:
+        for key in boto3.resource('s3').Bucket(BUCKET_NAME).objects.all():
+            key.delete()
+        s3.Bucket(BUCKET_NAME).delete()
+    except s3.meta.client.exceptions.NoSuchBucket:
+        pass
