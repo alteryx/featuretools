@@ -662,13 +662,10 @@ class DeepFeatureSynthesis(object):
                                           variable_type=set(input_types))
 
         matching_inputs = match(input_types, features,
-                                commutative=primitive.commutative)
+                                commutative=primitive.commutative,
+                                need_direct=direct_only)
 
         if direct_only:
-            # Only include inputs for which at least one input is a DirectFeature
-            matching_inputs = [inputs for inputs in matching_inputs
-                               if any(isinstance(f, DirectFeature) for f in inputs)]
-
             # Don't create trans features of inputs which are all direct
             # features with the same relationship_path.
             matching_inputs = {inputs for inputs in matching_inputs
@@ -727,12 +724,13 @@ def match_by_type(features, t):
     return matches
 
 
-def match(input_types, features, replace=False, commutative=False):
+def match(input_types, features, replace=False, commutative=False, need_direct=False):
     to_match = input_types[0]
     matches = match_by_type(features, to_match)
 
     if len(input_types) == 1:
-        return [(m,) for m in matches]
+        return [(m,) for m in matches
+                if (not need_direct or isinstance(m, DirectFeature))]
 
     matching_inputs = set([])
 
@@ -742,7 +740,10 @@ def match(input_types, features, replace=False, commutative=False):
         if not replace:
             copy = [c for c in copy if c.unique_name() != m.unique_name()]
 
-        rest = match(input_types[1:], copy, replace)
+        # If we need a DirectFeature and this is not a DirectFeature then one of the rest must be.
+        still_need_direct = need_direct and not isinstance(m, DirectFeature)
+        rest = match(input_types[1:], copy, replace, need_direct=still_need_direct)
+
         for r in rest:
             new_match = [m] + list(r)
 
@@ -755,9 +756,9 @@ def match(input_types, features, replace=False, commutative=False):
             matching_inputs.add(new_match)
 
     if commutative:
-        return set([tuple(sorted(s, key=lambda x: x.get_name().lower())) for s in matching_inputs])
+        matching_inputs = {tuple(sorted(s, key=lambda x: x.get_name().lower())) for s in matching_inputs}
 
-    return set([tuple(s) for s in matching_inputs])
+    return matching_inputs
 
 
 def handle_primitive(primitive):
