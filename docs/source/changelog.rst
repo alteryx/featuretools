@@ -13,6 +13,7 @@ Changelog
         * Fix user-supplied variable_types modification in Entity init (:pr:`675`)
         * Don't calculate dependencies of unnecessary features (:pr:`667`)
         * Prevent normalize entity's new entity having same index as base entity (:pr:`681`)
+        * Update variable type inference to better check for string values (:pr:`683`)
     * Changes
         * Moved dask, distributed imports (:pr:`634`)
     * Documentation Changes
