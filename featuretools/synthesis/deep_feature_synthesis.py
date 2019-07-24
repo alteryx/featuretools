@@ -382,7 +382,8 @@ class DeepFeatureSynthesis(object):
         """
         Step 7 - Create transform features of direct features
         """
-        self._build_transform_features(all_features, entity, max_depth=max_depth, direct_only=True)
+        self._build_transform_features(all_features, entity, max_depth=max_depth,
+                                       require_direct_input=True)
 
         # now that all  features are added, build where clauses
         self._build_where_clauses(all_features, entity)
@@ -466,7 +467,8 @@ class DeepFeatureSynthesis(object):
             for val in variable.interesting_values:
                 self.where_clauses[entity.id].add(feat == val)
 
-    def _build_transform_features(self, all_features, entity, max_depth=0, direct_only=False):
+    def _build_transform_features(self, all_features, entity, max_depth=0,
+                                  require_direct_input=False):
         """Creates trans_features for all the variables in an entity
 
         Args:
@@ -491,7 +493,7 @@ class DeepFeatureSynthesis(object):
                                                         new_max_depth,
                                                         input_types,
                                                         trans_prim,
-                                                        direct_only=direct_only)
+                                                        require_direct_input=require_direct_input)
 
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
@@ -516,7 +518,7 @@ class DeepFeatureSynthesis(object):
                                                         new_max_depth,
                                                         input_types,
                                                         groupby_prim,
-                                                        direct_only=direct_only)
+                                                        require_direct_input=require_direct_input)
 
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
@@ -661,7 +663,7 @@ class DeepFeatureSynthesis(object):
         return False
 
     def _get_matching_inputs(self, all_features, entity, max_depth, input_types,
-                             primitive, direct_only=False, feature_filter=None):
+                             primitive, require_direct_input=False, feature_filter=None):
         features = self._features_by_type(all_features=all_features,
                                           entity=entity,
                                           max_depth=max_depth,
@@ -672,9 +674,9 @@ class DeepFeatureSynthesis(object):
 
         matching_inputs = match(input_types, features,
                                 commutative=primitive.commutative,
-                                need_direct=direct_only)
+                                require_direct_input=require_direct_input)
 
-        if direct_only:
+        if require_direct_input:
             # Don't create trans features of inputs which are all direct
             # features with the same relationship_path.
             matching_inputs = {inputs for inputs in matching_inputs
@@ -733,13 +735,13 @@ def match_by_type(features, t):
     return matches
 
 
-def match(input_types, features, replace=False, commutative=False, need_direct=False):
+def match(input_types, features, replace=False, commutative=False, require_direct_input=False):
     to_match = input_types[0]
     matches = match_by_type(features, to_match)
 
     if len(input_types) == 1:
         return [(m,) for m in matches
-                if (not need_direct or isinstance(m, DirectFeature))]
+                if (not require_direct_input or isinstance(m, DirectFeature))]
 
     matching_inputs = set([])
 
@@ -750,8 +752,9 @@ def match(input_types, features, replace=False, commutative=False, need_direct=F
             copy = [c for c in copy if c.unique_name() != m.unique_name()]
 
         # If we need a DirectFeature and this is not a DirectFeature then one of the rest must be.
-        still_need_direct = need_direct and not isinstance(m, DirectFeature)
-        rest = match(input_types[1:], copy, replace, need_direct=still_need_direct)
+        still_require_direct_input = require_direct_input and not isinstance(m, DirectFeature)
+        rest = match(input_types[1:], copy, replace,
+                     require_direct_input=still_require_direct_input)
 
         for r in rest:
             new_match = [m] + list(r)
