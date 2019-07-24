@@ -180,13 +180,14 @@ def col_is_datetime(col):
         return True
 
     # if it can be casted to numeric, it's not a datetime
+    dropped_na = col.dropna()
     try:
-        pd.to_numeric(col.dropna().iloc[:10], errors='raise')
+        pd.to_numeric(dropped_na, errors='raise')
     except (ValueError, TypeError):
         # finally, try to cast to datetime
         if col.dtype.name.find('str') > -1 or col.dtype.name.find('object') > -1:
             try:
-                pd.to_datetime(col.dropna(), errors='raise')
+                pd.to_datetime(dropped_na, errors='raise')
             except Exception:
                 return False
             else:
