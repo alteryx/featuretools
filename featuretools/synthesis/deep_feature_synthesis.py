@@ -486,8 +486,12 @@ class DeepFeatureSynthesis(object):
             if type(input_types[0]) == list:
                 input_types = input_types[0]
 
-            matching_inputs = self._get_matching_inputs(all_features, entity, new_max_depth,
-                                                        input_types, trans_prim, direct_only)
+            matching_inputs = self._get_matching_inputs(all_features,
+                                                        entity,
+                                                        new_max_depth,
+                                                        input_types,
+                                                        trans_prim,
+                                                        direct_only=direct_only)
 
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
@@ -507,8 +511,12 @@ class DeepFeatureSynthesis(object):
                 input_types = input_types[0]
             input_types.append(Id)
 
-            matching_inputs = self._get_matching_inputs(all_features, entity, new_max_depth,
-                                                        input_types, groupby_prim, direct_only)
+            matching_inputs = self._get_matching_inputs(all_features,
+                                                        entity,
+                                                        new_max_depth,
+                                                        input_types,
+                                                        groupby_prim,
+                                                        direct_only=direct_only)
 
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
@@ -557,20 +565,18 @@ class DeepFeatureSynthesis(object):
             if type(input_types[0]) == list:
                 input_types = input_types[0]
 
-            features = self._features_by_type(all_features=all_features,
-                                              entity=child_entity,
-                                              max_depth=new_max_depth,
-                                              variable_type=set(input_types))
+            def feature_filter(f):
+                # Remove direct features of parent entity and features in relationship path.
+                return (not _direct_of_entity(f, parent_entity)) \
+                    and not self._feature_in_relationship_path(relationship_path, f)
 
-            # Remove direct features of parent_entity
-            features = (f for f in features
-                        if not _direct_of_entity(f, parent_entity))
+            matching_inputs = self._get_matching_inputs(all_features,
+                                                        child_entity,
+                                                        new_max_depth,
+                                                        input_types,
+                                                        agg_prim,
+                                                        feature_filter=feature_filter)
 
-            # remove features in relationship path
-            features = [f for f in features
-                        if not self._feature_in_relationship_path(relationship_path, f)]
-            matching_inputs = match(input_types, features,
-                                    commutative=agg_prim.commutative)
             wheres = list(self.where_clauses[child_entity.id])
 
             for matching_input in matching_inputs:
@@ -655,11 +661,14 @@ class DeepFeatureSynthesis(object):
         return False
 
     def _get_matching_inputs(self, all_features, entity, max_depth, input_types,
-                             primitive, direct_only):
+                             primitive, direct_only=False, feature_filter=None):
         features = self._features_by_type(all_features=all_features,
                                           entity=entity,
                                           max_depth=max_depth,
                                           variable_type=set(input_types))
+
+        if feature_filter:
+            features = [f for f in features if feature_filter(f)]
 
         matching_inputs = match(input_types, features,
                                 commutative=primitive.commutative,
