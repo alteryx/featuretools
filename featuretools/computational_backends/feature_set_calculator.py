@@ -500,8 +500,6 @@ class FeatureSetCalculator(object):
                     fl.append(f)
                     break
         features = fl
-        import pdb
-        pdb.set_trace()
         if not len(features):
             return frame
 
@@ -545,11 +543,19 @@ class FeatureSetCalculator(object):
             # save aggregable features for later
             for f in features:
                 if _can_agg(f):
-                    variable_id = f.base_features[0].get_name()
 
-                    if variable_id not in to_agg:
-                        to_agg[variable_id] = []
+                    variable_obj = f.base_features[0]
+                    variable_num_output = variable_obj.number_output_features
+                    variable_id = variable_obj.get_name()
 
+                    # if variable_id not in to_agg:
+                    #     if variable_num_output > 1:
+                    #         for variable_ids in variable_obj.get_feature_names():
+                    #             to_agg[variable_ids] = []
+                    #     else:
+                    #         to_agg[variable_id] = []
+
+                    to_agg[variable_id] = []
                     func = f.get_function()
 
                     # for some reason, using the string count is significantly
@@ -572,6 +578,18 @@ class FeatureSetCalculator(object):
 
                         func.__name__ = funcname
 
+                    # if variable_num_output > 1:
+                    #     for variable_ids in variable_obj.get_feature_names():
+                    #         to_agg[variable_ids].append(func)
+                    #         # this is used below to rename columns that pandas names for us
+                    #         import pdb
+                    #         pdb.set_trace()
+                    #         agg_rename[u"{}-{}".format(variable_ids, funcname)] = f.get_name()
+                    # else:
+                    #     to_agg[variable_id].append(func)
+                    #     # this is used below to rename columns that pandas names for us
+                    #     agg_rename[u"{}-{}".format(variable_id, funcname)] = f.get_name()
+                    # continue
                     to_agg[variable_id].append(func)
                     # this is used below to rename columns that pandas names for us
                     agg_rename[u"{}-{}".format(variable_id, funcname)] = f.get_name()
@@ -601,6 +619,13 @@ class FeatureSetCalculator(object):
                 # work)
                 to_merge = base_frame.groupby(base_frame[groupby_var],
                                               observed=True, sort=False).agg(to_agg)
+
+                # import pdb
+                # pdb.set_trace()
+                # #rename columns to the correct feature names, preserving multi output feature names
+
+
+
                 # rename columns to the correct feature names
                 to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns.ravel()]
                 to_merge = to_merge[list(agg_rename.values())]
@@ -626,6 +651,13 @@ class FeatureSetCalculator(object):
         # convert boolean dtypes to floats as appropriate
         # pandas behavior: https://github.com/pydata/pandas/issues/3752
         for f in features:
+            for basis in f.base_features:
+                if basis.number_output_features > 1:
+                    if (f.variable_type == variable_types.Numeric and
+                        frame[f.get_name()].dtype.name in ['object', 'bool']):
+                        print("yeet")
+            ### need to fix this here
+
             if (f.number_output_features == 1 and
                     f.variable_type == variable_types.Numeric and
                     frame[f.get_name()].dtype.name in ['object', 'bool']):

@@ -370,6 +370,8 @@ class DeepFeatureSynthesis(object):
             if self.allowed_paths and tuple(new_path.entities()) not in self.allowed_paths:
                 continue
 
+
+
             self._build_forward_features(
                 all_features=all_features,
                 relationship_path=sub_relationship_path,
@@ -472,7 +474,6 @@ class DeepFeatureSynthesis(object):
             new_max_depth = max_depth - 1
 
         self._add_identity_features(all_features, entity)
-
         for trans_prim in self.trans_primitives:
             # if multiple input_types, only use first one for DFS
             input_types = trans_prim.input_types
@@ -626,6 +627,12 @@ class DeepFeatureSynthesis(object):
 
         for feat in all_features[entity.id]:
             f = all_features[entity.id][feat]
+
+            outputs = f.number_output_features
+            if outputs > 1:
+                for i in range(outputs):
+                    all_features.pop(f)
+                    all_features.append(MultiOutputFeatCol(f, i))
 
             if (variable_type == variable_types.PandasTypes._all or
                     f.variable_type == variable_type or

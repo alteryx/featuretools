@@ -613,8 +613,8 @@ def test_make_three_most_common(es):
 
 def test_stacking_multi(es):
     threecommon = NMostCommon(3)
-    import pdb
-    pdb.set_trace()
+    # import pdb
+    # pdb.set_trace()
     tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=threecommon)
 
     stacked = ft.Feature(tc, parent_entity=es['customers'], primitive=NumUnique)

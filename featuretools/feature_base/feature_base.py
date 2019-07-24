@@ -747,16 +747,16 @@ class Feature(object):
 
         raise Exception("Unrecognized feature initialization")
 
-class MultiOutputFeatCol(object):
+class MultiOutputFeatCol(FeatureBase):
     """
     Class to access specific multi output feature column
     """
-    def __init__(self, multi_feature, n):
+    def __init__(self, base_feature, n):
+        self.base_features = [base_feature]
         #should take in a feature ie <Feature: n_most_common> and the specific
         #output number, (0:n-1), and then get_feature_names should return the
         #name of the specific output column that corresponds to it
-        self.multi_feature = multi_feature
-        self.num_output_parent = multi_feature.number_output_features
+        self.num_output_parent = base_feature.number_output_features
         self.n = n
 
         msg = "cannot access slice from single output feature"
