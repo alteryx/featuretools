@@ -19,6 +19,7 @@ class FeatureSet(object):
     Represents an immutable set of features to be calculated for a single entity, and their
     dependencies.
     """
+
     def __init__(self, features, approximate_feature_trie=None):
         """
         Args:
