@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 import shutil
+import tarfile
 import tempfile
 import urllib
 
@@ -120,9 +121,14 @@ def write_data_description(entityset, path, **kwargs):
             file = os.path.join(tmpdir, 'data_description.json')
             with open(file, 'w') as file:
                 json.dump(description, file)
-            file_name = "es-{date:%Y-%m-%d_%H:%M:%S}.tar".format(data=datetime.datetime.now())
-            shutil.make_archive(file_name, format='tar', root_dir=tmpdir)
-            with open(os.path.join(tmpdir, file_name)) as fin:
+
+            file_name = "es-{date:%Y-%m-%d_%H:%M:%S}".format(date=datetime.datetime.now())
+            file_path = os.path.join(tmpdir, file_name)
+            tar = tarfile.open(str(file_path) + ".tar", 'w')
+            tar.add(str(tmpdir), arcname=file_name)
+            tar.close()
+            tar = tarfile.open(str(file_path) + ".tar")
+            with open(file_path + ".tar", 'r') as fin:
                 with open(path, 'w') as fout:
                     for line in fin:
                         fout.write(line)
@@ -142,4 +148,4 @@ def write_data_description(entityset, path, **kwargs):
 
 
 def is_url(string):
-    return urllib.parse.urlparse(string).scheme in ('http', 'https')
+    return urllib.parse.urlparse(string).scheme in ('http', 'https', "s3")
