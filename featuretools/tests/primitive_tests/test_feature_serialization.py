@@ -103,7 +103,6 @@ def test_serialized_renamed_features(es):
         serialize_name_unchanged(feature_type)
 
 
-
 @mock_s3
 def test_serialize_features_mock_s3(es):
     features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
@@ -113,7 +112,6 @@ def test_serialize_features_mock_s3(es):
 
     ft.save_features(features_original, url)
 
-    #set permission of serialized object to public
     bucket = s3.Bucket(BUCKET_NAME)
     obj = list(bucket.objects.all())[0].key
     s3.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
@@ -123,7 +121,6 @@ def test_serialize_features_mock_s3(es):
     for feat_1, feat_2 in zip(features_original, features_deserialized):
         assert feat_1.unique_name() == feat_2.unique_name()
         assert feat_1.entityset == feat_2.entityset
-
 
 
 def test_deserialize_features_s3(es):

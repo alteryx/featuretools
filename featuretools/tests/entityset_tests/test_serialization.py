@@ -153,7 +153,6 @@ def test_serialize_s3_csv(es):
 
     es.to_csv(S3_URL, encoding='utf-8', engine='python')
 
-    #set permission of serialized object to public
     bucket = s3.Bucket(BUCKET_NAME)
     obj = list(bucket.objects.all())[0].key
     s3.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
@@ -176,7 +175,6 @@ def test_serialize_s3_pickle(es):
 
     es.to_pickle(S3_URL)
 
-    #set permission of serialized object to public
     bucket = s3.Bucket(BUCKET_NAME)
     obj = list(bucket.objects.all())[0].key
     s3.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
@@ -200,7 +198,6 @@ def test_serialize_s3_parquet(es):
 
     es.to_parquet(S3_URL)
 
-    #set permission of serialized object to public
     bucket = s3.Bucket(BUCKET_NAME)
     obj = list(bucket.objects.all())[0].key
     s3.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
