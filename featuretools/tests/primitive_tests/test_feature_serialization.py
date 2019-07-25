@@ -1,9 +1,9 @@
 import os
 
 import boto3
+import pytest
 from moto import mock_s3
 from pympler.asizeof import asizeof
-import pytest
 from smart_open import open
 
 import featuretools as ft
