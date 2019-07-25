@@ -7,6 +7,7 @@ import tempfile
 import urllib
 
 import boto3
+import s3fs
 from smart_open import open
 
 FORMATS = ['csv', 'pickle', 'parquet']
@@ -132,12 +133,16 @@ def write_data_description(entityset, path, **kwargs):
             tar = tarfile.open(str(file_path) + ".tar")
             if("profile_name" in kwargs):
                 transport_params = {'session': boto3.Session(profile_name=kwargs['profile_name'])}
+                with open(file_path + ".tar", 'rb') as fin:
+                    with open(path, 'wb', transport_params=transport_params) as fout:
+                        for line in fin:
+                            fout.write(line)
             else:
-                transport_params = {'session': boto3.Session(profile_name='default')}
-            with open(file_path + ".tar", 'rb') as fin:
-                with open(path, 'wb', transport_params=transport_params) as fout:
-                    for line in fin:
-                        fout.write(line)
+                s3 = s3fs.S3FileSystem(anon=True)
+                with open(file_path + ".tar", 'rb') as fin:
+                    with s3.open(path, 'wb') as fout:
+                        for line in fin:
+                            fout.write(line)
     elif is_url(path):
         raise ValueError("Writing to URLs is not supported")
     else:

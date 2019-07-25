@@ -7,6 +7,7 @@ from pathlib import Path
 
 import boto3
 import pandas as pd
+import s3fs
 from smart_open import open
 
 from featuretools.entityset.relationship import Relationship
@@ -167,16 +168,20 @@ def read_entityset(path, **kwargs):
         with tempfile.TemporaryDirectory() as tmpdir:
             file_name = Path(path).name + ".tar"
             file_path = os.path.join(tmpdir, file_name)
+            transport_params = {}
             if("profile_name" in kwargs):
                 transport_params = {'session': boto3.Session(profile_name=kwargs['profile_name'])}
-            elif is_s3(path):
-                transport_params = {'session': boto3.Session(profile_name='default')}
+            if is_s3(path):
+                s3 = s3fs.S3FileSystem(anon=True)
+                with s3.open(path, "rb") as fin:
+                    with open(file_path, 'wb') as fout:
+                        for line in fin:
+                            fout.write(line)
             else:
-                transport_params = {}
-            with open(path, "rb", transport_params=transport_params) as fin:
-                with open(file_path, 'wb') as fout:
-                    for line in fin:
-                        fout.write(line)
+                with open(path, "rb", transport_params=transport_params) as fin:
+                    with open(file_path, 'wb') as fout:
+                        for line in fin:
+                            fout.write(line)
             tar = tarfile.open(str(file_path))
             tar.extractall(path=tmpdir)
             data_description = read_data_description(tmpdir)
