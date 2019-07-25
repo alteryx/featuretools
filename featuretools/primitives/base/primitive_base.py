@@ -40,7 +40,7 @@ class PrimitiveBase(object):
     def __get_item__(self, n):
         msg = "cannot access slice from single output feature"
         assert(self.number_output_features > 1), msg
-        msg = "cannot access instance of feature that is not between 0 and " + str(n-1)
+        msg = "cannot access instance of feature that is not between 0 and " + str(n - 1)
         assert(self.number_output_features < n), msg
         return
 

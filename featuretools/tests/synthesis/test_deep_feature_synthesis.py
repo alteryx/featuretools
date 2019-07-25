@@ -23,6 +23,7 @@ from featuretools.primitives import (  # CumMean,
     Mode,
     NMostCommon,
     NotEqual,
+    NumUnique,
     Sum,
     TimeSincePrevious
 )
@@ -742,3 +743,14 @@ def test_makes_direct_features_along_multiple_paths(games_es):
                 f = 'teams[%s_team_id].MEAN(games[%s_team_id].%s_team_score)' \
                     % (forward, backward, var)
                 assert feature_with_name(features, f)
+
+
+def test_stacks_multioutput_features(es):
+    fm, feat = ft.dfs(entityset=es,
+                      target_entity="customers",
+                      agg_primitives=[NumUnique, NMostCommon(n=3)],
+                      trans_primitives=[],
+                      max_depth=3
+                      )
+
+    assert False

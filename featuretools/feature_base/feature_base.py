@@ -747,20 +747,19 @@ class Feature(object):
 
         raise Exception("Unrecognized feature initialization")
 
+
 class MultiOutputFeatCol(FeatureBase):
     """
     Class to access specific multi output feature column
     """
-    def __init__(self, base_feature, n):
-        base_features = []
-        #should take in a feature ie <Feature: n_most_common> and the specific
-        #output number, (0:n-1), and then get_feature_names should return the
-        #name of the specific output column that corresponds to it
+
+    def __init__(self, base_feature, n, name=None):
+        base_features = [base_feature]
         self.num_output_parent = base_feature.number_output_features
         self.n = n
-        self._name = self.get_feature_names
-
-        #self.child_entity = base_feature.entity
+        self._name = name
+        self.base_features = base_features
+        self.base_feature = base_features[0]
 
         self.entity_id = base_feature.entity_id
         self.entityset = base_feature.entityset
@@ -773,13 +772,12 @@ class MultiOutputFeatCol(FeatureBase):
         msg = "cannot access column that is not between 0 and " + str(self.num_output_parent - 1)
         assert(n < self.num_output_parent), msg
 
-    def get_feature_names(self):
-        #want to return name of column
-        return [self.base_feature.get_name + "[" + str(self.n) +"]"]
+    def generate_name(self):
+        return self.base_feature.get_names()[self.n]
 
-    def unique_name(self):
-        return u"%s: %s" % (self.entity_id, self.get_feature_names()[0])
-
+    @property
+    def number_output_features(self):
+        return 1
 
 
 def _check_feature(feature):
