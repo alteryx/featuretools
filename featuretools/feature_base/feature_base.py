@@ -752,21 +752,33 @@ class MultiOutputFeatCol(FeatureBase):
     Class to access specific multi output feature column
     """
     def __init__(self, base_feature, n):
-        self.base_features = [base_feature]
+        base_features = []
         #should take in a feature ie <Feature: n_most_common> and the specific
         #output number, (0:n-1), and then get_feature_names should return the
         #name of the specific output column that corresponds to it
         self.num_output_parent = base_feature.number_output_features
         self.n = n
+        self._name = self.get_feature_names
+
+        #self.child_entity = base_feature.entity
+
+        self.entity_id = base_feature.entity_id
+        self.entityset = base_feature.entityset
+        self.primitive = base_feature.primitive
+
+        self.relationship_path = base_feature.relationship_path
 
         msg = "cannot access slice from single output feature"
         assert(self.num_output_parent > 1), msg
-        msg = "cannot access instance of feature that is not between 0 and " + str(n-1)
-        assert(self.num_output_parent < n), msg
+        msg = "cannot access column that is not between 0 and " + str(self.num_output_parent - 1)
+        assert(n < self.num_output_parent), msg
 
     def get_feature_names(self):
         #want to return name of column
-        return [self.multi_feature + "[" + str(self.n) +"]"]
+        return [self.base_feature.get_name + "[" + str(self.n) +"]"]
+
+    def unique_name(self):
+        return u"%s: %s" % (self.entity_id, self.get_feature_names()[0])
 
 
 
