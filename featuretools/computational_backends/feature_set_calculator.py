@@ -545,7 +545,8 @@ class FeatureSetCalculator(object):
                 if _can_agg(f):
 
                     variable_id = f.base_features[0].get_name()
-                    to_agg[variable_id] = []
+                    if variable_id not in to_agg:
+                        to_agg[variable_id] = []
                     func = f.get_function()
 
                     # for some reason, using the string count is significantly

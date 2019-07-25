@@ -753,4 +753,6 @@ def test_stacks_multioutput_features(es):
                       max_depth=3
                       )
 
-    assert False
+    for i in range(3):
+        f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.countrycode)[%d])' % i
+        assert feature_with_name(feat, f)
