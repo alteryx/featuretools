@@ -148,13 +148,19 @@ def test_to_pickle_id_none(path_management):
 
 @mock_s3
 def test_serialize_s3_csv(es):
-    boto3.resource('s3').create_bucket(Bucket=BUCKET_NAME)
+    s3 = boto3.resource('s3')
+    s3.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
 
     es.to_csv(S3_URL, encoding='utf-8', engine='python')
+
+    #set permission of serialized object to public
+    bucket = s3.Bucket(BUCKET_NAME)
+    obj = list(bucket.objects.all())[0].key
+    s3.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+
     new_es = deserialize.read_entityset(S3_URL)
     assert es.__eq__(new_es, deep=True)
 
-    s3 = boto3.resource('s3')
     try:
         for key in boto3.resource('s3').Bucket(BUCKET_NAME).objects.all():
             key.delete()
@@ -165,9 +171,16 @@ def test_serialize_s3_csv(es):
 
 @mock_s3
 def test_serialize_s3_pickle(es):
-    boto3.resource('s3').create_bucket(Bucket=BUCKET_NAME)
+    s3 = boto3.resource('s3')
+    s3.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
 
     es.to_pickle(S3_URL)
+
+    #set permission of serialized object to public
+    bucket = s3.Bucket(BUCKET_NAME)
+    obj = list(bucket.objects.all())[0].key
+    s3.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+
     new_es = deserialize.read_entityset(S3_URL)
     assert es.__eq__(new_es, deep=True)
 
@@ -182,9 +195,16 @@ def test_serialize_s3_pickle(es):
 
 @mock_s3
 def test_serialize_s3_parquet(es):
-    boto3.resource('s3').create_bucket(Bucket=BUCKET_NAME)
+    s3 = boto3.resource('s3')
+    s3.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
 
     es.to_parquet(S3_URL)
+
+    #set permission of serialized object to public
+    bucket = s3.Bucket(BUCKET_NAME)
+    obj = list(bucket.objects.all())[0].key
+    s3.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+
     new_es = deserialize.read_entityset(S3_URL)
     assert es.__eq__(new_es, deep=True)
 
