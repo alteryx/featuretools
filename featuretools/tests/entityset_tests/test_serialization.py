@@ -208,14 +208,7 @@ def test_deserialize_url_csv(es):
     assert es.__eq__(new_es, deep=True)
 
 
-def test_real_s3_to_csv(es):
-    # session = boto3.Session()
-    # print(session.get_credentials().access_key)
-    # s3 = session.resource('s3')
-    # bucket = s3.Bucket('featuretools-static')
-    # obj = s3.Object('featuretools-static', 'test_serialization_data_1.0.0.tar')
-    # print(obj.content_length)
-
+def test_real_s3_csv(es):
     test_url = "s3://featuretools-static/test_serialization_data_1.0.0.tar"
     new_es = deserialize.read_entityset(test_url)
     assert es.__eq__(new_es, deep=True)
