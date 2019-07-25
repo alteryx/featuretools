@@ -20,6 +20,8 @@ from featuretools.variable_types.variable import (
 CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
+S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
+URL = 'https://featuretools-static.s3.amazonaws.com/test_serialization_data_1.0.0.tar'
 
 
 def test_all_variable_descriptions():
@@ -148,9 +150,8 @@ def test_to_pickle_id_none(path_management):
 def test_serialize_s3_csv(es):
     boto3.resource('s3').create_bucket(Bucket=BUCKET_NAME)
 
-    url = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-    es.to_csv(url, encoding='utf-8', engine='python')
-    new_es = deserialize.read_entityset(url)
+    es.to_csv(S3_URL, encoding='utf-8', engine='python')
+    new_es = deserialize.read_entityset(S3_URL)
     assert es.__eq__(new_es, deep=True)
 
     s3 = boto3.resource('s3')
@@ -166,9 +167,8 @@ def test_serialize_s3_csv(es):
 def test_serialize_s3_pickle(es):
     boto3.resource('s3').create_bucket(Bucket=BUCKET_NAME)
 
-    url = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-    es.to_pickle(url)
-    new_es = deserialize.read_entityset(url)
+    es.to_pickle(S3_URL)
+    new_es = deserialize.read_entityset(S3_URL)
     assert es.__eq__(new_es, deep=True)
 
     s3 = boto3.resource('s3')
@@ -184,9 +184,8 @@ def test_serialize_s3_pickle(es):
 def test_serialize_s3_parquet(es):
     boto3.resource('s3').create_bucket(Bucket=BUCKET_NAME)
 
-    url = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-    es.to_parquet(url)
-    new_es = deserialize.read_entityset(url)
+    es.to_parquet(S3_URL)
+    new_es = deserialize.read_entityset(S3_URL)
     assert es.__eq__(new_es, deep=True)
 
     s3 = boto3.resource('s3')
@@ -196,3 +195,27 @@ def test_serialize_s3_parquet(es):
         s3.Bucket(BUCKET_NAME).delete()
     except s3.meta.client.exceptions.NoSuchBucket:
         pass
+
+
+def test_serialize_url_csv(es):
+    error_text = "Writing to URLs is not supported"
+    with pytest.raises(ValueError, match=error_text):
+        es.to_csv(URL, encoding='utf-8', engine='python')
+
+
+def test_deserialize_url_csv(es):
+    new_es = deserialize.read_entityset(URL)
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_real_s3_to_csv(es):
+    # session = boto3.Session()
+    # print(session.get_credentials().access_key)
+    # s3 = session.resource('s3')
+    # bucket = s3.Bucket('featuretools-static')
+    # obj = s3.Object('featuretools-static', 'test_serialization_data_1.0.0.tar')
+    # print(obj.content_length)
+
+    test_url = "s3://featuretools-static/test_serialization_data_1.0.0.tar"
+    new_es = deserialize.read_entityset(test_url)
+    assert es.__eq__(new_es, deep=True)
