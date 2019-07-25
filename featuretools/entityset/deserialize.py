@@ -187,7 +187,7 @@ def read_entityset(path, **kwargs):
 
 
 def is_s3(string):
-    return urllib.parse.urlparse(string).scheme in ("s3")
+    return urllib.parse.urlparse(string).scheme == "s3"
 
 
 def is_url(string):
