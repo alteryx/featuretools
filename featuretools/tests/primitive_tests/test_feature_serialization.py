@@ -103,33 +103,27 @@ def test_serialized_renamed_features(es):
         serialize_name_unchanged(feature_type)
 
 
-@mock_s3
-def serialize_features_mock_s3_helper(es_size, features_original):
-    boto3.resource('s3').create_bucket(Bucket=BUCKET_NAME)
-    url = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-
-    ft.save_features(features_original, url)
-    features_deserializedA = ft.load_features(url)
-
-    with open(url, "w") as f:
-        ft.save_features(features_original, f)
-    features_deserializedB = ft.load_features(open(url))
-
-    features = ft.save_features(features_original)
-    features_deserializedC = ft.load_features(features)
-    assert asizeof(features) < es_size
-
-    features_deserialized_options = [features_deserializedA, features_deserializedB, features_deserializedC]
-    for features_deserialized in features_deserialized_options:
-        for feat_1, feat_2 in zip(features_original, features_deserialized):
-            assert feat_1.unique_name() == feat_2.unique_name()
-            assert feat_1.entityset == feat_2.entityset
-
 
 @mock_s3
 def test_serialize_features_mock_s3(es):
     features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
-    serialize_features_mock_s3_helper(asizeof(es), features_original)
+    s3 = boto3.resource('s3')
+    s3.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
+    url = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
+
+    ft.save_features(features_original, url)
+
+    #set permission of serialized object to public
+    bucket = s3.Bucket(BUCKET_NAME)
+    obj = list(bucket.objects.all())[0].key
+    s3.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+
+    features_deserialized = ft.load_features(url)
+
+    for feat_1, feat_2 in zip(features_original, features_deserialized):
+        assert feat_1.unique_name() == feat_2.unique_name()
+        assert feat_1.entityset == feat_2.entityset
+
 
 
 def test_deserialize_features_s3(es):
