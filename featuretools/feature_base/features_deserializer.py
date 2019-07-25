@@ -1,5 +1,7 @@
 import json
+import urllib
 
+import boto3
 from smart_open import open
 
 from featuretools.entityset.deserialize import \
@@ -17,7 +19,7 @@ from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools.utils.gen_utils import check_schema_version
 
 
-def load_features(features):
+def load_features(features, **kwargs):
     """Loads the features from a filepath, an open file, or a JSON formatted string.
 
     Args:
@@ -53,7 +55,7 @@ def load_features(features):
     .. seealso::
         :func:`.save_features`
     """
-    return FeaturesDeserializer.load(features).to_list()
+    return FeaturesDeserializer.load(features, **kwargs).to_list()
 
 
 class FeaturesDeserializer(object):
@@ -75,12 +77,18 @@ class FeaturesDeserializer(object):
         self._primitives_deserializer = PrimitivesDeserializer()
 
     @classmethod
-    def load(cls, features):
+    def load(cls, features, **kwargs):
         if isinstance(features, str):
             try:
                 features_dict = json.loads(features)
             except ValueError:
-                with open(features, 'r') as f:
+                if("profile_name" in kwargs):
+                    transport_params = {'session': boto3.Session(profile_name=kwargs['profile_name'])}
+                elif is_s3(features):
+                    transport_params = {'session': boto3.Session(profile_name='default')}
+                else:
+                    transport_params = {}
+                with open(features, 'r', transport_params=transport_params) as f:
                     features_dict = json.load(f)
             return cls(features_dict)
         return cls(json.load(features))
@@ -114,3 +122,7 @@ class FeaturesDeserializer(object):
 
     def _check_schema_version(self):
         check_schema_version(self, 'features')
+
+
+def is_s3(string):
+    return urllib.parse.urlparse(string).scheme == 's3'

@@ -1,5 +1,7 @@
 import json
+import urllib
 
+import boto3
 from smart_open import open
 
 from featuretools.version import __version__ as ft_version
@@ -7,7 +9,7 @@ from featuretools.version import __version__ as ft_version
 SCHEMA_VERSION = "3.0.0"
 
 
-def save_features(features, location=None):
+def save_features(features, location=None, **kwargs):
     """Saves the features list as JSON to a specified filepath, writes to an open file, or
     returns the serialized features as a JSON string. If no file provided, returns a string.
 
@@ -52,7 +54,7 @@ def save_features(features, location=None):
     .. seealso::
         :func:`.load_features`
     """
-    return FeaturesSerializer(features).save(location)
+    return FeaturesSerializer(features).save(location, **kwargs)
 
 
 class FeaturesSerializer(object):
@@ -72,12 +74,20 @@ class FeaturesSerializer(object):
             'feature_definitions': self._feature_definitions(),
         }
 
-    def save(self, location):
+    def save(self, location, **kwargs):
         features_dict = self.to_dict()
         if location is None:
             return json.dumps(features_dict)
         if isinstance(location, str):
-            with open(location, "w") as f:
+            if is_url(location):
+                raise ValueError("Writing to URLs is not supported")
+            elif("profile_name" in kwargs):
+                transport_params = {'session': boto3.Session(profile_name=kwargs['profile_name'])}
+            elif is_s3(location):
+                transport_params = {'session': boto3.Session(profile_name='default')}
+            else:
+                transport_params = {}
+            with open(location, "w", transport_params=transport_params) as f:
                 json.dump(features_dict, f)
         else:
             json.dump(features_dict, location)
@@ -101,3 +111,11 @@ class FeaturesSerializer(object):
                 name = dependency.unique_name()
                 if name not in self._features_dict:
                     self._features_dict[name] = dependency.to_dictionary()
+
+
+def is_s3(string):
+    return urllib.parse.urlparse(string).scheme == "s3"
+
+
+def is_url(string):
+    return urllib.parse.urlparse(string).scheme in ('http', 'https')
