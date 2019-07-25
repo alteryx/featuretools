@@ -6,6 +6,7 @@ import tarfile
 import tempfile
 import urllib
 
+import boto3
 from smart_open import open
 
 FORMATS = ['csv', 'pickle', 'parquet']
@@ -111,7 +112,7 @@ def write_data_description(entityset, path, **kwargs):
         path (str) : Location on disk to write `data_description.json` and entity data.
         kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
     '''
-    if is_url(path):
+    if is_s3(path):
         with tempfile.TemporaryDirectory() as tmpdir:
             os.makedirs(os.path.join(tmpdir, 'data'))
             description = entityset_to_description(entityset)
@@ -129,10 +130,16 @@ def write_data_description(entityset, path, **kwargs):
             tar.add(str(tmpdir) + '/data', arcname='/data')
             tar.close()
             tar = tarfile.open(str(file_path) + ".tar")
+            if("profile_name" in kwargs):
+                transport_params = {'session': boto3.Session(profile_name=kwargs['profile_name'])}
+            else:
+                transport_params = {'session': boto3.Session(profile_name='default')}
             with open(file_path + ".tar", 'rb') as fin:
-                with open(path, 'wb') as fout:
+                with open(path, 'wb', transport_params=transport_params) as fout:
                     for line in fin:
                         fout.write(line)
+    elif is_url(path):
+        raise ValueError("Writing to URLs is not supported")
     else:
         path = os.path.abspath(path)
         if os.path.exists(path):
@@ -148,5 +155,9 @@ def write_data_description(entityset, path, **kwargs):
             json.dump(description, file)
 
 
+def is_s3(string):
+    return urllib.parse.urlparse(string).scheme in ("s3")
+
+
 def is_url(string):
-    return urllib.parse.urlparse(string).scheme in ('http', 'https', "s3")
+    return urllib.parse.urlparse(string).scheme in ('http', 'https')

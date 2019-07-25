@@ -5,6 +5,7 @@ import tempfile
 import urllib
 from pathlib import Path
 
+import boto3
 import pandas as pd
 from smart_open import open
 
@@ -166,7 +167,13 @@ def read_entityset(path, **kwargs):
         with tempfile.TemporaryDirectory() as tmpdir:
             file_name = Path(path).name + ".tar"
             file_path = os.path.join(tmpdir, file_name)
-            with open(path, "rb") as fin:
+            if("profile_name" in kwargs):
+                transport_params = {'session': boto3.Session(profile_name=kwargs['profile_name'])}
+            elif is_s3(path):
+                transport_params = {'session': boto3.Session(profile_name='default')}
+            else:
+                transport_params = {}
+            with open(path, "rb", transport_params=transport_params) as fin:
                 with open(file_path, 'wb') as fout:
                     for line in fin:
                         fout.write(line)
@@ -177,6 +184,10 @@ def read_entityset(path, **kwargs):
     else:
         data_description = read_data_description(path)
         return description_to_entityset(data_description, **kwargs)
+
+
+def is_s3(string):
+    return urllib.parse.urlparse(string).scheme in ("s3")
 
 
 def is_url(string):
