@@ -3,6 +3,7 @@ import os
 import boto3
 from moto import mock_s3
 from pympler.asizeof import asizeof
+import pytest
 from smart_open import open
 
 import featuretools as ft
@@ -103,7 +104,7 @@ def test_serialized_renamed_features(es):
 
 
 @mock_s3
-def serialize_features_s3_helper(es_size, features_original):
+def serialize_features_mock_s3_helper(es_size, features_original):
     boto3.resource('s3').create_bucket(Bucket=BUCKET_NAME)
     url = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
 
@@ -126,6 +127,35 @@ def serialize_features_s3_helper(es_size, features_original):
 
 
 @mock_s3
-def test_serialize_features_s3(es):
+def test_serialize_features_mock_s3(es):
     features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
-    serialize_features_s3_helper(asizeof(es), features_original)
+    serialize_features_mock_s3_helper(asizeof(es), features_original)
+
+
+def test_deserialize_features_s3(es):
+    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+    url = "s3://featuretools-static/test_feature_serialization_1.0.0"
+
+    features_deserialized = ft.load_features(url)
+    for feat_1, feat_2 in zip(features_original, features_deserialized):
+        assert feat_1.unique_name() == feat_2.unique_name()
+        assert feat_1.entityset == feat_2.entityset
+
+
+def test_deserialize_features_url(es):
+    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+    url = "https://featuretools-static.s3.amazonaws.com/test_feature_serialization_1.0.0"
+
+    features_deserialized = ft.load_features(url)
+    for feat_1, feat_2 in zip(features_original, features_deserialized):
+        assert feat_1.unique_name() == feat_2.unique_name()
+        assert feat_1.entityset == feat_2.entityset
+
+
+def test_serialize_url(es):
+    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+    url = "https://featuretools-static.s3.amazonaws.com/test_feature_serialization_1.0.0"
+
+    error_text = "Writing to URLs is not supported"
+    with pytest.raises(ValueError, match=error_text):
+        ft.save_features(features_original, url)
