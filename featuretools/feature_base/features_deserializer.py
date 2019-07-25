@@ -2,6 +2,7 @@ import json
 import urllib
 
 import boto3
+import s3fs
 from smart_open import open
 
 from featuretools.entityset.deserialize import \
@@ -82,14 +83,16 @@ class FeaturesDeserializer(object):
             try:
                 features_dict = json.loads(features)
             except ValueError:
+                transport_params = {}
                 if("profile_name" in kwargs):
                     transport_params = {'session': boto3.Session(profile_name=kwargs['profile_name'])}
-                elif is_s3(features):
-                    transport_params = {'session': boto3.Session(profile_name='default')}
+                if is_s3(features):
+                    s3 = s3fs.S3FileSystem(anon=True)
+                    with s3.open(features, "rb") as f:
+                        features_dict = json.load(f)
                 else:
-                    transport_params = {}
-                with open(features, 'r', transport_params=transport_params) as f:
-                    features_dict = json.load(f)
+                    with open(features, 'r', transport_params=transport_params) as f:
+                        features_dict = json.load(f)
             return cls(features_dict)
         return cls(json.load(features))
 

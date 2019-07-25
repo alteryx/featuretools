@@ -2,6 +2,7 @@ import json
 import urllib
 
 import boto3
+import s3fs
 from smart_open import open
 
 from featuretools.version import __version__ as ft_version
@@ -79,16 +80,18 @@ class FeaturesSerializer(object):
         if location is None:
             return json.dumps(features_dict)
         if isinstance(location, str):
+            transport_params = {}
             if is_url(location):
                 raise ValueError("Writing to URLs is not supported")
             elif("profile_name" in kwargs):
                 transport_params = {'session': boto3.Session(profile_name=kwargs['profile_name'])}
             elif is_s3(location):
-                transport_params = {'session': boto3.Session(profile_name='default')}
+                s3 = s3fs.S3FileSystem(anon=True)
+                with s3.open(location, "w") as f:
+                    json.dump(features_dict, f)
             else:
-                transport_params = {}
-            with open(location, "w", transport_params=transport_params) as f:
-                json.dump(features_dict, f)
+                with open(location, "w", transport_params=transport_params) as f:
+                    json.dump(features_dict, f)
         else:
             json.dump(features_dict, location)
 
