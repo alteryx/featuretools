@@ -126,7 +126,6 @@ def test_serialize_features_mock_s3(es):
 def test_deserialize_features_s3(es):
     # TODO: Feature ordering is different in py3.5 vs 3.6+
     features_original = sorted(ft.dfs(target_entity='sessions', entityset=es, features_only=True), key=lambda x: x.unique_name())
-    print(ft.dfs(target_entity='sessions', entityset=es, features_only=True))
     url = "s3://featuretools-static/test_feature_serialization_1.0.0"
 
     features_deserialized = sorted(ft.load_features(url), key=lambda x: x.unique_name())

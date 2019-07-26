@@ -2,7 +2,6 @@ import json
 import os
 import tarfile
 import tempfile
-import urllib
 from pathlib import Path
 
 import boto3
@@ -192,8 +191,8 @@ def read_entityset(path, **kwargs):
 
 
 def _is_s3(string):
-    return urllib.parse.urlparse(string).scheme == "s3"
+    return "s3://" in string
 
 
 def _is_url(string):
-    return urllib.parse.urlparse(string).scheme in ('http', 'https', "s3")
+    return 'http' in string or 'https' in string

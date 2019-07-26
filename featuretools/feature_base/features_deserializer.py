@@ -1,5 +1,4 @@
 import json
-import urllib
 
 import boto3
 import s3fs
@@ -128,4 +127,4 @@ class FeaturesDeserializer(object):
 
 
 def _is_s3(string):
-    return urllib.parse.urlparse(string).scheme == 's3'
+    return "s3://" in string

@@ -4,7 +4,6 @@ import os
 import shutil
 import tarfile
 import tempfile
-import urllib
 
 import boto3
 import s3fs
@@ -161,8 +160,8 @@ def write_data_description(entityset, path, **kwargs):
 
 
 def _is_s3(string):
-    return urllib.parse.urlparse(string).scheme == 's3'
+    return "s3://" in string
 
 
 def _is_url(string):
-    return urllib.parse.urlparse(string).scheme in ('http', 'https')
+    return 'http' in string or 'https' in string
