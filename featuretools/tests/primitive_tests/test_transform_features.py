@@ -56,7 +56,9 @@ from featuretools.primitives.utils import (
     PrimitivesDeserializer,
     serialize_primitive
 )
+from featuretools.synthesis import dfs
 from featuretools.synthesis.deep_feature_synthesis import match
+from featuretools.tests.testing_utils import feature_with_name
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
 
@@ -794,6 +796,41 @@ def test_tranform_stack_agg(es):
                       primitive=NMostCommon(n=3))
     with pytest.raises(AssertionError):
         ft.Feature(topn, primitive=Percentile)
+
+# def test_transform_stack_multi_output(es):
+#     fm, feat = ft.dfs(entityset=es,
+#                       target_entity="customers",
+#                       agg_primitives=[NMostCommon(n=3)],
+#                       trans_primitives=[Diff],
+#                       max_depth=3
+#                       )
+#     assert False
+
+
+def test_stacking_of_multi_output_transform_feat(es):
+    class TestTime(TransformPrimitive):
+        name = "test_time"
+        input_types = [Datetime]
+        return_type = Numeric
+        number_output_features = 6
+
+        def get_function(self):
+            def test_f(x):
+                times = pd.Series(x)
+                units = ["year", "month", "day", "hour", "minute", "second"]
+                return [times.apply(lambda x: getattr(x, unit)) for unit in units]
+            return test_f
+
+    fm, fl = dfs(
+        entityset=es,
+        target_entity="sessions",
+        agg_primitives=[],
+        trans_primitives=[TestTime, Second, Diff],
+        max_depth=4)
+
+    for i in range(6):
+        f = 'customers.DIFF(TEST_TIME(upgrade_date)[%d])' % i
+        assert feature_with_name(fl, f)
 
 
 def test_feature_names_inherit_from_make_trans_primitive():

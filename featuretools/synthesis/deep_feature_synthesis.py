@@ -9,7 +9,7 @@ from featuretools.feature_base import (
     DirectFeature,
     GroupByTransformFeature,
     IdentityFeature,
-    MultiOutputFeatCol,
+    MultiOutputFeature,
     TransformFeature
 )
 from featuretools.primitives.base import (
@@ -271,7 +271,7 @@ class DeepFeatureSynthesis(object):
 
     def _run_dfs(self, entity, relationship_path, all_features, max_depth):
         """
-        create features for the provided entity
+        Create features for the provided entity
 
         Args:
             entity (Entity): Entity for which to create features.
@@ -425,15 +425,19 @@ class DeepFeatureSynthesis(object):
             self._handle_new_feature(all_features=all_features,
                                      new_feature=new_f)
 
-        # add seed features, if any, for dfs to build on top of
+        new_seeds = []
         for f in self.seed_features:
-            new_base_feats = []
             for bfeat in f.base_features:
                 if bfeat.number_output_features > 1:
                     for i in range(bfeat.number_output_features):
-                        new_base_feats.append(MultiOutputFeatCol(bfeat, i))
-                    f.base_features.remove(bfeat)
-            f.base_features.extend(new_base_feats)
+                        g = f.copy()
+                        g.base_features.remove(bfeat)
+                        g.base_features.append(MultiOutputFeature(bfeat, i))
+                        new_seeds.append(g)
+                else:
+                    new_seeds.append(f)
+        self.seed_features = new_seeds
+        for f in self.seed_features:
             if f.entity.id == entity.id:
                 self._handle_new_feature(all_features=all_features,
                                          new_feature=f)
@@ -635,7 +639,7 @@ class DeepFeatureSynthesis(object):
             if outputs > 1:
                 del(entity_features[fname])
                 for i in range(outputs):
-                    new_feat = MultiOutputFeatCol(feature, i)
+                    new_feat = MultiOutputFeature(feature, i)
                     entity_features[new_feat.unique_name()] = new_feat
 
         for feat in entity_features:

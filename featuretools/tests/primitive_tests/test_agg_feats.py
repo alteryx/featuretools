@@ -13,7 +13,9 @@ from featuretools.primitives import (
     Count,
     Mean,
     Median,
+    NMostCommon,
     NumTrue,
+    NumUnique,
     Sum,
     TimeSinceFirst,
     TimeSinceLast,
@@ -607,6 +609,24 @@ def test_make_three_most_common(es):
         else:
             for i1, i2 in zip(true_results.iloc[i], df.iloc[i]):
                 assert (pd.isnull(i1) and pd.isnull(i2)) or (i1 == i2)
+
+
+def test_stacking_multi(es):
+    threecommon = NMostCommon(3)
+    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=threecommon)
+
+    stacked = ft.Feature(tc, parent_entity=es['customers'], primitive=NumUnique)
+
+    fm, feat = ft.dfs(entityset=es,
+                      target_entity="customers",
+                      seed_features=[stacked],
+                      agg_primitives=[],
+                      trans_primitives=[]
+                      )
+
+    for i in range(3):
+        f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.product_id)[%d])' % i
+        assert feature_with_name(feat, f)
 
 
 def _assert_agg_feats_equal(f1, f2):

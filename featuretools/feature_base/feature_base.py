@@ -444,7 +444,10 @@ class DirectFeature(FeatureBase):
 
     @property
     def number_output_features(self):
-        return self.base_features[0].primitive.number_output_features
+        if isinstance(self.base_features[0], MultiOutputFeature):
+            return 1
+        else:
+            return self.base_features[0].primitive.number_output_features
 
     @property
     def default_value(self):
@@ -748,7 +751,7 @@ class Feature(object):
         raise Exception("Unrecognized feature initialization")
 
 
-class MultiOutputFeatCol(FeatureBase):
+class MultiOutputFeature(FeatureBase):
     """
     Class to access specific multi output feature column
     """

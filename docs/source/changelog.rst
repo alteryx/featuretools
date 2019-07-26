@@ -5,6 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
         * Added drop_first as param in encode_features (:pr:`647`)
+        * Added support for stacking multi-output primitives (:pr: `679`)
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
         * Fix deserialization of feature relationship path (:pr:`665`)
@@ -26,7 +27,7 @@ Changelog
         * Miscellaneous changes (:pr:`672`, :pr:`674`)
 
     Thanks to the following people for contributing to this release:
-    :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`,
+    :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`, :user:`ctduffy`,
     :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`
 
 

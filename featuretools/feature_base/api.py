@@ -6,7 +6,7 @@ from .feature_base import (
     FeatureBase,
     GroupByTransformFeature,
     IdentityFeature,
-    MultiOutputFeatCol,
+    MultiOutputFeature,
     TransformFeature
 )
 from .features_deserializer import load_features
