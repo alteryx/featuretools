@@ -124,20 +124,23 @@ def test_serialize_features_mock_s3(es):
 
 
 def test_deserialize_features_s3(es):
-    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+    # TODO: Feature ordering is different in py3.5 vs 3.6+
+    features_original = sorted(ft.dfs(target_entity='sessions', entityset=es, features_only=True), key=lambda x : x.unique_name())
+    print(ft.dfs(target_entity='sessions', entityset=es, features_only=True))
     url = "s3://featuretools-static/test_feature_serialization_1.0.0"
 
-    features_deserialized = ft.load_features(url)
+    features_deserialized = sorted(ft.load_features(url), key=lambda x : x.unique_name())
     for feat_1, feat_2 in zip(features_original, features_deserialized):
         assert feat_1.unique_name() == feat_2.unique_name()
         assert feat_1.entityset == feat_2.entityset
 
 
 def test_deserialize_features_url(es):
-    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+    # TODO: Feature ordering is different in py3.5 vs 3.6+
+    features_original = sorted(ft.dfs(target_entity='sessions', entityset=es, features_only=True), key=lambda x : x.unique_name())
     url = "https://featuretools-static.s3.amazonaws.com/test_feature_serialization_1.0.0"
 
-    features_deserialized = ft.load_features(url)
+    features_deserialized = sorted(ft.load_features(url), key=lambda x : x.unique_name())
     for feat_1, feat_2 in zip(features_original, features_deserialized):
         assert feat_1.unique_name() == feat_2.unique_name()
         assert feat_1.entityset == feat_2.entityset
