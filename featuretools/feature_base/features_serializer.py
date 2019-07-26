@@ -120,4 +120,4 @@ def _is_s3(string):
 
 
 def _is_url(string):
-    return 'http' in string or 'https' in string
+    return 'http' in string or 's3' in string
