@@ -18,3 +18,4 @@ smart-open>=1.8.4
 moto>=1.3.13
 pathlib >= 1.0.1; python_version <'3'
 s3fs >= 0.2.2
+backports.tempfile >= 1.0

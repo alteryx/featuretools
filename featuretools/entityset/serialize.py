@@ -3,10 +3,10 @@ import json
 import os
 import shutil
 import tarfile
-import tempfile
 
 import boto3
 import s3fs
+from backports import tempfile
 from smart_open import open
 
 FORMATS = ['csv', 'pickle', 'parquet']
@@ -164,4 +164,4 @@ def _is_s3(string):
 
 
 def _is_url(string):
-    return 'http' in string or 's3' in string
+    return 'http' in string

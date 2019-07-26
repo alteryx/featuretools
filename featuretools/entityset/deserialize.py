@@ -1,12 +1,12 @@
 import json
 import os
 import tarfile
-import tempfile
 from pathlib import Path
 
 import boto3
 import pandas as pd
 import s3fs
+from backports import tempfile
 from smart_open import open
 
 from featuretools.entityset.relationship import Relationship
