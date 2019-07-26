@@ -797,15 +797,6 @@ def test_tranform_stack_agg(es):
     with pytest.raises(AssertionError):
         ft.Feature(topn, primitive=Percentile)
 
-# def test_transform_stack_multi_output(es):
-#     fm, feat = ft.dfs(entityset=es,
-#                       target_entity="customers",
-#                       agg_primitives=[NMostCommon(n=3)],
-#                       trans_primitives=[Diff],
-#                       max_depth=3
-#                       )
-#     assert False
-
 
 def test_stacking_of_multi_output_transform_feat(es):
     class TestTime(TransformPrimitive):

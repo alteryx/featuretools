@@ -441,6 +441,7 @@ def test_agg_same_method_name(es):
 
     f_sum = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Sum)
     f_max = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Max)
+
     fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
     assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
 
