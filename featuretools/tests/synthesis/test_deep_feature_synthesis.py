@@ -756,3 +756,21 @@ def test_stacks_multioutput_features(es):
     for i in range(3):
         f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.countrycode)[%d])' % i
         assert feature_with_name(feat, f)
+
+
+def test_seed_multi_output_feature_stacking(es):
+    threecommon = NMostCommon(3)
+    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=threecommon)
+
+    stacked = ft.Feature(tc, parent_entity=es['customers'], primitive=NumUnique)
+
+    fm, feat = ft.dfs(entityset=es,
+                      target_entity="customers",
+                      seed_features=[stacked],
+                      agg_primitives=[],
+                      trans_primitives=[]
+                      )
+
+    for i in range(3):
+        f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.product_id)[%d])' % i
+        assert feature_with_name(feat, f)
