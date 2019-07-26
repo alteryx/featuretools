@@ -839,4 +839,3 @@ def test_makes_direct_of_agg_of_trans_on_target(es):
 
     features = dfs_obj.build_features()
     assert feature_with_name(features, 'sessions.MEAN(log.ABSOLUTE(value))')
-
