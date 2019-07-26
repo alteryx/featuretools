@@ -139,10 +139,10 @@ def read_entity_data(description, path):
 
 
 def read_data_description(path):
-    '''Read data description from disk.
+    '''Read data description from disk, S3 path, or URL.
 
         Args:
-            path (str): Location on disk to read `data_description.json`.
+            path (str): Location on disk, S3 path, or URL to read `data_description.json`.
 
         Returns:
             description (dict) : Description of :class:`.EntitySet`.
@@ -158,20 +158,20 @@ def read_data_description(path):
 
 
 def read_entityset(path, **kwargs):
-    '''Read entityset from disk.
+    '''Read entityset from disk, S3 path, or URL.
 
         Args:
-            path (str): Directory on disk to read `data_description.json`.
-            kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
+            path (str): Directory on disk, S3 path, or URL to read `data_description.json`.
+            kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method or to specify AWS profile.
     '''
-    if(is_url(path)):
+    if(_is_url(path)):
         with tempfile.TemporaryDirectory() as tmpdir:
             file_name = Path(path).name + ".tar"
             file_path = os.path.join(tmpdir, file_name)
             transport_params = {}
             if("profile_name" in kwargs):
                 transport_params = {'session': boto3.Session(profile_name=kwargs['profile_name'])}
-            if is_s3(path):
+            if _is_s3(path):
                 s3 = s3fs.S3FileSystem(anon=True)
                 with s3.open(path, "rb") as fin:
                     with open(file_path, 'wb') as fout:
@@ -191,9 +191,9 @@ def read_entityset(path, **kwargs):
         return description_to_entityset(data_description, **kwargs)
 
 
-def is_s3(string):
+def _is_s3(string):
     return urllib.parse.urlparse(string).scheme == "s3"
 
 
-def is_url(string):
+def _is_url(string):
     return urllib.parse.urlparse(string).scheme in ('http', 'https', "s3")

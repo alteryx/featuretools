@@ -21,7 +21,7 @@ from featuretools.utils.gen_utils import check_schema_version
 
 
 def load_features(features, **kwargs):
-    """Loads the features from a filepath, an open file, or a JSON formatted string.
+    """Loads the features from a filepath, S3 path, URL, an open file, or a JSON formatted string.
 
     Args:
         features (str or :class:`.FileObject`): The location of where features has
@@ -32,8 +32,8 @@ def load_features(features, **kwargs):
         features (list[:class:`.FeatureBase`]): Feature definitions list.
 
     Note:
-        Features saved in one version of Featuretools are not guaranteed to work in another.
-        After upgrading Featuretools, features may need to be generated again.
+        Features saved in one version of Featuretools or python are not guaranteed to work in another.
+        After upgrading Featuretools or python, features may need to be generated again.
 
     Example:
         .. ipython:: python
@@ -86,7 +86,7 @@ class FeaturesDeserializer(object):
                 transport_params = {}
                 if("profile_name" in kwargs):
                     transport_params = {'session': boto3.Session(profile_name=kwargs['profile_name'])}
-                if is_s3(features):
+                if _is_s3(features):
                     s3 = s3fs.S3FileSystem(anon=True)
                     with s3.open(features, "r", encoding='utf-8') as f:
                         features_dict = json.load(f)
@@ -127,5 +127,5 @@ class FeaturesDeserializer(object):
         check_schema_version(self, 'features')
 
 
-def is_s3(string):
+def _is_s3(string):
     return urllib.parse.urlparse(string).scheme == 's3'

@@ -66,7 +66,7 @@ def entityset_to_description(entityset):
 
 
 def write_entity_data(entity, path, format='csv', **kwargs):
-    '''Write entity data to disk.
+    '''Write entity data to disk or S3 path.
 
     Args:
         entity (Entity) : Instance of :class:`.Entity`.
@@ -106,14 +106,14 @@ def write_entity_data(entity, path, format='csv', **kwargs):
 
 
 def write_data_description(entityset, path, **kwargs):
-    '''Serialize entityset to data description and write to disk.
+    '''Serialize entityset to data description and write to disk or S3 path.
 
     Args:
         entityset (EntitySet) : Instance of :class:`.EntitySet`.
-        path (str) : Location on disk to write `data_description.json` and entity data.
-        kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method.
+        path (str) : Location on disk or S3 path to write `data_description.json` and entity data.
+        kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
     '''
-    if is_s3(path):
+    if _is_s3(path):
         with tempfile.TemporaryDirectory() as tmpdir:
             os.makedirs(os.path.join(tmpdir, 'data'))
             description = entityset_to_description(entityset)
@@ -143,7 +143,7 @@ def write_data_description(entityset, path, **kwargs):
                     with s3.open(path, 'wb') as fout:
                         for line in fin:
                             fout.write(line)
-    elif is_url(path):
+    elif _is_url(path):
         raise ValueError("Writing to URLs is not supported")
     else:
         path = os.path.abspath(path)
@@ -160,9 +160,9 @@ def write_data_description(entityset, path, **kwargs):
             json.dump(description, file)
 
 
-def is_s3(string):
+def _is_s3(string):
     return urllib.parse.urlparse(string).scheme == 's3'
 
 
-def is_url(string):
+def _is_url(string):
     return urllib.parse.urlparse(string).scheme in ('http', 'https')

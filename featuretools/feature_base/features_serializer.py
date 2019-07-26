@@ -11,7 +11,7 @@ SCHEMA_VERSION = "3.0.0"
 
 
 def save_features(features, location=None, **kwargs):
-    """Saves the features list as JSON to a specified filepath, writes to an open file, or
+    """Saves the features list as JSON to a specified filepath/S3 path, writes to an open file, or
     returns the serialized features as a JSON string. If no file provided, returns a string.
 
     Args:
@@ -81,11 +81,11 @@ class FeaturesSerializer(object):
             return json.dumps(features_dict)
         if isinstance(location, str):
             transport_params = {}
-            if is_url(location):
+            if _is_url(location):
                 raise ValueError("Writing to URLs is not supported")
             elif("profile_name" in kwargs):
                 transport_params = {'session': boto3.Session(profile_name=kwargs['profile_name'])}
-            elif is_s3(location):
+            elif _is_s3(location):
                 s3 = s3fs.S3FileSystem(anon=True)
                 with s3.open(location, "w") as f:
                     json.dump(features_dict, f)
@@ -116,9 +116,9 @@ class FeaturesSerializer(object):
                     self._features_dict[name] = dependency.to_dictionary()
 
 
-def is_s3(string):
+def _is_s3(string):
     return urllib.parse.urlparse(string).scheme == "s3"
 
 
-def is_url(string):
+def _is_url(string):
     return urllib.parse.urlparse(string).scheme in ('http', 'https')
