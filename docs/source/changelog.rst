@@ -4,7 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
-        * Added drop_first as param in encode_features (:pr:`647`)
+        * Added drop_first as param in encode_features (:pr: `647`)
         * Added support for stacking multi-output primitives (:pr: `679`)
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
