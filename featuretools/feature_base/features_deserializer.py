@@ -88,7 +88,7 @@ class FeaturesDeserializer(object):
                     transport_params = {'session': boto3.Session(profile_name=kwargs['profile_name'])}
                 if is_s3(features):
                     s3 = s3fs.S3FileSystem(anon=True)
-                    with s3.open(features, "rb") as f:
+                    with s3.open(features, "r") as f:
                         features_dict = json.load(f)
                 else:
                     with open(features, 'r', transport_params=transport_params) as f:
