@@ -87,7 +87,8 @@ class FeaturesSerializer(object):
             elif _is_s3(location):
                 s3 = s3fs.S3FileSystem(anon=True)
                 with s3.open(location, "w") as f:
-                    json.dump(features_dict, f)
+                    features = json.dumps(features_dict, ensure_ascii=False)
+                    f.write(features)
             else:
                 with open(location, "w", transport_params=transport_params) as f:
                     json.dump(features_dict, f)
