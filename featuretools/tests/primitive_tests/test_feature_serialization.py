@@ -17,6 +17,9 @@ from featuretools.variable_types import Numeric
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
+TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
+S3_URL = "s3://featuretools-static/test_feature_serialization_1.0.0"
+URL = "https://featuretools-static.s3.amazonaws.com/test_feature_serialization_1.0.0"
 
 
 def pickle_features_test_helper(es_size, features_original):
@@ -104,20 +107,31 @@ def test_serialized_renamed_features(es):
         serialize_name_unchanged(feature_type)
 
 
-@mock_s3
-def test_serialize_features_mock_s3(es):
+@pytest.fixture
+def s3_client():
+    with mock_s3():
+        s3 = boto3.resource('s3')
+        yield s3
+        for key in boto3.resource('s3').Bucket(BUCKET_NAME).objects.all():
+            key.delete()
+
+
+@pytest.fixture
+def s3_bucket(s3_client):
+    s3_client.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
+    bucket = s3_client.Bucket(BUCKET_NAME)
+    return bucket
+
+
+def test_serialize_features_mock_s3(es, s3_client, s3_bucket):
     features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
-    s3 = boto3.resource('s3')
-    s3.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
-    url = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
 
-    ft.save_features(features_original, url)
+    ft.save_features(features_original, TEST_S3_URL)
 
-    bucket = s3.Bucket(BUCKET_NAME)
-    obj = list(bucket.objects.all())[0].key
-    s3.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+    obj = list(s3_bucket.objects.all())[0].key
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
 
-    features_deserialized = ft.load_features(url)
+    features_deserialized = ft.load_features(TEST_S3_URL)
 
     for feat_1, feat_2 in zip(features_original, features_deserialized):
         assert feat_1.unique_name() == feat_2.unique_name()
@@ -127,9 +141,7 @@ def test_serialize_features_mock_s3(es):
 def test_deserialize_features_s3(es):
     # TODO: Feature ordering is different in py3.5 vs 3.6+
     features_original = sorted(ft.dfs(target_entity='sessions', entityset=es, features_only=True), key=lambda x: x.unique_name())
-    url = "s3://featuretools-static/test_feature_serialization_1.0.0"
-
-    features_deserialized = sorted(ft.load_features(url), key=lambda x: x.unique_name())
+    features_deserialized = sorted(ft.load_features(S3_URL), key=lambda x: x.unique_name())
     for feat_1, feat_2 in zip(features_original, features_deserialized):
         assert feat_1.unique_name() == feat_2.unique_name()
         assert feat_1.entityset == feat_2.entityset
@@ -138,9 +150,7 @@ def test_deserialize_features_s3(es):
 def test_deserialize_features_url(es):
     # TODO: Feature ordering is different in py3.5 vs 3.6+
     features_original = sorted(ft.dfs(target_entity='sessions', entityset=es, features_only=True), key=lambda x: x.unique_name())
-    url = "https://featuretools-static.s3.amazonaws.com/test_feature_serialization_1.0.0"
-
-    features_deserialized = sorted(ft.load_features(url), key=lambda x: x.unique_name())
+    features_deserialized = sorted(ft.load_features(URL), key=lambda x: x.unique_name())
     for feat_1, feat_2 in zip(features_original, features_deserialized):
         assert feat_1.unique_name() == feat_2.unique_name()
         assert feat_1.entityset == feat_2.entityset
@@ -148,23 +158,19 @@ def test_deserialize_features_url(es):
 
 def test_serialize_url(es):
     features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
-    url = "https://featuretools-static.s3.amazonaws.com/test_feature_serialization_1.0.0"
-
     error_text = "Writing to URLs is not supported"
     with pytest.raises(ValueError, match=error_text):
-        ft.save_features(features_original, url)
+        ft.save_features(features_original, URL)
 
 
 def tests_s3_profile_serialize(es):
     features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
-    test_url = "s3://featuretools-static/test_feature_serialization_1.0.0"
     error_text = "The config profile (.*) could not be found"
     with pytest.raises(ProfileNotFound, match=error_text):
-        ft.save_features(features_original, test_url, profile_name="aws")
+        ft.save_features(features_original, S3_URL, profile_name="aws")
 
 
 def tests_s3_profile_deserialize(es):
-    test_url = "s3://featuretools-static/test_feature_serialization_1.0.0"
     error_text = "The config profile (.*) could not be found"
     with pytest.raises(ProfileNotFound, match=error_text):
-        ft.load_features(test_url, profile_name="aws")
+        ft.load_features(S3_URL, profile_name="aws")

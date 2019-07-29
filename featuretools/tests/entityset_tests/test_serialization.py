@@ -21,7 +21,8 @@ from featuretools.variable_types.variable import (
 CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
-S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
+TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
+S3_URL = "s3://featuretools-static/test_serialization_data_1.0.0.tar"
 URL = 'https://featuretools-static.s3.amazonaws.com/test_serialization_data_1.0.0.tar'
 
 
@@ -147,63 +148,48 @@ def test_to_pickle_id_none(path_management):
     assert es.__eq__(new_es, deep=True)
 
 
-@mock_s3
-def test_serialize_s3_csv(es):
-    s3 = boto3.resource('s3')
-    s3.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
+@pytest.fixture
+def s3_client():
+    with mock_s3():
+        s3 = boto3.resource('s3')
+        yield s3
 
-    es.to_csv(S3_URL, encoding='utf-8', engine='python')
 
-    bucket = s3.Bucket(BUCKET_NAME)
-    obj = list(bucket.objects.all())[0].key
-    s3.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+@pytest.fixture
+def s3_bucket(s3_client):
+    s3_client.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
+    s3_bucket = s3_client.Bucket(BUCKET_NAME)
+    yield s3_bucket
 
-    new_es = deserialize.read_entityset(S3_URL)
+
+def test_serialize_s3_csv(es, s3_client, s3_bucket):
+    es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python')
+
+    obj = list(s3_bucket.objects.all())[0].key
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+
+    new_es = deserialize.read_entityset(TEST_S3_URL)
     assert es.__eq__(new_es, deep=True)
 
-    for key in boto3.resource('s3').Bucket(BUCKET_NAME).objects.all():
-        key.delete()
 
+def test_serialize_s3_pickle(es, s3_client, s3_bucket):
+    es.to_pickle(TEST_S3_URL)
 
-@mock_s3
-def test_serialize_s3_pickle(es):
-    s3 = boto3.resource('s3')
-    s3.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
+    obj = list(s3_bucket.objects.all())[0].key
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
 
-    es.to_pickle(S3_URL)
-
-    bucket = s3.Bucket(BUCKET_NAME)
-    obj = list(bucket.objects.all())[0].key
-    s3.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
-
-    new_es = deserialize.read_entityset(S3_URL)
+    new_es = deserialize.read_entityset(TEST_S3_URL)
     assert es.__eq__(new_es, deep=True)
 
-    s3 = boto3.resource('s3')
-    for key in boto3.resource('s3').Bucket(BUCKET_NAME).objects.all():
-        key.delete()
-    s3.Bucket(BUCKET_NAME).delete()
 
+def test_serialize_s3_parquet(es, s3_client, s3_bucket):
+    es.to_parquet(TEST_S3_URL)
 
-@mock_s3
-def test_serialize_s3_parquet(es):
-    s3 = boto3.resource('s3')
-    s3.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
+    obj = list(s3_bucket.objects.all())[0].key
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
 
-    es.to_parquet(S3_URL)
-
-    bucket = s3.Bucket(BUCKET_NAME)
-    obj = list(bucket.objects.all())[0].key
-    s3.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
-
-    new_es = deserialize.read_entityset(S3_URL)
+    new_es = deserialize.read_entityset(TEST_S3_URL)
     assert es.__eq__(new_es, deep=True)
-
-    s3 = boto3.resource('s3')
-
-    for key in boto3.resource('s3').Bucket(BUCKET_NAME).objects.all():
-        key.delete()
-    s3.Bucket(BUCKET_NAME).delete()
 
 
 def test_serialize_url_csv(es):
@@ -218,20 +204,17 @@ def test_deserialize_url_csv(es):
 
 
 def test_real_s3_csv(es):
-    test_url = "s3://featuretools-static/test_serialization_data_1.0.0.tar"
-    new_es = deserialize.read_entityset(test_url)
+    new_es = deserialize.read_entityset(S3_URL)
     assert es.__eq__(new_es, deep=True)
 
 
 def tests_s3_profile_serialize(es):
-    test_url = "s3://featuretools-static/test_serialization_data_1.0.0.tar"
     error_text = "The config profile (.*) could not be found"
     with pytest.raises(ProfileNotFound, match=error_text):
-        es.to_csv(test_url, profile_name="aws")
+        es.to_csv(S3_URL, profile_name="aws")
 
 
 def tests_s3_profile_deserialize(es):
-    test_url = "s3://featuretools-static/test_serialization_data_1.0.0.tar"
     error_text = "The config profile (.*) could not be found"
     with pytest.raises(ProfileNotFound, match=error_text):
-        deserialize.read_entityset(test_url, profile_name="aws")
+        deserialize.read_entityset(S3_URL, profile_name="aws")
