@@ -27,6 +27,9 @@ def load_features(features, profile_name=None):
         been saved which this must include the name of the file, or a JSON formatted
         string, or a readable file handle where the features have been saved.
 
+        profile_name (str): The AWS profile specified to write to S3.
+                            Default: None
+
     Returns:
         features (list[:class:`.FeatureBase`]): Feature definitions list.
 
