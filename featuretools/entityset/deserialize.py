@@ -171,7 +171,7 @@ def read_entityset(path, profile_name=None, **kwargs):
             transport_params = {}
             if(profile_name is not None):
                 transport_params = {'session': boto3.Session(profile_name=profile_name)}
-            if _is_s3(path):
+            if _is_s3(path) and profile_name is None:
                 s3 = s3fs.S3FileSystem(anon=True)
                 with s3.open(path, "rb") as fin:
                     with open(file_path, 'wb') as fout:
