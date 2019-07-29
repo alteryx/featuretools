@@ -5,6 +5,7 @@ import shutil
 import boto3
 import pandas as pd
 import pytest
+from botocore.exceptions import ProfileNotFound
 from moto import mock_s3
 
 from featuretools.demo import load_mock_customer
@@ -229,3 +230,17 @@ def test_real_s3_csv(es):
     test_url = "s3://featuretools-static/test_serialization_data_1.0.0.tar"
     new_es = deserialize.read_entityset(test_url)
     assert es.__eq__(new_es, deep=True)
+
+
+def tests_s3_profile_serialize(es):
+    test_url = "s3://featuretools-static/test_serialization_data_1.0.0.tar"
+    error_text = "The config profile (.*) could not be found"
+    with pytest.raises(ProfileNotFound, match=error_text):
+        es.to_csv(test_url, profile_name="aws")
+
+
+def tests_s3_profile_deserialize(es):
+    test_url = "s3://featuretools-static/test_serialization_data_1.0.0.tar"
+    error_text = "The config profile (.*) could not be found"
+    with pytest.raises(ProfileNotFound, match=error_text):
+        deserialize.read_entityset(test_url, profile_name="aws")

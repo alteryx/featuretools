@@ -2,6 +2,7 @@ import os
 
 import boto3
 import pytest
+from botocore.exceptions import ProfileNotFound
 from moto import mock_s3
 from pympler.asizeof import asizeof
 from smart_open import open
@@ -152,3 +153,18 @@ def test_serialize_url(es):
     error_text = "Writing to URLs is not supported"
     with pytest.raises(ValueError, match=error_text):
         ft.save_features(features_original, url)
+
+
+def tests_s3_profile_serialize(es):
+    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+    test_url = "s3://featuretools-static/test_feature_serialization_1.0.0"
+    error_text = "The config profile (.*) could not be found"
+    with pytest.raises(ProfileNotFound, match=error_text):
+        ft.save_features(features_original, test_url, profile_name="aws")
+
+
+def tests_s3_profile_deserialize(es):
+    test_url = "s3://featuretools-static/test_feature_serialization_1.0.0"
+    error_text = "The config profile (.*) could not be found"
+    with pytest.raises(ProfileNotFound, match=error_text):
+        ft.load_features(test_url, profile_name="aws")
