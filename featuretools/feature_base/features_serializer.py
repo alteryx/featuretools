@@ -9,7 +9,7 @@ from featuretools.version import __version__ as ft_version
 SCHEMA_VERSION = "3.0.0"
 
 
-def save_features(features, location=None, **kwargs):
+def save_features(features, location=None, profile_name=None):
     """Saves the features list as JSON to a specified filepath/S3 path, writes to an open file, or
     returns the serialized features as a JSON string. If no file provided, returns a string.
 
@@ -21,6 +21,9 @@ def save_features(features, location=None, **kwargs):
             or a writeable file handle to write to. If location is None, will return a JSON string
             of the serialized features.
             Default: None
+
+        profile_name (str): The AWS profile specified to write to S3.
+                            Default: None
 
     Note:
         Features saved in one version of Featuretools are not guaranteed to work in another.
@@ -54,7 +57,7 @@ def save_features(features, location=None, **kwargs):
     .. seealso::
         :func:`.load_features`
     """
-    return FeaturesSerializer(features).save(location, **kwargs)
+    return FeaturesSerializer(features).save(location, profile_name=profile_name)
 
 
 class FeaturesSerializer(object):
@@ -74,7 +77,7 @@ class FeaturesSerializer(object):
             'feature_definitions': self._feature_definitions(),
         }
 
-    def save(self, location, **kwargs):
+    def save(self, location, profile_name):
         features_dict = self.to_dict()
         if location is None:
             return json.dumps(features_dict)
@@ -82,8 +85,8 @@ class FeaturesSerializer(object):
             transport_params = {}
             if _is_url(location):
                 raise ValueError("Writing to URLs is not supported")
-            elif("profile_name" in kwargs):
-                transport_params = {'session': boto3.Session(profile_name=kwargs['profile_name'])}
+            elif(profile_name is not None):
+                transport_params = {'session': boto3.Session(profile_name=profile_name)}
             elif _is_s3(location):
                 s3 = s3fs.S3FileSystem(anon=True)
                 with s3.open(location, "w") as f:
