@@ -161,12 +161,8 @@ def test_serialize_s3_csv(es):
     new_es = deserialize.read_entityset(S3_URL)
     assert es.__eq__(new_es, deep=True)
 
-    try:
-        for key in boto3.resource('s3').Bucket(BUCKET_NAME).objects.all():
-            key.delete()
-        s3.Bucket(BUCKET_NAME).delete()
-    except s3.meta.client.exceptions.NoSuchBucket:
-        pass
+    for key in boto3.resource('s3').Bucket(BUCKET_NAME).objects.all():
+        key.delete()
 
 
 @mock_s3
@@ -184,12 +180,9 @@ def test_serialize_s3_pickle(es):
     assert es.__eq__(new_es, deep=True)
 
     s3 = boto3.resource('s3')
-    try:
-        for key in boto3.resource('s3').Bucket(BUCKET_NAME).objects.all():
-            key.delete()
-        s3.Bucket(BUCKET_NAME).delete()
-    except s3.meta.client.exceptions.NoSuchBucket:
-        pass
+    for key in boto3.resource('s3').Bucket(BUCKET_NAME).objects.all():
+        key.delete()
+    s3.Bucket(BUCKET_NAME).delete()
 
 
 @mock_s3
@@ -207,12 +200,10 @@ def test_serialize_s3_parquet(es):
     assert es.__eq__(new_es, deep=True)
 
     s3 = boto3.resource('s3')
-    try:
-        for key in boto3.resource('s3').Bucket(BUCKET_NAME).objects.all():
-            key.delete()
-        s3.Bucket(BUCKET_NAME).delete()
-    except s3.meta.client.exceptions.NoSuchBucket:
-        pass
+
+    for key in boto3.resource('s3').Bucket(BUCKET_NAME).objects.all():
+        key.delete()
+    s3.Bucket(BUCKET_NAME).delete()
 
 
 def test_serialize_url_csv(es):
