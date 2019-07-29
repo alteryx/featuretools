@@ -156,20 +156,21 @@ def read_data_description(path):
     return description
 
 
-def read_entityset(path, **kwargs):
+def read_entityset(path, profile_name=None, **kwargs):
     '''Read entityset from disk, S3 path, or URL.
 
         Args:
             path (str): Directory on disk, S3 path, or URL to read `data_description.json`.
-            kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method or to specify AWS profile.
+            profile_name (str): The AWS profile specified to write to S3. Default: None
+            kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
     '''
     if(_is_url(path)):
         with tempfile.TemporaryDirectory() as tmpdir:
             file_name = Path(path).name + ".tar"
             file_path = os.path.join(tmpdir, file_name)
             transport_params = {}
-            if("profile_name" in kwargs):
-                transport_params = {'session': boto3.Session(profile_name=kwargs['profile_name'])}
+            if(profile_name is not None):
+                transport_params = {'session': boto3.Session(profile_name=profile_name)}
             if _is_s3(path):
                 s3 = s3fs.S3FileSystem(anon=True)
                 with s3.open(path, "rb") as fin:

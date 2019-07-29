@@ -104,7 +104,7 @@ def write_entity_data(entity, path, format='csv', **kwargs):
     return {'location': location, 'type': format, 'params': kwargs}
 
 
-def write_data_description(entityset, path, **kwargs):
+def write_data_description(entityset, path, profile_name=None, **kwargs):
     '''Serialize entityset to data description and write to disk or S3 path.
 
     Args:
@@ -130,8 +130,8 @@ def write_data_description(entityset, path, **kwargs):
             tar.add(str(tmpdir) + '/data', arcname='/data')
             tar.close()
             tar = tarfile.open(str(file_path) + ".tar")
-            if("profile_name" in kwargs):
-                transport_params = {'session': boto3.Session(profile_name=kwargs['profile_name'])}
+            if(profile_name is not None):
+                transport_params = {'session': boto3.Session(profile_name=profile_name)}
                 with open(file_path + ".tar", 'rb') as fin:
                     with open(path, 'wb', transport_params=transport_params) as fout:
                         for line in fin:
