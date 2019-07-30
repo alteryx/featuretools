@@ -17,4 +17,4 @@ funcsigs>=1.0.2; python_version < '3'
 smart-open>=1.8.4
 pathlib >= 1.0.1; python_version <'3'
 s3fs >= 0.2.2
-backports.tempfile >= 1.0
+backports.tempfile >= 1.0; python_version < 3
