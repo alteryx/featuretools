@@ -165,7 +165,7 @@ def read_entityset(path, profile_name=None, **kwargs):
             profile_name (str): The AWS profile specified to write to S3. Default: None
             kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
     '''
-    if(_is_url(path) or _is_s3(path)):
+    if _is_url(path) or _is_s3(path):
         with tempfile.TemporaryDirectory() as tmpdir:
             file_name = Path(path).name + ".tar"
             file_path = os.path.join(tmpdir, file_name)
