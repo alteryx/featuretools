@@ -6,7 +6,6 @@ import boto3
 import pandas as pd
 import pytest
 from botocore.exceptions import ProfileNotFound
-from moto import mock_s3
 
 from featuretools.demo import load_mock_customer
 from featuretools.entityset import EntitySet, deserialize, serialize
@@ -149,8 +148,36 @@ def test_to_pickle_id_none(path_management):
     assert es.__eq__(new_es, deep=True)
 
 
+def test_serialize_url_csv(es):
+    error_text = "Writing to URLs is not supported"
+    with pytest.raises(ValueError, match=error_text):
+        es.to_csv(URL, encoding='utf-8', engine='python')
+
+
+def test_deserialize_url_csv(es):
+    new_es = deserialize.read_entityset(URL)
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_real_s3_csv(es):
+    new_es = deserialize.read_entityset(S3_URL)
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_anon_s3_csv(es):
+    new_es = deserialize.read_entityset(S3_URL, profile_name=False)
+    assert es.__eq__(new_es, deep=True)
+
+
+def tests_s3_profile_deserialize(es):
+    error_text = "The config profile (.*) could not be found"
+    with pytest.raises(ProfileNotFound, match=error_text):
+        deserialize.read_entityset(S3_URL, profile_name=TEST_CONFIG)
+
+
 @pytest.fixture
 def s3_client():
+    from moto import mock_s3
     with mock_s3():
         s3 = boto3.resource('s3')
         yield s3
@@ -191,31 +218,3 @@ def test_serialize_s3_parquet(es, s3_client, s3_bucket):
 
     new_es = deserialize.read_entityset(TEST_S3_URL)
     assert es.__eq__(new_es, deep=True)
-
-
-def test_serialize_url_csv(es):
-    error_text = "Writing to URLs is not supported"
-    with pytest.raises(ValueError, match=error_text):
-        es.to_csv(URL, encoding='utf-8', engine='python')
-
-
-def test_deserialize_url_csv(es):
-    new_es = deserialize.read_entityset(URL)
-    assert es.__eq__(new_es, deep=True)
-
-
-def test_real_s3_csv(es):
-    new_es = deserialize.read_entityset(S3_URL)
-    assert es.__eq__(new_es, deep=True)
-
-
-def tests_s3_profile_serialize(es):
-    error_text = "The config profile (.*) could not be found"
-    with pytest.raises(ProfileNotFound, match=error_text):
-        es.to_csv(S3_URL, profile_name=TEST_CONFIG)
-
-
-def tests_s3_profile_deserialize(es):
-    error_text = "The config profile (.*) could not be found"
-    with pytest.raises(ProfileNotFound, match=error_text):
-        deserialize.read_entityset(S3_URL, profile_name=TEST_CONFIG)

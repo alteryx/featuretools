@@ -162,7 +162,8 @@ def read_entityset(path, profile_name=None, **kwargs):
 
         Args:
             path (str): Directory on disk, S3 path, or URL to read `data_description.json`.
-            profile_name (str): The AWS profile specified to write to S3. Default: None
+            profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
+                                    Set to False to use an anonymous profile.
             kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
     '''
     if _is_url(path) or _is_s3(path):
@@ -170,9 +171,10 @@ def read_entityset(path, profile_name=None, **kwargs):
             file_name = Path(path).name + ".tar"
             file_path = os.path.join(tmpdir, file_name)
             transport_params = {}
-            if(profile_name is not None):
+            session = boto3.Session()
+            if isinstance(profile_name, str):
                 transport_params = {'session': boto3.Session(profile_name=profile_name)}
-            if _is_s3(path) and profile_name is None:
+            if _is_s3(path) and (session.get_credentials() is None or profile_name is False):
                 s3 = s3fs.S3FileSystem(anon=True)
                 with s3.open(path, "rb") as fin:
                     with open(file_path, 'wb') as fout:

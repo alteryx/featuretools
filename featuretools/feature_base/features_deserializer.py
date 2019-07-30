@@ -28,8 +28,8 @@ def load_features(features, profile_name=None):
         been saved which this must include the name of the file, or a JSON formatted
         string, or a readable file handle where the features have been saved.
 
-        profile_name (str): The AWS profile specified to write to S3.
-                            Default: None
+        profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
+                                    Set to False to use an anonymous profile.
 
     Returns:
         features (list[:class:`.FeatureBase`]): Feature definitions list.
@@ -87,9 +87,10 @@ class FeaturesDeserializer(object):
                 features_dict = json.loads(features)
             except ValueError:
                 transport_params = {}
-                if(profile_name is not None):
+                session = boto3.Session()
+                if isinstance(profile_name, str):
                     transport_params = {'session': boto3.Session(profile_name=profile_name)}
-                if _is_s3(features) and profile_name is None:
+                elif _is_s3(features) and (session.get_credentials() is None or profile_name is False):
                     s3 = s3fs.S3FileSystem(anon=True)
                     with s3.open(features, "r", encoding='utf-8') as f:
                         features_dict = json.load(f)

@@ -112,7 +112,8 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
     Args:
         entityset (EntitySet) : Instance of :class:`.EntitySet`.
         path (str) : Location on disk or S3 path to write `data_description.json` and entity data.
-        profile_name (str): The AWS profile specified to write to S3. Default: None
+        profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
+                                    Set to False to use an anonymous profile.
         kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
     '''
     if _is_s3(path):
@@ -121,8 +122,11 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
             dump_data_description(entityset, tmpdir, **kwargs)
             file_path = create_archive(tmpdir)
 
-            if(profile_name is not None):
+            transport_params = {}
+            session = boto3.Session()
+            if isinstance(profile_name, str):
                 transport_params = {'session': boto3.Session(profile_name=profile_name)}
+            elif session.get_credentials() is not None and profile_name is not False:
                 with open(file_path + ".tar", 'rb') as fin:
                     with open(path, 'wb', transport_params=transport_params) as fout:
                         for line in fin:

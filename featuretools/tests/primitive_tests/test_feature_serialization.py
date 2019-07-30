@@ -3,7 +3,6 @@ import os
 import boto3
 import pytest
 from botocore.exceptions import ProfileNotFound
-from moto import mock_s3
 from pympler.asizeof import asizeof
 from smart_open import open
 
@@ -108,41 +107,19 @@ def test_serialized_renamed_features(es):
         serialize_name_unchanged(feature_type)
 
 
-@pytest.fixture
-def s3_client():
-    with mock_s3():
-        s3 = boto3.resource('s3')
-        yield s3
-        for key in boto3.resource('s3').Bucket(BUCKET_NAME).objects.all():
-            key.delete()
-
-
-@pytest.fixture
-def s3_bucket(s3_client):
-    s3_client.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
-    bucket = s3_client.Bucket(BUCKET_NAME)
-    return bucket
-
-
-def test_serialize_features_mock_s3(es, s3_client, s3_bucket):
-    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
-
-    ft.save_features(features_original, TEST_S3_URL)
-
-    obj = list(s3_bucket.objects.all())[0].key
-    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
-
-    features_deserialized = ft.load_features(TEST_S3_URL)
-
+def test_deserialize_features_s3(es):
+    # TODO: Feature ordering is different in py3.5 vs 3.6+
+    features_original = sorted(ft.dfs(target_entity='sessions', entityset=es, features_only=True), key=lambda x: x.unique_name())
+    features_deserialized = sorted(ft.load_features(S3_URL), key=lambda x: x.unique_name())
     for feat_1, feat_2 in zip(features_original, features_deserialized):
         assert feat_1.unique_name() == feat_2.unique_name()
         assert feat_1.entityset == feat_2.entityset
 
 
-def test_deserialize_features_s3(es):
+def test_anon_features_s3(es):
     # TODO: Feature ordering is different in py3.5 vs 3.6+
     features_original = sorted(ft.dfs(target_entity='sessions', entityset=es, features_only=True), key=lambda x: x.unique_name())
-    features_deserialized = sorted(ft.load_features(S3_URL), key=lambda x: x.unique_name())
+    features_deserialized = sorted(ft.load_features(S3_URL, profile_name=False), key=lambda x: x.unique_name())
     for feat_1, feat_2 in zip(features_original, features_deserialized):
         assert feat_1.unique_name() == feat_2.unique_name()
         assert feat_1.entityset == feat_2.entityset
@@ -175,3 +152,35 @@ def tests_s3_profile_deserialize(es):
     error_text = "The config profile (.*) could not be found"
     with pytest.raises(ProfileNotFound, match=error_text):
         ft.load_features(S3_URL, profile_name=TEST_CONFIG)
+
+
+@pytest.fixture
+def s3_client():
+    from moto import mock_s3
+    with mock_s3():
+        s3 = boto3.resource('s3')
+        yield s3
+        for key in boto3.resource('s3').Bucket(BUCKET_NAME).objects.all():
+            key.delete()
+
+
+@pytest.fixture
+def s3_bucket(s3_client):
+    s3_client.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
+    bucket = s3_client.Bucket(BUCKET_NAME)
+    return bucket
+
+
+def test_serialize_features_mock_s3(es, s3_client, s3_bucket):
+    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+
+    ft.save_features(features_original, TEST_S3_URL)
+
+    obj = list(s3_bucket.objects.all())[0].key
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+
+    features_deserialized = ft.load_features(TEST_S3_URL)
+
+    for feat_1, feat_2 in zip(features_original, features_deserialized):
+        assert feat_1.unique_name() == feat_2.unique_name()
+        assert feat_1.entityset == feat_2.entityset
