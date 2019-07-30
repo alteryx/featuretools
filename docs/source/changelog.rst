@@ -6,12 +6,15 @@ Changelog
     * Enhancements
         * Give more frequent progress bar updates and update chunk size behavior (:pr:`631`)
         * Added drop_first as param in encode_features (:pr:`647`)
+        * Generate transform features of direct features (:pr:`623`)
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
         * Fix deserialization of feature relationship path (:pr:`665`)
         * Set index after adding ancestor relationship variables (:pr:`668`)
         * Fix user-supplied variable_types modification in Entity init (:pr:`675`)
         * Don't calculate dependencies of unnecessary features (:pr:`667`)
+        * Prevent normalize entity's new entity having same index as base entity (:pr:`681`)
+        * Update variable type inference to better check for string values (:pr:`683`)
     * Changes
         * Moved dask, distributed imports (:pr:`634`)
     * Documentation Changes
@@ -26,7 +29,7 @@ Changelog
 
     Thanks to the following people for contributing to this release:
     :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`,
-    :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`
+    :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`
 
 **v0.9.1 July 3, 2019**
     * Enhancements
