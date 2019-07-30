@@ -17,6 +17,7 @@ from featuretools.feature_base.feature_base import (
 )
 from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools.utils.gen_utils import check_schema_version
+from featuretools.utils.wrangle import _is_s3
 
 
 def load_features(features, profile_name=None):
@@ -127,7 +128,3 @@ class FeaturesDeserializer(object):
 
     def _check_schema_version(self):
         check_schema_version(self, 'features')
-
-
-def _is_s3(string):
-    return "s3://" in string

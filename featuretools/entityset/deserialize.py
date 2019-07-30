@@ -12,6 +12,7 @@ from smart_open import open
 from featuretools.entityset.relationship import Relationship
 from featuretools.entityset.serialize import FORMATS
 from featuretools.utils.gen_utils import check_schema_version
+from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.variable_types.variable import find_variable_types
 
 
@@ -164,7 +165,7 @@ def read_entityset(path, profile_name=None, **kwargs):
             profile_name (str): The AWS profile specified to write to S3. Default: None
             kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
     '''
-    if(_is_url(path)):
+    if(_is_url(path) or _is_s3(path)):
         with tempfile.TemporaryDirectory() as tmpdir:
             file_name = Path(path).name + ".tar"
             file_path = os.path.join(tmpdir, file_name)
@@ -189,11 +190,3 @@ def read_entityset(path, profile_name=None, **kwargs):
     else:
         data_description = read_data_description(path)
         return description_to_entityset(data_description, **kwargs)
-
-
-def _is_s3(string):
-    return "s3://" in string
-
-
-def _is_url(string):
-    return 'http' in string or 's3' in string

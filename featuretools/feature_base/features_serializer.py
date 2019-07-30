@@ -4,6 +4,7 @@ import boto3
 import s3fs
 from smart_open import open
 
+from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.version import __version__ as ft_version
 
 SCHEMA_VERSION = "3.0.0"
@@ -117,11 +118,3 @@ class FeaturesSerializer(object):
                 name = dependency.unique_name()
                 if name not in self._features_dict:
                     self._features_dict[name] = dependency.to_dictionary()
-
-
-def _is_s3(string):
-    return "s3://" in string
-
-
-def _is_url(string):
-    return 'http' in string

@@ -9,6 +9,8 @@ import s3fs
 from backports import tempfile
 from smart_open import open
 
+from featuretools.utils.wrangle import _is_s3, _is_url
+
 FORMATS = ['csv', 'pickle', 'parquet']
 SCHEMA_VERSION = "1.0.0"
 
@@ -159,11 +161,3 @@ def create_archive(tmpdir):
     tar.add(str(tmpdir) + '/data', arcname='/data')
     tar.close()
     return file_path
-
-
-def _is_s3(string):
-    return "s3://" in string
-
-
-def _is_url(string):
-    return 'http' in string
