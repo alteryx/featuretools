@@ -24,6 +24,7 @@ WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
 S3_URL = "s3://featuretools-static/test_serialization_data_1.0.0.tar"
 URL = 'https://featuretools-static.s3.amazonaws.com/test_serialization_data_1.0.0.tar'
+TEST_CONFIG = "CheckConfigPassesOn"
 
 
 def test_all_variable_descriptions():
@@ -211,10 +212,10 @@ def test_real_s3_csv(es):
 def tests_s3_profile_serialize(es):
     error_text = "The config profile (.*) could not be found"
     with pytest.raises(ProfileNotFound, match=error_text):
-        es.to_csv(S3_URL, profile_name="aws")
+        es.to_csv(S3_URL, profile_name=TEST_CONFIG)
 
 
 def tests_s3_profile_deserialize(es):
     error_text = "The config profile (.*) could not be found"
     with pytest.raises(ProfileNotFound, match=error_text):
-        deserialize.read_entityset(S3_URL, profile_name="aws")
+        deserialize.read_entityset(S3_URL, profile_name=TEST_CONFIG)

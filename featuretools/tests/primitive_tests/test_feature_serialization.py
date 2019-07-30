@@ -20,6 +20,7 @@ WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
 S3_URL = "s3://featuretools-static/test_feature_serialization_1.0.0"
 URL = "https://featuretools-static.s3.amazonaws.com/test_feature_serialization_1.0.0"
+TEST_CONFIG = "CheckConfigPassesOn"
 
 
 def pickle_features_test_helper(es_size, features_original):
@@ -167,10 +168,10 @@ def tests_s3_profile_serialize(es):
     features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
     error_text = "The config profile (.*) could not be found"
     with pytest.raises(ProfileNotFound, match=error_text):
-        ft.save_features(features_original, S3_URL, profile_name="aws")
+        ft.save_features(features_original, S3_URL, profile_name=TEST_CONFIG)
 
 
 def tests_s3_profile_deserialize(es):
     error_text = "The config profile (.*) could not be found"
     with pytest.raises(ProfileNotFound, match=error_text):
-        ft.load_features(S3_URL, profile_name="aws")
+        ft.load_features(S3_URL, profile_name=TEST_CONFIG)
