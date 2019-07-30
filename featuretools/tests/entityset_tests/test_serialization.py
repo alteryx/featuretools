@@ -147,6 +147,53 @@ def test_to_pickle_id_none(path_management):
     assert es.__eq__(new_es, deep=True)
 
 
+@pytest.fixture
+def s3_client():
+    _environ = os.environ.copy()
+    from moto import mock_s3
+    with mock_s3():
+        s3 = boto3.resource('s3')
+        yield s3
+    os.environ.clear()
+    os.environ.update(_environ)
+
+
+@pytest.fixture
+def s3_bucket(s3_client):
+    s3_client.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
+    s3_bucket = s3_client.Bucket(BUCKET_NAME)
+    yield s3_bucket
+
+
+def test_serialize_s3_csv(es, s3_client, s3_bucket):
+    es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=False)
+    obj = list(s3_bucket.objects.all())[0].key
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+
+    new_es = deserialize.read_entityset(TEST_S3_URL)
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_serialize_s3_pickle(es, s3_client, s3_bucket):
+    es.to_pickle(TEST_S3_URL, profile_name=False)
+
+    obj = list(s3_bucket.objects.all())[0].key
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+
+    new_es = deserialize.read_entityset(TEST_S3_URL)
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_serialize_s3_parquet(es, s3_client, s3_bucket):
+    es.to_parquet(TEST_S3_URL, profile_name=False)
+
+    obj = list(s3_bucket.objects.all())[0].key
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+
+    new_es = deserialize.read_entityset(TEST_S3_URL)
+    assert es.__eq__(new_es, deep=True)
+
+
 def test_serialize_url_csv(es):
     error_text = "Writing to URLs is not supported"
     with pytest.raises(ValueError, match=error_text):
@@ -174,51 +221,3 @@ def tests_s3_check_profile(es):
         assert session.get_credentials().access_key is not TEST_KEY
     except AttributeError:
         assert session.get_credentials() is None
-
-
-@pytest.fixture
-def s3_client():
-    _environ = dict(os.environ)
-    from moto import mock_s3
-    with mock_s3():
-        s3 = boto3.resource('s3')
-        yield s3
-    os.environ.clear()
-    os.environ.update(_environ)
-
-
-@pytest.fixture
-def s3_bucket(s3_client):
-    s3_client.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
-    s3_bucket = s3_client.Bucket(BUCKET_NAME)
-    yield s3_bucket
-
-
-def test_serialize_s3_csv(es, s3_client, s3_bucket):
-    es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python')
-
-    obj = list(s3_bucket.objects.all())[0].key
-    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
-
-    new_es = deserialize.read_entityset(TEST_S3_URL)
-    assert es.__eq__(new_es, deep=True)
-
-
-def test_serialize_s3_pickle(es, s3_client, s3_bucket):
-    es.to_pickle(TEST_S3_URL)
-
-    obj = list(s3_bucket.objects.all())[0].key
-    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
-
-    new_es = deserialize.read_entityset(TEST_S3_URL)
-    assert es.__eq__(new_es, deep=True)
-
-
-def test_serialize_s3_parquet(es, s3_client, s3_bucket):
-    es.to_parquet(TEST_S3_URL)
-
-    obj = list(s3_bucket.objects.all())[0].key
-    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
-
-    new_es = deserialize.read_entityset(TEST_S3_URL)
-    assert es.__eq__(new_es, deep=True)
