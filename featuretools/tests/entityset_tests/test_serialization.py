@@ -170,7 +170,10 @@ def test_anon_s3_csv(es):
 
 def tests_s3_check_profile(es):
     session = boto3.Session()
-    assert session.get_credentials().access_key is not TEST_KEY
+    try:
+        assert session.get_credentials().access_key is not TEST_KEY
+    except AttributeError:
+        assert session.get_credentials is None
 
 
 @pytest.fixture
