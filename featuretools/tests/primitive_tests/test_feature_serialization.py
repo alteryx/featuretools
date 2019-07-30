@@ -182,3 +182,18 @@ def test_serialize_features_mock_s3(es, s3_client, s3_bucket):
     for feat_1, feat_2 in zip(features_original, features_deserialized):
         assert feat_1.unique_name() == feat_2.unique_name()
         assert feat_1.entityset == feat_2.entityset
+
+
+def test_serialize_features_mock_anon_s3(es, s3_client, s3_bucket):
+    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+
+    ft.save_features(features_original, TEST_S3_URL, profile_name=False)
+
+    obj = list(s3_bucket.objects.all())[0].key
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+
+    features_deserialized = ft.load_features(TEST_S3_URL, profile_name=False)
+
+    for feat_1, feat_2 in zip(features_original, features_deserialized):
+        assert feat_1.unique_name() == feat_2.unique_name()
+        assert feat_1.entityset == feat_2.entityset
