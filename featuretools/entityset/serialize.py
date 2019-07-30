@@ -149,8 +149,7 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
         path = os.path.abspath(path)
         if os.path.exists(path):
             shutil.rmtree(path)
-        for dirname in [path, os.path.join(path, 'data')]:
-            os.makedirs(dirname)
+        os.makedirs(os.path.join(path, 'data'))
         description = entityset_to_description(entityset)
         for entity in entityset.entities:
             loading_info = write_entity_data(entity, path, **kwargs)
