@@ -6,10 +6,15 @@ import tarfile
 
 import boto3
 import s3fs
-from backports import tempfile
 from smart_open import open
 
+from featuretools.utils import is_python_2
 from featuretools.utils.wrangle import _is_s3, _is_url
+
+if is_python_2():
+    from backports import tempfile
+else:
+    import tempfile
 
 FORMATS = ['csv', 'pickle', 'parquet']
 SCHEMA_VERSION = "1.0.0"

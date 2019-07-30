@@ -6,14 +6,19 @@ from pathlib import Path
 import boto3
 import pandas as pd
 import s3fs
-from backports import tempfile
 from smart_open import open
 
 from featuretools.entityset.relationship import Relationship
 from featuretools.entityset.serialize import FORMATS
+from featuretools.utils import is_python_2
 from featuretools.utils.gen_utils import check_schema_version
 from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.variable_types.variable import find_variable_types
+
+if is_python_2():
+    from backports import tempfile
+else:
+    import tempfile
 
 
 def description_to_variable(description, entity=None):
