@@ -116,21 +116,9 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
     if _is_s3(path):
         with tempfile.TemporaryDirectory() as tmpdir:
             os.makedirs(os.path.join(tmpdir, 'data'))
-            description = entityset_to_description(entityset)
-            for entity in entityset.entities:
-                loading_info = write_entity_data(entity, tmpdir, **kwargs)
-                description['entities'][entity.id]['loading_info'].update(loading_info)
-            file = os.path.join(tmpdir, 'data_description.json')
-            with open(file, 'w') as file:
-                json.dump(description, file)
+            dump_data_description(entityset, tmpdir, **kwargs)
+            file_path = create_archive(tmpdir)
 
-            file_name = "es-{date:%Y-%m-%d_%H:%M:%S}".format(date=datetime.datetime.now())
-            file_path = os.path.join(tmpdir, file_name)
-            tar = tarfile.open(str(file_path) + ".tar", 'w')
-            tar.add(str(tmpdir) + '/data_description.json', arcname='/data_description.json')
-            tar.add(str(tmpdir) + '/data', arcname='/data')
-            tar.close()
-            tar = tarfile.open(str(file_path) + ".tar")
             if(profile_name is not None):
                 transport_params = {'session': boto3.Session(profile_name=profile_name)}
                 with open(file_path + ".tar", 'rb') as fin:
@@ -150,13 +138,27 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
         if os.path.exists(path):
             shutil.rmtree(path)
         os.makedirs(os.path.join(path, 'data'))
-        description = entityset_to_description(entityset)
-        for entity in entityset.entities:
-            loading_info = write_entity_data(entity, path, **kwargs)
-            description['entities'][entity.id]['loading_info'].update(loading_info)
-        file = os.path.join(path, 'data_description.json')
-        with open(file, 'w') as file:
-            json.dump(description, file)
+        dump_data_description(entityset, path, **kwargs)
+
+
+def dump_data_description(entityset, path, **kwargs):
+    description = entityset_to_description(entityset)
+    for entity in entityset.entities:
+        loading_info = write_entity_data(entity, path, **kwargs)
+        description['entities'][entity.id]['loading_info'].update(loading_info)
+    file = os.path.join(path, 'data_description.json')
+    with open(file, 'w') as file:
+        json.dump(description, file)
+
+
+def create_archive(tmpdir):
+    file_name = "es-{date:%Y-%m-%d_%H:%M:%S}".format(date=datetime.datetime.now())
+    file_path = os.path.join(tmpdir, file_name)
+    tar = tarfile.open(str(file_path) + ".tar", 'w')
+    tar.add(str(tmpdir) + '/data_description.json', arcname='/data_description.json')
+    tar.add(str(tmpdir) + '/data', arcname='/data')
+    tar.close()
+    return file_path
 
 
 def _is_s3(string):
