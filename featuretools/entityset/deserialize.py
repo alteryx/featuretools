@@ -168,7 +168,7 @@ def read_entityset(path, profile_name=None, **kwargs):
         Args:
             path (str): Directory on disk, S3 path, or URL to read `data_description.json`.
             profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
-                                    Set to False to use an anonymous profile.
+                Set to False to use an anonymous profile.
             kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
     '''
     if _is_url(path) or _is_s3(path):

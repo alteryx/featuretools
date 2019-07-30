@@ -24,7 +24,7 @@ def save_features(features, location=None, profile_name=None):
             Default: None
 
         profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
-                                    Set to False to use an anonymous profile.
+            Set to False to use an anonymous profile.
 
     Note:
         Features saved in one version of Featuretools are not guaranteed to work in another.
@@ -88,9 +88,9 @@ class FeaturesSerializer(object):
 
             if _is_url(location):
                 raise ValueError("Writing to URLs is not supported")
-            elif isinstance(profile_name, str):
+            if isinstance(profile_name, str):
                 transport_params = {'session': boto3.Session(profile_name=profile_name)}
-            elif _is_s3(location) and (session.get_credentials() is None or profile_name is False):
+            if _is_s3(location) and (session.get_credentials() is None or profile_name is False):
                 s3 = s3fs.S3FileSystem(anon=True)
                 with s3.open(location, "w") as f:
                     features = json.dumps(features_dict, ensure_ascii=False)
