@@ -20,6 +20,7 @@ TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
 S3_URL = "s3://featuretools-static/test_feature_serialization_1.0.0"
 URL = "https://featuretools-static.s3.amazonaws.com/test_feature_serialization_1.0.0"
 TEST_CONFIG = "CheckConfigPassesOn"
+TEST_KEY = "test_access_key_features"
 
 
 def pickle_features_test_helper(es_size, features_original):
@@ -107,7 +108,7 @@ def test_serialized_renamed_features(es):
         serialize_name_unchanged(feature_type)
 
 
-def test_deserialize_features_s3(es):
+def test_deserialize_features_default_s3(es):
     # TODO: Feature ordering is different in py3.5 vs 3.6+
     features_original = sorted(ft.dfs(target_entity='sessions', entityset=es, features_only=True), key=lambda x: x.unique_name())
     features_deserialized = sorted(ft.load_features(S3_URL), key=lambda x: x.unique_name())
@@ -116,7 +117,7 @@ def test_deserialize_features_s3(es):
         assert feat_1.entityset == feat_2.entityset
 
 
-def test_anon_features_s3(es):
+def test_features_anon_s3(es):
     # TODO: Feature ordering is different in py3.5 vs 3.6+
     features_original = sorted(ft.dfs(target_entity='sessions', entityset=es, features_only=True), key=lambda x: x.unique_name())
     features_deserialized = sorted(ft.load_features(S3_URL, profile_name=False), key=lambda x: x.unique_name())
@@ -141,27 +142,22 @@ def test_serialize_url(es):
         ft.save_features(features_original, URL)
 
 
-def tests_s3_profile_serialize(es):
-    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
-    error_text = "The config profile (.*) could not be found"
-    with pytest.raises(ProfileNotFound, match=error_text):
-        ft.save_features(features_original, S3_URL, profile_name=TEST_CONFIG)
-
-
-def tests_s3_profile_deserialize(es):
-    error_text = "The config profile (.*) could not be found"
-    with pytest.raises(ProfileNotFound, match=error_text):
-        ft.load_features(S3_URL, profile_name=TEST_CONFIG)
+def tests_s3_check_profile(es):
+    session = boto3.Session()
+    assert session.get_credentials().access_key is not TEST_KEY
 
 
 @pytest.fixture
 def s3_client():
+    _environ = dict(os.environ)
     from moto import mock_s3
     with mock_s3():
         s3 = boto3.resource('s3')
         yield s3
         for key in boto3.resource('s3').Bucket(BUCKET_NAME).objects.all():
             key.delete()
+    os.environ.clear()
+    os.environ.update(_environ)
 
 
 @pytest.fixture

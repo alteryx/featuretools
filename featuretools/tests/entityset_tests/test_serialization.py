@@ -23,7 +23,7 @@ WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
 S3_URL = "s3://featuretools-static/test_serialization_data_1.0.0.tar"
 URL = 'https://featuretools-static.s3.amazonaws.com/test_serialization_data_1.0.0.tar'
-TEST_CONFIG = "CheckConfigPassesOn"
+TEST_KEY = "test_access_key_es"
 
 
 def test_all_variable_descriptions():
@@ -159,7 +159,7 @@ def test_deserialize_url_csv(es):
     assert es.__eq__(new_es, deep=True)
 
 
-def test_real_s3_csv(es):
+def test_default_s3_csv(es):
     new_es = deserialize.read_entityset(S3_URL)
     assert es.__eq__(new_es, deep=True)
 
@@ -169,18 +169,20 @@ def test_anon_s3_csv(es):
     assert es.__eq__(new_es, deep=True)
 
 
-def tests_s3_profile_deserialize(es):
-    error_text = "The config profile (.*) could not be found"
-    with pytest.raises(ProfileNotFound, match=error_text):
-        deserialize.read_entityset(S3_URL, profile_name=TEST_CONFIG)
+def tests_s3_check_profile(es):
+    session = boto3.Session()
+    assert session.get_credentials().access_key is not TEST_KEY
 
 
 @pytest.fixture
 def s3_client():
+    _environ = dict(os.environ)
     from moto import mock_s3
     with mock_s3():
         s3 = boto3.resource('s3')
         yield s3
+    os.environ.clear()
+    os.environ.update(_environ)
 
 
 @pytest.fixture
