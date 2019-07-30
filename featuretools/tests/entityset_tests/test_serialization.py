@@ -5,7 +5,6 @@ import shutil
 import boto3
 import pandas as pd
 import pytest
-from botocore.exceptions import ProfileNotFound
 
 from featuretools.demo import load_mock_customer
 from featuretools.entityset import EntitySet, deserialize, serialize

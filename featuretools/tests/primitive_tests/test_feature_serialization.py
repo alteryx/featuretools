@@ -2,7 +2,6 @@ import os
 
 import boto3
 import pytest
-from botocore.exceptions import ProfileNotFound
 from pympler.asizeof import asizeof
 from smart_open import open
 
