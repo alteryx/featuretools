@@ -173,7 +173,7 @@ def tests_s3_check_profile(es):
     try:
         assert session.get_credentials().access_key is not TEST_KEY
     except AttributeError:
-        assert session.get_credentials is None
+        assert session.get_credentials() is None
 
 
 @pytest.fixture
