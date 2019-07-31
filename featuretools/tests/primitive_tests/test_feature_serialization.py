@@ -23,6 +23,7 @@ TEST_CONFIG = "CheckConfigPassesOn"
 TEST_KEY = "test_access_key_features"
 CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
 
+
 def pickle_features_test_helper(es_size, features_original):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     filepath = os.path.join(dir_path, 'test_feature')
@@ -154,6 +155,7 @@ def test_serialize_features_mock_anon_s3(es, s3_client, s3_bucket):
     for feat_1, feat_2 in zip(features_original, features_deserialized):
         assert feat_1.unique_name() == feat_2.unique_name()
         assert feat_1.entityset == feat_2.entityset
+
 
 @pytest.fixture
 def setup_test_profile(monkeypatch):
