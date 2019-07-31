@@ -483,7 +483,15 @@ class FeatureSetCalculator(object):
 
         new_df = child_df.merge(merge_df, left_on=merge_var, right_index=True,
                                 how='left')
+        # Handle default values
+        fillna_dict = {}
+        for f in features:
+            feature_defaults = {name: f.default_value
+                                for name in f.get_feature_names()}
+            fillna_dict.update(feature_defaults)
 
+        new_df.fillna(fillna_dict, inplace=True)
+ 
         return new_df
 
     def _calculate_agg_features(self, features, frame, df_trie):
