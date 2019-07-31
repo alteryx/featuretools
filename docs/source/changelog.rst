@@ -14,6 +14,7 @@ Changelog
         * Don't calculate dependencies of unnecessary features (:pr:`667`)
         * Prevent normalize entity's new entity having same index as base entity (:pr:`681`)
         * Update variable type inference to better check for string values (:pr:`683`)
+        * Fix ft.show_info() doesn't work in Jupyter (:pr:`690`)
     * Changes
         * Moved dask, distributed imports (:pr:`634`)
     * Documentation Changes
@@ -28,7 +29,7 @@ Changelog
 
     Thanks to the following people for contributing to this release:
     :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`,
-    :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`
+    :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`, :user:`FreshLeaf8865`
 
 **v0.9.1 July 3, 2019**
     * Enhancements
