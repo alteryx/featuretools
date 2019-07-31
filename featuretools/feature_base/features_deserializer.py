@@ -102,7 +102,7 @@ class FeaturesDeserializer(object):
                     else:
                         features_dict = use_s3fs_features(features)
                 else:
-                    with open(features, 'r', encoding='utf-8') as f:
+                    with open(features, 'r') as f:
                         features_dict = json.load(f)
             return cls(features_dict)
         return cls(json.load(features))

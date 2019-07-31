@@ -158,7 +158,7 @@ def read_data_description(path):
     path = os.path.abspath(path)
     assert os.path.exists(path), '"{}" does not exist'.format(path)
     file = os.path.join(path, 'data_description.json')
-    with open(file, 'r', encoding='utf-8') as file:
+    with open(file, 'r') as file:
         description = json.load(file)
     description['path'] = path
     return description
