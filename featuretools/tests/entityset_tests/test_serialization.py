@@ -223,6 +223,47 @@ def test_serialize_s3_anon_parquet(es, s3_client, s3_bucket):
     assert es.__eq__(new_es, deep=True)
 
 
+@pytest.fixture
+def setup_test_profile(monkeypatch):
+    test_path = os.path.join(CACHE, 'test_credentials')
+    test_path_config = os.path.join(CACHE, 'test_config')
+    monkeypatch.setenv("AWS_SHARED_CREDENTIALS_FILE", test_path)
+    monkeypatch.setenv("AWS_CONFIG_FILE", test_path_config)
+    monkeypatch.delenv("AWS_ACCESS_KEY_ID", raising=False)
+    monkeypatch.delenv("AWS_SECRET_ACCESS_KEY", raising=False)
+    monkeypatch.setenv("AWS_PROFILE", "test")
+
+    try:
+        os.remove(test_path)
+        os.remove(test_path_config)
+    except EnvironmentError:
+        pass
+
+    f = open(test_path, "w+")
+    f.write("[test]\n")
+    f.write("aws_access_key_id=AKIAIOSFODNN7EXAMPLE\n")
+    f.write("aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\n")
+    f.close()
+    f = open(test_path_config, "w+")
+    f.write("[profile test]\n")
+    f.write("region=us-east-2\n")
+    f.write("output=text\n")
+    f.close()
+
+    yield
+    os.remove(test_path)
+    os.remove(test_path_config)
+
+
+def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
+    es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name='test')
+    obj = list(s3_bucket.objects.all())[0].key
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+
+    new_es = deserialize.read_entityset(TEST_S3_URL, profile_name='test')
+    assert es.__eq__(new_es, deep=True)
+
+
 def test_serialize_url_csv(es):
     error_text = "Writing to URLs is not supported"
     with pytest.raises(ValueError, match=error_text):
@@ -242,11 +283,3 @@ def test_default_s3_csv(es):
 def test_anon_s3_csv(es):
     new_es = deserialize.read_entityset(S3_URL, profile_name=False)
     assert es.__eq__(new_es, deep=True)
-
-
-def tests_s3_check_profile(es):
-    session = boto3.Session()
-    try:
-        assert session.get_credentials().access_key is not TEST_KEY
-    except AttributeError:
-        assert session.get_credentials() is None
