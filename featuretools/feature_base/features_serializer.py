@@ -1,9 +1,11 @@
 import json
 
 import boto3
-import s3fs
-from smart_open import open
 
+from featuretools.utils.gen_utils import (
+    use_s3fs_features,
+    use_smartopen_features
+)
 from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.version import __version__ as ft_version
 
@@ -24,7 +26,7 @@ def save_features(features, location=None, profile_name=None):
             Default: None
 
         profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
-            Set to False to use an anonymous profile.
+                                    Set to False to use an anonymous profile.
 
     Note:
         Features saved in one version of Featuretools are not guaranteed to work in another.
@@ -84,23 +86,22 @@ class FeaturesSerializer(object):
             return json.dumps(features_dict)
         if isinstance(location, str):
             transport_params = {}
-            session = boto3.Session()
-
             if _is_url(location):
                 raise ValueError("Writing to URLs is not supported")
             if _is_s3(location):
+                session = boto3.Session()
                 if isinstance(profile_name, str):
                     transport_params = {'session': boto3.Session(profile_name=profile_name)}
-                if session.get_credentials() is not None or profile_name is not False:
-                    with open(location, "w", transport_params=transport_params) as f:
-                        json.dump(features_dict, f)
+                    use_smartopen_features(location, features_dict, transport_params, read=False)
+                elif profile_name is False:
+                    use_s3fs_features(location, features_dict, read=False)
+                elif session.get_credentials() is not None:
+                    use_smartopen_features(location, features_dict, read=False)
                 else:
-                    s3 = s3fs.S3FileSystem(anon=True)
-                    with s3.open(location, "w") as f:
-                        features = json.dumps(features_dict, ensure_ascii=False)
-                        f.write(features)
-            with open(location, "w") as f:
-                json.dump(features_dict, f)
+                    use_s3fs_features(location, features_dict, read=False)
+            else:
+                with open(location, "w") as f:
+                    json.dump(features_dict, f)
         else:
             json.dump(features_dict, location)
 

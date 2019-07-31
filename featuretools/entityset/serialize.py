@@ -5,10 +5,9 @@ import shutil
 import tarfile
 
 import boto3
-import s3fs
-from smart_open import open
 
 from featuretools.utils import is_python_2
+from featuretools.utils.gen_utils import use_s3fs_es, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
 
 if is_python_2():
@@ -131,17 +130,13 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
             session = boto3.Session()
             if isinstance(profile_name, str):
                 transport_params = {'session': boto3.Session(profile_name=profile_name)}
-            if session.get_credentials() is not None or profile_name is not False:
-                with open(file_path + ".tar", 'rb') as fin:
-                    with open(path, 'wb', transport_params=transport_params) as fout:
-                        for line in fin:
-                            fout.write(line)
+                use_smartopen_es(file_path, path, transport_params, read=False)
+            elif profile_name is False:
+                use_s3fs_es(file_path, path, read=False)
+            elif session.get_credentials() is not None:
+                use_smartopen_es(file_path, path, read=False)
             else:
-                s3 = s3fs.S3FileSystem(anon=True)
-                with open(file_path + ".tar", 'rb') as fin:
-                    with s3.open(path, 'wb') as fout:
-                        for line in fin:
-                            fout.write(line)
+                use_s3fs_es(file_path, path, read=False)
     elif _is_url(path):
         raise ValueError("Writing to URLs is not supported")
     else:

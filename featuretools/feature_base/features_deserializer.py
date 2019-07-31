@@ -1,8 +1,6 @@
 import json
 
 import boto3
-import s3fs
-from smart_open import open
 
 from featuretools.entityset.deserialize import \
     description_to_entityset as deserialize_es
@@ -16,7 +14,11 @@ from featuretools.feature_base.feature_base import (
     TransformFeature
 )
 from featuretools.primitives.utils import PrimitivesDeserializer
-from featuretools.utils.gen_utils import check_schema_version
+from featuretools.utils.gen_utils import (
+    check_schema_version,
+    use_s3fs_features,
+    use_smartopen_features
+)
 from featuretools.utils.wrangle import _is_s3, _is_url
 
 
@@ -86,18 +88,22 @@ class FeaturesDeserializer(object):
             try:
                 features_dict = json.loads(features)
             except ValueError:
-                if _is_url or _is_s3:
-                    transport_params = {}
+                if _is_url(features):
+                    features_dict = use_smartopen_features(features)
+                elif _is_s3(features):
                     session = boto3.Session()
                     if isinstance(profile_name, str):
                         transport_params = {'session': boto3.Session(profile_name=profile_name)}
-                    if session.get_credentials() is not None or profile_name is not False:
-                        with open(features, 'r', encoding='utf-8', transport_params=transport_params) as f:
-                            features_dict = json.load(f)
+                        features_dict = use_smartopen_features(features, transport_params)
+                    elif profile_name is False:
+                        features_dict = use_s3fs_features(features)
+                    elif session.get_credentials() is not None:
+                        features_dict = use_smartopen_features(features)
                     else:
-                        s3 = s3fs.S3FileSystem(anon=True)
-                        with s3.open(features, "r", encoding='utf-8') as f:
-                            features_dict = json.load(f)
+                        features_dict = use_s3fs_features(features)
+                else:
+                    with open(features, 'r', encoding='utf-8') as f:
+                        features_dict = json.load(f)
             return cls(features_dict)
         return cls(json.load(features))
 

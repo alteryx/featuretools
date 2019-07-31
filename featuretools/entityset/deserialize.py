@@ -5,13 +5,15 @@ from pathlib import Path
 
 import boto3
 import pandas as pd
-import s3fs
-from smart_open import open
 
 from featuretools.entityset.relationship import Relationship
 from featuretools.entityset.serialize import FORMATS
 from featuretools.utils import is_python_2
-from featuretools.utils.gen_utils import check_schema_version
+from featuretools.utils.gen_utils import (
+    check_schema_version,
+    use_s3fs_es,
+    use_smartopen_es
+)
 from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.variable_types.variable import find_variable_types
 
@@ -177,19 +179,19 @@ def read_entityset(path, profile_name=None, **kwargs):
             file_path = os.path.join(tmpdir, file_name)
             transport_params = {}
             session = boto3.Session()
-            if isinstance(profile_name, str):
+
+            if _is_url(path):
+                use_smartopen_es(file_path, path)
+            elif isinstance(profile_name, str):
                 transport_params = {'session': boto3.Session(profile_name=profile_name)}
-            if session.get_credentials() is not None or profile_name is not False:
-                with open(path, "rb", transport_params=transport_params) as fin:
-                    with open(file_path, 'wb') as fout:
-                        for line in fin:
-                            fout.write(line)
+                use_smartopen_es(file_path, path, transport_params)
+            elif profile_name is False:
+                use_s3fs_es(file_path, path)
+            elif session.get_credentials() is not None:
+                use_smartopen_es(file_path, path)
             else:
-                s3 = s3fs.S3FileSystem(anon=True)
-                with s3.open(path, "rb") as fin:
-                    with open(file_path, 'wb') as fout:
-                        for line in fin:
-                            fout.write(line)
+                use_s3fs_es(file_path, path)
+
             tar = tarfile.open(str(file_path))
             tar.extractall(path=tmpdir)
             data_description = read_data_description(tmpdir)
