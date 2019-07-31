@@ -107,6 +107,54 @@ def test_serialized_renamed_features(es):
         serialize_name_unchanged(feature_type)
 
 
+@pytest.fixture
+def s3_client():
+    _environ = os.environ.copy()
+    from moto import mock_s3
+    with mock_s3():
+        s3 = boto3.resource('s3')
+        yield s3
+    os.environ.clear()
+    os.environ.update(_environ)
+
+
+@pytest.fixture
+def s3_bucket(s3_client):
+    s3_client.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
+    s3_bucket = s3_client.Bucket(BUCKET_NAME)
+    yield s3_bucket
+
+
+def test_serialize_features_mock_s3(es, s3_client, s3_bucket):
+    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+
+    ft.save_features(features_original, TEST_S3_URL)
+
+    obj = list(s3_bucket.objects.all())[0].key
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+
+    features_deserialized = ft.load_features(TEST_S3_URL)
+
+    for feat_1, feat_2 in zip(features_original, features_deserialized):
+        assert feat_1.unique_name() == feat_2.unique_name()
+        assert feat_1.entityset == feat_2.entityset
+
+
+def test_serialize_features_mock_anon_s3(es, s3_client, s3_bucket):
+    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+
+    ft.save_features(features_original, TEST_S3_URL, profile_name=False)
+
+    obj = list(s3_bucket.objects.all())[0].key
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+
+    features_deserialized = ft.load_features(TEST_S3_URL, profile_name=False)
+
+    for feat_1, feat_2 in zip(features_original, features_deserialized):
+        assert feat_1.unique_name() == feat_2.unique_name()
+        assert feat_1.entityset == feat_2.entityset
+
+
 def test_deserialize_features_default_s3(es):
     # TODO: Feature ordering is different in py3.5 vs 3.6+
     features_original = sorted(ft.dfs(target_entity='sessions', entityset=es, features_only=True), key=lambda x: x.unique_name())
@@ -147,53 +195,3 @@ def tests_s3_check_profile(es):
         assert session.get_credentials().access_key is not TEST_KEY
     except AttributeError:
         assert session.get_credentials() is None
-
-
-@pytest.fixture
-def s3_client():
-    _environ = dict(os.environ)
-    from moto import mock_s3
-    with mock_s3():
-        s3 = boto3.resource('s3')
-        yield s3
-        for key in boto3.resource('s3').Bucket(BUCKET_NAME).objects.all():
-            key.delete()
-    os.environ.clear()
-    os.environ.update(_environ)
-
-
-@pytest.fixture
-def s3_bucket(s3_client):
-    s3_client.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
-    bucket = s3_client.Bucket(BUCKET_NAME)
-    return bucket
-
-
-def test_serialize_features_mock_s3(es, s3_client, s3_bucket):
-    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
-
-    ft.save_features(features_original, TEST_S3_URL)
-
-    obj = list(s3_bucket.objects.all())[0].key
-    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
-
-    features_deserialized = ft.load_features(TEST_S3_URL)
-
-    for feat_1, feat_2 in zip(features_original, features_deserialized):
-        assert feat_1.unique_name() == feat_2.unique_name()
-        assert feat_1.entityset == feat_2.entityset
-
-
-def test_serialize_features_mock_anon_s3(es, s3_client, s3_bucket):
-    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
-
-    ft.save_features(features_original, TEST_S3_URL, profile_name=False)
-
-    obj = list(s3_bucket.objects.all())[0].key
-    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
-
-    features_deserialized = ft.load_features(TEST_S3_URL, profile_name=False)
-
-    for feat_1, feat_2 in zip(features_original, features_deserialized):
-        assert feat_1.unique_name() == feat_2.unique_name()
-        assert feat_1.entityset == feat_2.entityset
