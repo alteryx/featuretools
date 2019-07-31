@@ -924,6 +924,7 @@ def test_warning_not_enough_chunks(es, capsys):
     pattern = r'Fewer chunks \([0-9]+\), than workers \([0-9]+\) consider reducing the chunk size'
     assert re.search(pattern, captured.out) is not None
 
+
 def test_n_jobs():
     try:
         cpus = len(psutil.Process().cpu_affinity())
