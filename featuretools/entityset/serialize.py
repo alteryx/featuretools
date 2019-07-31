@@ -131,7 +131,7 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
             session = boto3.Session()
             if isinstance(profile_name, str):
                 transport_params = {'session': boto3.Session(profile_name=profile_name)}
-            if session.get_credentials() is not None and profile_name is not False:
+            if session.get_credentials() is not None or profile_name is not False:
                 with open(file_path + ".tar", 'rb') as fin:
                     with open(path, 'wb', transport_params=transport_params) as fout:
                         for line in fin:

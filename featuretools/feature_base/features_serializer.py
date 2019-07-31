@@ -88,16 +88,19 @@ class FeaturesSerializer(object):
 
             if _is_url(location):
                 raise ValueError("Writing to URLs is not supported")
-            if isinstance(profile_name, str):
-                transport_params = {'session': boto3.Session(profile_name=profile_name)}
-            if _is_s3(location) and (session.get_credentials() is None or profile_name is False):
-                s3 = s3fs.S3FileSystem(anon=True)
-                with s3.open(location, "w") as f:
-                    features = json.dumps(features_dict, ensure_ascii=False)
-                    f.write(features)
-            else:
-                with open(location, "w", transport_params=transport_params) as f:
-                    json.dump(features_dict, f)
+            if _is_s3(location):
+                if isinstance(profile_name, str):
+                    transport_params = {'session': boto3.Session(profile_name=profile_name)}
+                if session.get_credentials() is not None or profile_name is not False:
+                    with open(location, "w", transport_params=transport_params) as f:
+                        json.dump(features_dict, f)
+                else:
+                    s3 = s3fs.S3FileSystem(anon=True)
+                    with s3.open(location, "w") as f:
+                        features = json.dumps(features_dict, ensure_ascii=False)
+                        f.write(features)
+            with open(location, "w") as f:
+                json.dump(features_dict, f)
         else:
             json.dump(features_dict, location)
 

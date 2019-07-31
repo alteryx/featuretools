@@ -17,7 +17,7 @@ from featuretools.feature_base.feature_base import (
 )
 from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools.utils.gen_utils import check_schema_version
-from featuretools.utils.wrangle import _is_s3
+from featuretools.utils.wrangle import _is_s3, _is_url
 
 
 def load_features(features, profile_name=None):
@@ -86,17 +86,18 @@ class FeaturesDeserializer(object):
             try:
                 features_dict = json.loads(features)
             except ValueError:
-                transport_params = {}
-                session = boto3.Session()
-                if isinstance(profile_name, str):
-                    transport_params = {'session': boto3.Session(profile_name=profile_name)}
-                if _is_s3(features) and (session.get_credentials() is None or profile_name is False):
-                    s3 = s3fs.S3FileSystem(anon=True)
-                    with s3.open(features, "r", encoding='utf-8') as f:
-                        features_dict = json.load(f)
-                else:
-                    with open(features, 'r', encoding='utf-8', transport_params=transport_params) as f:
-                        features_dict = json.load(f)
+                if _is_url or _is_s3:
+                    transport_params = {}
+                    session = boto3.Session()
+                    if isinstance(profile_name, str):
+                        transport_params = {'session': boto3.Session(profile_name=profile_name)}
+                    if session.get_credentials() is not None or profile_name is not False:
+                        with open(features, 'r', encoding='utf-8', transport_params=transport_params) as f:
+                            features_dict = json.load(f)
+                    else:
+                        s3 = s3fs.S3FileSystem(anon=True)
+                        with s3.open(features, "r", encoding='utf-8') as f:
+                            features_dict = json.load(f)
             return cls(features_dict)
         return cls(json.load(features))
 
