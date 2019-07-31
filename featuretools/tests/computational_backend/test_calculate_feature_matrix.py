@@ -1249,18 +1249,18 @@ def test_missing_parent():
         "session_id": ["a", "a", "b", "c"],
         "value": [1, 1, 1, 1]
     })
-    
+
     sessions = pd.DataFrame({
         "id": ["a", "b"]
     })
 
     es = ft.EntitySet()
     es.entity_from_dataframe(entity_id="transactions",
-                            dataframe=transactions,
-                            index="id")
+                             dataframe=transactions,
+                             index="id")
     es.entity_from_dataframe(entity_id="sessions",
-                            dataframe=sessions,
-                            index="id")
+                             dataframe=sessions,
+                             index="id")
 
     es.add_relationship(ft.Relationship(es["sessions"]["id"], es["transactions"]["session_id"]))
 
