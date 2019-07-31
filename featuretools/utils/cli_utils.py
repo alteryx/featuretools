@@ -15,7 +15,8 @@ deps = ["numpy", "pandas", "tqdm", "toolz", "PyYAML", "cloudpickle",
 
 
 def show_info():
-    subprocess.run(["featuretools", "info"])
+    res = subprocess.run(["featuretools", "info"], stdout=subprocess.PIPE)
+    print(res.stdout.decode('utf-8'))
 
 
 def print_info():
