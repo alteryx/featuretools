@@ -511,8 +511,8 @@ def test_empty_path_approximate_full(es):
                                               approximate=Timedelta(10, 's'),
                                               cutoff_time=cutoff_time)
     vals1 = feature_matrix[dfeat.get_name()].tolist()
-    assert np.isnan(vals1[0])
-    assert np.isnan(vals1[1])
+    assert not np.isnan(vals1[0])
+    assert not np.isnan(vals1[1])
     assert feature_matrix[agg_feat.get_name()].tolist() == [5, 1]
 
 # todo: do we need to test this situation?
@@ -1241,3 +1241,34 @@ def test_some_instances_not_in_data(es):
     assert all(fm.index.values == index_answer)
     for x, y in zip(fm.columns, [ifeat_answer, prop_answer, dfeat_answer]):
         np.testing.assert_array_equal(fm[x], y)
+
+
+def test_missing_parent():
+    transactions = pd.DataFrame({
+        "id": [1, 2, 3, 4],
+        "session_id": ["a", "a", "b", "c"],
+        "value": [1, 1, 1, 1]
+    })
+    
+    sessions = pd.DataFrame({
+        "id": ["a", "b"]
+    })
+
+    es = ft.EntitySet()
+    es.entity_from_dataframe(entity_id="transactions",
+                            dataframe=transactions,
+                            index="id")
+    es.entity_from_dataframe(entity_id="sessions",
+                            dataframe=sessions,
+                            index="id")
+
+    es.add_relationship(ft.Relationship(es["sessions"]["id"], es["transactions"]["session_id"]))
+
+    sum_features = ft.Feature(es["transactions"]["value"], parent_entity=es["sessions"], primitive=Sum)
+    sessions_sum = ft.Feature(sum_features, entity=es["transactions"])
+
+    fm = ft.calculate_feature_matrix(features=[sessions_sum], entityset=es)
+
+    desired_val = 0.0
+    calculated_val = fm.get_values()[3][0]
+    assert desired_val == calculated_val
