@@ -491,7 +491,7 @@ class FeatureSetCalculator(object):
             fillna_dict.update(feature_defaults)
 
         new_df.fillna(fillna_dict, inplace=True)
- 
+
         return new_df
 
     def _calculate_agg_features(self, features, frame, df_trie):
