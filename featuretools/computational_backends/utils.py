@@ -55,10 +55,7 @@ def datetime_round(dt, freq, round_up=False):
 
     round down Timestamp series to a specified freq
     """
-    if round_up:
-        round_f = np.ceil
-    else:
-        round_f = np.floor
+    round_f = np.floor
     dt = pd.DatetimeIndex(dt)
     if isinstance(freq, pd.Timedelta):
         freq = freq.value
