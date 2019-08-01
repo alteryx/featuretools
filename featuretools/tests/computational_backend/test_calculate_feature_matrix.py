@@ -1197,7 +1197,7 @@ def test_instances_not_in_data(es):
     fm = calculate_feature_matrix(features,
                                   entityset=es,
                                   instance_ids=instances,
-                                  approximate="2 years")
+                                  approximate="730 days")
     assert all(fm.index.values == instances)
     for column in fm.columns:
         assert fm[column].isnull().all()
