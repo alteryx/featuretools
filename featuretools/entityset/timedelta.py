@@ -1,9 +1,5 @@
 from __future__ import division
 
-from builtins import str
-from datetime import datetime
-
-import numpy as np
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
@@ -190,48 +186,14 @@ class Timedelta(object):
 
     def __radd__(self, time):
         """Add the Timedelta to a timestamp value"""
-        if self.value > 0:
-            return self._do_add(time, self.value)
-        elif self.value < 0:
-            return self._do_sub(time, -self.value)
-        return time
+        if self.unit != self._Observations:
+            return time + self.delta_obj
+        else:
+            raise Exception("Invalid unit")
 
     def __rsub__(self, time):
         """Subtract the Timedelta from a timestamp value"""
-        if self.value > 0:
-            return self._do_sub(time, self.value)
-        elif self.value < 0:
-            return self._do_add(time, -self.value)
-        return time
-
-    def _do_sub(self, time, value):
-        assert value > 0, "Value must be greater than 0"
-
         if self.unit != self._Observations:
-            return add_td(time, -1 * value, self.unit)
-
-        raise Exception("Invalid unit")
-
-    def _do_add(self, time, value):
-        assert value > 0, "Value must be greater than 0"
-
-        if self.unit not in [self._Observations]:
-            return add_td(time, value, self.unit)
-
-        raise Exception("Invalid unit")
-
-
-def add_td(time, value, unit):
-    if unit in ["ms", "s", "h", "m", "d"]:
-        return time + pd.Timedelta(value, unit)
-    elif unit == 'Y':
-        if hasattr(time, '__len__'):
-            is_array = isinstance(time, np.ndarray)
-            new_time = pd.Series(time).apply(lambda x: x + relativedelta(years=value))
-            if is_array:
-                new_time = new_time.values
-            return new_time
+            return time - self.delta_obj
         else:
-            return time + relativedelta(years=value)
-    else:
-        raise ValueError("Invalid Unit")
+            raise Exception("Invalid unit")
