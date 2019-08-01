@@ -43,7 +43,7 @@ class Timedelta(object):
 
     # units for absolute times
     _time_units = ['ms', 's', 'h', 'm', 'd']
-
+    _relative_units = ['mo', 'Y']
     _readable_units = {
         "ms": "Milliseconds",
         "s": "Seconds",
@@ -53,7 +53,8 @@ class Timedelta(object):
         "o": "Observations",
         "w": "Weeks",
         "Y": "Years",
-        'u': 'Units'
+        'u': 'Units',
+        'mo': "Months"
     }
 
     _convert_to_days = {
@@ -93,13 +94,13 @@ class Timedelta(object):
             unit = 'd'
 
         self.unit = unit
-
         if unit == self._Observations and entity is None:
             raise Exception("Must define entity to use %s as unit" % (unit))
 
         self.entity = entity
-
         self.inclusive = inclusive
+
+        self.delta_obj = self.get_unit_type()
 
     @classmethod
     def from_dictionary(cls, dictionary):
@@ -116,11 +117,20 @@ class Timedelta(object):
 
     @classmethod
     def _check_unit_plural(cls, s):
-        if len(s) > 1 and not s.endswith('s'):
+        if len(s) > 2 and not s.endswith('s'):
             return (s + 's').lower()
         elif len(s) > 1:
             return s.lower()
         return s
+
+    def get_unit_type(self):
+        if self.unit == "o" or self.unit == "u":
+            return None
+        elif self.unit in self._time_units:
+            return pd.Timedelta(self.value, self.unit)
+        else:
+            unit = self.readable_unit.lower()
+            return relativedelta(**{unit: self.value})
 
     def get_name(self):
         if self.unit == self._generic_unit:
