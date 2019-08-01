@@ -23,7 +23,7 @@ def bin_cutoff_times(cuttoff_time, bin_size):
     if type(bin_size) == int:
         binned_cutoff_time['time'] = binned_cutoff_time['time'].apply(lambda x: x / bin_size * bin_size)
     else:
-        bin_size = _check_timedelta(bin_size).get_pandas_timedelta()
+        bin_size = _check_timedelta(bin_size).get_delta_obj()
         binned_cutoff_time['time'] = datetime_round(binned_cutoff_time['time'], bin_size)
     return binned_cutoff_time
 
@@ -61,7 +61,10 @@ def datetime_round(dt, freq, round_up=False):
     else:
         round_f = np.floor
     dt = pd.DatetimeIndex(dt)
-    freq = to_offset(freq).delta.value
+    if isinstance(freq, pd.Timedelta):
+        freq = freq.value
+    else:
+        freq = freq.get_date_offset().delta.value
     return pd.DatetimeIndex(((round_f(dt.asi8 / freq)) * freq).astype(np.int64))
 
 

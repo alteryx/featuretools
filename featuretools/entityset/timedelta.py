@@ -145,11 +145,11 @@ class Timedelta(object):
             return self._readable_units[self._original_unit]
         return self._readable_units[self.unit]
 
-    def get_pandas_timedelta(self):
-        if self.is_absolute():
-            return self.delta_obj
-        else:
-            raise Exception("Invalid unit")
+    def get_delta_obj(self):
+        return self.delta_obj
+
+    def get_date_offset(self):
+        return pd.DateOffset(**{self.unit: self.value})
 
     def view(self, unit):
         if self.is_absolute():
