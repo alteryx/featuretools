@@ -71,8 +71,6 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
             pass
     if value is not None and entity_id is not None:
         unit = 'o'
-    elif value is not None:
-        unit = 'u'
     else:
         pattern = '([0-9]+) *([a-zA-Z]+)$'
         match = re.match(pattern, td)
