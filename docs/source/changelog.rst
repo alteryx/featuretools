@@ -6,6 +6,7 @@ Changelog
     * Enhancements
         * Added drop_first as param in encode_features (:pr:`647`)
         * Generate transform features of direct features (:pr:`623`)
+        * When calculating direct features use default value if parent missing (:pr:`688`)
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
         * Fix deserialization of feature relationship path (:pr:`665`)
@@ -28,7 +29,7 @@ Changelog
 
     Thanks to the following people for contributing to this release:
     :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`,
-    :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`
+    :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`, :user:`iaroslav0`
 
 **v0.9.1 July 3, 2019**
     * Enhancements
