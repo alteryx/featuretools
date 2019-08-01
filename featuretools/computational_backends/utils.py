@@ -8,7 +8,6 @@ from functools import wraps
 import numpy as np
 import pandas as pd
 import psutil
-from pandas.tseries.frequencies import to_offset
 
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, DirectFeature
