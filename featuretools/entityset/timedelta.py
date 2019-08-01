@@ -149,20 +149,23 @@ class Timedelta(object):
         if self.is_absolute():
             return self.delta_obj
         else:
-            raise Exception("Invalid unit")
+            # return non-relative timedelta
+            return pd.Timedelta(self.value, self.unit)
 
     def view(self, unit):
         if self.is_absolute():
             return self.delta_obj.view(unit)
         else:
-            raise Exception("Invalid unit")
+            # return non-relative timedelta view
+            return self.get_pandas_timedelta().view(unit)
 
     @property
     def value_in_seconds(self):
         if self.is_absolute():
             return self.delta_obj.total_seconds()
         else:
-            raise Exception("Invalid unit")
+            # return non-relative seconds
+            return self.get_pandas_timedelt().total_seconds()
 
     def get_arguments(self):
         return {
