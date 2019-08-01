@@ -1,11 +1,10 @@
-import numpy as np
 import pandas as pd
 import pytest
+from dateutil.relativedelta import relativedelta
 from toolz import merge
 
 import featuretools as ft
 from featuretools.entityset import Timedelta
-from featuretools.entityset.timedelta import add_td
 from featuretools.primitives import Count  # , SlidingMean
 from featuretools.utils.wrangle import _check_timedelta
 
@@ -82,9 +81,6 @@ def test_check_timedelta(es):
         else:
             assert td.value == 2 * 7
 
-    td = _check_timedelta(2)
-    assert td.value == 2
-    assert td.unit == Timedelta._generic_unit
     td = _check_timedelta((2, 'logs'))
     assert td.value == 2
     assert td.unit == Timedelta._Observations
@@ -130,20 +126,15 @@ def test_deltas_week(es):
     assert all_times[0] + delta_days == all_times[0] + delta_week
 
 
-def test_deltas_year():
-    start_list = pd.to_datetime(['2014-01-01', '2016-01-01'])
-    start_array = np.array(start_list)
-    new_time_1 = add_td(start_list, 2, 'Y')
-    new_time_2 = add_td(start_array, 2, 'Y')
-    values = [2016, 2018]
-    for i, value in enumerate(values):
-        assert new_time_1.dt.year.values[i] == value
-        assert np.datetime_as_string(new_time_2[i])[:4] == str(value)
+def test_relative_year():
+    td_time = "1 years"
+    td = _check_timedelta(td_time)
+    assert td.unit == "Y"
+    assert td.value == 1
+    assert isinstance(td.delta_obj, relativedelta)
 
-    error_text = 'Invalid Unit'
-    with pytest.raises(ValueError, match=error_text) as excinfo:
-        add_td(start_list, 2, 'M')
-    assert 'Invalid Unit' in str(excinfo)
+    time = pd.to_datetime('2020-02-29')
+    assert time + td == pd.to_datetime('2021-02-28')
 
 
 def test_serialization():
@@ -164,3 +155,14 @@ def test_serialization():
 
     for expected, dictionary in zip(times, dictionaries):
         assert expected == Timedelta.from_dictionary(dictionary)
+
+
+def test_relative_month():
+    td_time = "1 month"
+    td = _check_timedelta(td_time)
+    assert td.unit == "mo"
+    assert td.value == 1
+    assert isinstance(td.delta_obj, relativedelta)
+
+    time = pd.to_datetime('2020-01-31')
+    assert time + td == pd.to_datetime('2020-02-29')
