@@ -278,7 +278,6 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     # force to 100% since we saved last 5 percent
     progress_bar.update(progress_bar.total - progress_bar.n)
     progress_bar.close()
-    progress_bar.refresh()
 
     return feature_matrix
 
@@ -290,13 +289,11 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
         feature_set = cloudpickle.loads(feature_set)
 
     feature_matrix = []
-
-    feature_matrix = []
     if no_unapproximated_aggs and approximate is not None:
         if entityset.time_type == NumericTimeIndex:
-            chunk_time = np.inf
+            group_time = np.inf
         else:
-            chunk_time = datetime.now()
+            group_time = datetime.now()
 
     for _, group in cutoff_time.groupby(cutoff_df_time_var):
         # if approximating, calculate the approximate features
@@ -331,7 +328,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
         # if all aggregations have been approximated, can calculate all together
         if no_unapproximated_aggs and approximate is not None:
-            inner_grouped = [[chunk_time, group]]
+            inner_grouped = [[group_time, group]]
         else:
             # if approximated features, set cutoff_time to unbinned time
             if precalculated_features_trie is not None:
@@ -566,7 +563,7 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
         for batch in iterator:
             results = client.gather(batch)
             for result in results:
-                feature_matrix += [result]
+                feature_matrix.append(result)
                 progress_bar.update(result.shape[0])
 
     except Exception:
