@@ -38,9 +38,6 @@ class Timedelta(object):
 
     _Observations = "o"
 
-    _generic_unit = "u"
-    _generic_expanded_unit = "units"
-
     # units for absolute times
     _time_units = ['ms', 's', 'h', 'm', 'd']
     _relative_units = ['mo', 'Y']
@@ -53,7 +50,6 @@ class Timedelta(object):
         "o": "Observations",
         "w": "Weeks",
         "Y": "Years",
-        'u': 'Units',
         'mo': "Months"
     }
 
@@ -124,7 +120,7 @@ class Timedelta(object):
         return s
 
     def get_unit_type(self):
-        if self.unit == "o" or self.unit == "u":
+        if self.unit == "o":
             return None
         elif self.unit in self._time_units:
             return pd.Timedelta(self.value, self.unit)
@@ -133,17 +129,14 @@ class Timedelta(object):
             return relativedelta(**{unit: self.value})
 
     def get_name(self):
-        if self.unit == self._generic_unit:
-            return str(self.value)
-        else:
-            unit = self.readable_unit
-            if self.readable_unit == "Weeks":
-                # divide to convert back
-                return "{} {}".format(self.value / self._convert_to_days["w"], unit)
-            if self.value == 1:
-                unit = self.make_singular(unit)
+        unit = self.readable_unit
+        if self.readable_unit == "Weeks":
+            # divide to convert back
+            return "{} {}".format(self.value / self._convert_to_days["w"], unit)
+        if self.value == 1:
+            unit = self.make_singular(unit)
 
-            return "{} {}".format(self.value, unit)
+        return "{} {}".format(self.value, unit)
 
     def __eq__(self, other):
         if not isinstance(other, Timedelta):
@@ -161,24 +154,18 @@ class Timedelta(object):
         return self._readable_units[self.unit]
 
     def get_pandas_timedelta(self):
-        if self.is_absolute() and self.unit != self._generic_unit:
+        if self.is_absolute():
             return pd.Timedelta(self.value, self.unit)
-        else:
-            return None
 
     def view(self, unit):
-        if self.is_absolute() and self.unit != self._generic_unit:
+        if self.is_absolute():
             return self.get_pandas_timedelta().view(unit)
-        else:
-            return None
 
     @property
     def value_in_seconds(self):
-        if self.is_absolute() and self.unit != self._generic_unit:
+        if self.is_absolute():
             pd_td = self.get_pandas_timedelta()
             return pd_td.total_seconds()
-        else:
-            return None
 
     def get_arguments(self):
         return {
@@ -220,10 +207,7 @@ class Timedelta(object):
     def _do_sub(self, time, value):
         assert value > 0, "Value must be greater than 0"
 
-        if (self.unit == self._generic_unit and
-                not isinstance(time, (pd.Timestamp, datetime))):
-            return time - value
-        elif self.unit != self._Observations:
+        if self.unit != self._Observations:
             return add_td(time, -1 * value, self.unit)
 
         raise Exception("Invalid unit")
@@ -231,10 +215,7 @@ class Timedelta(object):
     def _do_add(self, time, value):
         assert value > 0, "Value must be greater than 0"
 
-        if (self.unit == self._generic_unit and
-                not isinstance(time, (pd.Timestamp, datetime))):
-            return time + value
-        elif self.unit not in [self._Observations]:
+        if self.unit not in [self._Observations]:
             return add_td(time, value, self.unit)
 
         raise Exception("Invalid unit")
