@@ -17,7 +17,8 @@ class Timedelta(object):
     - "m" : minutes
     - "d" : days
     - "o"/"observations" : number of individual events
-    - "u"/"unit" : whatever unit associated column/number is
+    - "mo" : months
+    - "Y" : years
 
     Timedeltas can also be defined in terms of observations. In this case, the
     Timedelta represents the period spanned by `value` consecutive instances of
@@ -37,6 +38,7 @@ class Timedelta(object):
     # units for absolute times
     _time_units = ['ms', 's', 'h', 'm', 'd']
     _relative_units = ['mo', 'Y']
+
     _readable_units = {
         "ms": "Milliseconds",
         "s": "Seconds",
