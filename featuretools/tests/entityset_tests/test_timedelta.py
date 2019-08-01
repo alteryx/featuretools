@@ -25,26 +25,6 @@ def test_singular():
     assert Timedelta.make_singular("Months") == "Month"
 
 
-def test_view():
-    td = Timedelta(4, "d")
-    assert td.view("d") == pd.Timedelta(4, "d").view("d")
-
-    td2 = Timedelta(4, "mo")
-    error_txt = 'Invalid unit'
-    with pytest.raises(Exception, match=error_txt):
-        td2.view("d")
-
-
-def test_value_in_seconds():
-    td = Timedelta(4, "d")
-    assert td.value_in_seconds == pd.Timedelta(4, "d").total_seconds()
-
-    td2 = Timedelta(4, "mo")
-    error_txt = 'Invalid unit'
-    with pytest.raises(Exception, match=error_txt):
-        td2.value_in_seconds()
-
-
 def test_delta_with_observations(es):
     four_delta = Timedelta(4, 'observations', 'log')
     assert not four_delta.is_absolute()
@@ -169,26 +149,6 @@ def test_relative_year():
 
     time = pd.to_datetime('2020-02-29')
     assert time + td == pd.to_datetime('2021-02-28')
-
-
-def test_serialization():
-    times = [
-        Timedelta(1, unit='w'),
-        Timedelta(3, unit='d'),
-        Timedelta(5, unit='o', entity='log'),
-    ]
-
-    dictionaries = [
-        {'value': 1, 'unit': 'w', 'entity_id': None},
-        {'value': 3, 'unit': 'd', 'entity_id': None},
-        {'value': 5, 'unit': 'o', 'entity_id': 'log'},
-    ]
-
-    for td, expected in zip(times, dictionaries):
-        assert expected == td.get_arguments()
-
-    for expected, dictionary in zip(times, dictionaries):
-        assert expected == Timedelta.from_dictionary(dictionary)
 
 
 def test_relative_month():
