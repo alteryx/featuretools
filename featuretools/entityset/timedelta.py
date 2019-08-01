@@ -24,10 +24,7 @@ class Timedelta(object):
     Timedelta represents the period spanned by `value` consecutive instances of
     the `entity`.
 
-    For observation timedeltas, a
-
-    >>> Timedelta(10, "s").value_in_seconds # 10 seconds
-    10.0
+    For observation timedeltas:
     >>> three_observations_log = Timedelta(3, "observations", entity='log')
     >>> three_observations_log.get_name()
     '3 Observations'
@@ -93,6 +90,12 @@ class Timedelta(object):
         self.delta_obj = self.get_unit_type()
 
     @classmethod
+    def from_dictionary(cls, dictionary):
+        return cls(dictionary['value'],
+                   unit=dictionary['unit'],
+                   entity=dictionary['entity_id'])
+
+    @classmethod
     def make_singular(cls, s):
         if len(s) > 1 and s.endswith('s'):
             return s[:-1]
@@ -136,6 +139,13 @@ class Timedelta(object):
 
     def get_date_offset(self):
         return pd.DateOffset(**{self.unit: self.value})
+
+    def get_arguments(self):
+        return {
+            'value': self._original_value(),
+            'unit': self._original_unit or self.unit,
+            'entity_id': self.entity
+        }
 
     def _original_value(self):
         if self._original_unit:

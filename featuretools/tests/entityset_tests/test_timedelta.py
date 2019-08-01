@@ -151,6 +151,26 @@ def test_relative_year():
     assert time + td == pd.to_datetime('2021-02-28')
 
 
+def test_serialization():
+    times = [
+        Timedelta(1, unit='w'),
+        Timedelta(3, unit='d'),
+        Timedelta(5, unit='o', entity='log'),
+    ]
+
+    dictionaries = [
+        {'value': 1, 'unit': 'w', 'entity_id': None},
+        {'value': 3, 'unit': 'd', 'entity_id': None},
+        {'value': 5, 'unit': 'o', 'entity_id': 'log'},
+    ]
+
+    for td, expected in zip(times, dictionaries):
+        assert expected == td.get_arguments()
+
+    for expected, dictionary in zip(times, dictionaries):
+        assert expected == Timedelta.from_dictionary(dictionary)
+
+
 def test_relative_month():
     td_time = "1 month"
     td = _check_timedelta(td_time)
