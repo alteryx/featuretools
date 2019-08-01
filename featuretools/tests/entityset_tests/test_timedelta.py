@@ -20,6 +20,31 @@ def test_timedelta_equality():
     assert Timedelta(10, "d") != 1
 
 
+def test_singular():
+    assert Timedelta.make_singular("Month") == "Month"
+    assert Timedelta.make_singular("Months") == "Month"
+
+
+def test_view():
+    td = Timedelta(4, "d")
+    assert td.view("d") == pd.Timedelta(4, "d").view("d")
+
+    td2 = Timedelta(4, "mo")
+    error_txt = 'Invalid unit'
+    with pytest.raises(Exception, match=error_txt):
+        td2.view("d")
+
+
+def test_value_in_seconds():
+    td = Timedelta(4, "d")
+    assert td.value_in_seconds == pd.Timedelta(4, "d").total_seconds()
+
+    td2 = Timedelta(4, "mo")
+    error_txt = 'Invalid unit'
+    with pytest.raises(Exception, match=error_txt):
+        td2.value_in_seconds()
+
+
 def test_delta_with_observations(es):
     four_delta = Timedelta(4, 'observations', 'log')
     assert not four_delta.is_absolute()
@@ -28,6 +53,15 @@ def test_delta_with_observations(es):
     neg_four_delta = -four_delta
     assert not neg_four_delta.is_absolute()
     assert neg_four_delta.value == -4
+
+    time = pd.to_datetime('2019-05-01')
+
+    error_txt = 'Invalid unit'
+    with pytest.raises(Exception, match=error_txt):
+        time + four_delta
+
+    with pytest.raises(Exception, match=error_txt):
+        time - four_delta
 
 
 def test_delta_with_time_unit_matches_pandas(es):
