@@ -36,7 +36,7 @@ class Timedelta(object):
     _Observations = "o"
 
     # units for absolute times
-    _time_units = ['ms', 's', 'h', 'm', 'd']
+    _absolute_units = ['ms', 's', 'h', 'm', 'd']
     _relative_units = ['mo', 'Y']
 
     _readable_units = {
@@ -57,7 +57,7 @@ class Timedelta(object):
 
     _readable_to_unit = {v.lower(): k for k, v in _readable_units.items()}
 
-    def __init__(self, value, unit=None, entity=None, inclusive=False):
+    def __init__(self, value, unit=None, entity=None):
         """
         Args:
             value (float, str) : Value of timedelta, or string providing
@@ -65,8 +65,6 @@ class Timedelta(object):
             unit (str) : Unit of time delta.
             entity (str, optional) : Entity id to use if unit equals
                 "observations".
-            inclusive (bool, optional) : if True, include events that are
-                exactly timedelta distance away from the original time/observation
         """
         # TODO: check if value is int or float
         if is_string(value):
@@ -92,16 +90,13 @@ class Timedelta(object):
             raise Exception("Must define entity to use %s as unit" % (unit))
 
         self.entity = entity
-        self.inclusive = inclusive
-
         self.delta_obj = self.get_unit_type()
 
     @classmethod
     def from_dictionary(cls, dictionary):
         return cls(dictionary['value'],
                    unit=dictionary['unit'],
-                   entity=dictionary['entity_id'],
-                   inclusive=dictionary['inclusive'])
+                   entity=dictionary['entity_id'])
 
     @classmethod
     def make_singular(cls, s):
@@ -120,7 +115,7 @@ class Timedelta(object):
     def get_unit_type(self):
         if self.unit == "o":
             return None
-        elif self.unit in self._time_units:
+        elif self.unit in self._absolute_units:
             return pd.Timedelta(self.value, self.unit)
         else:
             unit = self.readable_unit.lower()
@@ -142,8 +137,7 @@ class Timedelta(object):
 
         return (self.value == other.value and
                 self.unit == other.unit and
-                self.entity == other.entity and
-                self.inclusive == other.inclusive)
+                self.entity == other.entity)
 
     @property
     def readable_unit(self):
@@ -153,24 +147,28 @@ class Timedelta(object):
 
     def get_pandas_timedelta(self):
         if self.is_absolute():
-            return pd.Timedelta(self.value, self.unit)
+            return self.delta_obj
+        else:
+            raise Exception("Invalid unit")
 
     def view(self, unit):
         if self.is_absolute():
-            return self.get_pandas_timedelta().view(unit)
+            return self.delta_obj.view(unit)
+        else:
+            raise Exception("Invalid unit")
 
     @property
     def value_in_seconds(self):
         if self.is_absolute():
-            pd_td = self.get_pandas_timedelta()
-            return pd_td.total_seconds()
+            return self.delta_obj.total_seconds()
+        else:
+            raise Exception("Invalid unit")
 
     def get_arguments(self):
         return {
             'value': self._original_value(),
             'unit': self._original_unit or self.unit,
-            'entity_id': self.entity,
-            'inclusive': self.inclusive,
+            'entity_id': self.entity
         }
 
     def _original_value(self):
@@ -180,7 +178,7 @@ class Timedelta(object):
             return self.value
 
     def is_absolute(self):
-        return self.unit != self._Observations
+        return self.unit in self._absolute_units
 
     def __neg__(self):
         """Negate the timedelta"""

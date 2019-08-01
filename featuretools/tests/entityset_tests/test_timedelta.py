@@ -140,14 +140,14 @@ def test_relative_year():
 def test_serialization():
     times = [
         Timedelta(1, unit='w'),
-        Timedelta(3, unit='d', inclusive=True),
+        Timedelta(3, unit='d'),
         Timedelta(5, unit='o', entity='log'),
     ]
 
     dictionaries = [
-        {'value': 1, 'unit': 'w', 'entity_id': None, 'inclusive': False},
-        {'value': 3, 'unit': 'd', 'entity_id': None, 'inclusive': True},
-        {'value': 5, 'unit': 'o', 'entity_id': 'log', 'inclusive': False},
+        {'value': 1, 'unit': 'w', 'entity_id': None},
+        {'value': 3, 'unit': 'd', 'entity_id': None},
+        {'value': 5, 'unit': 'o', 'entity_id': 'log'},
     ]
 
     for td, expected in zip(times, dictionaries):
