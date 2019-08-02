@@ -5,6 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
         * Added drop_first as param in encode_features (:pr:`647`)
+        * Generate transform features of direct features (:pr:`623`)
         * Added serializing and deserializing from S3 and deserializing from URLs (:pr:`685`)
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
@@ -28,8 +29,7 @@ Changelog
 
     Thanks to the following people for contributing to this release:
     :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`,
-    :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`
-
+    :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`
 
 **v0.9.1 July 3, 2019**
     * Enhancements
