@@ -145,7 +145,8 @@ class EntitySet(object):
 
     def to_pickle(self, path, compression=None, profile_name=None):
         '''Write entityset in the pickle format, location specified by `path`.
-            Path could be a local path or a S3 path (will serialize as a tar archive).
+            Path could be a local path or a S3 path.
+            If writing to S3 a tar archive of files will be written.
 
             Args:
                 path (str): location on disk to write to (will be created as a directory)
@@ -157,7 +158,8 @@ class EntitySet(object):
 
     def to_parquet(self, path, engine='auto', compression=None, profile_name=None):
         '''Write entityset to disk in the parquet format, location specified by `path`.
-            Path could be a local path or a S3 path (will serialize as a tar archive).
+            Path could be a local path or a S3 path.
+            If writing to S3 a tar archive of files will be written.
 
             Args:
                 path (str): location on disk to write to (will be created as a directory)
@@ -170,7 +172,8 @@ class EntitySet(object):
 
     def to_csv(self, path, sep=',', encoding='utf-8', engine='python', compression=None, profile_name=None):
         '''Write entityset to disk in the csv format, location specified by `path`.
-            Path could be a local path or a S3 path (will serialize as a tar archive).
+            Path could be a local path or a S3 path.
+            If writing to S3 a tar archive of files will be written.
 
             Args:
                 path (str) : Location on disk to write to (will be created as a directory)
