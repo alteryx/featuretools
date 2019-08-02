@@ -233,7 +233,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     # make total 5% higher to allot time for wrapping up at end
     progress_bar = make_tqdm_iterator(
-        total=cutoff_time.shape[0] * 1.05,
+        total=cutoff_time.shape[0] / .95,
         smoothing=.05,  # arbitrary selection close to 0, which would be no smoothing
         bar_format=PBAR_FORMAT,
         disable=(not verbose)
@@ -277,6 +277,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     # force to 100% since we saved last 5 percent
     progress_bar.update(progress_bar.total - progress_bar.n)
+    progress_bar.refresh()
     progress_bar.close()
 
     return feature_matrix
