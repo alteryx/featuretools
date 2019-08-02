@@ -24,6 +24,12 @@ TEST_KEY = "test_access_key_features"
 CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
 
 
+def assert_features(original, deserialized):
+    for feat_1, feat_2 in zip(original, deserialized):
+        assert feat_1.unique_name() == feat_2.unique_name()
+        assert feat_1.entityset == feat_2.entityset
+
+
 def pickle_features_test_helper(es_size, features_original):
     dir_path = os.path.dirname(os.path.realpath(__file__))
     filepath = os.path.join(dir_path, 'test_feature')
@@ -45,9 +51,7 @@ def pickle_features_test_helper(es_size, features_original):
 
     features_deserialized_options = [features_deserializedA, features_deserializedB, features_deserializedC]
     for features_deserialized in features_deserialized_options:
-        for feat_1, feat_2 in zip(features_original, features_deserialized):
-            assert feat_1.unique_name() == feat_2.unique_name()
-            assert feat_1.entityset == feat_2.entityset
+        assert_features(features_original, features_deserialized)
 
 
 def test_pickle_features(es):
@@ -136,10 +140,7 @@ def test_serialize_features_mock_s3(es, s3_client, s3_bucket):
     s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
 
     features_deserialized = ft.load_features(TEST_S3_URL)
-
-    for feat_1, feat_2 in zip(features_original, features_deserialized):
-        assert feat_1.unique_name() == feat_2.unique_name()
-        assert feat_1.entityset == feat_2.entityset
+    assert_features(features_original, features_deserialized)
 
 
 def test_serialize_features_mock_anon_s3(es, s3_client, s3_bucket):
@@ -151,10 +152,7 @@ def test_serialize_features_mock_anon_s3(es, s3_client, s3_bucket):
     s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
 
     features_deserialized = ft.load_features(TEST_S3_URL, profile_name=False)
-
-    for feat_1, feat_2 in zip(features_original, features_deserialized):
-        assert feat_1.unique_name() == feat_2.unique_name()
-        assert feat_1.entityset == feat_2.entityset
+    assert_features(features_original, features_deserialized)
 
 
 @pytest.fixture
@@ -198,37 +196,28 @@ def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
     s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
 
     features_deserialized = ft.load_features(TEST_S3_URL, profile_name='test')
-
-    for feat_1, feat_2 in zip(features_original, features_deserialized):
-        assert feat_1.unique_name() == feat_2.unique_name()
-        assert feat_1.entityset == feat_2.entityset
+    assert_features(features_original, features_deserialized)
 
 
 def test_deserialize_features_default_s3(es):
     # TODO: Feature ordering is different in py3.5 vs 3.6+
     features_original = sorted(ft.dfs(target_entity='sessions', entityset=es, features_only=True), key=lambda x: x.unique_name())
     features_deserialized = sorted(ft.load_features(S3_URL), key=lambda x: x.unique_name())
-    for feat_1, feat_2 in zip(features_original, features_deserialized):
-        assert feat_1.unique_name() == feat_2.unique_name()
-        assert feat_1.entityset == feat_2.entityset
+    assert_features(features_original, features_deserialized)
 
 
 def test_features_anon_s3(es):
     # TODO: Feature ordering is different in py3.5 vs 3.6+
     features_original = sorted(ft.dfs(target_entity='sessions', entityset=es, features_only=True), key=lambda x: x.unique_name())
     features_deserialized = sorted(ft.load_features(S3_URL, profile_name=False), key=lambda x: x.unique_name())
-    for feat_1, feat_2 in zip(features_original, features_deserialized):
-        assert feat_1.unique_name() == feat_2.unique_name()
-        assert feat_1.entityset == feat_2.entityset
+    assert_features(features_original, features_deserialized)
 
 
 def test_deserialize_features_url(es):
     # TODO: Feature ordering is different in py3.5 vs 3.6+
     features_original = sorted(ft.dfs(target_entity='sessions', entityset=es, features_only=True), key=lambda x: x.unique_name())
     features_deserialized = sorted(ft.load_features(URL), key=lambda x: x.unique_name())
-    for feat_1, feat_2 in zip(features_original, features_deserialized):
-        assert feat_1.unique_name() == feat_2.unique_name()
-        assert feat_1.entityset == feat_2.entityset
+    assert_features(features_original, features_deserialized)
 
 
 def test_serialize_url(es):
