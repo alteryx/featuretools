@@ -267,6 +267,10 @@ def test_cutoff_time_binning():
     for i in binned_cutoff_times.index:
         assert binned_cutoff_times['time'][i] == labels[i]
 
+    error_text = "Unit is relative"
+    with pytest.raises(ValueError, match=error_text):
+        binned_cutoff_times = bin_cutoff_times(cutoff_time, Timedelta(1, 'mo'))
+
 
 def test_training_window(es):
     property_feature = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)

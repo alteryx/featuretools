@@ -137,9 +137,6 @@ class Timedelta(object):
     def get_delta_obj(self):
         return self.delta_obj
 
-    def get_date_offset(self):
-        return pd.DateOffset(**{self.unit: self.value})
-
     def get_arguments(self):
         return {
             'value': self._original_value(),
