@@ -8,9 +8,9 @@ import pandas as pd
 
 from featuretools.entityset.relationship import Relationship
 from featuretools.entityset.serialize import FORMATS
-from featuretools.utils import is_python_2
 from featuretools.utils.gen_utils import (
     check_schema_version,
+    is_python_2,
     use_s3fs_es,
     use_smartopen_es
 )
