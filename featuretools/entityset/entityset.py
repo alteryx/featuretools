@@ -149,7 +149,7 @@ class EntitySet(object):
             Args:
                 path (str): location on disk to write to (will be created as a directory)
                 compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
-                profile_name (str) : Name of AWS profile to use or None.
+                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
         '''
         serialize.write_data_description(self, path, format='pickle', compression=compression, profile_name=profile_name)
         return self
@@ -161,7 +161,7 @@ class EntitySet(object):
                 path (str): location on disk to write to (will be created as a directory)
                 engine (str) : Name of the engine to use. Possible values are: {'auto', 'pyarrow', 'fastparquet'}.
                 compression (str) : Name of the compression to use. Possible values are: {'snappy', 'gzip', 'brotli', None}.
-                profile_name (str) : Name of AWS profile to use or None.
+                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
         '''
         serialize.write_data_description(self, path, format='parquet', engine=engine, compression=compression, profile_name=profile_name)
         return self
@@ -175,7 +175,7 @@ class EntitySet(object):
                 encoding (str) : A string representing the encoding to use in the output file, defaults to 'utf-8'.
                 engine (str) : Name of the engine to use. Possible values are: {'c', 'python'}.
                 compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
-                profile_name (str) : Name of AWS profile to use or None.
+                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
         '''
         serialize.write_data_description(self, path, format='csv', index=False, sep=sep, encoding=encoding, engine=engine, compression=compression, profile_name=profile_name)
         return self
