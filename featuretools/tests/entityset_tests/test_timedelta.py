@@ -100,6 +100,12 @@ def test_check_timedelta(es):
     assert td.unit == Timedelta._Observations
 
 
+def test_check_pd_timedelta(es):
+    pdtd = pd.Timedelta(5, 'm')
+    td = _check_timedelta(pdtd)
+    assert td.unit == 's'
+    assert td.value == 300
+
 def test_week_to_days():
     assert Timedelta("1001 weeks") == Timedelta(1001 * 7, "days")
 

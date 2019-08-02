@@ -51,7 +51,7 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
         if td.entity is not None and related_entity_id is not None and td.entity == related_entity_id:
             raise ValueError("Timedelta entity {} same as passed related entity {}".format(td.entity, related_entity_id))
         return td
-    elif not (is_string(td) or isinstance(td, (tuple, int, float))):
+    elif not (is_string(td) or isinstance(td, pd.Timedelta) or isinstance(td, (tuple, int, float))):
         raise ValueError("Unable to parse timedelta: {}".format(td))
 
     # TODO: allow observations from an entity in string
@@ -69,7 +69,10 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
             value = float(td)
         except Exception:
             pass
-    if value is not None and entity_id is not None:
+    if isinstance(td, pd.Timedelta):
+        unit = 's'
+        value = td.total_seconds()
+    elif value is not None and entity_id is not None:
         unit = 'o'
     else:
         pattern = '([0-9]+) *([a-zA-Z]+)$'
