@@ -212,6 +212,20 @@ def test_serialize_s3_anon_parquet(es, s3_client, s3_bucket):
     assert es.__eq__(new_es, deep=True)
 
 
+def create_test_credentials(test_path):
+    with open(test_path, "w+") as f:
+        f.write("[test]\n")
+        f.write("aws_access_key_id=AKIAIOSFODNN7EXAMPLE\n")
+        f.write("aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\n")
+
+
+def create_test_config(test_path_config):
+    with open(test_path_config, "w+") as f:
+        f.write("[profile test]\n")
+        f.write("region=us-east-2\n")
+        f.write("output=text\n")
+
+
 @pytest.fixture
 def setup_test_profile(monkeypatch):
     test_path = os.path.join(CACHE, 'test_credentials')
@@ -225,20 +239,11 @@ def setup_test_profile(monkeypatch):
     try:
         os.remove(test_path)
         os.remove(test_path_config)
-    except EnvironmentError:
+    except OSError:
         pass
 
-    f = open(test_path, "w+")
-    f.write("[test]\n")
-    f.write("aws_access_key_id=AKIAIOSFODNN7EXAMPLE\n")
-    f.write("aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\n")
-    f.close()
-    f = open(test_path_config, "w+")
-    f.write("[profile test]\n")
-    f.write("region=us-east-2\n")
-    f.write("output=text\n")
-    f.close()
-
+    create_test_credentials(test_path)
+    create_test_config(test_path_config)
     yield
     os.remove(test_path)
     os.remove(test_path_config)
