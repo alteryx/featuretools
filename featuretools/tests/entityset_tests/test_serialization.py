@@ -146,7 +146,7 @@ def test_to_pickle_id_none(path_management):
     new_es = deserialize.read_entityset(path_management)
     assert es.__eq__(new_es, deep=True)
 
-
+# TODO: Fix Moto tests needing to explicitly set permissions for objects
 @pytest.fixture
 def s3_client():
     _environ = os.environ.copy()
@@ -172,42 +172,42 @@ def make_public(s3_client, s3_bucket):
 
 def test_serialize_s3_csv(es, s3_client, s3_bucket):
     es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python')
-    make_public(s3_client,s3_bucket)
+    make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL)
     assert es.__eq__(new_es, deep=True)
 
 
 def test_serialize_s3_pickle(es, s3_client, s3_bucket):
     es.to_pickle(TEST_S3_URL)
-    make_public(s3_client,s3_bucket)
+    make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL)
     assert es.__eq__(new_es, deep=True)
 
 
 def test_serialize_s3_parquet(es, s3_client, s3_bucket):
     es.to_parquet(TEST_S3_URL)
-    make_public(s3_client,s3_bucket)
+    make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL)
     assert es.__eq__(new_es, deep=True)
 
 
 def test_serialize_s3_anon_csv(es, s3_client, s3_bucket):
     es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=False)
-    make_public(s3_client,s3_bucket)
+    make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=False)
     assert es.__eq__(new_es, deep=True)
 
 
 def test_serialize_s3_anon_pickle(es, s3_client, s3_bucket):
     es.to_pickle(TEST_S3_URL, profile_name=False)
-    make_public(s3_client,s3_bucket)
+    make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=False)
     assert es.__eq__(new_es, deep=True)
 
 
 def test_serialize_s3_anon_parquet(es, s3_client, s3_bucket):
     es.to_parquet(TEST_S3_URL, profile_name=False)
-    make_public(s3_client,s3_bucket)
+    make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=False)
     assert es.__eq__(new_es, deep=True)
 
@@ -246,7 +246,7 @@ def setup_test_profile(monkeypatch):
 
 def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
     es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name='test')
-    make_public(s3_client,s3_bucket)
+    make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL, profile_name='test')
     assert es.__eq__(new_es, deep=True)
 
