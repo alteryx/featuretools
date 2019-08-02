@@ -161,9 +161,9 @@ def dump_data_description(entityset, path, **kwargs):
 
 
 def create_archive(tmpdir):
-    file_name = "es-{date:%Y-%m-%d_%H:%M:%S}".format(date=datetime.datetime.now())
+    file_name = "es-{date:%Y-%m-%d_%H:%M:%S}.tar".format(date=datetime.datetime.now())
     file_path = os.path.join(tmpdir, file_name)
-    tar = tarfile.open(str(file_path) + ".tar", 'w')
+    tar = tarfile.open(str(file_path), 'w')
     tar.add(str(tmpdir) + '/data_description.json', arcname='/data_description.json')
     tar.add(str(tmpdir) + '/data', arcname='/data')
     tar.close()

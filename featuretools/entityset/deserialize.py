@@ -175,7 +175,7 @@ def read_entityset(path, profile_name=None, **kwargs):
     '''
     if _is_url(path) or _is_s3(path):
         with tempfile.TemporaryDirectory() as tmpdir:
-            file_name = Path(path).name + ".tar"
+            file_name = Path(path).name
             file_path = os.path.join(tmpdir, file_name)
             transport_params = {}
             session = boto3.Session()
