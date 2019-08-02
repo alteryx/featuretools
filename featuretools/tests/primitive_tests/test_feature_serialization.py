@@ -199,25 +199,17 @@ def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
     assert_features(features_original, features_deserialized)
 
 
-def test_deserialize_features_default_s3(es):
-    # TODO: Feature ordering is different in py3.5 vs 3.6+
-    features_original = sorted(ft.dfs(target_entity='sessions', entityset=es, features_only=True), key=lambda x: x.unique_name())
-    features_deserialized = sorted(ft.load_features(S3_URL), key=lambda x: x.unique_name())
+def deserialize_features_helper(features_original, url, profile_name=None):
+    features_deserialized = sorted(ft.load_features(url, profile_name=profile_name), key=lambda x: x.unique_name())
     assert_features(features_original, features_deserialized)
 
 
-def test_features_anon_s3(es):
+def test_deserialize_features_s3(es):
     # TODO: Feature ordering is different in py3.5 vs 3.6+
     features_original = sorted(ft.dfs(target_entity='sessions', entityset=es, features_only=True), key=lambda x: x.unique_name())
-    features_deserialized = sorted(ft.load_features(S3_URL, profile_name=False), key=lambda x: x.unique_name())
-    assert_features(features_original, features_deserialized)
-
-
-def test_deserialize_features_url(es):
-    # TODO: Feature ordering is different in py3.5 vs 3.6+
-    features_original = sorted(ft.dfs(target_entity='sessions', entityset=es, features_only=True), key=lambda x: x.unique_name())
-    features_deserialized = sorted(ft.load_features(URL), key=lambda x: x.unique_name())
-    assert_features(features_original, features_deserialized)
+    deserialize_features_helper(features_original, S3_URL)
+    deserialize_features_helper(features_original, S3_URL, False)
+    deserialize_features_helper(features_original, URL)
 
 
 def test_serialize_url(es):
