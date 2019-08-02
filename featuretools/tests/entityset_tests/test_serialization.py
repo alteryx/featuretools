@@ -2,6 +2,7 @@ import errno
 import os
 import shutil
 
+import boto3
 import pandas as pd
 import pytest
 
@@ -16,6 +17,12 @@ from featuretools.variable_types.variable import (
 )
 
 CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
+BUCKET_NAME = "test-bucket"
+WRITE_KEY_NAME = "test-key"
+TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
+S3_URL = "s3://featuretools-static/test_serialization_data_1.0.0.tar"
+URL = 'https://featuretools-static.s3.amazonaws.com/test_serialization_data_1.0.0.tar'
+TEST_KEY = "test_access_key_es"
 
 
 def test_all_variable_descriptions():
@@ -137,4 +144,134 @@ def test_to_pickle_id_none(path_management):
     es = EntitySet()
     es.to_pickle(path_management)
     new_es = deserialize.read_entityset(path_management)
+    assert es.__eq__(new_es, deep=True)
+
+# TODO: Fix Moto tests needing to explicitly set permissions for objects
+@pytest.fixture
+def s3_client():
+    _environ = os.environ.copy()
+    from moto import mock_s3
+    with mock_s3():
+        s3 = boto3.resource('s3')
+        yield s3
+    os.environ.clear()
+    os.environ.update(_environ)
+
+
+@pytest.fixture
+def s3_bucket(s3_client):
+    s3_client.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
+    s3_bucket = s3_client.Bucket(BUCKET_NAME)
+    yield s3_bucket
+
+
+def make_public(s3_client, s3_bucket):
+    obj = list(s3_bucket.objects.all())[0].key
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+
+
+def test_serialize_s3_csv(es, s3_client, s3_bucket):
+    es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python')
+    make_public(s3_client, s3_bucket)
+    new_es = deserialize.read_entityset(TEST_S3_URL)
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_serialize_s3_pickle(es, s3_client, s3_bucket):
+    es.to_pickle(TEST_S3_URL)
+    make_public(s3_client, s3_bucket)
+    new_es = deserialize.read_entityset(TEST_S3_URL)
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_serialize_s3_parquet(es, s3_client, s3_bucket):
+    es.to_parquet(TEST_S3_URL)
+    make_public(s3_client, s3_bucket)
+    new_es = deserialize.read_entityset(TEST_S3_URL)
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_serialize_s3_anon_csv(es, s3_client, s3_bucket):
+    es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=False)
+    make_public(s3_client, s3_bucket)
+    new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=False)
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_serialize_s3_anon_pickle(es, s3_client, s3_bucket):
+    es.to_pickle(TEST_S3_URL, profile_name=False)
+    make_public(s3_client, s3_bucket)
+    new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=False)
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_serialize_s3_anon_parquet(es, s3_client, s3_bucket):
+    es.to_parquet(TEST_S3_URL, profile_name=False)
+    make_public(s3_client, s3_bucket)
+    new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=False)
+    assert es.__eq__(new_es, deep=True)
+
+
+def create_test_credentials(test_path):
+    with open(test_path, "w+") as f:
+        f.write("[test]\n")
+        f.write("aws_access_key_id=AKIAIOSFODNN7EXAMPLE\n")
+        f.write("aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\n")
+
+
+def create_test_config(test_path_config):
+    with open(test_path_config, "w+") as f:
+        f.write("[profile test]\n")
+        f.write("region=us-east-2\n")
+        f.write("output=text\n")
+
+
+@pytest.fixture
+def setup_test_profile(monkeypatch):
+    test_path = os.path.join(CACHE, 'test_credentials')
+    test_path_config = os.path.join(CACHE, 'test_config')
+    monkeypatch.setenv("AWS_SHARED_CREDENTIALS_FILE", test_path)
+    monkeypatch.setenv("AWS_CONFIG_FILE", test_path_config)
+    monkeypatch.delenv("AWS_ACCESS_KEY_ID", raising=False)
+    monkeypatch.delenv("AWS_SECRET_ACCESS_KEY", raising=False)
+    monkeypatch.setenv("AWS_PROFILE", "test")
+
+    try:
+        os.remove(test_path)
+        os.remove(test_path_config)
+    except OSError:
+        pass
+
+    create_test_credentials(test_path)
+    create_test_config(test_path_config)
+    yield
+    os.remove(test_path)
+    os.remove(test_path_config)
+
+
+def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
+    es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name='test')
+    make_public(s3_client, s3_bucket)
+    new_es = deserialize.read_entityset(TEST_S3_URL, profile_name='test')
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_serialize_url_csv(es):
+    error_text = "Writing to URLs is not supported"
+    with pytest.raises(ValueError, match=error_text):
+        es.to_csv(URL, encoding='utf-8', engine='python')
+
+
+def test_deserialize_url_csv(es):
+    new_es = deserialize.read_entityset(URL)
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_default_s3_csv(es):
+    new_es = deserialize.read_entityset(S3_URL)
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_anon_s3_csv(es):
+    new_es = deserialize.read_entityset(S3_URL, profile_name=False)
     assert es.__eq__(new_es, deep=True)

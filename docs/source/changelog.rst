@@ -7,6 +7,7 @@ Changelog
         * Give more frequent progress bar updates and update chunk size behavior (:pr:`631`)
         * Added drop_first as param in encode_features (:pr:`647`)
         * Generate transform features of direct features (:pr:`623`)
+        * Added serializing and deserializing from S3 and deserializing from URLs (:pr:`685`)
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
         * Fix deserialization of feature relationship path (:pr:`665`)
