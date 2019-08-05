@@ -511,7 +511,8 @@ class DeepFeatureSynthesis(object):
             # if multiple input_types, only use first one for DFS
             if type(input_types[0]) == list:
                 input_types = input_types[0]
-            input_types.append(Id)
+            if Id not in input_types:
+                input_types.append(Id)
 
             matching_inputs = self._get_matching_inputs(all_features,
                                                         entity,
@@ -519,7 +520,6 @@ class DeepFeatureSynthesis(object):
                                                         input_types,
                                                         groupby_prim,
                                                         require_direct_input=require_direct_input)
-
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
                     new_f = GroupByTransformFeature(list(matching_input[:-1]),
@@ -631,10 +631,10 @@ class DeepFeatureSynthesis(object):
 
         if max_depth is not None and max_depth < 0:
             return selected_features
-
+        
         if entity.id not in all_features:
             return selected_features
-
+        
         for feat in all_features[entity.id]:
             f = all_features[entity.id][feat]
 
@@ -675,7 +675,7 @@ class DeepFeatureSynthesis(object):
         matching_inputs = match(input_types, features,
                                 commutative=primitive.commutative,
                                 require_direct_input=require_direct_input)
-
+        
         if require_direct_input:
             # Don't create trans features of inputs which are all direct
             # features with the same relationship_path.
