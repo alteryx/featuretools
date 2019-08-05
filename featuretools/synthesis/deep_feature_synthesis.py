@@ -520,6 +520,7 @@ class DeepFeatureSynthesis(object):
                                                         input_types,
                                                         groupby_prim,
                                                         require_direct_input=require_direct_input)
+            
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
                     new_f = GroupByTransformFeature(list(matching_input[:-1]),
