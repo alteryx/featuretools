@@ -444,10 +444,7 @@ class DirectFeature(FeatureBase):
 
     @property
     def number_output_features(self):
-        if isinstance(self.base_features[0], MultiOutputFeature):
-            return 1
-        else:
-            return self.base_features[0].primitive.number_output_features
+        return self.base_features[0].number_output_features
 
     @property
     def default_value(self):
