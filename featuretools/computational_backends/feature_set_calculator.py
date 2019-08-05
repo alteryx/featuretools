@@ -58,7 +58,10 @@ class FeatureSetCalculator(object):
 
         self.precalculated_features = precalculated_features
 
-    def run(self, instance_ids):
+        # total number of features (including dependencies) to be calculate
+        self.num_features = len(feature_set.features_by_name.values())
+
+    def run(self, instance_ids, progress_callback=None):
         """
         Calculate values of features for the given instances of the target
         entity.
@@ -79,12 +82,19 @@ class FeatureSetCalculator(object):
             instance_ids (np.ndarray or pd.Categorical): Instance ids for which
                 to build features.
 
+            progress_callback (callable): function to be called with incremental progress updates
+
         Returns:
             pd.DataFrame : Pandas DataFrame of calculated feature values.
                 Indexed by instance_ids. Columns in same order as features
                 passed in.
         """
         assert len(instance_ids) > 0, "0 instance ids provided"
+
+        if progress_callback is None:
+            # do nothing for the progress call back if not provided
+            def progress_callback(*args):
+                pass
 
         feature_trie = self.feature_set.feature_trie
 
@@ -98,7 +108,8 @@ class FeatureSetCalculator(object):
                                             full_entity_df_trie=full_entity_df_trie,
                                             precalculated_trie=self.precalculated_features,
                                             filter_variable=target_entity.index,
-                                            filter_values=instance_ids)
+                                            filter_values=instance_ids,
+                                            progress_callback=progress_callback)
 
         # The dataframe for the target entity should be stored at the root of
         # df_trie.
@@ -132,7 +143,8 @@ class FeatureSetCalculator(object):
                                        full_entity_df_trie,
                                        precalculated_trie,
                                        filter_variable, filter_values,
-                                       parent_data=None):
+                                       parent_data=None,
+                                       progress_callback=None):
         """
         Generate dataframes with features calculated for this node of the trie,
         and all descendant nodes. The dataframes will be stored in df_trie.
@@ -190,8 +202,10 @@ class FeatureSetCalculator(object):
                                     time_last=self.time_last,
                                     training_window=self.training_window)
 
-        # Step 2: Add variables to the dataframe linking it to all ancestors.
+        # call to update timer
+        progress_callback(0)
 
+        # Step 2: Add variables to the dataframe linking it to all ancestors.
         new_ancestor_relationship_variables = []
         if parent_data:
             parent_relationship, ancestor_relationship_variables, parent_df = \
@@ -204,6 +218,9 @@ class FeatureSetCalculator(object):
             # Add the variable linking this entity to its parent, so that
             # descendants get linked to the parent.
             new_ancestor_relationship_variables.append(parent_relationship.child_variable.id)
+
+        # call to update timer
+        progress_callback(0)
 
         # Step 3: Recurse on children.
 
@@ -240,7 +257,8 @@ class FeatureSetCalculator(object):
                 precalculated_trie=sub_precalc_trie,
                 filter_variable=sub_filter_variable,
                 filter_values=sub_filter_values,
-                parent_data=parent_data)
+                parent_data=parent_data,
+                progress_callback=progress_callback)
 
         # Step 4: Calculate the features for this entity.
         #
@@ -257,11 +275,14 @@ class FeatureSetCalculator(object):
                           right_index=True,
                           suffixes=('', '_precalculated'))
 
+        # call to update timer
+        progress_callback(0)
+
         # First, calculate any features that require the full entity. These can
         # be calculated first because all of their dependents are included in
         # full_entity_features.
         if need_full_entity:
-            df = self._calculate_features(df, full_entity_df_trie, full_entity_features)
+            df = self._calculate_features(df, full_entity_df_trie, full_entity_features, progress_callback)
 
             # Store full entity df.
             full_entity_df_trie.value = df
@@ -271,13 +292,13 @@ class FeatureSetCalculator(object):
             df = df[df[filter_variable].isin(filter_values)]
 
         # Calculate all features that don't require the full entity.
-        df = self._calculate_features(df, df_trie, not_full_entity_features)
+        df = self._calculate_features(df, df_trie, not_full_entity_features, progress_callback)
 
         # Step 5: Store the dataframe for this entity at the root of df_trie, so
         # that it can be accessed by the caller.
         df_trie.value = df
 
-    def _calculate_features(self, df, df_trie, features):
+    def _calculate_features(self, df, df_trie, features, progress_callback):
         # Group the features so that each group can be calculated together.
         # The groups must also be in topological order (if A is a transform of B
         # then B must be in a group before A).
@@ -286,7 +307,7 @@ class FeatureSetCalculator(object):
         for group in feature_groups:
             representative_feature = group[0]
             handler = self._feature_type_handler(representative_feature)
-            df = handler(group, df, df_trie)
+            df = handler(group, df, df_trie, progress_callback)
 
         return df
 
@@ -370,18 +391,23 @@ class FeatureSetCalculator(object):
         else:
             raise UnknownFeature(u"{} feature unknown".format(f.__class__))
 
-    def _calculate_identity_features(self, features, df, _df_trie):
+    def _calculate_identity_features(self, features, df, _df_trie, progress_callback):
         for f in features:
             assert f.get_name() in df, (
                 'Column "%s" missing frome dataframe' % f.get_name())
 
+        progress_callback(len(features) / float(self.num_features))
+
         return df
 
-    def _calculate_transform_features(self, features, frame, _df_trie):
+    def _calculate_transform_features(self, features, frame, _df_trie, progress_callback):
         for f in features:
             # handle when no data
             if frame.shape[0] == 0:
                 set_default_column(frame, f)
+
+                progress_callback(1 / float(self.num_features))
+
                 continue
 
             # collect only the variables we need for this transformation
@@ -403,14 +429,18 @@ class FeatureSetCalculator(object):
                 values = [strip_values_if_series(values)]
             update_feature_columns(f, frame, values)
 
+            progress_callback(1 / float(self.num_features))
+
         return frame
 
-    def _calculate_groupby_features(self, features, frame, _df_trie):
+    def _calculate_groupby_features(self, features, frame, _df_trie, progress_callback):
         for f in features:
             set_default_column(frame, f)
 
         # handle when no data
         if frame.shape[0] == 0:
+            progress_callback(len(features) / float(self.num_features))
+
             return frame
 
         groupby = features[0].groupby.get_name()
@@ -449,9 +479,11 @@ class FeatureSetCalculator(object):
             if feature_vals:
                 frame[f.get_name()].update(pd.concat(feature_vals))
 
+            progress_callback(1 / float(self.num_features))
+
         return frame
 
-    def _calculate_direct_features(self, features, child_df, df_trie):
+    def _calculate_direct_features(self, features, child_df, df_trie, progress_callback):
         path = features[0].relationship_path
         assert len(path) == 1, \
             "Error calculating DirectFeatures, len(path) != 1"
@@ -484,9 +516,11 @@ class FeatureSetCalculator(object):
         new_df = child_df.merge(merge_df, left_on=merge_var, right_index=True,
                                 how='left')
 
+        progress_callback(len(features) / float(self.num_features))
+
         return new_df
 
-    def _calculate_agg_features(self, features, frame, df_trie):
+    def _calculate_agg_features(self, features, frame, df_trie, progress_callback):
         test_feature = features[0]
         child_entity = test_feature.base_features[0].entity
         base_frame = df_trie.get_node(test_feature.relationship_path).value
@@ -501,6 +535,7 @@ class FeatureSetCalculator(object):
                     break
         features = fl
         if not len(features):
+            progress_callback(len(features) / float(self.num_features))
             return frame
 
         # handle where
@@ -512,6 +547,7 @@ class FeatureSetCalculator(object):
         if base_frame.empty:
             for f in features:
                 frame[f.get_name()] = np.nan
+                progress_callback(1 / float(self.num_features))
         else:
             relationship_path = test_feature.relationship_path
 
@@ -589,6 +625,8 @@ class FeatureSetCalculator(object):
                                  left_index=True,
                                  right_index=True, how='left')
 
+                progress_callback(len(to_apply) / float(self.num_features))
+
             # Apply the aggregate functions to generate a new dataframe, and merge
             # it with the existing one
             if len(to_agg):
@@ -611,6 +649,9 @@ class FeatureSetCalculator(object):
 
                 frame = pd.merge(left=frame, right=to_merge,
                                  left_index=True, right_index=True, how='left')
+
+                # determine number of features that were just merged
+                progress_callback(len(to_merge.columns) / float(self.num_features))
 
         # Handle default values
         fillna_dict = {}

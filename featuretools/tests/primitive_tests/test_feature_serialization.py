@@ -1,6 +1,9 @@
 import os
 
+import boto3
+import pytest
 from pympler.asizeof import asizeof
+from smart_open import open
 
 import featuretools as ft
 from featuretools.feature_base.features_deserializer import (
@@ -8,7 +11,23 @@ from featuretools.feature_base.features_deserializer import (
 )
 from featuretools.feature_base.features_serializer import FeaturesSerializer
 from featuretools.primitives import CumSum, make_agg_primitive
+from featuretools.tests import integration_data
 from featuretools.variable_types import Numeric
+
+BUCKET_NAME = "test-bucket"
+WRITE_KEY_NAME = "test-key"
+TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
+S3_URL = "s3://featuretools-static/test_feature_serialization_1.0.0"
+URL = "https://featuretools-static.s3.amazonaws.com/test_feature_serialization_1.0.0"
+TEST_CONFIG = "CheckConfigPassesOn"
+TEST_KEY = "test_access_key_features"
+CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
+
+
+def assert_features(original, deserialized):
+    for feat_1, feat_2 in zip(original, deserialized):
+        assert feat_1.unique_name() == feat_2.unique_name()
+        assert feat_1.entityset == feat_2.entityset
 
 
 def pickle_features_test_helper(es_size, features_original):
@@ -32,9 +51,7 @@ def pickle_features_test_helper(es_size, features_original):
 
     features_deserialized_options = [features_deserializedA, features_deserializedB, features_deserializedC]
     for features_deserialized in features_deserialized_options:
-        for feat_1, feat_2 in zip(features_original, features_deserialized):
-            assert feat_1.unique_name() == feat_2.unique_name()
-            assert feat_1.entityset == feat_2.entityset
+        assert_features(features_original, features_deserialized)
 
 
 def test_pickle_features(es):
@@ -94,3 +111,104 @@ def test_serialized_renamed_features(es):
 
     for feature_type in feature_type_list:
         serialize_name_unchanged(feature_type)
+
+
+@pytest.fixture
+def s3_client():
+    _environ = os.environ.copy()
+    from moto import mock_s3
+    with mock_s3():
+        s3 = boto3.resource('s3')
+        yield s3
+    os.environ.clear()
+    os.environ.update(_environ)
+
+
+@pytest.fixture
+def s3_bucket(s3_client):
+    s3_client.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
+    s3_bucket = s3_client.Bucket(BUCKET_NAME)
+    yield s3_bucket
+
+
+def test_serialize_features_mock_s3(es, s3_client, s3_bucket):
+    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+
+    ft.save_features(features_original, TEST_S3_URL)
+
+    obj = list(s3_bucket.objects.all())[0].key
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+
+    features_deserialized = ft.load_features(TEST_S3_URL)
+    assert_features(features_original, features_deserialized)
+
+
+def test_serialize_features_mock_anon_s3(es, s3_client, s3_bucket):
+    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+
+    ft.save_features(features_original, TEST_S3_URL, profile_name=False)
+
+    obj = list(s3_bucket.objects.all())[0].key
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+
+    features_deserialized = ft.load_features(TEST_S3_URL, profile_name=False)
+    assert_features(features_original, features_deserialized)
+
+
+@pytest.fixture
+def setup_test_profile(monkeypatch):
+    test_path = os.path.join(CACHE, 'test_credentials')
+    test_path_config = os.path.join(CACHE, 'test_config')
+    monkeypatch.setenv("AWS_SHARED_CREDENTIALS_FILE", test_path)
+    monkeypatch.setenv("AWS_CONFIG_FILE", test_path_config)
+    monkeypatch.delenv("AWS_ACCESS_KEY_ID", raising=False)
+    monkeypatch.delenv("AWS_SECRET_ACCESS_KEY", raising=False)
+    monkeypatch.setenv("AWS_PROFILE", "test")
+
+    try:
+        os.remove(test_path)
+        os.remove(test_path_config)
+    except EnvironmentError:
+        pass
+
+    f = open(test_path, "w+")
+    f.write("[test]\n")
+    f.write("aws_access_key_id=AKIAIOSFODNN7EXAMPLE\n")
+    f.write("aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\n")
+    f.close()
+    f = open(test_path_config, "w+")
+    f.write("[profile test]\n")
+    f.write("region=us-east-2\n")
+    f.write("output=text\n")
+    f.close()
+
+    yield
+    os.remove(test_path)
+    os.remove(test_path_config)
+
+
+def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
+    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+
+    ft.save_features(features_original, TEST_S3_URL, profile_name='test')
+
+    obj = list(s3_bucket.objects.all())[0].key
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+
+    features_deserialized = ft.load_features(TEST_S3_URL, profile_name='test')
+    assert_features(features_original, features_deserialized)
+
+
+@pytest.mark.parametrize("url,profile_name", [(S3_URL, None), (S3_URL, False), (URL, None)])
+def test_deserialize_features_s3(es, url, profile_name):
+    # TODO: Feature ordering is different in py3.5 vs 3.6+
+    features_original = sorted(ft.dfs(target_entity='sessions', entityset=es, features_only=True), key=lambda x: x.unique_name())
+    features_deserialized = sorted(ft.load_features(url, profile_name=profile_name), key=lambda x: x.unique_name())
+    assert_features(features_original, features_deserialized)
+
+
+def test_serialize_url(es):
+    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+    error_text = "Writing to URLs is not supported"
+    with pytest.raises(ValueError, match=error_text):
+        ft.save_features(features_original, URL)
