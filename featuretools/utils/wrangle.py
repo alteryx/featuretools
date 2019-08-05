@@ -25,11 +25,6 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
     Shortform is fine if space is dropped
     '2m'
     '1u"
-    When using generic units, can drop the unit
-    1
-    2
-    '1'
-    '2'
     When using observations, need to provide an entity as either a tuple or a separate arg
     ('2o', 'logs')
     ('2 o', 'logs')
@@ -41,7 +36,8 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
     ('2', 'logs')
 
 
-
+    If a pd.Timedelta object is passed, units will be converted to seconds due to the underlying representation
+        of pd .Timedelta.
     """
     if td is None:
         return td
