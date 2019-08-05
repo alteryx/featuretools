@@ -442,18 +442,6 @@ class DeepFeatureSynthesis(object):
                                      new_feature=new_f)
 
         # add seed features, if any, for dfs to build on top of
-        new_seeds = []
-        for f in self.seed_features:
-            for bfeat in f.base_features:
-                if bfeat.number_output_features > 1:
-                    for i in range(bfeat.number_output_features):
-                        g = f.copy()
-                        g.base_features.remove(bfeat)
-                        g.base_features.append(MultiOutputFeature(bfeat, i))
-                        new_seeds.append(g)
-                else:
-                    new_seeds.append(f)
-        self.seed_features = new_seeds
         for f in self.seed_features:
             if f.entity.id == entity.id:
                 self._handle_new_feature(all_features=all_features,

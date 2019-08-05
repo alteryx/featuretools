@@ -1,11 +1,12 @@
 import os.path
 
+import pytest
 from pympler.asizeof import asizeof
 
 import featuretools as ft
 from featuretools import config
 from featuretools.feature_base import IdentityFeature
-from featuretools.primitives import Last, Mode, Sum
+from featuretools.primitives import Last, Mode, NMostCommon, NumUnique, Sum
 from featuretools.variable_types import Categorical, Datetime, Id, Numeric
 
 
@@ -143,3 +144,22 @@ def test_to_dictionary(es):
         'arguments': direct_feature.get_arguments()
     }
     assert expected == direct_feature.to_dictionary()
+
+
+def test_multi_output_base_error(es):
+    threecommon = NMostCommon(3)
+    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=threecommon)
+    EText = "Cannot stack on whole multi-output feature."
+    with pytest.raises(ValueError, match=EText):
+        ft.Feature(tc, parent_entity=es['customers'], primitive=NumUnique)
+
+    # TODO test on direct feature and transform feature as well
+
+
+def test_multi_output_base_stacking(es):
+    # TODO: test to make sure user can generate own multi output feature,
+    # choose column(s), and stack on this/these.
+
+    # test this with calculate_feature_matrix-maybe put the test in here?
+    # need to fix up multi output primitive to do this though which is in this file, so maybe do it here though
+    assert(True)

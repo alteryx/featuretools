@@ -392,6 +392,9 @@ class DirectFeature(FeatureBase):
     def __init__(self, base_feature, child_entity, relationship=None, name=None):
         base_feature = _check_feature(base_feature)
 
+        if base_feature.number_output_features > 1:
+            raise ValueError("Cannot stack on whole multi-output feature.")
+
         self.parent_entity = base_feature.entity
 
         relationship = self._handle_relationship(child_entity, relationship)
@@ -496,6 +499,10 @@ class AggregationFeature(FeatureBase):
             assert len(set([bf.entity for bf in base_features])) == 1, msg
         else:
             base_features = [_check_feature(base_features)]
+
+        for bf in base_features:
+            if bf.number_output_features > 1:
+                raise ValueError("Cannot stack on whole multi-output feature.")
 
         self.child_entity = base_features[0].entity
 
@@ -640,6 +647,10 @@ class TransformFeature(FeatureBase):
         else:
             base_features = [_check_feature(base_features)]
 
+        for bf in base_features:
+            if bf.number_output_features > 1:
+                raise ValueError("Cannot stack on whole multi-output feature.")
+
         super(TransformFeature, self).__init__(entity=base_features[0].entity,
                                                base_features=base_features,
                                                relationship_path=RelationshipPath([]),
@@ -722,7 +733,6 @@ class Feature(object):
 
     def __new__(self, base, entity=None, groupby=None, parent_entity=None,
                 primitive=None, use_previous=None, where=None):
-
         # either direct or indentity
         if primitive is None and entity is None:
             return IdentityFeature(base)

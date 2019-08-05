@@ -764,12 +764,10 @@ def test_seed_multi_output_feature_stacking(es):
     threecommon = NMostCommon(3)
     tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=threecommon)
 
-    stacked = ft.Feature(tc, parent_entity=es['customers'], primitive=NumUnique)
-
     fm, feat = ft.dfs(entityset=es,
                       target_entity="customers",
-                      seed_features=[stacked],
-                      agg_primitives=[],
+                      seed_features=[tc],
+                      agg_primitives=[NumUnique],
                       trans_primitives=[]
                       )
 
