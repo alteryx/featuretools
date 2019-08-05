@@ -593,6 +593,19 @@ class Haversine(TransformPrimitive):
 
     def get_function(self):
         def haversine(latlong1, latlong2):
+            #Convert nan's to (nan,nan) tuple to allow them to flow through the calcs
+            if latlong1.hasnans:
+                #If all values are nan, latlong1 could have another datatype than tuples
+                if latlong1.dtype != 'object':
+                    latlong1 = latlong1.astype('object')
+                nan_tuple_series = pd.Series([(np.nan,np.nan) for x in range(len(latlong1))])
+                latlong1 = np.where(latlong1.isna(),nan_tuple_series,latlong1)
+            if latlong2.hasnans:
+                #If all values are nan, latlong2 could have another datatype than tuples
+                if latlong2.dtype != 'object':
+                    latlong2 = latlong2.astype('object')
+                nan_tuple_series = pd.Series([(np.nan,np.nan) for x in range(len(latlong2))])
+                latlong2 = np.where(latlong2.isna(),nan_tuple_series,latlong2)
             lat_1s = np.array([x[0] for x in latlong1])
             lon_1s = np.array([x[1] for x in latlong1])
             lat_2s = np.array([x[0] for x in latlong2])
