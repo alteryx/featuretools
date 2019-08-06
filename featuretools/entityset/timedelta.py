@@ -126,9 +126,6 @@ class Timedelta(object):
             return self._readable_units[self._original_unit]
         return self._readable_units[self.unit]
 
-    def get_delta_obj(self):
-        return self.delta_obj
-
     def get_arguments(self):
         return {
             'value': self._original_value(),
