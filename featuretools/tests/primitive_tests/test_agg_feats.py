@@ -616,11 +616,13 @@ def test_stacking_multi(es):
     threecommon = NMostCommon(3)
     tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=threecommon)
 
-    stacked = ft.Feature(tc, parent_entity=es['customers'], primitive=NumUnique)
+    stacked = []
+    for i in range(3):
+        stacked.append(ft.Feature(tc[i], parent_entity=es['customers'], primitive=NumUnique))
 
     fm, feat = ft.dfs(entityset=es,
                       target_entity="customers",
-                      seed_features=[stacked],
+                      seed_features=stacked,
                       agg_primitives=[],
                       trans_primitives=[]
                       )

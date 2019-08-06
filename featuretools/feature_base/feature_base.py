@@ -392,9 +392,6 @@ class DirectFeature(FeatureBase):
     def __init__(self, base_feature, child_entity, relationship=None, name=None):
         base_feature = _check_feature(base_feature)
 
-        if base_feature.number_output_features > 1:
-            raise ValueError("Cannot stack on whole multi-output feature.")
-
         self.parent_entity = base_feature.entity
 
         relationship = self._handle_relationship(child_entity, relationship)
@@ -536,6 +533,13 @@ class AggregationFeature(FeatureBase):
                                                  primitive=primitive,
                                                  name=name)
 
+    def __getitem__(self, key):
+        assert self.number_output_features > 1, \
+            'can only access slice of multi-output feature'
+        assert self.number_output_features > key, \
+            'index is higher than the number of outputs'
+        return MultiOutputFeature(self, key)
+
     def _handle_relationship_path(self, parent_entity, relationship_path):
         if relationship_path:
             assert all(not is_forward for is_forward, _r in relationship_path), \
@@ -656,6 +660,13 @@ class TransformFeature(FeatureBase):
                                                relationship_path=RelationshipPath([]),
                                                primitive=primitive,
                                                name=name)
+
+    def __getitem__(self, key):
+        assert self.number_output_features > 1, \
+            'can only access slice of multi-output feature'
+        assert self.number_output_features > key, \
+            'index is higher than the number of outputs'
+        return MultiOutputFeature(self, key)
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):

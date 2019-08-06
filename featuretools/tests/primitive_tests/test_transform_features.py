@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 import featuretools as ft
+from featuretools import calculate_feature_matrix
 from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.computational_backends.feature_set_calculator import (
     FeatureSetCalculator
@@ -35,7 +36,6 @@ from featuretools.primitives import (
     Month,
     MultiplyNumeric,
     MultiplyNumericScalar,
-    NMostCommon,
     Not,
     NotEqual,
     NotEqualScalar,
@@ -790,12 +790,13 @@ def test_make_transform_multiple_output_features(es):
             assert base_feature.unique_name() != join_time_split.unique_name()
 
 
-def test_tranform_stack_agg(es):
-    topn = ft.Feature(es['log']['product_id'],
-                      parent_entity=es['customers'],
-                      primitive=NMostCommon(n=3))
-    with pytest.raises(AssertionError):
-        ft.Feature(topn, primitive=Percentile)
+# def test_tranform_stack_agg(es):
+#     topn = ft.Feature(es['log']['product_id'],
+#                       parent_entity=es['customers'],
+#                       primitive=NMostCommon(n=3))
+#     percents = []
+#     for i in range(3):
+#         percents.append(ft.Feature(topn[i], primitive=Percentile))
 
 
 def test_stacking_of_multi_output_transform_feat(es):
@@ -819,9 +820,12 @@ def test_stacking_of_multi_output_transform_feat(es):
         trans_primitives=[TestTime, Second, Diff],
         max_depth=4)
 
+    fm2 = calculate_feature_matrix(entityset=es, features=fl)
+
     for i in range(6):
         f = 'customers.DIFF(TEST_TIME(upgrade_date)[%d])' % i
         assert feature_with_name(fl, f)
+        assert 'customers.DIFF(TEST_TIME(date_of_birth)[1])' in fm2.columns
 
 
 def test_feature_names_inherit_from_make_trans_primitive():

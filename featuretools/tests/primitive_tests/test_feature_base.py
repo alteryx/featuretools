@@ -146,7 +146,7 @@ def test_to_dictionary(es):
     assert expected == direct_feature.to_dictionary()
 
 
-def test_multi_output_base_error(es):
+def test_multi_output_base_error_agg(es):
     threecommon = NMostCommon(3)
     tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=threecommon)
     EText = "Cannot stack on whole multi-output feature."
