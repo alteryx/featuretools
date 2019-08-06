@@ -2,7 +2,7 @@ import featuretools as ft
 from featuretools.entityset.deserialize import description_to_entityset
 from featuretools.feature_base.features_serializer import FeaturesSerializer
 
-SCHEMA_VERSION = "3.0.1"
+SCHEMA_VERSION = "3.1.0"
 
 
 def test_single_feature(es):

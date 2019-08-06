@@ -2,7 +2,7 @@ import json
 
 from featuretools.version import __version__ as ft_version
 
-SCHEMA_VERSION = "3.0.1"
+SCHEMA_VERSION = "3.1.0"
 
 
 def save_features(features, location=None):
