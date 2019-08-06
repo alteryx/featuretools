@@ -21,11 +21,10 @@ class Timedelta(object):
     - "Y" : years
 
     Timedeltas can also be defined in terms of observations. In this case, the
-    Timedelta represents the period spanned by `value` consecutive instances of
-    the `entity`.
+    Timedelta represents the period spanned by `value`.
 
     For observation timedeltas:
-    >>> three_observations_log = Timedelta(3, "observations", entity='log')
+    >>> three_observations_log = Timedelta(3, "observations")
     >>> three_observations_log.get_name()
     '3 Observations'
     """
@@ -54,14 +53,12 @@ class Timedelta(object):
 
     _readable_to_unit = {v.lower(): k for k, v in _readable_units.items()}
 
-    def __init__(self, value, unit=None, entity=None):
+    def __init__(self, value, unit=None):
         """
         Args:
             value (float, str) : Value of timedelta, or string providing
                 both unit and value.
             unit (str) : Unit of time delta.
-            entity (str, optional) : Entity id to use if unit equals
-                "observations".
         """
         # TODO: check if value is int or float
         if is_string(value):
@@ -83,17 +80,12 @@ class Timedelta(object):
             unit = 'd'
 
         self.unit = unit
-        if unit == self._Observations and entity is None:
-            raise Exception("Must define entity to use %s as unit" % (unit))
-
-        self.entity = entity
         self.delta_obj = self.get_unit_type()
 
     @classmethod
     def from_dictionary(cls, dictionary):
         return cls(dictionary['value'],
-                   unit=dictionary['unit'],
-                   entity=dictionary['entity_id'])
+                   unit=dictionary['unit'])
 
     @classmethod
     def make_singular(cls, s):
@@ -140,8 +132,7 @@ class Timedelta(object):
     def get_arguments(self):
         return {
             'value': self._original_value(),
-            'unit': self._original_unit or self.unit,
-            'entity_id': self.entity
+            'unit': self._original_unit or self.unit
         }
 
     def _original_value(self):
@@ -158,12 +149,11 @@ class Timedelta(object):
             return False
 
         return (self.value == other.value and
-                self.unit == other.unit and
-                self.entity == other.entity)
+                self.unit == other.unit)
 
     def __neg__(self):
         """Negate the timedelta"""
-        return Timedelta(-self.value, self.unit, self.entity)
+        return Timedelta(-self.value, self.unit)
 
     def __radd__(self, time):
         """Add the Timedelta to a timestamp value"""

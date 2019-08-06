@@ -9,12 +9,6 @@ from featuretools.primitives import Count  # , SlidingMean
 from featuretools.utils.wrangle import _check_timedelta
 
 
-def test_requires_entities_if_observations():
-    error_txt = 'Must define entity to use o as unit'
-    with pytest.raises(Exception, match=error_txt):
-        Timedelta(4, 'observations')
-
-
 def test_timedelta_equality():
     assert Timedelta(10, "d") == Timedelta(10, "d")
     assert Timedelta(10, "d") != 1
@@ -26,7 +20,7 @@ def test_singular():
 
 
 def test_delta_with_observations(es):
-    four_delta = Timedelta(4, 'observations', 'log')
+    four_delta = Timedelta(4, 'observations')
     assert not four_delta.is_absolute()
     assert four_delta.value == 4
 
@@ -86,18 +80,12 @@ def test_check_timedelta(es):
         if unit in to_standard_unit:
             standard_unit = to_standard_unit[unit]
 
-        if standard_unit == 'o':
-            s = (s, 'logs')
         td = _check_timedelta(s)
         if standard_unit != 'w':
             assert td.value == 2
             assert td.unit == standard_unit
         else:
             assert td.value == 2 * 7
-
-    td = _check_timedelta((2, 'logs'))
-    assert td.value == 2
-    assert td.unit == Timedelta._Observations
 
 
 def test_check_pd_timedelta(es):
@@ -162,13 +150,13 @@ def test_serialization():
     times = [
         Timedelta(1, unit='w'),
         Timedelta(3, unit='d'),
-        Timedelta(5, unit='o', entity='log'),
+        Timedelta(5, unit='o'),
     ]
 
     dictionaries = [
-        {'value': 1, 'unit': 'w', 'entity_id': None},
-        {'value': 3, 'unit': 'd', 'entity_id': None},
-        {'value': 5, 'unit': 'o', 'entity_id': 'log'},
+        {'value': 1, 'unit': 'w'},
+        {'value': 3, 'unit': 'd'},
+        {'value': 5, 'unit': 'o'}
     ]
 
     for td, expected in zip(times, dictionaries):

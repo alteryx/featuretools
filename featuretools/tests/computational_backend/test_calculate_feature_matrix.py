@@ -296,7 +296,7 @@ def test_training_window(es):
         feature_matrix = calculate_feature_matrix([property_feature],
                                                   es,
                                                   cutoff_time=cutoff_time,
-                                                  training_window=Timedelta(2, 'observations', entity='log'))
+                                                  training_window=Timedelta(2, 'observations'))
 
     feature_matrix = calculate_feature_matrix([property_feature, dagg],
                                               es,
