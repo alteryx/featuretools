@@ -1,6 +1,5 @@
 import os.path
 
-import pandas as pd
 import pytest
 from pympler.asizeof import asizeof
 
@@ -169,9 +168,6 @@ def test_multi_output_base_error_trans(es):
         input_types = [Datetime]
         return_type = Numeric
         number_output_features = 6
-
-        def get_function(self):
-            return fun(x)
 
     tc = ft.Feature(es['customers']['date_of_birth'], primitive=TestTime)
 
