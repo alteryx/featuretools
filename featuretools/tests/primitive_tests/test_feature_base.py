@@ -6,7 +6,7 @@ from pympler.asizeof import asizeof
 import featuretools as ft
 from featuretools import config
 from featuretools.feature_base import IdentityFeature
-from featuretools.primitives import Last, Mode, NMostCommon, NumUnique, Sum
+from featuretools.primitives import Diff, Last, Mode, NMostCommon, NumUnique, Sum, TransformPrimitive
 from featuretools.variable_types import Categorical, Datetime, Id, Numeric
 
 
@@ -153,7 +153,27 @@ def test_multi_output_base_error_agg(es):
     with pytest.raises(ValueError, match=EText):
         ft.Feature(tc, parent_entity=es['customers'], primitive=NumUnique)
 
-    # TODO test on direct feature and transform feature as well
+def test_multi_output_base_error_trans(es):
+    class TestTime(TransformPrimitive):
+        name = "test_time"
+        input_types = [Datetime]
+        return_type = Numeric
+        number_output_features = 6
+
+        def get_function(self):
+            def test_f(x):
+                times = pd.Series(x)
+                units = ["year", "month", "day", "hour", "minute", "second"]
+                return [times.apply(lambda x: getattr(x, unit)) for unit in units]
+            return test_f
+
+    tc = ft.Feature(es['customers']['date_of_birth'], primitive=TestTime)
+
+    EText = "Cannot stack on whole multi-output feature."
+    with pytest.raises(ValueError, match=EText):
+        ft.Feature(tc, primitive=Diff)
+
+# TODO test on direct feature and transform feature as well
 
 
 def test_multi_output_base_stacking(es):

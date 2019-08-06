@@ -790,15 +790,6 @@ def test_make_transform_multiple_output_features(es):
             assert base_feature.unique_name() != join_time_split.unique_name()
 
 
-# def test_tranform_stack_agg(es):
-#     topn = ft.Feature(es['log']['product_id'],
-#                       parent_entity=es['customers'],
-#                       primitive=NMostCommon(n=3))
-#     percents = []
-#     for i in range(3):
-#         percents.append(ft.Feature(topn[i], primitive=Percentile))
-
-
 def test_stacking_of_multi_output_transform_feat(es):
     class TestTime(TransformPrimitive):
         name = "test_time"
