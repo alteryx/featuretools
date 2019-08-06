@@ -171,11 +171,7 @@ def test_multi_output_base_error_trans(es):
         number_output_features = 6
 
         def get_function(self):
-            def test_f(x):
-                times = pd.Series(x)
-                units = ["year", "month", "day", "hour", "minute", "second"]
-                return [times.apply(lambda x: getattr(x, unit)) for unit in units]
-            return test_f
+            return fun(x)
 
     tc = ft.Feature(es['customers']['date_of_birth'], primitive=TestTime)
 
