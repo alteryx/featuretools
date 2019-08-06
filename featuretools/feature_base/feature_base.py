@@ -790,6 +790,9 @@ class MultiOutputFeature(FeatureBase):
         msg = "cannot access column that is not between 0 and " + str(self.num_output_parent - 1)
         assert(n < self.num_output_parent), msg
 
+    def __getitem__(self, key):
+        raise ValueError("Cannot get item from slice of multi output feature")
+
     def generate_name(self):
         return self.base_feature.get_names()[self.n]
 

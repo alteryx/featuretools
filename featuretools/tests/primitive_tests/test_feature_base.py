@@ -209,8 +209,8 @@ def test_multi_output_index_error(es):
                             primitive=NumUnique)
         single[0]
 
-    error_text = "'MultiOutputFeature' object does not support indexing"
-    with pytest.raises(TypeError, match=error_text):
+    error_text = "Cannot get item from slice of multi output feature"
+    with pytest.raises(ValueError, match=error_text):
         threecommon[0][0]
 
     error_text = 'index is higher than the number of outputs'
