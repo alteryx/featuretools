@@ -4,7 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
-        * Give more frequent progress bar updates and update chunk size behavior (:pr:`631`)
+        * Give more frequent progress bar updates and update chunk size behavior (:pr:`631`, :pr:`696`)
         * Added drop_first as param in encode_features (:pr:`647`)
         * Added support for stacking multi-output primitives (:pr:`679`)
         * Generate transform features of direct features (:pr:`623`)
