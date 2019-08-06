@@ -26,10 +26,12 @@ from featuretools.primitives import (  # CumMean,
     NotEqual,
     NumUnique,
     Sum,
-    TimeSincePrevious
+    TimeSincePrevious,
+    TransformPrimitive
 )
 from featuretools.synthesis import DeepFeatureSynthesis
 from featuretools.tests.testing_utils import feature_with_name
+from featuretools.variable_types import Datetime, Numeric
 
 
 def test_makes_agg_features_from_str(es):
@@ -748,15 +750,32 @@ def test_makes_direct_features_through_multiple_relationships(games_es):
 
 
 def test_stacks_multioutput_features(es):
+    class TestTime(TransformPrimitive):
+        name = "test_time"
+        input_types = [Datetime]
+        return_type = Numeric
+        number_output_features = 6
+
+        def get_function(self):
+            def test_f(x):
+                times = pd.Series(x)
+                units = ["year", "month", "day", "hour", "minute", "second"]
+                return [times.apply(lambda x: getattr(x, unit)) for unit in units]
+            return test_f
+
     fm, feat = ft.dfs(entityset=es,
                       target_entity="customers",
                       agg_primitives=[NumUnique, NMostCommon(n=3)],
-                      trans_primitives=[],
-                      max_depth=3
+                      trans_primitives=[TestTime, Diff],
+                      max_depth=4
                       )
 
     for i in range(3):
         f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.countrycode)[%d])' % i
+        assert feature_with_name(feat, f)
+
+    for i in range(6):
+        f = 'DIFF(TEST_TIME(date_of_birth)[%d])' % i
         assert feature_with_name(feat, f)
 
 
@@ -768,7 +787,8 @@ def test_seed_multi_output_feature_stacking(es):
                       target_entity="customers",
                       seed_features=[tc],
                       agg_primitives=[NumUnique],
-                      trans_primitives=[]
+                      trans_primitives=[],
+                      max_depth=4
                       )
 
     for i in range(3):

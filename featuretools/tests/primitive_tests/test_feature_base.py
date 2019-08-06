@@ -183,13 +183,36 @@ def test_multi_output_base_error_trans(es):
     with pytest.raises(ValueError, match=EText):
         ft.Feature(tc, primitive=Diff)
 
-# TODO test on direct feature and transform feature as well
+
+def test_multi_output_attributes(es):
+    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=NMostCommon)
+
+    assert tc.generate_name() == 'N_MOST_COMMON(log.product_id)'
+    assert tc.number_output_features == 3
+    assert tc.base_features == ['<Feature: product_id>']
+
+    assert tc[0].generate_name() == 'N_MOST_COMMON(log.product_id)[0]'
+    assert tc[0].number_output_features == 1
+    assert tc[0].base_features == [tc]
+    assert tc.relationship_path == tc[0].relationship_path
 
 
-def test_multi_output_base_stacking(es):
-    # TODO: test to make sure user can generate own multi output feature,
-    # choose column(s), and stack on this/these.
+def test_multi_output_index_error(es):
+    error_text = "can only access slice of multi-output feature"
+    threecommon = ft.Feature(es['log']['product_id'],
+                             parent_entity=es["sessions"],
+                             primitive=NMostCommon)
 
-    # test this with calculate_feature_matrix-maybe put the test in here?
-    # need to fix up multi output primitive to do this though which is in this file, so maybe do it here though
-    assert(True)
+    with pytest.raises(AssertionError, match=error_text):
+        single = ft.Feature(es['log']['product_id'],
+                            parent_entity=es["sessions"],
+                            primitive=NumUnique)
+        single[0]
+
+    error_text = "'MultiOutputFeature' object does not support indexing"
+    with pytest.raises(TypeError, match=error_text):
+        threecommon[0][0]
+
+    error_text = 'index is higher than the number of outputs'
+    with pytest.raises(AssertionError, match=error_text):
+        threecommon[10]
