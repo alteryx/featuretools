@@ -18,6 +18,7 @@ Changelog
         * Update variable type inference to better check for string values (:pr:`683`)
     * Changes
         * Moved dask, distributed imports (:pr:`634`)
+        * Added categorical-encoding library (:pr:`700`)
     * Documentation Changes
         * Miscellaneous changes (:pr:`641`, :pr:`658`)
         * Modified doc_string of top_n in encoding (:pr:`648`)
@@ -29,7 +30,7 @@ Changelog
         * Miscellaneous changes (:pr:`672`, :pr:`674`)
 
     Thanks to the following people for contributing to this release:
-    :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`,
+    :user:`alexjwang`, :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`,
     :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`
 
 **v0.9.1 July 3, 2019**

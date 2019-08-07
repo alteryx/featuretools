@@ -158,7 +158,7 @@ jobs:
             source venv/bin/activate
             python -c "import featuretools_tsfresh_primitives"
             python -c "import featuretools_update_checker"
-	    python -c "import categorical-encoding"
+            python -c "import categorical-encoding"
           environment:
             FEATURETOOLS_UPDATE_CHECKER: False
 
