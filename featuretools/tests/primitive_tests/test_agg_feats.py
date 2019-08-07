@@ -620,16 +620,18 @@ def test_stacking_multi(es):
     for i in range(3):
         stacked.append(ft.Feature(tc[i], parent_entity=es['customers'], primitive=NumUnique))
 
-    fm, feat = ft.dfs(entityset=es,
-                      target_entity="customers",
-                      seed_features=stacked,
-                      agg_primitives=[],
-                      trans_primitives=[]
-                      )
+    fm = ft.calculate_feature_matrix(stacked, entityset=es)
+
+    correct_vals = [[3, 2, 1], [2, 1, 0], [0, 0, 0]]
+    correct_vals1 = [[3, 1, 1], [2, 1, 0], [0, 0, 0]]
+    # either of the above can be correct, and the outcome depends on the sorting of
+    # two values in the initial n most common function, which changes arbitrarily.
 
     for i in range(3):
         f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.product_id)[%d])' % i
-        assert feature_with_name(feat, f)
+        cols = fm.columns
+        assert f in cols
+        assert fm[cols[i]].tolist() == correct_vals[i] or fm[cols[i]].tolist() == correct_vals1[i]
 
 
 def _assert_agg_feats_equal(f1, f2):

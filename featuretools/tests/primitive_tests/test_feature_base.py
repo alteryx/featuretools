@@ -155,8 +155,8 @@ def test_to_dictionary(es):
 
 
 def test_multi_output_base_error_agg(es):
-    threecommon = NMostCommon(3)
-    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=threecommon)
+    three_common = NMostCommon(3)
+    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=three_common)
     EText = "Cannot stack on whole multi-output feature."
     with pytest.raises(ValueError, match=EText):
         ft.Feature(tc, parent_entity=es['customers'], primitive=NumUnique)
@@ -191,9 +191,9 @@ def test_multi_output_attributes(es):
 
 def test_multi_output_index_error(es):
     error_text = "can only access slice of multi-output feature"
-    threecommon = ft.Feature(es['log']['product_id'],
-                             parent_entity=es["sessions"],
-                             primitive=NMostCommon)
+    three_common = ft.Feature(es['log']['product_id'],
+                              parent_entity=es["sessions"],
+                              primitive=NMostCommon)
 
     with pytest.raises(AssertionError, match=error_text):
         single = ft.Feature(es['log']['product_id'],
@@ -203,8 +203,8 @@ def test_multi_output_index_error(es):
 
     error_text = "Cannot get item from slice of multi output feature"
     with pytest.raises(ValueError, match=error_text):
-        threecommon[0][0]
+        three_common[0][0]
 
     error_text = 'index is higher than the number of outputs'
     with pytest.raises(AssertionError, match=error_text):
-        threecommon[10]
+        three_common[10]

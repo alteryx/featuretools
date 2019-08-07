@@ -4,7 +4,6 @@ import pandas as pd
 import pytest
 
 import featuretools as ft
-from featuretools import calculate_feature_matrix
 from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.computational_backends.feature_set_calculator import (
     FeatureSetCalculator
@@ -749,7 +748,7 @@ def test_make_transform_sets_kwargs_correctly(es):
 
 
 def test_make_transform_multiple_output_features(es):
-    def test_f(x):
+    def test_time(x):
         times = pd.Series(x)
         units = ["year", "month", "day", "hour", "minute", "second"]
         return [times.apply(lambda x: getattr(x, unit)) for unit in units]
@@ -760,7 +759,7 @@ def test_make_transform_multiple_output_features(es):
                 for subname in subnames]
 
     TestTime = make_trans_primitive(
-        function=test_f,
+        function=test_time,
         input_types=[Datetime],
         return_type=Numeric,
         number_output_features=6,
@@ -789,34 +788,18 @@ def test_make_transform_multiple_output_features(es):
         for base_feature in feature.base_features:
             assert base_feature.unique_name() != join_time_split.unique_name()
 
-
-def test_stacking_of_multi_output_transform_feat(es):
-    class TestTime(TransformPrimitive):
-        name = "test_time"
-        input_types = [Datetime]
-        return_type = Numeric
-        number_output_features = 6
-
-        def get_function(self):
-            def test_f(x):
-                times = pd.Series(x)
-                units = ["year", "month", "day", "hour", "minute", "second"]
-                return [times.apply(lambda x: getattr(x, unit)) for unit in units]
-            return test_f
-
-    fm, fl = dfs(
+    fl = dfs(
         entityset=es,
         target_entity="sessions",
         agg_primitives=[],
         trans_primitives=[TestTime, Second, Diff],
+        features_only=True,
         max_depth=4)
-
-    fm2 = calculate_feature_matrix(entityset=es, features=fl)
 
     for i in range(6):
         f = 'customers.DIFF(TEST_TIME(upgrade_date)[%d])' % i
         assert feature_with_name(fl, f)
-        assert 'customers.DIFF(TEST_TIME(date_of_birth)[1])' in fm2.columns
+        assert ('customers.DIFF(TEST_TIME(date_of_birth)[%d])' % i) in fl
 
 
 def test_feature_names_inherit_from_make_trans_primitive():

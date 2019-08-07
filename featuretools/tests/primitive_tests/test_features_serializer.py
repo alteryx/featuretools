@@ -42,6 +42,38 @@ def test_base_features_in_list(es):
     _compare_feature_dicts(expected, serializer.to_dict())
 
 
+def test_multi_output_features(es):
+    value = ft.IdentityFeature(es['log']['product_id'])
+    threecommon = ft.primitives.NMostCommon()
+    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=threecommon)
+
+    features = [tc, value]
+    for i in range(3):
+        features.append(ft.Feature(tc[i],
+                                   parent_entity=es['customers'],
+                                   primitive=ft.primitives.NumUnique))
+
+    # this works when appended both before and after serialization
+    features.extend([tc[0], tc[1], tc[2]])
+
+    serializer = FeaturesSerializer(features)
+
+    flist = [ft.unique_name() for ft in features]
+    fd = [ft.to_dictionary() for ft in features]
+    fdict = dict(zip(flist, fd))
+
+    expected = {
+        'ft_version': ft.__version__,
+        'schema_version': SCHEMA_VERSION,
+        'entityset': es.to_dictionary(),
+        'feature_list': flist,
+        'feature_definitions': fdict
+    }
+    actual = serializer.to_dict()
+
+    _compare_feature_dicts(expected, actual)
+
+
 def test_base_features_not_in_list(es):
     value = ft.IdentityFeature(es['log']['value'])
     value_x2 = ft.TransformFeature(value,
@@ -88,11 +120,11 @@ def test_where_feature_dependency(es):
     _compare_feature_dicts(expected, serializer.to_dict())
 
 
-def _compare_feature_dicts(a, b):
+def _compare_feature_dicts(a_dict, b_dict):
     # We can't compare entityset dictionaries because variable lists are not
     # guaranteed to be in the same order.
-    es_a = description_to_entityset(a.pop('entityset'))
-    es_b = description_to_entityset(b.pop('entityset'))
+    es_a = description_to_entityset(a_dict.pop('entityset'))
+    es_b = description_to_entityset(b_dict.pop('entityset'))
     assert es_a == es_b
 
-    assert a == b
+    assert a_dict == b_dict

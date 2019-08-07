@@ -58,6 +58,13 @@ class FeatureBase(object):
         assert self._check_input_types(), ("Provided inputs don't match input "
                                            "type requirements")
 
+    def __getitem__(self, key):
+        assert self.number_output_features > 1, \
+            'can only access slice of multi-output feature'
+        assert self.number_output_features > key, \
+            'index is higher than the number of outputs'
+        return MultiOutputFeature(self, key)
+
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
         raise NotImplementedError("Must define from_dictionary on FeatureBase subclass")
@@ -533,13 +540,6 @@ class AggregationFeature(FeatureBase):
                                                  primitive=primitive,
                                                  name=name)
 
-    def __getitem__(self, key):
-        assert self.number_output_features > 1, \
-            'can only access slice of multi-output feature'
-        assert self.number_output_features > key, \
-            'index is higher than the number of outputs'
-        return MultiOutputFeature(self, key)
-
     def _handle_relationship_path(self, parent_entity, relationship_path):
         if relationship_path:
             assert all(not is_forward for is_forward, _r in relationship_path), \
@@ -660,13 +660,6 @@ class TransformFeature(FeatureBase):
                                                relationship_path=RelationshipPath([]),
                                                primitive=primitive,
                                                name=name)
-
-    def __getitem__(self, key):
-        assert self.number_output_features > 1, \
-            'can only access slice of multi-output feature'
-        assert self.number_output_features > key, \
-            'index is higher than the number of outputs'
-        return MultiOutputFeature(self, key)
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
@@ -799,6 +792,20 @@ class MultiOutputFeature(FeatureBase):
     @property
     def number_output_features(self):
         return 1
+
+    def get_arguments(self):
+        return {
+            'name': self._name,
+            'base_feature': self.base_feature,
+            'n': self.n
+        }
+
+    @classmethod
+    def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
+        base_feature = arguments['base_feature']
+        n = arguments['n']
+        name = arguments['name']
+        return cls(base_feature=base_feature, n=n, name=name)
 
 
 def _check_feature(feature):
