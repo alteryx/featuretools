@@ -771,11 +771,11 @@ def test_stacks_multioutput_features(es):
                       )
 
     for i in range(3):
-        f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.countrycode)[%d])' % i
+        f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.countrycode)[' + str(i) + '])'
         assert feature_with_name(feat, f)
 
     for i in range(6):
-        f = 'DIFF(TEST_TIME(date_of_birth)[%d])' % i
+        f = 'DIFF(TEST_TIME(date_of_birth)[' + str(i) + '])'
         assert feature_with_name(feat, f)
 
 
@@ -792,7 +792,7 @@ def test_seed_multi_output_feature_stacking(es):
                       )
 
     for i in range(3):
-        f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.product_id)[%d])' % i
+        f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.product_id)[' + str(i) + '])'
         assert feature_with_name(feat, f)
 
 

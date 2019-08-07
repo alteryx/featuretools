@@ -628,7 +628,7 @@ def test_stacking_multi(es):
     # two values in the initial n most common function, which changes arbitrarily.
 
     for i in range(3):
-        f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.product_id)[%d])' % i
+        f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.product_id)[' + str(i) + '])'
         cols = fm.columns
         assert f in cols
         assert fm[cols[i]].tolist() == correct_vals[i] or fm[cols[i]].tolist() == correct_vals1[i]

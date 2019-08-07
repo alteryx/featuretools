@@ -797,9 +797,9 @@ def test_make_transform_multiple_output_features(es):
         max_depth=4)
 
     for i in range(6):
-        f = 'customers.DIFF(TEST_TIME(upgrade_date)[%d])' % i
+        f = 'customers.DIFF(TEST_TIME(upgrade_date)[' + str(i) + '])'
         assert feature_with_name(fl, f)
-        assert ('customers.DIFF(TEST_TIME(date_of_birth)[%d])' % i) in fl
+        assert 'customers.DIFF(TEST_TIME(date_of_birth)[' + str(i) + '])' in fl
 
 
 def test_feature_names_inherit_from_make_trans_primitive():
