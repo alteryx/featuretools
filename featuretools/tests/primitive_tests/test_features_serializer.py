@@ -58,8 +58,8 @@ def test_multi_output_features(es):
 
     serializer = FeaturesSerializer(features)
 
-    flist = [ft.unique_name() for ft in features]
-    fd = [ft.to_dictionary() for ft in features]
+    flist = [feat.unique_name() for feat in features]
+    fd = [feat.to_dictionary() for feat in features]
     fdict = dict(zip(flist, fd))
 
     expected = {
