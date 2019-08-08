@@ -18,6 +18,7 @@ Changelog
         * Update variable type inference to better check for string values (:pr:`683`)
     * Changes
         * Moved dask, distributed imports (:pr:`634`)
+	* Added to Featuretools plugins (:pr:`699`)
     * Documentation Changes
         * Miscellaneous changes (:pr:`641`, :pr:`658`)
         * Modified doc_string of top_n in encoding (:pr:`648`)
