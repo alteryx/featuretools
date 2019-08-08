@@ -356,11 +356,9 @@ def test_groupby_uses_calc_time(es):
 
 
 def test_groupby_multi_output_stacking(es):
-    def test_time(x):
-        return x
-
     TestTime = make_trans_primitive(
-        function=test_time,
+        function=lambda x: x,
+        name="test_time",
         input_types=[Datetime],
         return_type=Numeric,
         number_output_features=6,
