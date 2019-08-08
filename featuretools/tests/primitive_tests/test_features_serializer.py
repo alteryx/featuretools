@@ -52,9 +52,7 @@ def test_multi_output_features(es):
         features.append(ft.Feature(tc[i],
                                    parent_entity=es['customers'],
                                    primitive=ft.primitives.NumUnique))
-
-    # this works when appended both before and after serialization
-    features.extend([tc[0], tc[1], tc[2]])
+        features.append(tc[i])
 
     serializer = FeaturesSerializer(features)
 

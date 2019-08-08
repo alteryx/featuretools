@@ -357,21 +357,13 @@ def test_groupby_uses_calc_time(es):
 
 def test_groupby_multi_output_stacking(es):
     def test_time(x):
-        times = pd.Series(x)
-        units = ["year", "month", "day", "hour", "minute", "second"]
-        return [times.apply(lambda x: getattr(x, unit)) for unit in units]
-
-    def gen_feat_names(self):
-        subnames = ["Year", "Month", "Day", "Hour", "Minute", "Second"]
-        return ["Now.%s(%s)" % (subname, self.base_features[0].get_name())
-                for subname in subnames]
+        return x
 
     TestTime = make_trans_primitive(
         function=test_time,
         input_types=[Datetime],
         return_type=Numeric,
         number_output_features=6,
-        cls_attributes={"get_feature_names": gen_feat_names},
     )
 
     fl = dfs(
