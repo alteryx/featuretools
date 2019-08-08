@@ -370,14 +370,15 @@ def test_groupby_multi_output_stacking(es):
         entityset=es,
         target_entity="sessions",
         agg_primitives=[],
-        trans_primitives=[TestTime, CumSum],
+        trans_primitives=[TestTime],
+        groupby_trans_primitives=[CumSum],
         features_only=True,
         max_depth=4)
 
     for i in range(6):
-        f = 'customers.CUM_SUM(TEST_TIME(upgrade_date)[' + str(i) + '])'
+        f = 'customers.CUM_SUM(TEST_TIME(upgrade_date)[' + str(i) + ']) by cohort'
         assert feature_with_name(fl, f)
-        assert 'customers.CUM_SUM(TEST_TIME(date_of_birth)[' + str(i) + '])' in fl
+        assert 'customers.CUM_SUM(TEST_TIME(date_of_birth)[' + str(i) + ']) by customer_id' in fl
 
 
 def test_serialization(es):
