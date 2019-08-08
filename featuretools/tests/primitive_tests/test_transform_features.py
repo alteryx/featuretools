@@ -55,7 +55,6 @@ from featuretools.primitives.utils import (
     PrimitivesDeserializer,
     serialize_primitive
 )
-from featuretools.synthesis import dfs
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.tests.testing_utils import feature_with_name
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
@@ -776,30 +775,19 @@ def test_make_transform_multiple_output_features(es):
     fm, fl = ft.dfs(
         entityset=es,
         target_entity="log",
-        trans_primitives=[TestTime, Year, Month, Day, Hour, Minute, Second])
+        agg_primitives=[],
+        trans_primitives=[TestTime, Year, Month, Day, Hour, Minute, Second, Diff],
+        max_depth=5)
 
     subnames = join_time_split.get_feature_names()
     altnames = [f.get_name() for f in alt_features]
     for col1, col2 in zip(subnames, altnames):
         assert (fm[col1] == fm[col2]).all()
 
-    # check no feature stacked on new primitive
-    for feature in fl:
-        for base_feature in feature.base_features:
-            assert base_feature.unique_name() != join_time_split.unique_name()
-
-    fl = dfs(
-        entityset=es,
-        target_entity="sessions",
-        agg_primitives=[],
-        trans_primitives=[TestTime, Second, Diff],
-        features_only=True,
-        max_depth=4)
-
     for i in range(6):
-        f = 'customers.DIFF(TEST_TIME(upgrade_date)[' + str(i) + '])'
+        f = 'sessions.customers.DIFF(TEST_TIME(date_of_birth)[' + str(i) + '])'
         assert feature_with_name(fl, f)
-        assert 'customers.DIFF(TEST_TIME(date_of_birth)[' + str(i) + '])' in fl
+        assert 'DIFF(TEST_TIME(datetime)[' + str(i) + '])' in fl
 
 
 def test_feature_names_inherit_from_make_trans_primitive():
