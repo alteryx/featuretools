@@ -14,6 +14,7 @@ commands:
     steps:
       - run: |
           python setup.py sdist
+          mkdir unpacked_sdist
           tar -zxvf dist/featuretools-*.tar.gz -C unpacked_sdist
 
 jobs:
