@@ -766,7 +766,13 @@ class MultiOutputFeature(FeatureBase):
 
     def __init__(self, base_feature, n, name=None):
         base_features = [base_feature]
-        self.num_output_parent = base_feature.number_output_features
+        num_output_parent = base_feature.number_output_features
+
+        msg = "cannot access slice from single output feature"
+        assert(num_output_parent > 1), msg
+        msg = "cannot access column that is not between 0 and " + str(self.num_output_parent - 1)
+        assert(n < num_output_parent), msg
+
         self.n = n
         self._name = name
         self.base_features = base_features
@@ -778,10 +784,7 @@ class MultiOutputFeature(FeatureBase):
 
         self.relationship_path = base_feature.relationship_path
 
-        msg = "cannot access slice from single output feature"
-        assert(self.num_output_parent > 1), msg
-        msg = "cannot access column that is not between 0 and " + str(self.num_output_parent - 1)
-        assert(n < self.num_output_parent), msg
+
 
     def __getitem__(self, key):
         raise ValueError("Cannot get item from slice of multi output feature")
