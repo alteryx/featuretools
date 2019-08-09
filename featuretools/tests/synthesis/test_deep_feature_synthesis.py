@@ -763,12 +763,13 @@ def test_stacks_multioutput_features(es):
                 return [times.apply(lambda x: getattr(x, unit)) for unit in units]
             return test_f
 
-    fm, feat = ft.dfs(entityset=es,
-                      target_entity="customers",
-                      agg_primitives=[NumUnique, NMostCommon(n=3)],
-                      trans_primitives=[TestTime, Diff],
-                      max_depth=4
-                      )
+    feat = ft.dfs(entityset=es,
+                  target_entity="customers",
+                  agg_primitives=[NumUnique, NMostCommon(n=3)],
+                  trans_primitives=[TestTime, Diff],
+                  max_depth=4,
+                  features_only=True
+                  )
 
     for i in range(3):
         f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.countrycode)[%d])' % i

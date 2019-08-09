@@ -766,12 +766,12 @@ class MultiOutputFeature(FeatureBase):
 
     def __init__(self, base_feature, n, name=None):
         base_features = [base_feature]
-        num_output_parent = base_feature.number_output_features
+        self.num_output_parent = base_feature.number_output_features
 
         msg = "cannot access slice from single output feature"
-        assert(num_output_parent > 1), msg
+        assert(self.num_output_parent > 1), msg
         msg = "cannot access column that is not between 0 and " + str(self.num_output_parent - 1)
-        assert(n < num_output_parent), msg
+        assert(n < self.num_output_parent), msg
 
         self.n = n
         self._name = name

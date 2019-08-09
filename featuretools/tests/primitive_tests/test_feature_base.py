@@ -157,8 +157,8 @@ def test_to_dictionary(es):
 def test_multi_output_base_error_agg(es):
     three_common = NMostCommon(3)
     tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=three_common)
-    EText = "Cannot stack on whole multi-output feature."
-    with pytest.raises(ValueError, match=EText):
+    error_text = "Cannot stack on whole multi-output feature."
+    with pytest.raises(ValueError, match=error_text):
         ft.Feature(tc, parent_entity=es['customers'], primitive=NumUnique)
 
 
@@ -171,8 +171,8 @@ def test_multi_output_base_error_trans(es):
 
     tc = ft.Feature(es['customers']['date_of_birth'], primitive=TestTime)
 
-    EText = "Cannot stack on whole multi-output feature."
-    with pytest.raises(ValueError, match=EText):
+    error_text = "Cannot stack on whole multi-output feature."
+    with pytest.raises(ValueError, match=error_text):
         ft.Feature(tc, primitive=Diff)
 
 
