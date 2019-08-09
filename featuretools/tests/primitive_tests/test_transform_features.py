@@ -785,9 +785,9 @@ def test_make_transform_multiple_output_features(es):
         assert (fm[col1] == fm[col2]).all()
 
     for i in range(6):
-        f = 'sessions.customers.DIFF(TEST_TIME(date_of_birth)[' + str(i) + '])'
+        f = 'sessions.customers.DIFF(TEST_TIME(date_of_birth)[%d])' % i
         assert feature_with_name(fl, f)
-        assert 'DIFF(TEST_TIME(datetime)[' + str(i) + '])' in fl
+        assert ('DIFF(TEST_TIME(datetime)[%d])' % i) in fl
 
 
 def test_feature_names_inherit_from_make_trans_primitive():

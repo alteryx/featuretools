@@ -374,9 +374,9 @@ def test_groupby_multi_output_stacking(es):
         max_depth=4)
 
     for i in range(6):
-        f = 'customers.CUM_SUM(TEST_TIME(upgrade_date)[' + str(i) + ']) by cohort'
+        f = 'customers.CUM_SUM(TEST_TIME(upgrade_date)[%d]) by cohort' % i
         assert feature_with_name(fl, f)
-        assert 'customers.CUM_SUM(TEST_TIME(date_of_birth)[' + str(i) + ']) by customer_id' in fl
+        assert ('customers.CUM_SUM(TEST_TIME(date_of_birth)[%d]) by customer_id' % i) in fl
 
 
 def test_serialization(es):
