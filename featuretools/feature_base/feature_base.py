@@ -784,8 +784,6 @@ class MultiOutputFeature(FeatureBase):
 
         self.relationship_path = base_feature.relationship_path
 
-
-
     def __getitem__(self, key):
         raise ValueError("Cannot get item from slice of multi output feature")
 
