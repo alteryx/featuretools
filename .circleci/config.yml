@@ -14,9 +14,7 @@ commands:
     steps:
       - run: |
           python setup.py sdist
-          FT_VERSION=$(python setup.py --version)
-          tar -zxvf "dist/featuretools-${FT_VERSION}.tar.gz"
-          mv "featuretools-${FT_VERSION}" unpacked_sdist
+          tar -zxvf dist/featuretools-*.tar.gz -C unpacked_sdist
 
 jobs:
   install_ft:
