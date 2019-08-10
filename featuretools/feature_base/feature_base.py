@@ -63,7 +63,7 @@ class FeatureBase(object):
             'can only access slice of multi-output feature'
         assert self.number_output_features > key, \
             'index is higher than the number of outputs'
-        return MultiOutputFeature(self, key)
+        return FeatureOutputSlice(self, key)
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
@@ -759,7 +759,7 @@ class Feature(object):
         raise Exception("Unrecognized feature initialization")
 
 
-class MultiOutputFeature(FeatureBase):
+class FeatureOutputSlice(FeatureBase):
     """
     Class to access specific multi output feature column
     """

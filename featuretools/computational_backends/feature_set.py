@@ -6,8 +6,8 @@ from collections import defaultdict
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import (
     AggregationFeature,
+    FeatureOutputSlice,
     GroupByTransformFeature,
-    MultiOutputFeature,
     TransformFeature
 )
 from featuretools.utils import Trie
@@ -136,7 +136,7 @@ class FeatureSet(object):
         sub_ignored_trie = approximate_feature_trie.get_node(feature.relationship_path)
 
         for dep_feat in feature.get_dependencies():
-            if isinstance(dep_feat, MultiOutputFeature):
+            if isinstance(dep_feat, FeatureOutputSlice):
                 dep_feat = dep_feat.base_feature
             self._add_feature_to_trie(sub_trie, dep_feat, sub_ignored_trie,
                                       ancestor_needs_full_entity=needs_full_entity)

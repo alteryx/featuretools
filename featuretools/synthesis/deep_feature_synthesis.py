@@ -9,7 +9,6 @@ from featuretools.feature_base import (
     DirectFeature,
     GroupByTransformFeature,
     IdentityFeature,
-    MultiOutputFeature,
     TransformFeature
 )
 from featuretools.primitives.base import (
@@ -442,6 +441,8 @@ class DeepFeatureSynthesis(object):
                                      new_feature=new_f)
 
         # add seed features, if any, for dfs to build on top of
+        # if there are any multi output features, this will build on
+        # top of each output of the feature.
         for f in self.seed_features:
             if f.entity.id == entity.id:
                 self._handle_new_feature(all_features=all_features,
@@ -646,7 +647,7 @@ class DeepFeatureSynthesis(object):
             if outputs > 1:
                 del(entity_features[fname])
                 for i in range(outputs):
-                    new_feat = MultiOutputFeature(feature, i)
+                    new_feat = feature[i]
                     entity_features[new_feat.unique_name()] = new_feat
 
         for feat in entity_features:

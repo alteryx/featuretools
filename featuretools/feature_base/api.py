@@ -4,9 +4,9 @@ from .feature_base import (
     DirectFeature,
     Feature,
     FeatureBase,
+    FeatureOutputSlice,
     GroupByTransformFeature,
     IdentityFeature,
-    MultiOutputFeature,
     TransformFeature
 )
 from .features_deserializer import load_features
