@@ -8,6 +8,7 @@ Changelog
         * Added drop_first as param in encode_features (:pr:`647`)
         * Generate transform features of direct features (:pr:`623`)
         * Added serializing and deserializing from S3 and deserializing from URLs (:pr:`685`)
+        * Adding nlp_primitives library as supported import
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
         * Fix deserialization of feature relationship path (:pr:`665`)
@@ -29,7 +30,7 @@ Changelog
         * Miscellaneous changes (:pr:`672`, :pr:`674`)
 
     Thanks to the following people for contributing to this release:
-    :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`,
+    :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`, :user:`ctduffy`
     :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`
 
 **v0.9.1 July 3, 2019**
