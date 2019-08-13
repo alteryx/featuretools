@@ -9,6 +9,7 @@ from featuretools.feature_base.feature_base import (
     DirectFeature,
     Feature,
     FeatureBase,
+    FeatureOutputSlice,
     GroupByTransformFeature,
     IdentityFeature,
     TransformFeature
@@ -73,6 +74,7 @@ class FeaturesDeserializer(object):
         'GroupByTransformFeature': GroupByTransformFeature,
         'IdentityFeature': IdentityFeature,
         'TransformFeature': TransformFeature,
+        'FeatureOutputSlice': FeatureOutputSlice
     }
 
     def __init__(self, features_dict):
