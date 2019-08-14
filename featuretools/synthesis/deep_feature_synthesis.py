@@ -270,7 +270,7 @@ class DeepFeatureSynthesis(object):
 
     def _run_dfs(self, entity, relationship_path, all_features, max_depth):
         """
-        create features for the provided entity
+        Create features for the provided entity
 
         Args:
             entity (Entity): Entity for which to create features.
@@ -318,6 +318,7 @@ class DeepFeatureSynthesis(object):
         """
         Step 3 - Create aggregation features for all deep backward relationships
         """
+
         backward_entities = self.es.get_backward_entities(entity.id, deep=True)
         for b_entity_id, sub_relationship_path in backward_entities:
             if b_entity_id in self.ignore_entities:
@@ -336,11 +337,13 @@ class DeepFeatureSynthesis(object):
         """
         Step 4 - Create transform features of identity and aggregation features
         """
+
         self._build_transform_features(all_features, entity, max_depth=max_depth)
 
         """
         Step 5 - Recursively build features for each entity in a forward relationship
         """
+
         forward_entities = self.es.get_forward_entities(entity.id)
         for f_entity_id, sub_relationship_path in forward_entities:
             # Skip if we've already created features for this entity.
@@ -365,6 +368,7 @@ class DeepFeatureSynthesis(object):
         """
         Step 6 - Create direct features for forward relationships
         """
+
         forward_entities = self.es.get_forward_entities(entity.id)
         for f_entity_id, sub_relationship_path in forward_entities:
             if f_entity_id in self.ignore_entities:
@@ -437,6 +441,8 @@ class DeepFeatureSynthesis(object):
                                      new_feature=new_f)
 
         # add seed features, if any, for dfs to build on top of
+        # if there are any multi output features, this will build on
+        # top of each output of the feature.
         for f in self.seed_features:
             if f.entity.id == entity.id:
                 self._handle_new_feature(all_features=all_features,
@@ -635,8 +641,17 @@ class DeepFeatureSynthesis(object):
         if entity.id not in all_features:
             return selected_features
 
-        for feat in all_features[entity.id]:
-            f = all_features[entity.id][feat]
+        entity_features = all_features[entity.id].copy()
+        for fname, feature in all_features[entity.id].items():
+            outputs = feature.number_output_features
+            if outputs > 1:
+                del(entity_features[fname])
+                for i in range(outputs):
+                    new_feat = feature[i]
+                    entity_features[new_feat.unique_name()] = new_feat
+
+        for feat in entity_features:
+            f = entity_features[feat]
 
             if (variable_type == variable_types.PandasTypes._all or
                     f.variable_type == variable_type or
