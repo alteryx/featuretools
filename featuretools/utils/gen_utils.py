@@ -1,5 +1,8 @@
+import json
 import sys
 
+import s3fs
+from smart_open import open
 from tqdm import tqdm
 
 
@@ -117,3 +120,52 @@ def check_schema_version(cls, cls_type):
         # Check if saved has older major version.
         if current[0] > saved[0]:
             raise RuntimeError(error_text_outdated)
+
+
+def use_smartopen_es(file_path, path, transport_params=None, read=True):
+    if read:
+        with open(path, "rb", transport_params=transport_params) as fin:
+            with open(file_path, 'wb') as fout:
+                for line in fin:
+                    fout.write(line)
+    else:
+        with open(file_path, 'rb') as fin:
+            with open(path, 'wb', transport_params=transport_params) as fout:
+                for line in fin:
+                    fout.write(line)
+
+
+def use_s3fs_es(file_path, path, read=True):
+    s3 = s3fs.S3FileSystem(anon=True)
+    if read:
+        with s3.open(path, "rb") as fin:
+            with open(file_path, 'wb') as fout:
+                for line in fin:
+                    fout.write(line)
+    else:
+        with open(file_path, 'rb') as fin:
+            with s3.open(path, 'wb') as fout:
+                for line in fin:
+                    fout.write(line)
+
+
+def use_smartopen_features(path, features_dict=None, transport_params=None, read=True):
+    if read:
+        with open(path, 'r', encoding='utf-8', transport_params=transport_params) as f:
+            features_dict = json.load(f)
+            return features_dict
+    else:
+        with open(path, "w", transport_params=transport_params) as f:
+            json.dump(features_dict, f)
+
+
+def use_s3fs_features(file_path, features_dict=None, read=True):
+    s3 = s3fs.S3FileSystem(anon=True)
+    if read:
+        with s3.open(file_path, "r", encoding='utf-8') as f:
+            features_dict = json.load(f)
+            return features_dict
+    else:
+        with s3.open(file_path, "w") as f:
+            features = json.dumps(features_dict, ensure_ascii=False)
+            f.write(features)

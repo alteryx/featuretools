@@ -4,8 +4,11 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Give more frequent progress bar updates and update chunk size behavior (:pr:`631`, :pr:`696`)
         * Added drop_first as param in encode_features (:pr:`647`)
+        * Added support for stacking multi-output primitives (:pr:`679`)
         * Generate transform features of direct features (:pr:`623`)
+        * Added serializing and deserializing from S3 and deserializing from URLs (:pr:`685`)
         * Added functionality for relative units (month/year) in Timedelta (:pr:`692`)
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
@@ -28,8 +31,10 @@ Changelog
         * Miscellaneous changes (:pr:`672`, :pr:`674`)
 
     Thanks to the following people for contributing to this release:
-    :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`,
-    :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`
+    :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`, :user:`ctduffy`,
+    :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`,
+    :user:`jeremyliweishih`
+
 
 **v0.9.1 July 3, 2019**
     * Enhancements
