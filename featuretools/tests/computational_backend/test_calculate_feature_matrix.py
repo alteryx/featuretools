@@ -914,11 +914,13 @@ def test_parallel_failure_raises_correct_error(es):
 def test_warning_not_enough_chunks(es, capsys):
     property_feature = IdentityFeature(es['log']['value']) > 10
 
-    calculate_feature_matrix([property_feature],
-                             entityset=es,
-                             chunk_size=.5,
-                             verbose=True,
-                             n_jobs=3)
+    with cluster(nworkers=3) as (scheduler, [a, b, c]):
+        dkwargs = {'cluster': scheduler['address']}
+        calculate_feature_matrix([property_feature],
+                                 entityset=es,
+                                 chunk_size=.5,
+                                 verbose=True,
+                                 dask_kwargs=dkwargs)
 
     captured = capsys.readouterr()
     pattern = r'Fewer chunks \([0-9]+\), than workers \([0-9]+\) consider reducing the chunk size'
