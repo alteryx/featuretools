@@ -61,7 +61,7 @@ def datetime_round(dt, freq):
         unit = freq.unit
 
     freq = str(freq.value) + unit
-    return dt.apply(lambda x: x.floor(freq))
+    return dt.dt.floor(freq)
 
 
 def gather_approximate_features(feature_set):
