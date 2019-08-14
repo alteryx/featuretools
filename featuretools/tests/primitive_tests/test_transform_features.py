@@ -35,7 +35,6 @@ from featuretools.primitives import (
     Month,
     MultiplyNumeric,
     MultiplyNumericScalar,
-    NMostCommon,
     Not,
     NotEqual,
     NotEqualScalar,
@@ -57,6 +56,7 @@ from featuretools.primitives.utils import (
     serialize_primitive
 )
 from featuretools.synthesis.deep_feature_synthesis import match
+from featuretools.tests.testing_utils import feature_with_name
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
 
@@ -747,7 +747,7 @@ def test_make_transform_sets_kwargs_correctly(es):
 
 
 def test_make_transform_multiple_output_features(es):
-    def test_f(x):
+    def test_time(x):
         times = pd.Series(x)
         units = ["year", "month", "day", "hour", "minute", "second"]
         return [times.apply(lambda x: getattr(x, unit)) for unit in units]
@@ -758,7 +758,7 @@ def test_make_transform_multiple_output_features(es):
                 for subname in subnames]
 
     TestTime = make_trans_primitive(
-        function=test_f,
+        function=test_time,
         input_types=[Datetime],
         return_type=Numeric,
         number_output_features=6,
@@ -775,25 +775,19 @@ def test_make_transform_multiple_output_features(es):
     fm, fl = ft.dfs(
         entityset=es,
         target_entity="log",
-        trans_primitives=[TestTime, Year, Month, Day, Hour, Minute, Second])
+        agg_primitives=[],
+        trans_primitives=[TestTime, Year, Month, Day, Hour, Minute, Second, Diff],
+        max_depth=5)
 
     subnames = join_time_split.get_feature_names()
     altnames = [f.get_name() for f in alt_features]
     for col1, col2 in zip(subnames, altnames):
         assert (fm[col1] == fm[col2]).all()
 
-    # check no feature stacked on new primitive
-    for feature in fl:
-        for base_feature in feature.base_features:
-            assert base_feature.unique_name() != join_time_split.unique_name()
-
-
-def test_tranform_stack_agg(es):
-    topn = ft.Feature(es['log']['product_id'],
-                      parent_entity=es['customers'],
-                      primitive=NMostCommon(n=3))
-    with pytest.raises(AssertionError):
-        ft.Feature(topn, primitive=Percentile)
+    for i in range(6):
+        f = 'sessions.customers.DIFF(TEST_TIME(date_of_birth)[%d])' % i
+        assert feature_with_name(fl, f)
+        assert ('DIFF(TEST_TIME(datetime)[%d])' % i) in fl
 
 
 def test_feature_names_inherit_from_make_trans_primitive():

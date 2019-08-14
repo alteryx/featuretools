@@ -99,7 +99,7 @@ When we call ``dfs`` on this entityset, there are 6 instances (one for each of t
                                       agg_primitives=[],
                                       trans_primitives=[CaseCount])
     feature_matrix.columns
-    feature_matrix[['customers.CASE_COUNT(favorite_quote)__0', 'customers.CASE_COUNT(favorite_quote)__1']]
+    feature_matrix[['customers.CASE_COUNT(favorite_quote)[0]', 'customers.CASE_COUNT(favorite_quote)[1]']]
 
 .. Primitives That Use External Data Files
 .. =======================================
