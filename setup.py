@@ -9,7 +9,7 @@ with open(path.join(dirname, 'README.md')) as f:
 extras_require = {
   'tsfresh': ['featuretools-tsfresh-primitives >= 0.1.0'],
   'update_checker': ['featuretools-update-checker >= 1.0.0'],
-  'categorical_encoding': ['categorical-encoding >= 0.0.0'],
+  'categorical_encoding': ['categorical-encoding >= 0.2.1'],
 }
 extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
