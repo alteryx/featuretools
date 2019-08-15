@@ -16,13 +16,20 @@ from featuretools.variable_types.variable import (
     find_variable_types
 )
 
+SCHEMA_VER = serialize.SCHEMA_VERSION
 CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-S3_URL = "s3://featuretools-static/test_serialization_data_1.0.0.tar"
-URL = 'https://featuretools-static.s3.amazonaws.com/test_serialization_data_1.0.0.tar'
+
+S3_URL = "s3://featuretools-static/test_serialization_data_{}.tar".format(SCHEMA_VER)
+URL = 'https://featuretools-static.s3.amazonaws.com/test_serialization_data_{}.tar'.format(SCHEMA_VER)
 TEST_KEY = "test_access_key_es"
+
+'''
+`test_create_serialization` creates a tar file based off of the current schema version.
+This can be uploaded to S3 for deserialization tests
+'''
 
 
 def test_all_variable_descriptions():
@@ -189,6 +196,13 @@ def test_serialize_s3_parquet(es, s3_client, s3_bucket):
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL)
     assert es.__eq__(new_es, deep=True)
+
+
+def test_create_serialization(es, s3_client, s3_bucket):
+    path = os.path.join(CACHE, "test_serialization_data_{}.tar".format(SCHEMA_VER))
+    es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=False)
+    make_public(s3_client, s3_bucket)
+    s3_client.meta.client.download_file(BUCKET_NAME, WRITE_KEY_NAME, path)
 
 
 def test_serialize_s3_anon_csv(es, s3_client, s3_bucket):
