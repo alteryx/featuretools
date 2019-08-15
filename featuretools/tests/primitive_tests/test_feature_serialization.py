@@ -27,7 +27,7 @@ CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
 
 '''
 `test_create_serialize_features` serializes a test file based off of the current schema version.
-This can be uploaded to S3 for deserialization tests.
+This file will be located in tests/integration_data/.cache and can be uploaded to S3 for deserialization tests.
 '''
 
 

@@ -28,7 +28,7 @@ TEST_KEY = "test_access_key_es"
 
 '''
 `test_create_serialization` creates a test tar file based off of the current schema version.
-This can be uploaded to S3 for deserialization tests.
+This file will be located in tests/integration_data/.cache and can be uploaded to S3 for deserialization tests.
 '''
 
 
