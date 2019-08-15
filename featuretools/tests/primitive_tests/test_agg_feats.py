@@ -9,11 +9,13 @@ import pytest
 
 import featuretools as ft
 from featuretools.entityset.relationship import RelationshipPath
-from featuretools.primitives import (  # NMostCommon,
+from featuretools.primitives import (
     Count,
     Mean,
     Median,
+    NMostCommon,
     NumTrue,
+    NumUnique,
     Sum,
     TimeSinceFirst,
     TimeSinceLast,
@@ -594,13 +596,35 @@ def test_make_three_most_common(es):
                           agg_primitives=[NMostCommoner],
                           trans_primitives=[])
 
-    df = fm[["PD_TOP3(log.product_id)__%s" % i for i in range(3)]]
+    df = fm[["PD_TOP3(log.product_id)[%s]" % i for i in range(3)]]
 
     assert set(df.iloc[0].values[:2]) == set(['coke zero', 'toothpaste'])  # coke zero and toothpaste have same number of occurrences
     assert df.iloc[0].values[2] in ['car', 'brown bag']  # so just check that the top two match
 
     assert df.iloc[1].reset_index(drop=True).equals(pd.Series(['coke zero', 'Haribo sugar-free gummy bears', np.nan]))
     assert df.iloc[2].reset_index(drop=True).equals(pd.Series(['taco clock', np.nan, np.nan]))
+
+
+def test_stacking_multi(es):
+    threecommon = NMostCommon(3)
+    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=threecommon)
+
+    stacked = []
+    for i in range(3):
+        stacked.append(ft.Feature(tc[i], parent_entity=es['customers'], primitive=NumUnique))
+
+    fm = ft.calculate_feature_matrix(stacked, entityset=es)
+
+    correct_vals = [[3, 2, 1], [2, 1, 0], [0, 0, 0]]
+    correct_vals1 = [[3, 1, 1], [2, 1, 0], [0, 0, 0]]
+    # either of the above can be correct, and the outcome depends on the sorting of
+    # two values in the initial n most common function, which changes arbitrarily.
+
+    for i in range(3):
+        f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.product_id)[%d])' % i
+        cols = fm.columns
+        assert f in cols
+        assert fm[cols[i]].tolist() == correct_vals[i] or fm[cols[i]].tolist() == correct_vals1[i]
 
 
 def _assert_agg_feats_equal(f1, f2):

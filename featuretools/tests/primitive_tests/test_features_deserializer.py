@@ -24,6 +24,36 @@ def test_single_feature(es):
     assert expected == deserializer.to_list()
 
 
+def test_multioutput_feature(es):
+    value = ft.IdentityFeature(es['log']['product_id'])
+    threecommon = ft.primitives.NMostCommon()
+    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=threecommon)
+
+    features = [tc, value]
+    for i in range(3):
+        features.append(ft.Feature(tc[i],
+                                   parent_entity=es['customers'],
+                                   primitive=ft.primitives.NumUnique))
+        features.append(tc[i])
+
+    flist = [feat.unique_name() for feat in features]
+    fd = [feat.to_dictionary() for feat in features]
+    fdict = dict(zip(flist, fd))
+
+    dictionary = {
+        'ft_version': ft.__version__,
+        'schema_version': SCHEMA_VERSION,
+        'entityset': es.to_dictionary(),
+        'feature_list': flist,
+        'feature_definitions': fdict
+    }
+
+    deserializer = FeaturesDeserializer(dictionary).to_list()
+
+    for i in range(len(features)):
+        assert features[i].unique_name() == deserializer[i].unique_name()
+
+
 def test_base_features_in_list(es):
     value = ft.IdentityFeature(es['log']['value'])
     max_feat = ft.AggregationFeature(value, es['sessions'], ft.primitives.Max)

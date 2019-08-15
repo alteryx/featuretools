@@ -1,12 +1,26 @@
 import json
 import os
+import tarfile
+from pathlib import Path
 
+import boto3
 import pandas as pd
 
 from featuretools.entityset.relationship import Relationship
 from featuretools.entityset.serialize import FORMATS
-from featuretools.utils.gen_utils import check_schema_version
+from featuretools.utils.gen_utils import (
+    check_schema_version,
+    is_python_2,
+    use_s3fs_es,
+    use_smartopen_es
+)
+from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.variable_types.variable import find_variable_types
+
+if is_python_2():
+    from backports import tempfile
+else:
+    import tempfile
 
 
 def description_to_variable(description, entity=None):
@@ -132,14 +146,15 @@ def read_entity_data(description, path):
 
 
 def read_data_description(path):
-    '''Read data description from disk.
+    '''Read data description from disk, S3 path, or URL.
 
         Args:
-            path (str): Location on disk to read `data_description.json`.
+            path (str): Location on disk, S3 path, or URL to read `data_description.json`.
 
         Returns:
             description (dict) : Description of :class:`.EntitySet`.
     '''
+
     path = os.path.abspath(path)
     assert os.path.exists(path), '"{}" does not exist'.format(path)
     file = os.path.join(path, 'data_description.json')
@@ -149,12 +164,38 @@ def read_data_description(path):
     return description
 
 
-def read_entityset(path, **kwargs):
-    '''Read entityset from disk.
+def read_entityset(path, profile_name=None, **kwargs):
+    '''Read entityset from disk, S3 path, or URL.
 
         Args:
-            path (str): Directory on disk to read `data_description.json`.
+            path (str): Directory on disk, S3 path, or URL to read `data_description.json`.
+            profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
+                Set to False to use an anonymous profile.
             kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
     '''
-    data_description = read_data_description(path)
-    return description_to_entityset(data_description, **kwargs)
+    if _is_url(path) or _is_s3(path):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            file_name = Path(path).name
+            file_path = os.path.join(tmpdir, file_name)
+            transport_params = {}
+            session = boto3.Session()
+
+            if _is_url(path):
+                use_smartopen_es(file_path, path)
+            elif isinstance(profile_name, str):
+                transport_params = {'session': boto3.Session(profile_name=profile_name)}
+                use_smartopen_es(file_path, path, transport_params)
+            elif profile_name is False:
+                use_s3fs_es(file_path, path)
+            elif session.get_credentials() is not None:
+                use_smartopen_es(file_path, path)
+            else:
+                use_s3fs_es(file_path, path)
+
+            tar = tarfile.open(str(file_path))
+            tar.extractall(path=tmpdir)
+            data_description = read_data_description(tmpdir)
+            return description_to_entityset(data_description, **kwargs)
+    else:
+        data_description = read_data_description(path)
+        return description_to_entityset(data_description, **kwargs)

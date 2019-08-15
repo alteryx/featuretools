@@ -5,3 +5,4 @@ pytest-xdist==1.26.1
 pytest-cov==2.6.1
 fastparquet>=0.1.6
 graphviz>=0.8.4
+moto>=1.3.13

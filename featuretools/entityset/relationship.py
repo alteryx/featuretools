@@ -161,6 +161,9 @@ class RelationshipPath(object):
         return isinstance(other, RelationshipPath) and \
             self._relationships_with_direction == other._relationships_with_direction
 
+    def __ne__(self, other):
+        return not self == other
+
     def __repr__(self):
         if self._relationships_with_direction:
             path = '%s.%s' % (next(self.entities()), self.name)

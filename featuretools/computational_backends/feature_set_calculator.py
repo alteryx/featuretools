@@ -352,6 +352,9 @@ class FeatureSetCalculator(object):
                             left_on=relationship.child_variable.id,
                             right_on=relationship.child_variable.id)
 
+        # ensure index is maintained
+        df.set_index(relationship.child_entity.index, drop=False, inplace=True)
+
         return df, new_relationship_variables
 
     def generate_default_df(self, instance_ids, extra_columns=None):
@@ -520,13 +523,17 @@ class FeatureSetCalculator(object):
     def _calculate_agg_features(self, features, frame, df_trie, progress_callback):
         test_feature = features[0]
         child_entity = test_feature.base_features[0].entity
-
         base_frame = df_trie.get_node(test_feature.relationship_path).value
         # Sometimes approximate features get computed in a previous filter frame
         # and put in the current one dynamically,
         # so there may be existing features here
-        features = [f for f in features if f.get_name()
-                    not in frame.columns]
+        fl = []
+        for f in features:
+            for ind in f.get_feature_names():
+                if ind not in frame.columns:
+                    fl.append(f)
+                    break
+        features = fl
         if not len(features):
             progress_callback(len(features) / float(self.num_features))
             return frame
@@ -572,11 +579,10 @@ class FeatureSetCalculator(object):
             # save aggregable features for later
             for f in features:
                 if _can_agg(f):
-                    variable_id = f.base_features[0].get_name()
 
+                    variable_id = f.base_features[0].get_name()
                     if variable_id not in to_agg:
                         to_agg[variable_id] = []
-
                     func = f.get_function()
 
                     # for some reason, using the string count is significantly
@@ -630,6 +636,7 @@ class FeatureSetCalculator(object):
                 # work)
                 to_merge = base_frame.groupby(base_frame[groupby_var],
                                               observed=True, sort=False).agg(to_agg)
+
                 # rename columns to the correct feature names
                 to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns.ravel()]
                 to_merge = to_merge[list(agg_rename.values())]

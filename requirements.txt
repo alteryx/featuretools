@@ -1,6 +1,6 @@
 numpy>=1.13.3
 pandas>=0.23.0
-tqdm>=4.19.2
+tqdm>=4.32.0
 toolz>=0.8.2
 pyyaml>=3.12
 cloudpickle>=0.4.0
@@ -14,3 +14,7 @@ click>=7.0.0
 scikit-learn>=0.20.0,<0.21; python_version < '3'
 scikit-learn>=0.20.0; python_version >= '3'
 funcsigs>=1.0.2; python_version < '3'
+smart-open>=1.8.4
+pathlib >= 1.0.1; python_version <'3'
+s3fs >= 0.2.2
+backports.tempfile >= 1.0; python_version < '3'
