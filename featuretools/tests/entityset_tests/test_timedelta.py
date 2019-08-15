@@ -175,3 +175,12 @@ def test_relative_month():
 
     time = pd.to_datetime('2020-01-31')
     assert time + td == pd.to_datetime('2020-02-29')
+
+    td_time = "6 months"
+    td = _check_timedelta(td_time)
+    assert td.unit == "mo"
+    assert td.value == 6
+    assert isinstance(td.delta_obj, relativedelta)
+
+    time = pd.to_datetime('2020-01-31')
+    assert time + td == pd.to_datetime('2020-07-31')
