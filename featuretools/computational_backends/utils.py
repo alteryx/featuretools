@@ -5,10 +5,8 @@ import os
 import warnings
 from functools import wraps
 
-import numpy as np
 import pandas as pd
 import psutil
-from pandas.tseries.frequencies import to_offset
 
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, DirectFeature
@@ -23,7 +21,7 @@ def bin_cutoff_times(cuttoff_time, bin_size):
     if type(bin_size) == int:
         binned_cutoff_time['time'] = binned_cutoff_time['time'].apply(lambda x: x / bin_size * bin_size)
     else:
-        bin_size = _check_timedelta(bin_size).get_pandas_timedelta()
+        bin_size = _check_timedelta(bin_size)
         binned_cutoff_time['time'] = datetime_round(binned_cutoff_time['time'], bin_size)
     return binned_cutoff_time
 
@@ -50,19 +48,20 @@ def save_csv_decorator(save_progress=None):
     return inner_decorator
 
 
-def datetime_round(dt, freq, round_up=False):
+def datetime_round(dt, freq):
     """
-    Taken from comments on the Pandas source: https://github.com/pandas-dev/pandas/issues/4314
-
     round down Timestamp series to a specified freq
     """
-    if round_up:
-        round_f = np.ceil
+    if not freq.is_absolute():
+        raise ValueError("Unit is relative")
+
+    if freq.unit == 'm':
+        unit = 't'
     else:
-        round_f = np.floor
-    dt = pd.DatetimeIndex(dt)
-    freq = to_offset(freq).delta.value
-    return pd.DatetimeIndex(((round_f(dt.asi8 / freq)) * freq).astype(np.int64))
+        unit = freq.unit
+
+    freq = str(freq.value) + unit
+    return dt.dt.floor(freq)
 
 
 def gather_approximate_features(feature_set):
