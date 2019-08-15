@@ -9,8 +9,9 @@ import featuretools as ft
 from featuretools.feature_base.features_deserializer import (
     FeaturesDeserializer
 )
+from featuretools.feature_base.features_serializer import \
+    SCHEMA_VERSION as SCHEMA_VER
 from featuretools.feature_base.features_serializer import FeaturesSerializer
-from featuretools.feature_base.features_serializer import SCHEMA_VERSION as SCHEMA_VER
 from featuretools.primitives import CumSum, make_agg_primitive
 from featuretools.tests import integration_data
 from featuretools.variable_types import Numeric
