@@ -10,6 +10,7 @@ from featuretools.feature_base.features_deserializer import (
     FeaturesDeserializer
 )
 from featuretools.feature_base.features_serializer import FeaturesSerializer
+from featuretools.feature_base.features_serializer import SCHEMA_VERSION  as SCHEMA_VER
 from featuretools.primitives import CumSum, make_agg_primitive
 from featuretools.tests import integration_data
 from featuretools.variable_types import Numeric
@@ -17,8 +18,8 @@ from featuretools.variable_types import Numeric
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-S3_URL = "s3://featuretools-static/test_feature_serialization_1.0.0"
-URL = "https://featuretools-static.s3.amazonaws.com/test_feature_serialization_1.0.0"
+S3_URL = "s3://featuretools-static/test_feature_serialization_{}".format(SCHEMA_VER)
+URL = "https://featuretools-static.s3.amazonaws.com/test_feature_serialization_{}".format(SCHEMA_VER)
 TEST_CONFIG = "CheckConfigPassesOn"
 TEST_KEY = "test_access_key_features"
 CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
@@ -129,6 +130,17 @@ def s3_bucket(s3_client):
     s3_client.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
     s3_bucket = s3_client.Bucket(BUCKET_NAME)
     yield s3_bucket
+
+
+def test_create_features_s3(es, s3_client, s3_bucket):
+    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+    ft.save_features(features_original, TEST_S3_URL)
+
+    obj = list(s3_bucket.objects.all())[0].key
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+
+    path = os.path.join(CACHE, "test_feature_serialization_{}".format(SCHEMA_VER))
+    s3_client.meta.client.download_file(BUCKET_NAME, WRITE_KEY_NAME, path)
 
 
 def test_serialize_features_mock_s3(es, s3_client, s3_bucket):
