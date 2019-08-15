@@ -613,7 +613,7 @@ def test_stacking_multi(es):
     for i in range(3):
         stacked.append(ft.Feature(tc[i], parent_entity=es['customers'], primitive=NumUnique))
 
-    fm = ft.calculate_feature_matrix(stacked, entityset=es)
+    fm = ft.calculate_feature_matrix(stacked, entityset=es, instance_ids=[0, 1, 2])
 
     correct_vals = [[3, 2, 1], [2, 1, 0], [0, 0, 0]]
     correct_vals1 = [[3, 1, 1], [2, 1, 0], [0, 0, 0]]
