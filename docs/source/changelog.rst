@@ -8,7 +8,7 @@ Changelog
         * Added drop_first as param in encode_features (:pr:`647`)
         * Added support for stacking multi-output primitives (:pr:`679`)
         * Generate transform features of direct features (:pr:`623`)
-        * Added serializing and deserializing from S3 and deserializing from URLs (:pr:`685`)
+        * Added serializing and deserializing from S3 and deserializing from URLs (:pr:`685`, :pr:`707`)
         * Added functionality for relative units (month/year) in Timedelta (:pr:`692`)
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
