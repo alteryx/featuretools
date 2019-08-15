@@ -27,8 +27,8 @@ URL = 'https://featuretools-static.s3.amazonaws.com/test_serialization_data_{}.t
 TEST_KEY = "test_access_key_es"
 
 '''
-`test_create_serialization` creates a tar file based off of the current schema version.
-This can be uploaded to S3 for deserialization tests
+`test_create_serialization` creates a test tar file based off of the current schema version.
+This can be uploaded to S3 for deserialization tests.
 '''
 
 

@@ -24,6 +24,10 @@ TEST_CONFIG = "CheckConfigPassesOn"
 TEST_KEY = "test_access_key_features"
 CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
 
+'''
+`test_create_serialize_features` serializes a test file based off of the current schema version.
+This can be uploaded to S3 for deserialization tests.
+'''
 
 def assert_features(original, deserialized):
     for feat_1, feat_2 in zip(original, deserialized):
@@ -132,7 +136,7 @@ def s3_bucket(s3_client):
     yield s3_bucket
 
 
-def test_create_features_s3(es, s3_client, s3_bucket):
+def test_create_serialize_features(es, s3_client, s3_bucket):
     features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
     ft.save_features(features_original, TEST_S3_URL)
 
