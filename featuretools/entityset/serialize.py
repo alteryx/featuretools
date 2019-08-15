@@ -19,7 +19,7 @@ else:
     import tempfile
 
 FORMATS = ['csv', 'pickle', 'parquet']
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "1.0.1"
 
 
 def entity_to_description(entity):
