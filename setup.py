@@ -10,6 +10,7 @@ extras_require = {
   'tsfresh': ['featuretools-tsfresh-primitives >= 0.1.0'],
   'update_checker': ['featuretools-update-checker >= 1.0.0'],
   'nlp_primitives': ['nlp-primitives >= 0.2.2'],
+  'autonormalize': ['autonormalize >= 1.0.0'],
 }
 extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 

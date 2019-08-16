@@ -33,6 +33,11 @@ NLP Primitives:
 
         python -m pip install featuretools[nlp_primitives]
 
+AutoNormalize:
+    Automated creation of normalized ``EntitySet`` from denormalized data::
+
+        python -m pip install featuretools[autonormalize]
+
 
 .. _graphviz:
 
