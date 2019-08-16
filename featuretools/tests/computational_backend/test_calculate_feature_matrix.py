@@ -268,6 +268,10 @@ def test_cutoff_time_binning():
     for i in binned_cutoff_times.index:
         assert binned_cutoff_times['time'][i] == labels[i]
 
+    error_text = "Unit is relative"
+    with pytest.raises(ValueError, match=error_text):
+        binned_cutoff_times = bin_cutoff_times(cutoff_time, Timedelta(1, 'mo'))
+
 
 def test_training_window(es):
     property_feature = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
@@ -293,7 +297,7 @@ def test_training_window(es):
         feature_matrix = calculate_feature_matrix([property_feature],
                                                   es,
                                                   cutoff_time=cutoff_time,
-                                                  training_window=Timedelta(2, 'observations', entity='log'))
+                                                  training_window=Timedelta(2, 'observations'))
 
     feature_matrix = calculate_feature_matrix([property_feature, dagg],
                                               es,
@@ -914,11 +918,13 @@ def test_parallel_failure_raises_correct_error(es):
 def test_warning_not_enough_chunks(es, capsys):
     property_feature = IdentityFeature(es['log']['value']) > 10
 
-    calculate_feature_matrix([property_feature],
-                             entityset=es,
-                             chunk_size=.5,
-                             verbose=True,
-                             n_jobs=3)
+    with cluster(nworkers=3) as (scheduler, [a, b, c]):
+        dkwargs = {'cluster': scheduler['address']}
+        calculate_feature_matrix([property_feature],
+                                 entityset=es,
+                                 chunk_size=.5,
+                                 verbose=True,
+                                 dask_kwargs=dkwargs)
 
     captured = capsys.readouterr()
     pattern = r'Fewer chunks \([0-9]+\), than workers \([0-9]+\) consider reducing the chunk size'
@@ -1118,7 +1124,7 @@ def test_instances_not_in_data(es):
     fm = calculate_feature_matrix(features,
                                   entityset=es,
                                   instance_ids=instances,
-                                  approximate="2 years")
+                                  approximate="730 days")
     assert all(fm.index.values == instances)
     for column in fm.columns:
         assert fm[column].isnull().all()

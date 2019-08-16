@@ -147,14 +147,12 @@ def test_make_agg_feat_using_prev_time(es):
 def test_make_agg_feat_using_prev_n_events(es):
     agg_feat_1 = ft.Feature(es['log']['value'],
                             parent_entity=es['sessions'],
-                            use_previous=Timedelta(1, 'observations',
-                                                   entity=es['log']),
+                            use_previous=Timedelta(1, 'observations'),
                             primitive=Min)
 
     agg_feat_2 = ft.Feature(es['log']['value'],
                             parent_entity=es['sessions'],
-                            use_previous=Timedelta(3, 'observations',
-                                                   entity=es['log']),
+                            use_previous=Timedelta(3, 'observations'),
                             primitive=Min)
 
     assert agg_feat_1.get_name() != agg_feat_2.get_name(), \

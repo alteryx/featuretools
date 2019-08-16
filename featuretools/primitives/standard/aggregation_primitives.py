@@ -264,7 +264,7 @@ class NMostCommon(AggregationPrimitive):
 
     def get_function(self):
         def n_most_common(x):
-            array = np.array(x.value_counts()[:self.n].index)
+            array = np.array(x.value_counts().index[:self.n])
             if len(array) < self.n:
                 filler = np.full(self.n - len(array), np.nan)
                 array = np.append(array, filler)
