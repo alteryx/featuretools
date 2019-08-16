@@ -9,7 +9,7 @@ Changelog
         * Added support for stacking multi-output primitives (:pr:`679`)
         * Generate transform features of direct features (:pr:`623`)
         * Added serializing and deserializing from S3 and deserializing from URLs (:pr:`685`)
-        * Adding Natural Language Processing primitives as an add-on library (:pr:`704`)
+        * Added nlp_primitives as an add-on library (:pr:`704`)
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
         * Fix deserialization of feature relationship path (:pr:`665`)
