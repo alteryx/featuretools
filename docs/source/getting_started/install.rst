@@ -33,6 +33,11 @@ Categorical Encoding:
 
         python -m pip install featuretools[categorical_encoding]
 
+NLP Primitives:
+    Use Natural Language Processing Primitives for data with text in Featuretools::
+
+        python -m pip install featuretools[nlp_primitives]
+
 AutoNormalize:
     Automated creation of normalized ``EntitySet`` from denormalized data::
 

@@ -179,6 +179,30 @@ Location Transform Primitives
    Longitude
    Haversine
 
+.. currentmodule:: nlp_primitives
+
+.. autosummary::
+   :nosignatures:
+
+Natural Language Processing Primitives
+--------------------------------------
+Natural Language Processing primitives create features for textual data. For more information on how to use and install these primitives, see `here <https://github.com/FeatureLabs/nlp_primitives>`__.
+
+.. autosummary::
+    :toctree: generated/
+
+    DiversityScore
+    LSA
+    MeanCharactersPerWord
+    PartOfSpeechCount
+    PolarityScore
+    PunctuationCount
+    StopwordCount
+    TitleWordCount
+    UniversalSentenceEncoder
+    UpperCaseCount
+
+
 Feature methods
 ---------------
 .. currentmodule:: featuretools.feature_base

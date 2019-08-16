@@ -9,6 +9,7 @@ Changelog
         * Added support for stacking multi-output primitives (:pr:`679`)
         * Generate transform features of direct features (:pr:`623`)
         * Added serializing and deserializing from S3 and deserializing from URLs (:pr:`685`)
+        * Added nlp_primitives as an add-on library (:pr:`704`)
         * Added AutoNormalize to Featuretools plugins (:pr:`699`)
         * Added functionality for relative units (month/year) in Timedelta (:pr:`692`)
     * Fixes
@@ -33,9 +34,9 @@ Changelog
         * Miscellaneous changes (:pr:`672`, :pr:`674`)
 
     Thanks to the following people for contributing to this release:
-    :user:`alexjwang`, :user:`allisonportis`, :user:`ayushpatidar`, :user:`CJStadler`, :user:`ctduffy`,
-    :user:`gsheni`, :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`,
-    :user:`jeremyliweishih`
+    :user:`alexjwang`, :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`, :user:`ctduffy`,
+    :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`,
+    :user:`jeremyliweishih`, :user:`allisonportis`
 
 **v0.9.1 July 3, 2019**
     * Enhancements
