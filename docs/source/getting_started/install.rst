@@ -29,7 +29,7 @@ TSFresh Primitives:
         python -m pip install featuretools[tsfresh]
 
 AutoNormalize:
-    Automated creation of normalized ``EntitySet`` from denormalized ``DataFrame``::
+    Automated creation of normalized ``EntitySet`` from denormalized data::
 
         python -m pip install featuretools[autonormalize]
 
