@@ -158,6 +158,7 @@ jobs:
             source venv/bin/activate
             python -c "import featuretools_tsfresh_primitives"
             python -c "import featuretools_update_checker"
+            python -c "import categorical_encoding"
             python -c "import nlp_primitives"
             python -c "import autonormalize"
           environment:
