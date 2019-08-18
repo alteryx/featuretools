@@ -69,10 +69,10 @@ def test_update_data(es):
         es['customers'].update_data(df.drop(columns=['cohort']))
     assert 'Updated dataframe is missing new cohort column' in str(excinfo)
 
-    error_text = 'Updated dataframe contains 16 columns, expecting 15'
+    error_text = 'Updated dataframe contains 17 columns, expecting 16'
     with pytest.raises(ValueError, match=error_text) as excinfo:
         es['customers'].update_data(df)
-    assert 'Updated dataframe contains 16 columns, expecting 15' in str(excinfo)
+    assert 'Updated dataframe contains 17 columns, expecting 16' in str(excinfo)
 
     # test already_sorted on entity without time index
     df = es["sessions"].df.copy(deep=True)

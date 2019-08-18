@@ -424,6 +424,22 @@ class FilePath(Variable):
     _default_pandas_dtype = str
 
 
+class USState(Categorical):
+    """Represents a two-letter US state.
+    eg. Arizona = AZ
+    """
+    type_string = "us_state"
+    _default_pandas_dtypelt = str
+
+
+class USRegion(Categorical):
+    """ Represents one of the five US regions:
+    ["Northeast", "Southwest", "West", "Southeast", "Midwest"]
+    """
+    type_string = "us_region"
+    _default_pandas_dtype = str
+
+
 def find_variable_types():
     return {str(vtype.type_string): vtype for vtype in find_descendents(
         Variable) if hasattr(vtype, 'type_string')}

@@ -62,6 +62,7 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
         'id': [0, 1, 2],
         'age': [33, 25, 56],
         u'région_id': ['United States'] * 3,
+        'state': ['AZ', 'CA', 'NY'],
         'cohort': [0, 1, 0],
         'cohort_name': ['Early Adopters', 'Late Adopters', 'Early Adopters'],
         'loves_ice_cream': [True, False, True],
@@ -139,6 +140,7 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                         [''] * 3 +
                         ['ALB'] * 2 +
                         ['USA'])
+    states = list(['CA'] * 17)
     subregioncodes = list(['US-AZ'] * 5 +
                           ['US-MT'] * 4 +
                           [np.nan] * 2 +
@@ -158,6 +160,7 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
         'latlong2': latlong2,
         'zipcode': zipcodes,
         'countrycode': countrycodes,
+        'state': states,
         'subregioncode': subregioncodes,
         'value_many_nans': values_many_nans,
         'priority_level': [0] * 2 + [1] * 5 + [0] * 6 + [2] * 2 + [1] * 2,
@@ -269,6 +272,7 @@ def make_variable_types(with_integer_time_index=False):
         'id': variable_types.Categorical,
         'age': variable_types.Numeric,
         u'région_id': variable_types.Id,
+        'state': variable_types.USState,
         'loves_ice_cream': variable_types.Boolean,
         'favorite_quote': variable_types.Text,
         'signup_date': variable_types.Datetime,
@@ -292,6 +296,7 @@ def make_variable_types(with_integer_time_index=False):
 
     log_variable_types = {
         'id': variable_types.Categorical,
+        'state': variable_types.USState,
         'session_id': variable_types.Id,
         'product_id': variable_types.Categorical,
         'datetime': variable_types.Datetime,

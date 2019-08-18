@@ -8,6 +8,7 @@ from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.computational_backends.feature_set_calculator import (
     FeatureSetCalculator
 )
+from featuretools.feature_base import Feature
 from featuretools.primitives import (
     Absolute,
     AddNumeric,
@@ -47,6 +48,7 @@ from featuretools.primitives import (
     SubtractNumericScalar,
     Sum,
     TransformPrimitive,
+    USRegionOf,
     Year,
     get_transform_primitives
 )
@@ -122,6 +124,15 @@ def test_make_trans_feat(es):
     df = calculator.run(np.array([0]))
     v = df[f.get_name()][0]
     assert v == 10
+
+
+def test_state_region_mapping(es):
+    region_feature = Feature(es["customers"]["state"], primitive=USRegionOf)
+    feature_set = FeatureSet([region_feature])
+    calculator = FeatureSetCalculator(es, time_last=None, feature_set=feature_set)
+    df = calculator.run(np.array(range(3)))
+    print(df[region_feature.get_name()].tolist())
+    assert df[region_feature.get_name()].tolist() == ["West", "West", "Northeast"]
 
 
 def test_diff(es):

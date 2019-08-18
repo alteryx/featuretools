@@ -17,6 +17,8 @@ from featuretools.variable_types import (
     Numeric,
     Ordinal,
     Text,
+    USRegion,
+    USState,
     Variable
 )
 
@@ -531,6 +533,75 @@ class Longitude(TransformPrimitive):
 
     def get_function(self):
         return lambda array: pd.Series([x[1] for x in array])
+
+
+class USRegionOf(TransformPrimitive):
+    """Returns the US region of an array of US states.
+
+    Examples:
+        >>> region = USRegionOf()
+        >>> region(['AR', 'CA', 'NY'])
+        ['South', 'West', 'Northeast']
+    """
+    name = 'us_region_of'
+    input_types = [USState]
+    return_type = USRegion
+
+    def get_function(self):
+        stateMap = {
+            "AK": "West",
+            "AL": "South",
+            "AR": "South",
+            "AZ": "West",
+            "CA": "West",
+            "CO": "West",
+            "CT": "Northeast",
+            "DC": "South",
+            "DE": "South",
+            "FL": "South",
+            "GA": "South",
+            "HI": "West",
+            "IA": "Midwest",
+            "ID": "West",
+            "IL": "Midwest",
+            "IN": "Midwest",
+            "KS": "Midwest",
+            "KY": "South",
+            "LA": "South",
+            "MA": "Northeast",
+            "MD": "South",
+            "ME": "Northeast",
+            "MI": "Midwest",
+            "MN": "Midwest",
+            "MO": "Midwest",
+            "MS": "South",
+            "MT": "West",
+            "NC": "South",
+            "ND": "Midwest",
+            "NE": "Midwest",
+            "NH": "Northeast",
+            "NJ": "Northeast",
+            "NM": "West",
+            "NV": "West",
+            "NY": "Northeast",
+            "OH": "Midwest",
+            "OK": "South",
+            "OR": "West",
+            "PA": "Northeast",
+            "RI": "Northeast",
+            "SC": "South",
+            "SD": "Midwest",
+            "TN": "South",
+            "TX": "South",
+            "UT": "West",
+            "VA": "South",
+            "VT": "Northeast",
+            "WA": "West",
+            "WI": "Midwest",
+            "WV": "South",
+            "WY": "West"
+        }
+        return lambda array: [stateMap[state] for state in array]
 
 
 class Haversine(TransformPrimitive):
