@@ -2,7 +2,12 @@
 
 Changelog
 ---------
-**Future Release**
+**v0.10.0 Aug 19, 2019**
+
+    .. warning::
+        The next non-bugfix release of Featuretools will not support Python 2
+
+
     * Enhancements
         * Give more frequent progress bar updates and update chunk size behavior (:pr:`631`, :pr:`696`)
         * Added drop_first as param in encode_features (:pr:`647`)
@@ -12,6 +17,7 @@ Changelog
         * Added nlp_primitives as an add-on library (:pr:`704`)
         * Added AutoNormalize to Featuretools plugins (:pr:`699`)
         * Added functionality for relative units (month/year) in Timedelta (:pr:`692`)
+        * Added categorical-encoding as an add-on library (:pr:`700`)
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
         * Fix deserialization of feature relationship path (:pr:`665`)
@@ -22,7 +28,6 @@ Changelog
         * Update variable type inference to better check for string values (:pr:`683`)
     * Changes
         * Moved dask, distributed imports (:pr:`634`)
-        * Added categorical-encoding library (:pr:`700`)
     * Documentation Changes
         * Miscellaneous changes (:pr:`641`, :pr:`658`)
         * Modified doc_string of top_n in encoding (:pr:`648`)
@@ -34,9 +39,10 @@ Changelog
         * Miscellaneous changes (:pr:`672`, :pr:`674`)
 
     Thanks to the following people for contributing to this release:
-    :user:`alexjwang`, :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`, :user:`ctduffy`,
-    :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`,
-    :user:`jeremyliweishih`, :user:`allisonportis`
+    :user:`alexjwang`, :user:`allisonportis`, :user:`ayushpatidar`,
+    :user:`CJStadler`, :user:`ctduffy`, :user:`gsheni`, :user:`jeff-hernandez`,
+    :user:`jeremyliweishih`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`,
+
 
 **v0.9.1 July 3, 2019**
     * Enhancements
