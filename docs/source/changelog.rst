@@ -2,7 +2,7 @@
 
 Changelog
 ---------
-**Future Release**
+**v0.10.0 Aug 19, 2019**
     * Enhancements
         * Give more frequent progress bar updates and update chunk size behavior (:pr:`631`, :pr:`696`)
         * Added drop_first as param in encode_features (:pr:`647`)
@@ -34,9 +34,10 @@ Changelog
         * Miscellaneous changes (:pr:`672`, :pr:`674`)
 
     Thanks to the following people for contributing to this release:
-    :user:`alexjwang`, :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`, :user:`ctduffy`,
-    :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`,
-    :user:`jeremyliweishih`, :user:`allisonportis`
+    :user:`alexjwang`, :user:`allisonportis`, :user:`ayushpatidar`,
+    :user:`CJStadler`, :user:`ctduffy`, :user:`gsheni`, :user:`jeff-hernandez`,
+    :user:`jeremyliweishih`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`,
+
 
 **v0.9.1 July 3, 2019**
     * Enhancements
