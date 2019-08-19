@@ -3,6 +3,8 @@
 Changelog
 ---------
 **v0.10.0 Aug 19, 2019**
+    **The next non-bugfix release of Featuretools will not support Python 2**
+
     * Enhancements
         * Give more frequent progress bar updates and update chunk size behavior (:pr:`631`, :pr:`696`)
         * Added drop_first as param in encode_features (:pr:`647`)
