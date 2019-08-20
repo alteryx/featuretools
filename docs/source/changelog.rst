@@ -7,7 +7,7 @@ Changelog
     * Fixes
     * Changes 
     * Documentation Changes
-        * Fixed FAQ cell output (pr:`710`)
+        * Fixed FAQ cell output (:pr:`710`)
     * Testing Changes 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`,
