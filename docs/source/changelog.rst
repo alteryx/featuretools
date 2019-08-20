@@ -2,6 +2,16 @@
 
 Changelog
 ---------
+**Future Release**
+    * Enchantments
+    * Fixes
+    * Changes 
+    * Documentation Changes
+    * Testing Changes 
+    Thanks to the following people for contributing to this release:
+
+:user:`gsheni`
+
 **v0.10.0 Aug 19, 2019**
 
     .. warning::
@@ -11,7 +21,7 @@ Changelog
     * Enhancements
         * Give more frequent progress bar updates and update chunk size behavior (:pr:`631`, :pr:`696`)
         * Added drop_first as param in encode_features (:pr:`647`)
-        * Added support for stacking multi-output primitives (:pr:`679`)
+        * Added support for stackingmulti-output primitives (:pr:`679`)
         * Generate transform features of direct features (:pr:`623`)
         * Added serializing and deserializing from S3 and deserializing from URLs (:pr:`685`)
         * Added nlp_primitives as an add-on library (:pr:`704`)
