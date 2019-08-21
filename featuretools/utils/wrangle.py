@@ -101,18 +101,24 @@ def _check_time_type(time):
 
 
 def _dataframes_equal(df1, df2):
-    if df1.empty and not df2.empty:
-        return False
-    elif not df1.empty and df2.empty:
+    # ^ means XOR
+    if df1.empty ^ df2.empty:
         return False
     elif not df1.empty and not df2.empty:
-        for df in [df1, df2]:
-            obj = df.select_dtypes('object').columns
-            df[obj] = df[obj].astype('unicode')
+        if not set(df1.columns) == set(df2.columns):
+            return False
+
         for c in df1:
+            df1c = df1[c]
+            df2c = df2[c]
+            if df1c.dtype == object:
+                df1c = df1c.astype('unicode')
+            if df2c.dtype == object:
+                df2c = df2c.astype('unicode')
+
             normal_compare = True
-            if df1[c].dtype == object:
-                dropped = df1[c].dropna()
+            if df1c.dtype == object:
+                dropped = df1c.dropna()
                 if not dropped.empty:
                     if isinstance(dropped.iloc[0], tuple):
                         dropped2 = df2[c].dropna()
@@ -124,12 +130,13 @@ def _dataframes_equal(df1, df2):
                             except IndexError:
                                 raise IndexError("If column data are tuples, they must all be the same length")
                             if not equal:
+                                breakpoint()
                                 return False
             if normal_compare:
                 # handle nan equality correctly
                 # This way is much faster than df1.equals(df2)
-                result = df1[c] == df2[c]
-                result[pd.isnull(df1[c]) == pd.isnull(df2)[c]] = True
+                result = df1c == df2c
+                result[pd.isnull(df1c) == pd.isnull(df2c)] = True
                 if not result.all():
                     return False
     return True
