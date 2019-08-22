@@ -15,7 +15,7 @@ from featuretools.utils.gen_utils import (
     use_smartopen_es
 )
 from featuretools.utils.wrangle import _is_s3, _is_url
-from featuretools.variable_types.variable import find_variable_types
+from featuretools.variable_types.variable import LatLong, find_variable_types
 
 if is_python_2():
     from backports import tempfile
@@ -148,7 +148,7 @@ def read_entity_data(description, path):
     if load_format in ['parquet', 'csv']:
         latlongs = []
         for var_description in description['variables']:
-            if var_description['type']['value'] == "latlong":
+            if var_description['type']['value'] == LatLong.type_string:
                 latlongs.append(var_description["id"])
 
         def parse_latlong(x):
