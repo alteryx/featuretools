@@ -130,7 +130,6 @@ def _dataframes_equal(df1, df2):
                             except IndexError:
                                 raise IndexError("If column data are tuples, they must all be the same length")
                             if not equal:
-                                breakpoint()
                                 return False
             if normal_compare:
                 # handle nan equality correctly
