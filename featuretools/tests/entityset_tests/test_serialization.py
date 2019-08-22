@@ -120,6 +120,7 @@ def test_to_csv(es, path_management):
     new_es = deserialize.read_entityset(path_management)
     assert es.__eq__(new_es, deep=True)
     assert type(es['log'].df['latlong'][0]) == tuple
+    assert type(new_es['log'].df['latlong'][0]) == tuple
 
 
 def test_to_pickle(es, path_management):
@@ -127,6 +128,7 @@ def test_to_pickle(es, path_management):
     new_es = deserialize.read_entityset(path_management)
     assert es.__eq__(new_es, deep=True)
     assert type(es['log'].df['latlong'][0]) == tuple
+    assert type(new_es['log'].df['latlong'][0]) == tuple
 
 
 def test_to_parquet(es, path_management):
@@ -134,6 +136,7 @@ def test_to_parquet(es, path_management):
     new_es = deserialize.read_entityset(path_management)
     assert es.__eq__(new_es, deep=True)
     assert type(es['log'].df['latlong'][0]) == tuple
+    assert type(new_es['log'].df['latlong'][0]) == tuple
 
 
 def test_to_parquet_with_lti(path_management):
