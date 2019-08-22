@@ -1,7 +1,3 @@
-import pytest
-
-from ..testing_utils import make_ecommerce_entityset
-
 import featuretools as ft
 
 from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; CumSum,
@@ -36,11 +32,6 @@ from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; 
 )
 
 
-@pytest.fixture
-def es():
-    return make_ecommerce_entityset()
-
-
 def test_overrides(es):
     value = ft.Feature(es['log']['value'])
     value2 = ft.Feature(es['log']['value_2'])
@@ -48,7 +39,7 @@ def test_overrides(es):
     feats = [AddNumeric, SubtractNumeric, MultiplyNumeric, DivideNumeric,
              ModuloNumeric, GreaterThan, LessThan, Equal, NotEqual,
              GreaterThanEqualTo, LessThanEqualTo]
-    assert ft.Feature(value, primitive=Negate).hash() == (-value).hash()
+    assert ft.Feature(value, primitive=Negate).unique_name() == (-value).unique_name()
 
     compares = [(value, value), (value, value2)]
     overrides = [
@@ -81,7 +72,7 @@ def test_overrides(es):
         for feat in feats:
             f = ft.Feature([left, right], primitive=feat)
             o = overrides.pop(0)
-            assert o.hash() == f.hash()
+            assert o.unique_name() == f.unique_name()
 
 
 def test_override_boolean(es):
@@ -131,7 +122,7 @@ def test_scalar_overrides(es):
     for feat in feats:
         f = ft.Feature(value, primitive=feat(2))
         o = overrides.pop(0)
-        assert o.hash() == f.hash()
+        assert o.unique_name() == f.unique_name()
 
     value2 = ft.Feature(es['log']['value_2'])
 
@@ -157,7 +148,7 @@ def test_scalar_overrides(es):
     for feat in reverse_feats:
         f = ft.Feature(value2, primitive=feat(2))
         o = reverse_overrides.pop(0)
-        assert o.hash() == f.hash()
+        assert o.unique_name() == f.unique_name()
 
 
 def test_override_cmp_from_variable(es):

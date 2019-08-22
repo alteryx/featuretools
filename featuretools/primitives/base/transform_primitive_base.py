@@ -2,8 +2,8 @@ import copy
 import functools
 import inspect
 
-from .primitive_base import PrimitiveBase
-from .utils import inspect_function_args
+from featuretools.primitives.base.primitive_base import PrimitiveBase
+from featuretools.primitives.base.utils import inspect_function_args
 
 
 class TransformPrimitive(PrimitiveBase):

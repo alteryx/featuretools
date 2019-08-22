@@ -88,7 +88,7 @@ In this dataset we have two relationships
 Run Deep Feature Synthesis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A minimal input to DFS is a set of entities, a list of relationships, and the "target_entity" to calculate features for. The ouput of DFS is a feature matrix and the corresponding list of feature defintions.
+A minimal input to DFS is a set of entities, a list of relationships, and the "target_entity" to calculate features for. The ouput of DFS is a feature matrix and the corresponding list of feature definitions.
 
 Let's first create a feature matrix for each customer in the data
 
@@ -137,6 +137,7 @@ What's next?
 
 * Learn about :doc:`loading_data/using_entitysets`
 * Apply automated feature engineering with :doc:`automated_feature_engineering/afe`
+* Explore `runnable demos <https://www.featuretools.com/demos>`__ based on real world use cases
 * Can't find what you're looking for? Ask for :doc:`help`
 
 
@@ -144,15 +145,6 @@ What's next?
 
 Table of contents
 -----------------
-
-**Getting Started**
-
-* :doc:`getting_started/install`
-* :doc:`loading_data/using_entitysets`
-* :doc:`automated_feature_engineering/afe`
-* :doc:`automated_feature_engineering/primitives`
-* :doc:`automated_feature_engineering/handling_time`
-
 
 .. toctree::
    :maxdepth: 1
@@ -165,33 +157,6 @@ Table of contents
    automated_feature_engineering/primitives
    automated_feature_engineering/handling_time
 
-
-.. **Feature Engineering Language**
-
-.. * :doc:`feature_engineering_language/fel`
-.. * :doc:`feature_engineering_language/feature-types`
-
-
-.. .. * :doc:`feature_engineering_language/seed_features` .. -max i think seed features to be fleshed out more before getting its own page
-
-.. .. toctree::
-..    :maxdepth: 1
-..    :hidden:
-..    :caption: Feature Engineering Language
-
-..    feature_engineering_language/fel
-..    feature_engineering_language/feature-types
-.. feature_engineering_language/seed_features
-
-**Guides**
-
-* :doc:`guides/tuning_dfs`
-* :doc:`guides/performance`
-* :doc:`guides/parallel`
-* :doc:`guides/deployment`
-* :doc:`guides/exporting_feature_matrix`
-* :doc:`guides/advanced_custom_primitives`
-
 .. toctree::
    :maxdepth: 1
    :caption: Guides
@@ -200,39 +165,15 @@ Table of contents
    guides/performance
    guides/parallel
    guides/deployment
-   guides/exporting_feature_matrix
    guides/advanced_custom_primitives
-
-.. **Tutorials and Demos**
-
-.. * :doc:`use_cases/index`
-.. * :doc:`use_cases/retail_data_demo`
-.. * :doc:`use_cases/customer_segmentation`
-
-.. .. toctree::
-..    :maxdepth: 1
-..    :hidden:
-..    :caption: Tutorials and Demos
-
-..    use_cases/index
-..    use_cases/retail_data_demo
-..    use_cases/customer_segmentation
-
-
-**Resources and References**
-
-* :doc:`help`
-* :doc:`usage_tips/limitations`
-* :doc:`usage_tips/glossary`
-* :doc:`ecosystem`
-* :doc:`api_reference`
-* :doc:`changelog`
 
 .. toctree::
    :maxdepth: 1
    :caption: Resources and References
 
+   frequently_asked_questions
    help
+   featuretools_enterprise
    usage_tips/limitations
    usage_tips/glossary
    ecosystem
@@ -246,7 +187,6 @@ Table of contents
    :hidden:
 
    feature_engineering_language/feature-types
-   guides/chunking
    guides/save_progress_example
 
 Other links

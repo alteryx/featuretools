@@ -8,9 +8,8 @@ import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
 
-from .timedelta import Timedelta
-
 from featuretools import variable_types as vtypes
+from featuretools.entityset.timedelta import Timedelta
 from featuretools.utils import is_string
 from featuretools.utils.entity_utils import (
     col_is_datetime,
@@ -118,9 +117,8 @@ class Entity(object):
             return False
         if len(self.variables) != len(other.variables):
             return False
-        for v in self.variables:
-            if v not in other.variables:
-                return False
+        if set(self.variables) != set(other.variables):
+            return False
         if deep:
             if self.last_time_index is None and other.last_time_index is not None:
                 return False
@@ -230,11 +228,15 @@ class Entity(object):
             time_last (pd.TimeStamp) : Query data up to and including this
                 time. Only applies if entity has a time index.
             training_window (Timedelta, optional):
-                Data older than time_last by more than this will be ignored
+                Window defining how much time before the cutoff time data
+                can be used when calculating features. If None, all data before cutoff time is used.
 
         Returns:
             pd.DataFrame : instances that match constraints with ids in order of underlying dataframe
         """
+        if not variable_id:
+            variable_id = self.index
+
         instance_vals = self._vals_to_series(instance_vals, variable_id)
 
         training_window = _check_timedelta(training_window)
@@ -248,10 +250,6 @@ class Entity(object):
 
         elif instance_vals.shape[0] == 0:
             df = self.df.head(0)
-
-        elif variable_id is None or variable_id == self.index:
-            df = self.df.reindex(instance_vals)
-            df.dropna(subset=[self.index], inplace=True)
 
         else:
             df = self.df[self.df[variable_id].isin(instance_vals)]
@@ -287,7 +285,7 @@ class Entity(object):
                 that each map to a list of columns that depend on that secondary time
         """
         variables = []
-        variable_types = variable_types or {}
+        variable_types = variable_types.copy() or {}
         if index not in variable_types:
             variable_types[index] = vtypes.Index
 
@@ -400,14 +398,16 @@ class Entity(object):
 
         self.entityset.reset_data_description()
 
-    def delete_variable(self, variable_id):
+    def delete_variables(self, variable_ids):
         """
-        Remove variable from entity's dataframe and from
+        Remove variables from entity's dataframe and from
         self.variables
         """
-        self.df.drop(variable_id, axis=1, inplace=True)
-        v = self._get_variable(variable_id)
-        self.variables.remove(v)
+        self.df.drop(variable_ids, axis=1, inplace=True)
+
+        for v_id in variable_ids:
+            v = self._get_variable(v_id)
+            self.variables.remove(v)
 
     def set_time_index(self, variable_id, already_sorted=False):
         # check time type
@@ -501,9 +501,7 @@ class Entity(object):
 
         return out_vals
 
-    def _handle_time(self, df, time_last=None,
-                     training_window=None,
-                     columns=None):
+    def _handle_time(self, df, time_last=None, training_window=None):
         """
         Filter a dataframe for all instances before time_last.
         If this entity does not have a time index, return the original

@@ -4,7 +4,10 @@ from .feature_base import (
     DirectFeature,
     Feature,
     FeatureBase,
+    FeatureOutputSlice,
     GroupByTransformFeature,
     IdentityFeature,
     TransformFeature
 )
+from .features_deserializer import load_features
+from .features_serializer import save_features

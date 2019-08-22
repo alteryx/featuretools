@@ -4,30 +4,24 @@ import pytest
 
 from featuretools.primitives.base import PrimitiveBase
 from featuretools.primitives.utils import (
-    get_featuretools_root,
     list_primitive_files,
     load_primitive_from_file
 )
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def this_dir():
     return os.path.dirname(os.path.abspath(__file__))
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def primitives_to_install_dir(this_dir):
     return os.path.join(this_dir, "primitives_to_install")
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture
 def bad_primitives_files_dir(this_dir):
     return os.path.join(this_dir, "bad_primitive_files")
-
-
-def test_get_featuretools_root(this_dir):
-    root = os.path.abspath(os.path.join(this_dir, '..', ".."))
-    assert get_featuretools_root() == root
 
 
 def test_list_primitive_files(primitives_to_install_dir):

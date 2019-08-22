@@ -5,42 +5,35 @@ import os
 import graphviz
 import pytest
 
-from ..testing_utils import make_ecommerce_entityset
 
-
-@pytest.fixture()
-def entityset():
-    return make_ecommerce_entityset()
-
-
-def test_returns_digraph_object(entityset):
-    graph = entityset.plot()
+def test_returns_digraph_object(es):
+    graph = es.plot()
 
     assert isinstance(graph, graphviz.Digraph)
 
 
-def test_saving_png_file(entityset):
+def test_saving_png_file(es):
     output_path = 'test1.png'
 
-    entityset.plot(to_file=output_path)
+    es.plot(to_file=output_path)
 
     assert os.path.isfile(output_path)
     os.remove(output_path)
 
 
-def test_missing_file_extension(entityset):
+def test_missing_file_extension(es):
     output_path = 'test1'
 
     with pytest.raises(ValueError) as excinfo:
-        entityset.plot(to_file=output_path)
+        es.plot(to_file=output_path)
 
     assert str(excinfo.value).startswith('Please use a file extension')
 
 
-def test_invalid_format(entityset):
+def test_invalid_format(es):
     output_path = 'test1.xzy'
 
     with pytest.raises(ValueError) as excinfo:
-        entityset.plot(to_file=output_path)
+        es.plot(to_file=output_path)
 
     assert str(excinfo.value).startswith('Unknown format')

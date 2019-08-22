@@ -100,7 +100,7 @@ Aggregation Primitives
     AvgTimeBetween
     TimeSinceLast
     TimeSinceFirst
-    NUnique
+    NumUnique
     PercentTrue
     All
     Any
@@ -129,6 +129,7 @@ General Transform Primitives
     :toctree: generated/
 
     Absolute
+    Percentile
     TimeSince
 
 Datetime Transform Primitives
@@ -155,6 +156,11 @@ Cumulative Transform Primitives
 
     Diff
     TimeSincePrevious
+    CumCount
+    CumSum
+    CumMean
+    CumMin
+    CumMax
 
 Text Transform Primitives
 *************************
@@ -173,6 +179,30 @@ Location Transform Primitives
    Longitude
    Haversine
 
+.. currentmodule:: nlp_primitives
+
+.. autosummary::
+   :nosignatures:
+
+Natural Language Processing Primitives
+--------------------------------------
+Natural Language Processing primitives create features for textual data. For more information on how to use and install these primitives, see `here <https://github.com/FeatureLabs/nlp_primitives>`__.
+
+.. autosummary::
+    :toctree: generated/
+
+    DiversityScore
+    LSA
+    MeanCharactersPerWord
+    PartOfSpeechCount
+    PolarityScore
+    PunctuationCount
+    StopwordCount
+    TitleWordCount
+    UniversalSentenceEncoder
+    UpperCaseCount
+
+
 Feature methods
 ---------------
 .. currentmodule:: featuretools.feature_base
@@ -185,7 +215,7 @@ Feature methods
 
 Feature calculation
 ~~~~~~~~~~~~~~~~~~~~
-.. currentmodule:: featuretools.computational_backends
+.. currentmodule:: featuretools
 .. autosummary::
     :toctree: generated/
 
@@ -194,7 +224,7 @@ Feature calculation
 
 Feature encoding
 ~~~~~~~~~~~~~~~~~
-.. currentmodule:: featuretools.synthesis
+.. currentmodule:: featuretools
 .. autosummary::
     :toctree: generated/
 
@@ -256,8 +286,8 @@ EntitySet query methods
     :toctree: generated/
 
     EntitySet.__getitem__
-    EntitySet.find_backward_path
-    EntitySet.find_forward_path
+    EntitySet.find_backward_paths
+    EntitySet.find_forward_paths
     EntitySet.get_forward_entities
     EntitySet.get_backward_entities
 

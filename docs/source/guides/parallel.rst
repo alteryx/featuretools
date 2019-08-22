@@ -53,6 +53,6 @@ The dashboard requires an additional python package, bokeh, to work. Once bokeh 
                                      dask_kwargs={'diagnostics_port': 8787}
                                      verbose=True)
 
-Parallel Computation by Partioning Data
----------------------------------------
+Parallel Computation by Partitioning Data
+-----------------------------------------
 As an alternative to Featuretool's parallelization, the data can be partitioned and the feature calculations run on multiple cores or a cluster using Dask or Apache Spark with PySpark. This approach may be necessary with a large ``EntitySet`` because the current parallel implementation sends the entire ``EntitySet`` to each worker which may exhaust the worker memory. For more information on partitioning the data and using Dask or Spark, see :doc:`/guides/performance`. Dask and Spark allow Featuretools to scale to multiple cores on a single machine or multiple machines on a cluster.

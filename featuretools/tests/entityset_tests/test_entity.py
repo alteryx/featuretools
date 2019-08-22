@@ -5,15 +5,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ..testing_utils import make_ecommerce_entityset
-
 import featuretools as ft
 from featuretools import variable_types
-
-
-@pytest.fixture
-def es():
-    return make_ecommerce_entityset()
 
 
 def test_enforces_variable_id_is_str(es):
@@ -112,3 +105,41 @@ def test_query_by_values_returns_rows_in_given_order():
                                   })
     query = es['test'].query_by_values(['b', 'a'], variable_id='value')
     assert np.array_equal(query['id'], [1, 3, 4, 5])
+
+
+def test_query_by_values_secondary_time_index(es):
+    end = np.datetime64(datetime(2011, 10, 1))
+    all_instances = [0, 1, 2]
+    result = es['customers'].query_by_values(all_instances, time_last=end)
+
+    for col in ["cancel_date", "cancel_reason"]:
+        nulls = result.loc[all_instances][col].isnull() == [False, True, True]
+        assert nulls.all(), "Some instance has data it shouldn't for column %s" % col
+
+
+def test_delete_variables(es):
+    entity = es['customers']
+    to_delete = ['age', 'cohort', 'email']
+    entity.delete_variables(to_delete)
+
+    variable_names = [v.id for v in entity.variables]
+
+    for var in to_delete:
+        assert var not in variable_names
+        assert var not in entity.df
+
+
+def test_variable_types_unmodified():
+    df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                       "transaction_time": [10, 12, 13, 20, 21, 20],
+                       "fraud": [True, False, False, False, True, True]})
+
+    es = ft.EntitySet()
+    variable_types = {'fraud': ft.variable_types.Boolean}
+    old_variable_types = variable_types.copy()
+    es.entity_from_dataframe(entity_id="transactions",
+                             dataframe=df,
+                             index='id',
+                             time_index='transaction_time',
+                             variable_types=variable_types)
+    assert old_variable_types == variable_types

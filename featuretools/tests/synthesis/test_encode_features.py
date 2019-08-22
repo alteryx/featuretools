@@ -1,26 +1,19 @@
 import pandas as pd
 import pytest
 
-from ..testing_utils import make_ecommerce_entityset
-
 from featuretools import EntitySet, calculate_feature_matrix, dfs
 from featuretools.feature_base import Feature, IdentityFeature
 from featuretools.primitives import NMostCommon
 from featuretools.synthesis import encode_features
 
 
-@pytest.fixture(scope='module')
-def entityset():
-    return make_ecommerce_entityset()
-
-
-def test_encodes_features(entityset):
-    f1 = IdentityFeature(entityset["log"]["product_id"])
-    f2 = IdentityFeature(entityset["log"]["purchased"])
-    f3 = IdentityFeature(entityset["log"]["value"])
+def test_encodes_features(es):
+    f1 = IdentityFeature(es["log"]["product_id"])
+    f2 = IdentityFeature(es["log"]["purchased"])
+    f3 = IdentityFeature(es["log"]["value"])
 
     features = [f1, f2, f3]
-    feature_matrix = calculate_feature_matrix(features, entityset, instance_ids=[0, 1, 2, 3, 4, 5])
+    feature_matrix = calculate_feature_matrix(features, es, instance_ids=[0, 1, 2, 3, 4, 5])
 
     feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features)
     assert len(features_encoded) == 6
@@ -33,11 +26,11 @@ def test_encodes_features(entityset):
     assert len(features_encoded) == 5
 
 
-def test_inplace_encodes_features(entityset):
-    f1 = IdentityFeature(entityset["log"]["product_id"])
+def test_inplace_encodes_features(es):
+    f1 = IdentityFeature(es["log"]["product_id"])
 
     features = [f1]
-    feature_matrix = calculate_feature_matrix(features, entityset, instance_ids=[0, 1, 2, 3, 4, 5])
+    feature_matrix = calculate_feature_matrix(features, es, instance_ids=[0, 1, 2, 3, 4, 5])
 
     feature_matrix_shape = feature_matrix.shape
     feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features)
@@ -49,12 +42,12 @@ def test_inplace_encodes_features(entityset):
     assert feature_matrix_encoded.shape == feature_matrix.shape
 
 
-def test_to_encode_features(entityset):
-    f1 = IdentityFeature(entityset["log"]["product_id"])
-    f2 = IdentityFeature(entityset["log"]["value"])
+def test_to_encode_features(es):
+    f1 = IdentityFeature(es["log"]["product_id"])
+    f2 = IdentityFeature(es["log"]["value"])
 
     features = [f1, f2]
-    feature_matrix = calculate_feature_matrix(features, entityset, instance_ids=[0, 1, 2, 3, 4, 5])
+    feature_matrix = calculate_feature_matrix(features, es, instance_ids=[0, 1, 2, 3, 4, 5])
 
     feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features)
     feature_matrix_encoded_shape = feature_matrix_encoded.shape
@@ -69,16 +62,16 @@ def test_to_encode_features(entityset):
     assert feature_matrix_encoded_shape != feature_matrix_encoded.shape
 
 
-def test_encode_features_handles_pass_columns(entityset):
-    f1 = IdentityFeature(entityset["log"]["product_id"])
-    f2 = IdentityFeature(entityset["log"]["value"])
+def test_encode_features_handles_pass_columns(es):
+    f1 = IdentityFeature(es["log"]["product_id"])
+    f2 = IdentityFeature(es["log"]["value"])
 
     features = [f1, f2]
     cutoff_time = pd.DataFrame({'instance_id': range(6),
-                                'time': entityset['log'].df['datetime'][0:6],
+                                'time': es['log'].df['datetime'][0:6],
                                 'label': [i % 2 for i in range(6)]},
                                columns=["instance_id", "time", "label"])
-    feature_matrix = calculate_feature_matrix(features, entityset, cutoff_time)
+    feature_matrix = calculate_feature_matrix(features, es, cutoff_time)
 
     assert 'label' in feature_matrix.columns
 
@@ -97,17 +90,17 @@ def test_encode_features_handles_pass_columns(entityset):
     assert 'label' in feature_matrix_encoded.columns
 
 
-def test_encode_features_catches_features_mismatch(entityset):
-    f1 = IdentityFeature(entityset["log"]["product_id"])
-    f2 = IdentityFeature(entityset["log"]["value"])
-    f3 = IdentityFeature(entityset["log"]["session_id"])
+def test_encode_features_catches_features_mismatch(es):
+    f1 = IdentityFeature(es["log"]["product_id"])
+    f2 = IdentityFeature(es["log"]["value"])
+    f3 = IdentityFeature(es["log"]["session_id"])
 
     features = [f1, f2]
     cutoff_time = pd.DataFrame({'instance_id': range(6),
-                                'time': entityset['log'].df['datetime'][0:6],
+                                'time': es['log'].df['datetime'][0:6],
                                 'label': [i % 2 for i in range(6)]},
                                columns=["instance_id", "time", "label"])
-    feature_matrix = calculate_feature_matrix(features, entityset, cutoff_time)
+    feature_matrix = calculate_feature_matrix(features, es, cutoff_time)
 
     assert 'label' in feature_matrix.columns
 
@@ -131,17 +124,33 @@ def test_encode_unknown_features():
                                           'category = c', 'category = b', 'category is unknown']
 
 
-def test_encode_features_topn(entityset):
-    topn = Feature(entityset['log']['product_id'],
-                   parent_entity=entityset['customers'],
+def test_encode_features_topn(es):
+    topn = Feature(es['log']['product_id'],
+                   parent_entity=es['customers'],
                    primitive=NMostCommon(n=3))
-    features, feature_defs = dfs(entityset=entityset,
+    features, feature_defs = dfs(entityset=es,
                                  instance_ids=[0, 1, 2],
                                  target_entity="customers",
                                  agg_primitives=[NMostCommon(n=3)])
     features_enc, feature_defs_enc = encode_features(features,
                                                      feature_defs,
                                                      include_unknown=True)
-    assert topn.hash() in [feat.hash() for feat in feature_defs_enc]
+    assert topn.unique_name() in [feat.unique_name() for feat in feature_defs_enc]
     for name in topn.get_feature_names():
         assert name in features_enc.columns
+        assert features_enc.columns.tolist().count(name) == 1
+
+
+def test_encode_features_drop_first():
+    df = pd.DataFrame({'category': ['ao', 'b', 'c', 'd', 'e']})
+    es = EntitySet('test')
+    es.entity_from_dataframe(entity_id='a', dataframe=df, index='index', make_index=True)
+    features, feature_defs = dfs(entityset=es, target_entity='a')
+    features_enc, feature_defs_enc = encode_features(features, feature_defs,
+                                                     drop_first=True, include_unknown=False)
+    assert len(features_enc.columns) == 4
+
+    features_enc, feature_defs = encode_features(features, feature_defs, top_n=3, drop_first=True,
+                                                 include_unknown=False)
+
+    assert len(features_enc.columns) == 2
