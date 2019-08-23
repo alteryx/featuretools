@@ -3,15 +3,16 @@
 Changelog
 ---------
 **Future Release**
-    * Enchantments
+    * Enhancements
     * Fixes
-    * Changes 
+    * Changes
     * Documentation Changes
         * Fixed FAQ cell output (:pr:`710`)
-    * Testing Changes 
-    Thanks to the following people for contributing to this release:
-    :user:`gsheni`,
+    * Testing Changes
 
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
+    
 **v0.10.0 Aug 19, 2019**
 
     .. warning::
