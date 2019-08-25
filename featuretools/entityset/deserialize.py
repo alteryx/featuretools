@@ -15,7 +15,7 @@ from featuretools.utils.gen_utils import (
     use_smartopen_es
 )
 from featuretools.utils.wrangle import _is_s3, _is_url
-from featuretools.variable_types.variable import find_variable_types
+from featuretools.variable_types.variable import LatLong, find_variable_types
 
 if is_python_2():
     from backports import tempfile
@@ -127,22 +127,37 @@ def read_entity_data(description, path):
     '''
     file = os.path.join(path, description['loading_info']['location'])
     kwargs = description['loading_info'].get('params', {})
-    if description['loading_info']['type'] == 'csv':
+    load_format = description['loading_info']['type']
+    if load_format == 'csv':
         dataframe = pd.read_csv(
             file,
             engine=kwargs['engine'],
             compression=kwargs['compression'],
             encoding=kwargs['encoding'],
         )
-    elif description['loading_info']['type'] == 'parquet':
+    elif load_format == 'parquet':
         dataframe = pd.read_parquet(file, engine=kwargs['engine'])
-    elif description['loading_info']['type'] == 'pickle':
+    elif load_format == 'pickle':
         dataframe = pd.read_pickle(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))
     dtypes = description['loading_info']['properties']['dtypes']
-    return dataframe.astype(dtypes)
+    dataframe = dataframe.astype(dtypes)
+
+    if load_format in ['parquet', 'csv']:
+        latlongs = []
+        for var_description in description['variables']:
+            if var_description['type']['value'] == LatLong.type_string:
+                latlongs.append(var_description["id"])
+
+        def parse_latlong(x):
+            return tuple(float(y) for y in x[1:-1].split(","))
+
+        for column in latlongs:
+            dataframe[column] = dataframe[column].apply(parse_latlong)
+
+    return dataframe
 
 
 def read_data_description(path):
