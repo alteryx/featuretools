@@ -2,14 +2,11 @@
 
 Changelog
 ---------
-**Future Release**
-    * Enhancements
+**v0.10.1 Aug 25, 2019**
     * Fixes
         * Fix serialized LatLong data being loaded as strings (:pr:`712`)
-    * Changes
     * Documentation Changes
         * Fixed FAQ cell output (:pr:`710`)
-    * Testing Changes
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`
