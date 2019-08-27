@@ -2,6 +2,14 @@
 
 Changelog
 ---------
+**Future Release**
+    * Documentation Changes
+        * Updated URL for Compose (:pr:`716`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`jeff-hernandez`
+
+
 **v0.10.1 Aug 25, 2019**
     * Fixes
         * Fix serialized LatLong data being loaded as strings (:pr:`712`)
