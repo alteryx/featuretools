@@ -3,6 +3,10 @@
 Changelog
 ---------
 **Future Release**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Testing Changes
     * Documentation Changes
         * Updated URL for Compose (:pr:`716`)
 
