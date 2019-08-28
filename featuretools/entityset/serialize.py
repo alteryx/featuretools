@@ -1,7 +1,6 @@
 import datetime
 import json
 import os
-import shutil
 import tarfile
 
 import boto3
@@ -145,9 +144,7 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
         raise ValueError("Writing to URLs is not supported")
     else:
         path = os.path.abspath(path)
-        if os.path.exists(path):
-            shutil.rmtree(path)
-        os.makedirs(os.path.join(path, 'data'))
+        os.makedirs(os.path.join(path, 'data'), exist_ok=True)
         dump_data_description(entityset, path, **kwargs)
 
 
