@@ -6,9 +6,9 @@ Changelog
     * Enhancements
     * Fixes
     * Changes
-    * Testing Changes
     * Documentation Changes
         * Updated URL for Compose (:pr:`716`)
+    * Testing Changes
 
     Thanks to the following people for contributing to this release:
     :user:`jeff-hernandez`
