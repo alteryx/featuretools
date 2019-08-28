@@ -1,6 +1,7 @@
 import json
 import shutil
 import sys
+import warnings
 
 import s3fs
 from smart_open import open
@@ -112,7 +113,7 @@ def check_schema_version(cls, cls_type):
             if c_num > s_num:
                 break
             elif c_num < s_num:
-                raise RuntimeError(error_text_upgrade)
+                warnings.warn(error_text_upgrade)
 
         error_text_outdated = ('Unable to load %s. The schema version '
                                'of the saved %s (%s) is no longer '
@@ -120,7 +121,7 @@ def check_schema_version(cls, cls_type):
                                % (cls_type, cls_type, version_string))
         # Check if saved has older major version.
         if current[0] > saved[0]:
-            raise RuntimeError(error_text_outdated)
+            warnings.warn(error_text_outdated)
 
 
 def use_smartopen_es(file_path, path, transport_params=None, read=True):
