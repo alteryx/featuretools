@@ -207,8 +207,9 @@ def read_entityset(path, profile_name=None, **kwargs):
             else:
                 use_s3fs_es(file_path, path)
 
-            tar = tarfile.open(str(file_path))
-            tar.extractall(path=tmpdir)
+            with tarfile.open(str(file_path)) as tar:
+                tar.extractall(path=tmpdir)
+
             data_description = read_data_description(tmpdir)
             return description_to_entityset(data_description, **kwargs)
     else:

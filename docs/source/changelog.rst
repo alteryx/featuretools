@@ -5,6 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
     * Fixes
+        * Fixed entity set deserialization (:pr:`720`)
     * Changes
     * Documentation Changes
         * Updated URL for Compose (:pr:`716`)
