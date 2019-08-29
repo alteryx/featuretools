@@ -209,6 +209,8 @@ def read_entityset(path, profile_name=None, **kwargs):
 
             tar = tarfile.open(str(file_path))
             tar.extractall(path=tmpdir)
+            tar.close()
+
             data_description = read_data_description(tmpdir)
             return description_to_entityset(data_description, **kwargs)
     else:
