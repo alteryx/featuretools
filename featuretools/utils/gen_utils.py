@@ -126,27 +126,19 @@ def use_smartopen_es(file_path, path, transport_params=None, read=True):
     if read:
         with open(path, "rb", transport_params=transport_params) as fin:
             with open(file_path, 'wb') as fout:
-                for line in fin:
-                    fout.write(line)
+                shutil.copyfileobj(fin, fout)
     else:
         with open(file_path, 'rb') as fin:
             with open(path, 'wb', transport_params=transport_params) as fout:
-                for line in fin:
-                    fout.write(line)
+                shutil.copyfileobj(fin, fout)
 
 
 def use_s3fs_es(file_path, path, read=True):
     s3 = s3fs.S3FileSystem(anon=True)
     if read:
-        with s3.open(path, "rb") as fin:
-            with open(file_path, 'wb') as fout:
-                for line in fin:
-                    fout.write(line)
+        s3.get(path, file_path)
     else:
-        with open(file_path, 'rb') as fin:
-            with s3.open(path, 'wb') as fout:
-                for line in fin:
-                    fout.write(line)
+        s3.put(file_path, path)
 
 
 def use_smartopen_features(path, features_dict=None, transport_params=None, read=True):
