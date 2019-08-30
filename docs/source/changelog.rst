@@ -23,7 +23,7 @@ Changelog
         * Fixed FAQ cell output (:pr:`710`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`
+    :user:`gsheni`, :user:`kmax12`, :user:`rwedge`
 
 
 **v0.10.0 Aug 19, 2019**
