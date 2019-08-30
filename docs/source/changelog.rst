@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Improve how files are copied and written (:pr:`721`)
     * Fixes
         * Fixed entity set deserialization (:pr:`720`)
     * Changes
