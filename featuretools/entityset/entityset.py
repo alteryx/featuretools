@@ -485,6 +485,9 @@ class EntitySet(object):
         if time_index is not None and time_index == index:
             raise ValueError("time_index and index cannot be the same value, %s" % (time_index))
 
+        if vtypes.DatetimeTimeIndex in variable_types.values() and time_index is None:
+            raise ValueError("'DatetimeTimeIndex' must be set using time_index parameter")
+
         entity = Entity(
             entity_id,
             dataframe,
