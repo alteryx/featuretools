@@ -7,7 +7,6 @@ Changelog
         * Improve how files are copied and written (:pr:`721`)
     * Fixes
         * Fixed entity set deserialization (:pr:`720`)
-        * Added error message when DatetimeTimeIndex is not set as time_index (:pr:`497`)
     * Changes
     * Documentation Changes
         * Updated URL for Compose (:pr:`716`)
