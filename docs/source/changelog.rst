@@ -7,7 +7,7 @@ Changelog
         * Improve how files are copied and written (:pr:`721`)
     * Fixes
         * Fixed entity set deserialization (:pr:`720`)
-        * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`497`)
+        * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
     * Changes
     * Documentation Changes
         * Updated URL for Compose (:pr:`716`)
