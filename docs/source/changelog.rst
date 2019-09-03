@@ -14,7 +14,7 @@ Changelog
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`christopherbunn`
+    :user:`jeff-hernandez`, :user:`christopherbunn`, :user:`kmax12`
 
 
 **v0.10.1 Aug 25, 2019**
@@ -24,7 +24,7 @@ Changelog
         * Fixed FAQ cell output (:pr:`710`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`kmax12`, :user:`rwedge`
+    :user:`gsheni`, :user:`rwedge`
 
 
 **v0.10.0 Aug 19, 2019**
