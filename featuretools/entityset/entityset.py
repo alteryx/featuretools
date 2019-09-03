@@ -486,7 +486,8 @@ class EntitySet(object):
             raise ValueError("time_index and index cannot be the same value, %s" % (time_index))
 
         if vtypes.DatetimeTimeIndex in variable_types.values() and time_index is None:
-            raise ValueError("'DatetimeTimeIndex' must be set using time_index parameter")
+            var_name = variable_types.keys()[variable_types.values().index(vtypes.DatetimeTimeIndex)]
+            raise ValueError("Variable %s must be set using time_index parameter" % (var_name))
 
         entity = Entity(
             entity_id,
