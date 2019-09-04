@@ -140,3 +140,40 @@ def test_dask_kwargs(entities, relationships):
     for column in feature_matrix:
         for x, y in zip(feature_matrix[column], feature_matrix_2[column]):
             assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+
+
+def test_accepts_pandas_training_window():
+    from featuretools.demo import load_mock_customer
+    es = load_mock_customer(return_entityset=True)
+    cutoff_times = pd.DataFrame()
+    cutoff_times['customer_id'] = [1, 2, 3, 4]
+    cutoff_times['time'] = pd.to_datetime(['2014-1-1 04:00', '2014-1-1 05:00',
+                                           '2014-1-1 06:00', '2014-1-1 08:00'])
+    cutoff_times['label'] = [True, True, False, True]
+
+    feature_matrix, features = dfs(
+        cutoff_time=cutoff_times,
+        entityset=es,
+        target_entity="customers",
+        agg_primitives=['mean', 'trend'],
+        trans_primitives=["month", "time_since_previous"],
+        ignore_variables={"transactions": ["year", "year_month"]},
+        training_window=pd.Timedelta(3, "M"),
+        verbose=True
+    )
+
+    feature_matrix_2, features_2 = dfs(
+        cutoff_time=cutoff_times,
+        entityset=es,
+        target_entity="customers",
+        agg_primitives=['mean', 'trend'],
+        trans_primitives=["month", "time_since_previous"],
+        ignore_variables={"transactions": ["year", "year_month"]},
+        training_window="3 months",
+        verbose=True,
+    )
+
+    assert all(f1.unique_name() == f2.unique_name() for f1, f2 in zip(features, features_2))
+    for column in feature_matrix:
+        for x, y in zip(feature_matrix[column], feature_matrix_2[column]):
+            assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
