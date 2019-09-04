@@ -898,7 +898,7 @@ class EntitySet(object):
             variables_string = '\l'.join([var.id + ' : ' + var.type_string  # noqa: W605
                                           for var in entity.variables])
             nrows = entity.shape[0]
-            label = '{%s (%d row%s)|%s\l}' % (entity.id, nrows, 's'*(nrows>1), variables_string)  # noqa: W605
+            label = '{%s (%d row%s)|%s\l}' % (entity.id, nrows, 's' * (nrows > 1), variables_string)  # noqa: W605
             graph.node(entity.id, shape='record', label=label)
 
         # Draw relationships
