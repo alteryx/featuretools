@@ -945,3 +945,20 @@ def test_same_index_values():
                             new_entity_id="new_entity",
                             index="first_entity_time",
                             make_time_index=True)
+
+
+def test_use_time_index():
+    df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                       "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s")})
+    es = ft.EntitySet()
+    error_text = "DatetimeTimeIndex variable transaction_time must be set using time_index parameter"
+    with pytest.raises(ValueError, match=error_text):
+        es.entity_from_dataframe(entity_id="entity",
+                                 index="id",
+                                 variable_types={"transaction_time": variable_types.DatetimeTimeIndex},
+                                 dataframe=df)
+
+    es.entity_from_dataframe(entity_id="entity",
+                             index="id",
+                             time_index="transaction_time",
+                             dataframe=df)

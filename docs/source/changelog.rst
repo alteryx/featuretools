@@ -7,13 +7,14 @@ Changelog
         * Improve how files are copied and written (:pr:`721`)
     * Fixes
         * Fixed entity set deserialization (:pr:`720`)
+        * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
     * Changes
     * Documentation Changes
         * Updated URL for Compose (:pr:`716`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`
+    :user:`jeff-hernandez`, :user:`christopherbunn`, :user:`kmax12`
 
 
 **v0.10.1 Aug 25, 2019**
@@ -23,7 +24,7 @@ Changelog
         * Fixed FAQ cell output (:pr:`710`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`kmax12`, :user:`rwedge`
+    :user:`gsheni`, :user:`rwedge`
 
 
 **v0.10.0 Aug 19, 2019**
