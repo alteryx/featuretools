@@ -5,7 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
         * Improve how files are copied and written (:pr:`721`)
-        * Added number of rows to graph in :meth:`entityset.plot` (:pr:`725`)
+        * Add number of rows to graph in :meth:`entityset.plot` (:pr:`725`)
     * Fixes
         * Fixed entity set deserialization (:pr:`720`)
         * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
