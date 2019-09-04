@@ -8,6 +8,7 @@ Changelog
     * Fixes
         * Fixed entity set deserialization (:pr:`720`)
         * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
+	* Updated training_window error assertion to only check against observations (:pr:`728`) 
     * Changes
     * Documentation Changes
         * Updated URL for Compose (:pr:`716`)
