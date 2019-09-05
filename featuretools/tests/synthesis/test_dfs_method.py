@@ -148,8 +148,8 @@ def test_accepts_pandas_training_window():
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5],
                                     "card_id": [1, 1, 5, 1, 5],
                                     "transaction_time": pd.to_datetime([
-                                        '2012-1-1 04:00', '2014-2-1 05:00',
-                                        '2014-3-1 06:00', '2014-4-1 08:00',
+                                        '2011-1-1 04:00', '2012-2-28 05:00',
+                                        '2012-2-29 06:00', '2012-3-1 08:00',
                                         '2014-4-1 10:00']),
                                     "fraud": [True, False, False, False, True]})
 
@@ -171,12 +171,20 @@ def test_accepts_pandas_training_window():
 
     feature_matrix_2, features_2 = dfs(entityset=es,
                                        target_entity="transactions",
-                                       cutoff_time=pd.Timestamp("2014-4-1 04:00"))
+                                       cutoff_time=pd.Timestamp("2012-4-1 04:00"))
 
     feature_matrix_3, features_3 = dfs(entityset=es,
                                        target_entity="transactions",
-                                       cutoff_time=pd.Timestamp("2014-4-1 04:00"),
+                                       cutoff_time=pd.Timestamp("2012-4-1 04:00"),
                                        training_window=pd.Timedelta(3, "M"))
+
+    # Test case for leap years
+    feature_matrix_4, features_4 = dfs(entityset=es,
+                                       target_entity="transactions",
+                                       cutoff_time=pd.Timestamp("2013-2-28 04:00"),
+                                       training_window=pd.Timedelta(1, "Y"))
+
     assert feature_matrix.index.all([1, 2, 3, 4, 5])
-    assert feature_matrix_2.index.all([1, 2, 3])
-    assert feature_matrix_3.index.all([2, 3])
+    assert feature_matrix_2.index.all([1, 2, 3, 4])
+    assert feature_matrix_3.index.all([2, 3, 4])
+    assert feature_matrix_4.index.all([2, 3])

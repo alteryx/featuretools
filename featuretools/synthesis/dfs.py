@@ -120,7 +120,8 @@ def dfs(entities=None,
             Window defining how much time before the cutoff time data
             can be used when calculating features. If ``None`` , all data
             before cutoff time is used. Defaults to ``None``. Month and year
-            units are not relative when Pandas Timedeltas are used.
+            units are not relative when Pandas Timedeltas are used. Relative
+            units should be passed as a Featuretools Timedelta or a string.
 
         approximate (Timedelta): Bucket size to group instances with similar
             cutoff times by for features with costly calculations. For example,
