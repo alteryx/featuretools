@@ -99,9 +99,9 @@ def test_later_schema_version(es):
     def test_version(major, minor, patch, raises=True):
         version = '.'.join([str(v) for v in [major, minor, patch]])
         if raises:
-            error_text = ('Unable to load features. The schema version of the saved '
-                          'features (%s) is greater than the latest supported (%s). '
-                          'You may need to upgrade featuretools.'
+            error_text = ('The schema version of the saved features'
+                          '(%s) is greater than the latest supported (%s). '
+                          'You may need to upgrade featuretools. Attempting to load features ...'
                           % (version, SCHEMA_VERSION))
         else:
             error_text = None
@@ -121,9 +121,9 @@ def test_earlier_schema_version(es):
         version = '.'.join([str(v) for v in [major, minor, patch]])
 
         if raises:
-            error_text = ('Unable to load features. The schema version of the '
-                          'saved features (%s) is no longer supported by this '
-                          'version of featuretools.'
+            error_text = ('The schema version of the saved features'
+                          '(%s) is no longer supported by this version'
+                          'of featuretools. Attempting to load features ...'
                           % (version))
         else:
             error_text = None

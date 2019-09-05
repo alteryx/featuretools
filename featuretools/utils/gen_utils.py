@@ -105,20 +105,21 @@ def check_schema_version(cls, cls_type):
         current = SCHEMA_VERSION.split('.')
         saved = version_string.split('.')
 
-        error_text_upgrade = ('Unable to load %s. The schema version of the saved '
-                              '%s (%s) is greater than the latest supported (%s). '
-                              'You may need to upgrade featuretools.'
-                              % (cls_type, cls_type, version_string, SCHEMA_VERSION))
+        error_text_upgrade = ('The schema version of the saved %s'
+                              '(%s) is greater than the latest supported (%s). '
+                              'You may need to upgrade featuretools. Attempting to load %s ...'
+                              % (cls_type, version_string, SCHEMA_VERSION, cls_type))
         for c_num, s_num in zip_longest(current, saved, fillvalue=0):
             if c_num > s_num:
                 break
             elif c_num < s_num:
                 warnings.warn(error_text_upgrade)
+                break
 
-        error_text_outdated = ('Unable to load %s. The schema version '
-                               'of the saved %s (%s) is no longer '
-                               'supported by this version of featuretools.'
-                               % (cls_type, cls_type, version_string))
+        error_text_outdated = ('The schema version of the saved %s'
+                               '(%s) is no longer supported by this version'
+                               'of featuretools. Attempting to load %s ...'
+                               % (cls_type, version_string, cls_type))
         # Check if saved has older major version.
         if current[0] > saved[0]:
             warnings.warn(error_text_outdated)
