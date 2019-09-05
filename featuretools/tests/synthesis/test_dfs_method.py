@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 from distributed.utils_test import cluster
 
+from featuretools.entityset import EntitySet, Relationship
 from featuretools.primitives import Max, Mean, Min, Sum
 from featuretools.synthesis import dfs
 
@@ -143,37 +144,39 @@ def test_dask_kwargs(entities, relationships):
 
 
 def test_accepts_pandas_training_window():
-    from featuretools.demo import load_mock_customer
-    es = load_mock_customer(return_entityset=True)
-    cutoff_times = pd.DataFrame()
-    cutoff_times['customer_id'] = [1, 2, 3, 4]
-    cutoff_times['time'] = pd.to_datetime(['2014-1-1 04:00', '2014-1-1 05:00',
-                                           '2014-1-1 06:00', '2014-1-1 08:00'])
-    cutoff_times['label'] = [True, True, False, True]
+    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
+    transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5],
+                                    "card_id": [1, 1, 5, 1, 5],
+                                    "transaction_time": pd.to_datetime([
+                                        '2012-1-1 04:00', '2014-2-1 05:00',
+                                        '2014-3-1 06:00', '2014-4-1 08:00',
+                                        '2014-4-1 10:00']),
+                                    "fraud": [True, False, False, False, True]})
 
-    feature_matrix, features = dfs(
-        cutoff_time=cutoff_times,
-        entityset=es,
-        target_entity="customers",
-        agg_primitives=['mean', 'trend'],
-        trans_primitives=["month", "time_since_previous"],
-        ignore_variables={"transactions": ["year", "year_month"]},
-        training_window=pd.Timedelta(3, "M"),
-        verbose=True
-    )
+    es = EntitySet(id="fraud_data")
+    es = es.entity_from_dataframe(entity_id="transactions",
+                                  dataframe=transactions_df,
+                                  index="id",
+                                  time_index="transaction_time")
 
-    feature_matrix_2, features_2 = dfs(
-        cutoff_time=cutoff_times,
-        entityset=es,
-        target_entity="customers",
-        agg_primitives=['mean', 'trend'],
-        trans_primitives=["month", "time_since_previous"],
-        ignore_variables={"transactions": ["year", "year_month"]},
-        training_window="3 months",
-        verbose=True,
-    )
+    es = es.entity_from_dataframe(entity_id="cards",
+                                  dataframe=cards_df,
+                                  index="id")
+    relationship = Relationship(es["cards"]["id"], es["transactions"]["card_id"])
+    es = es.add_relationship(relationship)
+    es.add_last_time_indexes()
 
-    assert all(f1.unique_name() == f2.unique_name() for f1, f2 in zip(features, features_2))
-    for column in feature_matrix:
-        for x, y in zip(feature_matrix[column], feature_matrix_2[column]):
-            assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+    feature_matrix, features = dfs(entityset=es,
+                                   target_entity="transactions")
+
+    feature_matrix_2, features_2 = dfs(entityset=es,
+                                       target_entity="transactions",
+                                       cutoff_time=pd.Timestamp("2014-4-1 04:00"))
+
+    feature_matrix_3, features_3 = dfs(entityset=es,
+                                       target_entity="transactions",
+                                       cutoff_time=pd.Timestamp("2014-4-1 04:00"),
+                                       training_window=pd.Timedelta(3, "M"))
+    assert feature_matrix.index.all([1, 2, 3, 4, 5])
+    assert feature_matrix_2.index.all([1, 2, 3])
+    assert feature_matrix_3.index.all([2, 3])
