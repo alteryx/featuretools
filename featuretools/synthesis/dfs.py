@@ -118,8 +118,9 @@ def dfs(entities=None,
 
         training_window (Timedelta or str, optional):
             Window defining how much time before the cutoff time data
-            can be used when calculating features. If ``None`` , all data before cutoff time is used.
-            Defaults to ``None``.
+            can be used when calculating features. If ``None`` , all data
+            before cutoff time is used. Defaults to ``None``. Month and year
+            units are not relative when Pandas Timedeltas are used.
 
         approximate (Timedelta): Bucket size to group instances with similar
             cutoff times by for features with costly calculations. For example,
