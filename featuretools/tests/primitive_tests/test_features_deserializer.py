@@ -217,9 +217,9 @@ def _check_schema_version(version, es, error_text):
     }
 
     if error_text:
-        with pytest.raises(RuntimeError) as excinfo:
+        with pytest.warns(UserWarning) as record:
             FeaturesDeserializer(dictionary)
 
-        assert error_text == str(excinfo.value)
+        assert record[0].message.args[0] == error_text
     else:
         FeaturesDeserializer(dictionary)
