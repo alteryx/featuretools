@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 from distributed.utils_test import cluster
 
+from featuretools.entityset import EntitySet, Relationship, Timedelta
 from featuretools.primitives import Max, Mean, Min, Sum
 from featuretools.synthesis import dfs
 
@@ -25,6 +26,32 @@ def entities():
 @pytest.fixture
 def relationships():
     return [("cards", "id", "transactions", "card_id")]
+
+
+@pytest.fixture
+def datetime_es():
+    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
+    transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5],
+                                    "card_id": [1, 1, 5, 1, 5],
+                                    "transaction_time": pd.to_datetime([
+                                        '2011-2-28 04:00', '2012-2-28 05:00',
+                                        '2012-2-29 06:00', '2012-3-1 08:00',
+                                        '2014-4-1 10:00']),
+                                    "fraud": [True, False, False, False, True]})
+
+    datetime_es = EntitySet(id="fraud_data")
+    datetime_es = datetime_es.entity_from_dataframe(entity_id="transactions",
+                                                    dataframe=transactions_df,
+                                                    index="id",
+                                                    time_index="transaction_time")
+
+    datetime_es = datetime_es.entity_from_dataframe(entity_id="cards",
+                                                    dataframe=cards_df,
+                                                    index="id")
+    relationship = Relationship(datetime_es["cards"]["id"], datetime_es["transactions"]["card_id"])
+    datetime_es = datetime_es.add_relationship(relationship)
+    datetime_es.add_last_time_indexes()
+    return datetime_es
 
 
 def test_accepts_cutoff_time_df(entities, relationships):
@@ -140,3 +167,43 @@ def test_dask_kwargs(entities, relationships):
     for column in feature_matrix:
         for x, y in zip(feature_matrix[column], feature_matrix_2[column]):
             assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
+
+
+def test_accepts_relative_training_window(datetime_es):
+    feature_matrix, features = dfs(entityset=datetime_es,
+                                   target_entity="transactions")
+
+    feature_matrix_2, features_2 = dfs(entityset=datetime_es,
+                                       target_entity="transactions",
+                                       cutoff_time=pd.Timestamp("2012-4-1 04:00"))
+
+    feature_matrix_3, features_3 = dfs(entityset=datetime_es,
+                                       target_entity="transactions",
+                                       cutoff_time=pd.Timestamp("2012-4-1 04:00"),
+                                       training_window=Timedelta("3 months"))
+
+    feature_matrix_4, features_4 = dfs(entityset=datetime_es,
+                                       target_entity="transactions",
+                                       cutoff_time=pd.Timestamp("2012-4-1 04:00"),
+                                       training_window="3 months")
+
+    # Test case for leap years
+    feature_matrix_5, features_5 = dfs(entityset=datetime_es,
+                                       target_entity="transactions",
+                                       cutoff_time=pd.Timestamp("2012-2-29 04:00"),
+                                       training_window=Timedelta("1 year"))
+
+    assert (feature_matrix.index == [1, 2, 3, 4, 5]).all()
+    assert (feature_matrix_2.index == [1, 2, 3, 4]).all()
+    assert (feature_matrix_3.index == [2, 3, 4]).all()
+    assert (feature_matrix_4.index == [2, 3, 4]).all()
+    assert (feature_matrix_5.index == [1, 2]).all()
+
+
+def test_accepts_pandas_training_window(datetime_es):
+    feature_matrix, features = dfs(entityset=datetime_es,
+                                   target_entity="transactions",
+                                   cutoff_time=pd.Timestamp("2012-4-1 04:00"),
+                                   training_window=pd.Timedelta(90, "D"))
+
+    assert (feature_matrix.index == [2, 3, 4]).all()

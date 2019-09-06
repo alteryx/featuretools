@@ -9,7 +9,6 @@ import pandas as pd
 import pandas.api.types as pdtypes
 
 from featuretools import variable_types as vtypes
-from featuretools.entityset.timedelta import Timedelta
 from featuretools.utils import is_string
 from featuretools.utils.entity_utils import (
     col_is_datetime,
@@ -240,10 +239,9 @@ class Entity(object):
         instance_vals = self._vals_to_series(instance_vals, variable_id)
 
         training_window = _check_timedelta(training_window)
+
         if training_window is not None:
-            assert (isinstance(training_window, Timedelta) and
-                    training_window.is_absolute()),\
-                "training window must be an absolute Timedelta"
+            assert training_window.unit != "o", "Training window cannot be in observations"
 
         if instance_vals is None:
             df = self.df.copy()
@@ -511,6 +509,7 @@ class Entity(object):
             if time_last is not None and not df.empty:
                 df = df[df[self.time_index] <= time_last]
                 if training_window is not None:
+                    training_window = _check_timedelta(training_window)
                     mask = df[self.time_index] >= time_last - training_window
                     if self.last_time_index is not None:
                         lti_slice = self.last_time_index.reindex(df.index)
