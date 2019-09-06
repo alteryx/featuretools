@@ -237,13 +237,13 @@ class Entity(object):
             variable_id = self.index
 
         instance_vals = self._vals_to_series(instance_vals, variable_id)
-
-        training_window = _check_timedelta(training_window)
+        if not isinstance(training_window, pd.DateOffset):
+            training_window = _check_timedelta(training_window)
         # if training_window is not None:
         #     assert (isinstance(training_window, Timedelta) and
         #             training_window.is_absolute()),\
         #         "training window must be an absolute Timedelta"
-        if training_window is not None:
+        if training_window is not None and hasattr(training_window, 'unit'):
             assert training_window.unit != "o", "Training window cannot be in observations"
 
         if instance_vals is None:
@@ -512,7 +512,8 @@ class Entity(object):
             if time_last is not None and not df.empty:
                 df = df[df[self.time_index] <= time_last]
                 if training_window is not None:
-                    training_window = _check_timedelta(training_window)
+                    if not isinstance(training_window, pd.DateOffset):
+                        training_window = _check_timedelta(training_window)
                     mask = df[self.time_index] >= time_last - training_window
                     if self.last_time_index is not None:
                         lti_slice = self.last_time_index.reindex(df.index)
