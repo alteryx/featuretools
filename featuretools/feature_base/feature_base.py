@@ -1,3 +1,4 @@
+import pandas as pd
 from builtins import zip
 
 from featuretools import Relationship, Timedelta, primitives
@@ -525,8 +526,8 @@ class AggregationFeature(FeatureBase):
             assert self.child_entity.time_index is not None, (
                 "Applying function that requires time index to entity that "
                 "doesn't have one")
-
-            self.use_previous = _check_timedelta(use_previous)
+            if not isinstance(use_previous, pd.DateOffset):
+                self.use_previous = _check_timedelta(use_previous)
             assert len(base_features) > 0
             time_index = base_features[0].entity.time_index
             time_col = base_features[0].entity[time_index]
