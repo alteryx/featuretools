@@ -5,6 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
         * Improve how files are copied and written (:pr:`721`)
+        * Add number of rows to graph in entityset.plot (:pr:`727`)
     * Fixes
         * Fixed entity set deserialization (:pr:`720`)
         * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
@@ -15,7 +16,7 @@ Changelog
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`christopherbunn`, :user:`kmax12`, :user:`chidauri`
+    :user:`jeff-hernandez`, :user:`chidauri`, :user:`christopherbunn`, :user:`kmax12`, :user:`MarcoGorelli`
 
 
 **v0.10.1 Aug 25, 2019**
