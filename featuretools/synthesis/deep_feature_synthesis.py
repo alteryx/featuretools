@@ -516,8 +516,9 @@ class DeepFeatureSynthesis(object):
             input_types = groupby_prim.input_types[:]
             # if multiple input_types, only use first one for DFS
             if type(input_types[0]) == list:
-                input_types = input_types[0]
-            input_types.append(Id)
+                input_types = input_types[0][:]
+            if Id not in input_types:
+                input_types.append(Id)
 
             matching_inputs = self._get_matching_inputs(all_features,
                                                         entity,
