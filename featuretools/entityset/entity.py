@@ -240,7 +240,7 @@ class Entity(object):
 
         training_window = _check_timedelta(training_window)
 
-        if training_window is not None:
+        if training_window is not None and not isinstance(training_window, pd.DateOffset):
             assert training_window.unit != "o", "Training window cannot be in observations"
 
         if instance_vals is None:

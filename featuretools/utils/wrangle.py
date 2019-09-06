@@ -81,7 +81,7 @@ def _check_time_against_column(time, time_column):
     elif isinstance(time, (int, float)):
         return isinstance(time_column,
                           variable_types.Numeric)
-    elif isinstance(time, (pd.Timestamp, datetime)):
+    elif isinstance(time, (pd.Timestamp, datetime, pd.DateOffset)):
         return isinstance(time_column,
                           variable_types.Datetime)
     elif isinstance(time, Timedelta):

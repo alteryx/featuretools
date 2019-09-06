@@ -559,7 +559,7 @@ class FeatureSetCalculator(object):
             if use_previous and not base_frame.empty:
                 # Filter by use_previous values
                 time_last = self.time_last
-                if use_previous.is_absolute():
+                if isinstance(use_previous, pd.DateOffset) or use_previous.unit != "o":
                     time_first = time_last - use_previous
                     ti = child_entity.time_index
                     if ti is not None:

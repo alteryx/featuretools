@@ -200,10 +200,18 @@ def test_accepts_relative_training_window(datetime_es):
     assert (feature_matrix_5.index == [1, 2]).all()
 
 
-def test_accepts_pandas_training_window(datetime_es):
+def test_accepts_pd_timedelta_training_window(datetime_es):
     feature_matrix, features = dfs(entityset=datetime_es,
                                    target_entity="transactions",
                                    cutoff_time=pd.Timestamp("2012-4-1 04:00"),
                                    training_window=pd.Timedelta(90, "D"))
 
     assert (feature_matrix.index == [2, 3, 4]).all()
+
+
+def test_accepts_pd_dateoffset_training_window(datetime_es):
+    feature_matrix, features = dfs(entityset=datetime_es,
+                                   target_entity="transactions",
+                                   cutoff_time=pd.Timestamp("2012-4-1 04:00"),
+                                   training_window=pd.Timedelta(90, "D"))
+
