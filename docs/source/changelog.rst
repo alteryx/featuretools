@@ -15,7 +15,7 @@ Changelog
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`christopherbunn`, :user:`kmax12`
+    :user:`jeff-hernandez`, :user:`christopherbunn`, :user:`kmax12`, :user:`MarcoGorelli`
 
 
 **v0.10.1 Aug 25, 2019**
