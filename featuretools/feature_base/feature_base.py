@@ -1,5 +1,6 @@
-import pandas as pd
 from builtins import zip
+
+import pandas as pd
 
 from featuretools import Relationship, Timedelta, primitives
 from featuretools.entityset.relationship import RelationshipPath
