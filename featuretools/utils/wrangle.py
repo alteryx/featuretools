@@ -27,12 +27,15 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
     '1u"
     If a pd.Timedelta object is passed, units will be converted to seconds due to the underlying representation
         of pd .Timedelta.
+    If a pd.DateOffset object is passed, it must be one of the readable units
+        and it can only have one temporal parameter
     """
     if td is None:
         return td
     if isinstance(td, Timedelta):
         return td
-    elif not (is_string(td) or isinstance(td, pd.Timedelta) or isinstance(td, (int, float))):
+    elif not (is_string(td) or isinstance(td, pd.Timedelta) or
+              isinstance(td, (int, float)) or isinstance(td, pd.DateOffset)):
         raise ValueError("Unable to parse timedelta: {}".format(td))
 
     value = None
@@ -46,6 +49,18 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
     if isinstance(td, pd.Timedelta):
         unit = 's'
         value = td.total_seconds()
+    elif isinstance(td, pd.DateOffset):
+        possible_units = list(Timedelta._readable_units.values())
+        possible_units = [unit.lower() for unit in possible_units]
+        unit = None
+        for td_unit, td_value in td.kwds.items():
+            if td_unit in possible_units and unit is None and value is None:
+                unit = td_unit
+                value = td_value
+            elif td_unit in possible_units:
+                raise ValueError("DateOffset can only have one temporal parameter")
+        if unit is None and value is None:
+            raise ValueError("DateOffset does not have any compatible units")
     else:
         pattern = '([0-9]+) *([a-zA-Z]+)$'
         match = re.match(pattern, td)

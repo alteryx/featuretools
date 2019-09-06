@@ -240,10 +240,10 @@ class Entity(object):
         instance_vals = self._vals_to_series(instance_vals, variable_id)
 
         training_window = _check_timedelta(training_window)
-        if training_window is not None:
-            assert (isinstance(training_window, Timedelta) and
-                    training_window.is_absolute()),\
-                "training window must be an absolute Timedelta"
+        # if training_window is not None:
+        #     assert (isinstance(training_window, Timedelta) and
+        #             training_window.is_absolute()),\
+        #         "training window must be an absolute Timedelta"
 
         if instance_vals is None:
             df = self.df.copy()
