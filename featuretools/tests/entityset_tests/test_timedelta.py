@@ -184,3 +184,32 @@ def test_relative_month():
 
     time = pd.to_datetime('2020-01-31')
     assert time + td == pd.to_datetime('2020-07-31')
+
+
+def test_check_pd_dateoffset():
+    do_time = pd.DateOffset(days=30)
+    do_td = _check_timedelta(do_time)
+    assert do_td.unit == "d"
+    assert do_td.value == 30
+
+    # Testing non-plural units
+    do_time = pd.DateOffset(days=30)
+    do_td = _check_timedelta(do_time)
+    assert do_td.unit == "d"
+    assert do_td.value == 30
+
+    # Testing relative time
+    do_time = pd.DateOffset(months=3)
+    do_td = _check_timedelta(do_time)
+    assert do_td.unit == "mo"
+    assert do_td.value == 3
+
+    error_txt = 'DateOffset can only have one temporal parameter'
+    with pytest.raises(Exception, match=error_txt):
+        do_time = pd.DateOffset(months=3, days=5)
+        do_td = _check_timedelta(do_time)
+
+    error_txt = 'DateOffset does not have any compatible units'
+    with pytest.raises(Exception, match=error_txt):
+        do_time = pd.DateOffset(weekday=5)
+        do_td = _check_timedelta(do_time)
