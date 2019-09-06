@@ -5,16 +5,18 @@ Changelog
 **Future Release**
     * Enhancements
         * Improve how files are copied and written (:pr:`721`)
+        * Add number of rows to graph in entityset.plot (:pr:`727`)
     * Fixes
         * Fixed entity set deserialization (:pr:`720`)
         * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
+	* Updated training_window error assertion to only check against observations (:pr:`728`) 
     * Changes
     * Documentation Changes
         * Updated URL for Compose (:pr:`716`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`christopherbunn`, :user:`kmax12`
+    :user:`jeff-hernandez`, :user:`christopherbunn`, :user:`kmax12`, :user:`MarcoGorelli`
 
 
 **v0.10.1 Aug 25, 2019**

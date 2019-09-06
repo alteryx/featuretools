@@ -237,13 +237,10 @@ class Entity(object):
             variable_id = self.index
 
         instance_vals = self._vals_to_series(instance_vals, variable_id)
-        if not isinstance(training_window, pd.DateOffset):
-            training_window = _check_timedelta(training_window)
-        # if training_window is not None:
-        #     assert (isinstance(training_window, Timedelta) and
-        #             training_window.is_absolute()),\
-        #         "training window must be an absolute Timedelta"
-        if training_window is not None and hasattr(training_window, 'unit'):
+
+        training_window = _check_timedelta(training_window)
+
+        if training_window is not None:
             assert training_window.unit != "o", "Training window cannot be in observations"
 
         if instance_vals is None:
