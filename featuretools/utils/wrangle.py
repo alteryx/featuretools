@@ -34,6 +34,8 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
         return td
     if isinstance(td, Timedelta):
         return td
+    if isinstance(td, pd.DateOffset):
+        return td
     elif not (is_string(td) or isinstance(td, pd.Timedelta) or
               isinstance(td, (int, float)) or isinstance(td, pd.DateOffset)):
         raise ValueError("Unable to parse timedelta: {}".format(td))

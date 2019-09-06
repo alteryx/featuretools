@@ -512,8 +512,7 @@ class Entity(object):
             if time_last is not None and not df.empty:
                 df = df[df[self.time_index] <= time_last]
                 if training_window is not None:
-                    if not isinstance(training_window, pd.DateOffset):
-                        training_window = _check_timedelta(training_window)
+                    training_window = _check_timedelta(training_window)
                     mask = df[self.time_index] >= time_last - training_window
                     if self.last_time_index is not None:
                         lti_slice = self.last_time_index.reindex(df.index)
