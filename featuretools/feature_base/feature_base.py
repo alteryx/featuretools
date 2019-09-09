@@ -614,7 +614,9 @@ class AggregationFeature(FeatureBase):
         if self.use_previous is not None and hasattr(self.use_previous, 'get_name'):
             use_prev_str = u", Last {}".format(self.use_previous.get_name())
         elif isinstance(self.use_previous, pd.DateOffset):
-            use_prev_str = u", Last {}".format('DateOffset')  # TODO: get dateoffset type name
+            since_str = (pd.to_datetime('today') - self.use_previous)
+            since_str = since_str.strftime('%Y-%m-%d %H:%M:%S')
+            use_prev_str = u", Since {}".format(pd.to_datetime(since_str))
         else:
             use_prev_str = u''
         return use_prev_str

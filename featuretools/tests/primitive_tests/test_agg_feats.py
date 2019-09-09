@@ -648,16 +648,19 @@ def test_use_previous_pd_dateoffset(es):
                                                primitive=Count)
 
     feature_matrix_2 = ft.calculate_feature_matrix([total_events_last_20_years_pd], es)
+
     assert (feature_matrix["COUNT(log, Last 20 Years)"] == [10, 5, 2]).all()
     assert (feature_matrix["COUNT(log, Last 20 Years)"] == feature_matrix_2["COUNT(log, Last 20 Years)"]).all()
 
+    since_str = (pd.to_datetime('today') - pd.tseries.offsets.BDay(100))
     total_events_last_1_year = ft.Feature(es["log"]["id"],
                                           parent_entity=es["customers"],
                                           use_previous=pd.tseries.offsets.BDay(100),
                                           primitive=Count)
-
+    since_str = since_str.strftime('%Y-%m-%d %H:%M:%S')
     feature_matrix_3 = ft.calculate_feature_matrix([total_events_last_1_year], es)
-    assert (feature_matrix_3["COUNT(log, Last DateOffset)"] == [0.0, 0.0, 0.0]).all()
+
+    assert (feature_matrix_3["COUNT(log, Since {})".format(since_str)] == [0.0, 0.0, 0.0]).all()
 
 
 def _assert_agg_feats_equal(f1, f2):
