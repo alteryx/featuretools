@@ -53,7 +53,7 @@ class Timedelta(object):
 
     _readable_to_unit = {v.lower(): k for k, v in _readable_units.items()}
 
-    def __init__(self, value, unit=None):
+    def __init__(self, value, unit=None, delta_obj=None):
         """
         Args:
             value (float, str) : Value of timedelta, or string providing
@@ -69,7 +69,6 @@ class Timedelta(object):
         self.value = value
         self._original_unit = None  # to alert get_name that although we converted the unit to 'd' it was initially
         unit = self._check_unit_plural(unit)
-        assert unit in self._readable_units or unit in self._readable_to_unit
         if unit in self._readable_to_unit:
             unit = self._readable_to_unit[unit]
 
@@ -80,7 +79,10 @@ class Timedelta(object):
             unit = 'd'
 
         self.unit = unit
-        self.delta_obj = self.get_unit_type()
+        if delta_obj is not None:
+            self.delta_obj = delta_obj
+        else:
+            self.delta_obj = self.get_unit_type()
 
     @classmethod
     def from_dictionary(cls, dictionary):
@@ -124,7 +126,10 @@ class Timedelta(object):
     def readable_unit(self):
         if self._original_unit is not None:
             return self._readable_units[self._original_unit]
-        return self._readable_units[self.unit]
+        elif self.unit in self._readable_units.keys():
+            return self._readable_units[self.unit]
+        else:
+            return self.unit
 
     def get_arguments(self):
         return {

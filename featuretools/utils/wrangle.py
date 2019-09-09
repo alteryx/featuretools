@@ -9,7 +9,7 @@ from featuretools.entityset.timedelta import Timedelta
 from featuretools.utils import is_string
 
 
-def _check_timedelta(td, entity_id=None, related_entity_id=None):
+def _check_timedelta(td):
     """
     Convert strings to Timedelta objects
     Allows for both shortform and longform units, as well as any form of capitalization
@@ -38,6 +38,7 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
               isinstance(td, (int, float)) or isinstance(td, pd.DateOffset)):
         raise ValueError("Unable to parse timedelta: {}".format(td))
     value = None
+    delta_obj = None
     try:
         value = int(td)
     except Exception:
@@ -49,18 +50,19 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
         unit = 's'
         value = td.total_seconds()
     elif isinstance(td, pd.DateOffset):
-        if len(td.kwds.items()) != 1:
+        if len(td.kwds.items()) > 1:
             return td
+        possible_units = list(Timedelta._readable_units.values())
+        possible_units = [unit.lower() for unit in possible_units]
+        dateoffset_unit = list(td.kwds.items())[0][0]
+        if len(td.kwds.items()) == 1 and dateoffset_unit in possible_units:
+            unit = dateoffset_unit
+            value = list(td.kwds.items())[0][1]
+            delta_obj = td
         else:
-            possible_units = list(Timedelta._readable_units.values())
-            possible_units = [unit.lower() for unit in possible_units]
-            unit = None
-            for td_unit, td_value in td.kwds.items():
-                if td_unit in possible_units and unit is None and value is None:
-                    unit = td_unit
-                    value = td_value
-            if unit is None and value is None:
-                return td
+            unit = td.__class__.__name__
+            value = td.__dict__['n']
+            delta_obj = td
     else:
         pattern = '([0-9]+) *([a-zA-Z]+)$'
         match = re.match(pattern, td)
@@ -73,7 +75,7 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
             except Exception:
                 raise ValueError("Unable to parse value {} from ".format(value) +
                                  "timedelta string: {}".format(td))
-    return Timedelta(value, unit)
+    return Timedelta(value, unit, delta_obj)
 
 
 def _check_time_against_column(time, time_column):
