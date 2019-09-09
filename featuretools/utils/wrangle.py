@@ -28,7 +28,7 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
     If a pd.Timedelta object is passed, units will be converted to seconds due to the underlying representation
         of pd.Timedelta.
     If a pd.DateOffset object is passed, it will be converted to a Featuretools Timedelta if it has one
-        temporal parameter. Otherwise, it will remain a pd.DateOffset.
+        temporal parameter with unit support in Featuretools Timedelta. Otherwise, it will remain a pd.DateOffset.
     """
     if td is None:
         return td

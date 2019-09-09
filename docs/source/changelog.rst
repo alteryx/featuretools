@@ -6,10 +6,11 @@ Changelog
     * Enhancements
         * Improve how files are copied and written (:pr:`721`)
         * Add number of rows to graph in entityset.plot (:pr:`727`)
+        * Added support for pandas DateOffsets in DFS and Timedelta (:pr:`732`)
     * Fixes
         * Fixed entity set deserialization (:pr:`720`)
         * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
-	* Updated training_window error assertion to only check against observations (:pr:`728`) 
+	* Updated training_window error assertion to only check against observations (:pr:`728`)
     * Changes
     * Documentation Changes
         * Updated URL for Compose (:pr:`716`)
