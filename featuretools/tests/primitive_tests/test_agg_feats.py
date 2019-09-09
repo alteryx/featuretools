@@ -634,6 +634,32 @@ def test_stacking_multi(es):
         assert fm[cols[i]].tolist() == correct_vals[i] or fm[cols[i]].tolist() == correct_vals1[i]
 
 
+def test_use_previous_pd_dateoffset(es):
+    total_events_last_20_years = ft.Feature(es["log"]["id"],
+                                            parent_entity=es["customers"],
+                                            use_previous="20 years",
+                                            primitive=Count)
+
+    feature_matrix = ft.calculate_feature_matrix([total_events_last_20_years], es)
+
+    total_events_last_20_years_pd = ft.Feature(es["log"]["id"],
+                                               parent_entity=es["customers"],
+                                               use_previous=pd.DateOffset(years=20),
+                                               primitive=Count)
+
+    feature_matrix_2 = ft.calculate_feature_matrix([total_events_last_20_years_pd], es)
+    assert (feature_matrix["COUNT(log, Last 20 Years)"] == [10, 5, 2]).all()
+    assert (feature_matrix["COUNT(log, Last 20 Years)"] == feature_matrix_2["COUNT(log, Last 20 Years)"]).all()
+
+    total_events_last_1_year = ft.Feature(es["log"]["id"],
+                                          parent_entity=es["customers"],
+                                          use_previous=pd.tseries.offsets.BDay(100),
+                                          primitive=Count)
+
+    feature_matrix_3 = ft.calculate_feature_matrix([total_events_last_1_year], es)
+    assert (feature_matrix_3["COUNT(log, Last DateOffset)"] == [0.0, 0.0, 0.0]).all()
+
+
 def _assert_agg_feats_equal(f1, f2):
     assert f1.unique_name() == f2.unique_name()
     assert f1.child_entity.id == f2.child_entity.id
