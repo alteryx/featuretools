@@ -271,6 +271,16 @@ def test_make_groupby_features(es):
                               "CUM_SUM(value) by session_id"))
 
 
+def test_make_groupby_features_with_id(es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[],
+                                   groupby_trans_primitives=['cum_count'])
+    features = dfs_obj.build_features()
+    assert (feature_with_name(features, "CUM_COUNT(sessions) by customer_id"))
+
+
 def test_make_groupby_features_with_agg(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='cohorts',
                                    entityset=es,
