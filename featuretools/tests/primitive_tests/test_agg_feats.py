@@ -635,32 +635,15 @@ def test_stacking_multi(es):
 
 
 def test_use_previous_pd_dateoffset(es):
-    total_events_last_20_years = ft.Feature(es["log"]["id"],
-                                            parent_entity=es["customers"],
-                                            use_previous="20 years",
-                                            primitive=Count)
+    time_diff = (pd.Timestamp('today') - pd.Timestamp('2011-04-09 10:32:00')).total_seconds()
+    total_events_pd = ft.Feature(es["log"]["id"],
+                                 parent_entity=es["customers"],
+                                 use_previous=pd.DateOffset(seconds=time_diff),
+                                 primitive=Count)
 
-    feature_matrix = ft.calculate_feature_matrix([total_events_last_20_years], es)
-
-    total_events_last_20_years_pd = ft.Feature(es["log"]["id"],
-                                               parent_entity=es["customers"],
-                                               use_previous=pd.DateOffset(years=20),
-                                               primitive=Count)
-
-    feature_matrix_2 = ft.calculate_feature_matrix([total_events_last_20_years_pd], es)
-
-    assert (feature_matrix["COUNT(log, Last 20 Years)"] == [10, 5, 2]).all()
-    assert (feature_matrix["COUNT(log, Last 20 Years)"] == feature_matrix_2["COUNT(log, Last 20 Years)"]).all()
-
-    since_str = (pd.to_datetime('today') - pd.tseries.offsets.BDay(100))
-    total_events_last_100_bday = ft.Feature(es["log"]["id"],
-                                            parent_entity=es["customers"],
-                                            use_previous=pd.tseries.offsets.BDay(100),
-                                            primitive=Count)
-    since_str = since_str.strftime('%Y-%m-%d %H:%M:%S')
-    feature_matrix_3 = ft.calculate_feature_matrix([total_events_last_100_bday], es)
-
-    assert (feature_matrix_3["COUNT(log, Last 100 businessdays)".format(since_str)] == [0.0, 0.0, 0.0]).all()
+    feature_matrix = ft.calculate_feature_matrix([total_events_pd], es)
+    col_name = list(feature_matrix.head().keys())[0]
+    assert (feature_matrix[col_name] == [1, 5, 2]).all()
 
 
 def _assert_agg_feats_equal(f1, f2):

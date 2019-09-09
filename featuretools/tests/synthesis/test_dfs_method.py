@@ -212,20 +212,13 @@ def test_accepts_pd_timedelta_training_window(datetime_es):
 def test_accepts_pd_dateoffset_training_window(datetime_es):
     feature_matrix, features = dfs(entityset=datetime_es,
                                    target_entity="transactions",
-                                   cutoff_time=pd.Timestamp("2012-4-1 04:00"),
-                                   training_window=pd.DateOffset(days=40))
-
-    assert (feature_matrix.index == [2, 3, 4]).all()
+                                   cutoff_time=pd.Timestamp("2012-3-31 04:00"),
+                                   training_window=pd.DateOffset(months=2))
 
     feature_matrix_2, features_2 = dfs(entityset=datetime_es,
-                                       target_entity="transactions",
-                                       cutoff_time=pd.Timestamp("2012-3-31 04:00"),
-                                       training_window=pd.Timedelta(2, "M"))
-
-    feature_matrix_3, features_3 = dfs(entityset=datetime_es,
                                        target_entity="transactions",
                                        cutoff_time=pd.Timestamp("2012-4-1 04:00"),
                                        training_window=pd.tseries.offsets.QuarterEnd(startingMonth=1))
 
-    assert (feature_matrix_2.index == [2, 3, 4]).all()
-    assert (feature_matrix_2.index == feature_matrix_3.index).all()
+    assert (feature_matrix.index == [2, 3, 4]).all()
+    assert (feature_matrix.index == feature_matrix_2.index).all()

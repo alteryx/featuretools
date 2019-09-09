@@ -184,3 +184,21 @@ def test_relative_month():
 
     time = pd.to_datetime('2020-01-31')
     assert time + td == pd.to_datetime('2020-07-31')
+
+
+def test_pd_dateoffset_to_timedelta():
+    single_temporal = pd.DateOffset(months=3)
+    single_td = _check_timedelta(single_temporal)
+    assert single_td.unit == "mo"
+    assert single_td.value == 3
+    assert single_td.delta_obj == relativedelta(months=3)
+
+    mult_temporal = pd.DateOffset(years=10, months=3, days=5)
+    mult_td = _check_timedelta(mult_temporal)
+    assert mult_td == mult_temporal
+
+    special_dateoffset = pd.offsets.BDay(100)
+    special_td = _check_timedelta(special_dateoffset)
+    assert special_td.unit == "businessdays"
+    assert special_td.value == 100
+    assert special_td.delta_obj == special_dateoffset

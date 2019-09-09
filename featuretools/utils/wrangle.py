@@ -28,7 +28,7 @@ def _check_timedelta(td):
     If a pd.Timedelta object is passed, units will be converted to seconds due to the underlying representation
         of pd.Timedelta.
     If a pd.DateOffset object is passed, it will be converted to a Featuretools Timedelta if it has one
-        temporal parameter with unit support in Featuretools Timedelta. Otherwise, it will remain a pd.DateOffset.
+        temporal parameter. Otherwise, it will remain a pd.DateOffset.
     """
     if td is None:
         return td
@@ -50,15 +50,16 @@ def _check_timedelta(td):
         unit = 's'
         value = td.total_seconds()
     elif isinstance(td, pd.DateOffset):
+        # DateOffsets with more than 1 keyword have multiple temporal values.
         if len(td.kwds.items()) > 1:
             return td
         possible_units = list(Timedelta._readable_units.values())
         possible_units = [unit.lower() for unit in possible_units]
         dateoffset_unit = list(td.kwds.items())[0][0]
+        # DateOffsets with 1 or no keywords can be converted to a ft.Timedelta
         if len(td.kwds.items()) == 1 and dateoffset_unit in possible_units:
             unit = dateoffset_unit
             value = list(td.kwds.items())[0][1]
-            delta_obj = td
         else:
             unit = td.__class__.__name__
             value = td.__dict__['n']

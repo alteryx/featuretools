@@ -3,8 +3,6 @@ import logging
 from builtins import object
 from collections import defaultdict
 
-import pandas as pd
-
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import (
     AggregationFeature,
@@ -206,8 +204,8 @@ class FeatureSet(object):
 # These functions are used for sorting and grouping features
 
 
-def _get_use_previous(f):  # TODO Sort and group features for DateOffset
-    if isinstance(f, AggregationFeature) and f.use_previous is not None and not isinstance(f.use_previous, pd.DateOffset):
+def _get_use_previous(f):  # TODO Sort and group features for DateOffset with two different temporal values
+    if isinstance(f, AggregationFeature) and f.use_previous is not None and f.use_previous.unit is not None:
         return (f.use_previous.unit, f.use_previous.value)
     else:
         return ("", -1)
