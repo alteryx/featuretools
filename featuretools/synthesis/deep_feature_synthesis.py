@@ -529,7 +529,7 @@ class DeepFeatureSynthesis(object):
 
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
-                    #
+                    # Need ID for cum_count, but not for other groupbys
                     if groupby_prim.name == "cum_count":
                         new_f = GroupByTransformFeature(list(matching_input[:]),
                                                         groupby=matching_input[-1],
