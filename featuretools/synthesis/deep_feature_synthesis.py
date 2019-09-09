@@ -517,7 +517,8 @@ class DeepFeatureSynthesis(object):
             # if multiple input_types, only use first one for DFS
             if type(input_types[0]) == list:
                 input_types = input_types[0][:]
-            if Id not in input_types:
+            id_is_input = Id in input_types
+            if not id_is_input:
                 input_types.append(Id)
 
             matching_inputs = self._get_matching_inputs(all_features,
@@ -529,8 +530,8 @@ class DeepFeatureSynthesis(object):
 
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
-                    # Need ID for cum_count, but not for other groupbys
-                    if groupby_prim.name == "cum_count":
+                    # Need ID if it's part of the input, but not for other groupbys
+                    if id_is_input:
                         new_f = GroupByTransformFeature(list(matching_input[:]),
                                                         groupby=matching_input[-1],
                                                         primitive=groupby_prim)
