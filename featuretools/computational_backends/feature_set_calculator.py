@@ -455,10 +455,7 @@ class FeatureSetCalculator(object):
                     continue
                 column_names = [bf.get_name() for bf in f.base_features]
                 # exclude the groupby variable from being passed to the function
-                if f.primitive.name == "cum_count":
-                    variable_data = [grouped[name].get_group(group) for name in column_names]
-                else:
-                    variable_data = [grouped[name].get_group(group) for name in column_names[:-1]]
+                variable_data = [grouped[name].get_group(group) for name in column_names[:-1]]
                 feature_func = f.get_function()
                 # apply the function to the relevant dataframe slice and add the
                 # feature row to the results dataframe.

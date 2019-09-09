@@ -529,9 +529,15 @@ class DeepFeatureSynthesis(object):
 
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
-                    new_f = GroupByTransformFeature(list(matching_input[:-1]),
-                                                    groupby=matching_input[-1],
-                                                    primitive=groupby_prim)
+                    #
+                    if groupby_prim.name == "cum_count":
+                        new_f = GroupByTransformFeature(list(matching_input[:]),
+                                                        groupby=matching_input[-1],
+                                                        primitive=groupby_prim)
+                    else:
+                        new_f = GroupByTransformFeature(list(matching_input[:-1]),
+                                                        groupby=matching_input[-1],
+                                                        primitive=groupby_prim)
                     self._handle_new_feature(all_features=all_features,
                                              new_feature=new_f)
 
