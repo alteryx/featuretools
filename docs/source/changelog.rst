@@ -12,12 +12,13 @@ Changelog
         * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
 	* Updated training_window error assertion to only check against observations (:pr:`728`)
     * Changes
+        * Raise warning and not error on schema version mismatch (:pr:`718`)
     * Documentation Changes
         * Updated URL for Compose (:pr:`716`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`christopherbunn`, :user:`kmax12`, :user:`MarcoGorelli`
+    :user:`jeff-hernandez`, :user:`chidauri`, :user:`christopherbunn`, :user:`kmax12`, :user:`MarcoGorelli`
 
 
 **v0.10.1 Aug 25, 2019**

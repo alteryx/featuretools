@@ -99,14 +99,14 @@ def test_later_schema_version(es):
     def test_version(major, minor, patch, raises=True):
         version = '.'.join([str(v) for v in [major, minor, patch]])
         if raises:
-            error_text = ('Unable to load features. The schema version of the saved '
-                          'features (%s) is greater than the latest supported (%s). '
-                          'You may need to upgrade featuretools.'
-                          % (version, SCHEMA_VERSION))
+            warning_text = ('The schema version of the saved features'
+                            '(%s) is greater than the latest supported (%s). '
+                            'You may need to upgrade featuretools. Attempting to load features ...'
+                            % (version, SCHEMA_VERSION))
         else:
-            error_text = None
+            warning_text = None
 
-        _check_schema_version(version, es, error_text)
+        _check_schema_version(version, es, warning_text)
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
@@ -121,14 +121,14 @@ def test_earlier_schema_version(es):
         version = '.'.join([str(v) for v in [major, minor, patch]])
 
         if raises:
-            error_text = ('Unable to load features. The schema version of the '
-                          'saved features (%s) is no longer supported by this '
-                          'version of featuretools.'
-                          % (version))
+            warning_text = ('The schema version of the saved features'
+                            '(%s) is no longer supported by this version'
+                            'of featuretools. Attempting to load features ...'
+                            % (version))
         else:
-            error_text = None
+            warning_text = None
 
-        _check_schema_version(version, es, error_text)
+        _check_schema_version(version, es, warning_text)
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
@@ -207,7 +207,7 @@ def test_unknown_primitive_module(es):
     assert error_text == str(excinfo.value)
 
 
-def _check_schema_version(version, es, error_text):
+def _check_schema_version(version, es, warning_text):
     dictionary = {
         'ft_version': ft.__version__,
         'schema_version': version,
@@ -216,10 +216,10 @@ def _check_schema_version(version, es, error_text):
         'feature_definitions': {}
     }
 
-    if error_text:
-        with pytest.raises(RuntimeError) as excinfo:
+    if warning_text:
+        with pytest.warns(UserWarning) as record:
             FeaturesDeserializer(dictionary)
 
-        assert error_text == str(excinfo.value)
+        assert record[0].message.args[0] == warning_text
     else:
         FeaturesDeserializer(dictionary)
