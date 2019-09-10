@@ -1,3 +1,5 @@
+import pandas as pd
+
 import featuretools as ft
 from featuretools.entityset.deserialize import description_to_entityset
 from featuretools.feature_base.features_serializer import FeaturesSerializer
@@ -112,6 +114,48 @@ def test_where_feature_dependency(es):
             max_feature.unique_name(): max_feature.to_dictionary(),
             value.unique_name(): value.to_dictionary(),
             is_purchased.unique_name(): is_purchased.to_dictionary(),
+        }
+    }
+
+    _compare_feature_dicts(expected, serializer.to_dict())
+
+
+def test_feature_use_previous_pd_timedelta(es):
+    value = ft.IdentityFeature(es['log']['id'])
+    td = pd.Timedelta(3, "M")
+    count_feature = ft.AggregationFeature(value, es['customers'], ft.primitives.Count, use_previous=td)
+    features = [count_feature, value]
+    serializer = FeaturesSerializer(features)
+
+    expected = {
+        'ft_version': ft.__version__,
+        'schema_version': SCHEMA_VERSION,
+        'entityset': es.to_dictionary(),
+        'feature_list': [count_feature.unique_name(), value.unique_name()],
+        'feature_definitions': {
+            count_feature.unique_name(): count_feature.to_dictionary(),
+            value.unique_name(): value.to_dictionary(),
+        }
+    }
+
+    _compare_feature_dicts(expected, serializer.to_dict())
+
+
+def test_feature_use_previous_pd_dateoffset(es):
+    value = ft.IdentityFeature(es['log']['id'])
+    do = pd.DateOffset(months=3)
+    count_feature = ft.AggregationFeature(value, es['customers'], ft.primitives.Count, use_previous=do)
+    features = [count_feature, value]
+    serializer = FeaturesSerializer(features)
+
+    expected = {
+        'ft_version': ft.__version__,
+        'schema_version': SCHEMA_VERSION,
+        'entityset': es.to_dictionary(),
+        'feature_list': [count_feature.unique_name(), value.unique_name()],
+        'feature_definitions': {
+            count_feature.unique_name(): count_feature.to_dictionary(),
+            value.unique_name(): value.to_dictionary(),
         }
     }
 

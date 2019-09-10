@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 
 import featuretools as ft
@@ -205,6 +206,46 @@ def test_unknown_primitive_module(es):
 
     error_text = 'Primitive "Max" in module "fake.module" not found'
     assert error_text == str(excinfo.value)
+
+
+def test_feature_use_previous_pd_timedelta(es):
+    value = ft.IdentityFeature(es['log']['id'])
+    td = pd.Timedelta(3, "M")
+    count_feature = ft.AggregationFeature(value, es['customers'], ft.primitives.Count, use_previous=td)
+    dictionary = {
+        'ft_version': ft.__version__,
+        'schema_version': SCHEMA_VERSION,
+        'entityset': es.to_dictionary(),
+        'feature_list': [count_feature.unique_name(), value.unique_name()],
+        'feature_definitions': {
+            count_feature.unique_name(): count_feature.to_dictionary(),
+            value.unique_name(): value.to_dictionary(),
+        }
+    }
+    deserializer = FeaturesDeserializer(dictionary)
+
+    expected = [count_feature, value]
+    assert expected == deserializer.to_list()
+
+
+def test_feature_use_previous_pd_dateoffset(es):
+    value = ft.IdentityFeature(es['log']['id'])
+    do = pd.DateOffset(months=3)
+    count_feature = ft.AggregationFeature(value, es['customers'], ft.primitives.Count, use_previous=do)
+    dictionary = {
+        'ft_version': ft.__version__,
+        'schema_version': SCHEMA_VERSION,
+        'entityset': es.to_dictionary(),
+        'feature_list': [count_feature.unique_name(), value.unique_name()],
+        'feature_definitions': {
+            count_feature.unique_name(): count_feature.to_dictionary(),
+            value.unique_name(): value.to_dictionary(),
+        }
+    }
+    deserializer = FeaturesDeserializer(dictionary)
+
+    expected = [count_feature, value]
+    assert expected == deserializer.to_list()
 
 
 def _check_schema_version(version, es, warning_text):
