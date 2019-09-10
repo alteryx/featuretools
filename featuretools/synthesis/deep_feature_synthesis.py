@@ -521,25 +521,22 @@ class DeepFeatureSynthesis(object):
             # Add Id if not present for the matching function
             if not id_is_input:
                 input_types.append(Id)
-
-            groupby_id_indices = [i for i in range(len(input_types)) if input_types[i] == Id]
+            id_index = input_types.index(Id)
             matching_inputs = self._get_matching_inputs(all_features,
                                                         entity,
                                                         new_max_depth,
                                                         input_types,
                                                         groupby_prim,
                                                         require_direct_input=require_direct_input)
-
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
-                    for id_index in groupby_id_indices:
-                        if id_is_input:
-                            new_f = GroupByTransformFeature(list(matching_input[:]),
-                                                            groupby=matching_input[id_index],
-                                                            primitive=groupby_prim)
-                        else:
-                            new_f = GroupByTransformFeature(list(matching_input[:id_index] + matching_input[id_index + 1:]),
-                                                            groupby=matching_input[id_index],
+                    if id_is_input:
+                        new_f = GroupByTransformFeature(list(matching_input[:]),
+                                                        groupby=matching_input[id_index],
+                                                        primitive=groupby_prim)
+                    else:
+                        new_f = GroupByTransformFeature(list(matching_input[:-1]),
+                                                            groupby=matching_input[-1],
                                                             primitive=groupby_prim)
                     self._handle_new_feature(all_features=all_features,
                                              new_feature=new_f)
