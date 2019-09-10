@@ -528,16 +528,22 @@ class DeepFeatureSynthesis(object):
                                                         input_types,
                                                         groupby_prim,
                                                         require_direct_input=require_direct_input)
+            # use all possible IDs as groupbys as well as input
+            if id_is_input:
+                id_matches = set()
+                for matching_input in matching_inputs:
+                    id_matches.add(matching_input[id_index])
+                matches_with_groupby = set()
+                for matching_input in matching_inputs:
+                    for id in id_matches:
+                        matches_with_groupby.add(matching_input + (id, ))
+                matching_inputs = matches_with_groupby
+
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
-                    if id_is_input:
-                        new_f = GroupByTransformFeature(list(matching_input[:]),
-                                                        groupby=matching_input[id_index],
-                                                        primitive=groupby_prim)
-                    else:
-                        new_f = GroupByTransformFeature(list(matching_input[:-1]),
-                                                        groupby=matching_input[-1],
-                                                        primitive=groupby_prim)
+                    new_f = GroupByTransformFeature(list(matching_input[:-1]),
+                                                    groupby=matching_input[-1],
+                                                    primitive=groupby_prim)
                     self._handle_new_feature(all_features=all_features,
                                              new_feature=new_f)
 
