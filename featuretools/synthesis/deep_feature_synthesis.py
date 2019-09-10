@@ -518,9 +518,11 @@ class DeepFeatureSynthesis(object):
             if type(input_types[0]) == list:
                 input_types = input_types[0][:]
             id_is_input = Id in input_types
+            # Add Id if not present for the matching function
             if not id_is_input:
                 input_types.append(Id)
 
+            groupby_id_indices = [i for i in range(len(input_types)) if input_types[i] == Id]
             matching_inputs = self._get_matching_inputs(all_features,
                                                         entity,
                                                         new_max_depth,
@@ -530,15 +532,15 @@ class DeepFeatureSynthesis(object):
 
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
-                    # Need ID if it's part of the input, but not for other groupbys
-                    if id_is_input:
-                        new_f = GroupByTransformFeature(list(matching_input[:]),
-                                                        groupby=matching_input[-1],
-                                                        primitive=groupby_prim)
-                    else:
-                        new_f = GroupByTransformFeature(list(matching_input[:-1]),
-                                                        groupby=matching_input[-1],
-                                                        primitive=groupby_prim)
+                    for id_index in groupby_id_indices:
+                        if id_is_input:
+                            new_f = GroupByTransformFeature(list(matching_input[:]),
+                                                            groupby=matching_input[id_index],
+                                                            primitive=groupby_prim)
+                        else:
+                            new_f = GroupByTransformFeature(list(matching_input[:id_index] + matching_input[id_index + 1:]),
+                                                            groupby=matching_input[id_index],
+                                                            primitive=groupby_prim)
                     self._handle_new_feature(all_features=all_features,
                                              new_feature=new_f)
 
