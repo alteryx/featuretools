@@ -536,8 +536,8 @@ class DeepFeatureSynthesis(object):
                                                         primitive=groupby_prim)
                     else:
                         new_f = GroupByTransformFeature(list(matching_input[:-1]),
-                                                            groupby=matching_input[-1],
-                                                            primitive=groupby_prim)
+                                                        groupby=matching_input[-1],
+                                                        primitive=groupby_prim)
                     self._handle_new_feature(all_features=all_features,
                                              new_feature=new_f)
 
