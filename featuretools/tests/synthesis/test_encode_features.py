@@ -135,9 +135,24 @@ def test_encode_features_topn(es):
     features_enc, feature_defs_enc = encode_features(features,
                                                      feature_defs,
                                                      include_unknown=True)
-    assert topn.hash() in [feat.hash() for feat in feature_defs_enc]
+    assert topn.unique_name() in [feat.unique_name() for feat in feature_defs_enc]
     for name in topn.get_feature_names():
         assert name in features_enc.columns
+
+
+def test_encode_features_drop_first():
+    df = pd.DataFrame({'category': ['ao', 'b', 'c', 'd', 'e']})
+    es = EntitySet('test')
+    es.entity_from_dataframe(entity_id='a', dataframe=df, index='index', make_index=True)
+    features, feature_defs = dfs(entityset=es, target_entity='a')
+    features_enc, feature_defs_enc = encode_features(features, feature_defs,
+                                                     drop_first=True, include_unknown=False)
+    assert len(features_enc.columns) == 4
+
+    features_enc, feature_defs = encode_features(features, feature_defs, top_n=3, drop_first=True,
+                                                 include_unknown=False)
+
+    assert len(features_enc.columns) == 2
 
 
 def test_encode_features_handles_dictionary_input(es):

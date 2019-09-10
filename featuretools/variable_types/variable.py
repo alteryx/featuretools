@@ -5,7 +5,7 @@ from builtins import object
 import numpy as np
 import pandas as pd
 
-from featuretools.utils import is_string
+from featuretools.utils.gen_utils import find_descendents, is_string
 
 
 class Variable(object):
@@ -42,6 +42,9 @@ class Variable(object):
         return isinstance(other, self.__class__) and \
             self.id == other.id and \
             self.entity_id == other.entity_id
+
+    def __hash__(self):
+        return hash((self.id, self.entity_id))
 
     def __repr__(self):
         ret = u"<Variable: {} (dtype = {})>".format(self.name, self.type_string)
@@ -421,12 +424,9 @@ class FilePath(Variable):
     _default_pandas_dtype = str
 
 
-ALL_VARIABLE_TYPES = [Datetime, Numeric, Timedelta,
-                      Categorical, Text, Ordinal, Discrete,
-                      Boolean, LatLong, ZIPCode, IPAddress,
-                      FullName, EmailAddress, URL, PhoneNumber,
-                      DateOfBirth, CountryCode, SubRegionCode,
-                      FilePath, DatetimeTimeIndex]
+def find_variable_types():
+    return {str(vtype.type_string): vtype for vtype in find_descendents(
+        Variable) if hasattr(vtype, 'type_string')}
 
 
 DEFAULT_DTYPE_VALUES = {

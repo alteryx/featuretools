@@ -1,17 +1,10 @@
 import pytest
 
-from ..testing_utils import make_ecommerce_entityset
-
 import featuretools as ft
 from featuretools.feature_base.features_deserializer import (
     FeaturesDeserializer
 )
 from featuretools.feature_base.features_serializer import SCHEMA_VERSION
-
-
-@pytest.fixture(scope='module')
-def es():
-    return make_ecommerce_entityset()
 
 
 def test_single_feature(es):
@@ -29,6 +22,36 @@ def test_single_feature(es):
 
     expected = [feature]
     assert expected == deserializer.to_list()
+
+
+def test_multioutput_feature(es):
+    value = ft.IdentityFeature(es['log']['product_id'])
+    threecommon = ft.primitives.NMostCommon()
+    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=threecommon)
+
+    features = [tc, value]
+    for i in range(3):
+        features.append(ft.Feature(tc[i],
+                                   parent_entity=es['customers'],
+                                   primitive=ft.primitives.NumUnique))
+        features.append(tc[i])
+
+    flist = [feat.unique_name() for feat in features]
+    fd = [feat.to_dictionary() for feat in features]
+    fdict = dict(zip(flist, fd))
+
+    dictionary = {
+        'ft_version': ft.__version__,
+        'schema_version': SCHEMA_VERSION,
+        'entityset': es.to_dictionary(),
+        'feature_list': flist,
+        'feature_definitions': fdict
+    }
+
+    deserializer = FeaturesDeserializer(dictionary).to_list()
+
+    for i in range(len(features)):
+        assert features[i].unique_name() == deserializer[i].unique_name()
 
 
 def test_base_features_in_list(es):
@@ -75,34 +98,43 @@ def test_base_features_not_in_list(es):
 def test_later_schema_version(es):
     def test_version(major, minor, patch, raises=True):
         version = '.'.join([str(v) for v in [major, minor, patch]])
-        dictionary = {
-            'ft_version': ft.__version__,
-            'schema_version': version,
-            'entityset': es.to_dictionary(),
-            'feature_list': [],
-            'feature_definitions': {}
-        }
-
-        error_text = ('Unable to load features. The schema version of the saved '
-                      'features (%s) is greater than the latest supported (%s). '
-                      'You may need to upgrade featuretools.'
-                      % (version, SCHEMA_VERSION))
-
         if raises:
-            with pytest.raises(RuntimeError) as excinfo:
-                FeaturesDeserializer(dictionary)
-
-            assert error_text == str(excinfo.value)
+            warning_text = ('The schema version of the saved features'
+                            '(%s) is greater than the latest supported (%s). '
+                            'You may need to upgrade featuretools. Attempting to load features ...'
+                            % (version, SCHEMA_VERSION))
         else:
-            FeaturesDeserializer(dictionary)
+            warning_text = None
+
+        _check_schema_version(version, es, warning_text)
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
+
     test_version(major + 1, minor, patch)
     test_version(major, minor + 1, patch)
     test_version(major, minor, patch + 1)
-    test_version(major - 1, minor + 1, patch, raises=False)
-    test_version(major - 1, minor, patch + 1, raises=False)
     test_version(major, minor - 1, patch + 1, raises=False)
+
+
+def test_earlier_schema_version(es):
+    def test_version(major, minor, patch, raises=True):
+        version = '.'.join([str(v) for v in [major, minor, patch]])
+
+        if raises:
+            warning_text = ('The schema version of the saved features'
+                            '(%s) is no longer supported by this version'
+                            'of featuretools. Attempting to load features ...'
+                            % (version))
+        else:
+            warning_text = None
+
+        _check_schema_version(version, es, warning_text)
+
+    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
+
+    test_version(major - 1, minor, patch)
+    test_version(major, minor - 1, patch, raises=False)
+    test_version(major, minor, patch - 1, raises=False)
 
 
 def test_unknown_feature_type(es):
@@ -173,3 +205,21 @@ def test_unknown_primitive_module(es):
 
     error_text = 'Primitive "Max" in module "fake.module" not found'
     assert error_text == str(excinfo.value)
+
+
+def _check_schema_version(version, es, warning_text):
+    dictionary = {
+        'ft_version': ft.__version__,
+        'schema_version': version,
+        'entityset': es.to_dictionary(),
+        'feature_list': [],
+        'feature_definitions': {}
+    }
+
+    if warning_text:
+        with pytest.warns(UserWarning) as record:
+            FeaturesDeserializer(dictionary)
+
+        assert record[0].message.args[0] == warning_text
+    else:
+        FeaturesDeserializer(dictionary)

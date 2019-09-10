@@ -1,9 +1,8 @@
 import pandas as pd
 
-from .deep_feature_synthesis import DeepFeatureSynthesis
-
 from featuretools.computational_backends import calculate_feature_matrix
 from featuretools.entityset import EntitySet
+from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
 from featuretools.utils import entry_point
 
 
@@ -70,7 +69,7 @@ def dfs(entities=None,
         agg_primitives (list[str or AggregationPrimitive], optional): List of Aggregation
             Feature types to apply.
 
-                Default: ["sum", "std", "max", "skew", "min", "mean", "count", "percent_true", "n_unique", "mode"]
+                Default: ["sum", "std", "max", "skew", "min", "mean", "count", "percent_true", "num_unique", "mode"]
 
         trans_primitives (list[str or TransformPrimitive], optional):
             List of Transform Feature functions to apply.
@@ -119,8 +118,10 @@ def dfs(entities=None,
 
         training_window (Timedelta or str, optional):
             Window defining how much time before the cutoff time data
-            can be used when calculating features. If ``None`` , all data before cutoff time is used.
-            Defaults to ``None``.
+            can be used when calculating features. If ``None`` , all data
+            before cutoff time is used. Defaults to ``None``. Month and year
+            units are not relative when Pandas Timedeltas are used. Relative
+            units should be passed as a Featuretools Timedelta or a string.
 
         approximate (Timedelta): Bucket size to group instances with similar
             cutoff times by for features with costly calculations. For example,

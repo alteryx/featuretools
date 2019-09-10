@@ -2,8 +2,8 @@ import copy
 import functools
 import inspect
 
-from .primitive_base import PrimitiveBase
-from .utils import inspect_function_args
+from featuretools.primitives.base.primitive_base import PrimitiveBase
+from featuretools.primitives.base.utils import inspect_function_args
 
 
 class AggregationPrimitive(PrimitiveBase):
@@ -12,14 +12,13 @@ class AggregationPrimitive(PrimitiveBase):
     base_of = None  # whitelist of primitives this prim can be input for
     base_of_exclude = None  # primitives this primitive can't be input for
     stack_on_self = True  # whether or not it can be in input_types of self
-    allow_where = True  # whether DFS can apply where clause to this primitive
 
-    def generate_name(self, base_feature_names, child_entity_id,
+    def generate_name(self, base_feature_names, relationship_path_name,
                       parent_entity_id, where_str, use_prev_str):
         base_features_str = ", ".join(base_feature_names)
         return u"%s(%s.%s%s%s%s)" % (
             self.name.upper(),
-            child_entity_id,
+            relationship_path_name,
             base_features_str,
             where_str,
             use_prev_str,

@@ -8,8 +8,6 @@ import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
 
-from .timedelta import Timedelta
-
 from featuretools import variable_types as vtypes
 from featuretools.utils import is_string
 from featuretools.utils.entity_utils import (
@@ -118,9 +116,8 @@ class Entity(object):
             return False
         if len(self.variables) != len(other.variables):
             return False
-        for v in self.variables:
-            if v not in other.variables:
-                return False
+        if set(self.variables) != set(other.variables):
+            return False
         if deep:
             if self.last_time_index is None and other.last_time_index is not None:
                 return False
@@ -236,23 +233,21 @@ class Entity(object):
         Returns:
             pd.DataFrame : instances that match constraints with ids in order of underlying dataframe
         """
+        if not variable_id:
+            variable_id = self.index
+
         instance_vals = self._vals_to_series(instance_vals, variable_id)
 
         training_window = _check_timedelta(training_window)
+
         if training_window is not None:
-            assert (isinstance(training_window, Timedelta) and
-                    training_window.is_absolute()),\
-                "training window must be an absolute Timedelta"
+            assert training_window.unit != "o", "Training window cannot be in observations"
 
         if instance_vals is None:
             df = self.df.copy()
 
         elif instance_vals.shape[0] == 0:
             df = self.df.head(0)
-
-        elif variable_id is None or variable_id == self.index:
-            df = self.df.reindex(instance_vals)
-            df.dropna(subset=[self.index], inplace=True)
 
         else:
             df = self.df[self.df[variable_id].isin(instance_vals)]
@@ -288,7 +283,7 @@ class Entity(object):
                 that each map to a list of columns that depend on that secondary time
         """
         variables = []
-        variable_types = variable_types or {}
+        variable_types = variable_types.copy() or {}
         if index not in variable_types:
             variable_types[index] = vtypes.Index
 
@@ -514,6 +509,7 @@ class Entity(object):
             if time_last is not None and not df.empty:
                 df = df[df[self.time_index] <= time_last]
                 if training_window is not None:
+                    training_window = _check_timedelta(training_window)
                     mask = df[self.time_index] >= time_last - training_window
                     if self.last_time_index is not None:
                         lti_slice = self.last_time_index.reindex(df.index)

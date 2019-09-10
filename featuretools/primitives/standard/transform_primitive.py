@@ -5,18 +5,18 @@ from builtins import str
 import numpy as np
 import pandas as pd
 
-from ..base.transform_primitive_base import TransformPrimitive
-
+from featuretools.primitives.base.transform_primitive_base import (
+    TransformPrimitive
+)
+from featuretools.utils import convert_time_units
 from featuretools.variable_types import (
     Boolean,
     Datetime,
     DatetimeTimeIndex,
-    Id,
     LatLong,
     Numeric,
     Ordinal,
     Text,
-    Timedelta,
     Variable
 )
 
@@ -54,42 +54,39 @@ class Absolute(TransformPrimitive):
 
 
 class TimeSincePrevious(TransformPrimitive):
-    """Compute the time in seconds since the previous instance of an entry.
+    """Compute the time since the previous entry in a list.
+
+    Args:
+        unit (str): Defines the unit of time to count from.
+            Defaults to Seconds. Acceptable values:
+            years, months, days, hours, minutes, seconds, milliseconds, nanoseconds
 
     Description:
-        Given a list of datetimes and a corresponding list of item ID values,
-        compute the time in seconds elapsed since the previous occurrence
-        of the item in the list. If an item is present only once, the result
-        for this item will be `NaN`. Similarly, the result for the first
-        occurrence of an item will always be `NaN`.
+        Given a list of datetimes, compute the time in seconds elapsed since
+        the previous item in the list. The result for the first item in the
+        list will always be `NaN`.
 
     Examples:
         >>> from datetime import datetime
         >>> time_since_previous = TimeSincePrevious()
         >>> dates = [datetime(2019, 3, 1, 0, 0, 0),
         ...          datetime(2019, 3, 1, 0, 2, 0),
-        ...          datetime(2019, 3, 10, 0, 0, 0),
+        ...          datetime(2019, 3, 1, 0, 3, 0),
         ...          datetime(2019, 3, 1, 0, 2, 30),
-        ...          datetime(2019, 3, 10, 0, 0, 50)]
-        >>> labels = ['A', 'A', 'B', 'A', 'B']
-        >>> time_since_previous(dates, labels).tolist()
-        [nan, 120.0, nan, 30.0, 50.0]
+        ...          datetime(2019, 3, 1, 0, 10, 0)]
+        >>> time_since_previous(dates).tolist()
+        [nan, 120.0, 60.0, -30.0, 450.0]
     """
     name = "time_since_previous"
-    input_types = [DatetimeTimeIndex, Id]
+    input_types = [DatetimeTimeIndex]
     return_type = Numeric
 
-    def generate_name(self, base_feature_names):
-        return u"time_since_previous_by_%s" % base_feature_names[1]
+    def __init__(self, unit="seconds"):
+        self.unit = unit.lower()
 
     def get_function(self):
-        def pd_diff(base_array, group_array):
-            bf_name = 'base_feature'
-            groupby = 'groupby'
-            grouped_df = pd.DataFrame.from_dict({bf_name: base_array,
-                                                 groupby: group_array})
-            grouped_df = grouped_df.groupby(groupby).diff()
-            return grouped_df[bf_name].apply(lambda x: x.total_seconds())
+        def pd_diff(values):
+            return convert_time_units(values.diff().apply(lambda x: x.total_seconds()), self.unit)
         return pd_diff
 
 
@@ -340,7 +337,12 @@ class NumWords(TransformPrimitive):
 
 
 class TimeSince(TransformPrimitive):
-    """Calculates time in nanoseconds from a value to a specified cutoff datetime.
+    """Calculates time from a value to a specified cutoff datetime.
+
+    Args:
+        unit (str): Defines the unit of time to count from.
+            Defaults to Seconds. Acceptable values:
+            years, months, days, hours, minutes, seconds, milliseconds, nanoseconds
 
     Examples:
         >>> from datetime import datetime
@@ -351,41 +353,32 @@ class TimeSince(TransformPrimitive):
         >>> cutoff_time = datetime(2019, 3, 1, 0, 0, 0, 0)
         >>> values = time_since(array=times, time=cutoff_time)
         >>> list(map(int, values))
+        [0, -1, -120]
+
+        Change output to nanoseconds
+
+        >>> from datetime import datetime
+        >>> time_since_nano = TimeSince(unit='nanoseconds')
+        >>> times = [datetime(2019, 3, 1, 0, 0, 0, 1),
+        ...          datetime(2019, 3, 1, 0, 0, 1, 0),
+        ...          datetime(2019, 3, 1, 0, 2, 0, 0)]
+        >>> cutoff_time = datetime(2019, 3, 1, 0, 0, 0, 0)
+        >>> values = time_since_nano(array=times, time=cutoff_time)
+        >>> list(map(lambda x: int(round(x)), values))
         [-1000, -1000000000, -120000000000]
     """
     name = 'time_since'
     input_types = [[DatetimeTimeIndex], [Datetime]]
-    return_type = Timedelta
-    uses_calc_time = True
-
-    def get_function(self):
-        def pd_time_since(array, time):
-            return (time - pd.DatetimeIndex(array)).values
-        return pd_time_since
-
-
-class DaysSince(TransformPrimitive):
-    """Calculates the number of days from a value to a specified datetime.
-
-    Examples:
-        >>> from datetime import datetime
-        >>> days_since = DaysSince()
-        >>> dates = [datetime(2019, 3, 2, 0),
-        ...          datetime(2019, 3, 10, 12),
-        ...          datetime(2019, 3, 1, 0)]
-        >>> cutoff_date = datetime(2019, 3, 1, 0, 0, 0, 0)
-        >>> days_since(array=dates, time=cutoff_date).tolist()
-        [-1, -10, 0]
-    """
-    name = "days_since"
-    input_types = [DatetimeTimeIndex]
     return_type = Numeric
     uses_calc_time = True
 
+    def __init__(self, unit="seconds"):
+        self.unit = unit.lower()
+
     def get_function(self):
-        def pd_days_since(array, time):
-            return (time - pd.DatetimeIndex(array)).days
-        return pd_days_since
+        def pd_time_since(array, time):
+            return convert_time_units((time - pd.DatetimeIndex(array)).total_seconds(), self.unit)
+        return pd_time_since
 
 
 class IsIn(TransformPrimitive):
@@ -416,55 +409,27 @@ class IsIn(TransformPrimitive):
 
 class Diff(TransformPrimitive):
     """Compute the difference between the value in a list and the
-    previous value.
+    previous value in that list.
 
     Description:
-        Given a list of values and a corresponding list of item ID values,
-        compute the difference from the previous occurrence of the item in
-        the list. If an item is present only once, the result for this item
-        will be `NaN`. Similarly, the result for the first occurrence of an
-        item will always be `NaN`. If the values are datetimes, the output
-        will be a timedelta.
+        Given a list of values, compute the difference from the previous
+        item in the list. The result for the first element of the list will
+        always be `NaN`. If the values are datetimes, the output will be a
+        timedelta.
 
     Examples:
         >>> diff = Diff()
         >>> values = [1, 10, 3, 4, 15]
-        >>> labels = ['A', 'A', 'B', 'A', 'B']
-        >>> diff(values, labels).tolist()
-        [nan, 9.0, nan, -6.0, 12.0]
-
-        If values are datetimes, difference will be a timedelta
-
-        >>> from datetime import datetime
-        >>> diff = Diff()
-        >>> values = [datetime(2019, 3, 1, 0, 0, 0),
-        ...          datetime(2019, 3, 1, 0, 1, 0),
-        ...          datetime(2019, 3, 2, 0, 0, 0),
-        ...          datetime(2019, 3, 1, 0, 1, 30)]
-        >>> labels = ['A', 'A', 'B', 'A']
-        >>> diff(values, labels).tolist()
-        [NaT, Timedelta('0 days 00:01:00'), NaT, Timedelta('0 days 00:00:30')]
+        >>> diff(values).tolist()
+        [nan, 9.0, -7.0, 1.0, 11.0]
     """
     name = "diff"
-    input_types = [Numeric, Id]
+    input_types = [Numeric]
     return_type = Numeric
 
-    def generate_name(self, base_feature_names):
-        base_features_str = base_feature_names[0] + u" by " + \
-            base_feature_names[1]
-        return u"DIFF(%s)" % (base_features_str)
-
     def get_function(self):
-        def pd_diff(base_array, group_array):
-            bf_name = 'base_feature'
-            groupby = 'groupby'
-            grouped_df = pd.DataFrame.from_dict({bf_name: base_array,
-                                                 groupby: group_array})
-            grouped_df = grouped_df.groupby(groupby).diff()
-            try:
-                return grouped_df[bf_name]
-            except KeyError:
-                return pd.Series([np.nan] * len(base_array))
+        def pd_diff(values):
+            return values.diff()
         return pd_diff
 
 

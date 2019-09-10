@@ -1,20 +1,17 @@
-import pytest
-
-from ..testing_utils import make_ecommerce_entityset
-
 import featuretools as ft
 from featuretools.primitives.utils import PrimitivesDeserializer
 
 
-@pytest.fixture
-def es():
-    return make_ecommerce_entityset()
+def test_relationship_path(es):
+    value = ft.IdentityFeature(es['log']['value'])
+    assert len(value.relationship_path) == 0
 
 
 def test_serialization(es):
     value = ft.IdentityFeature(es['log']['value'])
 
     dictionary = {
+        'name': None,
         'entity_id': 'log',
         'variable_id': 'value',
     }

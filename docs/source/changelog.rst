@@ -2,10 +2,154 @@
 
 Changelog
 ---------
-**v0.8.0** Pre-Release
-    * PR
+**Future Release**
+    * Enhancements
+        * Improve how files are copied and written (:pr:`721`)
+        * Add number of rows to graph in entityset.plot (:pr:`727`)
+    * Fixes
+        * Fixed entity set deserialization (:pr:`720`)
+        * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
+	* Updated training_window error assertion to only check against observations (:pr:`728`) 
+    * Changes
+        * Raise warning and not error on schema version mismatch (:pr:`718`)
+    * Documentation Changes
+        * Updated URL for Compose (:pr:`716`)
+    * Testing Changes
 
     Thanks to the following people for contributing to this release:
+    :user:`jeff-hernandez`, :user:`chidauri`, :user:`christopherbunn`, :user:`kmax12`, :user:`MarcoGorelli`
+
+
+**v0.10.1 Aug 25, 2019**
+    * Fixes
+        * Fix serialized LatLong data being loaded as strings (:pr:`712`)
+    * Documentation Changes
+        * Fixed FAQ cell output (:pr:`710`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`rwedge`
+
+
+**v0.10.0 Aug 19, 2019**
+
+    .. warning::
+        The next non-bugfix release of Featuretools will not support Python 2
+
+
+    * Enhancements
+        * Give more frequent progress bar updates and update chunk size behavior (:pr:`631`, :pr:`696`)
+        * Added drop_first as param in encode_features (:pr:`647`)
+        * Added support for stacking multi-output primitives (:pr:`679`)
+        * Generate transform features of direct features (:pr:`623`)
+        * Added serializing and deserializing from S3 and deserializing from URLs (:pr:`685`)
+        * Added nlp_primitives as an add-on library (:pr:`704`)
+        * Added AutoNormalize to Featuretools plugins (:pr:`699`)
+        * Added functionality for relative units (month/year) in Timedelta (:pr:`692`)
+        * Added categorical-encoding as an add-on library (:pr:`700`)
+    * Fixes
+        * Fix performance regression in DFS (:pr:`637`)
+        * Fix deserialization of feature relationship path (:pr:`665`)
+        * Set index after adding ancestor relationship variables (:pr:`668`)
+        * Fix user-supplied variable_types modification in Entity init (:pr:`675`)
+        * Don't calculate dependencies of unnecessary features (:pr:`667`)
+        * Prevent normalize entity's new entity having same index as base entity (:pr:`681`)
+        * Update variable type inference to better check for string values (:pr:`683`)
+    * Changes
+        * Moved dask, distributed imports (:pr:`634`)
+    * Documentation Changes
+        * Miscellaneous changes (:pr:`641`, :pr:`658`)
+        * Modified doc_string of top_n in encoding (:pr:`648`)
+        * Hyperlinked ComposeML (:pr:`653`)
+        * Added FAQ (:pr:`620`, :pr:`677`)
+        * Fixed FAQ question with multiple question marks (:pr:`673`)
+    * Testing Changes
+        * Add master, and release tests for premium primitives (:pr:`660`, :pr:`669`)
+        * Miscellaneous changes (:pr:`672`, :pr:`674`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`alexjwang`, :user:`allisonportis`, :user:`ayushpatidar`,
+    :user:`CJStadler`, :user:`ctduffy`, :user:`gsheni`, :user:`jeff-hernandez`,
+    :user:`jeremyliweishih`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`,
+
+
+**v0.9.1 July 3, 2019**
+    * Enhancements
+        * Speedup groupby transform calculations (:pr:`609`)
+        * Generate features along all paths when there are multiple paths between entities (:pr:`600`, :pr:`608`)
+    * Fixes
+        * Select columns of dataframe using a list (:pr:`615`)
+        * Change type of features calculated on Index features to Categorical (:pr:`602`)
+        * Filter dataframes through forward relationships (:pr:`625`)
+        * Specify Dask version in requirements for python 2 (:pr:`627`)
+        * Keep dataframe sorted by time during feature calculation (:pr:`626`)
+        * Fix bug in encode_features that created duplicate columns of
+          features with multiple outputs (:pr:`622`)
+    * Changes
+        * Remove unused variance_selection.py file (:pr:`613`)
+        * Remove Timedelta data param (:pr:`619`)
+        * Remove DaysSince primitive (:pr:`628`)
+    * Documentation Changes
+        * Add installation instructions for add-on libraries (:pr:`617`)
+        * Clarification of Multi Output Feature Creation (:pr:`638`)
+        * Miscellaneous changes (:pr:`632`, :pr:`639`)
+    * Testing Changes
+        * Miscellaneous changes (:pr:`595`, :pr:`612`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`CJStadler`, :user:`kmax12`, :user:`rwedge`, :user:`gsheni`, :user:`kkleidal`, :user:`ctduffy`
+
+**v0.9.0** June 19, 2019
+    * Enhancements
+        * Add unit parameter to timesince primitives (:pr:`558`)
+        * Add ability to install optional add on libraries (:pr:`551`)
+        * Load and save features from open files and strings (:pr:`566`)
+        * Support custom variable types (:pr:`571`)
+        * Support entitysets which have multiple paths between two entities (:pr:`572`, :pr:`544`)
+        * Added show_info function, more output information added to CLI `featuretools info` (:pr:`525`)
+    * Fixes
+        * Normalize_entity specifies error when 'make_time_index' is an invalid string (:pr:`550`)
+        * Schema version added for entityset serialization (:pr:`586`)
+        * Renamed features have names correctly serialized (:pr:`585`)
+        * Improved error message for index/time_index being the same column in normalize_entity and entity_from_dataframe (:pr:`583`)
+        * Removed all mentions of allow_where (:pr:`587`, :pr:`588`)
+        * Removed unused variable in normalize entity (:pr:`589`)
+        * Change time since return type to numeric (:pr:`606`)
+    * Changes
+        * Refactor get_pandas_data_slice to take single entity (:pr:`547`)
+        * Updates TimeSincePrevious and Diff Primitives (:pr:`561`)
+        * Remove unecessary time_last variable (:pr:`546`)
+    * Documentation Changes
+        * Add Featuretools Enterprise to documentation (:pr:`563`)
+        * Miscellaneous changes (:pr:`552`, :pr:`573`, :pr:`577`, :pr:`599`)
+    * Testing Changes
+        * Miscellaneous changes (:pr:`559`, :pr:`569`, :pr:`570`, :pr:`574`, :pr:`584`, :pr:`590`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`alexjwang`, :user:`allisonportis`, :user:`CJStadler`, :user:`ctduffy`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`
+
+**v0.8.0** May 17, 2019
+    * Rename NUnique to NumUnique (:pr:`510`)
+    * Serialize features as JSON (:pr:`532`)
+    * Drop all variables at once in normalize_entity (:pr:`533`)
+    * Remove unnecessary sorting from normalize_entity (:pr:`535`)
+    * Features cache their names (:pr:`536`)
+    * Only calculate features for instances before cutoff (:pr:`523`)
+    * Remove all relative imports (:pr:`530`)
+    * Added FullName Variable Type (:pr:`506`)
+    * Add error message when target entity does not exist (:pr:`520`)
+    * New demo links (:pr:`542`)
+    * Remove duplicate features check in DFS (:pr:`538`)
+    * featuretools_primitives entry point expects list of primitive classes (:pr:`529`)
+    * Update ALL_VARIABLE_TYPES list (:pr:`526`)
+    * More Informative N Jobs Prints and Warnings (:pr:`511`)
+    * Update sklearn version requirements (:pr:`541`)
+    * Update Makefile (:pr:`519`)
+    * Remove unused parameter in Entity._handle_time (:pr:`524`)
+    * Remove build_ext code from setup.py (:pr:`513`)
+    * Documentation updates (:pr:`512`, :pr:`514`, :pr:`515`, :pr:`521`, :pr:`522`, :pr:`527`, :pr:`545`)
+    * Testing updates (:pr:`509`, :pr:`516`, :pr:`517`, :pr:`539`)
+
+    Thanks to the following people for contributing to this release: :user:`bphi`, :user:`CharlesBradshaw`, :user:`CJStadler`, :user:`glentennis`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`
 
 **Breaking Changes**
 

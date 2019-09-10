@@ -15,3 +15,7 @@ class MockClient():
 
     def scheduler_info(self):
         return {'workers': {'worker 1': {'memory_limit': virtual_memory().total}}}
+
+
+def get_mock_client_cluster():
+    return MockClient, mock_cluster

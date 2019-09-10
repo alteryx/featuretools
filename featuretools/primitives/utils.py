@@ -3,10 +3,13 @@ from inspect import isclass
 
 import pandas as pd
 
-from .base import AggregationPrimitive, PrimitiveBase, TransformPrimitive
-
 import featuretools
-from featuretools.utils import is_python_2
+from featuretools.primitives.base import (
+    AggregationPrimitive,
+    PrimitiveBase,
+    TransformPrimitive
+)
+from featuretools.utils.gen_utils import find_descendents, is_python_2
 
 if is_python_2():
     import imp
@@ -69,10 +72,6 @@ def _get_names_primitives(primitive_func):
         names.append(name)
         primitives.append(primitive)
     return names, primitives
-
-
-def get_featuretools_root():
-    return os.path.dirname(featuretools.__file__)
 
 
 def list_primitive_files(directory):
@@ -147,9 +146,10 @@ class PrimitivesDeserializer(object):
     deseriazing the next primitive the iteration resumes where it left off. This
     means that we never visit a class more than once.
     """
+
     def __init__(self):
         self.class_cache = {}  # (class_name, module_name) -> class
-        self.primitive_classes = _descendants(PrimitiveBase)
+        self.primitive_classes = find_descendents(PrimitiveBase)
 
     def deserialize_primitive(self, primitive_dict):
         """
@@ -179,15 +179,3 @@ class PrimitivesDeserializer(object):
 
             if cls_key == search_key:
                 return cls
-
-
-def _descendants(cls):
-    """
-    A generator which yields all descendant classes of the given class
-    (including the given class).
-    """
-    yield cls
-
-    for sub in cls.__subclasses__():
-        for c in _descendants(sub):
-            yield c

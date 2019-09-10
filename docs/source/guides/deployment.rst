@@ -34,11 +34,11 @@ Now let's build some features definitions using DFS. Because we have categorical
     feature_matrix_enc
 
 
-Now, we can use :meth:`featuretools.save_features` to save a list features.
+Now, we can use :meth:`featuretools.save_features` to save a list features to a json file
 
 .. ipython:: python
 
-    ft.save_features(features_enc, "feature_definitions")
+    ft.save_features(features_enc, "feature_definitions.json")
 
 
 
@@ -49,13 +49,13 @@ We can use :meth:`featuretools.load_features` to read in a list of saved feature
 
 .. ipython:: python
 
-    saved_features = ft.load_features('feature_definitions')
+    saved_features = ft.load_features('feature_definitions.json')
 
 .. ipython:: python
     :suppress:
 
     import os
-    os.remove("feature_definitions")
+    os.remove("feature_definitions.json")
 
 
 After we load the features back in, we can calculate the feature matrix.
@@ -65,6 +65,32 @@ After we load the features back in, we can calculate the feature matrix.
     feature_matrix = ft.calculate_feature_matrix(saved_features, es_test)
     feature_matrix
 
-As you can see above, we have the exact same features as before, but calculated on using our test data.
+As you can see above, we have the exact same features as before, but calculated using the test data.
+
+
+Exporting Feature Matrix
+*************************
+
+Save as csv
+~~~~~~~~~~~
+The feature matrix is a pandas dataframe that we can save to disk
+
+.. ipython:: python
+
+    feature_matrix.to_csv("feature_matrix.csv")
+
+We can also read it back in as follows:
+
+.. ipython:: python
+
+    saved_fm = pd.read_csv("feature_matrix.csv", index_col="customer_id")
+    saved_fm
+
+
+.. ipython:: python
+    :suppress:
+
+    import os
+    os.remove("feature_matrix.csv")
 
 

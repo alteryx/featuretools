@@ -1,40 +1,45 @@
 import json
 
-from .feature_base import (
+import boto3
+
+from featuretools.entityset.deserialize import \
+    description_to_entityset as deserialize_es
+from featuretools.feature_base.feature_base import (
     AggregationFeature,
     DirectFeature,
     Feature,
     FeatureBase,
+    FeatureOutputSlice,
     GroupByTransformFeature,
     IdentityFeature,
     TransformFeature
 )
-from .features_serializer import SCHEMA_VERSION
-
-from featuretools.entityset.deserialize import \
-    description_to_entityset as deserialize_es
 from featuretools.primitives.utils import PrimitivesDeserializer
-from featuretools.utils.gen_utils import is_python_2
+from featuretools.utils.gen_utils import (
+    check_schema_version,
+    use_s3fs_features,
+    use_smartopen_features
+)
+from featuretools.utils.wrangle import _is_s3, _is_url
 
-if is_python_2():
-    from itertools import izip_longest as zip_longest
-else:
-    from itertools import zip_longest
 
-
-def load_features(filepath):
-    """Loads the features from a filepath.
+def load_features(features, profile_name=None):
+    """Loads the features from a filepath, S3 path, URL, an open file, or a JSON formatted string.
 
     Args:
-        filepath (str): The location of where features has been saved.
-            This must include the name of the file.
+        features (str or :class:`.FileObject`): The location of where features has
+        been saved which this must include the name of the file, or a JSON formatted
+        string, or a readable file handle where the features have been saved.
+
+        profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
+            Set to False to use an anonymous profile.
 
     Returns:
         features (list[:class:`.FeatureBase`]): Feature definitions list.
 
     Note:
-        Features saved in one version of Featuretools are not guaranteed to work in another.
-        After upgrading Featuretools, features may need to be generated again.
+        Features saved in one version of Featuretools or python are not guaranteed to work in another.
+        After upgrading Featuretools or python, features may need to be generated again.
 
     Example:
         .. ipython:: python
@@ -45,12 +50,19 @@ def load_features(filepath):
 
         .. code-block:: python
 
-            filepath = os.path.join('/Home/features/', 'list')
+            filepath = os.path.join('/Home/features/', 'list.json')
             ft.load_features(filepath)
+
+            f = open(filepath, 'r')
+            ft.load_features(f)
+
+            feature_str = f.read()
+            ft.load_features(feature_str)
+
     .. seealso::
         :func:`.save_features`
     """
-    return FeaturesDeserializer.load(filepath).to_list()
+    return FeaturesDeserializer.load(features, profile_name).to_list()
 
 
 class FeaturesDeserializer(object):
@@ -62,6 +74,7 @@ class FeaturesDeserializer(object):
         'GroupByTransformFeature': GroupByTransformFeature,
         'IdentityFeature': IdentityFeature,
         'TransformFeature': TransformFeature,
+        'FeatureOutputSlice': FeatureOutputSlice
     }
 
     def __init__(self, features_dict):
@@ -72,11 +85,29 @@ class FeaturesDeserializer(object):
         self._primitives_deserializer = PrimitivesDeserializer()
 
     @classmethod
-    def load(cls, filepath):
-        with open(filepath, 'r') as f:
-            features_dict = json.load(f)
-
-        return cls(features_dict)
+    def load(cls, features, profile_name):
+        if isinstance(features, str):
+            try:
+                features_dict = json.loads(features)
+            except ValueError:
+                if _is_url(features):
+                    features_dict = use_smartopen_features(features)
+                elif _is_s3(features):
+                    session = boto3.Session()
+                    if isinstance(profile_name, str):
+                        transport_params = {'session': boto3.Session(profile_name=profile_name)}
+                        features_dict = use_smartopen_features(features, transport_params)
+                    elif profile_name is False:
+                        features_dict = use_s3fs_features(features)
+                    elif session.get_credentials() is not None:
+                        features_dict = use_smartopen_features(features)
+                    else:
+                        features_dict = use_s3fs_features(features)
+                else:
+                    with open(features, 'r') as f:
+                        features_dict = json.load(f)
+            return cls(features_dict)
+        return cls(json.load(features))
 
     def to_list(self):
         feature_names = self.features_dict['feature_list']
@@ -106,15 +137,4 @@ class FeaturesDeserializer(object):
         return feature
 
     def _check_schema_version(self):
-        current = SCHEMA_VERSION.split('.')
-        saved = self.features_dict['schema_version'].split('.')
-        error_text = ('Unable to load features. The schema version of the saved '
-                      'features (%s) is greater than the latest supported (%s). '
-                      'You may need to upgrade featuretools.'
-                      % (self.features_dict['schema_version'], SCHEMA_VERSION))
-
-        for c_num, s_num in zip_longest(current, saved, fillvalue=0):
-            if c_num > s_num:
-                break
-            elif c_num < s_num:
-                raise RuntimeError(error_text)
+        check_schema_version(self, 'features')
