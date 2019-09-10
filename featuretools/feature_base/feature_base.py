@@ -714,10 +714,7 @@ class GroupByTransformFeature(TransformFeature):
     def generate_name(self):
         # exclude the groupby feature from base_names since it has a special
         # place in the feature name
-        if self.primitive.name == "cum_count":
-            base_names = [self.entity_id]
-        else:
-            base_names = [bf.get_name() for bf in self.base_features[:-1]]
+        base_names = [bf.get_name() for bf in self.base_features[:-1]]
         _name = self.primitive.generate_name(base_names)
         return u"{} by {}".format(_name, self.groupby.get_name())
 

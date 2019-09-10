@@ -278,7 +278,7 @@ def test_make_groupby_features_with_id(es):
                                    trans_primitives=[],
                                    groupby_trans_primitives=['cum_count'])
     features = dfs_obj.build_features()
-    assert (feature_with_name(features, "CUM_COUNT(sessions) by customer_id"))
+    assert (feature_with_name(features, "CUM_COUNT(customer_id) by customer_id"))
 
 
 def test_make_groupby_features_with_agg(es):
