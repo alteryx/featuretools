@@ -138,3 +138,22 @@ def test_encode_features_topn(es):
     assert topn.hash() in [feat.hash() for feat in feature_defs_enc]
     for name in topn.get_feature_names():
         assert name in features_enc.columns
+
+
+def test_encode_features_handles_dictionary_input(es):
+    f1 = IdentityFeature(es["log"]["product_id"])
+    f2 = IdentityFeature(es["log"]["purchased"])
+    f3 = IdentityFeature(es["log"]["session_id"])
+
+    features = [f1, f2, f3]
+    feature_matrix = calculate_feature_matrix(features, es, instance_ids=[0, 1, 2, 3, 4, 5])
+    top_n_dict = {f1: 2, f3: 1}
+    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features, top_n=top_n_dict)
+    assert len(features_encoded) == 6
+
+    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features, top_n=top_n_dict, include_unknown=False)
+    assert len(features_encoded) == 4
+
+    top_n_dict = {}
+    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features, top_n=top_n_dict)
+    assert len(features_encoded) == 8

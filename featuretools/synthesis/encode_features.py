@@ -15,7 +15,10 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
         Args:
             feature_matrix (pd.DataFrame): Dataframe of features.
             features (list[PrimitiveBase]): Feature definitions in feature_matrix.
-            top_n (pd.DataFrame): Number of top values to include.
+            top_n (int or dict[FeatureBase -> int]): Number of top values to include.
+                If dict[FeatureBase -> int] provided, then we will use the feature's
+                corresponding value in the dictionary as the number of top values to include.
+                If a feature is not in dictionary, a default value of 10 is used.
             include_unknown (pd.DataFrame): Add feature encoding an unknown class.
                 defaults to True
             to_encode (list[str]): List of feature names to encode.
@@ -113,7 +116,11 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
         val_counts = val_counts.sort_values([f.get_name(), index_name],
                                             ascending=False)
         val_counts.set_index(index_name, inplace=True)
-        unique = val_counts.head(top_n).index.tolist()
+        if isinstance(top_n, dict):
+            f_top_n = top_n.get(f, 10)
+            unique = val_counts.head(f_top_n).index.tolist()
+        elif isinstance(top_n, int):
+            unique = val_counts.head(top_n).index.tolist()
         for label in unique:
             add = f == label
             encoded.append(add)
