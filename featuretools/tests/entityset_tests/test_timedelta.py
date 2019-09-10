@@ -202,3 +202,20 @@ def test_pd_dateoffset_to_timedelta():
     assert special_td.unit == "businessdays"
     assert special_td.value == 100
     assert special_td.delta_obj == special_dateoffset
+
+
+def test_pd_dateoffset_to_timedelta_math():
+    base = pd.to_datetime("2020-01-31")
+    add = _check_timedelta(pd.DateOffset(months=2))
+    res = base + add
+    assert res == pd.to_datetime("2020-03-31")
+
+    base_2 = pd.to_datetime("2020-01-31")
+    add_2 = _check_timedelta(pd.DateOffset(months=2, days=3))
+    res_2 = base_2 + add_2
+    assert res_2 == pd.to_datetime("2020-04-03")
+
+    base_3 = pd.to_datetime("2019-09-20")
+    sub = _check_timedelta(pd.offsets.BDay(10))
+    res_3 = base_3 - sub
+    assert res_3 == pd.to_datetime("2019-09-06")

@@ -55,7 +55,8 @@ def _check_timedelta(td):
             return td
         possible_units = list(Timedelta._readable_units.values())
         possible_units = [unit.lower() for unit in possible_units]
-        dateoffset_unit = list(td.kwds.items())[0][0]
+        if len(td.kwds.items()) == 1:
+            dateoffset_unit = list(td.kwds.items())[0][0]
         # DateOffsets with 1 or no keywords can be converted to a ft.Timedelta
         if len(td.kwds.items()) == 1 and dateoffset_unit in possible_units:
             unit = dateoffset_unit
