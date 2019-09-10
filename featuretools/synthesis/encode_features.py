@@ -123,12 +123,11 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
         val_counts = val_counts.sort_values([f.get_name(), index_name],
                                             ascending=False)
         val_counts.set_index(index_name, inplace=True)
-        f_top_n = top_n
+        select_n = top_n
         if isinstance(top_n, dict):
-            f_top_n = top_n.get(f.get_name(), DEFAULT_TOP_N)
-        select_n = f_top_n
+            select_n = top_n.get(f.get_name(), DEFAULT_TOP_N)
         if drop_first:
-            select_n = min(len(val_counts), f_top_n)
+            select_n = min(len(val_counts), top_n)
             select_n = max(select_n - 1, 1)
         unique = val_counts.head(select_n).index.tolist()
         for label in unique:
