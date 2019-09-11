@@ -1,7 +1,5 @@
 from builtins import zip
 
-import pandas as pd
-
 from featuretools import Relationship, Timedelta, primitives
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.primitives.base import (
@@ -25,6 +23,8 @@ from featuretools.variable_types import (
     NumericTimeIndex,
     Variable
 )
+
+# import pandas as pd
 
 
 class FeatureBase(object):
@@ -613,10 +613,6 @@ class AggregationFeature(FeatureBase):
     def _use_prev_str(self):
         if self.use_previous is not None and hasattr(self.use_previous, 'get_name'):
             use_prev_str = u", Last {}".format(self.use_previous.get_name())
-        elif isinstance(self.use_previous, pd.DateOffset):
-            since_str = (pd.to_datetime('today') - self.use_previous)
-            since_str = since_str.strftime('%Y-%m-%d %H:%M:%S')
-            use_prev_str = u", Since {}".format(pd.to_datetime(since_str))
         else:
             use_prev_str = u''
         return use_prev_str

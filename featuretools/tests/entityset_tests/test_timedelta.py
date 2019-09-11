@@ -22,11 +22,11 @@ def test_singular():
 def test_delta_with_observations(es):
     four_delta = Timedelta(4, 'observations')
     assert not four_delta.is_absolute()
-    assert four_delta.value == 4
+    assert four_delta.times['o'] == 4
 
     neg_four_delta = -four_delta
     assert not neg_four_delta.is_absolute()
-    assert neg_four_delta.value == -4
+    assert neg_four_delta.times['o'] == -4
 
     time = pd.to_datetime('2019-05-01')
 
@@ -81,22 +81,13 @@ def test_check_timedelta(es):
             standard_unit = to_standard_unit[unit]
 
         td = _check_timedelta(s)
-        if standard_unit != 'w':
-            assert td.value == 2
-            assert td.unit == standard_unit
-        else:
-            assert td.value == 2 * 7
+        assert td.times[standard_unit] == 2
 
 
 def test_check_pd_timedelta(es):
     pdtd = pd.Timedelta(5, 'm')
     td = _check_timedelta(pdtd)
-    assert td.unit == 's'
-    assert td.value == 300
-
-
-def test_week_to_days():
-    assert Timedelta("1001 weeks") == Timedelta(1001 * 7, "days")
+    assert td.times['s'] == 300
 
 
 def test_string_timedelta_args():
@@ -138,8 +129,7 @@ def test_deltas_week(es):
 def test_relative_year():
     td_time = "1 years"
     td = _check_timedelta(td_time)
-    assert td.unit == "Y"
-    assert td.value == 1
+    assert td.times["Y"] == 1
     assert isinstance(td.delta_obj, relativedelta)
 
     time = pd.to_datetime('2020-02-29')
@@ -169,8 +159,7 @@ def test_serialization():
 def test_relative_month():
     td_time = "1 month"
     td = _check_timedelta(td_time)
-    assert td.unit == "mo"
-    assert td.value == 1
+    assert td.times['mo'] == 1
     assert isinstance(td.delta_obj, relativedelta)
 
     time = pd.to_datetime('2020-01-31')
@@ -178,8 +167,7 @@ def test_relative_month():
 
     td_time = "6 months"
     td = _check_timedelta(td_time)
-    assert td.unit == "mo"
-    assert td.value == 6
+    assert td.times['mo'] == 6
     assert isinstance(td.delta_obj, relativedelta)
 
     time = pd.to_datetime('2020-01-31')
@@ -189,18 +177,18 @@ def test_relative_month():
 def test_pd_dateoffset_to_timedelta():
     single_temporal = pd.DateOffset(months=3)
     single_td = _check_timedelta(single_temporal)
-    assert single_td.unit == "mo"
-    assert single_td.value == 3
-    assert single_td.delta_obj == relativedelta(months=3)
+    assert single_td.times['mo'] == 3
+    assert single_td.delta_obj == pd.DateOffset(months=3)
 
     mult_temporal = pd.DateOffset(years=10, months=3, days=5)
     mult_td = _check_timedelta(mult_temporal)
-    assert mult_td == mult_temporal
+    expected = {'Y': 10, 'mo': 3, 'd': 5}
+    assert mult_td.times == expected
+    assert mult_td.delta_obj == mult_temporal
 
     special_dateoffset = pd.offsets.BDay(100)
     special_td = _check_timedelta(special_dateoffset)
-    assert special_td.unit == "businessdays"
-    assert special_td.value == 100
+    assert special_td.times["businessdays"] == 100
     assert special_td.delta_obj == special_dateoffset
 
 

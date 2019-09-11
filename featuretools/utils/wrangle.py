@@ -37,34 +37,35 @@ def _check_timedelta(td):
     elif not (is_string(td) or isinstance(td, pd.Timedelta) or
               isinstance(td, (int, float)) or isinstance(td, pd.DateOffset)):
         raise ValueError("Unable to parse timedelta: {}".format(td))
-    value = None
-    delta_obj = None
-    try:
-        value = int(td)
-    except Exception:
-        try:
-            value = float(td)
-        except Exception:
-            pass
     if isinstance(td, pd.Timedelta):
         unit = 's'
         value = td.total_seconds()
+        return Timedelta({unit: value}, delta_obj=td)
     elif isinstance(td, pd.DateOffset):
-        # DateOffsets with more than 1 keyword have multiple temporal values.
-        if len(td.kwds.items()) > 1:
-            return td
-        possible_units = list(Timedelta._readable_units.values())
-        possible_units = [unit.lower() for unit in possible_units]
-        if len(td.kwds.items()) == 1:
-            dateoffset_unit = list(td.kwds.items())[0][0]
-        # DateOffsets with 1 or no keywords can be converted to a ft.Timedelta
-        if len(td.kwds.items()) == 1 and dateoffset_unit in possible_units:
-            unit = dateoffset_unit
-            value = list(td.kwds.items())[0][1]
+        # DateOffsets
+        if td.__class__.__name__ == "DateOffset":
+            times = dict()
+            for td_unit, td_value in td.kwds.items():
+                times[td_unit] = td_value
+            return Timedelta(times, delta_obj=td)
+        # Special offsets (such as BDay)
         else:
             unit = td.__class__.__name__
             value = td.__dict__['n']
-            delta_obj = td
+            times = {unit: value}
+            return Timedelta(times, delta_obj=td)
+        # Subclasses of DateOffsets
+        # DateOffsets with more than 1 keyword have multiple temporal values.
+        # if len(td.kwds.items()) > 1:
+        # possible_units = list(Timedelta._readable_units.values())
+        # possible_units = [unit.lower() for unit in possible_units]
+        # if len(td.kwds.items()) == 1:
+        #     dateoffset_unit = list(td.kwds.items())[0][0]
+        # # DateOffsets with 1 or no keywords can be converted to a ft.Timedelta
+        # if len(td.kwds.items()) == 1 and dateoffset_unit in possible_units:
+        #     unit = dateoffset_unit
+        #     value = list(td.kwds.items())[0][1]
+
     else:
         pattern = '([0-9]+) *([a-zA-Z]+)$'
         match = re.match(pattern, td)
@@ -77,7 +78,7 @@ def _check_timedelta(td):
             except Exception:
                 raise ValueError("Unable to parse value {} from ".format(value) +
                                  "timedelta string: {}".format(td))
-    return Timedelta(value, unit, delta_obj)
+        return Timedelta({unit: value})
 
 
 def _check_time_against_column(time, time_column):
