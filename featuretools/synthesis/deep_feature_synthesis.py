@@ -512,7 +512,7 @@ class DeepFeatureSynthesis(object):
             input_types = groupby_prim.input_types[:]
             # if multiple input_types, only use first one for DFS
             if type(input_types[0]) == list:
-                input_types = input_types[0][:]
+                input_types = input_types[0]
             matching_inputs = self._get_matching_inputs(all_features,
                                                         entity,
                                                         new_max_depth,
@@ -527,7 +527,7 @@ class DeepFeatureSynthesis(object):
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
                     for id_groupby in id_matches:
-                        new_f = GroupByTransformFeature(list(matching_input[:]),
+                        new_f = GroupByTransformFeature(list(matching_input),
                                                         groupby=id_groupby,
                                                         primitive=groupby_prim)
                         self._handle_new_feature(all_features=all_features,
