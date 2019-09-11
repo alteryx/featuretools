@@ -140,15 +140,13 @@ def test_serialization():
     times = [
         Timedelta(1, unit='w'),
         Timedelta(3, unit='d'),
-        Timedelta(5, unit='o'),
-        Timedelta({'years': 4, 'months': 3, 'days': 2})
+        Timedelta(5, unit='o')
     ]
 
     dictionaries = [
         {'value': 1, 'unit': 'w'},
         {'value': 3, 'unit': 'd'},
-        {'value': 5, 'unit': 'o'},
-        {'value': [4, 3, 2], 'unit':['Y', 'mo', 'd']}
+        {'value': 5, 'unit': 'o'}
     ]
 
     for td, expected in zip(times, dictionaries):
@@ -156,6 +154,23 @@ def test_serialization():
 
     for expected, dictionary in zip(times, dictionaries):
         assert expected == Timedelta.from_dictionary(dictionary)
+
+    # Test multiple temporal parameters separately since it is not deterministic
+    mult_time = {'years': 4, 'months': 3, 'days': 2}
+    mult_td = Timedelta(mult_time)
+
+    # Serialize
+    td_units = mult_td.get_arguments()['unit']
+    td_values = mult_td.get_arguments()['value']
+    arg_list = list(zip(td_values, td_units))
+
+    assert (4, 'Y') in arg_list
+    assert (3, 'mo') in arg_list
+    assert (2, 'd') in arg_list
+
+    # Deserialize
+    assert mult_td == Timedelta.from_dictionary({'value': [4, 3, 2],
+                                                 'unit': ['Y', 'mo', 'd']})
 
 
 def test_relative_month():
