@@ -17,9 +17,10 @@ Changelog
     * Documentation Changes
         * Updated URL for Compose (:pr:`716`)
     * Testing Changes
+        * Update dependencies (:pr:`738`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`chidauri`, :user:`christopherbunn`, :user:`kmax12`, :user:`MarcoGorelli`, :user:`angela97lin`, :user:`frances-h`
+    :user:`jeff-hernandez`, :user:`chidauri`, :user:`christopherbunn`, :user:`kmax12`, :user:`MarcoGorelli`, :user:`angela97lin`, :user:`frances-h`, :user:`rwedge`
 
 
 **v0.10.1 Aug 25, 2019**
