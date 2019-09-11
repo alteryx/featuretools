@@ -517,33 +517,25 @@ class DeepFeatureSynthesis(object):
             # if multiple input_types, only use first one for DFS
             if type(input_types[0]) == list:
                 input_types = input_types[0][:]
-            id_is_input = Id in input_types
-            if not id_is_input:
-                input_types.append(Id)
             matching_inputs = self._get_matching_inputs(all_features,
                                                         entity,
                                                         new_max_depth,
                                                         input_types,
                                                         groupby_prim,
                                                         require_direct_input=require_direct_input)
-            # add IDs as groupbys if they are also inputs
-            if id_is_input:
-                id_matches = self._features_by_type(all_features=all_features,
-                                                    entity=entity,
-                                                    max_depth=max_depth,
-                                                    variable_type=set([Id]))
-                matches_with_id_groupby = set([])
-                for matching_input in matching_inputs:
-                    for id in id_matches:
-                        matches_with_id_groupby.add(matching_input + (id, ))
-                matching_inputs = matches_with_id_groupby
+            # get IDs to use as groupby
+            id_matches = self._features_by_type(all_features=all_features,
+                                                entity=entity,
+                                                max_depth=max_depth,
+                                                variable_type=set([Id]))
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
-                    new_f = GroupByTransformFeature(list(matching_input[:-1]),
-                                                    groupby=matching_input[-1],
-                                                    primitive=groupby_prim)
-                    self._handle_new_feature(all_features=all_features,
-                                             new_feature=new_f)
+                    for id_groupby in id_matches:
+                        new_f = GroupByTransformFeature(list(matching_input[:]),
+                                                        groupby=id_groupby,
+                                                        primitive=groupby_prim)
+                        self._handle_new_feature(all_features=all_features,
+                                                 new_feature=new_f)
 
     def _build_forward_features(self, all_features, relationship_path, max_depth=0):
         _, relationship = relationship_path[0]
