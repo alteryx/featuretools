@@ -268,6 +268,13 @@ def test_serialize_url_csv(es):
         es.to_csv(URL, encoding='utf-8', engine='python')
 
 
+def test_serialize_data_description(es, tmpdir):
+    write_path = tmpdir.mkdir("test")
+    test_dir = write_path.mkdir("test_dir")
+    serialize.write_data_description(es, path=str(write_path), index='1', sep='\t', encoding='utf-8', compression=None)
+    assert os.path.exists(test_dir)
+
+
 def test_deserialize_url_csv(es):
     new_es = deserialize.read_entityset(URL)
     assert es.__eq__(new_es, deep=True)
