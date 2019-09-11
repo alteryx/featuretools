@@ -288,7 +288,8 @@ def test_make_groupby_features_with_diff_id(es):
                                    trans_primitives=[],
                                    groupby_trans_primitives=['cum_count'])
     features = dfs_obj.build_features()
-    assert (feature_with_name(features, "CUM_COUNT(cohort) by région_id"))
+    groupby_with_diff_id = u"CUM_COUNT(cohort) by région_id"
+    assert (feature_with_name(features, groupby_with_diff_id))
 
 
 def test_make_groupby_features_with_agg(es):
