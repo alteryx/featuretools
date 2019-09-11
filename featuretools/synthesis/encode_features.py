@@ -7,15 +7,20 @@ from featuretools.variable_types.variable import Discrete
 
 logger = logging.getLogger('featuretools')
 
+DEFAULT_TOP_N = 10
 
-def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
+
+def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unknown=True,
                     to_encode=None, inplace=False, drop_first=False, verbose=False):
     """Encode categorical features
 
         Args:
             feature_matrix (pd.DataFrame): Dataframe of features.
             features (list[PrimitiveBase]): Feature definitions in feature_matrix.
-            top_n (int): Number of top values to include.
+            top_n (int or dict[string -> int]): Number of top values to include.
+                If dict[string -> int] is used, key is feature name and value is
+                the number of top values to include for that feature.
+                If a feature's name is not in dictionary, a default value of 10 is used.
             include_unknown (pd.DataFrame): Add feature encoding an unknown class.
                 defaults to True
             to_encode (list[str]): List of feature names to encode.
@@ -119,6 +124,8 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
                                             ascending=False)
         val_counts.set_index(index_name, inplace=True)
         select_n = top_n
+        if isinstance(top_n, dict):
+            select_n = top_n.get(f.get_name(), DEFAULT_TOP_N)
         if drop_first:
             select_n = min(len(val_counts), top_n)
             select_n = max(select_n - 1, 1)
