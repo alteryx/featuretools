@@ -526,7 +526,7 @@ class DeepFeatureSynthesis(object):
             # get IDs to use as groupby
             id_matches = self._features_by_type(all_features=all_features,
                                                 entity=entity,
-                                                max_depth=max_depth,
+                                                max_depth=new_max_depth,
                                                 variable_type=set([Id]))
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
