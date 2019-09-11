@@ -1,7 +1,5 @@
 from __future__ import division
 
-from collections import OrderedDict
-
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
@@ -85,7 +83,7 @@ class Timedelta(object):
         dict_units = dictionary['unit']
         dict_values = dictionary['value']
         if isinstance(dict_units, str) and isinstance(dict_values, (int, float)):
-            return cls(OrderedDict([(dict_units, dict_values)]))
+            return cls({dict_units: dict_values})
         else:
             all_units = dict()
             for i in range(len(dict_units)):
@@ -117,7 +115,7 @@ class Timedelta(object):
             return relativedelta(**readable_times)
 
     def lower_readable_times(self):
-        readable_times = OrderedDict()
+        readable_times = dict()
         for unit, value in self.times.items():
             readable_unit = self._readable_units[unit].lower()
             readable_times[readable_unit] = value
@@ -171,7 +169,7 @@ class Timedelta(object):
 
     def __neg__(self):
         """Negate the timedelta"""
-        new_times = OrderedDict()
+        new_times = dict()
         for unit, value in self.times.items():
             new_times[unit] = -value
         if self.delta_obj is not None:

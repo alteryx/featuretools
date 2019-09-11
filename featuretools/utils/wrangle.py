@@ -1,5 +1,4 @@
 import re
-from collections import OrderedDict
 from datetime import datetime
 
 import numpy as np
@@ -46,7 +45,7 @@ def _check_timedelta(td):
     elif isinstance(td, pd.DateOffset):
         # DateOffsets
         if td.__class__.__name__ == "DateOffset":
-            times = OrderedDict()
+            times = dict()
             for td_unit, td_value in td.kwds.items():
                 times[td_unit] = td_value
             return Timedelta(times, delta_obj=td)
@@ -54,7 +53,7 @@ def _check_timedelta(td):
         else:
             unit = td.__class__.__name__
             value = td.__dict__['n']
-            times = OrderedDict([(unit, value)])
+            times = dict([(unit, value)])
             return Timedelta(times, delta_obj=td)
     else:
         pattern = '([0-9]+) *([a-zA-Z]+)$'
