@@ -167,7 +167,7 @@ class Timedelta(object):
         return True
 
     def has_multiple_units(self):
-        if isinstance(self.unit, list) and isinstance(self.value, list):
+        if len(list(self.times.keys())) > 1 and len(list(self.times.values())) > 1:
             return True
         else:
             return False

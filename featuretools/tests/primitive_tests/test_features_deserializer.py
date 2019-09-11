@@ -247,6 +247,24 @@ def test_feature_use_previous_pd_dateoffset(es):
     expected = [count_feature, value]
     assert expected == deserializer.to_list()
 
+    value = ft.IdentityFeature(es['log']['id'])
+    do = pd.DateOffset(months=3, days=2, minutes=30)
+    count_feature = ft.AggregationFeature(value, es['customers'], ft.primitives.Count, use_previous=do)
+    dictionary = {
+        'ft_version': ft.__version__,
+        'schema_version': SCHEMA_VERSION,
+        'entityset': es.to_dictionary(),
+        'feature_list': [count_feature.unique_name(), value.unique_name()],
+        'feature_definitions': {
+            count_feature.unique_name(): count_feature.to_dictionary(),
+            value.unique_name(): value.to_dictionary(),
+        }
+    }
+    deserializer = FeaturesDeserializer(dictionary)
+
+    expected = [count_feature, value]
+    assert expected == deserializer.to_list()
+
 
 def _check_schema_version(version, es, warning_text):
     dictionary = {

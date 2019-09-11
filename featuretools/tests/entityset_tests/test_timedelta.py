@@ -141,12 +141,14 @@ def test_serialization():
         Timedelta(1, unit='w'),
         Timedelta(3, unit='d'),
         Timedelta(5, unit='o'),
+        Timedelta({'years': 4, 'months': 3, 'days': 2})
     ]
 
     dictionaries = [
         {'value': 1, 'unit': 'w'},
         {'value': 3, 'unit': 'd'},
-        {'value': 5, 'unit': 'o'}
+        {'value': 5, 'unit': 'o'},
+        {'value': [4, 3, 2], 'unit':['Y', 'mo', 'd']}
     ]
 
     for td, expected in zip(times, dictionaries):
@@ -174,6 +176,15 @@ def test_relative_month():
     assert time + td == pd.to_datetime('2020-07-31')
 
 
+def test_has_multiple_units():
+    single_unit = pd.DateOffset(months=3)
+    multiple_units = pd.DateOffset(months=3, years=3, days=5)
+    single_td = _check_timedelta(single_unit)
+    multiple_td = _check_timedelta(multiple_units)
+    assert single_td.has_multiple_units() is False
+    assert multiple_td.has_multiple_units() is True
+
+
 def test_pd_dateoffset_to_timedelta():
     single_temporal = pd.DateOffset(months=3)
     single_td = _check_timedelta(single_temporal)
@@ -185,6 +196,8 @@ def test_pd_dateoffset_to_timedelta():
     expected = {'Y': 10, 'mo': 3, 'd': 5}
     assert mult_td.times == expected
     assert mult_td.delta_obj == mult_temporal
+    # get_name() for multiple values is not deterministic
+    assert len(mult_td.get_name()) == len("10 Years 3 Months 5 Days")
 
     special_dateoffset = pd.offsets.BDay(100)
     special_td = _check_timedelta(special_dateoffset)

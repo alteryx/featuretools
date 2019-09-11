@@ -161,6 +161,25 @@ def test_feature_use_previous_pd_dateoffset(es):
 
     _compare_feature_dicts(expected, serializer.to_dict())
 
+    value = ft.IdentityFeature(es['log']['id'])
+    do = pd.DateOffset(months=3, days=2, minutes=30)
+    count_feature = ft.AggregationFeature(value, es['customers'], ft.primitives.Count, use_previous=do)
+    features = [count_feature, value]
+    serializer = FeaturesSerializer(features)
+
+    expected = {
+        'ft_version': ft.__version__,
+        'schema_version': SCHEMA_VERSION,
+        'entityset': es.to_dictionary(),
+        'feature_list': [count_feature.unique_name(), value.unique_name()],
+        'feature_definitions': {
+            count_feature.unique_name(): count_feature.to_dictionary(),
+            value.unique_name(): value.to_dictionary(),
+        }
+    }
+
+    _compare_feature_dicts(expected, serializer.to_dict())
+
 
 def _compare_feature_dicts(a_dict, b_dict):
     # We can't compare entityset dictionaries because variable lists are not
