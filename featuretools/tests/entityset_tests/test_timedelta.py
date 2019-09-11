@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 import pandas as pd
 import pytest
 from dateutil.relativedelta import relativedelta
@@ -137,11 +139,12 @@ def test_relative_year():
 
 
 def test_serialization():
+    dict_time = OrderedDict([('years', 4), ('months', 3), ('days', 2)])
     times = [
         Timedelta(1, unit='w'),
         Timedelta(3, unit='d'),
         Timedelta(5, unit='o'),
-        Timedelta({'years': 4, 'months': 3, 'days': 2})
+        Timedelta(dict_time)
     ]
 
     dictionaries = [

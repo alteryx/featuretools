@@ -1,5 +1,7 @@
 from __future__ import division
 
+from collections import OrderedDict
+
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
@@ -52,8 +54,8 @@ class Timedelta(object):
     def __init__(self, value, unit=None, delta_obj=None):
         """
         Args:
-            value (float, str) : Value of timedelta, or string providing
-                both unit and value.
+            value (float, str, dict) : Value of timedelta, string providing
+                both unit and value, or a dictionary of units and times.
             unit (str) : Unit of time delta.
         """
 
@@ -65,12 +67,10 @@ class Timedelta(object):
         elif isinstance(value, dict):
             self.times = value
         else:
-            # elif isinstance(value, (int, float)) and isinstance(unit, str):
-            self.times = {unit: value}
-        self.fixed_units = dict()
+            self.times = OrderedDict([(unit, value)])
+        self.fixed_units = OrderedDict()
         for unit, value in self.times.items():
             unit = self._check_unit_plural(unit)
-            # assert unit in self._readable_units or unit in self._readable_to_unit
             if unit in self._readable_to_unit:
                 unit = self._readable_to_unit[unit]
             self.fixed_units[unit] = value
@@ -82,12 +82,12 @@ class Timedelta(object):
 
     @classmethod
     def from_dictionary(cls, dictionary):
-        all_units = dict()
         dict_units = dictionary['unit']
         dict_values = dictionary['value']
         if isinstance(dict_units, str) and isinstance(dict_values, (int, float)):
-            return cls({dict_units: dict_values})
+            return cls(OrderedDict([(dict_units, dict_values)]))
         else:
+            all_units = OrderedDict()
             for i in range(len(dict_units)):
                 all_units[dict_units[i]] = dict_values[i]
             return cls(all_units)
@@ -117,7 +117,7 @@ class Timedelta(object):
             return relativedelta(**readable_times)
 
     def lower_readable_times(self):
-        readable_times = dict()
+        readable_times = OrderedDict()
         for unit, value in self.times.items():
             readable_unit = self._readable_units[unit].lower()
             readable_times[readable_unit] = value
@@ -133,15 +133,6 @@ class Timedelta(object):
                 unit = self.make_singular(unit)
             final_str += "{} {} ".format(value, self._readable_units[unit])
         return final_str[:-1]
-
-    # @property
-    # def readable_unit(self):
-    #     if self._original_unit is not None:
-    #         return self._readable_units[self._original_unit]
-    #     elif self.unit in self._readable_units.keys():
-    #         return self._readable_units[self.unit]
-    #     else:
-    #         return self.unit
 
     def get_arguments(self):
         units = list()
@@ -180,7 +171,7 @@ class Timedelta(object):
 
     def __neg__(self):
         """Negate the timedelta"""
-        new_times = dict()
+        new_times = OrderedDict()
         for unit, value in self.times.items():
             new_times[unit] = -value
         if self.delta_obj is not None:
