@@ -10,7 +10,8 @@ Changelog
     * Fixes
         * Fixed entity set deserialization (:pr:`720`)
         * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
-	* Updated training_window error assertion to only check against observations (:pr:`728`) 
+        * Fixed CumCount and other group-by transform primitives that take ID as input (:pr:`733`)
+	* Updated training_window error assertion to only check against observations (:pr:`728`)
     * Changes
         * Raise warning and not error on schema version mismatch (:pr:`718`)
     * Documentation Changes
@@ -18,7 +19,7 @@ Changelog
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`chidauri`, :user:`christopherbunn`, :user:`kmax12`, :user:`MarcoGorelli`, :user:`angela97lin`
+    :user:`jeff-hernandez`, :user:`chidauri`, :user:`christopherbunn`, :user:`kmax12`, :user:`MarcoGorelli`, :user:`angela97lin`, :user:`frances-h`
 
 
 **v0.10.1 Aug 25, 2019**
