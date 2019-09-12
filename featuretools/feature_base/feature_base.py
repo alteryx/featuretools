@@ -24,8 +24,6 @@ from featuretools.variable_types import (
     Variable
 )
 
-# import pandas as pd
-
 
 class FeatureBase(object):
     def __init__(self, entity, base_features, relationship_path, primitive, name=None, names=None):

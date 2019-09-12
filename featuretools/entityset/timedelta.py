@@ -104,11 +104,22 @@ class Timedelta(object):
             return s.lower()
         return s
 
+    def get_value(self, unit=None):
+        if unit is not None:
+            return self.times[unit]
+        elif len(self.times.values()) == 1:
+            return list(self.times.values())[0]
+        else:
+            return self.times
+
+    def get_units(self):
+        return list(self.times.keys())
+
     def get_unit_type(self):
-        all_units = list(self.times.keys())
+        all_units = self.get_units()
         if self._Observations in all_units:
             return None
-        elif self.is_absolute() and len(all_units) == 1:
+        elif self.is_absolute() and self.has_multiple_units() is False:
             return pd.Timedelta(self.times[all_units[0]], all_units[0])
         else:
             readable_times = self.lower_readable_times()
@@ -122,8 +133,8 @@ class Timedelta(object):
         return readable_times
 
     def get_name(self):
-        all_units = list(self.times.keys())
-        if len(all_units) == 1:
+        all_units = self.get_units()
+        if self.has_multiple_units() is False:
             return "{} {}".format(self.times[all_units[0]], self._readable_units[all_units[0]])
         final_str = ""
         for unit, value in self.times.items():
@@ -144,19 +155,19 @@ class Timedelta(object):
             return {'unit': units, 'value': values}
 
     def is_absolute(self):
-        for unit in list(self.times.keys()):
+        for unit in self.get_units():
             if unit not in self._absolute_units:
                 return False
         return True
 
     def has_no_observations(self):
-        for unit in list(self.times.keys()):
+        for unit in self.get_units():
             if unit in self._Observations:
                 return False
         return True
 
     def has_multiple_units(self):
-        if len(list(self.times.keys())) > 1 and len(list(self.times.values())) > 1:
+        if len(self.get_units()) > 1:
             return True
         else:
             return False
@@ -179,14 +190,14 @@ class Timedelta(object):
 
     def __radd__(self, time):
         """Add the Timedelta to a timestamp value"""
-        if self._Observations not in self.times.keys():
+        if self._Observations not in self.get_units():
             return time + self.delta_obj
         else:
             raise Exception("Invalid unit")
 
     def __rsub__(self, time):
         """Subtract the Timedelta from a timestamp value"""
-        if self._Observations not in self.times.keys():
+        if self._Observations not in self.get_units():
             return time - self.delta_obj
         else:
             raise Exception("Invalid unit")

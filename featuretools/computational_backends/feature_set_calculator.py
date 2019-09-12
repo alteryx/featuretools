@@ -565,7 +565,7 @@ class FeatureSetCalculator(object):
                     if ti is not None:
                         base_frame = base_frame[base_frame[ti] >= time_first]
                 else:
-                    n = use_previous.times['o']
+                    n = use_previous.get_value('o')
 
                     def last_n(df):
                         return df.iloc[-n:]
