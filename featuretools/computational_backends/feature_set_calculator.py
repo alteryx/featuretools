@@ -61,7 +61,7 @@ class FeatureSetCalculator(object):
         # total number of features (including dependencies) to be calculate
         self.num_features = len(feature_set.features_by_name.values())
 
-    def run(self, instance_ids, progress_callback=None):
+    def run(self, instance_ids, update_progress_callback=None):
         """
         Calculate values of features for the given instances of the target
         entity.
@@ -82,7 +82,7 @@ class FeatureSetCalculator(object):
             instance_ids (np.ndarray or pd.Categorical): Instance ids for which
                 to build features.
 
-            progress_callback (callable): function to be called with incremental progress updates
+            update_progress_callback (callable): function to be called with incremental progress updates
 
         Returns:
             pd.DataFrame : Pandas DataFrame of calculated feature values.
@@ -91,11 +91,10 @@ class FeatureSetCalculator(object):
         """
         assert len(instance_ids) > 0, "0 instance ids provided"
 
-        if progress_callback is None:
+        if update_progress_callback is None:
             # do nothing for the progress call back if not provided
-            def progress_callback(*args):
+            def update_progress_callback(*args):
                 pass
-
         feature_trie = self.feature_set.feature_trie
 
         df_trie = Trie(path_constructor=RelationshipPath)
@@ -109,7 +108,7 @@ class FeatureSetCalculator(object):
                                             precalculated_trie=self.precalculated_features,
                                             filter_variable=target_entity.index,
                                             filter_values=instance_ids,
-                                            progress_callback=progress_callback)
+                                            update_progress_callback=update_progress_callback)
 
         # The dataframe for the target entity should be stored at the root of
         # df_trie.
@@ -144,7 +143,7 @@ class FeatureSetCalculator(object):
                                        precalculated_trie,
                                        filter_variable, filter_values,
                                        parent_data=None,
-                                       progress_callback=None):
+                                       update_progress_callback=None):
         """
         Generate dataframes with features calculated for this node of the trie,
         and all descendant nodes. The dataframes will be stored in df_trie.
@@ -203,7 +202,7 @@ class FeatureSetCalculator(object):
                                     training_window=self.training_window)
 
         # call to update timer
-        progress_callback(0)
+        update_progress_callback(0)
 
         # Step 2: Add variables to the dataframe linking it to all ancestors.
         new_ancestor_relationship_variables = []
@@ -220,7 +219,7 @@ class FeatureSetCalculator(object):
             new_ancestor_relationship_variables.append(parent_relationship.child_variable.id)
 
         # call to update timer
-        progress_callback(0)
+        update_progress_callback(0)
 
         # Step 3: Recurse on children.
 
@@ -258,7 +257,7 @@ class FeatureSetCalculator(object):
                 filter_variable=sub_filter_variable,
                 filter_values=sub_filter_values,
                 parent_data=parent_data,
-                progress_callback=progress_callback)
+                update_progress_callback=update_progress_callback)
 
         # Step 4: Calculate the features for this entity.
         #
@@ -276,13 +275,13 @@ class FeatureSetCalculator(object):
                           suffixes=('', '_precalculated'))
 
         # call to update timer
-        progress_callback(0)
+        update_progress_callback(0)
 
         # First, calculate any features that require the full entity. These can
         # be calculated first because all of their dependents are included in
         # full_entity_features.
         if need_full_entity:
-            df = self._calculate_features(df, full_entity_df_trie, full_entity_features, progress_callback)
+            df = self._calculate_features(df, full_entity_df_trie, full_entity_features, update_progress_callback)
 
             # Store full entity df.
             full_entity_df_trie.value = df
@@ -292,13 +291,13 @@ class FeatureSetCalculator(object):
             df = df[df[filter_variable].isin(filter_values)]
 
         # Calculate all features that don't require the full entity.
-        df = self._calculate_features(df, df_trie, not_full_entity_features, progress_callback)
+        df = self._calculate_features(df, df_trie, not_full_entity_features, update_progress_callback)
 
         # Step 5: Store the dataframe for this entity at the root of df_trie, so
         # that it can be accessed by the caller.
         df_trie.value = df
 
-    def _calculate_features(self, df, df_trie, features, progress_callback):
+    def _calculate_features(self, df, df_trie, features, update_progress_callback):
         # Group the features so that each group can be calculated together.
         # The groups must also be in topological order (if A is a transform of B
         # then B must be in a group before A).
@@ -307,7 +306,7 @@ class FeatureSetCalculator(object):
         for group in feature_groups:
             representative_feature = group[0]
             handler = self._feature_type_handler(representative_feature)
-            df = handler(group, df, df_trie, progress_callback)
+            df = handler(group, df, df_trie, update_progress_callback)
 
         return df
 
@@ -395,9 +394,7 @@ class FeatureSetCalculator(object):
         for f in features:
             assert f.get_name() in df, (
                 'Column "%s" missing frome dataframe' % f.get_name())
-
         progress_callback(len(features) / float(self.num_features))
-
         return df
 
     def _calculate_transform_features(self, features, frame, _df_trie, progress_callback):
@@ -405,9 +402,7 @@ class FeatureSetCalculator(object):
             # handle when no data
             if frame.shape[0] == 0:
                 set_default_column(frame, f)
-
                 progress_callback(1 / float(self.num_features))
-
                 continue
 
             # collect only the variables we need for this transformation
@@ -428,7 +423,6 @@ class FeatureSetCalculator(object):
             else:
                 values = [strip_values_if_series(values)]
             update_feature_columns(f, frame, values)
-
             progress_callback(1 / float(self.num_features))
 
         return frame
