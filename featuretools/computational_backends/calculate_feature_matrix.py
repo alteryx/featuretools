@@ -290,12 +290,12 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         progress_percent = 100.0
         time_elapsed = progress_bar.format_dict["elapsed"]
         progress_callback(update, progress_percent, time_elapsed)
-    
+
     # force to 100% since we saved last 5 percent
     progress_bar.update(progress_bar.total - progress_bar.n)
     progress_bar.refresh()
     progress_bar.close()
-    
+
     return feature_matrix
 
 
@@ -327,7 +327,9 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
         @save_csv_decorator(save_progress)
         def calc_results(time_last, ids, precalculated_features=None, training_window=None):
+
             update_progress_callback = None
+
             if progress_bar is not None:
                 def update_progress_callback(done):
                     previous_progress = progress_bar.n
