@@ -288,14 +288,14 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     if save_progress and os.path.exists(os.path.join(save_progress, 'temp')):
         shutil.rmtree(os.path.join(save_progress, 'temp'))
 
+    # force to 100% since we saved last 5 percent
+    previous_progress = progress_bar.n
+    progress_bar.update(progress_bar.total - progress_bar.n)
+
     if progress_callback is not None:
-        update = (progress_bar.total - progress_bar.n) / progress_bar.total * 100
-        progress_percent = 100.0
-        time_elapsed = progress_bar.format_dict["elapsed"]
+        update, progress_percent, time_elapsed = update_progress_callback_parameters(progress_bar, previous_progress)
         progress_callback(update, progress_percent, time_elapsed)
 
-    # force to 100% since we saved last 5 percent
-    progress_bar.update(progress_bar.total - progress_bar.n)
     progress_bar.refresh()
     progress_bar.close()
 
@@ -332,15 +332,13 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
         def calc_results(time_last, ids, precalculated_features=None, training_window=None):
 
             update_progress_callback = None
-
+     
             if progress_bar is not None:
                 def update_progress_callback(done):
                     previous_progress = progress_bar.n
                     progress_bar.update(done * group.shape[0])
                     if progress_callback is not None:
-                        update = (progress_bar.n - previous_progress) / progress_bar.total * 100
-                        progress_percent = (progress_bar.n / progress_bar.total) * 100
-                        time_elapsed = progress_bar.format_dict["elapsed"]
+                        update, progress_percent, time_elapsed = update_progress_callback_parameters(progress_bar, previous_progress)
                         progress_callback(update, progress_percent, time_elapsed)
             calculator = FeatureSetCalculator(entityset,
                                               feature_set,
@@ -586,9 +584,7 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
                 previous_progress = progress_bar.n
                 progress_bar.update(result.shape[0])
                 if progress_callback is not None:
-                    update = (progress_bar.n - previous_progress) / progress_bar.total * 100
-                    progress_percent = (progress_bar.n / progress_bar.total) * 100
-                    time_elapsed = progress_bar.format_dict["elapsed"]
+                    update, progress_percent, time_elapsed = update_progress_callback_parameters(progress_bar, previous_progress)
                     progress_callback(update, progress_percent, time_elapsed)
 
     except Exception:
@@ -654,3 +650,10 @@ def _handle_chunk_size(chunk_size, total_size):
         chunk_size = int(chunk_size)
 
     return chunk_size
+
+
+def update_progress_callback_parameters(progress_bar, previous_progress):
+    update = (progress_bar.n - previous_progress) / progress_bar.total * 100
+    progress_percent = (progress_bar.n / progress_bar.total) * 100
+    time_elapsed = progress_bar.format_dict["elapsed"]
+    return (update, progress_percent, time_elapsed)
