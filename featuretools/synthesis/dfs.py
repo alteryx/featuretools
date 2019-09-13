@@ -34,7 +34,8 @@ def dfs(entities=None,
         n_jobs=1,
         dask_kwargs=None,
         verbose=False,
-        return_variable_types=None):
+        return_variable_types=None,
+        progress_callback=None):
     '''Calculates a feature matrix and features given a dictionary of entities
     and a list of relationships.
 
@@ -159,6 +160,11 @@ def dfs(entities=None,
                 Numeric, Discrete, and Boolean. If given as
                 the string 'all', use all available variable types.
 
+        progress_callback (callable): function to be called with incremental progress updates.
+            Has the following parameters:
+                update: percentage change in progress since last call
+                progress_percent: percentage of total computation completed
+                time_elapsed: total time in seconds that has elapsed since start of call
     Examples:
         .. code-block:: python
 
@@ -214,7 +220,8 @@ def dfs(entities=None,
                                                   chunk_size=chunk_size,
                                                   n_jobs=n_jobs,
                                                   dask_kwargs=dask_kwargs,
-                                                  verbose=verbose)
+                                                  verbose=verbose,
+                                                  progress_callback=progress_callback)
     else:
         feature_matrix = calculate_feature_matrix(features,
                                                   entityset=entityset,
@@ -227,5 +234,6 @@ def dfs(entities=None,
                                                   chunk_size=chunk_size,
                                                   n_jobs=n_jobs,
                                                   dask_kwargs=dask_kwargs,
-                                                  verbose=verbose)
+                                                  verbose=verbose,
+                                                  progress_callback=progress_callback)
     return feature_matrix, features

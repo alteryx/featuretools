@@ -1216,11 +1216,11 @@ def test_chunk_dataframe_groups():
 
 
 def test_calls_progress_callback(es):
-    # call with all feature types. make sure progress callback calls sum to 1
     class MockProgressCallback:
         def __init__(self):
             self.total_update = 0
             self.total_progress_percent = 0
+
         def __call__(self, update, progress_percent, time_elapsed):
             self.total_update += update
             self.total_progress_percent = progress_percent
@@ -1230,14 +1230,14 @@ def test_calls_progress_callback(es):
     trans_per_session = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["sessions"], primitive=Count)
     trans_per_customer = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["customers"], primitive=Count)
     features = [trans_per_customer, ft.Feature(trans_per_session, parent_entity=es["customers"], primitive=Max)]
-    fm = ft.calculate_feature_matrix(features, entityset=es, progress_callback=mock_progress_callback)
-    
+    ft.calculate_feature_matrix(features, entityset=es, progress_callback=mock_progress_callback)
+
     assert np.isclose(mock_progress_callback.total_update, 100.0)
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
-    
-    # test again with multiple jobs
+
+    # test with multiple jobs
     mock_progress_callback = MockProgressCallback()
-    fm = ft.calculate_feature_matrix(features, entityset=es, progress_callback=mock_progress_callback, n_jobs=3)
+    ft.calculate_feature_matrix(features, entityset=es, progress_callback=mock_progress_callback, n_jobs=3)
 
     assert np.isclose(mock_progress_callback.total_update, 100.0)
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)

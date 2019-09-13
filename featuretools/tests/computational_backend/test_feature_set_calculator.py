@@ -814,9 +814,6 @@ def test_returns_order_of_instance_ids(es):
     assert list(df.index) == instance_ids
 
 
-
-
-
 def test_calls_progress_callback(es):
     # call with all feature types. make sure progress callback calls sum to 1
     identity = ft.Feature(es['customers']['age'])
@@ -856,8 +853,8 @@ def test_calls_progress_callback(es):
     calculator.run(np.array(instance_ids), mock_update_progress_callback)
 
     assert np.isclose(mock_update_progress_callback.total, 1)
-    
-    
+
+
 def test_precalculated_features(es):
     error_msg = 'This primitive should never be used because the features are precalculated'
 
