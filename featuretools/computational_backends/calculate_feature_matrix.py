@@ -332,7 +332,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
         def calc_results(time_last, ids, precalculated_features=None, training_window=None):
 
             update_progress_callback = None
-     
+
             if progress_bar is not None:
                 def update_progress_callback(done):
                     previous_progress = progress_bar.n
