@@ -814,6 +814,9 @@ def test_returns_order_of_instance_ids(es):
     assert list(df.index) == instance_ids
 
 
+
+
+
 def test_calls_progress_callback(es):
     # call with all feature types. make sure progress callback calls sum to 1
     identity = ft.Feature(es['customers']['age'])
@@ -829,19 +832,19 @@ def test_calls_progress_callback(es):
                                       time_last=None,
                                       feature_set=feature_set)
 
-    class MockProgressCallback:
+    class MockUpdateProgressCallback:
         def __init__(self):
             self.total = 0
 
         def __call__(self, update):
             self.total += update
 
-    mock_progress_callback = MockProgressCallback()
+    mock_update_progress_callback = MockUpdateProgressCallback()
 
     instance_ids = [0, 1, 2]
-    calculator.run(np.array(instance_ids), mock_progress_callback)
+    calculator.run(np.array(instance_ids), mock_update_progress_callback)
 
-    assert np.isclose(mock_progress_callback.total, 1)
+    assert np.isclose(mock_update_progress_callback.total, 1)
 
     # testing again with a time_last with no data
     feature_set = FeatureSet(all_features)
@@ -849,12 +852,12 @@ def test_calls_progress_callback(es):
                                       time_last=pd.Timestamp("1950"),
                                       feature_set=feature_set)
 
-    mock_progress_callback = MockProgressCallback()
-    calculator.run(np.array(instance_ids), mock_progress_callback)
+    mock_update_progress_callback = MockUpdateProgressCallback()
+    calculator.run(np.array(instance_ids), mock_update_progress_callback)
 
-    assert np.isclose(mock_progress_callback.total, 1)
-
-
+    assert np.isclose(mock_update_progress_callback.total, 1)
+    
+    
 def test_precalculated_features(es):
     error_msg = 'This primitive should never be used because the features are precalculated'
 

@@ -38,16 +38,6 @@ from featuretools.variable_types import (
 logger = logging.getLogger('featuretools.computational_backend')
 
 PBAR_FORMAT = "Elapsed: {elapsed} | Progress: {l_bar}{bar}"
-PBAR_FORMAT_REMAINING = PBAR_FORMAT + "| Remaining: {remaining}"
-
-
-def progress_callback_dummy(update, progress_percentage, time_elapsed):
-    """
-    update: change in progress since last call
-    progress_percent: percentage of total computation completed
-    time_elapsed: featuretools estimate of time remaining in seconds. None if no estimate
-    """
-    print("update: ", update, "progress_percent %: ", progress_percentage, "time_elapsed: ", time_elapsed)
 
 
 def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instance_ids=None,
@@ -56,7 +46,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                              training_window=None, approximate=None,
                              save_progress=None, verbose=False,
                              chunk_size=None, n_jobs=1,
-                             dask_kwargs=None, progress_callback=progress_callback_dummy):
+                             dask_kwargs=None, progress_callback=None):
     """Calculates a matrix for a given set of instance ids and calculation times.
 
     Args:
@@ -246,9 +236,9 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                     }
     if progress_callback is not None:
         if not verbose:
-            make_tqdm_iterator.update({'file': open(os.devnull, 'w')})
+            tqdm_options.update({'file': open(os.devnull, 'w')})
     else:
-        make_tqdm_iterator.update({'disable': (not verbose)})
+        tqdm_options.update({'disable': (not verbose)})
     progress_bar = make_tqdm_iterator(**tqdm_options)
 
     if n_jobs != 1 or dask_kwargs is not None:
@@ -265,7 +255,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                                    target_time=target_time,
                                                    pass_columns=pass_columns,
                                                    progress_bar=progress_bar,
-                                                   dask_kwargs=dask_kwargs or {})
+                                                   dask_kwargs=dask_kwargs or {},
+                                                   progress_callback=progress_callback)
     else:
         feature_matrix = calculate_chunk(cutoff_time=cutoff_time_to_pass,
                                          chunk_size=chunk_size,
@@ -279,7 +270,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                          target_time=target_time,
                                          pass_columns=pass_columns,
                                          progress_bar=progress_bar,
-                                         progress_callback_function=progress_callback)
+                                         progress_callback=progress_callback)
 
     feature_matrix.sort_index(level='time', kind='mergesort', inplace=True)
     if not cutoff_time_in_index:
@@ -289,7 +280,11 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         shutil.rmtree(os.path.join(save_progress, 'temp'))
 
     # force to 100% since we saved last 5 percent
-    print("ending:", "total:", progress_bar.total, "n:", progress_bar.n, cutoff_time.shape[0])
+    if progress_callback is not None:
+        update = (progress_bar.total - progress_bar.n) / progress_bar.total * 100
+        progress_percent = 100.0
+        time_elapsed = progress_bar.format_dict["elapsed"]
+        progress_callback(update, progress_percent, time_elapsed)
 
     progress_bar.update(progress_bar.total - progress_bar.n)
     progress_bar.refresh()
@@ -299,7 +294,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
 def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate, training_window,
                     save_progress, no_unapproximated_aggs, cutoff_df_time_var, target_time,
-                    pass_columns, progress_bar=None, progress_callback_function=None):
+                    pass_columns, progress_bar=None, progress_callback=None):
     if not isinstance(feature_set, FeatureSet):
         feature_set = cloudpickle.loads(feature_set)
 
@@ -330,11 +325,11 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                 def update_progress_callback(done):
                     previous_progress = progress_bar.n
                     progress_bar.update(done * group.shape[0])
-                    if progress_callback_function is not None:
+                    if progress_callback is not None:
                         update = (progress_bar.n - previous_progress) / progress_bar.total * 100
                         progress_percent = (progress_bar.n / progress_bar.total) * 100
                         time_elapsed = progress_bar.format_dict["elapsed"]
-                        progress_callback_function(update, progress_percent, time_elapsed)
+                        progress_callback(update, progress_percent, time_elapsed)
             calculator = FeatureSetCalculator(entityset,
                                               feature_set,
                                               time_last,
@@ -357,9 +352,6 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
             inner_grouped = _chunk_dataframe_groups(inner_grouped, chunk_size)
 
         for time_last, group in inner_grouped:
-            if len(feature_matrix) == 1:
-                progress_bar.bar_format = PBAR_FORMAT_REMAINING
-                progress_bar.refresh()
 
             # sort group by instance id
             ids = group['instance_id'].sort_values().values
@@ -503,12 +495,9 @@ def scatter_warning(num_scattered_workers, num_workers):
 def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate, training_window,
                               save_progress, entityset, n_jobs, no_unapproximated_aggs,
                               cutoff_df_time_var, target_time, pass_columns,
-                              progress_bar, dask_kwargs=None):
+                              progress_bar, dask_kwargs=None, progress_callback=None):
     from distributed import as_completed, Future
     from dask.base import tokenize
-
-    progress_bar.bar_format = PBAR_FORMAT_REMAINING
-    progress_bar.refresh()
 
     client = None
     cluster = None
@@ -573,7 +562,8 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
                              cutoff_df_time_var=cutoff_df_time_var,
                              target_time=target_time,
                              pass_columns=pass_columns,
-                             progress_bar=None)
+                             progress_bar=None,
+                             progress_callback=progress_callback)
 
         feature_matrix = []
         iterator = as_completed(_chunks).batches()
@@ -581,7 +571,13 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
             results = client.gather(batch)
             for result in results:
                 feature_matrix.append(result)
+                previous_progress = progress_bar.n
                 progress_bar.update(result.shape[0])
+                if progress_callback is not None:
+                    update = (progress_bar.n - previous_progress) / progress_bar.total * 100
+                    progress_percent = (progress_bar.n / progress_bar.total) * 100
+                    time_elapsed = progress_bar.format_dict["elapsed"]
+                    progress_callback(update, progress_percent, time_elapsed)
 
     except Exception:
         raise
