@@ -238,10 +238,10 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     chunk_size = _handle_chunk_size(chunk_size, cutoff_time.shape[0])
     tqdm_options = {'total': (cutoff_time.shape[0] / .95),  # make total 5% higher to allot time for wrapping up at end
                     'smoothing': .05,  # arbitrary selection close to 0, which would be no smoothing
-                    'bar_format': PBAR_FORMAT
-                    }
+                    'bar_format': PBAR_FORMAT}
     if progress_callback is not None:
         if not verbose:
+            # allows us to utilize progress_bar updates without printing to anywhere
             tqdm_options.update({'file': open(os.devnull, 'w')})
     else:
         tqdm_options.update({'disable': (not verbose)})
@@ -285,16 +285,17 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     if save_progress and os.path.exists(os.path.join(save_progress, 'temp')):
         shutil.rmtree(os.path.join(save_progress, 'temp'))
 
-    # force to 100% since we saved last 5 percent
     if progress_callback is not None:
         update = (progress_bar.total - progress_bar.n) / progress_bar.total * 100
         progress_percent = 100.0
         time_elapsed = progress_bar.format_dict["elapsed"]
         progress_callback(update, progress_percent, time_elapsed)
-
+    
+    # force to 100% since we saved last 5 percent
     progress_bar.update(progress_bar.total - progress_bar.n)
     progress_bar.refresh()
     progress_bar.close()
+    
     return feature_matrix
 
 

@@ -394,7 +394,9 @@ class FeatureSetCalculator(object):
         for f in features:
             assert f.get_name() in df, (
                 'Column "%s" missing frome dataframe' % f.get_name())
+
         progress_callback(len(features) / float(self.num_features))
+
         return df
 
     def _calculate_transform_features(self, features, frame, _df_trie, progress_callback):
@@ -402,7 +404,9 @@ class FeatureSetCalculator(object):
             # handle when no data
             if frame.shape[0] == 0:
                 set_default_column(frame, f)
+
                 progress_callback(1 / float(self.num_features))
+
                 continue
 
             # collect only the variables we need for this transformation
@@ -423,6 +427,7 @@ class FeatureSetCalculator(object):
             else:
                 values = [strip_values_if_series(values)]
             update_feature_columns(f, frame, values)
+
             progress_callback(1 / float(self.num_features))
 
         return frame
