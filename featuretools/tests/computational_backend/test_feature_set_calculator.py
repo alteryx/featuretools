@@ -829,19 +829,19 @@ def test_calls_progress_callback(es):
                                       time_last=None,
                                       feature_set=feature_set)
 
-    class MockUpdateProgressCallback:
+    class MockProgressCallback:
         def __init__(self):
             self.total = 0
 
         def __call__(self, update):
             self.total += update
 
-    mock_update_progress_callback = MockUpdateProgressCallback()
+    mock_progress_callback = MockProgressCallback()
 
     instance_ids = [0, 1, 2]
-    calculator.run(np.array(instance_ids), mock_update_progress_callback)
+    calculator.run(np.array(instance_ids), mock_progress_callback)
 
-    assert np.isclose(mock_update_progress_callback.total, 1)
+    assert np.isclose(mock_progress_callback.total, 1)
 
     # testing again with a time_last with no data
     feature_set = FeatureSet(all_features)
@@ -849,10 +849,10 @@ def test_calls_progress_callback(es):
                                       time_last=pd.Timestamp("1950"),
                                       feature_set=feature_set)
 
-    mock_update_progress_callback = MockUpdateProgressCallback()
-    calculator.run(np.array(instance_ids), mock_update_progress_callback)
+    mock_progress_callback = MockProgressCallback()
+    calculator.run(np.array(instance_ids), mock_progress_callback)
 
-    assert np.isclose(mock_update_progress_callback.total, 1)
+    assert np.isclose(mock_progress_callback.total, 1)
 
 
 def test_precalculated_features(es):

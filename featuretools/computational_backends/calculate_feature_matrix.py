@@ -119,8 +119,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         progress_callback (callable): function to be called with incremental progress updates.
             Has the following parameters:
 
-                update: percentage change in progress since last call
-                progress_percent: percentage of total computation completed
+                update: percentage change (float between 0 and 100) in progress since last call
+                progress_percent: percentage (float between 0 and 100) of total computation completed
                 time_elapsed: total time in seconds that has elapsed since start of call
 
     """
@@ -239,14 +239,15 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     chunk_size = _handle_chunk_size(chunk_size, cutoff_time.shape[0])
     tqdm_options = {'total': (cutoff_time.shape[0] / .95),  # make total 5% higher to allot time for wrapping up at end
-                    'smoothing': .05,  # arbitrary selection close to 0, which would be no smoothing
                     'bar_format': PBAR_FORMAT}
-    if progress_callback is not None:
-        if not verbose:
+
+    if not verbose:
+        if progress_callback is not None:
             # allows us to utilize progress_bar updates without printing to anywhere
             tqdm_options.update({'file': open(os.devnull, 'w')})
-    else:
-        tqdm_options.update({'disable': (not verbose)})
+        else:
+            tqdm_options.update({'disable': True})
+
     progress_bar = make_tqdm_iterator(**tqdm_options)
 
     if n_jobs != 1 or dask_kwargs is not None:
@@ -346,7 +347,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                                               time_last,
                                               training_window=training_window,
                                               precalculated_features=precalculated_features)
-            matrix = calculator.run(ids, update_progress_callback=update_progress_callback)
+            matrix = calculator.run(ids, progress_callback=update_progress_callback)
             return matrix
 
         # if all aggregations have been approximated, can calculate all together

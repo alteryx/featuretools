@@ -163,8 +163,8 @@ def dfs(entities=None,
         progress_callback (callable): function to be called with incremental progress updates.
             Has the following parameters:
 
-                update: percentage change in progress since last call
-                progress_percent: percentage of total computation completed
+                update: percentage change (float between 0 and 100) in progress since last call
+                progress_percent: percentage (float between 0 and 100) of total computation completed
                 time_elapsed: total time in seconds that has elapsed since start of call
 
     Examples:
