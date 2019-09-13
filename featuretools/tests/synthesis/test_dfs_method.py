@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
+import numpy as np
 import pandas as pd
 import pytest
 from distributed.utils_test import cluster
-import numpy as np
 
 from featuretools.entityset import EntitySet, Relationship, Timedelta
 from featuretools.primitives import Max, Mean, Min, Sum
