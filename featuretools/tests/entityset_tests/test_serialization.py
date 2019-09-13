@@ -1,4 +1,5 @@
 import errno
+import json
 import os
 import shutil
 
@@ -268,11 +269,15 @@ def test_serialize_url_csv(es):
         es.to_csv(URL, encoding='utf-8', engine='python')
 
 
-def test_serialize_data_description(es, tmpdir):
+def test_serialize_subdirs_not_removed(es, tmpdir):
     write_path = tmpdir.mkdir("test")
     test_dir = write_path.mkdir("test_dir")
+    with open(write_path.join('data_description.json'), 'w') as f:
+        json.dump('__SAMPLE_TEXT__', f)
     serialize.write_data_description(es, path=str(write_path), index='1', sep='\t', encoding='utf-8', compression=None)
     assert os.path.exists(str(test_dir))
+    with open(write_path.join('data_description.json'), 'r') as f:
+        assert '__SAMPLE_TEXT__' not in json.load(f)
 
 
 def test_deserialize_url_csv(es):
