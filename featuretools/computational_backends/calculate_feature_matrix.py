@@ -239,14 +239,14 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     chunk_size = _handle_chunk_size(chunk_size, cutoff_time.shape[0])
     tqdm_options = {'total': (cutoff_time.shape[0] / .95),  # make total 5% higher to allot time for wrapping up at end
-                    'bar_format': PBAR_FORMAT}
+                    'bar_format': PBAR_FORMAT,
+                    'disable': True}
 
-    if not verbose:
-        if progress_callback is not None:
-            # allows us to utilize progress_bar updates without printing to anywhere
-            tqdm_options.update({'file': open(os.devnull, 'w')})
-        else:
-            tqdm_options.update({'disable': True})
+    if verbose:
+        tqdm_options.update({'disable': False})
+    elif progress_callback is not None:
+        # allows us to utilize progress_bar updates without printing to anywhere
+        tqdm_options.update({'file': open(os.devnull, 'w'), 'disable': False})
 
     progress_bar = make_tqdm_iterator(**tqdm_options)
 
