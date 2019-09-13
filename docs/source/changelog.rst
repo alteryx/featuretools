@@ -13,6 +13,7 @@ Changelog
         * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
         * Fixed CumCount and other group-by transform primitives that take ID as input (:pr:`733`)
 	* Updated training_window error assertion to only check against observations (:pr:`728`)
+        * Don't delete the whole destination folder while saving entityset (:pr:`717`)
     * Changes
         * Raise warning and not error on schema version mismatch (:pr:`718`)
         * Removed time remaining from displayed progress bar in dfs() and calculate_feature_matrix() (:pr:`739`)
