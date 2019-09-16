@@ -56,23 +56,9 @@ class Timedelta(object):
                 both unit and value, or a dictionary of units and times.
             unit (str) : Unit of time delta.
         """
+        self.check_value(value, unit)
+        self.times = self.fix_units()
 
-        # TODO: check if value is int or float
-        if is_string(value):
-            from featuretools.utils.wrangle import _check_timedelta
-            td = _check_timedelta(value)
-            self.times = td.times
-        elif isinstance(value, dict):
-            self.times = value
-        else:
-            self.times = {unit: value}
-        self.fixed_units = dict()
-        for unit, value in self.times.items():
-            unit = self._check_unit_plural(unit)
-            if unit in self._readable_to_unit:
-                unit = self._readable_to_unit[unit]
-            self.fixed_units[unit] = value
-        self.times = self.fixed_units
         if delta_obj is not None:
             self.delta_obj = delta_obj
         else:
@@ -124,6 +110,25 @@ class Timedelta(object):
         else:
             readable_times = self.lower_readable_times()
             return relativedelta(**readable_times)
+
+    def check_value(self, value, unit):
+        if is_string(value):
+            from featuretools.utils.wrangle import _check_timedelta
+            td = _check_timedelta(value)
+            self.times = td.times
+        elif isinstance(value, dict):
+            self.times = value
+        else:
+            self.times = {unit: value}
+
+    def fix_units(self):
+        fixed_units = dict()
+        for unit, value in self.times.items():
+            unit = self._check_unit_plural(unit)
+            if unit in self._readable_to_unit:
+                unit = self._readable_to_unit[unit]
+            fixed_units[unit] = value
+        return fixed_units
 
     def lower_readable_times(self):
         readable_times = dict()
