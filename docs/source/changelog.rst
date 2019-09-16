@@ -7,6 +7,7 @@ Changelog
         * Improve how files are copied and written (:pr:`721`)
         * Add number of rows to graph in entityset.plot (:pr:`727`)
         * Enable feature-specific top_n value using a dictionary in encode_features (:pr:`735`)
+        * Added progress_callback parameter to dfs() and calculate_feature_matrix() (:pr:`739`)
     * Fixes
         * Fixed entity set deserialization (:pr:`720`)
         * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
@@ -15,6 +16,7 @@ Changelog
         * Don't delete the whole destination folder while saving entityset (:pr:`717`)
     * Changes
         * Raise warning and not error on schema version mismatch (:pr:`718`)
+        * Removed time remaining from displayed progress bar in dfs() and calculate_feature_matrix() (:pr:`739`)
     * Documentation Changes
         * Updated URL for Compose (:pr:`716`)
     * Testing Changes
