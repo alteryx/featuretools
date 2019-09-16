@@ -585,16 +585,15 @@ class DeepFeatureSynthesis(object):
                                                         groupby_prim,
                                                         require_direct_input=require_direct_input,
                                                         feature_filter=variable_filter)
-            # get columns to use as groupbys, use IDs as default unless other options given
-            if 'include_groupby_variables' not in current_options or \
-               'ignore_groupby_variables' not in current_options:
-                default_type = Id
+            # get columns to use as groupbys, use IDs as default unless other groupbys specified
+            if 'include_groupby_variables' in current_options:
+                default_type = variable_types.PandasTypes._all
             else:
-                default_type = None
+                default_type = set([Id])
             groupby_matches = self._features_by_type(all_features=all_features,
                                                      entity=entity,
                                                      max_depth=new_max_depth,
-                                                     variable_type=[default_type])
+                                                     variable_type=default_type)
             groupby_filter = groupby_filter_generator(current_options)
             groupby_matches = [groupby for groupby in groupby_matches if groupby_filter(groupby)]
 
@@ -733,7 +732,6 @@ class DeepFeatureSynthesis(object):
 
         for feat in entity_features:
             f = entity_features[feat]
-
             if (variable_type == variable_types.PandasTypes._all or
                     f.variable_type == variable_type or
                     any(issubclass(f.variable_type, vt) for vt in variable_type)):

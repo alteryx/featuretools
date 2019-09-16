@@ -124,12 +124,12 @@ def groupby_filter_generator(options):
         def groupby_filter(f):
             return (not isinstance(f, IdentityFeature) or
                     f.entity.id in options['include_groupby_variables'] and
-                    f.variable.id in options['include_variables'][f.entity.id])
+                    f.variable.id in options['include_groupby_variables'][f.entity.id])
     elif 'ignore_groupby_variables' in options:
         def groupby_filter(f):
             return (not isinstance(f, IdentityFeature) or
-                    f.entity.id not in options['ignore_variables'] or
-                    f.variable.id not in options['ignore_variables'][f.entity.id])
+                    f.entity.id not in options['ignore_groupby_variables'] or
+                    f.variable.id not in options['ignore_groupby_variables'][f.entity.id])
     else:
         def groupby_filter(f):
             return True

@@ -16,6 +16,7 @@ from featuretools.primitives import (  # CumMean,
     Absolute,
     AddNumeric,
     Count,
+    CumCount,
     Diff,
     Equal,
     Hour,
@@ -879,3 +880,141 @@ def test_makes_direct_of_agg_of_trans_on_target(es):
 
     features = dfs_obj.build_features()
     assert feature_with_name(features, 'sessions.MEAN(log.ABSOLUTE(value))')
+
+
+def test_primitive_options_errors(es):
+    wrong_key_options = {'mode': {'ignore_entity': ['sessions']}}
+    wrong_type_list = {'mode': {'ignore_entities': 'sessions'}}
+    wrong_type_dict = {'mode':
+                       {'ignore_variables': {'sessions': 'product_id'}}}
+    conflicting_primitive_options = {('count', 'mode'):
+                                     {'ignore_entities': ['sessions']},
+                                     'mode': {'include_entities': ['sessions']}}
+    key_error_text = "Unrecognized primitive option \'ignore_entity\' for mode"
+    list_error_text = "Incorrect type formatting for \'ignore_entities\' for mode"
+    dict_error_text = "Incorrect type formatting for \'ignore_variables\' for mode"
+    conflicting_error_text = "Multiple options found for primitive mode"
+    with pytest.raises(KeyError, match=key_error_text):
+        DeepFeatureSynthesis(target_entity_id='customers',
+                             entityset=es,
+                             agg_primitives=['mode'],
+                             trans_primitives=[],
+                             primitive_options=wrong_key_options)
+    with pytest.raises(TypeError, match=list_error_text):
+        DeepFeatureSynthesis(target_entity_id='customers',
+                             entityset=es,
+                             agg_primitives=['mode'],
+                             trans_primitives=[],
+                             primitive_options=wrong_type_list)
+    with pytest.raises(TypeError, match=dict_error_text):
+        DeepFeatureSynthesis(target_entity_id='customers',
+                             entityset=es,
+                             agg_primitives=['mode'],
+                             trans_primitives=[],
+                             primitive_options=wrong_type_dict)
+    with pytest.raises(KeyError, match=conflicting_error_text):
+        DeepFeatureSynthesis(target_entity_id='customers',
+                             entityset=es,
+                             agg_primitives=['mode'],
+                             trans_primitives=[],
+                             primitive_options=conflicting_primitive_options)
+
+
+def test_primitive_options(es):
+    options = {'mode': {'include_entities': ['stores', 'products']},
+               'count': {'ignore_entities': ['log'],
+                         'ignore_variables': {'products': ['department']}},
+               'last': {'include_variables': {'log': ['id']}}}
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
+                                   entityset=es,
+                                   agg_primitives=[Last, Mode, Count],
+                                   trans_primitives=[],
+                                   primitive_options=options)
+    features = dfs_obj.build_features()
+    for f in features:
+        deps = f.get_dependencies(deep=True)
+        entities = [d.entity.id for d in deps]
+        identities = [d for d in deps
+                      if isinstance(d, IdentityFeature)]
+        variables = [d.variable.id for d in identities
+                     if d.entity.id == 'log']
+        if isinstance(f.primitive, Mode):
+            assert ('stores' in entities or 'products' in entities)
+        if isinstance(f.primitive, Count):
+            assert 'log' not in entities
+            if 'products' in entities:
+                assert 'department' not in variables
+        if isinstance(f.primitive, Last):
+            if ['log'] == entities:
+                assert 'id' in variables
+
+
+def test_primitive_options_with_globals(es):
+    # non-overlapping ignore_entities
+    options = {'last': {'ignore_entities': ['customers']}}
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
+                                   entityset=es,
+                                   agg_primitives=[Last],
+                                   trans_primitives=[],
+                                   ignore_entities=['log'],
+                                   primitive_options=options)
+    features = dfs_obj.build_features()
+    for f in features:
+        deps = f.get_dependencies(deep=True)
+        entities = [d.entity.id for d in deps]
+        assert 'log' not in entities
+        if isinstance(f.primitive, Last):
+            assert 'customers' not in entities
+
+    # non-overlapping ignore_variables
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
+                                   entityset=es,
+                                   agg_primitives=[Last],
+                                   trans_primitives=[],
+                                   ignore_variables={'log': ['value']},
+                                   primitive_options=options)
+    features = dfs_obj.build_features()
+    for f in features:
+        deps = f.get_dependencies(deep=True)
+        identities = [d for d in deps
+                      if isinstance(d, IdentityFeature)]
+        variables = [d.variable.id for d in identities
+                     if d.entity.id == 'log']
+        assert 'value' not in variables
+        if isinstance(f.primitive, Last):
+            assert 'customers' not in [d.entity.id for d in deps]
+
+    # Overlapping globals/options
+    options = {'last': {'include_entities': ['log']}}
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
+                                   entityset=es,
+                                   agg_primitives=[Last, Mode],
+                                   trans_primitives=[],
+                                   ignore_entities=['log'],
+                                   primitive_options=options)
+    features = dfs_obj.build_features()
+    for f in features:
+        deps = f.get_dependencies()
+        entities = [d.entity.id for d in deps]
+        # Last only uses log entity
+        if isinstance(f.primitive, Last):
+            assert ['log'] == entities
+        # All other primitives ignore log
+        else:
+            assert 'log' not in entities
+
+
+def test_primitive_options_groupbys(es):
+    options = {'cum_sum': {'include_groupby_variables': {'customers': ['cancel_reason']}},
+               'cum_count': {'ignore_groupby_variables': {'customers': [u"région_id"]}}}
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[],
+                                   groupby_trans_primitives=['cum_sum', 'cum_count'],
+                                   primitive_options=options)
+    features = dfs_obj.build_features()
+    assert feature_with_name(features, 'CUM_SUM(age) by cancel_reason')
+    for f in features:
+        if isinstance(f, CumCount):
+            assert f.groupby != u'région_id'
