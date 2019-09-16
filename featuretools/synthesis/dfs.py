@@ -92,8 +92,8 @@ def dfs(entities=None,
             variables within each entity to blacklist when creating features.
 
         primitive_options (dict[str or list[str] -> dict, optional]): Specify
-            options or a single primitive or a group of primitives. Each option
-            ``dict`` can have the following keys:
+            options for a single primitive or a group of primitives. Each
+            option ``dict`` can have the following keys:
 
             ``"include_entities"``
                 List of entities to be included when creating features for
@@ -228,6 +228,7 @@ def dfs(entities=None,
                                       drop_contains=drop_contains,
                                       ignore_entities=ignore_entities,
                                       ignore_variables=ignore_variables,
+                                      primitive_options=primitive_options,
                                       max_features=max_features,
                                       seed_features=seed_features)
 

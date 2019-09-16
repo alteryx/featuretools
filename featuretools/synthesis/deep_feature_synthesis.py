@@ -16,6 +16,10 @@ from featuretools.primitives.base import (
     PrimitiveBase,
     TransformPrimitive
 )
+from featuretools.primitives.options_utils import (
+    generate_all_primitive_options,
+    variable_filter_generator
+)
 from featuretools.utils import is_string
 from featuretools.variable_types import Boolean, Discrete, Id, Numeric
 
@@ -78,9 +82,9 @@ class DeepFeatureSynthesis(object):
             where_stacking_limit (int, optional): Cap the depth of the where features.
                 Default: 1
 
-            primitive_options (dict[str or list[str] -> dict, optional]): Specify
-                options or a single primitive or a group of primitives. Each option
-                ``dict`` can have the following keys:
+            primitive_options (dict[str or tuple[str] -> dict, optional]):
+                Specify options for a single primitive or a group of primitives.
+                Each option ``dict`` can have the following keys:
 
                 ``"include_entities"``
                     List of entities to be included when creating features for
@@ -212,6 +216,16 @@ class DeepFeatureSynthesis(object):
         for p in groupby_trans_primitives:
             p = check_trans_primitive(p)
             self.groupby_trans_primitives.append(p)
+
+        if primitive_options is None:
+            primitive_options = {}
+        all_primitives = self.trans_primitives + self.agg_primitives + \
+            self.where_primitives + self.groupby_trans_primitives
+        self.primitive_options, self.ignore_entities =\
+            generate_all_primitive_options(all_primitives,
+                                           primitive_options,
+                                           self.ignore_entities,
+                                           self.ignore_variables)
 
         self.seed_features = seed_features or []
         self.drop_exact = drop_exact or []
@@ -466,10 +480,7 @@ class DeepFeatureSynthesis(object):
             entity (Entity): Entity to calculate features for.
         """
         variables = entity.variables
-        ignore_variables = self.ignore_variables[entity.id]
         for v in variables:
-            if v.id in ignore_variables:
-                continue
             new_f = IdentityFeature(variable=v)
             self._handle_new_feature(all_features=all_features,
                                      new_feature=new_f)
@@ -599,8 +610,14 @@ class DeepFeatureSynthesis(object):
         new_max_depth = None
         if max_depth is not None:
             new_max_depth = max_depth - 1
-
         for agg_prim in self.agg_primitives:
+            current_options = self.primitive_options[agg_prim.name]
+            variable_filter = variable_filter_generator(current_options)
+            if 'include_entities' in current_options and \
+                    child_entity.id not in current_options['include_entities']:
+                continue
+            elif child_entity.id in current_options['ignore_entities']:
+                continue
             # if multiple input_types, only use first one for DFS
             input_types = agg_prim.input_types
             if type(input_types[0]) == list:
@@ -608,8 +625,10 @@ class DeepFeatureSynthesis(object):
 
             def feature_filter(f):
                 # Remove direct features of parent entity and features in relationship path.
+                # Include/ignore variables based on current_options
                 return (not _direct_of_entity(f, parent_entity)) \
-                    and not self._feature_in_relationship_path(relationship_path, f)
+                    and not self._feature_in_relationship_path(relationship_path, f) \
+                    and variable_filter(f)
 
             matching_inputs = self._get_matching_inputs(all_features,
                                                         child_entity,
@@ -716,7 +735,6 @@ class DeepFeatureSynthesis(object):
                                           entity=entity,
                                           max_depth=max_depth,
                                           variable_type=set(input_types))
-
         if feature_filter:
             features = [f for f in features if feature_filter(f)]
 
