@@ -23,11 +23,12 @@ def generate_all_primitive_options(all_primitives,
                                    ignore_variables):
     primitive_options = init_primitive_options(primitive_options)
     global_ignore_entities = ignore_entities
+    # for now, only use primitive names as option keys
     for primitive in all_primitives:
         if not isinstance(primitive, str):
             primitive = primitive.name
         if primitive in primitive_options:
-            # have to reconcile global ignored with individual options
+            # Reconcile global options with individually-specified options
             options = primitive_options[primitive]
             included_entities = set().union(
                 options.get('include_entities') if options.get('include_entities') else set([]),
@@ -91,13 +92,6 @@ def init_option_dict(key, option_dict):
 def variable_filter_generator(options):
     if 'include_variables' in options:
         def variable_filter(f):
-            print(options['include_variables'])
-            print(f.entity.id, f.variable.id)
-            print((not isinstance(f, IdentityFeature) or
-                    (f.entity.id in options['include_variables'] and
-                    f.variable.id in options['include_variables'][f.entity.id])))
-            print("\n")
-
             return (not isinstance(f, IdentityFeature) or
                     (f.entity.id in options['include_variables'] and
                     f.variable.id in options['include_variables'][f.entity.id]))
@@ -112,3 +106,20 @@ def variable_filter_generator(options):
         def variable_filter(f):
             return True
     return variable_filter
+
+
+def groupby_filter_generator(options):
+    if 'include_groupby_variables' in options:
+        def groupby_filter(f):
+            return (not isinstance(f, IdentityFeature) or
+                    f.entity.id in options['include_groupby_variables'] and
+                    f.variable.id in options['include_variables'][f.entity.id])
+    elif 'ignore_groupby_variables' in options:
+        def groupby_filter(f):
+            return (not isinstance(f, IdentityFeature) or
+                    f.entity.id not in options['ignore_variables'] or
+                    f.variable.id not in options['ignore_variables'][f.entity.id])
+    else:
+        def groupby_filter(f):
+            return True
+    return groupby_filter

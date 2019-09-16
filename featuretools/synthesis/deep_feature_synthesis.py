@@ -18,6 +18,7 @@ from featuretools.primitives.base import (
 )
 from featuretools.primitives.options_utils import (
     generate_all_primitive_options,
+    groupby_filter_generator,
     variable_filter_generator
 )
 from featuretools.utils import is_string
@@ -534,6 +535,13 @@ class DeepFeatureSynthesis(object):
             new_max_depth = max_depth - 1
 
         for trans_prim in self.trans_primitives:
+            current_options = self.primitive_options[trans_prim.name]
+            variable_filter = variable_filter_generator(current_options)
+            if 'include_entities' in current_options and \
+                    entity.id not in current_options['include_entities']:
+                continue
+            elif entity.id in current_options['ignore_entities']:
+                continue
             # if multiple input_types, only use first one for DFS
             input_types = trans_prim.input_types
             if type(input_types[0]) == list:
@@ -544,7 +552,8 @@ class DeepFeatureSynthesis(object):
                                                         new_max_depth,
                                                         input_types,
                                                         trans_prim,
-                                                        require_direct_input=require_direct_input)
+                                                        require_direct_input=require_direct_input,
+                                                        feature_filter=variable_filter)
 
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
@@ -554,6 +563,17 @@ class DeepFeatureSynthesis(object):
                                              new_feature=new_f)
 
         for groupby_prim in self.groupby_trans_primitives:
+            current_options = self.primitive_options[groupby_prim.name]
+            variable_filter = variable_filter_generator(current_options)
+            if ('include_entities' in current_options and
+                    entity.id not in current_options['include_entities']) or \
+               ('include_groupby_entities' in current_options and
+                    entity.id not in current_options['include_groupby_entities']):
+                continue
+            elif entity.id in current_options['ignore_entities'] or \
+                ('ignore_groupby_entities' in current_options and
+                    entity.id in current_options['ignore_groupby_entities']):
+                continue
             input_types = groupby_prim.input_types[:]
             # if multiple input_types, only use first one for DFS
             if type(input_types[0]) == list:
@@ -563,17 +583,26 @@ class DeepFeatureSynthesis(object):
                                                         new_max_depth,
                                                         input_types,
                                                         groupby_prim,
-                                                        require_direct_input=require_direct_input)
-            # get IDs to use as groupby
-            id_matches = self._features_by_type(all_features=all_features,
-                                                entity=entity,
-                                                max_depth=new_max_depth,
-                                                variable_type=set([Id]))
+                                                        require_direct_input=require_direct_input,
+                                                        feature_filter=variable_filter)
+            # get columns to use as groupbys, use IDs as default unless other options given
+            if 'include_groupby_variables' not in current_options or \
+               'ignore_groupby_variables' not in current_options:
+                default_type = Id
+            else:
+                default_type = None
+            groupby_matches = self._features_by_type(all_features=all_features,
+                                                     entity=entity,
+                                                     max_depth=new_max_depth,
+                                                     variable_type=[default_type])
+            groupby_filter = groupby_filter_generator(current_options)
+            groupby_matches = [groupby for groupby in groupby_matches if groupby_filter(groupby)]
+
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
-                    for id_groupby in id_matches:
+                    for groupby in groupby_matches:
                         new_f = GroupByTransformFeature(list(matching_input),
-                                                        groupby=id_groupby,
+                                                        groupby=groupby,
                                                         primitive=groupby_prim)
                         self._handle_new_feature(all_features=all_features,
                                                  new_feature=new_f)
