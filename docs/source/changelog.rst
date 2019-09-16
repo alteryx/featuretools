@@ -15,6 +15,7 @@ Changelog
         * Don't delete the whole destination folder while saving entityset (:pr:`717`)
     * Changes
         * Raise warning and not error on schema version mismatch (:pr:`718`)
+	* Change feature calculation to return in order of instance ids provided (:pr:`676`)
     * Documentation Changes
         * Updated URL for Compose (:pr:`716`)
     * Testing Changes
@@ -60,7 +61,6 @@ Changelog
         * Update variable type inference to better check for string values (:pr:`683`)
     * Changes
         * Moved dask, distributed imports (:pr:`634`)
-        * Change feature calculation to return in order of instance ids provided (:pr:`676`)
     * Documentation Changes
         * Miscellaneous changes (:pr:`641`, :pr:`658`)
         * Modified doc_string of top_n in encoding (:pr:`648`)
