@@ -91,7 +91,7 @@ def dfs(entities=None,
         ignore_variables (dict[str -> list[str]], optional): List of specific
             variables within each entity to blacklist when creating features.
 
-        primitive_options (dict[str or list[str] -> dict, optional]): Specify
+        primitive_options (dict[str or tuple[str] -> dict, optional]): Specify
             options for a single primitive or a group of primitives. Each
             option ``dict`` can have the following keys:
 

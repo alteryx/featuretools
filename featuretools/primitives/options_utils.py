@@ -1,27 +1,32 @@
 from featuretools.feature_base import IdentityFeature
 
 
-def get_primitive_options():
-    # all possible option keys:anonymous value type checker
-    return {'ignore_entities': (lambda x: isinstance(x, list)),
-            'include_entities': (lambda x: isinstance(x, list)),
-            'ignore_variables': (lambda x: isinstance(x, dict) and
-                                 all([isinstance(y, list) for y in x.values()])),
-            'include_variables': (lambda x: isinstance(x, dict) and
-                                  all([isinstance(y, list) for y in x.values()])),
-            'ignore_groupby_entities': (lambda x: isinstance(x, list)),
-            'include_groupby_entities': (lambda x: isinstance(x, list)),
-            'ignore_groupby_variables': (lambda x: isinstance(x, dict) and
-                                         all([isinstance(y, list) for y in x.values()])),
-            'include_groupby_variables': (lambda x: isinstance(x, dict) and
-                                          all([isinstance(y, list) for y in x.values()]))}
+def _get_primitive_options():
+    # all possible option keys: function that verifies value type
+    return {'ignore_entities': list_entity_check,
+            'include_entities': list_entity_check,
+            'ignore_variables': dict_to_list_variable_check,
+            'include_variables': dict_to_list_variable_check,
+            'ignore_groupby_entities': list_entity_check,
+            'include_groupby_entities': list_entity_check,
+            'ignore_groupby_variables': dict_to_list_variable_check,
+            'include_groupby_variables': dict_to_list_variable_check}
+
+
+def dict_to_list_variable_check(option):
+    return (isinstance(option, dict) and
+            all([isinstance(option_val, list) for option_val in option.values()]))
+
+
+def list_entity_check(option):
+    return (isinstance(option, list))
 
 
 def generate_all_primitive_options(all_primitives,
                                    primitive_options,
                                    ignore_entities,
                                    ignore_variables):
-    primitive_options = init_primitive_options(primitive_options)
+    primitive_options = _init_primitive_options(primitive_options)
     global_ignore_entities = ignore_entities
     # for now, only use primitive names as option keys
     for primitive in all_primitives:
@@ -50,33 +55,39 @@ def generate_all_primitive_options(all_primitives,
     return primitive_options, global_ignore_entities
 
 
-def init_primitive_options(primitive_options):
+def _init_primitive_options(primitive_options):
     # Flatten all tuple keys, convert value lists into sets, check for
     # conflicting keys
     flattened_options = {}
     for primitive_key, option_dict in primitive_options.items():
-        option_dict = init_option_dict(primitive_key, option_dict)
+        option_dict = _init_option_dict(primitive_key, option_dict)
         if isinstance(primitive_key, tuple):
             for each_primitive in primitive_key:
-                assert each_primitive not in flattened_options,\
-                    "Conflicting primitive options found for " + str(each_primitive)
+                # if primitive is specified more than once, raise error
+                if each_primitive in flattened_options:
+                    raise KeyError('Multiple options found for primitive %s' %
+                                   (each_primitive))
                 flattened_options[each_primitive] = option_dict
         else:
-            assert primitive_key not in flattened_options,\
-                "Conflicting primitive options found for " + str(primitive_key)
+            # if primitive is specified more than once, raise error
+            if primitive_key in flattened_options:
+                raise KeyError('Multiple options found for primitive %s' %
+                               (primitive_key))
             flattened_options[primitive_key] = option_dict
     return flattened_options
 
 
-def init_option_dict(key, option_dict):
+def _init_option_dict(key, option_dict):
     initialized_option_dict = {}
-    primitive_options = get_primitive_options()
+    primitive_options = _get_primitive_options()
     # verify all keys are valid and match expected type, convert lists to sets
     for option_key, option in option_dict.items():
-        assert option_key in primitive_options,\
-            'Unrecognized primitive option \'' + str(option_key) + '\' for \'' + str(key) + '\''
-        assert primitive_options[option_key](option),\
-            'Incorrect type formatting for \'' + str(option_key) + '\' for \'' + str(key) + '\''
+        if option_key not in primitive_options:
+            raise KeyError("Unrecognized primitive option \'%s\' for %s" %
+                           (option_key, key))
+        if not primitive_options[option_key](option):
+            raise TypeError("Incorrect type formatting for \'%s\' for %s" %
+                            (option_key, key))
         if isinstance(option, list):
             initialized_option_dict[option_key] = set(option)
         elif isinstance(option, dict):
