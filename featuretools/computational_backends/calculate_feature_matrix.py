@@ -291,8 +291,6 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
         feature_set = cloudpickle.loads(feature_set)
 
     feature_matrix = []
-
-    feature_matrix = []
     if no_unapproximated_aggs and approximate is not None:
         if entityset.time_type == NumericTimeIndex:
             group_time = np.inf
