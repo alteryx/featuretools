@@ -231,11 +231,14 @@ def test_calls_progress_callback(entities, relationships):
 
     # test with multiple jobs
     mock_progress_callback = MockProgressCallback()
-    feature_matrix, features = dfs(entities=entities,
-                                   relationships=relationships,
-                                   target_entity="transactions",
-                                   n_jobs=3,
-                                   progress_callback=mock_progress_callback)
+
+    with cluster() as (scheduler, [a, b]):
+        dkwargs = {'cluster': scheduler['address']}
+        feature_matrix, features = dfs(entities=entities,
+                                       relationships=relationships,
+                                       target_entity="transactions",
+                                       progress_callback=mock_progress_callback,
+                                       dask_kwargs=dkwargs)
 
     assert np.isclose(mock_progress_callback.total_update, 100.0)
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
