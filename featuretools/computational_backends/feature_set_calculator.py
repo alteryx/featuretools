@@ -59,7 +59,7 @@ class FeatureSetCalculator(object):
         self.precalculated_features = precalculated_features
 
         # total number of features (including dependencies) to be calculate
-        self.num_features = len(feature_set.features_by_name.values())
+        self.num_features = sum(len(features1) + len(features2) for _, (_, features1, features2) in self.feature_set.feature_trie)
 
     def run(self, instance_ids, progress_callback=None):
         """
