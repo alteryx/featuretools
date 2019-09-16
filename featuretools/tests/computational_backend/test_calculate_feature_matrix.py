@@ -300,7 +300,7 @@ def test_training_window(es):
 
     es.add_last_time_indexes()
 
-    error_text = 'training window must be an absolute Timedelta'
+    error_text = 'Training window cannot be in observations'
     with pytest.raises(AssertionError, match=error_text):
         feature_matrix = calculate_feature_matrix([property_feature],
                                                   es,

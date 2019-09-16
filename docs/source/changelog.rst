@@ -4,12 +4,52 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Improve how files are copied and written (:pr:`721`)
+        * Add number of rows to graph in entityset.plot (:pr:`727`)
+        * Enable feature-specific top_n value using a dictionary in encode_features (:pr:`735`)
+    * Fixes
+        * Fixed entity set deserialization (:pr:`720`)
+        * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
+        * Fixed CumCount and other group-by transform primitives that take ID as input (:pr:`733`)
+	* Updated training_window error assertion to only check against observations (:pr:`728`)
+        * Don't delete the whole destination folder while saving entityset (:pr:`717`)
+    * Changes
+        * Raise warning and not error on schema version mismatch (:pr:`718`)
+    * Documentation Changes
+        * Updated URL for Compose (:pr:`716`)
+    * Testing Changes
+        * Update dependencies (:pr:`738`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`jeff-hernandez`, :user:`chidauri`, :user:`christopherbunn`, :user:`kmax12`, :user:`MarcoGorelli`, :user:`angela97lin`, :user:`frances-h`, :user:`rwedge`
+
+
+**v0.10.1 Aug 25, 2019**
+    * Fixes
+        * Fix serialized LatLong data being loaded as strings (:pr:`712`)
+    * Documentation Changes
+        * Fixed FAQ cell output (:pr:`710`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`rwedge`
+
+
+**v0.10.0 Aug 19, 2019**
+
+    .. warning::
+        The next non-bugfix release of Featuretools will not support Python 2
+
+
+    * Enhancements
         * Give more frequent progress bar updates and update chunk size behavior (:pr:`631`, :pr:`696`)
         * Added drop_first as param in encode_features (:pr:`647`)
         * Added support for stacking multi-output primitives (:pr:`679`)
         * Generate transform features of direct features (:pr:`623`)
         * Added serializing and deserializing from S3 and deserializing from URLs (:pr:`685`)
+        * Added nlp_primitives as an add-on library (:pr:`704`)
+        * Added AutoNormalize to Featuretools plugins (:pr:`699`)
         * Added functionality for relative units (month/year) in Timedelta (:pr:`692`)
+        * Added categorical-encoding as an add-on library (:pr:`700`)
     * Fixes
         * Fix performance regression in DFS (:pr:`637`)
         * Fix deserialization of feature relationship path (:pr:`665`)
@@ -32,9 +72,9 @@ Changelog
         * Miscellaneous changes (:pr:`672`, :pr:`674`)
 
     Thanks to the following people for contributing to this release:
-    :user:`ayushpatidar`, :user:`CJStadler`, :user:`gsheni`, :user:`ctduffy`,
-    :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`,
-    :user:`jeremyliweishih`
+    :user:`alexjwang`, :user:`allisonportis`, :user:`ayushpatidar`,
+    :user:`CJStadler`, :user:`ctduffy`, :user:`gsheni`, :user:`jeff-hernandez`,
+    :user:`jeremyliweishih`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`,
 
 **v0.9.1 July 3, 2019**
     * Enhancements

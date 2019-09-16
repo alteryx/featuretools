@@ -1,5 +1,7 @@
 import json
+import shutil
 import sys
+import warnings
 
 import s3fs
 from smart_open import open
@@ -103,50 +105,43 @@ def check_schema_version(cls, cls_type):
         current = SCHEMA_VERSION.split('.')
         saved = version_string.split('.')
 
-        error_text_upgrade = ('Unable to load %s. The schema version of the saved '
-                              '%s (%s) is greater than the latest supported (%s). '
-                              'You may need to upgrade featuretools.'
-                              % (cls_type, cls_type, version_string, SCHEMA_VERSION))
+        warning_text_upgrade = ('The schema version of the saved %s'
+                                '(%s) is greater than the latest supported (%s). '
+                                'You may need to upgrade featuretools. Attempting to load %s ...'
+                                % (cls_type, version_string, SCHEMA_VERSION, cls_type))
         for c_num, s_num in zip_longest(current, saved, fillvalue=0):
             if c_num > s_num:
                 break
             elif c_num < s_num:
-                raise RuntimeError(error_text_upgrade)
+                warnings.warn(warning_text_upgrade)
+                break
 
-        error_text_outdated = ('Unable to load %s. The schema version '
-                               'of the saved %s (%s) is no longer '
-                               'supported by this version of featuretools.'
-                               % (cls_type, cls_type, version_string))
+        warning_text_outdated = ('The schema version of the saved %s'
+                                 '(%s) is no longer supported by this version'
+                                 'of featuretools. Attempting to load %s ...'
+                                 % (cls_type, version_string, cls_type))
         # Check if saved has older major version.
         if current[0] > saved[0]:
-            raise RuntimeError(error_text_outdated)
+            warnings.warn(warning_text_outdated)
 
 
 def use_smartopen_es(file_path, path, transport_params=None, read=True):
     if read:
         with open(path, "rb", transport_params=transport_params) as fin:
             with open(file_path, 'wb') as fout:
-                for line in fin:
-                    fout.write(line)
+                shutil.copyfileobj(fin, fout)
     else:
         with open(file_path, 'rb') as fin:
             with open(path, 'wb', transport_params=transport_params) as fout:
-                for line in fin:
-                    fout.write(line)
+                shutil.copyfileobj(fin, fout)
 
 
 def use_s3fs_es(file_path, path, read=True):
     s3 = s3fs.S3FileSystem(anon=True)
     if read:
-        with s3.open(path, "rb") as fin:
-            with open(file_path, 'wb') as fout:
-                for line in fin:
-                    fout.write(line)
+        s3.get(path, file_path)
     else:
-        with open(file_path, 'rb') as fin:
-            with s3.open(path, 'wb') as fout:
-                for line in fin:
-                    fout.write(line)
+        s3.put(file_path, path)
 
 
 def use_smartopen_features(path, features_dict=None, transport_params=None, read=True):

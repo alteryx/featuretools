@@ -44,6 +44,10 @@ def test_variable_ordering_matches_column_ordering(es):
 
 
 def test_eq(es):
+    latlong = es['log'].df['latlong'].copy()
+
+    assert es['log'].__eq__(es['log'], deep=True)
+    assert (es['log'].df['latlong'] == latlong).all()
 
     es['log'].id = 'customers'
     es['log'].index = 'notid'

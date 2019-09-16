@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 
 import graphviz
+import pandas as pd
 import pytest
+
+import featuretools as ft
 
 
 def test_returns_digraph_object(es):
@@ -13,7 +17,7 @@ def test_returns_digraph_object(es):
 
 
 def test_saving_png_file(es):
-    output_path = 'test1.png'
+    output_path = "test1.png"
 
     es.plot(to_file=output_path)
 
@@ -22,18 +26,35 @@ def test_saving_png_file(es):
 
 
 def test_missing_file_extension(es):
-    output_path = 'test1'
+    output_path = "test1"
 
     with pytest.raises(ValueError) as excinfo:
         es.plot(to_file=output_path)
 
-    assert str(excinfo.value).startswith('Please use a file extension')
+    assert str(excinfo.value).startswith("Please use a file extension")
 
 
 def test_invalid_format(es):
-    output_path = 'test1.xzy'
+    output_path = "test1.xzy"
 
     with pytest.raises(ValueError) as excinfo:
         es.plot(to_file=output_path)
 
-    assert str(excinfo.value).startswith('Unknown format')
+    assert str(excinfo.value).startswith("Unknown format")
+
+
+def test_multiple_rows(es):
+    plot_ = es.plot()
+    result = re.findall(r"\((\d+\srows?)\)", plot_.source)
+    expected = ["{} rows".format(str(i.shape[0])) for i in es.entities]
+    assert result == expected
+
+
+def test_single_row():
+    es = ft.EntitySet("test")
+    df = pd.DataFrame({"foo": [1]})
+    es.entity_from_dataframe("test", df)
+    plot_ = es.plot()
+    result = re.findall(r"\((\d+\srows?)\)", plot_.source)
+    expected = ["1 row"]
+    assert result == expected

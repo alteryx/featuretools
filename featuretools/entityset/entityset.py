@@ -485,6 +485,11 @@ class EntitySet(object):
         if time_index is not None and time_index == index:
             raise ValueError("time_index and index cannot be the same value, %s" % (time_index))
 
+        if time_index is None:
+            for variable, variable_type in variable_types.items():
+                if variable_type == vtypes.DatetimeTimeIndex:
+                    raise ValueError("DatetimeTimeIndex variable %s must be set using time_index parameter" % (variable))
+
         entity = Entity(
             entity_id,
             dataframe,
@@ -892,7 +897,8 @@ class EntitySet(object):
         for entity in self.entities:
             variables_string = '\l'.join([var.id + ' : ' + var.type_string  # noqa: W605
                                           for var in entity.variables])
-            label = '{%s|%s\l}' % (entity.id, variables_string)  # noqa: W605
+            nrows = entity.shape[0]
+            label = '{%s (%d row%s)|%s\l}' % (entity.id, nrows, 's' * (nrows > 1), variables_string)  # noqa: W605
             graph.node(entity.id, shape='record', label=label)
 
         # Draw relationships

@@ -154,3 +154,42 @@ def test_encode_features_drop_first():
                                                  include_unknown=False)
 
     assert len(features_enc.columns) == 2
+
+
+def test_encode_features_handles_dictionary_input(es):
+    f1 = IdentityFeature(es["log"]["product_id"])
+    f2 = IdentityFeature(es["log"]["purchased"])
+    f3 = IdentityFeature(es["log"]["session_id"])
+
+    features = [f1, f2, f3]
+    feature_matrix = calculate_feature_matrix(features, es, instance_ids=range(16))
+    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features)
+    true_values = ['product_id = coke zero', 'product_id = toothpaste', 'product_id = car',
+                   'product_id = brown bag', 'product_id = taco clock', 'product_id = Haribo sugar-free gummy bears',
+                   'product_id is unknown', 'purchased', 'session_id = 0', 'session_id = 1', 'session_id = 4',
+                   'session_id = 3', 'session_id = 5', 'session_id = 2', 'session_id is unknown']
+    assert len(features_encoded) == 15
+    for col in true_values:
+        assert col in list(feature_matrix_encoded.columns)
+
+    top_n_dict = {}
+    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features, top_n=top_n_dict)
+    assert len(features_encoded) == 15
+    for col in true_values:
+        assert col in list(feature_matrix_encoded.columns)
+
+    top_n_dict = {f1.get_name(): 4, f3.get_name(): 3}
+    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features, top_n=top_n_dict)
+    assert len(features_encoded) == 10
+    true_values = ['product_id = coke zero', 'product_id = toothpaste', 'product_id = car',
+                   'product_id = brown bag', 'product_id is unknown', 'purchased',
+                   'session_id = 0', 'session_id = 1', 'session_id = 4', 'session_id is unknown']
+    for col in true_values:
+        assert col in list(feature_matrix_encoded.columns)
+
+    feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features, top_n=top_n_dict, include_unknown=False)
+    true_values = ['product_id = coke zero', 'product_id = toothpaste', 'product_id = car',
+                   'product_id = brown bag', 'purchased', 'session_id = 0', 'session_id = 1', 'session_id = 4']
+    assert len(features_encoded) == 8
+    for col in true_values:
+        assert col in list(feature_matrix_encoded.columns)

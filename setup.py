@@ -9,12 +9,15 @@ with open(path.join(dirname, 'README.md')) as f:
 extras_require = {
   'tsfresh': ['featuretools-tsfresh-primitives >= 0.1.0'],
   'update_checker': ['featuretools-update-checker >= 1.0.0'],
+  'categorical_encoding': ['categorical-encoding >= 0.2.0'],
+  'nlp_primitives': ['nlp-primitives >= 0.2.2'],
+  'autonormalize': ['autonormalize >= 1.0.0'],
 }
 extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
 setup(
     name='featuretools',
-    version='0.9.1',
+    version='0.10.1',
     packages=find_packages(),
     description='a framework for automated feature engineering',
     url='http://featuretools.com',

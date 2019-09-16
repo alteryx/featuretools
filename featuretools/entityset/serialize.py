@@ -1,7 +1,7 @@
 import datetime
+import errno
 import json
 import os
-import shutil
 import tarfile
 
 import boto3
@@ -101,10 +101,11 @@ def write_entity_data(entity, path, format='csv', **kwargs):
         # Serializing to parquet format raises an error when columns contain tuples.
         # Columns containing tuples are mapped as dtype object.
         # Issue is resolved by casting columns of dtype object to string.
-        columns = entity.df.select_dtypes('object').columns
-        entity.df[columns] = entity.df[columns].astype('unicode')
-        entity.df.columns = entity.df.columns.astype('unicode')  # ensures string column names for python 2.7
-        entity.df.to_parquet(file, **kwargs)
+        df = entity.df.copy()
+        columns = df.select_dtypes('object').columns
+        df[columns] = df[columns].astype('unicode')
+        df.columns = df.columns.astype('unicode')  # ensures string column names for python 2.7
+        df.to_parquet(file, **kwargs)
     elif format == 'pickle':
         entity.df.to_pickle(file, **kwargs)
     else:
@@ -144,9 +145,12 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
         raise ValueError("Writing to URLs is not supported")
     else:
         path = os.path.abspath(path)
-        if os.path.exists(path):
-            shutil.rmtree(path)
-        os.makedirs(os.path.join(path, 'data'))
+        try:
+            os.makedirs(os.path.join(path, 'data'))
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+
         dump_data_description(entityset, path, **kwargs)
 
 

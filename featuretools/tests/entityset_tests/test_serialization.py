@@ -1,4 +1,5 @@
 import errno
+import json
 import os
 import shutil
 
@@ -119,18 +120,24 @@ def test_to_csv(es, path_management):
     es.to_csv(path_management, encoding='utf-8', engine='python')
     new_es = deserialize.read_entityset(path_management)
     assert es.__eq__(new_es, deep=True)
+    assert type(es['log'].df['latlong'][0]) == tuple
+    assert type(new_es['log'].df['latlong'][0]) == tuple
 
 
 def test_to_pickle(es, path_management):
     es.to_pickle(path_management)
     new_es = deserialize.read_entityset(path_management)
     assert es.__eq__(new_es, deep=True)
+    assert type(es['log'].df['latlong'][0]) == tuple
+    assert type(new_es['log'].df['latlong'][0]) == tuple
 
 
 def test_to_parquet(es, path_management):
     es.to_parquet(path_management)
     new_es = deserialize.read_entityset(path_management)
     assert es.__eq__(new_es, deep=True)
+    assert type(es['log'].df['latlong'][0]) == tuple
+    assert type(new_es['log'].df['latlong'][0]) == tuple
 
 
 def test_to_parquet_with_lti(path_management):
@@ -260,6 +267,17 @@ def test_serialize_url_csv(es):
     error_text = "Writing to URLs is not supported"
     with pytest.raises(ValueError, match=error_text):
         es.to_csv(URL, encoding='utf-8', engine='python')
+
+
+def test_serialize_subdirs_not_removed(es, tmpdir):
+    write_path = tmpdir.mkdir("test")
+    test_dir = write_path.mkdir("test_dir")
+    with open(str(write_path.join('data_description.json')), 'w') as f:
+        json.dump('__SAMPLE_TEXT__', f)
+    serialize.write_data_description(es, path=str(write_path), index='1', sep='\t', encoding='utf-8', compression=None)
+    assert os.path.exists(str(test_dir))
+    with open(str(write_path.join('data_description.json')), 'r') as f:
+        assert '__SAMPLE_TEXT__' not in json.load(f)
 
 
 def test_deserialize_url_csv(es):

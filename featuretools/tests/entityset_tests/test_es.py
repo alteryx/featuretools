@@ -868,14 +868,14 @@ def test_later_schema_version(es):
     def test_version(major, minor, patch, raises=True):
         version = '.'.join([str(v) for v in [major, minor, patch]])
         if raises:
-            error_text = ('Unable to load entityset. The schema version of the saved '
-                          'entityset (%s) is greater than the latest supported (%s). '
-                          'You may need to upgrade featuretools.'
-                          % (version, SCHEMA_VERSION))
+            warning_text = ('The schema version of the saved entityset'
+                            '(%s) is greater than the latest supported (%s). '
+                            'You may need to upgrade featuretools. Attempting to load entityset ...'
+                            % (version, SCHEMA_VERSION))
         else:
-            error_text = None
+            warning_text = None
 
-        _check_schema_version(version, es, error_text)
+        _check_schema_version(version, es, warning_text)
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
@@ -889,14 +889,14 @@ def test_earlier_schema_version(es):
     def test_version(major, minor, patch, raises=True):
         version = '.'.join([str(v) for v in [major, minor, patch]])
         if raises:
-            error_text = ('Unable to load entityset. The schema version of the '
-                          'saved entityset (%s) is no longer supported by this '
-                          'version of featuretools.'
-                          % (version))
+            warning_text = ('The schema version of the saved entityset'
+                            '(%s) is no longer supported by this version'
+                            'of featuretools. Attempting to load entityset ...'
+                            % (version))
         else:
-            error_text = None
+            warning_text = None
 
-        _check_schema_version(version, es, error_text)
+        _check_schema_version(version, es, warning_text)
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
@@ -905,7 +905,7 @@ def test_earlier_schema_version(es):
     test_version(major, minor, patch - 1, raises=False)
 
 
-def _check_schema_version(version, es, error_text):
+def _check_schema_version(version, es, warning_text):
     entities = {entity.id: serialize.entity_to_description(entity) for entity in es.entities}
     relationships = [relationship.to_dictionary() for relationship in es.relationships]
     dictionary = {
@@ -915,10 +915,10 @@ def _check_schema_version(version, es, error_text):
         'relationships': relationships,
     }
 
-    if error_text:
-        with pytest.raises(RuntimeError) as excinfo:
+    if warning_text:
+        with pytest.warns(UserWarning) as record:
             deserialize.description_to_entityset(dictionary)
-        assert error_text == str(excinfo.value)
+        assert record[0].message.args[0] == warning_text
     else:
         deserialize.description_to_entityset(dictionary)
 
@@ -946,3 +946,20 @@ def test_same_index_values():
                             new_entity_id="new_entity",
                             index="first_entity_time",
                             make_time_index=True)
+
+
+def test_use_time_index():
+    df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                       "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s")})
+    es = ft.EntitySet()
+    error_text = "DatetimeTimeIndex variable transaction_time must be set using time_index parameter"
+    with pytest.raises(ValueError, match=error_text):
+        es.entity_from_dataframe(entity_id="entity",
+                                 index="id",
+                                 variable_types={"transaction_time": variable_types.DatetimeTimeIndex},
+                                 dataframe=df)
+
+    es.entity_from_dataframe(entity_id="entity",
+                             index="id",
+                             time_index="transaction_time",
+                             dataframe=df)
