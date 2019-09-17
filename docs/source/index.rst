@@ -165,6 +165,7 @@ Table of contents
    guides/performance
    guides/parallel
    guides/deployment
+   guides/specifying_primitive_options
    guides/advanced_custom_primitives
 
 .. toctree::
