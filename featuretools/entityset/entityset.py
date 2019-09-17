@@ -577,7 +577,10 @@ class EntitySet(object):
         transfer_types = {}
         transfer_types[index] = type(base_entity[index])
         for v in additional_variables + copy_variables:
-            transfer_types[v] = type(base_entity[v])
+            if type(base_entity[v]) == vtypes.DatetimeTimeIndex:
+                transfer_types[v] = vtypes.Datetime
+            else:
+                transfer_types[v] = type(base_entity[v])
 
         # create and add new entity
         new_entity_df = self[base_entity_id].df.copy()
