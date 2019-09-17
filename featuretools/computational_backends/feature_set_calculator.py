@@ -95,7 +95,6 @@ class FeatureSetCalculator(object):
             # do nothing for the progress call back if not provided
             def progress_callback(*args):
                 pass
-
         feature_trie = self.feature_set.feature_trie
 
         df_trie = Trie(path_constructor=RelationshipPath)
