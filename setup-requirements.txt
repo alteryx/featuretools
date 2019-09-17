@@ -1,1 +1,0 @@
-pytest-runner==4.2
