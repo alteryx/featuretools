@@ -107,30 +107,27 @@ def variable_filter_generator(options):
                     (f.entity.id in options['include_variables'] and
                     f.variable.id in options['include_variables'][f.entity.id]))
 
-    elif 'ignore_variables' in options:
+    # ignore options initialized to set() if not present
+    else:
         def variable_filter(f):
             return (not isinstance(f, IdentityFeature) or
                     f.entity.id not in options['ignore_variables'] or
                     f.variable.id not in options['ignore_variables'][f.entity.id])
-
-    else:
-        def variable_filter(f):
-            return True
     return variable_filter
 
 
 def groupby_filter_generator(options):
     if 'include_groupby_variables' in options:
         def groupby_filter(f):
-            return (not isinstance(f, IdentityFeature) or
-                    f.entity.id in options['include_groupby_variables'] and
-                    f.variable.id in options['include_groupby_variables'][f.entity.id])
+            return (isinstance(f, IdentityFeature) and
+                    (f.entity.id in options['include_groupby_variables'] and
+                    f.variable.id in options['include_groupby_variables'][f.entity.id]))
     elif 'ignore_groupby_variables' in options:
         def groupby_filter(f):
-            return (not isinstance(f, IdentityFeature) or
-                    f.entity.id not in options['ignore_groupby_variables'] or
-                    f.variable.id not in options['ignore_groupby_variables'][f.entity.id])
+            return (isinstance(f, IdentityFeature) and
+                    (f.entity.id not in options['ignore_groupby_variables'] or
+                    f.variable.id not in options['ignore_groupby_variables'][f.entity.id]))
     else:
         def groupby_filter(f):
-            return True
+            return (isinstance(f, IdentityFeature))
     return groupby_filter
