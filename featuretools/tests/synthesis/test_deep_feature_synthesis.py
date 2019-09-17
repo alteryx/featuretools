@@ -22,6 +22,7 @@ from featuretools.primitives import (  # CumMean,
     Hour,
     IsIn,
     Last,
+    Mean,
     Mode,
     NMostCommon,
     NotEqual,
@@ -921,32 +922,30 @@ def test_primitive_options_errors(es):
 
 
 def test_primitive_options(es):
-    options = {'mode': {'include_entities': ['stores', 'products']},
-               'count': {'ignore_entities': ['log'],
-                         'ignore_variables': {'products': ['department']}},
-               'last': {'include_variables': {'log': ['id']}}}
-    dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
+    options = {'sum': {'include_variables': {'customers': ['age']}},
+               'mean': {'include_entities': ['customers']},
+               'mode': {'ignore_entities': ['sessions']},
+               'num_unique': {'ignore_variables': {'customers': ['engagement_level']}}}
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='cohorts',
                                    entityset=es,
-                                   agg_primitives=[Last, Mode, Count],
-                                   trans_primitives=[],
                                    primitive_options=options)
     features = dfs_obj.build_features()
     for f in features:
-        deps = f.get_dependencies(deep=True)
+        deps = f.get_dependencies()
         entities = [d.entity.id for d in deps]
-        identities = [d for d in deps
-                      if isinstance(d, IdentityFeature)]
-        variables = [d.variable.id for d in identities
-                     if d.entity.id == 'log']
+        identities = [d for d in deps if isinstance(d, IdentityFeature)]
+        variables = [d.variable.id for d in identities]
+        if isinstance(f.primitive, Sum):
+            if 'customers' in entities:
+                print(f)
+                assert 'age' in variables or variables == []
+        if isinstance(f.primitive, Mean):
+            assert 'customers' in entities
         if isinstance(f.primitive, Mode):
-            assert ('stores' in entities or 'products' in entities)
-        if isinstance(f.primitive, Count):
-            assert 'log' not in entities
-            if 'products' in entities:
-                assert 'department' not in variables
-        if isinstance(f.primitive, Last):
-            if ['log'] == entities:
-                assert 'id' in variables
+            assert 'sessions' not in entities
+        if isinstance(f.primitive, NumUnique):
+            if 'customers' in entities:
+                assert 'engagement_level' not in variables
 
 
 def test_primitive_options_with_globals(es):
@@ -1016,5 +1015,5 @@ def test_primitive_options_groupbys(es):
     features = dfs_obj.build_features()
     assert feature_with_name(features, 'CUM_SUM(age) by cancel_reason')
     for f in features:
-        if isinstance(f, CumCount):
+        if isinstance(f.primitive, CumCount):
             assert f.groupby != u'région_id'
