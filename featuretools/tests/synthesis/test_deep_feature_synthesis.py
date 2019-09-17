@@ -17,6 +17,7 @@ from featuretools.primitives import (  # CumMean,
     AddNumeric,
     Count,
     CumCount,
+    Day,
     Diff,
     Equal,
     Hour,
@@ -24,6 +25,7 @@ from featuretools.primitives import (  # CumMean,
     Last,
     Mean,
     Mode,
+    Month,
     NMostCommon,
     NotEqual,
     NumUnique,
@@ -937,7 +939,6 @@ def test_primitive_options(es):
         variables = [d.variable.id for d in identities]
         if isinstance(f.primitive, Sum):
             if 'customers' in entities:
-                print(f)
                 assert 'age' in variables or variables == []
         if isinstance(f.primitive, Mean):
             assert 'customers' in entities
@@ -947,23 +948,41 @@ def test_primitive_options(es):
             if 'customers' in entities:
                 assert 'engagement_level' not in variables
 
+    options = {'month': {'ignore_variables': {'customers': ['date_of_birth']}},
+               'day': {'include_variables': {'customers': ['signup_date', 'upgrade_date']}}}
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   ignore_entities=['cohort'],
+                                   primitive_options=options)
+    features = dfs_obj.build_features()
+    for f in features:
+        deps = f.get_dependencies()
+        entities = [d.entity.id for d in deps]
+        identities = [d for d in deps if isinstance(d, IdentityFeature)]
+        variables = [d.variable.id for d in identities]
+        if isinstance(f.primitive, Month):
+            if 'customers' in entities:
+                assert 'date_of_birth' not in variables
+        if isinstance(f.primitive, Day):
+            if 'customers' in entities:
+                assert 'signup_date' in variables or 'upgrade_date' in variables
+
 
 def test_primitive_options_with_globals(es):
     # non-overlapping ignore_entities
-    options = {'last': {'ignore_entities': ['customers']}}
-    dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
+    options = {'mode': {'ignore_entities': ['sessions']}}
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='cohorts',
                                    entityset=es,
-                                   agg_primitives=[Last],
-                                   trans_primitives=[],
-                                   ignore_entities=['log'],
+                                   ignore_entities=[u'régions'],
                                    primitive_options=options)
     features = dfs_obj.build_features()
     for f in features:
         deps = f.get_dependencies(deep=True)
         entities = [d.entity.id for d in deps]
-        assert 'log' not in entities
-        if isinstance(f.primitive, Last):
-            assert 'customers' not in entities
+        assert u'régions' not in entities
+        if isinstance(f.primitive, Mode):
+            assert 'sessions' not in entities
 
     # non-overlapping ignore_variables
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
@@ -985,7 +1004,7 @@ def test_primitive_options_with_globals(es):
 
     # Overlapping globals/options
     options = {'last': {'include_entities': ['log']}}
-    dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='cohorts',
                                    entityset=es,
                                    agg_primitives=[Last, Mode],
                                    trans_primitives=[],
