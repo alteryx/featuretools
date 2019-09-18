@@ -1245,7 +1245,13 @@ def test_calls_progress_callback(es):
 
     # test with multiple jobs
     mock_progress_callback = MockProgressCallback()
-    ft.calculate_feature_matrix(features, entityset=es, progress_callback=mock_progress_callback, n_jobs=3)
+
+    with cluster() as (scheduler, [a, b]):
+        dkwargs = {'cluster': scheduler['address']}
+        ft.calculate_feature_matrix(features,
+                                    entityset=es,
+                                    progress_callback=mock_progress_callback,
+                                    dask_kwargs=dkwargs)
 
     assert np.isclose(mock_progress_callback.total_update, 100.0)
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
