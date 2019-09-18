@@ -19,6 +19,7 @@ import featuretools as ft
 from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
 from featuretools.computational_backends import utils
 from featuretools.computational_backends.calculate_feature_matrix import (
+    FEATURE_CALCULATION_PERCENTAGE,
     _chunk_dataframe_groups,
     _handle_chunk_size,
     scatter_warning
@@ -1218,20 +1219,27 @@ def test_chunk_dataframe_groups():
 def test_calls_progress_callback(es):
     class MockProgressCallback:
         def __init__(self):
+            self.progress_history = []
             self.total_update = 0
             self.total_progress_percent = 0
 
         def __call__(self, update, progress_percent, time_elapsed):
             self.total_update += update
             self.total_progress_percent = progress_percent
+            self.progress_history.append(progress_percent)
 
     mock_progress_callback = MockProgressCallback()
+
     es = ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
+
+    # make sure to calculate features that have different paths to same base feature
     trans_per_session = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["sessions"], primitive=Count)
     trans_per_customer = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["customers"], primitive=Count)
-    features = [trans_per_customer, ft.Feature(trans_per_session, parent_entity=es["customers"], primitive=Max)]
+    features = [trans_per_session, ft.Feature(trans_per_customer, entity=es["sessions"])]
     ft.calculate_feature_matrix(features, entityset=es, progress_callback=mock_progress_callback)
 
+    # second to last entry is the last update from feature calculation
+    assert np.isclose(mock_progress_callback.progress_history[-2], FEATURE_CALCULATION_PERCENTAGE * 100)
     assert np.isclose(mock_progress_callback.total_update, 100.0)
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
 
