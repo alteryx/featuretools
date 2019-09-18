@@ -13,6 +13,7 @@ Changelog
         * Fixed entity set deserialization (:pr:`720`)
         * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
         * Fixed CumCount and other group-by transform primitives that take ID as input (:pr:`733`)
+        * Fix progress bar undercounting (:pr:`743`)
 	* Updated training_window error assertion to only check against observations (:pr:`728`)
         * Don't delete the whole destination folder while saving entityset (:pr:`717`)
     * Changes
