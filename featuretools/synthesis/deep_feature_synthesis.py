@@ -574,7 +574,6 @@ class DeepFeatureSynthesis(object):
                             entity.id in current_options['ignore_groupby_variables']))
             if skip_entity:
                 continue
-            
             input_types = groupby_prim.input_types[:]
             # if multiple input_types, only use first one for DFS
             if type(input_types[0]) == list:
