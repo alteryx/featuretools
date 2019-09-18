@@ -565,15 +565,16 @@ class DeepFeatureSynthesis(object):
         for groupby_prim in self.groupby_trans_primitives:
             current_options = self.primitive_options[groupby_prim.name]
             variable_filter = variable_filter_generator(current_options)
-            if ('include_entities' in current_options and
-                    entity.id not in current_options['include_entities']) or \
-               ('include_groupby_entities' in current_options and
-                    entity.id not in current_options['include_groupby_entities']):
+            skip_entity = (('include_entities' in current_options and
+                            entity.id not in current_options['include_entities'] or
+                            'include_groupby_entities' in current_options and
+                            entity.id not in current_options['include_groupby_entities']) or
+                           (entity.id in current_options['ignore_entities'] or
+                            'ignore_groupby_entities' in current_options and
+                            entity.id in current_options['ignore_groupby_variables']))
+            if skip_entity:
                 continue
-            elif entity.id in current_options['ignore_entities'] or \
-                ('ignore_groupby_entities' in current_options and
-                    entity.id in current_options['ignore_groupby_entities']):
-                continue
+            
             input_types = groupby_prim.input_types[:]
             # if multiple input_types, only use first one for DFS
             if type(input_types[0]) == list:

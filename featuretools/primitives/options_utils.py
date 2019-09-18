@@ -42,10 +42,13 @@ def generate_all_primitive_options(all_primitives,
             global_ignore_entities = global_ignore_entities.difference(included_entities)
             options['ignore_entities'] = options['ignore_entities'].union(ignore_entities.difference(included_entities))
             for entity, ignore_vars in ignore_variables.items():
-                if entity in included_entities:
-                    continue
+                # if already ignoring variables for this entity, add globals
                 if entity in options['ignore_variables']:
                     options['ignore_variables'][entity] = options['ignore_variables'][entity].union(ignore_vars)
+                # if no ignore_variables and entity is explicitly included, don't ignore the variable
+                elif entity in included_entities:
+                    continue
+                # Otherwise, keep the global option
                 else:
                     options['ignore_variables'][entity] = ignore_vars
         else:
@@ -61,19 +64,14 @@ def _init_primitive_options(primitive_options):
     flattened_options = {}
     for primitive_key, option_dict in primitive_options.items():
         option_dict = _init_option_dict(primitive_key, option_dict)
-        if isinstance(primitive_key, tuple):
-            for each_primitive in primitive_key:
-                # if primitive is specified more than once, raise error
-                if each_primitive in flattened_options:
-                    raise KeyError('Multiple options found for primitive %s' %
-                                   (each_primitive))
-                flattened_options[each_primitive] = option_dict
-        else:
+        if not isinstance(primitive_key, tuple):
+            primitive_key = (primitive_key,)
+        for each_primitive in primitive_key:
             # if primitive is specified more than once, raise error
-            if primitive_key in flattened_options:
+            if each_primitive in flattened_options:
                 raise KeyError('Multiple options found for primitive %s' %
-                               (primitive_key))
-            flattened_options[primitive_key] = option_dict
+                               (each_primitive))
+            flattened_options[each_primitive] = option_dict
     return flattened_options
 
 
