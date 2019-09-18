@@ -1047,7 +1047,6 @@ def test_primitive_options_with_globals(es):
                 assert 'age' not in variables
 
 
-
 def test_primitive_options_groupbys(es):
     options = {'cum_sum': {'include_groupby_variables': {'customers': ['cancel_reason']}},
                'cum_count': {'include_entities': ['customers'],
