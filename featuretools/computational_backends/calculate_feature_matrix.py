@@ -38,7 +38,7 @@ from featuretools.variable_types import (
 logger = logging.getLogger('featuretools.computational_backend')
 
 PBAR_FORMAT = "Elapsed: {elapsed} | Progress: {l_bar}{bar}"
-FEATURE_CALCULATION_PERCENTAGE = .95
+FEATURE_CALCULATION_PERCENTAGE = .95  # make total 5% higher to allot time for wrapping up at end
 
 
 def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instance_ids=None,
@@ -239,7 +239,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         cutoff_time_to_pass = cutoff_time
 
     chunk_size = _handle_chunk_size(chunk_size, cutoff_time.shape[0])
-    tqdm_options = {'total': (cutoff_time.shape[0] / FEATURE_CALCULATION_PERCENTAGE),  # make total 5% higher to allot time for wrapping up at end
+    tqdm_options = {'total': (cutoff_time.shape[0] / FEATURE_CALCULATION_PERCENTAGE),
                     'bar_format': PBAR_FORMAT,
                     'disable': True}
 
