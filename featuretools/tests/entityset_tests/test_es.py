@@ -974,3 +974,15 @@ def test_normalize_with_datetime_time_index(es):
     vtypes = es['cancel_reason'].variable_types
     assert vtypes['signup_date'] == variable_types.Datetime
     assert vtypes['upgrade_date'] == variable_types.Datetime
+
+
+def test_normalize_with_numeric_time_index(int_es):
+    int_es.normalize_entity(base_entity_id="customers",
+                            new_entity_id="cancel_reason",
+                            index="cancel_reason",
+                            make_time_index=False,
+                            copy_variables=['signup_date', 'upgrade_date'])
+
+    vtypes = int_es['cancel_reason'].variable_types
+    assert vtypes['signup_date'] == variable_types.Numeric
+    assert vtypes['upgrade_date'] == variable_types.Numeric

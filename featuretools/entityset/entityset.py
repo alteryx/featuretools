@@ -579,6 +579,8 @@ class EntitySet(object):
         for v in additional_variables + copy_variables:
             if type(base_entity[v]) == vtypes.DatetimeTimeIndex:
                 transfer_types[v] = vtypes.Datetime
+            elif type(base_entity[v]) == vtypes.NumericTimeIndex:
+                transfer_types[v] = vtypes.Numeric
             else:
                 transfer_types[v] = type(base_entity[v])
 
