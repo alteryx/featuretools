@@ -598,6 +598,9 @@ class EntitySet(object):
         elif make_time_index:
             # Create a new time index based on the base entity time index.
             base_time_index = base_entity.time_index
+            t_index = base_entity[base_time_index]
+            if not isinstance(t_index, (vtypes.NumericTimeIndex, vtypes.DatetimeTimeIndex)):
+                raise TypeError("{0} is not a NumericTimeIndex or DatetimeTimeIndex, but type {1}".format(base_time_index, type(t_index)))
             if new_entity_time_index is None:
                 new_entity_time_index = "first_%s_time" % (base_entity.id)
 
