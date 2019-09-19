@@ -7,12 +7,13 @@ from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 @pytest.fixture
 def es():
-    return make_ecommerce_entityset()
+    return make_ecommerce_entityset(save_files=False)
 
 
 @pytest.fixture
 def int_es():
-    return make_ecommerce_entityset(with_integer_time_index=True)
+    return make_ecommerce_entityset(with_integer_time_index=True,
+                                    save_files=False)
 
 
 @pytest.fixture
