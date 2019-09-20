@@ -1066,7 +1066,7 @@ def test_primitive_options_groupbys(es):
                                                              'cum_mean'],
                                    primitive_options=options)
     features = dfs_obj.build_features()
-    assert feature_with_name(features, 'CUM_SUM(age) by région_id')
+    assert feature_with_name(features, u'CUM_SUM(age) by région_id')
     for f in features:
         # These either have nothing to groupby or don't include the target entity so shouldn't create features
         assert f.primitive.name not in ['cum_min', 'cum_max', 'cum_max']
