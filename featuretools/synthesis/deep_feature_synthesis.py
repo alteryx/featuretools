@@ -83,9 +83,11 @@ class DeepFeatureSynthesis(object):
             where_stacking_limit (int, optional): Cap the depth of the where features.
                 Default: 1
 
-            primitive_options (dict[str or tuple[str] -> dict, optional]):
+            primitive_options (list[dict[str or tuple[str] -> dict] or dict[str or tuple[str] -> dict, optional]):
                 Specify options for a single primitive or a group of primitives.
-                Each option ``dict`` can have the following keys:
+                Lists of option dicts are used to specify options per input for primitives
+                with multiple inputs. Each option ``dict`` can have the following keys:
+
 
                 ``"include_entities"``
                     List of entities to be included when creating features for
