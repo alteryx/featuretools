@@ -548,6 +548,13 @@ class EntitySet(object):
         additional_variables = additional_variables or []
         copy_variables = copy_variables or []
 
+        # Check base entity to make sure time index is valid
+        if base_entity.time_index is not None:
+            t_index = base_entity[base_entity.time_index]
+            if not isinstance(t_index, (vtypes.NumericTimeIndex, vtypes.DatetimeTimeIndex)):
+                base_error = "Time index '{0}' is not a NumericTimeIndex or DatetimeTimeIndex, but type {1}. Use set_time_index on entity '{2}' to set the time_index."
+                raise TypeError(base_error.format(base_entity.time_index, type(t_index), str(base_entity.id)))
+
         if not isinstance(additional_variables, list):
             raise TypeError("'additional_variables' must be a list, but received type {}"
                             .format(type(additional_variables)))
@@ -577,7 +584,12 @@ class EntitySet(object):
         transfer_types = {}
         transfer_types[index] = type(base_entity[index])
         for v in additional_variables + copy_variables:
-            transfer_types[v] = type(base_entity[v])
+            if type(base_entity[v]) == vtypes.DatetimeTimeIndex:
+                transfer_types[v] = vtypes.Datetime
+            elif type(base_entity[v]) == vtypes.NumericTimeIndex:
+                transfer_types[v] = vtypes.Numeric
+            else:
+                transfer_types[v] = type(base_entity[v])
 
         # create and add new entity
         new_entity_df = self[base_entity_id].df.copy()
