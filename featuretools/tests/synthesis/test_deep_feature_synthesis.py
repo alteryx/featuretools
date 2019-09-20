@@ -1048,25 +1048,66 @@ def test_primitive_options_with_globals(es):
 
 
 def test_primitive_options_groupbys(es):
-    options = {'cum_sum': {'include_groupby_variables': {'customers': ['cancel_reason']}},
+    options = {'cum_sum': {'include_groupby_variables': {'customers': [u'région_id']},
+                           'ignore_groupby_variables': {'sessions': ['customer_id']}},
+               'cum_mean': {'ignore_groupby_variables': {'customers': [u'région_id',
+                                                                       'customer_id']}},
                'cum_count': {'include_entities': ['customers'],
-                             'ignore_groupby_variables': {'customers': [u"région_id"]}},
+                             'include_groupby_variables': {'customers': [u"région_id",
+                                                                         "customer_id"]}},
                'cum_min': {'ignore_entities': ['customers']},
                'cum_max': {'include_entities': ['cohorts']}}
     dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
                                    entityset=es,
-                                   groupby_trans_primitives=['cum_sum', 'cum_count', 'cum_min', 'cum_max'],
+                                   groupby_trans_primitives=['cum_sum',
+                                                             'cum_count',
+                                                             'cum_min',
+                                                             'cum_max',
+                                                             'cum_mean'],
                                    primitive_options=options)
     features = dfs_obj.build_features()
-    assert feature_with_name(features, 'CUM_SUM(age) by cancel_reason')
+    assert feature_with_name(features, 'CUM_SUM(age) by région_id')
     for f in features:
         # These either have nothing to groupby or don't include the target entity so shouldn't create features
-        assert f.primitive.name not in ['cum_min', 'cum_max']
+        assert f.primitive.name not in ['cum_min', 'cum_max', 'cum_max']
 
         if isinstance(f.primitive, CumCount):
-            assert f.groupby != u'région_id'
+            assert f.groupby in [u'région_id', 'customer_id']
         if isinstance(f.primitive, CumSum):
             deps = f.get_dependencies()
             entities = [d.entity.id for d in deps]
             if 'customers' in entities:
                 assert f.groupby == 'cancel_reason'
+
+
+def test_primitive_options_multiple_inputs(es):
+    too_many_options = {'mode': [{'include_entities': ['logs']},
+                                 {'ignore_entities': ['sessions']}]}
+    error_msg = "Number of options does not match number of inputs for primitive mode"
+    with pytest.raises(AssertionError, match=error_msg):
+        DeepFeatureSynthesis(target_entity_id='customers',
+                             entityset=es,
+                             agg_primitives=['mode'],
+                             trans_primitives=[],
+                             primitive_options=too_many_options)
+
+    options = {'trend': [{'include_entities': ['log'],
+                          'ignore_variables': {'log': ['value']}},
+                         {'include_entities': ['log'],
+                          'include_variables': {'log': ['datetime']}}]}
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
+                                   entityset=es,
+                                   agg_primitives=['trend'],
+                                   trans_primitives=[],
+                                   primitive_options=options)
+    features = dfs_obj.build_features()
+    for f in features:
+        deps = f.get_dependencies()
+        entities = [d.entity.id for d in deps]
+        identities = [d for d in deps if isinstance(d, IdentityFeature)]
+        variables = [d.variable.id for d in identities]
+        if f.primitive.name == 'trend':
+            assert 'log' in entities
+            assert 'datetime' in variables
+            if len(variables) == 2:
+                assert 'value' != variables[0]

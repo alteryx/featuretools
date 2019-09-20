@@ -66,3 +66,10 @@ GroupBy Transform Primitives can also have additional options ``include_groupby_
 to include/ignore to use to group inputs. By default, DFS only groups by ID columns. Specifying ``include_groupby_variables``
 overrides this default, and will only group by variables given. On the other hand, ``ignore_groupby_variables`` will
 continue to use the ID columns, ignoring any variables specified that are also ID columns.
+
+
+Specifying for each Input for Multiple Input Primitives
+*******************************************************
+For primitives that take multiple columns as input, such as ``Trend``, the above options can be specified for each input by
+passing them in as a list. If only one option dictionary is given, it is used for all inputs. The length of the list provided
+must match the number of inputs the primitive takes.
