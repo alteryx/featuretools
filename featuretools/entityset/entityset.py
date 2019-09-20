@@ -548,6 +548,13 @@ class EntitySet(object):
         additional_variables = additional_variables or []
         copy_variables = copy_variables or []
 
+        # Check base entity to make sure time index is valid
+        if base_entity.time_index is not None:
+            t_index = base_entity[base_entity.time_index]
+            if not isinstance(t_index, (vtypes.NumericTimeIndex, vtypes.DatetimeTimeIndex)):
+                base_error = "Time index '{0}' is not a NumericTimeIndex or DatetimeTimeIndex, but type {1}. Use set_time_index on entity '{2}' to set the time_index."
+                raise TypeError(base_error.format(base_entity.time_index, type(t_index), str(base_entity.id)))
+
         if not isinstance(additional_variables, list):
             raise TypeError("'additional_variables' must be a list, but received type {}"
                             .format(type(additional_variables)))
@@ -598,9 +605,6 @@ class EntitySet(object):
         elif make_time_index:
             # Create a new time index based on the base entity time index.
             base_time_index = base_entity.time_index
-            t_index = base_entity[base_time_index]
-            if not isinstance(t_index, (vtypes.NumericTimeIndex, vtypes.DatetimeTimeIndex)):
-                raise TypeError("{0} is not a NumericTimeIndex or DatetimeTimeIndex, but type {1}".format(base_time_index, type(t_index)))
             if new_entity_time_index is None:
                 new_entity_time_index = "first_%s_time" % (base_entity.id)
 

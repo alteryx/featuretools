@@ -990,8 +990,9 @@ def test_normalize_with_numeric_time_index(int_es):
 
 def test_normalize_with_invalid_time_index(es):
     es['customers'].convert_variable_type('signup_date', variable_types.Datetime)
-    error_text = "signup_date is not a NumericTimeIndex or DatetimeTimeIndex," \
-        + " but type <class 'featuretools.variable_types.variable.Datetime'>"
+    error_text = "Time index 'signup_date' is not a NumericTimeIndex or DatetimeTimeIndex," \
+        + " but type <class 'featuretools.variable_types.variable.Datetime'>."\
+        + " Use set_time_index on entity 'customers' to set the time_index."
     with pytest.raises(TypeError, match=error_text):
         es.normalize_entity(base_entity_id="customers",
                             new_entity_id="cancel_reason",
