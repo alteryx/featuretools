@@ -574,8 +574,7 @@ class DeepFeatureSynthesis(object):
                                                         entity,
                                                         new_max_depth,
                                                         input_types,
-                                                        groupby_prim,
-                                                        require_direct_input=require_direct_input)
+                                                        groupby_prim)
             matching_inputs = filter_matches_by_options(matching_inputs, current_options)
             # get columns to use as groupbys, use IDs as default unless other groupbys specified
             if any(['include_groupby_variables' in option for option in current_options]):
@@ -589,9 +588,18 @@ class DeepFeatureSynthesis(object):
             # Convert groupby matches to tuples to make them consistent with inputs
             groupby_matches = [(groupby_match, ) for groupby_match in groupby_matches]
             groupby_matches = filter_matches_by_options(groupby_matches, current_options, groupby=True)
+            # If require_direct_input, require a DirectFeature in input or as a
+            # groupby, and don't create features of inputs/groupbys which are
+            # all direct features with the same relationship path
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
                     for groupby in groupby_matches:
+                        if require_direct_input and (
+                            _all_direct_and_same_path(matching_input + (groupby,)) or
+                            not any([isinstance(feature, DirectFeature) for
+                                     feature in (matching_input + (groupby, ))])
+                        ):
+                            continue
                         new_f = GroupByTransformFeature(list(matching_input),
                                                         groupby=groupby[0],
                                                         primitive=groupby_prim)
