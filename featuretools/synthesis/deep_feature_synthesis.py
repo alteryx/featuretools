@@ -575,6 +575,7 @@ class DeepFeatureSynthesis(object):
                                                         new_max_depth,
                                                         input_types,
                                                         groupby_prim)
+
             matching_inputs = filter_matches_by_options(matching_inputs, current_options)
             # get columns to use as groupbys, use IDs as default unless other groupbys specified
             if any(['include_groupby_variables' in option for option in current_options]):
@@ -593,6 +594,7 @@ class DeepFeatureSynthesis(object):
             # all direct features with the same relationship path
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
+
                     for groupby in groupby_matches:
                         if require_direct_input and (
                             _all_direct_and_same_path(matching_input + (groupby,)) or
