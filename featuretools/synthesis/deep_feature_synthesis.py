@@ -228,7 +228,8 @@ class DeepFeatureSynthesis(object):
             generate_all_primitive_options(all_primitives,
                                            primitive_options,
                                            self.ignore_entities,
-                                           self.ignore_variables)
+                                           self.ignore_variables,
+                                           self.es)
 
         self.seed_features = seed_features or []
         self.drop_exact = drop_exact or []

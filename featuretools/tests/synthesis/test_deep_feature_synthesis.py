@@ -17,6 +17,7 @@ from featuretools.primitives import (  # CumMean,
     AddNumeric,
     Count,
     CumCount,
+    CumMean,
     CumSum,
     Day,
     Diff,
@@ -896,10 +897,15 @@ def test_primitive_options_errors(es):
     conflicting_primitive_options = {('count', 'mode'):
                                      {'ignore_entities': ['sessions']},
                                      'mode': {'include_entities': ['sessions']}}
+    invalid_entity = {'mode': {'include_entities': ['invalid_entity']}}
+    invalid_variable_entity = {'mode': {'include_variables': {'invalid_entity': ['product_id']}}}
+    invalid_variable = {'mode': {'include_variables': {'sessions': ['invalid_variable']}}}
     key_error_text = "Unrecognized primitive option \'ignore_entity\' for mode"
     list_error_text = "Incorrect type formatting for \'ignore_entities\' for mode"
     dict_error_text = "Incorrect type formatting for \'ignore_variables\' for mode"
     conflicting_error_text = "Multiple options found for primitive mode"
+    invalid_entity_warning = "Entity \'invalid_entity\' not in entityset"
+    invalid_variable_warning = "Variable \'invalid_variable\' not in entity \'sessions\'"
     with pytest.raises(KeyError, match=key_error_text):
         DeepFeatureSynthesis(target_entity_id='customers',
                              entityset=es,
@@ -924,6 +930,27 @@ def test_primitive_options_errors(es):
                              agg_primitives=['mode'],
                              trans_primitives=[],
                              primitive_options=conflicting_primitive_options)
+    with pytest.warns(UserWarning, match=invalid_entity_warning) as record:
+        DeepFeatureSynthesis(target_entity_id='customers',
+                             entityset=es,
+                             agg_primitives=['mode'],
+                             trans_primitives=[],
+                             primitive_options=invalid_entity)
+    assert len(record) == 1
+    with pytest.warns(UserWarning, match=invalid_entity_warning) as record:
+        DeepFeatureSynthesis(target_entity_id='customers',
+                             entityset=es,
+                             agg_primitives=['mode'],
+                             trans_primitives=[],
+                             primitive_options=invalid_variable_entity)
+    assert len(record) == 1
+    with pytest.warns(UserWarning, match=invalid_variable_warning) as record:
+        DeepFeatureSynthesis(target_entity_id='customers',
+                             entityset=es,
+                             agg_primitives=['mode'],
+                             trans_primitives=[],
+                             primitive_options=invalid_variable)
+    assert len(record) == 1
 
 
 def test_primitive_options(es):
@@ -1051,10 +1078,10 @@ def test_primitive_options_groupbys(es):
     options = {'cum_sum': {'include_groupby_variables': {'customers': [u'région_id']},
                            'ignore_groupby_variables': {'sessions': ['customer_id']}},
                'cum_mean': {'ignore_groupby_variables': {'customers': [u'région_id',
-                                                                       'customer_id']}},
+                                                                       'id']}},
                'cum_count': {'include_entities': ['customers'],
                              'include_groupby_variables': {'customers': [u"région_id",
-                                                                         "customer_id"]}},
+                                                                         "cohort"]}},
                'cum_min': {'ignore_entities': ['customers']},
                'cum_max': {'include_entities': ['cohorts']}}
     dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
@@ -1070,14 +1097,15 @@ def test_primitive_options_groupbys(es):
     for f in features:
         # These either have nothing to groupby or don't include the target entity so shouldn't create features
         assert f.primitive.name not in ['cum_min', 'cum_max', 'cum_max']
-
+        if isinstance(f.primitive, CumMean):
+            assert f.groupby.variable.id not in [u'région_id', 'id']
         if isinstance(f.primitive, CumCount):
-            assert f.groupby in [u'région_id', 'customer_id']
+            assert f.groupby.variable.id in [u'région_id', 'cohort']
         if isinstance(f.primitive, CumSum):
             deps = f.get_dependencies()
             entities = [d.entity.id for d in deps]
             if 'customers' in entities:
-                assert f.groupby == 'cancel_reason'
+                assert f.groupby.variable.id == u'région_id'
 
 
 def test_primitive_options_multiple_inputs(es):
