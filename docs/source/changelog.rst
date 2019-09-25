@@ -6,6 +6,7 @@ Changelog
     * Enhancements
         * Improve how files are copied and written (:pr:`721`)
         * Add number of rows to graph in entityset.plot (:pr:`727`)
+        * Added support for pandas DateOffsets in DFS and Timedelta (:pr:`732`)
         * Enable feature-specific top_n value using a dictionary in encode_features (:pr:`735`)
         * Added progress_callback parameter to dfs() and calculate_feature_matrix() (:pr:`739`, :pr:`745`)
     * Fixes
