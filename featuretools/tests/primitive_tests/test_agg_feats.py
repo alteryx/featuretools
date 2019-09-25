@@ -635,13 +635,12 @@ def test_stacking_multi(es):
 
 
 def test_use_previous_pd_dateoffset(es):
-    time_diff = (pd.Timestamp('today') - pd.Timestamp('2011-04-09 10:32:00')).total_seconds()
     total_events_pd = ft.Feature(es["log"]["id"],
                                  parent_entity=es["customers"],
-                                 use_previous=pd.DateOffset(seconds=time_diff),
+                                 use_previous=pd.DateOffset(hours=47, minutes=60),
                                  primitive=Count)
 
-    feature_matrix = ft.calculate_feature_matrix([total_events_pd], es)
+    feature_matrix = ft.calculate_feature_matrix([total_events_pd], es, cutoff_time=pd.Timestamp('2011-04-11 10:31:30'))
     col_name = list(feature_matrix.head().keys())[0]
     assert (feature_matrix[col_name] == [1, 5, 2]).all()
 

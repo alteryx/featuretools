@@ -55,6 +55,9 @@ class Timedelta(object):
             value (float, str, dict) : Value of timedelta, string providing
                 both unit and value, or a dictionary of units and times.
             unit (str) : Unit of time delta.
+            delta_obj (pd.Timedelta or pd.DateOffset) : A time object used
+                internally to do time operations. If None is provided, one will
+                be created using the provided value and unit.
         """
         self.check_value(value, unit)
         self.times = self.fix_units()
