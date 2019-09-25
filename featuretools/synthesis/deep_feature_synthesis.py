@@ -517,8 +517,7 @@ class DeepFeatureSynthesis(object):
                                                         entity,
                                                         new_max_depth,
                                                         input_types,
-                                                        groupby_prim,
-                                                        require_direct_input=require_direct_input)
+                                                        groupby_prim)
             # get IDs to use as groupby
             id_matches = self._features_by_type(all_features=all_features,
                                                 entity=entity,
