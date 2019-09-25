@@ -9,7 +9,7 @@ from featuretools.utils.gen_utils import (
 from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.version import __version__ as ft_version
 
-SCHEMA_VERSION = "3.1.0"
+SCHEMA_VERSION = "3.2.0"
 
 
 def save_features(features, location=None, profile_name=None):

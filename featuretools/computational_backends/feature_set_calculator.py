@@ -558,13 +558,13 @@ class FeatureSetCalculator(object):
             if use_previous and not base_frame.empty:
                 # Filter by use_previous values
                 time_last = self.time_last
-                if use_previous.is_absolute():
+                if use_previous.has_no_observations():
                     time_first = time_last - use_previous
                     ti = child_entity.time_index
                     if ti is not None:
                         base_frame = base_frame[base_frame[ti] >= time_first]
                 else:
-                    n = use_previous.value
+                    n = use_previous.get_value('o')
 
                     def last_n(df):
                         return df.iloc[-n:]
