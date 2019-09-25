@@ -1,7 +1,6 @@
 import pandas as pd
 import pytest
 from dateutil.relativedelta import relativedelta
-from toolz import merge
 
 import featuretools as ft
 from featuretools.entityset import Timedelta
@@ -68,7 +67,9 @@ def test_check_timedelta(es):
     exp_to_standard_unit = {e: t for e, t in zip(expanded_units, time_units)}
     singular_units = [u[:-1] for u in expanded_units]
     sing_to_standard_unit = {s: t for s, t in zip(singular_units, time_units)}
-    to_standard_unit = merge(exp_to_standard_unit, sing_to_standard_unit)
+    to_standard_unit = {}
+    to_standard_unit.update(exp_to_standard_unit)
+    to_standard_unit.update(sing_to_standard_unit)
     full_units = singular_units + expanded_units + time_units + time_units
 
     strings = ["2 {}".format(u) for u in singular_units + expanded_units +
