@@ -21,6 +21,7 @@ Changelog
         * Raise warning and not error on schema version mismatch (:pr:`718`)
         * Removed time remaining from displayed progress bar in dfs() and calculate_feature_matrix() (:pr:`739`)
         * Raise warning in normalize_entity() when time_index of base_entity has an invalid type (:pr:`749`)
+        * Remove toolz as a direct dependency (:pr:`755`)
     * Documentation Changes
         * Updated URL for Compose (:pr:`716`)
     * Testing Changes
