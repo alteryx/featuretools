@@ -523,14 +523,23 @@ class DeepFeatureSynthesis(object):
                                                 entity=entity,
                                                 max_depth=new_max_depth,
                                                 variable_type=set([Id]))
-            for matching_input in matching_inputs:
+            # If require_direct_input, require a DirectFeature in input or as a
+            # groupby, and don't create features of inputs/groupbys which are
+            # all direct features with the same relationship path
+            matches_with_groupby = set()
+            for id in id_matches:
+                for match in matching_inputs:
+                    if not require_direct_input or (
+                            not _all_direct_and_same_path(match + (id,)) and
+                            any([isinstance(m, DirectFeature) for m in (match + (id,))])):
+                        matches_with_groupby.add(match + (id,))
+            for matching_input in matches_with_groupby:
                 if all(bf.number_output_features == 1 for bf in matching_input):
-                    for id_groupby in id_matches:
-                        new_f = GroupByTransformFeature(list(matching_input),
-                                                        groupby=id_groupby,
-                                                        primitive=groupby_prim)
-                        self._handle_new_feature(all_features=all_features,
-                                                 new_feature=new_f)
+                    new_f = GroupByTransformFeature(list(matching_input[:-1]),
+                                                    groupby=matching_input[-1],
+                                                    primitive=groupby_prim)
+                    self._handle_new_feature(all_features=all_features,
+                                             new_feature=new_f)
 
     def _build_forward_features(self, all_features, relationship_path, max_depth=0):
         _, relationship = relationship_path[0]

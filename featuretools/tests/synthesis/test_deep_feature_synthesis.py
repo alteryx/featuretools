@@ -270,6 +270,7 @@ def test_make_groupby_features(es):
     assert (feature_with_name(features,
                               "CUM_SUM(value) by session_id"))
 
+
 def test_make_indirect_groupby_features(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
@@ -279,6 +280,7 @@ def test_make_indirect_groupby_features(es):
     features = dfs_obj.build_features()
     assert (feature_with_name(features,
                               "CUM_SUM(products.rating) by session_id"))
+
 
 def test_make_groupby_features_with_id(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
