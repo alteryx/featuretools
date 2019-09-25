@@ -323,9 +323,8 @@ def test_arithmetic_of_direct(es):
     features = []
     for test in to_test:
         features.append(ft.Feature([log_age, log_rating], primitive=test[0]))
-    features += [log_rating, log_age]
-    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 3, 5, 7])
 
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 3, 5, 7])
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert v == test[1]
