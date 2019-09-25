@@ -6,12 +6,13 @@ Changelog
     * Enhancements
         * Improve how files are copied and written (:pr:`721`)
         * Add number of rows to graph in entityset.plot (:pr:`727`)
+        * Added support for pandas DateOffsets in DFS and Timedelta (:pr:`732`)
         * Enable feature-specific top_n value using a dictionary in encode_features (:pr:`735`)
         * Added progress_callback parameter to dfs() and calculate_feature_matrix() (:pr:`739`, :pr:`745`)
     * Fixes
         * Fixed entity set deserialization (:pr:`720`)
         * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
-        * Fixed CumCount and other group-by transform primitives that take ID as input (:pr:`733`)
+        * Fixed CumCount and other group-by transform primitives that take ID as input (:pr:`733`, :pr:`754`)
         * Fix progress bar undercounting (:pr:`743`)
 	* Updated training_window error assertion to only check against observations (:pr:`728`)
         * Don't delete the whole destination folder while saving entityset (:pr:`717`)
@@ -19,6 +20,7 @@ Changelog
         * Raise warning and not error on schema version mismatch (:pr:`718`)
         * Removed time remaining from displayed progress bar in dfs() and calculate_feature_matrix() (:pr:`739`)
         * Raise warning in normalize_entity() when time_index of base_entity has an invalid type (:pr:`749`)
+        * Remove toolz as a direct dependency (:pr:`755`)
         * Allow boolean variable types to be used in the Multiply primivite (:pr:`756`)
     * Documentation Changes
         * Updated URL for Compose (:pr:`716`)
