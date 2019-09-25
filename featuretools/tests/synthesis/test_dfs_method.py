@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
-
+import numpy as np
 import pandas as pd
 import pytest
 from distributed.utils_test import cluster
 
+from featuretools.computational_backends.calculate_feature_matrix import (
+    FEATURE_CALCULATION_PERCENTAGE
+)
 from featuretools.entityset import EntitySet, Relationship, Timedelta
 from featuretools.primitives import Max, Mean, Min, Sum
 from featuretools.synthesis import dfs
@@ -207,3 +210,42 @@ def test_accepts_pandas_training_window(datetime_es):
                                    training_window=pd.Timedelta(90, "D"))
 
     assert (feature_matrix.index == [2, 3, 4]).all()
+
+
+def test_calls_progress_callback(entities, relationships):
+    class MockProgressCallback:
+        def __init__(self):
+            self.progress_history = []
+            self.total_update = 0
+            self.total_progress_percent = 0
+
+        def __call__(self, update, progress_percent, time_elapsed):
+            self.total_update += update
+            self.total_progress_percent = progress_percent
+            self.progress_history.append(progress_percent)
+
+    mock_progress_callback = MockProgressCallback()
+
+    feature_matrix, features = dfs(entities=entities,
+                                   relationships=relationships,
+                                   target_entity="transactions",
+                                   progress_callback=mock_progress_callback)
+
+    # second to last entry is the last update from feature calculation
+    assert np.isclose(mock_progress_callback.progress_history[-2], FEATURE_CALCULATION_PERCENTAGE * 100)
+    assert np.isclose(mock_progress_callback.total_update, 100.0)
+    assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
+
+    # test with multiple jobs
+    mock_progress_callback = MockProgressCallback()
+
+    with cluster() as (scheduler, [a, b]):
+        dkwargs = {'cluster': scheduler['address']}
+        feature_matrix, features = dfs(entities=entities,
+                                       relationships=relationships,
+                                       target_entity="transactions",
+                                       progress_callback=mock_progress_callback,
+                                       dask_kwargs=dkwargs)
+
+    assert np.isclose(mock_progress_callback.total_update, 100.0)
+    assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
