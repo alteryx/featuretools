@@ -59,7 +59,7 @@ class FeatureSetCalculator(object):
         self.precalculated_features = precalculated_features
 
         # total number of features (including dependencies) to be calculate
-        self.num_features = len(feature_set.features_by_name.values())
+        self.num_features = sum(len(features1) + len(features2) for _, (_, features1, features2) in self.feature_set.feature_trie)
 
     def run(self, instance_ids, progress_callback=None):
         """
@@ -95,7 +95,6 @@ class FeatureSetCalculator(object):
             # do nothing for the progress call back if not provided
             def progress_callback(*args):
                 pass
-
         feature_trie = self.feature_set.feature_trie
 
         df_trie = Trie(path_constructor=RelationshipPath)

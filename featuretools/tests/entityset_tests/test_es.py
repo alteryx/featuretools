@@ -963,3 +963,40 @@ def test_use_time_index():
                              index="id",
                              time_index="transaction_time",
                              dataframe=df)
+
+
+def test_normalize_with_datetime_time_index(es):
+    es.normalize_entity(base_entity_id="customers",
+                        new_entity_id="cancel_reason",
+                        index="cancel_reason",
+                        make_time_index=False,
+                        copy_variables=['signup_date', 'upgrade_date'])
+
+    vtypes = es['cancel_reason'].variable_types
+    assert vtypes['signup_date'] == variable_types.Datetime
+    assert vtypes['upgrade_date'] == variable_types.Datetime
+
+
+def test_normalize_with_numeric_time_index(int_es):
+    int_es.normalize_entity(base_entity_id="customers",
+                            new_entity_id="cancel_reason",
+                            index="cancel_reason",
+                            make_time_index=False,
+                            copy_variables=['signup_date', 'upgrade_date'])
+
+    vtypes = int_es['cancel_reason'].variable_types
+    assert vtypes['signup_date'] == variable_types.Numeric
+    assert vtypes['upgrade_date'] == variable_types.Numeric
+
+
+def test_normalize_with_invalid_time_index(es):
+    es['customers'].convert_variable_type('signup_date', variable_types.Datetime)
+    error_text = "Time index 'signup_date' is not a NumericTimeIndex or DatetimeTimeIndex," \
+        + " but type <class 'featuretools.variable_types.variable.Datetime'>."\
+        + " Use set_time_index on entity 'customers' to set the time_index."
+    with pytest.raises(TypeError, match=error_text):
+        es.normalize_entity(base_entity_id="customers",
+                            new_entity_id="cancel_reason",
+                            index="cancel_reason",
+                            copy_variables=['upgrade_date'])
+    es['customers'].convert_variable_type('signup_date', variable_types.DatetimeTimeIndex)
