@@ -573,8 +573,7 @@ class DeepFeatureSynthesis(object):
                                                         entity,
                                                         new_max_depth,
                                                         input_types,
-                                                        groupby_prim,
-                                                        require_direct_input=require_direct_input)
+                                                        groupby_prim)
             matching_inputs = filter_matches_by_options(matching_inputs, current_options)
             # get columns to use as groupbys, use IDs as default unless other groupbys specified
             if any(['include_groupby_variables' in option for option in current_options]):
