@@ -352,7 +352,8 @@ def test_boolean_multiply():
     fm = ft.calculate_feature_matrix(entityset=es, features=features)
 
     for row in to_test:
-        assert fm[f'{row[0]} * {row[1]}'].equals(df[row[0]] * df[row[1]])
+        col_name = '{} * {}'.format(row[0], row[1])
+        assert fm[col_name].equals(df[row[0]] * df[row[1]])
 
 
 # P TODO: rewrite this  test
