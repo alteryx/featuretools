@@ -495,7 +495,11 @@ class MultiplyNumeric(TransformPrimitive):
         [2, 2, 4]
     """
     name = "multiply_numeric"
-    input_types = [Numeric, Numeric]
+    input_types = [
+        [Numeric, Numeric],
+        [Numeric, Boolean],
+        [Boolean, Numeric]
+    ]
     return_type = Numeric
     commutative = True
 
