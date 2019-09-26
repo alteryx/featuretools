@@ -633,7 +633,9 @@ def test_use_previous_pd_dateoffset(es):
                                  use_previous=pd.DateOffset(hours=47, minutes=60),
                                  primitive=Count)
 
-    feature_matrix = ft.calculate_feature_matrix([total_events_pd], es, cutoff_time=pd.Timestamp('2011-04-11 10:31:30'))
+    feature_matrix = ft.calculate_feature_matrix([total_events_pd], es,
+                                                 cutoff_time=pd.Timestamp('2011-04-11 10:31:30'),
+                                                 instance_ids=[0, 1, 2])
     col_name = list(feature_matrix.head().keys())[0]
     assert (feature_matrix[col_name] == [1, 5, 2]).all()
 
