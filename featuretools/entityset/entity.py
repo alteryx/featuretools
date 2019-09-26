@@ -240,7 +240,7 @@ class Entity(object):
         training_window = _check_timedelta(training_window)
 
         if training_window is not None:
-            assert training_window.unit != "o", "Training window cannot be in observations"
+            assert training_window.has_no_observations(), "Training window cannot be in observations"
 
         if instance_vals is None:
             df = self.df.copy()
