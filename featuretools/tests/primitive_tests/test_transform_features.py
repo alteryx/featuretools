@@ -344,16 +344,21 @@ def test_boolean_multiply():
         ('numeric', 'numeric'),
         ('numeric', 'bool'),
         ('bool', 'numeric'),
+        ('bool', 'bool')
     ]
     features = []
     for row in to_test:
         features.append(ft.Feature(es["test"][row[0]]) * ft.Feature(es["test"][row[1]]))
 
+    features.append(ft.Feature(es["test"]['numeric']) * 3)
     fm = ft.calculate_feature_matrix(entityset=es, features=features)
 
     for row in to_test:
         col_name = '{} * {}'.format(row[0], row[1])
-        assert fm[col_name].equals(df[row[0]] * df[row[1]])
+        if row[0] == 'bool' and row[1] == 'bool':
+            assert fm[col_name].equals(df[row[0]] & df[row[1]])
+        else:
+            assert fm[col_name].equals(df[row[0]] * df[row[1]])
 
 
 # P TODO: rewrite this  test

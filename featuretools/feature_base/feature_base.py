@@ -13,6 +13,7 @@ from featuretools.utils.wrangle import (
     _check_timedelta
 )
 from featuretools.variable_types import (
+    Boolean,
     Categorical,
     Datetime,
     DatetimeTimeIndex,
@@ -286,6 +287,9 @@ class FeatureBase(object):
 
     def __mul__(self, other):
         """Multiply by other"""
+        if isinstance(other, FeatureBase):
+            if self.variable_type == Boolean and other.variable_type == Boolean:
+                return Feature([self, other], primitive=primitives.MultiplyBoolean)
         return self._handle_binary_comparision(other, primitives.MultiplyNumeric, primitives.MultiplyNumericScalar)
 
     def __rmul__(self, other):
