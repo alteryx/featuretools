@@ -162,10 +162,10 @@ Table of contents
    :caption: Guides
 
    guides/tuning_dfs
+   guides/specifying_primitive_options
    guides/performance
    guides/parallel
    guides/deployment
-   guides/specifying_primitive_options
    guides/advanced_custom_primitives
 
 .. toctree::
@@ -194,4 +194,3 @@ Other links
 ------------
 * :ref:`genindex`
 * :ref:`search`
-
