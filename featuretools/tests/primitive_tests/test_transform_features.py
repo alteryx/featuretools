@@ -350,7 +350,6 @@ def test_boolean_multiply():
     for row in to_test:
         features.append(ft.Feature(es["test"][row[0]]) * ft.Feature(es["test"][row[1]]))
 
-    features.append(ft.Feature(es["test"]['numeric']) * 3)
     fm = ft.calculate_feature_matrix(entityset=es, features=features)
 
     for row in to_test:
