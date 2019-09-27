@@ -212,10 +212,11 @@ def filter_groupby_matches_by_options(groupby_matches, options):
 
 def filter_matches_by_options(matches, options, groupby=False):
     generator = _groupby_filter_generator if groupby else _variable_filter_generator
+    # If more than one option, than need to handle each for each input
     if len(options) > 1:
         def is_valid_match(match):
             variable_filter = [generator(option) for option in options]
-            if all([variable_filter[i](match[i]) for i in range(len(variable_filter))]):
+            if all([vf(m) for vf, m in zip(variable_filter, match)]):
                 return True
             else:
                 return False

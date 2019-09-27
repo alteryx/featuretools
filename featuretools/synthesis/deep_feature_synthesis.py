@@ -587,7 +587,6 @@ class DeepFeatureSynthesis(object):
                                                      entity=entity,
                                                      max_depth=new_max_depth,
                                                      variable_type=default_type)
-            # Convert groupby matches to tuples to make them consistent with inputs
             groupby_matches = filter_groupby_matches_by_options(groupby_matches, current_options)
 
             # If require_direct_input, require a DirectFeature in input or as a
@@ -595,7 +594,6 @@ class DeepFeatureSynthesis(object):
             # all direct features with the same relationship path
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
-
                     for groupby in groupby_matches:
                         if require_direct_input and (
                             _all_direct_and_same_path(matching_input + (groupby,)) or
