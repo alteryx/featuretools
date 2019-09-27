@@ -17,9 +17,10 @@ from featuretools.primitives.base import (
     TransformPrimitive
 )
 from featuretools.primitives.options_utils import (
+    filter_groupby_matches_by_options,
     filter_matches_by_options,
     generate_all_primitive_options,
-    ignore_entity
+    ignore_entity_for_primitive
 )
 from featuretools.utils import is_string
 from featuretools.variable_types import Boolean, Discrete, Id, Numeric
@@ -539,7 +540,7 @@ class DeepFeatureSynthesis(object):
 
         for trans_prim in self.trans_primitives:
             current_options = self.primitive_options[trans_prim.name]
-            if ignore_entity(current_options, entity):
+            if ignore_entity_for_primitive(current_options, entity):
                 continue
             # if multiple input_types, only use first one for DFS
             input_types = trans_prim.input_types
@@ -551,9 +552,8 @@ class DeepFeatureSynthesis(object):
                                                         new_max_depth,
                                                         input_types,
                                                         trans_prim,
+                                                        current_options,
                                                         require_direct_input=require_direct_input)
-            matching_inputs = filter_matches_by_options(matching_inputs,
-                                                        current_options)
 
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
@@ -564,7 +564,7 @@ class DeepFeatureSynthesis(object):
 
         for groupby_prim in self.groupby_trans_primitives:
             current_options = self.primitive_options[groupby_prim.name]
-            if ignore_entity(current_options, entity, groupby=True):
+            if ignore_entity_for_primitive(current_options, entity, groupby=True):
                 continue
             input_types = groupby_prim.input_types[:]
             # if multiple input_types, only use first one for DFS
@@ -574,11 +574,12 @@ class DeepFeatureSynthesis(object):
                                                         entity,
                                                         new_max_depth,
                                                         input_types,
-                                                        groupby_prim)
+                                                        groupby_prim,
+                                                        current_options)
 
-            matching_inputs = filter_matches_by_options(matching_inputs, current_options)
             # get columns to use as groupbys, use IDs as default unless other groupbys specified
-            if any(['include_groupby_variables' in option for option in current_options]):
+            if any(['include_groupby_variables' in option and entity.id in
+                    option['include_groupby_variables'] for option in current_options]):
                 default_type = variable_types.PandasTypes._all
             else:
                 default_type = set([Id])
@@ -587,8 +588,8 @@ class DeepFeatureSynthesis(object):
                                                      max_depth=new_max_depth,
                                                      variable_type=default_type)
             # Convert groupby matches to tuples to make them consistent with inputs
-            groupby_matches = [(groupby_match, ) for groupby_match in groupby_matches]
-            groupby_matches = filter_matches_by_options(groupby_matches, current_options, groupby=True)
+            groupby_matches = filter_groupby_matches_by_options(groupby_matches, current_options)
+
             # If require_direct_input, require a DirectFeature in input or as a
             # groupby, and don't create features of inputs/groupbys which are
             # all direct features with the same relationship path
@@ -643,7 +644,7 @@ class DeepFeatureSynthesis(object):
         for agg_prim in self.agg_primitives:
             current_options = self.primitive_options[agg_prim.name]
 
-            if ignore_entity(current_options, child_entity):
+            if ignore_entity_for_primitive(current_options, child_entity):
                 continue
             # if multiple input_types, only use first one for DFS
             input_types = agg_prim.input_types
@@ -660,6 +661,7 @@ class DeepFeatureSynthesis(object):
                                                         new_max_depth,
                                                         input_types,
                                                         agg_prim,
+                                                        current_options,
                                                         feature_filter=feature_filter)
             matching_inputs = filter_matches_by_options(matching_inputs,
                                                         current_options)
@@ -755,7 +757,8 @@ class DeepFeatureSynthesis(object):
         return False
 
     def _get_matching_inputs(self, all_features, entity, max_depth, input_types,
-                             primitive, require_direct_input=False, feature_filter=None):
+                             primitive, primitive_options, require_direct_input=False,
+                             feature_filter=None):
         features = self._features_by_type(all_features=all_features,
                                           entity=entity,
                                           max_depth=max_depth,
@@ -772,7 +775,7 @@ class DeepFeatureSynthesis(object):
             # features with the same relationship_path.
             matching_inputs = {inputs for inputs in matching_inputs
                                if not _all_direct_and_same_path(inputs)}
-
+        matching_inputs = filter_matches_by_options(matching_inputs, primitive_options)
         return matching_inputs
 
 

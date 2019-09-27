@@ -23,11 +23,11 @@ def dict_to_list_variable_check(option, es):
     else:
         for entity, variables in option.items():
             if entity not in es:
-                warnings.warn("Entity \'%s\' not in entityset" % (entity))
+                warnings.warn("Entity '%s' not in entityset" % (entity))
             else:
                 for invalid_var in [variable for variable in variables
                                     if variable not in es[entity]]:
-                    warnings.warn("Variable \'%s\' not in entity \'%s\'" % (invalid_var, entity))
+                    warnings.warn("Variable '%s' not in entity '%s'" % (invalid_var, entity))
         return True
 
 
@@ -37,7 +37,7 @@ def list_entity_check(option, es):
     else:
         for invalid_entity in [entity for entity in option if entity not in es]:
             print(invalid_entity)
-            warnings.warn("Entity \'%s\' not in entityset" % (invalid_entity))
+            warnings.warn("Entity '%s' not in entityset" % (invalid_entity))
         return True
 
 
@@ -187,7 +187,7 @@ def _groupby_filter_generator(options):
     return groupby_filter
 
 
-def ignore_entity(options, entity, groupby=False):
+def ignore_entity_for_primitive(options, entity, groupby=False):
     # This logic handles whether given options ignore an entity or not
     def should_ignore_entity(option):
         if 'include_entities' in option and \
@@ -202,6 +202,12 @@ def ignore_entity(options, entity, groupby=False):
         else:
             return False
     return any([should_ignore_entity(option) for option in options])
+
+
+def filter_groupby_matches_by_options(groupby_matches, options):
+    return filter_matches_by_options([(groupby_match, ) for groupby_match in groupby_matches],
+                                     options,
+                                     groupby=True)
 
 
 def filter_matches_by_options(matches, options, groupby=False):
