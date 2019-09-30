@@ -20,6 +20,7 @@ def dfs(entities=None,
         max_depth=2,
         ignore_entities=None,
         ignore_variables=None,
+        primitive_options=None,
         seed_features=None,
         drop_contains=None,
         drop_exact=None,
@@ -90,6 +91,40 @@ def dfs(entities=None,
 
         ignore_variables (dict[str -> list[str]], optional): List of specific
             variables within each entity to blacklist when creating features.
+
+        primitive_options (list[dict[str or tuple[str] -> dict] or dict[str or tuple[str] -> dict, optional]):
+            Specify options for a single primitive or a group of primitives.
+            Lists of option dicts are used to specify options per input for primitives
+            with multiple inputs. Each option ``dict`` can have the following keys:
+
+            ``"include_entities"``
+                List of entities to be included when creating features for
+                the primitive(s). All other entities will be ignored
+                (list[str]).
+            ``"ignore_entities"``
+                List of entities to be blacklisted when creating features
+                for the primitive(s) (list[str]).
+            ``"include_variables"``
+                List of specific variables within each entity to include when
+                creating feautres for the primitive(s). All other variables
+                in a given entity will be ignored (dict[str -> list[str]]).
+            ``"ignore_variables"``
+                List of specific variables within each entityt to blacklist
+                when creating features for the primitive(s) (dict[str ->
+                list[str]]).
+            ``"include_groupby_entities"``
+                List of Entities to be included when finding groupbys. All
+                other entities will be ignored (list[str]).
+            ``"ignore_groupby_entities"``
+                List of entities to blacklist when finding groupbys
+                (list[str]).
+            ``"include_groupby_variables"``
+                List of specific variables within each entity to include as
+                groupbys, if applicable. All other variables in each
+                entity will be ignored (dict[str -> list[str]]).
+            ``"ignore_groupby_variables"``
+                List of specific variables within each entity to blacklist
+                as groupbys (dict[str -> list[str]]).
 
         seed_features (list[:class:`.FeatureBase`]): List of manually defined
             features to use.
@@ -202,6 +237,7 @@ def dfs(entities=None,
                                       drop_contains=drop_contains,
                                       ignore_entities=ignore_entities,
                                       ignore_variables=ignore_variables,
+                                      primitive_options=primitive_options,
                                       max_features=max_features,
                                       seed_features=seed_features)
 

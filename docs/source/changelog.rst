@@ -9,6 +9,7 @@ Changelog
         * Added support for pandas DateOffsets in DFS and Timedelta (:pr:`732`)
         * Enable feature-specific top_n value using a dictionary in encode_features (:pr:`735`)
         * Added progress_callback parameter to dfs() and calculate_feature_matrix() (:pr:`739`, :pr:`745`)
+        * Enable specifying primitives on a per column or per entity basis (:pr:`748`)
     * Fixes
         * Fixed entity set deserialization (:pr:`720`)
         * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
