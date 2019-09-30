@@ -2,7 +2,7 @@
 
 Changelog
 ---------
-**Future Release**
+**v0.11.0 Sep 30, 2019**
     * Enhancements
         * Improve how files are copied and written (:pr:`721`)
         * Add number of rows to graph in entityset.plot (:pr:`727`)
