@@ -2,7 +2,11 @@
 
 Changelog
 ---------
-**Future Release**
+**v0.11.0 Sep 30, 2019**
+
+    .. warning::
+        The next non-bugfix release of Featuretools will not support Python 2
+
     * Enhancements
         * Improve how files are copied and written (:pr:`721`)
         * Add number of rows to graph in entityset.plot (:pr:`727`)
@@ -19,7 +23,7 @@ Changelog
         * Don't delete the whole destination folder while saving entityset (:pr:`717`)
     * Changes
         * Raise warning and not error on schema version mismatch (:pr:`718`)
-	    * Change feature calculation to return in order of instance ids provided (:pr:`676`)
+        * Change feature calculation to return in order of instance ids provided (:pr:`676`)
         * Removed time remaining from displayed progress bar in dfs() and calculate_feature_matrix() (:pr:`739`)
         * Raise warning in normalize_entity() when time_index of base_entity has an invalid type (:pr:`749`)
         * Remove toolz as a direct dependency (:pr:`755`)
@@ -30,7 +34,9 @@ Changelog
         * Update dependencies (:pr:`738`, :pr:`741`, :pr:`747`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`chidauri`, :user:`christopherbunn`, :user:`kmax12`, :user:`MarcoGorelli`, :user:`angela97lin`, :user:`frances-h`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`angela97lin`, :user:`chidauri`, :user:`christopherbunn`,
+    :user:`frances-h`, :user:`jeff-hernandez`, :user:`kmax12`,
+    :user:`MarcoGorelli`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **Breaking Changes**
 
