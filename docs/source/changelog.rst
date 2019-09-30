@@ -30,7 +30,9 @@ Changelog
         * Update dependencies (:pr:`738`, :pr:`741`, :pr:`747`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`chidauri`, :user:`christopherbunn`, :user:`kmax12`, :user:`MarcoGorelli`, :user:`angela97lin`, :user:`frances-h`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`angela97lin`, :user:`chidauri`, :user:`christopherbunn`,
+    :user:`frances-h`, :user:`jeff-hernandez`, :user:`kmax12`,
+    :user:`MarcoGorelli`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **Breaking Changes**
 
