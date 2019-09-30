@@ -82,7 +82,7 @@ def test_update_data(es):
     df = es["sessions"].df.copy(deep=True)
     df["id"].iloc[1:3] = [2, 1]
     es["sessions"].update_data(df.copy(deep=True))
-    assert es["sessions"].df["id"].iloc[1] == 1
+    assert es["sessions"].df["id"].iloc[1] == 2  # no sorting since time index not defined
     es["sessions"].update_data(df.copy(deep=True), already_sorted=True)
     assert es["sessions"].df["id"].iloc[1] == 2
 
