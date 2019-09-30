@@ -32,6 +32,9 @@ Changelog
     Thanks to the following people for contributing to this release:
     :user:`jeff-hernandez`, :user:`chidauri`, :user:`christopherbunn`, :user:`kmax12`, :user:`MarcoGorelli`, :user:`angela97lin`, :user:`frances-h`, :user:`rwedge`, :user:`thehomebrewnerd`
 
+**Breaking Changes**
+
+* Feature calculations will return in the order of instance ids provided instead of the order of time points instances are calculated at.
 
 **v0.10.1 Aug 25, 2019**
     * Fixes
