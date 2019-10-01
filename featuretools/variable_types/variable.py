@@ -43,13 +43,7 @@ class Variable(object):
         return hash((self.id, self.entity_id))
 
     def __repr__(self):
-        ret = u"<Variable: {} (dtype = {})>".format(self.name, self.type_string)
-
-        # encode for python 2
-        if type(ret) != str:
-            ret = ret.encode("utf-8")
-
-        return ret
+        return u"<Variable: {} (dtype = {})>".format(self.name, self.type_string)
 
     @classmethod
     def create_from(cls, variable):
@@ -252,13 +246,7 @@ class Datetime(Variable):
         super(Datetime, self).__init__(id, entity, name=name)
 
     def __repr__(self):
-        ret = u"<Variable: {} (dtype: {}, format: {})>".format(self.name, self.type_string, self.format)
-
-        # encode for python 2
-        if type(ret) != str:
-            ret = ret.encode("utf-8")
-
-        return ret
+        return u"<Variable: {} (dtype: {}, format: {})>".format(self.name, self.type_string, self.format)
 
     def to_data_description(self):
         description = super(Datetime, self).to_data_description()

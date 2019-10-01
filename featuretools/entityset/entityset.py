@@ -212,10 +212,6 @@ class EntitySet(object):
                 (r._child_entity_id, r._child_variable_id,
                  r._parent_entity_id, r._parent_variable_id)
 
-        # encode for python 2
-        if type(repr_out) != str:
-            repr_out = repr_out.encode("utf-8")
-
         return repr_out
 
     def add_relationships(self, relationships):
