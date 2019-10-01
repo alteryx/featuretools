@@ -2,6 +2,17 @@
 
 Changelog
 ---------
+**Future Release**
+    * Enhancements
+    * Fixes
+    * Updates
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+
+
 **v0.11.0 Sep 30, 2019**
 
     .. warning::
