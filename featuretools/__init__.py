@@ -34,11 +34,3 @@ for entry_point in pkg_resources.iter_entry_points('featuretools_plugin'):
         sys.modules["featuretools." + entry_point.name] = entry_point.load()
     except Exception:
         pass
-
-
-from .utils.gen_utils import is_python_2
-if is_python_2():
-    warnings.warn(
-        "The next non-bugfix release of Featuretools will not support Python 2",
-        FutureWarning
-    )
