@@ -3,20 +3,12 @@ import errno
 import json
 import os
 import tarfile
+import tempfile
 
 import boto3
 
-from featuretools.utils.gen_utils import (
-    is_python_2,
-    use_s3fs_es,
-    use_smartopen_es
-)
+from featuretools.utils.gen_utils import use_s3fs_es, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
-
-if is_python_2():
-    from backports import tempfile
-else:
-    import tempfile
 
 FORMATS = ['csv', 'pickle', 'parquet']
 SCHEMA_VERSION = "1.0.0"
