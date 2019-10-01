@@ -2,6 +2,7 @@ import json
 import shutil
 import sys
 import warnings
+from itertools import zip_longest
 
 import s3fs
 from smart_open import open
@@ -70,10 +71,6 @@ def get_relationship_variable_id(path):
     return child_link_name
 
 
-def is_python_2():
-    return sys.version_info.major < 3
-
-
 def find_descendents(cls):
     """
     A generator which yields all descendent classes of the given class
@@ -90,11 +87,6 @@ def find_descendents(cls):
 
 def check_schema_version(cls, cls_type):
     if is_string(cls_type):
-        if is_python_2():
-            from itertools import izip_longest as zip_longest
-        else:
-            from itertools import zip_longest
-
         if cls_type == 'entityset':
             from featuretools.entityset.serialize import SCHEMA_VERSION
             version_string = cls.get('schema_version')
