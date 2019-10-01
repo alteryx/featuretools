@@ -389,12 +389,11 @@ def test_nonstr_column_names():
     df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 3: ['a', 'b', 'c']})
     es = ft.EntitySet(id='Failure')
 
-    error_text = "All column names must be strings.*"
-    with pytest.raises(ValueError, match=error_text) as excinfo:
+    error_text = r"All column names must be strings \(Column 3 is not a string\)"
+    with pytest.raises(ValueError, match=error_text):
         es.entity_from_dataframe(entity_id='str_cols',
                                  dataframe=df,
                                  index='index')
-    assert 'All column names must be strings (Column 3 is not a string)' in str(excinfo)
 
 
 def test_sort_time_id():
