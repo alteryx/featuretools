@@ -16,12 +16,8 @@ def test_cannot_re_add_relationships_that_already_exists(es):
 
 def test_add_relationships_convert_type(es):
     for r in es.relationships:
-        try:
-            assert type(r.parent_variable) == variable_types.Index
-            assert type(r.child_variable) == variable_types.Id
-        except Exception:
-            assert type(r.parent_variable) == variable_types.Index
-            assert type(r.child_variable) == variable_types.Id
+        assert type(r.parent_variable) == variable_types.Index
+        assert type(r.child_variable) == variable_types.Id
 
 
 def test_get_forward_entities(es):
