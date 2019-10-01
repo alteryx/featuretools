@@ -50,17 +50,6 @@ def make_tqdm_iterator(**kwargs):
     return iterator
 
 
-def is_string(test_value):
-    """Checks for string in Python2 and Python3
-       Via Stack Overflow: https://stackoverflow.com/a/22679982/9458191
-    """
-    try:
-        python_string = basestring
-    except NameError:
-        python_string = str
-    return isinstance(test_value, python_string)
-
-
 def get_relationship_variable_id(path):
     _, r = path[0]
     child_link_name = r.child_variable.id
@@ -86,7 +75,7 @@ def find_descendents(cls):
 
 
 def check_schema_version(cls, cls_type):
-    if is_string(cls_type):
+    if isinstance(cls_type, str):
         if cls_type == 'entityset':
             from featuretools.entityset.serialize import SCHEMA_VERSION
             version_string = cls.get('schema_version')

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from featuretools.utils.gen_utils import find_descendents, is_string
+from featuretools.utils.gen_utils import find_descendents
 
 
 class Variable(object):
@@ -22,7 +22,7 @@ class Variable(object):
     _default_pandas_dtype = object
 
     def __init__(self, id, entity, name=None):
-        assert is_string(id), "Variable id must be a string"
+        assert isinstance(id, str), "Variable id must be a string"
         self.id = id
         self._name = name
         self.entity_id = entity.id

@@ -1,8 +1,6 @@
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
-from featuretools.utils import is_string
-
 
 class Timedelta(object):
     """Represents differences in time.
@@ -113,7 +111,7 @@ class Timedelta(object):
             return relativedelta(**readable_times)
 
     def check_value(self, value, unit):
-        if is_string(value):
+        if isinstance(value, str):
             from featuretools.utils.wrangle import _check_timedelta
             td = _check_timedelta(value)
             self.times = td.times

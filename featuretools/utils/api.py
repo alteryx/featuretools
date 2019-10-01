@@ -6,6 +6,6 @@ from .cli_utils import (
     show_info
 )
 from .entry_point import entry_point
-from .gen_utils import is_string, make_tqdm_iterator
+from .gen_utils import make_tqdm_iterator
 from .time_utils import convert_time_units, make_temporal_cutoffs
 from .trie import Trie
