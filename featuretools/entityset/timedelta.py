@@ -1,5 +1,3 @@
-from __future__ import division
-
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 

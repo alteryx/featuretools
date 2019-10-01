@@ -4,7 +4,6 @@ import os
 import re
 import shutil
 import tempfile
-from builtins import range
 from datetime import datetime
 from itertools import combinations
 from random import randint

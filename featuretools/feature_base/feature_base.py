@@ -1,5 +1,3 @@
-from builtins import zip
-
 from featuretools import Relationship, Timedelta, primitives
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.primitives.base import (

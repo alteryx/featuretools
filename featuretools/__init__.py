@@ -1,5 +1,4 @@
 # flake8: noqa
-from __future__ import absolute_import
 import warnings
 from .config_init import config
 from . import variable_types
