@@ -1,20 +1,16 @@
+import urllib.request
+
 import pytest
 
 from featuretools.demo import load_flight, load_mock_customer, load_retail
 from featuretools.synthesis import dfs
-from featuretools.utils.gen_utils import is_python_2
-
-if is_python_2():
-    import urllib2
-else:
-    import urllib.request as urllib2
 
 
 @pytest.fixture(autouse=True)
 def set_testing_headers():
-    opener = urllib2.build_opener()
+    opener = urllib.request.build_opener()
     opener.addheaders = [('Testing', 'True')]
-    urllib2.install_opener(opener)
+    urllib.request.install_opener(opener)
 
 
 def test_load_retail_diff():
