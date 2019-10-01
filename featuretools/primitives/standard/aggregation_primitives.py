@@ -8,7 +8,7 @@ import pandas as pd
 from featuretools.primitives.base.aggregation_primitive_base import (
     AggregationPrimitive
 )
-from featuretools.utils import convert_time_units, is_python_2
+from featuretools.utils import convert_time_units
 from featuretools.variable_types import (
     Boolean,
     DatetimeTimeIndex,
@@ -34,12 +34,7 @@ class Count(AggregationPrimitive):
     default_value = 0
 
     def get_function(self):
-        # note: returning class instance method errors for python2,
-        # so using this branching code path while we support python2
-        if is_python_2():
-            return pd.Series.count.__func__
-        else:
-            return pd.Series.count
+        return pd.Series.count
 
     def generate_name(self, base_feature_names, relationship_path_name,
                       parent_entity_id, where_str, use_prev_str):
@@ -177,12 +172,7 @@ class NumUnique(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self):
-        # note: returning class instance method errors for python2,
-        # so using this branching code path while we support python2
-        if is_python_2():
-            return pd.Series.nunique.__func__
-        else:
-            return pd.Series.nunique
+        return pd.Series.nunique
 
 
 class NumTrue(AggregationPrimitive):
@@ -341,10 +331,7 @@ class Median(AggregationPrimitive):
     return_type = Numeric
 
     def get_function(self):
-        if is_python_2():
-            return pd.Series.median.__func__
-        else:
-            return pd.Series.median
+        return pd.Series.median
 
 
 class Skew(AggregationPrimitive):
@@ -367,12 +354,7 @@ class Skew(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self):
-        # note: returning class instance method errors for python2,
-        # so using this branching code path while we support python2
-        if is_python_2():
-            return pd.Series.skew.__func__
-        else:
-            return pd.Series.skew
+        return pd.Series.skew
 
 
 class Std(AggregationPrimitive):
