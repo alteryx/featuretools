@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import copy
 from builtins import range
 from datetime import datetime
