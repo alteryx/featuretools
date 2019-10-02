@@ -1,5 +1,4 @@
 import datetime
-import errno
 import json
 import os
 import tarfile
@@ -137,12 +136,7 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
         raise ValueError("Writing to URLs is not supported")
     else:
         path = os.path.abspath(path)
-        try:
-            os.makedirs(os.path.join(path, 'data'))
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise
-
+        os.makedirs(os.path.join(path, 'data'), exist_ok=True)
         dump_data_description(entityset, path, **kwargs)
 
 
