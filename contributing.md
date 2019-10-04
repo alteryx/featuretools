@@ -7,7 +7,7 @@ Whether you are a novice or experienced software developer, all contributions an
 There are many ways to contribute to Featuretools, with the most common ones being contribution of code or documentation to the project.
 
 **To contribute, you can:**
-1. Help users on our [Slack channel](https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTZiZDdkYjZhZTVkMmVmZDIxNWZiNTVjNDQxYmZkMzI5NGRlOTg5YjcwYmJiNWE2YjIzZmFkMjc1NDZkNjBhZTQ). Answer questions under the featuretools tag on [Stack Overflow](https://stackoverflow.com/questions/tagged/featuretools)
+1. Help users on our [Slack channel](https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTQ1MjZlOWFmZDk2YzAwMjEzNTkwZTZkN2NmOGFjOGI4YzE5OGMyMGM5NGIxNTE4NjkzYWI3OWEwZjkyZGExYmQ). Answer questions under the featuretools tag on [Stack Overflow](https://stackoverflow.com/questions/tagged/featuretools)
 
 2. Submit a pull request for one of [Good First Issues](https://github.com/featuretools/featuretools/issues?q=is%3Aopen+is%3Aissue+label%3A%22Good+First+Issue%22)
 
