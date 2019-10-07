@@ -7,6 +7,7 @@ Changelog
     * Fixes
     * Updates
     * Changes
+        * Drop Python 2 support (:pr:`759`)
     * Documentation Changes
     * Testing Changes
 

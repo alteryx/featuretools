@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from datetime import datetime
 
 import numpy as np
@@ -69,14 +68,12 @@ def test_update_data(es):
     df['new'] = [1, 2, 3]
 
     error_text = 'Updated dataframe is missing new cohort column'
-    with pytest.raises(ValueError, match=error_text) as excinfo:
+    with pytest.raises(ValueError, match=error_text):
         es['customers'].update_data(df.drop(columns=['cohort']))
-    assert 'Updated dataframe is missing new cohort column' in str(excinfo)
 
     error_text = 'Updated dataframe contains 16 columns, expecting 15'
-    with pytest.raises(ValueError, match=error_text) as excinfo:
+    with pytest.raises(ValueError, match=error_text):
         es['customers'].update_data(df)
-    assert 'Updated dataframe contains 16 columns, expecting 15' in str(excinfo)
 
     # test already_sorted on entity without time index
     df = es["sessions"].df.copy(deep=True)

@@ -1,5 +1,3 @@
-from builtins import zip
-
 from featuretools import Relationship, Timedelta, primitives
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.primitives.base import (
@@ -171,13 +169,7 @@ class FeatureBase(object):
         return self.primitive.number_output_features
 
     def __repr__(self):
-        ret = "<Feature: %s>" % (self.get_name())
-
-        # encode for python 2
-        if type(ret) != str:
-            ret = ret.encode("utf-8")
-
-        return ret
+        return "<Feature: %s>" % (self.get_name())
 
     def hash(self):
         return hash(self.get_name() + self.entity.id)

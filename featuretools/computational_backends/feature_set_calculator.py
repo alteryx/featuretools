@@ -16,7 +16,7 @@ from featuretools.feature_base import (
     IdentityFeature,
     TransformFeature
 )
-from featuretools.utils import Trie, is_python_2
+from featuretools.utils import Trie
 from featuretools.utils.gen_utils import get_relationship_variable_id
 
 warnings.simplefilter('ignore', np.RankWarning)
@@ -587,9 +587,7 @@ class FeatureSetCalculator(object):
                     # for some reason, using the string count is significantly
                     # faster than any method a primitive can return
                     # https://stackoverflow.com/questions/55731149/use-a-function-instead-of-string-in-pandas-groupby-agg
-                    if is_python_2() and func == pd.Series.count.__func__:
-                        func = "count"
-                    elif func == pd.Series.count:
+                    if func == pd.Series.count:
                         func = "count"
 
                     funcname = func

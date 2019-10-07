@@ -1,6 +1,5 @@
 import math
 import re
-from builtins import str
 
 import pandas as pd
 from tqdm import tqdm

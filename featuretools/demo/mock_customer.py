@@ -1,7 +1,3 @@
-from __future__ import division
-
-from builtins import range
-
 import pandas as pd
 from numpy import random
 from numpy.random import choice

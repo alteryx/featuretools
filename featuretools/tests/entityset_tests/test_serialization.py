@@ -1,4 +1,3 @@
-import errno
 import json
 import os
 import shutil
@@ -90,11 +89,7 @@ def test_entityset_description(es):
 @pytest.fixture
 def path_management():
     path = os.path.join(CACHE, 'es')
-    try:
-        os.makedirs(path)
-    except OSError as e:
-        if e.errno != errno.EEXIST:  # EEXIST corresponds to FileExistsError
-            raise e
+    os.makedirs(path, exist_ok=True)
     yield path
     shutil.rmtree(path)
 

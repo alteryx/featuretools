@@ -6,7 +6,6 @@ import pandas as pd
 
 from featuretools import variable_types
 from featuretools.entityset.timedelta import Timedelta
-from featuretools.utils import is_string
 
 
 def _check_timedelta(td):
@@ -34,8 +33,7 @@ def _check_timedelta(td):
         return td
     if isinstance(td, Timedelta):
         return td
-    elif not (is_string(td) or isinstance(td, pd.Timedelta) or
-              isinstance(td, (int, float)) or isinstance(td, pd.DateOffset)):
+    elif not isinstance(td, (int, float, str, pd.DateOffset, pd.Timedelta)):
         raise ValueError("Unable to parse timedelta: {}".format(td))
     if isinstance(td, pd.Timedelta):
         unit = 's'
