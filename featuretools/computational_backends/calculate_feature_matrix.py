@@ -1,12 +1,9 @@
-from __future__ import division
-
 import logging
 import math
 import os
 import shutil
 import time
 import warnings
-from builtins import zip
 from datetime import datetime
 
 import cloudpickle

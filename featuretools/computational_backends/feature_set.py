@@ -1,6 +1,5 @@
 import itertools
 import logging
-from builtins import object
 from collections import defaultdict
 
 from featuretools.entityset.relationship import RelationshipPath

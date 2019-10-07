@@ -1,6 +1,5 @@
 import copy
 import logging
-from builtins import object
 from collections import defaultdict
 
 import cloudpickle
@@ -12,7 +11,6 @@ import featuretools.variable_types.variable as vtypes
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.entity import Entity
 from featuretools.entityset.relationship import Relationship, RelationshipPath
-from featuretools.utils import is_string
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
@@ -212,10 +210,6 @@ class EntitySet(object):
             repr_out += u"\n    %s.%s -> %s.%s" % \
                 (r._child_entity_id, r._child_variable_id,
                  r._parent_entity_id, r._parent_variable_id)
-
-        # encode for python 2
-        if type(repr_out) != str:
-            repr_out = repr_out.encode("utf-8")
 
         return repr_out
 
@@ -573,7 +567,7 @@ class EntitySet(object):
             if v == index:
                 raise ValueError("Not copying {} as both index and variable".format(v))
                 break
-        if is_string(make_time_index):
+        if isinstance(make_time_index, str):
             if make_time_index not in base_entity.df.columns:
                 raise ValueError("'make_time_index' must be a variable in the base entity")
             elif make_time_index not in additional_variables + copy_variables:
