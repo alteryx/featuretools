@@ -20,7 +20,7 @@ Conversation happens in the following places:
 
 .. _`StackOverflow`: http://stackoverflow.com/questions/tagged/featuretools
 .. _`Github issue tracker`: https://github.com/featuretools/featuretools/issues
-.. _`Slack`: https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTZiZDdkYjZhZTVkMmVmZDIxNWZiNTVjNDQxYmZkMzI5NGRlOTg5YjcwYmJiNWE2YjIzZmFkMjc1NDZkNjBhZTQ
+.. _`Slack`: https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTQ1MjZlOWFmZDk2YzAwMjEzNTkwZTZkN2NmOGFjOGI4YzE5OGMyMGM5NGIxNTE4NjkzYWI3OWEwZjkyZGExYmQ
 
 
 Asking for help

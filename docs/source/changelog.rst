@@ -9,10 +9,11 @@ Changelog
     * Changes
         * Drop Python 2 support (:pr:`759`)
     * Documentation Changes
+        * Update featuretools slack link (:pr:`765`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-
+    :user:`kmax12`, :user:`rwedge`
 
 **v0.11.0 Sep 30, 2019**
 
