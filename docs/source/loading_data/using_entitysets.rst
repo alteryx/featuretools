@@ -107,7 +107,8 @@ When working with raw data, it is common to have sufficient information to justi
                              new_entity_id="sessions",
                              index="session_id",
                              make_time_index="session_start",
-                             additional_variables=["device", "customer_id", "zip_code", "session_start", "join_date"])
+                             additional_variables=["device", "customer_id", "zip_code", "join_date"],
+                             copy_variables=["session_start"])
 
     es
 
