@@ -143,7 +143,8 @@ To finish preparing this dataset, create a "customers" entity using the same met
                              new_entity_id="customers",
                              index="customer_id",
                              make_time_index="join_date",
-                             additional_variables=["zip_code", "join_date"])
+                             additional_variables=["zip_code"],
+                             copy_variables=["join_date"])
     es
 
 
