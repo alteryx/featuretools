@@ -5,7 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
     * Fixes
-        * Prevents user from removing base entity time index using additional_variables (:pr:`750`)
+        * Prevents user from removing base entity time index using additional_variables (:pr:`768`)
     * Updates
     * Changes
         * Drop Python 2 support (:pr:`759`)
