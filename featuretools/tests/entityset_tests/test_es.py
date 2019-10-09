@@ -14,6 +14,19 @@ from featuretools.entityset import (
 )
 from featuretools.entityset.serialize import SCHEMA_VERSION
 
+def test_normalize_time_index_as_additional_variable(es):
+    
+    error_text = "Not moving signup_date as it is the base time index variable."
+    with pytest.raises(ValueError, match=error_text):
+        assert "signup_date" in es["customers"].df.columns
+        es.normalize_entity(base_entity_id='customers',
+                            new_entity_id='cancellations',
+                            index='cancel_reason',
+                            make_time_index='signup_date',
+                            additional_variables=['signup_date'],
+                            copy_variables=[])
+        assert "signup_date" in es["customers"].df.columns
+
 
 def test_operations_invalidate_metadata(es):
     new_es = ft.EntitySet(id="test")
@@ -687,19 +700,13 @@ def test_normalize_entity_new_time_index_error_check(es):
                             index='cancel_reason',
                             make_time_index="non-existent")
 
-    error_text = "'make_time_index' must specified in 'additional_variables' or 'copy_variables'"
+    error_text = "'make_time_index' must be specified in 'copy_variables'"
     with pytest.raises(ValueError, match=error_text):
         es.normalize_entity(base_entity_id='customers',
                             new_entity_id='cancellations',
                             index='cancel_reason',
                             make_time_index='cancel_date')
 
-    es.normalize_entity(base_entity_id='customers',
-                        new_entity_id='cancellations',
-                        index='cancel_reason',
-                        make_time_index='cancel_date',
-                        additional_variables=['cancel_date'],
-                        copy_variables=[])
     es = es_copy
     es.normalize_entity(base_entity_id='customers',
                         new_entity_id='cancellations',
