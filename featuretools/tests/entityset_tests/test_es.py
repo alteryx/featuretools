@@ -14,8 +14,8 @@ from featuretools.entityset import (
 )
 from featuretools.entityset.serialize import SCHEMA_VERSION
 
+
 def test_normalize_time_index_as_additional_variable(es):
-    
     error_text = "Not moving signup_date as it is the base time index variable."
     with pytest.raises(ValueError, match=error_text):
         assert "signup_date" in es["customers"].df.columns
