@@ -268,6 +268,11 @@ class AvgTimeBetween(AggregationPrimitive):
         elapsed between consecutive events. If there are fewer
         than 2 non-null values, return `NaN`.
 
+    Args:
+        unit (str): Defines the unit of time.
+            Defaults to seconds. Acceptable values:
+            years, months, days, hours, minutes, seconds, milliseconds, nanoseconds
+
     Examples:
         >>> from datetime import datetime
         >>> avg_time_between = AvgTimeBetween()
