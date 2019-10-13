@@ -371,6 +371,23 @@ class Std(AggregationPrimitive):
     def get_function(self):
         return np.std
 
+class First(AggregationPrimitive):
+    """Determines the first value in a list.
+
+    Examples:
+        >>> first = First()
+        >>> first([1, 2, 3, 4, 5, None])
+        1.0
+    """
+    name = "first"
+    input_types = [Variable]
+    return_type = None
+    stack_on_self = False
+
+    def get_function(self):
+        def pd_first(x):
+            return x.iloc[0]
+        return pd_first
 
 class Last(AggregationPrimitive):
     """Determines the last value in a list.
