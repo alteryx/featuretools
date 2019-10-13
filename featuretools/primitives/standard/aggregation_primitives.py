@@ -371,6 +371,7 @@ class Std(AggregationPrimitive):
     def get_function(self):
         return np.std
 
+
 class First(AggregationPrimitive):
     """Determines the first value in a list.
 
@@ -388,6 +389,7 @@ class First(AggregationPrimitive):
         def pd_first(x):
             return x.iloc[0]
         return pd_first
+
 
 class Last(AggregationPrimitive):
     """Determines the last value in a list.
