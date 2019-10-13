@@ -8,12 +8,14 @@ Changelog
     * Updates
     * Changes
         * Drop Python 2 support (:pr:`759`)
+        * Add unit parameter to AvgTimeBetween (:pr:`771`)
+
     * Documentation Changes
         * Update featuretools slack link (:pr:`765`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`kmax12`, :user:`rwedge`
+    :user:`kmax12`, :user:`rwedge`, :user:`jeffzi`
 
 **v0.11.0 Sep 30, 2019**
 
