@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Added First primitive (:pr:`770`)
     * Fixes
     * Updates
     * Changes
