@@ -25,7 +25,6 @@ def test_normalize_time_index_as_additional_variable(es):
                             make_time_index='signup_date',
                             additional_variables=['signup_date'],
                             copy_variables=[])
-        assert "signup_date" in es["customers"].df.columns
 
 
 def test_operations_invalidate_metadata(es):

@@ -569,7 +569,7 @@ class EntitySet(object):
 
         for v in additional_variables:
             if v == base_entity.time_index:
-                raise ValueError("Not moving {} as it is the base time index variable.".format(v))
+                raise ValueError("Not moving {} as it is the base time index variable. Perhaps, move the variable to the copy_variables.".format(v))
 
         if isinstance(make_time_index, str):
             if make_time_index not in base_entity.df.columns:
