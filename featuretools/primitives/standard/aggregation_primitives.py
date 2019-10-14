@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
+from scipy.stats import entropy
 
 from featuretools.primitives.base.aggregation_primitive_base import (
     AggregationPrimitive
@@ -9,6 +10,7 @@ from featuretools.primitives.base.aggregation_primitive_base import (
 from featuretools.utils import convert_time_units
 from featuretools.variable_types import (
     Boolean,
+    Categorical,
     DatetimeTimeIndex,
     Discrete,
     Index,
@@ -91,6 +93,7 @@ class Mean(AggregationPrimitive):
 
         def mean(series):
             return np.mean(series.values)
+
         return mean
 
 
@@ -114,6 +117,7 @@ class Mode(AggregationPrimitive):
     def get_function(self):
         def pd_mode(s):
             return s.mode().get(0, np.nan)
+
         return pd_mode
 
 
@@ -220,6 +224,7 @@ class PercentTrue(AggregationPrimitive):
     def get_function(self):
         def percent_true(s):
             return s.fillna(0).mean()
+
         return percent_true
 
 
@@ -257,6 +262,7 @@ class NMostCommon(AggregationPrimitive):
                 filler = np.full(self.n - len(array), np.nan)
                 array = np.append(array, filler)
             return array
+
         return n_most_common
 
 
@@ -308,6 +314,7 @@ class AvgTimeBetween(AggregationPrimitive):
             # diff_in_seconds = diff_in_ns * 1e-9
             # avg = diff_in_seconds.mean()
             return avg
+
         return pd_avg_time_between
 
 
@@ -388,6 +395,7 @@ class Last(AggregationPrimitive):
     def get_function(self):
         def pd_last(x):
             return x.iloc[-1]
+
         return pd_last
 
 
@@ -475,7 +483,6 @@ class TimeSinceLast(AggregationPrimitive):
         self.unit = unit.lower()
 
     def get_function(self):
-
         def time_since_last(values, time=None):
             time_since = time - values.iloc[-1]
             return convert_time_units(time_since.total_seconds(), self.unit)
@@ -525,7 +532,6 @@ class TimeSinceFirst(AggregationPrimitive):
         self.unit = unit.lower()
 
     def get_function(self):
-
         def time_since_first(values, time=None):
             time_since = time - values.iloc[0]
             return convert_time_units(time_since.total_seconds(), self.unit)
@@ -584,6 +590,7 @@ class Trend(AggregationPrimitive):
             coefficients = np.polyfit(x, y, 1)
 
             return coefficients[0]
+
         return pd_trend
 
 
@@ -611,3 +618,33 @@ def find_dividend_by_unit(time):
         if round(div) == div:
             return dividend
     return 1
+
+
+class Entropy(AggregationPrimitive):
+    """Calculates the entropy for a categorical variable
+
+    Description:
+        Given a list of observations from a categorical
+        variable return the entropy of the distribution.
+        NaN values can be treated as a category or
+        dropped using the dropna argument
+
+    Examples:
+        >>> entropy = Entropy()
+        >>> entropy([1,2,3,4])
+        1.3862943611198906
+    """
+    name = "entropy"
+    input_types = [Categorical]
+    return_type = Numeric
+    stack_on_self = False
+
+    def __init__(self, dropna=True):
+        self.dropna = dropna
+
+    def get_function(self):
+        def pd_entropy(s):
+            distribution = s.value_counts(normalize=True, dropna=self.dropna)
+            return entropy(distribution)
+
+        return pd_entropy
