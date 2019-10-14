@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
-from scipy.stats import entropy
+from scipy import stats
 
 from featuretools.primitives.base.aggregation_primitive_base import (
     AggregationPrimitive
@@ -630,8 +630,8 @@ class Entropy(AggregationPrimitive):
         dropped using the dropna argument
 
     Examples:
-        >>> entropy = Entropy()
-        >>> entropy([1,2,3,4])
+        >>> pd_entropy = Entropy()
+        >>> pd_entropy([1,2,3,4])
         1.3862943611198906
     """
     name = "entropy"
@@ -645,6 +645,6 @@ class Entropy(AggregationPrimitive):
     def get_function(self):
         def pd_entropy(s):
             distribution = s.value_counts(normalize=True, dropna=self.dropna)
-            return entropy(distribution)
+            return stats.entropy(distribution)
 
         return pd_entropy
