@@ -574,8 +574,8 @@ class EntitySet(object):
         if isinstance(make_time_index, str):
             if make_time_index not in base_entity.df.columns:
                 raise ValueError("'make_time_index' must be a variable in the base entity")
-            elif make_time_index not in copy_variables:
-                raise ValueError("'make_time_index' must be specified in 'copy_variables'")
+            elif make_time_index not in additional_variables + copy_variables:
+                raise ValueError("'make_time_index' must specified in 'additional_variables' or 'copy_variables'")
         if index == base_entity.index:
             raise ValueError("'index' must be different from the index column of the base entity")
 
