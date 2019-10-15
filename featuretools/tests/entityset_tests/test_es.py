@@ -722,6 +722,7 @@ def test_normalize_entity_new_time_index_error_check(es):
                         additional_variables=['cancel_date'],
                         copy_variables=[])
 
+
 def test_normalize_time_index_from_none(es):
     es['customers'].time_index = None
     es.normalize_entity('customers', 'birthdays', 'age',
