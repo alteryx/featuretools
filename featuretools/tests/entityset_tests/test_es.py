@@ -714,7 +714,7 @@ def test_normalize_entity_new_time_index_error_check(es):
                         additional_variables=[],
                         copy_variables=['cancel_date'])
 
-    es = es_copy
+    es = copy.deepcopy(es)
     es.normalize_entity(base_entity_id='customers',
                         new_entity_id='cancellations',
                         index='cancel_reason',
