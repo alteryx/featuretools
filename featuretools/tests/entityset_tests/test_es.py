@@ -699,7 +699,7 @@ def test_normalize_entity_new_time_index_error_check(es):
                             index='cancel_reason',
                             make_time_index="non-existent")
 
-    error_text = "'make_time_index' must specified in 'additional_variables' or 'copy_variables'"
+    error_text = "'make_time_index' must be specified in 'additional_variables' or 'copy_variables'"
     with pytest.raises(ValueError, match=error_text):
         es.normalize_entity(base_entity_id='customers',
                             new_entity_id='cancellations',
@@ -714,6 +714,13 @@ def test_normalize_entity_new_time_index_error_check(es):
                         additional_variables=[],
                         copy_variables=['cancel_date'])
 
+    es = es_copy
+    es.normalize_entity(base_entity_id='customers',
+                        new_entity_id='cancellations',
+                        index='cancel_reason',
+                        make_time_index='cancel_date',
+                        additional_variables=['cancel_date'],
+                        copy_variables=[])
 
 def test_normalize_time_index_from_none(es):
     es['customers'].time_index = None
