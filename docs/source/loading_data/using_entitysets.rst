@@ -107,8 +107,7 @@ When working with raw data, it is common to have sufficient information to justi
                              new_entity_id="sessions",
                              index="session_id",
                              make_time_index="session_start",
-                             additional_variables=["device", "customer_id", "zip_code", "join_date"],
-                             copy_variables=["session_start"])
+                             additional_variables=["device", "customer_id", "zip_code", "session_start", "join_date"])
 
     es
 
@@ -143,8 +142,7 @@ To finish preparing this dataset, create a "customers" entity using the same met
                              new_entity_id="customers",
                              index="customer_id",
                              make_time_index="join_date",
-                             additional_variables=["zip_code"],
-                             copy_variables=["join_date"])
+                             additional_variables=["zip_code","join_date"])
     es
 
 
