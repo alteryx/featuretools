@@ -282,9 +282,6 @@ class AvgTimeBetween(AggregationPrimitive):
         >>> avg_time_between(times)
         375.0
         >>> avg_time_between = AvgTimeBetween(unit="minutes")
-        >>> times = [datetime(2010, 1, 1, 11, 45, 0),
-        ...          datetime(2010, 1, 1, 11, 55, 15),
-        ...          datetime(2010, 1, 1, 11, 57, 30)]
         >>> avg_time_between(times)
         6.25
     """
