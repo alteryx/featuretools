@@ -11,7 +11,7 @@ Changelog
     * Documentation Changes
         * Update featuretools slack link (:pr:`765`)
     * Testing Changes
-
+        * Run CI tests in parallel (:pr:`751`)
     Thanks to the following people for contributing to this release:
     :user:`kmax12`, :user:`rwedge`
 
