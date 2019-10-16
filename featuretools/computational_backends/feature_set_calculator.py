@@ -16,7 +16,7 @@ from featuretools.feature_base import (
     IdentityFeature,
     TransformFeature
 )
-from featuretools.utils import Trie, is_python_2
+from featuretools.utils import Trie
 from featuretools.utils.gen_utils import get_relationship_variable_id
 
 warnings.simplefilter('ignore', np.RankWarning)
@@ -558,13 +558,13 @@ class FeatureSetCalculator(object):
             if use_previous and not base_frame.empty:
                 # Filter by use_previous values
                 time_last = self.time_last
-                if use_previous.is_absolute():
+                if use_previous.has_no_observations():
                     time_first = time_last - use_previous
                     ti = child_entity.time_index
                     if ti is not None:
                         base_frame = base_frame[base_frame[ti] >= time_first]
                 else:
-                    n = use_previous.value
+                    n = use_previous.get_value('o')
 
                     def last_n(df):
                         return df.iloc[-n:]
@@ -587,9 +587,7 @@ class FeatureSetCalculator(object):
                     # for some reason, using the string count is significantly
                     # faster than any method a primitive can return
                     # https://stackoverflow.com/questions/55731149/use-a-function-instead-of-string-in-pandas-groupby-agg
-                    if is_python_2() and func == pd.Series.count.__func__:
-                        func = "count"
-                    elif func == pd.Series.count:
+                    if func == pd.Series.count:
                         func = "count"
 
                     funcname = func

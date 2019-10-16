@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import numpy as np
 import pandas as pd
 import pytest
@@ -328,6 +327,36 @@ def test_arithmetic_of_direct(es):
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert v == test[1]
+
+
+def test_boolean_multiply():
+    es = ft.EntitySet()
+    df = pd.DataFrame({"index": [0, 1, 2],
+                       "bool": [True, False, True],
+                       "numeric": [2, 3, np.nan]})
+
+    es.entity_from_dataframe(entity_id="test",
+                             dataframe=df,
+                             index="index")
+
+    to_test = [
+        ('numeric', 'numeric'),
+        ('numeric', 'bool'),
+        ('bool', 'numeric'),
+        ('bool', 'bool')
+    ]
+    features = []
+    for row in to_test:
+        features.append(ft.Feature(es["test"][row[0]]) * ft.Feature(es["test"][row[1]]))
+
+    fm = ft.calculate_feature_matrix(entityset=es, features=features)
+
+    for row in to_test:
+        col_name = '{} * {}'.format(row[0], row[1])
+        if row[0] == 'bool' and row[1] == 'bool':
+            assert fm[col_name].equals(df[row[0]] & df[row[1]])
+        else:
+            assert fm[col_name].equals(df[row[0]] * df[row[1]])
 
 
 # P TODO: rewrite this  test

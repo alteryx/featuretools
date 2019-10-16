@@ -9,8 +9,8 @@ import pkg_resources
 
 import featuretools
 
-deps = ["numpy", "pandas", "tqdm", "toolz", "PyYAML", "cloudpickle",
-        "future", "dask", "distributed", "psutil", "Click",
+deps = ["numpy", "pandas", "tqdm", "PyYAML", "cloudpickle",
+        "dask", "distributed", "psutil", "Click",
         "scikit-learn", "pip", "setuptools"]
 
 

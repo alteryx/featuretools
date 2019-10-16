@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-
 import copy
-from builtins import range
 from datetime import datetime
 
 import pandas as pd
@@ -389,12 +386,11 @@ def test_nonstr_column_names():
     df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 3: ['a', 'b', 'c']})
     es = ft.EntitySet(id='Failure')
 
-    error_text = "All column names must be strings.*"
-    with pytest.raises(ValueError, match=error_text) as excinfo:
+    error_text = r"All column names must be strings \(Column 3 is not a string\)"
+    with pytest.raises(ValueError, match=error_text):
         es.entity_from_dataframe(entity_id='str_cols',
                                  dataframe=df,
                                  index='index')
-    assert 'All column names must be strings (Column 3 is not a string)' in str(excinfo)
 
 
 def test_sort_time_id():
@@ -444,6 +440,7 @@ def test_concat_entitysets(es):
     es_1 = copy.deepcopy(es)
     es_2 = copy.deepcopy(es)
 
+    # map of what rows to take from es_1 and es_2 for each entity
     emap = {
         'log': [list(range(10)) + [14, 15, 16], list(range(10, 14)) + [15, 16]],
         'sessions': [[0, 1, 2, 5], [1, 3, 4, 5]],
@@ -480,7 +477,7 @@ def test_concat_entitysets(es):
     assert old_es_1.__eq__(es_1, deep=True)
     assert old_es_2.__eq__(es_2, deep=True)
 
-    assert es_3.__eq__(es, deep=True)
+    assert es_3.__eq__(es)
     for entity in es.entities:
         df = es[entity.id].df.sort_index()
         df_3 = es_3[entity.id].df.sort_index()
@@ -962,3 +959,40 @@ def test_use_time_index():
                              index="id",
                              time_index="transaction_time",
                              dataframe=df)
+
+
+def test_normalize_with_datetime_time_index(es):
+    es.normalize_entity(base_entity_id="customers",
+                        new_entity_id="cancel_reason",
+                        index="cancel_reason",
+                        make_time_index=False,
+                        copy_variables=['signup_date', 'upgrade_date'])
+
+    vtypes = es['cancel_reason'].variable_types
+    assert vtypes['signup_date'] == variable_types.Datetime
+    assert vtypes['upgrade_date'] == variable_types.Datetime
+
+
+def test_normalize_with_numeric_time_index(int_es):
+    int_es.normalize_entity(base_entity_id="customers",
+                            new_entity_id="cancel_reason",
+                            index="cancel_reason",
+                            make_time_index=False,
+                            copy_variables=['signup_date', 'upgrade_date'])
+
+    vtypes = int_es['cancel_reason'].variable_types
+    assert vtypes['signup_date'] == variable_types.Numeric
+    assert vtypes['upgrade_date'] == variable_types.Numeric
+
+
+def test_normalize_with_invalid_time_index(es):
+    es['customers'].convert_variable_type('signup_date', variable_types.Datetime)
+    error_text = "Time index 'signup_date' is not a NumericTimeIndex or DatetimeTimeIndex," \
+        + " but type <class 'featuretools.variable_types.variable.Datetime'>."\
+        + " Use set_time_index on entity 'customers' to set the time_index."
+    with pytest.raises(TypeError, match=error_text):
+        es.normalize_entity(base_entity_id="customers",
+                            new_entity_id="cancel_reason",
+                            index="cancel_reason",
+                            copy_variables=['upgrade_date'])
+    es['customers'].convert_variable_type('signup_date', variable_types.DatetimeTimeIndex)

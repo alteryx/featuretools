@@ -1,5 +1,3 @@
-from builtins import zip
-
 from featuretools import Relationship, Timedelta, primitives
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.primitives.base import (
@@ -13,6 +11,7 @@ from featuretools.utils.wrangle import (
     _check_timedelta
 )
 from featuretools.variable_types import (
+    Boolean,
     Categorical,
     Datetime,
     DatetimeTimeIndex,
@@ -170,13 +169,7 @@ class FeatureBase(object):
         return self.primitive.number_output_features
 
     def __repr__(self):
-        ret = "<Feature: %s>" % (self.get_name())
-
-        # encode for python 2
-        if type(ret) != str:
-            ret = ret.encode("utf-8")
-
-        return ret
+        return "<Feature: %s>" % (self.get_name())
 
     def hash(self):
         return hash(self.get_name() + self.entity.id)
@@ -286,6 +279,9 @@ class FeatureBase(object):
 
     def __mul__(self, other):
         """Multiply by other"""
+        if isinstance(other, FeatureBase):
+            if self.variable_type == Boolean and other.variable_type == Boolean:
+                return Feature([self, other], primitive=primitives.MultiplyBoolean)
         return self._handle_binary_comparision(other, primitives.MultiplyNumeric, primitives.MultiplyNumericScalar)
 
     def __rmul__(self, other):
@@ -525,7 +521,6 @@ class AggregationFeature(FeatureBase):
             assert self.child_entity.time_index is not None, (
                 "Applying function that requires time index to entity that "
                 "doesn't have one")
-
             self.use_previous = _check_timedelta(use_previous)
             assert len(base_features) > 0
             time_index = base_features[0].entity.time_index
@@ -610,7 +605,7 @@ class AggregationFeature(FeatureBase):
         return where_str
 
     def _use_prev_str(self):
-        if self.use_previous is not None:
+        if self.use_previous is not None and hasattr(self.use_previous, 'get_name'):
             use_prev_str = u", Last {}".format(self.use_previous.get_name())
         else:
             use_prev_str = u''

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import numpy as np
 import pandas as pd
 import pytest
@@ -111,14 +110,10 @@ def test_approximate_features(entities, relationships):
     direct_agg_feat_name = 'cards.PERCENT_TRUE(transactions.fraud)'
     assert len(feature_matrix.index) == 6
     assert len(feature_matrix.columns) == len(features)
-    truth_index = pd.MultiIndex.from_arrays([[1, 3, 1, 5, 3, 6],
-                                             [11, 16, 16, 26, 17, 22]],
-                                            names=('id', 'time'))
-    truth_values = pd.Series(data=[1.0, 0.5, 0.5, 1.0, 0.5, 1.0],
-                             index=truth_index)
-    truth_values.sort_index(level='time', kind='mergesort', inplace=True)
 
-    assert (feature_matrix[direct_agg_feat_name] == truth_values).all()
+    truth_values = pd.Series(data=[1.0, 0.5, 0.5, 1.0, 0.5, 1.0])
+
+    assert (feature_matrix[direct_agg_feat_name] == truth_values.values).all()
 
 
 def test_all_variables(entities, relationships):
@@ -203,13 +198,28 @@ def test_accepts_relative_training_window(datetime_es):
     assert (feature_matrix_5.index == [1, 2]).all()
 
 
-def test_accepts_pandas_training_window(datetime_es):
+def test_accepts_pd_timedelta_training_window(datetime_es):
     feature_matrix, features = dfs(entityset=datetime_es,
                                    target_entity="transactions",
-                                   cutoff_time=pd.Timestamp("2012-4-1 04:00"),
-                                   training_window=pd.Timedelta(90, "D"))
+                                   cutoff_time=pd.Timestamp("2012-3-31 04:00"),
+                                   training_window=pd.Timedelta(61, "D"))
 
     assert (feature_matrix.index == [2, 3, 4]).all()
+
+
+def test_accepts_pd_dateoffset_training_window(datetime_es):
+    feature_matrix, features = dfs(entityset=datetime_es,
+                                   target_entity="transactions",
+                                   cutoff_time=pd.Timestamp("2012-3-31 04:00"),
+                                   training_window=pd.DateOffset(months=2))
+
+    feature_matrix_2, features_2 = dfs(entityset=datetime_es,
+                                       target_entity="transactions",
+                                       cutoff_time=pd.Timestamp("2012-3-31 04:00"),
+                                       training_window=pd.offsets.BDay(44))
+
+    assert (feature_matrix.index == [2, 3, 4]).all()
+    assert (feature_matrix.index == feature_matrix_2.index).all()
 
 
 def test_calls_progress_callback(entities, relationships):

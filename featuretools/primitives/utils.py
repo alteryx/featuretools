@@ -1,3 +1,4 @@
+import importlib.util
 import os
 from inspect import isclass
 
@@ -9,12 +10,7 @@ from featuretools.primitives.base import (
     PrimitiveBase,
     TransformPrimitive
 )
-from featuretools.utils.gen_utils import find_descendents, is_python_2
-
-if is_python_2():
-    import imp
-else:
-    import importlib.util
+from featuretools.utils.gen_utils import find_descendents
 
 
 def get_aggregation_primitives():
@@ -100,15 +96,10 @@ def check_valid_primitive_path(path):
 def load_primitive_from_file(filepath):
     """load primitive objects in a file"""
     module = os.path.basename(filepath)[:-3]
-    if is_python_2():
-        # for python 2.7
-        module = imp.load_source(module, filepath)
-    else:
-        # TODO: what is the first argument"?
-        # for python >3.5
-        spec = importlib.util.spec_from_file_location(module, filepath)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
+    # TODO: what is the first argument"?
+    spec = importlib.util.spec_from_file_location(module, filepath)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
 
     primitives = []
     for primitive_name in vars(module):

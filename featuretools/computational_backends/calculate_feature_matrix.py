@@ -1,12 +1,9 @@
-from __future__ import division
-
 import logging
 import math
 import os
 import shutil
 import time
 import warnings
-from builtins import zip
 from datetime import datetime
 
 import cloudpickle
@@ -282,7 +279,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                          progress_bar=progress_bar,
                                          progress_callback=progress_callback)
 
-    feature_matrix.sort_index(level='time', kind='mergesort', inplace=True)
+    # ensure rows are sorted by input order
+    feature_matrix = feature_matrix.reindex(cutoff_time[["instance_id", "time"]])
     if not cutoff_time_in_index:
         feature_matrix.reset_index(level='time', drop=True, inplace=True)
 

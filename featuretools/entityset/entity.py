@@ -1,15 +1,10 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
-
 import logging
-from builtins import range
 
 import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
 
 from featuretools import variable_types as vtypes
-from featuretools.utils import is_string
 from featuretools.utils.entity_utils import (
     col_is_datetime,
     convert_all_variable_data,
@@ -82,8 +77,7 @@ class Entity(object):
         self.time_index = None
         if time_index:
             self.set_time_index(time_index, already_sorted=already_sorted)
-        elif not already_sorted:
-            self.df.sort_index(kind="mergesort", inplace=True)
+
         self.set_secondary_time_index(secondary_time_index)
 
     def __repr__(self):
@@ -95,10 +89,6 @@ class Entity(object):
         shape = self.shape
         repr_out += u"\n  Shape:\n    (Rows: {}, Columns: {})".format(
             shape[0], shape[1])
-
-        # encode for python 2
-        if type(repr_out) != str:
-            repr_out = repr_out.encode("utf-8")
 
         return repr_out
 
@@ -241,7 +231,7 @@ class Entity(object):
         training_window = _check_timedelta(training_window)
 
         if training_window is not None:
-            assert training_window.unit != "o", "Training window cannot be in observations"
+            assert training_window.has_no_observations(), "Training window cannot be in observations"
 
         if instance_vals is None:
             df = self.df.copy()
@@ -331,8 +321,7 @@ class Entity(object):
         self.set_index(self.index)
         if self.time_index is not None:
             self.set_time_index(self.time_index, already_sorted=already_sorted)
-        elif not already_sorted:
-            self.df.sort_index(kind="mergesort", inplace=True)
+
         self.set_secondary_time_index(self.secondary_time_index)
         if recalculate_last_time_indexes and self.last_time_index is not None:
             self.entityset.add_last_time_indexes(updated_entities=[self.id])
@@ -561,10 +550,10 @@ def _create_index(index, make_index, df):
 
 def _validate_entity_params(id, df, time_index):
     '''Validation checks for Entity inputs'''
-    assert is_string(id), "Entity id must be a string"
+    assert isinstance(id, str), "Entity id must be a string"
     assert len(df.columns) == len(set(df.columns)), "Duplicate column names"
     for c in df.columns:
-        if not is_string(c):
+        if not isinstance(c, str):
             raise ValueError("All column names must be strings (Column {} "
                              "is not a string)".format(c))
     if time_index is not None and time_index not in df.columns:

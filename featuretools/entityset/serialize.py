@@ -1,22 +1,13 @@
 import datetime
-import errno
 import json
 import os
 import tarfile
+import tempfile
 
 import boto3
 
-from featuretools.utils.gen_utils import (
-    is_python_2,
-    use_s3fs_es,
-    use_smartopen_es
-)
+from featuretools.utils.gen_utils import use_s3fs_es, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
-
-if is_python_2():
-    from backports import tempfile
-else:
-    import tempfile
 
 FORMATS = ['csv', 'pickle', 'parquet']
 SCHEMA_VERSION = "1.0.0"
@@ -145,12 +136,7 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
         raise ValueError("Writing to URLs is not supported")
     else:
         path = os.path.abspath(path)
-        try:
-            os.makedirs(os.path.join(path, 'data'))
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise
-
+        os.makedirs(os.path.join(path, 'data'), exist_ok=True)
         dump_data_description(entityset, path, **kwargs)
 
 

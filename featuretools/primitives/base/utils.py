@@ -1,9 +1,4 @@
-try:
-    # python 3
-    from inspect import signature
-except ImportError:
-    # python 2
-    from funcsigs import signature
+from inspect import signature
 
 
 def inspect_function_args(new_class, function, uses_calc_time):

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from datetime import datetime
 from math import isnan
 
@@ -592,24 +590,17 @@ def test_make_three_most_common(es):
 
     fm, features = ft.dfs(entityset=es,
                           target_entity="customers",
+                          instance_ids=[0, 1, 2],
                           agg_primitives=[NMostCommoner],
                           trans_primitives=[])
 
-    true_results = pd.DataFrame([
-        ['coke zero', 'toothpaste', "car"],
-        ['coke zero', 'Haribo sugar-free gummy bears', np.nan],
-        ['taco clock', np.nan, np.nan]
-    ])
     df = fm[["PD_TOP3(log.product_id)[%s]" % i for i in range(3)]]
-    for i in range(df.shape[0]):
-        if i == 0:
-            # coke zero and toothpaste have same number of occurrences
-            # so just check that the top two match
-            assert set(true_results.iloc[i].values[:2]) == set(df.iloc[i].values[:2])
-            assert df.iloc[0].values[2] in ("brown bag", "car")
-        else:
-            for i1, i2 in zip(true_results.iloc[i], df.iloc[i]):
-                assert (pd.isnull(i1) and pd.isnull(i2)) or (i1 == i2)
+
+    assert set(df.iloc[0].values[:2]) == set(['coke zero', 'toothpaste'])  # coke zero and toothpaste have same number of occurrences
+    assert df.iloc[0].values[2] in ['car', 'brown bag']  # so just check that the top two match
+
+    assert df.iloc[1].reset_index(drop=True).equals(pd.Series(['coke zero', 'Haribo sugar-free gummy bears', np.nan]))
+    assert df.iloc[2].reset_index(drop=True).equals(pd.Series(['taco clock', np.nan, np.nan]))
 
 
 def test_stacking_multi(es):
@@ -620,7 +611,7 @@ def test_stacking_multi(es):
     for i in range(3):
         stacked.append(ft.Feature(tc[i], parent_entity=es['customers'], primitive=NumUnique))
 
-    fm = ft.calculate_feature_matrix(stacked, entityset=es)
+    fm = ft.calculate_feature_matrix(stacked, entityset=es, instance_ids=[0, 1, 2])
 
     correct_vals = [[3, 2, 1], [2, 1, 0], [0, 0, 0]]
     correct_vals1 = [[3, 1, 1], [2, 1, 0], [0, 0, 0]]
@@ -632,6 +623,19 @@ def test_stacking_multi(es):
         cols = fm.columns
         assert f in cols
         assert fm[cols[i]].tolist() == correct_vals[i] or fm[cols[i]].tolist() == correct_vals1[i]
+
+
+def test_use_previous_pd_dateoffset(es):
+    total_events_pd = ft.Feature(es["log"]["id"],
+                                 parent_entity=es["customers"],
+                                 use_previous=pd.DateOffset(hours=47, minutes=60),
+                                 primitive=Count)
+
+    feature_matrix = ft.calculate_feature_matrix([total_events_pd], es,
+                                                 cutoff_time=pd.Timestamp('2011-04-11 10:31:30'),
+                                                 instance_ids=[0, 1, 2])
+    col_name = list(feature_matrix.head().keys())[0]
+    assert (feature_matrix[col_name] == [1, 5, 2]).all()
 
 
 def _assert_agg_feats_equal(f1, f2):

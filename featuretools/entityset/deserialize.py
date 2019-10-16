@@ -1,6 +1,7 @@
 import json
 import os
 import tarfile
+import tempfile
 from pathlib import Path
 
 import boto3
@@ -10,17 +11,11 @@ from featuretools.entityset.relationship import Relationship
 from featuretools.entityset.serialize import FORMATS
 from featuretools.utils.gen_utils import (
     check_schema_version,
-    is_python_2,
     use_s3fs_es,
     use_smartopen_es
 )
 from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.variable_types.variable import LatLong, find_variable_types
-
-if is_python_2():
-    from backports import tempfile
-else:
-    import tempfile
 
 
 def description_to_variable(description, entity=None):

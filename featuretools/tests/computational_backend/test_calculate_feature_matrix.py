@@ -1,10 +1,7 @@
-# -*- coding: utf-8 -*-
-
 import os
 import re
 import shutil
 import tempfile
-from builtins import range
 from datetime import datetime
 from itertools import combinations
 from random import randint
@@ -102,6 +99,14 @@ def test_calc_feature_matrix(es):
         feature_matrix = calculate_feature_matrix([property_feature],
                                                   entityset=es,
                                                   cutoff_time=cutoff_times_dup)
+
+    cutoff_reordered = cutoff_time.iloc[[-1, 10, 1]]  # 3 ids not ordered by cutoff time
+    feature_matrix = calculate_feature_matrix([property_feature],
+                                              es,
+                                              cutoff_time=cutoff_reordered,
+                                              verbose=True)
+
+    assert all(feature_matrix.index == cutoff_reordered["id"].values)
 
 
 def test_cfm_approximate_correct_ordering():
@@ -242,7 +247,7 @@ def test_cutoff_time_correctly(es):
                                               es,
                                               cutoff_time=cutoff_time)
 
-    labels = [0, 10, 5]
+    labels = [10, 5, 0]
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 
@@ -681,9 +686,8 @@ def test_cutoff_time_extra_columns(es):
     fm = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df)
     # check column was added to end of matrix
     assert 'label' == fm.columns[-1]
-    # check column was sorted by time labelike the rest of the feature matrix
-    true_series = pd.Series([False, True, True], index=[0, 1, 0])
-    assert (fm['label'] == true_series).all()
+
+    assert (fm['label'].values == cutoff_df['label'].values).all()
 
     fm_2 = calculate_feature_matrix([dfeat],
                                     es,
@@ -691,9 +695,8 @@ def test_cutoff_time_extra_columns(es):
                                     approximate="2 days")
     # check column was added to end of matrix
     assert 'label' in fm_2.columns
-    # check column was sorted by time like the rest of the feature matrix
-    true_series = pd.Series([False, True, True], index=[0, 1, 0])
-    assert (fm_2['label'] == true_series).all()
+
+    assert (fm_2['label'].values == cutoff_df['label'].values).all()
 
 
 def test_instances_after_cutoff_time_removed(es):
@@ -706,7 +709,7 @@ def test_instances_after_cutoff_time_removed(es):
 
     # Customer with id 1 should be removed
     actual_ids = [id for (id, _) in fm.index]
-    assert actual_ids == [0, 2]
+    assert set(actual_ids) == set([2, 0])
 
 
 def test_instances_with_id_kept_after_cutoff(es):
@@ -721,7 +724,7 @@ def test_instances_with_id_kept_after_cutoff(es):
     # Customer #1 is after cutoff, but since it is included in instance_ids it
     # should be kept.
     actual_ids = [id for (id, _) in fm.index]
-    assert actual_ids == [0, 1, 2]
+    assert set(actual_ids) == set([0, 1, 2])
 
 
 def test_cfm_returns_original_time_indexes(es):
@@ -732,7 +735,6 @@ def test_cfm_returns_original_time_indexes(es):
                                        pd.Timestamp('2011-04-09 10:30:03'),
                                        pd.Timestamp('2011-04-08 10:30:00')],
                               'instance_id': [0, 1, 0]})
-    sorted_df = cutoff_df.sort_values(['time', 'instance_id'], kind='mergesort')
 
     # no approximate
     fm = calculate_feature_matrix([dfeat],
@@ -740,40 +742,40 @@ def test_cfm_returns_original_time_indexes(es):
                                   cutoff_time_in_index=True)
     instance_level_vals = fm.index.get_level_values(0).values
     time_level_vals = fm.index.get_level_values(1).values
-    assert (instance_level_vals == sorted_df['instance_id'].values).all()
-    assert (time_level_vals == sorted_df['time'].values).all()
+    assert (instance_level_vals == cutoff_df['instance_id'].values).all()
+    assert (time_level_vals == cutoff_df['time'].values).all()
 
     # approximate, in different windows, no unapproximated aggs
     fm2 = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df,
                                    cutoff_time_in_index=True, approximate="1 m")
     instance_level_vals = fm2.index.get_level_values(0).values
     time_level_vals = fm2.index.get_level_values(1).values
-    assert (instance_level_vals == sorted_df['instance_id'].values).all()
-    assert (time_level_vals == sorted_df['time'].values).all()
+    assert (instance_level_vals == cutoff_df['instance_id'].values).all()
+    assert (time_level_vals == cutoff_df['time'].values).all()
 
     # approximate, in different windows, unapproximated aggs
     fm2 = calculate_feature_matrix([dfeat, agg_feat_2], es, cutoff_time=cutoff_df,
                                    cutoff_time_in_index=True, approximate="1 m")
     instance_level_vals = fm2.index.get_level_values(0).values
     time_level_vals = fm2.index.get_level_values(1).values
-    assert (instance_level_vals == sorted_df['instance_id'].values).all()
-    assert (time_level_vals == sorted_df['time'].values).all()
+    assert (instance_level_vals == cutoff_df['instance_id'].values).all()
+    assert (time_level_vals == cutoff_df['time'].values).all()
 
     # approximate, in same window, no unapproximated aggs
     fm3 = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df,
                                    cutoff_time_in_index=True, approximate="2 d")
     instance_level_vals = fm3.index.get_level_values(0).values
     time_level_vals = fm3.index.get_level_values(1).values
-    assert (instance_level_vals == sorted_df['instance_id'].values).all()
-    assert (time_level_vals == sorted_df['time'].values).all()
+    assert (instance_level_vals == cutoff_df['instance_id'].values).all()
+    assert (time_level_vals == cutoff_df['time'].values).all()
 
     # approximate, in same window, unapproximated aggs
     fm3 = calculate_feature_matrix([dfeat, agg_feat_2], es, cutoff_time=cutoff_df,
                                    cutoff_time_in_index=True, approximate="2 d")
     instance_level_vals = fm3.index.get_level_values(0).values
     time_level_vals = fm3.index.get_level_values(1).values
-    assert (instance_level_vals == sorted_df['instance_id'].values).all()
-    assert (time_level_vals == sorted_df['time'].values).all()
+    assert (instance_level_vals == cutoff_df['instance_id'].values).all()
+    assert (time_level_vals == cutoff_df['time'].values).all()
 
 
 def test_dask_kwargs(es):
@@ -1135,6 +1137,7 @@ def test_some_instances_not_in_data(es):
     a_time = datetime(2011, 4, 10, 10, 41, 9)  # only valid data
     b_time = datetime(2011, 4, 10, 11, 10, 5)  # some missing data
     c_time = datetime(2011, 4, 10, 12, 0, 0)  # all missing data
+
     times = [a_time, b_time, a_time, a_time, b_time, b_time] + [c_time] * 4
     cutoff_time = pd.DataFrame({"instance_id": list(range(12, 22)),
                                 "time": times})
@@ -1149,12 +1152,11 @@ def test_some_instances_not_in_data(es):
                                   entityset=es,
                                   cutoff_time=cutoff_time)
 
-    index_answer = [12, 14, 15, 13, 16, 17, 18, 19, 20, 21]
-    ifeat_answer = [0, 14, np.nan, 7] + [np.nan] * 6
-    prop_answer = [0, 1, np.nan, 0, 0] + [np.nan] * 5
-    dfeat_answer = [14, 14, np.nan, 14] + [np.nan] * 6
+    ifeat_answer = [0, 7, 14, np.nan] + [np.nan] * 6
+    prop_answer = [0, 0, 1, np.nan, 0] + [np.nan] * 5
+    dfeat_answer = [14, 14, 14, np.nan] + [np.nan] * 6
 
-    assert all(fm.index.values == index_answer)
+    assert all(fm.index.values == cutoff_time["instance_id"].values)
     for x, y in zip(fm.columns, [ifeat_answer, prop_answer, dfeat_answer]):
         np.testing.assert_array_equal(fm[x], y)
 
@@ -1163,10 +1165,11 @@ def test_some_instances_not_in_data(es):
                                   cutoff_time=cutoff_time,
                                   approximate="5 seconds")
 
-    dfeat_answer[0:2] = [7, 7]  # approximate calculated before 14 appears
-    prop_answer[2] = 0  # no_unapproximated_aggs code ignores cutoff time
+    dfeat_answer[0] = 7  # approximate calculated before 14 appears
+    dfeat_answer[2] = 7  # approximate calculated before 14 appears
+    prop_answer[3] = 0  # no_unapproximated_aggs code ignores cutoff time
 
-    assert all(fm.index.values == index_answer)
+    assert all(fm.index.values == cutoff_time["instance_id"].values)
     for x, y in zip(fm.columns, [ifeat_answer, prop_answer, dfeat_answer]):
         np.testing.assert_array_equal(fm[x], y)
 

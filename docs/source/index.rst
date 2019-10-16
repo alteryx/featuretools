@@ -162,6 +162,7 @@ Table of contents
    :caption: Guides
 
    guides/tuning_dfs
+   guides/specifying_primitive_options
    guides/performance
    guides/parallel
    guides/deployment
@@ -193,4 +194,3 @@ Other links
 ------------
 * :ref:`genindex`
 * :ref:`search`
-

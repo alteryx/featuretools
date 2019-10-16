@@ -1,4 +1,3 @@
-import errno
 import json
 import os
 import shutil
@@ -21,8 +20,8 @@ CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-S3_URL = "s3://featuretools-static/test_serialization_data_1.0.0.tar"
-URL = 'https://featuretools-static.s3.amazonaws.com/test_serialization_data_1.0.0.tar'
+S3_URL = "s3://featuretools-static/test_serialization_data_2.0.0.tar"
+URL = 'https://featuretools-static.s3.amazonaws.com/test_serialization_data_2.0.0.tar'
 TEST_KEY = "test_access_key_es"
 
 
@@ -90,11 +89,7 @@ def test_entityset_description(es):
 @pytest.fixture
 def path_management():
     path = os.path.join(CACHE, 'es')
-    try:
-        os.makedirs(path)
-    except OSError as e:
-        if e.errno != errno.EEXIST:  # EEXIST corresponds to FileExistsError
-            raise e
+    os.makedirs(path, exist_ok=True)
     yield path
     shutil.rmtree(path)
 

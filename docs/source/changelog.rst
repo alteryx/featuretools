@@ -4,28 +4,56 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+    * Fixes
+    * Updates
+    * Changes
+        * Drop Python 2 support (:pr:`759`)
+    * Documentation Changes
+        * Update featuretools slack link (:pr:`765`)
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`kmax12`, :user:`rwedge`
+
+**v0.11.0 Sep 30, 2019**
+
+    .. warning::
+        The next non-bugfix release of Featuretools will not support Python 2
+
+    * Enhancements
         * Improve how files are copied and written (:pr:`721`)
         * Add number of rows to graph in entityset.plot (:pr:`727`)
+        * Added support for pandas DateOffsets in DFS and Timedelta (:pr:`732`)
         * Enable feature-specific top_n value using a dictionary in encode_features (:pr:`735`)
         * Added progress_callback parameter to dfs() and calculate_feature_matrix() (:pr:`739`, :pr:`745`)
+        * Enable specifying primitives on a per column or per entity basis (:pr:`748`)
     * Fixes
         * Fixed entity set deserialization (:pr:`720`)
         * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
-        * Fixed CumCount and other group-by transform primitives that take ID as input (:pr:`733`)
+        * Fixed CumCount and other group-by transform primitives that take ID as input (:pr:`733`, :pr:`754`)
         * Fix progress bar undercounting (:pr:`743`)
 	* Updated training_window error assertion to only check against observations (:pr:`728`)
         * Don't delete the whole destination folder while saving entityset (:pr:`717`)
     * Changes
         * Raise warning and not error on schema version mismatch (:pr:`718`)
+        * Change feature calculation to return in order of instance ids provided (:pr:`676`)
         * Removed time remaining from displayed progress bar in dfs() and calculate_feature_matrix() (:pr:`739`)
+        * Raise warning in normalize_entity() when time_index of base_entity has an invalid type (:pr:`749`)
+        * Remove toolz as a direct dependency (:pr:`755`)
+        * Allow boolean variable types to be used in the Multiply primitive (:pr:`756`)
     * Documentation Changes
         * Updated URL for Compose (:pr:`716`)
     * Testing Changes
         * Update dependencies (:pr:`738`, :pr:`741`, :pr:`747`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`chidauri`, :user:`christopherbunn`, :user:`kmax12`, :user:`MarcoGorelli`, :user:`angela97lin`, :user:`frances-h`, :user:`rwedge`
+    :user:`angela97lin`, :user:`chidauri`, :user:`christopherbunn`,
+    :user:`frances-h`, :user:`jeff-hernandez`, :user:`kmax12`,
+    :user:`MarcoGorelli`, :user:`rwedge`, :user:`thehomebrewnerd`
 
+**Breaking Changes**
+
+* Feature calculations will return in the order of instance ids provided instead of the order of time points instances are calculated at.
 
 **v0.10.1 Aug 25, 2019**
     * Fixes
@@ -77,7 +105,6 @@ Changelog
     :user:`alexjwang`, :user:`allisonportis`, :user:`ayushpatidar`,
     :user:`CJStadler`, :user:`ctduffy`, :user:`gsheni`, :user:`jeff-hernandez`,
     :user:`jeremyliweishih`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`,
-
 
 **v0.9.1 July 3, 2019**
     * Enhancements
