@@ -690,8 +690,7 @@ def test_normalize_entity(es):
     assert 'device_type' in es['device_types'].df.columns
 
 
-def test_normalize_entity_new_time_index_error_check(es):
-    es_copy = copy.deepcopy(es)
+def test_normalize_entity_new_time_index_in_base_entity_error_check(es):
     error_text = "'make_time_index' must be a variable in the base entity"
     with pytest.raises(ValueError, match=error_text):
         es.normalize_entity(base_entity_id='customers',
@@ -699,6 +698,8 @@ def test_normalize_entity_new_time_index_error_check(es):
                             index='cancel_reason',
                             make_time_index="non-existent")
 
+
+def test_normalize_entity_new_time_index_in_variable_list_error_check(es):
     error_text = "'make_time_index' must be specified in 'additional_variables' or 'copy_variables'"
     with pytest.raises(ValueError, match=error_text):
         es.normalize_entity(base_entity_id='customers',
@@ -706,7 +707,8 @@ def test_normalize_entity_new_time_index_error_check(es):
                             index='cancel_reason',
                             make_time_index='cancel_date')
 
-    es = es_copy
+
+def test_normalize_entity_new_time_index_copy_success_check(es):
     es.normalize_entity(base_entity_id='customers',
                         new_entity_id='cancellations',
                         index='cancel_reason',
@@ -714,7 +716,8 @@ def test_normalize_entity_new_time_index_error_check(es):
                         additional_variables=[],
                         copy_variables=['cancel_date'])
 
-    es = copy.deepcopy(es)
+
+def test_normalize_entity_new_time_index_additional_success_check(es):
     es.normalize_entity(base_entity_id='customers',
                         new_entity_id='cancellations',
                         index='cancel_reason',
