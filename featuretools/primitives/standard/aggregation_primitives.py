@@ -264,9 +264,14 @@ class AvgTimeBetween(AggregationPrimitive):
     """Computes the average number of seconds between consecutive events.
 
     Description:
-        Given a list of datetimes, return the average number of seconds
+        Given a list of datetimes, return the average time (default in seconds)
         elapsed between consecutive events. If there are fewer
         than 2 non-null values, return `NaN`.
+
+    Args:
+        unit (str): Defines the unit of time.
+            Defaults to seconds. Acceptable values:
+            years, months, days, hours, minutes, seconds, milliseconds, nanoseconds
 
     Examples:
         >>> from datetime import datetime
@@ -276,10 +281,16 @@ class AvgTimeBetween(AggregationPrimitive):
         ...          datetime(2010, 1, 1, 11, 57, 30)]
         >>> avg_time_between(times)
         375.0
+        >>> avg_time_between = AvgTimeBetween(unit="minutes")
+        >>> avg_time_between(times)
+        6.25
     """
     name = "avg_time_between"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
+
+    def __init__(self, unit="seconds"):
+        self.unit = unit.lower()
 
     def get_function(self):
         def pd_avg_time_between(x):
@@ -307,7 +318,7 @@ class AvgTimeBetween(AggregationPrimitive):
             # diff_in_ns = x.diff().iloc[1:].astype('int64')
             # diff_in_seconds = diff_in_ns * 1e-9
             # avg = diff_in_seconds.mean()
-            return avg
+            return convert_time_units(avg, self.unit)
         return pd_avg_time_between
 
 
