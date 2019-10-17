@@ -6,6 +6,7 @@ Changelog
     * Enhancements
         * Added First primitive (:pr:`770`)
     * Fixes
+        * Prevents user from removing base entity time index using additional_variables (:pr:`768`)
     * Updates
     * Changes
         * Drop Python 2 support (:pr:`759`)
@@ -16,7 +17,7 @@ Changelog
         * CircleCI fixes (:pr:`774`)
 
     Thanks to the following people for contributing to this release:
-    :user:`kmax12`, :user:`rwedge`, :user:`jeffzi`
+    :user:`kmax12`, :user:`rwedge`, :user:`ablacke-ayx`, :user:`jeffzi`
 
 **v0.11.0 Sep 30, 2019**
 
