@@ -124,7 +124,7 @@ If we look at the variables in transactions and the new sessions entity, we see 
     es["sessions"].variables
 
 1. It removed "device", "customer_id", "zip_code" and "join_date" from "transactions" and created a new variables in the sessions entity. This reduces redundant information as the those properties of a session don't change between transactions.
-2. It copied and marked "session_start" as a time index variable into the new sessions entity to indicate the beginning of a session. If the base entity has a time index and ``make_time_index`` is not set, ``normalize entity`` will create a time index for the new entity.  In this case it would create a new time index called "first_transactions_time" using the time of the first transaction of each session. If we don't want this time index to be created, we can set ``make_time_index``=False.
+2. It copied and marked "session_start" as a time index variable into the new sessions entity to indicate the beginning of a session. If the base entity has a time index and ``make_time_index`` is not set, ``normalize entity`` will create a time index for the new entity.  In this case it would create a new time index called "first_transactions_time" using the time of the first transaction of each session. If we don't want this time index to be created, we can set ``make_time_index=False``.
 
 If we look at the dataframes, can see what the ``normalize_entity`` did to the actual data.
 
