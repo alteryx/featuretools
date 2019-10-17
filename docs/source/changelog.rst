@@ -13,6 +13,7 @@ Changelog
         * Add unit parameter to AvgTimeBetween (:pr:`771`)
     * Documentation Changes
         * Update featuretools slack link (:pr:`765`)
+        * Set up repo to use Read the Docs (:pr:`776`)
     * Testing Changes
         * CircleCI fixes (:pr:`774`)
         * Disable PIP progress bars (:pr:`775`)
