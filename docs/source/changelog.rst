@@ -15,6 +15,7 @@ Changelog
         * Update featuretools slack link (:pr:`765`)
     * Testing Changes
         * CircleCI fixes (:pr:`774`)
+        * Disable PIP progress bars (:pr:`775`)
 
     Thanks to the following people for contributing to this release:
     :user:`kmax12`, :user:`rwedge`, :user:`ablacke-ayx`, :user:`jeffzi`
