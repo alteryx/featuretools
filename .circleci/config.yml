@@ -36,7 +36,7 @@ jobs:
       - run : |
           virtualenv venv
           source venv/bin/activate
-          pip config set global.progress_bar off
+          pip config --site set global.progress_bar off
           pip install -e unpacked_sdist/
           pip install -r unpacked_sdist/test-requirements.txt
       - persist_to_workspace:
@@ -147,7 +147,7 @@ jobs:
       - run: |
           virtualenv venv
           source venv/bin/activate
-          pip config set global.progress_bar off
+          pip config --site set global.progress_bar off
           pip install -e unpacked_sdist/[complete]
       - run:
           command: |
