@@ -36,6 +36,7 @@ jobs:
       - run : |
           virtualenv venv
           source venv/bin/activate
+          pip config --site set global.progress_bar off
           pip install -e unpacked_sdist/
           pip install -r unpacked_sdist/test-requirements.txt
       - persist_to_workspace:
@@ -146,6 +147,7 @@ jobs:
       - run: |
           virtualenv venv
           source venv/bin/activate
+          pip config --site set global.progress_bar off
           pip install -e unpacked_sdist/[complete]
       - run:
           command: |
@@ -164,7 +166,7 @@ jobs:
       - image: busybox:latest
     steps:
       - checkout
-      - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/Featuretools/featuretools/pull/}\`"
+      - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/featuretools/pull/}\`"
 
 workflows:
   version: 2

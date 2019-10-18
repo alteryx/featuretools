@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
-from scipy import stats
 
 from featuretools.primitives.base.aggregation_primitive_base import (
     AggregationPrimitive
@@ -10,7 +9,6 @@ from featuretools.primitives.base.aggregation_primitive_base import (
 from featuretools.utils import convert_time_units
 from featuretools.variable_types import (
     Boolean,
-    Categorical,
     DatetimeTimeIndex,
     Discrete,
     Index,
@@ -93,7 +91,6 @@ class Mean(AggregationPrimitive):
 
         def mean(series):
             return np.mean(series.values)
-
         return mean
 
 
@@ -117,7 +114,6 @@ class Mode(AggregationPrimitive):
     def get_function(self):
         def pd_mode(s):
             return s.mode().get(0, np.nan)
-
         return pd_mode
 
 
@@ -224,7 +220,6 @@ class PercentTrue(AggregationPrimitive):
     def get_function(self):
         def percent_true(s):
             return s.fillna(0).mean()
-
         return percent_true
 
 
@@ -262,7 +257,6 @@ class NMostCommon(AggregationPrimitive):
                 filler = np.full(self.n - len(array), np.nan)
                 array = np.append(array, filler)
             return array
-
         return n_most_common
 
 
@@ -270,9 +264,14 @@ class AvgTimeBetween(AggregationPrimitive):
     """Computes the average number of seconds between consecutive events.
 
     Description:
-        Given a list of datetimes, return the average number of seconds
+        Given a list of datetimes, return the average time (default in seconds)
         elapsed between consecutive events. If there are fewer
         than 2 non-null values, return `NaN`.
+
+    Args:
+        unit (str): Defines the unit of time.
+            Defaults to seconds. Acceptable values:
+            years, months, days, hours, minutes, seconds, milliseconds, nanoseconds
 
     Examples:
         >>> from datetime import datetime
@@ -282,10 +281,16 @@ class AvgTimeBetween(AggregationPrimitive):
         ...          datetime(2010, 1, 1, 11, 57, 30)]
         >>> avg_time_between(times)
         375.0
+        >>> avg_time_between = AvgTimeBetween(unit="minutes")
+        >>> avg_time_between(times)
+        6.25
     """
     name = "avg_time_between"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
+
+    def __init__(self, unit="seconds"):
+        self.unit = unit.lower()
 
     def get_function(self):
         def pd_avg_time_between(x):
@@ -313,8 +318,7 @@ class AvgTimeBetween(AggregationPrimitive):
             # diff_in_ns = x.diff().iloc[1:].astype('int64')
             # diff_in_seconds = diff_in_ns * 1e-9
             # avg = diff_in_seconds.mean()
-            return avg
-
+            return convert_time_units(avg, self.unit)
         return pd_avg_time_between
 
 
@@ -379,6 +383,26 @@ class Std(AggregationPrimitive):
         return np.std
 
 
+class First(AggregationPrimitive):
+    """Determines the first value in a list.
+
+    Examples:
+        >>> first = First()
+        >>> first([1, 2, 3, 4, 5, None])
+        1.0
+    """
+    name = "first"
+    input_types = [Variable]
+    return_type = None
+    stack_on_self = False
+
+    def get_function(self):
+        def pd_first(x):
+            return x.iloc[0]
+
+        return pd_first
+
+
 class Last(AggregationPrimitive):
     """Determines the last value in a list.
 
@@ -395,7 +419,6 @@ class Last(AggregationPrimitive):
     def get_function(self):
         def pd_last(x):
             return x.iloc[-1]
-
         return pd_last
 
 
@@ -590,7 +613,6 @@ class Trend(AggregationPrimitive):
             coefficients = np.polyfit(x, y, 1)
 
             return coefficients[0]
-
         return pd_trend
 
 
@@ -619,39 +641,3 @@ def find_dividend_by_unit(time):
             return dividend
     return 1
 
-
-class Entropy(AggregationPrimitive):
-    """Calculates the entropy for a categorical variable
-
-    Description:
-        Given a list of observations from a categorical
-        variable return the entropy of the distribution.
-        NaN values can be treated as a category or
-        dropped.
-
-    Args:
-        dropna (bool): Whether to consider NaN values as a separate category
-            Defaults to False.
-        base (float): The logarithmic base to use
-            Defaults to e (natural logarithm)
-
-    Examples:
-        >>> pd_entropy = Entropy()
-        >>> pd_entropy([1,2,3,4])
-        1.3862943611198906
-    """
-    name = "entropy"
-    input_types = [Categorical]
-    return_type = Numeric
-    stack_on_self = False
-
-    def __init__(self, dropna=False, base=None):
-        self.dropna = dropna
-        self.base = base
-
-    def get_function(self):
-        def pd_entropy(s):
-            distribution = s.value_counts(normalize=True, dropna=self.dropna)
-            return stats.entropy(distribution, base=self.base)
-
-        return pd_entropy
