@@ -5,6 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
         * Added First primitive (:pr:`770`)
+        * Added Entropy aggregation primitive (:pr:`779`)
     * Fixes
         * Prevents user from removing base entity time index using additional_variables (:pr:`768`)
     * Updates
@@ -19,7 +20,7 @@ Changelog
         * Disable PIP progress bars (:pr:`775`)
 
     Thanks to the following people for contributing to this release:
-    :user:`kmax12`, :user:`rwedge`, :user:`ablacke-ayx`, :user:`jeffzi`, :user:`BoopBoopBeepBoop`
+    :user:`kmax12`, :user:`rwedge`, :user:`ablacke-ayx`, :user:`jeffzi`, :user:`BoopBoopBeepBoop`, :user:`twdobson`
 
 **v0.11.0 Sep 30, 2019**
 
