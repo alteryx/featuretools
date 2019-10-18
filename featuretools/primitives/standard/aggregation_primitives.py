@@ -658,11 +658,13 @@ class Entropy(AggregationPrimitive):
         variable return the entropy of the distribution.
         NaN values can be treated as a category or
         dropped.
+
     Args:
         dropna (bool): Whether to consider NaN values as a separate category
             Defaults to False.
         base (float): The logarithmic base to use
             Defaults to e (natural logarithm)
+
     Examples:
         >>> pd_entropy = Entropy()
         >>> pd_entropy([1,2,3,4])
