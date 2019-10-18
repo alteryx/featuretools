@@ -6,6 +6,7 @@ Changelog
     * Enhancements
         * Added First primitive (:pr:`770`)
     * Fixes
+        * Prevents user from removing base entity time index using additional_variables (:pr:`768`)
     * Updates
     * Changes
         * Drop Python 2 support (:pr:`759`)
@@ -13,11 +14,13 @@ Changelog
         * Allow custom naming for multi-output primitives (:pr:`780`)
     * Documentation Changes
         * Update featuretools slack link (:pr:`765`)
+        * Set up repo to use Read the Docs (:pr:`776`)
     * Testing Changes
         * CircleCI fixes (:pr:`774`)
+        * Disable PIP progress bars (:pr:`775`)
 
     Thanks to the following people for contributing to this release:
-    :user:`kmax12`, :user:`rwedge`, :user:`jeffzi`, :user:'thehomebrewnerd'
+    :user:`kmax12`, :user:`rwedge`, :user:`ablacke-ayx`, :user:`jeffzi`, :user:`BoopBoopBeepBoop`, :user:`thehomebrewnerd`
 
 **v0.11.0 Sep 30, 2019**
 

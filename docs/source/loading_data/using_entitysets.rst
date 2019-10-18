@@ -108,12 +108,12 @@ When working with raw data, it is common to have sufficient information to justi
                              index="session_id",
                              make_time_index="session_start",
                              additional_variables=["device", "customer_id", "zip_code", "session_start", "join_date"])
-
+                             
     es
 
 Looking at the output above, we see this method did two operations
 
-1. It created a new entity called "sessions" based on the "session_id" variable in "transactions"
+1. It created a new entity called "sessions" based on the "session_id" and "session_start" variables in "transactions"
 2. It added a relationship connecting "transactions" and "sessions".
 
 If we look at the variables in transactions and the new sessions entity, we see two more operations that were performed automatically.
@@ -123,8 +123,8 @@ If we look at the variables in transactions and the new sessions entity, we see 
     es["transactions"].variables
     es["sessions"].variables
 
-1. It removed "device", "customer_id", "zip_code", "session_start" and "join_date" from "transactions" and created a new variables in the sessions entity. This reduces redundant information as the those properties of a session don't change between transactions.
-2. It marked "session_start" as a time index in the new sessions entity to indicate the beginning of a session. By default, unless it's explicitly set to another variable, ``normalize_entity`` would have made a "first_transactions_time" in this entity. If we don't want this variable to be created, we can set ``make_time_index=False``.
+1. It removed "device", "customer_id", "zip_code" and "join_date" from "transactions" and created a new variables in the sessions entity. This reduces redundant information as the those properties of a session don't change between transactions.
+2. It copied and marked "session_start" as a time index variable into the new sessions entity to indicate the beginning of a session. If the base entity has a time index and ``make_time_index`` is not set, ``normalize entity`` will create a time index for the new entity.  In this case it would create a new time index called "first_transactions_time" using the time of the first transaction of each session. If we don't want this time index to be created, we can set ``make_time_index=False``.
 
 If we look at the dataframes, can see what the ``normalize_entity`` did to the actual data.
 
@@ -143,6 +143,7 @@ To finish preparing this dataset, create a "customers" entity using the same met
                              index="customer_id",
                              make_time_index="join_date",
                              additional_variables=["zip_code", "join_date"])
+                             
     es
 
 
