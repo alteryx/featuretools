@@ -10,13 +10,14 @@ Changelog
     * Changes
         * Drop Python 2 support (:pr:`759`)
         * Add unit parameter to AvgTimeBetween (:pr:`771`)
+        * Allow custom naming for multi-output primitives (:pr:`780`)
     * Documentation Changes
         * Update featuretools slack link (:pr:`765`)
     * Testing Changes
         * CircleCI fixes (:pr:`774`)
 
     Thanks to the following people for contributing to this release:
-    :user:`kmax12`, :user:`rwedge`, :user:`jeffzi`
+    :user:`kmax12`, :user:`rwedge`, :user:`jeffzi`, :user:'thehomebrewnerd'
 
 **v0.11.0 Sep 30, 2019**
 
