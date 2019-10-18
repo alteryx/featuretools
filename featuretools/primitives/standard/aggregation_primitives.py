@@ -627,7 +627,13 @@ class Entropy(AggregationPrimitive):
         Given a list of observations from a categorical
         variable return the entropy of the distribution.
         NaN values can be treated as a category or
-        dropped using the dropna argument
+        dropped.
+
+    Args:
+        dropna (bool): Whether to consider NaN values as a separate category
+            Defaults to False.
+        base (float): The logarithmic base to use
+            Defaults to e (natural logarithm)
 
     Examples:
         >>> pd_entropy = Entropy()
@@ -639,12 +645,13 @@ class Entropy(AggregationPrimitive):
     return_type = Numeric
     stack_on_self = False
 
-    def __init__(self, dropna=True):
+    def __init__(self, dropna=False, base=None):
         self.dropna = dropna
+        self.base = base
 
     def get_function(self):
         def pd_entropy(s):
             distribution = s.value_counts(normalize=True, dropna=self.dropna)
-            return stats.entropy(distribution)
+            return stats.entropy(distribution, base=self.base)
 
         return pd_entropy
