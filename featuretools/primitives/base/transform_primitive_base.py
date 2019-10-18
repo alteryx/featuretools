@@ -20,6 +20,10 @@ class TransformPrimitive(PrimitiveBase):
             self.get_args_string(),
         )
 
+    def generate_names(self, base_feature_names):
+        n = self.number_output_features
+        return [self.generate_name(base_feature_names) + "[%s]" % i for i in range(n)]
+
 
 def make_trans_primitive(function, input_types, return_type, name=None,
                          description=None, cls_attributes=None,
