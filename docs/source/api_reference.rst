@@ -107,6 +107,7 @@ Aggregation Primitives
     Last
     Skew
     Trend
+    Entropy
 
 
 Transform Primitives

@@ -653,6 +653,7 @@ def find_dividend_by_unit(time):
 
 class Entropy(AggregationPrimitive):
     """Calculates the entropy for a categorical variable
+
     Description:
         Given a list of observations from a categorical
         variable return the entropy of the distribution.
