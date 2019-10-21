@@ -14,12 +14,14 @@ Changelog
     * Documentation Changes
         * Update featuretools slack link (:pr:`765`)
         * Set up repo to use Read the Docs (:pr:`776`)
+        * Add First primitive to API reference docs (:pr:`782`)
     * Testing Changes
         * CircleCI fixes (:pr:`774`)
         * Disable PIP progress bars (:pr:`775`)
 
     Thanks to the following people for contributing to this release:
-    :user:`kmax12`, :user:`rwedge`, :user:`ablacke-ayx`, :user:`jeffzi`, :user:`BoopBoopBeepBoop`
+    :user:`kmax12`, :user:`rwedge`, :user:`ablacke-ayx`, :user:`jeffzi`, :user:`BoopBoopBeepBoop`,
+    :user:`thehomebrewnerd`
 
 **v0.11.0 Sep 30, 2019**
 
