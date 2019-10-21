@@ -21,7 +21,7 @@ Changelog
 
     Thanks to the following people for contributing to this release:
     :user:`kmax12`, :user:`rwedge`, :user:`ablacke-ayx`, :user:`jeffzi`, :user:`BoopBoopBeepBoop`,
-    :user:`thehomebrewnerd`, :user:`twdobson`
+    :user:`thehomebrewnerd`
 
 **v0.11.0 Sep 30, 2019**
 
