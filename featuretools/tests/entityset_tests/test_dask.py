@@ -7,7 +7,8 @@ def test_create_entity_from_dask_df(es):
         entity_id="log_dask",
         dataframe=log_dask,
         index="id",
-        time_index="datetime"
+        time_index="datetime",
+        variable_types=es['log'].variable_types
     )
 
     assert es['log'].df.equals(es['log_dask'].df.compute())

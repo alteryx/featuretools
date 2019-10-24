@@ -128,7 +128,7 @@ def convert_all_variable_data(df, variable_types):
 def convert_variable_data(df, column_id, new_type, **kwargs):
     """Convert dataframe's variable to different type.
     """
-    if df[column_id].empty:
+    if len(df[column_id]) == 0:
         return df
     if new_type == vtypes.Numeric:
         orig_nonnull = df[column_id].dropna().shape[0]
