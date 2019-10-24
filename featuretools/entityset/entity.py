@@ -96,7 +96,7 @@ class Entity(object):
     @property
     def shape(self):
         '''Shape of the entity's dataframe'''
-        return self.df.shape
+        return (len(self.df), self.df.shape[1])
 
     def __eq__(self, other, deep=False):
         if self.index != other.index:
