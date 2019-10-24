@@ -197,7 +197,7 @@ class EntitySet(object):
         for e in self.entities:
             if e.df.shape:
                 repr_out += u"\n    {} [Rows: {}, Columns: {}]".format(
-                    e.id, e.df.shape[0], e.df.shape[1])
+                    e.id, len(e.df), e.df.shape[1])
             else:
                 repr_out += u"\n    {} [Rows: None, Columns: None]".format(
                     e.id)

@@ -1,5 +1,6 @@
 import logging
 
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
@@ -398,10 +399,10 @@ class Entity(object):
 
     def set_time_index(self, variable_id, already_sorted=False):
         # check time type
-        if self.df.empty:
+        if len(self.df) == 0:
             time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
         else:
-            time_to_check = self.df[variable_id].iloc[0]
+            time_to_check = self.df[variable_id].head().iloc[0]
 
         time_type = _check_time_type(time_to_check)
         if time_type is None:
@@ -416,7 +417,8 @@ class Entity(object):
                             (self.id, time_type))
 
         # use stable sort
-        if not already_sorted:
+        # TODO: fix for dask dataframe
+        if isinstance(self.df, pd.core.frame.DataFrame) and not already_sorted:
             # sort by time variable, then by index
             self.df.sort_values([variable_id, self.index], inplace=True)
 
@@ -436,7 +438,11 @@ class Entity(object):
         self.df = self.df.set_index(self.df[variable_id], drop=False)
         self.df.index.name = None
         if unique:
-            assert self.df.index.is_unique, "Index is not unique on dataframe (Entity {})".format(self.id)
+            if isinstance(self.df.index, dd.core.Index):
+                index_is_unique = self.df.index.compute().is_unique
+            else:
+                index_is_unique = self.df.index.is_unique
+            assert index_is_unique, "Index is not unique on dataframe (Entity {})".format(self.id)
 
         self.convert_variable_type(variable_id, vtypes.Index, convert_data=False)
         self.index = variable_id

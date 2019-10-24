@@ -48,7 +48,7 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
                 inferred_type = vtypes.Categorical
 
                 # heuristics to predict this some other than categorical
-                sample = df[variable].sample(min(10000, len(df[variable])))
+                sample = df[variable].sample(frac=min(10000 / len(df[variable]), 1))
 
                 # catch cases where object dtype cannot be interpreted as a string
                 try:
@@ -171,9 +171,10 @@ def get_linked_vars(entity):
 
 
 def col_is_datetime(col):
-    # check if dtype is datetime
+    # check if dtype is datetime - use .head() when getting first value
+    # in case column is a dask Series
     if (col.dtype.name.find('datetime') > -1 or
-            (len(col) and isinstance(col.iloc[0], datetime))):
+            (len(col) and isinstance(col.head().iloc[0], datetime))):
         return True
 
     # if it can be casted to numeric, it's not a datetime
