@@ -2,6 +2,8 @@ import warnings
 from datetime import datetime
 from functools import partial
 
+import dask.array as da
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
@@ -392,7 +394,7 @@ class FeatureSetCalculator(object):
 
     def _calculate_identity_features(self, features, df, _df_trie, progress_callback):
         for f in features:
-            assert f.get_name() in df, (
+            assert f.get_name() in df.columns, (
                 'Column "%s" missing frome dataframe' % f.get_name())
 
         progress_callback(len(features) / float(self.num_features))
@@ -402,7 +404,7 @@ class FeatureSetCalculator(object):
     def _calculate_transform_features(self, features, frame, _df_trie, progress_callback):
         for f in features:
             # handle when no data
-            if frame.shape[0] == 0:
+            if len(frame) == 0:
                 set_default_column(frame, f)
 
                 progress_callback(1 / float(self.num_features))
@@ -726,7 +728,10 @@ def update_feature_columns(feature, data, values):
     names = feature.get_feature_names()
     assert len(names) == len(values)
     for name, value in zip(names, values):
-        data[name] = value
+        if isinstance(data, dd.core.DataFrame):
+            data[name] = dd.from_array(da.from_array(value), columns=name)
+        else:
+            data[name] = value
 
 
 def strip_values_if_series(values):

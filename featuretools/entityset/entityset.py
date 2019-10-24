@@ -254,7 +254,7 @@ class EntitySet(object):
         # default to object dtypes for discrete variables, but
         # indexes/ids default to ints. In this case, we convert
         # the empty column's type to int
-        if (child_e.df.empty and child_e.df[child_v].dtype == object and
+        if (len(child_e.df) == 0 and child_e.df[child_v].dtype == object and
                 is_numeric_dtype(parent_e.df[parent_v])):
             child_e.df[child_v] = pd.Series(name=child_v, dtype=np.int64)
 
@@ -630,7 +630,7 @@ class EntitySet(object):
             drop_duplicates(index, keep='first')[selected_variables]
 
         if make_time_index:
-            new_entity_df2.rename(columns={base_time_index: new_entity_time_index}, inplace=True)
+            new_entity_df2 = new_entity_df2.rename(columns={base_time_index: new_entity_time_index})
         if make_secondary_time_index:
             assert len(make_secondary_time_index) == 1, "Can only provide 1 secondary time index"
             secondary_time_index = list(make_secondary_time_index.keys())[0]

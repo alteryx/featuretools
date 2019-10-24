@@ -243,7 +243,10 @@ class Entity(object):
         else:
             df = self.df[self.df[variable_id].isin(instance_vals)]
 
-            df = df.set_index(self.index, drop=False)
+            if self.df[self.index].dtype.name == 'category':
+                df = df.set_index(self.df[self.index].cat.as_ordered(), drop=False)
+            else:
+                df = df.set_index(self.index, drop=False)
 
             # ensure filtered df has same categories as original
             # workaround for issue below
@@ -391,7 +394,7 @@ class Entity(object):
         Remove variables from entity's dataframe and from
         self.variables
         """
-        self.df.drop(variable_ids, axis=1, inplace=True)
+        self.df = self.df.drop(variable_ids, axis=1)
 
         for v_id in variable_ids:
             v = self._get_variable(v_id)
@@ -435,7 +438,10 @@ class Entity(object):
             variable_id (string) : Name of an existing variable to set as index.
             unique (bool) : Whether to assert that the index is unique.
         """
-        self.df = self.df.set_index(self.df[variable_id], drop=False)
+        if self.df[variable_id].dtype.name == 'category':
+            self.df = self.df.set_index(self.df[variable_id].cat.as_ordered(), drop=False)
+        else:
+            self.df = self.df.set_index(self.df[variable_id], drop=False)
         self.df.index.name = None
         if unique:
             if isinstance(self.df.index, dd.core.Index):
@@ -481,7 +487,7 @@ class Entity(object):
         # convert iterable to pd.Series
         if type(instance_vals) == pd.DataFrame:
             out_vals = instance_vals[variable_id]
-        elif type(instance_vals) == pd.Series:
+        elif type(instance_vals) == pd.Series or type(instance_vals) == dd.core.Series:
             out_vals = instance_vals.rename(variable_id)
         else:
             out_vals = pd.Series(instance_vals)
@@ -501,7 +507,7 @@ class Entity(object):
         dataframe.
         """
         if self.time_index:
-            if time_last is not None and not df.empty:
+            if time_last is not None and len(df) > 0:
                 df = df[df[self.time_index] <= time_last]
                 if training_window is not None:
                     training_window = _check_timedelta(training_window)

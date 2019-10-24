@@ -150,7 +150,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             df = target_entity._handle_time(target_entity.df,
                                             time_last=cutoff_time,
                                             training_window=training_window)
-            instance_ids = df[index_var].tolist()
+            instance_ids = list(df[index_var])
 
         cutoff_time = [cutoff_time] * len(instance_ids)
         map_args = [(id, time) for id, time in zip(instance_ids, cutoff_time)]
