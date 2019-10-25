@@ -5,13 +5,13 @@ Changelog
 **Future Release**
     * Enhancements
         * Added First primitive (:pr:`770`)
+        * Allow custom naming for multi-output primitives (:pr:`780`)
     * Fixes
         * Prevents user from removing base entity time index using additional_variables (:pr:`768`)
     * Updates
     * Changes
         * Drop Python 2 support (:pr:`759`)
         * Add unit parameter to AvgTimeBetween (:pr:`771`)
-        * Allow custom naming for multi-output primitives (:pr:`780`)
     * Documentation Changes
         * Update featuretools slack link (:pr:`765`)
         * Set up repo to use Read the Docs (:pr:`776`)
