@@ -401,3 +401,26 @@ def test_serialization(es):
         ft.feature_base.GroupByTransformFeature.from_dictionary(dictionary, es,
                                                                 dependencies,
                                                                 PrimitivesDeserializer())
+
+
+def test_groupby_with_multioutput_primitive(es):
+    def multi_cum_sum(x):
+        return x.cumsum(), x.cumsum(), x.cumsum()
+
+    num_features = 3
+    MultiCumSum = make_trans_primitive(function=multi_cum_sum,
+                                       input_types=[Numeric],
+                                       return_type=Numeric,
+                                       number_output_features=num_features)
+
+    fm, _ = dfs(entityset=es,
+                target_entity="customers",
+                trans_primitives=[],
+                agg_primitives=[],
+                groupby_trans_primitives=[MultiCumSum])
+
+    for i in range(3):
+        f = 'MULTI_CUM_SUM(age) by cohort[%d]' % i
+        assert f in fm.columns
+        f = 'MULTI_CUM_SUM(age) by région_id[%d]' % i
+        assert f in fm.columns

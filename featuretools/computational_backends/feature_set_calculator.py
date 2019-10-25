@@ -465,18 +465,24 @@ class FeatureSetCalculator(object):
                 else:
                     values = feature_func(*variable_data)
 
-                # make sure index is aligned
-                if isinstance(values, pd.Series):
-                    values.index = variable_data[0].index
-                else:
-                    values = pd.Series(values, index=variable_data[0].index)
+                if f.number_output_features == 1:
+                    values = [values]
 
-                feature_vals.append(values)
+                # make sure index is aligned
+                for value in values:
+                    if isinstance(value, pd.Series):
+                        value.index = variable_data[0].index
+                    else:
+                        value = pd.Series(value, index=variable_data[0].index)
+                    feature_vals.append(value)
 
             # Note
             # more efficient in pandas to concat and update only once
             if feature_vals:
-                frame[f.get_name()].update(pd.concat(feature_vals))
+                if f.number_output_features > 1:
+                    frame[f.get_names()].update(pd.concat(feature_vals))
+                else:
+                    frame[f.get_name()].update(pd.concat(feature_vals))
 
             progress_callback(1 / float(self.num_features))
 
