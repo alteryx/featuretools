@@ -417,25 +417,19 @@ def test_groupby_with_multioutput_primitive(es):
                 target_entity='customers',
                 trans_primitives=[],
                 agg_primitives=[],
-                groupby_trans_primitives=[MultiCumSum])
+                groupby_trans_primitives=[MultiCumSum, CumSum, CumMax, CumMin])
 
-    cohort_answers = [
-        [56.0, 89.0, 25.0],
-        [56.0, 56.0, 25.0],
-        [56.0, 33.0, 25.0]
-    ]
-
-    region_answers = [
-        [56.0, 89.0, 114.0],
-        [56.0, 56.0, 56.0],
-        [56.0, 33.0, 25.0]
+    correct_answers = [
+        [fm['CUM_SUM(age) by cohort'], fm['CUM_SUM(age) by région_id']],
+        [fm['CUM_MAX(age) by cohort'], fm['CUM_MAX(age) by région_id']],
+        [fm['CUM_MIN(age) by cohort'], fm['CUM_MIN(age) by région_id']]
     ]
     for i in range(3):
         f = 'MULTI_CUM_SUM(age) by cohort[%d]' % i
         assert f in fm.columns
-        for x, y in zip(fm[f].values, cohort_answers[i]):
+        for x, y in zip(fm[f].values, correct_answers[i][0].values):
             assert x == y
         f = 'MULTI_CUM_SUM(age) by région_id[%d]' % i
         assert f in fm.columns
-        for x, y in zip(fm[f], region_answers[i]):
+        for x, y in zip(fm[f].values, correct_answers[i][1].values):
             assert x == y
