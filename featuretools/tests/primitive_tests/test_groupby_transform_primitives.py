@@ -405,7 +405,7 @@ def test_serialization(es):
 
 def test_groupby_with_multioutput_primitive(es):
     def multi_cum_sum(x):
-        return x.cumsum(), x.cumsum(), x.cumsum()
+        return x.cumsum(), x.cummax(), x.cummin()
 
     num_features = 3
     MultiCumSum = make_trans_primitive(function=multi_cum_sum,
@@ -414,13 +414,28 @@ def test_groupby_with_multioutput_primitive(es):
                                        number_output_features=num_features)
 
     fm, _ = dfs(entityset=es,
-                target_entity="customers",
+                target_entity='customers',
                 trans_primitives=[],
                 agg_primitives=[],
                 groupby_trans_primitives=[MultiCumSum])
 
+    cohort_answers = [
+        [56.0, 89.0, 25.0],
+        [56.0, 56.0, 25.0],
+        [56.0, 33.0, 25.0]
+    ]
+
+    region_answers = [
+        [56.0, 89.0, 114.0],
+        [56.0, 56.0, 56.0],
+        [56.0, 33.0, 25.0]
+    ]
     for i in range(3):
         f = 'MULTI_CUM_SUM(age) by cohort[%d]' % i
         assert f in fm.columns
+        for x, y in zip(fm[f].values, cohort_answers[i]):
+            assert x == y
         f = 'MULTI_CUM_SUM(age) by région_id[%d]' % i
         assert f in fm.columns
+        for x, y in zip(fm[f], region_answers[i]):
+            assert x == y
