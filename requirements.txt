@@ -1,6 +1,6 @@
 scipy>=0.13.3
 numpy>=1.13.3
-pandas>=0.23.0
+pandas>=0.24.0
 tqdm>=4.32.0
 pyyaml>=3.12
 cloudpickle>=0.4.0
