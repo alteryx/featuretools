@@ -424,6 +424,7 @@ def test_groupby_with_multioutput_primitive(es):
         [fm['CUM_MAX(age) by cohort'], fm['CUM_MAX(age) by région_id']],
         [fm['CUM_MIN(age) by cohort'], fm['CUM_MIN(age) by région_id']]
     ]
+
     for i in range(3):
         f = 'MULTI_CUM_SUM(age) by cohort[%d]' % i
         assert f in fm.columns

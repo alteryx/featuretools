@@ -447,8 +447,9 @@ class FeatureSetCalculator(object):
         groups = frame[groupby].unique()  # get all the unique group name to iterate over later
 
         for f in features:
+            feature_vals = []
             for group in groups:
-                feature_vals = []
+                group_vals = []
                 # skip null key if it exists
                 if pd.isnull(group):
                     continue
@@ -474,17 +475,21 @@ class FeatureSetCalculator(object):
                         value.index = variable_data[0].index
                     else:
                         value = pd.Series(value, index=variable_data[0].index)
-                    feature_vals.append(value)
+                    group_vals.append(value)
 
                 # Note
                 # more efficient in pandas to concat and update only once
-                if feature_vals:
+                if group_vals:
                     if f.number_output_features > 1:
-                        update_df = pd.concat(feature_vals, axis=1)
+                        update_df = pd.concat(group_vals, axis=1)
                         update_df.columns = f.get_names()
-                        frame.update(update_df)
                     else:
-                        frame[f.get_name()].update(pd.concat(feature_vals))
+                        update_df = pd.concat(group_vals)
+                        update_df.rename(f.get_name(), inplace=True)
+                feature_vals.append(update_df)
+
+            if feature_vals:
+                frame.update(pd.concat(feature_vals))
 
             progress_callback(1 / float(self.num_features))
 
