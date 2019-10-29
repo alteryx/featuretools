@@ -23,6 +23,8 @@ commands:
 
 jobs:
   windows_install:
+    executor:
+      name: windows/default
     steps:
       - checkout
       - run: pwd
