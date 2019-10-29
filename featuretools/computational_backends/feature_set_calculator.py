@@ -448,6 +448,9 @@ class FeatureSetCalculator(object):
 
         for f in features:
             feature_vals = []
+            for _ in range(f.number_output_features):
+                feature_vals.append([])
+
             for group in groups:
                 # skip null key if it exists
                 if pd.isnull(group):
@@ -469,20 +472,17 @@ class FeatureSetCalculator(object):
                     values = [values]
 
                 # make sure index is aligned
-                for value, name in zip(values, f.get_feature_names()):
+                for i, value in enumerate(values):
                     if isinstance(value, pd.Series):
                         value.index = variable_data[0].index
                     else:
                         value = pd.Series(value, index=variable_data[0].index)
-                    value.rename(name, inplace=True)
-                    if f.number_output_features == 1:
-                        feature_vals.append(value)
+                    feature_vals[i].append(value)
 
-                if f.number_output_features > 1:
-                    feature_vals.append(pd.concat(values, axis=1))
-
-            if feature_vals:
-                frame.update(pd.concat(feature_vals))
+            if any(feature_vals):
+                assert len(feature_vals) == len(f.get_feature_names())
+                for col_vals, name in zip(feature_vals, f.get_feature_names()):
+                    frame[name].update(pd.concat(col_vals))
 
             progress_callback(1 / float(self.num_features))
 
