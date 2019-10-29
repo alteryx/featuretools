@@ -8,6 +8,7 @@ Changelog
         * Added Entropy aggregation primitive (:pr:`779`)
     * Fixes
         * Prevents user from removing base entity time index using additional_variables (:pr:`768`)
+        * Fixes error when a multioutput primitive was supplied to dfs as a groupby trans primitive (:pr:`786`)
     * Updates
     * Changes
         * Drop Python 2 support (:pr:`759`)
