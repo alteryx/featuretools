@@ -12,6 +12,7 @@ Changelog
     * Changes
         * Drop Python 2 support (:pr:`759`)
         * Add unit parameter to AvgTimeBetween (:pr:`771`)
+        * Require Pandas 0.24.1 or higher (:pr:`787`)
     * Documentation Changes
         * Update featuretools slack link (:pr:`765`)
         * Set up repo to use Read the Docs (:pr:`776`)
