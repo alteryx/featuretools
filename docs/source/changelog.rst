@@ -5,6 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
         * Added First primitive (:pr:`770`)
+        * Added Entropy aggregation primitive (:pr:`779`)
     * Fixes
         * Prevents user from removing base entity time index using additional_variables (:pr:`768`)
         * Fixes error when a multioutput primitive was supplied to dfs as a groupby trans primitive (:pr:`786`)
@@ -12,6 +13,7 @@ Changelog
     * Changes
         * Drop Python 2 support (:pr:`759`)
         * Add unit parameter to AvgTimeBetween (:pr:`771`)
+        * Require Pandas 0.24.1 or higher (:pr:`787`)
     * Documentation Changes
         * Update featuretools slack link (:pr:`765`)
         * Set up repo to use Read the Docs (:pr:`776`)
@@ -22,7 +24,7 @@ Changelog
 
     Thanks to the following people for contributing to this release:
     :user:`kmax12`, :user:`rwedge`, :user:`ablacke-ayx`, :user:`jeffzi`, :user:`BoopBoopBeepBoop`,
-    :user:`thehomebrewnerd`
+    :user:`thehomebrewnerd`, :user:`twdobson`
 
 **v0.11.0 Sep 30, 2019**
 

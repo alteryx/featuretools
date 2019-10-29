@@ -80,7 +80,7 @@ def generate_all_primitive_options(all_primitives,
         else:
             # no user specified options, just use global defaults
             primitive_options[primitive] = [{'ignore_entities': ignore_entities,
-                                            'ignore_variables': ignore_variables}]
+                                             'ignore_variables': ignore_variables}]
     return primitive_options, global_ignore_entities
 
 
@@ -143,7 +143,7 @@ def _variable_filter_generator(options):
     def passes_include_filter(f):
         return (not isinstance(f, IdentityFeature) or
                 (f.entity.id in options['include_variables'] and
-                f.variable.id in options['include_variables'][f.entity.id]))
+                 f.variable.id in options['include_variables'][f.entity.id]))
 
     if 'include_variables' in options:
         def variable_filter(f):
@@ -161,7 +161,7 @@ def _groupby_filter_generator(options):
     def passes_include_groupby_filter(f):
         return (isinstance(f, IdentityFeature) and
                 (f.entity.id in options['include_groupby_variables'] and
-                f.variable.id in options['include_groupby_variables'][f.entity.id]))
+                 f.variable.id in options['include_groupby_variables'][f.entity.id]))
 
     def passes_ignore_groupby_filter(f):
         return (isinstance(f, IdentityFeature) and (
