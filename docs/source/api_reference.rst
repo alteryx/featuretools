@@ -104,9 +104,11 @@ Aggregation Primitives
     PercentTrue
     All
     Any
+    First
     Last
     Skew
     Trend
+    Entropy
 
 
 Transform Primitives
