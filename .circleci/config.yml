@@ -28,7 +28,7 @@ jobs:
       name: windows/default
     steps:
       - checkout
-      - run: docker run -v C:/featuretools:C:/featuretools python:3.7-windowsservercore "python -m venv venv; venv/Scripts/Activate.ps1; python -m pip install --upgrade pip; python -m pip install featuretools"
+      - run: docker run python:3.7-windowsservercore python -m venv venv
   install_ft:
     working_directory: ~/featuretools
     parameters:
