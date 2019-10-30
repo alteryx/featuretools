@@ -29,7 +29,7 @@ jobs:
     steps:
       - checkout
       - run: docker pull python:3.7-windowsservercore
-      - run: docker run python:3.7-windowsservercore "python -m venv venv; .\venv\Scripts\Activate.ps1; python -m pip install --upgrade pip;"
+      - run: docker run python:3.7-windowsservercore "python -m venv venv; python -m pip install --upgrade pip;"
   install_ft:
     working_directory: ~/featuretools
     parameters:
