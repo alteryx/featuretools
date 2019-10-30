@@ -27,7 +27,7 @@ jobs:
       name: windows/default
     steps:
       - checkout
-      - run: docker run python:3.7-windowsservercore python -m venv
+      - run: docker run python:3.7-windowsservercore pwd
   install_ft:
     working_directory: ~/featuretools
     parameters:
