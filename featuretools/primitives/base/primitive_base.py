@@ -46,6 +46,9 @@ class PrimitiveBase(object):
     def generate_name(self):
         raise NotImplementedError("Subclass must implement")
 
+    def generate_names(self):
+        raise NotImplementedError("Subclass must implement")
+
     def get_function(self):
         raise NotImplementedError("Subclass must implement")
 

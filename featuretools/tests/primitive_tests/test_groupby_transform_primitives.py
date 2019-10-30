@@ -419,18 +419,76 @@ def test_groupby_with_multioutput_primitive(es):
                 agg_primitives=[],
                 groupby_trans_primitives=[MultiCumSum, CumSum, CumMax, CumMin])
 
-    correct_answers = [
-        [fm['CUM_SUM(age) by cohort'], fm['CUM_SUM(age) by région_id']],
-        [fm['CUM_MAX(age) by cohort'], fm['CUM_MAX(age) by région_id']],
-        [fm['CUM_MIN(age) by cohort'], fm['CUM_MIN(age) by région_id']]
+    # Calculate output in a separate DFS call to make sure the multi-output code
+    # does not alter any values
+    fm2, _ = dfs(entityset=es,
+                 target_entity='customers',
+                 trans_primitives=[],
+                 agg_primitives=[],
+                 groupby_trans_primitives=[CumSum, CumMax, CumMin])
+
+    answer_cols = [
+        ['CUM_SUM(age) by cohort', 'CUM_SUM(age) by région_id'],
+        ['CUM_MAX(age) by cohort', 'CUM_MAX(age) by région_id'],
+        ['CUM_MIN(age) by cohort', 'CUM_MIN(age) by région_id']
     ]
 
     for i in range(3):
-        f = 'MULTI_CUM_SUM(age) by cohort[%d]' % i
+        # Check that multi-output gives correct answers
+        f = 'MULTI_CUM_SUM(age)[%d] by cohort' % i
         assert f in fm.columns
-        for x, y in zip(fm[f].values, correct_answers[i][0].values):
+        for x, y in zip(fm[f].values, fm[answer_cols[i][0]].values):
             assert x == y
-        f = 'MULTI_CUM_SUM(age) by région_id[%d]' % i
+        f = 'MULTI_CUM_SUM(age)[%d] by région_id' % i
         assert f in fm.columns
-        for x, y in zip(fm[f].values, correct_answers[i][1].values):
+        for x, y in zip(fm[f].values, fm[answer_cols[i][1]].values):
+            assert x == y
+        # Verify single output results are unchanged by inclusion of
+        # multi-output primitive
+        for x, y in zip(fm[answer_cols[i][0]], fm2[answer_cols[i][0]]):
+            assert x == y
+        for x, y in zip(fm[answer_cols[i][1]], fm2[answer_cols[i][1]]):
+            assert x == y
+
+
+def test_groupby_with_multioutput_primitive_custom_names(es):
+    def gen_custom_names(primitive, base_feature_names):
+        return ["CUSTOM_SUM", "CUSTOM_MAX", "CUSTOM_MIN"]
+
+    def multi_cum_sum(x):
+        return x.cumsum(), x.cummax(), x.cummin()
+
+    num_features = 3
+    MultiCumSum = make_trans_primitive(function=multi_cum_sum,
+                                       input_types=[Numeric],
+                                       return_type=Numeric,
+                                       number_output_features=num_features,
+                                       cls_attributes={"generate_names": gen_custom_names})
+
+    fm, _ = dfs(entityset=es,
+                target_entity='customers',
+                trans_primitives=[],
+                agg_primitives=[],
+                groupby_trans_primitives=[MultiCumSum, CumSum, CumMax, CumMin])
+
+    answer_cols = [
+        ['CUM_SUM(age) by cohort', 'CUM_SUM(age) by région_id'],
+        ['CUM_MAX(age) by cohort', 'CUM_MAX(age) by région_id'],
+        ['CUM_MIN(age) by cohort', 'CUM_MIN(age) by région_id']
+    ]
+
+    expected_names = [
+        ['CUSTOM_SUM by cohort', 'CUSTOM_SUM by région_id'],
+        ['CUSTOM_MAX by cohort', 'CUSTOM_MAX by région_id'],
+        ['CUSTOM_MIN by cohort', 'CUSTOM_MIN by région_id']
+    ]
+
+    for i in range(3):
+        f = expected_names[i][0]
+        assert f in fm.columns
+        for x, y in zip(fm[f].values, fm[answer_cols[i][0]].values):
+            assert x == y
+        f = expected_names[i][1]
+        assert f in fm.columns
+        for x, y in zip(fm[f].values, fm[answer_cols[i][1]].values):
             assert x == y
