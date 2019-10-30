@@ -722,6 +722,12 @@ class GroupByTransformFeature(TransformFeature):
         _name = self.primitive.generate_name(base_names)
         return u"{} by {}".format(_name, self.groupby.get_name())
 
+    def generate_names(self):
+        base_names = [bf.get_name() for bf in self.base_features[:-1]]
+        _names = self.primitive.generate_names(base_names)
+        names = [name + " by {}".format(self.groupby.get_name()) for name in _names]
+        return names
+
     def get_arguments(self):
         # Do not include groupby in base_features.
         feature_names = [feat.unique_name() for feat in self.base_features
