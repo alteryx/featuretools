@@ -2,7 +2,7 @@
 
 Changelog
 ---------
-**Future Release**
+**v0.12.0 Oct 31, 2019**
     * Enhancements
         * Added First primitive (:pr:`770`)
         * Added Entropy aggregation primitive (:pr:`779`)
@@ -10,7 +10,6 @@ Changelog
     * Fixes
         * Prevents user from removing base entity time index using additional_variables (:pr:`768`)
         * Fixes error when a multioutput primitive was supplied to dfs as a groupby trans primitive (:pr:`786`)
-    * Updates
     * Changes
         * Drop Python 2 support (:pr:`759`)
         * Add unit parameter to AvgTimeBetween (:pr:`771`)
@@ -24,8 +23,8 @@ Changelog
         * Disable PIP progress bars (:pr:`775`)
 
     Thanks to the following people for contributing to this release:
-    :user:`kmax12`, :user:`rwedge`, :user:`ablacke-ayx`, :user:`jeffzi`, :user:`BoopBoopBeepBoop`,
-    :user:`thehomebrewnerd`, :user:`twdobson`
+    :user:`ablacke-ayx`, :user:`BoopBoopBeepBoop`, :user:`jeffzi`,
+    :user:`kmax12`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`twdobson`
 
 **v0.11.0 Sep 30, 2019**
 
@@ -44,7 +43,7 @@ Changelog
         * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
         * Fixed CumCount and other group-by transform primitives that take ID as input (:pr:`733`, :pr:`754`)
         * Fix progress bar undercounting (:pr:`743`)
-	* Updated training_window error assertion to only check against observations (:pr:`728`)
+        * Updated training_window error assertion to only check against observations (:pr:`728`)
         * Don't delete the whole destination folder while saving entityset (:pr:`717`)
     * Changes
         * Raise warning and not error on schema version mismatch (:pr:`718`)
