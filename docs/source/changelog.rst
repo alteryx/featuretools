@@ -2,6 +2,15 @@
 
 Changelog
 ---------
+**Future Release**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+
 **v0.12.0 Oct 31, 2019**
     * Enhancements
         * Added First primitive (:pr:`770`)
