@@ -860,3 +860,31 @@ def test_get_filepath(es):
     assert fm["MOD4(value)"][0] == 0
     assert fm["MOD4(value)"][14] == 2
     assert pd.isnull(fm["MOD4(value)"][15])
+
+
+def test_override_multi_feature_names(es):
+    def gen_custom_names(primitive, base_feature_names):
+        return ['Above18(%s)' % base_feature_names,
+                'Above21(%s)' % base_feature_names,
+                'Above65(%s)' % base_feature_names]
+
+    def is_greater(x):
+        return x > 18, x > 21, x > 65
+
+    num_features = 3
+    IsGreater = make_trans_primitive(function=is_greater,
+                                     input_types=[Numeric],
+                                     return_type=Numeric,
+                                     number_output_features=num_features,
+                                     cls_attributes={"generate_names": gen_custom_names})
+
+    fm, features = ft.dfs(entityset=es,
+                          target_entity="customers",
+                          instance_ids=[0, 1, 2],
+                          agg_primitives=[],
+                          trans_primitives=[IsGreater])
+
+    expected_names = gen_custom_names(IsGreater, ['age'])
+
+    for name in expected_names:
+        assert name in fm.columns
