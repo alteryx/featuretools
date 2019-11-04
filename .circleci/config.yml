@@ -29,11 +29,12 @@ jobs:
     steps:
       - checkout
       - run: docker pull python:3.7-windowsservercore
-      - run: docker run python:3.7-windowsservercore powershell -Command
-          "python -m venv ./venv;
+      - run: docker run -v C:/featuretools:C:/featuretools python:3.7-windowsservercore powershell -Command
+          "dir;
+          cd ./featuretools;
+          python -m venv ./venv;
           ./venv/Scripts/Activate.ps1;
           python -m pip install --upgrade pip;
-          dir;
           pip install .;
           pip install -r test-requirements.txt;
           pytest;"
