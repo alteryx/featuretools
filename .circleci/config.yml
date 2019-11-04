@@ -33,6 +33,7 @@ jobs:
           "python -m venv ./venv;
           ./venv/Scripts/Activate.ps1;
           python -m pip install --upgrade pip;
+          dir;
           pip install .;
           pip install -r test-requirements.txt;
           pytest;"
