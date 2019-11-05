@@ -5,11 +5,14 @@ Changelog
 **Future Release**
     * Enhancements
     * Fixes
+        * Fix issue with converting to pickle or parquet after adding interesting features (:pr:`798`)
+    * Updates
     * Changes
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
+    :user:`frances-h`
 
 **v0.12.0 Oct 31, 2019**
     * Enhancements

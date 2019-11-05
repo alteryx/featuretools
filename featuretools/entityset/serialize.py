@@ -3,9 +3,9 @@ import json
 import os
 import tarfile
 import tempfile
-import numpy as np
 
 import boto3
+import numpy as np
 
 from featuretools.utils.gen_utils import use_s3fs_es, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
