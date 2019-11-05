@@ -34,10 +34,13 @@ class Variable(object):
     def entityset(self):
         return self.entity.entityset
 
-    def __eq__(self, other):
+    def __eq__(self, other, deep=False):
         return isinstance(other, self.__class__) and \
             self.id == other.id and \
-            self.entity_id == other.entity_id
+            self.entity_id == other.entity_id and \
+            (self.interesting_values == other.interesting_values or
+             set(self.interesting_values) == set(other.interesting_values) or
+             not deep)
 
     def __hash__(self):
         return hash((self.id, self.entity_id))

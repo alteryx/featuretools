@@ -52,8 +52,7 @@ def description_to_entity(description, entityset, path=None):
         dataframe = read_entity_data(description, path=path)
     else:
         dataframe = empty_dataframe(description)
-    variable_types = {}
-    variable_interesting_values = {}
+    variable_types, variable_interesting_values = {}, {}
     for variable in description['variables']:
         variable_type, interesting_values = description_to_variable(variable)
         variable_types[variable['id']] = variable_type
