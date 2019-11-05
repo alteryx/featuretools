@@ -644,3 +644,38 @@ def _assert_agg_feats_equal(f1, f2):
     assert f1.parent_entity.id == f2.parent_entity.id
     assert f1.relationship_path == f2.relationship_path
     assert f1.use_previous == f2.use_previous
+
+
+def test_override_multi_feature_names(es):
+    def gen_custom_names(primitive, base_feature_names, relationship_path_name,
+                         parent_entity_id, where_str, use_prev_str):
+        base_string = 'Custom_%s({}.{})'.format(parent_entity_id, base_feature_names)
+        return [base_string % i for i in range(primitive.number_output_features)]
+
+    def pd_top3(x):
+        array = np.array(x.value_counts()[:3].index)
+        if len(array) < 3:
+            filler = np.full(3 - len(array), np.nan)
+            array = np.append(array, filler)
+        return array
+
+    num_features = 3
+    NMostCommoner = make_agg_primitive(function=pd_top3,
+                                       input_types=[Numeric],
+                                       return_type=Discrete,
+                                       number_output_features=num_features,
+                                       cls_attributes={"generate_names": gen_custom_names})
+
+    fm, features = ft.dfs(entityset=es,
+                          target_entity="products",
+                          instance_ids=[0, 1, 2],
+                          agg_primitives=[NMostCommoner],
+                          trans_primitives=[])
+
+    expected_names = []
+    base_names = [['value'], ['value_2'], ['value_many_nans']]
+    for name in base_names:
+        expected_names += gen_custom_names(NMostCommoner, name, None, 'products', None, None)
+
+    for name in expected_names:
+        assert name in fm.columns
