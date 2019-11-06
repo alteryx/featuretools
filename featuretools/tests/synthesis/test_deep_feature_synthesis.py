@@ -972,7 +972,7 @@ def test_primitive_options(es):
                                    primitive_options=options)
     features = dfs_obj.build_features()
     for f in features:
-        deps = f.get_dependencies()
+        deps = f.get_dependencies(deep=True)
         entities = [d.entity.id for d in deps]
         identities = [d for d in deps if isinstance(d, IdentityFeature)]
         variables = [d.variable.id for d in identities]
@@ -999,7 +999,7 @@ def test_primitive_options(es):
     features = dfs_obj.build_features()
     assert not any([isinstance(f, NumCharacters) for f in features])
     for f in features:
-        deps = f.get_dependencies()
+        deps = f.get_dependencies(deep=True)
         entities = [d.entity.id for d in deps]
         identities = [d for d in deps if isinstance(d, IdentityFeature)]
         variables = [d.variable.id for d in identities]
@@ -1036,7 +1036,7 @@ def test_primitive_options_with_globals(es):
                                    primitive_options=options)
     features = dfs_obj.build_features()
     for f in features:
-        deps = f.get_dependencies()
+        deps = f.get_dependencies(deep=True)
         entities = [d.entity.id for d in deps]
         identities = [d for d in deps if isinstance(d, IdentityFeature)]
         variables = [d.variable.id for d in identities]
@@ -1063,7 +1063,7 @@ def test_primitive_options_with_globals(es):
         # ignoring cohorts means no features are created
         assert not isinstance(f.primitive, Month)
 
-        deps = f.get_dependencies()
+        deps = f.get_dependencies(deep=True)
         entities = [d.entity.id for d in deps]
         identities = [d for d in deps if isinstance(d, IdentityFeature)]
         variables = [d.variable.id for d in identities]
@@ -1111,7 +1111,7 @@ def test_primitive_options_groupbys(es):
         if isinstance(f.primitive, CumCount):
             assert f.groupby.variable.id in [u'région_id', 'cohort']
         if isinstance(f.primitive, CumSum):
-            deps = f.get_dependencies()
+            deps = f.get_dependencies(deep=True)
             entities = [d.entity.id for d in deps]
             if 'customers' in entities:
                 assert f.groupby.variable.id == u'région_id'

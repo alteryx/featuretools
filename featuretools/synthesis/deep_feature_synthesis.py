@@ -562,7 +562,7 @@ class DeepFeatureSynthesis(object):
 
         for groupby_prim in self.groupby_trans_primitives:
             current_options = self.primitive_options[groupby_prim.name]
-            if ignore_entity_for_primitive(current_options, entity, groupby=True):
+            if ignore_entity_for_primitive(current_options, entity):
                 continue
             input_types = groupby_prim.input_types[:]
             # if multiple input_types, only use first one for DFS
