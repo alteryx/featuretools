@@ -243,8 +243,8 @@ class Entity(object):
         else:
             df = self.df[self.df[variable_id].isin(instance_vals)]
 
-            if self.df[self.index].dtype.name == 'category':
-                df = df.set_index(self.df[self.index].cat.as_ordered(), drop=False)
+            if self.df[self.index].dtype.name == 'category' and isinstance(self.df, dd.core.DataFrame):
+                df = df.set_index(self.df[self.index].astype(object), drop=False)
             else:
                 df = df.set_index(self.index, drop=False)
 
@@ -405,7 +405,7 @@ class Entity(object):
         if len(self.df) == 0:
             time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
         else:
-            time_to_check = self.df[variable_id].head().iloc[0]
+            time_to_check = self.df[variable_id].head(1).iloc[0]
 
         time_type = _check_time_type(time_to_check)
         if time_type is None:
@@ -423,7 +423,7 @@ class Entity(object):
         # TODO: fix for dask dataframe
         if isinstance(self.df, pd.core.frame.DataFrame) and not already_sorted:
             # sort by time variable, then by index
-            self.df.sort_values([variable_id, self.index], inplace=True)
+            self.df = self.df.sort_values([variable_id, self.index])
 
         t = vtypes.NumericTimeIndex
         if col_is_datetime(self.df[variable_id]):
@@ -439,7 +439,7 @@ class Entity(object):
             unique (bool) : Whether to assert that the index is unique.
         """
         if self.df[variable_id].dtype.name == 'category':
-            self.df = self.df.set_index(self.df[variable_id].cat.as_ordered(), drop=False)
+            self.df = self.df.set_index(self.df[variable_id].astype(object), drop=False)
         else:
             self.df = self.df.set_index(self.df[variable_id], drop=False)
         self.df.index.name = None
@@ -455,10 +455,10 @@ class Entity(object):
 
     def set_secondary_time_index(self, secondary_time_index):
         for time_index, columns in secondary_time_index.items():
-            if self.df.empty:
+            if len(self.df) == 0:
                 time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[time_index]._default_pandas_dtype]
             else:
-                time_to_check = self.df[time_index].iloc[0]
+                time_to_check = self.df[time_index].head(1).iloc[0]
             time_type = _check_time_type(time_to_check)
             if time_type is None:
                 raise TypeError("%s time index not recognized as numeric or"
@@ -525,7 +525,7 @@ class Entity(object):
 
         for secondary_time_index, columns in self.secondary_time_index.items():
             # should we use ignore time last here?
-            if time_last is not None and not df.empty:
+            if time_last is not None and len(df) != 0:
                 mask = df[secondary_time_index] >= time_last
                 df.loc[mask, columns] = np.nan
 

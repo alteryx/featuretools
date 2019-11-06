@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
@@ -143,8 +144,12 @@ def convert_variable_data(df, column_id, new_type, **kwargs):
     elif issubclass(new_type, vtypes.Datetime):
         format = kwargs.get("format", None)
         # TODO: if float convert to int?
-        df[column_id] = pd.to_datetime(df[column_id], format=format,
-                                       infer_datetime_format=True)
+        if isinstance(df, dd.core.DataFrame):
+            df[column_id] = dd.to_datetime(df[column_id], format=format,
+                                           infer_datetime_format=True)
+        else:
+            df[column_id] = pd.to_datetime(df[column_id], format=format,
+                                           infer_datetime_format=True)
     elif new_type == vtypes.Boolean:
         map_dict = {kwargs.get("true_val", True): True,
                     kwargs.get("false_val", False): False,
@@ -174,7 +179,7 @@ def col_is_datetime(col):
     # check if dtype is datetime - use .head() when getting first value
     # in case column is a dask Series
     if (col.dtype.name.find('datetime') > -1 or
-            (len(col) and isinstance(col.head().iloc[0], datetime))):
+            (len(col) and isinstance(col.head(1).iloc[0], datetime))):
         return True
 
     # if it can be casted to numeric, it's not a datetime

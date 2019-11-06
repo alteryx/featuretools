@@ -1,6 +1,7 @@
 import copy
 from datetime import datetime
 
+import dask.dataframe as dd
 import pandas as pd
 import pytest
 
@@ -128,7 +129,7 @@ def test_query_by_id_with_time(es):
         instance_vals=[0, 1, 2, 3, 4],
         time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
 
-    assert df['id'].get_values().tolist() == [0, 1, 2]
+    assert list(df['id'].values) == [0, 1, 2]
 
 
 def test_query_by_variable_with_time(es):
@@ -138,8 +139,8 @@ def test_query_by_variable_with_time(es):
 
     true_values = [
         i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
-    assert df['id'].get_values().tolist() == list(range(10))
-    assert df['value'].get_values().tolist() == true_values
+    assert list(df['id'].values) == list(range(10))
+    assert list(df['value'].values) == true_values
 
 
 def test_query_by_variable_with_training_window(es):
@@ -148,8 +149,8 @@ def test_query_by_variable_with_training_window(es):
         time_last=datetime(2011, 4, 9, 10, 50, 0),
         training_window='15m')
 
-    assert df['id'].get_values().tolist() == [9]
-    assert df['value'].get_values().tolist() == [0]
+    assert list(df['id'].values) == [9]
+    assert list(df['value'].values) == [0]
 
 
 def test_query_by_indexed_variable(es):
@@ -157,7 +158,7 @@ def test_query_by_indexed_variable(es):
         instance_vals=['taco clock'],
         variable_id='product_id')
 
-    assert df['id'].get_values().tolist() == [15, 16]
+    assert list(df['id'].values) == [15, 16]
 
 
 def test_check_variables_and_dataframe():
@@ -229,7 +230,7 @@ def test_unknown_index():
                              index='id',
                              variable_types=vtypes, dataframe=df)
     assert es['test_entity'].index == 'id'
-    assert es['test_entity'].df['id'].tolist() == list(range(3))
+    assert list(es['test_entity'].df['id']) == list(range(3))
 
 
 def test_doesnt_remake_index():
@@ -410,8 +411,8 @@ def test_sort_time_id():
                                     "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s")[::-1]})
 
     es = EntitySet("test", entities={"t": (transactions_df, "id", "transaction_time")})
-    times = es["t"].df.transaction_time.tolist()
-    assert times == sorted(transactions_df.transaction_time.tolist())
+    times = list(es["t"].df.transaction_time)
+    assert times == sorted(list(transactions_df.transaction_time))
 
 
 def test_already_sorted_parameter():
@@ -433,8 +434,8 @@ def test_already_sorted_parameter():
                              index='id',
                              time_index="transaction_time",
                              already_sorted=True)
-    times = es["t"].df.transaction_time.tolist()
-    assert times == transactions_df.transaction_time.tolist()
+    times = list(es["t"].df.transaction_time)
+    assert times == list(transactions_df.transaction_time)
 
 
 def test_concat_entitysets(es):
@@ -732,7 +733,10 @@ def test_normalize_time_index_from_none(es):
                         make_time_index='date_of_birth',
                         copy_variables=['date_of_birth'])
     assert es['birthdays'].time_index == 'date_of_birth'
-    assert es['birthdays'].df['date_of_birth'].is_monotonic_increasing
+    df = es['birthdays'].df
+    if isinstance(df, dd.core.DataFrame):
+        df = df.compute()
+    assert df['date_of_birth'].is_monotonic_increasing
 
 
 def test_raise_error_if_dupicate_additional_variables_passed(es):
@@ -801,7 +805,10 @@ def test_normalize_entity_new_time_index(es):
     assert es['values'].time_index == new_time_index
     assert new_time_index in es['values'].df.columns
     assert len(es['values'].df.columns) == 2
-    assert es['values'].df[new_time_index].is_monotonic_increasing
+    df = es['values'].df
+    if isinstance(df, dd.core.DataFrame):
+        df = df.compute()
+    assert df[new_time_index].is_monotonic_increasing
 
 
 def test_normalize_entity_same_index(es):

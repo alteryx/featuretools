@@ -7,6 +7,7 @@ import warnings
 from datetime import datetime
 
 import cloudpickle
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 
@@ -178,7 +179,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                             "via pd.to_numeric(cutoff_time['time'])")
     elif entityset.time_type == DatetimeTimeIndex:
         if cutoff_time['time'].dtype.name not in PandasTypes._pandas_datetimes:
-            raise TypeError("cutoff_time times must be datetime type: try casting via pd.to_datetime(cutoff_time['time'])")
+            raise TypeError(
+                "cutoff_time times must be datetime type: try casting via pd.to_datetime(cutoff_time['time'])")
     assert (cutoff_time[['instance_id', 'time']].duplicated().sum() == 0), \
         "Duplicated rows in cutoff time dataframe."
     pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
@@ -280,9 +282,10 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                          progress_callback=progress_callback)
 
     # ensure rows are sorted by input order
-    feature_matrix = feature_matrix.reindex(cutoff_time[["instance_id", "time"]])
-    if not cutoff_time_in_index:
-        feature_matrix.reset_index(level='time', drop=True, inplace=True)
+    if isinstance(feature_matrix, pd.DataFrame):
+        feature_matrix = feature_matrix.reindex(cutoff_time[["instance_id", "time"]])
+        if not cutoff_time_in_index:
+            feature_matrix.reset_index(level='time', drop=True, inplace=True)
 
     if save_progress and os.path.exists(os.path.join(save_progress, 'temp')):
         shutil.rmtree(os.path.join(save_progress, 'temp'))
@@ -337,7 +340,8 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                     previous_progress = progress_bar.n
                     progress_bar.update(done * group.shape[0])
                     if progress_callback is not None:
-                        update, progress_percent, time_elapsed = update_progress_callback_parameters(progress_bar, previous_progress)
+                        update, progress_percent, time_elapsed = update_progress_callback_parameters(progress_bar,
+                                                                                                     previous_progress)
                         progress_callback(update, progress_percent, time_elapsed)
             calculator = FeatureSetCalculator(entityset,
                                               feature_set,
@@ -390,9 +394,10 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                 _feature_matrix.sort_index(level=1, kind='mergesort', inplace=True)
             else:
                 # all rows have same cutoff time. set time and add passed columns
-                num_rows = _feature_matrix.shape[0]
+                num_rows = len(_feature_matrix)
                 time_index = pd.Index([time_last] * num_rows, name='time')
-                _feature_matrix.set_index(time_index, append=True, inplace=True)
+                if isinstance(_feature_matrix, pd.DataFrame):
+                    _feature_matrix = _feature_matrix.set_index(time_index, append=True)
                 if len(pass_columns) > 0:
                     pass_through = group[['instance_id', cutoff_df_time_var] + pass_columns]
                     pass_through.rename(columns={'instance_id': id_name,
@@ -403,7 +408,10 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                         _feature_matrix[col] = pass_through[col]
             feature_matrix.append(_feature_matrix)
 
-    feature_matrix = pd.concat(feature_matrix)
+    if isinstance(feature_matrix[0], dd.core.DataFrame):
+        feature_matrix = dd.concat(feature_matrix)
+    else:
+        feature_matrix = pd.concat(feature_matrix)
 
     return feature_matrix
 
@@ -471,7 +479,7 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
 
         approx_features = [feature_set.features_by_name[name]
                            for name in approx_feature_names]
-        if cutoffs_with_approx_e_ids.empty:
+        if len(cutoffs_with_approx_e_ids) == 0:
             approx_fm = gen_empty_approx_features_df(approx_features)
         else:
             cutoffs_with_approx_e_ids.sort_values([cutoff_df_time_var,
@@ -583,7 +591,8 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
                 previous_progress = progress_bar.n
                 progress_bar.update(result.shape[0])
                 if progress_callback is not None:
-                    update, progress_percent, time_elapsed = update_progress_callback_parameters(progress_bar, previous_progress)
+                    update, progress_percent, time_elapsed = update_progress_callback_parameters(progress_bar,
+                                                                                                 previous_progress)
                     progress_callback(update, progress_percent, time_elapsed)
 
     except Exception:
@@ -620,7 +629,6 @@ def _add_approx_entity_index_var(es, target_entity_id, cutoffs, path):
         new_var_name = '%s.%s' % (last_child_var, relationship.child_variable.id)
         to_rename = {relationship.child_variable.id: new_var_name}
         child_df = child_df.rename(columns=to_rename)
-
         cutoffs = cutoffs.merge(child_df,
                                 left_on=last_child_var,
                                 right_on=last_parent_var)

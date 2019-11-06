@@ -110,9 +110,11 @@ def _check_time_type(time):
 
 def _dataframes_equal(df1, df2):
     # ^ means XOR
-    if df1.empty ^ df2.empty:
+    df1_empty = bool(len(df1))
+    df2_empty = bool(len(df2))
+    if df1_empty ^ df2_empty:
         return False
-    elif not df1.empty and not df2.empty:
+    elif not df1_empty and not df2_empty:
         if not set(df1.columns) == set(df2.columns):
             return False
 

@@ -127,7 +127,7 @@ def test_delete_variables(es):
 
     for var in to_delete:
         assert var not in variable_names
-        assert var not in entity.df
+        assert var not in entity.df.columns
 
 
 def test_variable_types_unmodified():

@@ -7,7 +7,7 @@ from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 @pytest.fixture
 def es():
-    return make_ecommerce_entityset()
+    return make_ecommerce_entityset(return_dask=False)
 
 
 @pytest.fixture

@@ -639,12 +639,11 @@ class EntitySet(object):
             secondary_df = new_entity_df. \
                 drop_duplicates(index, keep='last')[secondary_variables]
             if new_entity_secondary_time_index:
-                secondary_df.rename(columns={secondary_time_index: new_entity_secondary_time_index},
-                                    inplace=True)
+                secondary_df = secondary_df.rename(columns={secondary_time_index: new_entity_secondary_time_index})
                 secondary_time_index = new_entity_secondary_time_index
             else:
                 new_entity_secondary_time_index = secondary_time_index
-            secondary_df.set_index(index, inplace=True)
+            secondary_df = secondary_df.set_index(index)
             new_entity_df = new_entity_df2.join(secondary_df, on=index)
         else:
             new_entity_df = new_entity_df2

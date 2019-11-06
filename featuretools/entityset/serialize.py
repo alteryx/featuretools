@@ -5,6 +5,7 @@ import tarfile
 import tempfile
 
 import boto3
+import dask.dataframe as dd
 
 from featuretools.utils.gen_utils import use_s3fs_es, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
@@ -80,8 +81,13 @@ def write_entity_data(entity, path, format='csv', **kwargs):
     basename = '.'.join([entity.id, format])
     location = os.path.join('data', basename)
     file = os.path.join(path, location)
+    if isinstance(entity.df, dd.core.DataFrame):
+        df = entity.df.compute()
+    else:
+        df = entity.df
+
     if format == 'csv':
-        entity.df.to_csv(
+        df.to_csv(
             file,
             index=kwargs['index'],
             sep=kwargs['sep'],
@@ -92,13 +98,13 @@ def write_entity_data(entity, path, format='csv', **kwargs):
         # Serializing to parquet format raises an error when columns contain tuples.
         # Columns containing tuples are mapped as dtype object.
         # Issue is resolved by casting columns of dtype object to string.
-        df = entity.df.copy()
+        df = df.copy()
         columns = df.select_dtypes('object').columns
         df[columns] = df[columns].astype('unicode')
         df.columns = df.columns.astype('unicode')  # ensures string column names for python 2.7
         df.to_parquet(file, **kwargs)
     elif format == 'pickle':
-        entity.df.to_pickle(file, **kwargs)
+        df.to_pickle(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))

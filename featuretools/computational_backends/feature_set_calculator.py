@@ -2,7 +2,6 @@ import warnings
 from datetime import datetime
 from functools import partial
 
-import dask.array as da
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
@@ -116,7 +115,7 @@ class FeatureSetCalculator(object):
         # df_trie.
         df = df_trie.value
 
-        if df.empty:
+        if len(df) == 0:
             return self.generate_default_df(instance_ids=instance_ids)
 
         # fill in empty rows with default values
@@ -132,9 +131,14 @@ class FeatureSetCalculator(object):
 
         # Order by instance_ids
         unique_instance_ids = pd.unique(instance_ids)
-        # pd.unique changes the dtype for Categorical, so reset it.
-        unique_instance_ids = unique_instance_ids.astype(instance_ids.dtype)
-        df = df.reindex(unique_instance_ids)
+
+        if isinstance(df, dd.core.DataFrame):
+            unique_instance_ids = unique_instance_ids.astype(object)
+            df = df.loc[unique_instance_ids]
+        else:
+            # pd.unique changes the dtype for Categorical, so reset it.
+            unique_instance_ids = unique_instance_ids.astype(instance_ids.dtype)
+            df = df.reindex(unique_instance_ids)
 
         for feat in self.feature_set.target_features:
             column_list.extend(feat.get_feature_names())
@@ -541,7 +545,7 @@ class FeatureSetCalculator(object):
 
         # handle where
         where = test_feature.where
-        if where is not None and not base_frame.empty:
+        if where is not None and len(base_frame) != 0:
             base_frame = base_frame.loc[base_frame[where.get_name()]]
 
         # when no child data, just add all the features to frame with nan
@@ -557,7 +561,7 @@ class FeatureSetCalculator(object):
             # if the use_previous property exists on this feature, include only the
             # instances from the child entity included in that Timedelta
             use_previous = test_feature.use_previous
-            if use_previous and not base_frame.empty:
+            if use_previous and len(base_frame) != 0:
                 # Filter by use_previous values
                 time_last = self.time_last
                 if use_previous.has_no_observations():
@@ -659,7 +663,7 @@ class FeatureSetCalculator(object):
                                 for name in f.get_feature_names()}
             fillna_dict.update(feature_defaults)
 
-        frame.fillna(fillna_dict, inplace=True)
+        frame = frame.fillna(fillna_dict)
 
         # convert boolean dtypes to floats as appropriate
         # pandas behavior: https://github.com/pydata/pandas/issues/3752
@@ -729,7 +733,10 @@ def update_feature_columns(feature, data, values):
     assert len(names) == len(values)
     for name, value in zip(names, values):
         if isinstance(data, dd.core.DataFrame):
-            data[name] = dd.from_array(da.from_array(value), columns=name)
+            new_df = dd.from_pandas(pd.DataFrame({name: value}), npartitions=data.npartitions)
+            new_df[data.index.name] = dd.from_array(data.index.values.compute())
+            new_df = new_df.set_index(data.index.name)
+            data[name] = new_df[name]
         else:
             data[name] = value
 

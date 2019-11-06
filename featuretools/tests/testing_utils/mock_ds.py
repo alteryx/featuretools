@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 
@@ -340,7 +341,7 @@ def latlong_unstringify(latlong):
 
 
 def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save_files=True, file_location='local',
-                             split_by_time=False, compressed=False, entityset_type=EntitySet):
+                             split_by_time=False, compressed=False, entityset_type=EntitySet, return_dask=False):
     if file_location == 'local' and save_files:
         filenames = make_ecommerce_files(with_integer_time_index, base_path=base_path, file_location=file_location,
                                          split_by_time=split_by_time, compressed=compressed)
@@ -372,16 +373,27 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
         if time_index is not None:
             ti_name = time_index['name']
             secondary = time_index['secondary']
-        df = pd.read_csv(filenames[entity], encoding='utf-8', engine='python')
+        if return_dask:
+            df = dd.read_csv(filenames[entity], encoding='utf-8', engine='python')
+        else:
+            df = pd.read_csv(filenames[entity], encoding='utf-8', engine='python')
         if entity == "customers":
-            df["id"] = pd.Categorical(df['id'])
+            if not return_dask:
+                df["id"] = pd.Categorical(df['id'])
         if entity == 'sessions':
             # This should be changed back when converted to an EntitySet
-            df['customer_id'] = pd.Categorical(df['customer_id'])
+            if not return_dask:
+                df['customer_id'] = pd.Categorical(df['customer_id'])
         if entity == 'log':
-            df['latlong'] = df['latlong'].apply(latlong_unstringify)
-            df['latlong2'] = df['latlong2'].apply(latlong_unstringify)
-
+            if isinstance(df, dd.core.DataFrame):
+                npartitions = df.npartitions
+                df = df.compute()
+                for col in ['latlong', 'latlong2']:
+                    df[col] = df[col].apply(latlong_unstringify)
+                df = dd.from_pandas(df, npartitions=npartitions)
+            else:
+                df['latlong'] = df['latlong'].apply(latlong_unstringify)
+                df['latlong2'] = df['latlong2'].apply(latlong_unstringify)
         es.entity_from_dataframe(entity,
                                  df,
                                  index='id',
