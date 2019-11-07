@@ -6,7 +6,6 @@ Changelog
     * Enhancements
     * Fixes
         * Fix issue with converting to pickle or parquet after adding interesting features (:pr:`798`)
-    * Updates
     * Changes
     * Documentation Changes
     * Testing Changes

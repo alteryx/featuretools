@@ -35,9 +35,15 @@ def description_to_variable(description, entity=None):
     if entity is not None:
         kwargs = {} if is_type_string else description['type']
         variable = variable(description['id'], entity, **kwargs)
-        variable.interesting_values = description['properties']['interesting_values']
-        return variable
-    return (variable, description['properties']['interesting_values'])
+        try:
+            interesting_values = pd.read_json(description['properties']['interesting_values'])
+        except ValueError:
+            if description['properties']['interesting_values'] is None:
+                interesting_values = pd.Series()
+            else:
+                interesting_values = pd.Series(description['properties']['interesting_values'])
+        variable.interesting_values = interesting_values
+    return variable
 
 
 def description_to_entity(description, entityset, path=None):
@@ -52,20 +58,25 @@ def description_to_entity(description, entityset, path=None):
         dataframe = read_entity_data(description, path=path)
     else:
         dataframe = empty_dataframe(description)
-    variable_types, variable_interesting_values = {}, {}
-    for variable in description['variables']:
-        variable_type, interesting_values = description_to_variable(variable)
-        variable_types[variable['id']] = variable_type
-        variable_interesting_values[variable['id']] = interesting_values
+    variable_types = {variable['id']: (description_to_variable(variable), variable)
+                      for variable in description['variables']}
     es = entityset.entity_from_dataframe(
         description['id'],
         dataframe,
         index=description.get('index'),
         time_index=description.get('time_index'),
         secondary_time_index=description['properties'].get('secondary_time_index'),
-        variable_types=variable_types)
+        variable_types={variable: variable_types[variable][0] for variable in variable_types})
     for variable in es[description['id']].variables:
-        variable.interesting_values = variable_interesting_values[variable.id]
+        interesting_values = variable_types[variable.id][1]['properties']['interesting_values']
+        try:
+            interesting_values = pd.read_json(interesting_values, typ="series")
+        except ValueError:
+            if interesting_values is None:
+                interesting_values = pd.Series()
+            else:
+                interesting_values = pd.Series(interesting_values)
+        variable.interesting_values = interesting_values
 
 
 def description_to_entityset(description, **kwargs):

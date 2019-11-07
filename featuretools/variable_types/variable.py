@@ -28,7 +28,7 @@ class Variable(object):
         self.entity_id = entity.id
         assert entity.entityset is not None, "Entity must contain reference to EntitySet"
         self.entity = entity
-        self._interesting_values = None
+        self._interesting_values = pd.Series()
 
     @property
     def entityset(self):
@@ -41,10 +41,7 @@ class Variable(object):
         if not deep:
             return shallow_eq
         else:
-            try:
-                return shallow_eq and set(self.interesting_values) == set(other.interesting_values)
-            except TypeError:
-                return shallow_eq and self.interesting_values == other.interesting_values
+            return shallow_eq and set(self.interesting_values.values) == set(other.interesting_values.values)
 
     def __hash__(self):
         return hash((self.id, self.entity_id))
@@ -85,7 +82,7 @@ class Variable(object):
 
     @interesting_values.setter
     def interesting_values(self, interesting_values):
-        self._interesting_values = interesting_values
+        self._interesting_values = pd.Series(interesting_values)
 
     @property
     def series(self):
@@ -100,7 +97,7 @@ class Variable(object):
             'properties': {
                 'name': self.name,
                 'entity': self.entity.id,
-                'interesting_values': self._interesting_values
+                'interesting_values': self._interesting_values.to_json()
             },
         }
 
@@ -115,7 +112,7 @@ class Discrete(Variable):
 
     def __init__(self, id, entity, name=None):
         super(Discrete, self).__init__(id, entity, name)
-        self._interesting_values = []
+        self._interesting_values = pd.Series()
 
     @property
     def interesting_values(self):
@@ -125,8 +122,8 @@ class Discrete(Variable):
     def interesting_values(self, values):
         seen = set()
         seen_add = seen.add
-        self._interesting_values = [v for v in values
-                                    if not (v in seen or seen_add(v))]
+        self._interesting_values = pd.Series([v for v in values if not
+                                              (v in seen or seen_add(v))])
 
 
 class Boolean(Variable):

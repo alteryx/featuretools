@@ -5,7 +5,6 @@ import tarfile
 import tempfile
 
 import boto3
-import numpy as np
 
 from featuretools.utils.gen_utils import use_s3fs_es, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
@@ -141,20 +140,6 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
         dump_data_description(entityset, path, **kwargs)
 
 
-class NpJsonEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if hasattr(obj, 'to_json'):
-            return obj.to_json()
-        elif isinstance(obj, np.integer):
-            return int(obj)
-        elif isinstance(obj, np.floating):
-            return float(obj)
-        elif isinstance(obj, np.ndarray):
-            return obj.tolist()
-        else:
-            return super(NpJsonEncoder, self).default(obj)
-
-
 def dump_data_description(entityset, path, **kwargs):
     description = entityset_to_description(entityset)
     for entity in entityset.entities:
@@ -162,7 +147,7 @@ def dump_data_description(entityset, path, **kwargs):
         description['entities'][entity.id]['loading_info'].update(loading_info)
     file = os.path.join(path, 'data_description.json')
     with open(file, 'w') as file:
-        json.dump(description, file, cls=NpJsonEncoder)
+        json.dump(description, file)
 
 
 def create_archive(tmpdir):

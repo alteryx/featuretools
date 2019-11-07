@@ -348,7 +348,7 @@ class Entity(object):
         for variable in self.variables:
             # some heuristics to find basic 'where'-able variables
             if isinstance(variable, vtypes.Discrete):
-                variable.interesting_values = []
+                variable.interesting_values = pd.Series()
 
                 # TODO - consider removing this constraints
                 # don't add interesting values for entities in relationships
@@ -376,7 +376,7 @@ class Entity(object):
                             msg = "Variable {}: Marking {} as an "
                             msg += "interesting value"
                             logger.info(msg.format(variable.id, idx))
-                        variable.interesting_values += [idx]
+                        variable.interesting_values = variable.interesting_values.append(pd.Series([idx]))
                     else:
                         fraction = counts[idx] / total_count
                         if fraction > 0.05 and fraction < 0.95:
@@ -384,7 +384,7 @@ class Entity(object):
                                 msg = "Variable {}: Marking {} as an "
                                 msg += "interesting value"
                                 logger.info(msg.format(variable.id, idx))
-                            variable.interesting_values += [idx]
+                            variable.interesting_values = variable.interesting_values.append(pd.Series([idx]))
                             # total_count -= counts[idx]
                         else:
                             break
