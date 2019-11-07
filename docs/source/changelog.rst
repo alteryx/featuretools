@@ -8,8 +8,10 @@ Changelog
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Test more featuretools[complete] imports on CI (:pr:`803`)
 
     Thanks to the following people for contributing to this release:
+    :user:`rwedge`
 
 **v0.12.0 Oct 31, 2019**
     * Enhancements
