@@ -974,8 +974,7 @@ def test_primitive_options(es):
     for f in features:
         deps = f.get_dependencies(deep=True)
         entities = [d.entity.id for d in deps]
-        identities = [d for d in deps if isinstance(d, IdentityFeature)]
-        variables = [d.variable.id for d in identities]
+        variables = [d.get_name() for d in deps]
         if isinstance(f.primitive, Sum):
             if 'customers' in entities:
                 assert 'age' in variables or variables == []
@@ -1001,8 +1000,7 @@ def test_primitive_options(es):
     for f in features:
         deps = f.get_dependencies(deep=True)
         entities = [d.entity.id for d in deps]
-        identities = [d for d in deps if isinstance(d, IdentityFeature)]
-        variables = [d.variable.id for d in identities]
+        variables = [d.get_name() for d in deps]
         if isinstance(f.primitive, Month):
             if 'customers' in entities:
                 assert 'date_of_birth' not in variables
@@ -1038,8 +1036,7 @@ def test_primitive_options_with_globals(es):
     for f in features:
         deps = f.get_dependencies(deep=True)
         entities = [d.entity.id for d in deps]
-        identities = [d for d in deps if isinstance(d, IdentityFeature)]
-        variables = [d.variable.id for d in identities]
+        variables = [d.get_name() for d in deps]
         if 'customers' in entities:
             assert u'region_id' not in variables
         if isinstance(f.primitive, NumUnique):
@@ -1065,8 +1062,7 @@ def test_primitive_options_with_globals(es):
 
         deps = f.get_dependencies(deep=True)
         entities = [d.entity.id for d in deps]
-        identities = [d for d in deps if isinstance(d, IdentityFeature)]
-        variables = [d.variable.id for d in identities]
+        variables = [d.get_name() for d in deps]
         if isinstance(f.primitive, Mode):
             assert 'sessions' in entities or 'customers' in entities
             if 'customers' in entities:
@@ -1107,14 +1103,14 @@ def test_primitive_options_groupbys(es):
         # These either have nothing to groupby or don't include the target entity so shouldn't create features
         assert f.primitive.name not in ['cum_min', 'cum_max', 'cum_max']
         if isinstance(f.primitive, CumMean):
-            assert f.groupby.variable.id not in [u'région_id', 'id']
+            assert f.groupby.get_name() not in [u'région_id', 'id']
         if isinstance(f.primitive, CumCount):
-            assert f.groupby.variable.id in [u'région_id', 'cohort']
+            assert f.groupby.get_name() in [u'région_id', 'cohort']
         if isinstance(f.primitive, CumSum):
             deps = f.get_dependencies(deep=True)
             entities = [d.entity.id for d in deps]
             if 'customers' in entities:
-                assert f.groupby.variable.id == u'région_id'
+                assert f.groupby.get_name() == u'région_id'
 
 
 def test_primitive_options_multiple_inputs(es):
@@ -1141,8 +1137,7 @@ def test_primitive_options_multiple_inputs(es):
     for f in features:
         deps = f.get_dependencies()
         entities = [d.entity.id for d in deps]
-        identities = [d for d in deps if isinstance(d, IdentityFeature)]
-        variables = [d.variable.id for d in identities]
+        variables = [d.get_name() for d in deps]
         if f.primitive.name == 'trend':
             assert 'log' in entities
             assert 'datetime' in variables

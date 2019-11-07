@@ -358,7 +358,7 @@ class IdentityFeature(FeatureBase):
         self.return_type = type(variable)
         super(IdentityFeature, self).__init__(entity=variable.entity,
                                               base_features=[],
-                                              base_identity_features=self,
+                                              base_identity_features=BaseIdentityFeature(self),
                                               relationship_path=RelationshipPath([]),
                                               primitive=PrimitiveBase,
                                               name=name)
@@ -390,6 +390,19 @@ class IdentityFeature(FeatureBase):
     @property
     def variable_type(self):
         return type(self.variable)
+
+
+class BaseIdentityFeature:
+    def __init__(self, identity_feature):
+        self.feature = identity_feature
+
+    def __hash__(self):
+        return self.feature.hash()
+
+    def __eq__(self, other):
+        if not isinstance(other, BaseIdentityFeature):
+            return False
+        return self.feature is other.feature
 
 
 class DirectFeature(FeatureBase):
@@ -665,7 +678,6 @@ class TransformFeature(FeatureBase):
             if bf.number_output_features > 1:
                 raise ValueError("Cannot stack on whole multi-output feature.")
             base_identity_features = base_identity_features.union(bf.base_identity_features)
-
         super(TransformFeature, self).__init__(entity=base_features[0].entity,
                                                base_features=base_features,
                                                base_identity_features=base_identity_features,

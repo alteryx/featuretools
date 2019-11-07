@@ -135,15 +135,21 @@ def _init_option_dict(key, option_dict, es):
 
 def variable_filter(f, options):
     entities_in_path = {entity for entity in f.relationship_path.entities()}
-    for base_f in f.base_identity_features:
+    if 'include_variables' in options and f.entity.id in options['include_variables']:
+        if f.get_name() not in options['include_variables'][f.entity.id]:
+            return False
+    if 'ignore_variables' in options and f.entity.id in options['ignore_variables']:
+        if f.get_name() in options['ignore_variables'][f.entity.id]:
+            return False
+    for base_f in [base_identity.feature for base_identity in f.base_identity_features]:
         entities_in_path.discard(base_f.entity.id)
         if 'include_variables' in options and base_f.entity.id in options['include_variables']:
-            if base_f.variable.id in options['include_variables'][base_f.entity.id]:
+            if base_f.get_name() in options['include_variables'][base_f.entity.id]:
                 continue  # this is a valid feature, go to next
             else:
                 return False  # this is not an included feature
         if base_f.entity.id in options['ignore_variables'] and \
-                base_f.variable.id in options['ignore_variables'][base_f.entity.id]:
+                base_f.get_name() in options['ignore_variables'][base_f.entity.id]:
             return False  # ignore this feature
         if 'include_entities' in options and \
                 base_f.entity.id not in options['include_entities']:
@@ -159,20 +165,28 @@ def variable_filter(f, options):
 
 
 def groupby_filter(f, options):
+    entities_in_path = {entity for entity in f.relationship_path.entities()}
     if not issubclass(f.variable_type, Discrete):
         return False
-    entities_in_path = {entity for entity in f.relationship_path.entities()}
-    for base_f in f.base_identity_features:
+    if 'include_groupby_variables' in options and \
+            f.entity.id in options['include_groupby_variables']:
+        if f.get_name() not in options['include_groupby_variables'][f.entity.id]:
+            return False
+    if 'ignore_groupby_variables' in options and \
+            f.entity.id in options['ignore_groupby_variables']:
+        if f.get_name() in options['ignore_groupby_variables'][f.entity.id]:
+            return False
+    for base_f in [base_identity.feature for base_identity in f.base_identity_features]:
         entities_in_path.discard(base_f.entity.id)
         if 'include_groupby_variables' in options and \
                 base_f.entity.id in options['include_groupby_variables']:
-            if base_f.variable.id in options['include_groupby_variables'][base_f.entity.id]:
+            if base_f.get_name() in options['include_groupby_variables'][base_f.entity.id]:
                 continue
             else:
                 return False
         if 'ignore_groupby_variables' in options and \
                 base_f.entity.id in options['ignore_groupby_variables']:
-            if base_f.variable.id in options['ignore_groupby_variables'][base_f.entity.id]:
+            if base_f.get_name() in options['ignore_groupby_variables'][base_f.entity.id]:
                 return False
             else:
                 continue
