@@ -157,7 +157,7 @@ jobs:
             python -c "import featuretools_update_checker"
             python -c "import categorical_encoding"
             python -c "import nlp_primitives"
-            python -c "import featuretools.nlp_primitives"
+            # python -c "import featuretools.nlp_primitives" TODO: uncomment once nlp_primitives entrypoint is working
             python -c "import autonormalize"
             python -c "import featuretools.autonormalize"
           environment:
