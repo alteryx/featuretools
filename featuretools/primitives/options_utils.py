@@ -135,13 +135,7 @@ def _init_option_dict(key, option_dict, es):
 
 def variable_filter(f, options):
     entities_in_path = {entity for entity in f.relationship_path.entities()}
-    if 'include_variables' in options and f.entity.id in options['include_variables']:
-        if f.get_name() not in options['include_variables'][f.entity.id]:
-            return False
-    if 'ignore_variables' in options and f.entity.id in options['ignore_variables']:
-        if f.get_name() in options['ignore_variables'][f.entity.id]:
-            return False
-    for base_f in [base_identity.feature for base_identity in f.base_identity_features]:
+    for base_f in [base_identity.feature for base_identity in f.all_base_features]:
         entities_in_path.discard(base_f.entity.id)
         if 'include_variables' in options and base_f.entity.id in options['include_variables']:
             if base_f.get_name() in options['include_variables'][base_f.entity.id]:
@@ -176,7 +170,7 @@ def groupby_filter(f, options):
             f.entity.id in options['ignore_groupby_variables']:
         if f.get_name() in options['ignore_groupby_variables'][f.entity.id]:
             return False
-    for base_f in [base_identity.feature for base_identity in f.base_identity_features]:
+    for base_f in [base_identity.feature for base_identity in f.all_base_features]:
         entities_in_path.discard(base_f.entity.id)
         if 'include_groupby_variables' in options and \
                 base_f.entity.id in options['include_groupby_variables']:
@@ -188,8 +182,6 @@ def groupby_filter(f, options):
                 base_f.entity.id in options['ignore_groupby_variables']:
             if base_f.get_name() in options['ignore_groupby_variables'][base_f.entity.id]:
                 return False
-            else:
-                continue
         if 'include_groupby_entities' in options and \
                 base_f.entity.id not in options['include_groupby_entities']:
             return False
@@ -206,10 +198,16 @@ def groupby_filter(f, options):
     return True
 
 
-def ignore_entity_for_primitive(options, entity):
+def ignore_entity_for_primitive(options, entity, groupby=False):
     # This logic handles whether given options ignore an entity or not
     def should_ignore_entity(option):
-        if ('include_variables' in option and entity.id in option['include_variables']):
+        if groupby:
+            if 'include_groupby_variables' not in option or entity.id not in option['include_groupby_variables']:
+                if 'include_groupby_entities' in option and entity.id not in option['include_groupby_entities']:
+                    return True
+                elif 'ignore_groupby_entities' in option and entity.id in option['ignore_groupby_entities']:
+                    return True
+        if 'include_variables' in option and entity.id in option['include_variables']:
             return False
         elif 'include_entities' in option and entity.id not in option['include_entities']:
             return True

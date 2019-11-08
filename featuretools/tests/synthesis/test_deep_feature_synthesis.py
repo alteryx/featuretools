@@ -16,6 +16,7 @@ from featuretools.primitives import (  # CumMean,
     Count,
     CumCount,
     CumMean,
+    CumMin,
     CumSum,
     Day,
     Diff,
@@ -1011,6 +1012,18 @@ def test_primitive_options(es):
             assert 'customers' in entities
 
 
+def test_primitive_options_deep(es):
+    options = {
+        'sum': {},
+        'mean': {},
+        'mode': {},
+        'num_unique': {'include_variables': {'products': ['department']},
+                       'ignore_entities': ['products']}
+    }
+
+    assert options
+
+
 def test_primitive_options_with_globals(es):
     # non-overlapping ignore_entities
     options = {'mode': {'ignore_entities': ['sessions']}}
@@ -1080,37 +1093,39 @@ def test_primitive_options_with_globals(es):
 
 
 def test_primitive_options_groupbys(es):
-    options = {'cum_sum': {'include_groupby_variables': {'customers': [u'région_id']},
-                           'ignore_groupby_variables': {'sessions': ['customer_id']}},
-               'cum_mean': {'ignore_groupby_variables': {'customers': [u'région_id',
-                                                                       'id']}},
-               'cum_count': {'include_entities': ['customers'],
-                             'include_groupby_variables': {'customers': [u"région_id",
-                                                                         "cohort"]}},
-               'cum_min': {'ignore_entities': ['customers']},
-               'cum_max': {'include_entities': ['cohorts']}}
-    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+    options = {'cum_count': {'include_groupby_entities': ['log', 'sessions']},
+               'cum_sum': {'ignore_groupby_entities': ['sessions']},
+               'cum_mean': {'ignore_groupby_variables': {'customers': [u'région_id'],
+                                                         'log': ['session_id']}},
+               'cum_min': {'include_groupby_variables': {'log': ['zipcode', 'countrycode']}}}
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[],
+                                   max_depth=3,
                                    groupby_trans_primitives=['cum_sum',
                                                              'cum_count',
                                                              'cum_min',
-                                                             'cum_max',
                                                              'cum_mean'],
                                    primitive_options=options)
     features = dfs_obj.build_features()
-    assert feature_with_name(features, u'CUM_SUM(age) by région_id')
     for f in features:
-        # These either have nothing to groupby or don't include the target entity so shouldn't create features
-        assert f.primitive.name not in ['cum_min', 'cum_max', 'cum_max']
+        if isinstance(f, ft.GroupByTransformFeature):
+            deps = f.groupby.get_dependencies(deep=True)
+            entities = [d.entity.id for d in deps] + [f.groupby.entity.id]
+            variables = [d.get_name() for d in deps] + [f.groupby.get_name()]
         if isinstance(f.primitive, CumMean):
-            assert f.groupby.get_name() not in [u'région_id', 'id']
-        if isinstance(f.primitive, CumCount):
-            assert f.groupby.get_name() in [u'région_id', 'cohort']
-        if isinstance(f.primitive, CumSum):
-            deps = f.get_dependencies(deep=True)
-            entities = [d.entity.id for d in deps]
             if 'customers' in entities:
-                assert f.groupby.get_name() == u'région_id'
+                assert u'région_id' not in variables
+            if 'log' in entities:
+                assert 'session_id' not in variables
+        if isinstance(f.primitive, CumCount):
+            assert all([entity in ['log', 'sessions'] for entity in entities])
+        if isinstance(f.primitive, CumSum):
+            assert 'sessions' not in entities
+        if isinstance(f.primitive, CumMin):
+            if 'log' in entities:
+                assert all([variable in ['zipcode', 'countrycode'] for variable in variables])
 
 
 def test_primitive_options_multiple_inputs(es):
