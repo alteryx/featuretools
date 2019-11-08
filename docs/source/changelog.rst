@@ -7,8 +7,8 @@ Changelog
     * Fixes
     * Changes
     * Documentation Changes
+        * Fix import error in docs (:pr:`803`)
     * Testing Changes
-        * Test more featuretools[complete] imports on CI (:pr:`803`)
 
     Thanks to the following people for contributing to this release:
     :user:`rwedge`
