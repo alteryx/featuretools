@@ -7,9 +7,11 @@ Changelog
     * Fixes
     * Changes
     * Documentation Changes
+        * Fix import error in docs (:pr:`803`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
+    :user:`rwedge`
 
 **v0.12.0 Oct 31, 2019**
     * Enhancements
