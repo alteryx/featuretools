@@ -39,7 +39,6 @@ Changelog
     :user:`kmax12`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`twdobson`
 
 **v0.11.0 Sep 30, 2019**
-
     .. warning::
         The next non-bugfix release of Featuretools will not support Python 2
 
