@@ -9,6 +9,7 @@ Changelog
     * Documentation Changes
         * remove python 2.7 support and add 3.7 in install.rst (:pr:`805`)
         * Fix import error in docs (:pr:`803`)
+        * change inconsistent version release titeles in changelog (:pr:`806`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
