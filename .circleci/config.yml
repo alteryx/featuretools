@@ -28,7 +28,17 @@ jobs:
       name: windows/default
     steps:
       - checkout
-      - run: python -V
+      - run: >
+          powershell -C "
+          $url = https://repo.anaconda.com/miniconda/Miniconda3-4.7.12.1-Windows-x86_64.exe;
+          $file = ./Miniconda3-4.7.12.1-Windows-x86_64.exe;
+          Invoke-Webrequest $url -Outfile $file;
+          $hashFromFile = Get-FileHash $file -Algorithm SHA256;
+          $hashFromUrl = f18060cc0bb50ae75e4d602b7ce35197c8e31e81288d069b758594f1bb46ab45;
+          if ($hashFromFile.Hash -eq $hashFromUrl) {
+            Start-Process -FilePath ""$file"" -ArgumentList ""/InstallationType=JustMe /RegisterPython=0 /S /D=%UserProfile%\Miniconda3""
+          }"
+      - run: conda help
       # - run: docker pull python:3.7-windowsservercore
       # - run: docker run -v C:/featuretools:C:/featuretools python:3.7-windowsservercore powershell -Command
       #     "dir;
