@@ -25,8 +25,7 @@ from featuretools.variable_types import (
 
 
 class FeatureBase(object):
-    def __init__(self, entity, base_features, relationship_path, primitive,
-                 all_base_features=set(), name=None, names=None):
+    def __init__(self, entity, base_features, relationship_path, primitive, name=None, names=None):
         """Base class for all features
 
         Args:
@@ -38,11 +37,11 @@ class FeatureBase(object):
         """
         assert all(isinstance(f, FeatureBase) for f in base_features), \
             "All base features must be features"
+
         self.entity_id = entity.id
         self.entityset = entity.entityset.metadata
 
         self.base_features = base_features
-        self._all_base_features = all_base_features
 
         # initialize if not already initialized
         if not isinstance(primitive, PrimitiveBase):
@@ -50,7 +49,9 @@ class FeatureBase(object):
         self.primitive = primitive
 
         self.relationship_path = relationship_path
+
         self._name = name
+
         self._names = names
 
         assert self._check_input_types(), ("Provided inputs don't match input "
@@ -134,7 +135,7 @@ class FeatureBase(object):
             stop_at_set = set([i.unique_name() for i in stop_at])
             if self.unique_name() in stop_at_set:
                 return 0
-        for dep in self.get_dependencies(deep=False, ignored=stop_at_set):
+        for dep in self.get_dependencies(deep=True, ignored=stop_at_set):
             max_depth = max(dep.get_depth(stop_at=stop_at),
                             max_depth)
         return max_depth + 1
@@ -165,10 +166,6 @@ class FeatureBase(object):
     @property
     def number_output_features(self):
         return self.primitive.number_output_features
-
-    @property
-    def all_base_features(self):
-        return self._all_base_features.union(set([FeatureWrapper(self)]))
 
     def __repr__(self):
         return "<Feature: %s>" % (self.get_name())
@@ -346,19 +343,6 @@ class FeatureBase(object):
         return self.relationship_path.name
 
 
-class FeatureWrapper:
-    def __init__(self, identity_feature):
-        self.feature = identity_feature
-
-    def __hash__(self):
-        return self.feature.hash()
-
-    def __eq__(self, other):
-        if not isinstance(other, FeatureWrapper):
-            return False
-        return self.feature.unique_name() == other.feature.unique_name()
-
-
 class IdentityFeature(FeatureBase):
     """Feature for entity that is equivalent to underlying variable"""
 
@@ -407,17 +391,15 @@ class DirectFeature(FeatureBase):
     input_types = [Variable]
     return_type = None
 
-    def __init__(self, base_feature, child_entity,
-                 all_base_features=set(), relationship=None, name=None):
+    def __init__(self, base_feature, child_entity, relationship=None, name=None):
         base_feature = _check_feature(base_feature)
-        all_base_features = base_feature.all_base_features
+
         self.parent_entity = base_feature.entity
 
         relationship = self._handle_relationship(child_entity, relationship)
 
         super(DirectFeature, self).__init__(entity=child_entity,
                                             base_features=[base_feature],
-                                            all_base_features=all_base_features,
                                             relationship_path=RelationshipPath([(True, relationship)]),
                                             primitive=PrimitiveBase,
                                             name=name)
@@ -508,7 +490,7 @@ class AggregationFeature(FeatureBase):
     # each time point during calculation
     use_previous = None
 
-    def __init__(self, base_features, parent_entity, primitive, all_base_features=set(),
+    def __init__(self, base_features, parent_entity, primitive,
                  relationship_path=None, use_previous=None, where=None, name=None):
         if hasattr(base_features, '__iter__'):
             base_features = [_check_feature(bf) for bf in base_features]
@@ -516,10 +498,10 @@ class AggregationFeature(FeatureBase):
             assert len(set([bf.entity for bf in base_features])) == 1, msg
         else:
             base_features = [_check_feature(base_features)]
+
         for bf in base_features:
             if bf.number_output_features > 1:
                 raise ValueError("Cannot stack on whole multi-output feature.")
-            all_base_features = all_base_features.union(bf.all_base_features)
 
         self.child_entity = base_features[0].entity
 
@@ -548,7 +530,6 @@ class AggregationFeature(FeatureBase):
 
         super(AggregationFeature, self).__init__(entity=parent_entity,
                                                  base_features=base_features,
-                                                 all_base_features=all_base_features,
                                                  relationship_path=relationship_path,
                                                  primitive=primitive,
                                                  name=name)
@@ -661,7 +642,7 @@ class AggregationFeature(FeatureBase):
 
 
 class TransformFeature(FeatureBase):
-    def __init__(self, base_features, primitive, all_base_features=set(), name=None):
+    def __init__(self, base_features, primitive, name=None):
         # Any edits made to this method should also be made to the
         # new_class_init method in make_trans_primitive
         if hasattr(base_features, '__iter__'):
@@ -670,13 +651,13 @@ class TransformFeature(FeatureBase):
             assert len(set([bf.entity for bf in base_features])) == 1, msg
         else:
             base_features = [_check_feature(base_features)]
+
         for bf in base_features:
             if bf.number_output_features > 1:
                 raise ValueError("Cannot stack on whole multi-output feature.")
-            all_base_features = all_base_features.union(bf.all_base_features)
+
         super(TransformFeature, self).__init__(entity=base_features[0].entity,
                                                base_features=base_features,
-                                               all_base_features=all_base_features,
                                                relationship_path=RelationshipPath([]),
                                                primitive=primitive,
                                                name=name)
@@ -710,6 +691,7 @@ class GroupByTransformFeature(TransformFeature):
             groupby = IdentityFeature(groupby)
         assert issubclass(groupby.variable_type, Discrete)
         self.groupby = groupby
+
         if hasattr(base_features, '__iter__'):
             base_features.append(groupby)
         else:
@@ -805,7 +787,6 @@ class FeatureOutputSlice(FeatureBase):
         self._name = name
         self.base_features = base_features
         self.base_feature = base_features[0]
-        self._all_base_features = set.union(*[bf.all_base_features for bf in base_features])
 
         self.entity_id = base_feature.entity_id
         self.entityset = base_feature.entityset

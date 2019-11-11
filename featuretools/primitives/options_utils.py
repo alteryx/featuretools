@@ -134,7 +134,9 @@ def _init_option_dict(key, option_dict, es):
 
 
 def variable_filter(f, options):
-    for base_f in [base_identity.feature for base_identity in f.all_base_features]:
+    dependencies = f.get_dependencies(deep=True)
+    dependencies = [f] if not dependencies else dependencies + [f]
+    for base_f in dependencies:
         if 'include_variables' in options and base_f.entity.id in options['include_variables']:
             if base_f.get_name() in options['include_variables'][base_f.entity.id]:
                 continue  # this is a valid feature, go to next
@@ -154,7 +156,9 @@ def variable_filter(f, options):
 def groupby_filter(f, options):
     if not issubclass(f.variable_type, Discrete):
         return False
-    for base_f in [base_identity.feature for base_identity in f.all_base_features]:
+    dependencies = f.get_dependencies(deep=True)
+    dependencies = [f] if not dependencies else dependencies + [f]
+    for base_f in dependencies:
         if 'include_groupby_variables' in options and \
                 base_f.entity.id in options['include_groupby_variables']:
             if base_f.get_name() in options['include_groupby_variables'][base_f.entity.id]:

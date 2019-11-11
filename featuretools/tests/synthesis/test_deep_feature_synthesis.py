@@ -1086,7 +1086,7 @@ def test_primitive_options_groupbys(es):
                'cum_mean': {'ignore_groupby_variables': {'customers': [u'région_id'],
                                                          'log': ['session_id']}},
                'cum_min': {'include_groupby_variables': {'sessions': ['customer_id', 'device_type']}}}
-                                                         
+
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
                                    agg_primitives=[],
