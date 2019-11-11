@@ -35,13 +35,7 @@ def description_to_variable(description, entity=None):
     if entity is not None:
         kwargs = {} if is_type_string else description['type']
         variable = variable(description['id'], entity, **kwargs)
-        try:
-            interesting_values = pd.read_json(description['properties']['interesting_values'])
-        except ValueError:
-            if description['properties']['interesting_values'] is None:
-                interesting_values = pd.Series()
-            else:
-                interesting_values = pd.Series(description['properties']['interesting_values'])
+        interesting_values = pd.read_json(description['properties']['interesting_values'])
         variable.interesting_values = interesting_values
     return variable
 
@@ -69,13 +63,7 @@ def description_to_entity(description, entityset, path=None):
         variable_types={variable: variable_types[variable][0] for variable in variable_types})
     for variable in es[description['id']].variables:
         interesting_values = variable_types[variable.id][1]['properties']['interesting_values']
-        try:
-            interesting_values = pd.read_json(interesting_values, typ="series")
-        except ValueError:
-            if interesting_values is None:
-                interesting_values = pd.Series()
-            else:
-                interesting_values = pd.Series(interesting_values)
+        interesting_values = pd.read_json(interesting_values, typ="series")
         variable.interesting_values = interesting_values
 
 

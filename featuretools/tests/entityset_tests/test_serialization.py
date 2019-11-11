@@ -134,12 +134,26 @@ def test_to_pickle_interesting_values(es, path_management):
     assert es.__eq__(new_es, deep=True)
 
 
+def test_to_pickle_manual_interesting_values(es, path_management):
+    es['log']['product_id'].interesting_values = ["coke_zero"]
+    es.to_pickle(path_management)
+    new_es = deserialize.read_entityset(path_management)
+    assert es.__eq__(new_es, deep=True)
+
+
 def test_to_parquet(es, path_management):
     es.to_parquet(path_management)
     new_es = deserialize.read_entityset(path_management)
     assert es.__eq__(new_es, deep=True)
     assert type(es['log'].df['latlong'][0]) == tuple
     assert type(new_es['log'].df['latlong'][0]) == tuple
+
+
+def test_to_parquet_manual_interesting_values(es, path_management):
+    es['log']['product_id'].interesting_values = ["coke_zero"]
+    es.to_pickle(path_management)
+    new_es = deserialize.read_entityset(path_management)
+    assert es.__eq__(new_es, deep=True)
 
 
 def test_to_parquet_interesting_values(es, path_management):
