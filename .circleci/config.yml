@@ -29,7 +29,7 @@ jobs:
     steps:
       - checkout
       - run: |
-          Invoke-WebRequest -Uri "https://repo.anaconda.com/miniconda/Miniconda3-4.7.12.1-Windows-x86_64.exe"
+          $Response = Invoke-WebRequest -Uri "https://repo.anaconda.com/miniconda/Miniconda3-4.7.12.1-Windows-x86_64.exe"
       - run: conda help
           # $file = ".\Miniconda3-4.7.12.1-Windows-x86_64.exe"
           # $hashFromFile = Get-FileHash "$file" -Algorithm SHA256
