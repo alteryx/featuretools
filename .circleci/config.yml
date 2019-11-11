@@ -30,7 +30,7 @@ jobs:
       - checkout
       - run: >
           $url = "https://repo.anaconda.com/miniconda/Miniconda3-4.7.12.1-Windows-x86_64.exe";
-          $file = "./Miniconda3-4.7.12.1-Windows-x86_64.exe";
+          $file = ".\Miniconda3-4.7.12.1-Windows-x86_64.exe";
           Invoke-Webrequest "$url" -Outfile "$file";
           $hashFromFile = Get-FileHash "$file" -Algorithm SHA256;
           $hashFromUrl = "f18060cc0bb50ae75e4d602b7ce35197c8e31e81288d069b758594f1bb46ab45";
