@@ -28,6 +28,9 @@ jobs:
       name: windows/default
     steps:
       - checkout
+      - run:
+          command: ping repo.anaconda.com
+          shell: cmd.exe
       - run: |
           $Response = Invoke-WebRequest -Uri "https://repo.anaconda.com/miniconda/Miniconda3-4.7.12.1-Windows-x86_64.exe"
       - run: conda help
