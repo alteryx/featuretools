@@ -134,9 +134,7 @@ def _init_option_dict(key, option_dict, es):
 
 
 def variable_filter(f, options):
-    entities_in_path = {entity for entity in f.relationship_path.entities()}
     for base_f in [base_identity.feature for base_identity in f.all_base_features]:
-        entities_in_path.discard(base_f.entity.id)
         if 'include_variables' in options and base_f.entity.id in options['include_variables']:
             if base_f.get_name() in options['include_variables'][base_f.entity.id]:
                 continue  # this is a valid feature, go to next
@@ -150,28 +148,13 @@ def variable_filter(f, options):
             return False  # not an included entity
         elif base_f.entity.id in options['ignore_entities']:
             return False  # ignore the entity
-    for entity in f.relationship_path.entities():
-        if 'include_entities' in options and entity not in options['include_entities']:
-            return False
-        elif entity in options['ignore_entities']:
-            return False
     return True
 
 
 def groupby_filter(f, options):
-    entities_in_path = {entity for entity in f.relationship_path.entities()}
     if not issubclass(f.variable_type, Discrete):
         return False
-    if 'include_groupby_variables' in options and \
-            f.entity.id in options['include_groupby_variables']:
-        if f.get_name() not in options['include_groupby_variables'][f.entity.id]:
-            return False
-    if 'ignore_groupby_variables' in options and \
-            f.entity.id in options['ignore_groupby_variables']:
-        if f.get_name() in options['ignore_groupby_variables'][f.entity.id]:
-            return False
     for base_f in [base_identity.feature for base_identity in f.all_base_features]:
-        entities_in_path.discard(base_f.entity.id)
         if 'include_groupby_variables' in options and \
                 base_f.entity.id in options['include_groupby_variables']:
             if base_f.get_name() in options['include_groupby_variables'][base_f.entity.id]:
@@ -187,13 +170,6 @@ def groupby_filter(f, options):
             return False
         elif 'ignore_groupby_entities' in options and \
                 base_f.entity.id in options['ignore_groupby_entities']:
-            return False
-    for entity in entities_in_path:
-        if 'include_groupby_entities' in options and \
-                entity not in options['include_groupby_entities']:
-            return False
-        elif 'ignore_groupby_entities' in options and \
-                entity in options['ignore_groupby_entities']:
             return False
     return True
 

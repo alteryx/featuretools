@@ -910,12 +910,12 @@ def test_primitive_options_errors(es):
     invalid_entity = {'mode': {'include_entities': ['invalid_entity']}}
     invalid_variable_entity = {'mode': {'include_variables': {'invalid_entity': ['product_id']}}}
     invalid_variable = {'mode': {'include_variables': {'sessions': ['invalid_variable']}}}
-    key_error_text = "Unrecognized primitive option \'ignore_entity\' for mode"
-    list_error_text = "Incorrect type formatting for \'ignore_entities\' for mode"
-    dict_error_text = "Incorrect type formatting for \'ignore_variables\' for mode"
+    key_error_text = "Unrecognized primitive option 'ignore_entity' for mode"
+    list_error_text = "Incorrect type formatting for 'ignore_entities' for mode"
+    dict_error_text = "Incorrect type formatting for 'ignore_variables' for mode"
     conflicting_error_text = "Multiple options found for primitive mode"
-    invalid_entity_warning = "Entity \'invalid_entity\' not in entityset"
-    invalid_variable_warning = "Variable \'invalid_variable\' not in entity \'sessions\'"
+    invalid_entity_warning = "Entity 'invalid_entity' not in entityset"
+    invalid_variable_warning = "Variable 'invalid_variable' not in entity 'sessions'"
     with pytest.raises(KeyError, match=key_error_text):
         DeepFeatureSynthesis(target_entity_id='customers',
                              entityset=es,
@@ -1012,18 +1012,6 @@ def test_primitive_options(es):
             assert 'customers' in entities
 
 
-def test_primitive_options_deep(es):
-    options = {
-        'sum': {},
-        'mean': {},
-        'mode': {},
-        'num_unique': {'include_variables': {'products': ['department']},
-                       'ignore_entities': ['products']}
-    }
-
-    assert options
-
-
 def test_primitive_options_with_globals(es):
     # non-overlapping ignore_entities
     options = {'mode': {'ignore_entities': ['sessions']}}
@@ -1093,11 +1081,12 @@ def test_primitive_options_with_globals(es):
 
 
 def test_primitive_options_groupbys(es):
-    options = {'cum_count': {'include_groupby_entities': ['log', 'sessions']},
+    options = {'cum_count': {'include_groupby_entities': ['log', 'customers']},
                'cum_sum': {'ignore_groupby_entities': ['sessions']},
                'cum_mean': {'ignore_groupby_variables': {'customers': [u'région_id'],
                                                          'log': ['session_id']}},
-               'cum_min': {'include_groupby_variables': {'log': ['zipcode', 'countrycode']}}}
+               'cum_min': {'include_groupby_variables': {'sessions': ['customer_id', 'device_type']}}}
+                                                         
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
                                    agg_primitives=[],
@@ -1120,12 +1109,12 @@ def test_primitive_options_groupbys(es):
             if 'log' in entities:
                 assert 'session_id' not in variables
         if isinstance(f.primitive, CumCount):
-            assert all([entity in ['log', 'sessions'] for entity in entities])
+            assert all([entity in ['log', 'customers'] for entity in entities])
         if isinstance(f.primitive, CumSum):
             assert 'sessions' not in entities
         if isinstance(f.primitive, CumMin):
-            if 'log' in entities:
-                assert all([variable in ['zipcode', 'countrycode'] for variable in variables])
+            if 'sessions' in entities:
+                assert 'customer_id' in variables or 'device_type' in variables
 
 
 def test_primitive_options_multiple_inputs(es):
