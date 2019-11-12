@@ -11,6 +11,7 @@ Changelog
         * Fix import error in docs (:pr:`803`)
         * Fix release title formatting in changelog (:pr:`806`)
     * Testing Changes
+        * Use verbose mode for codecov upload (:pr:`810`)
 
     Thanks to the following people for contributing to this release:
     :user:`rwedge`, :user:`systemshift`
