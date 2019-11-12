@@ -17,8 +17,8 @@ from featuretools.variable_types import Numeric
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-S3_URL = "s3://featuretools-static/test_feature_serialization_1.0.0"
-URL = "https://featuretools-static.s3.amazonaws.com/test_feature_serialization_1.0.0"
+S3_URL = "s3://featuretools-static/test_feature_serialization_2.0.0"
+URL = "https://featuretools-static.s3.amazonaws.com/test_feature_serialization_2.0.0"
 TEST_CONFIG = "CheckConfigPassesOn"
 TEST_KEY = "test_access_key_features"
 CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
