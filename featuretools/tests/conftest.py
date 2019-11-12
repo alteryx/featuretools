@@ -5,6 +5,11 @@ import featuretools as ft
 from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
+def pytest_sessionstart(session):
+    make_ecommerce_entityset()
+    make_ecommerce_entityset(with_integer_time_index=True)
+
+
 @pytest.fixture
 def es():
     return make_ecommerce_entityset(save_files=False)
