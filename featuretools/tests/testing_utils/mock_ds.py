@@ -350,7 +350,8 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
                     'customers', 'sessions', 'log']
         filenames = {e: entity_filename(e, base_path, file_location=file_location,
                                         glob=(split_by_time and e == 'log'),
-                                        compressed=compressed)
+                                        compressed=compressed, 
+                                        with_integer_time_index=with_integer_time_index)
                      for e in entities}
     id = 'ecommerce'
     if with_integer_time_index:
@@ -381,7 +382,7 @@ def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save
         if entity == 'log':
             df['latlong'] = df['latlong'].apply(latlong_unstringify)
             df['latlong2'] = df['latlong2'].apply(latlong_unstringify)
-
+        
         es.entity_from_dataframe(entity,
                                  df,
                                  index='id',
