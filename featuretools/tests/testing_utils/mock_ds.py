@@ -185,7 +185,7 @@ def data_dir(base_path=None):
     dirname = os.path.dirname(integration_data.__file__)
     if base_path is None:
         return os.path.abspath(dirname)
-    return os.path.join(base_path, dirname)
+    return os.path.join(base_path, 'integration_data')
 
 
 def save_to_csv(entity_id, df, base_path=None, file_location='local',
@@ -231,7 +231,6 @@ def entity_filename(entity, base_path=None, file_location='local',
         dirname = "s3://featuretools-static/test_ecommerce/"
     else:
         dirname = data_dir(base_path)
-
     ext = '.csv'
     if compressed:
         ext = '.gzip'

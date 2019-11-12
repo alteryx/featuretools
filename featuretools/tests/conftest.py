@@ -5,19 +5,21 @@ import featuretools as ft
 from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
-def pytest_sessionstart(session):
-    make_ecommerce_entityset()
-    make_ecommerce_entityset(with_integer_time_index=True)
+@pytest.fixture(scope="session")
+def es_dir(tmp_path_factory, worker_id):
+    tmp_path_factory.mktemp('integration_data', numbered=False)
+    return str(tmp_path_factory.getbasetemp())
 
 
 @pytest.fixture
-def es():
-    return make_ecommerce_entityset(save_files=False)
+def es(es_dir):
+    return make_ecommerce_entityset(base_path=es_dir)
 
 
 @pytest.fixture
-def int_es():
-    return make_ecommerce_entityset(save_files=False, with_integer_time_index=True)
+def int_es(es_dir):
+    return make_ecommerce_entityset(with_integer_time_index=True,
+                                    base_path=es_dir)
 
 
 @pytest.fixture
