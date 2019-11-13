@@ -11,6 +11,7 @@ Changelog
         * Fix import error in docs (:pr:`803`)
         * Fix release title formatting in changelog (:pr:`806`)
     * Testing Changes
+        * Refactor test entityset creation to avoid saving to disk (:pr:`813`)
 
     Thanks to the following people for contributing to this release:
     :user:`rwedge`, :user:`systemshift`
