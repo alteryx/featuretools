@@ -7,12 +7,12 @@ import featuretools as ft
 from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
-@pytest.fixture('session')
+@pytest.fixture(scope='session')
 def make_es():
     return make_ecommerce_entityset()
 
 
-@pytest.fixture('session')
+@pytest.fixture(scope='session')
 def make_int_es():
     return make_ecommerce_entityset(with_integer_time_index=True)
 
