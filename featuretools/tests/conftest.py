@@ -9,7 +9,7 @@ from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 @pytest.fixture
 def es_dir(tmp_path_factory, worker_id):
-    if os.path.exists(tmp_path_factory.getbasetemp().joinpath(worker_id)):
+    if os.path.exists(str(tmp_path_factory.getbasetemp().joinpath(worker_id))):
         return str(tmp_path_factory.getbasetemp().joinpath(worker_id))
     else:
         base_path = tmp_path_factory.mktemp(worker_id, numbered=False)
