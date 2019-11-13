@@ -5,7 +5,6 @@ from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
 def test_tokenize_entityset(int_es):
-    #import pdb; pdb.set_trace()
     es = make_ecommerce_entityset()
     dupe = make_ecommerce_entityset()
 
