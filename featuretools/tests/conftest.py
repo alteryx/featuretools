@@ -14,9 +14,9 @@ def es_dir(tmp_path_factory, worker_id):
     else:
         base_path = tmp_path_factory.mktemp(worker_id, numbered=False)
         base_path.joinpath('integration_data').mkdir()
-        make_ecommerce_entityset(base_path=base_path)
+        make_ecommerce_entityset(base_path=str(base_path))
         make_ecommerce_entityset(with_integer_time_index=True,
-                                 base_path=base_path)
+                                 base_path=str(base_path))
         return str(base_path)
 
 
