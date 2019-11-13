@@ -1,9 +1,11 @@
+import os
+
 import pandas as pd
 import pytest
-import os
 
 import featuretools as ft
 from featuretools.tests.testing_utils import make_ecommerce_entityset
+
 
 @pytest.fixture
 def es_dir(tmp_path_factory, worker_id):
