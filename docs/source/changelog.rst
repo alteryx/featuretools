@@ -5,6 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
     * Fixes
+        * Use tqdm.notebook instead of tqdm to solve multiple progress bar issue (:pr:`814`)
     * Changes
     * Documentation Changes
         * remove python 2.7 support and add 3.7 in install.rst (:pr:`805`)
