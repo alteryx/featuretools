@@ -39,8 +39,9 @@ jobs:
           $hashFromUrl
           if ($hashFromFile.Hash -eq "$hashFromUrl") {
             Start-Process -FilePath $file -ArgumentList "/InstallationType=JustMe /RegisterPython=0 /S /D=.\Miniconda3"
+          } else {
+            Throw "File hashes did not match!"
           }
-          dir
       - run: conda help
       # - run: docker pull python:3.7-windowsservercore
       # - run: docker run -v C:/featuretools:C:/featuretools python:3.7-windowsservercore powershell -Command
