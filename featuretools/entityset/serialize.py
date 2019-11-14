@@ -95,7 +95,6 @@ def write_entity_data(entity, path, format='csv', **kwargs):
         df = entity.df.copy()
         columns = df.select_dtypes('object').columns
         df[columns] = df[columns].astype('unicode')
-        df.columns = df.columns.astype('unicode')  # ensures string column names for python 2.7
         df.to_parquet(file, **kwargs)
     elif format == 'pickle':
         entity.df.to_pickle(file, **kwargs)
