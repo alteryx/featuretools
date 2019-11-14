@@ -92,7 +92,7 @@ class EntitySet(object):
         return sum([entity.__sizeof__() for entity in self.entities])
 
     def __dask_tokenize__(self):
-        return (EntitySet, cloudpickle.dumps(self.metadata))
+        return (EntitySet, serialize.entityset_to_description(self.metadata))
 
     def __eq__(self, other, deep=False):
         if len(self.entity_dict) != len(other.entity_dict):
