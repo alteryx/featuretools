@@ -32,9 +32,9 @@ jobs:
           command: ping repo.anaconda.com
           shell: cmd.exe
       - run: |
-          $Response = Invoke-WebRequest -Uri "https://repo.anaconda.com/miniconda/Miniconda3-4.7.12.1-Windows-x86_64.exe"
+          $ProgressPreference = "silentlyContinue"
+          Invoke-WebRequest -Uri "https://repo.anaconda.com/miniconda/Miniconda3-4.7.12.1-Windows-x86_64.exe" -Outfile ".\Miniconda3-4.7.12.1-Windows-x86_64.exe"
       - run: conda help
-          # $file = ".\Miniconda3-4.7.12.1-Windows-x86_64.exe"
           # $hashFromFile = Get-FileHash "$file" -Algorithm SHA256
           # $hashFromUrl = "f18060cc0bb50ae75e4d602b7ce35197c8e31e81288d069b758594f1bb46ab45"
           # if ($hashFromFile.Hash -eq "$hashFromUrl") {
