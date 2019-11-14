@@ -6,6 +6,7 @@ Changelog
     * Enhancements
     * Fixes
     * Changes
+        * Remove python 2.7 support from serialize.py (:pr:`812`)
     * Documentation Changes
         * remove python 2.7 support and add 3.7 in install.rst (:pr:`805`)
         * Fix import error in docs (:pr:`803`)
