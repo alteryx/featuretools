@@ -53,7 +53,7 @@ def entityset_to_description(entityset):
     Returns:
         description (dict) : Description of :class:`.EntitySet`.
     '''
-    entities = {entity.id: entity_to_description(entity) for entity in 
+    entities = {entity.id: entity_to_description(entity) for entity in
                 sorted(entityset.entities, key=lambda entity: entity.id)}
     relationships = [relationship.to_dictionary() for relationship in entityset.relationships]
     data_description = {

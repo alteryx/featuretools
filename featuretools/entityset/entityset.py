@@ -2,7 +2,6 @@ import copy
 import logging
 from collections import defaultdict
 
-import cloudpickle
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_dtype_equal, is_numeric_dtype
