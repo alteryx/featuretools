@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 
 import numpy as np
@@ -6,11 +5,9 @@ import pandas as pd
 
 from featuretools import variable_types
 from featuretools.entityset import EntitySet, Relationship
-from featuretools.tests import integration_data
 
 
-def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_location='local',
-                         split_by_time=False, compressed=False):
+def make_ecommerce_entityset(with_integer_time_index=False):
     """ Makes a entityset with the following shape:
 
           R         Regions
@@ -21,7 +18,50 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
              \\ /   .
               L     Log
     """
+    dataframes = make_ecommerce_dataframes(with_integer_time_index=with_integer_time_index)
+    entities = dataframes.keys()
+    es_id = 'ecommerce'
+    if with_integer_time_index:
+        es_id += "_int_time_index"
 
+    variable_types = make_variable_types(
+        with_integer_time_index=with_integer_time_index)
+    time_indexes = make_time_indexes(
+        with_integer_time_index=with_integer_time_index)
+
+    es = EntitySet(id=es_id)
+
+    for entity in entities:
+        time_index = time_indexes.get(entity, None)
+        ti_name = None
+        secondary = None
+        if time_index is not None:
+            ti_name = time_index['name']
+            secondary = time_index['secondary']
+        df = dataframes[entity]
+        es.entity_from_dataframe(entity,
+                                 df,
+                                 index='id',
+                                 variable_types=variable_types[entity],
+                                 time_index=ti_name,
+                                 secondary_time_index=secondary)
+
+    es.normalize_entity('customers', 'cohorts', 'cohort',
+                        additional_variables=['cohort_name'],
+                        make_time_index=True,
+                        new_entity_time_index='cohort_end')
+
+    es.add_relationships(
+        [Relationship(es[u'régions']['id'], es['customers'][u'région_id']),
+         Relationship(es[u'régions']['id'], es['stores'][u'région_id']),
+         Relationship(es['customers']['id'], es['sessions']['customer_id']),
+         Relationship(es['sessions']['id'], es['log']['session_id']),
+         Relationship(es['products']['id'], es['log']['product_id'])])
+
+    return es
+
+
+def make_ecommerce_dataframes(with_integer_time_index=False):
     region_df = pd.DataFrame({'id': ['United States', 'Mexico'],
                               'language': ['en', 'sp']})
 
@@ -57,7 +97,7 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
         customer_times['date_of_birth'] = [2, 1, 3]
 
     customer_df = pd.DataFrame({
-        'id': [0, 1, 2],
+        'id': pd.Categorical([0, 1, 2]),
         'age': [33, 25, 56],
         u'région_id': ['United States'] * 3,
         'cohort': [0, 1, 0],
@@ -85,7 +125,7 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
                  '~/.rcinfo', '../../greatgrandparent', 'data.json']
 
     session_df = pd.DataFrame({'id': [0, 1, 2, 3, 4, 5],
-                               'customer_id': [0, 0, 0, 1, 1, 2],
+                               'customer_id': pd.Categorical([0, 0, 0, 1, 1, 2]),
                                'device_type': [0, 1, 1, 0, 0, 1],
                                'device_name': ['PC', 'Mobile', 'Mobile', 'PC',
                                                'PC', 'Mobile'],
@@ -165,84 +205,13 @@ def make_ecommerce_files(with_integer_time_index=False, base_path=None, file_loc
         brown_bag_reviews() + [gummy_review()] +
         ['I loved it'] * 4 + taco_clock_reviews()
     })
-    filenames = {}
-    for entity, df in [(u'régions', region_df),
-                       ('stores', store_df),
-                       ('products', product_df),
-                       ('customers', customer_df),
-                       ('sessions', session_df),
-                       ('log', log_df)]:
-        if split_by_time and entity == 'log':
-            df1 = df.iloc[:10]
-            df2 = df.iloc[10:]
-            df = [df1, df2]
-        filenames[entity] = save_to_csv(entity, df, base_path=base_path, file_location=file_location,
-                                        with_integer_time_index=with_integer_time_index, compressed=compressed)
-    return filenames
 
-
-def data_dir(base_path=None):
-    dirname = os.path.dirname(integration_data.__file__)
-    if base_path is None:
-        return os.path.abspath(dirname)
-    return os.path.join(base_path, dirname)
-
-
-def save_to_csv(entity_id, df, base_path=None, file_location='local',
-                with_integer_time_index=False, compressed=False):
-    path = entity_filename(entity_id, base_path, file_location=file_location,
-                           with_integer_time_index=with_integer_time_index,
-                           compressed=compressed)
-    ext = '.csv'
-    compression = None
-    if compressed:
-        ext = '.gzip'
-        compression = ext[1:]
-    if file_location == 's3':
-        pass
-        # src = StringIO()
-        # df.to_csv(src, index=False,
-        #         compression=compression,
-        #         encoding='utf-8')
-        # new_path = path.split('s3://')[1]
-        # parts = new_path.split('/')
-        # bucket = parts[0]
-        # new_path = '/'.join(parts[1:])
-        # src.seek(0)
-        # upload_file(src, new_path, bucket)
-    else:
-        if isinstance(df, list):
-            for i, d in enumerate(df):
-                p = path.replace(ext, '-{}{}'.format(i, ext))
-                d.to_csv(p, index=False,
-                         compression=compression,
-                         encoding='utf-8')
-            path = path.replace(ext, '-*{}'.format(ext))
-        else:
-            df.to_csv(path, index=False,
-                      compression=compression,
-                      encoding='utf-8')
-    return path
-
-
-def entity_filename(entity, base_path=None, file_location='local',
-                    with_integer_time_index=False, glob=False, compressed=False):
-    if file_location == 's3':
-        dirname = "s3://featuretools-static/test_ecommerce/"
-    else:
-        dirname = data_dir(base_path)
-
-    ext = '.csv'
-    if compressed:
-        ext = '.gzip'
-
-    if with_integer_time_index:
-        entity = entity + "_int"
-    if glob:
-        path = os.path.join(dirname, entity + "-*" + ext)
-    else:
-        path = os.path.join(dirname, entity + ext)
-    return path
+    return {u'régions': region_df,
+            'stores': store_df,
+            'products': product_df,
+            'customers': customer_df,
+            'sessions': session_df,
+            'log': log_df}
 
 
 def make_variable_types(with_integer_time_index=False):
@@ -331,77 +300,6 @@ def make_time_indexes(with_integer_time_index=False):
                     'secondary': None
                     }
             }
-
-
-def latlong_unstringify(latlong):
-    lat = float(latlong.split(", ")[0].replace("(", ""))
-    lon = float(latlong.split(", ")[1].replace(")", ""))
-    return (lat, lon)
-
-
-def make_ecommerce_entityset(with_integer_time_index=False, base_path=None, save_files=True, file_location='local',
-                             split_by_time=False, compressed=False, entityset_type=EntitySet):
-    if file_location == 'local' and save_files:
-        filenames = make_ecommerce_files(with_integer_time_index, base_path=base_path, file_location=file_location,
-                                         split_by_time=split_by_time, compressed=compressed)
-        entities = filenames.keys()
-    else:
-        entities = [u'régions', 'stores', 'products',
-                    'customers', 'sessions', 'log']
-        filenames = {e: entity_filename(e, base_path, file_location=file_location,
-                                        glob=(split_by_time and e == 'log'),
-                                        compressed=compressed)
-                     for e in entities}
-    id = 'ecommerce'
-    if with_integer_time_index:
-        id += "_int_time_index"
-    if split_by_time:
-        id += "_glob"
-
-    variable_types = make_variable_types(
-        with_integer_time_index=with_integer_time_index)
-    time_indexes = make_time_indexes(
-        with_integer_time_index=with_integer_time_index)
-
-    es = entityset_type(id=id)
-
-    for entity in entities:
-        time_index = time_indexes.get(entity, None)
-        ti_name = None
-        secondary = None
-        if time_index is not None:
-            ti_name = time_index['name']
-            secondary = time_index['secondary']
-        df = pd.read_csv(filenames[entity], encoding='utf-8', engine='python')
-        if entity == "customers":
-            df["id"] = pd.Categorical(df['id'])
-        if entity == 'sessions':
-            # This should be changed back when converted to an EntitySet
-            df['customer_id'] = pd.Categorical(df['customer_id'])
-        if entity == 'log':
-            df['latlong'] = df['latlong'].apply(latlong_unstringify)
-            df['latlong2'] = df['latlong2'].apply(latlong_unstringify)
-
-        es.entity_from_dataframe(entity,
-                                 df,
-                                 index='id',
-                                 variable_types=variable_types[entity],
-                                 time_index=ti_name,
-                                 secondary_time_index=secondary)
-
-    es.normalize_entity('customers', 'cohorts', 'cohort',
-                        additional_variables=['cohort_name'],
-                        make_time_index=True,
-                        new_entity_time_index='cohort_end')
-
-    es.add_relationships(
-        [Relationship(es[u'régions']['id'], es['customers'][u'région_id']),
-         Relationship(es[u'régions']['id'], es['stores'][u'région_id']),
-         Relationship(es['customers']['id'], es['sessions']['customer_id']),
-         Relationship(es['sessions']['id'], es['log']['session_id']),
-         Relationship(es['products']['id'], es['log']['product_id'])])
-
-    return es
 
 
 def coke_zero_review():
@@ -714,7 +612,3 @@ Avoiding all kinds of oral pathology is a major consideration. This toothpaste c
 I hope this product stays on the market a long time and does not change.
     """
             ]
-
-
-if __name__ == '__main__':
-    make_ecommerce_entityset()
