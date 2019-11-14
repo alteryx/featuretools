@@ -1,3 +1,4 @@
+import copy
 import os
 
 import pandas as pd
@@ -7,30 +8,24 @@ import featuretools as ft
 from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
-@pytest.fixture
-def es_dir(tmp_path_factory, worker_id):
-    if os.path.exists(str(tmp_path_factory.getbasetemp().joinpath(worker_id))):
-        return str(tmp_path_factory.getbasetemp().joinpath(worker_id))
-    else:
-        base_path = tmp_path_factory.mktemp(worker_id, numbered=False)
-        base_path.joinpath('integration_data').mkdir()
-        make_ecommerce_entityset(base_path=str(base_path))
-        make_ecommerce_entityset(with_integer_time_index=True,
-                                 base_path=str(base_path))
-        return str(base_path)
+@pytest.fixture(scope='session')
+def make_es():
+    return make_ecommerce_entityset()
+
+
+@pytest.fixture(scope='session')
+def make_int_es():
+    return make_ecommerce_entityset(with_integer_time_index=True)
 
 
 @pytest.fixture
-def es(es_dir):
-    return make_ecommerce_entityset(base_path=es_dir,
-                                    save_files=False)
+def es(make_es):
+    return copy.deepcopy(make_es)
 
 
 @pytest.fixture
-def int_es(es_dir):
-    return make_ecommerce_entityset(with_integer_time_index=True,
-                                    base_path=es_dir,
-                                    save_files=False)
+def int_es(make_int_es):
+    return copy.deepcopy(make_int_es)
 
 
 @pytest.fixture
