@@ -85,7 +85,7 @@ jobs:
                 coverage erase
                 cd unpacked_sdist/
                 coverage erase
-                pytest featuretools/ -n auto --cov=featuretools --cov-config=../.coveragerc
+                pytest featuretools/ -n 2 --cov=featuretools --cov-config=../.coveragerc
                 cd ../
                 cp unpacked_sdist/.coverage .coverage
                 codecov
@@ -95,7 +95,7 @@ jobs:
             - run: |
                 source venv/bin/activate
                 cd unpacked_sdist
-                pytest featuretools/ -n auto
+                pytest featuretools/ -n 2
 
   lint_test:
     working_directory: ~/featuretools
