@@ -40,7 +40,7 @@ jobs:
           }
       - run:
           shell: cmd.exe
-          command: start /wait "" Miniconda3-latest-Windows-x86_64.exe /InstallationType=JustMe /RegisterPython=0 /S /D=.\Miniconda3
+          command: start /wait "" Miniconda3-4.7.12.1-Windows-x86_64.exe /InstallationType=JustMe /RegisterPython=0 /S /D=Miniconda3
       # - run: docker pull python:3.7-windowsservercore
       # - run: docker run -v C:/featuretools:C:/featuretools python:3.7-windowsservercore powershell -Command
       #     "dir;
