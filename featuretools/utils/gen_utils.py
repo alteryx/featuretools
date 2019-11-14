@@ -6,7 +6,7 @@ from itertools import zip_longest
 
 import s3fs
 from smart_open import open
-from tqdm import tqdm
+from tqdm.notebook import tqdm
 
 
 def session_type():
