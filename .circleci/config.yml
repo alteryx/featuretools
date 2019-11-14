@@ -38,9 +38,10 @@ jobs:
           if ($hashFromFile.Hash -ne "$hashFromUrl") {
             Throw "File hashes did not match!"
           }
+          Start-Process -Wait -FilePath $file -ArgumentList "/InstallationType=JustMe /RegisterPython=0 /S /D=.\Miniconda3"
       - run:
+          command: dir
           shell: cmd.exe
-          command: start /wait "" Miniconda3-4.7.12.1-Windows-x86_64.exe /InstallationType=JustMe /RegisterPython=0 /S /D=Miniconda3
       # - run: docker pull python:3.7-windowsservercore
       # - run: docker run -v C:/featuretools:C:/featuretools python:3.7-windowsservercore powershell -Command
       #     "dir;
