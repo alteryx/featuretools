@@ -18,18 +18,18 @@ def make_ecommerce_entityset(with_integer_time_index=False):
              \\ /   .
               L     Log
     """
-    dfs = make_ecommerce_dataframes(with_integer_time_index=with_integer_time_index)
-    entities = dfs.keys()
-    id = 'ecommerce'
+    dataframes = make_ecommerce_dataframes(with_integer_time_index=with_integer_time_index)
+    entities = dataframes.keys()
+    es_id = 'ecommerce'
     if with_integer_time_index:
-        id += "_int_time_index"
+        es_id += "_int_time_index"
 
     variable_types = make_variable_types(
         with_integer_time_index=with_integer_time_index)
     time_indexes = make_time_indexes(
         with_integer_time_index=with_integer_time_index)
 
-    es = EntitySet(id=id)
+    es = EntitySet(id=es_id)
 
     for entity in entities:
         time_index = time_indexes.get(entity, None)
@@ -38,7 +38,7 @@ def make_ecommerce_entityset(with_integer_time_index=False):
         if time_index is not None:
             ti_name = time_index['name']
             secondary = time_index['secondary']
-        df = dfs[entity]
+        df = dataframes[entity]
         es.entity_from_dataframe(entity,
                                  df,
                                  index='id',
