@@ -35,14 +35,12 @@ jobs:
           Invoke-WebRequest -Uri $Uri -Outfile $File
           $hashFromFile = Get-FileHash "$file" -Algorithm SHA256
           $hashFromUrl = "f18060cc0bb50ae75e4d602b7ce35197c8e31e81288d069b758594f1bb46ab45"
-          $hashFromFile
-          $hashFromUrl
-          if ($hashFromFile.Hash -eq "$hashFromUrl") {
-            Start-Process -FilePath $file -ArgumentList "/InstallationType=JustMe /RegisterPython=0 /S /D=.\Miniconda3"
-          } else {
+          if ($hashFromFile.Hash -ne "$hashFromUrl") {
             Throw "File hashes did not match!"
           }
-      - run: conda help
+      - run:
+          shell: cmd.exe
+          command: start /wait "" Miniconda3-latest-Windows-x86_64.exe /InstallationType=JustMe /RegisterPython=0 /S /D=.\Miniconda3
       # - run: docker pull python:3.7-windowsservercore
       # - run: docker run -v C:/featuretools:C:/featuretools python:3.7-windowsservercore powershell -Command
       #     "dir;
