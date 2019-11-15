@@ -44,9 +44,9 @@ jobs:
       - run:
           command: dir %UserProfile%\Miniconda3
           shell: cmd.exe
-      - run:
-          command: conda
-          shell: cmd.exe
+      - run: |
+          %UserProfile%\Miniconda3\shell\condabin\conda-hook.ps1
+          conda help
       # - run: docker pull python:3.7-windowsservercore
       # - run: docker run -v C:/featuretools:C:/featuretools python:3.7-windowsservercore powershell -Command
       #     "dir;
