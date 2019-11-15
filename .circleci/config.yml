@@ -29,7 +29,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: download miniconda
+          name: Download Miniconda
           command: |
               $File = ".\Miniconda3-4.7.12.1-Windows-x86_64.exe"
               $Uri = "https://repo.anaconda.com/miniconda/Miniconda3-4.7.12.1-Windows-x86_64.exe"
@@ -41,18 +41,18 @@ jobs:
                 Throw "File hashes did not match!"
               }
       - run:
-          name: install miniconda
+          name: Install Miniconda
           command: start /wait C:\featuretools\Miniconda3-4.7.12.1-Windows-x86_64.exe /InstallationType=JustMe /RegisterPython=0 /S /D=%UserProfile%\Miniconda3
           shell: cmd.exe
       - run:
-          name: install fastparquet
+          name: Install Fastparquet
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate C:\Users\circleci\Miniconda3
               conda config --add channels conda-forge
               conda install fastparquet -q -y
       - run:
-          name: install featuretools
+          name: Install Featuretools
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate C:\Users\circleci\Miniconda3
@@ -60,7 +60,7 @@ jobs:
               python -m pip install .
               python -m pip install -r test-requirements.txt
       - run:
-          name: run unit tests
+          name: Run Unit Tests
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate C:\Users\circleci\Miniconda3
