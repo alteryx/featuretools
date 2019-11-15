@@ -40,6 +40,9 @@ jobs:
           }
           Start-Process -Wait -FilePath $file -NoNewWindow -ArgumentList "/InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /S /D=.\Miniconda3"
       - run:
+          command: dir
+          shell: cmd.exe
+      - run:
           command: echo %UserProfile%
           shell: cmd.exe
       - run:
