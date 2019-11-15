@@ -120,8 +120,6 @@ class Entity(object):
                 return False
             variables = {variable: (variable, ) for variable in self.variables}
             for variable in other.variables:
-                if not variables.get(variable):
-                    return False
                 variables[variable] += (variable, )
             for self_var, other_var in variables.values():
                 if not self_var.__eq__(other_var, deep=True):
