@@ -12,10 +12,11 @@ Changelog
         * Fix import error in docs (:pr:`803`)
         * Fix release title formatting in changelog (:pr:`806`)
     * Testing Changes
+        * Use multiple CPUS to run tests on CI (:pr:`811`)
         * Refactor test entityset creation to avoid saving to disk (:pr:`813`)
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`, :user:`systemshift`
+    :user:`rwedge`, :user:`systemshift`, :user:`frances-h`
 
 **v0.12.0 Oct 31, 2019**
     * Enhancements
