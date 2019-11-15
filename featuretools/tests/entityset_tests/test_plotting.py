@@ -19,7 +19,7 @@ def test_saving_png_file(es, tmpdir):
 
     es.plot(to_file=output_path)
 
-    assert os.path.isfile(str(output_path))
+    assert os.path.isfile(output_path)
     os.remove(output_path)
 
 
