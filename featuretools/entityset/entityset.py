@@ -2,7 +2,6 @@ import copy
 import logging
 from collections import defaultdict
 
-import cloudpickle
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_dtype_equal, is_numeric_dtype
@@ -92,7 +91,7 @@ class EntitySet(object):
         return sum([entity.__sizeof__() for entity in self.entities])
 
     def __dask_tokenize__(self):
-        return (EntitySet, cloudpickle.dumps(self.metadata))
+        return (EntitySet, serialize.entityset_to_description(self.metadata))
 
     def __eq__(self, other, deep=False):
         if len(self.entity_dict) != len(other.entity_dict):
