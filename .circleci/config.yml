@@ -28,36 +28,43 @@ jobs:
       name: windows/default
     steps:
       - checkout
-      - run: |
-          $File = ".\Miniconda3-4.7.12.1-Windows-x86_64.exe"
-          $Uri = "https://repo.anaconda.com/miniconda/Miniconda3-4.7.12.1-Windows-x86_64.exe"
-          $ProgressPreference = "silentlyContinue"
-          Invoke-WebRequest -Uri $Uri -Outfile $File
-          $hashFromFile = Get-FileHash "$file" -Algorithm SHA256
-          $hashFromUrl = "f18060cc0bb50ae75e4d602b7ce35197c8e31e81288d069b758594f1bb46ab45"
-          if ($hashFromFile.Hash -ne "$hashFromUrl") {
-            Throw "File hashes did not match!"
-          }
       - run:
+          name: download miniconda
+          command: |
+              $File = ".\Miniconda3-4.7.12.1-Windows-x86_64.exe"
+              $Uri = "https://repo.anaconda.com/miniconda/Miniconda3-4.7.12.1-Windows-x86_64.exe"
+              $ProgressPreference = "silentlyContinue"
+              Invoke-WebRequest -Uri $Uri -Outfile $File
+              $hashFromFile = Get-FileHash "$file" -Algorithm SHA256
+              $hashFromUrl = "f18060cc0bb50ae75e4d602b7ce35197c8e31e81288d069b758594f1bb46ab45"
+              if ($hashFromFile.Hash -ne "$hashFromUrl") {
+                Throw "File hashes did not match!"
+              }
+      - run:
+          name: install miniconda
           command: start /wait C:\featuretools\Miniconda3-4.7.12.1-Windows-x86_64.exe /InstallationType=JustMe /RegisterPython=0 /S /D=%UserProfile%\Miniconda3
           shell: cmd.exe
       - run:
-          command: dir %UserProfile%\Miniconda3
-          shell: cmd.exe
-      - run: |
-          C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-          conda help
-      # - run: docker pull python:3.7-windowsservercore
-      # - run: docker run -v C:/featuretools:C:/featuretools python:3.7-windowsservercore powershell -Command
-      #     "dir;
-      #     cd ./featuretools;
-      #     python -m venv ./venv;
-      #     ./venv/Scripts/Activate.ps1;
-      #     python -m pip install --upgrade pip;
-      #     pip install .;
-      #     pip install -r test-requirements.txt;
-      #     pytest;"
-
+          name: install fastparquet
+          command: |
+              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda activate C:\Users\circleci\Miniconda3
+              conda config --add channels conda-forge
+              conda install fastparquet
+      - run:
+          name: install featuretools
+          command: |
+              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda activate C:\Users\circleci\Miniconda3
+              python -m pip install --upgrade pip
+              python -m pip install .
+              python -m pip install -r test-requirements.txt
+      - run:
+          name: run unit tests
+          command: |
+              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda activate C:\Users\circleci\Miniconda3
+              py
   install_ft:
     working_directory: ~/featuretools
     parameters:
