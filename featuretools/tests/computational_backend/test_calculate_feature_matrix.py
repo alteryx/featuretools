@@ -1,7 +1,6 @@
 import os
 import re
 import shutil
-import tempfile
 from datetime import datetime
 from itertools import combinations
 from random import randint
@@ -206,7 +205,7 @@ def test_cfm_duplicated_index_in_cutoff_time(es):
     assert (feature_matrix.shape[0] == cutoff_time.shape[0])
 
 
-def test_saveprogress(es):
+def test_saveprogress(es, tmpdir):
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
                  [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
                  [datetime(2011, 4, 9, 10, 40, 0)] +
@@ -215,7 +214,7 @@ def test_saveprogress(es):
                  [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
     property_feature = ft.Feature(es['log']['value']) > 10
-    save_progress = tempfile.mkdtemp()
+    save_progress = str(tmpdir)
     fm_save = calculate_feature_matrix([property_feature],
                                        es,
                                        cutoff_time=cutoff_time,

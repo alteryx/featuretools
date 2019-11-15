@@ -11,7 +11,6 @@ from featuretools.feature_base.features_deserializer import (
 )
 from featuretools.feature_base.features_serializer import FeaturesSerializer
 from featuretools.primitives import CumSum, make_agg_primitive
-from featuretools.tests import integration_data
 from featuretools.variable_types import Numeric
 
 BUCKET_NAME = "test-bucket"
@@ -21,7 +20,6 @@ S3_URL = "s3://featuretools-static/test_feature_serialization_1.0.0"
 URL = "https://featuretools-static.s3.amazonaws.com/test_feature_serialization_1.0.0"
 TEST_CONFIG = "CheckConfigPassesOn"
 TEST_KEY = "test_access_key_features"
-CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
 
 
 def assert_features(original, deserialized):
@@ -30,8 +28,7 @@ def assert_features(original, deserialized):
         assert feat_1.entityset == feat_2.entityset
 
 
-def pickle_features_test_helper(es_size, features_original):
-    dir_path = os.path.dirname(os.path.realpath(__file__))
+def pickle_features_test_helper(es_size, features_original, dir_path):
     filepath = os.path.join(dir_path, 'test_feature')
 
     ft.save_features(features_original, filepath)
@@ -54,12 +51,12 @@ def pickle_features_test_helper(es_size, features_original):
         assert_features(features_original, features_deserialized)
 
 
-def test_pickle_features(es):
+def test_pickle_features(es, tmpdir):
     features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
-    pickle_features_test_helper(asizeof(es), features_original)
+    pickle_features_test_helper(asizeof(es), features_original, str(tmpdir))
 
 
-def test_pickle_features_with_custom_primitive(es):
+def test_pickle_features_with_custom_primitive(es, tmpdir):
     NewMax = make_agg_primitive(
         lambda x: max(x),
         name="NewMax",
@@ -71,7 +68,7 @@ def test_pickle_features_with_custom_primitive(es):
                                agg_primitives=["Last", "Mean", NewMax], features_only=True)
 
     assert any([isinstance(feat.primitive, NewMax) for feat in features_original])
-    pickle_features_test_helper(asizeof(es), features_original)
+    pickle_features_test_helper(asizeof(es), features_original, str(tmpdir))
 
 
 def test_serialized_renamed_features(es):
@@ -156,9 +153,10 @@ def test_serialize_features_mock_anon_s3(es, s3_client, s3_bucket):
 
 
 @pytest.fixture
-def setup_test_profile(monkeypatch):
-    test_path = os.path.join(CACHE, 'test_credentials')
-    test_path_config = os.path.join(CACHE, 'test_config')
+def setup_test_profile(monkeypatch, tmpdir):
+    cache = str(tmpdir.join('.cache').mkdir())
+    test_path = os.path.join(cache, 'test_credentials')
+    test_path_config = os.path.join(cache, 'test_config')
     monkeypatch.setenv("AWS_SHARED_CREDENTIALS_FILE", test_path)
     monkeypatch.setenv("AWS_CONFIG_FILE", test_path_config)
     monkeypatch.delenv("AWS_ACCESS_KEY_ID", raising=False)
