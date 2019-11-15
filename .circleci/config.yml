@@ -50,7 +50,7 @@ jobs:
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate C:\Users\circleci\Miniconda3
               conda config --add channels conda-forge
-              conda install fastparquet
+              conda install fastparquet -q -y
       - run:
           name: install featuretools
           command: |
@@ -64,7 +64,7 @@ jobs:
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate C:\Users\circleci\Miniconda3
-              py
+              pytest
   install_ft:
     working_directory: ~/featuretools
     parameters:
