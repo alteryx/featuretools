@@ -20,8 +20,9 @@ CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-S3_URL = "s3://featuretools-static/test_serialization_data_entityset_schema_2.0.0.tar"
-URL = 'https://featuretools-static.s3.amazonaws.com/test_serialization_data_entityset_schema_2.0.0.tar'
+TEST_FILE = "test_serialization_data_entityset_schema_2.0.0.tar"
+S3_URL = "s3://featuretools-static/" + TEST_FILE
+URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
 
 
