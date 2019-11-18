@@ -50,7 +50,7 @@ jobs:
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate C:\Users\circleci\Miniconda3
               conda config --add channels conda-forge
-              conda install fastparquet python-graphviz -q -y
+              conda install graphviz -q -y
       - run:
           name: Install Featuretools
           command: |
