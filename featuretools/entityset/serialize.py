@@ -10,7 +10,7 @@ from featuretools.utils.gen_utils import use_s3fs_es, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
 
 FORMATS = ['csv', 'pickle', 'parquet']
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "2.0.0"
 
 
 def entity_to_description(entity):
