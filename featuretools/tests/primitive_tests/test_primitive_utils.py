@@ -40,13 +40,13 @@ def test_load_primitive_from_file(primitives_to_install_dir):
 
 def test_errors_more_than_one_primitive_in_file(bad_primitives_files_dir):
     primitive_file = os.path.join(bad_primitives_files_dir, "multiple_primitives.py")
-    error_text = 'More than one primitive defined in file'
+    error_text = r"More than one primitive defined in file {}".format(primitive_file)
     with pytest.raises(RuntimeError, match=error_text):
         load_primitive_from_file(primitive_file)
 
 
 def test_errors_no_primitive_in_file(bad_primitives_files_dir):
     primitive_file = os.path.join(bad_primitives_files_dir, "no_primitives.py")
-    error_text = 'No primitive defined in file'
+    error_text = r"No primitive defined in file {}".format(primitive_file)
     with pytest.raises(RuntimeError, match=error_text):
         load_primitive_from_file(primitive_file)
