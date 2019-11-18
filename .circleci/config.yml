@@ -45,7 +45,7 @@ jobs:
           command: start /wait C:\featuretools\Miniconda3-4.7.12.1-Windows-x86_64.exe /InstallationType=JustMe /RegisterPython=0 /S /D=%UserProfile%\Miniconda3
           shell: cmd.exe
       - run:
-          name: Install Fastparquet
+          name: Install Graphviz
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate C:\Users\circleci\Miniconda3
