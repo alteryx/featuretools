@@ -66,7 +66,7 @@ def generate_all_primitive_options(all_primitives,
             # don't globally ignore a variable if it's included for a primitive
             if 'include_variables' in options:
                 for entity, include_vars in options['include_variables'].items():
-                    global_ignore_variables[entity] = global_ignore_variables[entity].remove(include_vars)
+                    global_ignore_variables[entity] = global_ignore_variables[entity].difference(include_vars)
             for option in options:
                 option['ignore_entities'] = option['ignore_entities'].union(
                     ignore_entities.difference(included_entities)

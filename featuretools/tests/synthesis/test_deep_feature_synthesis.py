@@ -1051,7 +1051,8 @@ def test_primitive_options_with_globals(es):
     options = {'mode': {'include_entities': ['sessions', 'customers'],
                         'ignore_variables': {'customers': [u'région_id']}},
                'num_unique': {'include_entities': ['sessions', 'customers'],
-                              'include_variables': {'sessions': ['device_type']}},
+                              'include_variables': {'sessions': ['device_type'],
+                                                    'customers': ['age']}},
                'month': {'ignore_variables': {'cohorts': ['cohort_end']}}}
     dfs_obj = DeepFeatureSynthesis(target_entity_id='cohorts',
                                    entityset=es,
@@ -1068,7 +1069,6 @@ def test_primitive_options_with_globals(es):
         entities = [d.entity.id for d in deps]
         identities = [d for d in deps if isinstance(d, IdentityFeature)]
         variables = [d.variable.id for d in identities]
-        assert f.get_name() != 'customers.age'
         if isinstance(f.primitive, Mode):
             assert 'sessions' in entities or 'customers' in entities
             if 'customers' in entities:
@@ -1078,6 +1078,8 @@ def test_primitive_options_with_globals(es):
             assert 'sessions' in entities or 'customers' in entities
             if 'sessions' in entities:
                 assert 'device_type' in variables or variables == []
+            if 'customers' in entities:
+                assert 'age' in variables or variables == []
         # All other primitives ignore 'sessions' and 'age'
         else:
             assert 'sessions' not in entities
