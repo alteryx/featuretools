@@ -51,6 +51,9 @@ def test_eq(es):
     assert es['log'].__eq__(other_es['log'], deep=True)
     assert (es['log'].df['latlong'] == latlong).all()
 
+    other_es['log'].add_interesting_values()
+    assert not es['log'].__eq__(other_es['log'], deep=True)
+
     es['log'].id = 'customers'
     es['log'].index = 'notid'
     assert not es['customers'].__eq__(es['log'], deep=True)
@@ -64,9 +67,6 @@ def test_eq(es):
     es['log'].secondary_time_index = {
         'cancel_date': ['cancel_reason', 'cancel_date']}
     assert not es['customers'].__eq__(es['log'], deep=True)
-
-    other_es['log'].add_interesting_values()
-    assert not es['log'].__eq__(other_es['log'], deep=True)
 
 
 def test_update_data(es):
