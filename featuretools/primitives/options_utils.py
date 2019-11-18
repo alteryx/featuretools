@@ -50,6 +50,7 @@ def generate_all_primitive_options(all_primitives,
                       for entity in es.entities}
     primitive_options = _init_primitive_options(primitive_options, entityset_dict)
     global_ignore_entities = ignore_entities
+    global_ignore_variables = ignore_variables
     # for now, only use primitive names as option keys
     for primitive in all_primitives:
         if not isinstance(primitive, str):
@@ -62,6 +63,10 @@ def generate_all_primitive_options(all_primitives,
                 option.get('include_variables').keys() if option.get('include_variables') else set([]))
                 for option in options])
             global_ignore_entities = global_ignore_entities.difference(included_entities)
+            # don't globally ignore a variable if it's included for a primitive
+            if 'include_variables' in options:
+                for entity, include_vars in options['include_variables'].items():
+                    global_ignore_variables[entity] = global_ignore_variables[entity].remove(include_vars)
             for option in options:
                 option['ignore_entities'] = option['ignore_entities'].union(
                     ignore_entities.difference(included_entities)
@@ -81,7 +86,7 @@ def generate_all_primitive_options(all_primitives,
             # no user specified options, just use global defaults
             primitive_options[primitive] = [{'ignore_entities': ignore_entities,
                                              'ignore_variables': ignore_variables}]
-    return primitive_options, global_ignore_entities
+    return primitive_options, global_ignore_entities, global_ignore_variables
 
 
 def _init_primitive_options(primitive_options, es):
