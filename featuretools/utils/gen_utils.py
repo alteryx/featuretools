@@ -98,7 +98,7 @@ def check_schema_version(cls, cls_type):
                 break
 
         warning_text_outdated = ('The schema version of the saved %s'
-                                 '(%s) is no longer supported by this version'
+                                 '(%s) is no longer supported by this version '
                                  'of featuretools. Attempting to load %s ...'
                                  % (cls_type, version_string, cls_type))
         # Check if saved has older major version.

@@ -35,7 +35,8 @@ def description_to_variable(description, entity=None):
     if entity is not None:
         kwargs = {} if is_type_string else description['type']
         variable = variable(description['id'], entity, **kwargs)
-        variable.interesting_values = description['properties']['interesting_values']
+        interesting_values = pd.read_json(description['properties']['interesting_values'])
+        variable.interesting_values = interesting_values
     return variable
 
 
@@ -51,14 +52,19 @@ def description_to_entity(description, entityset, path=None):
         dataframe = read_entity_data(description, path=path)
     else:
         dataframe = empty_dataframe(description)
-    variable_types = {variable['id']: description_to_variable(variable) for variable in description['variables']}
-    entityset.entity_from_dataframe(
+    variable_types = {variable['id']: (description_to_variable(variable), variable)
+                      for variable in description['variables']}
+    es = entityset.entity_from_dataframe(
         description['id'],
         dataframe,
         index=description.get('index'),
         time_index=description.get('time_index'),
         secondary_time_index=description['properties'].get('secondary_time_index'),
-        variable_types=variable_types)
+        variable_types={variable: variable_types[variable][0] for variable in variable_types})
+    for variable in es[description['id']].variables:
+        interesting_values = variable_types[variable.id][1]['properties']['interesting_values']
+        interesting_values = pd.read_json(interesting_values, typ="series")
+        variable.interesting_values = interesting_values
 
 
 def description_to_entityset(description, **kwargs):

@@ -17,8 +17,9 @@ from featuretools.variable_types.variable import (
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-S3_URL = "s3://featuretools-static/test_serialization_data_2.0.0.tar"
-URL = 'https://featuretools-static.s3.amazonaws.com/test_serialization_data_2.0.0.tar'
+TEST_FILE = "test_serialization_data_entityset_schema_2.0.0.tar"
+S3_URL = "s3://featuretools-static/" + TEST_FILE
+URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
 
 
@@ -116,12 +117,40 @@ def test_to_pickle(es, tmpdir):
     assert type(new_es['log'].df['latlong'][0]) == tuple
 
 
+def test_to_pickle_interesting_values(es, tmpdir):
+    es.add_interesting_values()
+    es.to_pickle(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_to_pickle_manual_interesting_values(es, tmpdir):
+    es['log']['product_id'].interesting_values = ["coke_zero"]
+    es.to_pickle(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert es.__eq__(new_es, deep=True)
+
+
 def test_to_parquet(es, tmpdir):
     es.to_parquet(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
     assert type(es['log'].df['latlong'][0]) == tuple
     assert type(new_es['log'].df['latlong'][0]) == tuple
+
+
+def test_to_parquet_manual_interesting_values(es, tmpdir):
+    es['log']['product_id'].interesting_values = ["coke_zero"]
+    es.to_pickle(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_to_parquet_interesting_values(es, tmpdir):
+    es.add_interesting_values()
+    es.to_parquet(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert es.__eq__(new_es, deep=True)
 
 
 def test_to_parquet_with_lti(tmpdir):
