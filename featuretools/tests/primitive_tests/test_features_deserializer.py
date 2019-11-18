@@ -123,7 +123,7 @@ def test_earlier_schema_version(es):
 
         if raises:
             warning_text = ('The schema version of the saved features'
-                            '(%s) is no longer supported by this version'
+                            '(%s) is no longer supported by this version '
                             'of featuretools. Attempting to load features ...'
                             % (version))
         else:
