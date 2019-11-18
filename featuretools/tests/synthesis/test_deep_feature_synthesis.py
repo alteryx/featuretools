@@ -1030,7 +1030,7 @@ def test_primitive_options_with_globals(es):
 
     # non-overlapping ignore_variables
     options = {'num_unique': {'ignore_variables': {'customers': ['engagement_level']}}}
-    dfs_obj = DeepFeatureSynthesis(target_entity_id='cohorts',
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
                                    entityset=es,
                                    ignore_variables={'customers': [u'région_id']},
                                    primitive_options=options)
@@ -1040,8 +1040,9 @@ def test_primitive_options_with_globals(es):
         entities = [d.entity.id for d in deps]
         identities = [d for d in deps if isinstance(d, IdentityFeature)]
         variables = [d.variable.id for d in identities]
+        assert f.get_name() != u'région_id'
         if 'customers' in entities:
-            assert u'region_id' not in variables
+            assert u'région_id' not in variables
         if isinstance(f.primitive, NumUnique):
             if 'customers' in entities:
                 assert 'engagement_level' not in variables
@@ -1067,6 +1068,7 @@ def test_primitive_options_with_globals(es):
         entities = [d.entity.id for d in deps]
         identities = [d for d in deps if isinstance(d, IdentityFeature)]
         variables = [d.variable.id for d in identities]
+        assert f.get_name() != 'customers.age'
         if isinstance(f.primitive, Mode):
             assert 'sessions' in entities or 'customers' in entities
             if 'customers' in entities:
