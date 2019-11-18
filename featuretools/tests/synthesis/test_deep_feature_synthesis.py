@@ -1084,7 +1084,8 @@ def test_primitive_options_with_globals(es):
         else:
             assert 'sessions' not in entities
             if 'customers' in entities:
-                assert 'age' not in variables
+                for variable in [v for v in variables if isinstance(v, IdentityFeature)]:
+                    assert 'age' != variable.get_name()
 
 
 def test_primitive_options_groupbys(es):
