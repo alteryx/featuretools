@@ -1,6 +1,7 @@
 import warnings
 
 from featuretools import primitives
+from featuretools.feature_base import IdentityFeature
 from featuretools.variable_types import Discrete
 
 
@@ -127,54 +128,38 @@ def _init_option_dict(key, option_dict, es):
             initialized_option_dict[option_key] = {key: set(option[key]) for key in option}
     # initialize ignore_entities and ignore_variables to empty sets if not present
     if 'ignore_variables' not in initialized_option_dict:
-        initialized_option_dict['ignore_variables'] = set()
+        initialized_option_dict['ignore_variables'] = dict()
     if 'ignore_entities' not in initialized_option_dict:
         initialized_option_dict['ignore_entities'] = set()
     return initialized_option_dict
 
 
-def variable_filter(f, options):
-    dependencies = f.get_dependencies(deep=True)
-    dependencies = [f] if not dependencies else dependencies + [f]
-    for base_f in dependencies:
-        if 'include_variables' in options and base_f.entity.id in options['include_variables']:
-            if base_f.get_name() in options['include_variables'][base_f.entity.id]:
-                continue  # this is a valid feature, go to next
-            else:
-                return False  # this is not an included feature
-        if base_f.entity.id in options['ignore_variables'] and \
-                base_f.get_name() in options['ignore_variables'][base_f.entity.id]:
-            return False  # ignore this feature
-        if 'include_entities' in options and \
-                base_f.entity.id not in options['include_entities']:
-            return False  # not an included entity
-        elif base_f.entity.id in options['ignore_entities']:
-            return False  # ignore the entity
-    return True
-
-
-def groupby_filter(f, options):
-    if not issubclass(f.variable_type, Discrete):
+def variable_filter(f, options, groupby=False):
+    if groupby and not issubclass(f.variable_type, Discrete):
         return False
+    include_vars = 'include_groupby_variables' if groupby else 'include_variables'
+    ignore_vars = 'ignore_groupby_variables' if groupby else 'ignore_variables'
+    include_entities = 'include_groupby_entities' if groupby else 'include_entities'
+    ignore_entities = 'ignore_groupby_entities' if groupby else 'ignore_entities'
+
     dependencies = f.get_dependencies(deep=True)
     dependencies = [f] if not dependencies else dependencies + [f]
     for base_f in dependencies:
-        if 'include_groupby_variables' in options and \
-                base_f.entity.id in options['include_groupby_variables']:
-            if base_f.get_name() in options['include_groupby_variables'][base_f.entity.id]:
-                continue
-            else:
-                return False
-        if 'ignore_groupby_variables' in options and \
-                base_f.entity.id in options['ignore_groupby_variables']:
-            if base_f.get_name() in options['ignore_groupby_variables'][base_f.entity.id]:
-                return False
-        if 'include_groupby_entities' in options and \
-                base_f.entity.id not in options['include_groupby_entities']:
-            return False
-        elif 'ignore_groupby_entities' in options and \
-                base_f.entity.id in options['ignore_groupby_entities']:
-            return False
+        if isinstance(base_f, IdentityFeature):
+            if include_vars in options and base_f.entity.id in options[include_vars]:
+                if base_f.get_name() in options[include_vars][base_f.entity.id]:
+                    continue  # this is a valid feature, go to next
+                else:
+                    return False  # this is not an included feature
+            if ignore_vars in options and base_f.entity.id in options[ignore_vars]:
+                if base_f.get_name() in options[ignore_vars][base_f.entity.id]:
+                    return False  # ignore this feature
+        if include_entities in options and \
+                base_f.entity.id not in options[include_entities]:
+            return False  # not an included entity
+        elif ignore_entities in options and \
+                base_f.entity.id in options[ignore_entities]:
+            return False  # ignore the entity
     return True
 
 
@@ -205,17 +190,17 @@ def filter_groupby_matches_by_options(groupby_matches, options):
 
 
 def filter_matches_by_options(matches, options, groupby=False):
-    match_filter = groupby_filter if groupby else variable_filter
+    # match_filter = groupby_filter if groupby else variable_filter
     # If more than one option, than need to handle each for each input
     if len(options) > 1:
         def is_valid_match(match):
-            if all([match_filter(m, option) for m, option in zip(match, options)]):
+            if all([variable_filter(m, option, groupby) for m, option in zip(match, options)]):
                 return True
             else:
                 return False
     else:
         def is_valid_match(match):
-            if all([match_filter(f, options[0]) for f in match]):
+            if all([variable_filter(f, options[0], groupby) for f in match]):
                 return True
             else:
                 return False
