@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Added GitHub Action to auto upload releases to PyPI (:pr:`816`)
     * Fixes
         * Fix issue with converting to pickle or parquet after adding interesting features (:pr:`798`)
         * Prevent DFS from creating Identity Features of globally ignored variables (:pr:`819`)
@@ -18,7 +19,7 @@ Changelog
         * Refactor test entityset creation to avoid saving to disk (:pr:`813`)
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`, :user:`systemshift`, :user:`frances-h`
+    :user:`rwedge`, :user:`systemshift`, :user:`frances-h`, :user:`jeff-hernandez`
 
 **v0.12.0 Oct 31, 2019**
     * Enhancements
