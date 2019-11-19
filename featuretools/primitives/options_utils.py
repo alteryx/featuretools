@@ -190,7 +190,6 @@ def filter_groupby_matches_by_options(groupby_matches, options):
 
 
 def filter_matches_by_options(matches, options, groupby=False):
-    # match_filter = groupby_filter if groupby else variable_filter
     # If more than one option, than need to handle each for each input
     if len(options) > 1:
         def is_valid_match(match):
