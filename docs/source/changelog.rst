@@ -6,6 +6,7 @@ Changelog
     * Enhancements
     * Fixes
         * Fix issue where some primitive options would not be applied (:pr:`807`)
+        * Fix issue with converting to pickle or parquet after adding interesting features (:pr:`798`)
     * Changes
         * Remove python 2.7 support from serialize.py (:pr:`812`)
     * Documentation Changes
