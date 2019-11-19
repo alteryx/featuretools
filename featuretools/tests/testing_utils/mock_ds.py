@@ -114,7 +114,7 @@ def make_ecommerce_dataframes(with_integer_time_index=False):
         'cancel_reason': ["reason_1", "reason_2", "reason_1"],
         'engagement_level': [1, 3, 2],
         'full_name': ['Mr. John Doe', 'Doe, Mrs. Jane', 'James Brown'],
-        'email': ['john.smith@example.com', '', 'team@featuretools.com'],
+        'email': ['john.smith@example.com', np.nan, 'team@featuretools.com'],
         'phone_number': ['5555555555', '555-555-5555', '1-(555)-555-5555'],
         'date_of_birth': customer_times['date_of_birth'],
     })
