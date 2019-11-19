@@ -14,6 +14,7 @@ Changelog
     * Testing Changes
         * Use multiple CPUS to run tests on CI (:pr:`811`)
         * Refactor test entityset creation to avoid saving to disk (:pr:`813`)
+        * Replace get_values() with to_numpy() to remove warnings (:pr:`820`)
 
     Thanks to the following people for contributing to this release:
     :user:`rwedge`, :user:`systemshift`, :user:`frances-h`
