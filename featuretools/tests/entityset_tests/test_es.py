@@ -128,7 +128,7 @@ def test_query_by_id_with_time(es):
         instance_vals=[0, 1, 2, 3, 4],
         time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
 
-    assert df['id'].get_values().tolist() == [0, 1, 2]
+    assert df['id'].to_numpy().tolist() == [0, 1, 2]
 
 
 def test_query_by_variable_with_time(es):
@@ -138,8 +138,8 @@ def test_query_by_variable_with_time(es):
 
     true_values = [
         i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
-    assert df['id'].get_values().tolist() == list(range(10))
-    assert df['value'].get_values().tolist() == true_values
+    assert df['id'].to_numpy().tolist() == list(range(10))
+    assert df['value'].to_numpy().tolist() == true_values
 
 
 def test_query_by_variable_with_training_window(es):
@@ -148,8 +148,8 @@ def test_query_by_variable_with_training_window(es):
         time_last=datetime(2011, 4, 9, 10, 50, 0),
         training_window='15m')
 
-    assert df['id'].get_values().tolist() == [9]
-    assert df['value'].get_values().tolist() == [0]
+    assert df['id'].to_numpy().tolist() == [9]
+    assert df['value'].to_numpy().tolist() == [0]
 
 
 def test_query_by_indexed_variable(es):
@@ -157,7 +157,7 @@ def test_query_by_indexed_variable(es):
         instance_vals=['taco clock'],
         variable_id='product_id')
 
-    assert df['id'].get_values().tolist() == [15, 16]
+    assert df['id'].to_numpy().tolist() == [15, 16]
 
 
 def test_check_variables_and_dataframe():
