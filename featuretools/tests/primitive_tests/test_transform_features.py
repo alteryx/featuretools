@@ -156,6 +156,14 @@ def test_diff_single_value(es):
     diff = ft.Feature(es['stores']['num_square_feet'], groupby=es['stores'][u'région_id'], primitive=Diff)
     feature_set = FeatureSet([diff])
     calculator = FeatureSetCalculator(es, feature_set=feature_set)
+    df = calculator.run(np.array([4]))
+    assert df[diff.get_name()][4] == 6000.0
+
+
+def test_diff_single_value_is_nan(es):
+    diff = ft.Feature(es['stores']['num_square_feet'], groupby=es['stores'][u'région_id'], primitive=Diff)
+    feature_set = FeatureSet([diff])
+    calculator = FeatureSetCalculator(es, feature_set=feature_set)
     df = calculator.run(np.array([5]))
     assert df.shape[0] == 1
     assert df[diff.get_name()].dropna().shape[0] == 0
