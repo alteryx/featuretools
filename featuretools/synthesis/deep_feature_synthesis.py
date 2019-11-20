@@ -223,13 +223,12 @@ class DeepFeatureSynthesis(object):
             primitive_options = {}
         all_primitives = self.trans_primitives + self.agg_primitives + \
             self.where_primitives + self.groupby_trans_primitives
-        self.primitive_options, self.ignore_entities =\
+        self.primitive_options, self.ignore_entities, self.ignore_variables =\
             generate_all_primitive_options(all_primitives,
                                            primitive_options,
                                            self.ignore_entities,
                                            self.ignore_variables,
                                            self.es)
-
         self.seed_features = seed_features or []
         self.drop_exact = drop_exact or []
         self.drop_contains = drop_contains or []
@@ -484,6 +483,8 @@ class DeepFeatureSynthesis(object):
         """
         variables = entity.variables
         for v in variables:
+            if v.name in self.ignore_variables[entity.id]:
+                continue
             new_f = IdentityFeature(variable=v)
             self._handle_new_feature(all_features=all_features,
                                      new_feature=new_f)
