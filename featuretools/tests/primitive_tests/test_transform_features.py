@@ -377,15 +377,14 @@ def test_boolean_multiply():
             assert fm[col_name].equals(df[row[0]] * df[row[1]])
 
 
-# P TODO: rewrite this  test
 def test_arithmetic_of_transform(es):
     diff1 = ft.Feature([es['log']['value']], primitive=Diff)
     diff2 = ft.Feature([es['log']['value_2']], primitive=Diff)
 
-    to_test = [(AddNumeric, [np.nan, 14., -7., 3.]),
-               (SubtractNumeric, [np.nan, 6., -3., 1.]),
-               (MultiplyNumeric, [np.nan, 40., 10., 2.]),
-               (DivideNumeric, [np.nan, 2.5, 2.5, 2.])]
+    to_test = [(AddNumeric, [np.nan, 7., -7., 10.]),
+               (SubtractNumeric, [np.nan, 3., -3., 4.]),
+               (MultiplyNumeric, [np.nan, 10., 10., 21.]),
+               (DivideNumeric, [np.nan, 2.5, 2.5, 2.3333333333333335])]
 
     features = []
     for test in to_test:
@@ -393,7 +392,7 @@ def test_arithmetic_of_transform(es):
 
     feature_set = FeatureSet(features)
     calculator = FeatureSetCalculator(es, feature_set=feature_set)
-    df = calculator.run(np.array([0, 2, 11, 13]))
+    df = calculator.run(np.array([0, 2, 12, 13]))
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert np.isnan(v.pop(0))
