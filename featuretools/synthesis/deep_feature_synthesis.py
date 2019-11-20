@@ -1,8 +1,6 @@
 import logging
 from collections import defaultdict
 
-import pandas as pd
-
 from featuretools import primitives, variable_types
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import (
@@ -518,7 +516,7 @@ class DeepFeatureSynthesis(object):
             # Features can contain a stale EntitySet reference without
             # interesting_values
             variable = self.es[feat.variable.entity.id][feat.variable.id]
-            if variable.interesting_values.equals(pd.Series()):
+            if variable.interesting_values.empty:
                 continue
 
             for val in variable.interesting_values:
