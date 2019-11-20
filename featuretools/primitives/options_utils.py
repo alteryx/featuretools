@@ -142,8 +142,7 @@ def variable_filter(f, options, groupby=False):
     include_entities = 'include_groupby_entities' if groupby else 'include_entities'
     ignore_entities = 'ignore_groupby_entities' if groupby else 'ignore_entities'
 
-    dependencies = f.get_dependencies(deep=True)
-    dependencies = [f] if not dependencies else dependencies + [f]
+    dependencies = f.get_dependencies(deep=True) + [f]
     for base_f in dependencies:
         if isinstance(base_f, IdentityFeature):
             if include_vars in options and base_f.entity.id in options[include_vars]:

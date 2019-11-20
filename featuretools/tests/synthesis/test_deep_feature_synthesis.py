@@ -981,7 +981,7 @@ def test_primitive_options(es):
                 if identity_base.entity.id == 'customers':
                     assert identity_base.get_name() == 'age'
         if isinstance(f.primitive, Mean):
-            assert 'customers' in entities
+            assert all([entity in ['customers'] for entity in entities])
         if isinstance(f.primitive, Mode):
             assert 'sessions' not in entities
         if isinstance(f.primitive, NumUnique):
@@ -1014,7 +1014,7 @@ def test_primitive_options(es):
                     assert identity_base.get_name() == 'signup_date' or \
                         identity_base.get_name() == 'upgrade_date'
         if isinstance(f.primitive, Year):
-            assert 'customers' in entities
+            assert all([entity in ['customers'] for entity in entities])
 
 
 def test_primitive_options_with_globals(es):
@@ -1072,13 +1072,13 @@ def test_primitive_options_with_globals(es):
         entities = [d.entity.id for d in deps]
         variables = [d for d in deps if isinstance(d, IdentityFeature)]
         if isinstance(f.primitive, Mode):
-            assert 'sessions' in entities or 'customers' in entities
+            assert [all([entity in ['sessions', 'customers'] for entity in entities])]
             for identity_base in variables:
                 assert not (identity_base.entity.id == 'customers' and
                             (identity_base.get_name() == 'age' or
                              identity_base.get_name() == u'région_id'))
         elif isinstance(f.primitive, NumUnique):
-            assert 'sessions' in entities or 'customers' in entities
+            assert [all([entity in ['sessions', 'customers'] for entity in entities])]
             for identity_base in variables:
                 if identity_base.entity.id == 'sessions':
                     assert identity_base.get_name() == 'device_type'
@@ -1157,7 +1157,7 @@ def test_primitive_options_multiple_inputs(es):
         entities = [d.entity.id for d in deps]
         variables = [d.get_name() for d in deps]
         if f.primitive.name == 'trend':
-            assert 'log' in entities
+            assert all([entity in ['log'] for entity in entities])
             assert 'datetime' in variables
             if len(variables) == 2:
                 assert 'value' != variables[0]
