@@ -6,7 +6,7 @@ Changelog
     * Enhancements
         * Added GitHub Action to auto upload releases to PyPI (:pr:`816`)
     * Fixes
-        * Fix issue with converting to pickle or parquet after adding interesting features (:pr:`798`)
+        * Fix issue with converting to pickle or parquet after adding interesting features (:pr:`798`, :pr:`823`)
     * Changes
         * Remove python 2.7 support from serialize.py (:pr:`812`)
     * Documentation Changes
