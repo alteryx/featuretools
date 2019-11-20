@@ -16,6 +16,7 @@ from featuretools.primitives import (  # CumMean,
     Count,
     CumCount,
     CumMean,
+    CumMin,
     CumSum,
     Day,
     Diff,
@@ -909,12 +910,12 @@ def test_primitive_options_errors(es):
     invalid_entity = {'mode': {'include_entities': ['invalid_entity']}}
     invalid_variable_entity = {'mode': {'include_variables': {'invalid_entity': ['product_id']}}}
     invalid_variable = {'mode': {'include_variables': {'sessions': ['invalid_variable']}}}
-    key_error_text = "Unrecognized primitive option \'ignore_entity\' for mode"
-    list_error_text = "Incorrect type formatting for \'ignore_entities\' for mode"
-    dict_error_text = "Incorrect type formatting for \'ignore_variables\' for mode"
+    key_error_text = "Unrecognized primitive option 'ignore_entity' for mode"
+    list_error_text = "Incorrect type formatting for 'ignore_entities' for mode"
+    dict_error_text = "Incorrect type formatting for 'ignore_variables' for mode"
     conflicting_error_text = "Multiple options found for primitive mode"
-    invalid_entity_warning = "Entity \'invalid_entity\' not in entityset"
-    invalid_variable_warning = "Variable \'invalid_variable\' not in entity \'sessions\'"
+    invalid_entity_warning = "Entity 'invalid_entity' not in entityset"
+    invalid_variable_warning = "Variable 'invalid_variable' not in entity 'sessions'"
     with pytest.raises(KeyError, match=key_error_text):
         DeepFeatureSynthesis(target_entity_id='customers',
                              entityset=es,
@@ -972,20 +973,21 @@ def test_primitive_options(es):
                                    primitive_options=options)
     features = dfs_obj.build_features()
     for f in features:
-        deps = f.get_dependencies()
+        deps = f.get_dependencies(deep=True)
         entities = [d.entity.id for d in deps]
-        identities = [d for d in deps if isinstance(d, IdentityFeature)]
-        variables = [d.variable.id for d in identities]
+        variables = [d for d in deps if isinstance(d, IdentityFeature)]
         if isinstance(f.primitive, Sum):
-            if 'customers' in entities:
-                assert 'age' in variables or variables == []
+            for identity_base in variables:
+                if identity_base.entity.id == 'customers':
+                    assert identity_base.get_name() == 'age'
         if isinstance(f.primitive, Mean):
-            assert 'customers' in entities
+            assert all([entity in ['customers'] for entity in entities])
         if isinstance(f.primitive, Mode):
             assert 'sessions' not in entities
         if isinstance(f.primitive, NumUnique):
-            if 'customers' in entities:
-                assert 'engagement_level' not in variables
+            for identity_base in variables:
+                assert not (identity_base.entity.id == 'customers' and
+                            identity_base.get_name() == 'engagement_level')
 
     options = {'month': {'ignore_variables': {'customers': ['date_of_birth']}},
                'day': {'include_variables': {'customers': ['signup_date', 'upgrade_date']}},
@@ -999,18 +1001,20 @@ def test_primitive_options(es):
     features = dfs_obj.build_features()
     assert not any([isinstance(f, NumCharacters) for f in features])
     for f in features:
-        deps = f.get_dependencies()
+        deps = f.get_dependencies(deep=True)
         entities = [d.entity.id for d in deps]
-        identities = [d for d in deps if isinstance(d, IdentityFeature)]
-        variables = [d.variable.id for d in identities]
+        variables = [d for d in deps if isinstance(d, IdentityFeature)]
         if isinstance(f.primitive, Month):
-            if 'customers' in entities:
-                assert 'date_of_birth' not in variables
+            for identity_base in variables:
+                assert not (identity_base.entity.id == 'customers' and
+                            identity_base.get_name() == 'date_of_birth')
         if isinstance(f.primitive, Day):
-            if 'customers' in entities:
-                assert 'signup_date' in variables or 'upgrade_date' in variables
+            for identity_base in variables:
+                if identity_base.entity.id == 'customers':
+                    assert identity_base.get_name() == 'signup_date' or \
+                        identity_base.get_name() == 'upgrade_date'
         if isinstance(f.primitive, Year):
-            assert 'customers' in entities
+            assert all([entity in ['customers'] for entity in entities])
 
 
 def test_primitive_options_with_globals(es):
@@ -1036,15 +1040,16 @@ def test_primitive_options_with_globals(es):
                                    primitive_options=options)
     features = dfs_obj.build_features()
     for f in features:
-        deps = f.get_dependencies()
+        deps = f.get_dependencies(deep=True)
         entities = [d.entity.id for d in deps]
-        identities = [d for d in deps if isinstance(d, IdentityFeature)]
-        variables = [d.variable.id for d in identities]
-        if 'customers' in entities:
-            assert u'region_id' not in variables
+        variables = [d for d in deps if isinstance(d, IdentityFeature)]
+        for identity_base in variables:
+            assert not (identity_base.entity.id == 'customers' and
+                        identity_base.get_name() == u'région_id')
         if isinstance(f.primitive, NumUnique):
-            if 'customers' in entities:
-                assert 'engagement_level' not in variables
+            for identity_base in variables:
+                assert not (identity_base.entity.id == 'customers' and
+                            identity_base.get_name() == 'engagement_level')
 
     # Overlapping globals/options with ignore_entities
     options = {'mode': {'include_entities': ['sessions', 'customers'],
@@ -1063,58 +1068,67 @@ def test_primitive_options_with_globals(es):
         # ignoring cohorts means no features are created
         assert not isinstance(f.primitive, Month)
 
-        deps = f.get_dependencies()
+        deps = f.get_dependencies(deep=True)
         entities = [d.entity.id for d in deps]
-        identities = [d for d in deps if isinstance(d, IdentityFeature)]
-        variables = [d.variable.id for d in identities]
+        variables = [d for d in deps if isinstance(d, IdentityFeature)]
         if isinstance(f.primitive, Mode):
-            assert 'sessions' in entities or 'customers' in entities
-            if 'customers' in entities:
-                assert 'age' not in variables
-                assert u'région_id' not in variables
+            assert [all([entity in ['sessions', 'customers'] for entity in entities])]
+            for identity_base in variables:
+                assert not (identity_base.entity.id == 'customers' and
+                            (identity_base.get_name() == 'age' or
+                             identity_base.get_name() == u'région_id'))
         elif isinstance(f.primitive, NumUnique):
-            assert 'sessions' in entities or 'customers' in entities
-            if 'sessions' in entities:
-                assert 'device_type' in variables or variables == []
+            assert [all([entity in ['sessions', 'customers'] for entity in entities])]
+            for identity_base in variables:
+                if identity_base.entity.id == 'sessions':
+                    assert identity_base.get_name() == 'device_type'
         # All other primitives ignore 'sessions' and 'age'
         else:
             assert 'sessions' not in entities
-            if 'customers' in entities:
-                assert 'age' not in variables
+            for identity_base in variables:
+                assert not (identity_base.entity.id == 'customers' and
+                            identity_base.get_name() == 'age')
 
 
 def test_primitive_options_groupbys(es):
-    options = {'cum_sum': {'include_groupby_variables': {'customers': [u'région_id']},
-                           'ignore_groupby_variables': {'sessions': ['customer_id']}},
-               'cum_mean': {'ignore_groupby_variables': {'customers': [u'région_id',
-                                                                       'id']}},
-               'cum_count': {'include_entities': ['customers'],
-                             'include_groupby_variables': {'customers': [u"région_id",
-                                                                         "cohort"]}},
-               'cum_min': {'ignore_entities': ['customers']},
-               'cum_max': {'include_entities': ['cohorts']}}
-    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+    options = {'cum_count': {'include_groupby_entities': ['log', 'customers']},
+               'cum_sum': {'ignore_groupby_entities': ['sessions']},
+               'cum_mean': {'ignore_groupby_variables': {'customers': [u'région_id'],
+                                                         'log': ['session_id']}},
+               'cum_min': {'include_groupby_variables': {'sessions': ['customer_id', 'device_type']}}}
+
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[],
+                                   max_depth=3,
                                    groupby_trans_primitives=['cum_sum',
                                                              'cum_count',
                                                              'cum_min',
-                                                             'cum_max',
                                                              'cum_mean'],
                                    primitive_options=options)
     features = dfs_obj.build_features()
-    assert feature_with_name(features, u'CUM_SUM(age) by région_id')
     for f in features:
-        # These either have nothing to groupby or don't include the target entity so shouldn't create features
-        assert f.primitive.name not in ['cum_min', 'cum_max', 'cum_max']
+        if isinstance(f, ft.GroupByTransformFeature):
+            deps = f.groupby.get_dependencies(deep=True)
+            entities = [d.entity.id for d in deps] + [f.groupby.entity.id]
+            variables = [d for d in deps if isinstance(d, IdentityFeature)]
+            variables += [f.groupby] if isinstance(f.groupby, IdentityFeature) else []
         if isinstance(f.primitive, CumMean):
-            assert f.groupby.variable.id not in [u'région_id', 'id']
+            for identity_groupby in variables:
+                assert not (identity_groupby.entity.id == 'customers' and
+                            identity_groupby.get_name() == u'région_id')
+                assert not (identity_groupby.entity.id == 'log' and
+                            identity_groupby.get_name() == 'session_id')
         if isinstance(f.primitive, CumCount):
-            assert f.groupby.variable.id in [u'région_id', 'cohort']
+            assert all([entity in ['log', 'customers'] for entity in entities])
         if isinstance(f.primitive, CumSum):
-            deps = f.get_dependencies()
-            entities = [d.entity.id for d in deps]
-            if 'customers' in entities:
-                assert f.groupby.variable.id == u'région_id'
+            assert 'sessions' not in entities
+        if isinstance(f.primitive, CumMin):
+            for identity_groupby in variables:
+                if identity_groupby.entity.id == 'sessions':
+                    assert identity_groupby.get_name() == 'customer_id' or\
+                        identity_groupby.get_name() == 'device_type'
 
 
 def test_primitive_options_multiple_inputs(es):
@@ -1141,10 +1155,9 @@ def test_primitive_options_multiple_inputs(es):
     for f in features:
         deps = f.get_dependencies()
         entities = [d.entity.id for d in deps]
-        identities = [d for d in deps if isinstance(d, IdentityFeature)]
-        variables = [d.variable.id for d in identities]
+        variables = [d.get_name() for d in deps]
         if f.primitive.name == 'trend':
-            assert 'log' in entities
+            assert all([entity in ['log'] for entity in entities])
             assert 'datetime' in variables
             if len(variables) == 2:
                 assert 'value' != variables[0]
