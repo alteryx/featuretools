@@ -1034,7 +1034,7 @@ def test_primitive_options_with_globals(es):
 
     # non-overlapping ignore_variables
     options = {'num_unique': {'ignore_variables': {'customers': ['engagement_level']}}}
-    dfs_obj = DeepFeatureSynthesis(target_entity_id='cohorts',
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
                                    entityset=es,
                                    ignore_variables={'customers': [u'région_id']},
                                    primitive_options=options)
@@ -1055,7 +1055,8 @@ def test_primitive_options_with_globals(es):
     options = {'mode': {'include_entities': ['sessions', 'customers'],
                         'ignore_variables': {'customers': [u'région_id']}},
                'num_unique': {'include_entities': ['sessions', 'customers'],
-                              'include_variables': {'sessions': ['device_type']}},
+                              'include_variables': {'sessions': ['device_type'],
+                                                    'customers': ['age']}},
                'month': {'ignore_variables': {'cohorts': ['cohort_end']}}}
     dfs_obj = DeepFeatureSynthesis(target_entity_id='cohorts',
                                    entityset=es,
