@@ -6,6 +6,7 @@ Changelog
     * Enhancements
         * Added GitHub Action to auto upload releases to PyPI (:pr:`816`)
     * Fixes
+        * Fix issue where some primitive options would not be applied (:pr:`807`)
         * Fix issue with converting to pickle or parquet after adding interesting features (:pr:`798`)
         * Prevent DFS from creating Identity Features of globally ignored variables (:pr:`819`)
     * Changes
@@ -16,7 +17,8 @@ Changelog
         * Fix release title formatting in changelog (:pr:`806`)
     * Testing Changes
         * Use multiple CPUS to run tests on CI (:pr:`811`)
-        * Refactor test entityset creation to avoid saving to disk (:pr:`813`,:pr:`821`)
+        * Refactor test entityset creation to avoid saving to disk (:pr:`813`, :pr:`821`)
+        * Remove get_values() from test_es.py to remove warnings (:pr:`820`)
 
     Thanks to the following people for contributing to this release:
     :user:`rwedge`, :user:`systemshift`, :user:`frances-h`, :user:`jeff-hernandez`
