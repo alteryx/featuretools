@@ -160,6 +160,16 @@ def test_diff_single_value(es):
     assert df[diff.get_name()][4] == 6000.0
 
 
+def test_diff_reordered(es):
+    sum_feat = ft.Feature(es['log']['value'], parent_entity=es["sessions"], primitive=Sum)
+    diff = ft.Feature(sum_feat, primitive=Diff)
+    feature_set = FeatureSet([diff])
+    calculator = FeatureSetCalculator(es, feature_set=feature_set)
+    df = calculator.run(np.array([4, 2]))
+    assert df[diff.get_name()][4] == 16
+    assert df[diff.get_name()][2] == -6
+
+
 def test_diff_single_value_is_nan(es):
     diff = ft.Feature(es['stores']['num_square_feet'], groupby=es['stores'][u'région_id'], primitive=Diff)
     feature_set = FeatureSet([diff])
