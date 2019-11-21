@@ -4,6 +4,7 @@ import sys
 import warnings
 from itertools import zip_longest
 
+import boto3
 from botocore import UNSIGNED
 from botocore.config import Config
 from smart_open import open
@@ -128,4 +129,13 @@ def use_smartopen_features(path, features_dict=None, transport_params=None, read
             json.dump(features_dict, f)
 
 
-ANON_TRANSPORT_PARAMS = {'resource_kwargs': {'config': Config(signature_version=UNSIGNED)}}
+def get_transport_params(profile_name):
+    if isinstance(profile_name, str):
+        transport_params = {'session': boto3.Session(profile_name=profile_name)}
+    elif profile_name is False or boto3.Session().get_credentials() is None:
+        transport_params = {
+            'resource_kwargs': {'config': Config(signature_version=UNSIGNED)}
+        }
+    else:
+        transport_params = None
+    return transport_params

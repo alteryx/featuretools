@@ -4,15 +4,14 @@ import tarfile
 import tempfile
 from pathlib import Path
 
-import boto3
 import pandas as pd
 
 from featuretools.entityset.relationship import Relationship
 from featuretools.entityset.serialize import FORMATS
 from featuretools.utils.gen_utils import (
     check_schema_version,
-    use_smartopen_es,
-    ANON_TRANSPORT_PARAMS
+    get_transport_params,
+    use_smartopen_es
 )
 from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.variable_types.variable import LatLong, find_variable_types
@@ -193,15 +192,10 @@ def read_entityset(path, profile_name=None, **kwargs):
         with tempfile.TemporaryDirectory() as tmpdir:
             file_name = Path(path).name
             file_path = os.path.join(tmpdir, file_name)
-            session = boto3.Session()
+            transport_params = None
 
-            if not _is_url(path) and isinstance(profile_name, str):
-                transport_params = {'session': boto3.Session(profile_name=profile_name)}
-            elif not _is_url(path) and (profile_name is False or  \
-                                        session.get_credentials() is None):
-                transport_params = ANON_TRANSPORT_PARAMS
-            else:
-                transport_params = None
+            if _is_s3(path):
+                transport_params = get_transport_params(profile_name)
 
             use_smartopen_es(file_path, path, transport_params)
             with tarfile.open(str(file_path)) as tar:
