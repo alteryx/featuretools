@@ -6,7 +6,7 @@ import tempfile
 
 import boto3
 
-from featuretools.utils.gen_utils import use_s3fs_es, use_smartopen_es
+from featuretools.utils.gen_utils import use_smartopen_es, ANON_TRANSPORT_PARAMS
 from featuretools.utils.wrangle import _is_s3, _is_url
 
 FORMATS = ['csv', 'pickle', 'parquet']
@@ -121,17 +121,14 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
             dump_data_description(entityset, tmpdir, **kwargs)
             file_path = create_archive(tmpdir)
 
-            transport_params = {}
             session = boto3.Session()
             if isinstance(profile_name, str):
                 transport_params = {'session': boto3.Session(profile_name=profile_name)}
-                use_smartopen_es(file_path, path, transport_params, read=False)
-            elif profile_name is False:
-                use_s3fs_es(file_path, path, read=False)
-            elif session.get_credentials() is not None:
-                use_smartopen_es(file_path, path, read=False)
+            elif profile_name is False or session.get_credentials() is None:
+                transport_params = ANON_TRANSPORT_PARAMS
             else:
-                use_s3fs_es(file_path, path, read=False)
+                transport_params = None
+            use_smartopen_es(file_path, path, read=False, transport_params=transport_params)
     elif _is_url(path):
         raise ValueError("Writing to URLs is not supported")
     else:

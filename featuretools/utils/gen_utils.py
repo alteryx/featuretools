@@ -118,14 +118,6 @@ def use_smartopen_es(file_path, path, transport_params=None, read=True):
                 shutil.copyfileobj(fin, fout)
 
 
-def use_s3fs_es(file_path, path, read=True):
-    s3 = s3fs.S3FileSystem(anon=True)
-    if read:
-        s3.get(path, file_path)
-    else:
-        s3.put(file_path, path)
-
-
 def use_smartopen_features(path, features_dict=None, transport_params=None, read=True):
     if read:
         with open(path, 'r', encoding='utf-8', transport_params=transport_params) as f:

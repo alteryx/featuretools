@@ -11,4 +11,3 @@ psutil>=5.4.8
 click>=7.0.0
 scikit-learn>=0.20.0
 smart-open>=1.8.4
-s3fs >= 0.2.2
