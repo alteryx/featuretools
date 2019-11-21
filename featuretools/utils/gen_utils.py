@@ -4,7 +4,8 @@ import sys
 import warnings
 from itertools import zip_longest
 
-import s3fs
+from botocore import UNSIGNED
+from botocore.config import Config
 from smart_open import open
 from tqdm import tqdm
 
@@ -135,13 +136,4 @@ def use_smartopen_features(path, features_dict=None, transport_params=None, read
             json.dump(features_dict, f)
 
 
-def use_s3fs_features(file_path, features_dict=None, read=True):
-    s3 = s3fs.S3FileSystem(anon=True)
-    if read:
-        with s3.open(file_path, "r", encoding='utf-8') as f:
-            features_dict = json.load(f)
-            return features_dict
-    else:
-        with s3.open(file_path, "w") as f:
-            features = json.dumps(features_dict, ensure_ascii=False)
-            f.write(features)
+ANON_TRANSPORT_PARAMS = {'resource_kwargs': {'config': Config(signature_version=UNSIGNED)}}

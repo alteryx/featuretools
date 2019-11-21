@@ -17,8 +17,8 @@ from featuretools.feature_base.feature_base import (
 from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools.utils.gen_utils import (
     check_schema_version,
-    use_s3fs_features,
-    use_smartopen_features
+    use_smartopen_features,
+    ANON_TRANSPORT_PARAMS
 )
 from featuretools.utils.wrangle import _is_s3, _is_url
 
@@ -96,13 +96,11 @@ class FeaturesDeserializer(object):
                     session = boto3.Session()
                     if isinstance(profile_name, str):
                         transport_params = {'session': boto3.Session(profile_name=profile_name)}
-                        features_dict = use_smartopen_features(features, transport_params)
-                    elif profile_name is False:
-                        features_dict = use_s3fs_features(features)
-                    elif session.get_credentials() is not None:
-                        features_dict = use_smartopen_features(features)
+                    elif profile_name is False or session.get_credentials() is None:
+                        transport_params = ANON_TRANSPORT_PARAMS
                     else:
-                        features_dict = use_s3fs_features(features)
+                        transport_params = None
+                    features_dict = use_smartopen_features(features, transport_params)
                 else:
                     with open(features, 'r') as f:
                         features_dict = json.load(f)

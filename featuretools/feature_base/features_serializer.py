@@ -3,7 +3,7 @@ import json
 import boto3
 
 from featuretools.utils.gen_utils import (
-    use_s3fs_features,
+    ANON_TRANSPORT_PARAMS,
     use_smartopen_features
 )
 from featuretools.utils.wrangle import _is_s3, _is_url
@@ -92,13 +92,11 @@ class FeaturesSerializer(object):
                 session = boto3.Session()
                 if isinstance(profile_name, str):
                     transport_params = {'session': boto3.Session(profile_name=profile_name)}
-                    use_smartopen_features(location, features_dict, transport_params, read=False)
-                elif profile_name is False:
-                    use_s3fs_features(location, features_dict, read=False)
-                elif session.get_credentials() is not None:
-                    use_smartopen_features(location, features_dict, read=False)
-                else:
-                    use_s3fs_features(location, features_dict, read=False)
+                elif profile_name is False or session.get_credentials() is None:
+                    transport_params = ANON_TRANSPORT_PARAMS
+                else :
+                    transport_params = None
+                use_smartopen_features(location, features_dict, transport_params, read=False)
             else:
                 with open(location, "w") as f:
                     json.dump(features_dict, f)
