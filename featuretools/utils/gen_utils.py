@@ -1,3 +1,4 @@
+import importlib
 import json
 import shutil
 import sys
@@ -102,3 +103,11 @@ def check_schema_version(cls, cls_type):
         # Check if saved has older major version.
         if current[0] > saved[0]:
             warnings.warn(warning_text_outdated)
+
+
+def check_library_installed(library, error_msg):
+    '''Attempts to import library.  If the import fails, raise an error with a custom message'''
+    try:
+        return importlib.import_module(library)
+    except ImportError:
+        raise ImportError(error_msg)

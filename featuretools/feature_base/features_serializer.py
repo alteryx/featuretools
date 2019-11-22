@@ -1,5 +1,6 @@
 import json
 
+from featuretools.utils.gen_utils import check_library_installed
 from featuretools.utils.s3_utils import use_s3fs_features, use_smartopen_features
 from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.version import __version__ as ft_version
@@ -84,10 +85,7 @@ class FeaturesSerializer(object):
             if _is_url(location):
                 raise ValueError("Writing to URLs is not supported")
             if _is_s3(location):
-                try:
-                    import boto3
-                except ImportError:
-                    raise ImportError("Please install boto3 library")
+                boto3 = check_library_installed("boto3", "The boto3 library is required to save feature lists to S3.")
                 session = boto3.Session()
                 if isinstance(profile_name, str):
                     transport_params = {'session': boto3.Session(profile_name=profile_name)}

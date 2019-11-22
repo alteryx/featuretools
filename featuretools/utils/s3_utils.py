@@ -1,19 +1,11 @@
-def smart_open_check():
-    try:
-        from smart_open import open
-    except ImportError:
-        raise ImportError("Please install the smart_open library")
+import shutil
+import json
 
-
-def s3fs_check():
-    try:
-        import s3fs
-    except ImportError:
-        raise ImportError("Please install the s3fs library")
+from featuretools.utils.gen_utils import check_library_installed
 
 
 def use_smartopen_es(file_path, path, transport_params=None, read=True):
-    smart_open_check()
+    open = check_library_installed("smart_open", "The smart_open library is required to upload or download EntitySets from S3 or URLs").open
     if read:
         with open(path, "rb", transport_params=transport_params) as fin:
             with open(file_path, 'wb') as fout:
@@ -25,7 +17,7 @@ def use_smartopen_es(file_path, path, transport_params=None, read=True):
 
 
 def use_s3fs_es(file_path, path, read=True):
-    s3fs_check()
+    s3fs = check_library_installed("s3fs", "The s3fs library is required to upload or download EntitySets from S3")
     s3 = s3fs.S3FileSystem(anon=True)
     if read:
         s3.get(path, file_path)
@@ -34,7 +26,7 @@ def use_s3fs_es(file_path, path, read=True):
 
 
 def use_smartopen_features(path, features_dict=None, transport_params=None, read=True):
-    smart_open_check()
+    open = check_library_installed("smart_open", "The smart_open library is required to upload or download feature lists from S3 or URLs").open
     if read:
         with open(path, 'r', encoding='utf-8', transport_params=transport_params) as f:
             features_dict = json.load(f)
@@ -45,7 +37,7 @@ def use_smartopen_features(path, features_dict=None, transport_params=None, read
 
 
 def use_s3fs_features(file_path, features_dict=None, read=True):
-    s3fs_check()
+    s3fs = check_library_installed("s3fs", "The s3fs library is required to upload or download feature lists from S3")
     s3 = s3fs.S3FileSystem(anon=True)
     if read:
         with s3.open(file_path, "r", encoding='utf-8') as f:
