@@ -1,6 +1,4 @@
 import importlib
-import json
-import shutil
 import sys
 import warnings
 from itertools import zip_longest
@@ -105,8 +103,15 @@ def check_schema_version(cls, cls_type):
             warnings.warn(warning_text_outdated)
 
 
-def check_library_installed(library, error_msg):
-    '''Attempts to import library.  If the import fails, raise an error with a custom message'''
+def import_or_raise(library, error_msg):
+    '''
+    Attempts to import the requested library.  If the import fails, raises an
+    ImportErorr with the supplied
+
+    Args:
+        library (str): the name of the library
+        error_msg (str): error message to return if the import fails
+    '''
     try:
         return importlib.import_module(library)
     except ImportError:

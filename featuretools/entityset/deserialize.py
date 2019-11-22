@@ -8,8 +8,12 @@ import pandas as pd
 
 from featuretools.entityset.relationship import Relationship
 from featuretools.entityset.serialize import FORMATS
-from featuretools.utils.gen_utils import check_library_installed, check_schema_version
-from featuretools.utils.s3_utils import use_s3fs_es, use_smartopen_es
+from featuretools.utils.gen_utils import check_schema_version, import_or_raise
+from featuretools.utils.s3_utils import (
+    BOTO3_ERR_MSG,
+    use_s3fs_es,
+    use_smartopen_es
+)
 from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.variable_types.variable import LatLong, find_variable_types
 
@@ -186,7 +190,7 @@ def read_entityset(path, profile_name=None, **kwargs):
             kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
     '''
     if _is_url(path) or _is_s3(path):
-        boto3 = check_library_installed("boto3", "The boto3 library is required to read EntitySets from URLs or S3.")
+        boto3 = import_or_raise("boto3", BOTO3_ERR_MSG)
 
         with tempfile.TemporaryDirectory() as tmpdir:
             file_name = Path(path).name

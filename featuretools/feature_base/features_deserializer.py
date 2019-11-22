@@ -13,8 +13,12 @@ from featuretools.feature_base.feature_base import (
     TransformFeature
 )
 from featuretools.primitives.utils import PrimitivesDeserializer
-from featuretools.utils.gen_utils import check_library_installed, check_schema_version
-from featuretools.utils.s3_utils import use_s3fs_features, use_smartopen_features
+from featuretools.utils.gen_utils import check_schema_version, import_or_raise
+from featuretools.utils.s3_utils import (
+    BOTO3_ERR_MSG,
+    use_s3fs_features,
+    use_smartopen_features
+)
 from featuretools.utils.wrangle import _is_s3, _is_url
 
 
@@ -88,7 +92,7 @@ class FeaturesDeserializer(object):
                 if _is_url(features):
                     features_dict = use_smartopen_features(features)
                 elif _is_s3(features):
-                    boto3 = check_library_installed("boto3", "The boto3 library is required to read feature lists from S3.")
+                    boto3 = import_or_raise("boto3", BOTO3_ERR_MSG)
                     session = boto3.Session()
                     if isinstance(profile_name, str):
                         transport_params = {'session': boto3.Session(profile_name=profile_name)}
