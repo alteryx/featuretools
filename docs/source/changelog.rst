@@ -12,6 +12,7 @@ Changelog
         * Prevent DFS from creating Identity Features of globally ignored variables (:pr:`819`)
     * Changes
         * Remove python 2.7 support from serialize.py (:pr:`812`)
+        * Make smart_open, boto3, and s3fs optional dependencies (:pr:`827`)
     * Documentation Changes
         * remove python 2.7 support and add 3.7 in install.rst (:pr:`805`)
         * Fix import error in docs (:pr:`803`)
@@ -23,6 +24,12 @@ Changelog
 
     Thanks to the following people for contributing to this release:
     :user:`rwedge`, :user:`systemshift`, :user:`frances-h`, :user:`jeff-hernandez`
+
+**Breaking Changes**
+* The libraries used for downloading or uploading from S3 or URLs are now
+optional and will no longer be installed by default.  To use this functionality
+they will need to be installed separately.
+
 
 **v0.12.0 Oct 31, 2019**
     * Enhancements
