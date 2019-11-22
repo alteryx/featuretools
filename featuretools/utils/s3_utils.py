@@ -5,7 +5,7 @@ from featuretools.utils.gen_utils import import_or_raise
 
 
 def use_smartopen_es(file_path, path, transport_params=None, read=True):
-    open = import_or_raise("smart_open", "The smart_open library is required to upload or download EntitySets from S3 or URLs").open
+    open = import_or_raise("smart_open", SMART_OPEN_ERR_MSG).open
     if read:
         with open(path, "rb", transport_params=transport_params) as fin:
             with open(file_path, 'wb') as fout:
@@ -17,7 +17,7 @@ def use_smartopen_es(file_path, path, transport_params=None, read=True):
 
 
 def use_s3fs_es(file_path, path, read=True):
-    s3fs = import_or_raise("s3fs", "The s3fs library is required to upload or download EntitySets from S3")
+    s3fs = import_or_raise("s3fs", S3FS_ERR_MSG)
     s3 = s3fs.S3FileSystem(anon=True)
     if read:
         s3.get(path, file_path)
