@@ -1,6 +1,6 @@
 import json
 
-from featuretools.utils.gen_utils import (
+from featuretools.utils.s3_utils import (
     get_transport_params,
     use_smartopen_features
 )

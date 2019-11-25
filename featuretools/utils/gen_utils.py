@@ -1,13 +1,8 @@
-import json
-import shutil
+import importlib
 import sys
 import warnings
 from itertools import zip_longest
 
-import boto3
-from botocore import UNSIGNED
-from botocore.config import Config
-from smart_open import open
 from tqdm import tqdm
 
 
@@ -108,34 +103,16 @@ def check_schema_version(cls, cls_type):
             warnings.warn(warning_text_outdated)
 
 
-def use_smartopen_es(file_path, path, transport_params=None, read=True):
-    if read:
-        with open(path, "rb", transport_params=transport_params) as fin:
-            with open(file_path, 'wb') as fout:
-                shutil.copyfileobj(fin, fout)
-    else:
-        with open(file_path, 'rb') as fin:
-            with open(path, 'wb', transport_params=transport_params) as fout:
-                shutil.copyfileobj(fin, fout)
+def import_or_raise(library, error_msg):
+    '''
+    Attempts to import the requested library.  If the import fails, raises an
+    ImportErorr with the supplied
 
-
-def use_smartopen_features(path, features_dict=None, transport_params=None, read=True):
-    if read:
-        with open(path, 'r', encoding='utf-8', transport_params=transport_params) as f:
-            features_dict = json.load(f)
-            return features_dict
-    else:
-        with open(path, "w", transport_params=transport_params) as f:
-            json.dump(features_dict, f)
-
-
-def get_transport_params(profile_name):
-    if isinstance(profile_name, str):
-        transport_params = {'session': boto3.Session(profile_name=profile_name)}
-    elif profile_name is False or boto3.Session().get_credentials() is None:
-        transport_params = {
-            'resource_kwargs': {'config': Config(signature_version=UNSIGNED)}
-        }
-    else:
-        transport_params = None
-    return transport_params
+    Args:
+        library (str): the name of the library
+        error_msg (str): error message to return if the import fails
+    '''
+    try:
+        return importlib.import_module(library)
+    except ImportError:
+        raise ImportError(error_msg)

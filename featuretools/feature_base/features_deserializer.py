@@ -13,8 +13,8 @@ from featuretools.feature_base.feature_base import (
     TransformFeature
 )
 from featuretools.primitives.utils import PrimitivesDeserializer
-from featuretools.utils.gen_utils import (
-    check_schema_version,
+from featuretools.utils.gen_utils import check_schema_version,
+from featuretools.utils.s3_utils import (
     get_transport_params,
     use_smartopen_features
 )
