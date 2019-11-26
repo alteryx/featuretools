@@ -162,9 +162,8 @@ def test_ignores_variables(es):
         assert 'value' not in variables
 
 
-@pytest.fixture
 def test_ignore_variables_input_type(es):
-    error_msg = 'ignore_variables should be dict[str -> list[str]]'
+    error_msg = r'ignore_variables should be dict\[str -> list\[str\]\]'  # need to use string literals to avoid regex params
     wrong_input_type = {'log': 'value'}
     with pytest.raises(TypeError, match=error_msg):
         DeepFeatureSynthesis(
