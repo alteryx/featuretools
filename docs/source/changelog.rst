@@ -21,7 +21,6 @@ Changelog
         * Use multiple CPUS to run tests on CI (:pr:`811`)
         * Refactor test entityset creation to avoid saving to disk (:pr:`813`, :pr:`821`)
         * Remove get_values() from test_es.py to remove warnings (:pr:`820`)
-        * Add test unit for wrong input type in ignore_variables (:pr:`826`)
 
     Thanks to the following people for contributing to this release:
     :user:`rwedge`, :user:`systemshift`, :user:`frances-h`, :user:`jeff-hernandez`
