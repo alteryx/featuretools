@@ -172,9 +172,10 @@ def test_ignore_variables_input_type(es):
             ignore_variables=wrong_input_type,
         )
 
+
 def test_ignore_variables_with_nonstrings(es):
     error_msg = 'list values should be of type str'
-    wrong_input_list = {'log': ['a','b', 3]}
+    wrong_input_list = {'log': ['a', 'b', 3]}
     with pytest.raises(TypeError, match=error_msg):
         DeepFeatureSynthesis(
             target_entity_id='log',
