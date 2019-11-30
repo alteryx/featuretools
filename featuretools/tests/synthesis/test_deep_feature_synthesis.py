@@ -173,7 +173,7 @@ def test_ignore_variables_input_type(es):
         )
 
 
-def test_ignore_variables_with_nonstrings(es):
+def test_ignore_variables_with_nonstring_values(es):
     error_msg = 'list values should be of type str'
     wrong_input_list = {'log': ['a', 'b', 3]}
     with pytest.raises(TypeError, match=error_msg):
@@ -183,6 +183,16 @@ def test_ignore_variables_with_nonstrings(es):
             ignore_variables=wrong_input_list,
         )
 
+
+def test_ignore_variables_with_nonstring_keys(es):
+    error_msg = r'ignore_variables should be dict\[str -> list\]'  # need to use string literals to avoid regex params
+    wrong_input_keys = {1: ['a','b','c']}
+    with pytest.raises(TypeError, match=error_msg):
+        DeepFeatureSynthesis(
+            target_entity_id='log',
+            entityset=es,
+            ignore_variables=wrong_input_keys,
+        )
 
 def test_makes_dfeatures(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
