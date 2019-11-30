@@ -26,10 +26,12 @@ Changelog
     :user:`rwedge`, :user:`systemshift`, :user:`frances-h`, :user:`jeff-hernandez`
 
 **Breaking Changes**
-* The libraries used for downloading or uploading from S3 or URLs are now
-optional and will no longer be installed by default.  To use this functionality
-they will need to be installed separately.
 
+* The libraries used for downloading or uploading from S3 or URLs are now
+  optional and will no longer be installed by default.  To use this
+  functionality they will need to be installed separately.
+* The fix to how the Diff primitive is calculated may slow down the overall
+  calculation time of feature lists that use this primitive.
 
 **v0.12.0 Oct 31, 2019**
     * Enhancements
