@@ -23,7 +23,7 @@ Changelog
         * Remove get_values() from test_es.py to remove warnings (:pr:`820`)
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`, :user:`systemshift`, :user:`frances-h`, :user:`jeff-hernandez`
+    :user:`frances-h`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`systemshift`
 
 **Breaking Changes**
 
