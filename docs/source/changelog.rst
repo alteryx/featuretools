@@ -2,6 +2,16 @@
 
 Changelog
 ---------
+**Future Release**
+    * Enhancements
+    * Fixes
+        * Raise error when given wrong input for ignore_variables (:pr:`826`)
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+
 **v0.13.0 Nov 30, 2019**
     * Enhancements
         * Added GitHub Action to auto upload releases to PyPI (:pr:`816`)
@@ -10,7 +20,6 @@ Changelog
         * Fix issue with converting to pickle or parquet after adding interesting features (:pr:`798`, :pr:`823`)
         * Diff primitive now calculates using all available data (:pr:`824`)
         * Prevent DFS from creating Identity Features of globally ignored variables (:pr:`819`)
-        * Raise error when given wrong input for ignore_variables (:pr:`826`)
     * Changes
         * Remove python 2.7 support from serialize.py (:pr:`812`)
         * Make smart_open, boto3, and s3fs optional dependencies (:pr:`827`)
