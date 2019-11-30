@@ -2,7 +2,7 @@
 
 Changelog
 ---------
-**Future Release**
+**v0.13.0 Nov 30, 2019**
     * Enhancements
         * Added GitHub Action to auto upload releases to PyPI (:pr:`816`)
     * Fixes
@@ -13,6 +13,7 @@ Changelog
         * Raise error when given wrong input for ignore_variables (:pr:`826`)
     * Changes
         * Remove python 2.7 support from serialize.py (:pr:`812`)
+        * Make smart_open, boto3, and s3fs optional dependencies (:pr:`827`)
     * Documentation Changes
         * remove python 2.7 support and add 3.7 in install.rst (:pr:`805`)
         * Fix import error in docs (:pr:`803`)
@@ -23,7 +24,15 @@ Changelog
         * Remove get_values() from test_es.py to remove warnings (:pr:`820`)
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`, :user:`systemshift`, :user:`frances-h`, :user:`jeff-hernandez`
+    :user:`frances-h`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`systemshift`
+
+**Breaking Changes**
+
+* The libraries used for downloading or uploading from S3 or URLs are now
+  optional and will no longer be installed by default.  To use this
+  functionality they will need to be installed separately.
+* The fix to how the Diff primitive is calculated may slow down the overall
+  calculation time of feature lists that use this primitive.
 
 **v0.12.0 Oct 31, 2019**
     * Enhancements
