@@ -2,6 +2,17 @@
 
 Changelog
 ---------
+**Future Release**
+    * Enhancements
+    * Fixes
+        * Raise error when given wrong input for ignore_variables (:pr:`826`)
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`systemshift`
+
 **v0.13.0 Nov 30, 2019**
     * Enhancements
         * Added GitHub Action to auto upload releases to PyPI (:pr:`816`)
