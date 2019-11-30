@@ -11,6 +11,7 @@ Changelog
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
+    :user:`systemshift`
 
 **v0.13.0 Nov 30, 2019**
     * Enhancements
