@@ -2,7 +2,7 @@
 
 Changelog
 ---------
-**Future Release**
+**v0.13.0 Nov 30, 2019**
     * Enhancements
         * Added GitHub Action to auto upload releases to PyPI (:pr:`816`)
     * Fixes
