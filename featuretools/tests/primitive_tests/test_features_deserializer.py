@@ -210,7 +210,7 @@ def test_unknown_primitive_module(es):
 
 def test_feature_use_previous_pd_timedelta(es):
     value = ft.IdentityFeature(es['log']['id'])
-    td = pd.Timedelta(3, "M")
+    td = pd.Timedelta(12, "W")
     count_feature = ft.AggregationFeature(value, es['customers'], ft.primitives.Count, use_previous=td)
     dictionary = {
         'ft_version': ft.__version__,

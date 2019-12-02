@@ -7,6 +7,7 @@ Changelog
     * Fixes
         * Raise error when given wrong input for ignore_variables (:pr:`826`)
     * Changes
+        * Replace pd.timedelta time units that were deprecated (:pr:`822`)
     * Documentation Changes
     * Testing Changes
 
