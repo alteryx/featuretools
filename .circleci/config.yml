@@ -240,7 +240,7 @@ workflows:
           name: "py36 windows unit tests"
           python_version: "3.6"
       - win_unit_tests:
-          name: "py35 windows unit tests"
+          name: "py37 windows unit tests"
           python_version: "3.7"
       - install_ft:
           name: "py35 install featuretools"
