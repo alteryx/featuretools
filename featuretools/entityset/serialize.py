@@ -4,9 +4,12 @@ import os
 import tarfile
 import tempfile
 
-import boto3
-
-from featuretools.utils.gen_utils import use_s3fs_es, use_smartopen_es
+from featuretools.utils.gen_utils import import_or_raise
+from featuretools.utils.s3_utils import (
+    BOTO3_ERR_MSG,
+    use_s3fs_es,
+    use_smartopen_es
+)
 from featuretools.utils.wrangle import _is_s3, _is_url
 
 FORMATS = ['csv', 'pickle', 'parquet']
@@ -116,6 +119,8 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
         kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
     '''
     if _is_s3(path):
+        boto3 = import_or_raise("boto3", BOTO3_ERR_MSG)
+
         with tempfile.TemporaryDirectory() as tmpdir:
             os.makedirs(os.path.join(tmpdir, 'data'))
             dump_data_description(entityset, tmpdir, **kwargs)

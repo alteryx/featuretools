@@ -1,8 +1,6 @@
 import logging
 from collections import defaultdict
 
-import pandas as pd
-
 from featuretools import primitives, variable_types
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import (
@@ -167,6 +165,12 @@ class DeepFeatureSynthesis(object):
 
         self.ignore_variables = defaultdict(set)
         if ignore_variables is not None:
+            # check if ignore_variables is not {str: list}
+            if not all(isinstance(i, str) for i in ignore_variables.keys()) or not all(isinstance(i, list) for i in ignore_variables.values()):
+                raise TypeError('ignore_variables should be dict[str -> list]')
+            # check if list values are all of type str
+            elif not all(all(isinstance(v, str) for v in value) for value in ignore_variables.values()):
+                raise TypeError('list values should be of type str')
             for eid, vars in ignore_variables.items():
                 self.ignore_variables[eid] = set(vars)
         self.target_entity_id = target_entity_id
@@ -225,13 +229,12 @@ class DeepFeatureSynthesis(object):
             primitive_options = {}
         all_primitives = self.trans_primitives + self.agg_primitives + \
             self.where_primitives + self.groupby_trans_primitives
-        self.primitive_options, self.ignore_entities =\
+        self.primitive_options, self.ignore_entities, self.ignore_variables =\
             generate_all_primitive_options(all_primitives,
                                            primitive_options,
                                            self.ignore_entities,
                                            self.ignore_variables,
                                            self.es)
-
         self.seed_features = seed_features or []
         self.drop_exact = drop_exact or []
         self.drop_contains = drop_contains or []
@@ -486,6 +489,8 @@ class DeepFeatureSynthesis(object):
         """
         variables = entity.variables
         for v in variables:
+            if v.name in self.ignore_variables[entity.id]:
+                continue
             new_f = IdentityFeature(variable=v)
             self._handle_new_feature(all_features=all_features,
                                      new_feature=new_f)
@@ -517,7 +522,7 @@ class DeepFeatureSynthesis(object):
             # Features can contain a stale EntitySet reference without
             # interesting_values
             variable = self.es[feat.variable.entity.id][feat.variable.id]
-            if variable.interesting_values.equals(pd.Series()):
+            if variable.interesting_values.empty:
                 continue
 
             for val in variable.interesting_values:
