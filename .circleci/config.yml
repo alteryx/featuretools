@@ -41,7 +41,7 @@ jobs:
       - run:
           name: Download Miniconda
           command: |
-              $File = ".\<< parameters.miniconda_pkg_name >>"
+              $File = "./<< parameters.miniconda_pkg_name >>"
               $Uri = "https://repo.anaconda.com/miniconda/"
               $ProgressPreference = "silentlyContinue"
               Invoke-WebRequest -Uri $Uri -Outfile $File
