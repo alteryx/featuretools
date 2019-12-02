@@ -79,7 +79,7 @@ jobs:
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate featuretools
-              pytest
+              pytest featuretools\ -n 2
   install_ft:
     working_directory: ~/featuretools
     parameters:
