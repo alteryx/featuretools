@@ -22,8 +22,18 @@ commands:
           mv "featuretools-${FT_VERSION}" unpacked_sdist
 
 jobs:
-  windows_install:
+  win_unit_tests:
     working_directory: C:/featuretools
+    parameters:
+      python_version:
+        type: string
+        default: "3.7"
+      miniconda_pkg_name:
+        type: string
+        default: "Miniconda3-4.7.12.1-Windows-x86_64.exe"
+      miniconda_hash:
+        type: string
+        default: "f18060cc0bb50ae75e4d602b7ce35197c8e31e81288d069b758594f1bb46ab45"
     executor:
       name: windows/default
     steps:
@@ -31,31 +41,36 @@ jobs:
       - run:
           name: Download Miniconda
           command: |
-              $File = ".\Miniconda3-4.7.12.1-Windows-x86_64.exe"
-              $Uri = "https://repo.anaconda.com/miniconda/Miniconda3-4.7.12.1-Windows-x86_64.exe"
+              $File = ".\<< parameters.miniconda_pkg_name >>"
+              $Uri = "https://repo.anaconda.com/miniconda/"
               $ProgressPreference = "silentlyContinue"
               Invoke-WebRequest -Uri $Uri -Outfile $File
               $hashFromFile = Get-FileHash "$file" -Algorithm SHA256
-              $hashFromUrl = "f18060cc0bb50ae75e4d602b7ce35197c8e31e81288d069b758594f1bb46ab45"
+              $hashFromUrl = "<< parameters.miniconda_hash >>"
               if ($hashFromFile.Hash -ne "$hashFromUrl") {
                 Throw "File hashes did not match!"
               }
       - run:
           name: Install Miniconda
-          command: start /wait C:\featuretools\Miniconda3-4.7.12.1-Windows-x86_64.exe /InstallationType=JustMe /RegisterPython=0 /S /D=%UserProfile%\Miniconda3
+          command: start /wait C:\featuretools\<< parameters.miniconda_pkg_name >> /InstallationType=JustMe /RegisterPython=0 /S /D=%UserProfile%\Miniconda3
           shell: cmd.exe
+      - run:
+          name: Create New Python Environment
+          command: |
+              C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
+              conda create -n featuretools python=<< parameters.python_version >>
       - run:
           name: Install Graphviz
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-              conda activate C:\Users\circleci\Miniconda3
+              conda activate featuretools
               conda config --add channels conda-forge
               conda install python-graphviz -q -y
       - run:
           name: Install Featuretools
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-              conda activate C:\Users\circleci\Miniconda3
+              conda activate featuretools
               python -m pip install --upgrade pip
               python -m pip install .
               python -m pip install -r test-requirements.txt
@@ -63,7 +78,7 @@ jobs:
           name: Run Unit Tests
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
-              conda activate C:\Users\circleci\Miniconda3
+              conda activate featuretools
               pytest
   install_ft:
     working_directory: ~/featuretools
@@ -218,7 +233,15 @@ workflows:
   version: 2
   test_all_python_versions:
     jobs:
-      - windows_install
+      - win_unit_tests:
+          name: "py35 windows unit tests"
+          python_version: "3.5"
+      - win_unit_tests:
+          name: "py36 windows unit tests"
+          python_version: "3.6"
+      - win_unit_tests:
+          name: "py35 windows unit tests"
+          python_version: "3.7"
       # - install_ft:
       #     name: "py35 install featuretools"
       #     image_tag: "3.5"
