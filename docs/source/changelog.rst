@@ -10,9 +10,10 @@ Changelog
         * Replace pd.timedelta time units that were deprecated (:pr:`822`)
     * Documentation Changes
     * Testing Changes
+        * Run unit tests in windows environment (:pr:`790`)
 
     Thanks to the following people for contributing to this release:
-    :user:`systemshift`
+    :user:`rwedge`, :user:`systemshift`
 
 **v0.13.0 Nov 30, 2019**
     * Enhancements
