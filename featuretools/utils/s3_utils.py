@@ -44,7 +44,7 @@ def use_s3fs_features(file_path, features_dict=None, read=True):
             features_dict = json.load(f)
             return features_dict
     else:
-        with s3.open(file_path, "w") as f:
+        with s3.open(file_path, "w", encoding='utf-8') as f:
             features = json.dumps(features_dict, ensure_ascii=False)
             f.write(features)
 
