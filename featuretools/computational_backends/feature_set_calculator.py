@@ -551,7 +551,7 @@ class FeatureSetCalculator(object):
         # when no child data, just add all the features to frame with nan
         if base_frame.empty:
             for f in features:
-                frame[f.get_name()] = np.nan
+                update_feature_columns(f, frame, np.full(f.number_output_features, np.nan))
                 progress_callback(1 / float(self.num_features))
         else:
             relationship_path = test_feature.relationship_path
