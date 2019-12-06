@@ -6,7 +6,7 @@ Changelog
     * Enhancements
     * Fixes
         * Raise error when given wrong input for ignore_variables (:pr:`826`)
-        * Fix multi-ouput features not created when there is no child data (:pr:`#834`)
+        * Fix multi-output features not created when there is no child data (:pr:`834`)
     * Changes
         * Replace pd.timedelta time units that were deprecated (:pr:`822`)
     * Documentation Changes
