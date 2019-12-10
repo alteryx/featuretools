@@ -165,6 +165,12 @@ class DeepFeatureSynthesis(object):
 
         self.ignore_variables = defaultdict(set)
         if ignore_variables is not None:
+            # check if ignore_variables is not {str: list}
+            if not all(isinstance(i, str) for i in ignore_variables.keys()) or not all(isinstance(i, list) for i in ignore_variables.values()):
+                raise TypeError('ignore_variables should be dict[str -> list]')
+            # check if list values are all of type str
+            elif not all(all(isinstance(v, str) for v in value) for value in ignore_variables.values()):
+                raise TypeError('list values should be of type str')
             for eid, vars in ignore_variables.items():
                 self.ignore_variables[eid] = set(vars)
         self.target_entity_id = target_entity_id
