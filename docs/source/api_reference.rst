@@ -26,20 +26,6 @@ Deep Feature Synthesis
 
     dfs
 
-
-Wrappers
-~~~~~~~~
-.. currentmodule:: featuretools.wrappers
-
-Scikit-learn (BETA)
--------------------
-.. autosummary::
-    :toctree: generated/
-
-    DFSTransformer
-
-
-
 .. DeepFeatureSynthesis
 
 Timedelta
