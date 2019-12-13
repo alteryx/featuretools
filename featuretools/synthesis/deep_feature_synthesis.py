@@ -1,5 +1,4 @@
 import logging
-from builtins import filter, object
 from collections import defaultdict
 
 from featuretools import primitives, variable_types
@@ -16,7 +15,12 @@ from featuretools.primitives.base import (
     PrimitiveBase,
     TransformPrimitive
 )
-from featuretools.utils import is_string
+from featuretools.primitives.options_utils import (
+    filter_groupby_matches_by_options,
+    filter_matches_by_options,
+    generate_all_primitive_options,
+    ignore_entity_for_primitive
+)
 from featuretools.variable_types import Boolean, Discrete, Id, Numeric
 
 logger = logging.getLogger('featuretools')
@@ -77,6 +81,41 @@ class DeepFeatureSynthesis(object):
 
             where_stacking_limit (int, optional): Cap the depth of the where features.
                 Default: 1
+
+            primitive_options (list[dict[str or tuple[str] -> dict] or dict[str or tuple[str] -> dict, optional]):
+                Specify options for a single primitive or a group of primitives.
+                Lists of option dicts are used to specify options per input for primitives
+                with multiple inputs. Each option ``dict`` can have the following keys:
+
+
+                ``"include_entities"``
+                    List of entities to be included when creating features for
+                    the primitive(s). All other entities will be ignored
+                    (list[str]).
+                ``"ignore_entities"``
+                    List of entities to be blacklisted when creating features
+                    for the primitive(s) (list[str]).
+                ``"include_variables"``
+                    List of specific variables within each entity to include when
+                    creating feautres for the primitive(s). All other variables
+                    in a given entity will be ignored (dict[str -> list[str]]).
+                ``"ignore_variables"``
+                    List of specific variables within each entityt to blacklist
+                    when creating features for the primitive(s) (dict[str ->
+                    list[str]]).
+                ``"include_groupby_entities"``
+                    List of Entities to be included when finding groupbys. All
+                    other entities will be ignored (list[str]).
+                ``"ignore_groupby_entities"``
+                    List of entities to blacklist when finding groupbys
+                    (list[str]).
+                ``"include_groupby_variables"``
+                    List of specific variables within each entity to include as
+                    groupbys, if applicable. All other variables in each
+                    entity will be ignored (dict[str -> list[str]]).
+                ``"ignore_groupby_variables"``
+                    List of specific variables within each entity to blacklist
+                    as groupbys (dict[str -> list[str]]).
         """
 
     def __init__(self,
@@ -91,6 +130,7 @@ class DeepFeatureSynthesis(object):
                  allowed_paths=None,
                  ignore_entities=None,
                  ignore_variables=None,
+                 primitive_options=None,
                  seed_features=None,
                  drop_contains=None,
                  drop_exact=None,
@@ -125,6 +165,12 @@ class DeepFeatureSynthesis(object):
 
         self.ignore_variables = defaultdict(set)
         if ignore_variables is not None:
+            # check if ignore_variables is not {str: list}
+            if not all(isinstance(i, str) for i in ignore_variables.keys()) or not all(isinstance(i, list) for i in ignore_variables.values()):
+                raise TypeError('ignore_variables should be dict[str -> list]')
+            # check if list values are all of type str
+            elif not all(all(isinstance(v, str) for v in value) for value in ignore_variables.values()):
+                raise TypeError('list values should be of type str')
             for eid, vars in ignore_variables.items():
                 self.ignore_variables[eid] = set(vars)
         self.target_entity_id = target_entity_id
@@ -137,7 +183,7 @@ class DeepFeatureSynthesis(object):
         self.agg_primitives = []
         agg_prim_dict = primitives.get_aggregation_primitives()
         for a in agg_primitives:
-            if is_string(a):
+            if isinstance(a, str):
                 if a.lower() not in agg_prim_dict:
                     raise ValueError("Unknown aggregation primitive {}. ".format(a),
                                      "Call ft.primitives.list_primitives() to get",
@@ -162,7 +208,7 @@ class DeepFeatureSynthesis(object):
             where_primitives = [primitives.Count]
         self.where_primitives = []
         for p in where_primitives:
-            if is_string(p):
+            if isinstance(p, str):
                 prim_obj = agg_prim_dict.get(p.lower(), None)
                 if prim_obj is None:
                     raise ValueError("Unknown where primitive {}. ".format(p),
@@ -179,6 +225,16 @@ class DeepFeatureSynthesis(object):
             p = check_trans_primitive(p)
             self.groupby_trans_primitives.append(p)
 
+        if primitive_options is None:
+            primitive_options = {}
+        all_primitives = self.trans_primitives + self.agg_primitives + \
+            self.where_primitives + self.groupby_trans_primitives
+        self.primitive_options, self.ignore_entities, self.ignore_variables =\
+            generate_all_primitive_options(all_primitives,
+                                           primitive_options,
+                                           self.ignore_entities,
+                                           self.ignore_variables,
+                                           self.es)
         self.seed_features = seed_features or []
         self.drop_exact = drop_exact or []
         self.drop_contains = drop_contains or []
@@ -432,9 +488,8 @@ class DeepFeatureSynthesis(object):
             entity (Entity): Entity to calculate features for.
         """
         variables = entity.variables
-        ignore_variables = self.ignore_variables[entity.id]
         for v in variables:
-            if v.id in ignore_variables:
+            if v.name in self.ignore_variables[entity.id]:
                 continue
             new_f = IdentityFeature(variable=v)
             self._handle_new_feature(all_features=all_features,
@@ -467,7 +522,7 @@ class DeepFeatureSynthesis(object):
             # Features can contain a stale EntitySet reference without
             # interesting_values
             variable = self.es[feat.variable.entity.id][feat.variable.id]
-            if variable.interesting_values is None:
+            if variable.interesting_values.empty:
                 continue
 
             for val in variable.interesting_values:
@@ -489,6 +544,9 @@ class DeepFeatureSynthesis(object):
             new_max_depth = max_depth - 1
 
         for trans_prim in self.trans_primitives:
+            current_options = self.primitive_options[trans_prim.name]
+            if ignore_entity_for_primitive(current_options, entity):
+                continue
             # if multiple input_types, only use first one for DFS
             input_types = trans_prim.input_types
             if type(input_types[0]) == list:
@@ -499,6 +557,7 @@ class DeepFeatureSynthesis(object):
                                                         new_max_depth,
                                                         input_types,
                                                         trans_prim,
+                                                        current_options,
                                                         require_direct_input=require_direct_input)
 
             for matching_input in matching_inputs:
@@ -509,30 +568,49 @@ class DeepFeatureSynthesis(object):
                                              new_feature=new_f)
 
         for groupby_prim in self.groupby_trans_primitives:
-            # Normally input_types is a list of what inputs can be supplied to
-            # the primitive function.  Here we temporarily add `Id` as an extra
-            # item in input_types so that the matching function will also look
-            # for feature columns to group by.
+            current_options = self.primitive_options[groupby_prim.name]
+            if ignore_entity_for_primitive(current_options, entity, groupby=True):
+                continue
             input_types = groupby_prim.input_types[:]
             # if multiple input_types, only use first one for DFS
             if type(input_types[0]) == list:
                 input_types = input_types[0]
-            input_types.append(Id)
-
             matching_inputs = self._get_matching_inputs(all_features,
                                                         entity,
                                                         new_max_depth,
                                                         input_types,
                                                         groupby_prim,
-                                                        require_direct_input=require_direct_input)
+                                                        current_options)
 
+            # get columns to use as groupbys, use IDs as default unless other groupbys specified
+            if any(['include_groupby_variables' in option and entity.id in
+                    option['include_groupby_variables'] for option in current_options]):
+                default_type = variable_types.PandasTypes._all
+            else:
+                default_type = set([Id])
+            groupby_matches = self._features_by_type(all_features=all_features,
+                                                     entity=entity,
+                                                     max_depth=new_max_depth,
+                                                     variable_type=default_type)
+            groupby_matches = filter_groupby_matches_by_options(groupby_matches, current_options)
+
+            # If require_direct_input, require a DirectFeature in input or as a
+            # groupby, and don't create features of inputs/groupbys which are
+            # all direct features with the same relationship path
             for matching_input in matching_inputs:
                 if all(bf.number_output_features == 1 for bf in matching_input):
-                    new_f = GroupByTransformFeature(list(matching_input[:-1]),
-                                                    groupby=matching_input[-1],
-                                                    primitive=groupby_prim)
-                    self._handle_new_feature(all_features=all_features,
-                                             new_feature=new_f)
+                    for groupby in groupby_matches:
+                        if require_direct_input and (
+                            _all_direct_and_same_path(matching_input + (groupby,)) or
+                            not any([isinstance(feature, DirectFeature) for
+                                     feature in (matching_input + (groupby, ))])
+                        ):
+                            continue
+                        new_f = GroupByTransformFeature(list(matching_input),
+                                                        groupby=groupby[0],
+                                                        primitive=groupby_prim)
+                        self._handle_new_feature(all_features=all_features,
+                                                 new_feature=new_f)
 
     def _build_forward_features(self, all_features, relationship_path, max_depth=0):
         _, relationship = relationship_path[0]
@@ -566,8 +644,11 @@ class DeepFeatureSynthesis(object):
         new_max_depth = None
         if max_depth is not None:
             new_max_depth = max_depth - 1
-
         for agg_prim in self.agg_primitives:
+            current_options = self.primitive_options[agg_prim.name]
+
+            if ignore_entity_for_primitive(current_options, child_entity):
+                continue
             # if multiple input_types, only use first one for DFS
             input_types = agg_prim.input_types
             if type(input_types[0]) == list:
@@ -583,8 +664,10 @@ class DeepFeatureSynthesis(object):
                                                         new_max_depth,
                                                         input_types,
                                                         agg_prim,
+                                                        current_options,
                                                         feature_filter=feature_filter)
-
+            matching_inputs = filter_matches_by_options(matching_inputs,
+                                                        current_options)
             wheres = list(self.where_clauses[child_entity.id])
 
             for matching_input in matching_inputs:
@@ -652,7 +735,6 @@ class DeepFeatureSynthesis(object):
 
         for feat in entity_features:
             f = entity_features[feat]
-
             if (variable_type == variable_types.PandasTypes._all or
                     f.variable_type == variable_type or
                     any(issubclass(f.variable_type, vt) for vt in variable_type)):
@@ -678,12 +760,12 @@ class DeepFeatureSynthesis(object):
         return False
 
     def _get_matching_inputs(self, all_features, entity, max_depth, input_types,
-                             primitive, require_direct_input=False, feature_filter=None):
+                             primitive, primitive_options, require_direct_input=False,
+                             feature_filter=None):
         features = self._features_by_type(all_features=all_features,
                                           entity=entity,
                                           max_depth=max_depth,
                                           variable_type=set(input_types))
-
         if feature_filter:
             features = [f for f in features if feature_filter(f)]
 
@@ -696,7 +778,7 @@ class DeepFeatureSynthesis(object):
             # features with the same relationship_path.
             matching_inputs = {inputs for inputs in matching_inputs
                                if not _all_direct_and_same_path(inputs)}
-
+        matching_inputs = filter_matches_by_options(matching_inputs, primitive_options)
         return matching_inputs
 
 
@@ -798,7 +880,7 @@ def handle_primitive(primitive):
 def check_trans_primitive(primitive):
     trans_prim_dict = primitives.get_transform_primitives()
 
-    if is_string(primitive):
+    if isinstance(primitive, str):
         if primitive.lower() not in trans_prim_dict:
             raise ValueError("Unknown transform primitive {}. ".format(primitive),
                              "Call ft.primitives.list_primitives() to get",

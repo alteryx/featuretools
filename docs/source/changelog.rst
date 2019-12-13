@@ -2,6 +2,113 @@
 
 Changelog
 ---------
+**Future Release**
+    * Enhancements
+    * Fixes
+        * Raise error when given wrong input for ignore_variables (:pr:`826`)
+    * Changes
+        * Replace pd.timedelta time units that were deprecated (:pr:`822`)
+    * Documentation Changes
+    * Testing Changes
+        * Run unit tests in windows environment (:pr:`790`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`rwedge`, :user:`systemshift`
+
+**v0.13.0 Nov 30, 2019**
+    * Enhancements
+        * Added GitHub Action to auto upload releases to PyPI (:pr:`816`)
+    * Fixes
+        * Fix issue where some primitive options would not be applied (:pr:`807`)
+        * Fix issue with converting to pickle or parquet after adding interesting features (:pr:`798`, :pr:`823`)
+        * Diff primitive now calculates using all available data (:pr:`824`)
+        * Prevent DFS from creating Identity Features of globally ignored variables (:pr:`819`)
+    * Changes
+        * Remove python 2.7 support from serialize.py (:pr:`812`)
+        * Make smart_open, boto3, and s3fs optional dependencies (:pr:`827`)
+    * Documentation Changes
+        * remove python 2.7 support and add 3.7 in install.rst (:pr:`805`)
+        * Fix import error in docs (:pr:`803`)
+        * Fix release title formatting in changelog (:pr:`806`)
+    * Testing Changes
+        * Use multiple CPUS to run tests on CI (:pr:`811`)
+        * Refactor test entityset creation to avoid saving to disk (:pr:`813`, :pr:`821`)
+        * Remove get_values() from test_es.py to remove warnings (:pr:`820`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`frances-h`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`systemshift`
+
+**Breaking Changes**
+
+* The libraries used for downloading or uploading from S3 or URLs are now
+  optional and will no longer be installed by default.  To use this
+  functionality they will need to be installed separately.
+* The fix to how the Diff primitive is calculated may slow down the overall
+  calculation time of feature lists that use this primitive.
+
+**v0.12.0 Oct 31, 2019**
+    * Enhancements
+        * Added First primitive (:pr:`770`)
+        * Added Entropy aggregation primitive (:pr:`779`)
+        * Allow custom naming for multi-output primitives (:pr:`780`)
+    * Fixes
+        * Prevents user from removing base entity time index using additional_variables (:pr:`768`)
+        * Fixes error when a multioutput primitive was supplied to dfs as a groupby trans primitive (:pr:`786`)
+    * Changes
+        * Drop Python 2 support (:pr:`759`)
+        * Add unit parameter to AvgTimeBetween (:pr:`771`)
+        * Require Pandas 0.24.1 or higher (:pr:`787`)
+    * Documentation Changes
+        * Update featuretools slack link (:pr:`765`)
+        * Set up repo to use Read the Docs (:pr:`776`)
+        * Add First primitive to API reference docs (:pr:`782`)
+    * Testing Changes
+        * CircleCI fixes (:pr:`774`)
+        * Disable PIP progress bars (:pr:`775`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`ablacke-ayx`, :user:`BoopBoopBeepBoop`, :user:`jeffzi`,
+    :user:`kmax12`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`twdobson`
+
+**v0.11.0 Sep 30, 2019**
+    .. warning::
+        The next non-bugfix release of Featuretools will not support Python 2
+
+    * Enhancements
+        * Improve how files are copied and written (:pr:`721`)
+        * Add number of rows to graph in entityset.plot (:pr:`727`)
+        * Added support for pandas DateOffsets in DFS and Timedelta (:pr:`732`)
+        * Enable feature-specific top_n value using a dictionary in encode_features (:pr:`735`)
+        * Added progress_callback parameter to dfs() and calculate_feature_matrix() (:pr:`739`, :pr:`745`)
+        * Enable specifying primitives on a per column or per entity basis (:pr:`748`)
+    * Fixes
+        * Fixed entity set deserialization (:pr:`720`)
+        * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
+        * Fixed CumCount and other group-by transform primitives that take ID as input (:pr:`733`, :pr:`754`)
+        * Fix progress bar undercounting (:pr:`743`)
+        * Updated training_window error assertion to only check against observations (:pr:`728`)
+        * Don't delete the whole destination folder while saving entityset (:pr:`717`)
+    * Changes
+        * Raise warning and not error on schema version mismatch (:pr:`718`)
+        * Change feature calculation to return in order of instance ids provided (:pr:`676`)
+        * Removed time remaining from displayed progress bar in dfs() and calculate_feature_matrix() (:pr:`739`)
+        * Raise warning in normalize_entity() when time_index of base_entity has an invalid type (:pr:`749`)
+        * Remove toolz as a direct dependency (:pr:`755`)
+        * Allow boolean variable types to be used in the Multiply primitive (:pr:`756`)
+    * Documentation Changes
+        * Updated URL for Compose (:pr:`716`)
+    * Testing Changes
+        * Update dependencies (:pr:`738`, :pr:`741`, :pr:`747`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`angela97lin`, :user:`chidauri`, :user:`christopherbunn`,
+    :user:`frances-h`, :user:`jeff-hernandez`, :user:`kmax12`,
+    :user:`MarcoGorelli`, :user:`rwedge`, :user:`thehomebrewnerd`
+
+**Breaking Changes**
+
+* Feature calculations will return in the order of instance ids provided instead of the order of time points instances are calculated at.
+
 **v0.10.1 Aug 25, 2019**
     * Fixes
         * Fix serialized LatLong data being loaded as strings (:pr:`712`)
@@ -13,7 +120,6 @@ Changelog
 
 
 **v0.10.0 Aug 19, 2019**
-
     .. warning::
         The next non-bugfix release of Featuretools will not support Python 2
 
@@ -52,7 +158,6 @@ Changelog
     :user:`alexjwang`, :user:`allisonportis`, :user:`ayushpatidar`,
     :user:`CJStadler`, :user:`ctduffy`, :user:`gsheni`, :user:`jeff-hernandez`,
     :user:`jeremyliweishih`, :user:`kmax12`, :user:`rwedge`, :user:`zhxt95`,
-
 
 **v0.9.1 July 3, 2019**
     * Enhancements
@@ -474,25 +579,21 @@ Changelog
     * Added ``Week`` transform primitive
 
 **v0.1.6** July 26, 2017
-
     * Added ``load_features`` and ``save_features`` to persist and reload features
     * Added save_progress argument to ``calculate_feature_matrix``
     * Added approximate parameter to ``calculate_feature_matrix`` and ``dfs``
     * Added ``load_flight`` to ft.demo
 
 **v0.1.5** July 11, 2017
-
     * Windows support
 
 **v0.1.3** July 10, 2017
-
     * Renamed feature submodule to primitives
     * Renamed prediction_entity arguments to target_entity
     * Added training_window parameter to ``calculate_feature_matrix``
 
 
 **v0.1.2** July 3rd, 2017
-
     * Initial release
 
 .. command

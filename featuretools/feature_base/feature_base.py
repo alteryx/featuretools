@@ -1,5 +1,3 @@
-from builtins import zip
-
 from featuretools import Relationship, Timedelta, primitives
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.primitives.base import (
@@ -13,6 +11,7 @@ from featuretools.utils.wrangle import (
     _check_timedelta
 )
 from featuretools.variable_types import (
+    Boolean,
     Categorical,
     Datetime,
     DatetimeTimeIndex,
@@ -84,9 +83,8 @@ class FeatureBase(object):
         return self._name
 
     def get_names(self):
-        n = self.number_output_features
         if not self._names:
-            self._names = [self.generate_name() + "[{}]".format(i) for i in range(n)]
+            self._names = self.generate_names()
         return self._names
 
     def get_feature_names(self):
@@ -170,13 +168,7 @@ class FeatureBase(object):
         return self.primitive.number_output_features
 
     def __repr__(self):
-        ret = "<Feature: %s>" % (self.get_name())
-
-        # encode for python 2
-        if type(ret) != str:
-            ret = ret.encode("utf-8")
-
-        return ret
+        return "<Feature: %s>" % (self.get_name())
 
     def hash(self):
         return hash(self.get_name() + self.entity.id)
@@ -286,6 +278,9 @@ class FeatureBase(object):
 
     def __mul__(self, other):
         """Multiply by other"""
+        if isinstance(other, FeatureBase):
+            if self.variable_type == Boolean and other.variable_type == Boolean:
+                return Feature([self, other], primitive=primitives.MultiplyBoolean)
         return self._handle_binary_comparision(other, primitives.MultiplyNumeric, primitives.MultiplyNumericScalar)
 
     def __rmul__(self, other):
@@ -525,7 +520,6 @@ class AggregationFeature(FeatureBase):
             assert self.child_entity.time_index is not None, (
                 "Applying function that requires time index to entity that "
                 "doesn't have one")
-
             self.use_previous = _check_timedelta(use_previous)
             assert len(base_features) > 0
             time_index = base_features[0].entity.time_index
@@ -610,7 +604,7 @@ class AggregationFeature(FeatureBase):
         return where_str
 
     def _use_prev_str(self):
-        if self.use_previous is not None:
+        if self.use_previous is not None and hasattr(self.use_previous, 'get_name'):
             use_prev_str = u", Last {}".format(self.use_previous.get_name())
         else:
             use_prev_str = u''
@@ -622,6 +616,13 @@ class AggregationFeature(FeatureBase):
                                             parent_entity_id=self.parent_entity.id,
                                             where_str=self._where_str(),
                                             use_prev_str=self._use_prev_str())
+
+    def generate_names(self):
+        return self.primitive.generate_names(base_feature_names=[bf.get_name() for bf in self.base_features],
+                                             relationship_path_name=self.relationship_path_name(),
+                                             parent_entity_id=self.parent_entity.id,
+                                             where_str=self._where_str(),
+                                             use_prev_str=self._use_prev_str())
 
     def get_arguments(self):
         return {
@@ -673,6 +674,9 @@ class TransformFeature(FeatureBase):
     def generate_name(self):
         return self.primitive.generate_name(base_feature_names=[bf.get_name() for bf in self.base_features])
 
+    def generate_names(self):
+        return self.primitive.generate_names(base_feature_names=[bf.get_name() for bf in self.base_features])
+
     def get_arguments(self):
         return {
             'name': self._name,
@@ -717,6 +721,12 @@ class GroupByTransformFeature(TransformFeature):
         base_names = [bf.get_name() for bf in self.base_features[:-1]]
         _name = self.primitive.generate_name(base_names)
         return u"{} by {}".format(_name, self.groupby.get_name())
+
+    def generate_names(self):
+        base_names = [bf.get_name() for bf in self.base_features[:-1]]
+        _names = self.primitive.generate_names(base_names)
+        names = [name + " by {}".format(self.groupby.get_name()) for name in _names]
+        return names
 
     def get_arguments(self):
         # Do not include groupby in base_features.

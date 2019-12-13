@@ -25,6 +25,16 @@ class AggregationPrimitive(PrimitiveBase):
             self.get_args_string(),
         )
 
+    def generate_names(self, base_feature_names, relationship_path_name,
+                       parent_entity_id, where_str, use_prev_str):
+        n = self.number_output_features
+        base_name = self.generate_name(base_feature_names,
+                                       relationship_path_name,
+                                       parent_entity_id,
+                                       where_str,
+                                       use_prev_str)
+        return [base_name + "[%s]" % i for i in range(n)]
+
 
 def make_agg_primitive(function, input_types, return_type, name=None,
                        stack_on_self=True, stack_on=None,

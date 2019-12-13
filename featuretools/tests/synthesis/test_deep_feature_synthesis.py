@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import copy
 
 import pandas as pd
@@ -16,18 +14,27 @@ from featuretools.primitives import (  # CumMean,
     Absolute,
     AddNumeric,
     Count,
+    CumCount,
+    CumMean,
+    CumMin,
+    CumSum,
+    Day,
     Diff,
     Equal,
     Hour,
     IsIn,
     Last,
+    Mean,
     Mode,
+    Month,
     NMostCommon,
     NotEqual,
+    NumCharacters,
     NumUnique,
     Sum,
     TimeSincePrevious,
-    TransformPrimitive
+    TransformPrimitive,
+    Year
 )
 from featuretools.synthesis import DeepFeatureSynthesis
 from featuretools.tests.testing_utils import feature_with_name
@@ -155,6 +162,39 @@ def test_ignores_variables(es):
         assert 'value' not in variables
 
 
+def test_ignore_variables_input_type(es):
+    error_msg = r'ignore_variables should be dict\[str -> list\]'  # need to use string literals to avoid regex params
+    wrong_input_type = {'log': 'value'}
+    with pytest.raises(TypeError, match=error_msg):
+        DeepFeatureSynthesis(
+            target_entity_id='log',
+            entityset=es,
+            ignore_variables=wrong_input_type,
+        )
+
+
+def test_ignore_variables_with_nonstring_values(es):
+    error_msg = 'list values should be of type str'
+    wrong_input_list = {'log': ['a', 'b', 3]}
+    with pytest.raises(TypeError, match=error_msg):
+        DeepFeatureSynthesis(
+            target_entity_id='log',
+            entityset=es,
+            ignore_variables=wrong_input_list,
+        )
+
+
+def test_ignore_variables_with_nonstring_keys(es):
+    error_msg = r'ignore_variables should be dict\[str -> list\]'  # need to use string literals to avoid regex params
+    wrong_input_keys = {1: ['a', 'b', 'c']}
+    with pytest.raises(TypeError, match=error_msg):
+        DeepFeatureSynthesis(
+            target_entity_id='log',
+            entityset=es,
+            ignore_variables=wrong_input_keys,
+        )
+
+
 def test_makes_dfeatures(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
@@ -269,6 +309,38 @@ def test_make_groupby_features(es):
     features = dfs_obj.build_features()
     assert (feature_with_name(features,
                               "CUM_SUM(value) by session_id"))
+
+
+def test_make_indirect_groupby_features(es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[],
+                                   groupby_trans_primitives=['cum_sum'])
+    features = dfs_obj.build_features()
+    assert (feature_with_name(features,
+                              "CUM_SUM(products.rating) by session_id"))
+
+
+def test_make_groupby_features_with_id(es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[],
+                                   groupby_trans_primitives=['cum_count'])
+    features = dfs_obj.build_features()
+    assert (feature_with_name(features, "CUM_COUNT(customer_id) by customer_id"))
+
+
+def test_make_groupby_features_with_diff_id(es):
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[],
+                                   groupby_trans_primitives=['cum_count'])
+    features = dfs_obj.build_features()
+    groupby_with_diff_id = u"CUM_COUNT(cohort) by région_id"
+    assert (feature_with_name(features, groupby_with_diff_id))
 
 
 def test_make_groupby_features_with_agg(es):
@@ -858,3 +930,268 @@ def test_makes_direct_of_agg_of_trans_on_target(es):
 
     features = dfs_obj.build_features()
     assert feature_with_name(features, 'sessions.MEAN(log.ABSOLUTE(value))')
+
+
+def test_primitive_options_errors(es):
+    wrong_key_options = {'mode': {'ignore_entity': ['sessions']}}
+    wrong_type_list = {'mode': {'ignore_entities': 'sessions'}}
+    wrong_type_dict = {'mode':
+                       {'ignore_variables': {'sessions': 'product_id'}}}
+    conflicting_primitive_options = {('count', 'mode'):
+                                     {'ignore_entities': ['sessions']},
+                                     'mode': {'include_entities': ['sessions']}}
+    invalid_entity = {'mode': {'include_entities': ['invalid_entity']}}
+    invalid_variable_entity = {'mode': {'include_variables': {'invalid_entity': ['product_id']}}}
+    invalid_variable = {'mode': {'include_variables': {'sessions': ['invalid_variable']}}}
+    key_error_text = "Unrecognized primitive option 'ignore_entity' for mode"
+    list_error_text = "Incorrect type formatting for 'ignore_entities' for mode"
+    dict_error_text = "Incorrect type formatting for 'ignore_variables' for mode"
+    conflicting_error_text = "Multiple options found for primitive mode"
+    invalid_entity_warning = "Entity 'invalid_entity' not in entityset"
+    invalid_variable_warning = "Variable 'invalid_variable' not in entity 'sessions'"
+    with pytest.raises(KeyError, match=key_error_text):
+        DeepFeatureSynthesis(target_entity_id='customers',
+                             entityset=es,
+                             agg_primitives=['mode'],
+                             trans_primitives=[],
+                             primitive_options=wrong_key_options)
+    with pytest.raises(TypeError, match=list_error_text):
+        DeepFeatureSynthesis(target_entity_id='customers',
+                             entityset=es,
+                             agg_primitives=['mode'],
+                             trans_primitives=[],
+                             primitive_options=wrong_type_list)
+    with pytest.raises(TypeError, match=dict_error_text):
+        DeepFeatureSynthesis(target_entity_id='customers',
+                             entityset=es,
+                             agg_primitives=['mode'],
+                             trans_primitives=[],
+                             primitive_options=wrong_type_dict)
+    with pytest.raises(KeyError, match=conflicting_error_text):
+        DeepFeatureSynthesis(target_entity_id='customers',
+                             entityset=es,
+                             agg_primitives=['mode'],
+                             trans_primitives=[],
+                             primitive_options=conflicting_primitive_options)
+    with pytest.warns(UserWarning, match=invalid_entity_warning) as record:
+        DeepFeatureSynthesis(target_entity_id='customers',
+                             entityset=es,
+                             agg_primitives=['mode'],
+                             trans_primitives=[],
+                             primitive_options=invalid_entity)
+    assert len(record) == 1
+    with pytest.warns(UserWarning, match=invalid_entity_warning) as record:
+        DeepFeatureSynthesis(target_entity_id='customers',
+                             entityset=es,
+                             agg_primitives=['mode'],
+                             trans_primitives=[],
+                             primitive_options=invalid_variable_entity)
+    assert len(record) == 1
+    with pytest.warns(UserWarning, match=invalid_variable_warning) as record:
+        DeepFeatureSynthesis(target_entity_id='customers',
+                             entityset=es,
+                             agg_primitives=['mode'],
+                             trans_primitives=[],
+                             primitive_options=invalid_variable)
+    assert len(record) == 1
+
+
+def test_primitive_options(es):
+    options = {'sum': {'include_variables': {'customers': ['age']}},
+               'mean': {'include_entities': ['customers']},
+               'mode': {'ignore_entities': ['sessions']},
+               'num_unique': {'ignore_variables': {'customers': ['engagement_level']}}}
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='cohorts',
+                                   entityset=es,
+                                   primitive_options=options)
+    features = dfs_obj.build_features()
+    for f in features:
+        deps = f.get_dependencies(deep=True)
+        entities = [d.entity.id for d in deps]
+        variables = [d for d in deps if isinstance(d, IdentityFeature)]
+        if isinstance(f.primitive, Sum):
+            for identity_base in variables:
+                if identity_base.entity.id == 'customers':
+                    assert identity_base.get_name() == 'age'
+        if isinstance(f.primitive, Mean):
+            assert all([entity in ['customers'] for entity in entities])
+        if isinstance(f.primitive, Mode):
+            assert 'sessions' not in entities
+        if isinstance(f.primitive, NumUnique):
+            for identity_base in variables:
+                assert not (identity_base.entity.id == 'customers' and
+                            identity_base.get_name() == 'engagement_level')
+
+    options = {'month': {'ignore_variables': {'customers': ['date_of_birth']}},
+               'day': {'include_variables': {'customers': ['signup_date', 'upgrade_date']}},
+               'num_characters': {'ignore_entities': ['customers']},
+               'year': {'include_entities': ['customers']}}
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   ignore_entities=['cohort'],
+                                   primitive_options=options)
+    features = dfs_obj.build_features()
+    assert not any([isinstance(f, NumCharacters) for f in features])
+    for f in features:
+        deps = f.get_dependencies(deep=True)
+        entities = [d.entity.id for d in deps]
+        variables = [d for d in deps if isinstance(d, IdentityFeature)]
+        if isinstance(f.primitive, Month):
+            for identity_base in variables:
+                assert not (identity_base.entity.id == 'customers' and
+                            identity_base.get_name() == 'date_of_birth')
+        if isinstance(f.primitive, Day):
+            for identity_base in variables:
+                if identity_base.entity.id == 'customers':
+                    assert identity_base.get_name() == 'signup_date' or \
+                        identity_base.get_name() == 'upgrade_date'
+        if isinstance(f.primitive, Year):
+            assert all([entity in ['customers'] for entity in entities])
+
+
+def test_primitive_options_with_globals(es):
+    # non-overlapping ignore_entities
+    options = {'mode': {'ignore_entities': ['sessions']}}
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='cohorts',
+                                   entityset=es,
+                                   ignore_entities=[u'régions'],
+                                   primitive_options=options)
+    features = dfs_obj.build_features()
+    for f in features:
+        deps = f.get_dependencies(deep=True)
+        entities = [d.entity.id for d in deps]
+        assert u'régions' not in entities
+        if isinstance(f.primitive, Mode):
+            assert 'sessions' not in entities
+
+    # non-overlapping ignore_variables
+    options = {'num_unique': {'ignore_variables': {'customers': ['engagement_level']}}}
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   ignore_variables={'customers': [u'région_id']},
+                                   primitive_options=options)
+    features = dfs_obj.build_features()
+    for f in features:
+        deps = f.get_dependencies(deep=True)
+        entities = [d.entity.id for d in deps]
+        variables = [d for d in deps if isinstance(d, IdentityFeature)]
+        for identity_base in variables:
+            assert not (identity_base.entity.id == 'customers' and
+                        identity_base.get_name() == u'région_id')
+        if isinstance(f.primitive, NumUnique):
+            for identity_base in variables:
+                assert not (identity_base.entity.id == 'customers' and
+                            identity_base.get_name() == 'engagement_level')
+
+    # Overlapping globals/options with ignore_entities
+    options = {'mode': {'include_entities': ['sessions', 'customers'],
+                        'ignore_variables': {'customers': [u'région_id']}},
+               'num_unique': {'include_entities': ['sessions', 'customers'],
+                              'include_variables': {'sessions': ['device_type'],
+                                                    'customers': ['age']}},
+               'month': {'ignore_variables': {'cohorts': ['cohort_end']}}}
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='cohorts',
+                                   entityset=es,
+                                   ignore_entities=['sessions'],
+                                   ignore_variables={'customers': ['age']},
+                                   primitive_options=options)
+    features = dfs_obj.build_features()
+    for f in features:
+        assert f.primitive.name != 'month'
+        # ignoring cohorts means no features are created
+        assert not isinstance(f.primitive, Month)
+
+        deps = f.get_dependencies(deep=True)
+        entities = [d.entity.id for d in deps]
+        variables = [d for d in deps if isinstance(d, IdentityFeature)]
+        if isinstance(f.primitive, Mode):
+            assert [all([entity in ['sessions', 'customers'] for entity in entities])]
+            for identity_base in variables:
+                assert not (identity_base.entity.id == 'customers' and
+                            (identity_base.get_name() == 'age' or
+                             identity_base.get_name() == u'région_id'))
+        elif isinstance(f.primitive, NumUnique):
+            assert [all([entity in ['sessions', 'customers'] for entity in entities])]
+            for identity_base in variables:
+                if identity_base.entity.id == 'sessions':
+                    assert identity_base.get_name() == 'device_type'
+        # All other primitives ignore 'sessions' and 'age'
+        else:
+            assert 'sessions' not in entities
+            for identity_base in variables:
+                assert not (identity_base.entity.id == 'customers' and
+                            identity_base.get_name() == 'age')
+
+
+def test_primitive_options_groupbys(es):
+    options = {'cum_count': {'include_groupby_entities': ['log', 'customers']},
+               'cum_sum': {'ignore_groupby_entities': ['sessions']},
+               'cum_mean': {'ignore_groupby_variables': {'customers': [u'région_id'],
+                                                         'log': ['session_id']}},
+               'cum_min': {'include_groupby_variables': {'sessions': ['customer_id', 'device_type']}}}
+
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[],
+                                   max_depth=3,
+                                   groupby_trans_primitives=['cum_sum',
+                                                             'cum_count',
+                                                             'cum_min',
+                                                             'cum_mean'],
+                                   primitive_options=options)
+    features = dfs_obj.build_features()
+    for f in features:
+        if isinstance(f, ft.GroupByTransformFeature):
+            deps = f.groupby.get_dependencies(deep=True)
+            entities = [d.entity.id for d in deps] + [f.groupby.entity.id]
+            variables = [d for d in deps if isinstance(d, IdentityFeature)]
+            variables += [f.groupby] if isinstance(f.groupby, IdentityFeature) else []
+        if isinstance(f.primitive, CumMean):
+            for identity_groupby in variables:
+                assert not (identity_groupby.entity.id == 'customers' and
+                            identity_groupby.get_name() == u'région_id')
+                assert not (identity_groupby.entity.id == 'log' and
+                            identity_groupby.get_name() == 'session_id')
+        if isinstance(f.primitive, CumCount):
+            assert all([entity in ['log', 'customers'] for entity in entities])
+        if isinstance(f.primitive, CumSum):
+            assert 'sessions' not in entities
+        if isinstance(f.primitive, CumMin):
+            for identity_groupby in variables:
+                if identity_groupby.entity.id == 'sessions':
+                    assert identity_groupby.get_name() == 'customer_id' or\
+                        identity_groupby.get_name() == 'device_type'
+
+
+def test_primitive_options_multiple_inputs(es):
+    too_many_options = {'mode': [{'include_entities': ['logs']},
+                                 {'ignore_entities': ['sessions']}]}
+    error_msg = "Number of options does not match number of inputs for primitive mode"
+    with pytest.raises(AssertionError, match=error_msg):
+        DeepFeatureSynthesis(target_entity_id='customers',
+                             entityset=es,
+                             agg_primitives=['mode'],
+                             trans_primitives=[],
+                             primitive_options=too_many_options)
+
+    options = {'trend': [{'include_entities': ['log'],
+                          'ignore_variables': {'log': ['value']}},
+                         {'include_entities': ['log'],
+                          'include_variables': {'log': ['datetime']}}]}
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
+                                   entityset=es,
+                                   agg_primitives=['trend'],
+                                   trans_primitives=[],
+                                   primitive_options=options)
+    features = dfs_obj.build_features()
+    for f in features:
+        deps = f.get_dependencies()
+        entities = [d.entity.id for d in deps]
+        variables = [d.get_name() for d in deps]
+        if f.primitive.name == 'trend':
+            assert all([entity in ['log'] for entity in entities])
+            assert 'datetime' in variables
+            if len(variables) == 2:
+                assert 'value' != variables[0]

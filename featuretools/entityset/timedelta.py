@@ -1,9 +1,5 @@
-from __future__ import division
-
 import pandas as pd
 from dateutil.relativedelta import relativedelta
-
-from featuretools.utils import is_string
 
 
 class Timedelta(object):
@@ -32,7 +28,7 @@ class Timedelta(object):
     _Observations = "o"
 
     # units for absolute times
-    _absolute_units = ['ms', 's', 'h', 'm', 'd']
+    _absolute_units = ['ms', 's', 'h', 'm', 'd', 'w']
     _relative_units = ['mo', 'Y']
 
     _readable_units = {
@@ -44,48 +40,40 @@ class Timedelta(object):
         "o": "Observations",
         "w": "Weeks",
         "Y": "Years",
-        'mo': "Months"
-    }
-
-    _convert_to_days = {
-        "w": 7
+        "mo": "Months"
     }
 
     _readable_to_unit = {v.lower(): k for k, v in _readable_units.items()}
 
-    def __init__(self, value, unit=None):
+    def __init__(self, value, unit=None, delta_obj=None):
         """
         Args:
-            value (float, str) : Value of timedelta, or string providing
-                both unit and value.
+            value (float, str, dict) : Value of timedelta, string providing
+                both unit and value, or a dictionary of units and times.
             unit (str) : Unit of time delta.
+            delta_obj (pd.Timedelta or pd.DateOffset) : A time object used
+                internally to do time operations. If None is provided, one will
+                be created using the provided value and unit.
         """
-        # TODO: check if value is int or float
-        if is_string(value):
-            from featuretools.utils.wrangle import _check_timedelta
-            td = _check_timedelta(value)
-            value, unit = td.value, td.unit
+        self.check_value(value, unit)
+        self.times = self.fix_units()
 
-        self.value = value
-        self._original_unit = None  # to alert get_name that although we converted the unit to 'd' it was initially
-        unit = self._check_unit_plural(unit)
-        assert unit in self._readable_units or unit in self._readable_to_unit
-        if unit in self._readable_to_unit:
-            unit = self._readable_to_unit[unit]
-
-        # weeks
-        if unit in self._convert_to_days:
-            self._original_unit = unit
-            self.value = self.value * self._convert_to_days[unit]
-            unit = 'd'
-
-        self.unit = unit
-        self.delta_obj = self.get_unit_type()
+        if delta_obj is not None:
+            self.delta_obj = delta_obj
+        else:
+            self.delta_obj = self.get_unit_type()
 
     @classmethod
     def from_dictionary(cls, dictionary):
-        return cls(dictionary['value'],
-                   unit=dictionary['unit'])
+        dict_units = dictionary['unit']
+        dict_values = dictionary['value']
+        if isinstance(dict_units, str) and isinstance(dict_values, (int, float)):
+            return cls({dict_units: dict_values})
+        else:
+            all_units = dict()
+            for i in range(len(dict_units)):
+                all_units[dict_units[i]] = dict_values[i]
+            return cls(all_units)
 
     @classmethod
     def make_singular(cls, s):
@@ -101,67 +89,119 @@ class Timedelta(object):
             return s.lower()
         return s
 
-    def get_unit_type(self):
-        if self.unit == "o":
-            return None
-        elif self.unit in self._absolute_units:
-            return pd.Timedelta(self.value, self.unit)
+    def get_value(self, unit=None):
+        if unit is not None:
+            return self.times[unit]
+        elif len(self.times.values()) == 1:
+            return list(self.times.values())[0]
         else:
-            unit = self.readable_unit.lower()
-            return relativedelta(**{unit: self.value})
+            return self.times
+
+    def get_units(self):
+        return list(self.times.keys())
+
+    def get_unit_type(self):
+        all_units = self.get_units()
+        if self._Observations in all_units:
+            return None
+        elif self.is_absolute() and self.has_multiple_units() is False:
+            return pd.Timedelta(self.times[all_units[0]], all_units[0])
+        else:
+            readable_times = self.lower_readable_times()
+            return relativedelta(**readable_times)
+
+    def check_value(self, value, unit):
+        if isinstance(value, str):
+            from featuretools.utils.wrangle import _check_timedelta
+            td = _check_timedelta(value)
+            self.times = td.times
+        elif isinstance(value, dict):
+            self.times = value
+        else:
+            self.times = {unit: value}
+
+    def fix_units(self):
+        fixed_units = dict()
+        for unit, value in self.times.items():
+            unit = self._check_unit_plural(unit)
+            if unit in self._readable_to_unit:
+                unit = self._readable_to_unit[unit]
+            fixed_units[unit] = value
+        return fixed_units
+
+    def lower_readable_times(self):
+        readable_times = dict()
+        for unit, value in self.times.items():
+            readable_unit = self._readable_units[unit].lower()
+            readable_times[readable_unit] = value
+        return readable_times
 
     def get_name(self):
-        unit = self.readable_unit
-        if self.readable_unit == "Weeks":
-            # divide to convert back
-            return "{} {}".format(self.value / self._convert_to_days["w"], unit)
-        if self.value == 1:
-            unit = self.make_singular(unit)
-
-        return "{} {}".format(self.value, unit)
-
-    @property
-    def readable_unit(self):
-        if self._original_unit is not None:
-            return self._readable_units[self._original_unit]
-        return self._readable_units[self.unit]
+        all_units = self.get_units()
+        if self.has_multiple_units() is False:
+            return "{} {}".format(self.times[all_units[0]], self._readable_units[all_units[0]])
+        final_str = ""
+        for unit, value in self.times.items():
+            if value == 1:
+                unit = self.make_singular(unit)
+            final_str += "{} {} ".format(value, self._readable_units[unit])
+        return final_str[:-1]
 
     def get_arguments(self):
-        return {
-            'value': self._original_value(),
-            'unit': self._original_unit or self.unit
-        }
-
-    def _original_value(self):
-        if self._original_unit:
-            return self.value / self._convert_to_days[self._original_unit]
+        units = list()
+        values = list()
+        for unit, value in self.times.items():
+            units.append(unit)
+            values.append(value)
+        if len(units) == 1:
+            return {'unit': units[0], 'value': values[0]}
         else:
-            return self.value
+            return {'unit': units, 'value': values}
 
     def is_absolute(self):
-        return self.unit in self._absolute_units
+        for unit in self.get_units():
+            if unit not in self._absolute_units:
+                return False
+        return True
+
+    def has_no_observations(self):
+        for unit in self.get_units():
+            if unit in self._Observations:
+                return False
+        return True
+
+    def has_multiple_units(self):
+        if len(self.get_units()) > 1:
+            return True
+        else:
+            return False
 
     def __eq__(self, other):
         if not isinstance(other, Timedelta):
             return False
 
-        return (self.value == other.value and
-                self.unit == other.unit)
+        return (self.times == other.times)
 
     def __neg__(self):
         """Negate the timedelta"""
-        return Timedelta(-self.value, self.unit)
+        new_times = dict()
+        for unit, value in self.times.items():
+            new_times[unit] = -value
+        if self.delta_obj is not None:
+            return Timedelta(new_times, delta_obj=-self.delta_obj)
+        else:
+            return Timedelta(new_times)
 
     def __radd__(self, time):
         """Add the Timedelta to a timestamp value"""
-        if self.unit != self._Observations:
+        if self._Observations not in self.get_units():
             return time + self.delta_obj
         else:
             raise Exception("Invalid unit")
 
     def __rsub__(self, time):
         """Subtract the Timedelta from a timestamp value"""
-        if self.unit != self._Observations:
+        if self._Observations not in self.get_units():
             return time - self.delta_obj
         else:
             raise Exception("Invalid unit")

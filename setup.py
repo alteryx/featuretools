@@ -17,7 +17,7 @@ extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
 setup(
     name='featuretools',
-    version='0.10.1',
+    version='0.13.0',
     packages=find_packages(),
     description='a framework for automated feature engineering',
     url='http://featuretools.com',
@@ -27,17 +27,13 @@ setup(
     classifiers=[
          'Development Status :: 3 - Alpha',
          'Intended Audience :: Developers',
-         'Programming Language :: Python :: 2.7',
          'Programming Language :: Python :: 3',
          'Programming Language :: Python :: 3.5',
          'Programming Language :: Python :: 3.6',
          'Programming Language :: Python :: 3.7'
     ],
     install_requires=open('requirements.txt').readlines(),
-    setup_requires=open('setup-requirements.txt').readlines(),
-    python_requires='>=2.7, <4',
-    test_suite='featuretools/tests',
-    tests_require=open('test-requirements.txt').readlines(),
+    python_requires='>=3.5, <4',
     extras_require=extras_require,
     keywords='feature engineering data science machine learning',
     include_package_data=True,

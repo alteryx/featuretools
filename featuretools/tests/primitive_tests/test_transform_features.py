@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import numpy as np
 import pandas as pd
 import pytest
@@ -154,6 +153,24 @@ def test_diff(es):
 
 
 def test_diff_single_value(es):
+    diff = ft.Feature(es['stores']['num_square_feet'], groupby=es['stores'][u'région_id'], primitive=Diff)
+    feature_set = FeatureSet([diff])
+    calculator = FeatureSetCalculator(es, feature_set=feature_set)
+    df = calculator.run(np.array([4]))
+    assert df[diff.get_name()][4] == 6000.0
+
+
+def test_diff_reordered(es):
+    sum_feat = ft.Feature(es['log']['value'], parent_entity=es["sessions"], primitive=Sum)
+    diff = ft.Feature(sum_feat, primitive=Diff)
+    feature_set = FeatureSet([diff])
+    calculator = FeatureSetCalculator(es, feature_set=feature_set)
+    df = calculator.run(np.array([4, 2]))
+    assert df[diff.get_name()][4] == 16
+    assert df[diff.get_name()][2] == -6
+
+
+def test_diff_single_value_is_nan(es):
     diff = ft.Feature(es['stores']['num_square_feet'], groupby=es['stores'][u'région_id'], primitive=Diff)
     feature_set = FeatureSet([diff])
     calculator = FeatureSetCalculator(es, feature_set=feature_set)
@@ -330,15 +347,44 @@ def test_arithmetic_of_direct(es):
         assert v == test[1]
 
 
-# P TODO: rewrite this  test
+def test_boolean_multiply():
+    es = ft.EntitySet()
+    df = pd.DataFrame({"index": [0, 1, 2],
+                       "bool": [True, False, True],
+                       "numeric": [2, 3, np.nan]})
+
+    es.entity_from_dataframe(entity_id="test",
+                             dataframe=df,
+                             index="index")
+
+    to_test = [
+        ('numeric', 'numeric'),
+        ('numeric', 'bool'),
+        ('bool', 'numeric'),
+        ('bool', 'bool')
+    ]
+    features = []
+    for row in to_test:
+        features.append(ft.Feature(es["test"][row[0]]) * ft.Feature(es["test"][row[1]]))
+
+    fm = ft.calculate_feature_matrix(entityset=es, features=features)
+
+    for row in to_test:
+        col_name = '{} * {}'.format(row[0], row[1])
+        if row[0] == 'bool' and row[1] == 'bool':
+            assert fm[col_name].equals(df[row[0]] & df[row[1]])
+        else:
+            assert fm[col_name].equals(df[row[0]] * df[row[1]])
+
+
 def test_arithmetic_of_transform(es):
     diff1 = ft.Feature([es['log']['value']], primitive=Diff)
     diff2 = ft.Feature([es['log']['value_2']], primitive=Diff)
 
-    to_test = [(AddNumeric, [np.nan, 14., -7., 3.]),
-               (SubtractNumeric, [np.nan, 6., -3., 1.]),
-               (MultiplyNumeric, [np.nan, 40., 10., 2.]),
-               (DivideNumeric, [np.nan, 2.5, 2.5, 2.])]
+    to_test = [(AddNumeric, [np.nan, 7., -7., 10.]),
+               (SubtractNumeric, [np.nan, 3., -3., 4.]),
+               (MultiplyNumeric, [np.nan, 10., 10., 21.]),
+               (DivideNumeric, [np.nan, 2.5, 2.5, 2.3333333333333335])]
 
     features = []
     for test in to_test:
@@ -346,7 +392,7 @@ def test_arithmetic_of_transform(es):
 
     feature_set = FeatureSet(features)
     calculator = FeatureSetCalculator(es, feature_set=feature_set)
-    df = calculator.run(np.array([0, 2, 11, 13]))
+    df = calculator.run(np.array([0, 2, 12, 13]))
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert np.isnan(v.pop(0))
@@ -831,3 +877,31 @@ def test_get_filepath(es):
     assert fm["MOD4(value)"][0] == 0
     assert fm["MOD4(value)"][14] == 2
     assert pd.isnull(fm["MOD4(value)"][15])
+
+
+def test_override_multi_feature_names(es):
+    def gen_custom_names(primitive, base_feature_names):
+        return ['Above18(%s)' % base_feature_names,
+                'Above21(%s)' % base_feature_names,
+                'Above65(%s)' % base_feature_names]
+
+    def is_greater(x):
+        return x > 18, x > 21, x > 65
+
+    num_features = 3
+    IsGreater = make_trans_primitive(function=is_greater,
+                                     input_types=[Numeric],
+                                     return_type=Numeric,
+                                     number_output_features=num_features,
+                                     cls_attributes={"generate_names": gen_custom_names})
+
+    fm, features = ft.dfs(entityset=es,
+                          target_entity="customers",
+                          instance_ids=[0, 1, 2],
+                          agg_primitives=[],
+                          trans_primitives=[IsGreater])
+
+    expected_names = gen_custom_names(IsGreater, ['age'])
+
+    for name in expected_names:
+        assert name in fm.columns

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import logging
 import os
 import warnings
@@ -55,13 +53,21 @@ def datetime_round(dt, freq):
     if not freq.is_absolute():
         raise ValueError("Unit is relative")
 
-    if freq.unit == 'm':
-        unit = 't'
+    # TODO: multitemporal units
+    all_units = list(freq.times.keys())
+    if len(all_units) == 1:
+        unit = all_units[0]
+        value = freq.times[unit]
+        if unit == 'm':
+            unit = 't'
+        # No support for weeks in datetime.datetime
+        if unit == 'w':
+            unit = 'd'
+            value = value * 7
+        freq = str(value) + unit
+        return dt.dt.floor(freq)
     else:
-        unit = freq.unit
-
-    freq = str(freq.value) + unit
-    return dt.dt.floor(freq)
+        assert "Frequency cannot have multiple temporal parameters"
 
 
 def gather_approximate_features(feature_set):

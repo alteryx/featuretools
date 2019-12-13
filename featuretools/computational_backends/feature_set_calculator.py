@@ -16,7 +16,7 @@ from featuretools.feature_base import (
     IdentityFeature,
     TransformFeature
 )
-from featuretools.utils import Trie, is_python_2
+from featuretools.utils import Trie
 from featuretools.utils.gen_utils import get_relationship_variable_id
 
 warnings.simplefilter('ignore', np.RankWarning)
@@ -59,7 +59,7 @@ class FeatureSetCalculator(object):
         self.precalculated_features = precalculated_features
 
         # total number of features (including dependencies) to be calculate
-        self.num_features = len(feature_set.features_by_name.values())
+        self.num_features = sum(len(features1) + len(features2) for _, (_, features1, features2) in self.feature_set.feature_trie)
 
     def run(self, instance_ids, progress_callback=None):
         """
@@ -95,7 +95,6 @@ class FeatureSetCalculator(object):
             # do nothing for the progress call back if not provided
             def progress_callback(*args):
                 pass
-
         feature_trie = self.feature_set.feature_trie
 
         df_trie = Trie(path_constructor=RelationshipPath)
@@ -449,6 +448,9 @@ class FeatureSetCalculator(object):
 
         for f in features:
             feature_vals = []
+            for _ in range(f.number_output_features):
+                feature_vals.append([])
+
             for group in groups:
                 # skip null key if it exists
                 if pd.isnull(group):
@@ -466,18 +468,21 @@ class FeatureSetCalculator(object):
                 else:
                     values = feature_func(*variable_data)
 
+                if f.number_output_features == 1:
+                    values = [values]
+
                 # make sure index is aligned
-                if isinstance(values, pd.Series):
-                    values.index = variable_data[0].index
-                else:
-                    values = pd.Series(values, index=variable_data[0].index)
+                for i, value in enumerate(values):
+                    if isinstance(value, pd.Series):
+                        value.index = variable_data[0].index
+                    else:
+                        value = pd.Series(value, index=variable_data[0].index)
+                    feature_vals[i].append(value)
 
-                feature_vals.append(values)
-
-            # Note
-            # more efficient in pandas to concat and update only once
-            if feature_vals:
-                frame[f.get_name()].update(pd.concat(feature_vals))
+            if any(feature_vals):
+                assert len(feature_vals) == len(f.get_feature_names())
+                for col_vals, name in zip(feature_vals, f.get_feature_names()):
+                    frame[name].update(pd.concat(col_vals))
 
             progress_callback(1 / float(self.num_features))
 
@@ -559,13 +564,13 @@ class FeatureSetCalculator(object):
             if use_previous and not base_frame.empty:
                 # Filter by use_previous values
                 time_last = self.time_last
-                if use_previous.is_absolute():
+                if use_previous.has_no_observations():
                     time_first = time_last - use_previous
                     ti = child_entity.time_index
                     if ti is not None:
                         base_frame = base_frame[base_frame[ti] >= time_first]
                 else:
-                    n = use_previous.value
+                    n = use_previous.get_value('o')
 
                     def last_n(df):
                         return df.iloc[-n:]
@@ -588,9 +593,7 @@ class FeatureSetCalculator(object):
                     # for some reason, using the string count is significantly
                     # faster than any method a primitive can return
                     # https://stackoverflow.com/questions/55731149/use-a-function-instead-of-string-in-pandas-groupby-agg
-                    if is_python_2() and func == pd.Series.count.__func__:
-                        func = "count"
-                    elif func == pd.Series.count:
+                    if func == pd.Series.count:
                         func = "count"
 
                     funcname = func

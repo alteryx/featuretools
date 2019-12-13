@@ -1,6 +1,5 @@
 import itertools
 import logging
-from builtins import object
 from collections import defaultdict
 
 from featuretools.entityset.relationship import RelationshipPath
@@ -204,9 +203,14 @@ class FeatureSet(object):
 # These functions are used for sorting and grouping features
 
 
-def _get_use_previous(f):
+def _get_use_previous(f):  # TODO Sort and group features for DateOffset with two different temporal values
     if isinstance(f, AggregationFeature) and f.use_previous is not None:
-        return (f.use_previous.unit, f.use_previous.value)
+        if len(f.use_previous.times.keys()) > 1:
+            return ("", -1)
+        else:
+            unit = list(f.use_previous.times.keys())[0]
+            value = f.use_previous.times[unit]
+            return (unit, value)
     else:
         return ("", -1)
 

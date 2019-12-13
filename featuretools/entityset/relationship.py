@@ -39,10 +39,6 @@ class Relationship(object):
             (self._child_entity_id, self._child_variable_id,
              self._parent_entity_id, self._parent_variable_id)
 
-        # encode for python 2
-        if type(ret) != str:
-            ret = ret.encode("utf-8")
-
         return ret
 
     def __eq__(self, other):

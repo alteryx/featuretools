@@ -6,10 +6,9 @@ import pandas as pd
 
 from featuretools import variable_types
 from featuretools.entityset.timedelta import Timedelta
-from featuretools.utils import is_string
 
 
-def _check_timedelta(td, entity_id=None, related_entity_id=None):
+def _check_timedelta(td):
     """
     Convert strings to Timedelta objects
     Allows for both shortform and longform units, as well as any form of capitalization
@@ -26,26 +25,34 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
     '2m'
     '1u"
     If a pd.Timedelta object is passed, units will be converted to seconds due to the underlying representation
-        of pd .Timedelta.
+        of pd.Timedelta.
+    If a pd.DateOffset object is passed, it will be converted to a Featuretools Timedelta if it has one
+        temporal parameter. Otherwise, it will remain a pd.DateOffset.
     """
     if td is None:
         return td
     if isinstance(td, Timedelta):
         return td
-    elif not (is_string(td) or isinstance(td, pd.Timedelta) or isinstance(td, (int, float))):
+    elif not isinstance(td, (int, float, str, pd.DateOffset, pd.Timedelta)):
         raise ValueError("Unable to parse timedelta: {}".format(td))
-
-    value = None
-    try:
-        value = int(td)
-    except Exception:
-        try:
-            value = float(td)
-        except Exception:
-            pass
     if isinstance(td, pd.Timedelta):
         unit = 's'
         value = td.total_seconds()
+        times = {unit: value}
+        return Timedelta(times, delta_obj=td)
+    elif isinstance(td, pd.DateOffset):
+        # DateOffsets
+        if td.__class__.__name__ == "DateOffset":
+            times = dict()
+            for td_unit, td_value in td.kwds.items():
+                times[td_unit] = td_value
+            return Timedelta(times, delta_obj=td)
+        # Special offsets (such as BDay)
+        else:
+            unit = td.__class__.__name__
+            value = td.__dict__['n']
+            times = dict([(unit, value)])
+            return Timedelta(times, delta_obj=td)
     else:
         pattern = '([0-9]+) *([a-zA-Z]+)$'
         match = re.match(pattern, td)
@@ -58,7 +65,8 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
             except Exception:
                 raise ValueError("Unable to parse value {} from ".format(value) +
                                  "timedelta string: {}".format(td))
-    return Timedelta(value, unit)
+        times = {unit: value}
+        return Timedelta(times)
 
 
 def _check_time_against_column(time, time_column):
@@ -76,7 +84,7 @@ def _check_time_against_column(time, time_column):
     elif isinstance(time, (int, float)):
         return isinstance(time_column,
                           variable_types.Numeric)
-    elif isinstance(time, (pd.Timestamp, datetime)):
+    elif isinstance(time, (pd.Timestamp, datetime, pd.DateOffset)):
         return isinstance(time_column,
                           variable_types.Datetime)
     elif isinstance(time, Timedelta):
