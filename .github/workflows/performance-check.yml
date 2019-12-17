@@ -1,0 +1,21 @@
+name: performance-check
+on:
+  push:
+    branches:
+      - master
+    paths: 
+      - 'featuretools/**'
+jobs:
+  run-performance-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - name: Run Lambda
+        env: 
+          lambda_function: ${{ secrets.LAMBDA_FUNC }}
+        run: aws lambda invoke --function-name $lambda_function --invocation-type Event /dev/stdout 1>/dev/null
