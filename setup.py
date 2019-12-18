@@ -12,12 +12,13 @@ extras_require = {
   'categorical_encoding': ['categorical-encoding >= 0.2.0'],
   'nlp_primitives': ['nlp-primitives >= 0.2.2'],
   'autonormalize': ['autonormalize >= 1.0.0'],
+  'sklearn_transformer': ['featuretools-sklearn-transformer >= 0.1.0'],
 }
 extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
 setup(
     name='featuretools',
-    version='0.13.0',
+    version='0.14.0.dev0',
     packages=find_packages(),
     description='a framework for automated feature engineering',
     url='http://featuretools.com',
