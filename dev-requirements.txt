@@ -1,4 +1,5 @@
 -r test-requirements.txt
+featuretools-sklearn-transformer >= 0.1.0
 codecov==2.0.15
 flake8==3.7.8
 autopep8==1.4.4
