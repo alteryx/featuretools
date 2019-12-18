@@ -28,7 +28,7 @@ def test_installed_packages():
     requirements = ["pandas", "numpy", "tqdm",
                     "PyYAML", "cloudpickle",
                     "dask", "distributed", "psutil",
-                    "Click", "scikit-learn"]
+                    "Click"]
     assert set(requirements).issubset(installed_packages.keys())
 
 

@@ -1,4 +1,4 @@
-scipy>=0.13.3
+scipy>=0.13.3,!=1.4.0
 numpy>=1.13.3
 pandas>=0.24.1
 tqdm>=4.32.0
@@ -8,4 +8,3 @@ distributed>=1.24.2
 dask>=1.1.0
 psutil>=5.4.8
 click>=7.0.0
-scikit-learn>=0.20.0

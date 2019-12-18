@@ -43,6 +43,11 @@ AutoNormalize:
 
         python -m pip install featuretools[autonormalize]
 
+Featuretools Sklearn Transformer:
+    Deep Feature Synthesis as a scikit-learn pipelines transformer
+
+        python -m pip install featuretools[sklearn_transformer]
+
 .. _graphviz:
 
 Installing Graphviz
