@@ -1,6 +1,5 @@
 -r test-requirements.txt
-scikit-learn>=0.20.0,!=0.22
-python-dateutil==2.8.0
+featuretools-sklearn-transformer >= 0.1.0
 codecov==2.0.15
 flake8==3.7.8
 autopep8==1.4.4
@@ -14,4 +13,3 @@ Sphinx==2.0.1
 sphinx_rtd_theme==0.4.3
 nlp_primitives>=0.2.2
 autonormalize >= 1.0.0
-featuretools-sklearn-transformer >= 0.1.0
