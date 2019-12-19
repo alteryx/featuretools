@@ -15,7 +15,6 @@ def test_hackathon():
     )
 
     primitives_list = ['cum_sum', 'diff', 'absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
-    primitives_list = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
 
     fm, _ = ft.dfs(entityset=es,
                    target_entity="users",
