@@ -9,7 +9,7 @@ Changelog
         * Fix multi-output features not created when there is no child data (:pr:`834`)
     * Changes
         * Replace pd.timedelta time units that were deprecated (:pr:`822`)
-        * Do not use scikit-learn 0.22 (:pr:`835`)
+        * Do not use scikit-learn 0.22 (:pr:`835`, :pr:`837`)
     * Documentation Changes
     * Testing Changes
         * Run unit tests in windows environment (:pr:`790`)
