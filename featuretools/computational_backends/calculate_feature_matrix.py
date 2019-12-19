@@ -136,7 +136,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     target_entity = entityset[features[0].entity.id]
     pass_columns = []
 
-    if not isinstance(cutoff_time, pd.DataFrame):
+    if not (isinstance(cutoff_time, pd.DataFrame) or isinstance(cutoff_time, dd.core.DataFrame)):
         if isinstance(cutoff_time, list):
             raise TypeError("cutoff_time must be a single value or DataFrame")
 
@@ -165,7 +165,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             raise AttributeError('Name of the index variable in the target entity'
                                  ' or "instance_id" must be present in cutoff_time')
         # rename to instance_id
-        cutoff_time.rename(columns={target_entity.index: "instance_id"}, inplace=True)
+        cutoff_time = cutoff_time.rename(columns={target_entity.index: "instance_id"})
 
     if "time" not in cutoff_time.columns:
         # take the first column that isn't instance_id and assume it is time
@@ -181,11 +181,17 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         if cutoff_time['time'].dtype.name not in PandasTypes._pandas_datetimes:
             raise TypeError(
                 "cutoff_time times must be datetime type: try casting via pd.to_datetime(cutoff_time['time'])")
-    assert (cutoff_time[['instance_id', 'time']].duplicated().sum() == 0), \
-        "Duplicated rows in cutoff time dataframe."
+    err_msg = "Duplicated rows in cutoff time dataframe."
+    if isinstance(cutoff_time, pd.DataFrame):
+        assert (cutoff_time[['instance_id', 'time']].duplicated().sum() == 0), err_msg
+        time_check = cutoff_time['time'].iloc[0]
+    elif isinstance(cutoff_time, dd.core.DataFrame):
+        assert (cutoff_time[['instance_id', 'time']].compute().duplicated().sum() == 0), err_msg
+        time_check = cutoff_time['time'].compute().iloc[0]
+
     pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
 
-    if _check_time_type(cutoff_time['time'].iloc[0]) is None:
+    if _check_time_type(time_check) is None:
         raise ValueError("cutoff_time time values must be datetime or numeric")
 
     # make sure dtype of instance_id in cutoff time
@@ -237,8 +243,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     else:
         cutoff_time_to_pass = cutoff_time
 
-    chunk_size = _handle_chunk_size(chunk_size, cutoff_time.shape[0])
-    tqdm_options = {'total': (cutoff_time.shape[0] / FEATURE_CALCULATION_PERCENTAGE),
+    chunk_size = _handle_chunk_size(chunk_size, len(cutoff_time))
+    tqdm_options = {'total': (len(cutoff_time) / FEATURE_CALCULATION_PERCENTAGE),
                     'bar_format': PBAR_FORMAT,
                     'disable': True}
 
@@ -317,6 +323,9 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
         else:
             group_time = datetime.now()
 
+    if isinstance(cutoff_time, dd.core.DataFrame):
+        cutoff_time = cutoff_time.compute()
+
     for _, group in cutoff_time.groupby(cutoff_df_time_var):
         # if approximating, calculate the approximate features
         if approximate is not None:
@@ -379,7 +388,10 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                                            precalculated_features=precalculated_features_trie,
                                            training_window=window)
 
-            id_name = _feature_matrix.index.name
+            if isinstance(_feature_matrix, dd.core.DataFrame):
+                id_name = _feature_matrix.columns[-1]
+            else:
+                id_name = _feature_matrix.index.name
 
             # if approximate, merge feature matrix with group frame to get original
             # cutoff times and passed columns
@@ -395,21 +407,38 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
             else:
                 # all rows have same cutoff time. set time and add passed columns
                 num_rows = len(_feature_matrix)
-                time_index = pd.Index([time_last] * num_rows, name='time')
                 if isinstance(_feature_matrix, pd.DataFrame):
+                    time_index = pd.Index([time_last] * num_rows, name='time')
                     _feature_matrix = _feature_matrix.set_index(time_index, append=True)
-                if len(pass_columns) > 0:
-                    pass_through = group[['instance_id', cutoff_df_time_var] + pass_columns]
-                    pass_through.rename(columns={'instance_id': id_name,
-                                                 cutoff_df_time_var: 'time'},
-                                        inplace=True)
-                    pass_through.set_index([id_name, 'time'], inplace=True)
-                    for col in pass_columns:
-                        _feature_matrix[col] = pass_through[col]
+                    if len(pass_columns) > 0:
+                        pass_through = group[['instance_id', cutoff_df_time_var] + pass_columns]
+                        pass_through.rename(columns={'instance_id': id_name,
+                                                     cutoff_df_time_var: 'time'},
+                                            inplace=True)
+                        pass_through.set_index([id_name, 'time'], inplace=True)
+                        for col in pass_columns:
+                            _feature_matrix[col] = pass_through[col]
+                elif isinstance(_feature_matrix, dd.core.DataFrame):
+                    time_index = dd.from_array(np.array([time_last] * num_rows))
+                    if not _feature_matrix.known_divisions:
+                        _feature_matrix = _feature_matrix.reset_index().set_index('index')
+                    _feature_matrix['time'] = time_index
+                    _feature_matrix['time'] = dd.to_datetime(_feature_matrix['time'])
+                    if len(pass_columns) > 0:
+                        pass_through = group[['instance_id', cutoff_df_time_var] + pass_columns]
+                        pass_through.rename(columns={'instance_id': id_name,
+                                                     cutoff_df_time_var: 'time'},
+                                            inplace=True)
+                        for col in pass_columns:
+                            pass_df = dd.from_pandas(pass_through[[id_name, 'time', col]], npartitions=_feature_matrix.npartitions)
+                            _feature_matrix = _feature_matrix.merge(pass_df)
+                    _feature_matrix = _feature_matrix.drop(columns=['time'])
+
             feature_matrix.append(_feature_matrix)
 
     if isinstance(feature_matrix[0], dd.core.DataFrame):
         feature_matrix = dd.concat(feature_matrix)
+        # feature_matrix = feature_matrix.set_index(id_name)
     else:
         feature_matrix = pd.concat(feature_matrix)
 

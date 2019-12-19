@@ -50,6 +50,8 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
 
                 # heuristics to predict this some other than categorical
                 sample = df[variable].sample(frac=min(10000 / len(df[variable]), 1))
+                if isinstance(sample, dd.core.Series):
+                    sample = sample.compute()
 
                 # catch cases where object dtype cannot be interpreted as a string
                 try:

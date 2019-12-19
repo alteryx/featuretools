@@ -119,14 +119,18 @@ class FeatureSetCalculator(object):
             return self.generate_default_df(instance_ids=instance_ids)
 
         # fill in empty rows with default values
-        missing_ids = [i for i in instance_ids if i not in
-                       df[target_entity.index]]
+        if isinstance(df, dd.core.DataFrame):
+            index_vals = df[target_entity.index].compute().values
+        else:
+            index_vals = df[target_entity.index].values
+        missing_ids = [i for i in instance_ids if i not in index_vals]
         if missing_ids:
             default_df = self.generate_default_df(instance_ids=missing_ids,
                                                   extra_columns=df.columns)
             df = df.append(default_df, sort=True)
 
-        df.index.name = self.entityset[self.feature_set.target_eid].index
+        if isinstance(df, pd.DataFrame):
+            df.index.name = self.entityset[self.feature_set.target_eid].index
         column_list = []
 
         # Order by instance_ids
@@ -134,7 +138,7 @@ class FeatureSetCalculator(object):
 
         if isinstance(df, dd.core.DataFrame):
             unique_instance_ids = unique_instance_ids.astype(object)
-            df = df.loc[unique_instance_ids]
+            # df = df.loc[unique_instance_ids]
         else:
             # pd.unique changes the dtype for Categorical, so reset it.
             unique_instance_ids = unique_instance_ids.astype(instance_ids.dtype)
@@ -142,6 +146,10 @@ class FeatureSetCalculator(object):
 
         for feat in self.feature_set.target_features:
             column_list.extend(feat.get_feature_names())
+
+        if isinstance(df, dd.core.DataFrame):
+            column_list.extend([target_entity.index])
+            df.index.name = target_entity.index
         return df[column_list]
 
     def _calculate_features_for_entity(self, entity_id, feature_trie, df_trie,
@@ -432,7 +440,7 @@ class FeatureSetCalculator(object):
                 values = [strip_values_if_series(value) for value in values]
             else:
                 values = [strip_values_if_series(values)]
-            update_feature_columns(f, frame, values)
+            frame = update_feature_columns(f, frame, values)
 
             progress_callback(1 / float(self.num_features))
 
@@ -513,10 +521,9 @@ class FeatureSetCalculator(object):
         # merge the identity feature from the parent entity into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
         if index_as_feature is not None:
-            merge_df.set_index(index_as_feature.get_name(), inplace=True,
-                               drop=False)
+            merge_df = merge_df.set_index(index_as_feature.get_name(), drop=False)
         else:
-            merge_df.set_index(merge_var, inplace=True)
+            merge_df = merge_df.set_index(merge_var)
 
         new_df = child_df.merge(merge_df, left_on=merge_var, right_index=True,
                                 how='left')
@@ -549,7 +556,7 @@ class FeatureSetCalculator(object):
             base_frame = base_frame.loc[base_frame[where.get_name()]]
 
         # when no child data, just add all the features to frame with nan
-        if base_frame.empty:
+        if len(base_frame) == 0:
             for f in features:
                 frame[f.get_name()] = np.nan
                 progress_callback(1 / float(self.num_features))
@@ -637,8 +644,11 @@ class FeatureSetCalculator(object):
                 # to silence pandas warning about ambiguity we explicitly pass
                 # the column (in actuality grouping by both index and group would
                 # work)
-                to_merge = base_frame.groupby(base_frame[groupby_var],
-                                              observed=True, sort=False).agg(to_agg)
+                if isinstance(base_frame, dd.core.DataFrame):
+                    to_merge = base_frame.groupby(base_frame[groupby_var]).agg(to_agg)
+                else:
+                    to_merge = base_frame.groupby(base_frame[groupby_var],
+                                                  observed=True, sort=False).agg(to_agg)
 
                 # rename columns to the correct feature names
                 to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns.ravel()]
@@ -650,8 +660,12 @@ class FeatureSetCalculator(object):
                     categories = pdtypes.CategoricalDtype(categories=frame.index.categories)
                     to_merge.index = to_merge.index.astype(object).astype(categories)
 
-                frame = pd.merge(left=frame, right=to_merge,
-                                 left_index=True, right_index=True, how='left')
+                if isinstance(frame, dd.core.DataFrame):
+                    frame = dd.merge(left=frame, right=to_merge,
+                                     left_index=True, right_index=True, how='left')
+                else:
+                    frame = pd.merge(left=frame, right=to_merge,
+                                     left_index=True, right_index=True, how='left')
 
                 # determine number of features that were just merged
                 progress_callback(len(to_merge.columns) / float(self.num_features))
@@ -730,15 +744,16 @@ def set_default_column(frame, f):
 
 def update_feature_columns(feature, data, values):
     names = feature.get_feature_names()
+    id_col = feature.entityset[feature.entity_id].index
     assert len(names) == len(values)
     for name, value in zip(names, values):
-        if isinstance(data, dd.core.DataFrame):
-            new_df = dd.from_pandas(pd.DataFrame({name: value}), npartitions=data.npartitions)
-            new_df[data.index.name] = dd.from_array(data.index.values.compute())
-            new_df = new_df.set_index(data.index.name)
-            data[name] = new_df[name]
+        if isinstance(value, np.ndarray) and isinstance(data, dd.core.DataFrame):
+            new_df = pd.DataFrame({name: value, id_col: data[id_col]})
+            data = data.merge(new_df, on=id_col)
         else:
             data[name] = value
+
+    return data
 
 
 def strip_values_if_series(values):

@@ -1,3 +1,4 @@
+import dask.dataframe as dd
 import pandas as pd
 
 from featuretools.computational_backends import calculate_feature_matrix
@@ -247,7 +248,7 @@ def dfs(entities=None,
     if features_only:
         return features
 
-    if isinstance(cutoff_time, pd.DataFrame):
+    if isinstance(cutoff_time, pd.DataFrame) or isinstance(cutoff_time, dd.core.DataFrame):
         feature_matrix = calculate_feature_matrix(features,
                                                   entityset=entityset,
                                                   cutoff_time=cutoff_time,

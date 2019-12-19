@@ -228,7 +228,6 @@ class Entity(object):
             variable_id = self.index
 
         instance_vals = self._vals_to_series(instance_vals, variable_id)
-
         training_window = _check_timedelta(training_window)
 
         if training_window is not None:
@@ -237,15 +236,15 @@ class Entity(object):
         if instance_vals is None:
             df = self.df.copy()
 
-        elif instance_vals.shape[0] == 0:
+        elif len(instance_vals) == 0:
             df = self.df.head(0)
 
         else:
+            if isinstance(instance_vals, dd.core.Series):
+                instance_vals = instance_vals.compute()
             df = self.df[self.df[variable_id].isin(instance_vals)]
 
-            if self.df[self.index].dtype.name == 'category' and isinstance(self.df, dd.core.DataFrame):
-                df = df.set_index(self.df[self.index].astype(object), drop=False)
-            else:
+            if isinstance(self.df, pd.DataFrame):
                 df = df.set_index(self.index, drop=False)
 
             # ensure filtered df has same categories as original
@@ -420,10 +419,13 @@ class Entity(object):
                             (self.id, time_type))
 
         # use stable sort
-        # TODO: fix for dask dataframe
-        if isinstance(self.df, pd.core.frame.DataFrame) and not already_sorted:
-            # sort by time variable, then by index
-            self.df = self.df.sort_values([variable_id, self.index])
+        if not already_sorted:
+            if isinstance(self.df, pd.DataFrame):
+                # sort by time variable, then by index
+                self.df = self.df.sort_values([variable_id, self.index])
+            if isinstance(self.df, dd.core.DataFrame):
+                n = len(self.df)
+                self.df = self.df.nsmallest(n, [variable_id, self.index])
 
         t = vtypes.NumericTimeIndex
         if col_is_datetime(self.df[variable_id]):
@@ -438,16 +440,17 @@ class Entity(object):
             variable_id (string) : Name of an existing variable to set as index.
             unique (bool) : Whether to assert that the index is unique.
         """
-        if self.df[variable_id].dtype.name == 'category':
-            self.df = self.df.set_index(self.df[variable_id].astype(object), drop=False)
-        else:
-            self.df = self.df.set_index(self.df[variable_id], drop=False)
-        self.df.index.name = None
+        if isinstance(self.df, pd.DataFrame):
+            if self.df[variable_id].dtype.name == 'category':
+                self.df = self.df.set_index(self.df[variable_id].astype(object), drop=False)
+            else:
+                self.df = self.df.set_index(self.df[variable_id], drop=False)
+            self.df.index.name = None
         if unique:
             if isinstance(self.df.index, dd.core.Index):
-                index_is_unique = self.df.index.compute().is_unique
+                index_is_unique = self.df[variable_id].compute().is_unique
             else:
-                index_is_unique = self.df.index.is_unique
+                index_is_unique = self.df[variable_id].is_unique
             assert index_is_unique, "Index is not unique on dataframe (Entity {})".format(self.id)
 
         self.convert_variable_type(variable_id, vtypes.Index, convert_data=False)
