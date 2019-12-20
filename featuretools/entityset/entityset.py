@@ -2,7 +2,6 @@ import copy
 import logging
 from collections import defaultdict
 
-import cloudpickle
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_dtype_equal, is_numeric_dtype
@@ -11,6 +10,7 @@ import featuretools.variable_types.variable as vtypes
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.entity import Entity
 from featuretools.entityset.relationship import Relationship, RelationshipPath
+from featuretools.utils.gen_utils import import_or_raise
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
@@ -92,7 +92,7 @@ class EntitySet(object):
         return sum([entity.__sizeof__() for entity in self.entities])
 
     def __dask_tokenize__(self):
-        return (EntitySet, cloudpickle.dumps(self.metadata))
+        return (EntitySet, serialize.entityset_to_description(self.metadata))
 
     def __eq__(self, other, deep=False):
         if len(self.entity_dict) != len(other.entity_dict):
@@ -861,13 +861,10 @@ class EntitySet(object):
                 Jupyter notebooks.
 
         """
-        try:
-            import graphviz
-        except ImportError:
-            raise ImportError('Please install graphviz to plot entity sets.' +
-                              ' (See https://docs.featuretools.com/getting_started/install.html#installing-graphviz for' +
-                              ' details)')
-
+        GRAPHVIZ_ERR_MSG = ('Please install graphviz to plot entity sets.' +
+                            ' (See https://docs.featuretools.com/getting_started/install.html#installing-graphviz for' +
+                            ' details)')
+        graphviz = import_or_raise("graphviz", GRAPHVIZ_ERR_MSG)
         # Try rendering a dummy graph to see if a working backend is installed
         try:
             graphviz.Digraph().pipe()

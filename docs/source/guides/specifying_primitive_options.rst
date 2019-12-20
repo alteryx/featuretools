@@ -60,6 +60,7 @@ Specifying Entities for Individual Primitives
 Which entities to include/ignore can also be specified for a single primitive or a group of primitives. Entities can be
 ignored using the ``ignore_entities`` option in ``primitive_options``, while entities to explicitly include are set by
 the ``include_entities`` option. When ``include_entities`` is given, all entities not listed are ignored by the primitive.
+No variables from any excluded entity will be used to generate features with the given primitive.
 
 .. ipython:: python
 
@@ -81,7 +82,8 @@ except ``'cohorts'`` and ``'log'`` for ``mode``.
 Specifying Columns for Individual Primitives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Specific variables (columns) can also be explicitly included/ignored for a primitive or group of primitives. Variables to
-ignore is set by the ``ignore_variables`` option, while variables to include is set by ``include_variables``.
+ignore is set by the ``ignore_variables`` option, while variables to include is set by ``include_variables``. When the
+``include_variables`` option is set, no other variables from that entity will be used to make features with the given primitive.
 
 .. ipython:: python
 
@@ -108,11 +110,12 @@ from the ``'customers'`` entity.
 
 Specifying GroupBy Options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-GroupBy Transform Primitives can also have additional options ``include_groupby_entities``, ``ignore_groupby_entities``,
+GroupBy Transform Primitives also have the additional options ``include_groupby_entities``, ``ignore_groupby_entities``,
 ``include_groupby_variables``, and ``ignore_groupby_variables``. These options are used to specify entities and columns
 to include/ignore as groupings for inputs. By default, DFS only groups by ID columns. Specifying ``include_groupby_variables``
 overrides this default, and will only group by variables given. On the other hand, ``ignore_groupby_variables`` will
-continue to use only the ID columns, ignoring any variables specified that are also ID columns.
+continue to use only the ID columns, ignoring any variables specified that are also ID columns. Note that if including 
+non-ID columns to group by, the included columns must also be a discrete type. 
 
 .. ipython:: python
 
@@ -125,12 +128,17 @@ continue to use only the ID columns, ignoring any variables specified that are a
                                            primitive_options={
                                                  'cum_sum': {'ignore_groupby_variables': {'log': ['product_id']}},
                                                  'cum_count': {'include_groupby_variables': {'log': ['product_id',
-                                                                                                     'priority_level']}}})
+                                                                                                     'priority_level']},
+                                                               'ignore_groupby_entities': ['sessions']}})
     features_list
 
 We ignore ``'product_id'`` as a groupby for ``cum_sum`` but still use any other ID columns in that or any other entity. For
 'cum_count', we use only ``'product_id'`` and ``'priority_level'`` as groupbys. Note that ``cum_sum`` doesn't use
-``'priority_level'`` because it's not an ID column, but we explicitly include it for ``cum_count``.
+``'priority_level'`` because it's not an ID column, but we explicitly include it for ``cum_count``. Finally, note that specifying
+groupby options doesn't affect what features the primitive is applied to. For example, ``cum_count`` ignores the entity ``sessions`` 
+for groupbys, but the feature ``<Feature: CUM_COUNT(sessions.customer_id) by product_id>`` is still made. The groupby is from
+the target entity ``log``, so the feature is valid given the associated options. To ignore the sessions entity for ``cum_count``, 
+the ``ignore_entities`` option for ``cum_count`` would need to include ``sessions``.
 
 
 Specifying for each Input for Multiple Input Primitives

@@ -83,9 +83,8 @@ class FeatureBase(object):
         return self._name
 
     def get_names(self):
-        n = self.number_output_features
         if not self._names:
-            self._names = [self.generate_name() + "[{}]".format(i) for i in range(n)]
+            self._names = self.generate_names()
         return self._names
 
     def get_feature_names(self):
@@ -618,6 +617,13 @@ class AggregationFeature(FeatureBase):
                                             where_str=self._where_str(),
                                             use_prev_str=self._use_prev_str())
 
+    def generate_names(self):
+        return self.primitive.generate_names(base_feature_names=[bf.get_name() for bf in self.base_features],
+                                             relationship_path_name=self.relationship_path_name(),
+                                             parent_entity_id=self.parent_entity.id,
+                                             where_str=self._where_str(),
+                                             use_prev_str=self._use_prev_str())
+
     def get_arguments(self):
         return {
             'name': self._name,
@@ -668,6 +674,9 @@ class TransformFeature(FeatureBase):
     def generate_name(self):
         return self.primitive.generate_name(base_feature_names=[bf.get_name() for bf in self.base_features])
 
+    def generate_names(self):
+        return self.primitive.generate_names(base_feature_names=[bf.get_name() for bf in self.base_features])
+
     def get_arguments(self):
         return {
             'name': self._name,
@@ -712,6 +721,12 @@ class GroupByTransformFeature(TransformFeature):
         base_names = [bf.get_name() for bf in self.base_features[:-1]]
         _name = self.primitive.generate_name(base_names)
         return u"{} by {}".format(_name, self.groupby.get_name())
+
+    def generate_names(self):
+        base_names = [bf.get_name() for bf in self.base_features[:-1]]
+        _names = self.primitive.generate_names(base_names)
+        names = [name + " by {}".format(self.groupby.get_name()) for name in _names]
+        return names
 
     def get_arguments(self):
         # Do not include groupby in base_features.

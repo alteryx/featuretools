@@ -4,13 +4,63 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+    * Fixes
+        * Raise error when given wrong input for ignore_variables (:pr:`826`)
+        * Fix multi-output features not created when there is no child data (:pr:`834`)
+        * Removing type casting in Equals and NotEquals primitives (:pr:`504`)
+    * Changes
+        * Replace pd.timedelta time units that were deprecated (:pr:`822`)
+        * Do not use scikit-learn 0.22 (:pr:`835`, :pr:`837`)
+    * Documentation Changes
+    * Testing Changes
+        * Run unit tests in windows environment (:pr:`790`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`rwedge`, :user:`systemshift`, :user:`jeffzi`, :user:`kmax12`
+
+**v0.13.0 Nov 30, 2019**
+    * Enhancements
+        * Added GitHub Action to auto upload releases to PyPI (:pr:`816`)
+    * Fixes
+        * Fix issue where some primitive options would not be applied (:pr:`807`)
+        * Fix issue with converting to pickle or parquet after adding interesting features (:pr:`798`, :pr:`823`)
+        * Diff primitive now calculates using all available data (:pr:`824`)
+        * Prevent DFS from creating Identity Features of globally ignored variables (:pr:`819`)
+    * Changes
+        * Remove python 2.7 support from serialize.py (:pr:`812`)
+        * Make smart_open, boto3, and s3fs optional dependencies (:pr:`827`)
+    * Documentation Changes
+        * remove python 2.7 support and add 3.7 in install.rst (:pr:`805`)
+        * Fix import error in docs (:pr:`803`)
+        * Fix release title formatting in changelog (:pr:`806`)
+    * Testing Changes
+        * Use multiple CPUS to run tests on CI (:pr:`811`)
+        * Refactor test entityset creation to avoid saving to disk (:pr:`813`, :pr:`821`)
+        * Remove get_values() from test_es.py to remove warnings (:pr:`820`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`frances-h`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`systemshift`
+
+**Breaking Changes**
+
+* The libraries used for downloading or uploading from S3 or URLs are now
+  optional and will no longer be installed by default.  To use this
+  functionality they will need to be installed separately.
+* The fix to how the Diff primitive is calculated may slow down the overall
+  calculation time of feature lists that use this primitive.
+
+**v0.12.0 Oct 31, 2019**
+    * Enhancements
         * Added First primitive (:pr:`770`)
+        * Added Entropy aggregation primitive (:pr:`779`)
+        * Allow custom naming for multi-output primitives (:pr:`780`)
     * Fixes
         * Prevents user from removing base entity time index using additional_variables (:pr:`768`)
-    * Updates
+        * Fixes error when a multioutput primitive was supplied to dfs as a groupby trans primitive (:pr:`786`)
     * Changes
         * Drop Python 2 support (:pr:`759`)
         * Add unit parameter to AvgTimeBetween (:pr:`771`)
+        * Require Pandas 0.24.1 or higher (:pr:`787`)
     * Documentation Changes
         * Update featuretools slack link (:pr:`765`)
         * Set up repo to use Read the Docs (:pr:`776`)
@@ -20,11 +70,10 @@ Changelog
         * Disable PIP progress bars (:pr:`775`)
 
     Thanks to the following people for contributing to this release:
-    :user:`kmax12`, :user:`rwedge`, :user:`ablacke-ayx`, :user:`jeffzi`, :user:`BoopBoopBeepBoop`,
-    :user:`thehomebrewnerd`
+    :user:`ablacke-ayx`, :user:`BoopBoopBeepBoop`, :user:`jeffzi`,
+    :user:`kmax12`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`twdobson`
 
 **v0.11.0 Sep 30, 2019**
-
     .. warning::
         The next non-bugfix release of Featuretools will not support Python 2
 
@@ -40,7 +89,7 @@ Changelog
         * Added error message when DateTimeIndex is a variable but not set as the time_index (:pr:`723`)
         * Fixed CumCount and other group-by transform primitives that take ID as input (:pr:`733`, :pr:`754`)
         * Fix progress bar undercounting (:pr:`743`)
-	* Updated training_window error assertion to only check against observations (:pr:`728`)
+        * Updated training_window error assertion to only check against observations (:pr:`728`)
         * Don't delete the whole destination folder while saving entityset (:pr:`717`)
     * Changes
         * Raise warning and not error on schema version mismatch (:pr:`718`)
@@ -74,7 +123,6 @@ Changelog
 
 
 **v0.10.0 Aug 19, 2019**
-
     .. warning::
         The next non-bugfix release of Featuretools will not support Python 2
 
@@ -534,25 +582,21 @@ Changelog
     * Added ``Week`` transform primitive
 
 **v0.1.6** July 26, 2017
-
     * Added ``load_features`` and ``save_features`` to persist and reload features
     * Added save_progress argument to ``calculate_feature_matrix``
     * Added approximate parameter to ``calculate_feature_matrix`` and ``dfs``
     * Added ``load_flight`` to ft.demo
 
 **v0.1.5** July 11, 2017
-
     * Windows support
 
 **v0.1.3** July 10, 2017
-
     * Renamed feature submodule to primitives
     * Renamed prediction_entity arguments to target_entity
     * Added training_window parameter to ``calculate_feature_matrix``
 
 
 **v0.1.2** July 3rd, 2017
-
     * Initial release
 
 .. command

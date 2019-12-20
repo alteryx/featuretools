@@ -1,7 +1,7 @@
 Install
 *******
 
-Featuretools is available for Python 2.7, 3.5, and 3.6. The recommended way to install Featuretools is using ``pip`` or ``conda``::
+Featuretools is available for Python 3.5, 3.6 and 3.7 The recommended way to install Featuretools is using ``pip`` or ``conda``::
 
     python -m pip install featuretools
 
@@ -42,6 +42,11 @@ AutoNormalize:
     Automated creation of normalized ``EntitySet`` from denormalized data::
 
         python -m pip install featuretools[autonormalize]
+
+Featuretools Sklearn Transformer:
+    Deep Feature Synthesis as a scikit-learn pipelines transformer
+
+        python -m pip install featuretools[sklearn_transformer]
 
 .. _graphviz:
 

@@ -4,13 +4,13 @@ import tarfile
 import tempfile
 from pathlib import Path
 
-import boto3
 import pandas as pd
 
 from featuretools.entityset.relationship import Relationship
 from featuretools.entityset.serialize import FORMATS
-from featuretools.utils.gen_utils import (
-    check_schema_version,
+from featuretools.utils.gen_utils import check_schema_version, import_or_raise
+from featuretools.utils.s3_utils import (
+    BOTO3_ERR_MSG,
     use_s3fs_es,
     use_smartopen_es
 )
@@ -35,7 +35,8 @@ def description_to_variable(description, entity=None):
     if entity is not None:
         kwargs = {} if is_type_string else description['type']
         variable = variable(description['id'], entity, **kwargs)
-        variable.interesting_values = description['properties']['interesting_values']
+        interesting_values = pd.read_json(description['properties']['interesting_values'])
+        variable.interesting_values = interesting_values
     return variable
 
 
@@ -51,14 +52,19 @@ def description_to_entity(description, entityset, path=None):
         dataframe = read_entity_data(description, path=path)
     else:
         dataframe = empty_dataframe(description)
-    variable_types = {variable['id']: description_to_variable(variable) for variable in description['variables']}
-    entityset.entity_from_dataframe(
+    variable_types = {variable['id']: (description_to_variable(variable), variable)
+                      for variable in description['variables']}
+    es = entityset.entity_from_dataframe(
         description['id'],
         dataframe,
         index=description.get('index'),
         time_index=description.get('time_index'),
         secondary_time_index=description['properties'].get('secondary_time_index'),
-        variable_types=variable_types)
+        variable_types={variable: variable_types[variable][0] for variable in variable_types})
+    for variable in es[description['id']].variables:
+        interesting_values = variable_types[variable.id][1]['properties']['interesting_values']
+        interesting_values = pd.read_json(interesting_values, typ="series")
+        variable.interesting_values = interesting_values
 
 
 def description_to_entityset(description, **kwargs):
@@ -184,6 +190,8 @@ def read_entityset(path, profile_name=None, **kwargs):
             kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
     '''
     if _is_url(path) or _is_s3(path):
+        boto3 = import_or_raise("boto3", BOTO3_ERR_MSG)
+
         with tempfile.TemporaryDirectory() as tmpdir:
             file_name = Path(path).name
             file_path = os.path.join(tmpdir, file_name)

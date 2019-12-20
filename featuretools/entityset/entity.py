@@ -117,10 +117,14 @@ class Entity(object):
             elif self.last_time_index is not None and other.last_time_index is not None:
                 if not self.last_time_index.equals(other.last_time_index):
                     return False
-
             if not _dataframes_equal(self.df, other.df):
                 return False
-
+            variables = {variable: (variable, ) for variable in self.variables}
+            for variable in other.variables:
+                variables[variable] += (variable, )
+            for self_var, other_var in variables.values():
+                if not self_var.__eq__(other_var, deep=True):
+                    return False
         return True
 
     def __sizeof__(self):
@@ -345,7 +349,7 @@ class Entity(object):
         for variable in self.variables:
             # some heuristics to find basic 'where'-able variables
             if isinstance(variable, vtypes.Discrete):
-                variable.interesting_values = []
+                variable.interesting_values = pd.Series()
 
                 # TODO - consider removing this constraints
                 # don't add interesting values for entities in relationships
@@ -373,7 +377,7 @@ class Entity(object):
                             msg = "Variable {}: Marking {} as an "
                             msg += "interesting value"
                             logger.info(msg.format(variable.id, idx))
-                        variable.interesting_values += [idx]
+                        variable.interesting_values = variable.interesting_values.append(pd.Series([idx]))
                     else:
                         fraction = counts[idx] / total_count
                         if fraction > 0.05 and fraction < 0.95:
@@ -381,7 +385,7 @@ class Entity(object):
                                 msg = "Variable {}: Marking {} as an "
                                 msg += "interesting value"
                                 logger.info(msg.format(variable.id, idx))
-                            variable.interesting_values += [idx]
+                            variable.interesting_values = variable.interesting_values.append(pd.Series([idx]))
                             # total_count -= counts[idx]
                         else:
                             break

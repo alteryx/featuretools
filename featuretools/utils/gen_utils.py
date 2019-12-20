@@ -1,11 +1,8 @@
-import json
-import shutil
+import importlib
 import sys
 import warnings
 from itertools import zip_longest
 
-import s3fs
-from smart_open import open
 from tqdm import tqdm
 
 
@@ -98,7 +95,7 @@ def check_schema_version(cls, cls_type):
                 break
 
         warning_text_outdated = ('The schema version of the saved %s'
-                                 '(%s) is no longer supported by this version'
+                                 '(%s) is no longer supported by this version '
                                  'of featuretools. Attempting to load %s ...'
                                  % (cls_type, version_string, cls_type))
         # Check if saved has older major version.
@@ -106,42 +103,16 @@ def check_schema_version(cls, cls_type):
             warnings.warn(warning_text_outdated)
 
 
-def use_smartopen_es(file_path, path, transport_params=None, read=True):
-    if read:
-        with open(path, "rb", transport_params=transport_params) as fin:
-            with open(file_path, 'wb') as fout:
-                shutil.copyfileobj(fin, fout)
-    else:
-        with open(file_path, 'rb') as fin:
-            with open(path, 'wb', transport_params=transport_params) as fout:
-                shutil.copyfileobj(fin, fout)
+def import_or_raise(library, error_msg):
+    '''
+    Attempts to import the requested library.  If the import fails, raises an
+    ImportErorr with the supplied
 
-
-def use_s3fs_es(file_path, path, read=True):
-    s3 = s3fs.S3FileSystem(anon=True)
-    if read:
-        s3.get(path, file_path)
-    else:
-        s3.put(file_path, path)
-
-
-def use_smartopen_features(path, features_dict=None, transport_params=None, read=True):
-    if read:
-        with open(path, 'r', encoding='utf-8', transport_params=transport_params) as f:
-            features_dict = json.load(f)
-            return features_dict
-    else:
-        with open(path, "w", transport_params=transport_params) as f:
-            json.dump(features_dict, f)
-
-
-def use_s3fs_features(file_path, features_dict=None, read=True):
-    s3 = s3fs.S3FileSystem(anon=True)
-    if read:
-        with s3.open(file_path, "r", encoding='utf-8') as f:
-            features_dict = json.load(f)
-            return features_dict
-    else:
-        with s3.open(file_path, "w") as f:
-            features = json.dumps(features_dict, ensure_ascii=False)
-            f.write(features)
+    Args:
+        library (str): the name of the library
+        error_msg (str): error message to return if the import fails
+    '''
+    try:
+        return importlib.import_module(library)
+    except ImportError:
+        raise ImportError(error_msg)

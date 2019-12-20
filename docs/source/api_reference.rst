@@ -29,14 +29,14 @@ Deep Feature Synthesis
 
 Wrappers
 ~~~~~~~~
-.. currentmodule:: featuretools.wrappers
+.. currentmodule:: featuretools
 
 Scikit-learn (BETA)
 -------------------
 .. autosummary::
     :toctree: generated/
 
-    DFSTransformer
+    wrappers.DFSTransformer
 
 
 
@@ -108,6 +108,7 @@ Aggregation Primitives
     Last
     Skew
     Trend
+    Entropy
 
 
 Transform Primitives
