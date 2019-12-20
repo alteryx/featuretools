@@ -4,14 +4,18 @@ import os
 import tarfile
 import tempfile
 
-import boto3
 import dask.dataframe as dd
 
-from featuretools.utils.gen_utils import use_s3fs_es, use_smartopen_es
+from featuretools.utils.gen_utils import import_or_raise
+from featuretools.utils.s3_utils import (
+    BOTO3_ERR_MSG,
+    use_s3fs_es,
+    use_smartopen_es
+)
 from featuretools.utils.wrangle import _is_s3, _is_url
 
 FORMATS = ['csv', 'pickle', 'parquet']
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "2.0.0"
 
 
 def entity_to_description(entity):
@@ -54,7 +58,8 @@ def entityset_to_description(entityset):
     Returns:
         description (dict) : Description of :class:`.EntitySet`.
     '''
-    entities = {entity.id: entity_to_description(entity) for entity in entityset.entities}
+    entities = {entity.id: entity_to_description(entity) for entity in
+                sorted(entityset.entities, key=lambda entity: entity.id)}
     relationships = [relationship.to_dictionary() for relationship in entityset.relationships]
     data_description = {
         'schema_version': SCHEMA_VERSION,
@@ -101,7 +106,6 @@ def write_entity_data(entity, path, format='csv', **kwargs):
         df = df.copy()
         columns = df.select_dtypes('object').columns
         df[columns] = df[columns].astype('unicode')
-        df.columns = df.columns.astype('unicode')  # ensures string column names for python 2.7
         df.to_parquet(file, **kwargs)
     elif format == 'pickle':
         df.to_pickle(file, **kwargs)
@@ -122,6 +126,8 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
         kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
     '''
     if _is_s3(path):
+        boto3 = import_or_raise("boto3", BOTO3_ERR_MSG)
+
         with tempfile.TemporaryDirectory() as tmpdir:
             os.makedirs(os.path.join(tmpdir, 'data'))
             dump_data_description(entityset, tmpdir, **kwargs)
@@ -157,7 +163,7 @@ def dump_data_description(entityset, path, **kwargs):
 
 
 def create_archive(tmpdir):
-    file_name = "es-{date:%Y-%m-%d_%H:%M:%S}.tar".format(date=datetime.datetime.now())
+    file_name = "es-{date:%Y-%m-%d_%H%M%S}.tar".format(date=datetime.datetime.now())
     file_path = os.path.join(tmpdir, file_name)
     tar = tarfile.open(str(file_path), 'w')
     tar.add(str(tmpdir) + '/data_description.json', arcname='/data_description.json')

@@ -139,6 +139,7 @@ def test_query_by_variable_with_time(es):
 
     true_values = [
         i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
+
     assert list(df['id'].values) == list(range(10))
     assert list(df['value'].values) == true_values
 
@@ -910,7 +911,7 @@ def test_earlier_schema_version(es):
         version = '.'.join([str(v) for v in [major, minor, patch]])
         if raises:
             warning_text = ('The schema version of the saved entityset'
-                            '(%s) is no longer supported by this version'
+                            '(%s) is no longer supported by this version '
                             'of featuretools. Attempting to load entityset ...'
                             % (version))
         else:

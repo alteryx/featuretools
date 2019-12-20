@@ -462,6 +462,9 @@ class FeatureSetCalculator(object):
 
         for f in features:
             feature_vals = []
+            for _ in range(f.number_output_features):
+                feature_vals.append([])
+
             for group in groups:
                 # skip null key if it exists
                 if pd.isnull(group):
@@ -479,18 +482,21 @@ class FeatureSetCalculator(object):
                 else:
                     values = feature_func(*variable_data)
 
+                if f.number_output_features == 1:
+                    values = [values]
+
                 # make sure index is aligned
-                if isinstance(values, pd.Series):
-                    values.index = variable_data[0].index
-                else:
-                    values = pd.Series(values, index=variable_data[0].index)
+                for i, value in enumerate(values):
+                    if isinstance(value, pd.Series):
+                        value.index = variable_data[0].index
+                    else:
+                        value = pd.Series(value, index=variable_data[0].index)
+                    feature_vals[i].append(value)
 
-                feature_vals.append(values)
-
-            # Note
-            # more efficient in pandas to concat and update only once
-            if feature_vals:
-                frame[f.get_name()].update(pd.concat(feature_vals))
+            if any(feature_vals):
+                assert len(feature_vals) == len(f.get_feature_names())
+                for col_vals, name in zip(feature_vals, f.get_feature_names()):
+                    frame[name].update(pd.concat(col_vals))
 
             progress_callback(1 / float(self.num_features))
 
@@ -558,7 +564,7 @@ class FeatureSetCalculator(object):
         # when no child data, just add all the features to frame with nan
         if len(base_frame) == 0:
             for f in features:
-                frame[f.get_name()] = np.nan
+                update_feature_columns(f, frame, np.full(f.number_output_features, np.nan))
                 progress_callback(1 / float(self.num_features))
         else:
             relationship_path = test_feature.relationship_path

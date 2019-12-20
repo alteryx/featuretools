@@ -1,3 +1,5 @@
+import copy
+
 import pandas as pd
 import pytest
 
@@ -5,14 +7,24 @@ import featuretools as ft
 from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
-@pytest.fixture
-def es():
-    return make_ecommerce_entityset(return_dask=False)
+@pytest.fixture(scope='session')
+def make_es():
+    return make_ecommerce_entityset()
 
 
-@pytest.fixture
-def int_es():
+@pytest.fixture(scope='session')
+def make_int_es():
     return make_ecommerce_entityset(with_integer_time_index=True)
+
+
+@pytest.fixture
+def es(make_es):
+    return copy.deepcopy(make_es)
+
+
+@pytest.fixture
+def int_es(make_int_es):
+    return copy.deepcopy(make_int_es)
 
 
 @pytest.fixture

@@ -1,6 +1,5 @@
 import json
 import os
-import shutil
 
 import boto3
 import pandas as pd
@@ -8,7 +7,6 @@ import pytest
 
 from featuretools.demo import load_mock_customer
 from featuretools.entityset import EntitySet, deserialize, serialize
-from featuretools.tests import integration_data
 from featuretools.variable_types.variable import (
     Categorical,
     Index,
@@ -16,12 +14,12 @@ from featuretools.variable_types.variable import (
     find_variable_types
 )
 
-CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-S3_URL = "s3://featuretools-static/test_serialization_data_2.0.0.tar"
-URL = 'https://featuretools-static.s3.amazonaws.com/test_serialization_data_2.0.0.tar'
+TEST_FILE = "test_serialization_data_entityset_schema_2.0.0.tar"
+S3_URL = "s3://featuretools-static/" + TEST_FILE
+URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
 
 
@@ -86,19 +84,11 @@ def test_entityset_description(es):
     assert es.metadata.__eq__(_es, deep=True)
 
 
-@pytest.fixture
-def path_management():
-    path = os.path.join(CACHE, 'es')
-    os.makedirs(path, exist_ok=True)
-    yield path
-    shutil.rmtree(path)
-
-
-def test_invalid_formats(es, path_management):
+def test_invalid_formats(es, tmpdir):
     error_text = 'must be one of the following formats: {}'
     error_text = error_text.format(', '.join(serialize.FORMATS))
     with pytest.raises(ValueError, match=error_text):
-        serialize.write_entity_data(es.entities[0], path=path_management, format='')
+        serialize.write_entity_data(es.entities[0], path=str(tmpdir), format='')
     with pytest.raises(ValueError, match=error_text):
         entity = {'loading_info': {'location': 'data', 'type': ''}}
         deserialize.read_entity_data(entity, path='.')
@@ -111,41 +101,69 @@ def test_empty_dataframe(es):
         assert dataframe.empty
 
 
-def test_to_csv(es, path_management):
-    es.to_csv(path_management, encoding='utf-8', engine='python')
-    new_es = deserialize.read_entityset(path_management)
+def test_to_csv(es, tmpdir):
+    es.to_csv(str(tmpdir), encoding='utf-8', engine='python')
+    new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
     assert type(es['log'].df['latlong'][0]) == tuple
     assert type(new_es['log'].df['latlong'][0]) == tuple
 
 
-def test_to_pickle(es, path_management):
-    es.to_pickle(path_management)
-    new_es = deserialize.read_entityset(path_management)
+def test_to_pickle(es, tmpdir):
+    es.to_pickle(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
     assert type(es['log'].df['latlong'][0]) == tuple
     assert type(new_es['log'].df['latlong'][0]) == tuple
 
 
-def test_to_parquet(es, path_management):
-    es.to_parquet(path_management)
-    new_es = deserialize.read_entityset(path_management)
+def test_to_pickle_interesting_values(es, tmpdir):
+    es.add_interesting_values()
+    es.to_pickle(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_to_pickle_manual_interesting_values(es, tmpdir):
+    es['log']['product_id'].interesting_values = ["coke_zero"]
+    es.to_pickle(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_to_parquet(es, tmpdir):
+    es.to_parquet(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
     assert type(es['log'].df['latlong'][0]) == tuple
     assert type(new_es['log'].df['latlong'][0]) == tuple
 
 
-def test_to_parquet_with_lti(path_management):
+def test_to_parquet_manual_interesting_values(es, tmpdir):
+    es['log']['product_id'].interesting_values = ["coke_zero"]
+    es.to_pickle(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_to_parquet_interesting_values(es, tmpdir):
+    es.add_interesting_values()
+    es.to_parquet(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_to_parquet_with_lti(tmpdir):
     es = load_mock_customer(return_entityset=True, random_seed=0)
-    es.to_parquet(path_management)
-    new_es = deserialize.read_entityset(path_management)
+    es.to_parquet(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
 
 
-def test_to_pickle_id_none(path_management):
+def test_to_pickle_id_none(tmpdir):
     es = EntitySet()
-    es.to_pickle(path_management)
-    new_es = deserialize.read_entityset(path_management)
+    es.to_pickle(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
 
 # TODO: Fix Moto tests needing to explicitly set permissions for objects
@@ -229,9 +247,10 @@ def create_test_config(test_path_config):
 
 
 @pytest.fixture
-def setup_test_profile(monkeypatch):
-    test_path = os.path.join(CACHE, 'test_credentials')
-    test_path_config = os.path.join(CACHE, 'test_config')
+def setup_test_profile(monkeypatch, tmpdir):
+    cache = str(tmpdir.join('.cache').mkdir())
+    test_path = os.path.join(cache, 'test_credentials')
+    test_path_config = os.path.join(cache, 'test_config')
     monkeypatch.setenv("AWS_SHARED_CREDENTIALS_FILE", test_path)
     monkeypatch.setenv("AWS_CONFIG_FILE", test_path_config)
     monkeypatch.delenv("AWS_ACCESS_KEY_ID", raising=False)

@@ -6,6 +6,7 @@ import pytest
 
 import featuretools as ft
 from featuretools import variable_types
+from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
 def test_enforces_variable_id_is_str(es):
@@ -43,10 +44,15 @@ def test_variable_ordering_matches_column_ordering(es):
 
 
 def test_eq(es):
+    other_es = make_ecommerce_entityset()
     latlong = es['log'].df['latlong'].copy()
 
     assert es['log'].__eq__(es['log'], deep=True)
+    assert es['log'].__eq__(other_es['log'], deep=True)
     assert (es['log'].df['latlong'] == latlong).all()
+
+    other_es['log'].add_interesting_values()
+    assert not es['log'].__eq__(other_es['log'], deep=True)
 
     es['log'].id = 'customers'
     es['log'].index = 'notid'
