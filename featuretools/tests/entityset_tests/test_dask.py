@@ -20,7 +20,7 @@ def test_hackathon():
                    target_entity="users",
                    trans_primitives=primitives_list)
 
-    df_dd = dd.from_pandas(df, npartitions=4)
+    df_dd = dd.from_pandas(df, npartitions=1)
     dask_es = EntitySet(id="dask_es")
     dask_es.entity_from_dataframe(
         entity_id="users",
@@ -36,7 +36,8 @@ def test_hackathon():
     # Account for difference in index and column ordering when making comarisons
     assert es['users'].df.reset_index(drop=True).equals(dask_es['users'].df.compute())
     # Use the same columns and make sure both are sorted on index values
-    assert fm.sort_index().equals(dask_fm.set_index('RESPID')[fm.columns].compute())
+    dask_computed_fm = dask_fm.set_index('RESPID')[fm.columns].compute()
+    assert fm.sort_index().equals(dask_computed_fm)
 
 
 def test_create_entity_from_dask_df(es):
@@ -252,6 +253,8 @@ def test_single_table_dask_entityset_cutoff_time_df():
                    cutoff_time=cutoff_times)
 
     # Use the same columns and make sure both are sorted on index values
+    # This test may fail sometimes because there are multiple entries for `id = 0`
+    # and they may not always be sorted the same
     assert fm.sort_index().equals(dask_fm.set_index('id')[fm.columns].compute())
 
 
