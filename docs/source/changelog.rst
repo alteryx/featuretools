@@ -14,6 +14,7 @@ Changelog
     * Documentation Changes
     * Testing Changes
         * Run unit tests in windows environment (:pr:`790`)
+        * Update boto3 version requirement for tests (:pr:`838`)
 
     Thanks to the following people for contributing to this release:
     :user:`rwedge`, :user:`systemshift`, :user:`jeffzi`, :user:`kmax12`
