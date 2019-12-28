@@ -2,7 +2,7 @@
 
 Changelog
 ---------
-**Future Release**
+**v0.13.1 Dec 28, 2019**
     * Enhancements
     * Fixes
         * Raise error when given wrong input for ignore_variables (:pr:`826`)
@@ -17,7 +17,7 @@ Changelog
         * Update boto3 version requirement for tests (:pr:`838`)
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`, :user:`systemshift`, :user:`jeffzi`, :user:`kmax12`
+    :user:`jeffzi`, :user:`kmax12`, :user:`rwedge`, :user:`systemshift`
 
 **v0.13.0 Nov 30, 2019**
     * Enhancements
