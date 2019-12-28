@@ -9,7 +9,7 @@ Changelog
         * Removing type casting in Equals and NotEquals primitives (:pr:`504`)
     * Changes
         * Replace pd.timedelta time units that were deprecated (:pr:`822`)
-        * Do not use scikit-learn 0.22 (:pr:`835`, :pr:`837`)
+        * Move sklearn wrapper to separate library (:pr:`835`, :pr:`837`)
     * Testing Changes
         * Run unit tests in windows environment (:pr:`790`)
         * Update boto3 version requirement for tests (:pr:`838`)
