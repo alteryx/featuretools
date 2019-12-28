@@ -3,7 +3,6 @@
 Changelog
 ---------
 **v0.13.1 Dec 28, 2019**
-    * Enhancements
     * Fixes
         * Raise error when given wrong input for ignore_variables (:pr:`826`)
         * Fix multi-output features not created when there is no child data (:pr:`834`)
@@ -11,7 +10,6 @@ Changelog
     * Changes
         * Replace pd.timedelta time units that were deprecated (:pr:`822`)
         * Do not use scikit-learn 0.22 (:pr:`835`, :pr:`837`)
-    * Documentation Changes
     * Testing Changes
         * Run unit tests in windows environment (:pr:`790`)
         * Update boto3 version requirement for tests (:pr:`838`)
