@@ -29,14 +29,14 @@ Deep Feature Synthesis
 
 Wrappers
 ~~~~~~~~
-.. currentmodule:: featuretools.wrappers
+.. currentmodule:: featuretools
 
 Scikit-learn (BETA)
 -------------------
 .. autosummary::
     :toctree: generated/
 
-    DFSTransformer
+    wrappers.DFSTransformer
 
 
 

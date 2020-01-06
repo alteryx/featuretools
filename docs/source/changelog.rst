@@ -2,18 +2,20 @@
 
 Changelog
 ---------
-**Future Release**
-    * Enhancements
+**v0.13.1 Dec 28, 2019**
     * Fixes
         * Raise error when given wrong input for ignore_variables (:pr:`826`)
+        * Fix multi-output features not created when there is no child data (:pr:`834`)
+        * Removing type casting in Equals and NotEquals primitives (:pr:`504`)
     * Changes
         * Replace pd.timedelta time units that were deprecated (:pr:`822`)
-    * Documentation Changes
+        * Move sklearn wrapper to separate library (:pr:`835`, :pr:`837`)
     * Testing Changes
         * Run unit tests in windows environment (:pr:`790`)
+        * Update boto3 version requirement for tests (:pr:`838`)
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`, :user:`systemshift`
+    :user:`jeffzi`, :user:`kmax12`, :user:`rwedge`, :user:`systemshift`
 
 **v0.13.0 Nov 30, 2019**
     * Enhancements

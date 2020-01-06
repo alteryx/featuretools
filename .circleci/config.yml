@@ -218,6 +218,7 @@ jobs:
             python -c "import categorical_encoding"
             python -c "import nlp_primitives"
             python -c "import autonormalize"
+            python -c "import featuretools_sklearn_transformer"
           environment:
             FEATURETOOLS_UPDATE_CHECKER: False
 

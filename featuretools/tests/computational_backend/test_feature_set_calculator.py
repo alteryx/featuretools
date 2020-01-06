@@ -653,7 +653,8 @@ def test_empty_child_dataframe():
     child_df = pd.DataFrame({"id": [1, 2, 3],
                              "parent_id": [1, 1, 1],
                              "time_index": pd.date_range(start='1/1/2018', periods=3),
-                             "value": [10, 5, 2]})
+                             "value": [10, 5, 2],
+                             "cat": ['a', 'a', 'b']})
 
     es = ft.EntitySet(id="blah")
     es.entity_from_dataframe(entity_id="parent", dataframe=parent_df, index="id")
@@ -666,20 +667,33 @@ def test_empty_child_dataframe():
     # create agg feature that requires multiple arguments
     trend = ft.Feature([es["child"]['value'], es["child"]['time_index']], parent_entity=es["parent"], primitive=Trend)
 
+    # create multi-output agg feature
+    n_most_common = ft.Feature(es["child"]['cat'], parent_entity=es["parent"], primitive=NMostCommon)
+
     # create aggs with where
     where = ft.Feature(es["child"]["value"]) == 1
     count_where = ft.Feature(es["child"]['id'], parent_entity=es["parent"], where=where, primitive=Count)
     trend_where = ft.Feature([es["child"]['value'], es["child"]['time_index']], parent_entity=es["parent"], where=where, primitive=Trend)
+    n_most_common_where = ft.Feature(es["child"]['cat'], parent_entity=es["parent"], where=where, primitive=NMostCommon)
 
     # cutoff time before all rows
-    fm = ft.calculate_feature_matrix(entityset=es, features=[count, count_where, trend, trend_where], cutoff_time=pd.Timestamp("12/31/2017"))
-    names = [count.get_name(), count_where.get_name(), trend.get_name(), trend_where.get_name()]
-    assert_array_equal(fm[names], [[0, 0, np.nan, np.nan]])
+    fm = ft.calculate_feature_matrix(entityset=es,
+                                     features=[count, count_where, trend, trend_where, n_most_common, n_most_common_where],
+                                     cutoff_time=pd.Timestamp("12/31/2017"))
+    names = [count.get_name(), count_where.get_name(),
+             trend.get_name(), trend_where.get_name(),
+             *n_most_common.get_names(), *n_most_common_where.get_names()]
+    values = [0, 0,
+              np.nan, np.nan,
+              *np.full(n_most_common.number_output_features, np.nan), *np.full(n_most_common_where.number_output_features, np.nan)]
+    assert_array_equal(fm[names], [values])
 
     # cutoff time after all rows, but where clause filters all rows
-    fm2 = ft.calculate_feature_matrix(entityset=es, features=[count_where, trend_where], cutoff_time=pd.Timestamp("1/4/2018"))
-    names = [count_where.get_name(), trend_where.get_name()]
-    assert_array_equal(fm2[names], [[0, np.nan]])
+    fm2 = ft.calculate_feature_matrix(entityset=es,
+                                      features=[count_where, trend_where, n_most_common_where],
+                                      cutoff_time=pd.Timestamp("1/4/2018"))
+    names = [count_where.get_name(), trend_where.get_name(), *n_most_common_where.get_names()]
+    assert_array_equal(fm2[names], [[0, np.nan, *np.full(n_most_common_where.number_output_features, np.nan)]])
 
 
 def test_with_features_built_from_es_metadata(es):
