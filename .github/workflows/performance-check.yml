@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - master
-      - ft-perform-action
 jobs:
   run-performance-analysis:
     runs-on: ubuntu-latest
