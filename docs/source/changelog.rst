@@ -4,11 +4,11 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
-        * Added GitHub Action to automatically run performance tests (:pr:`840`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Added GitHub Action to automatically run performance tests (:pr:`840`)
 
     Thanks to the following people for contributing to this release:
     :user:`frances-h`
