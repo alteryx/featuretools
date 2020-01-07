@@ -2,6 +2,7 @@ import copy
 
 import pandas as pd
 import pytest
+from dask import dataframe as dd
 
 import featuretools as ft
 from featuretools.tests.testing_utils import make_ecommerce_entityset
@@ -25,6 +26,14 @@ def es(make_es):
 @pytest.fixture
 def int_es(make_int_es):
     return copy.deepcopy(make_int_es)
+
+
+@pytest.fixture
+def dask_es(make_es):
+    dask_es = copy.deepcopy(make_es)
+    for entity in dask_es.entities:
+        entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=1)
+    return dask_es
 
 
 @pytest.fixture

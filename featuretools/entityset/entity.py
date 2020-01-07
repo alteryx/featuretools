@@ -534,7 +534,11 @@ class Entity(object):
             # should we use ignore time last here?
             if time_last is not None and len(df) != 0:
                 mask = df[secondary_time_index] >= time_last
-                df.loc[mask, columns] = np.nan
+                if isinstance(df, dd.core.DataFrame):
+                    for col in columns:
+                        df[col] = df[col].mask(mask, np.nan)
+                else:
+                    df.loc[mask, columns] = np.nan
 
         return df
 

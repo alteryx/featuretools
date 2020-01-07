@@ -5,39 +5,62 @@ import featuretools as ft
 from featuretools.entityset import EntitySet, Relationship
 
 
-def test_hackathon():
-    df = pd.read_csv('./featuretools/tests/entityset_tests/hackathon_users_data.csv')
-    es = EntitySet(id='es')
-    es.entity_from_dataframe(
-        entity_id="users",
-        dataframe=df,
-        index="RESPID",
-    )
-
-    primitives_list = ['cum_sum', 'diff', 'absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
-
-    fm, _ = ft.dfs(entityset=es,
-                   target_entity="users",
-                   trans_primitives=primitives_list)
-
-    df_dd = dd.from_pandas(df, npartitions=1)
-    dask_es = EntitySet(id="dask_es")
-    dask_es.entity_from_dataframe(
-        entity_id="users",
-        dataframe=df_dd,
-        index="RESPID",
-    )
-
-    dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_entity="users",
-                        trans_primitives=primitives_list)
+def test_aggregation(es, dask_es):
+    trans_primitives = ['absolute', 'is_weekend', 'num_characters']
+    agg_primitives = ['count', 'mean', 'sum', 'max', 'any', 'first', 'all', 'num_unique']
 
     assert es == dask_es
-    # Account for difference in index and column ordering when making comarisons
-    assert es['users'].df.reset_index(drop=True).equals(dask_es['users'].df.compute())
-    # Use the same columns and make sure both are sorted on index values
-    dask_computed_fm = dask_fm.set_index('RESPID')[fm.columns].compute()
-    assert fm.sort_index().equals(dask_computed_fm)
+
+    # Run DFS using each entity as a target and confirm results match
+    for entity in es.entities:
+        fm, _ = ft.dfs(entityset=es,
+                       target_entity=entity.id,
+                       trans_primitives=trans_primitives,
+                       agg_primitives=agg_primitives,
+                       max_depth=1)
+
+        dask_fm, _ = ft.dfs(entityset=dask_es,
+                            target_entity=entity.id,
+                            trans_primitives=trans_primitives,
+                            agg_primitives=agg_primitives,
+                            max_depth=1)
+        # Use the same columns and make sure both are sorted on index values
+        dask_computed_fm = dask_fm.compute().set_index(entity.index)[fm.columns]
+        assert fm.equals(dask_computed_fm)
+
+
+# def test_hackathon_single_table():
+#     df = pd.read_csv('./featuretools/tests/entityset_tests/hackathon_users_data.csv')
+#     es = EntitySet(id='es')
+#     es.entity_from_dataframe(
+#         entity_id="users",
+#         dataframe=df,
+#         index="RESPID",
+#     )
+
+#     trans_primitives = ['cum_sum', 'diff', 'absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
+
+#     fm, _ = ft.dfs(entityset=es,
+#                    target_entity="users",
+#                    trans_primitives=trans_primitives)
+#     # TODO: Fix issues and run this test with more than one partition
+#     df_dd = dd.from_pandas(df, npartitions=1)
+#     dask_es = EntitySet(id="dask_es")
+#     dask_es.entity_from_dataframe(
+#         entity_id="users",
+#         dataframe=df_dd,
+#         index="RESPID",
+#     )
+#     dask_fm, _ = ft.dfs(entityset=dask_es,
+#                         target_entity="users",
+#                         trans_primitives=trans_primitives)
+
+#     assert es == dask_es
+#     # Account for difference in index and column ordering when making comarisons
+#     assert es['users'].df.reset_index(drop=True).equals(dask_es['users'].df.compute())
+#     # Use the same columns and make sure both are sorted on index values
+#     dask_computed_fm = dask_fm.set_index('RESPID')[fm.columns].compute()
+#     assert fm.sort_index().equals(dask_computed_fm)
 
 
 def test_create_entity_from_dask_df(es):

@@ -366,7 +366,9 @@ class FeatureSetCalculator(object):
                             right_on=relationship.child_variable.id)
 
         # ensure index is maintained
-        df.set_index(relationship.child_entity.index, drop=False, inplace=True)
+        # TODO: Review for dask dataframes
+        if isinstance(df, pd.DataFrame):
+            df.set_index(relationship.child_entity.index, drop=False, inplace=True)
 
         return df, new_relationship_variables
 
@@ -416,6 +418,7 @@ class FeatureSetCalculator(object):
     def _calculate_transform_features(self, features, frame, _df_trie, progress_callback):
         for f in features:
             # handle when no data
+
             if len(frame) == 0:
                 set_default_column(frame, f)
 
@@ -424,6 +427,7 @@ class FeatureSetCalculator(object):
                 continue
 
             # collect only the variables we need for this transformation
+
             variable_data = [frame[bf.get_name()]
                              for bf in f.base_features]
 
@@ -526,13 +530,17 @@ class FeatureSetCalculator(object):
 
         # merge the identity feature from the parent entity into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
-        if index_as_feature is not None:
-            merge_df = merge_df.set_index(index_as_feature.get_name(), drop=False)
+        if isinstance(merge_df, dd.core.DataFrame):
+            new_df = child_df.merge(merge_df, left_on=merge_var, right_on=merge_var,
+                                    how='left')
         else:
-            merge_df = merge_df.set_index(merge_var)
+            if index_as_feature is not None:
+                merge_df = merge_df.set_index(index_as_feature.get_name(), drop=False)
+            else:
+                merge_df = merge_df.set_index(merge_var)
 
-        new_df = child_df.merge(merge_df, left_on=merge_var, right_index=True,
-                                how='left')
+            new_df = child_df.merge(merge_df, left_on=merge_var, right_index=True,
+                                    how='left')
 
         progress_callback(len(features) / float(self.num_features))
 
@@ -542,6 +550,8 @@ class FeatureSetCalculator(object):
         test_feature = features[0]
         child_entity = test_feature.base_features[0].entity
         base_frame = df_trie.get_node(test_feature.relationship_path).value
+        child_merge_var = test_feature.relationship_path[0][1].child_variable.id
+        parent_merge_var = test_feature.relationship_path[0][1].parent_variable.id
         # Sometimes approximate features get computed in a previous filter frame
         # and put in the current one dynamically,
         # so there may be existing features here
@@ -651,10 +661,10 @@ class FeatureSetCalculator(object):
                 # the column (in actuality grouping by both index and group would
                 # work)
                 if isinstance(base_frame, dd.core.DataFrame):
-                    to_merge = base_frame.groupby(base_frame[groupby_var]).agg(to_agg)
-                else:
-                    to_merge = base_frame.groupby(base_frame[groupby_var],
-                                                  observed=True, sort=False).agg(to_agg)
+                    base_frame = base_frame.compute()
+                    # to_merge = base_frame.groupby(base_frame[groupby_var]).agg(to_agg)
+                to_merge = base_frame.groupby(base_frame[groupby_var],
+                                              observed=True, sort=False).agg(to_agg)
 
                 # rename columns to the correct feature names
                 to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns.ravel()]
@@ -667,8 +677,8 @@ class FeatureSetCalculator(object):
                     to_merge.index = to_merge.index.astype(object).astype(categories)
 
                 if isinstance(frame, dd.core.DataFrame):
-                    frame = dd.merge(left=frame, right=to_merge,
-                                     left_index=True, right_index=True, how='left')
+                    frame = dd.merge(left=frame, right=to_merge.reset_index(),
+                                     left_on=parent_merge_var, right_on=child_merge_var, how='left')
                 else:
                     frame = pd.merge(left=frame, right=to_merge,
                                      left_index=True, right_index=True, how='left')
@@ -754,7 +764,7 @@ def update_feature_columns(feature, data, values):
     assert len(names) == len(values)
     for name, value in zip(names, values):
         if isinstance(value, np.ndarray) and isinstance(data, dd.core.DataFrame):
-            new_df = pd.DataFrame({name: value, id_col: data[id_col]})
+            new_df = pd.DataFrame({name: value, id_col: data[id_col].compute()})
             data = data.merge(new_df, on=id_col)
         else:
             data[name] = value
