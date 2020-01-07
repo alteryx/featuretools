@@ -2,6 +2,17 @@
 
 Changelog
 ---------
+**Future Release**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+        * Added GitHub Action to automatically run performance tests (:pr:`840`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`frances-h`
+
 **v0.13.1 Dec 28, 2019**
     * Fixes
         * Raise error when given wrong input for ignore_variables (:pr:`826`)
