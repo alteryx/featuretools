@@ -5,9 +5,13 @@ import featuretools as ft
 from featuretools.entityset import EntitySet, Relationship
 
 
-def test_aggregation(es, dask_es):
-    trans_primitives = ['absolute', 'is_weekend', 'num_characters']
-    agg_primitives = ['count', 'mean', 'sum', 'max', 'any', 'first', 'all', 'num_unique']
+def test_transform(es, dask_es):
+    primitives = ft.list_primitives()
+    trans_list = primitives[primitives['type'] == 'transform']['name'].tolist()
+    # These primitives currently do not work
+    bad_primitives = ['cum_mean', 'time_since', 'equal', 'not_equal', 'equal_scalar', 'not_equal_scalar']
+    trans_primitives = [prim for prim in trans_list if prim not in bad_primitives]
+    agg_primitives = []
 
     assert es == dask_es
 
@@ -17,12 +21,41 @@ def test_aggregation(es, dask_es):
                        target_entity=entity.id,
                        trans_primitives=trans_primitives,
                        agg_primitives=agg_primitives,
+                       cutoff_time=pd.Timestamp("2019-01-05 04:00"),
                        max_depth=1)
 
         dask_fm, _ = ft.dfs(entityset=dask_es,
                             target_entity=entity.id,
                             trans_primitives=trans_primitives,
                             agg_primitives=agg_primitives,
+                            cutoff_time=pd.Timestamp("2019-01-05 04:00"),
+                            max_depth=1)
+        # Use the same columns and make sure both are sorted on index values
+        dask_computed_fm = dask_fm.compute().set_index(entity.index)[fm.columns]
+        assert fm.equals(dask_computed_fm)
+
+
+def test_aggregation(es, dask_es):
+    primitives = ft.list_primitives()
+    trans_primitives = []
+    agg_primitives = primitives[primitives['type'] == 'aggregation']['name'].tolist()
+
+    assert es == dask_es
+
+    # Run DFS using each entity as a target and confirm results match
+    for entity in es.entities:
+        fm, _ = ft.dfs(entityset=es,
+                       target_entity=entity.id,
+                       trans_primitives=trans_primitives,
+                       agg_primitives=agg_primitives,
+                       cutoff_time=pd.Timestamp("2019-01-05 04:00"),
+                       max_depth=1)
+
+        dask_fm, _ = ft.dfs(entityset=dask_es,
+                            target_entity=entity.id,
+                            trans_primitives=trans_primitives,
+                            agg_primitives=agg_primitives,
+                            cutoff_time=pd.Timestamp("2019-01-05 04:00"),
                             max_depth=1)
         # Use the same columns and make sure both are sorted on index values
         dask_computed_fm = dask_fm.compute().set_index(entity.index)[fm.columns]

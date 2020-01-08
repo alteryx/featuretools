@@ -646,10 +646,16 @@ class FeatureSetCalculator(object):
                 # to silence pandas warning about ambiguity we explicitly pass
                 # the column (in actuality grouping by both index and group would
                 # work)
+                if isinstance(base_frame, dd.core.DataFrame):
+                    base_frame = base_frame.compute()
                 to_merge = base_frame.groupby(base_frame[groupby_var], observed=True, sort=False).apply(wrap)
-                frame = pd.merge(left=frame, right=to_merge,
-                                 left_index=True,
-                                 right_index=True, how='left')
+                if isinstance(frame, dd.core.DataFrame):
+                    frame = dd.merge(left=frame, right=to_merge.reset_index(),
+                                     left_on=parent_merge_var, right_on=child_merge_var, how='left')
+                else:
+                    frame = pd.merge(left=frame, right=to_merge,
+                                     left_index=True,
+                                     right_index=True, how='left')
 
                 progress_callback(len(to_apply) / float(self.num_features))
 
@@ -662,7 +668,6 @@ class FeatureSetCalculator(object):
                 # work)
                 if isinstance(base_frame, dd.core.DataFrame):
                     base_frame = base_frame.compute()
-                    # to_merge = base_frame.groupby(base_frame[groupby_var]).agg(to_agg)
                 to_merge = base_frame.groupby(base_frame[groupby_var],
                                               observed=True, sort=False).agg(to_agg)
 
