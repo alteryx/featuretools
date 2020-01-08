@@ -32,7 +32,7 @@ def int_es(make_int_es):
 def dask_es(make_es):
     dask_es = copy.deepcopy(make_es)
     for entity in dask_es.entities:
-        entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=1)
+        entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=2)
     return dask_es
 
 
