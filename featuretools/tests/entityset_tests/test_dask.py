@@ -22,14 +22,16 @@ def test_transform(es, dask_es):
                        trans_primitives=trans_primitives,
                        agg_primitives=agg_primitives,
                        cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                       max_depth=1)
+                       max_depth=2,
+                       max_features=100)
 
         dask_fm, _ = ft.dfs(entityset=dask_es,
                             target_entity=entity.id,
                             trans_primitives=trans_primitives,
                             agg_primitives=agg_primitives,
                             cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                            max_depth=1)
+                            max_depth=2,
+                            max_features=100)
         # Use the same columns and make sure both are sorted on index values
         dask_computed_fm = dask_fm.compute().set_index(entity.index)[fm.columns]
         assert fm.equals(dask_computed_fm)
@@ -49,14 +51,14 @@ def test_aggregation(es, dask_es):
                        trans_primitives=trans_primitives,
                        agg_primitives=agg_primitives,
                        cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                       max_depth=1)
+                       max_depth=2)
 
         dask_fm, _ = ft.dfs(entityset=dask_es,
                             target_entity=entity.id,
                             trans_primitives=trans_primitives,
                             agg_primitives=agg_primitives,
                             cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                            max_depth=1)
+                            max_depth=2)
         # Use the same columns and make sure both are sorted on index values
         dask_computed_fm = dask_fm.compute().set_index(entity.index)[fm.columns]
         assert fm.equals(dask_computed_fm)
@@ -392,18 +394,19 @@ def test_build_es_from_scratch_and_run_dfs():
                                        make_time_index="join_date",
                                        additional_variables=["zip_code", "join_date", "date_of_birth"])
 
-    primitives_list = ['cum_sum', 'diff', 'absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
+    trans_primitives = ['cum_sum', 'diff', 'absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
+    agg_primitives = ['first', 'last', 'num_unique', 'count', 'max', 'sum']
 
     fm, _ = ft.dfs(entityset=es,
                    target_entity="customers",
-                   trans_primitives=primitives_list,
-                   agg_primitives=[],
+                   trans_primitives=trans_primitives,
+                   agg_primitives=agg_primitives,
                    max_depth=2)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
                         target_entity="customers",
-                        trans_primitives=primitives_list,
-                        agg_primitives=[],
+                        trans_primitives=trans_primitives,
+                        agg_primitives=agg_primitives,
                         max_depth=2)
 
     # Use the same columns and make sure both are sorted on index values

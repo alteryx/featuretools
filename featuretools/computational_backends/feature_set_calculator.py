@@ -239,6 +239,8 @@ class FeatureSetCalculator(object):
 
         # Pass filtered values, even if we are using a full df.
         if need_full_entity:
+            if isinstance(filter_values, dd.core.Series):
+                filter_values = filter_values.compute()
             filtered_df = df[df[filter_variable].isin(filter_values)]
         else:
             filtered_df = df
@@ -550,7 +552,6 @@ class FeatureSetCalculator(object):
         test_feature = features[0]
         child_entity = test_feature.base_features[0].entity
         base_frame = df_trie.get_node(test_feature.relationship_path).value
-        child_merge_var = test_feature.relationship_path[0][1].child_variable.id
         parent_merge_var = test_feature.relationship_path[0][1].parent_variable.id
         # Sometimes approximate features get computed in a previous filter frame
         # and put in the current one dynamically,
@@ -650,6 +651,10 @@ class FeatureSetCalculator(object):
                     base_frame = base_frame.compute()
                 to_merge = base_frame.groupby(base_frame[groupby_var], observed=True, sort=False).apply(wrap)
                 if isinstance(frame, dd.core.DataFrame):
+                    child_merge_var = to_merge.index.name
+                    # Make sure the merge columns have the same data type
+                    to_merge = to_merge.reset_index()
+                    to_merge[child_merge_var] = to_merge[child_merge_var].astype(frame[parent_merge_var].dtype)
                     frame = dd.merge(left=frame, right=to_merge.reset_index(),
                                      left_on=parent_merge_var, right_on=child_merge_var, how='left')
                 else:
@@ -682,6 +687,7 @@ class FeatureSetCalculator(object):
                     to_merge.index = to_merge.index.astype(object).astype(categories)
 
                 if isinstance(frame, dd.core.DataFrame):
+                    child_merge_var = to_merge.index.name
                     frame = dd.merge(left=frame, right=to_merge.reset_index(),
                                      left_on=parent_merge_var, right_on=child_merge_var, how='left')
                 else:
