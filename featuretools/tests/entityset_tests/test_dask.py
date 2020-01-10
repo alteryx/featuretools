@@ -33,7 +33,8 @@ def test_transform(es, dask_es):
                             max_depth=2,
                             max_features=100)
         # Use the same columns and make sure both indexes are sorted the same
-        pd.testing.assert_frame_equal(fm, dask_fm.compute(), check_like=True)
+        dask_computed_fm = dask_fm.compute().set_index(entity.index).loc[fm.index][fm.columns]
+        pd.testing.assert_frame_equal(fm, dask_computed_fm)
 
 
 def test_aggregation(es, dask_es):
@@ -61,7 +62,8 @@ def test_aggregation(es, dask_es):
                             cutoff_time=pd.Timestamp("2019-01-05 04:00"),
                             max_depth=2)
         # Use the same columns and make sure both indexes are sorted the same
-        pd.testing.assert_frame_equal(fm, dask_fm.compute(), check_like=True)
+        dask_computed_fm = dask_fm.compute().set_index(entity.index).loc[fm.index][fm.columns]
+        pd.testing.assert_frame_equal(fm, dask_computed_fm)
 
 
 def test_create_entity_from_dask_df(es):
@@ -73,7 +75,7 @@ def test_create_entity_from_dask_df(es):
         time_index="datetime",
         variable_types=es["log"].variable_types
     )
-    pd.testing.assert_frame_equal(es["log"].df, es["log_dask"].df.compute())
+    pd.testing.assert_frame_equal(es["log"].df, es["log_dask"].df.compute(), check_like=True)
 
 
 def test_single_table_dask_entityset():
