@@ -122,7 +122,7 @@ jobs:
 
   unit_tests:
     working_directory: ~/featuretools
-    resource_class: large
+    resource_class: xlarge
     parameters:
       image_tag:
         type: string
@@ -157,7 +157,7 @@ jobs:
             - run: |
                 source venv/bin/activate
                 cd unpacked_sdist
-                pytest featuretools/ -n 2
+                pytest featuretools/ -n 4
 
   lint_test:
     working_directory: ~/featuretools

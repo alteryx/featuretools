@@ -296,7 +296,7 @@ def test_single_table_dask_entityset_cutoff_time_df():
              pd.Timestamp("2019-01-05 04:00"),
              pd.Timestamp("2019-01-15 04:00")]
     labels = [True, False, True, False]
-    cutoff_times = pd.DataFrame({"id": ids, "time": times, "labels": labels})
+    cutoff_times = pd.DataFrame({"id": ids, "time": times, "labels": labels}, columns=["id", "time", "labels"])
     cutoff_times_dask = dd.from_pandas(cutoff_times, npartitions=values_dd.npartitions)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
