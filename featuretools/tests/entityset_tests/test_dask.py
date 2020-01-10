@@ -1,5 +1,3 @@
-import os
-
 import pandas as pd
 from dask import dataframe as dd
 
@@ -35,8 +33,7 @@ def test_transform(es, dask_es):
                             max_depth=2,
                             max_features=100)
         # Use the same columns and make sure both indexes are sorted the same
-        dask_computed_fm = dask_fm.compute().set_index(entity.index).loc[fm.index][fm.columns]
-        pd.testing.assert_frame_equal(fm, dask_computed_fm)
+        pd.testing.assert_frame_equal(fm, dask_fm.compute(), check_like=True)
 
 
 def test_aggregation(es, dask_es):
@@ -64,43 +61,7 @@ def test_aggregation(es, dask_es):
                             cutoff_time=pd.Timestamp("2019-01-05 04:00"),
                             max_depth=2)
         # Use the same columns and make sure both indexes are sorted the same
-        dask_computed_fm = dask_fm.compute().set_index(entity.index).loc[fm.index][fm.columns]
-        pd.testing.assert_frame_equal(fm, dask_computed_fm)
-
-
-def test_hackathon_single_table():
-    data_path = os.path.join(os.path.dirname(__file__), "hackathon_users_data.csv")
-    df = pd.read_csv(data_path)
-    es = EntitySet(id='es')
-    es.entity_from_dataframe(
-        entity_id="users",
-        dataframe=df,
-        index="RESPID",
-    )
-
-    trans_primitives = ['cum_sum', 'diff', 'absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
-
-    fm, _ = ft.dfs(entityset=es,
-                   target_entity="users",
-                   trans_primitives=trans_primitives)
-    # TODO: Fix issues and run this test with more than one partition
-    df_dd = dd.from_pandas(df, npartitions=2)
-    dask_es = EntitySet(id="dask_es")
-    dask_es.entity_from_dataframe(
-        entity_id="users",
-        dataframe=df_dd,
-        index="RESPID",
-    )
-    dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_entity="users",
-                        trans_primitives=trans_primitives)
-
-    assert es == dask_es
-    # Account for difference in index and column ordering when making comarisons
-    assert es['users'].df.reset_index(drop=True).equals(dask_es['users'].df.compute())
-    # Use the same columns and make sure both are sorted on index values
-    dask_computed_fm = dask_fm.compute().set_index("RESPID").loc[fm.index][fm.columns]
-    pd.testing.assert_frame_equal(fm, dask_computed_fm)
+        pd.testing.assert_frame_equal(fm, dask_fm.compute(), check_like=True)
 
 
 def test_create_entity_from_dask_df(es):
@@ -112,7 +73,7 @@ def test_create_entity_from_dask_df(es):
         time_index="datetime",
         variable_types=es["log"].variable_types
     )
-    assert es["log"].df.equals(es["log_dask"].df.compute())
+    pd.testing.assert_frame_equal(es["log"].df, es["log_dask"].df.compute())
 
 
 def test_single_table_dask_entityset():
