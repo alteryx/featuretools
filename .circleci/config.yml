@@ -122,7 +122,6 @@ jobs:
 
   unit_tests:
     working_directory: ~/featuretools
-    resource_class: xlarge
     parameters:
       image_tag:
         type: string
@@ -147,7 +146,7 @@ jobs:
                 coverage erase
                 cd unpacked_sdist/
                 coverage erase
-                pytest featuretools/ -n 4 --cov=featuretools --cov-config=../.coveragerc
+                pytest featuretools/ -n 2 --cov=featuretools --cov-config=../.coveragerc
                 cd ../
                 cp unpacked_sdist/.coverage .coverage
                 codecov
@@ -157,7 +156,7 @@ jobs:
             - run: |
                 source venv/bin/activate
                 cd unpacked_sdist
-                pytest featuretools/ -n 4
+                pytest featuretools/ -n 2
 
   lint_test:
     working_directory: ~/featuretools
