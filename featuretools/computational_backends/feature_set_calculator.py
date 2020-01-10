@@ -418,10 +418,11 @@ class FeatureSetCalculator(object):
         return df
 
     def _calculate_transform_features(self, features, frame, _df_trie, progress_callback):
+        frame_len = len(frame)
+
         for f in features:
             # handle when no data
-
-            if len(frame) == 0:
+            if frame_len == 0:
                 set_default_column(frame, f)
 
                 progress_callback(1 / float(self.num_features))
