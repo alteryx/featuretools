@@ -66,40 +66,6 @@ def test_aggregation(es, dask_es):
         pd.testing.assert_frame_equal(fm, dask_computed_fm)
 
 
-def test_hackathon_single_table():
-    df = pd.read_csv('./featuretools/tests/entityset_tests/hackathon_users_data.csv')
-    es = EntitySet(id='es')
-    es.entity_from_dataframe(
-        entity_id="users",
-        dataframe=df,
-        index="RESPID",
-    )
-
-    trans_primitives = ['cum_sum', 'diff', 'absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
-
-    fm, _ = ft.dfs(entityset=es,
-                   target_entity="users",
-                   trans_primitives=trans_primitives)
-    # TODO: Fix issues and run this test with more than one partition
-    df_dd = dd.from_pandas(df, npartitions=2)
-    dask_es = EntitySet(id="dask_es")
-    dask_es.entity_from_dataframe(
-        entity_id="users",
-        dataframe=df_dd,
-        index="RESPID",
-    )
-    dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_entity="users",
-                        trans_primitives=trans_primitives)
-
-    assert es == dask_es
-    # Account for difference in index and column ordering when making comarisons
-    assert es['users'].df.reset_index(drop=True).equals(dask_es['users'].df.compute())
-    # Use the same columns and make sure both are sorted on index values
-    dask_computed_fm = dask_fm.compute().set_index("RESPID").loc[fm.index][fm.columns]
-    pd.testing.assert_frame_equal(fm, dask_computed_fm)
-
-
 def test_create_entity_from_dask_df(es):
     log_dask = dd.from_pandas(es["log"].df, npartitions=2)
     es = es.entity_from_dataframe(
@@ -109,7 +75,7 @@ def test_create_entity_from_dask_df(es):
         time_index="datetime",
         variable_types=es["log"].variable_types
     )
-    assert es["log"].df.equals(es["log_dask"].df.compute())
+    pd.testing.assert_frame_equal(es["log"].df, es["log_dask"].df.compute(), check_like=True)
 
 
 def test_single_table_dask_entityset():
@@ -293,7 +259,7 @@ def test_single_table_dask_entityset_cutoff_time_df():
              pd.Timestamp("2019-01-05 04:00"),
              pd.Timestamp("2019-01-15 04:00")]
     labels = [True, False, True, False]
-    cutoff_times = pd.DataFrame({"id": ids, "time": times, "labels": labels})
+    cutoff_times = pd.DataFrame({"id": ids, "time": times, "labels": labels}, columns=["id", "time", "labels"])
     cutoff_times_dask = dd.from_pandas(cutoff_times, npartitions=values_dd.npartitions)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
