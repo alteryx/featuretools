@@ -4,9 +4,8 @@ import pandas as pd
 from dask import dataframe as dd
 
 import featuretools as ft
-from featuretools.entityset import EntitySet, Relationship
-
 from featuretools.tests.testing_utils import make_ecommerce_entityset
+
 
 def make_dask_es(es):
     dask_es = copy.deepcopy(es)
@@ -14,7 +13,7 @@ def make_dask_es(es):
         entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=2)
     return dask_es
 
-
+@profile
 def test_transform(es, dask_es):
     primitives = ft.list_primitives()
     trans_list = primitives[primitives['type'] == 'transform']['name'].tolist()
@@ -41,7 +40,7 @@ def test_transform(es, dask_es):
                             max_depth=2,
                             max_features=100)
 
-
+@profile
 def test_aggregation(es, dask_es):
     primitives = ft.list_primitives()
     trans_primitives = []
@@ -66,9 +65,9 @@ def test_aggregation(es, dask_es):
                             max_depth=2)
 
 
-if __name__  == "__main__":
+if __name__ == "__main__":
     es = make_ecommerce_entityset()
     dask_es = make_dask_es(es)
 
-    # test_aggregation(es, dask_es)
+    test_aggregation(es, dask_es)
     test_transform(es, dask_es)
