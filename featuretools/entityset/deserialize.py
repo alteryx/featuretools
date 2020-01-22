@@ -35,7 +35,7 @@ def description_to_variable(description, entity=None):
     if entity is not None:
         kwargs = {} if is_type_string else description['type']
         variable = variable(description['id'], entity, **kwargs)
-        interesting_values = pd.read_json(description['properties']['interesting_values'])
+        interesting_values = pd.read_json(description['properties']['interesting_values'], typ='series')
         variable.interesting_values = interesting_values
     return variable
 

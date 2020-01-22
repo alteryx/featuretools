@@ -18,7 +18,7 @@ def info():
 
 @click.command(name='list-primitives')
 def list_primitives():
-    with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.max_colwidth', -1, 'display.width', 1000):
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.max_colwidth', None, 'display.width', 1000):
         print(featuretools.list_primitives())
 
 
