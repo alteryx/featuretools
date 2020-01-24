@@ -13,10 +13,9 @@ from featuretools.feature_base.feature_base import (
     TransformFeature
 )
 from featuretools.primitives.utils import PrimitivesDeserializer
-from featuretools.utils.gen_utils import check_schema_version, import_or_raise
+from featuretools.utils.gen_utils import check_schema_version
 from featuretools.utils.s3_utils import (
-    BOTO3_ERR_MSG,
-    use_s3fs_features,
+    get_transport_params,
     use_smartopen_features
 )
 from featuretools.utils.wrangle import _is_s3, _is_url
@@ -89,20 +88,13 @@ class FeaturesDeserializer(object):
             try:
                 features_dict = json.loads(features)
             except ValueError:
-                if _is_url(features):
-                    features_dict = use_smartopen_features(features)
-                elif _is_s3(features):
-                    boto3 = import_or_raise("boto3", BOTO3_ERR_MSG)
-                    session = boto3.Session()
-                    if isinstance(profile_name, str):
-                        transport_params = {'session': boto3.Session(profile_name=profile_name)}
-                        features_dict = use_smartopen_features(features, transport_params)
-                    elif profile_name is False:
-                        features_dict = use_s3fs_features(features)
-                    elif session.get_credentials() is not None:
-                        features_dict = use_smartopen_features(features)
-                    else:
-                        features_dict = use_s3fs_features(features)
+                if _is_url(features) or _is_s3(features):
+                    transport_params = None
+                    if _is_s3(features):
+                        transport_params = get_transport_params(profile_name)
+                    features_dict = use_smartopen_features(
+                        features, transport_params=transport_params
+                    )
                 else:
                     with open(features, 'r') as f:
                         features_dict = json.load(f)

@@ -16,15 +16,6 @@ def use_smartopen_es(file_path, path, transport_params=None, read=True):
                 shutil.copyfileobj(fin, fout)
 
 
-def use_s3fs_es(file_path, path, read=True):
-    s3fs = import_or_raise("s3fs", S3FS_ERR_MSG)
-    s3 = s3fs.S3FileSystem(anon=True)
-    if read:
-        s3.get(path, file_path)
-    else:
-        s3.put(file_path, path)
-
-
 def use_smartopen_features(path, features_dict=None, transport_params=None, read=True):
     open = import_or_raise("smart_open", SMART_OPEN_ERR_MSG).open
     if read:
@@ -36,17 +27,20 @@ def use_smartopen_features(path, features_dict=None, transport_params=None, read
             json.dump(features_dict, f)
 
 
-def use_s3fs_features(file_path, features_dict=None, read=True):
-    s3fs = import_or_raise("s3fs", S3FS_ERR_MSG)
-    s3 = s3fs.S3FileSystem(anon=True)
-    if read:
-        with s3.open(file_path, "r", encoding='utf-8') as f:
-            features_dict = json.load(f)
-            return features_dict
+def get_transport_params(profile_name):
+    boto3 = import_or_raise("boto3", BOTO3_ERR_MSG)
+    UNSIGNED = import_or_raise("botocore", BOTOCORE_ERR_MSG).UNSIGNED
+    Config = import_or_raise("botocore.config", BOTOCORE_ERR_MSG).Config
+
+    if isinstance(profile_name, str):
+        transport_params = {'session': boto3.Session(profile_name=profile_name)}
+    elif profile_name is False or boto3.Session().get_credentials() is None:
+        transport_params = {
+            'resource_kwargs': {'config': Config(signature_version=UNSIGNED)}
+        }
     else:
-        with s3.open(file_path, "w", encoding='utf-8') as f:
-            features = json.dumps(features_dict, ensure_ascii=False)
-            f.write(features)
+        transport_params = None
+    return transport_params
 
 
 BOTO3_ERR_MSG = (
@@ -56,17 +50,17 @@ BOTO3_ERR_MSG = (
     "Install via conda:\n"
     "    conda install boto3"
 )
+BOTOCORE_ERR_MSG = (
+    "The botocore library is required to read and write from URLs and S3.\n"
+    "Install via pip:\n"
+    "    pip install botocore\n"
+    "Install via conda:\n"
+    "    conda install botocore"
+)
 SMART_OPEN_ERR_MSG = (
     "The smart_open library is required to read and write from URLs and S3.\n"
     "Install via pip:\n"
     "    pip install smart-open\n"
     "Install via conda:\n"
     "    conda install smart_open"
-)
-S3FS_ERR_MSG = (
-    "The s3fs library is required to read and write from S3.\n"
-    "Install via pip:\n"
-    "    pip install s3fs\n"
-    "Install via conda:\n"
-    "    conda install s3fs"
 )

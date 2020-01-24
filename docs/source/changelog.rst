@@ -6,12 +6,13 @@ Changelog
     * Enhancements
     * Fixes
     * Changes
+        * Remove dependency on s3fs library for anonymous downloads from S3 (:pr:`825`)
     * Documentation Changes
     * Testing Changes
         * Added GitHub Action to automatically run performance tests (:pr:`840`)
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`
+    :user:`frances-h`, :user:`rwedge`
 
 **v0.13.1 Dec 28, 2019**
     * Fixes
