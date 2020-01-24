@@ -92,7 +92,9 @@ class FeaturesDeserializer(object):
                     transport_params = None
                     if _is_s3(features):
                         transport_params = get_transport_params(profile_name)
-                    features_dict = use_smartopen_features(features, transport_params)
+                    features_dict = use_smartopen_features(
+                        features, transport_params=transport_params
+                    )
                 else:
                     with open(features, 'r') as f:
                         features_dict = json.load(f)
