@@ -6,7 +6,7 @@ Changelog
     * Enhancements
     * Fixes
     * Changes
-        * Remove dependency on s3fs library for anonymous downloads from S3 (:pr`825`)
+        * Remove dependency on s3fs library for anonymous downloads from S3 (:pr:`825`)
     * Documentation Changes
     * Testing Changes
         * Added GitHub Action to automatically run performance tests (:pr:`840`)
