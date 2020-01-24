@@ -7,7 +7,7 @@ Whether you are a novice or experienced software developer, all contributions an
 There are many ways to contribute to Featuretools, with the most common ones being contribution of code or documentation to the project.
 
 **To contribute, you can:**
-1. Help users on our [Slack channel](https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTZiZDdkYjZhZTVkMmVmZDIxNWZiNTVjNDQxYmZkMzI5NGRlOTg5YjcwYmJiNWE2YjIzZmFkMjc1NDZkNjBhZTQ). Answer questions under the featuretools tag on [Stack Overflow](https://stackoverflow.com/questions/tagged/featuretools)
+1. Help users on our [Slack channel](https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTQ1MjZlOWFmZDk2YzAwMjEzNTkwZTZkN2NmOGFjOGI4YzE5OGMyMGM5NGIxNTE4NjkzYWI3OWEwZjkyZGExYmQ). Answer questions under the featuretools tag on [Stack Overflow](https://stackoverflow.com/questions/tagged/featuretools)
 
 2. Submit a pull request for one of [Good First Issues](https://github.com/featuretools/featuretools/issues?q=is%3Aopen+is%3Aissue+label%3A%22Good+First+Issue%22)
 
@@ -53,7 +53,16 @@ Before starting major work, you should touch base with the maintainers of Featur
 
 #### 3. Submit your Pull Request
 
-* Once your changes are ready to be submitted, make sure to push your changes to GitHub before creating a pull request. Create a pull request, and our continuous integration will run automatically. We will review your changes, and you will most likely be asked to make additional changes before it is finally ready to merge. However, once it's reviewed by a maintainer of Featuretools, passes continuous integration, we will merge it, and you will have successfully contributed to Featuretools!
+* Once your changes are ready to be submitted, make sure to push your changes to GitHub before creating a pull request. Create a pull request, and our continuous integration will run automatically.
+* Update the "Future Release" section of the changelog (`docs/source/changelog.rst`) to include your pull request and add your github username to the list of contributors.  Add a description of your PR to the subsection that most closely matches your contribution:
+    * Enhancements: new features or additions to Featuretools.
+    * Fixes: things like bugfixes or adding more descriptive error messages.
+    * Changes: modifications to an existing part of Featuretools.
+    * Documentation Changes
+    * Testing Changes
+
+   Documentation or testing changes rarely warrant an individual changelog entry; the PR number can be added to their respective "Miscellaneous changes" entries.
+* We will review your changes, and you will most likely be asked to make additional changes before it is finally ready to merge. However, once it's reviewed by a maintainer of Featuretools, passes continuous integration, we will merge it, and you will have successfully contributed to Featuretools!
 
 ## Report issues
 When reporting issues please include as much detail as possible about your operating system, featuretools version and python version. Whenever possible, please also include a brief, self-contained code example that demonstrates the problem.

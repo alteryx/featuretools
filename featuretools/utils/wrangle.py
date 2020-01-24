@@ -6,10 +6,9 @@ import pandas as pd
 
 from featuretools import variable_types
 from featuretools.entityset.timedelta import Timedelta
-from featuretools.utils import is_string
 
 
-def _check_timedelta(td, entity_id=None, related_entity_id=None):
+def _check_timedelta(td):
     """
     Convert strings to Timedelta objects
     Allows for both shortform and longform units, as well as any form of capitalization
@@ -25,54 +24,35 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
     Shortform is fine if space is dropped
     '2m'
     '1u"
-    When using generic units, can drop the unit
-    1
-    2
-    '1'
-    '2'
-    When using observations, need to provide an entity as either a tuple or a separate arg
-    ('2o', 'logs')
-    ('2 o', 'logs')
-    ('2 Observations', 'logs')
-    ('2 observations', 'logs')
-    ('2 observation', 'logs')
-    If an entity is provided and no unit is provided, assume observations (instead of generic units)
-    (2, 'logs')
-    ('2', 'logs')
-
-
-
+    If a pd.Timedelta object is passed, units will be converted to seconds due to the underlying representation
+        of pd.Timedelta.
+    If a pd.DateOffset object is passed, it will be converted to a Featuretools Timedelta if it has one
+        temporal parameter. Otherwise, it will remain a pd.DateOffset.
     """
     if td is None:
         return td
     if isinstance(td, Timedelta):
-        if td.entity is not None and entity_id is not None and td.entity != entity_id:
-            raise ValueError("Timedelta entity {} different from passed entity {}".format(td.entity, entity_id))
-        if td.entity is not None and related_entity_id is not None and td.entity == related_entity_id:
-            raise ValueError("Timedelta entity {} same as passed related entity {}".format(td.entity, related_entity_id))
         return td
-    elif not (is_string(td) or isinstance(td, (tuple, int, float))):
+    elif not isinstance(td, (int, float, str, pd.DateOffset, pd.Timedelta)):
         raise ValueError("Unable to parse timedelta: {}".format(td))
-
-    # TODO: allow observations from an entity in string
-
-    if isinstance(td, tuple):
-        if entity_id is None:
-            entity_id = td[1]
-        td = td[0]
-
-    value = None
-    try:
-        value = int(td)
-    except Exception:
-        try:
-            value = float(td)
-        except Exception:
-            pass
-    if value is not None and entity_id is not None:
-        unit = 'o'
-    elif value is not None:
-        unit = 'u'
+    if isinstance(td, pd.Timedelta):
+        unit = 's'
+        value = td.total_seconds()
+        times = {unit: value}
+        return Timedelta(times, delta_obj=td)
+    elif isinstance(td, pd.DateOffset):
+        # DateOffsets
+        if td.__class__.__name__ == "DateOffset":
+            times = dict()
+            for td_unit, td_value in td.kwds.items():
+                times[td_unit] = td_value
+            return Timedelta(times, delta_obj=td)
+        # Special offsets (such as BDay)
+        else:
+            unit = td.__class__.__name__
+            value = td.__dict__['n']
+            times = dict([(unit, value)])
+            return Timedelta(times, delta_obj=td)
     else:
         pattern = '([0-9]+) *([a-zA-Z]+)$'
         match = re.match(pattern, td)
@@ -85,7 +65,8 @@ def _check_timedelta(td, entity_id=None, related_entity_id=None):
             except Exception:
                 raise ValueError("Unable to parse value {} from ".format(value) +
                                  "timedelta string: {}".format(td))
-    return Timedelta(value, unit, entity=entity_id)
+        times = {unit: value}
+        return Timedelta(times)
 
 
 def _check_time_against_column(time, time_column):
@@ -103,7 +84,7 @@ def _check_time_against_column(time, time_column):
     elif isinstance(time, (int, float)):
         return isinstance(time_column,
                           variable_types.Numeric)
-    elif isinstance(time, (pd.Timestamp, datetime)):
+    elif isinstance(time, (pd.Timestamp, datetime, pd.DateOffset)):
         return isinstance(time_column,
                           variable_types.Datetime)
     elif isinstance(time, Timedelta):
@@ -128,18 +109,24 @@ def _check_time_type(time):
 
 
 def _dataframes_equal(df1, df2):
-    if df1.empty and not df2.empty:
-        return False
-    elif not df1.empty and df2.empty:
+    # ^ means XOR
+    if df1.empty ^ df2.empty:
         return False
     elif not df1.empty and not df2.empty:
-        for df in [df1, df2]:
-            obj = df.select_dtypes('object').columns
-            df[obj] = df[obj].astype('unicode')
+        if not set(df1.columns) == set(df2.columns):
+            return False
+
         for c in df1:
+            df1c = df1[c]
+            df2c = df2[c]
+            if df1c.dtype == object:
+                df1c = df1c.astype('unicode')
+            if df2c.dtype == object:
+                df2c = df2c.astype('unicode')
+
             normal_compare = True
-            if df1[c].dtype == object:
-                dropped = df1[c].dropna()
+            if df1c.dtype == object:
+                dropped = df1c.dropna()
                 if not dropped.empty:
                     if isinstance(dropped.iloc[0], tuple):
                         dropped2 = df2[c].dropna()
@@ -155,8 +142,24 @@ def _dataframes_equal(df1, df2):
             if normal_compare:
                 # handle nan equality correctly
                 # This way is much faster than df1.equals(df2)
-                result = df1[c] == df2[c]
-                result[pd.isnull(df1[c]) == pd.isnull(df2)[c]] = True
+                result = df1c == df2c
+                result[pd.isnull(df1c) == pd.isnull(df2c)] = True
                 if not result.all():
                     return False
     return True
+
+
+def _is_s3(string):
+    '''
+    Checks if the given string is a s3 path.
+    Returns a boolean.
+    '''
+    return "s3://" in string
+
+
+def _is_url(string):
+    '''
+    Checks if the given string is an url path.
+    Returns a boolean.
+    '''
+    return 'http' in string

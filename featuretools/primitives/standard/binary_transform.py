@@ -1,5 +1,3 @@
-from builtins import str
-
 import numpy as np
 import pandas as pd
 
@@ -277,8 +275,7 @@ class EqualScalar(TransformPrimitive):
 
     def get_function(self):
         def equal_scalar(vals):
-            # case to correct pandas type for comparison
-            return pd.Series(vals).astype(pd.Series([self.value]).dtype) == self.value
+            return pd.Series(vals) == self.value
         return equal_scalar
 
     def generate_name(self, base_feature_names):
@@ -331,8 +328,7 @@ class NotEqualScalar(TransformPrimitive):
 
     def get_function(self):
         def not_equal_scalar(vals):
-            # case to correct pandas type for comparison
-            return pd.Series(vals).astype(pd.Series([self.value]).dtype) != self.value
+            return pd.Series(vals) != self.value
         return not_equal_scalar
 
     def generate_name(self, base_feature_names):
@@ -495,7 +491,11 @@ class MultiplyNumeric(TransformPrimitive):
         [2, 2, 4]
     """
     name = "multiply_numeric"
-    input_types = [Numeric, Numeric]
+    input_types = [
+        [Numeric, Numeric],
+        [Numeric, Boolean],
+        [Boolean, Numeric],
+    ]
     return_type = Numeric
     commutative = True
 
@@ -532,6 +532,32 @@ class MultiplyNumericScalar(TransformPrimitive):
 
     def generate_name(self, base_feature_names):
         return "%s * %s" % (base_feature_names[0], str(self.value))
+
+
+class MultiplyBoolean(TransformPrimitive):
+    """Element-wise multiplication of two lists of boolean values.
+
+    Description:
+        Given a list of boolean values X and a list of boolean
+        values Y, determine the product of each value in X
+        with its corresponding value in Y.
+
+    Examples:
+        >>> multiply_boolean = MultiplyBoolean()
+        >>> multiply_boolean([True, True, False], [True, False, True]).tolist()
+        [True, False, False]
+    """
+    name = "multiply_boolean"
+    input_types = [[Boolean, Boolean]]
+
+    return_type = Boolean
+    commutative = True
+
+    def get_function(self):
+        return np.bitwise_and
+
+    def generate_name(self, base_feature_names):
+        return "%s * %s" % (base_feature_names[0], base_feature_names[1])
 
 
 class DivideNumeric(TransformPrimitive):

@@ -7,21 +7,29 @@ from featuretools.variable_types.variable import Discrete
 
 logger = logging.getLogger('featuretools')
 
+DEFAULT_TOP_N = 10
 
-def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
-                    to_encode=None, inplace=False, verbose=False):
+
+def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unknown=True,
+                    to_encode=None, inplace=False, drop_first=False, verbose=False):
     """Encode categorical features
 
         Args:
             feature_matrix (pd.DataFrame): Dataframe of features.
             features (list[PrimitiveBase]): Feature definitions in feature_matrix.
-            top_n (pd.DataFrame): Number of top values to include.
+            top_n (int or dict[string -> int]): Number of top values to include.
+                If dict[string -> int] is used, key is feature name and value is
+                the number of top values to include for that feature.
+                If a feature's name is not in dictionary, a default value of 10 is used.
             include_unknown (pd.DataFrame): Add feature encoding an unknown class.
                 defaults to True
             to_encode (list[str]): List of feature names to encode.
                 features not in this list are unencoded in the output matrix
                 defaults to encode all necessary features.
             inplace (bool): Encode feature_matrix in place. Defaults to False.
+            drop_first (bool): Whether to get k-1 dummies out of k categorical
+                    levels by removing the first level.
+                    defaults to False
             verbose (str): Print progress info.
 
         Returns:
@@ -61,6 +69,10 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
                 fm_encoded, f_encoded = ft.encode_features(feature_matrix, features,
                                                            to_encode=['purchased'])
                 f_encoded
+
+                fm_encoded, f_encoded = ft.encode_features(feature_matrix, features,
+                                                           drop_first=True)
+                f_encoded
     """
     if inplace:
         X = feature_matrix
@@ -71,10 +83,8 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
     feature_names = []
     for feature in features:
         for fname in feature.get_feature_names():
-            assert fname in X.columns, (
-                "Feature %s not found in feature matrix" % (fname)
-            )
-        feature_names.append(fname)
+            assert fname in X.columns, ("Feature %s not found in feature matrix" % (fname))
+            feature_names.append(fname)
 
     extra_columns = [col for col in X.columns if col not in feature_names]
 
@@ -113,7 +123,13 @@ def encode_features(feature_matrix, features, top_n=10, include_unknown=True,
         val_counts = val_counts.sort_values([f.get_name(), index_name],
                                             ascending=False)
         val_counts.set_index(index_name, inplace=True)
-        unique = val_counts.head(top_n).index.tolist()
+        select_n = top_n
+        if isinstance(top_n, dict):
+            select_n = top_n.get(f.get_name(), DEFAULT_TOP_N)
+        if drop_first:
+            select_n = min(len(val_counts), top_n)
+            select_n = max(select_n - 1, 1)
+        unique = val_counts.head(select_n).index.tolist()
         for label in unique:
             add = f == label
             encoded.append(add)

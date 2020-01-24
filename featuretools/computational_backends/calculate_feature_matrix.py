@@ -1,34 +1,30 @@
-from __future__ import division
-
-import gc
 import logging
+import math
 import os
 import shutil
 import time
 import warnings
-from builtins import zip
-from collections import defaultdict
 from datetime import datetime
 
 import cloudpickle
 import numpy as np
 import pandas as pd
 
-from featuretools.computational_backends.pandas_backend import PandasBackend
+from featuretools.computational_backends.feature_set import FeatureSet
+from featuretools.computational_backends.feature_set_calculator import (
+    FeatureSetCalculator
+)
 from featuretools.computational_backends.utils import (
     bin_cutoff_times,
-    calc_num_per_chunk,
     create_client_and_cluster,
     gather_approximate_features,
     gen_empty_approx_features_df,
-    get_next_chunk,
     save_csv_decorator
 )
+from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, FeatureBase
-from featuretools.utils.gen_utils import (
-    get_relationship_variable_id,
-    make_tqdm_iterator
-)
+from featuretools.utils import Trie
+from featuretools.utils.gen_utils import make_tqdm_iterator
 from featuretools.utils.wrangle import _check_time_type
 from featuretools.variable_types import (
     DatetimeTimeIndex,
@@ -38,14 +34,17 @@ from featuretools.variable_types import (
 
 logger = logging.getLogger('featuretools.computational_backend')
 
+PBAR_FORMAT = "Elapsed: {elapsed} | Progress: {l_bar}{bar}"
+FEATURE_CALCULATION_PERCENTAGE = .95  # make total 5% higher to allot time for wrapping up at end
+
 
 def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instance_ids=None,
                              entities=None, relationships=None,
                              cutoff_time_in_index=False,
                              training_window=None, approximate=None,
                              save_progress=None, verbose=False,
-                             chunk_size=None, n_jobs=1, dask_kwargs=None,
-                             profile=False):
+                             chunk_size=None, n_jobs=1,
+                             dask_kwargs=None, progress_callback=None):
     """Calculates a matrix for a given set of instance ids and calculation times.
 
     Args:
@@ -90,17 +89,14 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         verbose (bool, optional): Print progress info. The time granularity is
             per chunk.
 
-        profile (bool, optional): Enables profiling if True.
-
-        chunk_size (int or float or None or "cutoff time"): Number of rows of
+        chunk_size (int or float or None): maximum number of rows of
             output feature matrix to calculate at time. If passed an integer
             greater than 0, will try to use that many rows per chunk. If passed
             a float value between 0 and 1 sets the chunk size to that
-            percentage of all instances. If passed the string "cutoff time",
-            rows are split per cutoff time.
+            percentage of all rows. if None, and n_jobs > 1 it will be set to 1/n_jobs
 
         n_jobs (int, optional): number of parallel processes to use when
-            calculating feature matrix
+            calculating feature matrix.
 
         dask_kwargs (dict, optional): Dictionary of keyword arguments to be
             passed when creating the dask client and scheduler. Even if n_jobs
@@ -117,6 +113,14 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             Valid keyword arguments for LocalCluster will also be accepted.
 
         save_progress (str, optional): path to save intermediate computational results.
+
+        progress_callback (callable): function to be called with incremental progress updates.
+            Has the following parameters:
+
+                update: percentage change (float between 0 and 100) in progress since last call
+                progress_percent: percentage (float between 0 and 100) of total computation completed
+                time_elapsed: total time in seconds that has elapsed since start of call
+
     """
     assert (isinstance(features, list) and features != [] and
             all([isinstance(feature, FeatureBase) for feature in features])), \
@@ -166,6 +170,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         # take the first column that isn't instance_id and assume it is time
         not_instance_id = [c for c in cutoff_time.columns if c != "instance_id"]
         cutoff_time.rename(columns={not_instance_id[0]: "time"}, inplace=True)
+
     # Check that cutoff_time time type matches entityset time type
     if entityset.time_type == NumericTimeIndex:
         if cutoff_time['time'].dtype.name not in PandasTypes._pandas_numerics:
@@ -181,20 +186,19 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     if _check_time_type(cutoff_time['time'].iloc[0]) is None:
         raise ValueError("cutoff_time time values must be datetime or numeric")
 
-    backend = PandasBackend(entityset, features)
-
     # make sure dtype of instance_id in cutoff time
     # is same as column it references
     target_entity = features[0].entity
     dtype = entityset[target_entity.id].df[target_entity.index].dtype
     cutoff_time["instance_id"] = cutoff_time["instance_id"].astype(dtype)
 
-    # Get dictionary of features to approximate
+    feature_set = FeatureSet(features)
+
+    # Get features to approximate
     if approximate is not None:
-        to_approximate, all_approx_feature_set = gather_approximate_features(features, backend)
-    else:
-        to_approximate = defaultdict(list)
-        all_approx_feature_set = None
+        approximate_feature_trie = gather_approximate_features(feature_set)
+        # Make a new FeatureSet that ignores approximated features
+        feature_set = FeatureSet(features, approximate_feature_trie=approximate_feature_trie)
 
     # Check if there are any non-approximated aggregation features
     no_unapproximated_aggs = True
@@ -205,16 +209,19 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             no_unapproximated_aggs = False
             break
 
-        deps = feature.get_dependencies(deep=True, ignored=all_approx_feature_set)
+        if approximate is not None:
+            all_approx_features = {f for _, feats in feature_set.approximate_feature_trie
+                                   for f in feats}
+        else:
+            all_approx_features = set()
+        deps = feature.get_dependencies(deep=True, ignored=all_approx_features)
         for dependency in deps:
-            if (isinstance(dependency, AggregationFeature) and
-                    dependency not in to_approximate[dependency.entity.id]):
+            if isinstance(dependency, AggregationFeature):
                 no_unapproximated_aggs = False
                 break
 
     cutoff_df_time_var = 'time'
     target_time = '_original_time'
-    num_per_chunk = calc_num_per_chunk(chunk_size, cutoff_time.shape)
 
     if approximate is not None:
         # If there are approximated aggs, bin times
@@ -228,27 +235,25 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     else:
         cutoff_time_to_pass = cutoff_time
 
-    if num_per_chunk == "cutoff time":
-        iterator = cutoff_time_to_pass.groupby(cutoff_df_time_var)
-    else:
-        iterator = get_next_chunk(cutoff_time=cutoff_time_to_pass,
-                                  time_variable=cutoff_df_time_var,
-                                  num_per_chunk=num_per_chunk)
+    chunk_size = _handle_chunk_size(chunk_size, cutoff_time.shape[0])
+    tqdm_options = {'total': (cutoff_time.shape[0] / FEATURE_CALCULATION_PERCENTAGE),
+                    'bar_format': PBAR_FORMAT,
+                    'disable': True}
 
-    chunks = []
-    if num_per_chunk == "cutoff time":
-        for _, group in iterator:
-            chunks.append(group)
-    else:
-        for chunk in iterator:
-            chunks.append(chunk)
+    if verbose:
+        tqdm_options.update({'disable': False})
+    elif progress_callback is not None:
+        # allows us to utilize progress_bar updates without printing to anywhere
+        tqdm_options.update({'file': open(os.devnull, 'w'), 'disable': False})
+
+    progress_bar = make_tqdm_iterator(**tqdm_options)
 
     if n_jobs != 1 or dask_kwargs is not None:
-        feature_matrix = parallel_calculate_chunks(chunks=chunks,
-                                                   features=features,
+        feature_matrix = parallel_calculate_chunks(cutoff_time=cutoff_time_to_pass,
+                                                   chunk_size=chunk_size,
+                                                   feature_set=feature_set,
                                                    approximate=approximate,
                                                    training_window=training_window,
-                                                   verbose=verbose,
                                                    save_progress=save_progress,
                                                    entityset=entityset,
                                                    n_jobs=n_jobs,
@@ -256,103 +261,118 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                                    cutoff_df_time_var=cutoff_df_time_var,
                                                    target_time=target_time,
                                                    pass_columns=pass_columns,
-                                                   dask_kwargs=dask_kwargs or {})
+                                                   progress_bar=progress_bar,
+                                                   dask_kwargs=dask_kwargs or {},
+                                                   progress_callback=progress_callback)
     else:
-        feature_matrix = linear_calculate_chunks(chunks=chunks,
-                                                 features=features,
-                                                 approximate=approximate,
-                                                 training_window=training_window,
-                                                 profile=profile,
-                                                 verbose=verbose,
-                                                 save_progress=save_progress,
-                                                 entityset=entityset,
-                                                 no_unapproximated_aggs=no_unapproximated_aggs,
-                                                 cutoff_df_time_var=cutoff_df_time_var,
-                                                 target_time=target_time,
-                                                 pass_columns=pass_columns)
+        feature_matrix = calculate_chunk(cutoff_time=cutoff_time_to_pass,
+                                         chunk_size=chunk_size,
+                                         feature_set=feature_set,
+                                         approximate=approximate,
+                                         training_window=training_window,
+                                         save_progress=save_progress,
+                                         entityset=entityset,
+                                         no_unapproximated_aggs=no_unapproximated_aggs,
+                                         cutoff_df_time_var=cutoff_df_time_var,
+                                         target_time=target_time,
+                                         pass_columns=pass_columns,
+                                         progress_bar=progress_bar,
+                                         progress_callback=progress_callback)
 
-    feature_matrix = pd.concat(feature_matrix)
-
-    feature_matrix.sort_index(level='time', kind='mergesort', inplace=True)
+    # ensure rows are sorted by input order
+    feature_matrix = feature_matrix.reindex(cutoff_time[["instance_id", "time"]])
     if not cutoff_time_in_index:
         feature_matrix.reset_index(level='time', drop=True, inplace=True)
 
     if save_progress and os.path.exists(os.path.join(save_progress, 'temp')):
         shutil.rmtree(os.path.join(save_progress, 'temp'))
 
+    # force to 100% since we saved last 5 percent
+    previous_progress = progress_bar.n
+    progress_bar.update(progress_bar.total - progress_bar.n)
+
+    if progress_callback is not None:
+        update, progress_percent, time_elapsed = update_progress_callback_parameters(progress_bar, previous_progress)
+        progress_callback(update, progress_percent, time_elapsed)
+
+    progress_bar.refresh()
+    progress_bar.close()
+
     return feature_matrix
 
 
-def calculate_chunk(chunk, features, approximate, training_window,
-                    profile, verbose, save_progress,
-                    no_unapproximated_aggs, cutoff_df_time_var, target_time,
-                    pass_columns, backend=None, entityset=None):
-    if not isinstance(features, list):
-        features = cloudpickle.loads(features)
-
-    assert entityset is not None or backend is not None, "Must provide either"\
-        " entityset or backend to calculate_chunk"
-    if entityset is None:
-        entityset = backend.entityset
-    if backend is None:
-        backend = PandasBackend(entityset, features)
+def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate, training_window,
+                    save_progress, no_unapproximated_aggs, cutoff_df_time_var, target_time,
+                    pass_columns, progress_bar=None, progress_callback=None):
+    if not isinstance(feature_set, FeatureSet):
+        feature_set = cloudpickle.loads(feature_set)
 
     feature_matrix = []
-    entityset = backend.entityset
     if no_unapproximated_aggs and approximate is not None:
         if entityset.time_type == NumericTimeIndex:
-            chunk_time = np.inf
+            group_time = np.inf
         else:
-            chunk_time = datetime.now()
+            group_time = datetime.now()
 
-    for _, group in chunk.groupby(cutoff_df_time_var):
+    for _, group in cutoff_time.groupby(cutoff_df_time_var):
         # if approximating, calculate the approximate features
         if approximate is not None:
-            precalculated_features, all_approx_feature_set = approximate_features(
-                features,
+            precalculated_features_trie = approximate_features(
+                feature_set,
                 group,
                 window=approximate,
-                entityset=backend.entityset,
-                backend=backend,
+                entityset=entityset,
                 training_window=training_window,
-                profile=profile
             )
         else:
-            precalculated_features = None
-            all_approx_feature_set = None
+            precalculated_features_trie = None
 
         @save_csv_decorator(save_progress)
         def calc_results(time_last, ids, precalculated_features=None, training_window=None):
-            matrix = backend.calculate_all_features(ids, time_last,
-                                                    training_window=training_window,
-                                                    precalculated_features=precalculated_features,
-                                                    ignored=all_approx_feature_set,
-                                                    profile=profile)
+
+            update_progress_callback = None
+
+            if progress_bar is not None:
+                def update_progress_callback(done):
+                    previous_progress = progress_bar.n
+                    progress_bar.update(done * group.shape[0])
+                    if progress_callback is not None:
+                        update, progress_percent, time_elapsed = update_progress_callback_parameters(progress_bar, previous_progress)
+                        progress_callback(update, progress_percent, time_elapsed)
+            calculator = FeatureSetCalculator(entityset,
+                                              feature_set,
+                                              time_last,
+                                              training_window=training_window,
+                                              precalculated_features=precalculated_features)
+            matrix = calculator.run(ids, progress_callback=update_progress_callback)
             return matrix
 
         # if all aggregations have been approximated, can calculate all together
         if no_unapproximated_aggs and approximate is not None:
-            grouped = [[chunk_time, group]]
+            inner_grouped = [[group_time, group]]
         else:
             # if approximated features, set cutoff_time to unbinned time
-            if precalculated_features is not None:
+            if precalculated_features_trie is not None:
                 group[cutoff_df_time_var] = group[target_time]
 
-            grouped = group.groupby(cutoff_df_time_var, sort=True)
+            inner_grouped = group.groupby(cutoff_df_time_var, sort=True)
 
-        for _time_last_to_calc, group in grouped:
+        if chunk_size is not None:
+            inner_grouped = _chunk_dataframe_groups(inner_grouped, chunk_size)
+
+        for time_last, group in inner_grouped:
+
             # sort group by instance id
             ids = group['instance_id'].sort_values().values
-            time_last = group[cutoff_df_time_var].iloc[0]
             if no_unapproximated_aggs and approximate is not None:
                 window = None
             else:
                 window = training_window
 
-            # calculate values for those instances at time _time_last_to_calc
-            _feature_matrix = calc_results(_time_last_to_calc,
+            # calculate values for those instances at time time_last
+            _feature_matrix = calc_results(time_last,
                                            ids,
-                                           precalculated_features=precalculated_features,
+                                           precalculated_features=precalculated_features_trie,
                                            training_window=window)
 
             id_name = _feature_matrix.index.name
@@ -384,12 +404,13 @@ def calculate_chunk(chunk, features, approximate, training_window,
             feature_matrix.append(_feature_matrix)
 
     feature_matrix = pd.concat(feature_matrix)
+
     return feature_matrix
 
 
-def approximate_features(features, cutoff_time, window, entityset, backend,
-                         training_window=None, profile=None):
-    '''Given a list of features and cutoff_times to be passed to
+def approximate_features(feature_set, cutoff_time, window, entityset,
+                         training_window=None):
+    '''Given a set of features and cutoff_times to be passed to
     calculate_feature_matrix, calculates approximate values of some features
     to speed up calculations.  Cutoff times are sorted into
     window-sized buckets and the approximate feature values are only calculated
@@ -401,10 +422,6 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
         approximate these features on other top-level entities
 
     Args:
-        features (list[:class:`.FeatureBase`]): if these features are dependent
-            on aggregation features on the prediction, the approximate values
-            for the aggregation feature will be calculated
-
         cutoff_time (pd.DataFrame): specifies what time to calculate
             the features for each instance at. The resulting feature matrix will use data
             up to and including the cutoff_time. A DataFrame with
@@ -417,130 +434,65 @@ def approximate_features(features, cutoff_time, window, entityset, backend,
 
         entityset (:class:`.EntitySet`): An already initialized entityset.
 
+        feature_set (:class:`.FeatureSet`): The features to be calculated.
+
         training_window (`Timedelta`, optional):
             Window defining how much older than the cutoff time data
             can be to be included when calculating the feature. If None, all older data is used.
 
-        profile (bool, optional): Enables profiling if True
-
         save_progress (str, optional): path to save intermediate computational results
     '''
-    approx_fms_by_entity = {}
-    all_approx_feature_set = None
-    target_entity = features[0].entity
-    target_index_var = target_entity.index
-
-    to_approximate, all_approx_feature_set = gather_approximate_features(features, backend)
+    approx_fms_trie = Trie(path_constructor=RelationshipPath)
 
     target_time_colname = 'target_time'
     cutoff_time[target_time_colname] = cutoff_time['time']
-    target_instance_colname = target_index_var
-    cutoff_time[target_instance_colname] = cutoff_time['instance_id']
     approx_cutoffs = bin_cutoff_times(cutoff_time.copy(), window)
     cutoff_df_time_var = 'time'
     cutoff_df_instance_var = 'instance_id'
     # should this order be by dependencies so that calculate_feature_matrix
     # doesn't skip approximating something?
-    for approx_entity_id, approx_features in to_approximate.items():
-        # Gather associated instance_ids from the approximate entity
-        cutoffs_with_approx_e_ids = approx_cutoffs.copy()
-        frames = entityset.get_pandas_data_slice([approx_entity_id, target_entity.id],
-                                                 target_entity.id,
-                                                 cutoffs_with_approx_e_ids[target_instance_colname])
-
-        if frames is not None:
-            path = entityset.find_path(approx_entity_id, target_entity.id)
-            rvar = get_relationship_variable_id(path)
-            parent_instance_frame = frames[approx_entity_id][target_entity.id]
-            cutoffs_with_approx_e_ids[rvar] = \
-                cutoffs_with_approx_e_ids.merge(parent_instance_frame[[rvar]],
-                                                left_on=target_index_var,
-                                                right_index=True,
-                                                how='left')[rvar].values
-            new_approx_entity_index_var = rvar
-
-            # Select only columns we care about
-            columns_we_want = [target_instance_colname,
-                               new_approx_entity_index_var,
-                               cutoff_df_time_var,
-                               target_time_colname]
-
-            cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids[columns_we_want]
-            cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids.drop_duplicates()
-            cutoffs_with_approx_e_ids.dropna(subset=[new_approx_entity_index_var],
-                                             inplace=True)
-        else:
-            cutoffs_with_approx_e_ids = pd.DataFrame()
-
-        if cutoffs_with_approx_e_ids.empty:
-            approx_fms_by_entity = gen_empty_approx_features_df(approx_features)
+    for relationship_path, approx_feature_names in feature_set.approximate_feature_trie:
+        if not approx_feature_names:
             continue
 
-        cutoffs_with_approx_e_ids.sort_values([cutoff_df_time_var,
-                                               new_approx_entity_index_var], inplace=True)
-        # CFM assumes specific column names for cutoff_time argument
-        rename = {new_approx_entity_index_var: cutoff_df_instance_var}
-        cutoff_time_to_pass = cutoffs_with_approx_e_ids.rename(columns=rename)
-        cutoff_time_to_pass = cutoff_time_to_pass[[cutoff_df_instance_var, cutoff_df_time_var]]
+        cutoffs_with_approx_e_ids, new_approx_entity_index_var = \
+            _add_approx_entity_index_var(entityset, feature_set.target_eid,
+                                         approx_cutoffs.copy(), relationship_path)
 
-        cutoff_time_to_pass.drop_duplicates(inplace=True)
-        approx_fm = calculate_feature_matrix(approx_features,
-                                             entityset,
-                                             cutoff_time=cutoff_time_to_pass,
-                                             training_window=training_window,
-                                             approximate=None,
-                                             cutoff_time_in_index=False,
-                                             chunk_size=cutoff_time_to_pass.shape[0],
-                                             profile=profile)
+        # Select only columns we care about
+        columns_we_want = [new_approx_entity_index_var,
+                           cutoff_df_time_var,
+                           target_time_colname]
 
-        approx_fms_by_entity[approx_entity_id] = approx_fm
+        cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids[columns_we_want]
+        cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids.drop_duplicates()
+        cutoffs_with_approx_e_ids.dropna(subset=[new_approx_entity_index_var],
+                                         inplace=True)
 
-    # Include entity because we only want to ignore features that
-    # are base_features/dependencies of the top level entity we're
-    # approximating.
-    # For instance, if target entity is sessions, and we're
-    # approximating customers.COUNT(sessions.COUNT(log.value)),
-    # we could also just want the feature COUNT(log.value)
-    # defined on sessions
-    # as a first class feature in the feature matrix.
-    # Unless we signify to only ignore it as a dependency of
-    # a feature defined on customers, we would ignore computing it
-    # and pandas_backend would error
-    return approx_fms_by_entity, all_approx_feature_set
+        approx_features = [feature_set.features_by_name[name]
+                           for name in approx_feature_names]
+        if cutoffs_with_approx_e_ids.empty:
+            approx_fm = gen_empty_approx_features_df(approx_features)
+        else:
+            cutoffs_with_approx_e_ids.sort_values([cutoff_df_time_var,
+                                                   new_approx_entity_index_var], inplace=True)
+            # CFM assumes specific column names for cutoff_time argument
+            rename = {new_approx_entity_index_var: cutoff_df_instance_var}
+            cutoff_time_to_pass = cutoffs_with_approx_e_ids.rename(columns=rename)
+            cutoff_time_to_pass = cutoff_time_to_pass[[cutoff_df_instance_var, cutoff_df_time_var]]
 
+            cutoff_time_to_pass.drop_duplicates(inplace=True)
+            approx_fm = calculate_feature_matrix(approx_features,
+                                                 entityset,
+                                                 cutoff_time=cutoff_time_to_pass,
+                                                 training_window=training_window,
+                                                 approximate=None,
+                                                 cutoff_time_in_index=False,
+                                                 chunk_size=cutoff_time_to_pass.shape[0])
 
-def linear_calculate_chunks(chunks, features, approximate, training_window,
-                            profile, verbose, save_progress, entityset,
-                            no_unapproximated_aggs, cutoff_df_time_var,
-                            target_time, pass_columns):
-    backend = PandasBackend(entityset, features)
-    feature_matrix = []
+        approx_fms_trie.get_node(relationship_path).value = approx_fm
 
-    # if verbose, create progess bar
-    if verbose:
-        pbar_string = ("Elapsed: {elapsed} | Remaining: {remaining} | "
-                       "Progress: {l_bar}{bar}| "
-                       "Calculated: {n}/{total} chunks")
-        chunks = make_tqdm_iterator(iterable=chunks,
-                                    total=len(chunks),
-                                    bar_format=pbar_string)
-
-    for chunk in chunks:
-        _feature_matrix = calculate_chunk(chunk, features, approximate,
-                                          training_window,
-                                          profile, verbose,
-                                          save_progress,
-                                          no_unapproximated_aggs,
-                                          cutoff_df_time_var,
-                                          target_time, pass_columns,
-                                          backend=backend)
-        feature_matrix.append(_feature_matrix)
-        # Do a manual garbage collection in case objects from calculate_chunk
-        # weren't collected automatically
-        gc.collect()
-    if verbose:
-        chunks.close()
-    return feature_matrix
+    return approx_fms_trie
 
 
 def scatter_warning(num_scattered_workers, num_workers):
@@ -549,10 +501,10 @@ def scatter_warning(num_scattered_workers, num_workers):
         warnings.warn(scatter_warning.format(num_scattered_workers, num_workers))
 
 
-def parallel_calculate_chunks(chunks, features, approximate, training_window,
-                              verbose, save_progress, entityset, n_jobs,
-                              no_unapproximated_aggs, cutoff_df_time_var,
-                              target_time, pass_columns, dask_kwargs=None):
+def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate, training_window,
+                              save_progress, entityset, n_jobs, no_unapproximated_aggs,
+                              cutoff_df_time_var, target_time, pass_columns,
+                              progress_bar, dask_kwargs=None, progress_callback=None):
     from distributed import as_completed, Future
     from dask.base import tokenize
 
@@ -560,73 +512,147 @@ def parallel_calculate_chunks(chunks, features, approximate, training_window,
     cluster = None
     try:
         client, cluster = create_client_and_cluster(n_jobs=n_jobs,
-                                                    num_tasks=len(chunks),
                                                     dask_kwargs=dask_kwargs,
                                                     entityset_size=entityset.__sizeof__())
         # scatter the entityset
         # denote future with leading underscore
-        if verbose:
-            start = time.time()
+        start = time.time()
         es_token = "EntitySet-{}".format(tokenize(entityset))
         if es_token in client.list_datasets():
-            if verbose:
-                msg = "Using EntitySet persisted on the cluster as dataset {}"
-                print(msg.format(es_token))
+            msg = "Using EntitySet persisted on the cluster as dataset {}"
+            progress_bar.write(msg.format(es_token))
             _es = client.get_dataset(es_token)
         else:
             _es = client.scatter([entityset])[0]
             client.publish_dataset(**{_es.key: _es})
 
         # save features to a tempfile and scatter it
-        pickled_feats = cloudpickle.dumps(features)
+        pickled_feats = cloudpickle.dumps(feature_set)
         _saved_features = client.scatter(pickled_feats)
         client.replicate([_es, _saved_features])
         num_scattered_workers = len(client.who_has([Future(es_token)]).get(es_token, []))
         num_workers = len(client.scheduler_info()['workers'].values())
 
+        chunks = cutoff_time.groupby(cutoff_df_time_var)
+
+        if not chunk_size:
+            chunk_size = _handle_chunk_size(1.0 / num_workers, cutoff_time.shape[0])
+
+        chunks = _chunk_dataframe_groups(chunks, chunk_size)
+
+        chunks = [df for _, df in chunks]
+
+        if len(chunks) < num_workers:
+            chunk_warning = "Fewer chunks ({}), than workers ({}) consider reducing the chunk size"
+            warning_string = chunk_warning.format(len(chunks), num_workers)
+            progress_bar.write(warning_string)
+
         scatter_warning(num_scattered_workers, num_workers)
-        if verbose:
-            end = time.time()
-            scatter_time = round(end - start)
-            scatter_string = "EntitySet scattered to {} workers in {} seconds"
-            print(scatter_string.format(num_scattered_workers, scatter_time))
+        end = time.time()
+        scatter_time = round(end - start)
+
+        # if enabled, reset timer after scatter for better time remaining estimates
+        if not progress_bar.disable:
+            progress_bar.reset()
+
+        scatter_string = "EntitySet scattered to {} workers in {} seconds"
+        progress_bar.write(scatter_string.format(num_scattered_workers, scatter_time))
         # map chunks
         # TODO: consider handling task submission dask kwargs
         _chunks = client.map(calculate_chunk,
                              chunks,
-                             features=_saved_features,
+                             feature_set=_saved_features,
+                             chunk_size=None,
                              entityset=_es,
                              approximate=approximate,
                              training_window=training_window,
-                             profile=False,
-                             verbose=False,
                              save_progress=save_progress,
                              no_unapproximated_aggs=no_unapproximated_aggs,
                              cutoff_df_time_var=cutoff_df_time_var,
                              target_time=target_time,
-                             pass_columns=pass_columns)
+                             pass_columns=pass_columns,
+                             progress_bar=None,
+                             progress_callback=progress_callback)
 
         feature_matrix = []
         iterator = as_completed(_chunks).batches()
-        if verbose:
-            pbar_str = ("Elapsed: {elapsed} | Remaining: {remaining} | "
-                        "Progress: {l_bar}{bar}| "
-                        "Calculated: {n}/{total} chunks")
-            pbar = make_tqdm_iterator(total=len(_chunks), bar_format=pbar_str)
         for batch in iterator:
             results = client.gather(batch)
             for result in results:
                 feature_matrix.append(result)
-                if verbose:
-                    pbar.update()
-        if verbose:
-            pbar.close()
+                previous_progress = progress_bar.n
+                progress_bar.update(result.shape[0])
+                if progress_callback is not None:
+                    update, progress_percent, time_elapsed = update_progress_callback_parameters(progress_bar, previous_progress)
+                    progress_callback(update, progress_percent, time_elapsed)
+
     except Exception:
         raise
     finally:
         if 'cluster' not in dask_kwargs and cluster is not None:
             cluster.close()
+
         if client is not None:
             client.close()
 
+    feature_matrix = pd.concat(feature_matrix)
+
     return feature_matrix
+
+
+def _add_approx_entity_index_var(es, target_entity_id, cutoffs, path):
+    """
+    Add a variable to the cutoff df linking it to the entity at the end of the
+    path.
+
+    Return the updated cutoff df and the name of this variable. The name will
+    consist of the variables which were joined through.
+    """
+    last_child_var = 'instance_id'
+    last_parent_var = es[target_entity_id].index
+
+    for _, relationship in path:
+        child_vars = [last_parent_var, relationship.child_variable.id]
+        child_df = es[relationship.child_entity.id].df[child_vars]
+
+        # Rename relationship.child_variable to include the variables we have
+        # joined through.
+        new_var_name = '%s.%s' % (last_child_var, relationship.child_variable.id)
+        to_rename = {relationship.child_variable.id: new_var_name}
+        child_df = child_df.rename(columns=to_rename)
+
+        cutoffs = cutoffs.merge(child_df,
+                                left_on=last_child_var,
+                                right_on=last_parent_var)
+
+        # These will be used in the next iteration.
+        last_child_var = new_var_name
+        last_parent_var = relationship.parent_variable.id
+
+    return cutoffs, new_var_name
+
+
+def _chunk_dataframe_groups(grouped, chunk_size):
+    """chunks a grouped dataframe into groups no larger than chunk_size"""
+    for group_key, group_df in grouped:
+        for i in range(0, len(group_df), chunk_size):
+            yield group_key, group_df.iloc[i:i + chunk_size]
+
+
+def _handle_chunk_size(chunk_size, total_size):
+    if chunk_size is not None:
+        assert chunk_size > 0, "Chunk size must be greater than 0"
+
+        if chunk_size < 1:
+            chunk_size = math.ceil(chunk_size * total_size)
+
+        chunk_size = int(chunk_size)
+
+    return chunk_size
+
+
+def update_progress_callback_parameters(progress_bar, previous_progress):
+    update = (progress_bar.n - previous_progress) / progress_bar.total * 100
+    progress_percent = (progress_bar.n / progress_bar.total) * 100
+    time_elapsed = progress_bar.format_dict["elapsed"]
+    return (update, progress_percent, time_elapsed)

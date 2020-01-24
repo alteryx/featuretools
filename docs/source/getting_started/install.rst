@@ -1,10 +1,7 @@
 Install
 *******
 
-Pip and Conda
----------------
-
-Featuretools is available for Python 2.7, 3.5, and 3.6. The recommended way to install Featuretools is using ``pip`` or ``conda``::
+Featuretools is available for Python 3.5, 3.6 and 3.7 The recommended way to install Featuretools is using ``pip`` or ``conda``::
 
     python -m pip install featuretools
 
@@ -12,25 +9,69 @@ or from the Conda-forge channel on `anaconda.org <https://anaconda.org/conda-for
 
     conda install -c conda-forge featuretools
 
-.. note ::
 
-    In order to use :meth:`EntitySet.plot <featuretools.entityset.EntitySet.plot>` you will need to install the graphviz library.
+.. _addons:
 
-    Conda users:
-        conda install python-graphviz
+Add-ons
+--------
+You can install add-ons individually or all at once by running::
 
-    Ubuntu:
-        sudo apt-get install graphviz
+    python -m pip install featuretools[complete]
 
-        pip install graphviz
+Update checker:
+    Receive automatic notifications of new Featuretools releases::
 
-    Mac OS:
-        brew install graphviz
+        python -m pip install featuretools[update_checker]
 
-        pip install graphviz
+TSFresh Primitives:
+    Use 60+ primitives from `tsfresh <https://tsfresh.readthedocs.io/en/latest/>`__ in Featuretools::
 
-    Windows:
-        conda install python-graphviz
+        python -m pip install featuretools[tsfresh]
+
+Categorical Encoding:
+    Encode categorical data for integration into Featuretools/machine learning workflows::
+
+        python -m pip install featuretools[categorical_encoding]
+
+NLP Primitives:
+    Use Natural Language Processing Primitives for data with text in Featuretools::
+
+        python -m pip install featuretools[nlp_primitives]
+
+AutoNormalize:
+    Automated creation of normalized ``EntitySet`` from denormalized data::
+
+        python -m pip install featuretools[autonormalize]
+
+Featuretools Sklearn Transformer:
+    Deep Feature Synthesis as a scikit-learn pipelines transformer
+
+        python -m pip install featuretools[sklearn_transformer]
+
+.. _graphviz:
+
+Installing Graphviz
+-------------------
+
+In order to use :meth:`EntitySet.plot <featuretools.entityset.EntitySet.plot>` you will need to install the graphviz library.
+
+Conda users::
+
+    conda install python-graphviz
+
+Ubuntu::
+
+    sudo apt-get install graphviz
+    pip install graphviz
+
+Mac OS::
+
+    brew install graphviz
+    pip install graphviz
+
+Windows::
+
+    conda install python-graphviz
 
 
 Install from Source
@@ -54,7 +95,7 @@ of ``setup.py``.
 
 Development
 -----------
-Before making contributing to the codebase, please follow the guidelines `here <https://github.com/Featuretools/featuretools/blob/master/docs/contributing.md>`_
+Before making contributing to the codebase, please follow the guidelines `here <https://github.com/Featuretools/featuretools/blob/master/contributing.md>`_
 
 Virtualenv
 ~~~~~~~~~~

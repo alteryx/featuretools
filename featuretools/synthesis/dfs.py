@@ -20,6 +20,7 @@ def dfs(entities=None,
         max_depth=2,
         ignore_entities=None,
         ignore_variables=None,
+        primitive_options=None,
         seed_features=None,
         drop_contains=None,
         drop_exact=None,
@@ -34,7 +35,8 @@ def dfs(entities=None,
         n_jobs=1,
         dask_kwargs=None,
         verbose=False,
-        return_variable_types=None):
+        return_variable_types=None,
+        progress_callback=None):
     '''Calculates a feature matrix and features given a dictionary of entities
     and a list of relationships.
 
@@ -69,7 +71,7 @@ def dfs(entities=None,
         agg_primitives (list[str or AggregationPrimitive], optional): List of Aggregation
             Feature types to apply.
 
-                Default: ["sum", "std", "max", "skew", "min", "mean", "count", "percent_true", "n_unique", "mode"]
+                Default: ["sum", "std", "max", "skew", "min", "mean", "count", "percent_true", "num_unique", "mode"]
 
         trans_primitives (list[str or TransformPrimitive], optional):
             List of Transform Feature functions to apply.
@@ -89,6 +91,40 @@ def dfs(entities=None,
 
         ignore_variables (dict[str -> list[str]], optional): List of specific
             variables within each entity to blacklist when creating features.
+
+        primitive_options (list[dict[str or tuple[str] -> dict] or dict[str or tuple[str] -> dict, optional]):
+            Specify options for a single primitive or a group of primitives.
+            Lists of option dicts are used to specify options per input for primitives
+            with multiple inputs. Each option ``dict`` can have the following keys:
+
+            ``"include_entities"``
+                List of entities to be included when creating features for
+                the primitive(s). All other entities will be ignored
+                (list[str]).
+            ``"ignore_entities"``
+                List of entities to be blacklisted when creating features
+                for the primitive(s) (list[str]).
+            ``"include_variables"``
+                List of specific variables within each entity to include when
+                creating feautres for the primitive(s). All other variables
+                in a given entity will be ignored (dict[str -> list[str]]).
+            ``"ignore_variables"``
+                List of specific variables within each entityt to blacklist
+                when creating features for the primitive(s) (dict[str ->
+                list[str]]).
+            ``"include_groupby_entities"``
+                List of Entities to be included when finding groupbys. All
+                other entities will be ignored (list[str]).
+            ``"ignore_groupby_entities"``
+                List of entities to blacklist when finding groupbys
+                (list[str]).
+            ``"include_groupby_variables"``
+                List of specific variables within each entity to include as
+                groupbys, if applicable. All other variables in each
+                entity will be ignored (dict[str -> list[str]]).
+            ``"ignore_groupby_variables"``
+                List of specific variables within each entity to blacklist
+                as groupbys (dict[str -> list[str]]).
 
         seed_features (list[:class:`.FeatureBase`]): List of manually defined
             features to use.
@@ -118,8 +154,10 @@ def dfs(entities=None,
 
         training_window (Timedelta or str, optional):
             Window defining how much time before the cutoff time data
-            can be used when calculating features. If ``None`` , all data before cutoff time is used.
-            Defaults to ``None``.
+            can be used when calculating features. If ``None`` , all data
+            before cutoff time is used. Defaults to ``None``. Month and year
+            units are not relative when Pandas Timedeltas are used. Relative
+            units should be passed as a Featuretools Timedelta or a string.
 
         approximate (Timedelta): Bucket size to group instances with similar
             cutoff times by for features with costly calculations. For example,
@@ -157,6 +195,13 @@ def dfs(entities=None,
                 Numeric, Discrete, and Boolean. If given as
                 the string 'all', use all available variable types.
 
+        progress_callback (callable): function to be called with incremental progress updates.
+            Has the following parameters:
+
+                update: percentage change (float between 0 and 100) in progress since last call
+                progress_percent: percentage (float between 0 and 100) of total computation completed
+                time_elapsed: total time in seconds that has elapsed since start of call
+
     Examples:
         .. code-block:: python
 
@@ -192,6 +237,7 @@ def dfs(entities=None,
                                       drop_contains=drop_contains,
                                       ignore_entities=ignore_entities,
                                       ignore_variables=ignore_variables,
+                                      primitive_options=primitive_options,
                                       max_features=max_features,
                                       seed_features=seed_features)
 
@@ -212,7 +258,8 @@ def dfs(entities=None,
                                                   chunk_size=chunk_size,
                                                   n_jobs=n_jobs,
                                                   dask_kwargs=dask_kwargs,
-                                                  verbose=verbose)
+                                                  verbose=verbose,
+                                                  progress_callback=progress_callback)
     else:
         feature_matrix = calculate_feature_matrix(features,
                                                   entityset=entityset,
@@ -225,5 +272,6 @@ def dfs(entities=None,
                                                   chunk_size=chunk_size,
                                                   n_jobs=n_jobs,
                                                   dask_kwargs=dask_kwargs,
-                                                  verbose=verbose)
+                                                  verbose=verbose,
+                                                  progress_callback=progress_callback)
     return feature_matrix, features

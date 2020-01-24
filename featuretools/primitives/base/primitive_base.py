@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import os
 
 import numpy as np
@@ -22,8 +20,6 @@ class PrimitiveBase(object):
     #: (bool): True if feature needs to know what the current calculation time
     # is (provided to computational backend as "time_last")
     uses_calc_time = False
-    #: (bool): If True, allow where clauses in DFS
-    allow_where = False
     #: (int): Maximum number of features in the largest chain proceeding
     # downward from this feature's base features.
     max_stack_depth = None
@@ -48,6 +44,9 @@ class PrimitiveBase(object):
             return self._method(*series_args, **kwargs)
 
     def generate_name(self):
+        raise NotImplementedError("Subclass must implement")
+
+    def generate_names(self):
         raise NotImplementedError("Subclass must implement")
 
     def get_function(self):

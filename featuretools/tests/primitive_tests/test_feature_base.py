@@ -1,11 +1,20 @@
 import os.path
 
+import pytest
 from pympler.asizeof import asizeof
 
 import featuretools as ft
 from featuretools import config
 from featuretools.feature_base import IdentityFeature
-from featuretools.primitives import Last, Mode, Sum
+from featuretools.primitives import (
+    Diff,
+    Last,
+    Mode,
+    NMostCommon,
+    NumUnique,
+    Sum,
+    TransformPrimitive
+)
 from featuretools.variable_types import Categorical, Datetime, Id, Numeric
 
 
@@ -32,11 +41,11 @@ def test_get_dependencies(es):
     d1 = ft.Feature(agg2, es['sessions'])
     shallow = d1.get_dependencies(deep=False, ignored=None)
     deep = d1.get_dependencies(deep=True, ignored=None)
-    ignored = set([agg1.hash()])
+    ignored = set([agg1.unique_name()])
     deep_ignored = d1.get_dependencies(deep=True, ignored=ignored)
-    assert [s.hash() for s in shallow] == [agg2.hash()]
-    assert [d.hash() for d in deep] == [agg2.hash(), agg1.hash(), f.hash()]
-    assert [d.hash() for d in deep_ignored] == [agg2.hash()]
+    assert [s.unique_name() for s in shallow] == [agg2.unique_name()]
+    assert [d.unique_name() for d in deep] == [agg2.unique_name(), agg1.unique_name(), f.unique_name()]
+    assert [d.unique_name() for d in deep_ignored] == [agg2.unique_name()]
 
 
 def test_get_depth(es):
@@ -62,7 +71,7 @@ def test_squared(es):
     feature = ft.Feature(es['log']['value'])
     squared = feature * feature
     assert len(squared.base_features) == 2
-    assert squared.base_features[0].hash() == squared.base_features[1].hash()
+    assert squared.base_features[0].unique_name() == squared.base_features[1].unique_name()
 
 
 def test_return_type_inference(es):
@@ -74,6 +83,11 @@ def test_return_type_inference_direct_feature(es):
     mode = ft.Feature(es["log"]["priority_level"], parent_entity=es["customers"], primitive=Mode)
     mode_session = ft.Feature(mode, es["sessions"])
     assert mode_session.variable_type == es["log"]["priority_level"].__class__
+
+
+def test_return_type_inference_index(es):
+    last = ft.Feature(es["log"]["id"], parent_entity=es["customers"], primitive=Last)
+    assert last.variable_type == Categorical
 
 
 def test_return_type_inference_datetime_time_index(es):
@@ -138,3 +152,59 @@ def test_to_dictionary(es):
         'arguments': direct_feature.get_arguments()
     }
     assert expected == direct_feature.to_dictionary()
+
+
+def test_multi_output_base_error_agg(es):
+    three_common = NMostCommon(3)
+    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=three_common)
+    error_text = "Cannot stack on whole multi-output feature."
+    with pytest.raises(ValueError, match=error_text):
+        ft.Feature(tc, parent_entity=es['customers'], primitive=NumUnique)
+
+
+def test_multi_output_base_error_trans(es):
+    class TestTime(TransformPrimitive):
+        name = "test_time"
+        input_types = [Datetime]
+        return_type = Numeric
+        number_output_features = 6
+
+    tc = ft.Feature(es['customers']['date_of_birth'], primitive=TestTime)
+
+    error_text = "Cannot stack on whole multi-output feature."
+    with pytest.raises(ValueError, match=error_text):
+        ft.Feature(tc, primitive=Diff)
+
+
+def test_multi_output_attributes(es):
+    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=NMostCommon)
+
+    assert tc.generate_name() == 'N_MOST_COMMON(log.product_id)'
+    assert tc.number_output_features == 3
+    assert tc.base_features == ['<Feature: product_id>']
+
+    assert tc[0].generate_name() == 'N_MOST_COMMON(log.product_id)[0]'
+    assert tc[0].number_output_features == 1
+    assert tc[0].base_features == [tc]
+    assert tc.relationship_path == tc[0].relationship_path
+
+
+def test_multi_output_index_error(es):
+    error_text = "can only access slice of multi-output feature"
+    three_common = ft.Feature(es['log']['product_id'],
+                              parent_entity=es["sessions"],
+                              primitive=NMostCommon)
+
+    with pytest.raises(AssertionError, match=error_text):
+        single = ft.Feature(es['log']['product_id'],
+                            parent_entity=es["sessions"],
+                            primitive=NumUnique)
+        single[0]
+
+    error_text = "Cannot get item from slice of multi output feature"
+    with pytest.raises(ValueError, match=error_text):
+        three_common[0][0]
+
+    error_text = 'index is higher than the number of outputs'
+    with pytest.raises(AssertionError, match=error_text):
+        three_common[10]

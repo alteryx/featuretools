@@ -2,9 +2,49 @@ import locale
 import os
 import platform
 import struct
+import subprocess
 import sys
 
 import pkg_resources
+
+import featuretools
+
+deps = ["numpy", "pandas", "tqdm", "PyYAML", "cloudpickle",
+        "dask", "distributed", "psutil", "Click",
+        "pip", "setuptools"]
+
+
+def show_info():
+    subprocess.run(["featuretools", "info"])
+
+
+def print_info():
+    print("Featuretools version: %s" % featuretools.__version__)
+    print("Featuretools installation directory: %s" % get_featuretools_root())
+    print_sys_info()
+    print_deps(deps)
+
+
+def print_sys_info():
+    print("\nSYSTEM INFO")
+    print("-----------")
+    sys_info = get_sys_info()
+    for k, stat in sys_info:
+        print("{k}: {stat}".format(k=k, stat=stat))
+
+
+def print_deps(dependencies):
+    print("\nINSTALLED VERSIONS")
+    print("------------------")
+    installed_packages = get_installed_packages()
+
+    package_dep = []
+    for x in dependencies:
+        # prevents uninstalled deps from being printed
+        if x in installed_packages:
+            package_dep.append((x, installed_packages[x]))
+    for k, stat in package_dep:
+        print("{k}: {stat}".format(k=k, stat=stat))
 
 
 # Modified from here
@@ -40,3 +80,7 @@ def get_installed_packages():
     for d in pkg_resources.working_set:
         installed_packages[d.project_name] = d.version
     return installed_packages
+
+
+def get_featuretools_root():
+    return os.path.dirname(featuretools.__file__)

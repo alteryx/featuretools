@@ -1,3 +1,4 @@
+import importlib.util
 import os
 from inspect import isclass
 
@@ -9,12 +10,7 @@ from featuretools.primitives.base import (
     PrimitiveBase,
     TransformPrimitive
 )
-from featuretools.utils import is_python_2
-
-if is_python_2():
-    import imp
-else:
-    import importlib.util
+from featuretools.utils.gen_utils import find_descendents
 
 
 def get_aggregation_primitives():
@@ -74,10 +70,6 @@ def _get_names_primitives(primitive_func):
     return names, primitives
 
 
-def get_featuretools_root():
-    return os.path.dirname(featuretools.__file__)
-
-
 def list_primitive_files(directory):
     """returns list of files in directory that might contain primitives"""
     files = os.listdir(directory)
@@ -104,15 +96,10 @@ def check_valid_primitive_path(path):
 def load_primitive_from_file(filepath):
     """load primitive objects in a file"""
     module = os.path.basename(filepath)[:-3]
-    if is_python_2():
-        # for python 2.7
-        module = imp.load_source(module, filepath)
-    else:
-        # TODO: what is the first argument"?
-        # for python >3.5
-        spec = importlib.util.spec_from_file_location(module, filepath)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
+    # TODO: what is the first argument"?
+    spec = importlib.util.spec_from_file_location(module, filepath)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
 
     primitives = []
     for primitive_name in vars(module):
@@ -150,9 +137,10 @@ class PrimitivesDeserializer(object):
     deseriazing the next primitive the iteration resumes where it left off. This
     means that we never visit a class more than once.
     """
+
     def __init__(self):
         self.class_cache = {}  # (class_name, module_name) -> class
-        self.primitive_classes = _descendants(PrimitiveBase)
+        self.primitive_classes = find_descendents(PrimitiveBase)
 
     def deserialize_primitive(self, primitive_dict):
         """
@@ -182,15 +170,3 @@ class PrimitivesDeserializer(object):
 
             if cls_key == search_key:
                 return cls
-
-
-def _descendants(cls):
-    """
-    A generator which yields all descendant classes of the given class
-    (including the given class).
-    """
-    yield cls
-
-    for sub in cls.__subclasses__():
-        for c in _descendants(sub):
-            yield c

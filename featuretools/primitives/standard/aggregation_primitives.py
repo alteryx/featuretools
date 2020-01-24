@@ -1,16 +1,16 @@
-from __future__ import division
-
 from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
+from scipy import stats
 
 from featuretools.primitives.base.aggregation_primitive_base import (
     AggregationPrimitive
 )
-from featuretools.utils import is_python_2
+from featuretools.utils import convert_time_units
 from featuretools.variable_types import (
     Boolean,
+    Categorical,
     DatetimeTimeIndex,
     Discrete,
     Index,
@@ -34,16 +34,11 @@ class Count(AggregationPrimitive):
     default_value = 0
 
     def get_function(self):
-        # note: returning class instance method errors for python2,
-        # so using this branching code path while we support python2
-        if is_python_2():
-            return pd.Series.count.__func__
-        else:
-            return pd.Series.count
+        return pd.Series.count
 
-    def generate_name(self, base_feature_names, child_entity_id,
+    def generate_name(self, base_feature_names, relationship_path_name,
                       parent_entity_id, where_str, use_prev_str):
-        return u"COUNT(%s%s%s)" % (child_entity_id,
+        return u"COUNT(%s%s%s)" % (relationship_path_name,
                                    where_str, use_prev_str)
 
 
@@ -98,20 +93,8 @@ class Mean(AggregationPrimitive):
 
         def mean(series):
             return np.mean(series.values)
-        return mean
 
-    def generate_name(self, base_feature_names, child_entity_id,
-                      parent_entity_id, where_str, use_prev_str):
-        skipna = ""
-        if not self.skipna:
-            skipna = ", skipna=False"
-        base_features_str = ", ".join(base_feature_names)
-        return u"%s(%s.%s%s%s%s)" % (self.name.upper(),
-                                     child_entity_id,
-                                     base_features_str,
-                                     where_str,
-                                     use_prev_str,
-                                     skipna)
+        return mean
 
 
 class Mode(AggregationPrimitive):
@@ -134,6 +117,7 @@ class Mode(AggregationPrimitive):
     def get_function(self):
         def pd_mode(s):
             return s.mode().get(0, np.nan)
+
         return pd_mode
 
 
@@ -190,12 +174,7 @@ class NumUnique(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self):
-        # note: returning class instance method errors for python2,
-        # so using this branching code path while we support python2
-        if is_python_2():
-            return pd.Series.nunique.__func__
-        else:
-            return pd.Series.nunique
+        return pd.Series.nunique
 
 
 class NumTrue(AggregationPrimitive):
@@ -245,6 +224,7 @@ class PercentTrue(AggregationPrimitive):
     def get_function(self):
         def percent_true(s):
             return s.fillna(0).mean()
+
         return percent_true
 
 
@@ -277,11 +257,12 @@ class NMostCommon(AggregationPrimitive):
 
     def get_function(self):
         def n_most_common(x):
-            array = np.array(x.value_counts()[:self.n].index)
+            array = np.array(x.value_counts().index[:self.n])
             if len(array) < self.n:
                 filler = np.full(self.n - len(array), np.nan)
                 array = np.append(array, filler)
             return array
+
         return n_most_common
 
 
@@ -289,9 +270,14 @@ class AvgTimeBetween(AggregationPrimitive):
     """Computes the average number of seconds between consecutive events.
 
     Description:
-        Given a list of datetimes, return the average number of seconds
+        Given a list of datetimes, return the average time (default in seconds)
         elapsed between consecutive events. If there are fewer
         than 2 non-null values, return `NaN`.
+
+    Args:
+        unit (str): Defines the unit of time.
+            Defaults to seconds. Acceptable values:
+            years, months, days, hours, minutes, seconds, milliseconds, nanoseconds
 
     Examples:
         >>> from datetime import datetime
@@ -301,10 +287,16 @@ class AvgTimeBetween(AggregationPrimitive):
         ...          datetime(2010, 1, 1, 11, 57, 30)]
         >>> avg_time_between(times)
         375.0
+        >>> avg_time_between = AvgTimeBetween(unit="minutes")
+        >>> avg_time_between(times)
+        6.25
     """
     name = "avg_time_between"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
+
+    def __init__(self, unit="seconds"):
+        self.unit = unit.lower()
 
     def get_function(self):
         def pd_avg_time_between(x):
@@ -332,7 +324,8 @@ class AvgTimeBetween(AggregationPrimitive):
             # diff_in_ns = x.diff().iloc[1:].astype('int64')
             # diff_in_seconds = diff_in_ns * 1e-9
             # avg = diff_in_seconds.mean()
-            return avg
+            return convert_time_units(avg, self.unit)
+
         return pd_avg_time_between
 
 
@@ -354,10 +347,7 @@ class Median(AggregationPrimitive):
     return_type = Numeric
 
     def get_function(self):
-        if is_python_2():
-            return pd.Series.median.__func__
-        else:
-            return pd.Series.median
+        return pd.Series.median
 
 
 class Skew(AggregationPrimitive):
@@ -380,12 +370,7 @@ class Skew(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self):
-        # note: returning class instance method errors for python2,
-        # so using this branching code path while we support python2
-        if is_python_2():
-            return pd.Series.skew.__func__
-        else:
-            return pd.Series.skew
+        return pd.Series.skew
 
 
 class Std(AggregationPrimitive):
@@ -405,6 +390,26 @@ class Std(AggregationPrimitive):
         return np.std
 
 
+class First(AggregationPrimitive):
+    """Determines the first value in a list.
+
+    Examples:
+        >>> first = First()
+        >>> first([1, 2, 3, 4, 5, None])
+        1.0
+    """
+    name = "first"
+    input_types = [Variable]
+    return_type = None
+    stack_on_self = False
+
+    def get_function(self):
+        def pd_first(x):
+            return x.iloc[0]
+
+        return pd_first
+
+
 class Last(AggregationPrimitive):
     """Determines the last value in a list.
 
@@ -421,6 +426,7 @@ class Last(AggregationPrimitive):
     def get_function(self):
         def pd_last(x):
             return x.iloc[-1]
+
         return pd_last
 
 
@@ -467,12 +473,17 @@ class All(AggregationPrimitive):
 
 
 class TimeSinceLast(AggregationPrimitive):
-    """Calculates the time elapsed since the last datetime (in seconds).
+    """Calculates the time elapsed since the last datetime (default in seconds).
 
     Description:
         Given a list of datetimes, calculate the
-        time elapsed since the last datetime (in
+        time elapsed since the last datetime (default in
         seconds). Uses the instance's cutoff time.
+
+    Args:
+        unit (str): Defines the unit of time to count from.
+            Defaults to seconds. Acceptable values:
+            years, months, days, hours, minutes, seconds, milliseconds, nanoseconds
 
     Examples:
         >>> from datetime import datetime
@@ -483,17 +494,29 @@ class TimeSinceLast(AggregationPrimitive):
         ...          datetime(2010, 1, 1, 11, 57, 30)]
         >>> time_since_last(times, time=cutoff_time)
         150.0
+
+        >>> from datetime import datetime
+        >>> time_since_last = TimeSinceLast(unit = "minutes")
+        >>> cutoff_time = datetime(2010, 1, 1, 12, 0, 0)
+        >>> times = [datetime(2010, 1, 1, 11, 45, 0),
+        ...          datetime(2010, 1, 1, 11, 55, 15),
+        ...          datetime(2010, 1, 1, 11, 57, 30)]
+        >>> time_since_last(times, time=cutoff_time)
+        2.5
+
     """
     name = "time_since_last"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
     uses_calc_time = True
 
-    def get_function(self):
+    def __init__(self, unit="seconds"):
+        self.unit = unit.lower()
 
+    def get_function(self):
         def time_since_last(values, time=None):
             time_since = time - values.iloc[-1]
-            return time_since.total_seconds()
+            return convert_time_units(time_since.total_seconds(), self.unit)
 
         return time_since_last
 
@@ -506,6 +529,11 @@ class TimeSinceFirst(AggregationPrimitive):
         time elapsed since the first datetime (in
         seconds). Uses the instance's cutoff time.
 
+    Args:
+        unit (str): Defines the unit of time to count from.
+            Defaults to seconds. Acceptable values:
+            years, months, days, hours, minutes, seconds, milliseconds, nanoseconds
+
     Examples:
         >>> from datetime import datetime
         >>> time_since_first = TimeSinceFirst()
@@ -515,17 +543,29 @@ class TimeSinceFirst(AggregationPrimitive):
         ...          datetime(2010, 1, 1, 11, 57, 30)]
         >>> time_since_first(times, time=cutoff_time)
         900.0
+
+        >>> from datetime import datetime
+        >>> time_since_first = TimeSinceFirst(unit = "minutes")
+        >>> cutoff_time = datetime(2010, 1, 1, 12, 0, 0)
+        >>> times = [datetime(2010, 1, 1, 11, 45, 0),
+        ...          datetime(2010, 1, 1, 11, 55, 15),
+        ...          datetime(2010, 1, 1, 11, 57, 30)]
+        >>> time_since_first(times, time=cutoff_time)
+        15.0
+
     """
     name = "time_since_first"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
     uses_calc_time = True
 
-    def get_function(self):
+    def __init__(self, unit="seconds"):
+        self.unit = unit.lower()
 
+    def get_function(self):
         def time_since_first(values, time=None):
             time_since = time - values.iloc[0]
-            return time_since.total_seconds()
+            return convert_time_units(time_since.total_seconds(), self.unit)
 
         return time_since_first
 
@@ -581,6 +621,7 @@ class Trend(AggregationPrimitive):
             coefficients = np.polyfit(x, y, 1)
 
             return coefficients[0]
+
         return pd_trend
 
 
@@ -608,3 +649,40 @@ def find_dividend_by_unit(time):
         if round(div) == div:
             return dividend
     return 1
+
+
+class Entropy(AggregationPrimitive):
+    """Calculates the entropy for a categorical variable
+
+    Description:
+        Given a list of observations from a categorical
+        variable return the entropy of the distribution.
+        NaN values can be treated as a category or
+        dropped.
+
+    Args:
+        dropna (bool): Whether to consider NaN values as a separate category
+            Defaults to False.
+        base (float): The logarithmic base to use
+            Defaults to e (natural logarithm)
+
+    Examples:
+        >>> pd_entropy = Entropy()
+        >>> pd_entropy([1,2,3,4])
+        1.3862943611198906
+    """
+    name = "entropy"
+    input_types = [Categorical]
+    return_type = Numeric
+    stack_on_self = False
+
+    def __init__(self, dropna=False, base=None):
+        self.dropna = dropna
+        self.base = base
+
+    def get_function(self):
+        def pd_entropy(s):
+            distribution = s.value_counts(normalize=True, dropna=self.dropna)
+            return stats.entropy(distribution, base=self.base)
+
+        return pd_entropy

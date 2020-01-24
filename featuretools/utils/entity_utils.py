@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
-
 from datetime import datetime
 
 import numpy as np
@@ -39,20 +36,27 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
             else:
                 inferred_type = vtypes.Numeric
 
+        elif variable in link_vars:
+            inferred_type = vtypes.Categorical
+
         elif df[variable].dtype == "object":
-            if variable in link_vars:
+            if not len(df[variable]):
                 inferred_type = vtypes.Categorical
-            elif len(df[variable]):
-                if col_is_datetime(df[variable]):
-                    inferred_type = vtypes.Datetime
-                else:
-                    # heuristics to predict this some other than categorical
-                    sample = df[variable].sample(min(10000, df[variable].nunique()))
+            elif col_is_datetime(df[variable]):
+                inferred_type = vtypes.Datetime
+            else:
+                inferred_type = vtypes.Categorical
+
+                # heuristics to predict this some other than categorical
+                sample = df[variable].sample(min(10000, len(df[variable])))
+
+                # catch cases where object dtype cannot be interpreted as a string
+                try:
                     avg_length = sample.str.len().mean()
                     if avg_length > 50:
                         inferred_type = vtypes.Text
-                    else:
-                        inferred_type = vtypes.Categorical
+                except AttributeError:
+                    pass
 
         elif df[variable].dtype == "bool":
             inferred_type = vtypes.Boolean
@@ -60,11 +64,11 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
         elif pdtypes.is_categorical_dtype(df[variable].dtype):
             inferred_type = vtypes.Categorical
 
+        elif pdtypes.is_numeric_dtype(df[variable].dtype):
+            inferred_type = vtypes.Numeric
+
         elif col_is_datetime(df[variable]):
             inferred_type = vtypes.Datetime
-
-        elif variable in link_vars:
-            inferred_type = vtypes.Ordinal
 
         elif len(df[variable]):
             sample = df[variable] \
@@ -167,17 +171,23 @@ def get_linked_vars(entity):
 
 
 def col_is_datetime(col):
+    # check if dtype is datetime
     if (col.dtype.name.find('datetime') > -1 or
             (len(col) and isinstance(col.iloc[0], datetime))):
         return True
 
-    # TODO: not sure this is ideal behavior.
-    # it converts int columns that have dtype=object to datetimes starting from 1970
-    elif col.dtype.name.find('str') > -1 or col.dtype.name.find('object') > -1:
-        try:
-            pd.to_datetime(col.dropna().iloc[:10], errors='raise')
-        except Exception:
-            return False
-        else:
-            return True
+    # if it can be casted to numeric, it's not a datetime
+    dropped_na = col.dropna()
+    try:
+        pd.to_numeric(dropped_na, errors='raise')
+    except (ValueError, TypeError):
+        # finally, try to cast to datetime
+        if col.dtype.name.find('str') > -1 or col.dtype.name.find('object') > -1:
+            try:
+                pd.to_datetime(dropped_na, errors='raise')
+            except Exception:
+                return False
+            else:
+                return True
+
     return False

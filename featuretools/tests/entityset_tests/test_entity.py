@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from datetime import datetime
 
 import numpy as np
@@ -7,6 +6,7 @@ import pytest
 
 import featuretools as ft
 from featuretools import variable_types
+from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
 def test_enforces_variable_id_is_str(es):
@@ -44,6 +44,15 @@ def test_variable_ordering_matches_column_ordering(es):
 
 
 def test_eq(es):
+    other_es = make_ecommerce_entityset()
+    latlong = es['log'].df['latlong'].copy()
+
+    assert es['log'].__eq__(es['log'], deep=True)
+    assert es['log'].__eq__(other_es['log'], deep=True)
+    assert (es['log'].df['latlong'] == latlong).all()
+
+    other_es['log'].add_interesting_values()
+    assert not es['log'].__eq__(other_es['log'], deep=True)
 
     es['log'].id = 'customers'
     es['log'].index = 'notid'
@@ -65,20 +74,18 @@ def test_update_data(es):
     df['new'] = [1, 2, 3]
 
     error_text = 'Updated dataframe is missing new cohort column'
-    with pytest.raises(ValueError, match=error_text) as excinfo:
+    with pytest.raises(ValueError, match=error_text):
         es['customers'].update_data(df.drop(columns=['cohort']))
-    assert 'Updated dataframe is missing new cohort column' in str(excinfo)
 
     error_text = 'Updated dataframe contains 16 columns, expecting 15'
-    with pytest.raises(ValueError, match=error_text) as excinfo:
+    with pytest.raises(ValueError, match=error_text):
         es['customers'].update_data(df)
-    assert 'Updated dataframe contains 16 columns, expecting 15' in str(excinfo)
 
     # test already_sorted on entity without time index
     df = es["sessions"].df.copy(deep=True)
     df["id"].iloc[1:3] = [2, 1]
     es["sessions"].update_data(df.copy(deep=True))
-    assert es["sessions"].df["id"].iloc[1] == 1
+    assert es["sessions"].df["id"].iloc[1] == 2  # no sorting since time index not defined
     es["sessions"].update_data(df.copy(deep=True), already_sorted=True)
     assert es["sessions"].df["id"].iloc[1] == 2
 
@@ -107,6 +114,16 @@ def test_query_by_values_returns_rows_in_given_order():
     assert np.array_equal(query['id'], [1, 3, 4, 5])
 
 
+def test_query_by_values_secondary_time_index(es):
+    end = np.datetime64(datetime(2011, 10, 1))
+    all_instances = [0, 1, 2]
+    result = es['customers'].query_by_values(all_instances, time_last=end)
+
+    for col in ["cancel_date", "cancel_reason"]:
+        nulls = result.loc[all_instances][col].isnull() == [False, True, True]
+        assert nulls.all(), "Some instance has data it shouldn't for column %s" % col
+
+
 def test_delete_variables(es):
     entity = es['customers']
     to_delete = ['age', 'cohort', 'email']
@@ -117,3 +134,19 @@ def test_delete_variables(es):
     for var in to_delete:
         assert var not in variable_names
         assert var not in entity.df
+
+
+def test_variable_types_unmodified():
+    df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                       "transaction_time": [10, 12, 13, 20, 21, 20],
+                       "fraud": [True, False, False, False, True, True]})
+
+    es = ft.EntitySet()
+    variable_types = {'fraud': ft.variable_types.Boolean}
+    old_variable_types = variable_types.copy()
+    es.entity_from_dataframe(entity_id="transactions",
+                             dataframe=df,
+                             index='id',
+                             time_index='transaction_time',
+                             variable_types=variable_types)
+    assert old_variable_types == variable_types

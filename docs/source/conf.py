@@ -316,7 +316,7 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
 
-nbsphinx_execute = 'never'
+nbsphinx_execute = 'auto'
 
 extlinks = {
     'issue': ('https://github.com/featuretools/featuretools/issues/%s', 'GH#'),
@@ -338,4 +338,4 @@ napoleon_use_param = True
 napoleon_use_rtype = True
 
 def setup(app):
-    app.add_stylesheet("style.css")
+    app.add_css_file("style.css")

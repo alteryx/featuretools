@@ -4,7 +4,6 @@ import pytest
 
 from featuretools.primitives.base import PrimitiveBase
 from featuretools.primitives.utils import (
-    get_featuretools_root,
     list_primitive_files,
     load_primitive_from_file
 )
@@ -25,11 +24,6 @@ def bad_primitives_files_dir(this_dir):
     return os.path.join(this_dir, "bad_primitive_files")
 
 
-def test_get_featuretools_root(this_dir):
-    root = os.path.abspath(os.path.join(this_dir, '..', ".."))
-    assert get_featuretools_root() == root
-
-
 def test_list_primitive_files(primitives_to_install_dir):
     files = list_primitive_files(primitives_to_install_dir)
     custom_max_file = os.path.join(primitives_to_install_dir, "custom_max.py")
@@ -46,13 +40,15 @@ def test_load_primitive_from_file(primitives_to_install_dir):
 
 def test_errors_more_than_one_primitive_in_file(bad_primitives_files_dir):
     primitive_file = os.path.join(bad_primitives_files_dir, "multiple_primitives.py")
-    error_text = 'More than one primitive defined in file %s' % primitive_file
-    with pytest.raises(RuntimeError, match=error_text):
+    error_text = "More than one primitive defined in file {}".format(primitive_file)
+    with pytest.raises(RuntimeError) as excinfo:
         load_primitive_from_file(primitive_file)
+    assert str(excinfo.value) == error_text
 
 
 def test_errors_no_primitive_in_file(bad_primitives_files_dir):
     primitive_file = os.path.join(bad_primitives_files_dir, "no_primitives.py")
-    error_text = 'No primitive defined in file %s' % primitive_file
-    with pytest.raises(RuntimeError, match=error_text):
+    error_text = "No primitive defined in file {}".format(primitive_file)
+    with pytest.raises(RuntimeError) as excinfo:
         load_primitive_from_file(primitive_file)
+    assert str(excinfo.value) == error_text

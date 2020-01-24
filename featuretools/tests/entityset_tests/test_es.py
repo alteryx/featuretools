@@ -1,16 +1,30 @@
-# -*- coding: utf-8 -*-
-
 import copy
-from builtins import range
 from datetime import datetime
 
-import numpy as np
 import pandas as pd
 import pytest
 
 import featuretools as ft
 from featuretools import variable_types
-from featuretools.entityset import EntitySet, Relationship
+from featuretools.entityset import (
+    EntitySet,
+    Relationship,
+    deserialize,
+    serialize
+)
+from featuretools.entityset.serialize import SCHEMA_VERSION
+
+
+def test_normalize_time_index_as_additional_variable(es):
+    error_text = "Not moving signup_date as it is the base time index variable."
+    with pytest.raises(ValueError, match=error_text):
+        assert "signup_date" in es["customers"].df.columns
+        es.normalize_entity(base_entity_id='customers',
+                            new_entity_id='cancellations',
+                            index='cancel_reason',
+                            make_time_index='signup_date',
+                            additional_variables=['signup_date'],
+                            copy_variables=[])
 
 
 def test_operations_invalidate_metadata(es):
@@ -114,12 +128,7 @@ def test_query_by_id_with_time(es):
         instance_vals=[0, 1, 2, 3, 4],
         time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
 
-    assert df['id'].get_values().tolist() == [0, 1, 2]
-
-
-def test_get_forward_entities_deep(es):
-    entities = es.get_forward_entities('log', 'deep')
-    assert entities == set(['sessions', 'customers', 'products', u'régions', 'cohorts'])
+    assert df['id'].tolist() == [0, 1, 2]
 
 
 def test_query_by_variable_with_time(es):
@@ -129,8 +138,8 @@ def test_query_by_variable_with_time(es):
 
     true_values = [
         i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
-    assert df['id'].get_values().tolist() == list(range(10))
-    assert df['value'].get_values().tolist() == true_values
+    assert df['id'].tolist() == list(range(10))
+    assert df['value'].tolist() == true_values
 
 
 def test_query_by_variable_with_training_window(es):
@@ -139,8 +148,8 @@ def test_query_by_variable_with_training_window(es):
         time_last=datetime(2011, 4, 9, 10, 50, 0),
         training_window='15m')
 
-    assert df['id'].get_values().tolist() == [9]
-    assert df['value'].get_values().tolist() == [0]
+    assert df['id'].tolist() == [9]
+    assert df['value'].tolist() == [0]
 
 
 def test_query_by_indexed_variable(es):
@@ -148,7 +157,7 @@ def test_query_by_indexed_variable(es):
         instance_vals=['taco clock'],
         variable_id='product_id')
 
-    assert df['id'].get_values().tolist() == [15, 16]
+    assert df['id'].tolist() == [15, 16]
 
 
 def test_check_variables_and_dataframe():
@@ -389,12 +398,11 @@ def test_nonstr_column_names():
     df = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 3: ['a', 'b', 'c']})
     es = ft.EntitySet(id='Failure')
 
-    error_text = "All column names must be strings.*"
-    with pytest.raises(ValueError, match=error_text) as excinfo:
+    error_text = r"All column names must be strings \(Column 3 is not a string\)"
+    with pytest.raises(ValueError, match=error_text):
         es.entity_from_dataframe(entity_id='str_cols',
                                  dataframe=df,
                                  index='index')
-    assert 'All column names must be strings (Column 3 is not a string)' in str(excinfo)
 
 
 def test_sort_time_id():
@@ -444,6 +452,7 @@ def test_concat_entitysets(es):
     es_1 = copy.deepcopy(es)
     es_2 = copy.deepcopy(es)
 
+    # map of what rows to take from es_1 and es_2 for each entity
     emap = {
         'log': [list(range(10)) + [14, 15, 16], list(range(10, 14)) + [15, 16]],
         'sessions': [[0, 1, 2, 5], [1, 3, 4, 5]],
@@ -480,7 +489,7 @@ def test_concat_entitysets(es):
     assert old_es_1.__eq__(es_1, deep=True)
     assert old_es_2.__eq__(es_2, deep=True)
 
-    assert es_3.__eq__(es, deep=True)
+    assert es_3.__eq__(es)
     for entity in es.entities:
         df = es[entity.id].df.sort_index()
         df_3 = es_3[entity.id].df.sort_index()
@@ -658,151 +667,6 @@ def test_checks_time_type_setting_secondary_time_index(es):
         card_es['transactions'].set_secondary_time_index({'fraud': ['fraud']})
 
 
-def test_related_instances_backward(es):
-    result = es.related_instances(
-        start_entity_id=u'régions', final_entity_id='log',
-        instance_ids=['United States'])
-
-    col = es['log'].df['id'].values
-    assert len(result['id'].values) == len(col)
-    assert set(result['id'].values) == set(col)
-
-    result = es.related_instances(
-        start_entity_id=u'régions', final_entity_id='log',
-        instance_ids=['Mexico'])
-
-    assert len(result['id'].values) == 0
-
-
-def test_related_instances_forward(es):
-    result = es.related_instances(
-        start_entity_id='log', final_entity_id=u'régions',
-        instance_ids=[0, 1])
-
-    assert len(result['id'].values) == 1
-    assert result['id'].values[0] == 'United States'
-
-
-def test_related_instances_mixed_path(es):
-    result = es.related_instances(
-        start_entity_id='customers', final_entity_id='products',
-        instance_ids=[1])
-    related = ["Haribo sugar-free gummy bears", "coke zero"]
-    assert set(related) == set(result['id'].values)
-
-
-def test_related_instances_all(es):
-    # test querying across the entityset
-    result = es.related_instances(
-        start_entity_id='customers', final_entity_id='products',
-        instance_ids=None)
-
-    for p in es['products'].df['id'].values:
-        assert p in result['id'].values
-
-
-def test_related_instances_all_cutoff_time_same_entity(es):
-    # test querying across the entityset
-    result = es.related_instances(
-        start_entity_id='log', final_entity_id='log',
-        instance_ids=None, time_last=pd.Timestamp('2011/04/09 10:30:31'))
-
-    assert result['id'].values.tolist() == list(range(5))
-
-
-def test_get_pandas_slice(es):
-    filter_eids = ['products', u'régions', 'customers']
-    result = es.get_pandas_data_slice(filter_entity_ids=filter_eids,
-                                      index_eid='customers',
-                                      instances=[0])
-
-    # make sure all necessary filter frames are present
-    assert set(result.keys()) == set(filter_eids)
-    assert set(result['products'].keys()), set(['products', 'log'])
-    assert set(result['customers'].keys()) == set(
-        ['customers', 'sessions', 'log'])
-    assert set(result[u'régions'].keys()) == set(
-        [u'régions', 'stores', 'customers', 'sessions', 'log'])
-
-    # make sure different subsets of the log are included in each filtering
-    assert set(result['customers']['log']['id'].values) == set(range(10))
-    assert set(result['products']['log']['id'].values) == set(
-        list(range(10)) + list(range(11, 15)))
-    assert set(result[u'régions']['log']['id'].values) == set(range(17))
-
-
-def test_get_pandas_slice_times(es):
-    # todo these test used to use time first time last. i remvoed and it
-    # still passes,but we should double check this okay
-    filter_eids = ['products', u'régions', 'customers']
-    start = np.datetime64(datetime(2011, 4, 1))
-    end = np.datetime64(datetime(2011, 4, 9, 10, 31, 10))
-    result = es.get_pandas_data_slice(filter_entity_ids=filter_eids,
-                                      index_eid='customers',
-                                      instances=[0],
-                                      time_last=end)
-
-    # make sure no times outside range are included in any frames
-    for eid in filter_eids:
-        for t in result[eid]['log']['datetime'].values:
-            assert t >= start and t < end
-
-        # the instance ids should be the same for all filters
-        for i in range(7):
-            assert i in result[eid]['log']['id'].values
-
-
-def test_get_pandas_slice_times_include(es):
-    # todo these test used to use time first time last. i remvoed and it
-    # still passes,but we should double check this okay
-    filter_eids = ['products', u'régions', 'customers']
-    start = np.datetime64(datetime(2011, 4, 1))
-    end = np.datetime64(datetime(2011, 4, 9, 10, 31, 10))
-    result = es.get_pandas_data_slice(filter_entity_ids=filter_eids,
-                                      index_eid='customers',
-                                      instances=[0],
-                                      time_last=end)
-
-    # make sure no times outside range are included in any frames
-    for eid in filter_eids:
-        for t in result[eid]['log']['datetime'].values:
-            assert t >= start and t <= end
-
-        # the instance ids should be the same for all filters
-        for i in range(7):
-            assert i in result[eid]['log']['id'].values
-
-
-def test_get_pandas_slice_secondary_index(es):
-    filter_eids = ['products', u'régions', 'customers']
-    # this date is before the cancel date of customers 1 and 2
-    end = np.datetime64(datetime(2011, 10, 1))
-    all_instances = [0, 1, 2]
-    result = es.get_pandas_data_slice(filter_entity_ids=filter_eids,
-                                      index_eid='customers',
-                                      instances=all_instances,
-                                      time_last=end)
-
-    # only customer 0 should have values from these columns
-    customers_df = result["customers"]["customers"]
-    for col in ["cancel_date", "cancel_reason"]:
-        nulls = customers_df.iloc[all_instances][col].isnull() == [
-            False, True, True]
-        assert nulls.all(), "Some instance has data it shouldn't for column %s" % col
-
-
-def test_add_link_vars(es):
-    eframes = {e_id: es[e_id].df
-               for e_id in ["log", "sessions", "customers", u"régions"]}
-
-    es._add_multigenerational_link_vars(frames=eframes,
-                                        start_entity_id=u'régions',
-                                        end_entity_id='log')
-
-    assert 'sessions.customer_id' in eframes['log'].columns
-    assert u'sessions.customers.région_id' in eframes['log'].columns
-
-
 def test_normalize_entity(es):
     error_text = "'additional_variables' must be a list, but received type.*"
     with pytest.raises(TypeError, match=error_text):
@@ -826,9 +690,47 @@ def test_normalize_entity(es):
     assert 'device_type' in es['device_types'].df.columns
 
 
+def test_normalize_entity_new_time_index_in_base_entity_error_check(es):
+    error_text = "'make_time_index' must be a variable in the base entity"
+    with pytest.raises(ValueError, match=error_text):
+        es.normalize_entity(base_entity_id='customers',
+                            new_entity_id='cancellations',
+                            index='cancel_reason',
+                            make_time_index="non-existent")
+
+
+def test_normalize_entity_new_time_index_in_variable_list_error_check(es):
+    error_text = "'make_time_index' must be specified in 'additional_variables' or 'copy_variables'"
+    with pytest.raises(ValueError, match=error_text):
+        es.normalize_entity(base_entity_id='customers',
+                            new_entity_id='cancellations',
+                            index='cancel_reason',
+                            make_time_index='cancel_date')
+
+
+def test_normalize_entity_new_time_index_copy_success_check(es):
+    es.normalize_entity(base_entity_id='customers',
+                        new_entity_id='cancellations',
+                        index='cancel_reason',
+                        make_time_index='cancel_date',
+                        additional_variables=[],
+                        copy_variables=['cancel_date'])
+
+
+def test_normalize_entity_new_time_index_additional_success_check(es):
+    es.normalize_entity(base_entity_id='customers',
+                        new_entity_id='cancellations',
+                        index='cancel_reason',
+                        make_time_index='cancel_date',
+                        additional_variables=['cancel_date'],
+                        copy_variables=[])
+
+
 def test_normalize_time_index_from_none(es):
     es['customers'].time_index = None
-    es.normalize_entity('customers', 'birthdays', 'date_of_birth', make_time_index='date_of_birth')
+    es.normalize_entity('customers', 'birthdays', 'age',
+                        make_time_index='date_of_birth',
+                        copy_variables=['date_of_birth'])
     assert es['birthdays'].time_index == 'date_of_birth'
     assert es['birthdays'].df['date_of_birth'].is_monotonic_increasing
 
@@ -902,6 +804,24 @@ def test_normalize_entity_new_time_index(es):
     assert es['values'].df[new_time_index].is_monotonic_increasing
 
 
+def test_normalize_entity_same_index(es):
+    transactions_df = pd.DataFrame({"id": [1, 2, 3],
+                                    "transaction_time": pd.date_range(start="10:00", periods=3, freq="10s"),
+                                    "first_entity_time": [1, 2, 3]})
+    es = ft.EntitySet("example")
+    es.entity_from_dataframe(entity_id="entity",
+                             index="id",
+                             time_index="transaction_time",
+                             dataframe=transactions_df)
+
+    error_text = "'index' must be different from the index column of the base entity"
+    with pytest.raises(ValueError, match=error_text):
+        es.normalize_entity(base_entity_id="entity",
+                            new_entity_id="new_entity",
+                            index="id",
+                            make_time_index=True)
+
+
 def test_secondary_time_index(es):
     es.normalize_entity('log', 'values', 'value',
                         make_time_index=True,
@@ -955,3 +875,141 @@ def test_datetime64_conversion():
     es.entity_from_dataframe(entity_id='test_entity', index='id', dataframe=df)
     vtype_time_index = variable_types.variable.DatetimeTimeIndex
     es['test_entity'].convert_variable_type('time', vtype_time_index)
+
+
+def test_later_schema_version(es):
+    def test_version(major, minor, patch, raises=True):
+        version = '.'.join([str(v) for v in [major, minor, patch]])
+        if raises:
+            warning_text = ('The schema version of the saved entityset'
+                            '(%s) is greater than the latest supported (%s). '
+                            'You may need to upgrade featuretools. Attempting to load entityset ...'
+                            % (version, SCHEMA_VERSION))
+        else:
+            warning_text = None
+
+        _check_schema_version(version, es, warning_text)
+
+    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
+
+    test_version(major + 1, minor, patch)
+    test_version(major, minor + 1, patch)
+    test_version(major, minor, patch + 1)
+    test_version(major, minor - 1, patch + 1, raises=False)
+
+
+def test_earlier_schema_version(es):
+    def test_version(major, minor, patch, raises=True):
+        version = '.'.join([str(v) for v in [major, minor, patch]])
+        if raises:
+            warning_text = ('The schema version of the saved entityset'
+                            '(%s) is no longer supported by this version '
+                            'of featuretools. Attempting to load entityset ...'
+                            % (version))
+        else:
+            warning_text = None
+
+        _check_schema_version(version, es, warning_text)
+
+    major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
+
+    test_version(major - 1, minor, patch)
+    test_version(major, minor - 1, patch, raises=False)
+    test_version(major, minor, patch - 1, raises=False)
+
+
+def _check_schema_version(version, es, warning_text):
+    entities = {entity.id: serialize.entity_to_description(entity) for entity in es.entities}
+    relationships = [relationship.to_dictionary() for relationship in es.relationships]
+    dictionary = {
+        'schema_version': version,
+        'id': es.id,
+        'entities': entities,
+        'relationships': relationships,
+    }
+
+    if warning_text:
+        with pytest.warns(UserWarning) as record:
+            deserialize.description_to_entityset(dictionary)
+        assert record[0].message.args[0] == warning_text
+    else:
+        deserialize.description_to_entityset(dictionary)
+
+
+def test_same_index_values():
+    transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                                    "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s"),
+                                    "first_entity_time": [1, 2, 3, 5, 6, 6]})
+    es = ft.EntitySet("example")
+
+    error_text = "time_index and index cannot be the same value"
+    with pytest.raises(ValueError, match=error_text):
+        es.entity_from_dataframe(entity_id="entity",
+                                 index="id",
+                                 time_index="id",
+                                 dataframe=transactions_df)
+
+    es.entity_from_dataframe(entity_id="entity",
+                             index="id",
+                             time_index="transaction_time",
+                             dataframe=transactions_df)
+
+    with pytest.raises(ValueError, match=error_text):
+        es.normalize_entity(base_entity_id="entity",
+                            new_entity_id="new_entity",
+                            index="first_entity_time",
+                            make_time_index=True)
+
+
+def test_use_time_index():
+    df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                       "transaction_time": pd.date_range(start="10:00", periods=6, freq="10s")})
+    es = ft.EntitySet()
+    error_text = "DatetimeTimeIndex variable transaction_time must be set using time_index parameter"
+    with pytest.raises(ValueError, match=error_text):
+        es.entity_from_dataframe(entity_id="entity",
+                                 index="id",
+                                 variable_types={"transaction_time": variable_types.DatetimeTimeIndex},
+                                 dataframe=df)
+
+    es.entity_from_dataframe(entity_id="entity",
+                             index="id",
+                             time_index="transaction_time",
+                             dataframe=df)
+
+
+def test_normalize_with_datetime_time_index(es):
+    es.normalize_entity(base_entity_id="customers",
+                        new_entity_id="cancel_reason",
+                        index="cancel_reason",
+                        make_time_index=False,
+                        copy_variables=['signup_date', 'upgrade_date'])
+
+    vtypes = es['cancel_reason'].variable_types
+    assert vtypes['signup_date'] == variable_types.Datetime
+    assert vtypes['upgrade_date'] == variable_types.Datetime
+
+
+def test_normalize_with_numeric_time_index(int_es):
+    int_es.normalize_entity(base_entity_id="customers",
+                            new_entity_id="cancel_reason",
+                            index="cancel_reason",
+                            make_time_index=False,
+                            copy_variables=['signup_date', 'upgrade_date'])
+
+    vtypes = int_es['cancel_reason'].variable_types
+    assert vtypes['signup_date'] == variable_types.Numeric
+    assert vtypes['upgrade_date'] == variable_types.Numeric
+
+
+def test_normalize_with_invalid_time_index(es):
+    es['customers'].convert_variable_type('signup_date', variable_types.Datetime)
+    error_text = "Time index 'signup_date' is not a NumericTimeIndex or DatetimeTimeIndex," \
+        + " but type <class 'featuretools.variable_types.variable.Datetime'>."\
+        + " Use set_time_index on entity 'customers' to set the time_index."
+    with pytest.raises(TypeError, match=error_text):
+        es.normalize_entity(base_entity_id="customers",
+                            new_entity_id="cancel_reason",
+                            index="cancel_reason",
+                            copy_variables=['upgrade_date'])
+    es['customers'].convert_variable_type('signup_date', variable_types.DatetimeTimeIndex)

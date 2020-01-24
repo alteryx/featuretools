@@ -1,18 +1,30 @@
 import json
 
+from featuretools.utils.s3_utils import (
+    get_transport_params,
+    use_smartopen_features
+)
+from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.version import __version__ as ft_version
 
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "3.2.0"
 
 
-def save_features(features, filepath):
-    """Saves the features list as JSON to a specificed filepath.
+def save_features(features, location=None, profile_name=None):
+    """Saves the features list as JSON to a specified filepath/S3 path, writes to an open file, or
+    returns the serialized features as a JSON string. If no file provided, returns a string.
 
     Args:
         features (list[:class:`.FeatureBase`]): List of Feature definitions.
 
-        filepath (str): The location of where to save the features list. This
-            must include the name of the file.
+        location (str or :class:`.FileObject`, optional): The location of where to save
+            the features list which must include the name of the file,
+            or a writeable file handle to write to. If location is None, will return a JSON string
+            of the serialized features.
+            Default: None
+
+        profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
+                                    Set to False to use an anonymous profile.
 
     Note:
         Features saved in one version of Featuretools are not guaranteed to work in another.
@@ -36,12 +48,17 @@ def save_features(features, filepath):
 
             features = [f1, f2, f3]
 
-            filepath = os.path.join('/Home/features/', 'list')
+            filepath = os.path.join('/Home/features/', 'list.json')
             ft.save_features(features, filepath)
+
+            f = open(filepath, 'w')
+            ft.save_features(features, f)
+
+            features_str = ft.save_features(features)
     .. seealso::
         :func:`.load_features`
     """
-    FeaturesSerializer(features).save(filepath)
+    return FeaturesSerializer(features).save(location, profile_name=profile_name)
 
 
 class FeaturesSerializer(object):
@@ -61,10 +78,21 @@ class FeaturesSerializer(object):
             'feature_definitions': self._feature_definitions(),
         }
 
-    def save(self, filepath):
+    def save(self, location, profile_name):
         features_dict = self.to_dict()
-        with open(filepath, "w") as f:
-            json.dump(features_dict, f)
+        if location is None:
+            return json.dumps(features_dict)
+        if isinstance(location, str):
+            if _is_url(location):
+                raise ValueError("Writing to URLs is not supported")
+            if _is_s3(location):
+                transport_params = get_transport_params(profile_name)
+                use_smartopen_features(location, features_dict, transport_params, read=False)
+            else:
+                with open(location, "w") as f:
+                    json.dump(features_dict, f)
+        else:
+            json.dump(features_dict, location)
 
     def _feature_definitions(self):
         if not self._features_dict:
