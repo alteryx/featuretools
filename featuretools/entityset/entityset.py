@@ -484,6 +484,12 @@ class EntitySet(object):
                 if variable_type == vtypes.DatetimeTimeIndex:
                     raise ValueError("DatetimeTimeIndex variable %s must be set using time_index parameter" % (variable))
 
+        if len(self.entities) > 0:
+            if not isinstance(dataframe, type(self.entities[0].df)):
+                raise ValueError("All entity dataframes must be of the same type. "
+                                 "Cannot add entity of type {} to an entityset with existing entities "
+                                 "of type {}".format(type(dataframe), type(self.entities[0].df)))
+
         entity = Entity(
             entity_id,
             dataframe,

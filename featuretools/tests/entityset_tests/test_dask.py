@@ -1,4 +1,5 @@
 import pandas as pd
+import pytest
 from dask import dataframe as dd
 
 import featuretools as ft
@@ -67,15 +68,44 @@ def test_aggregation(es, dask_es):
 
 
 def test_create_entity_from_dask_df(es):
+    dask_es = EntitySet(id="dask_es")
     log_dask = dd.from_pandas(es["log"].df, npartitions=2)
-    es = es.entity_from_dataframe(
+    dask_es = dask_es.entity_from_dataframe(
         entity_id="log_dask",
         dataframe=log_dask,
         index="id",
         time_index="datetime",
         variable_types=es["log"].variable_types
     )
-    pd.testing.assert_frame_equal(es["log"].df, es["log_dask"].df.compute(), check_like=True)
+    pd.testing.assert_frame_equal(es["log"].df, dask_es["log_dask"].df.compute(), check_like=True)
+
+
+def test_create_entityset_with_mixed_dataframe_types(es, dask_es):
+    df = pd.DataFrame({"id": [0, 1, 2, 3],
+                       "values": [1, 12, -34, 27]})
+    dask_df = dd.from_pandas(df, npartitions=2)
+
+    # Test error is raised when trying to add Dask entity to entitset with existing pandas entities
+    err_msg = "All entity dataframes must be of the same type. " \
+              "Cannot add entity of type {} to an entityset with existing entities " \
+              "of type {}".format(type(dask_df), type(es.entities[0].df))
+
+    with pytest.raises(ValueError, match=err_msg):
+        es.entity_from_dataframe(
+            entity_id="new_entity",
+            dataframe=dask_df,
+            index="id")
+
+    # Test error is raised when trying to add pandas entity to entitset with existing dask entities
+    err_msg = "All entity dataframes must be of the same type. " \
+              "Cannot add entity of type {} to an entityset with existing entities " \
+              "of type {}".format(type(df), type(dask_es.entities[0].df))
+
+    with pytest.raises(ValueError, match=err_msg):
+        dask_es.entity_from_dataframe(
+            entity_id="new_entity",
+            dataframe=df,
+            index="id")
 
 
 def test_single_table_dask_entityset():
