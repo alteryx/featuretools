@@ -18,6 +18,7 @@ def test_transform(es, dask_es):
 
     # Run DFS using each entity as a target and confirm results match
     for entity in es.entities:
+        print(entity)
         fm, _ = ft.dfs(entityset=es,
                        target_entity=entity.id,
                        trans_primitives=trans_primitives,
@@ -308,10 +309,8 @@ def test_single_table_dask_entityset_cutoff_time_df():
                    trans_primitives=primitives_list,
                    cutoff_time=cutoff_times)
 
-    # Use the same columns and make sure both are sorted on index values
-    # This test may fail sometimes because there are multiple entries for `id = 0`
-    # and they may not always be sorted the same
-    assert fm.sort_index().equals(dask_fm.set_index('id')[fm.columns].compute())
+    # Use the same columns and make sure both have the same index values
+    pd.testing.assert_frame_equal(fm.reset_index(drop=True), dask_fm.compute().reset_index(drop=True)[fm.columns])
 
 
 def test_single_table_dask_entityset_dates_not_sorted():
@@ -348,6 +347,32 @@ def test_single_table_dask_entityset_dates_not_sorted():
 
     # Use the same columns and make sure both are sorted on index values
     assert fm.sort_index().equals(dask_fm.set_index('id')[fm.columns].compute())
+
+
+def test_training_window_parameter(mock_customer_es, mock_customer_dask_es):
+    entity = "customers"
+    cutoff_times = pd.DataFrame()
+    cutoff_times['customer_id'] = [1, 2, 3, 1]
+    cutoff_times['time'] = pd.to_datetime(['2014-1-1 04:00',
+                                           '2014-1-1 05:00',
+                                           '2014-1-1 06:00',
+                                           '2014-1-1 08:00'])
+    cutoff_times['label'] = [True, True, False, True]
+
+    cutoff_times_dask = dd.from_pandas(cutoff_times, npartitions=mock_customer_dask_es[entity].df.npartitions)
+
+    dask_fm, _ = ft.dfs(entityset=mock_customer_dask_es,
+                        target_entity=entity,
+                        cutoff_time=cutoff_times_dask,
+                        training_window="2 hour")
+
+    fm, _ = ft.dfs(entityset=mock_customer_es,
+                   target_entity=entity,
+                   cutoff_time=cutoff_times,
+                   training_window="2 hour")
+
+    # Use the same columns and make sure both have the same index values
+    pd.testing.assert_frame_equal(fm.reset_index(drop=True), dask_fm.compute().reset_index(drop=True)[fm.columns])
 
 
 def test_build_es_from_scratch_and_run_dfs():
