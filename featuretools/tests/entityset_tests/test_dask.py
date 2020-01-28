@@ -18,7 +18,6 @@ def test_transform(es, dask_es):
 
     # Run DFS using each entity as a target and confirm results match
     for entity in es.entities:
-        print(entity)
         fm, _ = ft.dfs(entityset=es,
                        target_entity=entity.id,
                        trans_primitives=trans_primitives,
@@ -143,8 +142,9 @@ def test_single_table_dask_entityset():
                    target_entity="data",
                    trans_primitives=primitives_list)
 
-    # Use the same columns and make sure both are sorted on index values
-    assert fm.sort_index().equals(dask_fm.set_index('id')[fm.columns].compute())
+    # Use the same columns and make sure both indexes are sorted the same
+    dask_computed_fm = dask_fm.compute().set_index('id').loc[fm.index][fm.columns]
+    pd.testing.assert_frame_equal(fm, dask_computed_fm)
 
 
 def test_single_table_dask_entityset_ids_not_sorted():
@@ -181,8 +181,8 @@ def test_single_table_dask_entityset_ids_not_sorted():
                    target_entity="data",
                    trans_primitives=primitives_list)
 
-    # Use the same columns and make sure both are sorted on index values
-    assert fm.sort_index().equals(dask_fm.set_index('id')[fm.columns].compute())
+    # Make sure both indexes are sorted the same
+    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('id').loc[fm.index])
 
 
 def test_single_table_dask_entityset_with_instance_ids():
@@ -223,8 +223,8 @@ def test_single_table_dask_entityset_with_instance_ids():
                    trans_primitives=primitives_list,
                    instance_ids=instance_ids)
 
-    # Use the same columns and make sure both are sorted on index values
-    assert fm.sort_index().equals(dask_fm.set_index('id')[fm.columns].compute())
+    # Make sure both indexes are sorted the same
+    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('id').loc[fm.index])
 
 
 def test_single_table_dask_entityset_single_cutoff_time():
@@ -263,8 +263,8 @@ def test_single_table_dask_entityset_single_cutoff_time():
                    trans_primitives=primitives_list,
                    cutoff_time=pd.Timestamp("2019-01-05 04:00"))
 
-    # Use the same columns and make sure both are sorted on index values
-    assert fm.sort_index().equals(dask_fm.set_index('id')[fm.columns].compute())
+    # Make sure both indexes are sorted the same
+    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('id').loc[fm.index])
 
 
 def test_single_table_dask_entityset_cutoff_time_df():
@@ -309,8 +309,7 @@ def test_single_table_dask_entityset_cutoff_time_df():
                    trans_primitives=primitives_list,
                    cutoff_time=cutoff_times)
 
-    # Use the same columns and make sure both have the same index values
-    pd.testing.assert_frame_equal(fm.reset_index(drop=True), dask_fm.compute().reset_index(drop=True)[fm.columns])
+    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('id'))
 
 
 def test_single_table_dask_entityset_dates_not_sorted():
@@ -345,8 +344,7 @@ def test_single_table_dask_entityset_dates_not_sorted():
                    trans_primitives=primitives_list,
                    max_depth=1)
 
-    # Use the same columns and make sure both are sorted on index values
-    assert fm.sort_index().equals(dask_fm.set_index('id')[fm.columns].compute())
+    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('id').loc[fm.index])
 
 
 def test_training_window_parameter(mock_customer_es, mock_customer_dask_es):
@@ -371,8 +369,7 @@ def test_training_window_parameter(mock_customer_es, mock_customer_dask_es):
                    cutoff_time=cutoff_times,
                    training_window="2 hour")
 
-    # Use the same columns and make sure both have the same index values
-    pd.testing.assert_frame_equal(fm.reset_index(drop=True), dask_fm.compute().reset_index(drop=True)[fm.columns])
+    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('customer_id'))
 
 
 def test_build_es_from_scratch_and_run_dfs():
@@ -432,5 +429,5 @@ def test_build_es_from_scratch_and_run_dfs():
                         agg_primitives=agg_primitives,
                         max_depth=2)
 
-    # Use the same columns and make sure both are sorted on index values
-    assert fm.sort_index().equals(dask_fm.set_index('customer_id')[fm.columns].compute())
+    # Use the same columns and make sure both have same index sorting
+    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('customer_id')[fm.columns])
