@@ -63,7 +63,7 @@ def test_calc_feature_matrix(es):
                                               verbose=True)
 
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()
-
+    
     error_text = 'features must be a non-empty list of features'
     with pytest.raises(AssertionError, match=error_text):
         feature_matrix = calculate_feature_matrix('features', es, cutoff_time=cutoff_time)
@@ -168,7 +168,7 @@ def test_cfm_no_cutoff_time_index(es):
                                               cutoff_time_in_index=False,
                                               approximate=Timedelta(12, 's'),
                                               cutoff_time=cutoff_time)
-    assert feature_matrix.index.name == 'instance_id'
+    assert feature_matrix.index.name == 'id'
     assert feature_matrix.index.values.tolist() == [0, 2]
     assert feature_matrix[dfeat.get_name()].tolist() == [10, 10]
     assert feature_matrix[agg_feat.get_name()].tolist() == [5, 1]
@@ -182,7 +182,7 @@ def test_cfm_no_cutoff_time_index(es):
                                                 cutoff_time_in_index=False,
                                                 approximate=Timedelta(10, 's'),
                                                 cutoff_time=cutoff_time)
-    assert feature_matrix_2.index.name == 'instance_id'
+    assert feature_matrix_2.index.name == 'id'
     assert feature_matrix_2.index.tolist() == [0, 2]
     assert feature_matrix_2[dfeat.get_name()].tolist() == [7, 10]
     assert feature_matrix_2[agg_feat.get_name()].tolist() == [5, 1]
