@@ -436,9 +436,8 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
             feature_matrix.append(_feature_matrix)
 
-    if isinstance(feature_matrix[0], dd.core.DataFrame):
+    if any(isinstance(fm, dd.core.DataFrame) for fm in feature_matrix):
         feature_matrix = dd.concat(feature_matrix)
-        # feature_matrix = feature_matrix.set_index(id_name)
     else:
         feature_matrix = pd.concat(feature_matrix)
 
@@ -503,14 +502,16 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
 
         cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids[columns_we_want]
         cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids.drop_duplicates()
-        cutoffs_with_approx_e_ids.dropna(subset=[new_approx_entity_index_var],
-                                         inplace=True)
+        cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids.dropna(subset=[new_approx_entity_index_var])
 
         approx_features = [feature_set.features_by_name[name]
                            for name in approx_feature_names]
         if len(cutoffs_with_approx_e_ids) == 0:
             approx_fm = gen_empty_approx_features_df(approx_features)
         else:
+            if isinstance(cutoffs_with_approx_e_ids, dd.DataFrame):
+                # TODO: Eliminate this .compute() call. Dask dfs don't implement .sort_values()
+                cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids.compute()
             cutoffs_with_approx_e_ids.sort_values([cutoff_df_time_var,
                                                    new_approx_entity_index_var], inplace=True)
             # CFM assumes specific column names for cutoff_time argument
@@ -658,9 +659,9 @@ def _add_approx_entity_index_var(es, target_entity_id, cutoffs, path):
         new_var_name = '%s.%s' % (last_child_var, relationship.child_variable.id)
         to_rename = {relationship.child_variable.id: new_var_name}
         child_df = child_df.rename(columns=to_rename)
-        cutoffs = cutoffs.merge(child_df,
-                                left_on=last_child_var,
-                                right_on=last_parent_var)
+        cutoffs = child_df.merge(cutoffs,
+                                 left_on=last_parent_var,
+                                 right_on=last_child_var)
 
         # These will be used in the next iteration.
         last_child_var = new_var_name

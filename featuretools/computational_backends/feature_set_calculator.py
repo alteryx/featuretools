@@ -116,7 +116,11 @@ class FeatureSetCalculator(object):
         df = df_trie.value
 
         if len(df) == 0:
-            return self.generate_default_df(instance_ids=instance_ids)
+            default_df = self.generate_default_df(instance_ids=instance_ids)
+            if isinstance(df, dd.core.DataFrame):
+                cols = [col for col in default_df.columns] + [default_df.index.name]
+                return dd.from_pandas(default_df.reset_index(), npartitions=1)[cols]
+            return default_df
 
         # fill in empty rows with default values
         if isinstance(df, dd.core.DataFrame):
@@ -127,7 +131,8 @@ class FeatureSetCalculator(object):
         if missing_ids:
             default_df = self.generate_default_df(instance_ids=missing_ids,
                                                   extra_columns=df.columns)
-            df = df.append(default_df, sort=True)
+            sorted_cols = sorted(default_df.columns)
+            df = df[sorted_cols].append(default_df[sorted_cols])
 
         if isinstance(df, pd.DataFrame):
             df.index.name = self.entityset[self.feature_set.target_eid].index

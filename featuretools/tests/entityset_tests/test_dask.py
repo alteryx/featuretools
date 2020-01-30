@@ -372,6 +372,31 @@ def test_training_window_parameter(mock_customer_es, mock_customer_dask_es):
     pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('customer_id'))
 
 
+# def test_approximate_parameter(mock_customer_es, mock_customer_dask_es):
+#     entity = "transactions"
+#     cutoff_times = pd.DataFrame()
+#     cutoff_times['transaction_id'] = [1, 2, 3, 1]
+#     cutoff_times['time'] = pd.to_datetime(['2014-1-1 04:00',
+#                                            '2014-1-1 05:00',
+#                                            '2014-1-1 06:00',
+#                                            '2014-1-1 08:00'])
+#     cutoff_times['label'] = [True, True, False, True]
+
+#     cutoff_times_dask = dd.from_pandas(cutoff_times, npartitions=mock_customer_dask_es[entity].df.npartitions)
+
+#     dask_fm, _ = ft.dfs(entityset=mock_customer_dask_es,
+#                         target_entity=entity,
+#                         cutoff_time=cutoff_times_dask,
+#                         approximate="1 day")
+
+#     fm, _ = ft.dfs(entityset=mock_customer_es,
+#                    target_entity=entity,
+#                    cutoff_time=cutoff_times,
+#                    approximate="1 day")
+
+#     pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('transaction_id'))
+
+
 def test_build_es_from_scratch_and_run_dfs():
     es = ft.demo.load_mock_customer(return_entityset=True)
     data = ft.demo.load_mock_customer()
