@@ -446,6 +446,77 @@ def test_training_window_parameter(mock_customer_es, mock_customer_dask_es):
 
 #     pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('transaction_id'))
 
+def test_secondary_time_index():
+    log_df = pd.DataFrame()
+    log_df['id'] = [0, 1, 2, 3]
+    log_df['scheduled_time'] = pd.to_datetime([
+        "2019-01-01",
+        "2019-01-01",
+        "2019-01-01",
+        "2019-01-01"
+    ])
+    log_df['departure_time'] = pd.to_datetime([
+        "2019-02-01 09:00",
+        "2019-02-06 10:00",
+        "2019-02-12 10:00",
+        "2019-03-01 11:30"])
+    log_df['arrival_time'] = pd.to_datetime([
+        "2019-02-01 11:23",
+        "2019-02-06 12:45",
+        "2019-02-12 13:53",
+        "2019-03-01 14:07"
+    ])
+    log_df['delay'] = [-2, 10, 60, 0]
+    log_df['flight_id'] = [0, 1, 0, 1]
+    log_dask = dd.from_pandas(log_df, npartitions=2)
+
+    flights_df = pd.DataFrame()
+    flights_df['id'] = [0, 1, 2, 3]
+    flights_df['origin'] = ["BOS", "LAX", "BOS", "LAX"]
+    flights_dask = dd.from_pandas(flights_df, npartitions=2)
+
+    es = ft.EntitySet("flights")
+    dask_es = ft.EntitySet("flights_dask")
+
+    es.entity_from_dataframe(entity_id='logs',
+                             dataframe=log_df,
+                             index="id",
+                             time_index="scheduled_time",
+                             secondary_time_index={
+                                 'arrival_time': ['departure_time', 'delay']})
+    dask_es.entity_from_dataframe(entity_id='logs',
+                                  dataframe=log_dask,
+                                  index="id",
+                                  time_index="scheduled_time",
+                                  secondary_time_index={
+                                      'arrival_time': ['departure_time', 'delay']})
+    es.entity_from_dataframe('flights', flights_df, index="id")
+    dask_es.entity_from_dataframe('flights', flights_dask, index="id")
+
+    new_rel = ft.Relationship(es['flights']['id'], es['logs']['flight_id'])
+    dask_rel = ft.Relationship(dask_es['flights']['id'], dask_es['logs']['flight_id'])
+    es.add_relationship(new_rel)
+    dask_es.add_relationship(dask_rel)
+
+    cutoff_df = pd.DataFrame()
+    cutoff_df['id'] = [0, 1, 1]
+    cutoff_df['time'] = pd.to_datetime(['2019-02-02', '2019-02-02', '2019-02-20'])
+
+    fm, _ = ft.dfs(entityset=es,
+                   target_entity="logs",
+                   cutoff_time=cutoff_df,
+                   agg_primitives=["max"],
+                   trans_primitives=["month"])
+
+    dask_fm, _ = ft.dfs(entityset=dask_es,
+                        target_entity="logs",
+                        cutoff_time=cutoff_df,
+                        agg_primitives=["max"],
+                        trans_primitives=["month"])
+
+    # Make sure both matrixes are sorted the same
+    pd.testing.assert_frame_equal(fm.sort_values('delay'), dask_fm.compute().set_index('id').sort_values('delay'))
+
 
 def test_build_es_from_scratch_and_run_dfs():
     es = ft.demo.load_mock_customer(return_entityset=True)
