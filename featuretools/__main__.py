@@ -1,6 +1,7 @@
 import click
 import pandas as pd
 import pkg_resources
+from packaging import version
 
 import featuretools
 from featuretools.utils.cli_utils import print_info
@@ -18,8 +19,12 @@ def info():
 
 @click.command(name='list-primitives')
 def list_primitives():
-    with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.max_colwidth', None, 'display.width', 1000):
-        print(featuretools.list_primitives())
+    if version.parse(pd.__version__) < version.parse('1.0.0rc0'):
+        with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.max_colwidth', -1, 'display.width', 1000):
+            print(featuretools.list_primitives())
+    else:
+        with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.max_colwidth', None, 'display.width', 1000):
+            print(featuretools.list_primitives())
 
 
 cli.add_command(list_primitives)
