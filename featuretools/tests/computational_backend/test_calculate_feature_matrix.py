@@ -63,7 +63,7 @@ def test_calc_feature_matrix(es):
                                               verbose=True)
 
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()
-    
+
     error_text = 'features must be a non-empty list of features'
     with pytest.raises(AssertionError, match=error_text):
         feature_matrix = calculate_feature_matrix('features', es, cutoff_time=cutoff_time)

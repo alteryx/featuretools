@@ -6,5 +6,6 @@ pyyaml>=3.12
 cloudpickle>=0.4.0
 distributed>=1.24.2
 dask[dataframe]>=1.1.0
+packaging>=14.1
 psutil>=5.4.8
 click>=7.0.0
