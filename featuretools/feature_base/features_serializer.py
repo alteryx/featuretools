@@ -1,9 +1,7 @@
 import json
 
-from featuretools.utils.gen_utils import import_or_raise
 from featuretools.utils.s3_utils import (
-    BOTO3_ERR_MSG,
-    use_s3fs_features,
+    get_transport_params,
     use_smartopen_features
 )
 from featuretools.utils.wrangle import _is_s3, _is_url
@@ -85,21 +83,11 @@ class FeaturesSerializer(object):
         if location is None:
             return json.dumps(features_dict)
         if isinstance(location, str):
-            transport_params = {}
             if _is_url(location):
                 raise ValueError("Writing to URLs is not supported")
             if _is_s3(location):
-                boto3 = import_or_raise("boto3", BOTO3_ERR_MSG)
-                session = boto3.Session()
-                if isinstance(profile_name, str):
-                    transport_params = {'session': boto3.Session(profile_name=profile_name)}
-                    use_smartopen_features(location, features_dict, transport_params, read=False)
-                elif profile_name is False:
-                    use_s3fs_features(location, features_dict, read=False)
-                elif session.get_credentials() is not None:
-                    use_smartopen_features(location, features_dict, read=False)
-                else:
-                    use_s3fs_features(location, features_dict, read=False)
+                transport_params = get_transport_params(profile_name)
+                use_smartopen_features(location, features_dict, transport_params, read=False)
             else:
                 with open(location, "w") as f:
                     json.dump(features_dict, f)

@@ -4,12 +4,7 @@ import os
 import tarfile
 import tempfile
 
-from featuretools.utils.gen_utils import import_or_raise
-from featuretools.utils.s3_utils import (
-    BOTO3_ERR_MSG,
-    use_s3fs_es,
-    use_smartopen_es
-)
+from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
 
 FORMATS = ['csv', 'pickle', 'parquet']
@@ -119,24 +114,13 @@ def write_data_description(entityset, path, profile_name=None, **kwargs):
         kwargs (keywords) : Additional keyword arguments to pass as keywords arguments to the underlying serialization method or to specify AWS profile.
     '''
     if _is_s3(path):
-        boto3 = import_or_raise("boto3", BOTO3_ERR_MSG)
-
         with tempfile.TemporaryDirectory() as tmpdir:
             os.makedirs(os.path.join(tmpdir, 'data'))
             dump_data_description(entityset, tmpdir, **kwargs)
             file_path = create_archive(tmpdir)
 
-            transport_params = {}
-            session = boto3.Session()
-            if isinstance(profile_name, str):
-                transport_params = {'session': boto3.Session(profile_name=profile_name)}
-                use_smartopen_es(file_path, path, transport_params, read=False)
-            elif profile_name is False:
-                use_s3fs_es(file_path, path, read=False)
-            elif session.get_credentials() is not None:
-                use_smartopen_es(file_path, path, read=False)
-            else:
-                use_s3fs_es(file_path, path, read=False)
+            transport_params = get_transport_params(profile_name)
+            use_smartopen_es(file_path, path, read=False, transport_params=transport_params)
     elif _is_url(path):
         raise ValueError("Writing to URLs is not supported")
     else:
