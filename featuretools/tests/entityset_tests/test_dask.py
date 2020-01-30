@@ -108,6 +108,56 @@ def test_create_entityset_with_mixed_dataframe_types(es, dask_es):
             index="id")
 
 
+def test_add_last_time_indexes():
+    es = EntitySet(id="es")
+    dask_es = EntitySet(id="dask_es")
+
+    sessions = pd.DataFrame({"id": [0, 1, 2, 3],
+                             "user": [1, 2, 1, 3],
+                             "time": [pd.to_datetime('2019-01-10'),
+                                      pd.to_datetime('2019-02-03'),
+                                      pd.to_datetime('2019-01-01'),
+                                      pd.to_datetime('2017-08-25')],
+                            "strings": ["I am a string",
+                                        "23",
+                                        "abcdef ghijk",
+                                        ""]})
+    sessions_dask = dd.from_pandas(sessions, npartitions=2)
+
+    transactions = pd.DataFrame({"id": [0, 1, 2, 3, 4, 5],
+                                 "session_id": [0, 0, 1, 2, 2, 3],
+                                 "amount": [1.23, 5.24, 123.52, 67.93, 40.34, 50.13],
+                                 "time": [pd.to_datetime('2019-01-10 03:53'),
+                                          pd.to_datetime('2019-01-10 04:12'),
+                                          pd.to_datetime('2019-02-03 10:34'),
+                                          pd.to_datetime('2019-01-01 12:35'),
+                                          pd.to_datetime('2019-01-01 12:49'),
+                                          pd.to_datetime('2017-08-25 04:53')]})
+    transactions_dask = dd.from_pandas(transactions, npartitions=2)
+
+    es.entity_from_dataframe(entity_id="sessions", dataframe=sessions, index="id", time_index="time")
+    dask_es.entity_from_dataframe(entity_id="sessions", dataframe=sessions_dask, index="id", time_index="time")
+
+    es.entity_from_dataframe(entity_id="transactions", dataframe=transactions, index="id", time_index="time")
+    dask_es.entity_from_dataframe(entity_id="transactions", dataframe=transactions_dask, index="id", time_index="time")
+
+    new_rel = Relationship(es["sessions"]["id"],
+                           es["transactions"]["session_id"])
+    dask_rel = Relationship(dask_es["sessions"]["id"],
+                            dask_es["transactions"]["session_id"])
+
+    es = es.add_relationship(new_rel)
+    dask_es = dask_es.add_relationship(dask_rel)
+
+    assert es['sessions'].last_time_index is None
+    assert dask_es['sessions'].last_time_index is None
+
+    es.add_last_time_indexes()
+    dask_es.add_last_time_indexes()
+
+    pd.testing.assert_series_equal(es['sessions'].last_time_index, dask_es['sessions'].last_time_index)
+
+
 def test_single_table_dask_entityset():
     primitives_list = ['cum_sum', 'diff', 'absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
 
