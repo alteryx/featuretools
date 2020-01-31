@@ -255,9 +255,6 @@ workflows:
       - install_ft:
           name: "py37 install featuretools"
       - install_ft:
-          name: "py36 install featuretools"
-          image_tag: "3.6"
-      - install_ft:
             name: "py38 install featuretools"
             image_tag: "3.8"
       - unit_tests:
