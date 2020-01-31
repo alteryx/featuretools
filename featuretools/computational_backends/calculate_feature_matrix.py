@@ -280,7 +280,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                          progress_callback=progress_callback)
 
     # ensure rows are sorted by input order
-    feature_matrix = feature_matrix.reindex(pd.MultiIndex.from_frame(cutoff_time[["instance_id", "time"]], 
+    feature_matrix = feature_matrix.reindex(pd.MultiIndex.from_frame(cutoff_time[["instance_id", "time"]],
                                                                      names=feature_matrix.index.names))
 
     if not cutoff_time_in_index:
