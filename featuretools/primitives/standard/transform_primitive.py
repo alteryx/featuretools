@@ -392,7 +392,9 @@ class TimeSince(TransformPrimitive):
 
     def get_function(self):
         def pd_time_since(array, time):
-            return convert_time_units((time - pd.DatetimeIndex(array)).total_seconds(), self.unit)
+            if isinstance(array, list):
+                array = pd.Series(array)
+            return convert_time_units((time - array).dt.total_seconds(), self.unit)
         return pd_time_since
 
 

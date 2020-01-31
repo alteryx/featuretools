@@ -10,7 +10,7 @@ def test_transform(es, dask_es):
     primitives = ft.list_primitives()
     trans_list = primitives[primitives['type'] == 'transform']['name'].tolist()
     # These primitives currently do not work
-    bad_primitives = ['cum_mean', 'time_since', 'equal', 'not_equal', 'equal_scalar', 'not_equal_scalar']
+    bad_primitives = ['cum_mean', 'equal', 'not_equal', 'equal_scalar', 'not_equal_scalar']
     trans_primitives = [prim for prim in trans_list if prim not in bad_primitives]
     agg_primitives = []
 
