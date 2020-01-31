@@ -2,13 +2,11 @@
 
 Changelog
 ---------
-**Future Release**
+**v0.13.2 Jan 31, 2020**
     * Enhancements
         * Support for Pandas 1.0.0 (:pr:`844`)
-    * Fixes
     * Changes
         * Remove dependency on s3fs library for anonymous downloads from S3 (:pr:`825`)
-    * Documentation Changes
     * Testing Changes
         * Added GitHub Action to automatically run performance tests (:pr:`840`)
 
