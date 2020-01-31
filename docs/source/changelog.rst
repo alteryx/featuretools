@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Support for Pandas 1.0.0 (:pr:`844`)
     * Fixes
     * Changes
         * Remove dependency on s3fs library for anonymous downloads from S3 (:pr:`825`)
