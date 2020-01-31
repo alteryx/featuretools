@@ -1,5 +1,5 @@
 pytest==5.2.0
-pympler==0.5
+pympler==0.8
 pytest-xdist==1.26.1
 pytest-cov==2.6.1
 fastparquet>=0.1.6
