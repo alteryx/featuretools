@@ -1195,3 +1195,27 @@ def test_primitive_options_multiple_inputs(es):
             assert 'datetime' in variables
             if len(variables) == 2:
                 assert 'value' != variables[0]
+
+
+def test_named_variables(es):
+    pass
+
+
+def test_multiple_named_variables(es):
+    pass
+
+
+def test_named_variable_multiple_input(es):
+    pass
+
+
+def test_named_variable_no_linked_variable(es):
+    pass
+
+
+def test_named_variable_no_linked_variable_only_one_input(es):
+    pass
+
+
+def test_named_variable_confused_order(es)
+    pass
