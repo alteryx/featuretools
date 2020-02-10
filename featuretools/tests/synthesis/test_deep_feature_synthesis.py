@@ -38,7 +38,7 @@ from featuretools.primitives import (  # CumMean,
 )
 from featuretools.synthesis import DeepFeatureSynthesis
 from featuretools.tests.testing_utils import feature_with_name
-from featuretools.variable_types import Datetime, Numeric
+from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
 
 def test_makes_agg_features_from_str(es):
@@ -1198,24 +1198,140 @@ def test_primitive_options_multiple_inputs(es):
 
 
 def test_named_variables(es):
-    pass
+    class TestPrimitive(TransformPrimitive):
+        name = "test_primitive"
+        input_types = [(Variable, "linked"), "linked"]
+        return_type = Boolean
+        commutative = True
+
+        def get_function(self):
+            def test_f(v1, v2):
+                return v1 == v2
+            return test_f
+
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[TestPrimitive])
+    features = dfs_obj.build_features()
 
 
 def test_multiple_named_variables(es):
-    pass
+    class TestPrimitive(TransformPrimitive):
+        name = "test_primitive"
+        input_types = [(Variable, "linked1"), (Variable, "linked2"),
+                       "linked1", "linked2"]
+        return_type = Boolean
+        commutative = True
+
+        def get_function(self):
+            def test_f(v1, v2, v3, v4):
+                return (v1 == v2) == (v3 == v4)
+            return test_f
+
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[TestPrimitive])
+    features = dfs_obj.build_features()
 
 
 def test_named_variable_multiple_input(es):
-    pass
+    class TestPrimitive(TransformPrimitive):
+        name = "test_primitive"
+        input_types = [[(Variable, "linked1"), "linked1"],
+                       [(Variable, "linked2"), "linked2"]]
+        return_type = Boolean
+        commutative = True
+
+        def get_function(self):
+            def test_f(v1, v2):
+                return v1 == v2
+            return test_f
+
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[TestPrimitive])
+    features = dfs_obj.build_features()
+
+
+def test_named_variable_across_multiple_input(es):
+    class TestPrimitive(TransformPrimitive):
+        name = "test_primitive"
+        input_types = [[(Variable, "linked1"), "linked1"],
+                       [Variable, "linked1"]]
+        return_type = Boolean
+        commutative = True
+
+        def get_function(self):
+            def test_f(v1, v2):
+                return v1 == v2
+            return test_f
+
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[TestPrimitive])
+    with pytest.raises(TypeError, match="referenced before"):
+        dfs_obj.build_features()
 
 
 def test_named_variable_no_linked_variable(es):
-    pass
+    class TestPrimitive(TransformPrimitive):
+        name = "test_primitive"
+        input_types = [(Variable, "linked1"), Numeric]
+        return_type = Boolean
+        commutative = True
+
+        def get_function(self):
+            def test_f(v1, v2):
+                return v1 == v2
+            return test_f
+
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[TestPrimitive])
+    with pytest.warns(UserWarning):
+        dfs_obj.build_features()
 
 
 def test_named_variable_no_linked_variable_only_one_input(es):
-    pass
+    class TestPrimitive(TransformPrimitive):
+        name = "test_primitive"
+        input_types = [(Variable, "linked1")]
+        return_type = Boolean
+        commutative = True
+
+        def get_function(self):
+            def test_f(v1):
+                return v1 is False
+            return test_f
+
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[TestPrimitive])
+    with pytest.warns(UserWarning):
+        dfs_obj.build_features()
 
 
-def test_named_variable_confused_order(es)
-    pass
+def test_named_variable_confused_order(es):
+    class TestPrimitive(TransformPrimitive):
+        name = "test_primitive"
+        input_types = ["linked", (Variable, "linked")]
+        return_type = Boolean
+        commutative = True
+
+        def get_function(self):
+            def test_f(v1, v2):
+                return v1 == v2
+            return test_f
+
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[TestPrimitive])
+    with pytest.raises(TypeError, match="referenced before"):
+        dfs_obj.build_features()
