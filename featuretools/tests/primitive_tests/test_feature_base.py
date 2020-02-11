@@ -15,7 +15,7 @@ from featuretools.primitives import (
     Sum,
     TransformPrimitive
 )
-from featuretools.variable_types import Categorical, Datetime, Id, Numeric
+from featuretools.variable_types import Boolean, Categorical, Discrete, Datetime, Id, Numeric, Variable
 
 
 def test_copy_features_does_not_copy_entityset(es):
@@ -208,3 +208,133 @@ def test_multi_output_index_error(es):
     error_text = 'index is higher than the number of outputs'
     with pytest.raises(AssertionError, match=error_text):
         three_common[10]
+
+
+def test_named_variables(es):
+    class TestPrimitive(TransformPrimitive):
+        name = "test_primitive"
+        input_types = [(Variable, "linked"), "linked"]
+        return_type = Boolean
+        commutative = True
+
+        def get_function(self):
+            def test_f(v1, v2):
+                return v1 == v2
+            return test_f
+
+    ft.Feature([es['log']['value'], es['log']['value_2']],
+               primitive=TestPrimitive)
+
+    with pytest.raises(AssertionError, match="Provided inputs don't match"):
+        ft.Feature([es['log']['value'], es['log']['datetime']],
+                   primitive=TestPrimitive)
+
+
+def test_multiple_named_variables(es):
+    class TestPrimitive(TransformPrimitive):
+        name = "test_primitive"
+        input_types = [(Variable, "linked1"), (Variable, "linked2"),
+                       "linked1", "linked2"]
+        return_type = Boolean
+        commutative = True
+
+        def get_function(self):
+            def test_f(v1, v2, v3, v4):
+                return (v1 == v2) == (v3 == v4)
+            return test_f
+
+    ft.Feature([es['log']['value'],
+                es['log']['session_id'],
+                es['log']['value_2'],
+                es['log']['product_id']],
+               primitive=TestPrimitive)
+
+
+def test_named_variable_multiple_input(es):
+    class TestPrimitive(TransformPrimitive):
+        name = "test_primitive"
+        input_types = [[(Discrete, "linked1"), "linked1"],
+                       [(Datetime, "linked2"), "linked2"]]
+        return_type = Boolean
+        commutative = True
+
+        def get_function(self):
+            def test_f(v1, v2):
+                return v1 == v2
+            return test_f
+
+    ft.Feature([es['log']['priority_level'], es['log']['countrycode']],
+               primitive=TestPrimitive)
+    ft.Feature([es['customers']['signup_date'], es['customers']['cancel_date']],
+               primitve=TestPrimitive)
+    with pytest.raises(AssertionError, match="Provided inputs don't match"):
+        ft.Feature([es['log']['priority_level'], es['customers']['cancel_date']],
+                   primitive=TestPrimitive)
+
+
+def test_named_variable_across_multiple_input(es):
+    class TestPrimitive(TransformPrimitive):
+        name = "test_primitive"
+        input_types = [[(Discrete, "linked1"), "linked1"],
+                       [Variable, "linked1"]]
+        return_type = Boolean
+        commutative = True
+
+        def get_function(self):
+            def test_f(v1, v2):
+                return v1 == v2
+            return test_f
+
+    with pytest.raises(TypeError, match="referenced before"):
+        ft.Feature([es['log']['value'], es['log']['value_2']],
+                   primitive=TestPrimitive)
+
+
+def test_named_variable_no_linked_variable(es):
+    class TestPrimitive(TransformPrimitive):
+        name = "test_primitive"
+        input_types = [(Variable, "linked1"), Numeric]
+        return_type = Boolean
+        commutative = True
+
+        def get_function(self):
+            def test_f(v1, v2):
+                return v1 == v2
+            return test_f
+
+    with pytest.warns(UserWarning):
+        ft.Feature([es['log']['value'], es['log']['value_2']],
+                   primitive=TestPrimitive)
+
+
+def test_named_variable_no_linked_variable_only_one_input(es):
+    class TestPrimitive(TransformPrimitive):
+        name = "test_primitive"
+        input_types = [(Variable, "linked1")]
+        return_type = Boolean
+        commutative = True
+
+        def get_function(self):
+            def test_f(v1):
+                return v1 is False
+            return test_f
+
+    with pytest.warns(UserWarning):
+        ft.Feature(es['log']['value'], primitive=TestPrimitive)
+
+
+def test_named_variable_confused_order(es):
+    class TestPrimitive(TransformPrimitive):
+        name = "test_primitive"
+        input_types = ["linked", (Variable, "linked")]
+        return_type = Boolean
+        commutative = True
+
+        def get_function(self):
+            def test_f(v1, v2):
+                return v1 == v2
+            return test_f
+
+    with pytest.raises(TypeError, match="referenced before"):
+        ft.Feature([es['log']['value'], es['log']['value_2']],
+                   primitive=TestPrimitive)
