@@ -263,12 +263,15 @@ def test_named_variable_multiple_input(es):
                 return v1 == v2
             return test_f
 
-    ft.Feature([es['log']['priority_level'], es['log']['countrycode']],
+    # Test Discrete linked variable
+    ft.Feature([es['sessions']['device_name'], es['sessions']['device_type']],
                primitive=TestPrimitive)
-    ft.Feature([es['customers']['signup_date'], es['customers']['cancel_date']],
-               primitve=TestPrimitive)
+    # Test Datetime linked variable
+    ft.Feature([es['customers']['cancel_date'], es['customers']['signup_date']],
+               primitive=TestPrimitive)
+    # Test it catches bad linked variables
     with pytest.raises(AssertionError, match="Provided inputs don't match"):
-        ft.Feature([es['log']['priority_level'], es['customers']['cancel_date']],
+        ft.Feature([es['customers']['engagement_level'], es['customers']['cancel_date']],
                    primitive=TestPrimitive)
 
 
@@ -285,7 +288,7 @@ def test_named_variable_across_multiple_input(es):
                 return v1 == v2
             return test_f
 
-    with pytest.raises(TypeError, match="referenced before"):
+    with pytest.raises(TypeError, match="string used before"):
         ft.Feature([es['log']['value'], es['log']['value_2']],
                    primitive=TestPrimitive)
 
@@ -335,6 +338,6 @@ def test_named_variable_confused_order(es):
                 return v1 == v2
             return test_f
 
-    with pytest.raises(TypeError, match="referenced before"):
+    with pytest.raises(TypeError, match="string used before"):
         ft.Feature([es['log']['value'], es['log']['value_2']],
                    primitive=TestPrimitive)
