@@ -310,6 +310,23 @@ def test_named_variable_no_linked_variable(es):
                    primitive=TestPrimitive)
 
 
+def test_named_variable_linked_variable_defined_twice(es):
+    class TestPrimitive(TransformPrimitive):
+        name = "test_primitive"
+        input_types = [(Variable, "linked1"), (Variable, "linked1"), "linked1"]
+        return_type = Boolean
+        commutative = True
+
+        def get_function(self):
+            def test_f(v1, v2, v3):
+                return v1 == v2
+            return test_f
+
+    with pytest.raises(AssertionError, match="linked1 defined twice"):
+        ft.Feature([es['log']['value'], es['log']['value_2']],
+                   primitive=TestPrimitive)
+
+
 def test_named_variable_no_linked_variable_only_one_input(es):
     class TestPrimitive(TransformPrimitive):
         name = "test_primitive"

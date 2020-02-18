@@ -1,3 +1,5 @@
+import warnings
+
 from featuretools import Relationship, Timedelta, primitives
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.primitives.base import (
@@ -150,8 +152,31 @@ class FeatureBase(object):
                 input_types = [input_types]
 
             for t in input_types:
-                zipped = list(zip(t, self.base_features))
-                if all([issubclass(f.variable_type, v) for v, f in zipped]):
+                linked_variables = dict()
+                valid_input = True
+                for vtype, feature in zip(t, self.base_features):
+                    if isinstance(vtype, tuple):
+                        vtype, name = vtype
+                        assert name not in linked_variables, ("Linked variable "
+                            "{} defined twice".format(name))
+                        linked_variables[name] = [feature.variable_type, 0]
+                    elif isinstance(vtype, str):
+                        try:
+                            name = vtype
+                            vtype = linked_variables[vtype][0]
+                            linked_variables[name][1] += 1
+                        except KeyError:
+                            raise TypeError("Linked variable string used before"
+                                            " linked variable is defined")
+                    if not issubclass(feature.variable_type, vtype):
+                        valid_input = False
+                        break
+
+                if valid_input:
+                    for var, (vtype, num_links) in linked_variables.items():
+                        if not num_links:
+                            warnings.warn("Variable {} is defined but has no "
+                                         "linked variables".format(var))
                     return True
         else:
             return True
