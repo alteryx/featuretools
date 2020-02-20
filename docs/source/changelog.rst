@@ -2,6 +2,13 @@
 
 Changelog
 ---------
+**Future Release**
+    * Changes
+        * Added Warnings from Entry Point Plugins (:pr:`850`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`jeff-hernandez`
+
 **v0.13.2 Jan 31, 2020**
     * Enhancements
         * Support for Pandas 1.0.0 (:pr:`844`)
