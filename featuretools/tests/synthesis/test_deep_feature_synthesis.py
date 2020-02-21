@@ -1273,7 +1273,7 @@ def test_named_variable_across_multiple_input(es):
                                    entityset=es,
                                    agg_primitives=[],
                                    trans_primitives=[TestPrimitive])
-    with pytest.raises(TypeError, match="referenced before"):
+    with pytest.raises(TypeError, match="string used before"):
         dfs_obj.build_features()
 
 
@@ -1333,5 +1333,5 @@ def test_named_variable_confused_order(es):
                                    entityset=es,
                                    agg_primitives=[],
                                    trans_primitives=[TestPrimitive])
-    with pytest.raises(TypeError, match="referenced before"):
+    with pytest.raises(TypeError, match="string used before"):
         dfs_obj.build_features()
