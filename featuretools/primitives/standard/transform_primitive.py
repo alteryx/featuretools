@@ -31,7 +31,12 @@ class IsNull(TransformPrimitive):
     return_type = Boolean
 
     def get_function(self):
-        return lambda array: pd.isnull(pd.Series(array))
+        def isnull(array):
+            if isinstance(array, dd.core.Series):
+                return dd.core.Series.isnull(array)
+            else:
+                return pd.isnull(pd.Series(array))
+        return isnull
 
 
 class Absolute(TransformPrimitive):
@@ -416,7 +421,10 @@ class IsIn(TransformPrimitive):
 
     def get_function(self):
         def pd_is_in(array):
-            return pd.Series(array).isin(self.list_of_outputs or [])
+            if isinstance(array, dd.core.Series):
+               return array.isin(self.list_of_outputs or [])
+            else:
+                return pd.Series(array).isin(self.list_of_outputs or [])
         return pd_is_in
 
     def generate_name(self, base_feature_names):

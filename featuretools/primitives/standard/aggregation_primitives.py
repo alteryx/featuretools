@@ -223,7 +223,7 @@ class PercentTrue(AggregationPrimitive):
 
     def get_function(self):
         def percent_true(s):
-            return s.fillna(0).mean()
+            return s[:].fillna(0).mean()
 
         return percent_true
 
