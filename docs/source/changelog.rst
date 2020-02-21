@@ -2,21 +2,31 @@
 
 Changelog
 ---------
-**Future Release**
+**v0.13.2 Jan 31, 2020**
     * Enhancements
+        * Support for Pandas 1.0.0 (:pr:`844`)
+    * Changes
+        * Remove dependency on s3fs library for anonymous downloads from S3 (:pr:`825`)
+    * Testing Changes
+        * Added GitHub Action to automatically run performance tests (:pr:`840`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`frances-h`, :user:`rwedge`
+
+**v0.13.1 Dec 28, 2019**
     * Fixes
         * Raise error when given wrong input for ignore_variables (:pr:`826`)
         * Fix multi-output features not created when there is no child data (:pr:`834`)
         * Removing type casting in Equals and NotEquals primitives (:pr:`504`)
     * Changes
         * Replace pd.timedelta time units that were deprecated (:pr:`822`)
-        * Do not use scikit-learn 0.22 (:pr:`835`, :pr:`837`)
-    * Documentation Changes
+        * Move sklearn wrapper to separate library (:pr:`835`, :pr:`837`)
     * Testing Changes
         * Run unit tests in windows environment (:pr:`790`)
+        * Update boto3 version requirement for tests (:pr:`838`)
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`, :user:`systemshift`, :user:`jeffzi`, :user:`kmax12`
+    :user:`jeffzi`, :user:`kmax12`, :user:`rwedge`, :user:`systemshift`
 
 **v0.13.0 Nov 30, 2019**
     * Enhancements

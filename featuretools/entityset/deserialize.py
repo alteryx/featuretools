@@ -8,12 +8,8 @@ import pandas as pd
 
 from featuretools.entityset.relationship import Relationship
 from featuretools.entityset.serialize import FORMATS
-from featuretools.utils.gen_utils import check_schema_version, import_or_raise
-from featuretools.utils.s3_utils import (
-    BOTO3_ERR_MSG,
-    use_s3fs_es,
-    use_smartopen_es
-)
+from featuretools.utils.gen_utils import check_schema_version
+from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
 from featuretools.variable_types.variable import LatLong, find_variable_types
 
@@ -35,7 +31,7 @@ def description_to_variable(description, entity=None):
     if entity is not None:
         kwargs = {} if is_type_string else description['type']
         variable = variable(description['id'], entity, **kwargs)
-        interesting_values = pd.read_json(description['properties']['interesting_values'])
+        interesting_values = pd.read_json(description['properties']['interesting_values'], typ='series')
         variable.interesting_values = interesting_values
     return variable
 
@@ -190,26 +186,15 @@ def read_entityset(path, profile_name=None, **kwargs):
             kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
     '''
     if _is_url(path) or _is_s3(path):
-        boto3 = import_or_raise("boto3", BOTO3_ERR_MSG)
-
         with tempfile.TemporaryDirectory() as tmpdir:
             file_name = Path(path).name
             file_path = os.path.join(tmpdir, file_name)
-            transport_params = {}
-            session = boto3.Session()
+            transport_params = None
 
-            if _is_url(path):
-                use_smartopen_es(file_path, path)
-            elif isinstance(profile_name, str):
-                transport_params = {'session': boto3.Session(profile_name=profile_name)}
-                use_smartopen_es(file_path, path, transport_params)
-            elif profile_name is False:
-                use_s3fs_es(file_path, path)
-            elif session.get_credentials() is not None:
-                use_smartopen_es(file_path, path)
-            else:
-                use_s3fs_es(file_path, path)
+            if _is_s3(path):
+                transport_params = get_transport_params(profile_name)
 
+            use_smartopen_es(file_path, path, transport_params)
             with tarfile.open(str(file_path)) as tar:
                 tar.extractall(path=tmpdir)
 
