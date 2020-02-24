@@ -448,10 +448,7 @@ class Entity(object):
             unique (bool) : Whether to assert that the index is unique.
         """
         if isinstance(self.df, pd.DataFrame):
-            if self.df[variable_id].dtype.name == 'category':
-                self.df = self.df.set_index(self.df[variable_id].astype(object), drop=False)
-            else:
-                self.df = self.df.set_index(self.df[variable_id], drop=False)
+            self.df = self.df.set_index(self.df[variable_id], drop=False)
             self.df.index.name = None
         if unique:
             if isinstance(self.df.index, dd.core.Index):

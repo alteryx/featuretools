@@ -123,10 +123,7 @@ class FeatureSetCalculator(object):
             return default_df
 
         # fill in empty rows with default values
-        if isinstance(df, dd.core.DataFrame):
-            index_vals = df[target_entity.index].compute().values
-        else:
-            index_vals = df[target_entity.index].values
+        index_vals = df[target_entity.index]
         missing_ids = [i for i in instance_ids if i not in index_vals]
         if missing_ids:
             default_df = self.generate_default_df(instance_ids=missing_ids,
@@ -590,7 +587,7 @@ class FeatureSetCalculator(object):
             # if the use_previous property exists on this feature, include only the
             # instances from the child entity included in that Timedelta
             use_previous = test_feature.use_previous
-            if use_previous and len(base_frame) != 0:
+            if use_previous:
                 # Filter by use_previous values
                 time_last = self.time_last
                 if use_previous.has_no_observations():
@@ -646,14 +643,14 @@ class FeatureSetCalculator(object):
 
             # Apply the non-aggregable functions generate a new dataframe, and merge
             # it with the existing one
+            if isinstance(base_frame, dd.core.DataFrame) and (len(to_apply) or len(to_agg)):
+                base_frame = base_frame.compute()
             if len(to_apply):
                 wrap = agg_wrapper(to_apply, self.time_last)
                 # groupby_var can be both the name of the index and a column,
                 # to silence pandas warning about ambiguity we explicitly pass
                 # the column (in actuality grouping by both index and group would
                 # work)
-                if isinstance(base_frame, dd.core.DataFrame):
-                    base_frame = base_frame.compute()
                 to_merge = base_frame.groupby(base_frame[groupby_var], observed=True, sort=False).apply(wrap)
                 if isinstance(frame, dd.core.DataFrame):
                     child_merge_var = to_merge.index.name
@@ -676,8 +673,6 @@ class FeatureSetCalculator(object):
                 # to silence pandas warning about ambiguity we explicitly pass
                 # the column (in actuality grouping by both index and group would
                 # work)
-                if isinstance(base_frame, dd.core.DataFrame):
-                    base_frame = base_frame.compute()
                 to_merge = base_frame.groupby(base_frame[groupby_var],
                                               observed=True, sort=False).agg(to_agg)
 
