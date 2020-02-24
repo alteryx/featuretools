@@ -2,6 +2,13 @@
 
 Changelog
 ---------
+**Future Release**
+    * Changes
+        * Pin msgpack dependency for Python 3.5; remove dataframe from Dask dependency (:pr:`851`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`frances-h`
+
 **v0.13.2 Jan 31, 2020**
     * Enhancements
         * Support for Pandas 1.0.0 (:pr:`844`)
