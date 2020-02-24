@@ -406,7 +406,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                 _feature_matrix.sort_index(level=1, kind='mergesort', inplace=True)
             else:
                 # all rows have same cutoff time. set time and add passed columns
-                num_rows = len(_feature_matrix)
+                num_rows = len(ids)
                 if isinstance(_feature_matrix, pd.DataFrame):
                     time_index = pd.Index([time_last] * num_rows, name='time')
                     _feature_matrix = _feature_matrix.set_index(time_index, append=True)

@@ -115,7 +115,7 @@ class FeatureSetCalculator(object):
         # df_trie.
         df = df_trie.value
 
-        if len(df) == 0:
+        if len(df.columns) == 0:
             default_df = self.generate_default_df(instance_ids=instance_ids)
             if isinstance(df, dd.core.DataFrame):
                 cols = [col for col in default_df.columns] + [default_df.index.name]
@@ -143,7 +143,6 @@ class FeatureSetCalculator(object):
 
         if isinstance(df, dd.core.DataFrame):
             unique_instance_ids = unique_instance_ids.astype(object)
-            # df = df.loc[unique_instance_ids]
         else:
             # pd.unique changes the dtype for Categorical, so reset it.
             unique_instance_ids = unique_instance_ids.astype(instance_ids.dtype)

@@ -27,12 +27,20 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
     if len(list(secondary_time_index.keys())):
         vids_to_assume_datetime.append(list(secondary_time_index.keys())[0])
     inferred_type = vtypes.Unknown
+    df_len = len(df)
+    if df_len:
+        sample_df = df.sample(frac=min(10000 / len(df), 1))
+        if isinstance(df, dd.core.DataFrame):
+            sample_df = sample_df.compute()
+    else:
+        sample_df = df
+
     for variable in df.columns:
         if variable in variable_types:
             continue
 
         elif variable in vids_to_assume_datetime:
-            if col_is_datetime(df[variable]):
+            if col_is_datetime(sample_df[variable]):
                 inferred_type = vtypes.Datetime
             else:
                 inferred_type = vtypes.Numeric
@@ -41,17 +49,15 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
             inferred_type = vtypes.Categorical
 
         elif df[variable].dtype == "object":
-            if not len(df[variable]):
+            if not df_len:
                 inferred_type = vtypes.Categorical
-            elif col_is_datetime(df[variable]):
+            elif col_is_datetime(sample_df[variable]):
                 inferred_type = vtypes.Datetime
             else:
                 inferred_type = vtypes.Categorical
 
                 # heuristics to predict this some other than categorical
-                sample = df[variable].sample(frac=min(10000 / len(df[variable]), 1))
-                if isinstance(sample, dd.core.Series):
-                    sample = sample.compute()
+                sample = sample_df[variable]
 
                 # catch cases where object dtype cannot be interpreted as a string
                 try:
@@ -70,10 +76,10 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
         elif pdtypes.is_numeric_dtype(df[variable].dtype):
             inferred_type = vtypes.Numeric
 
-        elif col_is_datetime(df[variable]):
+        elif col_is_datetime(sample_df[variable]):
             inferred_type = vtypes.Datetime
 
-        elif len(df[variable]):
+        elif df_len:
             sample = df[variable] \
                 .sample(min(10000, df[variable].nunique(dropna=False)))
 

@@ -60,6 +60,9 @@ class Entity(object):
                 dataframe, and create a new column of that name using integers the (0, len(dataframe)).
                 Otherwise, assume index exists in dataframe.
         """
+        # If Dask df, persist for improved downstream performance
+        if isinstance(df, dd.core.DataFrame):
+            df = df.persist()
         _validate_entity_params(id, df, time_index)
         created_index, index, df = _create_index(index, make_index, df)
 
