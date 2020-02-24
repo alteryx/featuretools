@@ -123,7 +123,10 @@ class FeatureSetCalculator(object):
             return default_df
 
         # fill in empty rows with default values
-        index_vals = df[target_entity.index]
+        if isinstance(df, dd.core.DataFrame):
+            index_vals = df[target_entity.index].compute().values
+        else:
+            index_vals = df[target_entity.index].values
         missing_ids = [i for i in instance_ids if i not in index_vals]
         if missing_ids:
             default_df = self.generate_default_df(instance_ids=missing_ids,

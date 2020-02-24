@@ -422,7 +422,7 @@ class IsIn(TransformPrimitive):
     def get_function(self):
         def pd_is_in(array):
             if isinstance(array, dd.core.Series):
-               return array.isin(self.list_of_outputs or [])
+                return array.isin(self.list_of_outputs or [])
             else:
                 return pd.Series(array).isin(self.list_of_outputs or [])
         return pd_is_in
