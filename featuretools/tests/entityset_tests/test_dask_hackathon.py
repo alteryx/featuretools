@@ -8,7 +8,7 @@ from featuretools.entityset import EntitySet
 
 
 def test_hackathon_single_table():
-    data_path = os.path.join(os.path.dirname(__file__), "data", "hackathon_users_data.csv")
+    data_path = os.path.join(os.path.dirname(__file__), "hackathon_users_data.csv")
     df = pd.read_csv(data_path)
     es = EntitySet(id='es')
     es.entity_from_dataframe(
