@@ -122,12 +122,14 @@ class FeatureSetCalculator(object):
                 return dd.from_pandas(default_df.reset_index(), npartitions=1)[cols]
             return default_df
 
-        # fill in empty rows with default values
+        # Fill in empty rows with default values. This only works for pandas dataframes
+        # and is not currently supported for Dask dataframes.
         if isinstance(df, dd.core.DataFrame):
-            index_vals = df[target_entity.index].compute().values
+            missing_ids = []
         else:
             index_vals = df[target_entity.index].values
-        missing_ids = [i for i in instance_ids if i not in index_vals]
+            missing_ids = [i for i in instance_ids if i not in index_vals]
+
         if missing_ids:
             default_df = self.generate_default_df(instance_ids=missing_ids,
                                                   extra_columns=df.columns)
