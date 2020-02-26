@@ -1214,6 +1214,9 @@ def test_named_variables(es):
                                    agg_primitives=[],
                                    trans_primitives=[TestPrimitive])
     features = dfs_obj.build_features()
+    assert feature_with_name(features, "TEST_PRIMITIVE(cancel_date, upgrade_date)")
+    # should not be present since one is subclass of other
+    assert not feature_with_name(features, "TEST_PRIMITIVE(cancel_date, date_of_birth)")
 
 
 def test_multiple_named_variables(es):
@@ -1222,7 +1225,6 @@ def test_multiple_named_variables(es):
         input_types = [(Variable, "linked1"), (Variable, "linked2"),
                        "linked1", "linked2"]
         return_type = Boolean
-        commutative = True
 
         def get_function(self):
             def test_f(v1, v2, v3, v4):
@@ -1234,7 +1236,8 @@ def test_multiple_named_variables(es):
                                    agg_primitives=[],
                                    trans_primitives=[TestPrimitive])
     features = dfs_obj.build_features()
-
+    assert feature_with_name(features, "TEST_PRIMITIVE(cancel_date, cohort, upgrade_date, région_id)")
+    # TODO: figure out why this creates 1200 features
 
 def test_named_variable_multiple_input(es):
     class TestPrimitive(TransformPrimitive):
@@ -1254,6 +1257,9 @@ def test_named_variable_multiple_input(es):
                                    agg_primitives=[],
                                    trans_primitives=[TestPrimitive])
     features = dfs_obj.build_features()
+    assert feature_with_name(features, "TEST_PRIMITIVE(cancel_date, upgrade_date)")
+    # should not be present since one is subclass of other
+    assert not feature_with_name(features, "TEST_PRIMITIVE(cancel_date, date_of_birth)")
 
 
 def test_named_variable_across_multiple_input(es):
@@ -1273,6 +1279,7 @@ def test_named_variable_across_multiple_input(es):
                                    entityset=es,
                                    agg_primitives=[],
                                    trans_primitives=[TestPrimitive])
+    # TODO: discuss whether ft should catch this or not
     with pytest.raises(TypeError, match="string used before"):
         dfs_obj.build_features()
 
@@ -1282,7 +1289,6 @@ def test_named_variable_no_linked_variable(es):
         name = "test_primitive"
         input_types = [(Variable, "linked1"), Numeric]
         return_type = Boolean
-        commutative = True
 
         def get_function(self):
             def test_f(v1, v2):
@@ -1293,7 +1299,9 @@ def test_named_variable_no_linked_variable(es):
                                    entityset=es,
                                    agg_primitives=[],
                                    trans_primitives=[TestPrimitive])
-    with pytest.warns(UserWarning):
+
+    msg = " is defined but has no linked variables"
+    with pytest.warns(UserWarning, match=msg):
         dfs_obj.build_features()
 
 
@@ -1302,7 +1310,6 @@ def test_named_variable_no_linked_variable_only_one_input(es):
         name = "test_primitive"
         input_types = [(Variable, "linked1")]
         return_type = Boolean
-        commutative = True
 
         def get_function(self):
             def test_f(v1):
@@ -1313,7 +1320,8 @@ def test_named_variable_no_linked_variable_only_one_input(es):
                                    entityset=es,
                                    agg_primitives=[],
                                    trans_primitives=[TestPrimitive])
-    with pytest.warns(UserWarning):
+    msg = " is defined but has no linked variables"
+    with pytest.warns(UserWarning, match=msg):
         dfs_obj.build_features()
 
 
