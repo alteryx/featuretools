@@ -1,6 +1,6 @@
 [run]
 source = featuretools
-omit = featuretools/tests/plugin_tests/featuretools_plugin/*
+omit = */featuretools_plugin/*
 
 [report]
 exclude_lines =
