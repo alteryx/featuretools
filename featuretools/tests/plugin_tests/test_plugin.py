@@ -3,11 +3,11 @@ import subprocess
 import sys
 
 
-def enter_root_directory():
+def root_directory():
     pwd = os.path.dirname(__file__)
     join = os.path.join(pwd, '..', '..', '..')
     realpath = os.path.realpath(join)
-    os.chdir(realpath)
+    return realpath
 
 
 def import_featuretools():
@@ -15,13 +15,12 @@ def import_featuretools():
 
 
 def install_featuretools():
-    enter_root_directory()
+    os.chdir(root_directory())
     return python('-m', 'pip', 'install', '-e', '.')
 
 
 def install_featuretools_plugin():
-    enter_root_directory()
-    os.chdir('./featuretools_plugin')
+    os.chdir(os.path.join(root_directory(), 'featuretools_plugin'))
     return python('-m', 'pip', 'install', '-e', '.')
 
 
