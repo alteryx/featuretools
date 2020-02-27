@@ -4,10 +4,11 @@ Changelog
 ---------
 **Future Release**
     * Changes
-        * Added Warnings from Entry Point Plugins (:pr:`850`)
+        * Pin msgpack dependency for Python 3.5; remove dataframe from Dask dependency (:pr:`851`)
+        * Added Plugin Warnings at Entry Point (:pr:`850`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`
+    :user:`frances-h`, :user:`jeff-hernandez`
 
 **v0.13.2 Jan 31, 2020**
     * Enhancements
