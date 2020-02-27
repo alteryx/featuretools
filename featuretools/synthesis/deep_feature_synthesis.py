@@ -737,7 +737,7 @@ class DeepFeatureSynthesis(object):
             f = entity_features[feat]
             if (variable_type == variable_types.PandasTypes._all or
                     f.variable_type == variable_type or
-                    any(issubclass(f.variable_type, vt) for vt in variable_type)):
+                    any(issubclass(f.variable_type, vt) for vt in variable_type if not isinstance(vt, str))):
                 if max_depth is None or f.get_depth(stop_at=self.seed_features) <= max_depth:
                     selected_features.append(f)
 
@@ -824,23 +824,39 @@ def check_stacking(primitive, inputs):
     return True
 
 
-def match_by_type(features, t):
+def match_by_type(features, t, strict=False):
     matches = []
     for f in features:
-        if issubclass(f.variable_type, t):
+        if f.variable_type == t or (not strict and issubclass(f.variable_type, t)):
             matches += [f]
     return matches
 
 
 def match(input_types, features, replace=False, commutative=False, require_direct_input=False):
     to_match = input_types[0]
-    matches = match_by_type(features, to_match)
+    name = None
+    strict = False
+    if isinstance(to_match, tuple):
+        to_match, name = to_match
+    # maybe this should happen before match so we can can say which primitive it is
+    elif isinstance(to_match, str):
+        raise TypeError("Linked variable string used before linked variable is defined")
+    elif isinstance(to_match, list):
+        to_match = to_match[0]
+        strict = True
+
+    matches = match_by_type(features, to_match, strict=strict)
 
     if len(input_types) == 1:
         return [(m,) for m in matches
                 if (not require_direct_input or isinstance(m, DirectFeature))]
 
     matching_inputs = set([])
+
+    if name:
+        linked_inputs = [i for i, input_type in enumerate(input_types[1:])
+                         if input_type == name]
+        linked_input_types = {}
 
     for m in matches:
         copy = features[:]
@@ -850,7 +866,17 @@ def match(input_types, features, replace=False, commutative=False, require_direc
 
         # If we need a DirectFeature and this is not a DirectFeature then one of the rest must be.
         still_require_direct_input = require_direct_input and not isinstance(m, DirectFeature)
-        rest = match(input_types[1:], copy, replace,
+
+        more_inputs = input_types[1:]
+        if name:
+            vtype = m.variable_type
+            if vtype not in linked_input_types:
+                for linked_input in linked_inputs:
+                    more_inputs[linked_input] = [vtype]
+                linked_input_types[vtype] = more_inputs
+            more_inputs = linked_input_types[vtype]
+
+        rest = match(more_inputs, copy, replace,
                      require_direct_input=still_require_direct_input)
 
         for r in rest:
