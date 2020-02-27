@@ -2,11 +2,10 @@ import os
 import subprocess
 import sys
 
-PWD = os.path.dirname(__file__)
-
 
 def enter_root_directory():
-    join = os.path.join(PWD, '..', '..', '..')
+    pwd = os.path.dirname(__file__)
+    join = os.path.join(pwd, '..', '..', '..')
     realpath = os.path.realpath(join)
     os.chdir(realpath)
 
@@ -20,8 +19,9 @@ def install_featuretools():
     return python('-m', 'pip', 'install', '-e', '.')
 
 
-def install_plugin():
-    os.chdir(PWD)
+def install_featuretools_plugin():
+    enter_root_directory()
+    os.chdir('./featuretools_plugin')
     return python('-m', 'pip', 'install', '-e', '.')
 
 
@@ -30,15 +30,15 @@ def python(*args):
     return subprocess.run(command, stderr=subprocess.PIPE)
 
 
-def uninstall_plugin():
+def uninstall_featuretools_plugin():
     return python('-m', 'pip', 'uninstall', 'featuretools_plugin', '-y')
 
 
 def test_plugin_warning():
-    install_plugin()
+    install_featuretools_plugin()
     install_featuretools()
-    warning = import_featuretools()
-    warning = warning.stderr.decode()\
-    uninstall_plugin()
+    output = import_featuretools()
+    warning = output.stderr.decode()
+    uninstall_featuretools_plugin()
 
     assert 'Failed to load featuretools plugin from plugin library' in warning
