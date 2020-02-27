@@ -1,41 +1,14 @@
-import os
-import subprocess
-import sys
-
-
-def root_directory():
-    pwd = os.path.dirname(__file__)
-    join = os.path.join(pwd, '..', '..', '..')
-    realpath = os.path.realpath(join)
-    return realpath
-
-
-def import_featuretools():
-    return python('-c', 'import featuretools')
-
-
-def install_featuretools():
-    os.chdir(root_directory())
-    return python('-m', 'pip', 'install', '-e', '.')
-
-
-def install_featuretools_plugin():
-    os.chdir(os.path.join(root_directory(), 'featuretools_plugin'))
-    return python('-m', 'pip', 'install', '-e', '.')
-
-
-def python(*args):
-    command = [sys.executable, *args]
-    return subprocess.run(command, stderr=subprocess.PIPE)
-
-
-def uninstall_featuretools_plugin():
-    return python('-m', 'pip', 'uninstall', 'featuretools_plugin', '-y')
+from featuretools.tests.plugin_tests.utils import (
+    import_featuretools,
+    install_featuretools_plugin,
+    reinstall_pandas,
+    uninstall_featuretools_plugin
+)
 
 
 def test_plugin_warning():
     install_featuretools_plugin()
-    install_featuretools()
+    reinstall_pandas()
     output = import_featuretools()
     warning = output.stderr.decode()
     uninstall_featuretools_plugin()
