@@ -3,11 +3,13 @@
 Changelog
 ---------
 **Future Release**
+    * Fixes
+        * Fix a connection closed error when using n_jobs (:pr:`853`)
     * Changes
         * Pin msgpack dependency for Python 3.5; remove dataframe from Dask dependency (:pr:`851`)
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`
+    :user:`frances-h`, :user:`rwedge`
 
 **v0.13.2 Jan 31, 2020**
     * Enhancements
