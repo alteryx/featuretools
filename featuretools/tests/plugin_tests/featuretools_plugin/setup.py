@@ -6,7 +6,7 @@ setup(
     install_requires=['pandas<0.24.0,>=0.23.0'],
     entry_points={
         'featuretools_plugin': [
-            'plugin = featuretools_plugin',
+            'module = featuretools_plugin',
         ],
     },
 )

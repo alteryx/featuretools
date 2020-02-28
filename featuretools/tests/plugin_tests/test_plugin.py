@@ -11,4 +11,4 @@ def test_plugin_warning():
     warning = output.stderr.decode()
     uninstall_featuretools_plugin()
 
-    assert 'Failed to load featuretools plugin from plugin library' in warning
+    assert 'Featuretools failed to load plugin module from library featuretools_plugin' in warning

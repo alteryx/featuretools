@@ -31,4 +31,6 @@ for entry_point in pkg_resources.iter_entry_points('featuretools_plugin'):
     try:
         sys.modules["featuretools." + entry_point.name] = entry_point.load()
     except Exception:
-        warnings.warn("Failed to load featuretools plugin from %s library" % entry_point.name)
+        message = "Featuretools failed to load plugin {} from library {}"
+        message = message.format(entry_point.name, entry_point.module_name)
+        warnings.warn(message)
