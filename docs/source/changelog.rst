@@ -2,7 +2,7 @@
 
 Changelog
 ---------
-**Future Release**
+**v0.13.3 Feb 28, 2020**
     * Fixes
         * Fix a connection closed error when using n_jobs (:pr:`853`)
     * Changes
