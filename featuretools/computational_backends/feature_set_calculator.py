@@ -619,7 +619,10 @@ class FeatureSetCalculator(object):
                     variable_id = f.base_features[0].get_name()
                     if variable_id not in to_agg:
                         to_agg[variable_id] = []
-                    func = f.get_function()
+                    if isinstance(base_frame, dd.core.DataFrame):
+                        func = f.get_dask_aggregation()
+                    else:
+                        func = f.get_function()
 
                     # for some reason, using the string count is significantly
                     # faster than any method a primitive can return
@@ -639,6 +642,11 @@ class FeatureSetCalculator(object):
 
                         func.__name__ = funcname
 
+                    if isinstance(func, dd.Aggregation):
+                        # TODO: handle aggregation being applied to same variable twice
+                        # (see above partial wrapping of functions)
+                        funcname = func.__name__
+
                     to_agg[variable_id].append(func)
                     # this is used below to rename columns that pandas names for us
                     agg_rename[u"{}-{}".format(variable_id, funcname)] = f.get_name()
@@ -648,16 +656,46 @@ class FeatureSetCalculator(object):
 
             # Apply the non-aggregable functions generate a new dataframe, and merge
             # it with the existing one
-            if isinstance(base_frame, dd.core.DataFrame) and (len(to_apply) or len(to_agg)):
-                base_frame = base_frame.compute()
             if len(to_apply):
-                wrap = agg_wrapper(to_apply, self.time_last)
-                # groupby_var can be both the name of the index and a column,
-                # to silence pandas warning about ambiguity we explicitly pass
-                # the column (in actuality grouping by both index and group would
-                # work)
-                to_merge = base_frame.groupby(base_frame[groupby_var], observed=True, sort=False).apply(wrap)
-                if isinstance(frame, dd.core.DataFrame):
+                if isinstance(base_frame, dd.core.DataFrame):
+                    aggregations = {}
+                    apply_rename = {}
+                    multi_output = {}
+                    aggregable_frame = base_frame[base_frame.columns]
+                    for f in to_apply:
+                        variable_ids = [bf.get_name() for bf in f.base_features]
+
+                        # combine input columns into a single column for primitives that take more than one input
+                        if len(variable_ids) > 1:
+                            aggregable_frame[",".join(variable_ids)] = pd.Series(
+                                (zip(*[aggregable_frame[v] for v in variable_ids]))
+                            )
+
+                        func = f.get_dask_aggregation()
+                        funcname = func.__name__
+                        variable_id = ",".join(variable_ids)
+                        if variable_id not in aggregations:
+                            aggregations[variable_id] = []
+                        aggregations[variable_id].append(func)
+
+                        apply_rename[u"{}-{}".format(variable_id, funcname)] = f.get_name()
+
+                        # primitives whose results that should be split into multiple columns
+                        if f.number_output_features > 1:
+                            multi_output[f.get_name()] = f
+
+                    to_merge = aggregable_frame.groupby(aggregable_frame[groupby_var]).agg(aggregations)
+
+                    # rename aggregation columns:
+                    to_merge.columns = [apply_rename["-".join(x)] for x in to_merge.columns.ravel()]
+                    to_merge = to_merge[list(apply_rename.values())]
+
+                    # separate outputs of multi-outputs into separate columns:
+                    to_merge = to_merge.apply(dask_split_output,
+                                              axis=1,
+                                              columns=to_merge.columns,
+                                              multi_output_prims=multi_output)
+
                     child_merge_var = to_merge.index.name
                     # Make sure the merge columns have the same data type
                     to_merge = to_merge.reset_index()
@@ -665,6 +703,14 @@ class FeatureSetCalculator(object):
                     frame = dd.merge(left=frame, right=to_merge.reset_index(),
                                      left_on=parent_merge_var, right_on=child_merge_var, how='left')
                 else:
+                    wrap = agg_wrapper(to_apply, self.time_last)
+                    # groupby_var can be both the name of the index and a column,
+                    # to silence pandas warning about ambiguity we explicitly pass
+                    # the column (in actuality grouping by both index and group would
+                    # work)
+                    to_merge = base_frame.groupby(base_frame[groupby_var],
+                                                  observed=True,
+                                                  sort=False).apply(wrap)
                     frame = pd.merge(left=frame, right=to_merge,
                                      left_index=True,
                                      right_index=True, how='left')
@@ -678,9 +724,11 @@ class FeatureSetCalculator(object):
                 # to silence pandas warning about ambiguity we explicitly pass
                 # the column (in actuality grouping by both index and group would
                 # work)
-                to_merge = base_frame.groupby(base_frame[groupby_var],
-                                              observed=True, sort=False).agg(to_agg)
-
+                if isinstance(base_frame, dd.core.DataFrame):
+                    to_merge = base_frame.groupby(base_frame[groupby_var]).agg(to_agg)
+                else:
+                    to_merge = base_frame.groupby(base_frame[groupby_var],
+                                                  observed=True, sort=False).agg(to_agg)
                 # rename columns to the correct feature names
                 to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns.ravel()]
                 to_merge = to_merge[list(agg_rename.values())]
@@ -767,6 +815,16 @@ def agg_wrapper(feats, time_last):
 
         return pd.Series(d)
     return wrap
+
+
+def dask_split_output(row, columns, multi_output_prims):
+    d = {}
+    for col, val in zip(columns, row):
+        if col in multi_output_prims:
+            update_feature_columns(multi_output_prims[col], d, val)
+        else:
+            d[col] = val
+    return pd.Series(d)
 
 
 def set_default_column(frame, f):

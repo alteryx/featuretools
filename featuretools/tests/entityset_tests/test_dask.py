@@ -42,13 +42,16 @@ def test_aggregation(es, dask_es):
     primitives = ft.list_primitives()
     trans_primitives = []
     agg_list = primitives[primitives['type'] == 'aggregation']['name'].tolist()
-    bad_primitives = ['trend', 'first', 'last', 'time_since_first', 'n_most_common', 'time_since_last']
+    bad_primitives = ['trend', 'first', 'last', 'time_since_first', 'time_since_last']
     agg_primitives = [prim for prim in agg_list if prim not in bad_primitives]
 
     assert es == dask_es
 
     # Run DFS using each entity as a target and confirm results match
     for entity in es.entities:
+        # remove n_most_common for customers due to ambiguity
+        if entity.id == 'customers':
+            agg_primitives.remove('n_most_common')
         fm, _ = ft.dfs(entityset=es,
                        target_entity=entity.id,
                        trans_primitives=trans_primitives,
@@ -62,9 +65,11 @@ def test_aggregation(es, dask_es):
                             agg_primitives=agg_primitives,
                             cutoff_time=pd.Timestamp("2019-01-05 04:00"),
                             max_depth=2)
+        if entity.id == 'customers':
+            agg_primitives.append('n_most_common')
         # Use the same columns and make sure both indexes are sorted the same
         dask_computed_fm = dask_fm.compute().set_index(entity.index).loc[fm.index][fm.columns]
-        pd.testing.assert_frame_equal(fm, dask_computed_fm)
+        pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
 
 
 def test_create_entity_from_dask_df(es):
@@ -118,10 +123,10 @@ def test_add_last_time_indexes():
                                       pd.to_datetime('2019-02-03'),
                                       pd.to_datetime('2019-01-01'),
                                       pd.to_datetime('2017-08-25')],
-                            "strings": ["I am a string",
-                                        "23",
-                                        "abcdef ghijk",
-                                        ""]})
+                             "strings": ["I am a string",
+                                         "23",
+                                         "abcdef ghijk",
+                                         ""]})
     sessions_dask = dd.from_pandas(sessions, npartitions=2)
 
     transactions = pd.DataFrame({"id": [0, 1, 2, 3, 4, 5],
@@ -561,7 +566,7 @@ def test_build_es_from_scratch_and_run_dfs():
                                        additional_variables=["zip_code", "join_date", "date_of_birth"])
 
     trans_primitives = ['cum_sum', 'diff', 'absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
-    agg_primitives = ['first', 'last', 'num_unique', 'count', 'max', 'sum']
+    agg_primitives = ['num_unique', 'count', 'max', 'sum']
 
     fm, _ = ft.dfs(entityset=es,
                    target_entity="customers",
@@ -576,4 +581,4 @@ def test_build_es_from_scratch_and_run_dfs():
                         max_depth=2)
 
     # Use the same columns and make sure both have same index sorting
-    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('customer_id')[fm.columns])
+    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('customer_id')[fm.columns], check_dtype=False)

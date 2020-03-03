@@ -634,6 +634,9 @@ class AggregationFeature(FeatureBase):
             'use_previous': self.use_previous and self.use_previous.get_arguments(),
         }
 
+    def get_dask_aggregation(self):
+        return self.primitive.get_dask_aggregation()
+
     def relationship_path_name(self):
         if self._path_is_unique:
             return self.child_entity.id

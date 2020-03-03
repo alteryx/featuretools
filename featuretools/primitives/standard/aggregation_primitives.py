@@ -1,7 +1,9 @@
+import itertools as it
 from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
+from dask import dataframe as dd
 from scipy import stats
 
 from featuretools.primitives.base.aggregation_primitive_base import (
@@ -36,6 +38,9 @@ class Count(AggregationPrimitive):
     def get_function(self):
         return pd.Series.count
 
+    def get_dask_aggregation(self):
+        return 'count'
+
     def generate_name(self, base_feature_names, relationship_path_name,
                       parent_entity_id, where_str, use_prev_str):
         return u"COUNT(%s%s%s)" % (relationship_path_name,
@@ -59,6 +64,9 @@ class Sum(AggregationPrimitive):
 
     def get_function(self):
         return np.sum
+
+    def get_dask_aggregation(self):
+        return 'sum'
 
 
 class Mean(AggregationPrimitive):
@@ -96,6 +104,9 @@ class Mean(AggregationPrimitive):
 
         return mean
 
+    def get_dask_aggregation(self):
+        return 'mean'
+
 
 class Mode(AggregationPrimitive):
     """Determines the most commonly repeated value.
@@ -120,6 +131,18 @@ class Mode(AggregationPrimitive):
 
         return pd_mode
 
+    def get_dask_aggregation(self):
+        def chunk(s):
+            return s.apply(lambda x: np.array(x.values))
+
+        def agg(vals):
+            def get_mode(x):
+                return self.get_function()(pd.Series(np.concatenate(x.values)))
+
+            return vals.agg(get_mode)
+
+        return dd.Aggregation(name='mode', chunk=chunk, agg=agg)
+
 
 class Min(AggregationPrimitive):
     """Calculates the smallest value, ignoring `NaN` values.
@@ -137,6 +160,9 @@ class Min(AggregationPrimitive):
     def get_function(self):
         return np.min
 
+    def get_dask_aggregation(self):
+        return 'min'
+
 
 class Max(AggregationPrimitive):
     """Calculates the highest value, ignoring `NaN` values.
@@ -153,6 +179,9 @@ class Max(AggregationPrimitive):
 
     def get_function(self):
         return np.max
+
+    def get_dask_aggregation(self):
+        return 'max'
 
 
 class NumUnique(AggregationPrimitive):
@@ -176,6 +205,24 @@ class NumUnique(AggregationPrimitive):
     def get_function(self):
         return pd.Series.nunique
 
+    def get_dask_aggregation(self):
+        def chunk(s):
+            def inner_chunk(x):
+                x = x[:].dropna()
+                return set(x.unique())
+
+            return s.agg(inner_chunk)
+
+        def agg(s):
+            def inner_agg(x):
+                x = x[:].dropna()
+                unique_vals = set().union(*x.values)
+                return len(unique_vals)
+
+            return s.agg(inner_agg)
+
+        return dd.Aggregation(name='any', chunk=chunk, agg=agg)
+
 
 class NumTrue(AggregationPrimitive):
     """Counts the number of `True` values.
@@ -198,6 +245,15 @@ class NumTrue(AggregationPrimitive):
 
     def get_function(self):
         return np.sum
+
+    def get_dask_aggregation(self):
+        def chunk(s):
+            return s.agg(np.sum)
+
+        def agg(s):
+            return s.agg(np.sum)
+
+        return dd.Aggregation(name='num_true', chunk=chunk, agg=agg)
 
 
 class PercentTrue(AggregationPrimitive):
@@ -226,6 +282,22 @@ class PercentTrue(AggregationPrimitive):
             return s[:].fillna(0).mean()
 
         return percent_true
+
+    def get_dask_aggregation(self):
+        def chunk(s):
+            def format_chunk(x):
+                return x[:].fillna(0)
+
+            return (s.agg(lambda x: format_chunk(x).sum()),
+                    s.agg(lambda x: len(format_chunk(x))))
+
+        def agg(val, length):
+            return (val.sum(), length.sum())
+
+        def finalize(total, length):
+            return total / length
+
+        return dd.Aggregation(name='percent_true', chunk=chunk, agg=agg, finalize=finalize)
 
 
 class NMostCommon(AggregationPrimitive):
@@ -264,6 +336,37 @@ class NMostCommon(AggregationPrimitive):
             return array
 
         return n_most_common
+
+    def get_dask_aggregation(self):
+        def chunk(s):
+            return s.apply(lambda x: x.values)
+
+        def agg(s):
+            def inner_agg(x):
+                categories = None
+                to_join = []
+                for arr in x:
+                    # maintain categories as zero occurences fill before NaN
+                    if isinstance(arr, pd.Categorical):
+                        if categories is not None:
+                            assert categories.equals(arr.categories)
+                        else:
+                            categories = arr.categories
+                    to_join.append(np.array(arr))
+                if categories is not None:
+                    return pd.Categorical(np.concatenate(to_join), categories=categories)
+                else:
+                    return np.concatenate(to_join)
+
+            return s.apply(inner_agg)
+
+        def finalize(s):
+            def final(x):
+                return self.get_function()(pd.Series(x))
+
+            return s.agg(final)
+
+        return dd.Aggregation('n_most_common', chunk, agg, finalize)
 
 
 class AvgTimeBetween(AggregationPrimitive):
@@ -328,6 +431,36 @@ class AvgTimeBetween(AggregationPrimitive):
 
         return pd_avg_time_between
 
+    def get_dask_aggregation(self):
+        def chunk(s):
+            def format_chunk(x):
+                x = x.dropna()
+                if x.shape[0] < 1:
+                    return x
+                if isinstance(x.iloc[0], (pd.Timestamp, datetime)):
+                    x = x.astype('int64')
+                return x
+
+            return (s.agg(lambda x: format_chunk(x).min()),
+                    s.agg(lambda x: format_chunk(x).max()),
+                    s.agg(lambda x: len(format_chunk(x))))
+
+        def agg(min_s, max_s, length):
+            def sum_or_nan(length):
+                length = length.sum()
+                if length < 2:
+                    return np.nan
+                return length
+
+            return (min_s.min(), max_s.max(), length.agg(sum_or_nan))
+
+        def finalize(min_s, max_s, length):
+            avg = (max_s - min_s) / (length - 1)
+            avg = avg * 1e-9
+            return convert_time_units(avg, self.unit)
+
+        return dd.Aggregation(name='any', chunk=chunk, agg=agg, finalize=finalize)
+
 
 class Median(AggregationPrimitive):
     """Determines the middlemost number in a list of values.
@@ -348,6 +481,19 @@ class Median(AggregationPrimitive):
 
     def get_function(self):
         return pd.Series.median
+
+    def get_dask_aggregation(self):
+        def chunk(s):
+            return s.apply(np.array)
+
+        def agg(s):
+            def get_median(x):
+                values = pd.Series(list(it.chain.from_iterable(x)))
+                return self.get_function()(values)
+
+            return s.agg(get_median)
+
+        return dd.Aggregation('median', chunk, agg)
 
 
 class Skew(AggregationPrimitive):
@@ -372,6 +518,19 @@ class Skew(AggregationPrimitive):
     def get_function(self):
         return pd.Series.skew
 
+    def get_dask_aggregation(self):
+        def chunk(s):
+            return s.apply(np.array)
+
+        def agg(s):
+            def skew(x):
+                values = pd.Series(list(it.chain.from_iterable(x)))
+                return values.skew()
+
+            return s.agg(skew)
+
+        return dd.Aggregation('skew', chunk, agg)
+
 
 class Std(AggregationPrimitive):
     """Computes the dispersion relative to the mean value, ignoring `NaN`.
@@ -388,6 +547,9 @@ class Std(AggregationPrimitive):
 
     def get_function(self):
         return np.std
+
+    def get_dask_aggregation(self):
+        return 'std'
 
 
 class First(AggregationPrimitive):
@@ -409,6 +571,9 @@ class First(AggregationPrimitive):
 
         return pd_first
 
+    def get_dask_aggregation(self):
+        return 'first'
+
 
 class Last(AggregationPrimitive):
     """Determines the last value in a list.
@@ -428,6 +593,9 @@ class Last(AggregationPrimitive):
             return x.iloc[-1]
 
         return pd_last
+
+    def get_dask_aggregation(self):
+        return 'last'
 
 
 class Any(AggregationPrimitive):
@@ -450,6 +618,15 @@ class Any(AggregationPrimitive):
     def get_function(self):
         return np.any
 
+    def get_dask_aggregation(self):
+        def chunk(s):
+            return s.agg(np.any)
+
+        def agg(s):
+            return s.agg(np.any)
+
+        return dd.Aggregation(name='any', chunk=chunk, agg=agg)
+
 
 class All(AggregationPrimitive):
     """Calculates if all values are 'True' in a list.
@@ -470,6 +647,15 @@ class All(AggregationPrimitive):
 
     def get_function(self):
         return np.all
+
+    def get_dask_aggregation(self):
+        def chunk(s):
+            return s.agg(np.all)
+
+        def agg(s):
+            return s.agg(np.all)
+
+        return dd.Aggregation(name='all', chunk=chunk, agg=agg)
 
 
 class TimeSinceLast(AggregationPrimitive):
@@ -686,3 +872,15 @@ class Entropy(AggregationPrimitive):
             return stats.entropy(distribution, base=self.base)
 
         return pd_entropy
+
+    def get_dask_aggregation(self):
+        def chunk(s):
+            return s.apply(lambda x: np.array(x.values))
+
+        def agg(dists):
+            def entropy(vals):
+                return self.get_function()(pd.Series(np.concatenate(vals.values)))
+
+            return dists.agg(entropy)
+
+        return dd.Aggregation(name='entropy', chunk=chunk, agg=agg)
