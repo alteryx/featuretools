@@ -2,6 +2,13 @@
 
 Changelog
 ---------
+**Future Release**
+    * Documentation Changes
+        * Add links to primitives.featurelabs.com (:pr:`860`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
+
 **v0.13.3 Feb 28, 2020**
     * Fixes
         * Fix a connection closed error when using n_jobs (:pr:`853`)
