@@ -5,9 +5,11 @@ Changelog
 **Future Release**
     * Documentation Changes
         * Add links to primitives.featurelabs.com (:pr:`860`)
+    * Testing Changes
+        * Miscellaneous changes (:pr:`861`)
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.13.3 Feb 28, 2020**
     * Fixes
