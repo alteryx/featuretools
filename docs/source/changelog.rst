@@ -3,6 +3,17 @@
 Changelog
 ---------
 **v0.13.3 Feb 28, 2020**
+    * Enhancements
+    * Fixes
+    * Changes
+        * Added Plugin Warnings at Entry Point (:pr:`850`)
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`jeff-hernandez`
+
+**v0.13.3 Feb 28, 2020**
     * Fixes
         * Fix a connection closed error when using n_jobs (:pr:`853`)
     * Changes
