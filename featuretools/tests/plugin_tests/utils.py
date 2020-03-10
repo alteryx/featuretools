@@ -4,7 +4,10 @@ import sys
 
 
 def import_featuretools():
-    return python('-c', 'import featuretools')
+    c = 'import os;'
+    c += 'os.environ["FEATURETOOLS_LOG_LEVEL"] = "debug";'
+    c += 'import featuretools;'
+    return python('-c', c)
 
 
 def install_featuretools_plugin():
