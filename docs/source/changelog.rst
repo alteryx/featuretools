@@ -7,6 +7,7 @@ Changelog
         * Added Plugin Warnings at Entry Point (:pr:`850`)
     * Documentation Changes
         * Add links to primitives.featurelabs.com (:pr:`860`)
+        * Add source code links to API reference (:pr:`862`)
     * Testing Changes
         * Miscellaneous changes (:pr:`861`)
 
