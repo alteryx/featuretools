@@ -179,6 +179,7 @@ Table of contents
    usage_tips/glossary
    ecosystem
    api_reference
+   Primitive Reference <https://primitives.featurelabs.com/>
    changelog
 
 
