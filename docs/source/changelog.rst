@@ -3,15 +3,13 @@
 Changelog
 ---------
 **Future Release**
-    * Enhancements
-    * Fixes
     * Changes
         * Added Plugin Warnings at Entry Point (:pr:`850`)
     * Documentation Changes
-    * Testing Changes
+        * Add links to primitives.featurelabs.com (:pr:`860`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`
+    :user:`thehomebrewnerd`, :user:`jeff-hernandez`
 
 **v0.13.3 Feb 28, 2020**
     * Fixes
@@ -23,7 +21,7 @@ Changelog
         * Update link to help documentation page in Github issue template (:pr:`855`)
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`rwedge`, :user:`jeff-hernandez`
+    :user:`frances-h`, :user:`rwedge`
 
 **v0.13.2 Jan 31, 2020**
     * Enhancements
