@@ -19,7 +19,6 @@ Changelog
         * Fix a connection closed error when using n_jobs (:pr:`853`)
     * Changes
         * Pin msgpack dependency for Python 3.5; remove dataframe from Dask dependency (:pr:`851`)
-        * Added Plugin Warnings at Entry Point (:pr:`850`)
     * Documentation Changes
         * Update link to help documentation page in Github issue template (:pr:`855`)
 
