@@ -15,7 +15,7 @@ def install_featuretools_plugin():
 
 def python(*args):
     command = [sys.executable, *args]
-    return subprocess.run(command, stderr=subprocess.PIPE)
+    return subprocess.run(command, stdout=subprocess.PIPE)
 
 
 def uninstall_featuretools_plugin():
