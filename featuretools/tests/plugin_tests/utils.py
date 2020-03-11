@@ -6,7 +6,7 @@ import sys
 def import_featuretools(level=None):
     c = ''
     if level:
-        c = 'import os;'
+        c += 'import os;'
         c += 'os.environ["FEATURETOOLS_LOG_LEVEL"] = "%s";' % level
 
     c += 'import featuretools;'
