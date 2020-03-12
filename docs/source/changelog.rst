@@ -4,7 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Fixes
-        * Fix ft.show_info() doesn't work in Jupyter (:pr:`690`)
+        * Fix ft.show_info() not displaying in Jupyter notebooks (:pr:`863`)
     * Documentation Changes
         * Add links to primitives.featurelabs.com (:pr:`860`)
         * Add source code links to API reference (:pr:`862`)
