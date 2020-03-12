@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from datetime import datetime
 
 import numpy as np
@@ -31,6 +29,7 @@ from featuretools.primitives import (  # NMostCommon,
     NotEqualScalar,
     NumTrue,
     Sum,
+    TimeSinceLast,
     Trend
 )
 from featuretools.primitives.base import AggregationPrimitive
@@ -146,14 +145,12 @@ def test_make_agg_feat_using_prev_time(es):
 def test_make_agg_feat_using_prev_n_events(es):
     agg_feat_1 = ft.Feature(es['log']['value'],
                             parent_entity=es['sessions'],
-                            use_previous=Timedelta(1, 'observations',
-                                                   entity=es['log']),
+                            use_previous=Timedelta(1, 'observations'),
                             primitive=Min)
 
     agg_feat_2 = ft.Feature(es['log']['value'],
                             parent_entity=es['sessions'],
-                            use_previous=Timedelta(3, 'observations',
-                                                   entity=es['log']),
+                            use_previous=Timedelta(3, 'observations'),
                             primitive=Min)
 
     assert agg_feat_1.get_name() != agg_feat_2.get_name(), \
@@ -656,7 +653,8 @@ def test_empty_child_dataframe():
     child_df = pd.DataFrame({"id": [1, 2, 3],
                              "parent_id": [1, 1, 1],
                              "time_index": pd.date_range(start='1/1/2018', periods=3),
-                             "value": [10, 5, 2]})
+                             "value": [10, 5, 2],
+                             "cat": ['a', 'a', 'b']})
 
     es = ft.EntitySet(id="blah")
     es.entity_from_dataframe(entity_id="parent", dataframe=parent_df, index="id")
@@ -669,20 +667,33 @@ def test_empty_child_dataframe():
     # create agg feature that requires multiple arguments
     trend = ft.Feature([es["child"]['value'], es["child"]['time_index']], parent_entity=es["parent"], primitive=Trend)
 
+    # create multi-output agg feature
+    n_most_common = ft.Feature(es["child"]['cat'], parent_entity=es["parent"], primitive=NMostCommon)
+
     # create aggs with where
     where = ft.Feature(es["child"]["value"]) == 1
     count_where = ft.Feature(es["child"]['id'], parent_entity=es["parent"], where=where, primitive=Count)
     trend_where = ft.Feature([es["child"]['value'], es["child"]['time_index']], parent_entity=es["parent"], where=where, primitive=Trend)
+    n_most_common_where = ft.Feature(es["child"]['cat'], parent_entity=es["parent"], where=where, primitive=NMostCommon)
 
     # cutoff time before all rows
-    fm = ft.calculate_feature_matrix(entityset=es, features=[count, count_where, trend, trend_where], cutoff_time=pd.Timestamp("12/31/2017"))
-    names = [count.get_name(), count_where.get_name(), trend.get_name(), trend_where.get_name()]
-    assert_array_equal(fm[names], [[0, 0, np.nan, np.nan]])
+    fm = ft.calculate_feature_matrix(entityset=es,
+                                     features=[count, count_where, trend, trend_where, n_most_common, n_most_common_where],
+                                     cutoff_time=pd.Timestamp("12/31/2017"))
+    names = [count.get_name(), count_where.get_name(),
+             trend.get_name(), trend_where.get_name(),
+             *n_most_common.get_names(), *n_most_common_where.get_names()]
+    values = [0, 0,
+              np.nan, np.nan,
+              *np.full(n_most_common.number_output_features, np.nan), *np.full(n_most_common_where.number_output_features, np.nan)]
+    assert_array_equal(fm[names], [values])
 
     # cutoff time after all rows, but where clause filters all rows
-    fm2 = ft.calculate_feature_matrix(entityset=es, features=[count_where, trend_where], cutoff_time=pd.Timestamp("1/4/2018"))
-    names = [count_where.get_name(), trend_where.get_name()]
-    assert_array_equal(fm2[names], [[0, np.nan]])
+    fm2 = ft.calculate_feature_matrix(entityset=es,
+                                      features=[count_where, trend_where, n_most_common_where],
+                                      cutoff_time=pd.Timestamp("1/4/2018"))
+    names = [count_where.get_name(), trend_where.get_name(), *n_most_common_where.get_names()]
+    assert_array_equal(fm2[names], [[0, np.nan, *np.full(n_most_common_where.number_output_features, np.nan)]])
 
 
 def test_with_features_built_from_es_metadata(es):
@@ -813,6 +824,47 @@ def test_returns_order_of_instance_ids(es):
     df = calculator.run(np.array(instance_ids))
 
     assert list(df.index) == instance_ids
+
+
+def test_calls_progress_callback(es):
+    # call with all feature types. make sure progress callback calls sum to 1
+    identity = ft.Feature(es['customers']['age'])
+    direct = ft.Feature(es['cohorts']['cohort_name'], es['customers'])
+    agg = ft.Feature(es["sessions"]["id"], parent_entity=es['customers'], primitive=Count)
+    agg_apply = ft.Feature(es["log"]["datetime"], parent_entity=es['customers'], primitive=TimeSinceLast)  # this feature is handle differently than simple features
+    trans = ft.Feature(agg, primitive=CumSum)
+    groupby_trans = ft.Feature(agg, primitive=CumSum, groupby=es["customers"]["cohort"])
+    all_features = [identity, direct, agg, agg_apply, trans, groupby_trans]
+
+    feature_set = FeatureSet(all_features)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=None,
+                                      feature_set=feature_set)
+
+    class MockProgressCallback:
+        def __init__(self):
+            self.total = 0
+
+        def __call__(self, update):
+            self.total += update
+
+    mock_progress_callback = MockProgressCallback()
+
+    instance_ids = [0, 1, 2]
+    calculator.run(np.array(instance_ids), mock_progress_callback)
+
+    assert np.isclose(mock_progress_callback.total, 1)
+
+    # testing again with a time_last with no data
+    feature_set = FeatureSet(all_features)
+    calculator = FeatureSetCalculator(es,
+                                      time_last=pd.Timestamp("1950"),
+                                      feature_set=feature_set)
+
+    mock_progress_callback = MockProgressCallback()
+    calculator.run(np.array(instance_ids), mock_progress_callback)
+
+    assert np.isclose(mock_progress_callback.total, 1)
 
 
 def test_precalculated_features(es):

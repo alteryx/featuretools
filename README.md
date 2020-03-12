@@ -81,7 +81,9 @@ customer_id                                                                     
 
 [5 rows x 69 columns]
 ```
-We now have a feature vector for each customer that can be used for machine learning. See the [documentation on Deep Feature Synthesis](https://docs.featuretools.com/automated_feature_engineering/afe.html) for more examples.
+We now have a feature vector for each customer that can be used for machine learning. See the [documentation on Deep Feature Synthesis](https://docs.featuretools.com/automated_feature_engineering/afe.html) for more examples. 
+
+Featuretools contains many [different types of built-in primitives](https://primitives.featurelabs.com/) for creating features. If the primitive you need is not included, Featuretools also allows you to [define your own custom primitives](https://docs.featuretools.com/en/stable/automated_feature_engineering/primitives.html#defining-custom-primitives).
 
 ## Demos
 **Predict Next Purchase**
@@ -101,7 +103,7 @@ The Featuretools community is happy to provide support to users of Featuretools.
 
 1. For usage questions, use [Stack Overflow](https://stackoverflow.com/questions/tagged/featuretools) with the `featuretools` tag.
 2. For bugs, issues, or feature requests start a [Github issue](https://github.com/featuretools/featuretools/issues).
-3. For discussion regarding development on the core library, use [Slack](https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTZiZDdkYjZhZTVkMmVmZDIxNWZiNTVjNDQxYmZkMzI5NGRlOTg5YjcwYmJiNWE2YjIzZmFkMjc1NDZkNjBhZTQ).
+3. For discussion regarding development on the core library, use [Slack](https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTQ1MjZlOWFmZDk2YzAwMjEzNTkwZTZkN2NmOGFjOGI4YzE5OGMyMGM5NGIxNTE4NjkzYWI3OWEwZjkyZGExYmQ).
 4. For everything else, the core developers can be reached by email at help@featuretools.com.
 
 ## Citing Featuretools

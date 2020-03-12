@@ -1,12 +1,17 @@
 import json
 import os
+import tarfile
+import tempfile
+from pathlib import Path
 
 import pandas as pd
 
 from featuretools.entityset.relationship import Relationship
 from featuretools.entityset.serialize import FORMATS
 from featuretools.utils.gen_utils import check_schema_version
-from featuretools.variable_types.variable import find_variable_types
+from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
+from featuretools.utils.wrangle import _is_s3, _is_url
+from featuretools.variable_types.variable import LatLong, find_variable_types
 
 
 def description_to_variable(description, entity=None):
@@ -26,7 +31,8 @@ def description_to_variable(description, entity=None):
     if entity is not None:
         kwargs = {} if is_type_string else description['type']
         variable = variable(description['id'], entity, **kwargs)
-        variable.interesting_values = description['properties']['interesting_values']
+        interesting_values = pd.read_json(description['properties']['interesting_values'], typ='series')
+        variable.interesting_values = interesting_values
     return variable
 
 
@@ -42,14 +48,19 @@ def description_to_entity(description, entityset, path=None):
         dataframe = read_entity_data(description, path=path)
     else:
         dataframe = empty_dataframe(description)
-    variable_types = {variable['id']: description_to_variable(variable) for variable in description['variables']}
-    entityset.entity_from_dataframe(
+    variable_types = {variable['id']: (description_to_variable(variable), variable)
+                      for variable in description['variables']}
+    es = entityset.entity_from_dataframe(
         description['id'],
         dataframe,
         index=description.get('index'),
         time_index=description.get('time_index'),
         secondary_time_index=description['properties'].get('secondary_time_index'),
-        variable_types=variable_types)
+        variable_types={variable: variable_types[variable][0] for variable in variable_types})
+    for variable in es[description['id']].variables:
+        interesting_values = variable_types[variable.id][1]['properties']['interesting_values']
+        interesting_values = pd.read_json(interesting_values, typ="series")
+        variable.interesting_values = interesting_values
 
 
 def description_to_entityset(description, **kwargs):
@@ -113,33 +124,49 @@ def read_entity_data(description, path):
     '''
     file = os.path.join(path, description['loading_info']['location'])
     kwargs = description['loading_info'].get('params', {})
-    if description['loading_info']['type'] == 'csv':
+    load_format = description['loading_info']['type']
+    if load_format == 'csv':
         dataframe = pd.read_csv(
             file,
             engine=kwargs['engine'],
             compression=kwargs['compression'],
             encoding=kwargs['encoding'],
         )
-    elif description['loading_info']['type'] == 'parquet':
+    elif load_format == 'parquet':
         dataframe = pd.read_parquet(file, engine=kwargs['engine'])
-    elif description['loading_info']['type'] == 'pickle':
+    elif load_format == 'pickle':
         dataframe = pd.read_pickle(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))
     dtypes = description['loading_info']['properties']['dtypes']
-    return dataframe.astype(dtypes)
+    dataframe = dataframe.astype(dtypes)
+
+    if load_format in ['parquet', 'csv']:
+        latlongs = []
+        for var_description in description['variables']:
+            if var_description['type']['value'] == LatLong.type_string:
+                latlongs.append(var_description["id"])
+
+        def parse_latlong(x):
+            return tuple(float(y) for y in x[1:-1].split(","))
+
+        for column in latlongs:
+            dataframe[column] = dataframe[column].apply(parse_latlong)
+
+    return dataframe
 
 
 def read_data_description(path):
-    '''Read data description from disk.
+    '''Read data description from disk, S3 path, or URL.
 
         Args:
-            path (str): Location on disk to read `data_description.json`.
+            path (str): Location on disk, S3 path, or URL to read `data_description.json`.
 
         Returns:
             description (dict) : Description of :class:`.EntitySet`.
     '''
+
     path = os.path.abspath(path)
     assert os.path.exists(path), '"{}" does not exist'.format(path)
     file = os.path.join(path, 'data_description.json')
@@ -149,12 +176,30 @@ def read_data_description(path):
     return description
 
 
-def read_entityset(path, **kwargs):
-    '''Read entityset from disk.
+def read_entityset(path, profile_name=None, **kwargs):
+    '''Read entityset from disk, S3 path, or URL.
 
         Args:
-            path (str): Directory on disk to read `data_description.json`.
+            path (str): Directory on disk, S3 path, or URL to read `data_description.json`.
+            profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
+                Set to False to use an anonymous profile.
             kwargs (keywords): Additional keyword arguments to pass as keyword arguments to the underlying deserialization method.
     '''
-    data_description = read_data_description(path)
-    return description_to_entityset(data_description, **kwargs)
+    if _is_url(path) or _is_s3(path):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            file_name = Path(path).name
+            file_path = os.path.join(tmpdir, file_name)
+            transport_params = None
+
+            if _is_s3(path):
+                transport_params = get_transport_params(profile_name)
+
+            use_smartopen_es(file_path, path, transport_params)
+            with tarfile.open(str(file_path)) as tar:
+                tar.extractall(path=tmpdir)
+
+            data_description = read_data_description(tmpdir)
+            return description_to_entityset(data_description, **kwargs)
+    else:
+        data_description = read_data_description(path)
+        return description_to_entityset(data_description, **kwargs)

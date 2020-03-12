@@ -1,7 +1,3 @@
-from __future__ import division
-
-from builtins import str
-
 import numpy as np
 import pandas as pd
 
@@ -426,6 +422,7 @@ class Diff(TransformPrimitive):
     name = "diff"
     input_types = [Numeric]
     return_type = Numeric
+    uses_full_entity = True
 
     def get_function(self):
         def pd_diff(values):

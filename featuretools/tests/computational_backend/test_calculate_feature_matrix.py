@@ -1,9 +1,6 @@
-# -*- coding: utf-8 -*-
-
 import os
+import re
 import shutil
-import tempfile
-from builtins import range
 from datetime import datetime
 from itertools import combinations
 from random import randint
@@ -18,13 +15,14 @@ import featuretools as ft
 from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
 from featuretools.computational_backends import utils
 from featuretools.computational_backends.calculate_feature_matrix import (
+    FEATURE_CALCULATION_PERCENTAGE,
+    _chunk_dataframe_groups,
+    _handle_chunk_size,
     scatter_warning
 )
 from featuretools.computational_backends.utils import (
     bin_cutoff_times,
-    calc_num_per_chunk,
     create_client_and_cluster,
-    get_next_chunk,
     n_jobs_to_workers
 )
 from featuretools.feature_base import (
@@ -100,6 +98,14 @@ def test_calc_feature_matrix(es):
         feature_matrix = calculate_feature_matrix([property_feature],
                                                   entityset=es,
                                                   cutoff_time=cutoff_times_dup)
+
+    cutoff_reordered = cutoff_time.iloc[[-1, 10, 1]]  # 3 ids not ordered by cutoff time
+    feature_matrix = calculate_feature_matrix([property_feature],
+                                              es,
+                                              cutoff_time=cutoff_reordered,
+                                              verbose=True)
+
+    assert all(feature_matrix.index == cutoff_reordered["id"].values)
 
 
 def test_cfm_approximate_correct_ordering():
@@ -199,7 +205,7 @@ def test_cfm_duplicated_index_in_cutoff_time(es):
     assert (feature_matrix.shape[0] == cutoff_time.shape[0])
 
 
-def test_saveprogress(es):
+def test_saveprogress(es, tmpdir):
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
                  [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
                  [datetime(2011, 4, 9, 10, 40, 0)] +
@@ -208,7 +214,7 @@ def test_saveprogress(es):
                  [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
     property_feature = ft.Feature(es['log']['value']) > 10
-    save_progress = tempfile.mkdtemp()
+    save_progress = str(tmpdir)
     fm_save = calculate_feature_matrix([property_feature],
                                        es,
                                        cutoff_time=cutoff_time,
@@ -240,7 +246,7 @@ def test_cutoff_time_correctly(es):
                                               es,
                                               cutoff_time=cutoff_time)
 
-    labels = [0, 10, 5]
+    labels = [10, 5, 0]
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 
@@ -267,6 +273,10 @@ def test_cutoff_time_binning():
     for i in binned_cutoff_times.index:
         assert binned_cutoff_times['time'][i] == labels[i]
 
+    error_text = "Unit is relative"
+    with pytest.raises(ValueError, match=error_text):
+        binned_cutoff_times = bin_cutoff_times(cutoff_time, Timedelta(1, 'mo'))
+
 
 def test_training_window(es):
     property_feature = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
@@ -287,12 +297,12 @@ def test_training_window(es):
 
     es.add_last_time_indexes()
 
-    error_text = 'training window must be an absolute Timedelta'
+    error_text = 'Training window cannot be in observations'
     with pytest.raises(AssertionError, match=error_text):
         feature_matrix = calculate_feature_matrix([property_feature],
                                                   es,
                                                   cutoff_time=cutoff_time,
-                                                  training_window=Timedelta(2, 'observations', entity='log'))
+                                                  training_window=Timedelta(2, 'observations'))
 
     feature_matrix = calculate_feature_matrix([property_feature, dagg],
                                               es,
@@ -366,8 +376,7 @@ def test_approximate_multiple_instances_per_cutoff_time(es):
     feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
                                               es,
                                               approximate=Timedelta(1, 'week'),
-                                              cutoff_time=cutoff_time,
-                                              chunk_size="cutoff time")
+                                              cutoff_time=cutoff_time)
     assert feature_matrix.shape[0] == 2
     assert feature_matrix[agg_feat.get_name()].tolist() == [5, 1]
 
@@ -385,8 +394,7 @@ def test_approximate_with_multiple_paths(diamond_es):
     feature_matrix = calculate_feature_matrix([dfeat],
                                               es,
                                               approximate=Timedelta(1, 'week'),
-                                              cutoff_time=cutoff_time,
-                                              chunk_size="cutoff time")
+                                              cutoff_time=cutoff_time)
     assert feature_matrix[dfeat.get_name()].tolist() == [6, 2]
 
 
@@ -677,9 +685,8 @@ def test_cutoff_time_extra_columns(es):
     fm = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df)
     # check column was added to end of matrix
     assert 'label' == fm.columns[-1]
-    # check column was sorted by time labelike the rest of the feature matrix
-    true_series = pd.Series([False, True, True], index=[0, 1, 0])
-    assert (fm['label'] == true_series).all()
+
+    assert (fm['label'].values == cutoff_df['label'].values).all()
 
     fm_2 = calculate_feature_matrix([dfeat],
                                     es,
@@ -687,9 +694,8 @@ def test_cutoff_time_extra_columns(es):
                                     approximate="2 days")
     # check column was added to end of matrix
     assert 'label' in fm_2.columns
-    # check column was sorted by time like the rest of the feature matrix
-    true_series = pd.Series([False, True, True], index=[0, 1, 0])
-    assert (fm_2['label'] == true_series).all()
+
+    assert (fm_2['label'].values == cutoff_df['label'].values).all()
 
 
 def test_instances_after_cutoff_time_removed(es):
@@ -702,7 +708,7 @@ def test_instances_after_cutoff_time_removed(es):
 
     # Customer with id 1 should be removed
     actual_ids = [id for (id, _) in fm.index]
-    assert actual_ids == [0, 2]
+    assert set(actual_ids) == set([2, 0])
 
 
 def test_instances_with_id_kept_after_cutoff(es):
@@ -717,7 +723,7 @@ def test_instances_with_id_kept_after_cutoff(es):
     # Customer #1 is after cutoff, but since it is included in instance_ids it
     # should be kept.
     actual_ids = [id for (id, _) in fm.index]
-    assert actual_ids == [0, 1, 2]
+    assert set(actual_ids) == set([0, 1, 2])
 
 
 def test_cfm_returns_original_time_indexes(es):
@@ -728,7 +734,6 @@ def test_cfm_returns_original_time_indexes(es):
                                        pd.Timestamp('2011-04-09 10:30:03'),
                                        pd.Timestamp('2011-04-08 10:30:00')],
                               'instance_id': [0, 1, 0]})
-    sorted_df = cutoff_df.sort_values(['time', 'instance_id'], kind='mergesort')
 
     # no approximate
     fm = calculate_feature_matrix([dfeat],
@@ -736,126 +741,40 @@ def test_cfm_returns_original_time_indexes(es):
                                   cutoff_time_in_index=True)
     instance_level_vals = fm.index.get_level_values(0).values
     time_level_vals = fm.index.get_level_values(1).values
-    assert (instance_level_vals == sorted_df['instance_id'].values).all()
-    assert (time_level_vals == sorted_df['time'].values).all()
+    assert (instance_level_vals == cutoff_df['instance_id'].values).all()
+    assert (time_level_vals == cutoff_df['time'].values).all()
 
     # approximate, in different windows, no unapproximated aggs
     fm2 = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df,
                                    cutoff_time_in_index=True, approximate="1 m")
     instance_level_vals = fm2.index.get_level_values(0).values
     time_level_vals = fm2.index.get_level_values(1).values
-    assert (instance_level_vals == sorted_df['instance_id'].values).all()
-    assert (time_level_vals == sorted_df['time'].values).all()
+    assert (instance_level_vals == cutoff_df['instance_id'].values).all()
+    assert (time_level_vals == cutoff_df['time'].values).all()
 
     # approximate, in different windows, unapproximated aggs
     fm2 = calculate_feature_matrix([dfeat, agg_feat_2], es, cutoff_time=cutoff_df,
                                    cutoff_time_in_index=True, approximate="1 m")
     instance_level_vals = fm2.index.get_level_values(0).values
     time_level_vals = fm2.index.get_level_values(1).values
-    assert (instance_level_vals == sorted_df['instance_id'].values).all()
-    assert (time_level_vals == sorted_df['time'].values).all()
+    assert (instance_level_vals == cutoff_df['instance_id'].values).all()
+    assert (time_level_vals == cutoff_df['time'].values).all()
 
     # approximate, in same window, no unapproximated aggs
     fm3 = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df,
                                    cutoff_time_in_index=True, approximate="2 d")
     instance_level_vals = fm3.index.get_level_values(0).values
     time_level_vals = fm3.index.get_level_values(1).values
-    assert (instance_level_vals == sorted_df['instance_id'].values).all()
-    assert (time_level_vals == sorted_df['time'].values).all()
+    assert (instance_level_vals == cutoff_df['instance_id'].values).all()
+    assert (time_level_vals == cutoff_df['time'].values).all()
 
     # approximate, in same window, unapproximated aggs
     fm3 = calculate_feature_matrix([dfeat, agg_feat_2], es, cutoff_time=cutoff_df,
                                    cutoff_time_in_index=True, approximate="2 d")
     instance_level_vals = fm3.index.get_level_values(0).values
     time_level_vals = fm3.index.get_level_values(1).values
-    assert (instance_level_vals == sorted_df['instance_id'].values).all()
-    assert (time_level_vals == sorted_df['time'].values).all()
-
-
-def test_calculating_number_per_chunk():
-    cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-08 10:30:00')
-                                       for x in range(200)],
-                              'instance_id': [0 for x in range(200)]})
-
-    singleton = pd.DataFrame({'time': [pd.Timestamp('2011-04-08 10:30:00')],
-                              'instance_id': [0]})
-    shape = cutoff_df.shape
-
-    error_text = "chunk_size must be None, a float between 0 and 1,a positive integer, or the string 'cutoff time'"
-    with pytest.raises(ValueError, match=error_text):
-        calc_num_per_chunk(-1, shape)
-
-    with pytest.raises(ValueError, match=error_text):
-        calc_num_per_chunk("test", shape)
-
-    with pytest.raises(ValueError, match=error_text):
-        calc_num_per_chunk(2.5, shape)
-
-    with pytest.warns(UserWarning):
-        assert calc_num_per_chunk(201, shape) == 200
-
-    assert calc_num_per_chunk(200, shape) == 200
-    assert calc_num_per_chunk(11, shape) == 11
-    assert calc_num_per_chunk(.7, shape) == 140
-    assert calc_num_per_chunk(.6749, shape) == 134
-    assert calc_num_per_chunk(.6751, shape) == 135
-    assert calc_num_per_chunk(None, shape) == 20
-    assert calc_num_per_chunk("cutoff time", shape) == "cutoff time"
-    assert calc_num_per_chunk(1, shape) == 1
-    assert calc_num_per_chunk(.5, singleton.shape) == 1
-    assert calc_num_per_chunk(None, singleton.shape) == 10
-
-
-def test_get_next_chunk():
-    times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
-                 [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
-                 [datetime(2011, 4, 9, 10, 40, 0)] +
-                 [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
-                 [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
-                 [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
-    cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
-    chunks = [chunk for chunk in get_next_chunk(cutoff_time, 'time', 4)]
-    assert len(chunks) == 5
-
-    # test when a cutoff time is larger than a chunk
-    times = list([datetime(2011, 4, 9, 10, 30, 6) for i in range(5)] +
-                 [datetime(2011, 4, 9, 10, 31, 9) for i in range(4)] +
-                 [datetime(2011, 4, 9, 10, 40, 0)] +
-                 [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
-                 [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
-                 [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
-    cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
-    chunks = [chunk for chunk in get_next_chunk(cutoff_time, 'time', 4)]
-    assert len(chunks) == 5
-    # largest cutoff time handled first
-    largest = pd.Series([datetime(2011, 4, 9, 10, 30, 6) for i in range(4)])
-    assert (chunks[0]['time'] == largest).all()
-    # additional part of cutoff time added to another chunk
-    assert (chunks[2]['time'] == times[4]).any()
-
-    # test when cutoff_time is smaller than num_per_chunk
-    chunks = [chunk for chunk in get_next_chunk(cutoff_time, 'time', 18)]
-    assert len(chunks) == 1
-
-
-def test_verbose_cutoff_time_chunks(es):
-    times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
-                 [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
-                 [datetime(2011, 4, 9, 10, 40, 0)] +
-                 [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
-                 [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
-                 [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
-    labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
-    cutoff_time = pd.DataFrame({'time': times, 'instance_id': range(17)})
-    property_feature = IdentityFeature(es['log']['value']) > 10
-
-    feature_matrix = calculate_feature_matrix([property_feature],
-                                              es,
-                                              cutoff_time=cutoff_time,
-                                              chunk_size="cutoff time",
-                                              verbose=True)
-
-    assert (feature_matrix[property_feature.get_name()] == labels).values.all()
+    assert (instance_level_vals == cutoff_df['instance_id'].values).all()
+    assert (time_level_vals == cutoff_df['time'].values).all()
 
 
 def test_dask_kwargs(es):
@@ -921,7 +840,6 @@ class TestCreateClientAndCluster(object):
                             get_mock_client_cluster)
         # cluster in dask_kwargs case
         client, cluster = create_client_and_cluster(n_jobs=2,
-                                                    num_tasks=3,
                                                     dask_kwargs={'cluster': 'tcp://127.0.0.1:54321'},
                                                     entityset_size=1)
         assert cluster == 'tcp://127.0.0.1:54321'
@@ -937,7 +855,6 @@ class TestCreateClientAndCluster(object):
 
         # jobs < tasks case
         client, cluster = create_client_and_cluster(n_jobs=2,
-                                                    num_tasks=3,
                                                     dask_kwargs={},
                                                     entityset_size=1)
         num_workers = min(cpus, 2)
@@ -947,18 +864,16 @@ class TestCreateClientAndCluster(object):
         match = r'.*workers requested, but only .* workers created'
         with pytest.warns(UserWarning, match=match) as record:
             client, cluster = create_client_and_cluster(n_jobs=1000,
-                                                        num_tasks=3,
                                                         dask_kwargs={'diagnostics_port': 8789},
                                                         entityset_size=1)
         assert len(record) == 1
 
-        num_workers = min(cpus, 3)
+        num_workers = cpus
         memory_limit = int(total_memory / float(num_workers))
         assert cluster == (num_workers, 1, 8789, memory_limit)
 
         # dask_kwargs sets memory limit
         client, cluster = create_client_and_cluster(n_jobs=2,
-                                                    num_tasks=3,
                                                     dask_kwargs={'diagnostics_port': 8789,
                                                                  'memory_limit': 1000},
                                                     entityset_size=1)
@@ -972,13 +887,11 @@ class TestCreateClientAndCluster(object):
         # errors if not enough memory for each worker to store the entityset
         with pytest.raises(ValueError, match=''):
             create_client_and_cluster(n_jobs=1,
-                                      num_tasks=5,
                                       dask_kwargs={},
                                       entityset_size=total_memory * 2)
 
         # does not error even if worker memory is less than 2x entityset size
         create_client_and_cluster(n_jobs=1,
-                                  num_tasks=5,
                                   dask_kwargs={},
                                   entityset_size=total_memory * .75)
 
@@ -1002,6 +915,22 @@ def test_parallel_failure_raises_correct_error(es):
                                  chunk_size=.13,
                                  n_jobs=0,
                                  approximate='1 hour')
+
+
+def test_warning_not_enough_chunks(es, capsys):
+    property_feature = IdentityFeature(es['log']['value']) > 10
+
+    with cluster(nworkers=3) as (scheduler, [a, b, c]):
+        dkwargs = {'cluster': scheduler['address']}
+        calculate_feature_matrix([property_feature],
+                                 entityset=es,
+                                 chunk_size=.5,
+                                 verbose=True,
+                                 dask_kwargs=dkwargs)
+
+    captured = capsys.readouterr()
+    pattern = r'Fewer chunks \([0-9]+\), than workers \([0-9]+\) consider reducing the chunk size'
+    assert re.search(pattern, captured.out) is not None
 
 
 def test_n_jobs():
@@ -1197,7 +1126,7 @@ def test_instances_not_in_data(es):
     fm = calculate_feature_matrix(features,
                                   entityset=es,
                                   instance_ids=instances,
-                                  approximate="2 years")
+                                  approximate="730 days")
     assert all(fm.index.values == instances)
     for column in fm.columns:
         assert fm[column].isnull().all()
@@ -1207,6 +1136,7 @@ def test_some_instances_not_in_data(es):
     a_time = datetime(2011, 4, 10, 10, 41, 9)  # only valid data
     b_time = datetime(2011, 4, 10, 11, 10, 5)  # some missing data
     c_time = datetime(2011, 4, 10, 12, 0, 0)  # all missing data
+
     times = [a_time, b_time, a_time, a_time, b_time, b_time] + [c_time] * 4
     cutoff_time = pd.DataFrame({"instance_id": list(range(12, 22)),
                                 "time": times})
@@ -1221,12 +1151,11 @@ def test_some_instances_not_in_data(es):
                                   entityset=es,
                                   cutoff_time=cutoff_time)
 
-    index_answer = [12, 14, 15, 13, 16, 17, 18, 19, 20, 21]
-    ifeat_answer = [0, 14, np.nan, 7] + [np.nan] * 6
-    prop_answer = [0, 1, np.nan, 0, 0] + [np.nan] * 5
-    dfeat_answer = [14, 14, np.nan, 14] + [np.nan] * 6
+    ifeat_answer = [0, 7, 14, np.nan] + [np.nan] * 6
+    prop_answer = [0, 0, 1, np.nan, 0] + [np.nan] * 5
+    dfeat_answer = [14, 14, 14, np.nan] + [np.nan] * 6
 
-    assert all(fm.index.values == index_answer)
+    assert all(fm.index.values == cutoff_time["instance_id"].values)
     for x, y in zip(fm.columns, [ifeat_answer, prop_answer, dfeat_answer]):
         np.testing.assert_array_equal(fm[x], y)
 
@@ -1235,9 +1164,96 @@ def test_some_instances_not_in_data(es):
                                   cutoff_time=cutoff_time,
                                   approximate="5 seconds")
 
-    dfeat_answer[0:2] = [7, 7]  # approximate calculated before 14 appears
-    prop_answer[2] = 0  # no_unapproximated_aggs code ignores cutoff time
+    dfeat_answer[0] = 7  # approximate calculated before 14 appears
+    dfeat_answer[2] = 7  # approximate calculated before 14 appears
+    prop_answer[3] = 0  # no_unapproximated_aggs code ignores cutoff time
 
-    assert all(fm.index.values == index_answer)
+    assert all(fm.index.values == cutoff_time["instance_id"].values)
     for x, y in zip(fm.columns, [ifeat_answer, prop_answer, dfeat_answer]):
         np.testing.assert_array_equal(fm[x], y)
+
+
+def test_handle_chunk_size():
+    total_size = 100
+
+    # user provides no chunk size
+    assert _handle_chunk_size(None, total_size) is None
+
+    # user provides fractional size
+    assert _handle_chunk_size(.1, total_size) == total_size * .1
+    assert _handle_chunk_size(.001, total_size) == 1  # rounds up
+    assert _handle_chunk_size(.345, total_size) == 35  # rounds up
+
+    # user provides absolute size
+    assert _handle_chunk_size(1, total_size) == 1
+    assert _handle_chunk_size(100, total_size) == 100
+    assert isinstance(_handle_chunk_size(100.0, total_size), int)
+
+    # test invalid cases
+    with pytest.raises(AssertionError, match="Chunk size must be greater than 0"):
+        _handle_chunk_size(0, total_size)
+
+    with pytest.raises(AssertionError, match="Chunk size must be greater than 0"):
+        _handle_chunk_size(-1, total_size)
+
+
+def test_chunk_dataframe_groups():
+    df = pd.DataFrame({
+        "group": [1, 1, 1, 1, 2, 2, 3]
+    })
+
+    grouped = df.groupby("group")
+    chunked_grouped = _chunk_dataframe_groups(grouped, 2)
+
+    # test group larger than chunk size gets split up
+    first = next(chunked_grouped)
+    assert first[0] == 1 and first[1].shape[0] == 2
+    second = next(chunked_grouped)
+    assert second[0] == 1 and second[1].shape[0] == 2
+
+    # test that equal to and less than chunk size stays together
+    third = next(chunked_grouped)
+    assert third[0] == 2 and third[1].shape[0] == 2
+    fourth = next(chunked_grouped)
+    assert fourth[0] == 3 and fourth[1].shape[0] == 1
+
+
+def test_calls_progress_callback(es):
+    class MockProgressCallback:
+        def __init__(self):
+            self.progress_history = []
+            self.total_update = 0
+            self.total_progress_percent = 0
+
+        def __call__(self, update, progress_percent, time_elapsed):
+            self.total_update += update
+            self.total_progress_percent = progress_percent
+            self.progress_history.append(progress_percent)
+
+    mock_progress_callback = MockProgressCallback()
+
+    es = ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
+
+    # make sure to calculate features that have different paths to same base feature
+    trans_per_session = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["sessions"], primitive=Count)
+    trans_per_customer = ft.Feature(es["transactions"]["transaction_id"], parent_entity=es["customers"], primitive=Count)
+    features = [trans_per_session, ft.Feature(trans_per_customer, entity=es["sessions"])]
+    ft.calculate_feature_matrix(features, entityset=es, progress_callback=mock_progress_callback)
+
+    # second to last entry is the last update from feature calculation
+    assert np.isclose(mock_progress_callback.progress_history[-2], FEATURE_CALCULATION_PERCENTAGE * 100)
+    assert np.isclose(mock_progress_callback.total_update, 100.0)
+    assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
+
+    # test with multiple jobs
+    mock_progress_callback = MockProgressCallback()
+
+    with cluster() as (scheduler, [a, b]):
+        dkwargs = {'cluster': scheduler['address']}
+        ft.calculate_feature_matrix(features,
+                                    entityset=es,
+                                    progress_callback=mock_progress_callback,
+                                    dask_kwargs=dkwargs)
+
+    assert np.isclose(mock_progress_callback.total_update, 100.0)
+    assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)

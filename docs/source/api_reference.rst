@@ -29,14 +29,14 @@ Deep Feature Synthesis
 
 Wrappers
 ~~~~~~~~
-.. currentmodule:: featuretools.wrappers
+.. currentmodule:: featuretools
 
 Scikit-learn (BETA)
 -------------------
 .. autosummary::
     :toctree: generated/
 
-    DFSTransformer
+    wrappers.DFSTransformer
 
 
 
@@ -63,6 +63,8 @@ Time utils
 
 Feature Primitives
 ~~~~~~~~~~~~~~~~~~
+A list of all Featuretools primitives can be obtained by visiting `primitives.featurelabs.com <https://primitives.featurelabs.com/>`__.
+
 Primitive Types
 ---------------
 .. currentmodule:: featuretools.primitives
@@ -104,9 +106,11 @@ Aggregation Primitives
     PercentTrue
     All
     Any
+    First
     Last
     Skew
     Trend
+    Entropy
 
 
 Transform Primitives
@@ -178,6 +182,30 @@ Location Transform Primitives
    Latitude
    Longitude
    Haversine
+
+.. currentmodule:: nlp_primitives
+
+.. autosummary::
+   :nosignatures:
+
+Natural Language Processing Primitives
+--------------------------------------
+Natural Language Processing primitives create features for textual data. For more information on how to use and install these primitives, see `here <https://github.com/FeatureLabs/nlp_primitives>`__.
+
+.. autosummary::
+    :toctree: generated/
+
+    DiversityScore
+    LSA
+    MeanCharactersPerWord
+    PartOfSpeechCount
+    PolarityScore
+    PunctuationCount
+    StopwordCount
+    TitleWordCount
+    UniversalSentenceEncoder
+    UpperCaseCount
+
 
 Feature methods
 ---------------

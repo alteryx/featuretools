@@ -1,14 +1,10 @@
-# -*- coding: utf-8 -*-
-
 import logging
 import os
 import warnings
 from functools import wraps
 
-import numpy as np
 import pandas as pd
 import psutil
-from pandas.tseries.frequencies import to_offset
 
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, DirectFeature
@@ -23,7 +19,7 @@ def bin_cutoff_times(cuttoff_time, bin_size):
     if type(bin_size) == int:
         binned_cutoff_time['time'] = binned_cutoff_time['time'].apply(lambda x: x / bin_size * bin_size)
     else:
-        bin_size = _check_timedelta(bin_size).get_pandas_timedelta()
+        bin_size = _check_timedelta(bin_size)
         binned_cutoff_time['time'] = datetime_round(binned_cutoff_time['time'], bin_size)
     return binned_cutoff_time
 
@@ -50,19 +46,28 @@ def save_csv_decorator(save_progress=None):
     return inner_decorator
 
 
-def datetime_round(dt, freq, round_up=False):
+def datetime_round(dt, freq):
     """
-    Taken from comments on the Pandas source: https://github.com/pandas-dev/pandas/issues/4314
-
     round down Timestamp series to a specified freq
     """
-    if round_up:
-        round_f = np.ceil
+    if not freq.is_absolute():
+        raise ValueError("Unit is relative")
+
+    # TODO: multitemporal units
+    all_units = list(freq.times.keys())
+    if len(all_units) == 1:
+        unit = all_units[0]
+        value = freq.times[unit]
+        if unit == 'm':
+            unit = 't'
+        # No support for weeks in datetime.datetime
+        if unit == 'w':
+            unit = 'd'
+            value = value * 7
+        freq = str(value) + unit
+        return dt.dt.floor(freq)
     else:
-        round_f = np.floor
-    dt = pd.DatetimeIndex(dt)
-    freq = to_offset(freq).delta.value
-    return pd.DatetimeIndex(((round_f(dt.asi8 / freq)) * freq).astype(np.int64))
+        assert "Frequency cannot have multiple temporal parameters"
 
 
 def gather_approximate_features(feature_set):
@@ -104,98 +109,6 @@ def gen_empty_approx_features_df(approx_features):
     return df
 
 
-def calc_num_per_chunk(chunk_size, shape):
-    """
-    Given a chunk size and the shape of the feature matrix to split into
-    chunk, returns the number of rows there should be per chunk
-    """
-    if isinstance(chunk_size, float) and chunk_size > 0 and chunk_size < 1:
-        num_per_chunk = int(shape[0] * float(chunk_size))
-        # must be at least 1 cutoff per chunk
-        num_per_chunk = max(1, num_per_chunk)
-    elif isinstance(chunk_size, int) and chunk_size >= 1:
-        if chunk_size > shape[0]:
-            warnings.warn("Chunk size is greater than size of feature matrix")
-            num_per_chunk = shape[0]
-        else:
-            num_per_chunk = chunk_size
-    elif chunk_size is None:
-        num_per_chunk = max(int(shape[0] * .1), 10)
-    elif chunk_size == "cutoff time":
-        num_per_chunk = "cutoff time"
-    else:
-        raise ValueError("chunk_size must be None, a float between 0 and 1,"
-                         "a positive integer, or the string 'cutoff time'")
-    return num_per_chunk
-
-
-def get_next_chunk(cutoff_time, time_variable, num_per_chunk):
-    """
-    Generator function that takes a DataFrame of cutoff times and the number of
-    rows to include per chunk and returns an iterator of the resulting chunks.
-
-    Args:
-        cutoff_time (pd.DataFrame): dataframe of cutoff times to chunk
-        time_variable (str): name of time column in cutoff_time dataframe
-        num_per_chunk (int): maximum number of rows to include in a chunk
-    """
-    # if chunk_size is 100%, return DataFrame immediately and stop iteration
-    if cutoff_time.shape[0] <= num_per_chunk:
-        yield cutoff_time
-        return
-
-    # split rows of cutoff_time into groups based on time variable
-    grouped = cutoff_time.groupby(time_variable, sort=False)
-
-    # sort groups by size, largest first
-    groups = grouped.size().sort_values(ascending=False).index
-
-    # list of partially filled chunks
-    chunks = []
-
-    # iterate through each group and try to make completely filled chunks
-    for group_name in groups:
-        # get locations in cutoff_time (iloc) of all rows in group
-        group = grouped.groups[group_name].values.tolist()
-
-        # divide up group into slices if too large to fit in a single chunk
-        group_slices = []
-        if len(group) > num_per_chunk:
-            for i in range(0, len(group), num_per_chunk):
-                group_slices.append(group[i: i + num_per_chunk])
-        else:
-            group_slices.append(group)
-
-        # for each slice of the group, try to find a chunk it can fit in
-        for group_slice in group_slices:
-            # if slice is exactly the number of rows for a chunk, yield the
-            # slice's rows of cutoff_time as the next chunk and move on
-            if len(group_slice) == num_per_chunk:
-                yield cutoff_time.loc[group_slice]
-                continue
-
-            # if not, look for partially filled chunks that have room
-            found_chunk = False
-            for i in range(len(chunks)):
-                chunk = chunks[i]
-                if len(chunk) + len(group_slice) <= num_per_chunk:
-                    chunk.extend(group_slice)
-                    found_chunk = True
-                    if len(chunk) == num_per_chunk:
-                        # if chunk is full, pop from partial list and yield
-                        loc_list = chunks.pop(i)
-                        yield cutoff_time.loc[loc_list]
-                    break
-
-            # if no chunk has room, this slice becomes another partial chunk
-            if not found_chunk:
-                chunks.append(group_slice)
-
-    # after iterating through every group, yield any remaining partial chunks
-    for chunk in chunks:
-        yield cutoff_time.loc[chunk]
-
-
 def n_jobs_to_workers(n_jobs):
     try:
         cpus = len(psutil.Process().cpu_affinity())
@@ -213,7 +126,7 @@ def n_jobs_to_workers(n_jobs):
     return workers
 
 
-def create_client_and_cluster(n_jobs, num_tasks, dask_kwargs, entityset_size):
+def create_client_and_cluster(n_jobs, dask_kwargs, entityset_size):
     Client, LocalCluster = get_client_cluster()
 
     cluster = None
@@ -227,17 +140,10 @@ def create_client_and_cluster(n_jobs, num_tasks, dask_kwargs, entityset_size):
             diagnostics_port = dask_kwargs['diagnostics_port']
             del dask_kwargs['diagnostics_port']
 
-        cpu_workers = n_jobs_to_workers(n_jobs)
-        workers = min(cpu_workers, num_tasks)
+        workers = n_jobs_to_workers(n_jobs)
         if n_jobs != -1 and workers < n_jobs:
             warning_string = "{} workers requested, but only {} workers created."
             warning_string = warning_string.format(n_jobs, workers)
-            if cpu_workers < n_jobs:
-                warning_string += " Not enough cpu cores ({}).".format(cpu_workers)
-
-            if num_tasks < n_jobs:
-                chunk_warning = " Not enough chunks ({}), consider reducing the chunk size"
-                warning_string += chunk_warning.format(num_tasks)
             warnings.warn(warning_string)
 
         # Distributed default memory_limit for worker is 'auto'. It calculates worker
@@ -260,7 +166,7 @@ def create_client_and_cluster(n_jobs, num_tasks, dask_kwargs, entityset_size):
                                memory_limit=memory_limit,
                                **dask_kwargs)
 
-        # if cluster has bokeh port, notify user if unxepected port number
+        # if cluster has bokeh port, notify user if unexpected port number
         if diagnostics_port is not None:
             if hasattr(cluster, 'scheduler') and cluster.scheduler:
                 info = cluster.scheduler.identity()

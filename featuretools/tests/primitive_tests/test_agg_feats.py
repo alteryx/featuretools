@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from datetime import datetime
 from math import isnan
 
@@ -9,11 +7,13 @@ import pytest
 
 import featuretools as ft
 from featuretools.entityset.relationship import RelationshipPath
-from featuretools.primitives import (  # NMostCommon,
+from featuretools.primitives import (
     Count,
     Mean,
     Median,
+    NMostCommon,
     NumTrue,
+    NumUnique,
     Sum,
     TimeSinceFirst,
     TimeSinceLast,
@@ -590,24 +590,52 @@ def test_make_three_most_common(es):
 
     fm, features = ft.dfs(entityset=es,
                           target_entity="customers",
+                          instance_ids=[0, 1, 2],
                           agg_primitives=[NMostCommoner],
                           trans_primitives=[])
 
-    true_results = pd.DataFrame([
-        ['coke zero', 'toothpaste', "car"],
-        ['coke zero', 'Haribo sugar-free gummy bears', np.nan],
-        ['taco clock', np.nan, np.nan]
-    ])
-    df = fm[["PD_TOP3(log.product_id)__%s" % i for i in range(3)]]
-    for i in range(df.shape[0]):
-        if i == 0:
-            # coke zero and toothpaste have same number of occurrences
-            # so just check that the top two match
-            assert set(true_results.iloc[i].values[:2]) == set(df.iloc[i].values[:2])
-            assert df.iloc[0].values[2] in ("brown bag", "car")
-        else:
-            for i1, i2 in zip(true_results.iloc[i], df.iloc[i]):
-                assert (pd.isnull(i1) and pd.isnull(i2)) or (i1 == i2)
+    df = fm[["PD_TOP3(log.product_id)[%s]" % i for i in range(3)]]
+
+    assert set(df.iloc[0].values[:2]) == set(['coke zero', 'toothpaste'])  # coke zero and toothpaste have same number of occurrences
+    assert df.iloc[0].values[2] in ['car', 'brown bag']  # so just check that the top two match
+
+    assert df.iloc[1].reset_index(drop=True).equals(pd.Series(['coke zero', 'Haribo sugar-free gummy bears', np.nan]))
+    assert df.iloc[2].reset_index(drop=True).equals(pd.Series(['taco clock', np.nan, np.nan]))
+
+
+def test_stacking_multi(es):
+    threecommon = NMostCommon(3)
+    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=threecommon)
+
+    stacked = []
+    for i in range(3):
+        stacked.append(ft.Feature(tc[i], parent_entity=es['customers'], primitive=NumUnique))
+
+    fm = ft.calculate_feature_matrix(stacked, entityset=es, instance_ids=[0, 1, 2])
+
+    correct_vals = [[3, 2, 1], [2, 1, 0], [0, 0, 0]]
+    correct_vals1 = [[3, 1, 1], [2, 1, 0], [0, 0, 0]]
+    # either of the above can be correct, and the outcome depends on the sorting of
+    # two values in the initial n most common function, which changes arbitrarily.
+
+    for i in range(3):
+        f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.product_id)[%d])' % i
+        cols = fm.columns
+        assert f in cols
+        assert fm[cols[i]].tolist() == correct_vals[i] or fm[cols[i]].tolist() == correct_vals1[i]
+
+
+def test_use_previous_pd_dateoffset(es):
+    total_events_pd = ft.Feature(es["log"]["id"],
+                                 parent_entity=es["customers"],
+                                 use_previous=pd.DateOffset(hours=47, minutes=60),
+                                 primitive=Count)
+
+    feature_matrix = ft.calculate_feature_matrix([total_events_pd], es,
+                                                 cutoff_time=pd.Timestamp('2011-04-11 10:31:30'),
+                                                 instance_ids=[0, 1, 2])
+    col_name = list(feature_matrix.head().keys())[0]
+    assert (feature_matrix[col_name] == [1, 5, 2]).all()
 
 
 def _assert_agg_feats_equal(f1, f2):
@@ -616,3 +644,38 @@ def _assert_agg_feats_equal(f1, f2):
     assert f1.parent_entity.id == f2.parent_entity.id
     assert f1.relationship_path == f2.relationship_path
     assert f1.use_previous == f2.use_previous
+
+
+def test_override_multi_feature_names(es):
+    def gen_custom_names(primitive, base_feature_names, relationship_path_name,
+                         parent_entity_id, where_str, use_prev_str):
+        base_string = 'Custom_%s({}.{})'.format(parent_entity_id, base_feature_names)
+        return [base_string % i for i in range(primitive.number_output_features)]
+
+    def pd_top3(x):
+        array = np.array(x.value_counts()[:3].index)
+        if len(array) < 3:
+            filler = np.full(3 - len(array), np.nan)
+            array = np.append(array, filler)
+        return array
+
+    num_features = 3
+    NMostCommoner = make_agg_primitive(function=pd_top3,
+                                       input_types=[Numeric],
+                                       return_type=Discrete,
+                                       number_output_features=num_features,
+                                       cls_attributes={"generate_names": gen_custom_names})
+
+    fm, features = ft.dfs(entityset=es,
+                          target_entity="products",
+                          instance_ids=[0, 1, 2],
+                          agg_primitives=[NMostCommoner],
+                          trans_primitives=[])
+
+    expected_names = []
+    base_names = [['value'], ['value_2'], ['value_many_nans']]
+    for name in base_names:
+        expected_names += gen_custom_names(NMostCommoner, name, None, 'products', None, None)
+
+    for name in expected_names:
+        assert name in fm.columns

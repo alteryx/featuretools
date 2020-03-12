@@ -1,13 +1,12 @@
-import errno
+import json
 import os
-import shutil
 
+import boto3
 import pandas as pd
 import pytest
 
 from featuretools.demo import load_mock_customer
 from featuretools.entityset import EntitySet, deserialize, serialize
-from featuretools.tests import integration_data
 from featuretools.variable_types.variable import (
     Categorical,
     Index,
@@ -15,7 +14,13 @@ from featuretools.variable_types.variable import (
     find_variable_types
 )
 
-CACHE = os.path.join(os.path.dirname(integration_data.__file__), '.cache')
+BUCKET_NAME = "test-bucket"
+WRITE_KEY_NAME = "test-key"
+TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
+TEST_FILE = "test_serialization_data_entityset_schema_2.0.0.tar"
+S3_URL = "s3://featuretools-static/" + TEST_FILE
+URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
+TEST_KEY = "test_access_key_es"
 
 
 def test_all_variable_descriptions():
@@ -79,23 +84,11 @@ def test_entityset_description(es):
     assert es.metadata.__eq__(_es, deep=True)
 
 
-@pytest.fixture
-def path_management():
-    path = os.path.join(CACHE, 'es')
-    try:
-        os.makedirs(path)
-    except OSError as e:
-        if e.errno != errno.EEXIST:  # EEXIST corresponds to FileExistsError
-            raise e
-    yield path
-    shutil.rmtree(path)
-
-
-def test_invalid_formats(es, path_management):
+def test_invalid_formats(es, tmpdir):
     error_text = 'must be one of the following formats: {}'
     error_text = error_text.format(', '.join(serialize.FORMATS))
     with pytest.raises(ValueError, match=error_text):
-        serialize.write_entity_data(es.entities[0], path=path_management, format='')
+        serialize.write_entity_data(es.entities[0], path=str(tmpdir), format='')
     with pytest.raises(ValueError, match=error_text):
         entity = {'loading_info': {'location': 'data', 'type': ''}}
         deserialize.read_entity_data(entity, path='.')
@@ -108,33 +101,209 @@ def test_empty_dataframe(es):
         assert dataframe.empty
 
 
-def test_to_csv(es, path_management):
-    es.to_csv(path_management, encoding='utf-8', engine='python')
-    new_es = deserialize.read_entityset(path_management)
+def test_to_csv(es, tmpdir):
+    es.to_csv(str(tmpdir), encoding='utf-8', engine='python')
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert es.__eq__(new_es, deep=True)
+    assert type(es['log'].df['latlong'][0]) == tuple
+    assert type(new_es['log'].df['latlong'][0]) == tuple
+
+
+def test_to_pickle(es, tmpdir):
+    es.to_pickle(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert es.__eq__(new_es, deep=True)
+    assert type(es['log'].df['latlong'][0]) == tuple
+    assert type(new_es['log'].df['latlong'][0]) == tuple
+
+
+def test_to_pickle_interesting_values(es, tmpdir):
+    es.add_interesting_values()
+    es.to_pickle(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
 
 
-def test_to_pickle(es, path_management):
-    es.to_pickle(path_management)
-    new_es = deserialize.read_entityset(path_management)
+def test_to_pickle_manual_interesting_values(es, tmpdir):
+    es['log']['product_id'].interesting_values = ["coke_zero"]
+    es.to_pickle(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
 
 
-def test_to_parquet(es, path_management):
-    es.to_parquet(path_management)
-    new_es = deserialize.read_entityset(path_management)
+def test_to_parquet(es, tmpdir):
+    es.to_parquet(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert es.__eq__(new_es, deep=True)
+    assert type(es['log'].df['latlong'][0]) == tuple
+    assert type(new_es['log'].df['latlong'][0]) == tuple
+
+
+def test_to_parquet_manual_interesting_values(es, tmpdir):
+    es['log']['product_id'].interesting_values = ["coke_zero"]
+    es.to_pickle(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
 
 
-def test_to_parquet_with_lti(path_management):
+def test_to_parquet_interesting_values(es, tmpdir):
+    es.add_interesting_values()
+    es.to_parquet(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_to_parquet_with_lti(tmpdir):
     es = load_mock_customer(return_entityset=True, random_seed=0)
-    es.to_parquet(path_management)
-    new_es = deserialize.read_entityset(path_management)
+    es.to_parquet(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
 
 
-def test_to_pickle_id_none(path_management):
+def test_to_pickle_id_none(tmpdir):
     es = EntitySet()
-    es.to_pickle(path_management)
-    new_es = deserialize.read_entityset(path_management)
+    es.to_pickle(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert es.__eq__(new_es, deep=True)
+
+# TODO: Fix Moto tests needing to explicitly set permissions for objects
+@pytest.fixture
+def s3_client():
+    _environ = os.environ.copy()
+    from moto import mock_s3
+    with mock_s3():
+        s3 = boto3.resource('s3')
+        yield s3
+    os.environ.clear()
+    os.environ.update(_environ)
+
+
+@pytest.fixture
+def s3_bucket(s3_client):
+    s3_client.create_bucket(Bucket=BUCKET_NAME, ACL='public-read-write')
+    s3_bucket = s3_client.Bucket(BUCKET_NAME)
+    yield s3_bucket
+
+
+def make_public(s3_client, s3_bucket):
+    obj = list(s3_bucket.objects.all())[0].key
+    s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
+
+
+def test_serialize_s3_csv(es, s3_client, s3_bucket):
+    es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python')
+    make_public(s3_client, s3_bucket)
+    new_es = deserialize.read_entityset(TEST_S3_URL)
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_serialize_s3_pickle(es, s3_client, s3_bucket):
+    es.to_pickle(TEST_S3_URL)
+    make_public(s3_client, s3_bucket)
+    new_es = deserialize.read_entityset(TEST_S3_URL)
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_serialize_s3_parquet(es, s3_client, s3_bucket):
+    es.to_parquet(TEST_S3_URL)
+    make_public(s3_client, s3_bucket)
+    new_es = deserialize.read_entityset(TEST_S3_URL)
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_serialize_s3_anon_csv(es, s3_client, s3_bucket):
+    es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=False)
+    make_public(s3_client, s3_bucket)
+    new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=False)
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_serialize_s3_anon_pickle(es, s3_client, s3_bucket):
+    es.to_pickle(TEST_S3_URL, profile_name=False)
+    make_public(s3_client, s3_bucket)
+    new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=False)
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_serialize_s3_anon_parquet(es, s3_client, s3_bucket):
+    es.to_parquet(TEST_S3_URL, profile_name=False)
+    make_public(s3_client, s3_bucket)
+    new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=False)
+    assert es.__eq__(new_es, deep=True)
+
+
+def create_test_credentials(test_path):
+    with open(test_path, "w+") as f:
+        f.write("[test]\n")
+        f.write("aws_access_key_id=AKIAIOSFODNN7EXAMPLE\n")
+        f.write("aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\n")
+
+
+def create_test_config(test_path_config):
+    with open(test_path_config, "w+") as f:
+        f.write("[profile test]\n")
+        f.write("region=us-east-2\n")
+        f.write("output=text\n")
+
+
+@pytest.fixture
+def setup_test_profile(monkeypatch, tmpdir):
+    cache = str(tmpdir.join('.cache').mkdir())
+    test_path = os.path.join(cache, 'test_credentials')
+    test_path_config = os.path.join(cache, 'test_config')
+    monkeypatch.setenv("AWS_SHARED_CREDENTIALS_FILE", test_path)
+    monkeypatch.setenv("AWS_CONFIG_FILE", test_path_config)
+    monkeypatch.delenv("AWS_ACCESS_KEY_ID", raising=False)
+    monkeypatch.delenv("AWS_SECRET_ACCESS_KEY", raising=False)
+    monkeypatch.setenv("AWS_PROFILE", "test")
+
+    try:
+        os.remove(test_path)
+        os.remove(test_path_config)
+    except OSError:
+        pass
+
+    create_test_credentials(test_path)
+    create_test_config(test_path_config)
+    yield
+    os.remove(test_path)
+    os.remove(test_path_config)
+
+
+def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
+    es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name='test')
+    make_public(s3_client, s3_bucket)
+    new_es = deserialize.read_entityset(TEST_S3_URL, profile_name='test')
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_serialize_url_csv(es):
+    error_text = "Writing to URLs is not supported"
+    with pytest.raises(ValueError, match=error_text):
+        es.to_csv(URL, encoding='utf-8', engine='python')
+
+
+def test_serialize_subdirs_not_removed(es, tmpdir):
+    write_path = tmpdir.mkdir("test")
+    test_dir = write_path.mkdir("test_dir")
+    with open(str(write_path.join('data_description.json')), 'w') as f:
+        json.dump('__SAMPLE_TEXT__', f)
+    serialize.write_data_description(es, path=str(write_path), index='1', sep='\t', encoding='utf-8', compression=None)
+    assert os.path.exists(str(test_dir))
+    with open(str(write_path.join('data_description.json')), 'r') as f:
+        assert '__SAMPLE_TEXT__' not in json.load(f)
+
+
+def test_deserialize_url_csv(es):
+    new_es = deserialize.read_entityset(URL)
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_default_s3_csv(es):
+    new_es = deserialize.read_entityset(S3_URL)
+    assert es.__eq__(new_es, deep=True)
+
+
+def test_anon_s3_csv(es):
+    new_es = deserialize.read_entityset(S3_URL, profile_name=False)
     assert es.__eq__(new_es, deep=True)

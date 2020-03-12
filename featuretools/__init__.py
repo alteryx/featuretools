@@ -1,5 +1,5 @@
 # flake8: noqa
-from __future__ import absolute_import
+import warnings
 from .config_init import config
 from . import variable_types
 from .entityset.api import *
@@ -12,7 +12,6 @@ from .utils.time_utils import *
 from .utils.cli_utils import show_info
 from .version import __version__
 import featuretools.demo
-import featuretools.wrappers
 from . import feature_base
 from .feature_base import AggregationFeature, DirectFeature, Feature, FeatureBase, IdentityFeature, TransformFeature, GroupByTransformFeature, save_features, load_features
 

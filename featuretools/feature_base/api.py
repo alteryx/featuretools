@@ -4,6 +4,7 @@ from .feature_base import (
     DirectFeature,
     Feature,
     FeatureBase,
+    FeatureOutputSlice,
     GroupByTransformFeature,
     IdentityFeature,
     TransformFeature

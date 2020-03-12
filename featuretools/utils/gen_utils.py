@@ -1,4 +1,7 @@
+import importlib
 import sys
+import warnings
+from itertools import zip_longest
 
 from tqdm import tqdm
 
@@ -44,17 +47,6 @@ def make_tqdm_iterator(**kwargs):
     return iterator
 
 
-def is_string(test_value):
-    """Checks for string in Python2 and Python3
-       Via Stack Overflow: https://stackoverflow.com/a/22679982/9458191
-    """
-    try:
-        python_string = basestring
-    except NameError:
-        python_string = str
-    return isinstance(test_value, python_string)
-
-
 def get_relationship_variable_id(path):
     _, r = path[0]
     child_link_name = r.child_variable.id
@@ -63,10 +55,6 @@ def get_relationship_variable_id(path):
         child_link_name = '%s.%s' % (r.parent_entity.id,
                                      parent_link_name)
     return child_link_name
-
-
-def is_python_2():
-    return sys.version_info.major < 3
 
 
 def find_descendents(cls):
@@ -84,12 +72,7 @@ def find_descendents(cls):
 
 
 def check_schema_version(cls, cls_type):
-    if is_string(cls_type):
-        if is_python_2():
-            from itertools import izip_longest as zip_longest
-        else:
-            from itertools import zip_longest
-
+    if isinstance(cls_type, str):
         if cls_type == 'entityset':
             from featuretools.entityset.serialize import SCHEMA_VERSION
             version_string = cls.get('schema_version')
@@ -100,20 +83,36 @@ def check_schema_version(cls, cls_type):
         current = SCHEMA_VERSION.split('.')
         saved = version_string.split('.')
 
-        error_text_upgrade = ('Unable to load %s. The schema version of the saved '
-                              '%s (%s) is greater than the latest supported (%s). '
-                              'You may need to upgrade featuretools.'
-                              % (cls_type, cls_type, version_string, SCHEMA_VERSION))
+        warning_text_upgrade = ('The schema version of the saved %s'
+                                '(%s) is greater than the latest supported (%s). '
+                                'You may need to upgrade featuretools. Attempting to load %s ...'
+                                % (cls_type, version_string, SCHEMA_VERSION, cls_type))
         for c_num, s_num in zip_longest(current, saved, fillvalue=0):
             if c_num > s_num:
                 break
             elif c_num < s_num:
-                raise RuntimeError(error_text_upgrade)
+                warnings.warn(warning_text_upgrade)
+                break
 
-        error_text_outdated = ('Unable to load %s. The schema version '
-                               'of the saved %s (%s) is no longer '
-                               'supported by this version of featuretools.'
-                               % (cls_type, cls_type, version_string))
+        warning_text_outdated = ('The schema version of the saved %s'
+                                 '(%s) is no longer supported by this version '
+                                 'of featuretools. Attempting to load %s ...'
+                                 % (cls_type, version_string, cls_type))
         # Check if saved has older major version.
         if current[0] > saved[0]:
-            raise RuntimeError(error_text_outdated)
+            warnings.warn(warning_text_outdated)
+
+
+def import_or_raise(library, error_msg):
+    '''
+    Attempts to import the requested library.  If the import fails, raises an
+    ImportErorr with the supplied
+
+    Args:
+        library (str): the name of the library
+        error_msg (str): error message to return if the import fails
+    '''
+    try:
+        return importlib.import_module(library)
+    except ImportError:
+        raise ImportError(error_msg)

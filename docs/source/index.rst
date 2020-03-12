@@ -162,6 +162,7 @@ Table of contents
    :caption: Guides
 
    guides/tuning_dfs
+   guides/specifying_primitive_options
    guides/performance
    guides/parallel
    guides/deployment
@@ -178,6 +179,7 @@ Table of contents
    usage_tips/glossary
    ecosystem
    api_reference
+   Primitive Reference <https://primitives.featurelabs.com/>
    changelog
 
 
@@ -187,11 +189,9 @@ Table of contents
    :hidden:
 
    feature_engineering_language/feature-types
-   guides/chunking
    guides/save_progress_example
 
 Other links
 ------------
 * :ref:`genindex`
 * :ref:`search`
-

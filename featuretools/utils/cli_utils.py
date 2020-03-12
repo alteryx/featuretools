@@ -9,9 +9,9 @@ import pkg_resources
 
 import featuretools
 
-deps = ["numpy", "pandas", "tqdm", "toolz", "PyYAML", "cloudpickle",
-        "future", "dask", "distributed", "psutil", "Click",
-        "scikit-learn", "pip", "setuptools"]
+deps = ["numpy", "pandas", "tqdm", "PyYAML", "cloudpickle",
+        "dask", "distributed", "psutil", "Click",
+        "pip", "setuptools"]
 
 
 def show_info():

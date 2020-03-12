@@ -1,9 +1,7 @@
 import copy
 import logging
-from builtins import object
 from collections import defaultdict
 
-import cloudpickle
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_dtype_equal, is_numeric_dtype
@@ -12,7 +10,7 @@ import featuretools.variable_types.variable as vtypes
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.entity import Entity
 from featuretools.entityset.relationship import Relationship, RelationshipPath
-from featuretools.utils import is_string
+from featuretools.utils.gen_utils import import_or_raise
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
@@ -94,7 +92,7 @@ class EntitySet(object):
         return sum([entity.__sizeof__() for entity in self.entities])
 
     def __dask_tokenize__(self):
-        return (EntitySet, cloudpickle.dumps(self.metadata))
+        return (EntitySet, serialize.entityset_to_description(self.metadata))
 
     def __eq__(self, other, deep=False):
         if len(self.entity_dict) != len(other.entity_dict):
@@ -143,29 +141,37 @@ class EntitySet(object):
     def reset_data_description(self):
         self._data_description = None
 
-    def to_pickle(self, path, compression=None):
-        '''Write entityset to disk in the pickle format, location specified by `path`.
+    def to_pickle(self, path, compression=None, profile_name=None):
+        '''Write entityset in the pickle format, location specified by `path`.
+            Path could be a local path or a S3 path.
+            If writing to S3 a tar archive of files will be written.
 
             Args:
                 path (str): location on disk to write to (will be created as a directory)
                 compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
+                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
         '''
-        serialize.write_data_description(self, path, format='pickle', compression=compression)
+        serialize.write_data_description(self, path, format='pickle', compression=compression, profile_name=profile_name)
         return self
 
-    def to_parquet(self, path, engine='auto', compression=None):
+    def to_parquet(self, path, engine='auto', compression=None, profile_name=None):
         '''Write entityset to disk in the parquet format, location specified by `path`.
+            Path could be a local path or a S3 path.
+            If writing to S3 a tar archive of files will be written.
 
             Args:
                 path (str): location on disk to write to (will be created as a directory)
                 engine (str) : Name of the engine to use. Possible values are: {'auto', 'pyarrow', 'fastparquet'}.
                 compression (str) : Name of the compression to use. Possible values are: {'snappy', 'gzip', 'brotli', None}.
+                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
         '''
-        serialize.write_data_description(self, path, format='parquet', engine=engine, compression=compression)
+        serialize.write_data_description(self, path, format='parquet', engine=engine, compression=compression, profile_name=profile_name)
         return self
 
-    def to_csv(self, path, sep=',', encoding='utf-8', engine='python', compression=None):
+    def to_csv(self, path, sep=',', encoding='utf-8', engine='python', compression=None, profile_name=None):
         '''Write entityset to disk in the csv format, location specified by `path`.
+            Path could be a local path or a S3 path.
+            If writing to S3 a tar archive of files will be written.
 
             Args:
                 path (str) : Location on disk to write to (will be created as a directory)
@@ -173,8 +179,9 @@ class EntitySet(object):
                 encoding (str) : A string representing the encoding to use in the output file, defaults to 'utf-8'.
                 engine (str) : Name of the engine to use. Possible values are: {'c', 'python'}.
                 compression (str) : Name of the compression to use. Possible values are: {'gzip', 'bz2', 'zip', 'xz', None}.
+                profile_name (str) : Name of AWS profile to use, False to use an anonymous profile, or None.
         '''
-        serialize.write_data_description(self, path, format='csv', index=False, sep=sep, encoding=encoding, engine=engine, compression=compression)
+        serialize.write_data_description(self, path, format='csv', index=False, sep=sep, encoding=encoding, engine=engine, compression=compression, profile_name=profile_name)
         return self
 
     def to_dictionary(self):
@@ -203,10 +210,6 @@ class EntitySet(object):
             repr_out += u"\n    %s.%s -> %s.%s" % \
                 (r._child_entity_id, r._child_variable_id,
                  r._parent_entity_id, r._parent_variable_id)
-
-        # encode for python 2
-        if type(repr_out) != str:
-            repr_out = repr_out.encode("utf-8")
 
         return repr_out
 
@@ -476,6 +479,11 @@ class EntitySet(object):
         if time_index is not None and time_index == index:
             raise ValueError("time_index and index cannot be the same value, %s" % (time_index))
 
+        if time_index is None:
+            for variable, variable_type in variable_types.items():
+                if variable_type == vtypes.DatetimeTimeIndex:
+                    raise ValueError("DatetimeTimeIndex variable %s must be set using time_index parameter" % (variable))
+
         entity = Entity(
             entity_id,
             dataframe,
@@ -534,6 +542,13 @@ class EntitySet(object):
         additional_variables = additional_variables or []
         copy_variables = copy_variables or []
 
+        # Check base entity to make sure time index is valid
+        if base_entity.time_index is not None:
+            t_index = base_entity[base_entity.time_index]
+            if not isinstance(t_index, (vtypes.NumericTimeIndex, vtypes.DatetimeTimeIndex)):
+                base_error = "Time index '{0}' is not a NumericTimeIndex or DatetimeTimeIndex, but type {1}. Use set_time_index on entity '{2}' to set the time_index."
+                raise TypeError(base_error.format(base_entity.time_index, type(t_index), str(base_entity.id)))
+
         if not isinstance(additional_variables, list):
             raise TypeError("'additional_variables' must be a list, but received type {}"
                             .format(type(additional_variables)))
@@ -551,19 +566,28 @@ class EntitySet(object):
         for v in additional_variables + copy_variables:
             if v == index:
                 raise ValueError("Not copying {} as both index and variable".format(v))
-                break
-        if is_string(make_time_index):
+
+        for v in additional_variables:
+            if v == base_entity.time_index:
+                raise ValueError("Not moving {} as it is the base time index variable. Perhaps, move the variable to the copy_variables.".format(v))
+
+        if isinstance(make_time_index, str):
             if make_time_index not in base_entity.df.columns:
                 raise ValueError("'make_time_index' must be a variable in the base entity")
             elif make_time_index not in additional_variables + copy_variables:
-                raise ValueError("'make_time_index' must specified in 'additional_variables' or 'copy_variables'")
+                raise ValueError("'make_time_index' must be specified in 'additional_variables' or 'copy_variables'")
         if index == base_entity.index:
             raise ValueError("'index' must be different from the index column of the base entity")
 
         transfer_types = {}
         transfer_types[index] = type(base_entity[index])
         for v in additional_variables + copy_variables:
-            transfer_types[v] = type(base_entity[v])
+            if type(base_entity[v]) == vtypes.DatetimeTimeIndex:
+                transfer_types[v] = vtypes.Datetime
+            elif type(base_entity[v]) == vtypes.NumericTimeIndex:
+                transfer_types[v] = vtypes.Numeric
+            else:
+                transfer_types[v] = type(base_entity[v])
 
         # create and add new entity
         new_entity_df = self[base_entity_id].df.copy()
@@ -838,13 +862,10 @@ class EntitySet(object):
                 Jupyter notebooks.
 
         """
-        try:
-            import graphviz
-        except ImportError:
-            raise ImportError('Please install graphviz to plot entity sets.' +
-                              ' (See https://docs.featuretools.com/getting_started/install.html#installing-graphviz for' +
-                              ' details)')
-
+        GRAPHVIZ_ERR_MSG = ('Please install graphviz to plot entity sets.' +
+                            ' (See https://docs.featuretools.com/getting_started/install.html#installing-graphviz for' +
+                            ' details)')
+        graphviz = import_or_raise("graphviz", GRAPHVIZ_ERR_MSG)
         # Try rendering a dummy graph to see if a working backend is installed
         try:
             graphviz.Digraph().pipe()
@@ -883,7 +904,8 @@ class EntitySet(object):
         for entity in self.entities:
             variables_string = '\l'.join([var.id + ' : ' + var.type_string  # noqa: W605
                                           for var in entity.variables])
-            label = '{%s|%s\l}' % (entity.id, variables_string)  # noqa: W605
+            nrows = entity.shape[0]
+            label = '{%s (%d row%s)|%s\l}' % (entity.id, nrows, 's' * (nrows > 1), variables_string)  # noqa: W605
             graph.node(entity.id, shape='record', label=label)
 
         # Draw relationships

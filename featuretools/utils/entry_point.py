@@ -1,12 +1,6 @@
-try:
-    # python 3
-    from inspect import signature
-except ImportError:
-    # python 2
-    from funcsigs import signature
-
 import time
 from functools import wraps
+from inspect import signature
 
 import pkg_resources
 

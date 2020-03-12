@@ -7,28 +7,37 @@ from featuretools.feature_base.feature_base import (
     DirectFeature,
     Feature,
     FeatureBase,
+    FeatureOutputSlice,
     GroupByTransformFeature,
     IdentityFeature,
     TransformFeature
 )
 from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools.utils.gen_utils import check_schema_version
+from featuretools.utils.s3_utils import (
+    get_transport_params,
+    use_smartopen_features
+)
+from featuretools.utils.wrangle import _is_s3, _is_url
 
 
-def load_features(features):
-    """Loads the features from a filepath, an open file, or a JSON formatted string.
+def load_features(features, profile_name=None):
+    """Loads the features from a filepath, S3 path, URL, an open file, or a JSON formatted string.
 
     Args:
         features (str or :class:`.FileObject`): The location of where features has
         been saved which this must include the name of the file, or a JSON formatted
         string, or a readable file handle where the features have been saved.
 
+        profile_name (str, bool): The AWS profile specified to write to S3. Will default to None and search for AWS credentials.
+            Set to False to use an anonymous profile.
+
     Returns:
         features (list[:class:`.FeatureBase`]): Feature definitions list.
 
     Note:
-        Features saved in one version of Featuretools are not guaranteed to work in another.
-        After upgrading Featuretools, features may need to be generated again.
+        Features saved in one version of Featuretools or python are not guaranteed to work in another.
+        After upgrading Featuretools or python, features may need to be generated again.
 
     Example:
         .. ipython:: python
@@ -51,7 +60,7 @@ def load_features(features):
     .. seealso::
         :func:`.save_features`
     """
-    return FeaturesDeserializer.load(features).to_list()
+    return FeaturesDeserializer.load(features, profile_name).to_list()
 
 
 class FeaturesDeserializer(object):
@@ -63,6 +72,7 @@ class FeaturesDeserializer(object):
         'GroupByTransformFeature': GroupByTransformFeature,
         'IdentityFeature': IdentityFeature,
         'TransformFeature': TransformFeature,
+        'FeatureOutputSlice': FeatureOutputSlice
     }
 
     def __init__(self, features_dict):
@@ -73,13 +83,21 @@ class FeaturesDeserializer(object):
         self._primitives_deserializer = PrimitivesDeserializer()
 
     @classmethod
-    def load(cls, features):
+    def load(cls, features, profile_name):
         if isinstance(features, str):
             try:
                 features_dict = json.loads(features)
             except ValueError:
-                with open(features, 'r') as f:
-                    features_dict = json.load(f)
+                if _is_url(features) or _is_s3(features):
+                    transport_params = None
+                    if _is_s3(features):
+                        transport_params = get_transport_params(profile_name)
+                    features_dict = use_smartopen_features(
+                        features, transport_params=transport_params
+                    )
+                else:
+                    with open(features, 'r') as f:
+                        features_dict = json.load(f)
             return cls(features_dict)
         return cls(json.load(features))
 

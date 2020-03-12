@@ -5,7 +5,7 @@ Featuretools Enterprise
 
 Premium Primitives
 ------------------
-Feature primitives are the building blocks of Featuretools. They define individual computations that can be applied to raw datasets to create new features. Featuretools Enterprise contains over 100 domain-specific premium primitives to help you build better features for more accurate models.
+Feature primitives are the building blocks of Featuretools. They define individual computations that can be applied to raw datasets to create new features. Featuretools Enterprise contains over 100 domain-specific premium primitives to help you build better features for more accurate models. A list of all premium primitives can be obtained by visiting `primitives.featurelabs.com <https://primitives.featurelabs.com/>`__.
 
 
 Spark and Dask

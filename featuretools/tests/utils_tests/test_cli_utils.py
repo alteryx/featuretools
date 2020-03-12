@@ -25,11 +25,15 @@ def test_sys_info():
 
 def test_installed_packages():
     installed_packages = get_installed_packages()
-    requirements = ["pandas", "numpy", "tqdm", "toolz",
-                    "PyYAML", "cloudpickle", "future",
+    # Per PEP 426, package names are case insensitive
+    # Underscore and hyphen are equivalent
+    installed_set = {name.lower().replace('-', '_')
+                     for name in installed_packages.keys()}
+    requirements = ["pandas", "numpy", "tqdm",
+                    "pyyaml", "cloudpickle",
                     "dask", "distributed", "psutil",
-                    "Click", "scikit-learn"]
-    assert set(requirements).issubset(installed_packages.keys())
+                    "click"]
+    assert set(requirements).issubset(installed_set)
 
 
 def test_get_featuretools_root(this_dir):

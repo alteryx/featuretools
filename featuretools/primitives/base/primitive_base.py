@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import os
 
 import numpy as np
@@ -46,6 +44,9 @@ class PrimitiveBase(object):
             return self._method(*series_args, **kwargs)
 
     def generate_name(self):
+        raise NotImplementedError("Subclass must implement")
+
+    def generate_names(self):
         raise NotImplementedError("Subclass must implement")
 
     def get_function(self):

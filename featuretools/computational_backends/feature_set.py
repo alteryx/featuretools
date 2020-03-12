@@ -1,11 +1,11 @@
 import itertools
 import logging
-from builtins import object
 from collections import defaultdict
 
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import (
     AggregationFeature,
+    FeatureOutputSlice,
     GroupByTransformFeature,
     TransformFeature
 )
@@ -135,6 +135,8 @@ class FeatureSet(object):
         sub_ignored_trie = approximate_feature_trie.get_node(feature.relationship_path)
 
         for dep_feat in feature.get_dependencies():
+            if isinstance(dep_feat, FeatureOutputSlice):
+                dep_feat = dep_feat.base_feature
             self._add_feature_to_trie(sub_trie, dep_feat, sub_ignored_trie,
                                       ancestor_needs_full_entity=needs_full_entity)
 
@@ -201,9 +203,14 @@ class FeatureSet(object):
 # These functions are used for sorting and grouping features
 
 
-def _get_use_previous(f):
+def _get_use_previous(f):  # TODO Sort and group features for DateOffset with two different temporal values
     if isinstance(f, AggregationFeature) and f.use_previous is not None:
-        return (f.use_previous.unit, f.use_previous.value)
+        if len(f.use_previous.times.keys()) > 1:
+            return ("", -1)
+        else:
+            unit = list(f.use_previous.times.keys())[0]
+            value = f.use_previous.times[unit]
+            return (unit, value)
     else:
         return ("", -1)
 

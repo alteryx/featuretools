@@ -15,11 +15,14 @@ from featuretools.primitives import (
     Last,
     TransformPrimitive
 )
+from featuretools.primitives.base import make_trans_primitive
 from featuretools.primitives.utils import (
     PrimitivesDeserializer,
     serialize_primitive
 )
-from featuretools.variable_types import DatetimeTimeIndex, Numeric
+from featuretools.synthesis import dfs
+from featuretools.tests.testing_utils import feature_with_name
+from featuretools.variable_types import Datetime, DatetimeTimeIndex, Numeric
 
 
 class TestCumCount:
@@ -352,6 +355,30 @@ def test_groupby_uses_calc_time(es):
         assert ((pd.isnull(x) and pd.isnull(y)) or x == y)
 
 
+def test_groupby_multi_output_stacking(es):
+    TestTime = make_trans_primitive(
+        function=lambda x: x,
+        name="test_time",
+        input_types=[Datetime],
+        return_type=Numeric,
+        number_output_features=6,
+    )
+
+    fl = dfs(
+        entityset=es,
+        target_entity="sessions",
+        agg_primitives=[],
+        trans_primitives=[TestTime],
+        groupby_trans_primitives=[CumSum],
+        features_only=True,
+        max_depth=4)
+
+    for i in range(6):
+        f = 'customers.CUM_SUM(TEST_TIME(upgrade_date)[%d]) by cohort' % i
+        assert feature_with_name(fl, f)
+        assert ('customers.CUM_SUM(TEST_TIME(date_of_birth)[%d]) by customer_id' % i) in fl
+
+
 def test_serialization(es):
     value = ft.IdentityFeature(es['log']['value'])
     zipcode = ft.IdentityFeature(es['log']['zipcode'])
@@ -374,3 +401,94 @@ def test_serialization(es):
         ft.feature_base.GroupByTransformFeature.from_dictionary(dictionary, es,
                                                                 dependencies,
                                                                 PrimitivesDeserializer())
+
+
+def test_groupby_with_multioutput_primitive(es):
+    def multi_cum_sum(x):
+        return x.cumsum(), x.cummax(), x.cummin()
+
+    num_features = 3
+    MultiCumSum = make_trans_primitive(function=multi_cum_sum,
+                                       input_types=[Numeric],
+                                       return_type=Numeric,
+                                       number_output_features=num_features)
+
+    fm, _ = dfs(entityset=es,
+                target_entity='customers',
+                trans_primitives=[],
+                agg_primitives=[],
+                groupby_trans_primitives=[MultiCumSum, CumSum, CumMax, CumMin])
+
+    # Calculate output in a separate DFS call to make sure the multi-output code
+    # does not alter any values
+    fm2, _ = dfs(entityset=es,
+                 target_entity='customers',
+                 trans_primitives=[],
+                 agg_primitives=[],
+                 groupby_trans_primitives=[CumSum, CumMax, CumMin])
+
+    answer_cols = [
+        ['CUM_SUM(age) by cohort', 'CUM_SUM(age) by région_id'],
+        ['CUM_MAX(age) by cohort', 'CUM_MAX(age) by région_id'],
+        ['CUM_MIN(age) by cohort', 'CUM_MIN(age) by région_id']
+    ]
+
+    for i in range(3):
+        # Check that multi-output gives correct answers
+        f = 'MULTI_CUM_SUM(age)[%d] by cohort' % i
+        assert f in fm.columns
+        for x, y in zip(fm[f].values, fm[answer_cols[i][0]].values):
+            assert x == y
+        f = 'MULTI_CUM_SUM(age)[%d] by région_id' % i
+        assert f in fm.columns
+        for x, y in zip(fm[f].values, fm[answer_cols[i][1]].values):
+            assert x == y
+        # Verify single output results are unchanged by inclusion of
+        # multi-output primitive
+        for x, y in zip(fm[answer_cols[i][0]], fm2[answer_cols[i][0]]):
+            assert x == y
+        for x, y in zip(fm[answer_cols[i][1]], fm2[answer_cols[i][1]]):
+            assert x == y
+
+
+def test_groupby_with_multioutput_primitive_custom_names(es):
+    def gen_custom_names(primitive, base_feature_names):
+        return ["CUSTOM_SUM", "CUSTOM_MAX", "CUSTOM_MIN"]
+
+    def multi_cum_sum(x):
+        return x.cumsum(), x.cummax(), x.cummin()
+
+    num_features = 3
+    MultiCumSum = make_trans_primitive(function=multi_cum_sum,
+                                       input_types=[Numeric],
+                                       return_type=Numeric,
+                                       number_output_features=num_features,
+                                       cls_attributes={"generate_names": gen_custom_names})
+
+    fm, _ = dfs(entityset=es,
+                target_entity='customers',
+                trans_primitives=[],
+                agg_primitives=[],
+                groupby_trans_primitives=[MultiCumSum, CumSum, CumMax, CumMin])
+
+    answer_cols = [
+        ['CUM_SUM(age) by cohort', 'CUM_SUM(age) by région_id'],
+        ['CUM_MAX(age) by cohort', 'CUM_MAX(age) by région_id'],
+        ['CUM_MIN(age) by cohort', 'CUM_MIN(age) by région_id']
+    ]
+
+    expected_names = [
+        ['CUSTOM_SUM by cohort', 'CUSTOM_SUM by région_id'],
+        ['CUSTOM_MAX by cohort', 'CUSTOM_MAX by région_id'],
+        ['CUSTOM_MIN by cohort', 'CUSTOM_MIN by région_id']
+    ]
+
+    for i in range(3):
+        f = expected_names[i][0]
+        assert f in fm.columns
+        for x, y in zip(fm[f].values, fm[answer_cols[i][0]].values):
+            assert x == y
+        f = expected_names[i][1]
+        assert f in fm.columns
+        for x, y in zip(fm[f].values, fm[answer_cols[i][1]].values):
+            assert x == y

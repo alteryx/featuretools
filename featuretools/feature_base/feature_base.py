@@ -1,5 +1,3 @@
-from builtins import zip
-
 from featuretools import Relationship, Timedelta, primitives
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.primitives.base import (
@@ -13,6 +11,7 @@ from featuretools.utils.wrangle import (
     _check_timedelta
 )
 from featuretools.variable_types import (
+    Boolean,
     Categorical,
     Datetime,
     DatetimeTimeIndex,
@@ -26,7 +25,7 @@ from featuretools.variable_types import (
 
 
 class FeatureBase(object):
-    def __init__(self, entity, base_features, relationship_path, primitive, name=None):
+    def __init__(self, entity, base_features, relationship_path, primitive, name=None, names=None):
         """Base class for all features
 
         Args:
@@ -53,8 +52,17 @@ class FeatureBase(object):
 
         self._name = name
 
+        self._names = names
+
         assert self._check_input_types(), ("Provided inputs don't match input "
                                            "type requirements")
+
+    def __getitem__(self, key):
+        assert self.number_output_features > 1, \
+            'can only access slice of multi-output feature'
+        assert self.number_output_features > key, \
+            'index is higher than the number of outputs'
+        return FeatureOutputSlice(self, key)
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
@@ -74,12 +82,17 @@ class FeatureBase(object):
             self._name = self.generate_name()
         return self._name
 
+    def get_names(self):
+        if not self._names:
+            self._names = self.generate_names()
+        return self._names
+
     def get_feature_names(self):
         n = self.number_output_features
         if n == 1:
             names = [self.get_name()]
         else:
-            names = [self.get_name() + "__{}".format(i) for i in range(n)]
+            names = self.get_names()
         return names
 
     def get_function(self):
@@ -155,13 +168,7 @@ class FeatureBase(object):
         return self.primitive.number_output_features
 
     def __repr__(self):
-        ret = "<Feature: %s>" % (self.get_name())
-
-        # encode for python 2
-        if type(ret) != str:
-            ret = ret.encode("utf-8")
-
-        return ret
+        return "<Feature: %s>" % (self.get_name())
 
     def hash(self):
         return hash(self.get_name() + self.entity.id)
@@ -271,6 +278,9 @@ class FeatureBase(object):
 
     def __mul__(self, other):
         """Multiply by other"""
+        if isinstance(other, FeatureBase):
+            if self.variable_type == Boolean and other.variable_type == Boolean:
+                return Feature([self, other], primitive=primitives.MultiplyBoolean)
         return self._handle_binary_comparision(other, primitives.MultiplyNumeric, primitives.MultiplyNumericScalar)
 
     def __rmul__(self, other):
@@ -436,7 +446,7 @@ class DirectFeature(FeatureBase):
 
     @property
     def number_output_features(self):
-        return self.base_features[0].primitive.number_output_features
+        return self.base_features[0].number_output_features
 
     @property
     def default_value(self):
@@ -489,6 +499,10 @@ class AggregationFeature(FeatureBase):
         else:
             base_features = [_check_feature(base_features)]
 
+        for bf in base_features:
+            if bf.number_output_features > 1:
+                raise ValueError("Cannot stack on whole multi-output feature.")
+
         self.child_entity = base_features[0].entity
 
         relationship_path, self._path_is_unique = \
@@ -506,7 +520,6 @@ class AggregationFeature(FeatureBase):
             assert self.child_entity.time_index is not None, (
                 "Applying function that requires time index to entity that "
                 "doesn't have one")
-
             self.use_previous = _check_timedelta(use_previous)
             assert len(base_features) > 0
             time_index = base_features[0].entity.time_index
@@ -591,7 +604,7 @@ class AggregationFeature(FeatureBase):
         return where_str
 
     def _use_prev_str(self):
-        if self.use_previous is not None:
+        if self.use_previous is not None and hasattr(self.use_previous, 'get_name'):
             use_prev_str = u", Last {}".format(self.use_previous.get_name())
         else:
             use_prev_str = u''
@@ -603,6 +616,13 @@ class AggregationFeature(FeatureBase):
                                             parent_entity_id=self.parent_entity.id,
                                             where_str=self._where_str(),
                                             use_prev_str=self._use_prev_str())
+
+    def generate_names(self):
+        return self.primitive.generate_names(base_feature_names=[bf.get_name() for bf in self.base_features],
+                                             relationship_path_name=self.relationship_path_name(),
+                                             parent_entity_id=self.parent_entity.id,
+                                             where_str=self._where_str(),
+                                             use_prev_str=self._use_prev_str())
 
     def get_arguments(self):
         return {
@@ -632,8 +652,9 @@ class TransformFeature(FeatureBase):
         else:
             base_features = [_check_feature(base_features)]
 
-        # R TODO handle stacking on sub-features
-        assert all(bf.number_output_features == 1 for bf in base_features)
+        for bf in base_features:
+            if bf.number_output_features > 1:
+                raise ValueError("Cannot stack on whole multi-output feature.")
 
         super(TransformFeature, self).__init__(entity=base_features[0].entity,
                                                base_features=base_features,
@@ -652,6 +673,9 @@ class TransformFeature(FeatureBase):
 
     def generate_name(self):
         return self.primitive.generate_name(base_feature_names=[bf.get_name() for bf in self.base_features])
+
+    def generate_names(self):
+        return self.primitive.generate_names(base_feature_names=[bf.get_name() for bf in self.base_features])
 
     def get_arguments(self):
         return {
@@ -698,6 +722,12 @@ class GroupByTransformFeature(TransformFeature):
         _name = self.primitive.generate_name(base_names)
         return u"{} by {}".format(_name, self.groupby.get_name())
 
+    def generate_names(self):
+        base_names = [bf.get_name() for bf in self.base_features[:-1]]
+        _names = self.primitive.generate_names(base_names)
+        names = [name + " by {}".format(self.groupby.get_name()) for name in _names]
+        return names
+
     def get_arguments(self):
         # Do not include groupby in base_features.
         feature_names = [feat.unique_name() for feat in self.base_features
@@ -717,7 +747,6 @@ class Feature(object):
 
     def __new__(self, base, entity=None, groupby=None, parent_entity=None,
                 primitive=None, use_previous=None, where=None):
-
         # either direct or indentity
         if primitive is None and entity is None:
             return IdentityFeature(base)
@@ -738,6 +767,56 @@ class Feature(object):
             return TransformFeature(base, primitive=primitive)
 
         raise Exception("Unrecognized feature initialization")
+
+
+class FeatureOutputSlice(FeatureBase):
+    """
+    Class to access specific multi output feature column
+    """
+
+    def __init__(self, base_feature, n, name=None):
+        base_features = [base_feature]
+        self.num_output_parent = base_feature.number_output_features
+
+        msg = "cannot access slice from single output feature"
+        assert(self.num_output_parent > 1), msg
+        msg = "cannot access column that is not between 0 and " + str(self.num_output_parent - 1)
+        assert(n < self.num_output_parent), msg
+
+        self.n = n
+        self._name = name
+        self.base_features = base_features
+        self.base_feature = base_features[0]
+
+        self.entity_id = base_feature.entity_id
+        self.entityset = base_feature.entityset
+        self.primitive = base_feature.primitive
+
+        self.relationship_path = base_feature.relationship_path
+
+    def __getitem__(self, key):
+        raise ValueError("Cannot get item from slice of multi output feature")
+
+    def generate_name(self):
+        return self.base_feature.get_names()[self.n]
+
+    @property
+    def number_output_features(self):
+        return 1
+
+    def get_arguments(self):
+        return {
+            'name': self._name,
+            'base_feature': self.base_feature,
+            'n': self.n
+        }
+
+    @classmethod
+    def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
+        base_feature = arguments['base_feature']
+        n = arguments['n']
+        name = arguments['name']
+        return cls(base_feature=base_feature, n=n, name=name)
 
 
 def _check_feature(feature):
