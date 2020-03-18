@@ -1,0 +1,11 @@
+# DOCKER BUILD COMMAND: docker build -t py .
+# DOCKER RUN COMMAND: docker run --rm -it -p 8787:8787 -v /Users/nate.parsons/dev/featuretools/featuretools/dask-tests-tmp:/app py python -u /app/test_agg.py
+
+FROM python
+
+ADD /data /data
+
+RUN python -m pip install git+https://github.com/FeatureLabs/featuretools.git@dask-entity
+RUN python -m pip install memory_profiler
+RUN python -m pip install fastparquet
+RUN python -m pip install bokeh

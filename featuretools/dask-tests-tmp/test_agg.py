@@ -34,7 +34,7 @@ previous_application_file = os.path.join(os.path.dirname(__file__), 'data/home-c
 def run_dask(trans_primitives, agg_primitives):
     # CREATE DASK DATAFRAMES
     print("Creating Dask dataframes")
-    blocksize = '10MB'
+    blocksize = '50MB'
     df1 = dd.read_csv(pandas_application_file + '.csv', blocksize=blocksize)
     df2 = dd.read_csv(pandas_application_file + '_2.csv', blocksize=blocksize)
     df3 = dd.read_csv(pandas_application_file + '_3.csv', blocksize=blocksize)
@@ -52,7 +52,7 @@ def run_dask(trans_primitives, agg_primitives):
     print('Previous Application DF npartitions: {}'.format(previous_application_dd.npartitions))
     # Create a bool column for testing
     bureau_dd['AMT_CREDIT_SUM_OVERDUE'] = bureau_dd['AMT_CREDIT_SUM_OVERDUE'].astype(bool)
-
+    
     # CREATE DASK ENTITYSET
     print("Creating Dask entityset")
     start_es = datetime.now()
@@ -90,7 +90,8 @@ def run_dask(trans_primitives, agg_primitives):
     dask_fm, _ = ft.dfs(entityset=dask_es,
                     target_entity="application",
                     trans_primitives=trans_primitives,
-                    agg_primitives=agg_primitives)
+                    agg_primitives=agg_primitives,
+                    verbose=True)
     end_dask = datetime.now()
     elapsed_dask = end_dask - start_dask
     print(f"Dask DFS completed in {elapsed_dask.total_seconds()} seconds")
@@ -159,7 +160,8 @@ def run_pandas(trans_primitives, agg_primitives):
     fm, _ = ft.dfs(entityset=es,
                target_entity="application",
                trans_primitives=trans_primitives,
-               agg_primitives=agg_primitives)
+               agg_primitives=agg_primitives,
+               verbose=True)
     end = datetime.now()
     elapsed = end - start
     print(f"Pandas DFS completed in {elapsed.total_seconds()} seconds")
@@ -175,57 +177,60 @@ def run_pandas(trans_primitives, agg_primitives):
 if __name__ == '__main__':
     # client = Client(n_workers=4, memory_limit='3GB')
     # client = Client(n_workers=1, threads_per_worker=4, processes=False, memory_limit='10GB')
-    client = Client(processes=False, silence_logs=logging.ERROR)
+    # client = Client(dashboard_address="127.0.0.1:8787", processes=False, silence_logs=logging.ERROR)
+    # client = Client()
+    # print(client)
 
     # Default primitives set
     agg_primitives = ['min', 'max', 'count', 'sum', 'mean', 'any', 'all', 'num_true']
+    agg_primitives = ['min', 'max', 'count']
     # TO TEST FURTHER: std, avg_time_between, num_unique, entropy, median, skew, n_most_common
     trans_primitives = ['cum_sum', 'diff', 'is_weekend', 'year', 'day', 'negate', 'cum_min', 'cum_max', 'absolute']
-    trans_primitives = []
+    trans_primitives = ['cum_sum', 'diff', 'negate']
 
     # Test each agg primitive individually
-    for agg_primitive in agg_primitives:
-        print(f"Testing primitive: {agg_primitive}")
-        print("Generating Dask feature matrix")
-        dask_fm = run_dask(trans_primitives, [agg_primitive])
-        print(f"Writing dask feature matrix to CSV: {dask_fm.npartitions} partitions")
-        start = datetime.now()
-        output_path = os.path.join(os.path.dirname(__file__), 'data/feature_matrix-*.csv')
-        dask_fm.to_csv(output_path)
-        end = datetime.now()
-        elapsed = end - start
-        print(f"Write to CSV completed in {elapsed.total_seconds()} seconds")
-        print("Computing dask feature matrix")
-        dask_fm = dask_fm.compute()
+    # for agg_primitive in agg_primitives:
+    #     print(f"Testing primitive: {agg_primitive}")
+    #     print("Generating Dask feature matrix")
+    #     dask_fm = run_dask(trans_primitives, [agg_primitive])
+    #     print(f"Writing dask feature matrix to CSV: {dask_fm.npartitions} partitions")
+    #     start = datetime.now()
+    #     output_path = os.path.join(os.path.dirname(__file__), 'data/feature_matrix-*.csv')
+    #     dask_fm.to_csv(output_path)
+    #     end = datetime.now()
+    #     elapsed = end - start
+    #     print(f"Write to CSV completed in {elapsed.total_seconds()} seconds")
+    #     print("Computing dask feature matrix")
+    #     dask_fm = dask_fm.compute()
 
-        print("Generating pandas feature matrix")
-        fm = run_pandas(trans_primitives, [agg_primitive])
-        print(f"Feature matrix cols: {fm.columns}")
-        print(fm.head())
-        print(f"Pandas feature matrix memory usage: {fm.memory_usage().sum()/1000000} MB")
-        print(f"Feature matrix shape: {fm.shape}")
+    #     print("Generating pandas feature matrix")
+    #     fm = run_pandas(trans_primitives, [agg_primitive])
+    #     print(f"Feature matrix cols: {fm.columns}")
+    #     print(fm.head())
+    #     print(f"Pandas feature matrix memory usage: {fm.memory_usage().sum()/1000000} MB")
+    #     print(f"Feature matrix shape: {fm.shape}")
 
-        try:
-            assert agg_primitive.upper() in "_".join(dask_fm.columns), f"`{agg_primitive.upper()}`` not found in dask features!"
-            assert agg_primitive.upper() in "_".join(fm.columns), f"`{agg_primitive.upper()}`` not found in dask features!"
-            pd.testing.assert_frame_equal(dask_fm.set_index('SK_ID_CURR').loc[fm.index][fm.columns], fm)
-            print("Dataframes are equal")
-        except:
-            print("Something didn't work right")
-            breakpoint()
+    #     try:
+    #         assert agg_primitive.upper() in "_".join(dask_fm.columns), f"`{agg_primitive.upper()}`` not found in dask features!"
+    #         assert agg_primitive.upper() in "_".join(fm.columns), f"`{agg_primitive.upper()}`` not found in dask features!"
+    #         pd.testing.assert_frame_equal(dask_fm.set_index('SK_ID_CURR').loc[fm.index][fm.columns], fm)
+    #         print("Dataframes are equal")
+    #     except:
+    #         print("Something didn't work right")
+    #         breakpoint()
 
     # Test all agg primitives at the same time
-    # print(f"Testing agg primitives: {agg_primitives}")
-    # print(f"Testing trans primitives: {trans_primitives}")
-    # print("Generating Dask feature matrix")
-    # dask_fm = run_dask(trans_primitives, agg_primitives)
-    # print(f"Writing dask feature matrix to CSV: {dask_fm.npartitions} partitions")
-    # start = datetime.now()
-    # output_path = os.path.join(os.path.dirname(__file__), 'data/feature_matrix-*.csv')
-    # dask_fm.to_csv(output_path)
-    # end = datetime.now()
-    # elapsed = end - start
-    # print(f"Write to CSV completed in {elapsed.total_seconds()} seconds")
+    print(f"Testing agg primitives: {agg_primitives}")
+    print(f"Testing trans primitives: {trans_primitives}")
+    print("Generating Dask feature matrix")
+    dask_fm = run_dask(trans_primitives, agg_primitives)
+    print(f"Writing dask feature matrix to CSV: {dask_fm.npartitions} partitions")
+    start = datetime.now()
+    output_path = os.path.join(os.path.dirname(__file__), 'data/feature_matrix-*.csv')
+    dask_fm.to_csv(output_path)
+    end = datetime.now()
+    elapsed = end - start
+    print(f"Write to CSV completed in {elapsed.total_seconds()} seconds")
 
     # print("Computing dask feature matrix")
     # dask_fm = dask_fm.compute()
@@ -233,12 +238,12 @@ if __name__ == '__main__':
     # dask_usage = memory_usage(run_dask)
     # print(f"Max Dask Memory Usage: {max(dask_usage)}")
 
-    # print("Generating pandas feature matrix")
-    # fm = run_pandas(trans_primitives, agg_primitives)
-    # print(f"Feature matrix cols: {fm.columns}")
-    # print(fm.head())
-    # print(f"Pandas feature matrix memory usage: {fm.memory_usage().sum()/1000000} MB")
-    # print(f"Feature matrix shape: {fm.shape}")
+    print("Generating pandas feature matrix")
+    fm = run_pandas(trans_primitives, agg_primitives)
+    print(f"Feature matrix cols: {fm.columns}")
+    print(fm.head())
+    print(f"Pandas feature matrix memory usage: {fm.memory_usage().sum()/1000000} MB")
+    print(f"Feature matrix shape: {fm.shape}")
 
     # try:
     #     pd.testing.assert_frame_equal(dask_fm.set_index('SK_ID_CURR').loc[fm.index][fm.columns], fm)
