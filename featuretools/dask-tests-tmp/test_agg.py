@@ -15,6 +15,7 @@ import pandas as pd
 from dask import dataframe as dd
 import dask
 from dask.distributed import Client
+from dask.distributed import wait
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
@@ -27,26 +28,26 @@ bureau_file = os.path.join(os.path.dirname(__file__), 'data/home-credit-default-
 previous_application_file = os.path.join(os.path.dirname(__file__), 'data/home-credit-default-risk/previous_application.csv')
 
 # DOCKER BUILD COMMAND: docker build -t py .
-# DOCKER RUN COMMAND: docker run -it -p 8787:8787 -v /Users/nate.parsons/dev/ft-dask-testing:/app -v /Users/nate.parsons/dev/ft-dask-testing/data:/app/data py python -u /app/test_loan.py
-# DOCKER RUN COMMAND: docker run -it -p 8787:8787 -v /Users/nate.parsons/dev/ft-dask-testing:/app -v /Users/nate.parsons/dev/ft-dask-testing/data:/app/data py python -u /app/test_long.py
-# DOCKER RUN COMMAND: docker run -it -p 8787:8787 -v /Users/nate.parsons/dev/ft-dask-testing:/app -v /Users/nate.parsons/dev/ft-dask-testing/data:/app/data py python -u /app/test_agg.py
+# DOCKER RUN COMMAND: docker run -it -p 8787:8787 -v /Users/nate.parsons/dev/featuretools/featuretools/dask-tests-tmp:/app -v /Users/nate.parsons/dev/featuretools/featuretools/dask-tests-tmp/data:/app/data py python -u /app/test_agg.py
 
 def run_dask(trans_primitives, agg_primitives):
     # CREATE DASK DATAFRAMES
     print("Creating Dask dataframes")
-    blocksize = '50MB'
+    blocksize = '5MB'
     df1 = dd.read_csv(pandas_application_file + '.csv', blocksize=blocksize)
-    df2 = dd.read_csv(pandas_application_file + '_2.csv', blocksize=blocksize)
-    df3 = dd.read_csv(pandas_application_file + '_3.csv', blocksize=blocksize)
-    df4 = dd.read_csv(pandas_application_file + '_4.csv', blocksize=blocksize)
-    df5 = dd.read_csv(pandas_application_file + '_5.csv', blocksize=blocksize)
-    df6 = dd.read_csv(pandas_application_file + '_6.csv', blocksize=blocksize)
-    df7 = dd.read_csv(pandas_application_file + '_7.csv', blocksize=blocksize)
-    df8 = dd.read_csv(pandas_application_file + '_8.csv', blocksize=blocksize)
-    df9 = dd.read_csv(pandas_application_file + '_9.csv', blocksize=blocksize)
-    application_dd = dd.concat([df1, df2])
+    df2 = dd.read_csv(pandas_application_file + '_2.csv')
+    df3 = dd.read_csv(pandas_application_file + '_3.csv')
+    df4 = dd.read_csv(pandas_application_file + '_4.csv')
+    df5 = dd.read_csv(pandas_application_file + '_5.csv')
+    df6 = dd.read_csv(pandas_application_file + '_6.csv')
+    df7 = dd.read_csv(pandas_application_file + '_7.csv')
+    df8 = dd.read_csv(pandas_application_file + '_8.csv')
+    df9 = dd.read_csv(pandas_application_file + '_9.csv')
+    # application_dd = dd.concat([df1, df2])
+    application_dd = df1
     bureau_dd = dd.read_csv(bureau_file, blocksize=blocksize)
     previous_application_dd = dd.read_csv(previous_application_file, blocksize=blocksize)
+
     print('Application DF npartitions: {}'.format(application_dd.npartitions))
     print('Bureau DF npartitions: {}'.format(bureau_dd.npartitions))
     print('Previous Application DF npartitions: {}'.format(previous_application_dd.npartitions))
@@ -121,8 +122,8 @@ def run_pandas(trans_primitives, agg_primitives):
     df7 = pd.read_csv(pandas_application_file + '_7.csv')
     df8 = pd.read_csv(pandas_application_file + '_8.csv')
     df9 = pd.read_csv(pandas_application_file + '_9.csv')
-    application_df = pd.concat([df1, df2])
-
+    # application_df = pd.concat([df1, df2])
+    application_df = df1
     bureau_df = pd.read_csv(bureau_file)
     previous_application_df = pd.read_csv(previous_application_file)
     # Create a bool column for testing
@@ -175,17 +176,14 @@ def run_pandas(trans_primitives, agg_primitives):
 # pd.testing.assert_frame_equal(computed_fm.set_index('SK_ID_CURR').loc[fm.index][fm.columns], fm)
 
 if __name__ == '__main__':
-    # client = Client(n_workers=4, memory_limit='3GB')
-    # client = Client(n_workers=1, threads_per_worker=4, processes=False, memory_limit='10GB')
-    # client = Client(dashboard_address="127.0.0.1:8787", processes=False, silence_logs=logging.ERROR)
+    # client = Client(processes=False, silence_logs=logging.ERROR)
     # client = Client()
-    # print(client)
 
     # Default primitives set
-    agg_primitives = ['min', 'max', 'count', 'sum', 'mean', 'any', 'all', 'num_true']
+    # agg_primitives = ['min', 'max', 'count', 'sum', 'mean', 'any', 'all', 'num_true']
     agg_primitives = ['min', 'max', 'count']
     # TO TEST FURTHER: std, avg_time_between, num_unique, entropy, median, skew, n_most_common
-    trans_primitives = ['cum_sum', 'diff', 'is_weekend', 'year', 'day', 'negate', 'cum_min', 'cum_max', 'absolute']
+    # trans_primitives = ['cum_sum', 'diff', 'is_weekend', 'year', 'day', 'negate', 'cum_min', 'cum_max', 'absolute']
     trans_primitives = ['cum_sum', 'diff', 'negate']
 
     # Test each agg primitive individually
@@ -232,16 +230,11 @@ if __name__ == '__main__':
     elapsed = end - start
     print(f"Write to CSV completed in {elapsed.total_seconds()} seconds")
 
-    # print("Computing dask feature matrix")
-    # dask_fm = dask_fm.compute()
-
     # dask_usage = memory_usage(run_dask)
     # print(f"Max Dask Memory Usage: {max(dask_usage)}")
 
     print("Generating pandas feature matrix")
     fm = run_pandas(trans_primitives, agg_primitives)
-    print(f"Feature matrix cols: {fm.columns}")
-    print(fm.head())
     print(f"Pandas feature matrix memory usage: {fm.memory_usage().sum()/1000000} MB")
     print(f"Feature matrix shape: {fm.shape}")
 
