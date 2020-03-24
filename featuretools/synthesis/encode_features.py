@@ -1,5 +1,6 @@
 import logging
 
+import dask.dataframe as dd
 import pandas as pd
 
 from featuretools.utils.gen_utils import make_tqdm_iterator
@@ -113,6 +114,8 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
             continue
 
         val_counts = X[f.get_name()].value_counts().to_frame()
+        if isinstance(val_counts, dd.core.DataFrame):
+            val_counts = val_counts.compute()
         index_name = val_counts.index.name
         if index_name is None:
             if 'index' in val_counts.columns:
@@ -140,7 +143,7 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
             encoded.append(unknown)
             X[unknown.get_name()] = (~X[f.get_name()].isin(unique)).astype(int)
 
-        X.drop(f.get_name(), axis=1, inplace=True)
+        X = X.drop(f.get_name(), axis=1)
 
     new_columns = []
     for e in encoded:
