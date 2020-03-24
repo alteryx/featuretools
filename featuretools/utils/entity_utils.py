@@ -29,7 +29,7 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
     inferred_type = vtypes.Unknown
     df_len = len(df)
     if df_len:
-        sample_df = df.sample(frac=min(10000 / len(df), 1))
+        sample_df = df.sample(frac=min(10000 / df_len, 1))
         if isinstance(df, dd.core.DataFrame):
             sample_df = sample_df.compute()
     else:
