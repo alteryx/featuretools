@@ -1,3 +1,5 @@
+# flake8: noqa
+
 # To run this test:
 # 1. Download data from https://www.kaggle.com/c/home-credit-default-risk/data and unzip into data/home-credit-default-risk/ directory
 # 2. Run home-credit-gen-data.py to generate addional datafiles
@@ -8,19 +10,19 @@
 # -Aggregation primitives can be run indvidually or at the same time, by uncommenting the proper code block near the end of the file
 # -The size of the resulting feature matrix can be adjusted by changing the number of dataframes combines with `concat` commands
 
-import os, sys, logging
+import logging
+import os
+import sys
 from datetime import datetime
 
+import dask
 import pandas as pd
 from dask import dataframe as dd
-import dask
-from dask.distributed import Client
-from dask.distributed import wait
+from dask.distributed import Client, wait
+from memory_profiler import memory_usage
 
 import featuretools as ft
 from featuretools.entityset import EntitySet
-
-from memory_profiler import memory_usage
 
 dask_application_file = os.path.join(os.path.dirname(__file__), 'data/home-credit-default-risk/application_train*.csv')
 pandas_application_file = os.path.join(os.path.dirname(__file__), 'data/home-credit-default-risk/application_train')
@@ -29,6 +31,7 @@ previous_application_file = os.path.join(os.path.dirname(__file__), 'data/home-c
 
 # DOCKER BUILD COMMAND: docker build -t py .
 # DOCKER RUN COMMAND: docker run -it -p 8787:8787 -v /Users/nate.parsons/dev/featuretools/featuretools/dask-tests-tmp:/app -v /Users/nate.parsons/dev/featuretools/featuretools/dask-tests-tmp/data:/app/data py python -u /app/test_agg.py
+
 
 def run_dask(trans_primitives, agg_primitives):
     # CREATE DASK DATAFRAMES
@@ -53,7 +56,7 @@ def run_dask(trans_primitives, agg_primitives):
     print('Previous Application DF npartitions: {}'.format(previous_application_dd.npartitions))
     # Create a bool column for testing
     bureau_dd['AMT_CREDIT_SUM_OVERDUE'] = bureau_dd['AMT_CREDIT_SUM_OVERDUE'].astype(bool)
-    
+
     # CREATE DASK ENTITYSET
     print("Creating Dask entityset")
     start_es = datetime.now()
@@ -74,25 +77,24 @@ def run_dask(trans_primitives, agg_primitives):
         index="SK_ID_PREV",
     )
     dask_rel1 = ft.Relationship(dask_es["application"]["SK_ID_CURR"],
-                        dask_es["bureau"]["SK_ID_CURR"])
+                                dask_es["bureau"]["SK_ID_CURR"])
     dask_rel2 = ft.Relationship(dask_es["application"]["SK_ID_CURR"],
-                        dask_es["previous_application"]["SK_ID_CURR"])
+                                dask_es["previous_application"]["SK_ID_CURR"])
     dask_es = dask_es.add_relationship(dask_rel1)
     dask_es = dask_es.add_relationship(dask_rel2)
     end_es = datetime.now()
     elapsed_es = end_es - start_es
     print(f"Entityset creation completed in {elapsed_es.total_seconds()} seconds")
 
-
     # RUN DFS WITH DASK ENTITYSET
     print("Run DFS with Dask entityset")
     start_dask = datetime.now()
     print(start_dask)
     dask_fm, _ = ft.dfs(entityset=dask_es,
-                    target_entity="application",
-                    trans_primitives=trans_primitives,
-                    agg_primitives=agg_primitives,
-                    verbose=True)
+                        target_entity="application",
+                        trans_primitives=trans_primitives,
+                        agg_primitives=agg_primitives,
+                        verbose=True)
     end_dask = datetime.now()
     elapsed_dask = end_dask - start_dask
     print(f"Dask DFS completed in {elapsed_dask.total_seconds()} seconds")
@@ -148,9 +150,9 @@ def run_pandas(trans_primitives, agg_primitives):
         index="SK_ID_PREV",
     )
     rel1 = ft.Relationship(es["application"]["SK_ID_CURR"],
-                        es["bureau"]["SK_ID_CURR"])
+                           es["bureau"]["SK_ID_CURR"])
     rel2 = ft.Relationship(es["application"]["SK_ID_CURR"],
-                        es["previous_application"]["SK_ID_CURR"])
+                           es["previous_application"]["SK_ID_CURR"])
     es = es.add_relationship(rel1)
     es = es.add_relationship(rel2)
 
@@ -159,10 +161,10 @@ def run_pandas(trans_primitives, agg_primitives):
     start = datetime.now()
     print(start)
     fm, _ = ft.dfs(entityset=es,
-               target_entity="application",
-               trans_primitives=trans_primitives,
-               agg_primitives=agg_primitives,
-               verbose=True)
+                   target_entity="application",
+                   trans_primitives=trans_primitives,
+                   agg_primitives=agg_primitives,
+                   verbose=True)
     end = datetime.now()
     elapsed = end - start
     print(f"Pandas DFS completed in {elapsed.total_seconds()} seconds")
