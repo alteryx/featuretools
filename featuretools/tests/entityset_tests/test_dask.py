@@ -85,6 +85,24 @@ def test_create_entity_from_dask_df(es):
     pd.testing.assert_frame_equal(es["log"].df, dask_es["log_dask"].df.compute(), check_like=True)
 
 
+def test_create_entity_with_non_numeric_index(es, dask_es):
+    df = pd.DataFrame({"id": ["A_1", "A_2", "C", "D"],
+                       "values": [1, 12, -34, 27]})
+    dask_df = dd.from_pandas(df, npartitions=2)
+
+    es.entity_from_dataframe(
+        entity_id="new_entity",
+        dataframe=df,
+        index="id")
+
+    dask_es.entity_from_dataframe(
+        entity_id="new_entity",
+        dataframe=dask_df,
+        index="id")
+
+    pd.testing.assert_frame_equal(es['new_entity'].df.reset_index(drop=True), dask_es['new_entity'].df.compute())
+
+
 def test_create_entityset_with_mixed_dataframe_types(es, dask_es):
     df = pd.DataFrame({"id": [0, 1, 2, 3],
                        "values": [1, 12, -34, 27]})
