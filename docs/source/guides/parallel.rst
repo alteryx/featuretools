@@ -14,7 +14,7 @@ The above command will start 2 processes to compute chunks of the feature matrix
 
 Running Featuretools with Spark and Dask
 ----------------------------------------
-The Featuretools development team is continually working to improve integration with Dask and Spark for performing feature engineering at scale. If you have a big data problem and are interested in testing our latest Dask or Spark integrations for free, please let us know by completing `this simple request form <https://forms.office.com/Pages/ShareFormPage.aspx?id=2TkvUj0wj0id66bXfx6v2BOWZ27M2npIiEDBPvpJ1ClUOE9MT0MyMloxQUtNVjlINVhMNlpONEc0SS4u&sharetoken=hKGLZZWSk3LfRFGhqxB9>`__.
+The Featuretools development team is continually working to improve integration with Dask and Spark for performing feature engineering at scale. If you have a big data problem and are interested in testing our latest Dask or Spark integrations for free, please let us know by completing `this simple request form <https://forms.office.com/Pages/ResponsePage.aspx?id=2TkvUj0wj0id66bXfx6v2ASd4JAap6pFigRj7EKGsuBUNDI4WDlGSzI1VVRHTUdMS0gyR1EyMkdJVi4u>`__.
 
 Continue reading below to learn how to perform parallel feature computation with the current integrations.
 
