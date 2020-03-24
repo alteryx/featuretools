@@ -46,8 +46,10 @@ An additional example of partitioning data to distribute on multiple cores or a 
 
 For a similar partition and distribute implementation using Apache Spark with PySpark, refer to the `Feature Engineering on Spark notebook <https://github.com/Featuretools/predicting-customer-churn/blob/master/churn/4.%20Feature%20Engineering%20on%20Spark.ipynb>`_. This implementation shows how to carry out feature engineering on a cluster of EC2 instances using Spark as the distributed framework. A write-up of this approach is described in the `Featuretools on Spark article <https://blog.featurelabs.com/featuretools-on-spark-2/>`_ on the Feature Labs engineering blog.
 
+Running Featuretools with Spark and Dask
+----------------------------------------
+The Featuretools development team is continually working to improve integration with Dask and Spark for performing feature engineering at scale. If you have a big data problem and are interested in testing our latest Dask or Spark integrations for free, please let us know by completing `this simple request form <https://forms.office.com/Pages/ShareFormPage.aspx?id=2TkvUj0wj0id66bXfx6v2BOWZ27M2npIiEDBPvpJ1ClUOE9MT0MyMloxQUtNVjlINVhMNlpONEc0SS4u&sharetoken=hKGLZZWSk3LfRFGhqxB9>`__.
+
 Featuretools Enterprise
 -----------------------
 If you don't want to build it yourself, Featuretools Enterprise has native integrations with Apache Spark and Dask. More information is available `here <https://www.featurelabs.com/featuretools>`__.
-
-If you would like to test `Featuretools Enterprise APIs <https://docs.featurelabs.com/>`_ for running Featuretools natively on Apache Spark or Dask, please let us know `here <https://forms.gle/TtFTH5QKM4gZtu7U7>`__.
