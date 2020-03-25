@@ -1,9 +1,12 @@
-import featuretools as ft
-import numpy as np
-import pandas as pd
+# flake8: noqa
 import math
 import os
+
+import numpy as np
+import pandas as pd
 from tqdm import tqdm
+
+import featuretools as ft
 
 
 def main():
@@ -43,19 +46,19 @@ def main():
     order_products = order_products.merge(orders[["order_id", "order_time"]])
     order_products["order_product_id"] = order_products["order_id"].astype(str) + "_" + order_products["add_to_cart_order"].astype(str)
     order_products.drop(["product_id", "department_id", "add_to_cart_order"], axis=1, inplace=True)
-    
+
     try:
         os.mkdir(output_dir)
     except:
         pass
-    
+
     print("Saving order_products...")
     for i in tqdm(range(math.ceil(len(order_products) / num_rows_per_file))):
-        order_products.iloc[i * num_rows_per_file:num_rows_per_file * (i+1)].to_csv(os.path.join(output_dir, "order_products_{}.csv".format(i)), index=False)
+        order_products.iloc[i * num_rows_per_file:num_rows_per_file * (i + 1)].to_csv(os.path.join(output_dir, "order_products_{}.csv".format(i)), index=False)
 
     print("Saving orders...")
     for i in tqdm(range(math.ceil(len(orders) / num_rows_per_file))):
-        orders.iloc[i * num_rows_per_file:num_rows_per_file * (i+1)].to_csv(os.path.join(output_dir, "orders_{}.csv".format(i)), index=False)
+        orders.iloc[i * num_rows_per_file:num_rows_per_file * (i + 1)].to_csv(os.path.join(output_dir, "orders_{}.csv".format(i)), index=False)
 
 if __name__ == "__main__":
     main()
