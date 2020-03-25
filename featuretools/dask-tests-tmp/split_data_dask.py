@@ -42,7 +42,7 @@ def main():
         df.drop(to_drop, axis=1, inplace=True)
         return df
     tqdm.pandas()
-    orders = orders.head(100000).groupby("user_id").progress_apply(add_time)
+    orders = orders.groupby("user_id").progress_apply(add_time)
     order_products = order_products.merge(orders[["order_id", "order_time"]])
     order_products["order_product_id"] = order_products["order_id"].astype(str) + "_" + order_products["add_to_cart_order"].astype(str)
     order_products.drop(["product_id", "department_id", "add_to_cart_order"], axis=1, inplace=True)
