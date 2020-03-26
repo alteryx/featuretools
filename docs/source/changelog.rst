@@ -11,6 +11,7 @@ Changelog
         * Add links to primitives.featurelabs.com (:pr:`860`)
         * Add source code links to API reference (:pr:`862`)
         * Update links for testing Dask/Spark integrations (:pr:`867`)
+        * Update release documentation for featuretools (:pr:`868`)
     * Testing Changes
         * Miscellaneous changes (:pr:`861`)
 
