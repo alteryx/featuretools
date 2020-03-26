@@ -28,7 +28,7 @@ Branches on the conda-forge featuretools repo are automatically built and the pa
     ```bash
     git remote add upstream https://github.com/conda-forge/featuretools-feedstock.git
     ```
-4. If your made the fork previously and its master branch is missing commits, update it with any changes from upstream
+4. If you made the fork previously and its master branch is missing commits, update it with any changes from upstream
     ```bash
     git fetch upstream
     git checkout master
