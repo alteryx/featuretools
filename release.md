@@ -108,7 +108,9 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
     **v0.13.3** Feb 28, 2020
     ```
 2. Remove any unused changelog sections for this release (e.g. Fixes, Testing Changes) 
-2. Put the contributors to this release in alphabetical order
+3. Add yourself to the list of contributors to this release and put the contributors in alphabetical order
+4. The release PR does not need to be mentioned in the list of changes
+
 
 #### Create Release PR
 A [release pr](https://github.com/Featuretools/featuretools/pull/856) should have the version number as the title and the changelog updates as the PR body text. The contributors list is not necessary. The special sphinx docs syntax (:pr:\`547\`) needs to be changed to github link syntax (#547).
