@@ -1,4 +1,4 @@
-pip
+pip>=20.0.2
 pytest==5.2.0
 pympler==0.5
 pytest-xdist==1.26.1
