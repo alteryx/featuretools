@@ -2,7 +2,10 @@
 
 Changelog
 ---------
-**Future Release**
+**v0.13.4 Mar 27, 2020**
+    .. warning::
+        The next non-bugfix release of Featuretools will not support Python 3.5
+
     * Fixes
         * Fix ft.show_info() not displaying in Jupyter notebooks (:pr:`863`)
     * Changes
@@ -16,7 +19,7 @@ Changelog
         * Miscellaneous changes (:pr:`861`)
 
     Thanks to the following people for contributing to this release:
-    :user:`FreshLeaf8865`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`frances-h`
+    :user:`frances-h`, :user:`FreshLeaf8865`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.13.3 Feb 28, 2020**
     * Fixes
