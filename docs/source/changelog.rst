@@ -6,7 +6,7 @@ Changelog
     * Fixes
         * Fix ft.show_info() not displaying in Jupyter notebooks (:pr:`863`)
     * Changes
-        * Added Plugin Warnings at Entry Point (:pr:`850`)
+        * Added Plugin Warnings at Entry Point (:pr:`850`, :pr:`869`)
     * Documentation Changes
         * Add links to primitives.featurelabs.com (:pr:`860`)
         * Add source code links to API reference (:pr:`862`)
@@ -16,7 +16,7 @@ Changelog
         * Miscellaneous changes (:pr:`861`)
 
     Thanks to the following people for contributing to this release:
-    :user:`FreshLeaf8865`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`FreshLeaf8865`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`frances-h`
 
 **v0.13.3 Feb 28, 2020**
     * Fixes
