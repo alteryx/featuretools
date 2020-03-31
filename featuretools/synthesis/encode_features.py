@@ -143,7 +143,13 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
             encoded.append(unknown)
             X[unknown.get_name()] = (~X[f.get_name()].isin(unique)).astype(int)
 
-        X = X.drop(f.get_name(), axis=1)
+        if inplace and not isinstance(X, dd.core.DataFrame):
+            X.drop(f.get_name(), axis=1, inplace=True)
+        else:
+            if inplace:
+                logger.warning("inplace is not supported with Dask DataFrames, "
+                               "not modifying original dataframe")
+            X = X.drop(f.get_name(), axis=1)
 
     new_columns = []
     for e in encoded:
