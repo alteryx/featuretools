@@ -136,12 +136,12 @@ class Mode(AggregationPrimitive):
             return s.apply(lambda x: np.array(x.values))
 
         def agg(vals):
-            def get_mode(x):
-                return self.get_function()(pd.Series(np.concatenate(x.values)))
+            return vals.apply(lambda x: np.concatenate(x.values))
 
-            return vals.agg(get_mode)
+        def finalize(s):
+            return s.apply(lambda x: self.get_function()(pd.Series(x)))
 
-        return dd.Aggregation(name='mode', chunk=chunk, agg=agg)
+        return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
 
 
 class Min(AggregationPrimitive):
@@ -216,12 +216,14 @@ class NumUnique(AggregationPrimitive):
         def agg(s):
             def inner_agg(x):
                 x = x[:].dropna()
-                unique_vals = set().union(*x.values)
-                return len(unique_vals)
+                return(set().union(*x.values))
 
             return s.agg(inner_agg)
 
-        return dd.Aggregation(name='any', chunk=chunk, agg=agg)
+        def finalize(s):
+            return s.apply(lambda x: len(x))
+
+        return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
 
 
 class NumTrue(AggregationPrimitive):
@@ -253,7 +255,7 @@ class NumTrue(AggregationPrimitive):
         def agg(s):
             return s.agg(np.sum)
 
-        return dd.Aggregation(name='num_true', chunk=chunk, agg=agg)
+        return dd.Aggregation(self.name, chunk=chunk, agg=agg)
 
 
 class PercentTrue(AggregationPrimitive):
@@ -297,7 +299,7 @@ class PercentTrue(AggregationPrimitive):
         def finalize(total, length):
             return total / length
 
-        return dd.Aggregation(name='percent_true', chunk=chunk, agg=agg, finalize=finalize)
+        return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
 
 
 class NMostCommon(AggregationPrimitive):
@@ -366,7 +368,7 @@ class NMostCommon(AggregationPrimitive):
 
             return s.agg(final)
 
-        return dd.Aggregation('n_most_common', chunk, agg, finalize)
+        return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
 
 
 class AvgTimeBetween(AggregationPrimitive):
@@ -459,7 +461,7 @@ class AvgTimeBetween(AggregationPrimitive):
             avg = avg * 1e-9
             return convert_time_units(avg, self.unit)
 
-        return dd.Aggregation(name='any', chunk=chunk, agg=agg, finalize=finalize)
+        return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
 
 
 class Median(AggregationPrimitive):
@@ -484,16 +486,15 @@ class Median(AggregationPrimitive):
 
     def get_dask_aggregation(self):
         def chunk(s):
-            return s.apply(np.array)
+            return s.apply(lambda x: np.array(x.values))
 
         def agg(s):
-            def get_median(x):
-                values = pd.Series(list(it.chain.from_iterable(x)))
-                return self.get_function()(values)
+            return s.apply(lambda x: np.concatenate(x.values))
 
-            return s.agg(get_median)
+        def finalize(s):
+            return s.apply(lambda x: self.get_function()(pd.Series(x)))
 
-        return dd.Aggregation('median', chunk, agg)
+        return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
 
 
 class Skew(AggregationPrimitive):
@@ -520,16 +521,15 @@ class Skew(AggregationPrimitive):
 
     def get_dask_aggregation(self):
         def chunk(s):
-            return s.apply(np.array)
+            return s.apply(lambda x: np.array(x.values))
 
         def agg(s):
-            def skew(x):
-                values = pd.Series(list(it.chain.from_iterable(x)))
-                return values.skew()
+            return s.apply(lambda x: np.concatenate(x.values))
 
-            return s.agg(skew)
+        def finalize(s):
+            return s.apply(lambda x: pd.Series(x).skew())
 
-        return dd.Aggregation('skew', chunk, agg)
+        return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
 
 
 class Std(AggregationPrimitive):
@@ -625,7 +625,7 @@ class Any(AggregationPrimitive):
         def agg(s):
             return s.agg(np.any)
 
-        return dd.Aggregation(name='any', chunk=chunk, agg=agg)
+        return dd.Aggregation(self.name, chunk=chunk, agg=agg)
 
 
 class All(AggregationPrimitive):
@@ -655,7 +655,7 @@ class All(AggregationPrimitive):
         def agg(s):
             return s.agg(np.all)
 
-        return dd.Aggregation(name='all', chunk=chunk, agg=agg)
+        return dd.Aggregation(self.name, chunk=chunk, agg=agg)
 
 
 class TimeSinceLast(AggregationPrimitive):
@@ -878,9 +878,9 @@ class Entropy(AggregationPrimitive):
             return s.apply(lambda x: np.array(x.values))
 
         def agg(dists):
-            def entropy(vals):
-                return self.get_function()(pd.Series(np.concatenate(vals.values)))
+            return dists.apply(lambda x: np.concatenate(x.values))
 
-            return dists.agg(entropy)
+        def finalize(s):
+            return s.apply(lambda x: self.get_function()(pd.Series(x)))
 
-        return dd.Aggregation(name='entropy', chunk=chunk, agg=agg)
+        return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
