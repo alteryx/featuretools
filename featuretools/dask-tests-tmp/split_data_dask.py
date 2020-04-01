@@ -25,26 +25,17 @@ def main():
 
     def add_time(df):
         df.reset_index(drop=True)
-        # df["order_time"] = np.nan
-        # days_since = df.columns.tolist().index("days_since_prior_order")
-        # hour_of_day = df.columns.tolist().index("order_hour_of_day")
-        # order_time = df.columns.tolist().index("order_time")
-
         df["days_since_first"] = df["days_since_prior_order"].cumsum().fillna(0)
         df["order_time"] = pd.Timestamp('Jan 1, 2015') + pd.to_timedelta(df["days_since_first"], "d") + pd.to_timedelta(df['order_hour_of_day'], "h")
-        # df.iloc[0, order_time] = pd.Timestamp('Jan 1, 2015') +  pd.Timedelta(df.iloc[0, hour_of_day], "h")
-        # for i in range(1, df.shape[0]):
-        #     df.iloc[i, order_time] = df.iloc[i - 1, order_time] \
-        #         + pd.Timedelta(df.iloc[i, days_since], "d") \
-        #                                 + pd.Timedelta(df.iloc[i, hour_of_day], "h")
-
         to_drop = ["order_number", "order_dow", "order_hour_of_day", "days_since_prior_order", "eval_set", "days_since_first"]
         df.drop(to_drop, axis=1, inplace=True)
         return df
+
     tqdm.pandas()
     orders = orders.groupby("user_id").progress_apply(add_time)
     order_products = order_products.merge(orders[["order_id", "order_time"]])
-    order_products["order_product_id"] = order_products["order_id"].astype(str) + "_" + order_products["add_to_cart_order"].astype(str)
+    # order_products["order_product_id"] = order_products["order_id"].astype(str) + "_" + order_products["add_to_cart_order"].astype(str)
+    order_products["order_product_id"] = order_products["order_id"] * 1000 + order_products["add_to_cart_order"]
     order_products.drop(["product_id", "department_id", "add_to_cart_order"], axis=1, inplace=True)
 
     try:

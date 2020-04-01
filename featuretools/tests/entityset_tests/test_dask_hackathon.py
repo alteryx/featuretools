@@ -25,10 +25,12 @@ def test_hackathon_single_table():
 
     df_dd = dd.read_csv(data_path, blocksize='1MB')
     dask_es = EntitySet(id="dask_es")
+    vtypes = es['users'].variable_types
     dask_es.entity_from_dataframe(
         entity_id="users",
         dataframe=df_dd,
         index="RESPID",
+        variable_types=vtypes
     )
     dask_fm, _ = ft.dfs(entityset=dask_es,
                         target_entity="users",

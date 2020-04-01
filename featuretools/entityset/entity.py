@@ -405,6 +405,11 @@ class Entity(object):
 
     def set_time_index(self, variable_id, already_sorted=False):
         # check time type
+        if isinstance(self.df, dd.core.DataFrame):
+            self.time_index = variable_id
+            self.entityset.time_type = self.variable_types[variable_id]
+            return
+
         if len(self.df) == 0:
             time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
         else:
@@ -424,12 +429,8 @@ class Entity(object):
 
         # use stable sort
         if not already_sorted:
-            if isinstance(self.df, pd.DataFrame):
-                # sort by time variable, then by index
-                self.df = self.df.sort_values([variable_id, self.index])
-            if isinstance(self.df, dd.core.DataFrame):
-                n = len(self.df)
-                self.df = self.df.nsmallest(n, [variable_id, self.index])
+            # sort by time variable, then by index
+            self.df = self.df.sort_values([variable_id, self.index])
 
         t = vtypes.NumericTimeIndex
         if col_is_datetime(self.df[variable_id]):
@@ -447,12 +448,12 @@ class Entity(object):
         if isinstance(self.df, pd.DataFrame):
             self.df = self.df.set_index(self.df[variable_id], drop=False)
             self.df.index.name = None
-        if unique:
-            if isinstance(self.df.index, dd.core.Index):
-                index_is_unique = self.df[variable_id].compute().is_unique
-            else:
-                index_is_unique = self.df[variable_id].is_unique
-            assert index_is_unique, "Index is not unique on dataframe (Entity {})".format(self.id)
+            if unique:
+                if isinstance(self.df.index, dd.core.Index):
+                    index_is_unique = self.df[variable_id].compute().is_unique
+                else:
+                    index_is_unique = self.df[variable_id].is_unique
+                assert index_is_unique, "Index is not unique on dataframe (Entity {})".format(self.id)
 
         self.convert_variable_type(variable_id, vtypes.Index, convert_data=False)
         self.index = variable_id

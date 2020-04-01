@@ -2,9 +2,8 @@ import copy
 import logging
 from collections import defaultdict
 
-import numpy as np
 import pandas as pd
-from pandas.api.types import is_dtype_equal, is_numeric_dtype
+from pandas.api.types import is_dtype_equal
 
 import featuretools.variable_types.variable as vtypes
 from featuretools.entityset import deserialize, serialize
@@ -195,12 +194,19 @@ class EntitySet(object):
         repr_out = u"Entityset: {}\n".format(self.id)
         repr_out += u"  Entities:"
         for e in self.entities:
-            if e.df.shape:
-                repr_out += u"\n    {} [Rows: {}, Columns: {}]".format(
-                    e.id, len(e.df), e.df.shape[1])
+            if isinstance(e.df, pd.DataFrame):
+                if e.df.shape:
+                    rows = e.df.shape[0]
+                    cols = e.df.shape[1]
+                else:
+                    rows = "None"
+                    cols = "None"
             else:
-                repr_out += u"\n    {} [Rows: None, Columns: None]".format(
-                    e.id)
+                rows = "TBD"
+                cols = len(e.df.columns)
+
+            repr_out += u"\n    {} [Rows: {}, Columns: {}]".format(e.id, rows, cols)
+
         repr_out += "\n  Relationships:"
 
         if len(self.relationships) == 0:
@@ -254,9 +260,9 @@ class EntitySet(object):
         # default to object dtypes for discrete variables, but
         # indexes/ids default to ints. In this case, we convert
         # the empty column's type to int
-        if (len(child_e.df) == 0 and child_e.df[child_v].dtype == object and
-                is_numeric_dtype(parent_e.df[parent_v])):
-            child_e.df[child_v] = pd.Series(name=child_v, dtype=np.int64)
+        # if (len(child_e.df) == 0 and child_e.df[child_v].dtype == object and
+        #         is_numeric_dtype(parent_e.df[parent_v])):
+        #     child_e.df[child_v] = pd.Series(name=child_v, dtype=np.int64)
 
         parent_dtype = parent_e.df[parent_v].dtype
         child_dtype = child_e.df[child_v].dtype
@@ -828,7 +834,15 @@ class EntitySet(object):
                     lti_df.set_index(entity.index, inplace=True)
                     lti_df = lti_df.reindex(entity.last_time_index.index)
                     lti_df['last_time_old'] = entity.last_time_index
-                    lti_df = lti_df.apply(lambda x: x.dropna().max(), axis=1)
+                    if not lti_df.empty:
+                        lti_df['last_time'] = lti_df['last_time'].astype('datetime64[ns]')
+                        lti_df['last_time_old'] = lti_df['last_time_old'].astype('datetime64[ns]')
+                        lti_df = lti_df.fillna(pd.to_datetime('1800-01-01 00:00')).max(axis=1)
+                        lti_df = lti_df.replace(pd.to_datetime('1800-01-01 00:00'), pd.NaT)
+                    else:
+                        lti_df = pd.Series()
+                    # lti_df = lti_df.apply(lambda x: x.dropna().max(), axis=1)
+
                     entity.last_time_index = lti_df
                     entity.last_time_index.name = 'last_time'
 

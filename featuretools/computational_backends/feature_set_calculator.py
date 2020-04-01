@@ -424,11 +424,10 @@ class FeatureSetCalculator(object):
         return df
 
     def _calculate_transform_features(self, features, frame, _df_trie, progress_callback):
-        frame_len = len(frame)
-
+        frame_empty = frame.empty if isinstance(frame, pd.DataFrame) else False
         for f in features:
             # handle when no data
-            if frame_len == 0:
+            if frame_empty:
                 set_default_column(frame, f)
 
                 progress_callback(1 / float(self.num_features))
@@ -575,12 +574,14 @@ class FeatureSetCalculator(object):
             return frame
 
         # handle where
+        base_frame_empty = base_frame.empty if isinstance(base_frame, pd.DataFrame) else False
         where = test_feature.where
-        if where is not None and len(base_frame) != 0:
+        if where is not None and not base_frame_empty:
             base_frame = base_frame.loc[base_frame[where.get_name()]]
 
         # when no child data, just add all the features to frame with nan
-        if len(base_frame) == 0:
+        base_frame_empty = base_frame.empty if isinstance(base_frame, pd.DataFrame) else False
+        if base_frame_empty:
             for f in features:
                 update_feature_columns(f, frame, np.full(f.number_output_features, np.nan))
                 progress_callback(1 / float(self.num_features))

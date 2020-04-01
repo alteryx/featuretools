@@ -5,7 +5,6 @@ from dask import dataframe as dd
 import featuretools as ft
 from featuretools.entityset import EntitySet, Relationship
 
-
 def test_transform(es, dask_es):
     primitives = ft.list_primitives()
     trans_list = primitives[primitives['type'] == 'transform']['name'].tolist()
@@ -98,7 +97,8 @@ def test_create_entity_with_non_numeric_index(es, dask_es):
     dask_es.entity_from_dataframe(
         entity_id="new_entity",
         dataframe=dask_df,
-        index="id")
+        index="id",
+        variable_types={"id": ft.variable_types.Id, "values": ft.variable_types.Numeric})
 
     pd.testing.assert_frame_equal(es['new_entity'].df.reset_index(drop=True), dask_es['new_entity'].df.compute())
 
@@ -146,6 +146,12 @@ def test_add_last_time_indexes():
                                          "abcdef ghijk",
                                          ""]})
     sessions_dask = dd.from_pandas(sessions, npartitions=2)
+    sessions_vtypes = {
+        "id": ft.variable_types.Id,
+        "user": ft.variable_types.Id,
+        "time": ft.variable_types.DatetimeTimeIndex,
+        "strings": ft.variable_types.Text
+    }
 
     transactions = pd.DataFrame({"id": [0, 1, 2, 3, 4, 5],
                                  "session_id": [0, 0, 1, 2, 2, 3],
@@ -157,12 +163,18 @@ def test_add_last_time_indexes():
                                           pd.to_datetime('2019-01-01 12:49'),
                                           pd.to_datetime('2017-08-25 04:53')]})
     transactions_dask = dd.from_pandas(transactions, npartitions=2)
+    transactions_vtypes = {
+        "id": ft.variable_types.Id,
+        "session_id": ft.variable_types.Id,
+        "amount": ft.variable_types.Numeric,
+        "time": ft.variable_types.DatetimeTimeIndex,
+    }
 
     es.entity_from_dataframe(entity_id="sessions", dataframe=sessions, index="id", time_index="time")
-    dask_es.entity_from_dataframe(entity_id="sessions", dataframe=sessions_dask, index="id", time_index="time")
+    dask_es.entity_from_dataframe(entity_id="sessions", dataframe=sessions_dask, index="id", time_index="time", variable_types=sessions_vtypes)
 
     es.entity_from_dataframe(entity_id="transactions", dataframe=transactions, index="id", time_index="time")
-    dask_es.entity_from_dataframe(entity_id="transactions", dataframe=transactions_dask, index="id", time_index="time")
+    dask_es.entity_from_dataframe(entity_id="transactions", dataframe=transactions_dask, index="id", time_index="time", variable_types=transactions_vtypes)
 
     new_rel = Relationship(es["sessions"]["id"],
                            es["transactions"]["session_id"])
@@ -196,10 +208,16 @@ def test_single_table_dask_entityset():
                                    "abcdef ghijk",
                                    ""]})
     values_dd = dd.from_pandas(df, npartitions=2)
+    vtypes = {
+        "id": ft.variable_types.Id,
+        "values": ft.variable_types.Numeric,
+        "dates": ft.variable_types.Datetime,
+        "strings": ft.variable_types.Text
+    }
     dask_es.entity_from_dataframe(entity_id="data",
                                   dataframe=values_dd,
                                   index="id",
-                                  variable_types={"strings": ft.variable_types.Text})
+                                  variable_types=vtypes)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
                         target_entity="data",
@@ -235,10 +253,16 @@ def test_single_table_dask_entityset_ids_not_sorted():
                                    "abcdef ghijk",
                                    ""]})
     values_dd = dd.from_pandas(df, npartitions=2)
+    vtypes = {
+        "id": ft.variable_types.Id,
+        "values": ft.variable_types.Numeric,
+        "dates": ft.variable_types.Datetime,
+        "strings": ft.variable_types.Text
+    }
     dask_es.entity_from_dataframe(entity_id="data",
                                   dataframe=values_dd,
                                   index="id",
-                                  variable_types={"strings": ft.variable_types.Text})
+                                  variable_types=vtypes)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
                         target_entity="data",
@@ -275,10 +299,16 @@ def test_single_table_dask_entityset_with_instance_ids():
                                    ""]})
 
     values_dd = dd.from_pandas(df, npartitions=2)
+    vtypes = {
+        "id": ft.variable_types.Id,
+        "values": ft.variable_types.Numeric,
+        "dates": ft.variable_types.Datetime,
+        "strings": ft.variable_types.Text
+    }
     dask_es.entity_from_dataframe(entity_id="data",
                                   dataframe=values_dd,
                                   index="id",
-                                  variable_types={"strings": ft.variable_types.Text})
+                                  variable_types=vtypes)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
                         target_entity="data",
@@ -315,10 +345,16 @@ def test_single_table_dask_entityset_single_cutoff_time():
                                    "abcdef ghijk",
                                    ""]})
     values_dd = dd.from_pandas(df, npartitions=2)
+    vtypes = {
+        "id": ft.variable_types.Id,
+        "values": ft.variable_types.Numeric,
+        "dates": ft.variable_types.Datetime,
+        "strings": ft.variable_types.Text
+    }
     dask_es.entity_from_dataframe(entity_id="data",
                                   dataframe=values_dd,
                                   index="id",
-                                  variable_types={"strings": ft.variable_types.Text})
+                                  variable_types=vtypes)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
                         target_entity="data",
@@ -353,10 +389,16 @@ def test_single_table_dask_entityset_cutoff_time_df():
                                    "23",
                                    "abcdef ghijk"]})
     values_dd = dd.from_pandas(df, npartitions=2)
+    vtypes = {
+        "id": ft.variable_types.Id,
+        "values": ft.variable_types.Numeric,
+        "dates": ft.variable_types.Datetime,
+        "strings": ft.variable_types.Text
+    }
     dask_es.entity_from_dataframe(entity_id="data",
                                   dataframe=values_dd,
                                   index="id",
-                                  variable_types={"strings": ft.variable_types.Text})
+                                  variable_types=vtypes)
     ids = [0, 1, 2, 0]
     times = [pd.Timestamp("2019-01-05 04:00"),
              pd.Timestamp("2019-01-05 04:00"),
@@ -396,10 +438,16 @@ def test_single_table_dask_entityset_dates_not_sorted():
 
     primitives_list = ['cum_sum', 'diff', 'absolute', 'is_weekend', 'year', 'day']
     values_dd = dd.from_pandas(df, npartitions=1)
+    vtypes = {
+        "id": ft.variable_types.Id,
+        "values": ft.variable_types.Numeric,
+        "dates": ft.variable_types.Datetime,
+    }
     dask_es.entity_from_dataframe(entity_id="data",
                                   dataframe=values_dd,
                                   index="id",
-                                  time_index="dates")
+                                  time_index="dates",
+                                  variable_types=vtypes)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
                         target_entity="data",
@@ -445,30 +493,6 @@ def test_training_window_parameter(mock_customer_es, mock_customer_dask_es):
     pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('customer_id'))
 
 
-# def test_approximate_parameter(mock_customer_es, mock_customer_dask_es):
-#     entity = "transactions"
-#     cutoff_times = pd.DataFrame()
-#     cutoff_times['transaction_id'] = [1, 2, 3, 1]
-#     cutoff_times['time'] = pd.to_datetime(['2014-1-1 04:00',
-#                                            '2014-1-1 05:00',
-#                                            '2014-1-1 06:00',
-#                                            '2014-1-1 08:00'])
-#     cutoff_times['label'] = [True, True, False, True]
-
-#     cutoff_times_dask = dd.from_pandas(cutoff_times, npartitions=mock_customer_dask_es[entity].df.npartitions)
-
-#     dask_fm, _ = ft.dfs(entityset=mock_customer_dask_es,
-#                         target_entity=entity,
-#                         cutoff_time=cutoff_times_dask,
-#                         approximate="1 day")
-
-#     fm, _ = ft.dfs(entityset=mock_customer_es,
-#                    target_entity=entity,
-#                    cutoff_time=cutoff_times,
-#                    approximate="1 day")
-
-#     pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('transaction_id'))
-
 def test_secondary_time_index():
     log_df = pd.DataFrame()
     log_df['id'] = [0, 1, 2, 3]
@@ -507,14 +531,26 @@ def test_secondary_time_index():
                              time_index="scheduled_time",
                              secondary_time_index={
                                  'arrival_time': ['departure_time', 'delay']})
+
+    log_vtypes = {
+        "id": ft.variable_types.Id,
+        "scheduled_time": ft.variable_types.DatetimeTimeIndex,
+        "departure_time": ft.variable_types.DatetimeTimeIndex,
+        "arrival_time": ft.variable_types.DatetimeTimeIndex,
+        "delay": ft.variable_types.Numeric,
+        "flight_id": ft.variable_types.Id
+    }
     dask_es.entity_from_dataframe(entity_id='logs',
                                   dataframe=log_dask,
                                   index="id",
+                                  variable_types=log_vtypes,
                                   time_index="scheduled_time",
                                   secondary_time_index={
                                       'arrival_time': ['departure_time', 'delay']})
+
     es.entity_from_dataframe('flights', flights_df, index="id")
-    dask_es.entity_from_dataframe('flights', flights_dask, index="id")
+    flights_vtypes = es['flights'].variable_types
+    dask_es.entity_from_dataframe('flights', flights_dask, index="id", variable_types=flights_vtypes)
 
     new_rel = ft.Relationship(es['flights']['id'], es['logs']['flight_id'])
     dask_rel = ft.Relationship(dask_es['flights']['id'], dask_es['logs']['flight_id'])
@@ -549,17 +585,34 @@ def test_build_es_from_scratch_and_run_dfs():
     transactions_dd = dd.from_pandas(transactions_df, npartitions=4)
     products_dd = dd.from_pandas(data["products"], npartitions=4)
     dask_es = EntitySet(id="transactions")
+
+    transactions_vtypes = {
+        "transaction_id": ft.variable_types.Id,
+        "session_id": ft.variable_types.Id,
+        "transaction_time": ft.variable_types.DatetimeTimeIndex,
+        "product_id": ft.variable_types.Id,
+        "amount": ft.variable_types.Numeric,
+        "customer_id": ft.variable_types.Id,
+        "device": ft.variable_types.Categorical,
+        "session_start": ft.variable_types.DatetimeTimeIndex,
+        "zip_code": ft.variable_types.ZIPCode,
+        "join_date": ft.variable_types.Datetime,
+        "date_of_birth": ft.variable_types.Datetime
+    }
     dask_es.entity_from_dataframe(entity_id="transactions",
                                   dataframe=transactions_dd,
                                   index="transaction_id",
                                   time_index="transaction_time",
-                                  variable_types={"product_id": ft.variable_types.Categorical,
-                                                  "zip_code": ft.variable_types.ZIPCode,
-                                                  "device": ft.variable_types.Categorical})
+                                  variable_types=transactions_vtypes)
+
+    products_vtypes = {
+        "product_id": ft.variable_types.Id,
+        "brand": ft.variable_types.Categorical
+    }
     dask_es.entity_from_dataframe(entity_id="products",
                                   dataframe=products_dd,
                                   index="product_id",
-                                  variable_types={"brand": ft.variable_types.Categorical})
+                                  variable_types=products_vtypes)
 
     new_rel = Relationship(dask_es["products"]["product_id"],
                            dask_es["transactions"]["product_id"])
