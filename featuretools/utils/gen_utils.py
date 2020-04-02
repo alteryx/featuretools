@@ -91,7 +91,7 @@ def check_schema_version(cls, cls_type):
             if c_num > s_num:
                 break
             elif c_num < s_num:
-                warnings.warning(warning_text_upgrade)
+                warnings.warn(warning_text_upgrade)
                 break
 
         warning_text_outdated = ('The schema version of the saved %s'
@@ -100,7 +100,7 @@ def check_schema_version(cls, cls_type):
                                  % (cls_type, version_string, cls_type))
         # Check if saved has older major version.
         if current[0] > saved[0]:
-            warnings.warning(warning_text_outdated)
+            warnings.warn(warning_text_outdated)
 
 
 def import_or_raise(library, error_msg):

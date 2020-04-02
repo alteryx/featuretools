@@ -2,13 +2,23 @@
 
 Changelog
 ---------
+**Future Release**
+    * Fixes
+        * Use logger.warning to fix deprecated logger.warn (:pr:`871`)
+    * Changes
+    * Documentation Changes
+        * Fix README links to docs (:pr:`872`)
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
+
 **v0.13.4 Mar 27, 2020**
     .. warning::
         The next non-bugfix release of Featuretools will not support Python 3.5
 
     * Fixes
         * Fix ft.show_info() not displaying in Jupyter notebooks (:pr:`863`)
-        * Use logger.warning to fix deprecated logger.warn (:pr:`871`)
     * Changes
         * Added Plugin Warnings at Entry Point (:pr:`850`, :pr:`869`)
     * Documentation Changes

@@ -24,11 +24,11 @@ def dict_to_list_variable_check(option, es):
     else:
         for entity, variables in option.items():
             if entity not in es:
-                warnings.warning("Entity '%s' not in entityset" % (entity))
+                warnings.warn("Entity '%s' not in entityset" % (entity))
             else:
                 for invalid_var in [variable for variable in variables
                                     if variable not in es[entity]]:
-                    warnings.warning("Variable '%s' not in entity '%s'" % (invalid_var, entity))
+                    warnings.warn("Variable '%s' not in entity '%s'" % (invalid_var, entity))
         return True
 
 
@@ -37,7 +37,7 @@ def list_entity_check(option, es):
         return False
     else:
         for invalid_entity in [entity for entity in option if entity not in es]:
-            warnings.warning("Entity '%s' not in entityset" % (invalid_entity))
+            warnings.warn("Entity '%s' not in entityset" % (invalid_entity))
         return True
 
 

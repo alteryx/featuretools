@@ -144,7 +144,7 @@ def create_client_and_cluster(n_jobs, dask_kwargs, entityset_size):
         if n_jobs != -1 and workers < n_jobs:
             warning_string = "{} workers requested, but only {} workers created."
             warning_string = warning_string.format(n_jobs, workers)
-            warnings.warning(warning_string)
+            warnings.warn(warning_string)
 
         # Distributed default memory_limit for worker is 'auto'. It calculates worker
         # memory limit as total virtual memory divided by the number

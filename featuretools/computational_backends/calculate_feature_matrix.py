@@ -500,7 +500,7 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
 def scatter_warning(num_scattered_workers, num_workers):
     if num_scattered_workers != num_workers:
         scatter_warning = "EntitySet was only scattered to {} out of {} workers"
-        warnings.warning(scatter_warning.format(num_scattered_workers, num_workers))
+        warnings.warn(scatter_warning.format(num_scattered_workers, num_workers))
 
 
 def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate, training_window,
