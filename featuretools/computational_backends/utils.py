@@ -144,7 +144,7 @@ def create_client_and_cluster(n_jobs, dask_kwargs, entityset_size):
         if n_jobs != -1 and workers < n_jobs:
             warning_string = "{} workers requested, but only {} workers created."
             warning_string = warning_string.format(n_jobs, workers)
-            warnings.warn(warning_string)
+            warnings.warning(warning_string)
 
         # Distributed default memory_limit for worker is 'auto'. It calculates worker
         # memory limit as total virtual memory divided by the number
@@ -182,11 +182,11 @@ def create_client_and_cluster(n_jobs, dask_kwargs, entityset_size):
         if worker_limit < entityset_size:
             raise ValueError("Insufficient memory to use this many workers")
         elif worker_limit < 2 * entityset_size and not warned_of_memory:
-            logger.warn("Worker memory is between 1 to 2 times the memory"
-                        " size of the EntitySet. If errors occur that do"
-                        " not occur with n_jobs equals 1, this may be the "
-                        "cause.  See https://docs.featuretools.com/guides/parallel.html"
-                        " for more information.")
+            logger.warning("Worker memory is between 1 to 2 times the memory"
+                           " size of the EntitySet. If errors occur that do"
+                           " not occur with n_jobs equals 1, this may be the "
+                           "cause.  See https://docs.featuretools.com/guides/parallel.html"
+                           " for more information.")
             warned_of_memory = True
 
     return client, cluster
