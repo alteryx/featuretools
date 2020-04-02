@@ -2,9 +2,9 @@
 
 Changelog
 ---------
-
 **Future Release**
     * Fixes
+        * Use logger.warning to fix deprecated logger.warn (:pr:`871`)
     * Changes
     * Documentation Changes
         * Fix README links to docs (:pr:`872`)
