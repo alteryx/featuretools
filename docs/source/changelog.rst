@@ -8,6 +8,7 @@ Changelog
 
     * Fixes
         * Fix ft.show_info() not displaying in Jupyter notebooks (:pr:`863`)
+        * Use logger.warning to fix deprecated logger.warn (:pr:`871`)
     * Changes
         * Added Plugin Warnings at Entry Point (:pr:`850`, :pr:`869`)
     * Documentation Changes
@@ -19,7 +20,7 @@ Changelog
         * Miscellaneous changes (:pr:`861`)
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`FreshLeaf8865`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`frances-h`, :user:`FreshLeaf8865`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`gsheni`
 
 **v0.13.3 Feb 28, 2020**
     * Fixes
