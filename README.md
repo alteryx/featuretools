@@ -81,7 +81,7 @@ customer_id                                                                     
 
 [5 rows x 69 columns]
 ```
-We now have a feature vector for each customer that can be used for machine learning. See the [documentation on Deep Feature Synthesis](https://docs.featuretools.com/automated_feature_engineering/afe.html) for more examples.
+We now have a feature vector for each customer that can be used for machine learning. See the [documentation on Deep Feature Synthesis](https://docs.featuretools.com/automated_feature_engineering/afe.html) for more examples. 
 
 Featuretools contains many [different types of built-in primitives](https://primitives.featurelabs.com/) for creating features. If the primitive you need is not included, Featuretools also allows you to [define your own custom primitives](https://docs.featuretools.com/en/stable/automated_feature_engineering/primitives.html#defining-custom-primitives).
 
@@ -96,7 +96,7 @@ For more examples of how to use Featuretools, check out our [demos](https://www.
 
 ## Testing & Development
 
-The Featuretools community welcomes pull requests. Instructions for testing and development are available [here.](https://docs.featuretools.com/en/stable/getting_started/install.html#development)
+The Featuretools community welcomes pull requests. Instructions for testing and development are available [here.](https://docs.featuretools.com/getting_started/install.html#development)
 
 ## Support
 The Featuretools community is happy to provide support to users of Featuretools. Project support can be found in four places depending on the type of question:
