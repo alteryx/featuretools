@@ -81,7 +81,7 @@ customer_id                                                                     
 
 [5 rows x 69 columns]
 ```
-We now have a feature vector for each customer that can be used for machine learning. See the [documentation on Deep Feature Synthesis](https://docs.featuretools.com/automated_feature_engineering/afe.html) for more examples.
+We now have a feature vector for each customer that can be used for machine learning. See the [documentation on Deep Feature Synthesis](https://docs.featuretools.com/en/stable/automated_feature_engineering/afe.html) for more examples.
 
 Featuretools contains many [different types of built-in primitives](https://primitives.featurelabs.com/) for creating features. If the primitive you need is not included, Featuretools also allows you to [define your own custom primitives](https://docs.featuretools.com/en/stable/automated_feature_engineering/primitives.html#defining-custom-primitives).
 
