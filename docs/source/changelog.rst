@@ -26,7 +26,6 @@ Changelog
         * Add source code links to API reference (:pr:`862`)
         * Update links for testing Dask/Spark integrations (:pr:`867`)
         * Update release documentation for featuretools (:pr:`868`)
-        * Fix README link to development (:pr:`872`)
     * Testing Changes
         * Miscellaneous changes (:pr:`861`)
 
