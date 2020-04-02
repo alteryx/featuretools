@@ -5,13 +5,14 @@ import pandas as pd
 import pytest
 
 import featuretools as ft
+from featuretools import variable_types
 from featuretools.tests.testing_utils import make_ecommerce_entityset
 
-from featuretools import variable_types
 
 def test_enforces_variable_id_is_str(es):
     assert variable_types.Categorical("1", es["customers"])
-    error_text = 'Variable id must be a string',
+
+    error_text = 'Variable id must be a string'
     with pytest.raises(AssertionError, match=error_text):
         variable_types.Categorical(1, es["customers"])
 
