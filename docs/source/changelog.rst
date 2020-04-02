@@ -2,6 +2,17 @@
 
 Changelog
 ---------
+
+**Future Release**
+    * Fixes
+    * Changes
+    * Documentation Changes
+        * Fix README link to development (:pr:`872`)
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
+
 **v0.13.4 Mar 27, 2020**
     .. warning::
         The next non-bugfix release of Featuretools will not support Python 3.5
