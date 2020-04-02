@@ -7,7 +7,7 @@ Changelog
     * Fixes
     * Changes
     * Documentation Changes
-        * Fix README link to development (:pr:`872`)
+        * Fix README links to docs (:pr:`872`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
