@@ -3,27 +3,27 @@ import os
 from datetime import datetime
 
 import dask.dataframe as dd
+import featuretools as ft
 import numpy as np
 import pandas as pd
 from dask.distributed import Client
 from dask_ml.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import cross_val_score
 
 import utils
 
-import featuretools as ft
-
 
 def run_test():
-    overall_start = datetime.now()
-    start = datetime.now()
     client = Client()
     data_path = os.path.join("data", "instacart", "dask_data")
-    order_products = dd.read_csv([os.path.join(data_path, "order_products_*.csv")])
-    orders = dd.read_csv([os.path.join(data_path, "orders_*.csv")])
+    order_products = dd.read_csv([os.path.join(data_path, "order_products_*.csv")]).compute()
+    orders = dd.read_csv([os.path.join(data_path, "orders_*.csv")]).compute()
+    overall_start = datetime.now()
+    start = datetime.now()
 
-    order_products = order_products.persist()
-    orders = orders.persist()
+    #order_products = order_products.persist()
+    #orders = orders.persist()
 
     print("Creating entityset...")
     order_products_vtypes = {
@@ -85,7 +85,7 @@ def run_test():
 
     label_times = utils.make_labels(es=es,
                                     product_name="Banana",
-                                    cutoff_time=pd.Timestamp('March 15, 2015'),
+                                    cutoff_time=pd.Timestamp('March 1, 2015'),
                                     prediction_window=ft.Timedelta("4 weeks"),
                                     training_window=ft.Timedelta("60 days"))
 
@@ -112,17 +112,16 @@ def run_test():
 
     print("Computing feature matrix...")
     start = datetime.now()
-    computed_fm = feature_matrix.compute()
+    if isinstance(feature_matrix, pd.DataFrame):
+        feature_matrix = feature_matrix.reset_index()
+    feature_matrix = feature_matrix.merge(label_times)
+    if isinstance(feature_matrix, dd.core.DataFrame):
+        feature_matrix = feature_matrix.compute()
     end = datetime.now()
     elapsed = (end - start).total_seconds()
     print("Elapsed time: {} sec".format(elapsed))
-    print("Shape: {}".format(computed_fm.shape))
-    print("Memory: {} MB".format(computed_fm.memory_usage().sum() / 1000000))
-
-    overall_end = datetime.now()
-    overall_elapsed = (overall_end - overall_start).total_seconds()
-    print("Total elapsed time: {} sec".format(overall_elapsed))
-    return
+    print("Shape: {}".format(feature_matrix.shape))
+    print("Memory: {} MB".format(feature_matrix.memory_usage().sum() / 1000000))
 
     print("Encoding categorical features...")
     start = datetime.now()
@@ -135,15 +134,18 @@ def run_test():
     elapsed = (end - start).total_seconds()
     print("Elapsed time: {} sec".format(elapsed))
 
-    return
-
     print("Training model...")
-    X = utils.merge_features_labels(fm_encoded, label_times)
-    X = X.drop(["user_id", "time"], axis=1)
+    X = fm_encoded.drop(["user_id", "time"], axis=1)
     X = X.fillna(0)
     y = X.pop("label")
 
     clf = RandomForestClassifier(n_estimators=400, n_jobs=-1)
+
+    scores = cross_val_score(estimator=clf,X=X, y=y, cv=3,
+                            scoring="roc_auc", verbose=True)
+
+    print("AUC %.2f +/- %.2f" % (scores.mean(), scores.std()))
+
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)
     clf.fit(X_train, y_train)
 
@@ -160,6 +162,9 @@ def run_test():
     elapsed = (end - start).total_seconds()
     print("Elapsed time: {} sec".format(elapsed))
 
+    overall_end = datetime.now()
+    overall_elapsed = (overall_end - overall_start).total_seconds()
+    print("Total elapsed time: {} sec".format(overall_elapsed))
 
 if __name__ == "__main__":
     run_test()

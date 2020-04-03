@@ -5,7 +5,8 @@ FROM python
 
 ADD /data /data
 
-RUN python -m pip install git+https://github.com/FeatureLabs/featuretools.git@dask-entity
+RUN python -m pip install git+https://github.com/FeatureLabs/featuretools.git@5ebd81e59364d62e51bc327951b02cd926a12696
 RUN python -m pip install memory_profiler
 RUN python -m pip install fastparquet
 RUN python -m pip install bokeh
+RUN python -m pip install dask_ml

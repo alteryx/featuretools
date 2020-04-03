@@ -15,7 +15,8 @@ def main():
     num_rows_per_file = 1000000
 
     print("Reading raw data...")
-    order_products = pd.read_csv(os.path.join(data_dir, "order_products__prior.csv"))
+    order_products = pd.concat([pd.read_csv(os.path.join(data_dir,"order_products__prior.csv")),
+                                pd.read_csv(os.path.join(data_dir, "order_products__train.csv"))])
     orders = pd.read_csv(os.path.join(data_dir, "orders.csv"))
     departments = pd.read_csv(os.path.join(data_dir, "departments.csv"))
     products = pd.read_csv(os.path.join(data_dir, "products.csv"))
