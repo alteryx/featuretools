@@ -14,12 +14,49 @@ import utils
 
 
 def run_test():
-    client = Client()
-    data_path = os.path.join("data", "instacart", "dask_data")
-    order_products = dd.read_csv([os.path.join(data_path, "order_products_*.csv")])
-    orders = dd.read_csv([os.path.join(data_path, "orders_*.csv")])
     overall_start = datetime.now()
     start = datetime.now()
+    client = Client()
+    data_dir = "data/instacart"
+    output_dir = "data/instacart/dask_data"
+    blocksize = '50Mb'
+
+    print("Reading raw data...")
+    order_products = dd.concat([dd.read_csv(os.path.join(data_dir, "order_products__prior.csv"), blocksize=blocksize),
+                                dd.read_csv(os.path.join(data_dir, "order_products__train.csv"), blocksize=blocksize)]).persist()
+    orders = dd.read_csv(os.path.join(data_dir, "orders.csv"), blocksize=blocksize).persist()
+    departments = dd.read_csv(os.path.join(data_dir, "departments.csv"), blocksize=blocksize).persist()
+    products = dd.read_csv(os.path.join(data_dir, "products.csv"), blocksize=blocksize).persist()
+
+    print("Cleaning up columns. Please be patient, this may take some time...")
+    order_products = order_products.merge(products).merge(departments)
+
+    def add_time(df):
+        df.reset_index(drop=True)
+        df["order_time"] = np.nan
+        days_since = df.columns.tolist().index("days_since_prior_order")
+        hour_of_day = df.columns.tolist().index("order_hour_of_day")
+        order_time = df.columns.tolist().index("order_time")
+
+        df.iloc[0, order_time] = pd.Timestamp('Jan 1, 2015') +  pd.Timedelta(df.iloc[0, hour_of_day], "h")
+        for i in range(1, df.shape[0]):
+            df.iloc[i, order_time] = df.iloc[i - 1, order_time] \
+                + pd.Timedelta(df.iloc[i, days_since], "d") \
+                                        + pd.Timedelta(df.iloc[i, hour_of_day], "h")
+
+        to_drop = ["order_number", "order_dow", "order_hour_of_day", "days_since_prior_order", "eval_set"]
+        df.drop(to_drop, axis=1, inplace=True)
+
+        return df
+
+    orders = orders.groupby("user_id").apply(add_time)
+    order_products = order_products.merge(orders[["order_id", "order_time"]])
+    # order_products["order_product_id"] = order_products["order_id"].astype(str) + "_" + order_products["add_to_cart_order"].astype(str)
+    order_products["order_product_id"] = order_products["order_id"] * 1000 + order_products["add_to_cart_order"]
+    order_products = order_products.drop(["product_id", "department_id", "add_to_cart_order"], axis=1)
+    end = datetime.now()
+    elapsed = (end - start).total_seconds()
+    print("Elapsed time: {} sec".format(elapsed))
 
     print("Creating entityset...")
     order_products_vtypes = {
@@ -114,7 +151,6 @@ def run_test():
 
     print("Encoding categorical features...")
     start = datetime.now()
-    # encode categorical values
     fm_encoded, features_encoded = ft.encode_features(feature_matrix,
                                                       features,
                                                       verbose=True)
@@ -154,6 +190,7 @@ def run_test():
     overall_end = datetime.now()
     overall_elapsed = (overall_end - overall_start).total_seconds()
     print("Total elapsed time: {} sec".format(overall_elapsed))
+
 
 if __name__ == "__main__":
     run_test()
