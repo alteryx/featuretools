@@ -182,17 +182,13 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             raise TypeError(
                 "cutoff_time times must be datetime type: try casting via pd.to_datetime(cutoff_time['time'])")
     err_msg = "Duplicated rows in cutoff time dataframe."
-    if isinstance(cutoff_time, pd.DataFrame):
-        assert (cutoff_time[['instance_id', 'time']].duplicated().sum() == 0), err_msg
-        time_check = cutoff_time['time'].iloc[0]
-    elif isinstance(cutoff_time, dd.core.DataFrame):
-        assert (cutoff_time[['instance_id', 'time']].compute().duplicated().sum() == 0), err_msg
-        time_check = cutoff_time['time'].compute().iloc[0]
 
-    pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
-
+    assert (cutoff_time[['instance_id', 'time']].duplicated().sum() == 0), err_msg
+    time_check = cutoff_time['time'].iloc[0]
     if _check_time_type(time_check) is None:
         raise ValueError("cutoff_time time values must be datetime or numeric")
+
+    pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
 
     # make sure dtype of instance_id in cutoff time
     # is same as column it references
@@ -324,9 +320,6 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
             group_time = np.inf
         else:
             group_time = datetime.now()
-
-    if isinstance(cutoff_time, dd.core.DataFrame):
-        cutoff_time = cutoff_time.compute()
 
     for _, group in cutoff_time.groupby(cutoff_df_time_var):
         # if approximating, calculate the approximate features
@@ -507,9 +500,6 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
         if len(cutoffs_with_approx_e_ids) == 0:
             approx_fm = gen_empty_approx_features_df(approx_features)
         else:
-            if isinstance(cutoffs_with_approx_e_ids, dd.DataFrame):
-                # TODO: Eliminate this .compute() call. Dask dfs don't implement .sort_values()
-                cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids.compute()
             cutoffs_with_approx_e_ids.sort_values([cutoff_df_time_var,
                                                    new_approx_entity_index_var], inplace=True)
             # CFM assumes specific column names for cutoff_time argument
