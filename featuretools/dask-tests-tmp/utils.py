@@ -50,17 +50,11 @@ def load_entityset(data_dir):
                              index="order_id",
                              time_index="order_time")
 
-    # es.entity_from_dataframe(entity_id="products",
-    #                          dataframe=products,
-    #                          index="product_id")
-
     es.add_relationship(ft.Relationship(es["orders"]["order_id"], es["order_products"]["order_id"]))
-    # es.add_relationship(ft.Relationship(es["products"]["product_id"], es["order_products"]["order_id"]))
-
+    
     es.normalize_entity(base_entity_id="orders", new_entity_id="users", index="user_id")
     es.add_last_time_indexes()
 
-    # order_products["department"].value_counts().head(10).index.values.tolist()
     es["order_products"]["department"].interesting_values = ['produce', 'dairy eggs', 'snacks', 'beverages', 'frozen', 'pantry', 'bakery', 'canned goods', 'deli', 'dry goods pasta']
     es["order_products"]["product_name"].interesting_values = ['Banana', 'Bag of Organic Bananas', 'Organic Baby Spinach', 'Organic Strawberries', 'Organic Hass Avocado', 'Organic Avocado', 'Large Lemon', 'Limes', 'Strawberries', 'Organic Whole Milk']
 
