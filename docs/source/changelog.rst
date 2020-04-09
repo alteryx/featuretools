@@ -3,6 +3,8 @@
 Changelog
 ---------
 **Future Release**
+    * Enhancements
+        * ft.encode_features - use less memory for one-hot encoded columns (:pr:`876`)
     * Fixes
         * Use logger.warning to fix deprecated logger.warn (:pr:`871`)
     * Changes
@@ -11,7 +13,7 @@ Changelog
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`rwedge`
 
 **v0.13.4 Mar 27, 2020**
     .. warning::
