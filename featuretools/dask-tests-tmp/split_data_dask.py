@@ -5,10 +5,10 @@ import os
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
+from dask.distributed import Client
 from tqdm import tqdm
 
 import featuretools as ft
-from dask.distributed import Client
 
 
 def main():
@@ -52,7 +52,6 @@ def main():
     # order_products["order_product_id"] = order_products["order_id"].astype(str) + "_" + order_products["add_to_cart_order"].astype(str)
     order_products["order_product_id"] = order_products["order_id"] * 1000 + order_products["add_to_cart_order"]
     order_products = order_products.drop(["product_id", "department_id", "add_to_cart_order"], axis=1)
-    breakpoint()
     try:
         os.mkdir(output_dir)
     except:

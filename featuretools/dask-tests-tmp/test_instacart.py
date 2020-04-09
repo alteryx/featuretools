@@ -3,7 +3,6 @@ import os
 from datetime import datetime
 
 import dask.dataframe as dd
-import featuretools as ft
 import numpy as np
 import pandas as pd
 from dask.distributed import Client
@@ -12,11 +11,13 @@ from sklearn.model_selection import cross_val_score, train_test_split
 
 import utils
 
+import featuretools as ft
+
 
 def run_test():
     client = Client()
     data_path = os.path.join("data", "instacart", "dask_data")
-    order_products = dd.read_csv([os.path.join(data_path, "order_products_*.csv")])
+    order_products = dd.read_csv([os.path.join(data_path, "order_products_00.csv")])
     orders = dd.read_csv([os.path.join(data_path, "orders_*.csv")])
     overall_start = datetime.now()
     start = datetime.now()
@@ -79,17 +80,22 @@ def run_test():
     es["order_products"]["product_name"].interesting_values = ['Banana', 'Bag of Organic Bananas', 'Organic Baby Spinach', 'Organic Strawberries', 'Organic Hass Avocado', 'Organic Avocado', 'Large Lemon', 'Limes', 'Strawberries', 'Organic Whole Milk']
     print(es)
 
+    print("Creating label times...")
+    start = datetime.now()
     label_times = utils.make_labels(es=es,
                                     product_name="Banana",
                                     cutoff_time=pd.Timestamp('March 1, 2015'),
                                     prediction_window=ft.Timedelta("4 weeks"),
                                     training_window=ft.Timedelta("60 days"))
+    end = datetime.now()
+    elapsed = (end - start).total_seconds()
+    print("Elapsed time: {} sec".format(elapsed))
 
     print("Running DFS...")
     start = datetime.now()
     feature_matrix, features = ft.dfs(target_entity="users",
                                       cutoff_time=label_times,
-                                      # training_window=ft.Timedelta("60 days"), # same as above
+                                      training_window=ft.Timedelta("60 days"),  # same as above
                                       entityset=es,
                                       trans_primitives=["day", "year", "month", "weekday", "haversine", "num_words", "num_characters"],
                                       agg_primitives=["sum", "std", "max", "skew", "min", "mean", "count", "percent_true"],
@@ -130,8 +136,8 @@ def run_test():
 
     clf = RandomForestClassifier(n_estimators=400, n_jobs=-1)
 
-    scores = cross_val_score(estimator=clf,X=X, y=y, cv=3,
-                            scoring="roc_auc", verbose=True)
+    scores = cross_val_score(estimator=clf, X=X, y=y, cv=3,
+                             scoring="roc_auc", verbose=True)
 
     print("AUC %.2f +/- %.2f" % (scores.mean(), scores.std()))
 
