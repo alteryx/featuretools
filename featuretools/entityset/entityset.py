@@ -4,6 +4,7 @@ from collections import defaultdict
 
 import pandas as pd
 from pandas.api.types import is_dtype_equal
+from dask import dataframe as dd
 
 import featuretools.variable_types.variable as vtypes
 from featuretools.entityset import deserialize, serialize
@@ -793,9 +794,17 @@ class EntitySet(object):
             if entity.last_time_index is None:
                 if entity.time_index is not None:
                     lti = entity.df[entity.time_index].copy()
+                    if isinstance(entity.df, dd.DataFrame):
+                        # The current Dask implementation doesn't set the index of the dataframe
+                        # to the entity's index, so we have to do it manually here
+                        lti.index = entity.df[entity.index].copy()
                 else:
                     lti = entity.df[entity.index].copy()
-                    lti[:] = None
+                    if isinstance(entity.df, dd.DataFrame):
+                        lti.index = entity.df[entity.index].copy()
+                        lti = lti.apply(lambda x: None, axis=1)
+                    else:
+                        lti[:] = None
                 entity.last_time_index = lti
 
             if entity.id in children:
@@ -820,27 +829,40 @@ class EntitySet(object):
                         continue
                     link_var = child_vars[entity.id][child_e.id].id
 
-                    lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
-                                           entity.index: child_e.df[link_var]})
+                    if isinstance(child_e.last_time_index, dd.Series):
+                        to_join = child_e.df[link_var]
+                        to_join.index = child_e.df[child_e.index]
 
-                    # sort by time and keep only the most recent
-                    lti_df.sort_values(['last_time', entity.index],
-                                       kind="mergesort", inplace=True)
+                        lti_df = child_e.last_time_index.to_frame(name='last_time').join(
+                            to_join.to_frame(name=entity.index)
+                        )
+                        lti_df = lti_df.groupby(entity.index).agg('max')
 
-                    lti_df.drop_duplicates(entity.index,
-                                           keep='last',
-                                           inplace=True)
+                        lti_df = entity.last_time_index.to_frame(name='last_time_old').join(lti_df)
 
-                    lti_df.set_index(entity.index, inplace=True)
-                    lti_df = lti_df.reindex(entity.last_time_index.index)
-                    lti_df['last_time_old'] = entity.last_time_index
-                    if not lti_df.empty:
+                    else:
+                        lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
+                                               entity.index: child_e.df[link_var]})
+
+                        # sort by time and keep only the most recent
+                        lti_df.sort_values(['last_time', entity.index],
+                                            kind="mergesort", inplace=True)
+
+                        lti_df.drop_duplicates(entity.index,
+                                               keep='last',
+                                               inplace=True)
+
+                        lti_df.set_index(entity.index, inplace=True)
+                        lti_df = lti_df.reindex(entity.last_time_index.index)
+                        lti_df['last_time_old'] = entity.last_time_index
+                    if not isinstance(lti_df, dd.DataFrame) and lti_df.empty:
+                        # Pandas errors out if it tries to do fillna and then max on an empty dataframe
+                        lti_df = pd.Series()
+                    else:
                         lti_df['last_time'] = lti_df['last_time'].astype('datetime64[ns]')
                         lti_df['last_time_old'] = lti_df['last_time_old'].astype('datetime64[ns]')
                         lti_df = lti_df.fillna(pd.to_datetime('1800-01-01 00:00')).max(axis=1)
                         lti_df = lti_df.replace(pd.to_datetime('1800-01-01 00:00'), pd.NaT)
-                    else:
-                        lti_df = pd.Series()
                     # lti_df = lti_df.apply(lambda x: x.dropna().max(), axis=1)
 
                     entity.last_time_index = lti_df
