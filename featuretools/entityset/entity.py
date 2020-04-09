@@ -240,13 +240,15 @@ class Entity(object):
         if instance_vals is None:
             df = self.df.copy()
 
-        elif len(instance_vals) == 0:
-            df = self.df.head(0)
-
         else:
             if isinstance(instance_vals, dd.core.Series):
-                instance_vals = instance_vals.compute()
-            df = self.df[self.df[variable_id].isin(instance_vals)]
+                instance_vals = instance_vals.reset_index()
+                instance_vals["in_instances"] = True
+                df = self.df.merge(instance_vals, how="left", on=variable_id)
+                df = df[df["in_instances"].fillna(False)]
+                df = df.drop(columns=["index", "in_instances"])
+            else:
+                df = self.df[self.df[variable_id].isin(instance_vals)]
 
             if isinstance(self.df, pd.DataFrame):
                 df = df.set_index(self.index, drop=False)
@@ -512,12 +514,20 @@ class Entity(object):
         dataframe.
         """
         if self.time_index:
-            if time_last is not None and len(df) > 0:
+            if time_last is not None:
                 df = df[df[self.time_index] <= time_last]
                 if training_window is not None:
                     training_window = _check_timedelta(training_window)
+                    # if isinstance(df, dd.core.DataFrame):
+                    #     df = df.copy().set_index(self.index, drop=False)
                     mask = df[self.time_index] >= time_last - training_window
                     if self.last_time_index is not None:
+                        # if isinstance(df, dd.core.DataFrame):
+                        #     lti_df = self.df.reset_index().merge(self.last_time_index.reset_index(), how="left", left_index=True, right_index=True)
+                        #     lti_df = lti_df.set_index(self.index)
+                        #     lti_slice = df.merge(lti_df, how="left", left_index=True, right_on=self.index)[self.last_time_index.name]
+                        # else:
+                        #     lti_slice = self.last_time_index.reindex(df.index)
                         lti_slice = self.last_time_index.reindex(df.index)
                         lti_mask = lti_slice >= time_last - training_window
                         mask = mask | lti_mask
@@ -526,7 +536,10 @@ class Entity(object):
                             "Using training_window but last_time_index is "
                             "not set on entity %s" % (self.id)
                         )
+
                     df = df[mask]
+                    # if isinstance(df, dd.core.DataFrame):
+                    #     df = df.reset_index(drop=True)
 
         for secondary_time_index, columns in self.secondary_time_index.items():
             # should we use ignore time last here?
