@@ -70,22 +70,11 @@ def make_labels(es, training_window, cutoff_time,
     orders = es["orders"].df
     ops = es["order_products"].df
 
-    # if isinstance(orders, dd.core.DataFrame):
-    #     orders = orders.compute()
-
-    # if isinstance(ops, dd.core.DataFrame):
-    #     ops = ops.compute()
-
     training_data = ops[(ops["order_time"] <= cutoff_time) & (ops["order_time"] > t_start)]
     prediction_data = ops[(ops["order_time"] > cutoff_time) & (ops["order_time"] < prediction_window_end)]
     users_in_training = training_data.merge(orders)["user_id"].unique()
-    # users_in_training = training_data.merge(orders)
-    # users_in_training["in_training"] = True
-    # users_in_training = users_in_training[["user_id", "in_training"]]
 
     valid_pred_data = prediction_data.merge(orders)
-    # valid_pred_data = valid_pred_data.merge(users_in_training, how="left", on="user_id")
-    # valid_pred_data = valid_pred_data[valid_pred_data["in_training"] == True].drop(columns=["in_training"])
 
     if isinstance(users_in_training, dd.core.Series):
         users_in_training = users_in_training.compute()

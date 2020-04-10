@@ -1,31 +1,30 @@
 # flake8: noqa
 import math
 import os
+from datetime import datetime
 
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 from dask.distributed import Client
-from tqdm import tqdm
 
 import featuretools as ft
 
 
 def main():
+    client = Client()
     data_dir = "data/instacart"
     output_dir = "data/instacart/dask_data"
-    num_rows_per_file = 1000000
-    blocksize = '50Mb'
 
     print("Reading raw data...")
-    order_products = dd.concat([dd.read_csv(os.path.join(data_dir, "order_products__prior.csv"), blocksize=blocksize),
-                                dd.read_csv(os.path.join(data_dir, "order_products__train.csv"), blocksize=blocksize)]).persist()
-    orders = dd.read_csv(os.path.join(data_dir, "orders.csv"), blocksize=blocksize).persist()
-    departments = dd.read_csv(os.path.join(data_dir, "departments.csv"), blocksize=blocksize).persist()
-    products = dd.read_csv(os.path.join(data_dir, "products.csv"), blocksize=blocksize).persist()
+    order_products = pd.concat([pd.read_csv(os.path.join(data_dir, "order_products__prior.csv")),
+                                pd.read_csv(os.path.join(data_dir, "order_products__train.csv"))])
+    orders = pd.read_csv(os.path.join(data_dir, "orders.csv"))
+    orders = dd.from_pandas(orders, npartitions=4)
+    departments = pd.read_csv(os.path.join(data_dir, "departments.csv"))
+    products = pd.read_csv(os.path.join(data_dir, "products.csv"))
 
     print("Cleaning up columns. Please be patient, this may take some time...")
-    order_products = order_products.merge(products).merge(departments)
 
     def add_time(df):
         df.reset_index(drop=True)
@@ -45,9 +44,10 @@ def main():
 
         return df
 
-    # tqdm.pandas()
-    # orders = orders.groupby("user_id").progress_apply(add_time)
-    orders = orders.groupby("user_id").apply(add_time)
+    print("Processing orders...")
+    orders = orders.groupby("user_id").apply(add_time).compute()
+    print("Processing order_products...")
+    order_products = order_products.merge(products).merge(departments)
     order_products = order_products.merge(orders[["order_id", "order_time"]])
     # order_products["order_product_id"] = order_products["order_id"].astype(str) + "_" + order_products["add_to_cart_order"].astype(str)
     order_products["order_product_id"] = order_products["order_id"] * 1000 + order_products["add_to_cart_order"]
@@ -58,15 +58,17 @@ def main():
         pass
 
     print("Saving order_products...")
-    order_products.to_csv(os.path.join(output_dir, "order_products_*.csv"), index=False)
-    # for i in tqdm(range(math.ceil(len(order_products) / num_rows_per_file))):
-    #     order_products.iloc[i * num_rows_per_file:num_rows_per_file * (i + 1)].to_csv(os.path.join(output_dir, "order_products_{}.csv".format(i)), index=False)
+    order_products.to_csv(os.path.join(output_dir, "order_products_dask.csv"), index=False)
 
     print("Saving orders...")
-    orders.to_csv(os.path.join(output_dir, "orders_*.csv"), index=False)
-    # for i in tqdm(range(math.ceil(len(orders) / num_rows_per_file))):
-    #     orders.iloc[i * num_rows_per_file:num_rows_per_file * (i + 1)].to_csv(os.path.join(output_dir, "orders_{}.csv".format(i)), index=False)
+    orders.to_csv(os.path.join(output_dir, "orders_dask.csv"), index=False)
+
+    client.close()
+
 
 if __name__ == "__main__":
-    client = Client()
+    start = datetime.now()
     main()
+    end = datetime.now()
+    elapsed = (end - start).total_seconds()
+    print("Elapsed time: {} sec".format(elapsed))

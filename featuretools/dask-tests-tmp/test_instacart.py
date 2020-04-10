@@ -17,8 +17,8 @@ import featuretools as ft
 def run_test():
     client = Client()
     data_path = os.path.join("data", "instacart", "dask_data")
-    order_products = dd.read_csv([os.path.join(data_path, "order_products_00.csv")])
-    orders = dd.read_csv([os.path.join(data_path, "orders_*.csv")])
+    order_products = dd.read_csv([os.path.join(data_path, "order_products_dask.csv")])
+    orders = dd.read_csv([os.path.join(data_path, "orders_dask.csv")])
     overall_start = datetime.now()
     start = datetime.now()
 
@@ -95,7 +95,7 @@ def run_test():
     start = datetime.now()
     feature_matrix, features = ft.dfs(target_entity="users",
                                       cutoff_time=label_times,
-                                      training_window=ft.Timedelta("60 days"),  # same as above
+                                      # training_window=ft.Timedelta("60 days"),  # same as above
                                       entityset=es,
                                       trans_primitives=["day", "year", "month", "weekday", "haversine", "num_words", "num_characters"],
                                       agg_primitives=["sum", "std", "max", "skew", "min", "mean", "count", "percent_true"],
@@ -112,12 +112,13 @@ def run_test():
     feature_matrix = feature_matrix.merge(label_times)
     if isinstance(feature_matrix, dd.core.DataFrame):
         feature_matrix = feature_matrix.compute()
+    feature_matrix.to_csv('fm_dask.csv', index=False)
     end = datetime.now()
     elapsed = (end - start).total_seconds()
     print("Elapsed time: {} sec".format(elapsed))
     print("Shape: {}".format(feature_matrix.shape))
     print("Memory: {} MB".format(feature_matrix.memory_usage().sum() / 1000000))
-
+    return
     print("Encoding categorical features...")
     start = datetime.now()
     # encode categorical values
