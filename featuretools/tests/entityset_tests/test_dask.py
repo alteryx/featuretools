@@ -1,80 +1,75 @@
-from datetime import datetime
-
 import pandas as pd
 import pytest
 from dask import dataframe as dd
 
 import featuretools as ft
-from featuretools import calculate_feature_matrix
 from featuretools.entityset import EntitySet, Relationship
-from featuretools.feature_base import DirectFeature
-from featuretools.primitives import Count
 
 
-# def test_transform(es, dask_es):
-#     primitives = ft.list_primitives()
-#     trans_list = primitives[primitives['type'] == 'transform']['name'].tolist()
-#     # These primitives currently not supported with Dask
-#     not_supported = ['cum_mean', 'equal', 'not_equal', 'equal_scalar', 'not_equal_scalar']
-#     trans_primitives = [prim for prim in trans_list if prim not in not_supported]
-#     agg_primitives = []
+def test_transform(es, dask_es):
+    primitives = ft.list_primitives()
+    trans_list = primitives[primitives['type'] == 'transform']['name'].tolist()
+    # These primitives currently not supported with Dask
+    not_supported = ['cum_mean', 'equal', 'not_equal', 'equal_scalar', 'not_equal_scalar']
+    trans_primitives = [prim for prim in trans_list if prim not in not_supported]
+    agg_primitives = []
 
-#     assert es == dask_es
+    assert es == dask_es
 
-#     # Run DFS using each entity as a target and confirm results match
-#     for entity in es.entities:
-#         fm, _ = ft.dfs(entityset=es,
-#                        target_entity=entity.id,
-#                        trans_primitives=trans_primitives,
-#                        agg_primitives=agg_primitives,
-#                        cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-#                        max_depth=2,
-#                        max_features=100)
+    # Run DFS using each entity as a target and confirm results match
+    for entity in es.entities:
+        fm, _ = ft.dfs(entityset=es,
+                       target_entity=entity.id,
+                       trans_primitives=trans_primitives,
+                       agg_primitives=agg_primitives,
+                       cutoff_time=pd.Timestamp("2019-01-05 04:00"),
+                       max_depth=2,
+                       max_features=100)
 
-#         dask_fm, _ = ft.dfs(entityset=dask_es,
-#                             target_entity=entity.id,
-#                             trans_primitives=trans_primitives,
-#                             agg_primitives=agg_primitives,
-#                             cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-#                             max_depth=2,
-#                             max_features=100)
-#         # Use the same columns and make sure both indexes are sorted the same
-#         dask_computed_fm = dask_fm.compute().set_index(entity.index).loc[fm.index][fm.columns]
-#         pd.testing.assert_frame_equal(fm, dask_computed_fm)
+        dask_fm, _ = ft.dfs(entityset=dask_es,
+                            target_entity=entity.id,
+                            trans_primitives=trans_primitives,
+                            agg_primitives=agg_primitives,
+                            cutoff_time=pd.Timestamp("2019-01-05 04:00"),
+                            max_depth=2,
+                            max_features=100)
+        # Use the same columns and make sure both indexes are sorted the same
+        dask_computed_fm = dask_fm.compute().set_index(entity.index).loc[fm.index][fm.columns]
+        pd.testing.assert_frame_equal(fm, dask_computed_fm)
 
 
-# def test_aggregation(es, dask_es):
-#     primitives = ft.list_primitives()
-#     trans_primitives = []
-#     agg_list = primitives[primitives['type'] == 'aggregation']['name'].tolist()
-#     not_supported = ['trend', 'first', 'last', 'time_since_first', 'time_since_last']
-#     agg_primitives = [prim for prim in agg_list if prim not in not_supported]
+def test_aggregation(es, dask_es):
+    primitives = ft.list_primitives()
+    trans_primitives = []
+    agg_list = primitives[primitives['type'] == 'aggregation']['name'].tolist()
+    not_supported = ['trend', 'first', 'last', 'time_since_first', 'time_since_last']
+    agg_primitives = [prim for prim in agg_list if prim not in not_supported]
 
-#     assert es == dask_es
+    assert es == dask_es
 
-#     # Run DFS using each entity as a target and confirm results match
-#     for entity in es.entities:
-#         # remove n_most_common for customers due to ambiguity
-#         if entity.id == 'customers':
-#             agg_primitives.remove('n_most_common')
-#         fm, _ = ft.dfs(entityset=es,
-#                        target_entity=entity.id,
-#                        trans_primitives=trans_primitives,
-#                        agg_primitives=agg_primitives,
-#                        cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-#                        max_depth=2)
+    # Run DFS using each entity as a target and confirm results match
+    for entity in es.entities:
+        # remove n_most_common for customers due to ambiguity
+        if entity.id == 'customers':
+            agg_primitives.remove('n_most_common')
+        fm, _ = ft.dfs(entityset=es,
+                       target_entity=entity.id,
+                       trans_primitives=trans_primitives,
+                       agg_primitives=agg_primitives,
+                       cutoff_time=pd.Timestamp("2019-01-05 04:00"),
+                       max_depth=2)
 
-#         dask_fm, _ = ft.dfs(entityset=dask_es,
-#                             target_entity=entity.id,
-#                             trans_primitives=trans_primitives,
-#                             agg_primitives=agg_primitives,
-#                             cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-#                             max_depth=2)
-#         if entity.id == 'customers':
-#             agg_primitives.append('n_most_common')
-#         # Use the same columns and make sure both indexes are sorted the same
-#         dask_computed_fm = dask_fm.compute().set_index(entity.index).loc[fm.index][fm.columns]
-#         pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
+        dask_fm, _ = ft.dfs(entityset=dask_es,
+                            target_entity=entity.id,
+                            trans_primitives=trans_primitives,
+                            agg_primitives=agg_primitives,
+                            cutoff_time=pd.Timestamp("2019-01-05 04:00"),
+                            max_depth=2)
+        if entity.id == 'customers':
+            agg_primitives.append('n_most_common')
+        # Use the same columns and make sure both indexes are sorted the same
+        dask_computed_fm = dask_fm.compute().set_index(entity.index).loc[fm.index][fm.columns]
+        pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
 
 
 def test_create_entity_from_dask_df(es):
@@ -657,5 +652,5 @@ def test_build_es_from_scratch_and_run_dfs():
                         max_depth=2)
 
     # Use the same columns and make sure both have same index sorting
-    breakpoint()
+
     pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('customer_id')[fm.columns], check_dtype=False)
