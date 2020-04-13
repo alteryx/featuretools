@@ -242,11 +242,7 @@ class Entity(object):
 
         else:
             if isinstance(instance_vals, dd.core.Series):
-                instance_vals = instance_vals.reset_index()
-                instance_vals["in_instances"] = True
-                df = self.df.merge(instance_vals, how="left", on=variable_id)
-                df = df[df["in_instances"].fillna(False)]
-                df = df.drop(columns=["index", "in_instances"])
+                df = self.df.merge(instance_vals.to_frame(), how="inner", on=variable_id)
             else:
                 df = self.df[self.df[variable_id].isin(instance_vals)]
 
@@ -518,16 +514,8 @@ class Entity(object):
                 df = df[df[self.time_index] <= time_last]
                 if training_window is not None:
                     training_window = _check_timedelta(training_window)
-                    # if isinstance(df, dd.core.DataFrame):
-                    #     df = df.copy().set_index(self.index, drop=False)
                     mask = df[self.time_index] >= time_last - training_window
                     if self.last_time_index is not None:
-                        # if isinstance(df, dd.core.DataFrame):
-                        #     lti_df = self.df.reset_index().merge(self.last_time_index.reset_index(), how="left", left_index=True, right_index=True)
-                        #     lti_df = lti_df.set_index(self.index)
-                        #     lti_slice = df.merge(lti_df, how="left", left_index=True, right_on=self.index)[self.last_time_index.name]
-                        # else:
-                        #     lti_slice = self.last_time_index.reindex(df.index)
                         lti_slice = self.last_time_index.reindex(df.index)
                         lti_mask = lti_slice >= time_last - training_window
                         mask = mask | lti_mask
@@ -538,8 +526,6 @@ class Entity(object):
                         )
 
                     df = df[mask]
-                    # if isinstance(df, dd.core.DataFrame):
-                    #     df = df.reset_index(drop=True)
 
         for secondary_time_index, columns in self.secondary_time_index.items():
             # should we use ignore time last here?
