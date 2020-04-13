@@ -802,7 +802,7 @@ class EntitySet(object):
                     lti = entity.df[entity.index].copy()
                     if isinstance(entity.df, dd.DataFrame):
                         lti.index = entity.df[entity.index].copy()
-                        lti = lti.apply(lambda x: None, axis=1)
+                        lti = lti.apply(lambda x: None)
                     else:
                         lti[:] = None
                 entity.last_time_index = lti
@@ -836,7 +836,10 @@ class EntitySet(object):
                         lti_df = child_e.last_time_index.to_frame(name='last_time').join(
                             to_join.to_frame(name=entity.index)
                         )
-                        lti_df = lti_df.groupby(entity.index).agg('max')
+                        new_index = lti_df.index.copy()
+                        new_index.name = None
+                        lti_df.index = new_index
+                        lti_df = lti_df.groupby(lti_df[entity.index]).agg('max')
 
                         lti_df = entity.last_time_index.to_frame(name='last_time_old').join(lti_df)
 
