@@ -1,9 +1,14 @@
 import pandas as pd
 import pytest
+from datetime import datetime
 from dask import dataframe as dd
 
 import featuretools as ft
 from featuretools.entityset import EntitySet, Relationship
+from featuretools.primitives import Count
+from featuretools.feature_base import DirectFeature
+from featuretools import Timedelta, calculate_feature_matrix
+
 
 def test_transform(es, dask_es):
     primitives = ft.list_primitives()
@@ -653,3 +658,28 @@ def test_build_es_from_scratch_and_run_dfs():
 
     # Use the same columns and make sure both have same index sorting
     pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('customer_id')[fm.columns], check_dtype=False)
+
+
+def test_dask_training_window(es, dask_es):
+    property_feature = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
+    top_level_agg = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count)
+
+    # make sure features that have a direct to a higher level agg
+    dagg = DirectFeature(top_level_agg, es['customers'])
+
+    times = [datetime(2011, 4, 9, 12, 31),
+             datetime(2011, 4, 10, 11),
+             datetime(2011, 4, 10, 13, 10, 1)]
+    cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 1, 2]})
+
+    es.add_last_time_indexes()
+    dask_es.add_last_time_indexes()
+
+    feature_matrix = calculate_feature_matrix([property_feature, dagg],
+                                              dask_es,
+                                              cutoff_time=cutoff_time,
+                                              training_window='2 hours')
+    prop_values = [5, 5, 1]
+    dagg_values = [3, 2, 1]
+    assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
+    assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
