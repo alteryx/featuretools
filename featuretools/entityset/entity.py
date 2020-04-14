@@ -562,7 +562,13 @@ def _create_index(index, make_index, df):
                            "integer column", index)
         # Case 5: make_index with no errors or warnings
         # (Case 4 also uses this code path)
-        df.insert(0, index, range(0, len(df)))
+        if isinstance(df, dd.core.DataFrame):
+            df_cols = df.columns.to_list()
+            df[index] = 1
+            df[index] = df[index].cumsum() - 1
+            df = df[[index] + df_cols]
+        else:
+            df.insert(0, index, range(len(df)))
         created_index = index
     # Case 6: user specified index, which is already in df. No action needed.
     return created_index, index, df

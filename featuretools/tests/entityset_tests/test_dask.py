@@ -1,14 +1,9 @@
-from datetime import datetime
-
+import dask.dataframe as dd
 import pandas as pd
 import pytest
-from dask import dataframe as dd
 
 import featuretools as ft
-from featuretools import calculate_feature_matrix
 from featuretools.entityset import EntitySet, Relationship
-from featuretools.feature_base import DirectFeature
-from featuretools.primitives import Count
 
 
 def test_transform(es, dask_es):
@@ -202,11 +197,12 @@ def test_add_last_time_indexes():
 def test_create_entity_with_make_index():
     df = pd.DataFrame({"values": [1, 12, -34, 27]})
     dask_df = dd.from_pandas(df, npartitions=2)
-
     dask_es = EntitySet(id="dask_es")
     vtypes = {"values": ft.variable_types.Numeric}
     dask_es.entity_from_dataframe(entity_id="new_entity", dataframe=dask_df, make_index=True, index="new_index", variable_types=vtypes)
-    breakpoint()
+
+    assert dask_es['new_entity'].df.columns[0] == "new_index"
+    assert dask_es['new_entity'].df['new_index'].compute().to_list() == [0, 1, 2, 3]
 
 
 def test_single_table_dask_entityset():
