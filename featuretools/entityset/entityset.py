@@ -2,9 +2,9 @@ import copy
 import logging
 from collections import defaultdict
 
+import dask.dataframe as dd
 import pandas as pd
 from pandas.api.types import is_dtype_equal
-from dask import dataframe as dd
 
 import featuretools.variable_types.variable as vtypes
 from featuretools.entityset import deserialize, serialize
@@ -195,19 +195,12 @@ class EntitySet(object):
         repr_out = u"Entityset: {}\n".format(self.id)
         repr_out += u"  Entities:"
         for e in self.entities:
-            if isinstance(e.df, pd.DataFrame):
-                if e.df.shape:
-                    rows = e.df.shape[0]
-                    cols = e.df.shape[1]
-                else:
-                    rows = "None"
-                    cols = "None"
+            if e.df.shape:
+                repr_out += u"\n    {} [Rows: {}, Columns: {}]".format(
+                    e.id, e.df.shape[0], e.df.shape[1])
             else:
-                rows = "TBD"
-                cols = len(e.df.columns)
-
-            repr_out += u"\n    {} [Rows: {}, Columns: {}]".format(e.id, rows, cols)
-
+                repr_out += u"\n    {} [Rows: None, Columns: None]".format(
+                    e.id)
         repr_out += "\n  Relationships:"
 
         if len(self.relationships) == 0:
@@ -849,7 +842,7 @@ class EntitySet(object):
 
                         # sort by time and keep only the most recent
                         lti_df.sort_values(['last_time', entity.index],
-                                            kind="mergesort", inplace=True)
+                                           kind="mergesort", inplace=True)
 
                         lti_df.drop_duplicates(entity.index,
                                                keep='last',
