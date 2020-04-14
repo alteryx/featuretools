@@ -1,14 +1,9 @@
-from datetime import datetime
-
 import pandas as pd
 import pytest
 from dask import dataframe as dd
 
 import featuretools as ft
-from featuretools import calculate_feature_matrix
 from featuretools.entityset import EntitySet, Relationship
-from featuretools.feature_base import DirectFeature
-from featuretools.primitives import Count
 
 
 def test_transform(es, dask_es):
@@ -667,5 +662,5 @@ def test_build_es_from_scratch_and_run_dfs():
                         max_depth=2)
 
     # Use the same columns and make sure both have same index sorting
-    breakpoint()
+
     pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('customer_id')[fm.columns], check_dtype=False)
