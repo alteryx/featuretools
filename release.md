@@ -107,16 +107,16 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
     ```
     **v0.13.3** Feb 28, 2020
     ```
-2. Remove any unused changelog sections for this release (e.g. Fixes, Testing Changes) 
+2. Remove any unused changelog sections for this release (e.g. Fixes, Testing Changes)
 3. Add yourself to the list of contributors to this release and put the contributors in alphabetical order
 4. The release PR does not need to be mentioned in the list of changes
 
 
 #### Create Release PR
-A [release pr](https://github.com/Featuretools/featuretools/pull/856) should have the version number as the title and the changelog updates as the PR body text. The contributors list is not necessary. The special sphinx docs syntax (:pr:\`547\`) needs to be changed to github link syntax (#547).
+A [release pr](https://github.com/FeatureLabs/featuretools/pull/856) should have the version number as the title and the changelog updates as the PR body text. The contributors list is not necessary. The special sphinx docs syntax (:pr:\`547\`) needs to be changed to github link syntax (#547).
 
 #### Create Github Release
-After the release pull request has been merged into the master branch, it is time draft the github release. [Example release](https://github.com/Featuretools/featuretools/releases/tag/v0.13.3)
+After the release pull request has been merged into the master branch, it is time draft the github release. [Example release](https://github.com/FeatureLabs/featuretools/releases/tag/v0.13.3)
 * The target should be the master branch
 * The tag should be the version number with a v prefix (e.g. v0.13.3)
 * Release title is the same as the tag

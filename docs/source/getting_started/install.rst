@@ -78,9 +78,9 @@ Install from Source
 -------------------
 
 To install featuretools from source, clone the repository from `github
-<https://github.com/featuretools/featuretools>`_::
+<https://github.com/FeatureLabs/featuretools>`_::
 
-    git clone https://github.com/featuretools/featuretools.git
+    git clone https://github.com/FeatureLabs/featuretools.git
     cd featuretools
     python setup.py install
 
@@ -95,7 +95,7 @@ of ``setup.py``.
 
 Development
 -----------
-Before making contributing to the codebase, please follow the guidelines `here <https://github.com/Featuretools/featuretools/blob/master/contributing.md>`_
+Before making contributing to the codebase, please follow the guidelines `here <https://github.com/FeatureLabs/featuretools/blob/master/contributing.md>`_
 
 Virtualenv
 ~~~~~~~~~~
