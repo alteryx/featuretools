@@ -10,6 +10,7 @@ Changelog
     * Changes
     * Documentation Changes
         * Fix README links to docs (:pr:`872`)
+        * Fix Github links with correct organizations (:pr:`908`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:

@@ -8,8 +8,8 @@
 
 
 
-[![Circle CI](https://circleci.com/gh/Featuretools/featuretools.svg?maxAge=2592000&style=shield)](https://circleci.com/gh/Featuretools/featuretools)
-[![Coverage Status](https://codecov.io/gh/Featuretools/featuretools/branch/master/graph/badge.svg)](https://codecov.io/gh/Featuretools/featuretools)
+[![Circle CI](https://circleci.com/gh/FeatureLabs/featuretools.svg?maxAge=2592000&style=shield)](https://circleci.com/gh/FeatureLabs/featuretools)
+[![Coverage Status](https://codecov.io/gh/FeatureLabs/featuretools/branch/master/graph/badge.svg)](https://codecov.io/gh/FeatureLabs/featuretools)
 [![PyPI version](https://badge.fury.io/py/featuretools.svg?maxAge=2592000)](https://badge.fury.io/py/featuretools)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/featuretools/badges/version.svg)](https://anaconda.org/conda-forge/featuretools)
 [![StackOverflow](http://img.shields.io/badge/questions-on_stackoverflow-blue.svg)](https://stackoverflow.com/questions/tagged/featuretools)
@@ -62,7 +62,7 @@ Below is an example of using Deep Feature Synthesis (DFS) to perform automated f
 >> es.plot()
 ```
 
-<img src="https://github.com/Featuretools/featuretools/blob/master/docs/source/images/entity_set.png?raw=true" width="350">
+<img src="https://github.com/FeatureLabs/featuretools/blob/master/docs/source/images/entity_set.png?raw=true" width="350">
 
 Featuretools can automatically create a single table of features for any "target entity"
 ```python
@@ -102,7 +102,7 @@ The Featuretools community welcomes pull requests. Instructions for testing and 
 The Featuretools community is happy to provide support to users of Featuretools. Project support can be found in four places depending on the type of question:
 
 1. For usage questions, use [Stack Overflow](https://stackoverflow.com/questions/tagged/featuretools) with the `featuretools` tag.
-2. For bugs, issues, or feature requests start a [Github issue](https://github.com/featuretools/featuretools/issues).
+2. For bugs, issues, or feature requests start a [Github issue](https://github.com/FeatureLabs/featuretools/issues).
 3. For discussion regarding development on the core library, use [Slack](https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTQ1MjZlOWFmZDk2YzAwMjEzNTkwZTZkN2NmOGFjOGI4YzE5OGMyMGM5NGIxNTE4NjkzYWI3OWEwZjkyZGExYmQ).
 4. For everything else, the core developers can be reached by email at help@featuretools.com.
 
