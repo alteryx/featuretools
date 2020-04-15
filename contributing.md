@@ -18,7 +18,7 @@ There are many ways to contribute to Featuretools, with the most common ones bei
 5. [Report issues](#Report-issues) you're facing, and give a "thumbs up" on issues that others reported and that are relevant to you. Issues should be used for bugs, and feature requests only.
 
 6. Spread the word: reference Featuretools from your blog and articles, link to it from your website, or simply star it in GitHub to say "I use it".
-    * If you would like to be featured on [ecosystem page](https://docs.featuretools.com/ecosystem.html), you can submit a [pull request](https://github.com/Featuretools/featuretools).
+    * If you would like to be featured on [ecosystem page](https://docs.featuretools.com/en/stable/ecosystem.html), you can submit a [pull request](https://github.com/Featuretools/featuretools).
 
 ## Contributing to the Codebase
 
