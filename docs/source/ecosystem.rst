@@ -6,7 +6,7 @@ Featuretools External Ecosystem
 
 New projects are regularly being built on top of Featuretools, highlighting the importance of automated feature engineering. On this page, we have a list of libraries, use cases / demos, and tutorials that leverage Featuretools. If you would like to add a project, please contact us or submit a pull request on `GitHub`_.
 
-.. _`GitHub`: https://github.com/Featuretools/featuretools
+.. _`GitHub`: https://github.com/FeatureLabs/featuretools
 
 .. note::
 

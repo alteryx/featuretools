@@ -10,6 +10,7 @@ Changelog
     * Changes
     * Documentation Changes
         * Fix README links to docs (:pr:`872`)
+        * Fix Github links with correct organizations (:pr:`908`)
         * Fix Ecosystem link (:pr:`910`)
     * Testing Changes
 
