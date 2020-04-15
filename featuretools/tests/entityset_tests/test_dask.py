@@ -195,14 +195,15 @@ def test_add_last_time_indexes():
 
 
 def test_create_entity_with_make_index():
-    df = pd.DataFrame({"values": [1, 12, -34, 27]})
+    values = [1, 12, -23, 27]
+    df = pd.DataFrame({"values": values})
     dask_df = dd.from_pandas(df, npartitions=2)
     dask_es = EntitySet(id="dask_es")
     vtypes = {"values": ft.variable_types.Numeric}
     dask_es.entity_from_dataframe(entity_id="new_entity", dataframe=dask_df, make_index=True, index="new_index", variable_types=vtypes)
 
-    assert dask_es['new_entity'].df.columns[0] == "new_index"
-    assert dask_es['new_entity'].df['new_index'].compute().to_list() == [0, 1, 2, 3]
+    expected_df = pd.DataFrame({"new_index": range(len(values)), "values": values})
+    pd.testing.assert_frame_equal(expected_df, dask_es['new_entity'].df.compute())
 
 
 def test_single_table_dask_entityset():
