@@ -11,7 +11,7 @@ Changelog
     * Documentation Changes
         * Fix README links to docs (:pr:`872`)
         * Fix Github links with correct organizations (:pr:`908`)
-        * Fix Ecosystem link (:pr:`910`)
+        * Fix hyperlinks in docs and docstrings with updated address (:pr:`910`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
