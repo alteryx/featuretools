@@ -2,6 +2,7 @@
 import os
 from datetime import datetime
 
+import composeml as cp
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
@@ -82,11 +83,31 @@ def run_test():
 
     print("Creating label times...")
     start = datetime.now()
-    label_times = utils.make_labels(es=es,
-                                    product_name="Banana",
-                                    cutoff_time=pd.Timestamp('March 1, 2015'),
-                                    prediction_window=ft.Timedelta("4 weeks"),
-                                    training_window=ft.Timedelta("60 days"))
+
+    def bought_product(df, product_name):
+        purchased = df.product_name.str.contains(product_name).any()
+        return purchased
+
+    lm = cp.LabelMaker(
+        target_entity='user_id',
+        time_index='order_time',
+        labeling_function=bought_product,
+        window_size='4w',
+    )
+
+    def denormalize(es):
+        df = es['order_products'].df.merge(es['orders'].df).merge(es['users'].df)
+        return df
+
+    df = denormalize(es).compute()  # Compose doesn't support Dask DataFrames
+
+    label_times = lm.search(
+        df.sort_values('order_time'),
+        minimum_data='2015-03-15',
+        num_examples_per_instance=2,
+        product_name='Banana',
+        verbose=True,
+    )
     end = datetime.now()
     elapsed = (end - start).total_seconds()
     print("Elapsed time: {} sec".format(elapsed))
@@ -109,7 +130,6 @@ def run_test():
     start = datetime.now()
     if isinstance(feature_matrix, pd.DataFrame):
         feature_matrix = feature_matrix.reset_index()
-    feature_matrix = feature_matrix.merge(label_times)
     if isinstance(feature_matrix, dd.core.DataFrame):
         feature_matrix = feature_matrix.compute()
     feature_matrix.to_csv('fm_dask.csv', index=False)
