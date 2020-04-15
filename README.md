@@ -8,8 +8,8 @@
 
 
 
-[![Circle CI](https://circleci.com/gh/Featuretools/featuretools.svg?maxAge=2592000&style=shield)](https://circleci.com/gh/Featuretools/featuretools)
-[![Coverage Status](https://codecov.io/gh/Featuretools/featuretools/branch/master/graph/badge.svg)](https://codecov.io/gh/Featuretools/featuretools)
+[![Circle CI](https://circleci.com/gh/Featuretools/featuretools.svg?maxAge=2592000&style=shield)](https://circleci.com/gh/FeatureLabs/featuretools)
+[![Coverage Status](https://codecov.io/gh/Featuretools/featuretools/branch/master/graph/badge.svg)](https://codecov.io/gh/FeatureLabs/featuretools)
 [![PyPI version](https://badge.fury.io/py/featuretools.svg?maxAge=2592000)](https://badge.fury.io/py/featuretools)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/featuretools/badges/version.svg)](https://anaconda.org/conda-forge/featuretools)
 [![StackOverflow](http://img.shields.io/badge/questions-on_stackoverflow-blue.svg)](https://stackoverflow.com/questions/tagged/featuretools)
