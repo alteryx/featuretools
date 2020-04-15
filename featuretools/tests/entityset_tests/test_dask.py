@@ -1,6 +1,6 @@
+import dask.dataframe as dd
 import pandas as pd
 import pytest
-from dask import dataframe as dd
 
 import featuretools as ft
 from featuretools.entityset import EntitySet, Relationship
@@ -192,6 +192,18 @@ def test_add_last_time_indexes():
     dask_es.add_last_time_indexes()
 
     pd.testing.assert_series_equal(es['sessions'].last_time_index.sort_index(), dask_es['sessions'].last_time_index.compute())
+
+
+def test_create_entity_with_make_index():
+    values = [1, 12, -23, 27]
+    df = pd.DataFrame({"values": values})
+    dask_df = dd.from_pandas(df, npartitions=2)
+    dask_es = EntitySet(id="dask_es")
+    vtypes = {"values": ft.variable_types.Numeric}
+    dask_es.entity_from_dataframe(entity_id="new_entity", dataframe=dask_df, make_index=True, index="new_index", variable_types=vtypes)
+
+    expected_df = pd.DataFrame({"new_index": range(len(values)), "values": values})
+    pd.testing.assert_frame_equal(expected_df, dask_es['new_entity'].df.compute())
 
 
 def test_single_table_dask_entityset():
