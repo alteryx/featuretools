@@ -10,6 +10,7 @@ Changelog
     * Changes
     * Documentation Changes
         * Fix README links to docs (:pr:`872`)
+        * Fix Ecosystem link (:pr:`910`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
