@@ -185,7 +185,7 @@ def create_client_and_cluster(n_jobs, dask_kwargs, entityset_size):
             logger.warning("Worker memory is between 1 to 2 times the memory"
                            " size of the EntitySet. If errors occur that do"
                            " not occur with n_jobs equals 1, this may be the "
-                           "cause.  See https://docs.featuretools.com/guides/parallel.html"
+                           "cause.  See https://docs.featuretools.com/en/stable/guides/parallel.html"
                            " for more information.")
             warned_of_memory = True
 
