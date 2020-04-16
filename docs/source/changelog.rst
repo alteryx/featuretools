@@ -11,6 +11,7 @@ Changelog
     * Documentation Changes
         * Fix README links to docs (:pr:`872`)
         * Fix Github links with correct organizations (:pr:`908`)
+        * Remove unused script for uploading docs to AWS (:pr:`911`)
         * Fix hyperlinks in docs and docstrings with updated address (:pr:`910`)
     * Testing Changes
 
