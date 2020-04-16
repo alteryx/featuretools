@@ -1,3 +1,4 @@
+import composeml as cp
 import numpy as np
 import pandas as pd
 import pytest
@@ -65,6 +66,36 @@ def test_accepts_cutoff_time_df(entities, relationships):
                                    cutoff_time=cutoff_times_df)
     assert len(feature_matrix.index) == 3
     assert len(feature_matrix.columns) == len(features)
+
+
+def test_accepts_cutoff_time_compose(entities, relationships):
+    def fraud_occured(df):
+        print(df)
+        return df['fraud'].any()
+
+    lm = cp.LabelMaker(
+        target_entity='card_id',
+        time_index='transaction_time',
+        labeling_function=fraud_occured,
+        window_size=1
+    )
+
+    labels = lm.search(
+        entities['transactions'][0],
+        num_examples_per_instance=-1
+    )
+
+    labels['cutoff_time'] = pd.to_numeric(labels['cutoff_time'])
+    labels.rename({'card_id': 'id'}, axis=1, inplace=True)
+
+    feature_matrix, features = dfs(entities=entities,
+                                   relationships=relationships,
+                                   target_entity="cards",
+                                   cutoff_time=labels)
+
+    assert len(feature_matrix.index) == 6
+    assert len(feature_matrix.columns) == len(features) + 1
+
 
 
 def test_accepts_single_cutoff_time(entities, relationships):
