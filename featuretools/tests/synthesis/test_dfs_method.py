@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 from distributed.utils_test import cluster
 
+
 from featuretools.computational_backends.calculate_feature_matrix import (
     FEATURE_CALCULATION_PERCENTAGE
 )
@@ -95,7 +96,6 @@ def test_accepts_cutoff_time_compose(entities, relationships):
 
     assert len(feature_matrix.index) == 6
     assert len(feature_matrix.columns) == len(features) + 1
-
 
 
 def test_accepts_single_cutoff_time(entities, relationships):
