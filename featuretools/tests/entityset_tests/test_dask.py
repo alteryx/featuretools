@@ -648,7 +648,8 @@ def test_build_es_from_scratch_and_run_dfs():
                                        make_time_index="join_date",
                                        additional_variables=["zip_code", "join_date", "date_of_birth"])
 
-    trans_primitives = ['cum_sum', 'diff', 'absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
+    # trans_primitives = ['cum_sum', 'diff', 'absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
+    trans_primitives = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
     agg_primitives = ['num_unique', 'count', 'max', 'sum']
 
     fm, _ = ft.dfs(entityset=es,
@@ -664,5 +665,5 @@ def test_build_es_from_scratch_and_run_dfs():
                         max_depth=2)
 
     # Use the same columns and make sure both have same index sorting
-
-    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('customer_id')[fm.columns], check_dtype=False)
+    _dask_fm = dask_fm.compute().set_index('customer_id').reindex(fm.index)
+    pd.testing.assert_frame_equal(fm, _dask_fm[fm.columns], check_dtype=False)
