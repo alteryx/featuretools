@@ -403,21 +403,11 @@ class Entity(object):
 
     def set_time_index(self, variable_id, already_sorted=False):
         # check time type
-        if isinstance(self.df, dd.core.DataFrame):
-            already_sorted = True  # skip sorting
-            old_vtype = self.variable_types[variable_id]
-            if old_vtype == vtypes.Datetime:
-                time_type = vtypes.DatetimeTimeIndex
-            elif old_vtype in (vtypes.Numeric, vtypes.Ordinal):
-                time_type = vtypes.NumericTimeIndex
-            else:
-                time_type = old_vtype
+        if isinstance(self.df, dd.core.DataFrame) or len(self.df) == 0:
+            time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
         else:
-            if len(self.df) == 0:
-                time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
-            else:
-                time_to_check = self.df[variable_id].head(1).iloc[0]
-            time_type = _check_time_type(time_to_check)
+            time_to_check = self.df[variable_id].head(1).iloc[0]
+        time_type = _check_time_type(time_to_check)
 
         if time_type is None:
             raise TypeError("%s time index not recognized as numeric or"
@@ -430,17 +420,18 @@ class Entity(object):
                             " other entityset time indexes" %
                             (self.id, time_type))
 
-        # use stable sort
-        if not already_sorted:
-            # sort by time variable, then by index
-            self.df = self.df.sort_values([variable_id, self.index])
-
         if isinstance(self.df, dd.core.DataFrame):
             t = time_type  # skip checking values
+            already_sorted = True # skip sorting
         else:
             t = vtypes.NumericTimeIndex
             if col_is_datetime(self.df[variable_id]):
                 t = vtypes.DatetimeTimeIndex
+
+        # use stable sort
+        if not already_sorted:
+            # sort by time variable, then by index
+            self.df = self.df.sort_values([variable_id, self.index])
 
         self.convert_variable_type(variable_id, t, convert_data=False)
 
