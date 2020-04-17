@@ -606,7 +606,7 @@ def test_build_es_from_scratch_and_run_dfs():
         "amount": ft.variable_types.Numeric,
         "customer_id": ft.variable_types.Id,
         "device": ft.variable_types.Categorical,
-        "session_start": ft.variable_types.DatetimeTimeIndex,
+        "session_start": ft.variable_types.Datetime,
         "zip_code": ft.variable_types.ZIPCode,
         "join_date": ft.variable_types.Datetime,
         "date_of_birth": ft.variable_types.Datetime

@@ -404,16 +404,21 @@ class Entity(object):
     def set_time_index(self, variable_id, already_sorted=False):
         # check time type
         if isinstance(self.df, dd.core.DataFrame):
-            self.time_index = variable_id
-            self.entityset.time_type = self.variable_types[variable_id]
-            return
-
-        if len(self.df) == 0:
-            time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
+            already_sorted = True  # skip sorting
+            old_vtype = self.variable_types[variable_id]
+            if old_vtype == vtypes.Datetime:
+                time_type = vtypes.DatetimeTimeIndex
+            elif old_vtype in (vtypes.Numeric, vtypes.Ordinal):
+                time_type = vtypes.NumericTimeIndex
+            else:
+                time_type = old_vtype
         else:
-            time_to_check = self.df[variable_id].head(1).iloc[0]
+            if len(self.df) == 0:
+                time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
+            else:
+                time_to_check = self.df[variable_id].head(1).iloc[0]
+            time_type = _check_time_type(time_to_check)
 
-        time_type = _check_time_type(time_to_check)
         if time_type is None:
             raise TypeError("%s time index not recognized as numeric or"
                             " datetime" % (self.id))
@@ -430,9 +435,13 @@ class Entity(object):
             # sort by time variable, then by index
             self.df = self.df.sort_values([variable_id, self.index])
 
-        t = vtypes.NumericTimeIndex
-        if col_is_datetime(self.df[variable_id]):
-            t = vtypes.DatetimeTimeIndex
+        if isinstance(self.df, dd.core.DataFrame):
+            t = time_type  # skip checking values
+        else:
+            t = vtypes.NumericTimeIndex
+            if col_is_datetime(self.df[variable_id]):
+                t = vtypes.DatetimeTimeIndex
+
         self.convert_variable_type(variable_id, t, convert_data=False)
 
         self.time_index = variable_id
