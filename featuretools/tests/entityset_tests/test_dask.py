@@ -650,20 +650,17 @@ def test_build_es_from_scratch_and_run_dfs():
 
     trans_primitives = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
     agg_primitives = ['num_unique', 'count', 'max', 'sum']
-    groupby_trans_primitives = ['cum_sum', 'diff']
 
     fm, _ = ft.dfs(entityset=es,
                    target_entity="customers",
                    trans_primitives=trans_primitives,
                    agg_primitives=agg_primitives,
-                   groupby_trans_primitives=groupby_trans_primitives,
                    max_depth=2)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
                         target_entity="customers",
                         trans_primitives=trans_primitives,
                         agg_primitives=agg_primitives,
-                        groupby_trans_primitives=groupby_trans_primitives,
                         max_depth=2)
 
     # Use the same columns and make sure both have same index sorting
