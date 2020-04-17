@@ -8,4 +8,3 @@ distributed>=1.24.2
 dask>=1.1.0
 psutil>=5.4.8
 click>=7.0.0
-msgpack<1.0.0; python_version == '3.5'
