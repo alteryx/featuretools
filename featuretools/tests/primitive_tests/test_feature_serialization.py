@@ -200,7 +200,6 @@ def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
 
 @pytest.mark.parametrize("url,profile_name", [(S3_URL, None), (S3_URL, False), (URL, None)])
 def test_deserialize_features_s3(es, url, profile_name):
-    # TODO: Feature ordering is different in py3.5 vs 3.6+
     features_original = sorted(ft.dfs(target_entity='sessions', entityset=es, features_only=True), key=lambda x: x.unique_name())
     features_deserialized = sorted(ft.load_features(url, profile_name=profile_name), key=lambda x: x.unique_name())
     assert_features(features_original, features_deserialized)

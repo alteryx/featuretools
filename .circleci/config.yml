@@ -235,27 +235,16 @@ workflows:
   test_all_python_versions:
     jobs:
       - win_unit_tests:
-          name: "py35 windows unit tests"
-          python_version: "3.5"
-      - win_unit_tests:
           name: "py36 windows unit tests"
           python_version: "3.6"
       - win_unit_tests:
           name: "py37 windows unit tests"
           python_version: "3.7"
       - install_ft:
-          name: "py35 install featuretools"
-          image_tag: "3.5"
-      - install_ft:
           name: "py36 install featuretools"
           image_tag: "3.6"
       - install_ft:
           name: "py37 install featuretools"
-      - unit_tests:
-          name: "py35 unit tests"
-          image_tag: "3.5"
-          requires:
-            - "py35 install featuretools"
       - unit_tests:
           name: "py36 unit tests"
           image_tag: "3.6"
@@ -266,11 +255,6 @@ workflows:
           name: "py37 unit tests"
           requires:
             - "py37 install featuretools"
-      - lint_test:
-          name: "py35 lint test"
-          image_tag: "3.5"
-          requires:
-            - "py35 install featuretools"
       - lint_test:
           name: "py36 lint test"
           image_tag: "3.6"
@@ -284,9 +268,6 @@ workflows:
           name: "build docs"
           requires:
             - "py37 install featuretools"
-      - install_ft_complete:
-          name: "py35 install featuretools complete test"
-          image_tag: "3.5"
       - install_ft_complete:
           name: "py36 install featuretools complete test"
           image_tag: "3.6"

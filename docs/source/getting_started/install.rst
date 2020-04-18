@@ -1,7 +1,7 @@
 Install
 *******
 
-Featuretools is available for Python 3.5, 3.6 and 3.7 The recommended way to install Featuretools is using ``pip`` or ``conda``::
+Featuretools is available for Python 3.6 and 3.7. The recommended way to install Featuretools is using ``pip`` or ``conda``::
 
     python -m pip install featuretools
 

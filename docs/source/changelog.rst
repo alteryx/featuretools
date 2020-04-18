@@ -8,6 +8,7 @@ Changelog
     * Fixes
         * Use logger.warning to fix deprecated logger.warn (:pr:`871`)
     * Changes
+        * Remove Python 3.5 support (:pr:`917`)
     * Documentation Changes
         * Fix README links to docs (:pr:`872`)
         * Fix Github links with correct organizations (:pr:`908`)
