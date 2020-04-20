@@ -289,8 +289,8 @@ class PercentTrue(AggregationPrimitive):
             def format_chunk(x):
                 return x[:].fillna(0)
 
-            return (s.agg(lambda x: format_chunk(x).sum()),
-                    s.agg(lambda x: len(format_chunk(x))))
+            return (s.agg(lambda x: format_chunk(x).sum()).astype('float64'),
+                    s.agg(lambda x: len(format_chunk(x))).astype('int64'))
 
         def agg(val, length):
             return (val.sum(), length.sum())

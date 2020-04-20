@@ -420,9 +420,6 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                     pass_through.rename(columns={'instance_id': id_name,
                                                  cutoff_df_time_var: 'time'},
                                         inplace=True)
-                    # Dask will not play nice with DataFrames that are not a Pandas dataframe
-                    if not type(pass_through) == pd.DataFrame:
-                        pass_through = pd.DataFrame(pass_through)
                     for col in pass_columns:
                         pass_df = dd.from_pandas(pass_through[[id_name, 'time', col]], npartitions=_feature_matrix.npartitions)
                         _feature_matrix = _feature_matrix.merge(pass_df)
