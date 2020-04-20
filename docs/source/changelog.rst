@@ -8,6 +8,7 @@ Changelog
     * Fixes
         * Use logger.warning to fix deprecated logger.warn (:pr:`871`)
     * Changes
+        * Change premium primitives CI test to Python 3.6 (:pr:`916`)
         * Remove Python 3.5 support (:pr:`917`)
     * Documentation Changes
         * Fix README links to docs (:pr:`872`)
