@@ -55,19 +55,18 @@ def run_test():
 
     pd_es = ft.EntitySet("instacart")
     pd_es.entity_from_dataframe(entity_id="order_products",
-                             dataframe=pd_order_products,
-                             index="order_product_id",
-                             time_index="order_time")
+                                dataframe=pd_order_products,
+                                index="order_product_id",
+                                time_index="order_time")
 
     pd_es.entity_from_dataframe(entity_id="orders",
-                             dataframe=pd_orders,
-                             index="order_id",
-                             time_index="order_time")
+                                dataframe=pd_orders,
+                                index="order_id",
+                                time_index="order_time")
 
     print("Adding relationships...")
     es.add_relationship(ft.Relationship(es["orders"]["order_id"], es["order_products"]["order_id"]))
     pd_es.add_relationship(ft.Relationship(pd_es["orders"]["order_id"], pd_es["order_products"]["order_id"]))
-
 
     print("Normalizing entity...")
     es.normalize_entity(base_entity_id="orders", new_entity_id="users", index="user_id")
@@ -78,8 +77,6 @@ def run_test():
     pd_es.add_last_time_indexes()
 
     return es, pd_es
-
-
 
 
 if __name__ == "__main__":
@@ -97,4 +94,3 @@ if __name__ == "__main__":
         print(eid)
         pd.testing.assert_series_equal(d_lti, p_lti, check_names=False)
     print('LTIs are equal')
-

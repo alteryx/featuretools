@@ -53,11 +53,11 @@ def test_aggregation(es, dask_es):
         if entity.id in ['customers', 'sessions']:
             agg_primitives.remove('n_most_common')
         fm, _ = ft.dfs(entityset=es,
-                    target_entity=entity.id,
-                    trans_primitives=trans_primitives,
-                    agg_primitives=agg_primitives,
-                    cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                    max_depth=2)
+                       target_entity=entity.id,
+                       trans_primitives=trans_primitives,
+                       agg_primitives=agg_primitives,
+                       cutoff_time=pd.Timestamp("2019-01-05 04:00"),
+                       max_depth=2)
 
         dask_fm, _ = ft.dfs(entityset=dask_es,
                             target_entity=entity.id,
