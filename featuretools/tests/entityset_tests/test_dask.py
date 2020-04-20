@@ -50,14 +50,14 @@ def test_aggregation(es, dask_es):
     # Run DFS using each entity as a target and confirm results match
     for entity in es.entities:
         # remove n_most_common for customers due to ambiguity
-        if entity.id == 'customers':
+        if entity.id in ['customers', 'sessions']:
             agg_primitives.remove('n_most_common')
         fm, _ = ft.dfs(entityset=es,
-                       target_entity=entity.id,
-                       trans_primitives=trans_primitives,
-                       agg_primitives=agg_primitives,
-                       cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                       max_depth=2)
+                    target_entity=entity.id,
+                    trans_primitives=trans_primitives,
+                    agg_primitives=agg_primitives,
+                    cutoff_time=pd.Timestamp("2019-01-05 04:00"),
+                    max_depth=2)
 
         dask_fm, _ = ft.dfs(entityset=dask_es,
                             target_entity=entity.id,
@@ -65,7 +65,7 @@ def test_aggregation(es, dask_es):
                             agg_primitives=agg_primitives,
                             cutoff_time=pd.Timestamp("2019-01-05 04:00"),
                             max_depth=2)
-        if entity.id == 'customers':
+        if entity.id in ['customers', 'sessions']:
             agg_primitives.append('n_most_common')
         # Use the same columns and make sure both indexes are sorted the same
         dask_computed_fm = dask_fm.compute().set_index(entity.index).loc[fm.index][fm.columns]
