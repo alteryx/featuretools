@@ -22,7 +22,6 @@ def run_test():
     pd_order_products = order_products.compute()
     pd_orders = orders.compute()
 
-
     print("Creating entityset...")
     order_products_vtypes = {
         "order_id": ft.variable_types.Id,
