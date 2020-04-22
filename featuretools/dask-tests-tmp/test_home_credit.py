@@ -18,7 +18,8 @@ def run_test():
         client.close()
     except:
         pass
-    client = Client()
+    client = Client(n_workers=1)
+    print(client)
 
     print("Reading raw data...")
     start = datetime.now()
@@ -382,6 +383,13 @@ def run_test():
                           agg_primitives=agg_primitives,
                           where_primitives=[], seed_features=[],
                           max_depth=2, verbose=1, cutoff_time=cutoff_times)
+    end = datetime.now()
+    elapsed = (end - start).total_seconds()
+    print("Elapsed time: {} sec".format(elapsed))
+
+    print("Write fm to csv...")
+    start = datetime.now()
+    fm.to_csv("dask-fm-test/*.csv")
     end = datetime.now()
     elapsed = (end - start).total_seconds()
     print("Elapsed time: {} sec".format(elapsed))
