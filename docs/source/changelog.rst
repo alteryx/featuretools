@@ -3,11 +3,52 @@
 Changelog
 ---------
 **Future Release**
+    * Enhancements
+        * ft.encode_features - use less memory for one-hot encoded columns (:pr:`876`)
+    * Fixes
+        * Use logger.warning to fix deprecated logger.warn (:pr:`871`)
     * Changes
-        * Pin msgpack dependency for Python 3.5; remove dataframe from Dask dependency (:pr:`851`)
+        * Change premium primitives CI test to Python 3.6 (:pr:`916`)
+        * Remove Python 3.5 support (:pr:`917`)
+    * Documentation Changes
+        * Fix README links to docs (:pr:`872`)
+        * Fix Github links with correct organizations (:pr:`908`)
+        * Fix hyperlinks in docs and docstrings with updated address (:pr:`910`)
+        * Remove unused script for uploading docs to AWS (:pr:`911`)
+    * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`
+    :user:`gsheni`, :user:`rwedge`
+
+**v0.13.4 Mar 27, 2020**
+    .. warning::
+        The next non-bugfix release of Featuretools will not support Python 3.5
+
+    * Fixes
+        * Fix ft.show_info() not displaying in Jupyter notebooks (:pr:`863`)
+    * Changes
+        * Added Plugin Warnings at Entry Point (:pr:`850`, :pr:`869`)
+    * Documentation Changes
+        * Add links to primitives.featurelabs.com (:pr:`860`)
+        * Add source code links to API reference (:pr:`862`)
+        * Update links for testing Dask/Spark integrations (:pr:`867`)
+        * Update release documentation for featuretools (:pr:`868`)
+    * Testing Changes
+        * Miscellaneous changes (:pr:`861`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`frances-h`, :user:`FreshLeaf8865`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
+
+**v0.13.3 Feb 28, 2020**
+    * Fixes
+        * Fix a connection closed error when using n_jobs (:pr:`853`)
+    * Changes
+        * Pin msgpack dependency for Python 3.5; remove dataframe from Dask dependency (:pr:`851`)
+    * Documentation Changes
+        * Update link to help documentation page in Github issue template (:pr:`855`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`frances-h`, :user:`rwedge`
 
 **v0.13.2 Jan 31, 2020**
     * Enhancements

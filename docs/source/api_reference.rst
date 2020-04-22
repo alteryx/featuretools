@@ -63,6 +63,8 @@ Time utils
 
 Feature Primitives
 ~~~~~~~~~~~~~~~~~~
+A list of all Featuretools primitives can be obtained by visiting `primitives.featurelabs.com <https://primitives.featurelabs.com/>`__.
+
 Primitive Types
 ---------------
 .. currentmodule:: featuretools.primitives
