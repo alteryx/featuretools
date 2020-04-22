@@ -3,7 +3,6 @@ import os
 from datetime import datetime
 
 import dask.dataframe as dd
-import featuretools as ft
 import numpy as np
 import pandas as pd
 from dask.distributed import Client
@@ -11,6 +10,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score, train_test_split
 
 import utils
+
+import featuretools as ft
 
 
 def run_test():
