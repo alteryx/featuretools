@@ -332,7 +332,11 @@ class NumCharacters(TransformPrimitive):
     return_type = Numeric
 
     def get_function(self):
-        return lambda array: pd.Series(array).fillna('').str.len()
+        def character_counter(array):
+            if isinstance(array, list):
+                array = pd.Series(array)
+            return array.fillna('').str.len()
+        return character_counter
 
 
 class NumWords(TransformPrimitive):
@@ -352,7 +356,9 @@ class NumWords(TransformPrimitive):
 
     def get_function(self):
         def word_counter(array):
-            return pd.Series(array).fillna('').str.count(' ') + 1
+            if isinstance(array, list):
+                array = pd.Series(array)
+            return array.fillna('').str.count(' ') + 1
         return word_counter
 
 
