@@ -51,7 +51,7 @@ def load_entityset(data_dir):
                              time_index="order_time")
 
     es.add_relationship(ft.Relationship(es["orders"]["order_id"], es["order_products"]["order_id"]))
-    
+
     es.normalize_entity(base_entity_id="orders", new_entity_id="users", index="user_id")
     es.add_last_time_indexes()
 

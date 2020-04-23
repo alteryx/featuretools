@@ -50,7 +50,7 @@ def test_aggregation(es, dask_es):
     # Run DFS using each entity as a target and confirm results match
     for entity in es.entities:
         # remove n_most_common for customers due to ambiguity
-        if entity.id == 'customers':
+        if entity.id in ['customers', 'sessions']:
             agg_primitives.remove('n_most_common')
         fm, _ = ft.dfs(entityset=es,
                        target_entity=entity.id,
@@ -65,7 +65,7 @@ def test_aggregation(es, dask_es):
                             agg_primitives=agg_primitives,
                             cutoff_time=pd.Timestamp("2019-01-05 04:00"),
                             max_depth=2)
-        if entity.id == 'customers':
+        if entity.id in ['customers', 'sessions']:
             agg_primitives.append('n_most_common')
         # Use the same columns and make sure both indexes are sorted the same
         dask_computed_fm = dask_fm.compute().set_index(entity.index).loc[fm.index][fm.columns]
@@ -191,7 +191,7 @@ def test_add_last_time_indexes():
     es.add_last_time_indexes()
     dask_es.add_last_time_indexes()
 
-    pd.testing.assert_series_equal(es['sessions'].last_time_index.sort_index(), dask_es['sessions'].last_time_index.compute())
+    pd.testing.assert_series_equal(es['sessions'].last_time_index.sort_index(), dask_es['sessions'].last_time_index.compute(), check_names=False)
 
 
 def test_create_entity_with_make_index():
@@ -207,7 +207,7 @@ def test_create_entity_with_make_index():
 
 
 def test_single_table_dask_entityset():
-    primitives_list = ['cum_sum', 'diff', 'absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
+    primitives_list = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
 
     dask_es = EntitySet(id="dask_es")
     df = pd.DataFrame({"id": [0, 1, 2, 3],
@@ -252,7 +252,7 @@ def test_single_table_dask_entityset():
 
 
 def test_single_table_dask_entityset_ids_not_sorted():
-    primitives_list = ['cum_sum', 'diff', 'absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
+    primitives_list = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
 
     dask_es = EntitySet(id="dask_es")
     df = pd.DataFrame({"id": [2, 0, 1, 3],
@@ -296,7 +296,7 @@ def test_single_table_dask_entityset_ids_not_sorted():
 
 
 def test_single_table_dask_entityset_with_instance_ids():
-    primitives_list = ['cum_sum', 'diff', 'absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
+    primitives_list = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
     instance_ids = [0, 1, 3]
 
     dask_es = EntitySet(id="dask_es")
@@ -344,7 +344,7 @@ def test_single_table_dask_entityset_with_instance_ids():
 
 
 def test_single_table_dask_entityset_single_cutoff_time():
-    primitives_list = ['cum_sum', 'diff', 'absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
+    primitives_list = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
 
     dask_es = EntitySet(id="dask_es")
     df = pd.DataFrame({"id": [0, 1, 2, 3],
@@ -390,7 +390,7 @@ def test_single_table_dask_entityset_single_cutoff_time():
 
 
 def test_single_table_dask_entityset_cutoff_time_df():
-    primitives_list = ['cum_sum', 'diff', 'absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
+    primitives_list = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
 
     dask_es = EntitySet(id="dask_es")
     df = pd.DataFrame({"id": [0, 1, 2],
@@ -448,7 +448,7 @@ def test_single_table_dask_entityset_dates_not_sorted():
                                  pd.to_datetime('2019-01-01'),
                                  pd.to_datetime('2017-08-25')]})
 
-    primitives_list = ['cum_sum', 'diff', 'absolute', 'is_weekend', 'year', 'day']
+    primitives_list = ['absolute', 'is_weekend', 'year', 'day']
     values_dd = dd.from_pandas(df, npartitions=1)
     vtypes = {
         "id": ft.variable_types.Id,

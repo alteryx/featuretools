@@ -15,10 +15,10 @@ import os
 import sys
 from datetime import datetime
 
-import dask
 import pandas as pd
 from dask import dataframe as dd
 from dask.distributed import Client, wait
+
 from memory_profiler import memory_usage
 
 import featuretools as ft

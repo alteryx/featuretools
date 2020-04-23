@@ -422,7 +422,7 @@ class Entity(object):
 
         if isinstance(self.df, dd.core.DataFrame):
             t = time_type  # skip checking values
-            already_sorted = True # skip sorting
+            already_sorted = True  # skip sorting
         else:
             t = vtypes.NumericTimeIndex
             if col_is_datetime(self.df[variable_id]):
