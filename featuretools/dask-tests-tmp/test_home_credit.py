@@ -18,7 +18,7 @@ def run_test():
         client.close()
     except:
         pass
-    client = Client(n_workers=1)
+    client = Client()
     print(client)
 
     print("Reading raw data...")
@@ -356,10 +356,16 @@ def run_test():
     print("Elapsed time: {} sec".format(elapsed))
 
     # Primitives supported by Dask implementation
-    agg_primitives =  ["sum", "max", "min", "mean", "count", "percent_true", "num_unique"]
-    trans_primitives = ['percentile', 'and']
-    agg_primitives =  ["sum", "max", "min", "mean"]
-    trans_primitives = ['and']
+    agg_primitives =  ["sum", "max", "min", "mean", "count", "percent_true", "num_unique"]  # Original
+    trans_primitives = ["percentile", "and"]  # Original
+    agg_primitives =  ["sum", "max", "min", "mean"] # 1545 features
+    trans_primitives = ["and"] # 1545 features
+    agg_primitives = ["sum", "max"]  # 938 features
+    trans_primitives = ["and"]  # 938 features
+    
+    agg_primitives = []  # 5946 features (15.7GB)
+    trans_primitives = ["and", "add_numeric", "negate"]  # 5946 features (15.7GB)
+
 
     print("Running DFS...")
     start = datetime.now()
@@ -386,7 +392,6 @@ def run_test():
     end = datetime.now()
     elapsed = (end - start).total_seconds()
     print("Elapsed time: {} sec".format(elapsed))
-
     print("Write fm to csv...")
     start = datetime.now()
     fm.to_csv("dask-fm-test/*.csv")

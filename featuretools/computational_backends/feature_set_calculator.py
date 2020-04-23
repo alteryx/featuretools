@@ -425,6 +425,8 @@ class FeatureSetCalculator(object):
 
     def _calculate_transform_features(self, features, frame, _df_trie, progress_callback):
         frame_empty = frame.empty if isinstance(frame, pd.DataFrame) else False
+        new_cols = {}
+
         for f in features:
             # handle when no data
             if frame_empty:
@@ -452,10 +454,13 @@ class FeatureSetCalculator(object):
                 values = [strip_values_if_series(value) for value in values]
             else:
                 values = [strip_values_if_series(values)]
-            frame = update_feature_columns(f, frame, values)
+
+            new_cols[f.get_name()] = values[0]
+            # frame = update_feature_columns(f, frame, values)
 
             progress_callback(1 / float(self.num_features))
 
+        frame = frame.assign(**new_cols)
         return frame
 
     def _calculate_groupby_features(self, features, frame, _df_trie, progress_callback):
