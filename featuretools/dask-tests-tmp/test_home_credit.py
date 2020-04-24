@@ -1,11 +1,11 @@
 # flake8: noqa
 import math
-import psutil
 from datetime import datetime
 
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
+import psutil
 from dask.distributed import Client
 
 import featuretools as ft
@@ -358,21 +358,20 @@ def run_test():
     # Primitives supported by Dask implementation
     agg_primitives =  ["sum", "max", "min", "mean", "count", "percent_true", "num_unique"]  # Original
     trans_primitives = ["percentile", "and"]  # Original
-    agg_primitives =  ["sum", "max", "min", "mean"] # 1545 features
-    trans_primitives = ["and"] # 1545 features
+    agg_primitives =  ["sum", "max", "min", "mean"]  # 1545 features
+    trans_primitives = ["and"]  # 1545 features
     agg_primitives = ["sum", "max"]  # 938 features
     trans_primitives = ["and"]  # 938 features
-    
+
     agg_primitives = []  # 5946 features (15.7GB)
     trans_primitives = ["and", "add_numeric", "negate"]  # 5946 features (15.7GB)
 
-
     print("Running DFS...")
     start = datetime.now()
-    cutoff_times = app['SK_ID_CURR'].to_frame().rename(columns={"SK_ID_CURR":"instance_id"})
+    cutoff_times = app['SK_ID_CURR'].to_frame().rename(columns={"SK_ID_CURR": "instance_id"})
     cutoff_times["time"] = datetime.now()
     cutoff_times = cutoff_times.compute()
-    
+
     features = ft.dfs(entityset=es, target_entity='app',
                       trans_primitives=trans_primitives,
                       agg_primitives=agg_primitives,
