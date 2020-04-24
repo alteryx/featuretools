@@ -90,6 +90,21 @@ def test_full_entity_trans_of_agg(es):
     assert v == 82
 
 
+def test_full_entity_error_dask(dask_es):
+    agg_feat = ft.Feature(dask_es['log']['value'], parent_entity=dask_es['customers'],
+                          primitive=Sum)
+    trans_feat = ft.Feature(agg_feat, primitive=CumSum)
+
+    feature_set = FeatureSet([trans_feat])
+    calculator = FeatureSetCalculator(dask_es,
+                                      time_last=None,
+                                      feature_set=feature_set)
+    error_text = "Cannot use primitives that require full entity with Dask"
+
+    with pytest.raises(ValueError, match=error_text):
+        df = calculator.run(np.array([1]))
+
+
 def test_make_agg_feat_of_identity_index_variable(es):
     agg_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
 
