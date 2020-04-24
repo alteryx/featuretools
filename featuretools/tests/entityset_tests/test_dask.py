@@ -64,8 +64,7 @@ def test_aggregation(es, dask_es):
                             agg_primitives=agg_primitives,
                             cutoff_time=pd.Timestamp("2019-01-05 04:00"),
                             max_depth=2)
-        if entity.id in ['customers', 'sessions']:
-            agg_primitives.append('n_most_common')
+
         # Use the same columns and make sure both indexes are sorted the same
         dask_computed_fm = dask_fm.compute().set_index(entity.index).loc[fm.index][fm.columns]
         pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
