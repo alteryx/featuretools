@@ -249,7 +249,10 @@ class NumTrue(AggregationPrimitive):
 
     def get_dask_aggregation(self):
         def chunk(s):
-            return s.agg(np.sum)
+            chunk_sum = s.agg(np.sum)
+            if chunk_sum.dtype == 'bool':
+                chunk_sum = chunk_sum.astype('int64')
+            return chunk_sum
 
         def agg(s):
             return s.agg(np.sum)
@@ -289,8 +292,13 @@ class PercentTrue(AggregationPrimitive):
             def format_chunk(x):
                 return x[:].fillna(0)
 
-            return (s.agg(lambda x: format_chunk(x).sum()).astype('float64'),
-                    s.agg(lambda x: len(format_chunk(x))).astype('int64'))
+            chunk_sum = s.agg(lambda x: format_chunk(x).sum())
+            chunk_len = s.agg(lambda x: len(format_chunk(x)))
+            if chunk_sum.dtype == 'bool':
+                chunk_sum = chunk_sum.astype('int64')
+            if chunk_len.dtype == 'bool':
+                chunk_len = chunk_len.astype('int64')
+            return (chunk_sum, chunk_len)
 
         def agg(val, length):
             return (val.sum(), length.sum())

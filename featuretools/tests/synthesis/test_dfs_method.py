@@ -5,7 +5,6 @@ import pytest
 from dask import dataframe as dd
 from distributed.utils_test import cluster
 
-
 from featuretools import variable_types as vtypes
 from featuretools.computational_backends.calculate_feature_matrix import (
     FEATURE_CALCULATION_PERCENTAGE
