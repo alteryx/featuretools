@@ -5,6 +5,7 @@ from datetime import datetime
 from itertools import combinations
 from random import randint
 
+import composeml as cp
 import numpy as np
 import pandas as pd
 import psutil
@@ -106,6 +107,59 @@ def test_calc_feature_matrix(es):
                                               verbose=True)
 
     assert all(feature_matrix.index == cutoff_reordered["id"].values)
+
+
+def test_cfm_compose(es):
+    def label_func(df):
+        return df['value'].sum() > 10
+
+    lm = cp.LabelMaker(
+        target_entity='id',
+        time_index='datetime',
+        labeling_function=label_func,
+        window_size='1m'
+    )
+
+    labels = lm.search(
+        es['log'].df,
+        num_examples_per_instance=-1
+    )
+
+    property_feature = ft.Feature(es['log']['value']) > 10
+
+    feature_matrix = calculate_feature_matrix([property_feature],
+                                              es,
+                                              cutoff_time=labels,
+                                              verbose=True)
+
+    assert (feature_matrix[property_feature.get_name()] == feature_matrix['label_func']).values.all()
+
+
+def test_cfm_dask_compose(dask_es):
+    def label_func(df):
+        return df['value'].sum() > 10
+
+    lm = cp.LabelMaker(
+        target_entity='id',
+        time_index='datetime',
+        labeling_function=label_func,
+        window_size='3m'
+    )
+
+    labels = lm.search(
+        dask_es['log'].df.compute(),
+        num_examples_per_instance=-1
+    )
+
+    property_feature = ft.Feature(dask_es['log']['value']) > 10
+
+    feature_matrix = calculate_feature_matrix([property_feature],
+                                              dask_es,
+                                              cutoff_time=labels,
+                                              verbose=True)
+    feature_matrix = feature_matrix.compute()
+
+    assert (feature_matrix[property_feature.get_name()] == feature_matrix['label_func']).values.all()
 
 
 def test_cfm_approximate_correct_ordering():
