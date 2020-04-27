@@ -334,16 +334,9 @@ def test_training_window_overlap(es):
         cutoff_time=cutoff_time,
         cutoff_time_in_index=True,
         training_window='10 minutes',
-    )
+    )['COUNT(log)']
 
-    expected = pd.DataFrame({
-        'COUNT(log)': {
-            (0, pd.Timestamp('2011-04-09 10:30:00')): 1,
-            (0, pd.Timestamp('2011-04-09 10:40:00')): 9,
-        },
-    })
-
-    assert actual.equals(expected)
+    np.testing.assert_array_equal(actual.values, [1, 9])
 
 
 def test_training_window_recent_time_index(es):
