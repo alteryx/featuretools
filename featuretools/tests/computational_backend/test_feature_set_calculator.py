@@ -102,7 +102,7 @@ def test_full_entity_error_dask(dask_es):
     error_text = "Cannot use primitives that require full entity with Dask"
 
     with pytest.raises(ValueError, match=error_text):
-        df = calculator.run(np.array([1]))
+        calculator.run(np.array([1]))
 
 
 def test_make_agg_feat_of_identity_index_variable(es):

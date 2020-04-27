@@ -111,10 +111,10 @@ def test_errors_unsupported_primitives_dask(dask_es):
     bad_trans_prim.dask_compatible, bad_agg_prim.dask_compatible = False, False
     error_text = "Selected primitives are incompatible with Dask EntitySets: cum_sum, num_unique"
     with pytest.raises(ValueError, match=error_text):
-        dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
-                                       entityset=dask_es,
-                                       agg_primitives=[bad_agg_prim],
-                                       trans_primitives=[bad_trans_prim])
+        DeepFeatureSynthesis(target_entity_id='sessions',
+                             entityset=dask_es,
+                             agg_primitives=[bad_agg_prim],
+                             trans_primitives=[bad_trans_prim])
 
 
 def test_error_for_missing_target_entity(es):
