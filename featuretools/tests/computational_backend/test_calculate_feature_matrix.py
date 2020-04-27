@@ -288,7 +288,7 @@ def test_training_window(es):
     # for now, warns if last_time_index not present
     times = [datetime(2011, 4, 9, 12, 31),
              datetime(2011, 4, 10, 11),
-             datetime(2011, 4, 10, 13, 10, 1)]
+             datetime(2011, 4, 10, 13, 10)]
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 1, 2]})
     feature_matrix = calculate_feature_matrix([property_feature, dagg],
                                               es,
@@ -308,7 +308,7 @@ def test_training_window(es):
                                               es,
                                               cutoff_time=cutoff_time,
                                               training_window='2 hours')
-    prop_values = [5, 5, 1]
+    prop_values = [4, 5, 1]
     dagg_values = [3, 2, 1]
     assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
     assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
