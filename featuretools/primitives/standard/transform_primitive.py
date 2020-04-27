@@ -535,7 +535,6 @@ class Percentile(TransformPrimitive):
     uses_full_entity = True
     input_types = [Numeric]
     return_type = Numeric
-    dask_compatible = True
 
     def get_function(self):
         return lambda array: pd.Series(array).rank(pct=True)
