@@ -13,7 +13,8 @@ def get_ipython():
 
 
 def is_notebook():
-    return 'IPKernelApp' in getattr(get_ipython(), 'config', {})
+    config = getattr(get_ipython(), 'config', {})
+    return 'IPKernelApp' in config
 
 
 def make_tqdm_iterator(**kwargs):
