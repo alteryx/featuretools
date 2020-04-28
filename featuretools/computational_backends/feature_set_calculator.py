@@ -1,3 +1,4 @@
+import math
 import warnings
 from datetime import datetime
 from functools import partial
@@ -564,6 +565,18 @@ class FeatureSetCalculator(object):
         child_entity = test_feature.base_features[0].entity
         base_frame = df_trie.get_node(test_feature.relationship_path).value
         parent_merge_var = test_feature.relationship_path[0][1].parent_variable.id
+        # If this is a dask dataframe, repartion to prevent frame partitions from getting too large
+        # Only repartition if number of new cols is relatively high to avoid excessive repartitioning
+        # if isinstance(frame, dd.core.DataFrame):
+        #     print("Original Partitions: ", frame.npartitions)
+        #     multiplier = 1 + len(features) / len(frame.columns)
+        #     print("Multiplier: ", multiplier)
+        #     if multiplier > 1.5:
+        #         new_partitions = round(multiplier * frame.npartitions)
+        #         frame = frame.repartition(npartitions=new_partitions)
+        #     print("New Partitions: ", frame.npartitions)
+            
+
         # Sometimes approximate features get computed in a previous filter frame
         # and put in the current one dynamically,
         # so there may be existing features here
@@ -731,7 +744,23 @@ class FeatureSetCalculator(object):
                 # the column (in actuality grouping by both index and group would
                 # work)
                 if isinstance(base_frame, dd.core.DataFrame):
-                    to_merge = base_frame.groupby(base_frame[groupby_var]).agg(to_agg)
+                    # TODO: This is a bit hacky for now - could potentially be improved
+                    # Check total number of output columns and set to_merge partitions accordingly
+                    num_new_feats = 0
+                    for item in to_agg.values():
+                        num_new_feats += len(item)
+                    out_partitions = 1
+                    if len(to_agg) > 100:
+                        multiplier = round(num_new_feats / len(base_frame.columns) / 2)
+                        print("cols", len(base_frame.columns))
+                        print("feats", num_new_feats)
+                        print("multiplier", multiplier)
+                        out_partitions = base_frame.npartitions * multiplier
+                        breakpoint()
+                    to_merge = base_frame.groupby(base_frame[groupby_var]).agg(to_agg, split_out=out_partitions, split_every=False)
+
+                    # print("partitions size: ", to_merge.get_partition(0).compute().memory_usage().sum() / 1000000)
+
                 else:
                     to_merge = base_frame.groupby(base_frame[groupby_var],
                                                   observed=True, sort=False).agg(to_agg)
@@ -747,12 +776,20 @@ class FeatureSetCalculator(object):
 
                 if isinstance(frame, dd.core.DataFrame):
                     child_merge_var = to_merge.index.name
-                    frame = dd.merge(left=frame, right=to_merge.reset_index(),
-                                     left_on=parent_merge_var, right_on=child_merge_var, how='left')
+                    # try: 
+                    #     frame = frame.set_index(parent_merge_var)
+                    # except:
+                    #     breakpoint()
+                    frame = dd.merge(left=frame, right=to_merge,
+                                     left_on=parent_merge_var, right_index=True, how='left')
+
+                    # frame = frame.reset_index()
+                    # frame = dd.merge(left=frame, right=to_merge.reset_index(),
+                    #                  left_on=parent_merge_var, right_on=child_merge_var, how='left')
                 else:
                     frame = pd.merge(left=frame, right=to_merge,
                                      left_index=True, right_index=True, how='left')
-
+                
                 # determine number of features that were just merged
                 progress_callback(len(to_merge.columns) / float(self.num_features))
 
@@ -772,6 +809,10 @@ class FeatureSetCalculator(object):
                     f.variable_type == variable_types.Numeric and
                     frame[f.get_name()].dtype.name in ['object', 'bool']):
                 frame[f.get_name()] = frame[f.get_name()].astype(float)
+        #print(f"Frame partition size {frame.get_partition(0).compute().memory_usage().sum()/1000000}, {frame.npartitions} partitions")
+        # print(f"Base frame partition size {base_frame.get_partition(0).compute().memory_usage().sum()/1000000}, {base_frame.npartitions} partitions")
+        # print(f"Length of base frame {len(base_frame)}")
+        #print(f"To_merge partition size {to_merge.get_partition(0).compute().memory_usage().sum()/1000000}, {to_merge.npartitions} partitions")
 
         return frame
 

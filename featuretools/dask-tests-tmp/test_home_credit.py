@@ -36,7 +36,12 @@ def run_test():
     end = datetime.now()
     elapsed = (end - start).total_seconds()
     print("Elapsed time: {} sec".format(elapsed))
-
+    
+    bureau_balance = bureau_balance.repartition(npartitions=bureau_balance.npartitions*8)
+    cash = cash.repartition(npartitions=cash.npartitions*5)
+    credit = credit.repartition(npartitions=credit.npartitions*2)
+    installments = installments.repartition(npartitions=installments.npartitions*4)
+    previous = previous.repartition(npartitions=previous.npartitions*3)
     print("Preparing data...")
     start = datetime.now()
     app_test['TARGET'] = np.nan
@@ -360,11 +365,14 @@ def run_test():
     trans_primitives = ["percentile", "and"]  # Original
     agg_primitives =  ["sum", "max", "min", "mean"]  # 1545 features
     trans_primitives = ["and"]  # 1545 features
-    agg_primitives = ["sum", "max"]  # 938 features
-    trans_primitives = ["and"]  # 938 features
+    #agg_primitives = ["sum", "max"]  # 938 features
+    #trans_primitives = ["and"]  # 938 features
 
-    agg_primitives = []  # 5946 features (15.7GB)
-    trans_primitives = ["and", "add_numeric", "negate"]  # 5946 features (15.7GB)
+    #agg_primitives = []  # 5946 features (15.7GB)
+    #trans_primitives = ["and", "add_numeric", "negate"]  # 5946 features (15.7GB)
+
+    agg_primitives = ["sum", "max", "min", "mean", "count"]  # 1067 features - Fails
+    trans_primitives = []  # 1067 features - Fails
 
     print("Running DFS...")
     start = datetime.now()
@@ -387,10 +395,11 @@ def run_test():
                           trans_primitives=trans_primitives,
                           agg_primitives=agg_primitives,
                           where_primitives=[], seed_features=[],
-                          max_depth=2, verbose=1, cutoff_time=cutoff_times)
+                          max_depth=2, verbose=0, cutoff_time=cutoff_times)
     end = datetime.now()
     elapsed = (end - start).total_seconds()
     print("Elapsed time: {} sec".format(elapsed))
+
     print("Write fm to csv...")
     start = datetime.now()
     fm.to_csv("dask-fm-test/*.csv")
