@@ -318,7 +318,7 @@ def test_errors_no_vtypes_dask():
                        'category_int': [1, 2, 3],
                        'ints': ['1', '2', '3'],
                        'floats': ['1', '2', '3.0']})
-    df = dd.from_pandas(df, npartitions = 3)
+    df = dd.from_pandas(df, npartitions=3)
     df["category_int"] = df["category_int"].astype("category")
 
     es = EntitySet(id='test')

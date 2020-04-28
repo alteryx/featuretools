@@ -40,7 +40,7 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
             continue
         elif isinstance(df, dd.DataFrame):
             msg = 'Variable types cannot be inferred from Dask DataFrames, ' \
-                  'use variable_types to provide type metadata'
+                  'use variable_types to provide type metadata for entity'
             raise ValueError(msg)
         elif variable in vids_to_assume_datetime:
             if col_is_datetime(sample_df[variable]):
