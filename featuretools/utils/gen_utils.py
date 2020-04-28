@@ -3,47 +3,20 @@ import sys
 import warnings
 from itertools import zip_longest
 
-from tqdm import tqdm
+from tqdm import tqdm, tqdm_notebook
 
 
-def session_type():
-    if 'IPython' not in sys.modules:
-        # IPython hasn't been imported, definitely not
-        return "python"
-    from IPython import get_ipython
-    # check for `kernel` attribute on the IPython instance
-    if getattr(get_ipython(), 'kernel', None) is not None:
-        return "kernel"
-    return "ipython"
+def get_ipython():
+    if importlib.util.find_spec('IPython'):
+        module = importlib.import_module('IPython')
+        return module.get_ipython()
 
 
 def make_tqdm_iterator(**kwargs):
-    options = {
-        "file": sys.stdout,
-        "leave": True
-    }
+    options = {"file": sys.stdout, "leave": True}
     options.update(kwargs)
-
-    if session_type() == 'kernel':
-        # from IPython import display
-        # capture_stderr = StringIO()
-        # with RedirectStdStreams(stderr=capture_stderr):
-        # try:
-        # iterator = tqdm_notebook(**options)
-        # except:
-        # failed = True
-        # else:
-        # failed = False
-        # err_out = capture_stderr.getvalue()
-        # capture_stderr.close()
-        # if failed or err_out.lower().find("widget javascript not detected") \
-        # >-1:
-        # display.clear_output(wait=True)
-        # iterator = tqdm(**options)
-        iterator = tqdm(**options)
-
-    else:
-        iterator = tqdm(**options)
+    notebook = get_ipython() is not None
+    iterator = (tqdm_notebook if notebook else tqdm)(**options)
     return iterator
 
 
