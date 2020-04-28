@@ -25,6 +25,9 @@ Changelog
 
 * Using training windows in feature calculations can result in different values than previous versions.
   This is a result from removing an overlap in consecutive training windows by making the left endpoint exclusive.
+  For example, if we use a cutoff time at the first minute of the hour with a one hour training window,
+  the firt minute of the previous hour will no longer be included in the feature calculation.
+
 
 **v0.13.4 Mar 27, 2020**
     .. warning::
