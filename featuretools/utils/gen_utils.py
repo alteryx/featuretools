@@ -3,24 +3,16 @@ import sys
 import warnings
 from itertools import zip_longest
 
-from tqdm import tqdm, tqdm_notebook
-
-
-def get_ipython():
-    if importlib.util.find_spec('IPython'):
-        module = importlib.import_module('IPython')
-        return module.get_ipython()
-
-
-def is_notebook():
-    config = getattr(get_ipython(), 'config', {})
-    return 'IPKernelApp' in config
+from tqdm import tqdm
 
 
 def make_tqdm_iterator(**kwargs):
-    options = {"file": sys.stdout, "leave": True}
+    options = {
+        "file": sys.stdout,
+        "leave": True
+    }
     options.update(kwargs)
-    iterator = (tqdm_notebook if is_notebook() else tqdm)(**options)
+    iterator = tqdm(**options)
     return iterator
 
 
