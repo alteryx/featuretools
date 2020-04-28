@@ -21,6 +21,11 @@ Changelog
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`jeff-hernandez`
 
+**Breaking Changes**
+
+  * Using training windows in feature calculations can result in different values than previous versions.
+    This is a result from removing an overlap in consecutive training windows by making the left endpoint exclusive.
+
 **v0.13.4 Mar 27, 2020**
     .. warning::
         The next non-bugfix release of Featuretools will not support Python 3.5
