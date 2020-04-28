@@ -385,7 +385,7 @@ def test_training_window_recent_time_index(es):
         cutoff_time=cutoff_time,
         training_window='2 hours'
     )
-    prop_values = [5, 5, 1, 0]
+    prop_values = [4, 5, 1, 0]
     dagg_values = [3, 2, 1, 3]
     feature_matrix.sort_index(inplace=True)
     assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
