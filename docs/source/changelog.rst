@@ -23,8 +23,8 @@ Changelog
 
 **Breaking Changes**
 
-  * Using training windows in feature calculations can result in different values than previous versions.
-    This is a result from removing an overlap in consecutive training windows by making the left endpoint exclusive.
+* Using training windows in feature calculations can result in different values than previous versions.
+  This is a result from removing an overlap in consecutive training windows by making the left endpoint exclusive.
 
 **v0.13.4 Mar 27, 2020**
     .. warning::
