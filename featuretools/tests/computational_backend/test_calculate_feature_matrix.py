@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import psutil
 import pytest
+from dask import dataframe as dd
 from distributed.utils_test import cluster
 
 import featuretools as ft
@@ -45,7 +46,7 @@ def test_scatter_warning():
     assert len(record) == 1
 
 
-def test_calc_feature_matrix(es):
+def test_calc_feature_matrix(es, dask_es):
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
                  [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
                  [datetime(2011, 4, 9, 10, 40, 0)] +
@@ -82,6 +83,14 @@ def test_calc_feature_matrix(es):
                                  es,
                                  instance_ids=range(17),
                                  cutoff_time=17)
+
+    error_text = "cannot use Dask DataFrame for cutoff_time: "\
+                 "cutoff_time must a single value or a Pandas DataFrame"
+    with pytest.raises(TypeError, match=error_text):
+        dask_cutoff_time = dd.from_pandas(cutoff_time, npartitions=4)
+        calculate_feature_matrix([property_feature],
+                                 dask_es,
+                                 cutoff_time=dask_cutoff_time)
 
     error_text = 'cutoff_time must be a single value or DataFrame'
     with pytest.raises(TypeError, match=error_text):
