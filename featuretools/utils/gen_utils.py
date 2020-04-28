@@ -12,11 +12,14 @@ def get_ipython():
         return module.get_ipython()
 
 
+def is_notebook():
+    return 'IPKernelApp' in getattr(get_ipython(), 'config', {})
+
+
 def make_tqdm_iterator(**kwargs):
     options = {"file": sys.stdout, "leave": True}
     options.update(kwargs)
-    notebook = get_ipython() is not None
-    iterator = (tqdm_notebook if notebook else tqdm)(**options)
+    iterator = (tqdm_notebook if is_notebook() else tqdm)(**options)
     return iterator
 
 
