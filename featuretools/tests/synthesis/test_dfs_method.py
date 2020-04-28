@@ -113,6 +113,19 @@ def test_accepts_cutoff_time_df(entities, relationships):
     assert len(feature_matrix.columns) == len(features)
 
 
+def test_warns_cutoff_time_dask(entities, relationships):
+    cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
+                                    "time": [10, 12, 15]})
+    cutoff_times_df = dd.from_pandas(cutoff_times_df, npartitions=2)
+    match = "cutoff_time should be a Pandas DataFrame: " \
+            "computing cutoff_time, this may take a while"
+    with pytest.warns(UserWarning, match=match):
+        feature_matrix, features = dfs(entities=entities,
+                                       relationships=relationships,
+                                       target_entity="transactions",
+                                       cutoff_time=cutoff_times_df)
+
+
 def test_accepts_cutoff_time_compose(entities, relationships):
     def fraud_occured(df):
         return df['fraud'].any()
