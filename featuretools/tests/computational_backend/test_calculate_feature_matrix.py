@@ -46,7 +46,7 @@ def test_scatter_warning():
     assert len(record) == 1
 
 
-def test_calc_feature_matrix(es, dask_es):
+def test_calc_feature_matrix(es):
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
                  [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
                  [datetime(2011, 4, 9, 10, 40, 0)] +
@@ -84,14 +84,6 @@ def test_calc_feature_matrix(es, dask_es):
                                  instance_ids=range(17),
                                  cutoff_time=17)
 
-    error_text = "cannot use Dask DataFrame for cutoff_time: "\
-                 "cutoff_time must a single value or a Pandas DataFrame"
-    with pytest.raises(TypeError, match=error_text):
-        dask_cutoff_time = dd.from_pandas(cutoff_time, npartitions=4)
-        calculate_feature_matrix([property_feature],
-                                 dask_es,
-                                 cutoff_time=dask_cutoff_time)
-
     error_text = 'cutoff_time must be a single value or DataFrame'
     with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([property_feature],
@@ -116,6 +108,28 @@ def test_calc_feature_matrix(es, dask_es):
                                               verbose=True)
 
     assert all(feature_matrix.index == cutoff_reordered["id"].values)
+
+
+def test_cfm_fails_dask_cutoff_time(es, dask_es):
+    times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
+                 [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
+                 [datetime(2011, 4, 9, 10, 40, 0)] +
+                 [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
+                 [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
+                 [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
+    instances = range(17)
+    cutoff_time = pd.DataFrame({'time': times,
+                                dask_es['log'].index: instances})
+    cutoff_time = dd.from_pandas(cutoff_time, npartitions=4)
+
+    property_feature = ft.Feature(es['log']['value']) > 10
+
+    error_text = "cannot use Dask DataFrame for cutoff_time: "\
+                 "cutoff_time must a single value or a Pandas DataFrame"
+    with pytest.raises(TypeError, match=error_text):
+        calculate_feature_matrix([property_feature],
+                                 dask_es,
+                                 cutoff_time=cutoff_time)
 
 
 def test_cfm_compose(es):
