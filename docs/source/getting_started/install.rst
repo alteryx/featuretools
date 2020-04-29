@@ -1,7 +1,7 @@
 Install
 *******
 
-Featuretools is available for Python 3.5, 3.6 and 3.7 The recommended way to install Featuretools is using ``pip`` or ``conda``::
+Featuretools is available for Python 3.6 and 3.7. The recommended way to install Featuretools is using ``pip`` or ``conda``::
 
     python -m pip install featuretools
 
@@ -78,9 +78,9 @@ Install from Source
 -------------------
 
 To install featuretools from source, clone the repository from `github
-<https://github.com/featuretools/featuretools>`_::
+<https://github.com/FeatureLabs/featuretools>`_::
 
-    git clone https://github.com/featuretools/featuretools.git
+    git clone https://github.com/FeatureLabs/featuretools.git
     cd featuretools
     python setup.py install
 
@@ -95,7 +95,7 @@ of ``setup.py``.
 
 Development
 -----------
-Before making contributing to the codebase, please follow the guidelines `here <https://github.com/Featuretools/featuretools/blob/master/contributing.md>`_
+Before making contributing to the codebase, please follow the guidelines `here <https://github.com/FeatureLabs/featuretools/blob/master/contributing.md>`_
 
 Virtualenv
 ~~~~~~~~~~

@@ -900,7 +900,7 @@ class EntitySet(object):
 
         """
         GRAPHVIZ_ERR_MSG = ('Please install graphviz to plot entity sets.' +
-                            ' (See https://docs.featuretools.com/getting_started/install.html#installing-graphviz for' +
+                            ' (See https://docs.featuretools.com/en/stable/getting_started/install.html#installing-graphviz for' +
                             ' details)')
         graphviz = import_or_raise("graphviz", GRAPHVIZ_ERR_MSG)
         # Try rendering a dummy graph to see if a working backend is installed
@@ -913,7 +913,7 @@ class EntitySet(object):
                 "  Mac OS: brew install graphviz\n" +
                 "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
                 "  Windows: conda install python-graphviz\n" +
-                "  For more details visit: https://docs.featuretools.com/getting_started/install.html"
+                "  For more details visit: https://docs.featuretools.com/en/stable/getting_started/install.html"
             )
 
         if to_file:

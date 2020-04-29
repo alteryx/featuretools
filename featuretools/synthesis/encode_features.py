@@ -136,12 +136,12 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
         for label in unique:
             add = f == label
             encoded.append(add)
-            X[add.get_name()] = (X[f.get_name()] == label).astype(int)
+            X[add.get_name()] = (X[f.get_name()] == label).astype("uint8")
 
         if include_unknown:
             unknown = f.isin(unique).NOT().rename(f.get_name() + " is unknown")
             encoded.append(unknown)
-            X[unknown.get_name()] = (~X[f.get_name()].isin(unique)).astype(int)
+            X[unknown.get_name()] = (~X[f.get_name()].isin(unique)).astype("uint8")
 
         if inplace and not isinstance(X, dd.core.DataFrame):
             X.drop(f.get_name(), axis=1, inplace=True)

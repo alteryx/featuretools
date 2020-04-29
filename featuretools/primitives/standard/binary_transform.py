@@ -60,8 +60,7 @@ class GreaterThanScalar(TransformPrimitive):
 
     def get_function(self):
         def greater_than_scalar(vals):
-            # convert series to handle both numeric and datetime case
-            return pd.Series(vals) > self.value
+            return vals > self.value
         return greater_than_scalar
 
     def generate_name(self, base_feature_names):
@@ -114,8 +113,7 @@ class GreaterThanEqualToScalar(TransformPrimitive):
 
     def get_function(self):
         def greater_than_equal_to_scalar(vals):
-            # convert series to handle both numeric and datetime case
-            return pd.Series(vals) >= self.value
+            return vals >= self.value
         return greater_than_equal_to_scalar
 
     def generate_name(self, base_feature_names):
@@ -168,8 +166,7 @@ class LessThanScalar(TransformPrimitive):
 
     def get_function(self):
         def less_than_scalar(vals):
-            # convert series to handle both numeric and datetime case
-            return pd.Series(vals) < self.value
+            return vals < self.value
         return less_than_scalar
 
     def generate_name(self, base_feature_names):
@@ -222,8 +219,7 @@ class LessThanEqualToScalar(TransformPrimitive):
 
     def get_function(self):
         def less_than_equal_to_scalar(vals):
-            # convert series to handle both numeric and datetime case
-            return pd.Series(vals) <= self.value
+            return vals <= self.value
         return less_than_equal_to_scalar
 
     def generate_name(self, base_feature_names):

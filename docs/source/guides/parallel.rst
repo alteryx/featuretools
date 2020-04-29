@@ -12,6 +12,12 @@ Featuretools can optionally compute features on multiple cores. The simplest way
 
 The above command will start 2 processes to compute chunks of the feature matrix in parallel. Each process receives its own copy of the entity set, so memory use will be proportional to the number of parallel processes. Because the entity set has to be copied to each process, there is overhead to perform this operation before calculation can begin. To avoid this overhead on successive calls to ``calculate_feature_matrix``, read the section below on using a persistent cluster.
 
+Running Featuretools with Spark and Dask
+----------------------------------------
+The Featuretools development team is continually working to improve integration with Dask and Spark for performing feature engineering at scale. If you have a big data problem and are interested in testing our latest Dask or Spark integrations for free, please let us know by completing `this simple request form <https://forms.office.com/Pages/ResponsePage.aspx?id=2TkvUj0wj0id66bXfx6v2ASd4JAap6pFigRj7EKGsuBUNDI4WDlGSzI1VVRHTUdMS0gyR1EyMkdJVi4u>`__.
+
+Continue reading below to learn how to perform parallel feature computation with the current integrations.
+
 Using persistent cluster
 ------------------------
 Behind the scenes, Featuretools uses `dask's <http://dask.pydata.org/>`_ distributed scheduler to implement multiprocessing. When you only specify the ``n_jobs`` parameter, a cluster will be created for that specific feature matrix calculation and destroyed once calculations have finished. A drawback of this is that each time a feature matrix is calculated, the entity set has to be transmitted to the workers again. To avoid this, we would like to reuse the same cluster between calls. The way to do this is by creating a cluster first and telling featuretools to use it with the ``dask_kwargs`` parameter::
