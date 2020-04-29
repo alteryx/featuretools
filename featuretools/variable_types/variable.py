@@ -28,7 +28,13 @@ class Variable(object):
         self.entity_id = entity.id
         assert entity.entityset is not None, "Entity must contain reference to EntitySet"
         self.entity = entity
-        self._interesting_values = pd.Series()
+        if self.id not in self.entity.df:
+            default_dtype = self._default_pandas_dtype
+            if isinstance(default_dtype, np.datetime64):
+                default_dtype = 'datetime64[ns]'
+        else:
+            default_dtype = self.entity.df[self.id].dtype
+        self._interesting_values = pd.Series(dtype=default_dtype)
 
     @property
     def entityset(self):
@@ -112,7 +118,6 @@ class Discrete(Variable):
 
     def __init__(self, id, entity, name=None):
         super(Discrete, self).__init__(id, entity, name)
-        self._interesting_values = pd.Series()
 
     @property
     def interesting_values(self):
