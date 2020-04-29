@@ -298,6 +298,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         update, progress_percent, time_elapsed = update_progress_callback_parameters(progress_bar, previous_progress)
         progress_callback(update, progress_percent, time_elapsed)
 
+    progress_bar.refresh()
     progress_bar.close()
     return feature_matrix
 
