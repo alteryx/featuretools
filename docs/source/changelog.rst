@@ -19,7 +19,7 @@ Changelog
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`
+    :user:`frances-h`, :user:`gsheni`, :user:`rwedge`
 
 **v0.13.4 Mar 27, 2020**
     .. warning::
