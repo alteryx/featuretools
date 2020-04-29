@@ -30,8 +30,10 @@ class Variable(object):
         self.entity = entity
         if self.id not in self.entity.df:
             default_dtype = self._default_pandas_dtype
-            if isinstance(default_dtype, np.datetime64):
+            if default_dtype == np.datetime64:
                 default_dtype = 'datetime64[ns]'
+            if default_dtype == np.timedelta64:
+                default_dtype = 'timedelta64[ns]'
         else:
             default_dtype = self.entity.df[self.id].dtype
         self._interesting_values = pd.Series(dtype=default_dtype)
