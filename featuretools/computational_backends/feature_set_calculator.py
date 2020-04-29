@@ -246,7 +246,8 @@ class FeatureSetCalculator(object):
         # Pass filtered values, even if we are using a full df.
         if need_full_entity:
             if isinstance(filter_values, dd.core.Series):
-                filter_values = filter_values.compute()
+                msg = "Cannot use primitives that require full entity with Dask EntitySets"
+                raise ValueError(msg)
             filtered_df = df[df[filter_variable].isin(filter_values)]
         else:
             filtered_df = df
