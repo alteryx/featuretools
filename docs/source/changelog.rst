@@ -9,6 +9,7 @@ Changelog
         * Use logger.warning to fix deprecated logger.warn (:pr:`871`)
         * Add dtype to interesting_values to fix deprecated empty Series with no dtype (:pr:`933`)
         * Remove overlap in training windows (:pr:`930`)
+        * Fix progress bar in notebook (:pr:`932`)
     * Changes
         * Change premium primitives CI test to Python 3.6 (:pr:`916`)
         * Remove Python 3.5 support (:pr:`917`)
