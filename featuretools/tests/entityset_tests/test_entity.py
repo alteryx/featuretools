@@ -17,6 +17,14 @@ def test_enforces_variable_id_is_str(es):
         variable_types.Categorical(1, es["customers"])
 
 
+def test_no_column_default_datetime(es):
+    variable = variable_types.Datetime("new_time", es["customers"])
+    assert variable.interesting_values.dtype == "datetime64[ns]"
+
+    variable = variable_types.Timedelta("timedelta", es["customers"])
+    assert variable.interesting_values.dtype == "timedelta64[ns]"
+
+
 def test_is_index_column(es):
     assert es['cohorts'].index == 'cohort'
 

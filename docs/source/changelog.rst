@@ -7,6 +7,7 @@ Changelog
         * ft.encode_features - use less memory for one-hot encoded columns (:pr:`876`)
     * Fixes
         * Use logger.warning to fix deprecated logger.warn (:pr:`871`)
+        * Add dtype to interesting_values to fix deprecated empty Series with no dtype (:pr:`933`)
         * Remove overlap in training windows (:pr:`930`)
     * Changes
         * Change premium primitives CI test to Python 3.6 (:pr:`916`)
@@ -19,7 +20,7 @@ Changelog
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`jeff-hernandez`
+    :user:`jeff-hernandez`, :user:`frances-h`, :user:`gsheni`, :user:`rwedge`
 
 **Breaking Changes**
 
