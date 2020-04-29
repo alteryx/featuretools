@@ -33,6 +33,8 @@ class AggregationPrimitive(PrimitiveBase):
                                        parent_entity_id,
                                        where_str,
                                        use_prev_str)
+        if n == 1:
+            return [base_name]
         return [base_name + "[%s]" % i for i in range(n)]
 
 

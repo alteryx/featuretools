@@ -23,6 +23,8 @@ class TransformPrimitive(PrimitiveBase):
     def generate_names(self, base_feature_names):
         n = self.number_output_features
         base_name = self.generate_name(base_feature_names)
+        if n == 1:
+            return [base_name]
         return [base_name + "[%s]" % i for i in range(n)]
 
 

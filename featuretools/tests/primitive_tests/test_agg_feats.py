@@ -679,3 +679,19 @@ def test_override_multi_feature_names(es):
 
     for name in expected_names:
         assert name in fm.columns
+
+
+def test_get_name_and_get_names_for_single_feature(es):
+    _, feature_defs = ft.dfs(entityset=es,
+                             target_entity="customers",
+                             agg_primitives=["max"],
+                             trans_primitives=[],
+                             max_depth=2)
+
+    agg_features = [feature for feature in feature_defs
+                    if isinstance(feature, ft.feature_base.feature_base.AggregationFeature)]
+    for feature in agg_features:
+        name = feature.get_name()
+        names = feature.get_names()
+        assert len(names) == 1
+        assert names[0] == name
