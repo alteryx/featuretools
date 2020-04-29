@@ -88,7 +88,8 @@ class Variable(object):
 
     @interesting_values.setter
     def interesting_values(self, interesting_values):
-        self._interesting_values = pd.Series(interesting_values)
+        self._interesting_values = pd.Series(interesting_values,
+                                             dtype=self._interesting_values.dtype)
 
     @property
     def series(self):
@@ -128,7 +129,8 @@ class Discrete(Variable):
         seen = set()
         seen_add = seen.add
         self._interesting_values = pd.Series([v for v in values if not
-                                              (v in seen or seen_add(v))])
+                                              (v in seen or seen_add(v))],
+                                             dtype=self._interesting_values.dtype)
 
 
 class Boolean(Variable):
