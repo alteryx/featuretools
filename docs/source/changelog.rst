@@ -8,6 +8,7 @@ Changelog
     * Fixes
         * Use logger.warning to fix deprecated logger.warn (:pr:`871`)
         * Add dtype to interesting_values to fix deprecated empty Series with no dtype (:pr:`933`)
+        * Remove overlap in training windows (:pr:`930`)
     * Changes
         * Change premium primitives CI test to Python 3.6 (:pr:`916`)
         * Remove Python 3.5 support (:pr:`917`)
@@ -19,7 +20,14 @@ Changelog
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`gsheni`, :user:`rwedge`
+    :user:`jeff-hernandez`, :user:`frances-h`, :user:`gsheni`, :user:`rwedge`
+
+**Breaking Changes**
+
+* Using training windows in feature calculations can result in different values than previous versions.
+  This was done to prevent consecutive training windows from overlapping by excluding data at the oldest point in time.
+  For example, if we use a cutoff time at the first minute of the hour with a one hour training window,
+  the first minute of the previous hour will no longer be included in the feature calculation.
 
 **v0.13.4 Mar 27, 2020**
     .. warning::
