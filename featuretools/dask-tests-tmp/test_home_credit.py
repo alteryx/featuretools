@@ -37,11 +37,11 @@ def run_test():
     elapsed = (end - start).total_seconds()
     print("Elapsed time: {} sec".format(elapsed))
     
-    bureau_balance = bureau_balance.repartition(npartitions=bureau_balance.npartitions*8)
-    cash = cash.repartition(npartitions=cash.npartitions*5)
-    credit = credit.repartition(npartitions=credit.npartitions*2)
-    installments = installments.repartition(npartitions=installments.npartitions*4)
-    previous = previous.repartition(npartitions=previous.npartitions*3)
+    # bureau_balance = bureau_balance.repartition(npartitions=bureau_balance.npartitions*8)
+    # cash = cash.repartition(npartitions=cash.npartitions*5)
+    # credit = credit.repartition(npartitions=credit.npartitions*2)
+    # installments = installments.repartition(npartitions=installments.npartitions*4)
+    # previous = previous.repartition(npartitions=previous.npartitions*3)
     print("Preparing data...")
     start = datetime.now()
     app_test['TARGET'] = np.nan
@@ -371,8 +371,8 @@ def run_test():
     #agg_primitives = []  # 5946 features (15.7GB)
     #trans_primitives = ["and", "add_numeric", "negate"]  # 5946 features (15.7GB)
 
-    agg_primitives = ["sum", "max", "min", "mean", "count"]  # 1067 features - Fails
-    trans_primitives = []  # 1067 features - Fails
+    agg_primitives = [["sum", "max", "min", "mean", "count", "any", "all"]  # 1075 features - Fails
+    trans_primitives = []  # 1075 features - Fails
 
     print("Running DFS...")
     start = datetime.now()
@@ -406,7 +406,7 @@ def run_test():
     end = datetime.now()
     elapsed = (end - start).total_seconds()
     print("Elapsed time: {} sec".format(elapsed))
-    return
+    
     print("Computing feature matrix...")
     start = datetime.now()
     fm_computed = fm.compute()
@@ -419,6 +419,8 @@ def run_test():
     print("Partition Ratio:", math.ceil(len(features) / len(es['app'].df.columns)))
     print("Column Ratio:", len(fm_computed.columns) / len(app.columns))
     print("Memory Ratio:", fm_computed.memory_usage().sum() / app.compute().memory_usage().sum())
+    print("Writing to single CSV")
+    fm_computed.to_csv("dask_fm_agg_v1.csv", index=False)
 
     client.close()
 
