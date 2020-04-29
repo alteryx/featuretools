@@ -10,7 +10,9 @@ def test_transform(es, dask_es):
     primitives = ft.list_primitives()
     trans_list = primitives[primitives['type'] == 'transform']['name'].tolist()
     # These primitives currently not supported with Dask
-    not_supported = ['cum_mean', 'equal', 'not_equal', 'equal_scalar', 'not_equal_scalar']
+    not_supported = ['cum_count', 'cum_sum', 'cum_max', 'cum_min', 'cum_mean', 'diff', 'percentile', 'equal',
+                     'not_equal', 'equal_scalar', 'not_equal_scalar', 'longitude', 'latitude', 'haversine']
+
     trans_primitives = [prim for prim in trans_list if prim not in not_supported]
     agg_primitives = []
 
@@ -42,16 +44,13 @@ def test_aggregation(es, dask_es):
     primitives = ft.list_primitives()
     trans_primitives = []
     agg_list = primitives[primitives['type'] == 'aggregation']['name'].tolist()
-    not_supported = ['trend', 'first', 'last', 'time_since_first', 'time_since_last']
+    not_supported = ['mode', 'median', 'n_most_common', 'skew', 'entropy', 'first', 'last', 'time_since_first', 'time_since_last', 'trend']
     agg_primitives = [prim for prim in agg_list if prim not in not_supported]
 
     assert es == dask_es
 
     # Run DFS using each entity as a target and confirm results match
     for entity in es.entities:
-        # remove n_most_common for customers due to ambiguity
-        if entity.id in ['customers', 'sessions']:
-            agg_primitives.remove('n_most_common')
         fm, _ = ft.dfs(entityset=es,
                        target_entity=entity.id,
                        trans_primitives=trans_primitives,
@@ -65,8 +64,7 @@ def test_aggregation(es, dask_es):
                             agg_primitives=agg_primitives,
                             cutoff_time=pd.Timestamp("2019-01-05 04:00"),
                             max_depth=2)
-        if entity.id in ['customers', 'sessions']:
-            agg_primitives.append('n_most_common')
+
         # Use the same columns and make sure both indexes are sorted the same
         dask_computed_fm = dask_fm.compute().set_index(entity.index).loc[fm.index][fm.columns]
         pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
