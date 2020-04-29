@@ -7,6 +7,7 @@ Changelog
         * ft.encode_features - use less memory for one-hot encoded columns (:pr:`876`)
     * Fixes
         * Use logger.warning to fix deprecated logger.warn (:pr:`871`)
+        * Use consistent naming between Feature.get_name() and Feature.get_names() for features with a single output (:pr:`934`)
     * Changes
         * Change premium primitives CI test to Python 3.6 (:pr:`916`)
         * Remove Python 3.5 support (:pr:`917`)
@@ -18,7 +19,7 @@ Changelog
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`
+    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.13.4 Mar 27, 2020**
     .. warning::
