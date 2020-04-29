@@ -28,7 +28,15 @@ class Variable(object):
         self.entity_id = entity.id
         assert entity.entityset is not None, "Entity must contain reference to EntitySet"
         self.entity = entity
-        self._interesting_values = pd.Series()
+        if self.id not in self.entity.df:
+            default_dtype = self._default_pandas_dtype
+            if default_dtype == np.datetime64:
+                default_dtype = 'datetime64[ns]'
+            if default_dtype == np.timedelta64:
+                default_dtype = 'timedelta64[ns]'
+        else:
+            default_dtype = self.entity.df[self.id].dtype
+        self._interesting_values = pd.Series(dtype=default_dtype)
 
     @property
     def entityset(self):
@@ -82,7 +90,8 @@ class Variable(object):
 
     @interesting_values.setter
     def interesting_values(self, interesting_values):
-        self._interesting_values = pd.Series(interesting_values)
+        self._interesting_values = pd.Series(interesting_values,
+                                             dtype=self._interesting_values.dtype)
 
     @property
     def series(self):
@@ -112,7 +121,6 @@ class Discrete(Variable):
 
     def __init__(self, id, entity, name=None):
         super(Discrete, self).__init__(id, entity, name)
-        self._interesting_values = pd.Series()
 
     @property
     def interesting_values(self):
@@ -123,7 +131,8 @@ class Discrete(Variable):
         seen = set()
         seen_add = seen.add
         self._interesting_values = pd.Series([v for v in values if not
-                                              (v in seen or seen_add(v))])
+                                              (v in seen or seen_add(v))],
+                                             dtype=self._interesting_values.dtype)
 
 
 class Boolean(Variable):

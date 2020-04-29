@@ -346,7 +346,7 @@ class Entity(object):
         for variable in self.variables:
             # some heuristics to find basic 'where'-able variables
             if isinstance(variable, vtypes.Discrete):
-                variable.interesting_values = pd.Series()
+                variable.interesting_values = pd.Series(dtype=variable.entity.df[variable.id].dtype)
 
                 # TODO - consider removing this constraints
                 # don't add interesting values for entities in relationships
