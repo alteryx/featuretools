@@ -195,7 +195,7 @@ def test_accepts_relative_training_window(datetime_es):
     assert (feature_matrix_2.index == [1, 2, 3, 4]).all()
     assert (feature_matrix_3.index == [2, 3, 4]).all()
     assert (feature_matrix_4.index == [2, 3, 4]).all()
-    assert (feature_matrix_5.index == [2]).all()
+    assert (feature_matrix_5.index == [1, 2]).all()
 
 
 def test_accepts_pd_timedelta_training_window(datetime_es):

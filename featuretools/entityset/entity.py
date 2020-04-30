@@ -500,13 +500,13 @@ class Entity(object):
         """
         if self.time_index:
             if time_last is not None and not df.empty:
-                df = df[df[self.time_index] <= time_last]
+                df = df[df[self.time_index] < time_last]
                 if training_window is not None:
                     training_window = _check_timedelta(training_window)
-                    mask = df[self.time_index] > time_last - training_window
+                    mask = df[self.time_index] >= time_last - training_window
                     if self.last_time_index is not None:
                         lti_slice = self.last_time_index.reindex(df.index)
-                        lti_mask = lti_slice > time_last - training_window
+                        lti_mask = lti_slice >= time_last - training_window
                         mask = mask | lti_mask
                     else:
                         logger.warning(
