@@ -2,7 +2,7 @@
 
 Changelog
 ---------
-**Future Release**
+**v0.14.0 Apr 30, 2020**
     * Enhancements
         * ft.encode_features - use less memory for one-hot encoded columns (:pr:`876`)
     * Fixes
@@ -18,10 +18,9 @@ Changelog
         * Fix Github links with correct organizations (:pr:`908`)
         * Fix hyperlinks in docs and docstrings with updated address (:pr:`910`)
         * Remove unused script for uploading docs to AWS (:pr:`911`)
-    * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`frances-h`, :user:`gsheni`, :user:`rwedge`
+    :user:`frances-h`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`
 
 **Breaking Changes**
 
