@@ -751,6 +751,7 @@ class FeatureSetCalculator(object):
                     #     num_new_feats += len(item)
                     out_partitions = 1
                     if len(to_agg) > 100:
+                        print(f"Length: {len(to_agg)}, splitting...")
                         out_partitions = base_frame.npartitions
                         dict1 = {}
                         dict2 = {}
@@ -772,7 +773,6 @@ class FeatureSetCalculator(object):
                         to_merge = merge1.merge(merge2, left_index=True, right_index=True)
                         to_merge = to_merge.merge(merge3, left_index=True, right_index=True)
                         to_merge = to_merge.merge(merge4, left_index=True, right_index=True)
-                        # breakpoint()
                     else:
                         to_merge = base_frame.groupby(base_frame[groupby_var]).agg(to_agg, split_out=out_partitions)
 
@@ -782,6 +782,11 @@ class FeatureSetCalculator(object):
                 # rename columns to the correct feature names
                 to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns.ravel()]
                 to_merge = to_merge[list(agg_rename.values())]
+                # if "SUM(cash.SK_DPD)" in to_merge.columns:
+                #     breakpoint()
+                # col = "SUM(cash.SK_DPD)"
+                # if col in agg_rename.values():
+                #     breakpoint()
 
                 # workaround for pandas bug where categories are in the wrong order
                 # see: https://github.com/pandas-dev/pandas/issues/22501
@@ -795,12 +800,12 @@ class FeatureSetCalculator(object):
                     #     frame = frame.set_index(parent_merge_var)
                     # except:
                     #     breakpoint()
-                    frame = dd.merge(left=frame, right=to_merge,
-                                     left_on=parent_merge_var, right_index=True, how='left')
+                    # frame = dd.merge(left=frame, right=to_merge,
+                    #                  left_on=parent_merge_var, right_index=True, how='left')
 
                     # frame = frame.reset_index()
-                    # frame = dd.merge(left=frame, right=to_merge.reset_index(),
-                    #                  left_on=parent_merge_var, right_on=child_merge_var, how='left')
+                    frame = dd.merge(left=frame, right=to_merge.reset_index(),
+                                     left_on=parent_merge_var, right_on=child_merge_var, how='left')
                 else:
                     frame = pd.merge(left=frame, right=to_merge,
                                      left_index=True, right_index=True, how='left')
@@ -828,7 +833,8 @@ class FeatureSetCalculator(object):
         # print(f"Base frame partition size {base_frame.get_partition(0).compute().memory_usage().sum()/1000000}, {base_frame.npartitions} partitions")
         # print(f"Length of base frame {len(base_frame)}")
         #print(f"To_merge partition size {to_merge.get_partition(0).compute().memory_usage().sum()/1000000}, {to_merge.npartitions} partitions")
-
+        # if "SUM(cash.SK_DPD)" in frame.columns:
+        #     breakpoint()
         return frame
 
     def _necessary_columns(self, entity, feature_names):

@@ -37,11 +37,12 @@ def run_test():
     elapsed = (end - start).total_seconds()
     print("Elapsed time: {} sec".format(elapsed))
     
-    # bureau_balance = bureau_balance.repartition(npartitions=bureau_balance.npartitions*8)
-    # cash = cash.repartition(npartitions=cash.npartitions*5)
-    # credit = credit.repartition(npartitions=credit.npartitions*2)
-    # installments = installments.repartition(npartitions=installments.npartitions*4)
-    # previous = previous.repartition(npartitions=previous.npartitions*3)
+    bureau_balance = bureau_balance.repartition(npartitions=bureau_balance.npartitions*8)
+    cash = cash.repartition(npartitions=cash.npartitions*5)
+    credit = credit.repartition(npartitions=credit.npartitions*2)
+    installments = installments.repartition(npartitions=installments.npartitions*4)
+    previous = previous.repartition(npartitions=previous.npartitions*3)
+
     print("Preparing data...")
     start = datetime.now()
     app_test['TARGET'] = np.nan
@@ -360,19 +361,25 @@ def run_test():
     elapsed = (end - start).total_seconds()
     print("Elapsed time: {} sec".format(elapsed))
 
-    # Primitives supported by Dask implementation
-    agg_primitives =  ["sum", "max", "min", "mean", "count", "percent_true", "num_unique"]  # Original
-    trans_primitives = ["percentile", "and"]  # Original
-    agg_primitives =  ["sum", "max", "min", "mean"]  # 1545 features
-    trans_primitives = ["and"]  # 1545 features
-    #agg_primitives = ["sum", "max"]  # 938 features
-    #trans_primitives = ["and"]  # 938 features
+    # Primitive tests
+    # agg_primitives =  ["sum", "max", "min", "mean", "count", "percent_true", "num_unique"]  # Original
+    # trans_primitives = ["percentile", "and"]  # Original
 
-    #agg_primitives = []  # 5946 features (15.7GB)
-    #trans_primitives = ["and", "add_numeric", "negate"]  # 5946 features (15.7GB)
+    # agg_primitives =  ["sum", "max", "min", "mean"]  # 1545 features
+    # trans_primitives = ["and"]  # 1545 features
+    
+    # agg_primitives = ["sum", "max"]  # 938 features
+    # trans_primitives = ["and"]  # 938 features
 
-    agg_primitives = [["sum", "max", "min", "mean", "count", "any", "all"]  # 1075 features - Fails
-    trans_primitives = []  # 1075 features - Fails
+    # agg_primitives = []  # 5946 features (15.7GB)
+    # trans_primitives = ["and", "add_numeric", "negate"]  # 5946 features (15.7GB)
+
+    # agg_primitives = ["sum", "max", "min", "mean", "count", "any", "all"]  # 1075 features
+    # trans_primitives = []  # 1075 features
+
+    agg_primitives = ["sum", "max", "min", "mean", "count", "any", "all"]  # 2083 features
+    trans_primitives = ["and", "negate"]  # 2083 features
+
 
     print("Running DFS...")
     start = datetime.now()
