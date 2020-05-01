@@ -573,7 +573,6 @@ class FeatureSetCalculator(object):
         #         new_partitions = round(multiplier * frame.npartitions)
         #         frame = frame.repartition(npartitions=new_partitions)
         #     print("New Partitions: ", frame.npartitions)
-            
 
         # Sometimes approximate features get computed in a previous filter frame
         # and put in the current one dynamically,
@@ -745,36 +744,80 @@ class FeatureSetCalculator(object):
                 # work)
                 if isinstance(base_frame, dd.core.DataFrame):
                     # TODO: This is a bit hacky for now - could potentially be improved
-                    # Check total number of output columns and set to_merge partitions accordingly
-                    # num_new_feats = 0
-                    # for item in to_agg.values():
-                    #     num_new_feats += len(item)
-                    out_partitions = 1
-                    if len(to_agg) > 100:
-                        print(f"Length: {len(to_agg)}, splitting...")
-                        out_partitions = base_frame.npartitions
-                        dict1 = {}
-                        dict2 = {}
-                        dict3 = {}
-                        dict4 = {}
-                        for i, (key, value) in enumerate(to_agg.items()):
-                            if i < len(to_agg) / 4:
-                                dict1[key] = value
-                            elif i < len(to_agg) / 2:
-                                dict2[key] = value
-                            elif i < len(to_agg) * 3 / 4:
-                                dict3[key] = value
-                            else:
-                                dict4[key] = value
-                        merge1 = base_frame.groupby(base_frame[groupby_var]).agg(dict1, split_out=out_partitions)
-                        merge2 = base_frame.groupby(base_frame[groupby_var]).agg(dict2, split_out=out_partitions)
-                        merge3 = base_frame.groupby(base_frame[groupby_var]).agg(dict3, split_out=out_partitions)
-                        merge4 = base_frame.groupby(base_frame[groupby_var]).agg(dict4, split_out=out_partitions)
-                        to_merge = merge1.merge(merge2, left_index=True, right_index=True)
-                        to_merge = to_merge.merge(merge3, left_index=True, right_index=True)
-                        to_merge = to_merge.merge(merge4, left_index=True, right_index=True)
+                    def split_dict(input_dict, num_items=25, output_list=[]):
+                        # Split the agg dict into a list of smaller dicts to avoid
+                        # memory issues with large Dask aggregations
+                        if len(input_dict) <= num_items:
+                            output_list.append(input_dict)
+                            return output_list
+                        else:
+                            keys = list(input_dict.keys())[:num_items]
+                            new_dict = {}
+                            for key in keys:
+                                value = input_dict.pop(key)
+                                new_dict[key] = value
+                            output_list.append(new_dict)
+
+                        return split_dict(input_dict, num_items, output_list)
+
+                    num_new_feats = 0
+                    for item in to_agg.values():
+                        num_new_feats += len(item)
+                    avg_cols_per_gp = num_new_feats / len(to_agg)
+                    group_len = math.ceil(50 / avg_cols_per_gp)
+                    feature_groups = split_dict(to_agg, group_len)
+
+                    base_gp = base_frame.groupby(base_frame[groupby_var])
+                    agg_values = []
+                    for group in feature_groups:
+                        agg_values.append(base_gp.agg(group))
+
+                    # print(f"Base Frame Partitions: {base_frame.npartitions}")
+                    # print(f"Base Frame Columns: {len(base_frame.columns)}")
+                    # print(f"Length of to_agg: {len(to_agg)}")
+                    # print(f"Total New Features: {num_new_feats}")
+                    # print(f"New Agg Dictionaries: {len(feature_groups)}")
+
+                    # MERGE - NEW APPROACH
+                    if num_new_feats > 50:
+                        new_partitions = base_frame.npartitions
+                        # agg_values = [df.repartition(npartitions=new_partitions) for df in agg_values]
+                        to_merge = agg_values[0].repartition(npartitions=new_partitions)
                     else:
-                        to_merge = base_frame.groupby(base_frame[groupby_var]).agg(to_agg, split_out=out_partitions)
+                        to_merge = agg_values[0]
+                    for df in agg_values[1:]:
+                        to_merge = dd.merge(to_merge, df, left_index=True, right_index=True)
+
+                    # MERGE - OLD APPROACH
+                    # out_partitions = 1
+                    # if len(to_agg) > 100:
+                    #     print(f"Length: {len(to_agg)}, splitting...")
+                    #     out_partitions = base_frame.npartitions
+                    #     dict1 = {}
+                    #     dict2 = {}
+                    #     dict3 = {}
+                    #     dict4 = {}
+                    #     for i, (key, value) in enumerate(to_agg.items()):
+                    #         if i < len(to_agg) / 4:
+                    #             dict1[key] = value
+                    #         elif i < len(to_agg) / 2:
+                    #             dict2[key] = value
+                    #         elif i < len(to_agg) * 3 / 4:
+                    #             dict3[key] = value
+                    #         else:
+                    #             dict4[key] = value
+                    #     merge1 = base_frame.groupby(base_frame[groupby_var]).agg(dict1, split_out=out_partitions)
+                    #     merge2 = base_frame.groupby(base_frame[groupby_var]).agg(dict2, split_out=out_partitions)
+                    #     merge3 = base_frame.groupby(base_frame[groupby_var]).agg(dict3, split_out=out_partitions)
+                    #     merge4 = base_frame.groupby(base_frame[groupby_var]).agg(dict4, split_out=out_partitions)
+                    #     to_merge = merge1.merge(merge2, left_index=True, right_index=True)
+                    #     to_merge = to_merge.merge(merge3, left_index=True, right_index=True)
+                    #     to_merge = to_merge.merge(merge4, left_index=True, right_index=True)
+                    # else:
+                    #     to_merge = base_frame.groupby(base_frame[groupby_var]).agg(to_agg, split_out=out_partitions)
+                    #     # rename columns to the correct feature names
+                    # to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns.ravel()]
+                    # to_merge = to_merge[list(agg_rename.values())]
 
                 else:
                     to_merge = base_frame.groupby(base_frame[groupby_var],
@@ -782,11 +825,6 @@ class FeatureSetCalculator(object):
                 # rename columns to the correct feature names
                 to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns.ravel()]
                 to_merge = to_merge[list(agg_rename.values())]
-                # if "SUM(cash.SK_DPD)" in to_merge.columns:
-                #     breakpoint()
-                # col = "SUM(cash.SK_DPD)"
-                # if col in agg_rename.values():
-                #     breakpoint()
 
                 # workaround for pandas bug where categories are in the wrong order
                 # see: https://github.com/pandas-dev/pandas/issues/22501
@@ -796,22 +834,20 @@ class FeatureSetCalculator(object):
 
                 if isinstance(frame, dd.core.DataFrame):
                     child_merge_var = to_merge.index.name
-                    # try: 
-                    #     frame = frame.set_index(parent_merge_var)
-                    # except:
-                    #     breakpoint()
-                    # frame = dd.merge(left=frame, right=to_merge,
-                    #                  left_on=parent_merge_var, right_index=True, how='left')
-
-                    # frame = frame.reset_index()
                     frame = dd.merge(left=frame, right=to_merge.reset_index(),
                                      left_on=parent_merge_var, right_on=child_merge_var, how='left')
                 else:
                     frame = pd.merge(left=frame, right=to_merge,
                                      left_index=True, right_index=True, how='left')
-                
+
                 # determine number of features that were just merged
                 progress_callback(len(to_merge.columns) / float(self.num_features))
+                # if len(frame.columns) > 1380:
+                #     print("Computing frame...")
+                #     print(f"Frame partitions: {frame.npartitions}")
+                #     print(f"Frame columns: {len(frame.columns)}")
+                #     breakpoint()
+                #     print(f"Shape: {frame.compute().shape}")
 
         # Handle default values
         fillna_dict = {}
@@ -829,12 +865,7 @@ class FeatureSetCalculator(object):
                     f.variable_type == variable_types.Numeric and
                     frame[f.get_name()].dtype.name in ['object', 'bool']):
                 frame[f.get_name()] = frame[f.get_name()].astype(float)
-        #print(f"Frame partition size {frame.get_partition(0).compute().memory_usage().sum()/1000000}, {frame.npartitions} partitions")
-        # print(f"Base frame partition size {base_frame.get_partition(0).compute().memory_usage().sum()/1000000}, {base_frame.npartitions} partitions")
-        # print(f"Length of base frame {len(base_frame)}")
-        #print(f"To_merge partition size {to_merge.get_partition(0).compute().memory_usage().sum()/1000000}, {to_merge.npartitions} partitions")
-        # if "SUM(cash.SK_DPD)" in frame.columns:
-        #     breakpoint()
+
         return frame
 
     def _necessary_columns(self, entity, feature_names):

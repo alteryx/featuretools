@@ -377,9 +377,11 @@ def run_test():
     # agg_primitives = ["sum", "max", "min", "mean", "count", "any", "all"]  # 1075 features
     # trans_primitives = []  # 1075 features
 
-    agg_primitives = ["sum", "max", "min", "mean", "count", "any", "all"]  # 2083 features
-    trans_primitives = ["and", "negate"]  # 2083 features
+    agg_primitives = ["sum", "max", "min", "mean", "count", "any", "all"]  # 2083 features - FAILS
+    trans_primitives = ["and", "negate"]  # 2083 features - FAILS
 
+    agg_primitives = ["sum", "max", "min", "mean", "count", "any", "all"]  # 1636 features
+    trans_primitives = ["and"]  # 1636 features
 
     print("Running DFS...")
     start = datetime.now()
@@ -413,7 +415,7 @@ def run_test():
     end = datetime.now()
     elapsed = (end - start).total_seconds()
     print("Elapsed time: {} sec".format(elapsed))
-    
+    return
     print("Computing feature matrix...")
     start = datetime.now()
     fm_computed = fm.compute()
