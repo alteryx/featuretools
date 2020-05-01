@@ -342,7 +342,7 @@ def test_training_window(es):
     # for now, warns if last_time_index not present
     times = [datetime(2011, 4, 9, 12, 31),
              datetime(2011, 4, 10, 11),
-             datetime(2011, 4, 10, 13, 10, 1)]
+             datetime(2011, 4, 10, 13, 10)]
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 1, 2]})
     feature_matrix = calculate_feature_matrix([property_feature, dagg],
                                               es,
@@ -362,10 +362,35 @@ def test_training_window(es):
                                               es,
                                               cutoff_time=cutoff_time,
                                               training_window='2 hours')
-    prop_values = [5, 5, 1]
+    prop_values = [4, 5, 1]
     dagg_values = [3, 2, 1]
     assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
     assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
+
+
+def test_training_window_overlap(es):
+    es.add_last_time_indexes()
+
+    count_log = ft.Feature(
+        base=es['log']['id'],
+        parent_entity=es['customers'],
+        primitive=Count,
+    )
+
+    cutoff_time = pd.DataFrame({
+        'id': [0, 0],
+        'time': ['2011-04-09 10:30:00', '2011-04-09 10:40:00'],
+    }).astype({'time': 'datetime64[ns]'})
+
+    actual = ft.calculate_feature_matrix(
+        features=[count_log],
+        entityset=es,
+        cutoff_time=cutoff_time,
+        cutoff_time_in_index=True,
+        training_window='10 minutes',
+    )['COUNT(log)']
+
+    np.testing.assert_array_equal(actual.values, [1, 9])
 
 
 def test_training_window_recent_time_index(es):
@@ -414,7 +439,7 @@ def test_training_window_recent_time_index(es):
         cutoff_time=cutoff_time,
         training_window='2 hours'
     )
-    prop_values = [5, 5, 1, 0]
+    prop_values = [4, 5, 1, 0]
     dagg_values = [3, 2, 1, 3]
     feature_matrix.sort_index(inplace=True)
     assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()

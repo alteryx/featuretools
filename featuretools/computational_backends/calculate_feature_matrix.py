@@ -251,6 +251,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         tqdm_options.update({'file': open(os.devnull, 'w'), 'disable': False})
 
     progress_bar = make_tqdm_iterator(**tqdm_options)
+    progress_bar._instances.clear()
 
     if n_jobs != 1 or dask_kwargs is not None:
         feature_matrix = parallel_calculate_chunks(cutoff_time=cutoff_time_to_pass,
@@ -304,7 +305,6 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     progress_bar.refresh()
     progress_bar.close()
-
     return feature_matrix
 
 
