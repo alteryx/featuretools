@@ -312,6 +312,23 @@ def test_converts_variable_type_after_init():
     assert df['ints'].dtype.name == 'bool'
 
 
+def test_errors_no_vtypes_dask():
+    df = pd.DataFrame({'id': [0, 1, 2],
+                       'category': ['a', 'b', 'a'],
+                       'category_int': [1, 2, 3],
+                       'ints': ['1', '2', '3'],
+                       'floats': ['1', '2', '3.0']})
+    df = dd.from_pandas(df, npartitions=3)
+    df["category_int"] = df["category_int"].astype("category")
+
+    es = EntitySet(id='test')
+    msg = 'Variable types cannot be inferred from Dask DataFrames, ' \
+          'use variable_types to provide type metadata for entity'
+    with pytest.raises(ValueError, match=msg):
+        es.entity_from_dataframe(entity_id='test_entity', index='id',
+                                 dataframe=df)
+
+
 def test_converts_datetime():
     # string converts to datetime correctly
     # This test fails without defining vtypes.  Entityset

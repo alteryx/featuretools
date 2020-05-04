@@ -22,9 +22,6 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
             that each map to a list of columns that depend on that secondary time
     '''
     # TODO: set pk and pk types here
-    if isinstance(df, dd.core.DataFrame):
-        return {}
-
     inferred_types = {}
     vids_to_assume_datetime = [time_index]
     if len(list(secondary_time_index.keys())):
@@ -41,7 +38,10 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
     for variable in df.columns:
         if variable in variable_types:
             continue
-
+        elif isinstance(df, dd.DataFrame):
+            msg = 'Variable types cannot be inferred from Dask DataFrames, ' \
+                  'use variable_types to provide type metadata for entity'
+            raise ValueError(msg)
         elif variable in vids_to_assume_datetime:
             if col_is_datetime(sample_df[variable]):
                 inferred_type = vtypes.Datetime
