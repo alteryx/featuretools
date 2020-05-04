@@ -136,9 +136,14 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     target_entity = entityset[features[0].entity.id]
     pass_columns = []
 
-    if not (isinstance(cutoff_time, pd.DataFrame) or isinstance(cutoff_time, dd.core.DataFrame)):
+    if not isinstance(cutoff_time, pd.DataFrame):
         if isinstance(cutoff_time, list):
             raise TypeError("cutoff_time must be a single value or DataFrame")
+
+        if isinstance(cutoff_time, dd.DataFrame):
+            msg = "cannot use Dask DataFrame for cutoff_time: "\
+                  "cutoff_time must a single value or a Pandas DataFrame"
+            raise TypeError(msg)
 
         if cutoff_time is None:
             if entityset.time_type == NumericTimeIndex:
@@ -251,6 +256,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         tqdm_options.update({'file': open(os.devnull, 'w'), 'disable': False})
 
     progress_bar = make_tqdm_iterator(**tqdm_options)
+    progress_bar._instances.clear()
 
     if n_jobs != 1 or dask_kwargs is not None:
         feature_matrix = parallel_calculate_chunks(cutoff_time=cutoff_time_to_pass,
@@ -304,7 +310,6 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     progress_bar.refresh()
     progress_bar.close()
-
     return feature_matrix
 
 

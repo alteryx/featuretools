@@ -246,7 +246,8 @@ class FeatureSetCalculator(object):
         # Pass filtered values, even if we are using a full df.
         if need_full_entity:
             if isinstance(filter_values, dd.core.Series):
-                filter_values = filter_values.compute()
+                msg = "Cannot use primitives that require full entity with Dask EntitySets"
+                raise ValueError(msg)
             filtered_df = df[df[filter_variable].isin(filter_values)]
         else:
             filtered_df = df
@@ -425,6 +426,7 @@ class FeatureSetCalculator(object):
 
     def _calculate_transform_features(self, features, frame, _df_trie, progress_callback):
         frame_empty = frame.empty if isinstance(frame, pd.DataFrame) else False
+        feature_values = []
         for f in features:
             # handle when no data
             if frame_empty:
@@ -452,10 +454,12 @@ class FeatureSetCalculator(object):
                 values = [strip_values_if_series(value) for value in values]
             else:
                 values = [strip_values_if_series(values)]
-            frame = update_feature_columns(f, frame, values)
+
+            feature_values.append((f, values))
 
             progress_callback(1 / float(self.num_features))
 
+        frame = update_feature_columns(feature_values, frame)
         return frame
 
     def _calculate_groupby_features(self, features, frame, _df_trie, progress_callback):
@@ -582,9 +586,11 @@ class FeatureSetCalculator(object):
         # when no child data, just add all the features to frame with nan
         base_frame_empty = base_frame.empty if isinstance(base_frame, pd.DataFrame) else False
         if base_frame_empty:
+            feature_values = []
             for f in features:
-                update_feature_columns(f, frame, np.full(f.number_output_features, np.nan))
+                feature_values.append((f, np.full(f.number_output_features, np.nan)))
                 progress_callback(1 / float(self.num_features))
+            frame = update_feature_columns(feature_values, frame)
         else:
             relationship_path = test_feature.relationship_path
 
@@ -800,6 +806,7 @@ def _can_agg(feature):
 def agg_wrapper(feats, time_last):
     def wrap(df):
         d = {}
+        feature_values = []
         for f in feats:
             func = f.get_function()
             variable_ids = [bf.get_name() for bf in f.base_features]
@@ -812,7 +819,9 @@ def agg_wrapper(feats, time_last):
 
             if f.number_output_features == 1:
                 values = [values]
-            update_feature_columns(f, d, values)
+            feature_values.append((f, values))
+
+        d = update_feature_columns(feature_values, d)
 
         return pd.Series(d)
     return wrap
@@ -821,10 +830,12 @@ def agg_wrapper(feats, time_last):
 def dask_split_output(row, columns, multi_output_prims):
     d = {}
     for col, val in zip(columns, row):
+        feature_values = []
         if col in multi_output_prims:
-            update_feature_columns(multi_output_prims[col], d, val)
+            feature_values.append((multi_output_prims[col], val))
         else:
-            d[col] = val
+            feature_values.append((col, val))
+        d = update_feature_columns(feature_values, d)
     return pd.Series(d)
 
 
@@ -833,18 +844,21 @@ def set_default_column(frame, f):
         frame[name] = f.default_value
 
 
-def update_feature_columns(feature, data, values):
-    names = feature.get_feature_names()
-    id_col = feature.entityset[feature.entity_id].index
-    assert len(names) == len(values)
-    for name, value in zip(names, values):
-        if isinstance(value, np.ndarray) and isinstance(data, dd.core.DataFrame):
-            new_df = pd.DataFrame({name: value, id_col: data[id_col].compute()})
-            data = data.merge(new_df, on=id_col)
-        else:
-            data[name] = value
+def update_feature_columns(feature_data, data):
+    new_cols = {}
+    for item in feature_data:
+        names = item[0].get_feature_names()
+        values = item[1]
+        assert len(names) == len(values)
+        for name, value in zip(names, values):
+            new_cols[name] = value
 
-    return data
+    # Handle the case where a dict is being updated
+    if isinstance(data, dict):
+        data.update(new_cols)
+        return data
+
+    return data.assign(**new_cols)
 
 
 def strip_values_if_series(values):
