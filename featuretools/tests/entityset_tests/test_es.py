@@ -123,6 +123,7 @@ def test_add_relationship_empty_child_convert_dtype(es):
     relationship = ft.Relationship(es["sessions"]["id"], es["log"]["session_id"])
     es['log'].df = pd.DataFrame(columns=es['log'].df.columns)
     assert len(es['log'].df) == 0
+    assert es['log'].df['session_id'].dtype == 'object'
 
     es.relationships.remove(relationship)
     assert(relationship not in es.relationships)
