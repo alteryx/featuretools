@@ -3,8 +3,9 @@ import logging
 from collections import defaultdict
 
 import dask.dataframe as dd
+import numpy as np
 import pandas as pd
-from pandas.api.types import is_dtype_equal
+from pandas.api.types import is_dtype_equal, is_numeric_dtype
 
 import featuretools.variable_types.variable as vtypes
 from featuretools.entityset import deserialize, serialize
@@ -254,9 +255,10 @@ class EntitySet(object):
         # default to object dtypes for discrete variables, but
         # indexes/ids default to ints. In this case, we convert
         # the empty column's type to int
-        # if (len(child_e.df) == 0 and child_e.df[child_v].dtype == object and
-        #         is_numeric_dtype(parent_e.df[parent_v])):
-        #     child_e.df[child_v] = pd.Series(name=child_v, dtype=np.int64)
+        if isinstance(child_e.df, pd.DataFrame) and \
+                (len(child_e.df) == 0 and child_e.df[child_v].dtype == object and
+                 is_numeric_dtype(parent_e.df[parent_v])):
+            child_e.df[child_v] = pd.Series(name=child_v, dtype=np.int64)
 
         parent_dtype = parent_e.df[parent_v].dtype
         child_dtype = child_e.df[child_v].dtype
