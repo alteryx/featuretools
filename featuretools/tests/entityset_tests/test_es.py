@@ -119,6 +119,19 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
         es.add_relationship(mismatch)
 
 
+def test_add_relationship_empty_child_convert_dtype(es):
+    relationship = ft.Relationship(es["sessions"]["id"], es["log"]["session_id"])
+    es['log'].df = pd.DataFrame(columns=es['log'].df.columns)
+    assert len(es['log'].df) == 0
+    assert es['log'].df['session_id'].dtype == 'object'
+
+    es.relationships.remove(relationship)
+    assert(relationship not in es.relationships)
+
+    es.add_relationship(relationship)
+    assert es['log'].df['session_id'].dtype == 'int64'
+
+
 def test_query_by_id(es):
     df = es['log'].query_by_values(instance_vals=[0])
     assert df['id'].values[0] == 0
