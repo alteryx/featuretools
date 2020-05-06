@@ -119,6 +119,19 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
         es.add_relationship(mismatch)
 
 
+def test_add_relationship_empty_child_convert_dtype(es):
+    relationship = ft.Relationship(es["sessions"]["id"], es["log"]["session_id"])
+    es['log'].df = pd.DataFrame(columns=es['log'].df.columns)
+    assert len(es['log'].df) == 0
+    assert es['log'].df['session_id'].dtype == 'object'
+
+    es.relationships.remove(relationship)
+    assert(relationship not in es.relationships)
+
+    es.add_relationship(relationship)
+    assert es['log'].df['session_id'].dtype == 'int64'
+
+
 def test_query_by_id(es):
     df = es['log'].query_by_values(instance_vals=[0])
     assert df['id'].values[0] == 0
@@ -310,6 +323,23 @@ def test_converts_variable_type_after_init():
                             true_val=1, false_val=2)
     assert isinstance(e['ints'], variable_types.Boolean)
     assert df['ints'].dtype.name == 'bool'
+
+
+def test_errors_no_vtypes_dask():
+    df = pd.DataFrame({'id': [0, 1, 2],
+                       'category': ['a', 'b', 'a'],
+                       'category_int': [1, 2, 3],
+                       'ints': ['1', '2', '3'],
+                       'floats': ['1', '2', '3.0']})
+    df = dd.from_pandas(df, npartitions=3)
+    df["category_int"] = df["category_int"].astype("category")
+
+    es = EntitySet(id='test')
+    msg = 'Variable types cannot be inferred from Dask DataFrames, ' \
+          'use variable_types to provide type metadata for entity'
+    with pytest.raises(ValueError, match=msg):
+        es.entity_from_dataframe(entity_id='test_entity', index='id',
+                                 dataframe=df)
 
 
 def test_converts_datetime():

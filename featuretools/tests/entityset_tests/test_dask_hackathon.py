@@ -17,7 +17,7 @@ def test_hackathon_single_table():
         index="RESPID",
     )
 
-    trans_primitives = ['cum_sum', 'diff', 'absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
+    trans_primitives = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
 
     fm, _ = ft.dfs(entityset=es,
                    target_entity="users",
