@@ -36,12 +36,12 @@ def run_test():
     end = datetime.now()
     elapsed = (end - start).total_seconds()
     print("Elapsed time: {} sec".format(elapsed))
-    
-    bureau_balance = bureau_balance.repartition(npartitions=bureau_balance.npartitions*8)
-    cash = cash.repartition(npartitions=cash.npartitions*5)
-    credit = credit.repartition(npartitions=credit.npartitions*2)
-    installments = installments.repartition(npartitions=installments.npartitions*4)
-    previous = previous.repartition(npartitions=previous.npartitions*3)
+
+    # bureau_balance = bureau_balance.repartition(npartitions=bureau_balance.npartitions*8)
+    # cash = cash.repartition(npartitions=cash.npartitions*5)
+    # credit = credit.repartition(npartitions=credit.npartitions*2)
+    # installments = installments.repartition(npartitions=installments.npartitions*4)
+    # previous = previous.repartition(npartitions=previous.npartitions*3)
 
     print("Preparing data...")
     start = datetime.now()
@@ -340,13 +340,10 @@ def run_test():
     print("Adding relationships...")
     # Relationship between app_train and bureau
     r_app_bureau = ft.Relationship(es['app']['SK_ID_CURR'], es['bureau']['SK_ID_CURR'])
-
     # Relationship between bureau and bureau balance
     r_bureau_balance = ft.Relationship(es['bureau']['SK_ID_BUREAU'], es['bureau_balance']['SK_ID_BUREAU'])
-
     # Relationship between current app and previous apps
     r_app_previous = ft.Relationship(es['app']['SK_ID_CURR'], es['previous']['SK_ID_CURR'])
-
     # Relationships between previous apps and cash, installments, and credit
     r_previous_cash = ft.Relationship(es['previous']['SK_ID_PREV'], es['cash']['SK_ID_PREV'])
     r_previous_installments = ft.Relationship(es['previous']['SK_ID_PREV'], es['installments']['SK_ID_PREV'])
@@ -365,23 +362,29 @@ def run_test():
     # agg_primitives =  ["sum", "max", "min", "mean", "count", "percent_true", "num_unique"]  # Original
     # trans_primitives = ["percentile", "and"]  # Original
 
-    # agg_primitives =  ["sum", "max", "min", "mean"]  # 1545 features
-    # trans_primitives = ["and"]  # 1545 features
-    
     # agg_primitives = ["sum", "max"]  # 938 features
     # trans_primitives = ["and"]  # 938 features
 
+    # agg_primitives =  ["sum", "max", "min", "mean"]  # 1545 features
+    # trans_primitives = ["and"]  # 1545 features
+    
     # agg_primitives = []  # 5946 features (15.7GB)
     # trans_primitives = ["and", "add_numeric", "negate"]  # 5946 features (15.7GB)
 
-    # agg_primitives = ["sum", "max", "min", "mean", "count", "any", "all"]  # 1075 features
-    # trans_primitives = []  # 1075 features
+    # agg_primitives = ["sum", "max", "min", "mean", "count", "any", "all"]  # 2083 features - FAILS
+    # trans_primitives = ["and", "negate"]  # 2083 features - FAILS
 
-    agg_primitives = ["sum", "max", "min", "mean", "count", "any", "all"]  # 2083 features - FAILS
-    trans_primitives = ["and", "negate"]  # 2083 features - FAILS
+    # agg_primitives = ["sum", "max", "min", "mean", "count", "any", "all"]  # 1636 features
+    # trans_primitives = ["and"]  # 1636 features
 
-    agg_primitives = ["sum", "max", "min", "mean", "count", "any", "all"]  # 1636 features
-    trans_primitives = ["and"]  # 1636 features
+    agg_primitives = ["sum", "max"]  # 938 features
+    trans_primitives = ["and"]  # 938 features
+
+    agg_primitives =  ["sum", "max", "min", "mean"]  # 1545 features
+    trans_primitives = ["and"]  # 1545 features
+
+    agg_primitives = []  # 5946 features (15.7GB)
+    trans_primitives = ["and", "add_numeric", "negate"]  # 5946 features (15.7GB)
 
     print("Running DFS...")
     start = datetime.now()
@@ -389,22 +392,22 @@ def run_test():
     cutoff_times["time"] = datetime.now()
     cutoff_times = cutoff_times.compute()
 
-    features = ft.dfs(entityset=es, target_entity='app',
-                      trans_primitives=trans_primitives,
-                      agg_primitives=agg_primitives,
-                      where_primitives=[], seed_features=[],
-                      max_depth=2, verbose=1, features_only=True, cutoff_time=cutoff_times)
+    # features = ft.dfs(entityset=es, target_entity='app',
+    #                   trans_primitives=trans_primitives,
+    #                   agg_primitives=agg_primitives,
+    #                   where_primitives=[], seed_features=[],
+    #                   max_depth=2, verbose=1, features_only=True, cutoff_time=cutoff_times)
 
-    new_partitions = es['app'].df.npartitions * math.ceil(len(features) / len(es['app'].df.columns))
-    print("New Partitions: {}".format(new_partitions))
-    es['app'].df = es['app'].df.repartition(npartitions=new_partitions)
+    # new_partitions = es['app'].df.npartitions * math.ceil(len(features) / len(es['app'].df.columns))
+    # print("New Partitions: {}".format(new_partitions))
+    # es['app'].df = es['app'].df.repartition(npartitions=new_partitions)
 
     # DFS with specified primitives
     fm, features = ft.dfs(entityset=es, target_entity='app',
                           trans_primitives=trans_primitives,
                           agg_primitives=agg_primitives,
                           where_primitives=[], seed_features=[],
-                          max_depth=2, verbose=0, cutoff_time=cutoff_times)
+                          max_depth=2, verbose=1, cutoff_time=cutoff_times)
     end = datetime.now()
     elapsed = (end - start).total_seconds()
     print("Elapsed time: {} sec".format(elapsed))

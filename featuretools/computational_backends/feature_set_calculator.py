@@ -1,4 +1,3 @@
-import math
 import warnings
 from datetime import datetime
 from functools import partial
@@ -460,6 +459,11 @@ class FeatureSetCalculator(object):
             progress_callback(1 / float(self.num_features))
 
         frame = update_feature_columns(feature_values, frame)
+
+        # if isinstance(frame, dd.core.DataFrame):
+        #     new_partitions = round(frame.npartitions * (1 + len(feature_values) / len(frame.columns)))
+        #     frame = frame.repartition(npartitions=new_partitions)
+
         return frame
 
     def _calculate_groupby_features(self, features, frame, _df_trie, progress_callback):
@@ -543,8 +547,10 @@ class FeatureSetCalculator(object):
         # merge the identity feature from the parent entity into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
         if isinstance(merge_df, dd.core.DataFrame):
-            new_df = child_df.merge(merge_df, left_on=merge_var, right_on=merge_var,
-                                    how='left')
+            new_df = child_df.merge(merge_df, left_on=merge_var, right_on=merge_var, how='left')
+            # Repartition to account for new columns to keep partition size reasonable
+            # new_partitions = round(new_df.npartitions * (1 + len(merge_df.columns) / len(child_df.columns)))
+            # new_df = new_df.repartition(npartitions=new_partitions)
         else:
             if index_as_feature is not None:
                 merge_df = merge_df.set_index(index_as_feature.get_name(), drop=False)
@@ -733,47 +739,13 @@ class FeatureSetCalculator(object):
                 # the column (in actuality grouping by both index and group would
                 # work)
                 if isinstance(base_frame, dd.core.DataFrame):
-                    # TODO: This is a bit hacky for now - could potentially be improved
-                    def split_dict(input_dict, num_items=25, output_list=[]):
-                        # Split the agg dict into a list of smaller dicts to avoid
-                        # memory issues with large Dask aggregations
-                        if len(input_dict) <= num_items:
-                            output_list.append(input_dict)
-                            return output_list
-                        else:
-                            keys = list(input_dict.keys())[:num_items]
-                            new_dict = {}
-                            for key in keys:
-                                value = input_dict.pop(key)
-                                new_dict[key] = value
-                            output_list.append(new_dict)
-
-                        return split_dict(input_dict, num_items, output_list)
-
                     num_new_feats = 0
                     for item in to_agg.values():
                         num_new_feats += len(item)
-                    avg_cols_per_gp = num_new_feats / len(to_agg)
-                    # Testing on the home credit data set suggests aggregating more than 50
-                    # columns at once can result in memory issues
-                    cols_to_agg = 50
-                    group_len = math.ceil(cols_to_agg / avg_cols_per_gp)
-                    feature_groups = split_dict(to_agg, group_len)
-
-                    base_gp = base_frame.groupby(base_frame[groupby_var])
-                    agg_values = []
-                    for group in feature_groups:
-                        agg_values.append(base_gp.agg(group))
-
-                    # MERGE - NEW APPROACH
-                    to_merge = agg_values[0]
-                    # If we are adding a lot of new features, repartition to help avoid memory issues
-                    # Assume aggregated frame will have 25% of the rows of the original frame
-                    if num_new_feats > cols_to_agg:
-                        new_partitions = math.ceil(base_frame.npartitions * 0.25)
-                        to_merge = to_merge.repartition(npartitions=new_partitions)
-                    for df in agg_values[1:]:
-                        to_merge = dd.merge(to_merge, df, left_index=True, right_index=True)
+                    # Assume the grouped result will have 25% of the rows of the base frame
+                    # split_out = round(base_frame.npartitions * (num_new_feats / len(base_frame.columns)) * 0.25)
+                    # print(f"Split out: {split_out}")
+                    to_merge = base_frame.groupby(groupby_var).agg(to_agg)
 
                 else:
                     to_merge = base_frame.groupby(base_frame[groupby_var],
@@ -781,7 +753,6 @@ class FeatureSetCalculator(object):
                 # rename columns to the correct feature names
                 to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns.ravel()]
                 to_merge = to_merge[list(agg_rename.values())]
-
                 # workaround for pandas bug where categories are in the wrong order
                 # see: https://github.com/pandas-dev/pandas/issues/22501
                 if pdtypes.is_categorical_dtype(frame.index):
@@ -789,21 +760,15 @@ class FeatureSetCalculator(object):
                     to_merge.index = to_merge.index.astype(object).astype(categories)
 
                 if isinstance(frame, dd.core.DataFrame):
-                    child_merge_var = to_merge.index.name
-                    frame = dd.merge(left=frame, right=to_merge.reset_index(),
-                                     left_on=parent_merge_var, right_on=child_merge_var, how='left')
+                    # new_partitions = round(frame.npartitions * (1 + num_new_feats / len(frame.columns)))
+                    # frame = frame.repartition(npartitions=new_partitions)
+                    frame = frame.merge(to_merge, left_on=parent_merge_var, right_index=True, how='left')
                 else:
                     frame = pd.merge(left=frame, right=to_merge,
                                      left_index=True, right_index=True, how='left')
 
                 # determine number of features that were just merged
                 progress_callback(len(to_merge.columns) / float(self.num_features))
-                # if len(frame.columns) > 1380:
-                #     print("Computing frame...")
-                #     print(f"Frame partitions: {frame.npartitions}")
-                #     print(f"Frame columns: {len(frame.columns)}")
-                #     breakpoint()
-                #     print(f"Shape: {frame.compute().shape}")
 
         # Handle default values
         fillna_dict = {}
