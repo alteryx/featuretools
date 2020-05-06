@@ -346,7 +346,7 @@ class Entity(object):
         for variable in self.variables:
             # some heuristics to find basic 'where'-able variables
             if isinstance(variable, vtypes.Discrete):
-                variable.interesting_values = pd.Series()
+                variable.interesting_values = pd.Series(dtype=variable.entity.df[variable.id].dtype)
 
                 # TODO - consider removing this constraints
                 # don't add interesting values for entities in relationships
@@ -503,10 +503,10 @@ class Entity(object):
                 df = df[df[self.time_index] <= time_last]
                 if training_window is not None:
                     training_window = _check_timedelta(training_window)
-                    mask = df[self.time_index] >= time_last - training_window
+                    mask = df[self.time_index] > time_last - training_window
                     if self.last_time_index is not None:
                         lti_slice = self.last_time_index.reindex(df.index)
-                        lti_mask = lti_slice >= time_last - training_window
+                        lti_mask = lti_slice > time_last - training_window
                         mask = mask | lti_mask
                     else:
                         logger.warning(

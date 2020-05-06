@@ -110,15 +110,15 @@ jobs:
       - image: circleci/buildpack-deps:curl
     steps:
       - run:
-          name: "Trigger premium primitives tests for python 3.5"
-          command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-35 https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
+          name: "Trigger premium primitives tests for python 3.6"
+          command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-36 https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
   run_premium_primitives_tests_on_release:
     docker:
       - image: circleci/buildpack-deps:curl
     steps:
       - run:
-          name: "Trigger premium primitives tests for python 3.5 release"
-          command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-35-ft-release https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
+          name: "Trigger premium primitives tests for python 3.6 release"
+          command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-36-ft-release https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
 
   unit_tests:
     working_directory: ~/featuretools
@@ -235,9 +235,6 @@ workflows:
   test_all_python_versions:
     jobs:
       - win_unit_tests:
-          name: "py35 windows unit tests"
-          python_version: "3.5"
-      - win_unit_tests:
           name: "py36 windows unit tests"
           python_version: "3.6"
       - win_unit_tests:
@@ -247,9 +244,6 @@ workflows:
           name: "py38 windows unit tests"
           python_version: "3.8"
       - install_ft:
-          name: "py35 install featuretools"
-          image_tag: "3.5"
-      - install_ft:
           name: "py36 install featuretools"
           image_tag: "3.6"
       - install_ft:
@@ -257,11 +251,6 @@ workflows:
       - install_ft:
             name: "py38 install featuretools"
             image_tag: "3.8"
-      - unit_tests:
-          name: "py35 unit tests"
-          image_tag: "3.5"
-          requires:
-            - "py35 install featuretools"
       - unit_tests:
           name: "py36 unit tests"
           image_tag: "3.6"
@@ -277,11 +266,6 @@ workflows:
           image_tag: "3.8"
           requires:
             - "py38 install featuretools"
-      - lint_test:
-          name: "py35 lint test"
-          image_tag: "3.5"
-          requires:
-            - "py35 install featuretools"
       - lint_test:
           name: "py36 lint test"
           image_tag: "3.6"
@@ -300,9 +284,6 @@ workflows:
           name: "build docs"
           requires:
             - "py37 install featuretools"
-      - install_ft_complete:
-          name: "py35 install featuretools complete test"
-          image_tag: "3.5"
       - install_ft_complete:
           name: "py36 install featuretools complete test"
           image_tag: "3.6"

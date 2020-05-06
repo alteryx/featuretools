@@ -2,13 +2,68 @@
 
 Changelog
 ---------
-**Future Release**
+**v0.14.0 Apr 30, 2020**
+    * Enhancements
+        * ft.encode_features - use less memory for one-hot encoded columns (:pr:`876`)
+    * Fixes
+        * Use logger.warning to fix deprecated logger.warn (:pr:`871`)
+        * Add dtype to interesting_values to fix deprecated empty Series with no dtype (:pr:`933`)
+        * Remove overlap in training windows (:pr:`930`)
+        * Fix progress bar in notebook (:pr:`932`)
+    * Changes
+        * Change premium primitives CI test to Python 3.6 (:pr:`916`)
+        * Remove Python 3.5 support (:pr:`917`)
+    * Documentation Changes
+        * Fix README links to docs (:pr:`872`)
+        * Fix Github links with correct organizations (:pr:`908`)
+        * Fix hyperlinks in docs and docstrings with updated address (:pr:`910`)
+        * Remove unused script for uploading docs to AWS (:pr:`911`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`frances-h`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`
+
+**Breaking Changes**
+
+* Using training windows in feature calculations can result in different values than previous versions.
+  This was done to prevent consecutive training windows from overlapping by excluding data at the oldest point in time.
+  For example, if we use a cutoff time at the first minute of the hour with a one hour training window,
+  the first minute of the previous hour will no longer be included in the feature calculation.
+
+**v0.13.4 Mar 27, 2020**
+    .. warning::
+        The next non-bugfix release of Featuretools will not support Python 3.5
+
+    * Fixes
+        * Fix ft.show_info() not displaying in Jupyter notebooks (:pr:`863`)
+    * Changes
+        * Added Plugin Warnings at Entry Point (:pr:`850`, :pr:`869`)
+    * Documentation Changes
+        * Add links to primitives.featurelabs.com (:pr:`860`)
+        * Add source code links to API reference (:pr:`862`)
+        * Update links for testing Dask/Spark integrations (:pr:`867`)
+        * Update release documentation for featuretools (:pr:`868`)
+    * Testing Changes
+        * Miscellaneous changes (:pr:`861`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`frances-h`, :user:`FreshLeaf8865`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`thehomebrewnerd`
+
+**v0.13.3 Feb 28, 2020**
+    * Fixes
+        * Fix a connection closed error when using n_jobs (:pr:`853`)
+    * Changes
+        * Pin msgpack dependency for Python 3.5; remove dataframe from Dask dependency (:pr:`851`)
+    * Documentation Changes
+        * Update link to help documentation page in Github issue template (:pr:`855`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`frances-h`, :user:`rwedge`
+
+**v0.13.2 Jan 31, 2020**
     * Enhancements
         * Support for Pandas 1.0.0 (:pr:`844`)
-    * Fixes
     * Changes
         * Remove dependency on s3fs library for anonymous downloads from S3 (:pr:`825`)
-    * Documentation Changes
     * Testing Changes
         * Added GitHub Action to automatically run performance tests (:pr:`840`)
 

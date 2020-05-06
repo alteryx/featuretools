@@ -39,7 +39,8 @@ extensions = [
     'nbsphinx',
     'IPython.sphinxext.ipython_console_highlighting',
     'IPython.sphinxext.ipython_directive',
-    'sphinx.ext.extlinks'
+    'sphinx.ext.extlinks',
+    'sphinx.ext.viewcode',
 ]
 
 
@@ -319,8 +320,8 @@ texinfo_documents = [
 nbsphinx_execute = 'auto'
 
 extlinks = {
-    'issue': ('https://github.com/featuretools/featuretools/issues/%s', 'GH#'),
-    'pr': ('https://github.com/featuretools/featuretools/pull/%s', 'GH#'),
+    'issue': ('https://github.com/FeatureLabs/featuretools/issues/%s', 'GH#'),
+    'pr': ('https://github.com/FeatureLabs/featuretools/pull/%s', 'GH#'),
     'user': ('https://github.com/%s', '@')
 }
 
