@@ -191,4 +191,3 @@ def col_is_datetime(col):
                 return True
 
     return False
-
