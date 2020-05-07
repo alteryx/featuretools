@@ -4,10 +4,29 @@ from featuretools.primitives import (
     GreaterThan,
     Last,
     NumCharacters,
+    Sum,
+    Std,
+    Max,
+    Skew,
+    Min,
+    Mean,
+    Count,
+    PercentTrue,
+    NumUnique,
+    Mode,
+    Year,
+    Month,
+    Weekday,
+    Haversine,
+    NumWords,
     get_aggregation_primitives,
     get_transform_primitives
 )
-from featuretools.primitives.utils import _get_descriptions
+from featuretools.primitives.utils import (
+    _get_descriptions,
+    get_default_aggregation_primitives,
+    get_default_transform_primitives
+)
 
 
 def test_list_primitives_order():
@@ -33,3 +52,17 @@ def test_descriptions():
                   Last: 'Determines the last value in a list.',
                   GreaterThan: 'Determines if values in one list are greater than another list.'}
     assert _get_descriptions(list(primitives.keys())) == list(primitives.values())
+
+
+def test_get_default_aggregation_primitives():
+    primitives = get_default_aggregation_primitives()
+    expected_primitives = [Sum, Std, Max, Skew, Min, Mean, Count, PercentTrue,
+                           NumUnique, Mode]
+    assert set(primitives) == set(expected_primitives)
+
+
+def test_get_default_transform_primitives():
+    primitives = get_default_transform_primitives()
+    expected_primitives = [Day, Year, Month, Weekday, Haversine, NumWords,
+                           NumCharacters]
+    assert set(primitives) == set(expected_primitives)
