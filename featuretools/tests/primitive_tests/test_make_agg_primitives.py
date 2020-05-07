@@ -37,7 +37,7 @@ def test_description_make_agg_primitive():
 
 # Check the successful default value for custom aggregation primitives
 def test_default_value_make_agg_primitive():
-    es = ft.demo.load_mock_customer(return_entityset=True)
+    pd_es = ft.demo.load_mock_customer(return_entityset=True)
 
     def mean_sunday(numeric, datetime):
         '''
@@ -51,7 +51,7 @@ def test_default_value_make_agg_primitive():
                                     input_types=[Numeric, Datetime],
                                     return_type=Numeric)
 
-    feature_matrix, features = ft.dfs(entityset=es,
+    feature_matrix, features = ft.dfs(entityset=pd_es,
                                       target_entity="sessions",
                                       agg_primitives=[MeanSunday],
                                       trans_primitives=[],
@@ -62,7 +62,7 @@ def test_default_value_make_agg_primitive():
                                            return_type=Numeric,
                                            default_value=0)
 
-    feature_matrix2, features = ft.dfs(entityset=es,
+    feature_matrix2, features = ft.dfs(entityset=pd_es,
                                        target_entity="sessions",
                                        agg_primitives=[MeanSundayDefault],
                                        trans_primitives=[],

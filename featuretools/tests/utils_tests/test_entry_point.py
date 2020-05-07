@@ -29,26 +29,26 @@ class MockPkgResources(object):
         return [self.entry_point]
 
 
-def test_entry_point(es, monkeypatch):
+def test_entry_point(pd_es, monkeypatch):
     entry_point = MockEntryPoint()
     # overrides a module used in the entry_point decorator for dfs
     # so the decorator will use this mock entry point
     monkeypatch.setitem(dfs.__globals__['entry_point'].__globals__,
                         "pkg_resources",
                         MockPkgResources(entry_point))
-    fm, fl = dfs(entityset=es, target_entity='customers')
+    fm, fl = dfs(entityset=pd_es, target_entity='customers')
     assert "entityset" in entry_point.kwargs.keys()
     assert "target_entity" in entry_point.kwargs.keys()
     assert (fm, fl) == entry_point.return_value
 
 
-def test_entry_point_error(es, monkeypatch):
+def test_entry_point_error(pd_es, monkeypatch):
     entry_point = MockEntryPoint()
     monkeypatch.setitem(dfs.__globals__['entry_point'].__globals__,
                         "pkg_resources",
                         MockPkgResources(entry_point))
     with pytest.raises(KeyError):
-        dfs(entityset=es, target_entity='missing_entity')
+        dfs(entityset=pd_es, target_entity='missing_entity')
 
     assert isinstance(entry_point.error, KeyError)
 

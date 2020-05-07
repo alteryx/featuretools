@@ -19,9 +19,9 @@ def feature_matrix():
 
 
 @pytest.fixture
-def test_es(es, feature_matrix):
-    es.entity_from_dataframe('test', feature_matrix, index='test')
-    return es
+def test_es(pd_es, feature_matrix):
+    pd_es.entity_from_dataframe('test', feature_matrix, index='test')
+    return pd_es
 
 
 def test_remove_low_information_feature_names(feature_matrix):

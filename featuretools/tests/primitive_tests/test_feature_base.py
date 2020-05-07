@@ -18,14 +18,14 @@ from featuretools.primitives import (
 from featuretools.variable_types import Categorical, Datetime, Id, Numeric
 
 
-def test_copy_features_does_not_copy_entityset(es):
-    agg = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum)
-    agg_where = ft.Feature(es['log']['value'], parent_entity=es['sessions'],
-                           where=IdentityFeature(es['log']['value']) == 2, primitive=Sum)
-    agg_use_previous = ft.Feature(es['log']['value'], parent_entity=es['sessions'],
+def test_copy_features_does_not_copy_entityset(pd_es):
+    agg = ft.Feature(pd_es['log']['value'], parent_entity=pd_es['sessions'], primitive=Sum)
+    agg_where = ft.Feature(pd_es['log']['value'], parent_entity=pd_es['sessions'],
+                           where=IdentityFeature(pd_es['log']['value']) == 2, primitive=Sum)
+    agg_use_previous = ft.Feature(pd_es['log']['value'], parent_entity=pd_es['sessions'],
                                   use_previous='4 days', primitive=Sum)
-    agg_use_previous_where = ft.Feature(es['log']['value'], parent_entity=es['sessions'],
-                                        where=IdentityFeature(es['log']['value']) == 2,
+    agg_use_previous_where = ft.Feature(pd_es['log']['value'], parent_entity=pd_es['sessions'],
+                                        where=IdentityFeature(pd_es['log']['value']) == 2,
                                         use_previous='4 days', primitive=Sum)
     features = [agg, agg_where, agg_use_previous, agg_use_previous_where]
     in_memory_size = asizeof(locals())
@@ -34,11 +34,11 @@ def test_copy_features_does_not_copy_entityset(es):
     assert new_in_memory_size < 2 * in_memory_size
 
 
-def test_get_dependencies(es):
-    f = ft.Feature(es['log']['value'])
-    agg1 = ft.Feature(f, parent_entity=es['sessions'], primitive=Sum)
-    agg2 = ft.Feature(agg1, parent_entity=es['customers'], primitive=Sum)
-    d1 = ft.Feature(agg2, es['sessions'])
+def test_get_dependencies(pd_es):
+    f = ft.Feature(pd_es['log']['value'])
+    agg1 = ft.Feature(f, parent_entity=pd_es['sessions'], primitive=Sum)
+    agg2 = ft.Feature(agg1, parent_entity=pd_es['customers'], primitive=Sum)
+    d1 = ft.Feature(agg2, pd_es['sessions'])
     shallow = d1.get_dependencies(deep=False, ignored=None)
     deep = d1.get_dependencies(deep=True, ignored=None)
     ignored = set([agg1.unique_name()])
@@ -48,13 +48,13 @@ def test_get_dependencies(es):
     assert [d.unique_name() for d in deep_ignored] == [agg2.unique_name()]
 
 
-def test_get_depth(es):
-    f = ft.Feature(es['log']['value'])
-    g = ft.Feature(es['log']['value'])
-    agg1 = ft.Feature(f, parent_entity=es['sessions'], primitive=Last)
-    agg2 = ft.Feature(agg1, parent_entity=es['customers'], primitive=Last)
-    d1 = ft.Feature(agg2, es['sessions'])
-    d2 = ft.Feature(d1, es['log'])
+def test_get_depth(pd_es):
+    f = ft.Feature(pd_es['log']['value'])
+    g = ft.Feature(pd_es['log']['value'])
+    agg1 = ft.Feature(f, parent_entity=pd_es['sessions'], primitive=Last)
+    agg2 = ft.Feature(agg1, parent_entity=pd_es['customers'], primitive=Last)
+    d1 = ft.Feature(agg2, pd_es['sessions'])
+    d2 = ft.Feature(d1, pd_es['log'])
     assert d2.get_depth() == 4
     # Make sure this works if we pass in two of the same
     # feature. This came up when user supplied duplicates
@@ -67,31 +67,31 @@ def test_get_depth(es):
     assert d2.get_depth(stop_at=[f, g, d2]) == 0
 
 
-def test_squared(es):
-    feature = ft.Feature(es['log']['value'])
+def test_squared(pd_es):
+    feature = ft.Feature(pd_es['log']['value'])
     squared = feature * feature
     assert len(squared.base_features) == 2
     assert squared.base_features[0].unique_name() == squared.base_features[1].unique_name()
 
 
-def test_return_type_inference(es):
-    mode = ft.Feature(es["log"]["priority_level"], parent_entity=es["customers"], primitive=Mode)
-    assert mode.variable_type == es["log"]["priority_level"].__class__
+def test_return_type_inference(pd_es):
+    mode = ft.Feature(pd_es["log"]["priority_level"], parent_entity=pd_es["customers"], primitive=Mode)
+    assert mode.variable_type == pd_es["log"]["priority_level"].__class__
 
 
-def test_return_type_inference_direct_feature(es):
-    mode = ft.Feature(es["log"]["priority_level"], parent_entity=es["customers"], primitive=Mode)
-    mode_session = ft.Feature(mode, es["sessions"])
-    assert mode_session.variable_type == es["log"]["priority_level"].__class__
+def test_return_type_inference_direct_feature(pd_es):
+    mode = ft.Feature(pd_es["log"]["priority_level"], parent_entity=pd_es["customers"], primitive=Mode)
+    mode_session = ft.Feature(mode, pd_es["sessions"])
+    assert mode_session.variable_type == pd_es["log"]["priority_level"].__class__
 
 
-def test_return_type_inference_index(es):
-    last = ft.Feature(es["log"]["id"], parent_entity=es["customers"], primitive=Last)
+def test_return_type_inference_index(pd_es):
+    last = ft.Feature(pd_es["log"]["id"], parent_entity=pd_es["customers"], primitive=Last)
     assert last.variable_type == Categorical
 
 
-def test_return_type_inference_datetime_time_index(es):
-    last = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=Last)
+def test_return_type_inference_datetime_time_index(pd_es):
+    last = ft.Feature(pd_es["log"]["datetime"], parent_entity=pd_es["customers"], primitive=Last)
     assert last.variable_type == Datetime
 
 
@@ -100,21 +100,21 @@ def test_return_type_inference_numeric_time_index(int_es):
     assert last.variable_type == Numeric
 
 
-def test_return_type_inference_id(es):
+def test_return_type_inference_id(pd_es):
     # direct features should keep Id variable type
-    direct_id_feature = ft.Feature(es["sessions"]["customer_id"], es["log"])
+    direct_id_feature = ft.Feature(pd_es["sessions"]["customer_id"], pd_es["log"])
     assert direct_id_feature.variable_type == Id
 
     # aggregations of Id variable types should get converted
-    mode = ft.Feature(es["log"]["session_id"], parent_entity=es["customers"], primitive=Mode)
+    mode = ft.Feature(pd_es["log"]["session_id"], parent_entity=pd_es["customers"], primitive=Mode)
     assert mode.variable_type == Categorical
 
     # also test direct feature of aggregation
-    mode_direct = ft.Feature(mode, es["sessions"])
+    mode_direct = ft.Feature(mode, pd_es["sessions"])
     assert mode_direct.variable_type == Categorical
 
 
-def test_set_data_path(es):
+def test_set_data_path(pd_es):
     key = "primitive_data_folder"
 
     # Don't change orig_path
@@ -144,8 +144,8 @@ def test_set_data_path(es):
     assert config.get(key) == orig_path
 
 
-def test_to_dictionary(es):
-    direct_feature = ft.Feature(es["sessions"]["customer_id"], es["log"])
+def test_to_dictionary(pd_es):
+    direct_feature = ft.Feature(pd_es["sessions"]["customer_id"], pd_es["log"])
     expected = {
         'type': 'DirectFeature',
         'dependencies': [feat.unique_name() for feat in direct_feature.get_dependencies()],
@@ -154,30 +154,30 @@ def test_to_dictionary(es):
     assert expected == direct_feature.to_dictionary()
 
 
-def test_multi_output_base_error_agg(es):
+def test_multi_output_base_error_agg(pd_es):
     three_common = NMostCommon(3)
-    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=three_common)
+    tc = ft.Feature(pd_es['log']['product_id'], parent_entity=pd_es["sessions"], primitive=three_common)
     error_text = "Cannot stack on whole multi-output feature."
     with pytest.raises(ValueError, match=error_text):
-        ft.Feature(tc, parent_entity=es['customers'], primitive=NumUnique)
+        ft.Feature(tc, parent_entity=pd_es['customers'], primitive=NumUnique)
 
 
-def test_multi_output_base_error_trans(es):
+def test_multi_output_base_error_trans(pd_es):
     class TestTime(TransformPrimitive):
         name = "test_time"
         input_types = [Datetime]
         return_type = Numeric
         number_output_features = 6
 
-    tc = ft.Feature(es['customers']['date_of_birth'], primitive=TestTime)
+    tc = ft.Feature(pd_es['customers']['date_of_birth'], primitive=TestTime)
 
     error_text = "Cannot stack on whole multi-output feature."
     with pytest.raises(ValueError, match=error_text):
         ft.Feature(tc, primitive=Diff)
 
 
-def test_multi_output_attributes(es):
-    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=NMostCommon)
+def test_multi_output_attributes(pd_es):
+    tc = ft.Feature(pd_es['log']['product_id'], parent_entity=pd_es["sessions"], primitive=NMostCommon)
 
     assert tc.generate_name() == 'N_MOST_COMMON(log.product_id)'
     assert tc.number_output_features == 3
@@ -189,15 +189,15 @@ def test_multi_output_attributes(es):
     assert tc.relationship_path == tc[0].relationship_path
 
 
-def test_multi_output_index_error(es):
+def test_multi_output_index_error(pd_es):
     error_text = "can only access slice of multi-output feature"
-    three_common = ft.Feature(es['log']['product_id'],
-                              parent_entity=es["sessions"],
+    three_common = ft.Feature(pd_es['log']['product_id'],
+                              parent_entity=pd_es["sessions"],
                               primitive=NMostCommon)
 
     with pytest.raises(AssertionError, match=error_text):
-        single = ft.Feature(es['log']['product_id'],
-                            parent_entity=es["sessions"],
+        single = ft.Feature(pd_es['log']['product_id'],
+                            parent_entity=pd_es["sessions"],
                             primitive=NumUnique)
         single[0]
 

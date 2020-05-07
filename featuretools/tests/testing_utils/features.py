@@ -9,13 +9,13 @@ def feature_with_name(features, name):
     return False
 
 
-def backward_path(es, entity_ids):
+def backward_path(pd_es, entity_ids):
     """
     Create a backward RelationshipPath through the given entities. Assumes only
     one such path is possible.
     """
     def _get_relationship(child, parent):
-        return next(r for r in es.get_forward_relationships(child)
+        return next(r for r in pd_es.get_forward_relationships(child)
                     if r.parent_entity.id == parent)
 
     relationships = [_get_relationship(child, parent)
@@ -24,13 +24,13 @@ def backward_path(es, entity_ids):
     return RelationshipPath([(False, r) for r in relationships])
 
 
-def forward_path(es, entity_ids):
+def forward_path(pd_es, entity_ids):
     """
     Create a forward RelationshipPath through the given entities. Assumes only
     one such path is possible.
     """
     def _get_relationship(child, parent):
-        return next(r for r in es.get_forward_relationships(child)
+        return next(r for r in pd_es.get_forward_relationships(child)
                     if r.parent_entity.id == parent)
 
     relationships = [_get_relationship(child, parent)

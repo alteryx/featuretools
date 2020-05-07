@@ -19,7 +19,7 @@ def make_int_es():
 
 
 @pytest.fixture
-def es(make_es):
+def pd_es(make_es):
     return copy.deepcopy(make_es)
 
 
@@ -34,6 +34,11 @@ def dask_es(make_es):
     for entity in dask_es.entities:
         entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=2)
     return dask_es
+
+
+@pytest.fixture(params=['pd_es', 'dask_es'])
+def es(request):
+    return request.getfixturevalue(request.param)
 
 
 @pytest.fixture

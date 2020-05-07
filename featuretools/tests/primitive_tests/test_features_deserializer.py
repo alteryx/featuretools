@@ -8,12 +8,12 @@ from featuretools.feature_base.features_deserializer import (
 from featuretools.feature_base.features_serializer import SCHEMA_VERSION
 
 
-def test_single_feature(es):
-    feature = ft.IdentityFeature(es['log']['value'])
+def test_single_feature(pd_es):
+    feature = ft.IdentityFeature(pd_es['log']['value'])
     dictionary = {
         'ft_version': ft.__version__,
         'schema_version': SCHEMA_VERSION,
-        'entityset': es.to_dictionary(),
+        'entityset': pd_es.to_dictionary(),
         'feature_list': [feature.unique_name()],
         'feature_definitions': {
             feature.unique_name(): feature.to_dictionary()
@@ -25,15 +25,15 @@ def test_single_feature(es):
     assert expected == deserializer.to_list()
 
 
-def test_multioutput_feature(es):
-    value = ft.IdentityFeature(es['log']['product_id'])
+def test_multioutput_feature(pd_es):
+    value = ft.IdentityFeature(pd_es['log']['product_id'])
     threecommon = ft.primitives.NMostCommon()
-    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=threecommon)
+    tc = ft.Feature(pd_es['log']['product_id'], parent_entity=pd_es["sessions"], primitive=threecommon)
 
     features = [tc, value]
     for i in range(3):
         features.append(ft.Feature(tc[i],
-                                   parent_entity=es['customers'],
+                                   parent_entity=pd_es['customers'],
                                    primitive=ft.primitives.NumUnique))
         features.append(tc[i])
 
@@ -44,7 +44,7 @@ def test_multioutput_feature(es):
     dictionary = {
         'ft_version': ft.__version__,
         'schema_version': SCHEMA_VERSION,
-        'entityset': es.to_dictionary(),
+        'entityset': pd_es.to_dictionary(),
         'feature_list': flist,
         'feature_definitions': fdict
     }
@@ -55,13 +55,13 @@ def test_multioutput_feature(es):
         assert features[i].unique_name() == deserializer[i].unique_name()
 
 
-def test_base_features_in_list(es):
-    value = ft.IdentityFeature(es['log']['value'])
-    max_feat = ft.AggregationFeature(value, es['sessions'], ft.primitives.Max)
+def test_base_features_in_list(pd_es):
+    value = ft.IdentityFeature(pd_es['log']['value'])
+    max_feat = ft.AggregationFeature(value, pd_es['sessions'], ft.primitives.Max)
     dictionary = {
         'ft_version': ft.__version__,
         'schema_version': SCHEMA_VERSION,
-        'entityset': es.to_dictionary(),
+        'entityset': pd_es.to_dictionary(),
         'feature_list': [max_feat.unique_name(), value.unique_name()],
         'feature_definitions': {
             max_feat.unique_name(): max_feat.to_dictionary(),
@@ -74,15 +74,15 @@ def test_base_features_in_list(es):
     assert expected == deserializer.to_list()
 
 
-def test_base_features_not_in_list(es):
-    value = ft.IdentityFeature(es['log']['value'])
+def test_base_features_not_in_list(pd_es):
+    value = ft.IdentityFeature(pd_es['log']['value'])
     value_x2 = ft.TransformFeature(value,
                                    ft.primitives.MultiplyNumericScalar(value=2))
-    max_feat = ft.AggregationFeature(value_x2, es['sessions'], ft.primitives.Max)
+    max_feat = ft.AggregationFeature(value_x2, pd_es['sessions'], ft.primitives.Max)
     dictionary = {
         'ft_version': ft.__version__,
         'schema_version': SCHEMA_VERSION,
-        'entityset': es.to_dictionary(),
+        'entityset': pd_es.to_dictionary(),
         'feature_list': [max_feat.unique_name()],
         'feature_definitions': {
             max_feat.unique_name(): max_feat.to_dictionary(),
@@ -96,7 +96,7 @@ def test_base_features_not_in_list(es):
     assert expected == deserializer.to_list()
 
 
-def test_later_schema_version(es):
+def test_later_schema_version(pd_es):
     def test_version(major, minor, patch, raises=True):
         version = '.'.join([str(v) for v in [major, minor, patch]])
         if raises:
@@ -107,7 +107,7 @@ def test_later_schema_version(es):
         else:
             warning_text = None
 
-        _check_schema_version(version, es, warning_text)
+        _check_schema_version(version, pd_es, warning_text)
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
@@ -117,7 +117,7 @@ def test_later_schema_version(es):
     test_version(major, minor - 1, patch + 1, raises=False)
 
 
-def test_earlier_schema_version(es):
+def test_earlier_schema_version(pd_es):
     def test_version(major, minor, patch, raises=True):
         version = '.'.join([str(v) for v in [major, minor, patch]])
 
@@ -129,7 +129,7 @@ def test_earlier_schema_version(es):
         else:
             warning_text = None
 
-        _check_schema_version(version, es, warning_text)
+        _check_schema_version(version, pd_es, warning_text)
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
@@ -138,11 +138,11 @@ def test_earlier_schema_version(es):
     test_version(major, minor, patch - 1, raises=False)
 
 
-def test_unknown_feature_type(es):
+def test_unknown_feature_type(pd_es):
     dictionary = {
         'ft_version': ft.__version__,
         'schema_version': SCHEMA_VERSION,
-        'entityset': es.to_dictionary(),
+        'entityset': pd_es.to_dictionary(),
         'feature_list': ['feature_1'],
         'feature_definitions': {
             'feature_1': {
@@ -159,15 +159,15 @@ def test_unknown_feature_type(es):
         deserializer.to_list()
 
 
-def test_unknown_primitive_type(es):
-    value = ft.IdentityFeature(es['log']['value'])
-    max_feat = ft.AggregationFeature(value, es['sessions'], ft.primitives.Max)
+def test_unknown_primitive_type(pd_es):
+    value = ft.IdentityFeature(pd_es['log']['value'])
+    max_feat = ft.AggregationFeature(value, pd_es['sessions'], ft.primitives.Max)
     max_dict = max_feat.to_dictionary()
     max_dict['arguments']['primitive']['type'] = 'FakePrimitive'
     dictionary = {
         'ft_version': ft.__version__,
         'schema_version': SCHEMA_VERSION,
-        'entityset': es.to_dictionary(),
+        'entityset': pd_es.to_dictionary(),
         'feature_list': [max_feat.unique_name(), value.unique_name()],
         'feature_definitions': {
             max_feat.unique_name(): max_dict,
@@ -184,15 +184,15 @@ def test_unknown_primitive_type(es):
     assert error_text == str(excinfo.value)
 
 
-def test_unknown_primitive_module(es):
-    value = ft.IdentityFeature(es['log']['value'])
-    max_feat = ft.AggregationFeature(value, es['sessions'], ft.primitives.Max)
+def test_unknown_primitive_module(pd_es):
+    value = ft.IdentityFeature(pd_es['log']['value'])
+    max_feat = ft.AggregationFeature(value, pd_es['sessions'], ft.primitives.Max)
     max_dict = max_feat.to_dictionary()
     max_dict['arguments']['primitive']['module'] = 'fake.module'
     dictionary = {
         'ft_version': ft.__version__,
         'schema_version': SCHEMA_VERSION,
-        'entityset': es.to_dictionary(),
+        'entityset': pd_es.to_dictionary(),
         'feature_list': [max_feat.unique_name(), value.unique_name()],
         'feature_definitions': {
             max_feat.unique_name(): max_dict,
@@ -208,14 +208,14 @@ def test_unknown_primitive_module(es):
     assert error_text == str(excinfo.value)
 
 
-def test_feature_use_previous_pd_timedelta(es):
-    value = ft.IdentityFeature(es['log']['id'])
+def test_feature_use_previous_pd_timedelta(pd_es):
+    value = ft.IdentityFeature(pd_es['log']['id'])
     td = pd.Timedelta(12, "W")
-    count_feature = ft.AggregationFeature(value, es['customers'], ft.primitives.Count, use_previous=td)
+    count_feature = ft.AggregationFeature(value, pd_es['customers'], ft.primitives.Count, use_previous=td)
     dictionary = {
         'ft_version': ft.__version__,
         'schema_version': SCHEMA_VERSION,
-        'entityset': es.to_dictionary(),
+        'entityset': pd_es.to_dictionary(),
         'feature_list': [count_feature.unique_name(), value.unique_name()],
         'feature_definitions': {
             count_feature.unique_name(): count_feature.to_dictionary(),
@@ -228,14 +228,14 @@ def test_feature_use_previous_pd_timedelta(es):
     assert expected == deserializer.to_list()
 
 
-def test_feature_use_previous_pd_dateoffset(es):
-    value = ft.IdentityFeature(es['log']['id'])
+def test_feature_use_previous_pd_dateoffset(pd_es):
+    value = ft.IdentityFeature(pd_es['log']['id'])
     do = pd.DateOffset(months=3)
-    count_feature = ft.AggregationFeature(value, es['customers'], ft.primitives.Count, use_previous=do)
+    count_feature = ft.AggregationFeature(value, pd_es['customers'], ft.primitives.Count, use_previous=do)
     dictionary = {
         'ft_version': ft.__version__,
         'schema_version': SCHEMA_VERSION,
-        'entityset': es.to_dictionary(),
+        'entityset': pd_es.to_dictionary(),
         'feature_list': [count_feature.unique_name(), value.unique_name()],
         'feature_definitions': {
             count_feature.unique_name(): count_feature.to_dictionary(),
@@ -247,13 +247,13 @@ def test_feature_use_previous_pd_dateoffset(es):
     expected = [count_feature, value]
     assert expected == deserializer.to_list()
 
-    value = ft.IdentityFeature(es['log']['id'])
+    value = ft.IdentityFeature(pd_es['log']['id'])
     do = pd.DateOffset(months=3, days=2, minutes=30)
-    count_feature = ft.AggregationFeature(value, es['customers'], ft.primitives.Count, use_previous=do)
+    count_feature = ft.AggregationFeature(value, pd_es['customers'], ft.primitives.Count, use_previous=do)
     dictionary = {
         'ft_version': ft.__version__,
         'schema_version': SCHEMA_VERSION,
-        'entityset': es.to_dictionary(),
+        'entityset': pd_es.to_dictionary(),
         'feature_list': [count_feature.unique_name(), value.unique_name()],
         'feature_definitions': {
             count_feature.unique_name(): count_feature.to_dictionary(),
@@ -266,11 +266,11 @@ def test_feature_use_previous_pd_dateoffset(es):
     assert expected == deserializer.to_list()
 
 
-def _check_schema_version(version, es, warning_text):
+def _check_schema_version(version, pd_es, warning_text):
     dictionary = {
         'ft_version': ft.__version__,
         'schema_version': version,
-        'entityset': es.to_dictionary(),
+        'entityset': pd_es.to_dictionary(),
         'feature_list': [],
         'feature_definitions': {}
     }

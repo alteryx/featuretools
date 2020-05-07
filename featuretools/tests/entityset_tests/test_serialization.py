@@ -25,16 +25,16 @@ TEST_KEY = "test_access_key_es"
 
 def test_all_variable_descriptions():
     variable_types = find_variable_types()
-    es = EntitySet()
+    pd_es = EntitySet()
     dataframe = pd.DataFrame(columns=list(variable_types))
-    es.entity_from_dataframe(
+    pd_es.entity_from_dataframe(
         'variable_types',
         dataframe,
         index='index',
         time_index='datetime_time_index',
         variable_types=variable_types,
     )
-    entity = es['variable_types']
+    entity = pd_es['variable_types']
     for variable in entity.variables:
         description = variable.to_data_description()
         _variable = deserialize.description_to_variable(description, entity=entity)
@@ -47,30 +47,30 @@ def test_custom_variable_descriptions():
         type_string = "item_list"
         _default_pandas_dtype = list
 
-    es = EntitySet()
+    pd_es = EntitySet()
     variables = {'item_list': ItemList, 'time_index': TimeIndex, 'index': Index}
     dataframe = pd.DataFrame(columns=list(variables))
-    es.entity_from_dataframe(
+    pd_es.entity_from_dataframe(
         'custom_variable', dataframe, index='index',
         time_index='time_index', variable_types=variables)
-    entity = es['custom_variable']
+    entity = pd_es['custom_variable']
     for variable in entity.variables:
         description = variable.to_data_description()
         _variable = deserialize.description_to_variable(description, entity=entity)
         assert variable.__eq__(_variable)
 
 
-def test_variable_descriptions(es):
-    for entity in es.entities:
+def test_variable_descriptions(pd_es):
+    for entity in pd_es.entities:
         for variable in entity.variables:
             description = variable.to_data_description()
             _variable = deserialize.description_to_variable(description, entity=entity)
             assert variable.__eq__(_variable)
 
 
-def test_entity_descriptions(es):
-    _es = EntitySet(es.id)
-    for entity in es.metadata.entities:
+def test_entity_descriptions(pd_es):
+    _es = EntitySet(pd_es.id)
+    for entity in pd_es.metadata.entities:
         description = serialize.entity_to_description(entity)
         deserialize.description_to_entity(description, _es)
         _entity = _es[description['id']]
@@ -78,93 +78,93 @@ def test_entity_descriptions(es):
         assert entity.__eq__(_entity, deep=True)
 
 
-def test_entityset_description(es):
-    description = serialize.entityset_to_description(es)
+def test_entityset_description(pd_es):
+    description = serialize.entityset_to_description(pd_es)
     _es = deserialize.description_to_entityset(description)
-    assert es.metadata.__eq__(_es, deep=True)
+    assert pd_es.metadata.__eq__(_es, deep=True)
 
 
-def test_invalid_formats(es, tmpdir):
+def test_invalid_formats(pd_es, tmpdir):
     error_text = 'must be one of the following formats: {}'
     error_text = error_text.format(', '.join(serialize.FORMATS))
     with pytest.raises(ValueError, match=error_text):
-        serialize.write_entity_data(es.entities[0], path=str(tmpdir), format='')
+        serialize.write_entity_data(pd_es.entities[0], path=str(tmpdir), format='')
     with pytest.raises(ValueError, match=error_text):
         entity = {'loading_info': {'location': 'data', 'type': ''}}
         deserialize.read_entity_data(entity, path='.')
 
 
-def test_empty_dataframe(es):
-    for entity in es.entities:
+def test_empty_dataframe(pd_es):
+    for entity in pd_es.entities:
         description = serialize.entity_to_description(entity)
         dataframe = deserialize.empty_dataframe(description)
         assert dataframe.empty
 
 
-def test_to_csv(es, tmpdir):
-    es.to_csv(str(tmpdir), encoding='utf-8', engine='python')
+def test_to_csv(pd_es, tmpdir):
+    pd_es.to_csv(str(tmpdir), encoding='utf-8', engine='python')
     new_es = deserialize.read_entityset(str(tmpdir))
-    assert es.__eq__(new_es, deep=True)
-    assert type(es['log'].df['latlong'][0]) == tuple
+    assert pd_es.__eq__(new_es, deep=True)
+    assert type(pd_es['log'].df['latlong'][0]) == tuple
     assert type(new_es['log'].df['latlong'][0]) == tuple
 
 
-def test_to_pickle(es, tmpdir):
-    es.to_pickle(str(tmpdir))
+def test_to_pickle(pd_es, tmpdir):
+    pd_es.to_pickle(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
-    assert es.__eq__(new_es, deep=True)
-    assert type(es['log'].df['latlong'][0]) == tuple
+    assert pd_es.__eq__(new_es, deep=True)
+    assert type(pd_es['log'].df['latlong'][0]) == tuple
     assert type(new_es['log'].df['latlong'][0]) == tuple
 
 
-def test_to_pickle_interesting_values(es, tmpdir):
-    es.add_interesting_values()
-    es.to_pickle(str(tmpdir))
+def test_to_pickle_interesting_values(pd_es, tmpdir):
+    pd_es.add_interesting_values()
+    pd_es.to_pickle(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 
-def test_to_pickle_manual_interesting_values(es, tmpdir):
-    es['log']['product_id'].interesting_values = ["coke_zero"]
-    es.to_pickle(str(tmpdir))
+def test_to_pickle_manual_interesting_values(pd_es, tmpdir):
+    pd_es['log']['product_id'].interesting_values = ["coke_zero"]
+    pd_es.to_pickle(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 
-def test_to_parquet(es, tmpdir):
-    es.to_parquet(str(tmpdir))
+def test_to_parquet(pd_es, tmpdir):
+    pd_es.to_parquet(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
-    assert es.__eq__(new_es, deep=True)
-    assert type(es['log'].df['latlong'][0]) == tuple
+    assert pd_es.__eq__(new_es, deep=True)
+    assert type(pd_es['log'].df['latlong'][0]) == tuple
     assert type(new_es['log'].df['latlong'][0]) == tuple
 
 
-def test_to_parquet_manual_interesting_values(es, tmpdir):
-    es['log']['product_id'].interesting_values = ["coke_zero"]
-    es.to_pickle(str(tmpdir))
+def test_to_parquet_manual_interesting_values(pd_es, tmpdir):
+    pd_es['log']['product_id'].interesting_values = ["coke_zero"]
+    pd_es.to_pickle(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 
-def test_to_parquet_interesting_values(es, tmpdir):
-    es.add_interesting_values()
-    es.to_parquet(str(tmpdir))
+def test_to_parquet_interesting_values(pd_es, tmpdir):
+    pd_es.add_interesting_values()
+    pd_es.to_parquet(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 
 def test_to_parquet_with_lti(tmpdir):
-    es = load_mock_customer(return_entityset=True, random_seed=0)
-    es.to_parquet(str(tmpdir))
+    pd_es = load_mock_customer(return_entityset=True, random_seed=0)
+    pd_es.to_parquet(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 
 def test_to_pickle_id_none(tmpdir):
-    es = EntitySet()
-    es.to_pickle(str(tmpdir))
+    pd_es = EntitySet()
+    pd_es.to_pickle(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 # TODO: Fix Moto tests needing to explicitly set permissions for objects
 @pytest.fixture
@@ -190,46 +190,46 @@ def make_public(s3_client, s3_bucket):
     s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
 
 
-def test_serialize_s3_csv(es, s3_client, s3_bucket):
-    es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python')
+def test_serialize_s3_csv(pd_es, s3_client, s3_bucket):
+    pd_es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python')
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL)
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 
-def test_serialize_s3_pickle(es, s3_client, s3_bucket):
-    es.to_pickle(TEST_S3_URL)
+def test_serialize_s3_pickle(pd_es, s3_client, s3_bucket):
+    pd_es.to_pickle(TEST_S3_URL)
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL)
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 
-def test_serialize_s3_parquet(es, s3_client, s3_bucket):
-    es.to_parquet(TEST_S3_URL)
+def test_serialize_s3_parquet(pd_es, s3_client, s3_bucket):
+    pd_es.to_parquet(TEST_S3_URL)
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL)
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 
-def test_serialize_s3_anon_csv(es, s3_client, s3_bucket):
-    es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=False)
+def test_serialize_s3_anon_csv(pd_es, s3_client, s3_bucket):
+    pd_es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=False)
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=False)
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 
-def test_serialize_s3_anon_pickle(es, s3_client, s3_bucket):
-    es.to_pickle(TEST_S3_URL, profile_name=False)
+def test_serialize_s3_anon_pickle(pd_es, s3_client, s3_bucket):
+    pd_es.to_pickle(TEST_S3_URL, profile_name=False)
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=False)
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 
-def test_serialize_s3_anon_parquet(es, s3_client, s3_bucket):
-    es.to_parquet(TEST_S3_URL, profile_name=False)
+def test_serialize_s3_anon_parquet(pd_es, s3_client, s3_bucket):
+    pd_es.to_parquet(TEST_S3_URL, profile_name=False)
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=False)
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 
 def create_test_credentials(test_path):
@@ -270,40 +270,40 @@ def setup_test_profile(monkeypatch, tmpdir):
     os.remove(test_path_config)
 
 
-def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
-    es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name='test')
+def test_s3_test_profile(pd_es, s3_client, s3_bucket, setup_test_profile):
+    pd_es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name='test')
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL, profile_name='test')
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 
-def test_serialize_url_csv(es):
+def test_serialize_url_csv(pd_es):
     error_text = "Writing to URLs is not supported"
     with pytest.raises(ValueError, match=error_text):
-        es.to_csv(URL, encoding='utf-8', engine='python')
+        pd_es.to_csv(URL, encoding='utf-8', engine='python')
 
 
-def test_serialize_subdirs_not_removed(es, tmpdir):
+def test_serialize_subdirs_not_removed(pd_es, tmpdir):
     write_path = tmpdir.mkdir("test")
     test_dir = write_path.mkdir("test_dir")
     with open(str(write_path.join('data_description.json')), 'w') as f:
         json.dump('__SAMPLE_TEXT__', f)
-    serialize.write_data_description(es, path=str(write_path), index='1', sep='\t', encoding='utf-8', compression=None)
+    serialize.write_data_description(pd_es, path=str(write_path), index='1', sep='\t', encoding='utf-8', compression=None)
     assert os.path.exists(str(test_dir))
     with open(str(write_path.join('data_description.json')), 'r') as f:
         assert '__SAMPLE_TEXT__' not in json.load(f)
 
 
-def test_deserialize_url_csv(es):
+def test_deserialize_url_csv(pd_es):
     new_es = deserialize.read_entityset(URL)
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 
-def test_default_s3_csv(es):
+def test_default_s3_csv(pd_es):
     new_es = deserialize.read_entityset(S3_URL)
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 
-def test_anon_s3_csv(es):
+def test_anon_s3_csv(pd_es):
     new_es = deserialize.read_entityset(S3_URL, profile_name=False)
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)

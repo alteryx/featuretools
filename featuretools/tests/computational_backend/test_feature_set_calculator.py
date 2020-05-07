@@ -38,11 +38,11 @@ from featuretools.utils import Trie
 from featuretools.variable_types import Numeric
 
 
-def test_make_identity(es):
-    f = IdentityFeature(es['log']['datetime'])
+def test_make_identity(pd_es):
+    f = IdentityFeature(pd_es['log']['datetime'])
 
     feature_set = FeatureSet([f])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
@@ -50,12 +50,12 @@ def test_make_identity(es):
     assert (v == datetime(2011, 4, 9, 10, 30, 0))
 
 
-def test_make_dfeat(es):
-    f = DirectFeature(es['customers']['age'],
-                      child_entity=es['sessions'])
+def test_make_dfeat(pd_es):
+    f = DirectFeature(pd_es['customers']['age'],
+                      child_entity=pd_es['sessions'])
 
     feature_set = FeatureSet([f])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
@@ -63,11 +63,11 @@ def test_make_dfeat(es):
     assert (v == 33)
 
 
-def test_make_agg_feat_of_identity_variable(es):
-    agg_feat = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum)
+def test_make_agg_feat_of_identity_variable(pd_es):
+    agg_feat = ft.Feature(pd_es['log']['value'], parent_entity=pd_es['sessions'], primitive=Sum)
 
     feature_set = FeatureSet([agg_feat])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
@@ -75,13 +75,13 @@ def test_make_agg_feat_of_identity_variable(es):
     assert (v == 50)
 
 
-def test_full_entity_trans_of_agg(es):
-    agg_feat = ft.Feature(es['log']['value'], parent_entity=es['customers'],
+def test_full_entity_trans_of_agg(pd_es):
+    agg_feat = ft.Feature(pd_es['log']['value'], parent_entity=pd_es['customers'],
                           primitive=Sum)
     trans_feat = ft.Feature(agg_feat, primitive=CumSum)
 
     feature_set = FeatureSet([trans_feat])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([1]))
@@ -105,11 +105,11 @@ def test_full_entity_error_dask(dask_es):
         calculator.run(np.array([1]))
 
 
-def test_make_agg_feat_of_identity_index_variable(es):
-    agg_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
+def test_make_agg_feat_of_identity_index_variable(pd_es):
+    agg_feat = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['sessions'], primitive=Count)
 
     feature_set = FeatureSet([agg_feat])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
@@ -117,14 +117,14 @@ def test_make_agg_feat_of_identity_index_variable(es):
     assert (v == 5)
 
 
-def test_make_agg_feat_where_count(es):
-    agg_feat = ft.Feature(es['log']['id'],
-                          parent_entity=es['sessions'],
-                          where=IdentityFeature(es['log']['product_id']) == 'coke zero',
+def test_make_agg_feat_where_count(pd_es):
+    agg_feat = ft.Feature(pd_es['log']['id'],
+                          parent_entity=pd_es['sessions'],
+                          where=IdentityFeature(pd_es['log']['product_id']) == 'coke zero',
                           primitive=Count)
 
     feature_set = FeatureSet([agg_feat])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
@@ -133,14 +133,14 @@ def test_make_agg_feat_where_count(es):
     assert (v == 3)
 
 
-def test_make_agg_feat_using_prev_time(es):
-    agg_feat = ft.Feature(es['log']['id'],
-                          parent_entity=es['sessions'],
+def test_make_agg_feat_using_prev_time(pd_es):
+    agg_feat = ft.Feature(pd_es['log']['id'],
+                          parent_entity=pd_es['sessions'],
                           use_previous=Timedelta(10, 's'),
                           primitive=Count)
 
     feature_set = FeatureSet([agg_feat])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=datetime(2011, 4, 9, 10, 30, 10),
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
@@ -148,7 +148,7 @@ def test_make_agg_feat_using_prev_time(es):
     v = df[agg_feat.get_name()][0]
     assert (v == 2)
 
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=datetime(2011, 4, 9, 10, 30, 30),
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
@@ -157,14 +157,14 @@ def test_make_agg_feat_using_prev_time(es):
     assert (v == 1)
 
 
-def test_make_agg_feat_using_prev_n_events(es):
-    agg_feat_1 = ft.Feature(es['log']['value'],
-                            parent_entity=es['sessions'],
+def test_make_agg_feat_using_prev_n_events(pd_es):
+    agg_feat_1 = ft.Feature(pd_es['log']['value'],
+                            parent_entity=pd_es['sessions'],
                             use_previous=Timedelta(1, 'observations'),
                             primitive=Min)
 
-    agg_feat_2 = ft.Feature(es['log']['value'],
-                            parent_entity=es['sessions'],
+    agg_feat_2 = ft.Feature(pd_es['log']['value'],
+                            parent_entity=pd_es['sessions'],
                             use_previous=Timedelta(3, 'observations'),
                             primitive=Min)
 
@@ -172,7 +172,7 @@ def test_make_agg_feat_using_prev_n_events(es):
         'Features should have different names based on use_previous'
 
     feature_set = FeatureSet([agg_feat_1, agg_feat_2])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=datetime(2011, 4, 9, 10, 30, 6),
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
@@ -183,7 +183,7 @@ def test_make_agg_feat_using_prev_n_events(es):
     assert v1 == 5
     assert v2 == 0
 
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=datetime(2011, 4, 9, 10, 30, 30),
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
@@ -194,21 +194,21 @@ def test_make_agg_feat_using_prev_n_events(es):
     assert v2 == 10
 
 
-def test_make_agg_feat_multiple_dtypes(es):
-    compare_prod = IdentityFeature(es['log']['product_id']) == 'coke zero'
+def test_make_agg_feat_multiple_dtypes(pd_es):
+    compare_prod = IdentityFeature(pd_es['log']['product_id']) == 'coke zero'
 
-    agg_feat = ft.Feature(es['log']['id'],
-                          parent_entity=es['sessions'],
+    agg_feat = ft.Feature(pd_es['log']['id'],
+                          parent_entity=pd_es['sessions'],
                           where=compare_prod,
                           primitive=Count)
 
-    agg_feat2 = ft.Feature(es['log']['product_id'],
-                           parent_entity=es['sessions'],
+    agg_feat2 = ft.Feature(pd_es['log']['product_id'],
+                           parent_entity=pd_es['sessions'],
                            where=compare_prod,
                            primitive=Mode)
 
     feature_set = FeatureSet([agg_feat, agg_feat2])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
@@ -219,17 +219,17 @@ def test_make_agg_feat_multiple_dtypes(es):
     assert (v2 == 'coke zero')
 
 
-def test_make_agg_feat_where_different_identity_feat(es):
+def test_make_agg_feat_where_different_identity_feat(pd_es):
     feats = []
     where_cmps = [LessThanScalar, GreaterThanScalar, LessThanEqualToScalar,
                   GreaterThanEqualToScalar, EqualScalar, NotEqualScalar]
     for where_cmp in where_cmps:
-        feats.append(ft.Feature(es['log']['id'],
-                                parent_entity=es['sessions'],
-                                where=ft.Feature(es['log']['datetime'], primitive=where_cmp(datetime(2011, 4, 10, 10, 40, 1))),
+        feats.append(ft.Feature(pd_es['log']['id'],
+                                parent_entity=pd_es['sessions'],
+                                where=ft.Feature(pd_es['log']['datetime'], primitive=where_cmp(datetime(2011, 4, 10, 10, 40, 1))),
                                 primitive=Count))
 
-    df = ft.calculate_feature_matrix(entityset=es, features=feats, instance_ids=[0, 1, 2, 3])
+    df = ft.calculate_feature_matrix(entityset=pd_es, features=feats, instance_ids=[0, 1, 2, 3])
 
     for i, where_cmp in enumerate(where_cmps):
         name = feats[i].get_name()
@@ -267,11 +267,11 @@ def test_make_agg_feat_where_different_identity_feat(es):
             assert (v3 == 1)
 
 
-def test_make_agg_feat_of_grandchild_entity(es):
-    agg_feat = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
+def test_make_agg_feat_of_grandchild_entity(pd_es):
+    agg_feat = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['customers'], primitive=Count)
 
     feature_set = FeatureSet([agg_feat])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
@@ -279,21 +279,21 @@ def test_make_agg_feat_of_grandchild_entity(es):
     assert (v == 10)
 
 
-def test_make_agg_feat_where_count_feat(es):
+def test_make_agg_feat_where_count_feat(pd_es):
     """
     Feature we're creating is:
     Number of sessions for each customer where the
     number of logs in the session is less than 3
     """
-    log_count_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
+    log_count_feat = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['sessions'], primitive=Count)
 
-    feat = ft.Feature(es['sessions']['id'],
-                      parent_entity=es['customers'],
+    feat = ft.Feature(pd_es['sessions']['id'],
+                      parent_entity=pd_es['customers'],
                       where=log_count_feat > 1,
                       primitive=Count)
 
     feature_set = FeatureSet([feat])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0, 1]))
@@ -304,22 +304,22 @@ def test_make_agg_feat_where_count_feat(es):
     assert (v1 == 2)
 
 
-def test_make_compare_feat(es):
+def test_make_compare_feat(pd_es):
     """
     Feature we're creating is:
     Number of sessions for each customer where the
     number of logs in the session is less than 3
     """
-    log_count_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
+    log_count_feat = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['sessions'], primitive=Count)
 
-    mean_agg_feat = ft.Feature(log_count_feat, parent_entity=es['customers'], primitive=Mean)
+    mean_agg_feat = ft.Feature(log_count_feat, parent_entity=pd_es['customers'], primitive=Mean)
 
-    mean_feat = DirectFeature(mean_agg_feat, child_entity=es['sessions'])
+    mean_feat = DirectFeature(mean_agg_feat, child_entity=pd_es['sessions'])
 
     feat = log_count_feat > mean_feat
 
     feature_set = FeatureSet([feat])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0, 1, 2]))
@@ -331,24 +331,24 @@ def test_make_compare_feat(es):
     assert not v2
 
 
-def test_make_agg_feat_where_count_and_device_type_feat(es):
+def test_make_agg_feat_where_count_and_device_type_feat(pd_es):
     """
     Feature we're creating is:
     Number of sessions for each customer where the
     number of logs in the session is less than 3
     """
-    log_count_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
+    log_count_feat = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['sessions'], primitive=Count)
 
     compare_count = log_count_feat == 1
-    compare_device_type = IdentityFeature(es['sessions']['device_type']) == 1
+    compare_device_type = IdentityFeature(pd_es['sessions']['device_type']) == 1
     and_feat = ft.Feature([compare_count, compare_device_type], primitive=And)
-    feat = ft.Feature(es['sessions']['id'],
-                      parent_entity=es['customers'],
+    feat = ft.Feature(pd_es['sessions']['id'],
+                      parent_entity=pd_es['customers'],
                       where=and_feat,
                       primitive=Count)
 
     feature_set = FeatureSet([feat])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
@@ -357,24 +357,24 @@ def test_make_agg_feat_where_count_and_device_type_feat(es):
     assert (instances[0] == 1)
 
 
-def test_make_agg_feat_where_count_or_device_type_feat(es):
+def test_make_agg_feat_where_count_or_device_type_feat(pd_es):
     """
     Feature we're creating is:
     Number of sessions for each customer where the
     number of logs in the session is less than 3
     """
-    log_count_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
+    log_count_feat = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['sessions'], primitive=Count)
 
     compare_count = log_count_feat > 1
-    compare_device_type = IdentityFeature(es['sessions']['device_type']) == 1
+    compare_device_type = IdentityFeature(pd_es['sessions']['device_type']) == 1
     or_feat = compare_count.OR(compare_device_type)
-    feat = ft.Feature(es['sessions']['id'],
-                      parent_entity=es['customers'],
+    feat = ft.Feature(pd_es['sessions']['id'],
+                      parent_entity=pd_es['customers'],
                       where=or_feat,
                       primitive=Count)
 
     feature_set = FeatureSet([feat])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
@@ -383,13 +383,13 @@ def test_make_agg_feat_where_count_or_device_type_feat(es):
     assert (instances[0] == 3)
 
 
-def test_make_agg_feat_of_agg_feat(es):
-    log_count_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
+def test_make_agg_feat_of_agg_feat(pd_es):
+    log_count_feat = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['sessions'], primitive=Count)
 
-    customer_sum_feat = ft.Feature(log_count_feat, parent_entity=es['customers'], primitive=Sum)
+    customer_sum_feat = ft.Feature(log_count_feat, parent_entity=pd_es['customers'], primitive=Sum)
 
     feature_set = FeatureSet([customer_sum_feat])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
@@ -413,31 +413,31 @@ def test_make_3_stacked_agg_feats():
         "val": [1, 1, 1, 1, 1]
     })
 
-    es = ft.EntitySet()
-    es.entity_from_dataframe(dataframe=df,
-                             index="id",
-                             entity_id="e0")
+    pd_es = ft.EntitySet()
+    pd_es.entity_from_dataframe(dataframe=df,
+                                index="id",
+                                entity_id="e0")
 
-    es.normalize_entity(base_entity_id="e0",
-                        new_entity_id="e1",
-                        index="e1",
-                        additional_variables=["e2", "e3"])
+    pd_es.normalize_entity(base_entity_id="e0",
+                           new_entity_id="e1",
+                           index="e1",
+                           additional_variables=["e2", "e3"])
 
-    es.normalize_entity(base_entity_id="e1",
-                        new_entity_id="e2",
-                        index="e2",
-                        additional_variables=["e3"])
+    pd_es.normalize_entity(base_entity_id="e1",
+                           new_entity_id="e2",
+                           index="e2",
+                           additional_variables=["e3"])
 
-    es.normalize_entity(base_entity_id="e2",
-                        new_entity_id="e3",
-                        index="e3")
+    pd_es.normalize_entity(base_entity_id="e2",
+                           new_entity_id="e3",
+                           index="e3")
 
-    sum_1 = ft.Feature(es["e0"]["val"], parent_entity=es["e1"], primitive=Sum)
-    sum_2 = ft.Feature(sum_1, parent_entity=es["e2"], primitive=Sum)
-    sum_3 = ft.Feature(sum_2, parent_entity=es["e3"], primitive=Sum)
+    sum_1 = ft.Feature(pd_es["e0"]["val"], parent_entity=pd_es["e1"], primitive=Sum)
+    sum_2 = ft.Feature(sum_1, parent_entity=pd_es["e2"], primitive=Sum)
+    sum_3 = ft.Feature(sum_2, parent_entity=pd_es["e3"], primitive=Sum)
 
     feature_set = FeatureSet([sum_3])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array(["z"]))
@@ -445,7 +445,7 @@ def test_make_3_stacked_agg_feats():
     assert (v == 5)
 
 
-def test_make_dfeat_of_agg_feat_on_self(es):
+def test_make_dfeat_of_agg_feat_on_self(pd_es):
     """
     The graph looks like this:
 
@@ -457,12 +457,12 @@ def test_make_dfeat_of_agg_feat_on_self(es):
 
     We're trying to calculate a DFeat from C to R on an agg_feat of R on C.
     """
-    customer_count_feat = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count)
+    customer_count_feat = ft.Feature(pd_es['customers']['id'], parent_entity=pd_es[u'régions'], primitive=Count)
 
-    num_customers_feat = DirectFeature(customer_count_feat, child_entity=es['customers'])
+    num_customers_feat = DirectFeature(customer_count_feat, child_entity=pd_es['customers'])
 
     feature_set = FeatureSet([num_customers_feat])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
@@ -470,7 +470,7 @@ def test_make_dfeat_of_agg_feat_on_self(es):
     assert (v == 3)
 
 
-def test_make_dfeat_of_agg_feat_through_parent(es):
+def test_make_dfeat_of_agg_feat_through_parent(pd_es):
     """
     The graph looks like this:
 
@@ -482,14 +482,14 @@ def test_make_dfeat_of_agg_feat_through_parent(es):
 
     We're trying to calculate a DFeat from C to R on an agg_feat of R on S.
     """
-    store_id_feat = IdentityFeature(es['stores']['id'])
+    store_id_feat = IdentityFeature(pd_es['stores']['id'])
 
-    store_count_feat = ft.Feature(store_id_feat, parent_entity=es[u'régions'], primitive=Count)
+    store_count_feat = ft.Feature(store_id_feat, parent_entity=pd_es[u'régions'], primitive=Count)
 
-    num_stores_feat = DirectFeature(store_count_feat, child_entity=es['customers'])
+    num_stores_feat = DirectFeature(store_count_feat, child_entity=pd_es['customers'])
 
     feature_set = FeatureSet([num_stores_feat])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
@@ -497,7 +497,7 @@ def test_make_dfeat_of_agg_feat_through_parent(es):
     assert (v == 3)
 
 
-def test_make_deep_agg_feat_of_dfeat_of_agg_feat(es):
+def test_make_deep_agg_feat_of_dfeat_of_agg_feat(pd_es):
     """
     The graph looks like this (higher implies parent):
 
@@ -510,15 +510,15 @@ def test_make_deep_agg_feat_of_dfeat_of_agg_feat(es):
     We're trying to calculate a DFeat from L to P on an agg_feat of P on L, and
     then aggregate it with another agg_feat of C on L.
     """
-    log_count_feat = ft.Feature(es['log']['id'], parent_entity=es['products'], primitive=Count)
+    log_count_feat = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['products'], primitive=Count)
 
     product_purchases_feat = DirectFeature(log_count_feat,
-                                           child_entity=es['log'])
+                                           child_entity=pd_es['log'])
 
-    purchase_popularity = ft.Feature(product_purchases_feat, parent_entity=es['customers'], primitive=Mean)
+    purchase_popularity = ft.Feature(product_purchases_feat, parent_entity=pd_es['customers'], primitive=Mean)
 
     feature_set = FeatureSet([purchase_popularity])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
@@ -526,17 +526,17 @@ def test_make_deep_agg_feat_of_dfeat_of_agg_feat(es):
     assert (v == 38.0 / 10.0)
 
 
-def test_deep_agg_feat_chain(es):
+def test_deep_agg_feat_chain(pd_es):
     """
     Agg feat of agg feat:
         region.Mean(customer.Count(Log))
     """
-    customer_count_feat = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
+    customer_count_feat = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['customers'], primitive=Count)
 
-    region_avg_feat = ft.Feature(customer_count_feat, parent_entity=es[u'régions'], primitive=Mean)
+    region_avg_feat = ft.Feature(customer_count_feat, parent_entity=pd_es[u'régions'], primitive=Mean)
 
     feature_set = FeatureSet([region_avg_feat])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array(['United States']))
@@ -544,13 +544,13 @@ def test_deep_agg_feat_chain(es):
     assert (v == 17 / 3.)
 
 
-def test_topn(es):
-    topn = ft.Feature(es['log']['product_id'],
-                      parent_entity=es['customers'],
+def test_topn(pd_es):
+    topn = ft.Feature(pd_es['log']['product_id'],
+                      parent_entity=pd_es['customers'],
                       primitive=NMostCommon(n=2))
     feature_set = FeatureSet([topn])
 
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0, 1, 2]))
@@ -573,13 +573,13 @@ def test_topn(es):
                 assert (pd.isnull(i1) and pd.isnull(i2)) or (i1 == i2)
 
 
-def test_trend(es):
-    trend = ft.Feature([es['log']['value'], es['log']['datetime']],
-                       parent_entity=es['customers'],
+def test_trend(pd_es):
+    trend = ft.Feature([pd_es['log']['value'], pd_es['log']['datetime']],
+                       parent_entity=pd_es['customers'],
                        primitive=Trend)
     feature_set = FeatureSet([trend])
 
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0, 1, 2]))
@@ -589,11 +589,11 @@ def test_trend(es):
     np.testing.assert_almost_equal(df[trend.get_name()].values.tolist(), true_results, decimal=5)
 
 
-def test_direct_squared(es):
-    feature = IdentityFeature(es['log']['value'])
+def test_direct_squared(pd_es):
+    feature = IdentityFeature(pd_es['log']['value'])
     squared = feature * feature
     feature_set = FeatureSet([feature, squared])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0, 1, 2]))
@@ -601,12 +601,12 @@ def test_direct_squared(es):
         assert (row[0] * row[0]) == row[1]
 
 
-def test_agg_empty_child(es):
-    customer_count_feat = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
+def test_agg_empty_child(pd_es):
+    customer_count_feat = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['customers'], primitive=Count)
     feature_set = FeatureSet([customer_count_feat])
 
     # time last before the customer had any events, so child frame is empty
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=datetime(2011, 4, 8),
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
@@ -615,20 +615,20 @@ def test_agg_empty_child(es):
 
 
 def test_diamond_entityset(diamond_es):
-    es = diamond_es
+    pd_es = diamond_es
 
-    amount = ft.IdentityFeature(es['transactions']['amount'])
-    path = backward_path(es, ['regions', 'customers', 'transactions'])
-    through_customers = ft.AggregationFeature(amount, es['regions'],
+    amount = ft.IdentityFeature(pd_es['transactions']['amount'])
+    path = backward_path(pd_es, ['regions', 'customers', 'transactions'])
+    through_customers = ft.AggregationFeature(amount, pd_es['regions'],
                                               primitive=ft.primitives.Sum,
                                               relationship_path=path)
-    path = backward_path(es, ['regions', 'stores', 'transactions'])
-    through_stores = ft.AggregationFeature(amount, es['regions'],
+    path = backward_path(pd_es, ['regions', 'stores', 'transactions'])
+    through_stores = ft.AggregationFeature(amount, pd_es['regions'],
                                            primitive=ft.primitives.Sum,
                                            relationship_path=path)
 
     feature_set = FeatureSet([through_customers, through_stores])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=datetime(2011, 4, 8),
                                       feature_set=feature_set)
     df = calculator.run(np.array([0, 1, 2]))
@@ -637,25 +637,25 @@ def test_diamond_entityset(diamond_es):
 
 
 def test_two_relationships_to_single_entity(games_es):
-    es = games_es
-    home_team, away_team = es.relationships
+    pd_es = games_es
+    home_team, away_team = pd_es.relationships
     path = RelationshipPath([(False, home_team)])
-    mean_at_home = ft.AggregationFeature(es['games']['home_team_score'],
-                                         es['teams'],
+    mean_at_home = ft.AggregationFeature(pd_es['games']['home_team_score'],
+                                         pd_es['teams'],
                                          relationship_path=path,
                                          primitive=ft.primitives.Mean)
     path = RelationshipPath([(False, away_team)])
-    mean_at_away = ft.AggregationFeature(es['games']['away_team_score'],
-                                         es['teams'],
+    mean_at_away = ft.AggregationFeature(pd_es['games']['away_team_score'],
+                                         pd_es['teams'],
                                          relationship_path=path,
                                          primitive=ft.primitives.Mean)
-    home_team_mean = ft.DirectFeature(mean_at_home, es['games'],
+    home_team_mean = ft.DirectFeature(mean_at_home, pd_es['games'],
                                       relationship=home_team)
-    away_team_mean = ft.DirectFeature(mean_at_away, es['games'],
+    away_team_mean = ft.DirectFeature(mean_at_away, pd_es['games'],
                                       relationship=away_team)
 
     feature_set = FeatureSet([home_team_mean, away_team_mean])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=datetime(2011, 8, 28),
                                       feature_set=feature_set)
     df = calculator.run(np.array(range(3)))
@@ -671,28 +671,28 @@ def test_empty_child_dataframe():
                              "value": [10, 5, 2],
                              "cat": ['a', 'a', 'b']})
 
-    es = ft.EntitySet(id="blah")
-    es.entity_from_dataframe(entity_id="parent", dataframe=parent_df, index="id")
-    es.entity_from_dataframe(entity_id="child", dataframe=child_df, index="id", time_index="time_index")
-    es.add_relationship(ft.Relationship(es["parent"]["id"], es["child"]["parent_id"]))
+    pd_es = ft.EntitySet(id="blah")
+    pd_es.entity_from_dataframe(entity_id="parent", dataframe=parent_df, index="id")
+    pd_es.entity_from_dataframe(entity_id="child", dataframe=child_df, index="id", time_index="time_index")
+    pd_es.add_relationship(ft.Relationship(pd_es["parent"]["id"], pd_es["child"]["parent_id"]))
 
     # create regular agg
-    count = ft.Feature(es["child"]['id'], parent_entity=es["parent"], primitive=Count)
+    count = ft.Feature(pd_es["child"]['id'], parent_entity=pd_es["parent"], primitive=Count)
 
     # create agg feature that requires multiple arguments
-    trend = ft.Feature([es["child"]['value'], es["child"]['time_index']], parent_entity=es["parent"], primitive=Trend)
+    trend = ft.Feature([pd_es["child"]['value'], pd_es["child"]['time_index']], parent_entity=pd_es["parent"], primitive=Trend)
 
     # create multi-output agg feature
-    n_most_common = ft.Feature(es["child"]['cat'], parent_entity=es["parent"], primitive=NMostCommon)
+    n_most_common = ft.Feature(pd_es["child"]['cat'], parent_entity=pd_es["parent"], primitive=NMostCommon)
 
     # create aggs with where
-    where = ft.Feature(es["child"]["value"]) == 1
-    count_where = ft.Feature(es["child"]['id'], parent_entity=es["parent"], where=where, primitive=Count)
-    trend_where = ft.Feature([es["child"]['value'], es["child"]['time_index']], parent_entity=es["parent"], where=where, primitive=Trend)
-    n_most_common_where = ft.Feature(es["child"]['cat'], parent_entity=es["parent"], where=where, primitive=NMostCommon)
+    where = ft.Feature(pd_es["child"]["value"]) == 1
+    count_where = ft.Feature(pd_es["child"]['id'], parent_entity=pd_es["parent"], where=where, primitive=Count)
+    trend_where = ft.Feature([pd_es["child"]['value'], pd_es["child"]['time_index']], parent_entity=pd_es["parent"], where=where, primitive=Trend)
+    n_most_common_where = ft.Feature(pd_es["child"]['cat'], parent_entity=pd_es["parent"], where=where, primitive=NMostCommon)
 
     # cutoff time before all rows
-    fm = ft.calculate_feature_matrix(entityset=es,
+    fm = ft.calculate_feature_matrix(entityset=pd_es,
                                      features=[count, count_where, trend, trend_where, n_most_common, n_most_common_where],
                                      cutoff_time=pd.Timestamp("12/31/2017"))
     names = [count.get_name(), count_where.get_name(),
@@ -704,19 +704,19 @@ def test_empty_child_dataframe():
     assert_array_equal(fm[names], [values])
 
     # cutoff time after all rows, but where clause filters all rows
-    fm2 = ft.calculate_feature_matrix(entityset=es,
+    fm2 = ft.calculate_feature_matrix(entityset=pd_es,
                                       features=[count_where, trend_where, n_most_common_where],
                                       cutoff_time=pd.Timestamp("1/4/2018"))
     names = [count_where.get_name(), trend_where.get_name(), *n_most_common_where.get_names()]
     assert_array_equal(fm2[names], [[0, np.nan, *np.full(n_most_common_where.number_output_features, np.nan)]])
 
 
-def test_with_features_built_from_es_metadata(es):
-    metadata = es.metadata
+def test_with_features_built_from_es_metadata(pd_es):
+    metadata = pd_es.metadata
     agg_feat = ft.Feature(metadata['log']['id'], parent_entity=metadata['customers'], primitive=Count)
 
     feature_set = FeatureSet([agg_feat])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
@@ -724,7 +724,7 @@ def test_with_features_built_from_es_metadata(es):
     assert (v == 10)
 
 
-def test_handles_primitive_function_name_uniqueness(es):
+def test_handles_primitive_function_name_uniqueness(pd_es):
     class SumTimesN(AggregationPrimitive):
         name = "sum_times_n"
         input_types = [Numeric]
@@ -740,35 +740,35 @@ def test_handles_primitive_function_name_uniqueness(es):
             return my_function
 
     # works as expected
-    f1 = ft.Feature(es["log"]["value"],
-                    parent_entity=es["customers"],
+    f1 = ft.Feature(pd_es["log"]["value"],
+                    parent_entity=pd_es["customers"],
                     primitive=SumTimesN(n=1))
-    fm = ft.calculate_feature_matrix(features=[f1], entityset=es)
+    fm = ft.calculate_feature_matrix(features=[f1], entityset=pd_es)
     value_sum = pd.Series([56, 26, 0])
     assert all(fm[f1.get_name()].sort_index() == value_sum)
 
     # works as expected
-    f2 = ft.Feature(es["log"]["value"],
-                    parent_entity=es["customers"],
+    f2 = ft.Feature(pd_es["log"]["value"],
+                    parent_entity=pd_es["customers"],
                     primitive=SumTimesN(n=2))
-    fm = ft.calculate_feature_matrix(features=[f2], entityset=es)
+    fm = ft.calculate_feature_matrix(features=[f2], entityset=pd_es)
     double_value_sum = pd.Series([112, 52, 0])
     assert all(fm[f2.get_name()].sort_index() == double_value_sum)
 
     # same primitive, same variable, different args
-    fm = ft.calculate_feature_matrix(features=[f1, f2], entityset=es)
+    fm = ft.calculate_feature_matrix(features=[f1, f2], entityset=pd_es)
     assert all(fm[f1.get_name()].sort_index() == value_sum)
     assert all(fm[f2.get_name()].sort_index() == double_value_sum)
 
     # different primtives, same function returned by get_function,
     # different base features
-    f3 = ft.Feature(es["log"]["value"],
-                    parent_entity=es["customers"],
+    f3 = ft.Feature(pd_es["log"]["value"],
+                    parent_entity=pd_es["customers"],
                     primitive=Sum)
-    f4 = ft.Feature(es["log"]["purchased"],
-                    parent_entity=es["customers"],
+    f4 = ft.Feature(pd_es["log"]["purchased"],
+                    parent_entity=pd_es["customers"],
                     primitive=NumTrue)
-    fm = ft.calculate_feature_matrix(features=[f3, f4], entityset=es)
+    fm = ft.calculate_feature_matrix(features=[f3, f4], entityset=pd_es)
     purchased_sum = pd.Series([10, 1, 1])
     assert all(fm[f3.get_name()].sort_index() == value_sum)
     assert all(fm[f4.get_name()].sort_index() == purchased_sum)\
@@ -812,47 +812,47 @@ def test_handles_primitive_function_name_uniqueness(es):
         def get_function(self):
             return np.sum
 
-    f5 = ft.Feature(es["log"]["value"],
-                    parent_entity=es["customers"],
+    f5 = ft.Feature(pd_es["log"]["value"],
+                    parent_entity=pd_es["customers"],
                     primitive=Sum1)
-    f6 = ft.Feature(es["log"]["value"],
-                    parent_entity=es["customers"],
+    f6 = ft.Feature(pd_es["log"]["value"],
+                    parent_entity=pd_es["customers"],
                     primitive=Sum2)
-    f7 = ft.Feature(es["log"]["value"],
-                    parent_entity=es["customers"],
+    f7 = ft.Feature(pd_es["log"]["value"],
+                    parent_entity=pd_es["customers"],
                     primitive=Sum3)
-    fm = ft.calculate_feature_matrix(features=[f5, f6, f7], entityset=es)
+    fm = ft.calculate_feature_matrix(features=[f5, f6, f7], entityset=pd_es)
     assert all(fm[f5.get_name()].sort_index() == value_sum)
     assert all(fm[f6.get_name()].sort_index() == value_sum)
     assert all(fm[f7.get_name()].sort_index() == value_sum)
 
 
-def test_returns_order_of_instance_ids(es):
-    feature_set = FeatureSet([ft.Feature(es['customers']['age'])])
-    calculator = FeatureSetCalculator(es,
+def test_returns_order_of_instance_ids(pd_es):
+    feature_set = FeatureSet([ft.Feature(pd_es['customers']['age'])])
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
 
     instance_ids = [0, 1, 2]
-    assert list(es['customers'].df['id']) != instance_ids
+    assert list(pd_es['customers'].df['id']) != instance_ids
 
     df = calculator.run(np.array(instance_ids))
 
     assert list(df.index) == instance_ids
 
 
-def test_calls_progress_callback(es):
+def test_calls_progress_callback(pd_es):
     # call with all feature types. make sure progress callback calls sum to 1
-    identity = ft.Feature(es['customers']['age'])
-    direct = ft.Feature(es['cohorts']['cohort_name'], es['customers'])
-    agg = ft.Feature(es["sessions"]["id"], parent_entity=es['customers'], primitive=Count)
-    agg_apply = ft.Feature(es["log"]["datetime"], parent_entity=es['customers'], primitive=TimeSinceLast)  # this feature is handle differently than simple features
+    identity = ft.Feature(pd_es['customers']['age'])
+    direct = ft.Feature(pd_es['cohorts']['cohort_name'], pd_es['customers'])
+    agg = ft.Feature(pd_es["sessions"]["id"], parent_entity=pd_es['customers'], primitive=Count)
+    agg_apply = ft.Feature(pd_es["log"]["datetime"], parent_entity=pd_es['customers'], primitive=TimeSinceLast)  # this feature is handle differently than simple features
     trans = ft.Feature(agg, primitive=CumSum)
-    groupby_trans = ft.Feature(agg, primitive=CumSum, groupby=es["customers"]["cohort"])
+    groupby_trans = ft.Feature(agg, primitive=CumSum, groupby=pd_es["customers"]["cohort"])
     all_features = [identity, direct, agg, agg_apply, trans, groupby_trans]
 
     feature_set = FeatureSet(all_features)
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
 
@@ -872,7 +872,7 @@ def test_calls_progress_callback(es):
 
     # testing again with a time_last with no data
     feature_set = FeatureSet(all_features)
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=pd.Timestamp("1950"),
                                       feature_set=feature_set)
 
@@ -882,7 +882,7 @@ def test_calls_progress_callback(es):
     assert np.isclose(mock_progress_callback.total, 1)
 
 
-def test_precalculated_features(es):
+def test_precalculated_features(pd_es):
     error_msg = 'This primitive should never be used because the features are precalculated'
 
     class ErrorPrim(AggregationPrimitive):
@@ -896,14 +896,14 @@ def test_precalculated_features(es):
                 raise RuntimeError(error_msg)
             return error
 
-    value = ft.Feature(es['log']['value'])
+    value = ft.Feature(pd_es['log']['value'])
     agg = ft.Feature(value,
-                     parent_entity=es['sessions'],
+                     parent_entity=pd_es['sessions'],
                      primitive=ErrorPrim)
     agg2 = ft.Feature(agg,
-                      parent_entity=es['customers'],
+                      parent_entity=pd_es['customers'],
                       primitive=ErrorPrim)
-    direct = ft.Feature(agg2, entity=es['sessions'])
+    direct = ft.Feature(agg2, entity=pd_es['sessions'])
 
     # Set up a FeatureSet which knows which features are precalculated.
     precalculated_feature_trie = Trie(default=set, path_constructor=RelationshipPath)
@@ -916,7 +916,7 @@ def test_precalculated_features(es):
     precalculated_fm_trie = Trie(path_constructor=RelationshipPath)
     precalculated_fm_trie.get_node(direct.relationship_path).value = parent_fm
 
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       feature_set=feature_set,
                                       precalculated_features=precalculated_fm_trie)
 
@@ -927,4 +927,4 @@ def test_precalculated_features(es):
 
     # Calculating without precalculated features should error.
     with pytest.raises(RuntimeError, match=error_msg):
-        FeatureSetCalculator(es, feature_set=FeatureSet([direct])).run(instance_ids)
+        FeatureSetCalculator(pd_es, feature_set=FeatureSet([direct])).run(instance_ids)

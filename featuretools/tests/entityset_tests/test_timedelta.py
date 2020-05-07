@@ -19,7 +19,7 @@ def test_singular():
     assert Timedelta.make_singular("Months") == "Month"
 
 
-def test_delta_with_observations(es):
+def test_delta_with_observations(pd_es):
     four_delta = Timedelta(4, 'observations')
     assert not four_delta.is_absolute()
     assert four_delta.get_value('o') == 4
@@ -38,13 +38,13 @@ def test_delta_with_observations(es):
         time - four_delta
 
 
-def test_delta_with_time_unit_matches_pandas(es):
+def test_delta_with_time_unit_matches_pandas(pd_es):
     customer_id = 0
-    sessions_df = es['sessions'].df
+    sessions_df = pd_es['sessions'].df
     if isinstance(sessions_df, dd.core.DataFrame):
         sessions_df = sessions_df.compute()
     sessions_df = sessions_df[sessions_df['customer_id'] == customer_id]
-    log_df = es['log'].df
+    log_df = pd_es['log'].df
     if isinstance(log_df, dd.core.DataFrame):
         log_df = log_df.compute()
     log_df = log_df[log_df['session_id'].isin(sessions_df['id'])]
@@ -66,7 +66,7 @@ def test_delta_with_time_unit_matches_pandas(es):
     assert all_times[4] + neg_delta == all_times[4] - pd.Timedelta(value, unit)
 
 
-def test_check_timedelta(es):
+def test_check_timedelta(pd_es):
     time_units = list(Timedelta._readable_units.keys())
     expanded_units = list(Timedelta._readable_units.values())
     exp_to_standard_unit = {e: t for e, t in zip(expanded_units, time_units)}
@@ -90,7 +90,7 @@ def test_check_timedelta(es):
         assert td.get_value(standard_unit) == 2
 
 
-def test_check_pd_timedelta(es):
+def test_check_pd_timedelta(pd_es):
     pdtd = pd.Timedelta(5, 'm')
     td = _check_timedelta(pdtd)
     assert td.get_value('s') == 300
@@ -105,27 +105,27 @@ def test_string_timedelta_args():
     assert Timedelta("1001 weeks") == Timedelta(1001, "weeks")
 
 
-def test_feature_takes_timedelta_string(es):
-    feature = ft.Feature(es['log']['id'], parent_entity=es['customers'],
+def test_feature_takes_timedelta_string(pd_es):
+    feature = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['customers'],
                          use_previous="1 day", primitive=Count)
     assert feature.use_previous == Timedelta(1, 'd')
 
 
-# def test_sliding_feature_takes_timedelta_string(es):
-#     feature = SlidingMean(es['log']['id'], es['customers'],
+# def test_sliding_feature_takes_timedelta_string(pd_es):
+#     feature = SlidingMean(pd_es['log']['id'], pd_es['customers'],
 #                           use_previous="1 day",
 #                           window_size="1 second")
 #     assert feature.use_previous == Timedelta(1, 'd')
 #     assert feature.window_size == Timedelta(1, 's')
 
 
-def test_deltas_week(es):
+def test_deltas_week(pd_es):
     customer_id = 0
-    sessions_df = es['sessions'].df
+    sessions_df = pd_es['sessions'].df
     if isinstance(sessions_df, dd.core.DataFrame):
         sessions_df = sessions_df.compute()
     sessions_df = sessions_df[sessions_df['customer_id'] == customer_id]
-    log_df = es['log'].df
+    log_df = pd_es['log'].df
     if isinstance(log_df, dd.core.DataFrame):
         log_df = log_df.compute()
     log_df = log_df[log_df['session_id'].isin(sessions_df['id'])]

@@ -23,34 +23,34 @@ from featuretools.synthesis import dfs
 from featuretools.variable_types import Categorical, Datetime, Numeric
 
 
-def test_direct_from_identity(es):
-    device = es['sessions']['device_type']
-    d = DirectFeature(base_feature=device, child_entity=es['log'])
+def test_direct_from_identity(pd_es):
+    device = pd_es['sessions']['device_type']
+    d = DirectFeature(base_feature=device, child_entity=pd_es['log'])
 
     feature_set = FeatureSet([d])
-    calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
+    calculator = FeatureSetCalculator(pd_es, feature_set=feature_set, time_last=None)
     df = calculator.run(np.array([0, 5]))
     v = df[d.get_name()].tolist()
     assert v == [0, 1]
 
 
-def test_direct_from_variable(es):
+def test_direct_from_variable(pd_es):
     # should be same behavior as test_direct_from_identity
-    device = es['sessions']['device_type']
+    device = pd_es['sessions']['device_type']
     d = DirectFeature(base_feature=device,
-                      child_entity=es['log'])
+                      child_entity=pd_es['log'])
 
     feature_set = FeatureSet([d])
-    calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
+    calculator = FeatureSetCalculator(pd_es, feature_set=feature_set, time_last=None)
     df = calculator.run(np.array([0, 5]))
     v = df[d.get_name()].tolist()
     assert v == [0, 1]
 
 
-def test_direct_rename(es):
+def test_direct_rename(pd_es):
     # should be same behavior as test_direct_from_identity
-    feat = DirectFeature(base_feature=es['sessions']['device_type'],
-                         child_entity=es['log'])
+    feat = DirectFeature(base_feature=pd_es['sessions']['device_type'],
+                         child_entity=pd_es['log'])
     copy_feat = feat.rename("session_test")
     assert feat.unique_name() != copy_feat.unique_name()
     assert feat.get_name() != copy_feat.get_name()
@@ -69,7 +69,7 @@ def test_direct_copy(games_es):
     assert copied.relationship_path == feat.relationship_path
 
 
-def test_direct_of_multi_output_transform_feat(es):
+def test_direct_of_multi_output_transform_feat(pd_es):
     class TestTime(TransformPrimitive):
         name = "test_time"
         input_types = [Datetime]
@@ -83,29 +83,29 @@ def test_direct_of_multi_output_transform_feat(es):
                 return [times.apply(lambda x: getattr(x, unit)) for unit in units]
             return test_f
 
-    join_time_split = Feature(es["customers"]["signup_date"],
+    join_time_split = Feature(pd_es["customers"]["signup_date"],
                               primitive=TestTime)
-    alt_features = [Feature(es["customers"]["signup_date"], primitive=Year),
-                    Feature(es["customers"]["signup_date"], primitive=Month),
-                    Feature(es["customers"]["signup_date"], primitive=Day),
-                    Feature(es["customers"]["signup_date"], primitive=Hour),
-                    Feature(es["customers"]["signup_date"], primitive=Minute),
-                    Feature(es["customers"]["signup_date"], primitive=Second)]
+    alt_features = [Feature(pd_es["customers"]["signup_date"], primitive=Year),
+                    Feature(pd_es["customers"]["signup_date"], primitive=Month),
+                    Feature(pd_es["customers"]["signup_date"], primitive=Day),
+                    Feature(pd_es["customers"]["signup_date"], primitive=Hour),
+                    Feature(pd_es["customers"]["signup_date"], primitive=Minute),
+                    Feature(pd_es["customers"]["signup_date"], primitive=Second)]
     fm, fl = dfs(
-        entityset=es,
+        entityset=pd_es,
         target_entity="sessions",
         trans_primitives=[TestTime, Year, Month, Day, Hour, Minute, Second])
 
     # Get column names of for multi feature and normal features
-    subnames = DirectFeature(join_time_split, es["sessions"]).get_feature_names()
-    altnames = [DirectFeature(f, es["sessions"]).get_name() for f in alt_features]
+    subnames = DirectFeature(join_time_split, pd_es["sessions"]).get_feature_names()
+    altnames = [DirectFeature(f, pd_es["sessions"]).get_name() for f in alt_features]
 
     # Check values are equal between
     for col1, col2 in zip(subnames, altnames):
         assert (fm[col1] == fm[col2]).all()
 
 
-def test_direct_features_of_multi_output_agg_primitives(es):
+def test_direct_features_of_multi_output_agg_primitives(pd_es):
     class ThreeMostCommonCat(AggregationPrimitive):
         name = "n_most_common_categorical"
         input_types = [Categorical]
@@ -121,7 +121,7 @@ def test_direct_features_of_multi_output_agg_primitives(es):
                 return array
             return pd_top3
 
-    fm, fl = dfs(entityset=es,
+    fm, fl = dfs(entityset=pd_es,
                  target_entity="log",
                  agg_primitives=[ThreeMostCommonCat],
                  trans_primitives=[],
@@ -192,8 +192,8 @@ def test_direct_with_multiple_possible_paths(games_es):
     assert feat.get_name() == 'teams[home_team_id].name'
 
 
-def test_direct_with_single_possible_path(es):
-    feat = ft.DirectFeature(es['customers']['age'], es['sessions'])
+def test_direct_with_single_possible_path(pd_es):
+    feat = ft.DirectFeature(pd_es['customers']['age'], pd_es['sessions'])
     assert feat.relationship_path_name() == 'customers'
     assert feat.get_name() == 'customers.age'
 
@@ -208,11 +208,11 @@ def test_direct_with_no_path(diamond_es):
         ft.DirectFeature(diamond_es['customers']['name'], diamond_es['customers'])
 
 
-def test_serialization(es):
-    value = ft.IdentityFeature(es['products']['rating'])
-    direct = ft.DirectFeature(value, es['log'])
+def test_serialization(pd_es):
+    value = ft.IdentityFeature(pd_es['products']['rating'])
+    direct = ft.DirectFeature(value, pd_es['log'])
 
-    log_to_products = next(r for r in es.get_forward_relationships('log')
+    log_to_products = next(r for r in pd_es.get_forward_relationships('log')
                            if r.parent_entity.id == 'products')
     dictionary = {
         'name': None,
@@ -222,6 +222,6 @@ def test_serialization(es):
 
     assert dictionary == direct.get_arguments()
     assert direct == \
-        ft.DirectFeature.from_dictionary(dictionary, es,
+        ft.DirectFeature.from_dictionary(dictionary, pd_es,
                                          {value.unique_name(): value},
                                          PrimitivesDeserializer())

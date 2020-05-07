@@ -29,7 +29,7 @@ def make_ecommerce_entityset(with_integer_time_index=False):
     time_indexes = make_time_indexes(
         with_integer_time_index=with_integer_time_index)
 
-    es = EntitySet(id=es_id)
+    pd_es = EntitySet(id=es_id)
 
     for entity in entities:
         time_index = time_indexes.get(entity, None)
@@ -39,26 +39,26 @@ def make_ecommerce_entityset(with_integer_time_index=False):
             ti_name = time_index['name']
             secondary = time_index['secondary']
         df = dataframes[entity]
-        es.entity_from_dataframe(entity,
-                                 df,
-                                 index='id',
-                                 variable_types=variable_types[entity],
-                                 time_index=ti_name,
-                                 secondary_time_index=secondary)
+        pd_es.entity_from_dataframe(entity,
+                                    df,
+                                    index='id',
+                                    variable_types=variable_types[entity],
+                                    time_index=ti_name,
+                                    secondary_time_index=secondary)
 
-    es.normalize_entity('customers', 'cohorts', 'cohort',
-                        additional_variables=['cohort_name'],
-                        make_time_index=True,
-                        new_entity_time_index='cohort_end')
+    pd_es.normalize_entity('customers', 'cohorts', 'cohort',
+                           additional_variables=['cohort_name'],
+                           make_time_index=True,
+                           new_entity_time_index='cohort_end')
 
-    es.add_relationships(
-        [Relationship(es[u'régions']['id'], es['customers'][u'région_id']),
-         Relationship(es[u'régions']['id'], es['stores'][u'région_id']),
-         Relationship(es['customers']['id'], es['sessions']['customer_id']),
-         Relationship(es['sessions']['id'], es['log']['session_id']),
-         Relationship(es['products']['id'], es['log']['product_id'])])
+    pd_es.add_relationships(
+        [Relationship(pd_es[u'régions']['id'], pd_es['customers'][u'région_id']),
+         Relationship(pd_es[u'régions']['id'], pd_es['stores'][u'région_id']),
+         Relationship(pd_es['customers']['id'], pd_es['sessions']['customer_id']),
+         Relationship(pd_es['sessions']['id'], pd_es['log']['session_id']),
+         Relationship(pd_es['products']['id'], pd_es['log']['product_id'])])
 
-    return es
+    return pd_es
 
 
 def make_ecommerce_dataframes(with_integer_time_index=False):

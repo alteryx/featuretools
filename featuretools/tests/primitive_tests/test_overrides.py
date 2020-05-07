@@ -32,9 +32,9 @@ from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; 
 )
 
 
-def test_overrides(es):
-    value = ft.Feature(es['log']['value'])
-    value2 = ft.Feature(es['log']['value_2'])
+def test_overrides(pd_es):
+    value = ft.Feature(pd_es['log']['value'])
+    value2 = ft.Feature(pd_es['log']['value_2'])
 
     feats = [AddNumeric, SubtractNumeric, MultiplyNumeric, DivideNumeric,
              ModuloNumeric, GreaterThan, LessThan, Equal, NotEqual,
@@ -75,8 +75,8 @@ def test_overrides(es):
             assert o.unique_name() == f.unique_name()
 
 
-def test_override_boolean(es):
-    count = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
+def test_override_boolean(pd_es):
+    count = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['sessions'], primitive=Count)
     count_lo = ft.Feature(count, primitive=GreaterThanScalar(1))
     count_hi = ft.Feature(count, primitive=LessThanScalar(10))
 
@@ -89,14 +89,14 @@ def test_override_boolean(es):
     features.append(count_lo.AND(count_hi))
     features.append(~(count_lo.AND(count_hi)))
 
-    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2])
+    df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=[0, 1, 2])
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert v == test
 
 
-def test_scalar_overrides(es):
-    value = ft.Feature(es['log']['value'])
+def test_scalar_overrides(pd_es):
+    value = ft.Feature(pd_es['log']['value'])
 
     feats = [
         AddNumericScalar, SubtractNumericScalar, MultiplyNumericScalar,
@@ -124,7 +124,7 @@ def test_scalar_overrides(es):
         o = overrides.pop(0)
         assert o.unique_name() == f.unique_name()
 
-    value2 = ft.Feature(es['log']['value_2'])
+    value2 = ft.Feature(pd_es['log']['value_2'])
 
     reverse_feats = [
         AddNumericScalar, ScalarSubtractNumericFeature, MultiplyNumericScalar,
@@ -151,22 +151,22 @@ def test_scalar_overrides(es):
         assert o.unique_name() == f.unique_name()
 
 
-def test_override_cmp_from_variable(es):
-    count_lo = ft.Feature(es['log']['value']) > 1
+def test_override_cmp_from_variable(pd_es):
+    count_lo = ft.Feature(pd_es['log']['value']) > 1
 
     to_test = [False, True, True]
 
     features = [count_lo]
 
-    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2])
+    df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=[0, 1, 2])
     v = df[count_lo.get_name()].values.tolist()
     for i, test in enumerate(to_test):
         assert v[i] == test
 
 
-def test_override_cmp(es):
-    count = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
-    _sum = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum)
+def test_override_cmp(pd_es):
+    count = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['sessions'], primitive=Count)
+    _sum = ft.Feature(pd_es['log']['value'], parent_entity=pd_es['sessions'], primitive=Sum)
     gt_lo = count > 1
     gt_other = count > _sum
     ge_lo = count >= 1
@@ -189,7 +189,7 @@ def test_override_cmp(es):
     features = [gt_lo, gt_other, ge_lo, ge_other, lt_hi,
                 lt_other, le_hi, le_other, ne_lo, ne_other]
 
-    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2])
+    df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=[0, 1, 2])
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert v == test

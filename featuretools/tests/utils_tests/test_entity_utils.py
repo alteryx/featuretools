@@ -150,16 +150,16 @@ def test_convert_variable_data():
 
 
 def test_get_linked_vars():
-    es = ft.demo.load_mock_customer(return_entityset=True)
+    pd_es = ft.demo.load_mock_customer(return_entityset=True)
 
-    transactions_linked_vars = get_linked_vars(es['transactions'])
+    transactions_linked_vars = get_linked_vars(pd_es['transactions'])
     assert transactions_linked_vars == ['product_id', 'session_id']
 
-    products_linked_vars = get_linked_vars(es['products'])
+    products_linked_vars = get_linked_vars(pd_es['products'])
     assert products_linked_vars == ['product_id']
 
-    sessions_linked_vars = get_linked_vars(es['sessions'])
+    sessions_linked_vars = get_linked_vars(pd_es['sessions'])
     assert sessions_linked_vars == ['session_id', 'customer_id']
 
-    customers_linked_vars = get_linked_vars(es['customers'])
+    customers_linked_vars = get_linked_vars(pd_es['customers'])
     assert customers_linked_vars == ['customer_id']
