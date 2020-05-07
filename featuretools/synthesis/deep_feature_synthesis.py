@@ -177,9 +177,7 @@ class DeepFeatureSynthesis(object):
         self.es = entityset
 
         if agg_primitives is None:
-            agg_primitives = [primitives.Sum, primitives.Std, primitives.Max, primitives.Skew,
-                              primitives.Min, primitives.Mean, primitives.Count,
-                              primitives.PercentTrue, primitives.NumUnique, primitives.Mode]
+            agg_primitives = primitives.get_default_aggregation_primitives()
         self.agg_primitives = []
         agg_prim_dict = primitives.get_aggregation_primitives()
         for a in agg_primitives:
@@ -196,9 +194,7 @@ class DeepFeatureSynthesis(object):
             self.agg_primitives.append(a)
 
         if trans_primitives is None:
-            trans_primitives = [primitives.Day, primitives.Year, primitives.Month,
-                                primitives.Weekday, primitives.Haversine,
-                                primitives.NumWords, primitives.NumCharacters]  # primitives.TimeSince
+            trans_primitives = primitives.get_default_transform_primitives()
         self.trans_primitives = []
         for t in trans_primitives:
             t = check_trans_primitive(t)
