@@ -8,6 +8,7 @@ Changelog
     * Changes
         * Add `get_default_aggregation_primitives` and `get_default_transform_primitives` (:pr:`945`)
     * Documentation Changes
+
     Thanks to the following people for contributing to this release:
     :user:`gsheni`
 
