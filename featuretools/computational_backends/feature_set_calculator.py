@@ -460,7 +460,6 @@ class FeatureSetCalculator(object):
             progress_callback(1 / float(self.num_features))
 
         frame = update_feature_columns(feature_values, frame)
-
         return frame
 
     def _calculate_groupby_features(self, features, frame, _df_trie, progress_callback):
@@ -544,7 +543,8 @@ class FeatureSetCalculator(object):
         # merge the identity feature from the parent entity into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
         if isinstance(merge_df, dd.core.DataFrame):
-            new_df = child_df.merge(merge_df, left_on=merge_var, right_on=merge_var, how='left')
+            new_df = child_df.merge(merge_df, left_on=merge_var, right_on=merge_var,
+                                    how='left')
         else:
             if index_as_feature is not None:
                 merge_df = merge_df.set_index(index_as_feature.get_name(), drop=False)
@@ -563,7 +563,6 @@ class FeatureSetCalculator(object):
         child_entity = test_feature.base_features[0].entity
         base_frame = df_trie.get_node(test_feature.relationship_path).value
         parent_merge_var = test_feature.relationship_path[0][1].parent_variable.id
-
         # Sometimes approximate features get computed in a previous filter frame
         # and put in the current one dynamically,
         # so there may be existing features here
@@ -733,12 +732,6 @@ class FeatureSetCalculator(object):
                 # the column (in actuality grouping by both index and group would
                 # work)
                 if isinstance(base_frame, dd.core.DataFrame):
-                    num_new_feats = 0
-                    for item in to_agg.values():
-                        num_new_feats += len(item)
-                    # Assume the grouped result will have 25% of the rows of the base frame
-                    # split_out = round(base_frame.npartitions * (num_new_feats / len(base_frame.columns)) * 0.25)
-                    # print(f"Split out: {split_out}")
                     to_merge = base_frame.groupby(groupby_var).agg(to_agg)
 
                 else:
@@ -747,6 +740,7 @@ class FeatureSetCalculator(object):
                 # rename columns to the correct feature names
                 to_merge.columns = [agg_rename["-".join(x)] for x in to_merge.columns.ravel()]
                 to_merge = to_merge[list(agg_rename.values())]
+
                 # workaround for pandas bug where categories are in the wrong order
                 # see: https://github.com/pandas-dev/pandas/issues/22501
                 if pdtypes.is_categorical_dtype(frame.index):
