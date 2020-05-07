@@ -461,10 +461,6 @@ class FeatureSetCalculator(object):
 
         frame = update_feature_columns(feature_values, frame)
 
-        # if isinstance(frame, dd.core.DataFrame):
-        #     new_partitions = round(frame.npartitions * (1 + len(feature_values) / len(frame.columns)))
-        #     frame = frame.repartition(npartitions=new_partitions)
-
         return frame
 
     def _calculate_groupby_features(self, features, frame, _df_trie, progress_callback):
@@ -549,9 +545,6 @@ class FeatureSetCalculator(object):
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
         if isinstance(merge_df, dd.core.DataFrame):
             new_df = child_df.merge(merge_df, left_on=merge_var, right_on=merge_var, how='left')
-            # Repartition to account for new columns to keep partition size reasonable
-            # new_partitions = round(new_df.npartitions * (1 + len(merge_df.columns) / len(child_df.columns)))
-            # new_df = new_df.repartition(npartitions=new_partitions)
         else:
             if index_as_feature is not None:
                 merge_df = merge_df.set_index(index_as_feature.get_name(), drop=False)
@@ -761,8 +754,6 @@ class FeatureSetCalculator(object):
                     to_merge.index = to_merge.index.astype(object).astype(categories)
 
                 if isinstance(frame, dd.core.DataFrame):
-                    # new_partitions = round(frame.npartitions * (1 + num_new_feats / len(frame.columns)))
-                    # frame = frame.repartition(npartitions=new_partitions)
                     frame = frame.merge(to_merge, left_on=parent_merge_var, right_index=True, how='left')
                 else:
                     frame = pd.merge(left=frame, right=to_merge,
