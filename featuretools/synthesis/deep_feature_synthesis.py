@@ -10,6 +10,10 @@ from featuretools.feature_base import (
     IdentityFeature,
     TransformFeature
 )
+from featuretools.primitives import (
+    get_default_aggregation_primitives,
+    get_default_transform_primitives
+)
 from featuretools.primitives.base import (
     AggregationPrimitive,
     PrimitiveBase,
@@ -20,10 +24,6 @@ from featuretools.primitives.options_utils import (
     filter_matches_by_options,
     generate_all_primitive_options,
     ignore_entity_for_primitive
-)
-from featuretools.primitives.utils import (
-    get_default_aggregation_primitives,
-    get_default_transform_primitives
 )
 from featuretools.variable_types import Boolean, Discrete, Id, Numeric
 

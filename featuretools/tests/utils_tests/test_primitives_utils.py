@@ -19,13 +19,11 @@ from featuretools.primitives import (
     Sum,
     Weekday,
     Year,
-    get_aggregation_primitives,
-    get_transform_primitives
-)
-from featuretools.primitives.utils import (
     _get_descriptions,
+    get_aggregation_primitives,
     get_default_aggregation_primitives,
-    get_default_transform_primitives
+    get_default_transform_primitives,
+    get_transform_primitives
 )
 
 
