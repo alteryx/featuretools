@@ -10,10 +10,6 @@ from featuretools.feature_base import (
     IdentityFeature,
     TransformFeature
 )
-from featuretools.primitives import (
-    get_default_aggregation_primitives,
-    get_default_transform_primitives
-)
 from featuretools.primitives.base import (
     AggregationPrimitive,
     PrimitiveBase,
@@ -181,7 +177,7 @@ class DeepFeatureSynthesis(object):
         self.es = entityset
 
         if agg_primitives is None:
-            agg_primitives = get_default_aggregation_primitives()
+            agg_primitives = primitives.get_default_aggregation_primitives()
         self.agg_primitives = []
         agg_prim_dict = primitives.get_aggregation_primitives()
         for a in agg_primitives:
@@ -198,7 +194,7 @@ class DeepFeatureSynthesis(object):
             self.agg_primitives.append(a)
 
         if trans_primitives is None:
-            trans_primitives = get_default_transform_primitives()
+            trans_primitives = primitives.get_default_transform_primitives()
         self.trans_primitives = []
         for t in trans_primitives:
             t = check_trans_primitive(t)
