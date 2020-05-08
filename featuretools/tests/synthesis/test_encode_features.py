@@ -26,6 +26,21 @@ def test_encodes_features(es):
     assert len(features_encoded) == 5
 
 
+def test_dask_errors_encode_features(dask_es):
+    f1 = IdentityFeature(dask_es["log"]["product_id"])
+    f2 = IdentityFeature(dask_es["log"]["purchased"])
+    f3 = IdentityFeature(dask_es["log"]["value"])
+
+    features = [f1, f2, f3]
+    feature_matrix = calculate_feature_matrix(features,
+                                              dask_es,
+                                              instance_ids=[0, 1, 2, 3, 4, 5])
+    error_text = "feature_matrix must be a Pandas DataFrame"
+
+    with pytest.raises(TypeError, match=error_text):
+        encode_features(feature_matrix, features)
+
+
 def test_inplace_encodes_features(es):
     f1 = IdentityFeature(es["log"]["product_id"])
 
