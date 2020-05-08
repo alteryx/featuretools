@@ -248,7 +248,7 @@ class Equal(TransformPrimitive):
     commutative = True
 
     def get_function(self):
-        return np.equal
+        return pd.Series.eq
 
     def generate_name(self, base_feature_names):
         return "%s = %s" % (base_feature_names[0], base_feature_names[1])
@@ -301,7 +301,7 @@ class NotEqual(TransformPrimitive):
     commutative = True
 
     def get_function(self):
-        return np.not_equal
+        return pd.Series.ne
 
     def generate_name(self, base_feature_names):
         return "%s != %s" % (base_feature_names[0], base_feature_names[1])
