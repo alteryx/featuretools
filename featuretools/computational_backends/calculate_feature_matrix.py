@@ -133,6 +133,14 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         if entities is not None and relationships is not None:
             entityset = EntitySet("entityset", entities, relationships)
 
+    if any(isinstance(es.df, dd.DataFrame) for es in entityset.entities):
+        if approximate:
+            msg = "Using approximate is not supported with Dask Entities"
+            raise ValueError(msg)
+        if training_window:
+            msg = "Using training_window is not supported with Dask Entities"
+            raise ValueError(msg)
+
     target_entity = entityset[features[0].entity.id]
     pass_columns = []
 
