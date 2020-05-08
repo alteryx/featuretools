@@ -27,7 +27,6 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
     if len(list(secondary_time_index.keys())):
         vids_to_assume_datetime.append(list(secondary_time_index.keys())[0])
     inferred_type = vtypes.Unknown
-
     for variable in df.columns:
         if variable in variable_types:
             continue
