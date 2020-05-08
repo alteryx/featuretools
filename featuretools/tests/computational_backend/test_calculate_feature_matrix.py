@@ -355,6 +355,18 @@ def test_cutoff_time_binning():
         binned_cutoff_times = bin_cutoff_times(cutoff_time, Timedelta(1, 'mo'))
 
 
+def test_training_window_fails_dask(dask_es):
+    property_feature = ft.Feature(dask_es['log']['id'],
+                                  parent_entity=dask_es['customers'],
+                                  primitive=Count)
+
+    error_text = "Using training_window is not supported with Dask Entities"
+    with pytest.raises(ValueError, match=error_text):
+        calculate_feature_matrix([property_feature],
+                                 dask_es,
+                                 training_window='2 hours')
+
+
 def test_training_window(es):
     property_feature = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
     top_level_agg = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count)
@@ -467,6 +479,17 @@ def test_training_window_recent_time_index(es):
     feature_matrix.sort_index(inplace=True)
     assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
     assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
+
+
+def test_approximate_fails_dask(dask_es):
+    agg_feat = ft.Feature(dask_es['log']['id'],
+                          parent_entity=dask_es['sessions'],
+                          primitive=Count)
+    error_text = "Using approximate is not supported with Dask Entities"
+    with pytest.raises(ValueError, match=error_text):
+        calculate_feature_matrix([agg_feat],
+                                 dask_es,
+                                 approximate=Timedelta(1, 'week'))
 
 
 def test_approximate_multiple_instances_per_cutoff_time(es):
