@@ -210,7 +210,8 @@ class Entity(object):
         self.variables[self.variables.index(variable)] = new_variable
 
     def query_by_values(self, instance_vals, variable_id=None, columns=None,
-                        time_last=None, training_window=None):
+                        time_last=None, training_window=None, include_cutoff_time=True):
+
         """Query instances that have variable with given value
 
         Args:
@@ -257,7 +258,8 @@ class Entity(object):
 
         df = self._handle_time(df=df,
                                time_last=time_last,
-                               training_window=training_window)
+                               training_window=training_window,
+                               include_cutoff_time=include_cutoff_time)
 
         if columns is not None:
             df = df[columns]
@@ -492,7 +494,7 @@ class Entity(object):
 
         return out_vals
 
-    def _handle_time(self, df, time_last=None, training_window=None):
+    def _handle_time(self, df, time_last=None, training_window=None, include_cutoff_time=True):
         """
         Filter a dataframe for all instances before time_last.
         If this entity does not have a time index, return the original
@@ -500,13 +502,22 @@ class Entity(object):
         """
         if self.time_index:
             if time_last is not None and not df.empty:
-                df = df[df[self.time_index] <= time_last]
+                if include_cutoff_time:
+                    df = df[df[self.time_index] <= time_last]
+                else:
+                    df = df[df[self.time_index] < time_last]
                 if training_window is not None:
                     training_window = _check_timedelta(training_window)
-                    mask = df[self.time_index] > time_last - training_window
+                    if include_cutoff_time:
+                        mask = df[self.time_index] > time_last - training_window
+                    else:
+                        mask = df[self.time_index] >= time_last - training_window
                     if self.last_time_index is not None:
                         lti_slice = self.last_time_index.reindex(df.index)
-                        lti_mask = lti_slice > time_last - training_window
+                        if include_cutoff_time:
+                            lti_mask = lti_slice > time_last - training_window
+                        else:
+                            lti_mask = lti_slice >= time_last - training_window
                         mask = mask | lti_mask
                     else:
                         logger.warning(

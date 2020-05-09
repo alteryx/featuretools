@@ -304,17 +304,30 @@ def test_training_window(es):
                                                   cutoff_time=cutoff_time,
                                                   training_window=Timedelta(2, 'observations'))
 
+    # Case1. include_cutoff_time = True
     feature_matrix = calculate_feature_matrix([property_feature, dagg],
                                               es,
                                               cutoff_time=cutoff_time,
-                                              training_window='2 hours')
+                                              training_window='2 hours',
+                                              include_cutoff_time=True)
     prop_values = [4, 5, 1]
     dagg_values = [3, 2, 1]
     assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
     assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
 
+    # Case1. include_cutoff_time = False
+    feature_matrix = calculate_feature_matrix([property_feature, dagg],
+                                              es,
+                                              cutoff_time=cutoff_time,
+                                              training_window='2 hours',
+                                              include_cutoff_time=False)
+    prop_values = [5, 5, 2]
+    dagg_values = [3, 2, 1]
+    assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
+    assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
 
-def test_training_window_overlap(es):
+
+def test_overlap_with_training_window(es):
     es.add_last_time_indexes()
 
     count_log = ft.Feature(
@@ -328,15 +341,62 @@ def test_training_window_overlap(es):
         'time': ['2011-04-09 10:30:00', '2011-04-09 10:40:00'],
     }).astype({'time': 'datetime64[ns]'})
 
+    # Case1. include_cutoff_time = True
     actual = ft.calculate_feature_matrix(
         features=[count_log],
         entityset=es,
         cutoff_time=cutoff_time,
         cutoff_time_in_index=True,
         training_window='10 minutes',
+        include_cutoff_time=True,
     )['COUNT(log)']
-
     np.testing.assert_array_equal(actual.values, [1, 9])
+
+    # Case2. include_cutoff_time = False
+    actual = ft.calculate_feature_matrix(
+        features=[count_log],
+        entityset=es,
+        cutoff_time=cutoff_time,
+        cutoff_time_in_index=True,
+        training_window='10 minutes',
+        include_cutoff_time=False,
+    )['COUNT(log)']
+    np.testing.assert_array_equal(actual.values, [0, 9])
+
+
+def test_overlap_without_training_window(es):
+    es.add_last_time_indexes()
+
+    count_log = ft.Feature(
+        base=es['log']['id'],
+        parent_entity=es['customers'],
+        primitive=Count,
+    )
+
+    cutoff_time = pd.DataFrame({
+        'id': [0, 0],
+        'time': ['2011-04-09 10:30:00', '2011-04-09 10:31:00'],
+    }).astype({'time': 'datetime64[ns]'})
+
+    # Case1. include_cutoff_time = True
+    actual = ft.calculate_feature_matrix(
+        features=[count_log],
+        entityset=es,
+        cutoff_time=cutoff_time,
+        cutoff_time_in_index=True,
+        include_cutoff_time=True,
+    )['COUNT(log)']
+    np.testing.assert_array_equal(actual.values, [1, 6])
+
+    # Case2. include_cutoff_time = False
+    actual = ft.calculate_feature_matrix(
+        features=[count_log],
+        entityset=es,
+        cutoff_time=cutoff_time,
+        cutoff_time_in_index=True,
+        include_cutoff_time=False,
+    )['COUNT(log)']
+    np.testing.assert_array_equal(actual.values, [0, 5])
 
 
 def test_training_window_recent_time_index(es):
@@ -379,16 +439,35 @@ def test_training_window_recent_time_index(es):
     times = [datetime(2011, 4, 9, 12, 31), datetime(2011, 4, 10, 11),
              datetime(2011, 4, 10, 13, 10, 1), datetime(2011, 4, 10, 1, 59, 59)]
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': instance_ids})
+
+    # Case1. include_cutoff_time = True
     feature_matrix = calculate_feature_matrix(
         [property_feature, dagg],
         es,
         cutoff_time=cutoff_time,
-        training_window='2 hours'
+        training_window='2 hours',
+        include_cutoff_time=True,
     )
     prop_values = [4, 5, 1, 0]
+    assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
+
     dagg_values = [3, 2, 1, 3]
     feature_matrix.sort_index(inplace=True)
+    assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
+
+    # Case2. include_cutoff_time = False
+    feature_matrix = calculate_feature_matrix(
+        [property_feature, dagg],
+        es,
+        cutoff_time=cutoff_time,
+        training_window='2 hours',
+        include_cutoff_time=False,
+    )
+    prop_values = [5, 5, 1, 0]
     assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
+
+    dagg_values = [3, 2, 1, 3]
+    feature_matrix.sort_index(inplace=True)
     assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
 
 
