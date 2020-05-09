@@ -5,12 +5,13 @@ Changelog
 **Future Release**
     * Enhancements
         * Add `get_default_aggregation_primitives` and `get_default_transform_primitives` (:pr:`945`)
+        * Add `include_cutoff_time` arg - control whether data at cutoff times are included in feature calculations (:pr:`959`)
     * Fixes
     * Changes
     * Documentation Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`rightx2`, :user:`jeff-hernandez`
 
 **v0.14.0 Apr 30, 2020**
     * Enhancements
@@ -37,7 +38,7 @@ Changelog
 * Using training windows in feature calculations can result in different values than previous versions.
   This was done to prevent consecutive training windows from overlapping by excluding data at the oldest point in time.
   For example, if we use a cutoff time at the first minute of the hour with a one hour training window,
-  the first minute of the previous hour will no longer be included in the feature calculation.
+  the first minute of the previous hour will no longer be included in the feature calculation. You can control it by setting `include_cutoff_time`.
 
 **v0.13.4 Mar 27, 2020**
     .. warning::
