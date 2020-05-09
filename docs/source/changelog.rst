@@ -5,6 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
         * ft.encode_features - use less memory for one-hot encoded columns (:pr:`876`)
+        * include_cutoff_time arg - control whether data at cutoff times are included in feature calculations (:pr:`958`)
     * Fixes
         * Use logger.warning to fix deprecated logger.warn (:pr:`871`)
         * Add dtype to interesting_values to fix deprecated empty Series with no dtype (:pr:`933`)
@@ -21,14 +22,14 @@ Changelog
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`frances-h`, :user:`gsheni`, :user:`rwedge`
+    :user:`jeff-hernandez`, :user:`frances-h`, :user:`gsheni`, :user:`rwedge`, :user:`rightx2`
 
 **Breaking Changes**
 
 * Using training windows in feature calculations can result in different values than previous versions.
   This was done to prevent consecutive training windows from overlapping by excluding data at the oldest point in time.
   For example, if we use a cutoff time at the first minute of the hour with a one hour training window,
-  the first minute of the previous hour will no longer be included in the feature calculation.
+  the first minute of the previous hour will no longer be included in the feature calculation. You can control it by setting `include_cutoff_time`.
 
 **v0.13.4 Mar 27, 2020**
     .. warning::
