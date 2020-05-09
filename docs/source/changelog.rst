@@ -4,8 +4,18 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Add `get_default_aggregation_primitives` and `get_default_transform_primitives` (:pr:`945`)
+        * ADd `include_cutoff_time` arg - control whether data at cutoff times are included in feature calculations (:pr:`958`)
+    * Fixes
+    * Changes
+    * Documentation Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`rightx2`, :user:`jeff-hernandez`
+
+**v0.14.0 Apr 30, 2020**
+    * Enhancements
         * ft.encode_features - use less memory for one-hot encoded columns (:pr:`876`)
-        * include_cutoff_time arg - control whether data at cutoff times are included in feature calculations (:pr:`958`)
     * Fixes
         * Use logger.warning to fix deprecated logger.warn (:pr:`871`)
         * Add dtype to interesting_values to fix deprecated empty Series with no dtype (:pr:`933`)
@@ -19,10 +29,9 @@ Changelog
         * Fix Github links with correct organizations (:pr:`908`)
         * Fix hyperlinks in docs and docstrings with updated address (:pr:`910`)
         * Remove unused script for uploading docs to AWS (:pr:`911`)
-    * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`frances-h`, :user:`gsheni`, :user:`rwedge`, :user:`rightx2`
+    :user:`frances-h`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`
 
 **Breaking Changes**
 
