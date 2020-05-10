@@ -224,6 +224,8 @@ class Entity(object):
             training_window (Timedelta, optional):
                 Window defining how much time before the cutoff time data
                 can be used when calculating features. If None, all data before cutoff time is used.
+            include_cutoff_time (bool):
+                If True, data at cutoff time are included in calculating features
 
         Returns:
             pd.DataFrame : instances that match constraints with ids in order of underlying dataframe

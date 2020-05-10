@@ -122,6 +122,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                 progress_percent: percentage (float between 0 and 100) of total computation completed
                 time_elapsed: total time in seconds that has elapsed since start of call
 
+        include_cutoff_time (bool): If True, data at cutoff time are included in calculating features
     """
     assert (isinstance(features, list) and features != [] and
             all([isinstance(feature, FeatureBase) for feature in features])), \
@@ -450,7 +451,9 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
             Window defining how much older than the cutoff time data
             can be to be included when calculating the feature. If None, all older data is used.
 
-        save_progress (str, optional): path to save intermediate computational results
+        include_cutoff_time (bool):
+            If True, data at cutoff time are included in calculating features
+
     '''
     approx_fms_trie = Trie(path_constructor=RelationshipPath)
 

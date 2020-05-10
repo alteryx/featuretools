@@ -84,6 +84,9 @@ class FeatureSetCalculator(object):
 
             progress_callback (callable): function to be called with incremental progress updates
 
+            include_cutoff_time (bool): If True, data at cutoff time are included
+                in calculating features.
+
         Returns:
             pd.DataFrame : Pandas DataFrame of calculated feature values.
                 Indexed by instance_ids. Columns in same order as features
@@ -179,6 +182,10 @@ class FeatureSetCalculator(object):
                 ancestor_relationship_variables, parent_df).
                 ancestor_relationship_variables is the names of variables which
                 link the parent entity to its ancestors.
+
+            include_cutoff_time (bool): If True, data at cutoff time are included
+                in calculating features.
+
         """
         # Step 1: Get a dataframe for the given entity, filtered by the given
         # conditions.
