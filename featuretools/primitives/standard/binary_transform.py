@@ -237,6 +237,12 @@ class Equal(TransformPrimitive):
         whether each value in X is equal to each corresponding value
         in Y.
 
+     Args:
+        strict_categories (bool): Deterimines how to compare Categorical
+        dtypes. If True, values are only conisidered equal if they have
+        the same categories. If False, categories are ignored when testing
+        equality. Defaults to False.
+
     Examples:
         >>> equal = Equal()
         >>> equal([2, 1, 2], [1, 2, 2]).tolist()
@@ -247,8 +253,24 @@ class Equal(TransformPrimitive):
     return_type = Boolean
     commutative = True
 
+    def __init__(self, strict_categories=False):
+        self.strict_categories = strict_categories
+
     def get_function(self):
-        return pd.Series.eq
+        def equal(x_vals, y_vals):
+            if isinstance(x_vals.dtype, pd.CategoricalDtype) and \
+               isinstance(y_vals.dtype, pd.CategoricalDtype):
+                res = np.equal(np.array(x_vals), np.array(y_vals))
+                if self.strict_categories and \
+                   set(x_vals.cat.categories) != set(y_vals.cat.categories):
+                    # Categories aren't equal, none are equal
+                    return pd.Series([False] * res.shape[0])
+                else:
+                    return pd.Series(res)
+            else:
+                return pd.Series.eq(x_vals, y_vals)
+
+        return equal
 
     def generate_name(self, base_feature_names):
         return "%s = %s" % (base_feature_names[0], base_feature_names[1])
@@ -290,6 +312,12 @@ class NotEqual(TransformPrimitive):
         whether each value in X is not equal to each corresponding
         value in Y.
 
+     Args:
+        strict_categories (bool): Deterimines how to compare Categorical
+        dtypes. If True, values are only conisidered equal if they have
+        the same categories. If False, categories are ignored when testing
+        equality. Defaults to False.
+
     Examples:
         >>> not_equal = NotEqual()
         >>> not_equal([2, 1, 2], [1, 2, 2]).tolist()
@@ -300,8 +328,24 @@ class NotEqual(TransformPrimitive):
     return_type = Boolean
     commutative = True
 
+    def __init__(self, strict_categories=False):
+        self.strict_categories = strict_categories
+
     def get_function(self):
-        return pd.Series.ne
+        def not_equal(x_vals, y_vals):
+            if isinstance(x_vals.dtype, pd.CategoricalDtype) and \
+               isinstance(y_vals.dtype, pd.CategoricalDtype):
+                res = np.not_equal(np.array(x_vals), np.array(y_vals))
+                if self.strict_categories \
+                   and set(x_vals.cat.categories) != set(y_vals.cat.categories):
+                    # Categories aren't equal, none are equal
+                    return pd.Series([True] * res.shape[0])
+                else:
+                    return pd.Series(res)
+            else:
+                return pd.Series.ne(x_vals, y_vals)
+
+        return not_equal
 
     def generate_name(self, base_feature_names):
         return "%s != %s" % (base_feature_names[0], base_feature_names[1])
