@@ -81,6 +81,32 @@ def get_default_transform_primitives():
     return trans_primitives
 
 
+def get_default_aggregation_primitives():
+    agg_primitives = [featuretools.primitives.Sum,
+                      featuretools.primitives.Std,
+                      featuretools.primitives.Max,
+                      featuretools.primitives.Skew,
+                      featuretools.primitives.Min,
+                      featuretools.primitives.Mean,
+                      featuretools.primitives.Count,
+                      featuretools.primitives.PercentTrue,
+                      featuretools.primitives.NumUnique,
+                      featuretools.primitives.Mode]
+    return agg_primitives
+
+
+def get_default_transform_primitives():
+    # featuretools.primitives.TimeSince
+    trans_primitives = [featuretools.primitives.Day,
+                        featuretools.primitives.Year,
+                        featuretools.primitives.Month,
+                        featuretools.primitives.Weekday,
+                        featuretools.primitives.Haversine,
+                        featuretools.primitives.NumWords,
+                        featuretools.primitives.NumCharacters]
+    return trans_primitives
+
+
 def _get_descriptions(primitives):
     descriptions = []
     for prim in primitives:
