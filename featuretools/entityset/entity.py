@@ -96,7 +96,7 @@ class Entity(object):
     @property
     def shape(self):
         '''Shape of the entity's dataframe'''
-        return (len(self.df), self.df.shape[1])
+        return self.df.shape
 
     def __eq__(self, other, deep=False):
         if self.index != other.index:
@@ -232,6 +232,7 @@ class Entity(object):
             variable_id = self.index
 
         instance_vals = self._vals_to_series(instance_vals, variable_id)
+
         training_window = _check_timedelta(training_window)
 
         if training_window is not None:
@@ -241,7 +242,7 @@ class Entity(object):
             df = self.df.copy()
 
         else:
-            if isinstance(instance_vals, dd.core.Series):
+            if isinstance(instance_vals, dd.Series):
                 df = self.df.merge(instance_vals.to_frame(), how="inner", on=variable_id)
             else:
                 df = self.df[self.df[variable_id].isin(instance_vals)]
@@ -403,7 +404,7 @@ class Entity(object):
 
     def set_time_index(self, variable_id, already_sorted=False):
         # check time type
-        if isinstance(self.df, dd.core.DataFrame) or len(self.df) == 0:
+        if isinstance(self.df, dd.DataFrame) or len(self.df) == 0:
             time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
         else:
             time_to_check = self.df[variable_id].head(1).iloc[0]
@@ -420,7 +421,7 @@ class Entity(object):
                             " other entityset time indexes" %
                             (self.id, time_type))
 
-        if isinstance(self.df, dd.core.DataFrame):
+        if isinstance(self.df, dd.DataFrame):
             t = time_type  # skip checking values
             already_sorted = True  # skip sorting
         else:
@@ -447,10 +448,7 @@ class Entity(object):
             self.df = self.df.set_index(self.df[variable_id], drop=False)
             self.df.index.name = None
             if unique:
-                if isinstance(self.df.index, dd.core.Index):
-                    index_is_unique = self.df[variable_id].compute().is_unique
-                else:
-                    index_is_unique = self.df[variable_id].is_unique
+                index_is_unique = self.df[variable_id].is_unique
                 assert index_is_unique, "Index is not unique on dataframe (Entity {})".format(self.id)
 
         self.convert_variable_type(variable_id, vtypes.Index, convert_data=False)
@@ -490,7 +488,7 @@ class Entity(object):
         # convert iterable to pd.Series
         if type(instance_vals) == pd.DataFrame:
             out_vals = instance_vals[variable_id]
-        elif type(instance_vals) == pd.Series or type(instance_vals) == dd.core.Series:
+        elif type(instance_vals) == pd.Series or type(instance_vals) == dd.Series:
             out_vals = instance_vals.rename(variable_id)
         else:
             out_vals = pd.Series(instance_vals)
@@ -510,7 +508,8 @@ class Entity(object):
         dataframe.
         """
         if self.time_index:
-            if time_last is not None:
+            df_empty = df.empty if isinstance(df, pd.DataFrame) else False
+            if time_last is not None and not df_empty:
                 df = df[df[self.time_index] <= time_last]
                 if training_window is not None:
                     training_window = _check_timedelta(training_window)
@@ -529,9 +528,10 @@ class Entity(object):
 
         for secondary_time_index, columns in self.secondary_time_index.items():
             # should we use ignore time last here?
-            if time_last is not None and len(df) != 0:
+            df_empty = df.empty if isinstance(df, pd.DataFrame) else False
+            if time_last is not None and not df_empty:
                 mask = df[secondary_time_index] >= time_last
-                if isinstance(df, dd.core.DataFrame):
+                if isinstance(df, dd.DataFrame):
                     for col in columns:
                         df[col] = df[col].mask(mask, np.nan)
                 else:
@@ -562,7 +562,7 @@ def _create_index(index, make_index, df):
                            "integer column", index)
         # Case 5: make_index with no errors or warnings
         # (Case 4 also uses this code path)
-        if isinstance(df, dd.core.DataFrame):
+        if isinstance(df, dd.DataFrame):
             df[index] = 1
             df[index] = df[index].cumsum() - 1
         else:

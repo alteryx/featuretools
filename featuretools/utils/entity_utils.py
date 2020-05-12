@@ -148,7 +148,7 @@ def convert_variable_data(df, column_id, new_type, **kwargs):
     elif issubclass(new_type, vtypes.Datetime):
         format = kwargs.get("format", None)
         # TODO: if float convert to int?
-        if isinstance(df, dd.core.DataFrame):
+        if isinstance(df, dd.DataFrame):
             df[column_id] = dd.to_datetime(df[column_id], format=format,
                                            infer_datetime_format=True)
         else:

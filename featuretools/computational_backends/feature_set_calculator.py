@@ -117,33 +117,30 @@ class FeatureSetCalculator(object):
 
         if len(df.columns) == 0:
             default_df = self.generate_default_df(instance_ids=instance_ids)
-            if isinstance(df, dd.core.DataFrame):
+            if isinstance(df, dd.DataFrame):
                 cols = [col for col in default_df.columns] + [default_df.index.name]
                 return dd.from_pandas(default_df.reset_index(), npartitions=1)[cols]
             return default_df
 
         # Fill in empty rows with default values. This only works for pandas dataframes
         # and is not currently supported for Dask dataframes.
-        if isinstance(df, dd.core.DataFrame):
-            missing_ids = []
-        else:
+        if isinstance(df, pd.DataFrame):
             index_vals = df[target_entity.index].values
             missing_ids = [i for i in instance_ids if i not in index_vals]
 
-        if missing_ids:
-            default_df = self.generate_default_df(instance_ids=missing_ids,
-                                                  extra_columns=df.columns)
-            sorted_cols = sorted(default_df.columns)
-            df = df[sorted_cols].append(default_df[sorted_cols])
+            if missing_ids:
+                default_df = self.generate_default_df(instance_ids=missing_ids,
+                                                    extra_columns=df.columns)
+                df = df.append(default_df, sort=True)
 
-        if isinstance(df, pd.DataFrame):
             df.index.name = self.entityset[self.feature_set.target_eid].index
+        
         column_list = []
 
         # Order by instance_ids
         unique_instance_ids = pd.unique(instance_ids)
 
-        if isinstance(df, dd.core.DataFrame):
+        if isinstance(df, dd.DataFrame):
             unique_instance_ids = unique_instance_ids.astype(object)
         else:
             # pd.unique changes the dtype for Categorical, so reset it.
@@ -153,7 +150,7 @@ class FeatureSetCalculator(object):
         for feat in self.feature_set.target_features:
             column_list.extend(feat.get_feature_names())
 
-        if isinstance(df, dd.core.DataFrame):
+        if isinstance(df, dd.DataFrame):
             column_list.extend([target_entity.index])
             df.index.name = target_entity.index
         return df[column_list]
@@ -245,7 +242,7 @@ class FeatureSetCalculator(object):
 
         # Pass filtered values, even if we are using a full df.
         if need_full_entity:
-            if isinstance(filter_values, dd.core.Series):
+            if isinstance(filter_values, dd.Series):
                 msg = "Cannot use primitives that require full entity with Dask EntitySets"
                 raise ValueError(msg)
             filtered_df = df[df[filter_variable].isin(filter_values)]
@@ -542,14 +539,16 @@ class FeatureSetCalculator(object):
 
         # merge the identity feature from the parent entity into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
-        if isinstance(merge_df, dd.core.DataFrame):
+        if isinstance(merge_df, dd.DataFrame):
             new_df = child_df.merge(merge_df, left_on=merge_var, right_on=merge_var,
                                     how='left')
         else:
             if index_as_feature is not None:
-                merge_df = merge_df.set_index(index_as_feature.get_name(), drop=False)
+                merge_df.set_index(index_as_feature.get_name(),
+                                   inplace=True,
+                                   drop=False)
             else:
-                merge_df = merge_df.set_index(merge_var)
+                merge_df.set_index(merge_var, inplace=True)
 
             new_df = child_df.merge(merge_df, left_on=merge_var, right_index=True,
                                     how='left')
@@ -626,7 +625,7 @@ class FeatureSetCalculator(object):
                     variable_id = f.base_features[0].get_name()
                     if variable_id not in to_agg:
                         to_agg[variable_id] = []
-                    if isinstance(base_frame, dd.core.DataFrame):
+                    if isinstance(base_frame, dd.DataFrame):
                         func = f.get_dask_aggregation()
                     else:
                         func = f.get_function()
@@ -664,7 +663,7 @@ class FeatureSetCalculator(object):
             # Apply the non-aggregable functions generate a new dataframe, and merge
             # it with the existing one
             if len(to_apply):
-                if isinstance(base_frame, dd.core.DataFrame):
+                if isinstance(base_frame, dd.DataFrame):
                     aggregations = {}
                     apply_rename = {}
                     multi_output = {}
@@ -731,7 +730,7 @@ class FeatureSetCalculator(object):
                 # to silence pandas warning about ambiguity we explicitly pass
                 # the column (in actuality grouping by both index and group would
                 # work)
-                if isinstance(base_frame, dd.core.DataFrame):
+                if isinstance(base_frame, dd.DataFrame):
                     to_merge = base_frame.groupby(groupby_var).agg(to_agg)
 
                 else:
@@ -747,7 +746,7 @@ class FeatureSetCalculator(object):
                     categories = pdtypes.CategoricalDtype(categories=frame.index.categories)
                     to_merge.index = to_merge.index.astype(object).astype(categories)
 
-                if isinstance(frame, dd.core.DataFrame):
+                if isinstance(frame, dd.DataFrame):
                     frame = frame.merge(to_merge, left_on=parent_merge_var, right_index=True, how='left')
                 else:
                     frame = pd.merge(left=frame, right=to_merge,
