@@ -62,3 +62,9 @@ The dashboard requires an additional python package, bokeh, to work. Once bokeh 
 Parallel Computation by Partitioning Data
 -----------------------------------------
 As an alternative to Featuretool's parallelization, the data can be partitioned and the feature calculations run on multiple cores or a cluster using Dask or Apache Spark with PySpark. This approach may be necessary with a large ``EntitySet`` because the current parallel implementation sends the entire ``EntitySet`` to each worker which may exhaust the worker memory. For more information on partitioning the data and using Dask or Spark, see :doc:`/guides/performance`. Dask and Spark allow Featuretools to scale to multiple cores on a single machine or multiple machines on a cluster.
+
+Computation with Dask Entitysets
+--------------------------------
+A final approach that can be used is to create Featuretools entitysets directly from Dask dataframes instead of using pandas dataframes. The previous methods discussed above may not work with very large datasets because of the memory required to load or partition the pandas dataframes. By creating entitysets directly from Dask dataframes, these limitations are removed. When computing a feature matrix from an entityset created from Dask dataframes, the resulting feature matrix will be returned as a Dask dataframe.
+
+This method does have some limitations in terms of the primitives that can be supported and the optional parameters that can be used when calculating the feature matrix. For more information on generating a feature matrix with this approach, refer to the guide :doc:`/guides/dfs_with_dask_entitysets`.
