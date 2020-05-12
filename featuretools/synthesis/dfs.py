@@ -203,7 +203,7 @@ def dfs(entities=None,
                 progress_percent: percentage (float between 0 and 100) of total computation completed
                 time_elapsed: total time in seconds that has elapsed since start of call
 
-        include_cutoff_time (bool): If True, data at cutoff time are included in calculating features
+        include_cutoff_time (bool): If True, data at cutoff times are included in feature calculations.
 
     Examples:
         .. code-block:: python
