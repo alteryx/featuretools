@@ -315,7 +315,7 @@ def test_training_window(es):
     assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
     assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
 
-    # Case1. include_cutoff_time = False
+    # Case2. include_cutoff_time = False
     feature_matrix = calculate_feature_matrix([property_feature, dagg],
                                               es,
                                               cutoff_time=cutoff_time,
