@@ -38,7 +38,7 @@ Changelog
 * Using training windows in feature calculations can result in different values than previous versions.
   This was done to prevent consecutive training windows from overlapping by excluding data at the oldest point in time.
   For example, if we use a cutoff time at the first minute of the hour with a one hour training window,
-  the first minute of the previous hour will no longer be included in the feature calculation. You can control it by setting `include_cutoff_time`.
+  the first minute of the previous hour will no longer be included in the feature calculation.
 
 **v0.13.4 Mar 27, 2020**
     .. warning::
