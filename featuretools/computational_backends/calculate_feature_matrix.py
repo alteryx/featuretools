@@ -252,8 +252,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     else:
         cutoff_time_to_pass = cutoff_time
 
-    chunk_size = _handle_chunk_size(chunk_size, cutoff_time.shape[0])
-    tqdm_options = {'total': (cutoff_time.shape[0] / FEATURE_CALCULATION_PERCENTAGE),
+    chunk_size = _handle_chunk_size(chunk_size, len(cutoff_time))
+    tqdm_options = {'total': (len(cutoff_time) / FEATURE_CALCULATION_PERCENTAGE),
                     'bar_format': PBAR_FORMAT,
                     'disable': True}
 

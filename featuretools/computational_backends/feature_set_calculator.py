@@ -130,11 +130,11 @@ class FeatureSetCalculator(object):
 
             if missing_ids:
                 default_df = self.generate_default_df(instance_ids=missing_ids,
-                                                    extra_columns=df.columns)
+                                                      extra_columns=df.columns)
                 df = df.append(default_df, sort=True)
 
             df.index.name = self.entityset[self.feature_set.target_eid].index
-        
+
         column_list = []
 
         # Order by instance_ids
