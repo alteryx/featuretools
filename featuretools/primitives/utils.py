@@ -39,16 +39,46 @@ def get_transform_primitives():
 
 def list_primitives():
     trans_names, trans_primitives = _get_names_primitives(get_transform_primitives)
+    trans_dask = [primitive.dask_compatible for primitive in trans_primitives]
     transform_df = pd.DataFrame({'name': trans_names,
-                                 'description': _get_descriptions(trans_primitives)})
+                                 'description': _get_descriptions(trans_primitives),
+                                 'dask_compatible': trans_dask})
     transform_df['type'] = 'transform'
 
     agg_names, agg_primitives = _get_names_primitives(get_aggregation_primitives)
+    agg_dask = [primitive.dask_compatible for primitive in agg_primitives]
     agg_df = pd.DataFrame({'name': agg_names,
-                           'description': _get_descriptions(agg_primitives)})
+                           'description': _get_descriptions(agg_primitives),
+                           'dask_compatible': agg_dask})
     agg_df['type'] = 'aggregation'
 
-    return pd.concat([agg_df, transform_df], ignore_index=True)[['name', 'type', 'description']]
+    return pd.concat([agg_df, transform_df], ignore_index=True)[['name', 'type', 'dask_compatible', 'description']]
+
+
+def get_default_aggregation_primitives():
+    agg_primitives = [featuretools.primitives.Sum,
+                      featuretools.primitives.Std,
+                      featuretools.primitives.Max,
+                      featuretools.primitives.Skew,
+                      featuretools.primitives.Min,
+                      featuretools.primitives.Mean,
+                      featuretools.primitives.Count,
+                      featuretools.primitives.PercentTrue,
+                      featuretools.primitives.NumUnique,
+                      featuretools.primitives.Mode]
+    return agg_primitives
+
+
+def get_default_transform_primitives():
+    # featuretools.primitives.TimeSince
+    trans_primitives = [featuretools.primitives.Day,
+                        featuretools.primitives.Year,
+                        featuretools.primitives.Month,
+                        featuretools.primitives.Weekday,
+                        featuretools.primitives.Haversine,
+                        featuretools.primitives.NumWords,
+                        featuretools.primitives.NumCharacters]
+    return trans_primitives
 
 
 def _get_descriptions(primitives):

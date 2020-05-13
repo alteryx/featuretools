@@ -179,9 +179,7 @@ class DeepFeatureSynthesis(object):
         self.es = entityset
 
         if agg_primitives is None:
-            agg_primitives = [primitives.Sum, primitives.Std, primitives.Max, primitives.Skew,
-                              primitives.Min, primitives.Mean, primitives.Count,
-                              primitives.PercentTrue, primitives.NumUnique, primitives.Mode]
+            agg_primitives = primitives.get_default_aggregation_primitives()
             if any(isinstance(e.df, dd.DataFrame) for e in self.es.entities):
                 agg_primitives = [p for p in agg_primitives if p.dask_compatible]
         self.agg_primitives = []
@@ -200,9 +198,7 @@ class DeepFeatureSynthesis(object):
             self.agg_primitives.append(a)
 
         if trans_primitives is None:
-            trans_primitives = [primitives.Day, primitives.Year, primitives.Month,
-                                primitives.Weekday, primitives.Haversine,
-                                primitives.NumWords, primitives.NumCharacters]  # primitives.TimeSince
+            trans_primitives = primitives.get_default_transform_primitives()
             if any(isinstance(e.df, dd.DataFrame) for e in self.es.entities):
                 trans_primitives = [p for p in trans_primitives if p.dask_compatible]
         self.trans_primitives = []

@@ -732,7 +732,8 @@ class FeatureSetCalculator(object):
                 # the column (in actuality grouping by both index and group would
                 # work)
                 if isinstance(base_frame, dd.core.DataFrame):
-                    to_merge = base_frame.groupby(base_frame[groupby_var]).agg(to_agg)
+                    to_merge = base_frame.groupby(groupby_var).agg(to_agg)
+
                 else:
                     to_merge = base_frame.groupby(base_frame[groupby_var],
                                                   observed=True, sort=False).agg(to_agg)
@@ -747,9 +748,7 @@ class FeatureSetCalculator(object):
                     to_merge.index = to_merge.index.astype(object).astype(categories)
 
                 if isinstance(frame, dd.core.DataFrame):
-                    child_merge_var = to_merge.index.name
-                    frame = dd.merge(left=frame, right=to_merge.reset_index(),
-                                     left_on=parent_merge_var, right_on=child_merge_var, how='left')
+                    frame = frame.merge(to_merge, left_on=parent_merge_var, right_index=True, how='left')
                 else:
                     frame = pd.merge(left=frame, right=to_merge,
                                      left_index=True, right_index=True, how='left')
