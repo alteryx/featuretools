@@ -122,7 +122,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                 progress_percent: percentage (float between 0 and 100) of total computation completed
                 time_elapsed: total time in seconds that has elapsed since start of call
 
-        include_cutoff_time (bool): If True, data at cutoff times are included in feature calculations.
+        include_cutoff_time (bool): Include data at cutoff times in feature calculations. Defaults to ``True``.
     """
     assert (isinstance(features, list) and features != [] and
             all([isinstance(feature, FeatureBase) for feature in features])), \
