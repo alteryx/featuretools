@@ -132,7 +132,7 @@ For example, a customer's session has multiple transactions which can happen at 
 Featuretools can automatically add last time indexes to every :class:`Entity` in an :class:`Entityset` by running ``EntitySet.add_last_time_indexes()``. If a ``last_time_index`` has been set, Featuretools will check to see if the ``last_time_index`` is after the start of the training window. That, combined with the cutoff time, allows DFS to discover which data is relevant for a given training window.
 
 
-Include data at cutoff times
+Excluding data at cutoff times
 -----------------------------------------------
 
 There are some situations where data is right just on the cutoff time. For example, let say you have to predict one month revenue for each store using sales data. One of the them is the revenue from ``2020-01-01`` to ``2020-01-31`` and there are bunch of sale history data before that time, including the one occured at ``2020-01-01 00:00:00``. You might want to include(or exclude) the data in feature calculation for this cutoff time. This can be controlled by using the ``include_cutoff_time`` parameter to :func:`featuretools.dfs` or :func:`featuretools.calculate_feature_matrix`::
