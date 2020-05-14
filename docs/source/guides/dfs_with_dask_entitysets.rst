@@ -64,7 +64,7 @@ There are many parts of Featuretools that are difficult to implement in a distri
 
 Supported Primitives
 ********************
-When creating a feature matrix from a Dask ``EntitySet``, only certain primitives can be used. Computation of certain features is quite expensive in a distributed environment, and as a result only a subset of Featuretools primitives are currently supported when using a Dask ``EntitySet``.
+When creating a feature matrix from a Dask ``EntitySet``, only certain primitives can be used. Primitives that rely on the order of the entire dataframe or require an entire column to be computed are inefficient and difficult to support in a distributed environment. As a result, only a subset of Featuretools primitives are currently supported when using a Dask ``EntitySet``.
 
 To obtain a list of the primitives that can be used with a Dask ``EntitySet``, you can call ``featuretools.list_primitives()``. This will return a table of all primitives. Any primitive that can be used with a Dask ``EntitySet`` will have a value of ``True`` in the ``dask_compatible`` column.
 
@@ -77,14 +77,16 @@ To obtain a list of the primitives that can be used with a Dask ``EntitySet``, y
     dask_compatible_df.tail()
 
 
-Entityset Limitations
-*********************
+Entity Limitations
+******************
 When creating a Featuretools ``Entity`` from Dask dataframes, variable type inference is not performed as it is when creating entities from pandas dataframes. This is done to improve speed as sampling the data to infer the variable types would require an expensive compute operation on the underlying Dask dataframe. As a consequence of, this users must define the variable types for each column in the supplied Dataframe. This step is needed so that the deep feature synthesis process can build the proper features based on the column types. A list of available variable types can be obtained by running ``featuretools.variable_types.find_variable_types()``.
 
 By default, Featuretools checks that entities created from pandas dataframes have unique index values. Because performing this same check with Dask would require an expensive compute operation, this check is not performed when creating an entity from a Dask dataframe. When using Dask dataframes, users must ensure that the supplied index values are unique.
 
-Entity Limitations
-******************
+With an ``Entity`` created from a Dask dataframe, the ordering of the dataframe rows is not guaranteed as it is with an ``Entity`` created from a pandas dataframe. Furthermore, Featuretools does not attempt to maintain order of the underlying dataframe that is used to create a Dask ``Entity``.
+
+EntitySet Limitations
+*********************
 When creating a Featuretools ``Entityset`` that will be made of Dask entities, there is only one major limitation to be aware of. All of the entities used to create the ``EntitySet`` must be of the same type, either all Dask entities or all pandas entities. Featuretools does not support creating a mixed ``EntitySet`` containing a mix of Dask and pandas entities.
 
 DFS Limitations
