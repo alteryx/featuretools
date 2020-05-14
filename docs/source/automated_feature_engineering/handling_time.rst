@@ -134,46 +134,53 @@ Featuretools can automatically add last time indexes to every :class:`Entity` in
 
 Excluding data at cutoff times
 -----------------------------------------------
-
-If you don't want to use the data at cutoff times in feature calculation, you can exclude them by setting ``include_cutoff_time`` to ``False``. Then, it will not use the data from these time points in time or any data newer than that. If you set it to ``True``, it will use the data from the older(or within the ``training_window`` if you set) and the one from the cutoff time as well:
+The ``cutoff_time`` is the last point in time where data can be used for feature calculation. If you don't want to use the data at the cutoff time in feature calculation, you can exclude that data by setting ``include_cutoff_time`` to ``False`` in :func:`featuretools.dfs` or :func:`featuretools.calculate_feature_matrix`. If you set it to ``True`` (the default behavior), data from the cutoff time point will be used. If used with ``training_window``, it will work like belows:
 
 .. ipython:: python
 
-    from featuretools.primitives import Count
+    from featuretools.primitives import Sum
 
     es.add_last_time_indexes()
 
     es['transactions'].df.head()
     es['sessions'].df.head(2)
 
-    count_log = ft.Feature(
-        base=es['transactions']['transaction_id'],
+    sum_log = ft.Feature(
+        base=es['transactions']['amount'],
         parent_entity=es['sessions'],
-        primitive=Count,
+        primitive=Sum,
     )
     cutoff_time = pd.DataFrame({
         'session_id': [1, 1],
         'time': ['2014-01-01 00:02:10', '2014-01-01 00:04:20'],
     }).astype({'time': 'datetime64[ns]'})
 
+With ``include_cutoff_time=True``, the oldest point in the training window(which is also the point of previous cutoff time(``2014-01-01 00:02:10``) in this case), is excluded and the its cutoff time point is included
+
+.. ipython:: python
+
     # Case1. include_cutoff_time = True
     actual = ft.calculate_feature_matrix(
-        features=[count_log],
+        features=[sum_log],
         entityset=es,
         cutoff_time=cutoff_time,
         cutoff_time_in_index=True,
-        training_window='3 minutes',
+        training_window='130 seconds',
         include_cutoff_time=True,
     )
     actual
 
+Whereas with ``include_cutoff_time=False``, the oldest point in the window is included and the cutoff time point is excluded
+
+.. ipython:: python
+
     # Case2. include_cutoff_time = False
     actual = ft.calculate_feature_matrix(
-        features=[count_log],
+        features=[sum_log],
         entityset=es,
         cutoff_time=cutoff_time,
         cutoff_time_in_index=True,
-        training_window='3 minutes',
+        training_window='130 seconds',
         include_cutoff_time=False,
     )
     actual
