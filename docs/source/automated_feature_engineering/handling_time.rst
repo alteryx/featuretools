@@ -135,20 +135,48 @@ Featuretools can automatically add last time indexes to every :class:`Entity` in
 Excluding data at cutoff times
 -----------------------------------------------
 
-There are some situations where data is right just on the cutoff time. For example, let say you have to predict one month revenue for each store using sales data. One of the them is the revenue from ``2020-01-01`` to ``2020-01-31`` and there are bunch of sale history data before that time, including the one occured at ``2020-01-01 00:00:00``. You might want to include(or exclude) the data in feature calculation for this cutoff time. This can be controlled by using the ``include_cutoff_time`` parameter to :func:`featuretools.dfs` or :func:`featuretools.calculate_feature_matrix`::
+If you don't want to use the data at cutoff times in feature calculation, you can exclude them by setting ``include_cutoff_time`` to ``False``. Then, it will not use the data from these time points in time or any data newer than that. If you set it to ``True``, it will use the data from the older(or within the ``training_window`` if you set) and the one from the cutoff time as well:
 
-    fm = ft.calculate_feature_matrix(features=features,
-                                     entityset=es_transactions,
-                                     cutoff_time=ct_transactions,
-                                     include_cutoff_time=True)
+.. ipython:: python
 
-    fm, features = ft.dfs(entityset=es,
-                          target_entity='customers',
-                          cutoff_time=pd.Timestamp("2014-1-1 04:00"),
-                          instance_ids=[1,2,3],
-                          cutoff_time_in_index=True,
-                          include_cutoff_time=False)
+    from featuretools.primitives import Count
 
+    es.add_last_time_indexes()
+
+    es['transactions'].df.head()
+    es['sessions'].df.head(2)
+
+    count_log = ft.Feature(
+        base=es['transactions']['transaction_id'],
+        parent_entity=es['sessions'],
+        primitive=Count,
+    )
+    cutoff_time = pd.DataFrame({
+        'session_id': [1, 1],
+        'time': ['2014-01-01 00:02:10', '2014-01-01 00:04:20'],
+    }).astype({'time': 'datetime64[ns]'})
+
+    # Case1. include_cutoff_time = True
+    actual = ft.calculate_feature_matrix(
+        features=[count_log],
+        entityset=es,
+        cutoff_time=cutoff_time,
+        cutoff_time_in_index=True,
+        training_window='3 minutes',
+        include_cutoff_time=True,
+    )
+    actual
+
+    # Case2. include_cutoff_time = False
+    actual = ft.calculate_feature_matrix(
+        features=[count_log],
+        entityset=es,
+        cutoff_time=cutoff_time,
+        cutoff_time_in_index=True,
+        training_window='3 minutes',
+        include_cutoff_time=False,
+    )
+    actual
 
 .. _approximate:
 
