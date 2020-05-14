@@ -1,8 +1,8 @@
-DFS with Dask Entitysets
+DFS with Dask EntitySets
 ========================
-Creating a feature matrix from a very large dataset can be problematic if the underlying pandas dataframes that make up the entities cannot easily fit in memory. To help get around this issue, Featuretools supports creating entities and entitysets from Dask dataframes. These entitysets can then be passed to ``ft.dfs`` to create a feature matrix, which will be returned as a Dask dataframe. In addition to working on larger than memory datasets, this approach also allows users to take advantage of the parallel processing capabilities offered by Dask.
+Creating a feature matrix from a very large dataset can be problematic if the underlying pandas dataframes that make up the entities cannot easily fit in memory. To help get around this issue, Featuretools supports creating ``Entity`` and ``EntitySet`` objects from Dask dataframes. A Dask ``EntitySet`` can then be passed to ``ft.dfs`` to create a feature matrix, which will be returned as a Dask dataframe. In addition to working on larger than memory datasets, this approach also allows users to take advantage of the parallel processing capabilities offered by Dask.
 
-This guide will provide an overview of how to create Dask entitysets and then generate a feature matrix from this entityset. If you are already familiar with creating a feature matrix starting from pandas dataframes, this process will seem quite familiar, as there are no differences in the process. There are, however, some limitations when using Dask dataframes, and those limitations are reviewed in more detail below.
+This guide will provide an overview of how to create a Dask ``EntitySet`` and then generate a feature matrix from it. If you are already familiar with creating a feature matrix starting from pandas dataframes, this process will seem quite familiar, as there are no differences in the process. There are, however, some limitations when using Dask dataframes, and those limitations are reviewed in more detail below.
 
 Creating Entities and Entitysets
 --------------------------------
@@ -20,7 +20,7 @@ For this example, we will create a very small pandas dataframe and then convert 
     dask_df
 
 
-Now that we have our Dask dataframe, we can start to create our entityset. The current implementation does not support variable type inference for Dask entities, so we must pass a dictionary of variable types using the ``variable_types`` parameter when calling ``es.entity_from_dataframe()``. Aside from needing to supply the variable types, the rest of the process of creating an entityset is the same as if we were using pandas dataframes.
+Now that we have our Dask dataframe, we can start to create the ``EntitySet``. The current implementation does not support variable type inference for Dask entities, so we must pass a dictionary of variable types using the ``variable_types`` parameter when calling ``es.entity_from_dataframe()``. Aside from needing to supply the variable types, the rest of the process of creating an ``EntitySet`` is the same as if we were using pandas dataframes.
 
 .. ipython:: python
 
@@ -33,12 +33,12 @@ Now that we have our Dask dataframe, we can start to create our entityset. The c
     es
 
 
-Notice that when we print our entityset, the number of rows for the ``dask_entity`` entity is returned as a Dask ``Delayed`` object. This is because obtaining the length of a Dask dataframe requires an expensive compute operation to sum up the lengths of all the individual partitions that make up the dataframe and that operation is not performed by default.
+Notice that when we print our ``EntitySet``, the number of rows for the ``dask_entity`` entity is returned as a Dask ``Delayed`` object. This is because obtaining the length of a Dask dataframe requires an expensive compute operation to sum up the lengths of all the individual partitions that make up the dataframe and that operation is not performed by default.
 
 
 Running DFS
 -----------
-We can pass the entityset we created above to ``featuretools.dfs`` in order to create a feature matrix. If the entityset we pass to ``dfs`` is made of Dask entities, the feature matrix we get back will be a Dask dataframe.
+We can pass the ``EntitySet`` we created above to ``featuretools.dfs`` in order to create a feature matrix. If the ``EntitySet`` we pass to ``dfs`` is made of Dask entities, the feature matrix we get back will be a Dask dataframe.
 
 .. ipython:: python
 
@@ -56,17 +56,17 @@ This feature matrix can be saved to disk or computed and brought into memory, us
     fm_computed
 
 
-While this is a simple example to illustrate the process of using Dask dataframes with Featuretools, this process will also work with entitysets containing multiple entities, as well as with aggregation primitives.
+While this is a simple example to illustrate the process of using Dask dataframes with Featuretools, this process will also work with an ``EntitySet`` containing multiple entities, as well as with aggregation primitives.
 
 Limitations
 -----------
-There are many parts of Featuretools that are difficult to implement in a distributed environment and several primitives that are not well suited to operate on distributed dataframes. As a result, there are some limitations when creating Dask entitysets and then using these entitysets to generate a feature matrix. The most significant limitations are reviewed in more detail in this section.
+There are many parts of Featuretools that are difficult to implement in a distributed environment and several primitives that are not well suited to operate on distributed dataframes. As a result, there are some limitations when creating a Dask ``Entityset`` and then using it to generate a feature matrix. The most significant limitations are reviewed in more detail in this section.
 
 Supported Primitives
 ********************
-When creating a feature matrix from a Dask entityset, only certain primitives can be used. Computation of certain features is quite expensive in a distributed environment, and as a result only a subset of Featuretools primitives are currently supported when using a Dask entityset.
+When creating a feature matrix from a Dask ``EntitySet``, only certain primitives can be used. Computation of certain features is quite expensive in a distributed environment, and as a result only a subset of Featuretools primitives are currently supported when using a Dask ``EntitySet``.
 
-To obtain a list of the primitives that can be used with Dask entitysets, you can call ``featuretools.list_primitives()``. This will return a table of all primitives. Any primitive that can be used with a Dask entityset will have a value of ``True`` in the ``dask_compatible`` column.
+To obtain a list of the primitives that can be used with a Dask ``EntitySet``, you can call ``featuretools.list_primitives()``. This will return a table of all primitives. Any primitive that can be used with a Dask ``EntitySet`` will have a value of ``True`` in the ``dask_compatible`` column.
 
 
 .. ipython:: python
@@ -85,11 +85,11 @@ By default, Featuretools checks that entities created from pandas dataframes hav
 
 Entity Limitations
 ******************
-When creating a Featuretools ``Entityset`` that will be made of Dask entities, there is only one major limitation to be aware of. All of the entities used to create the entityset must be of the same type, either all Dask entities or all pandas entities. Featuretools does not support creating mixed entitysets containing a mix of Dask and pandas entities.
+When creating a Featuretools ``Entityset`` that will be made of Dask entities, there is only one major limitation to be aware of. All of the entities used to create the ``EntitySet`` must be of the same type, either all Dask entities or all pandas entities. Featuretools does not support creating a mixed ``EntitySet`` containing a mix of Dask and pandas entities.
 
 DFS Limitations
 ***************
-There are a few key limitations when generating a feature matrix from a Dask entityset.
+There are a few key limitations when generating a feature matrix from a Dask ``EntitySet``.
 
 If a ``cutoff_time`` parammeter is passed to ``featuretools.dfs()`` it must either be a single cutoff time value, or a pandas dataframe. The current implementation does not support the use of a Dask dataframe for cutoff time values.
 
