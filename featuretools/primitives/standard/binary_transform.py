@@ -274,6 +274,7 @@ class EqualScalar(TransformPrimitive):
     name = "equal_scalar"
     input_types = [Variable]
     return_type = Boolean
+    dask_compatible = True
 
     def __init__(self, value=None):
         self.value = value
@@ -329,12 +330,15 @@ class NotEqualScalar(TransformPrimitive):
     name = "not_equal_scalar"
     input_types = [Variable]
     return_type = Boolean
+    dask_compatible = True
 
     def __init__(self, value=None):
         self.value = value
 
     def get_function(self):
         def not_equal_scalar(vals):
+            if isinstance(vals, dd.core.Series):
+                return vals != self.value
             return pd.Series(vals) != self.value
         return not_equal_scalar
 
