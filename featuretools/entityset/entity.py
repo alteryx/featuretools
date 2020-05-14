@@ -448,8 +448,8 @@ class Entity(object):
             self.df = self.df.set_index(self.df[variable_id], drop=False)
             self.df.index.name = None
             if unique:
-                index_is_unique = self.df[variable_id].is_unique
-                assert index_is_unique, "Index is not unique on dataframe (Entity {})".format(self.id)
+                assert self.df.index.is_unique, "Index is not unique on dataframe " \
+                    "(Entity {})".format(self.id)
 
         self.convert_variable_type(variable_id, vtypes.Index, convert_data=False)
         self.index = variable_id
