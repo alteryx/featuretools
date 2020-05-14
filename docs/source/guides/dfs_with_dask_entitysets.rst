@@ -4,7 +4,7 @@ Creating a feature matrix from a very large dataset can be problematic if the un
 
 This guide will provide an overview of how to create a Dask ``EntitySet`` and then generate a feature matrix from it. If you are already familiar with creating a feature matrix starting from pandas dataframes, this process will seem quite familiar, as there are no differences in the process. There are, however, some limitations when using Dask dataframes, and those limitations are reviewed in more detail below.
 
-Creating Entities and Entitysets
+Creating Entities and EntitySets
 --------------------------------
 For this example, we will create a very small pandas dataframe and then convert this into a Dask dataframe to use in the remainder of the process. Normally when using Dask, you would just read your data directly into a Dask dataframe without the intermediate step of using pandas.
 
@@ -83,7 +83,7 @@ When creating a Featuretools ``Entity`` from Dask dataframes, variable type infe
 
 By default, Featuretools checks that entities created from pandas dataframes have unique index values. Because performing this same check with Dask would require an expensive compute operation, this check is not performed when creating an entity from a Dask dataframe. When using Dask dataframes, users must ensure that the supplied index values are unique.
 
-With an ``Entity`` created from a Dask dataframe, the ordering of the dataframe rows is not guaranteed as it is with an ``Entity`` created from a pandas dataframe. Furthermore, Featuretools does not attempt to maintain order of the underlying dataframe that is used to create a Dask ``Entity``.
+When an ``Entity`` is created from a pandas dataframe, the ordering of the underlying dataframe rows is maintained. For a Dask ``Entity``, the ordering of the dataframe rows is not guaranteed, and Featuretools does not attempt to maintain row order in a Dask ``Entity``. If ordering is important, close attention must be paid to any output to avoid issues.
 
 EntitySet Limitations
 *********************
