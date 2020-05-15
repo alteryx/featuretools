@@ -67,11 +67,11 @@ Even though the entityset contains the complete transaction history for each cus
 Using a Cutoff Time DataFrame
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Oftentimes, the training examples for machine learning will come from different points in time. To specify a unique cutoff time for each row of the resulting feature matrix, we can pass a dataframe where the first column is the instance id and the second column is the corresponding cutoff time.
+Oftentimes, the training examples for machine learning will come from different points in time. To specify a unique cutoff time for each row of the resulting feature matrix, we can pass a dataframe which has one column for the instance id and another column for the corresponding cutoff time. These columns can be in any order, but they must be named properly. The column with the instance ids must either be named ``instance_id`` or have the same name as the target entity ``index``. The column with the cutoff time values must either be named ``time`` or have the same name as the target entity ``time_index``.
 
 .. note::
 
-    Only the first two columns are used to calculate features. Any additional columns passed through are appended to the resulting feature matrix. This is typically used to pass through machine learning labels to ensure that they stay aligned with the feature matrix.
+    Only the columns corresponding to the instance ids and the cutoff times are used to calculate features. Any additional columns passed through are appended to the resulting feature matrix. This is typically used to pass through machine learning labels to ensure that they stay aligned with the feature matrix.
 
 .. ipython:: python
 

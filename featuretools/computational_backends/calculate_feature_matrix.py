@@ -53,13 +53,16 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         entityset (EntitySet): An already initialized entityset. Required if `entities` and `relationships`
             not provided
 
-        cutoff_time (pd.DataFrame or Datetime): Specifies at which time to calculate
+        cutoff_time (pd.DataFrame or Datetime): Specifies times at which to calculate
             the features for each instance. The resulting feature matrix will use data
-            up to and including the cutoff_time. Can either be a DataFrame with
-            'instance_id' and 'time' columns, DataFrame with the name of the
-            index variable in the target entity and a time column, or a single
-            value to calculate for all instances. If the dataframe has more than two columns, any additional
-            columns will be added to the resulting feature matrix.
+            up to and including the cutoff_time. Can either be a DataFrame or a single
+            value. If a DataFrame is passed the instance ids for which to calculate features
+            must be in a column with the same name as the target entity index or a column
+            named `instance_id`. The cutoff time values in the DataFrame must be in a column with
+            the same name as the target entity time index or a column named `time`. If the
+            DataFrame has more than two columns, any additional columns will be added to the
+            resulting feature matrix. If a single value is passed, this value will be used for
+            all instances.
 
         instance_ids (list): List of instances to calculate features on. Only
             used if cutoff_time is a single datetime.
@@ -161,15 +164,17 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     # maybe add _check_time_dtype helper function
     if "instance_id" not in cutoff_time.columns:
         if target_entity.index not in cutoff_time.columns:
-            raise AttributeError('Name of the index variable in the target entity'
-                                 ' or "instance_id" must be present in cutoff_time')
+            raise AttributeError('Cutoff time DataFrame must contain a column with either the same name'
+                                 ' as the target entity index or a column named "instance_id"')
         # rename to instance_id
         cutoff_time.rename(columns={target_entity.index: "instance_id"}, inplace=True)
 
     if "time" not in cutoff_time.columns:
-        # take the first column that isn't instance_id and assume it is time
-        not_instance_id = [c for c in cutoff_time.columns if c != "instance_id"]
-        cutoff_time.rename(columns={not_instance_id[0]: "time"}, inplace=True)
+        if target_entity.time_index and target_entity.time_index not in cutoff_time.columns:
+            raise AttributeError('Cutoff time DataFrame must contain a column with either the same name'
+                                 ' as the target entity time_index or a column named "time"')
+        # rename to time
+        cutoff_time.rename(columns={target_entity.time_index: "time"}, inplace=True)
 
     # Check that cutoff_time time type matches entityset time type
     if entityset.time_type == NumericTimeIndex:
@@ -181,11 +186,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             raise TypeError("cutoff_time times must be datetime type: try casting via pd.to_datetime(cutoff_time['time'])")
     assert (cutoff_time[['instance_id', 'time']].duplicated().sum() == 0), \
         "Duplicated rows in cutoff time dataframe."
-    # move instance_id and time columns to first and second position in the cutoff_time dataframe
-    column_names = cutoff_time.columns.tolist()
-    column_names.insert(0, column_names.pop(column_names.index('instance_id')))
-    column_names.insert(1, column_names.pop(column_names.index('time')))
-    pass_columns = [column_name for column_name in column_names[2:]]
+
+    pass_columns = [col for col in cutoff_time.columns if col not in ['instance_id', 'time']]
 
     if _check_time_type(cutoff_time['time'].iloc[0]) is None:
         raise ValueError("cutoff_time time values must be datetime or numeric")

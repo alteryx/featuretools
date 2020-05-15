@@ -281,15 +281,32 @@ def test_cutoff_time_binning():
 def test_cutoff_time_columns_order(es):
     property_feature = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
     times = [datetime(2011, 4, 10), datetime(2011, 4, 11), datetime(2011, 4, 7)]
-    cutoff_time = pd.DataFrame({'dummy_col_1':[1,2,3],
+    cutoff_time = pd.DataFrame({'dummy_col_1': [1, 2, 3],
                                 'instance_id': [0, 1, 2],
-                                'dummy_col_2':[True, False, False],
+                                'dummy_col_2': [True, False, False],
                                 'time': times})
     feature_matrix = calculate_feature_matrix([property_feature],
                                               es,
                                               cutoff_time=cutoff_time)
 
-    labels = [0, 10, 5]
+    labels = [10, 5, 0]
+
+    assert (feature_matrix[property_feature.get_name()] == labels).values.all()
+
+
+def test_cutoff_time_columns_order_with_time_index_col(es):
+    property_feature = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
+    times = [datetime(2011, 4, 10), datetime(2011, 4, 11), datetime(2011, 4, 7)]
+    cutoff_time = pd.DataFrame({'dummy_col_1': [1, 2, 3],
+                                es['customers'].index: [0, 1, 2],
+                                'dummy_col_2': [True, False, False],
+                                es['customers'].time_index: times})
+    feature_matrix = calculate_feature_matrix([property_feature],
+                                              es,
+                                              cutoff_time=cutoff_time)
+
+    labels = [10, 5, 0]
+
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 
@@ -697,19 +714,22 @@ def test_cutoff_time_naming(es):
                                        pd.Timestamp('2011-04-09 10:30:06')],
                               'instance_id': [0, 0]})
     cutoff_df_index_name = cutoff_df.rename(columns={"instance_id": "id"})
-    cutoff_df_time_name = cutoff_df.rename(columns={"time": "cutoff_time"})
-    cutoff_df_index_name_time_name = cutoff_df.rename(columns={"instance_id": "id", "time": "cutoff_time"})
     cutoff_df_wrong_index_name = cutoff_df.rename(columns={"instance_id": "wrong_id"})
+    cutoff_df_wrong_time_name = cutoff_df.rename(columns={"time": "cutoff_time"})
 
     fm1 = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df)
-    for test_cutoff in [cutoff_df_index_name, cutoff_df_time_name, cutoff_df_index_name_time_name]:
-        fm2 = calculate_feature_matrix([dfeat], es, cutoff_time=test_cutoff)
+    fm2 = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df_index_name)
+    assert all((fm1 == fm2.values).values)
 
-        assert all((fm1 == fm2.values).values)
-
-    error_text = 'Name of the index variable in the target entity or "instance_id" must be present in cutoff_time'
+    error_text = 'Cutoff time DataFrame must contain a column with either the same name' \
+                 ' as the target entity index or a column named "instance_id"'
     with pytest.raises(AttributeError, match=error_text):
         calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df_wrong_index_name)
+
+    time_error_text = 'Cutoff time DataFrame must contain a column with either the same name' \
+                      ' as the target entity time_index or a column named "time"'
+    with pytest.raises(AttributeError, match=time_error_text):
+        calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df_wrong_time_name)
 
 
 def test_cutoff_time_extra_columns(es):
