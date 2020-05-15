@@ -237,12 +237,6 @@ class Equal(TransformPrimitive):
         whether each value in X is equal to each corresponding value
         in Y.
 
-     Args:
-        strict_categories (bool): Deterimines how to compare Categorical
-        dtypes. If True, values are only conisidered equal if they have
-        the same categories. If False, categories are ignored when testing
-        equality. Defaults to False.
-
     Examples:
         >>> equal = Equal()
         >>> equal([2, 1, 2], [1, 2, 2]).tolist()
@@ -253,22 +247,17 @@ class Equal(TransformPrimitive):
     return_type = Boolean
     commutative = True
 
-    def __init__(self, strict_categories=False):
-        self.strict_categories = strict_categories
-
     def get_function(self):
         def equal(x_vals, y_vals):
             if isinstance(x_vals.dtype, pd.CategoricalDtype) and \
                isinstance(y_vals.dtype, pd.CategoricalDtype):
-                res = np.equal(np.array(x_vals), np.array(y_vals))
-                if self.strict_categories and \
-                   set(x_vals.cat.categories) != set(y_vals.cat.categories):
-                    # Categories aren't equal, none are equal
-                    return pd.Series([False] * res.shape[0])
-                else:
-                    return pd.Series(res)
+                categories = set(x_vals.cat.categories).union(set(y_vals.cat.categories))
+                x_vals = x_vals.cat.add_categories(categories.difference(set(x_vals.cat.categories)))
+                y_vals = y_vals.cat.add_categories(categories.difference(set(y_vals.cat.categories)))
+            if hasattr(x_vals, 'eq'):
+                return x_vals.eq(y_vals)
             else:
-                return pd.Series.eq(x_vals, y_vals)
+                return np.equal(x_vals, y_vals)
 
         return equal
 
@@ -335,15 +324,13 @@ class NotEqual(TransformPrimitive):
         def not_equal(x_vals, y_vals):
             if isinstance(x_vals.dtype, pd.CategoricalDtype) and \
                isinstance(y_vals.dtype, pd.CategoricalDtype):
-                res = np.not_equal(np.array(x_vals), np.array(y_vals))
-                if self.strict_categories \
-                   and set(x_vals.cat.categories) != set(y_vals.cat.categories):
-                    # Categories aren't equal, none are equal
-                    return pd.Series([True] * res.shape[0])
-                else:
-                    return pd.Series(res)
+                categories = set(x_vals.cat.categories).union(set(y_vals.cat.categories))
+                x_vals = x_vals.cat.add_categories(categories.difference(set(x_vals.cat.categories)))
+                y_vals = y_vals.cat.add_categories(categories.difference(set(y_vals.cat.categories)))
+            if hasattr(x_vals, 'ne'):
+                return x_vals.ne(y_vals)
             else:
-                return pd.Series.ne(x_vals, y_vals)
+                return np.not_equal(x_vals, y_vals)
 
         return not_equal
 
