@@ -289,9 +289,9 @@ workflows:
           image_tag: "3.6"
       - install_ft_complete:
           name: "py37 install featuretools complete test"
-       - install_ft_complete:
-           name: "py38 install featuretools complete test"
-           image_tag: "3.8"
+      - install_ft_complete:
+          name: "py38 install featuretools complete test"
+          image_tag: "3.8"
       - changelog_updated:
           name: "changelog updated"
           filters:
