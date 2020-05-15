@@ -181,7 +181,11 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             raise TypeError("cutoff_time times must be datetime type: try casting via pd.to_datetime(cutoff_time['time'])")
     assert (cutoff_time[['instance_id', 'time']].duplicated().sum() == 0), \
         "Duplicated rows in cutoff time dataframe."
-    pass_columns = [column_name for column_name in cutoff_time.columns[2:]]
+    # move instance_id and time columns to first and second position in the cutoff_time dataframe
+    column_names = cutoff_time.columns.tolist()
+    column_names.insert(0, column_names.pop(column_names.index('instance_id')))
+    column_names.insert(1, column_names.pop(column_names.index('time')))
+    pass_columns = [column_name for column_name in column_names[2:]]
 
     if _check_time_type(cutoff_time['time'].iloc[0]) is None:
         raise ValueError("cutoff_time time values must be datetime or numeric")
