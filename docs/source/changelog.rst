@@ -2,6 +2,16 @@
 
 Changelog
 ---------
+**Future Release**
+    * Enhancements
+        * Add `get_default_aggregation_primitives` and `get_default_transform_primitives` (:pr:`945`)
+    * Fixes
+    * Changes
+    * Documentation Changes
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
+
 **v0.14.0 Apr 30, 2020**
     * Enhancements
         * ft.encode_features - use less memory for one-hot encoded columns (:pr:`876`)
