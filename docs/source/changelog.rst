@@ -4,13 +4,15 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
-        * Add `get_default_aggregation_primitives` and `get_default_transform_primitives` (:pr:`945`)
+        * Add ``get_default_aggregation_primitives`` and ``get_default_transform_primitives`` (:pr:`945`)
     * Fixes
     * Changes
     * Documentation Changes
+    * Testing Changes
+        * Update testing dependencies (:pr:`976`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`rwedge`
 
 **v0.14.0 Apr 30, 2020**
     * Enhancements
