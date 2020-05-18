@@ -327,7 +327,7 @@ def test_training_window(es):
     assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
 
 
-def test_overlap_with_training_window(es):
+def test_include_cutoff_time_with_training_window(es):
     es.add_last_time_indexes()
 
     count_log = ft.Feature(
@@ -364,7 +364,7 @@ def test_overlap_with_training_window(es):
     np.testing.assert_array_equal(actual.values, [0, 9])
 
 
-def test_overlap_without_training_window(es):
+def test_include_cutoff_time_without_training_window(es):
     es.add_last_time_indexes()
 
     count_log = ft.Feature(
