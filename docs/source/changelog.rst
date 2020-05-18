@@ -4,14 +4,17 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
-        * Add `get_default_aggregation_primitives` and `get_default_transform_primitives` (:pr:`945`)
+        * Add ``get_default_aggregation_primitives`` and ``get_default_transform_primitives`` (:pr:`945`)
         * Add `include_cutoff_time` arg - control whether data at cutoff times are included in feature calculations (:pr:`959`)
     * Fixes
     * Changes
     * Documentation Changes
+    * Testing Changes
+        * Add automated tests for python 3.8 environment (:pr:`847`)
+        * Update testing dependencies (:pr:`976`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rightx2`, :user:`jeff-hernandez`
+    :user:`gsheni`, :user:`rightx2`, :user:`jeff-hernandez`, :user:`rwedge`
 
 **v0.14.0 Apr 30, 2020**
     * Enhancements
