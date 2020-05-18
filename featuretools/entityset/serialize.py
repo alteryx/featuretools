@@ -24,6 +24,10 @@ def entity_to_description(entity):
     '''
     index = entity.df.columns.isin([variable.id for variable in entity.variables])
     dtypes = entity.df[entity.df.columns[index]].dtypes.astype(str).to_dict()
+    if isinstance(entity.df, dd.DataFrame):
+        entity_type = 'dask'
+    else:
+        entity_type = 'pandas'
     description = {
         "id": entity.id,
         "index": entity.index,
@@ -34,6 +38,7 @@ def entity_to_description(entity):
         },
         "variables": [variable.to_data_description() for variable in entity.variables],
         "loading_info": {
+            'entity_type': entity_type,
             'params': {},
             'properties': {
                 'dtypes': dtypes

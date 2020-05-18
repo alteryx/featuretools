@@ -4,6 +4,7 @@ import tarfile
 import tempfile
 from pathlib import Path
 
+from dask import dataframe as dd
 import pandas as pd
 
 from featuretools.entityset.relationship import Relationship
@@ -125,15 +126,20 @@ def read_entity_data(description, path):
     file = os.path.join(path, description['loading_info']['location'])
     kwargs = description['loading_info'].get('params', {})
     load_format = description['loading_info']['type']
+    entity_type = description['loading_info']['entity_type']
+    if entity_type == 'dask':
+        lib = dd
+    else:
+        lib = pd
     if load_format == 'csv':
-        dataframe = pd.read_csv(
+        dataframe = lib.read_csv(
             file,
             engine=kwargs['engine'],
             compression=kwargs['compression'],
             encoding=kwargs['encoding'],
         )
     elif load_format == 'parquet':
-        dataframe = pd.read_parquet(file, engine=kwargs['engine'])
+        dataframe = lib.read_parquet(file, engine=kwargs['engine'])
     elif load_format == 'pickle':
         dataframe = pd.read_pickle(file, **kwargs)
     else:
