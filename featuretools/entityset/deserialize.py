@@ -4,8 +4,8 @@ import tarfile
 import tempfile
 from pathlib import Path
 
-from dask import dataframe as dd
 import pandas as pd
+from dask import dataframe as dd
 
 from featuretools.entityset.relationship import Relationship
 from featuretools.entityset.serialize import FORMATS
@@ -126,7 +126,7 @@ def read_entity_data(description, path):
     file = os.path.join(path, description['loading_info']['location'])
     kwargs = description['loading_info'].get('params', {})
     load_format = description['loading_info']['type']
-    entity_type = description['loading_info']['entity_type']
+    entity_type = description['loading_info'].get('entity_type', 'pandas')
     if entity_type == 'dask':
         lib = dd
     else:
@@ -158,7 +158,12 @@ def read_entity_data(description, path):
             return tuple(float(y) for y in x[1:-1].split(","))
 
         for column in latlongs:
-            dataframe[column] = dataframe[column].apply(parse_latlong)
+            if entity_type == 'dask':
+                meta = (column, tuple([float, float]))
+                dataframe[column] = dataframe[column].apply(parse_latlong,
+                                                            meta=meta)
+            else:
+                dataframe[column] = dataframe[column].apply(parse_latlong)
 
     return dataframe
 

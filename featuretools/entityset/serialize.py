@@ -83,7 +83,7 @@ def write_entity_data(entity, path, format='csv', **kwargs):
         loading_info (dict) : Information on storage location and format of entity data.
     '''
     format = format.lower()
-    if isinstance(entity.df, dd.core.DataFrame):
+    if isinstance(entity.df, dd.DataFrame) and format == 'csv':
         basename = "{}-*.{}".format(entity.id, format)
     else:
         basename = '.'.join([entity.id, format])
