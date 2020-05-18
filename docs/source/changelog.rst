@@ -8,9 +8,11 @@ Changelog
     * Fixes
     * Changes
     * Documentation Changes
+    * Testing Changes
+        * Update testing dependencies (:pr:`976`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
+    :user:`gsheni`, :user:`rwedge`
 
 **v0.14.0 Apr 30, 2020**
     * Enhancements
