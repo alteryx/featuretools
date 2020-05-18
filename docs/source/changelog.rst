@@ -9,6 +9,7 @@ Changelog
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Add automated tests for python 3.8 environment (:pr:`847`)
         * Update testing dependencies (:pr:`976`)
 
     Thanks to the following people for contributing to this release:
