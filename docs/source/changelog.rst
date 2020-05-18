@@ -4,7 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
-        * Add `get_default_aggregation_primitives` and `get_default_transform_primitives` (:pr:`945`)
+        * Add ``get_default_aggregation_primitives`` and ``get_default_transform_primitives`` (:pr:`945`)
     * Fixes
     * Changes
     * Documentation Changes
