@@ -112,7 +112,7 @@ class Variable(object):
 
 
 class Unknown(Variable):
-    pass
+    type_string = "unknown"
 
 
 class Discrete(Variable):
@@ -354,7 +354,7 @@ class IPAddress(Variable):
     """Represents a computer network address. Represented
     in dotted-decimal notation. IPv4 and IPv6 are supported.
     """
-    type_string = "ip"
+    type_string = "ip_address"
     _default_pandas_dtype = str
 
 
@@ -370,7 +370,7 @@ class EmailAddress(Variable):
     """Represents an email box to which email message are sent.
     Consists of a local-part, an @ symbol, and a domain.
     """
-    type_string = "email"
+    type_string = "email_address"
     _default_pandas_dtype = str
 
 
@@ -411,13 +411,13 @@ class SubRegionCode(Categorical):
     should be in the Alpha-2 format.
     e.g. United States of America, Arizona = US-AZ
     """
-    type_string = "subregion_code"
+    type_string = "sub_region_code"
     _default_pandas_dtype = str
 
 
 class FilePath(Variable):
     """Represents a valid filepath, absolute or relative"""
-    type_string = "filepath"
+    type_string = "file_path"
     _default_pandas_dtype = str
 
 
