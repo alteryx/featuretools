@@ -98,9 +98,9 @@ jobs:
           virtualenv venv
           source venv/bin/activate
           pip config --site set global.progress_bar off
-          pip install --upgrade pip
-          pip install -e unpacked_sdist/
-          pip install -r unpacked_sdist/test-requirements.txt
+          python -m pip install --upgrade pip
+          python -m pip install -e unpacked_sdist/
+          python -m pip install -r unpacked_sdist/test-requirements.txt
       - persist_to_workspace:
           root: ~/featuretools
           paths:
@@ -143,7 +143,7 @@ jobs:
           steps:
             - run: |
                 source venv/bin/activate
-                pip install "$(cat dev-requirements.txt | grep codecov)"
+                python -m pip install "$(cat dev-requirements.txt | grep codecov)"
                 coverage erase
                 cd unpacked_sdist/
                 coverage erase
@@ -174,7 +174,7 @@ jobs:
           at: ~/featuretools
       - run: |
           source venv/bin/activate
-          pip install -r unpacked_sdist/dev-requirements.txt
+          python -m pip install -r unpacked_sdist/dev-requirements.txt
       - run: source venv/bin/activate && make lint
 
   build_docs:
@@ -194,7 +194,7 @@ jobs:
           at: ~/featuretools
       - run: |
           source venv/bin/activate
-          pip install -r unpacked_sdist/dev-requirements.txt
+          python -m pip install -r unpacked_sdist/dev-requirements.txt
       - run: |
           source venv/bin/activate
           make -C docs/ -e "SPHINXOPTS=-W" clean html
@@ -215,7 +215,7 @@ jobs:
           virtualenv venv
           source venv/bin/activate
           pip config --site set global.progress_bar off
-          pip install -e unpacked_sdist/[complete]
+          python -m pip install -e unpacked_sdist/[complete]
       - run:
           command: |
             source venv/bin/activate
