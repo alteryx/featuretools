@@ -292,6 +292,11 @@ workflows:
           requires:
             - "py36 install featuretools"
       - build_docs:
+          name: "build docs 3.7"
+          image_tag: "3.7"
+          requires:
+            - "py37 install featuretools"
+      - build_docs:
           name: "build docs 3.8"
           requires:
             - "py38 install featuretools"
