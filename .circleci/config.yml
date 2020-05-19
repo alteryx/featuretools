@@ -179,7 +179,7 @@ jobs:
   build_docs:
     working_directory: ~/featuretools
     docker:
-      - image: circleci/python:3.7-stretch
+      - image: circleci/python:3.8
     steps:
       - run: sudo apt update && sudo apt install -y pandoc
       - run: sudo apt install -y graphviz
@@ -282,7 +282,6 @@ workflows:
             - "py38 install featuretools"
       - build_docs:
           name: "build docs"
-          image_tag: "3.8"
           requires:
             - "py38 install featuretools"
       - install_ft_complete:
