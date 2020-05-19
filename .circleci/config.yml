@@ -98,6 +98,7 @@ jobs:
           virtualenv venv
           source venv/bin/activate
           pip config --site set global.progress_bar off
+          pip install --upgrade pip
           pip install -e unpacked_sdist/
           pip install -r unpacked_sdist/test-requirements.txt
       - persist_to_workspace:
