@@ -134,16 +134,31 @@ Featuretools can automatically add last time indexes to every :class:`Entity` in
 
 Excluding data at cutoff times
 -----------------------------------------------
-The ``cutoff_time`` is the last point in time where data can be used for feature calculation. If you don't want to use the data at the cutoff time in feature calculation, you can exclude that data by setting ``include_cutoff_time`` to ``False`` in :func:`featuretools.dfs` or :func:`featuretools.calculate_feature_matrix`. If you set it to ``True`` (the default behavior), data from the cutoff time point will be used. If used with ``training_window``, it will work like belows:
+The ``cutoff_time`` is the last point in time where data can be used for feature
+calculation. If you don't want to use the data at the cutoff time in feature
+calculation, you can exclude that data by setting ``include_cutoff_time`` to
+``False`` in :func:`featuretools.dfs` or:func:`featuretools.calculate_feature_matrix`.
+If you set it to ``True`` (the default behavior), data from the cutoff time point
+will be used.
+
+Setting ``include_cutoff_time`` to ``False`` also impacts how data at the edges
+of training windows are included or excluded.  Take this slice of data as an example:
+
+.. ipython:: python
+    es.add_last_time_indexes()
+
+    df = es['transactions'].df
+    df[df["session_id"] == 1].head()
+
+Looking at the data, transactions occur every 65 seconds.  To check how ``include_cutoff_time``
+effects training windows, we can calculate features at the time of a transaction
+while using a 65 second training window.  This creates a training window with a
+transaction at both endpoints of the window.  For this example, we'll find the sum
+of all transactions for session id 1 that are in the training window.
 
 .. ipython:: python
 
     from featuretools.primitives import Sum
-
-    es.add_last_time_indexes()
-
-    es['transactions'].df.head()
-    es['sessions'].df.head(2)
 
     sum_log = ft.Feature(
         base=es['transactions']['amount'],
@@ -151,11 +166,14 @@ The ``cutoff_time`` is the last point in time where data can be used for feature
         primitive=Sum,
     )
     cutoff_time = pd.DataFrame({
-        'session_id': [1, 1],
-        'time': ['2014-01-01 00:02:10', '2014-01-01 00:04:20'],
+        'session_id': [1],
+        'time': ['2014-01-01 00:04:20'],
     }).astype({'time': 'datetime64[ns]'})
 
-With ``include_cutoff_time=True``, the oldest point in the training window(which is also the point of previous cutoff time(``2014-01-01 00:02:10``) in this case), is excluded and the its cutoff time point is included
+With ``include_cutoff_time=True``, the oldest point in the training window
+(``2014-01-01 00:03:15``) is excluded and the cutoff time point is included. This
+means only transaction 371 is in the training window, so the sum of all transaction
+amounts is 31.54
 
 .. ipython:: python
 
@@ -165,12 +183,14 @@ With ``include_cutoff_time=True``, the oldest point in the training window(which
         entityset=es,
         cutoff_time=cutoff_time,
         cutoff_time_in_index=True,
-        training_window='130 seconds',
+        training_window='65 seconds',
         include_cutoff_time=True,
     )
     actual
 
-Whereas with ``include_cutoff_time=False``, the oldest point in the window is included and the cutoff time point is excluded
+Whereas with ``include_cutoff_time=False``, the oldest point in the window is
+included and the cutoff time point is excluded.  So in this case transaction 116
+is included and transaction 371 is exluded, and the sum is 78.92
 
 .. ipython:: python
 
@@ -180,7 +200,7 @@ Whereas with ``include_cutoff_time=False``, the oldest point in the window is in
         entityset=es,
         cutoff_time=cutoff_time,
         cutoff_time_in_index=True,
-        training_window='130 seconds',
+        training_window='65 seconds',
         include_cutoff_time=False,
     )
     actual
