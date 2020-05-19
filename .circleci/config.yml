@@ -97,7 +97,7 @@ jobs:
       - run : |
           virtualenv venv
           source venv/bin/activate
-          pip config --site set global.progress_bar off
+          python -m pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
           python -m pip install -e unpacked_sdist/
           python -m pip install -r unpacked_sdist/test-requirements.txt
@@ -214,7 +214,7 @@ jobs:
       - run: |
           virtualenv venv
           source venv/bin/activate
-          pip config --site set global.progress_bar off
+          python -m pip config --site set global.progress_bar off
           python -m pip install -e unpacked_sdist/[complete]
       - run:
           command: |
