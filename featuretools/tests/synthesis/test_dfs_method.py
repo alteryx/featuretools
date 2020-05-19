@@ -14,8 +14,13 @@ from featuretools.primitives import Max, Mean, Min, Sum
 from featuretools.synthesis import dfs
 
 
+@pytest.fixture(params=['pd_entities', 'dask_entities'])
+def entities(request):
+    return request.getfixturevalue(request.param)
+
+
 @pytest.fixture
-def entities():
+def pd_entities():
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                                     "card_id": [1, 2, 1, 3, 4, 5],
@@ -29,12 +34,33 @@ def entities():
 
 
 @pytest.fixture
+def dask_entities():
+    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
+    transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                                    "card_id": [1, 2, 1, 3, 4, 5],
+                                    "transaction_time": [10, 12, 13, 20, 21, 20],
+                                    "fraud": [True, False, False, False, True, True]})
+    cards_df = dd.from_pandas(cards_df, npartitions=2)
+    transactions_df = dd.from_pandas(transactions_df, npartitions=2)
+    entities = {
+        "cards": (cards_df, "id"),
+        "transactions": (transactions_df, "id", "transaction_time")
+    }
+    return entities
+
+
+@pytest.fixture
 def relationships():
     return [("cards", "id", "transactions", "card_id")]
 
 
+@pytest.fixture(params=['pd_es', 'dask_es'])
+def es(request):
+    return request.getfixturevalue(request.param)
+
+
 @pytest.fixture
-def datetime_es():
+def pd_es():
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5],
                                     "card_id": [1, 1, 5, 1, 5],
@@ -102,10 +128,10 @@ def dask_es():
     return dask_es
 
 
-def test_accepts_cutoff_time_df(entities, relationships):
+def test_accepts_cutoff_time_df(pd_entities, relationships):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
                                     "time": [10, 12, 15]})
-    feature_matrix, features = dfs(entities=entities,
+    feature_matrix, features = dfs(entities=pd_entities,
                                    relationships=relationships,
                                    target_entity="transactions",
                                    cutoff_time=cutoff_times_df)
@@ -113,20 +139,20 @@ def test_accepts_cutoff_time_df(entities, relationships):
     assert len(feature_matrix.columns) == len(features)
 
 
-def test_warns_cutoff_time_dask(entities, relationships):
+def test_warns_cutoff_time_dask(pd_entities, relationships):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
                                     "time": [10, 12, 15]})
     cutoff_times_df = dd.from_pandas(cutoff_times_df, npartitions=2)
     match = "cutoff_time should be a Pandas DataFrame: " \
             "computing cutoff_time, this may take a while"
     with pytest.warns(UserWarning, match=match):
-        feature_matrix, features = dfs(entities=entities,
+        feature_matrix, features = dfs(entities=pd_entities,
                                        relationships=relationships,
                                        target_entity="transactions",
                                        cutoff_time=cutoff_times_df)
 
 
-def test_accepts_cutoff_time_compose(entities, relationships):
+def test_accepts_cutoff_time_compose(pd_entities, relationships):
     def fraud_occured(df):
         return df['fraud'].any()
 
@@ -138,14 +164,14 @@ def test_accepts_cutoff_time_compose(entities, relationships):
     )
 
     labels = lm.search(
-        entities['transactions'][0],
+        pd_entities['transactions'][0],
         num_examples_per_instance=-1
     )
 
     labels['cutoff_time'] = pd.to_numeric(labels['cutoff_time'])
     labels.rename({'card_id': 'id'}, axis=1, inplace=True)
 
-    feature_matrix, features = dfs(entities=entities,
+    feature_matrix, features = dfs(entities=pd_entities,
                                    relationships=relationships,
                                    target_entity="cards",
                                    cutoff_time=labels)
@@ -154,7 +180,7 @@ def test_accepts_cutoff_time_compose(entities, relationships):
     assert len(feature_matrix.columns) == len(features) + 1
 
 
-def test_accepts_cutoff_time_compose_dask(dask_es):
+def test_accepts_cutoff_time_compose_dask(es):
     def fraud_occured(df):
         return df['fraud'].any()
 
@@ -165,25 +191,30 @@ def test_accepts_cutoff_time_compose_dask(dask_es):
         window_size='1y'
     )
 
+    transactions_df = es['transactions'].df
+    if isinstance(transactions_df, dd.DataFrame):
+        transactions_df = transactions_df.compute()
+
     labels = lm.search(
-        dask_es['transactions'].df.compute(),
+        transactions_df,
         num_examples_per_instance=-1
     )
 
     labels.rename({'card_id': 'id'}, axis=1, inplace=True)
 
-    feature_matrix, features = dfs(entityset=dask_es,
+    feature_matrix, features = dfs(entityset=es,
                                    target_entity="cards",
                                    cutoff_time=labels)
 
-    feature_matrix = feature_matrix.set_index('id').compute()
+    if isinstance(feature_matrix, dd.DataFrame):
+        feature_matrix = feature_matrix.set_index('id').compute()
 
     assert len(feature_matrix.index) == 4
     assert len(feature_matrix.columns) == len(features) + 1
 
 
-def test_accepts_single_cutoff_time(entities, relationships):
-    feature_matrix, features = dfs(entities=entities,
+def test_accepts_single_cutoff_time(pd_entities, relationships):
+    feature_matrix, features = dfs(entities=pd_entities,
                                    relationships=relationships,
                                    target_entity="transactions",
                                    cutoff_time=20)
@@ -191,8 +222,8 @@ def test_accepts_single_cutoff_time(entities, relationships):
     assert len(feature_matrix.columns) == len(features)
 
 
-def test_accepts_no_cutoff_time(entities, relationships):
-    feature_matrix, features = dfs(entities=entities,
+def test_accepts_no_cutoff_time(pd_entities, relationships):
+    feature_matrix, features = dfs(entities=pd_entities,
                                    relationships=relationships,
                                    target_entity="transactions",
                                    instance_ids=[1, 2, 3, 5, 6])
@@ -200,11 +231,11 @@ def test_accepts_no_cutoff_time(entities, relationships):
     assert len(feature_matrix.columns) == len(features)
 
 
-def test_ignores_instance_ids_if_cutoff_df(entities, relationships):
+def test_ignores_instance_ids_if_cutoff_df(pd_entities, relationships):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
                                     "time": [10, 12, 15]})
     instance_ids = [1, 2, 3, 4, 5]
-    feature_matrix, features = dfs(entities=entities,
+    feature_matrix, features = dfs(entities=pd_entities,
                                    relationships=relationships,
                                    target_entity="transactions",
                                    cutoff_time=cutoff_times_df,
@@ -213,10 +244,10 @@ def test_ignores_instance_ids_if_cutoff_df(entities, relationships):
     assert len(feature_matrix.columns) == len(features)
 
 
-def test_approximate_features(entities, relationships):
+def test_approximate_features(pd_entities, relationships):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 3, 1, 5, 3, 6],
                                     "time": [11, 16, 16, 26, 17, 22]})
-    feature_matrix, features = dfs(entities=entities,
+    feature_matrix, features = dfs(entities=pd_entities,
                                    relationships=relationships,
                                    target_entity="transactions",
                                    cutoff_time=cutoff_times_df,
@@ -231,11 +262,11 @@ def test_approximate_features(entities, relationships):
     assert (feature_matrix[direct_agg_feat_name] == truth_values.values).all()
 
 
-def test_all_variables(entities, relationships):
+def test_all_variables(pd_entities, relationships):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
                                     "time": [10, 12, 15]})
     instance_ids = [1, 2, 3, 4, 5]
-    feature_matrix, features = dfs(entities=entities,
+    feature_matrix, features = dfs(entities=pd_entities,
                                    relationships=relationships,
                                    target_entity="transactions",
                                    cutoff_time=cutoff_times_df,
@@ -252,25 +283,25 @@ def test_all_variables(entities, relationships):
     assert len(feature_matrix.columns) == len(features)
 
 
-def test_features_only(entities, relationships):
-    features = dfs(entities=entities,
+def test_features_only(pd_entities, relationships):
+    features = dfs(entities=pd_entities,
                    relationships=relationships,
                    target_entity="transactions",
                    features_only=True)
     assert len(features) > 0
 
 
-def test_dask_kwargs(entities, relationships):
+def test_dask_kwargs(pd_entities, relationships):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
                                     "time": [10, 12, 15]})
-    feature_matrix, features = dfs(entities=entities,
+    feature_matrix, features = dfs(entities=pd_entities,
                                    relationships=relationships,
                                    target_entity="transactions",
                                    cutoff_time=cutoff_times_df)
 
     with cluster() as (scheduler, [a, b]):
         dask_kwargs = {'cluster': scheduler['address']}
-        feature_matrix_2, features_2 = dfs(entities=entities,
+        feature_matrix_2, features_2 = dfs(entities=pd_entities,
                                            relationships=relationships,
                                            target_entity="transactions",
                                            cutoff_time=cutoff_times_df,
@@ -282,26 +313,26 @@ def test_dask_kwargs(entities, relationships):
             assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
 
 
-def test_accepts_relative_training_window(datetime_es):
-    feature_matrix, features = dfs(entityset=datetime_es,
+def test_accepts_relative_training_window(pd_es):
+    feature_matrix, features = dfs(entityset=pd_es,
                                    target_entity="transactions")
 
-    feature_matrix_2, features_2 = dfs(entityset=datetime_es,
+    feature_matrix_2, features_2 = dfs(entityset=pd_es,
                                        target_entity="transactions",
                                        cutoff_time=pd.Timestamp("2012-4-1 04:00"))
 
-    feature_matrix_3, features_3 = dfs(entityset=datetime_es,
+    feature_matrix_3, features_3 = dfs(entityset=pd_es,
                                        target_entity="transactions",
                                        cutoff_time=pd.Timestamp("2012-4-1 04:00"),
                                        training_window=Timedelta("3 months"))
 
-    feature_matrix_4, features_4 = dfs(entityset=datetime_es,
+    feature_matrix_4, features_4 = dfs(entityset=pd_es,
                                        target_entity="transactions",
                                        cutoff_time=pd.Timestamp("2012-4-1 04:00"),
                                        training_window="3 months")
 
     # Test case for leap years
-    feature_matrix_5, features_5 = dfs(entityset=datetime_es,
+    feature_matrix_5, features_5 = dfs(entityset=pd_es,
                                        target_entity="transactions",
                                        cutoff_time=pd.Timestamp("2012-2-29 04:00"),
                                        training_window=Timedelta("1 year"))
@@ -313,8 +344,8 @@ def test_accepts_relative_training_window(datetime_es):
     assert (feature_matrix_5.index == [2]).all()
 
 
-def test_accepts_pd_timedelta_training_window(datetime_es):
-    feature_matrix, features = dfs(entityset=datetime_es,
+def test_accepts_pd_timedelta_training_window(pd_es):
+    feature_matrix, features = dfs(entityset=pd_es,
                                    target_entity="transactions",
                                    cutoff_time=pd.Timestamp("2012-3-31 04:00"),
                                    training_window=pd.Timedelta(61, "D"))
@@ -322,13 +353,13 @@ def test_accepts_pd_timedelta_training_window(datetime_es):
     assert (feature_matrix.index == [2, 3, 4]).all()
 
 
-def test_accepts_pd_dateoffset_training_window(datetime_es):
-    feature_matrix, features = dfs(entityset=datetime_es,
+def test_accepts_pd_dateoffset_training_window(pd_es):
+    feature_matrix, features = dfs(entityset=pd_es,
                                    target_entity="transactions",
                                    cutoff_time=pd.Timestamp("2012-3-31 04:00"),
                                    training_window=pd.DateOffset(months=2))
 
-    feature_matrix_2, features_2 = dfs(entityset=datetime_es,
+    feature_matrix_2, features_2 = dfs(entityset=pd_es,
                                        target_entity="transactions",
                                        cutoff_time=pd.Timestamp("2012-3-31 04:00"),
                                        training_window=pd.offsets.BDay(44))
@@ -337,7 +368,7 @@ def test_accepts_pd_dateoffset_training_window(datetime_es):
     assert (feature_matrix.index == feature_matrix_2.index).all()
 
 
-def test_calls_progress_callback(entities, relationships):
+def test_calls_progress_callback(pd_entities, relationships):
     class MockProgressCallback:
         def __init__(self):
             self.progress_history = []
@@ -351,7 +382,7 @@ def test_calls_progress_callback(entities, relationships):
 
     mock_progress_callback = MockProgressCallback()
 
-    feature_matrix, features = dfs(entities=entities,
+    feature_matrix, features = dfs(entities=pd_entities,
                                    relationships=relationships,
                                    target_entity="transactions",
                                    progress_callback=mock_progress_callback)
@@ -366,7 +397,7 @@ def test_calls_progress_callback(entities, relationships):
 
     with cluster() as (scheduler, [a, b]):
         dkwargs = {'cluster': scheduler['address']}
-        feature_matrix, features = dfs(entities=entities,
+        feature_matrix, features = dfs(entities=pd_entities,
                                        relationships=relationships,
                                        target_entity="transactions",
                                        progress_callback=mock_progress_callback,
