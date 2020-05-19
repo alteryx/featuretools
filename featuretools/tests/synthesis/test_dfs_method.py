@@ -42,9 +42,20 @@ def dask_entities():
                                     "fraud": [True, False, False, False, True, True]})
     cards_df = dd.from_pandas(cards_df, npartitions=2)
     transactions_df = dd.from_pandas(transactions_df, npartitions=2)
+
+    cards_vtypes = {
+        'id': vtypes.Index
+    }
+    transactions_vtypes = {
+        'id': vtypes.Index,
+        'card_id': vtypes.Id,
+        'transaction_time': vtypes.NumericTimeIndex,
+        'fraud': vtypes.Boolean
+    }
+
     entities = {
-        "cards": (cards_df, "id"),
-        "transactions": (transactions_df, "id", "transaction_time")
+        "cards": (cards_df, "id", None, cards_vtypes),
+        "transactions": (transactions_df, "id", "transaction_time", transactions_vtypes)
     }
     return entities
 
@@ -106,7 +117,7 @@ def dask_es():
     transactions_vtypes = {
         'id': vtypes.Index,
         'card_id': vtypes.Id,
-        'transaction_time': vtypes.Datetime,
+        'transaction_time': vtypes.DatetimeTimeIndex,
         'fraud': vtypes.Boolean
     }
 
@@ -128,31 +139,34 @@ def dask_es():
     return dask_es
 
 
-def test_accepts_cutoff_time_df(pd_entities, relationships):
+def test_accepts_cutoff_time_df(entities, relationships):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
                                     "time": [10, 12, 15]})
-    feature_matrix, features = dfs(entities=pd_entities,
+    feature_matrix, features = dfs(entities=entities,
                                    relationships=relationships,
                                    target_entity="transactions",
                                    cutoff_time=cutoff_times_df)
+    if isinstance(feature_matrix, dd.DataFrame):
+        feature_matrix = feature_matrix.compute().set_index("id")
     assert len(feature_matrix.index) == 3
     assert len(feature_matrix.columns) == len(features)
 
 
-def test_warns_cutoff_time_dask(pd_entities, relationships):
+def test_warns_cutoff_time_dask(entities, relationships):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
                                     "time": [10, 12, 15]})
     cutoff_times_df = dd.from_pandas(cutoff_times_df, npartitions=2)
     match = "cutoff_time should be a Pandas DataFrame: " \
             "computing cutoff_time, this may take a while"
     with pytest.warns(UserWarning, match=match):
-        feature_matrix, features = dfs(entities=pd_entities,
+        feature_matrix, features = dfs(entities=entities,
                                        relationships=relationships,
                                        target_entity="transactions",
                                        cutoff_time=cutoff_times_df)
 
 
 def test_accepts_cutoff_time_compose(pd_entities, relationships):
+    # TODO: Review to see if this can be combined with test that follows
     def fraud_occured(df):
         return df['fraud'].any()
 
@@ -213,38 +227,45 @@ def test_accepts_cutoff_time_compose_dask(es):
     assert len(feature_matrix.columns) == len(features) + 1
 
 
-def test_accepts_single_cutoff_time(pd_entities, relationships):
-    feature_matrix, features = dfs(entities=pd_entities,
+def test_accepts_single_cutoff_time(entities, relationships):
+    feature_matrix, features = dfs(entities=entities,
                                    relationships=relationships,
                                    target_entity="transactions",
                                    cutoff_time=20)
+    if isinstance(feature_matrix, dd.DataFrame):
+        feature_matrix = feature_matrix.set_index('id').compute()
     assert len(feature_matrix.index) == 5
     assert len(feature_matrix.columns) == len(features)
 
 
-def test_accepts_no_cutoff_time(pd_entities, relationships):
-    feature_matrix, features = dfs(entities=pd_entities,
+def test_accepts_no_cutoff_time(entities, relationships):
+    feature_matrix, features = dfs(entities=entities,
                                    relationships=relationships,
                                    target_entity="transactions",
                                    instance_ids=[1, 2, 3, 5, 6])
+    if isinstance(feature_matrix, dd.DataFrame):
+        feature_matrix = feature_matrix.set_index('id').compute()
     assert len(feature_matrix.index) == 5
     assert len(feature_matrix.columns) == len(features)
 
 
-def test_ignores_instance_ids_if_cutoff_df(pd_entities, relationships):
+def test_ignores_instance_ids_if_cutoff_df(entities, relationships):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
                                     "time": [10, 12, 15]})
     instance_ids = [1, 2, 3, 4, 5]
-    feature_matrix, features = dfs(entities=pd_entities,
+    feature_matrix, features = dfs(entities=entities,
                                    relationships=relationships,
                                    target_entity="transactions",
                                    cutoff_time=cutoff_times_df,
                                    instance_ids=instance_ids)
+    if isinstance(feature_matrix, dd.DataFrame):
+        feature_matrix = feature_matrix.set_index('id').compute()
     assert len(feature_matrix.index) == 3
     assert len(feature_matrix.columns) == len(features)
 
 
 def test_approximate_features(pd_entities, relationships):
+    # TODO: Update to use Dask entities when issue #985 is closed
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 3, 1, 5, 3, 6],
                                     "time": [11, 16, 16, 26, 17, 22]})
     feature_matrix, features = dfs(entities=pd_entities,
@@ -283,8 +304,8 @@ def test_all_variables(pd_entities, relationships):
     assert len(feature_matrix.columns) == len(features)
 
 
-def test_features_only(pd_entities, relationships):
-    features = dfs(entities=pd_entities,
+def test_features_only(entities, relationships):
+    features = dfs(entities=entities,
                    relationships=relationships,
                    target_entity="transactions",
                    features_only=True)
@@ -314,6 +335,7 @@ def test_dask_kwargs(pd_entities, relationships):
 
 
 def test_accepts_relative_training_window(pd_es):
+    # TODO: Update to use Dask entities when issue #882 is closed
     feature_matrix, features = dfs(entityset=pd_es,
                                    target_entity="transactions")
 
@@ -345,6 +367,7 @@ def test_accepts_relative_training_window(pd_es):
 
 
 def test_accepts_pd_timedelta_training_window(pd_es):
+    # TODO: Update to use Dask entities when issue #882 is closed
     feature_matrix, features = dfs(entityset=pd_es,
                                    target_entity="transactions",
                                    cutoff_time=pd.Timestamp("2012-3-31 04:00"),
@@ -354,6 +377,7 @@ def test_accepts_pd_timedelta_training_window(pd_es):
 
 
 def test_accepts_pd_dateoffset_training_window(pd_es):
+    # TODO: Update to use Dask entities when issue #882 is closed
     feature_matrix, features = dfs(entityset=pd_es,
                                    target_entity="transactions",
                                    cutoff_time=pd.Timestamp("2012-3-31 04:00"),

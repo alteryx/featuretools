@@ -747,7 +747,7 @@ def test_intialized_trans_prim(es):
     assert (feature_with_name(features, "product_id.isin(['coke zero'])"))
 
 
-def test_initialized_agg_prim(pd_es):    
+def test_initialized_agg_prim(pd_es):
     ThreeMost = NMostCommon(n=3)
     dfs_obj = DeepFeatureSynthesis(target_entity_id="sessions",
                                    entityset=pd_es,
