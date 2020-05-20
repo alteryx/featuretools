@@ -4,14 +4,17 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
-        * Add `get_default_aggregation_primitives` and `get_default_transform_primitives` (:pr:`945`)
+        * Add ``get_default_aggregation_primitives`` and ``get_default_transform_primitives`` (:pr:`945`)
         * Allow cutoff time dataframe columns to be in any order (:pr:`969`)
     * Fixes
     * Changes
     * Documentation Changes
+    * Testing Changes
+        * Add automated tests for python 3.8 environment (:pr:`847`)
+        * Update testing dependencies (:pr:`976`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`sebrahimi1988`
+    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`sebrahimi1988`
 
 **Breaking Changes**
 
