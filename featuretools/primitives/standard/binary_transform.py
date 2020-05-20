@@ -298,12 +298,6 @@ class NotEqual(TransformPrimitive):
         whether each value in X is not equal to each corresponding
         value in Y.
 
-     Args:
-        strict_categories (bool): Deterimines how to compare Categorical
-        dtypes. If True, values are only conisidered equal if they have
-        the same categories. If False, categories are ignored when testing
-        equality. Defaults to False.
-
     Examples:
         >>> not_equal = NotEqual()
         >>> not_equal([2, 1, 2], [1, 2, 2]).tolist()
@@ -313,9 +307,6 @@ class NotEqual(TransformPrimitive):
     input_types = [Variable, Variable]
     return_type = Boolean
     commutative = True
-
-    def __init__(self, strict_categories=False):
-        self.strict_categories = strict_categories
 
     def get_function(self):
         def not_equal(x_vals, y_vals):
