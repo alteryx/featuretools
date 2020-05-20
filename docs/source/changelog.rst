@@ -6,6 +6,8 @@ Changelog
     * Enhancements
         * Add ``get_default_aggregation_primitives`` and ``get_default_transform_primitives`` (:pr:`945`)
     * Fixes
+        * Normalized type_strings of entity_classes so that the find_variable_types function produces a 
+          dictionary with a clear key to name transition
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -13,7 +15,7 @@ Changelog
         * Update testing dependencies (:pr:`976`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`
+    :user:`gsheni`, :user:`rwedge`, :user:`tuethan1999`
 
 **v0.14.0 Apr 30, 2020**
     * Enhancements
