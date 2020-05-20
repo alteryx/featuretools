@@ -141,6 +141,12 @@ def test_to_pickle(es, tmpdir):
     assert type(new_es['log'].df['latlong'][0]) == tuple
 
 
+def test_to_pickle_errors_dask(dask_es, tmpdir):
+    msg = 'Cannot serialize Dask EntitySet to pickle'
+    with pytest.raises(ValueError, match=msg):
+        dask_es.to_pickle(str(tmpdir))
+
+
 def test_to_pickle_interesting_values(es, tmpdir):
     es.add_interesting_values()
     es.to_pickle(str(tmpdir))
