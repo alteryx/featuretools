@@ -3,13 +3,13 @@ featuretools-sklearn-transformer >= 0.1.0
 codecov==2.1.0
 flake8==3.7.8
 autopep8==1.4.4
-ipython==7.2.0
+ipython==7.14.0
 isort==4.3.21
 jupyter==1.0.0
-matplotlib==3.0.2
-nbconvert==5.4.1
-nbsphinx==0.4.2
-Sphinx==2.0.1
+matplotlib==3.2.1
+nbconvert==5.6.1
+nbsphinx==0.7.0
+Sphinx==3.0.3
 sphinx_rtd_theme==0.4.3
-nlp_primitives>=0.2.2
-autonormalize >= 1.0.0
+nlp_primitives>=0.3.0
+autonormalize >= 1.0.1
