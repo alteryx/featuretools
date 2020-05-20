@@ -16,7 +16,7 @@ lint-fix:
 
 .PHONY: test
 test: lint
-	pytest featuretools/ --ignore=featuretools/dask-tests-tmp/
+	pytest featuretools/
 
 .PHONY: testcoverage
 testcoverage: lint
