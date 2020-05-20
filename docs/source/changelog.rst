@@ -18,9 +18,9 @@ Changelog
 
 **Breaking Changes**
 
-* Calls to `featuretools.dfs` or `featuretools.calculate_feature_matrix` that use a cutoff time
+* Calls to ``featuretools.dfs`` or ``featuretools.calculate_feature_matrix`` that use a cutoff time
   dataframe, but do not label the time column with either the target entity time index variable name or
-  as `time`, will now result in an `AttributeError`. Previously, the time column was selected to be the first
+  as ``time``, will now result in an ``AttributeError``. Previously, the time column was selected to be the first
   column that was not the instance id column. With this update, the position of the column in the dataframe is
   no longer used to determine the time column. Now, both instance id columns and time columns in a cutoff time
   dataframe can be in any order as long as they are named properly.
