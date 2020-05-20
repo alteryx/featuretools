@@ -115,13 +115,18 @@ def games_es(home_games_es):
 
 
 @pytest.fixture
-def mock_customer_es():
+def pd_mock_customer_es():
     return ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
 
 
 @pytest.fixture
-def mock_customer_dask_es(mock_customer_es):
-    dask_es = copy.deepcopy(mock_customer_es)
+def dask_mock_customer_es(pd_mock_customer_es):
+    dask_es = copy.deepcopy(pd_mock_customer_es)
     for entity in dask_es.entities:
         entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=2)
     return dask_es
+
+
+@pytest.fixture(params=['pd_mock_customer_es', 'dask_mock_customer_es'])
+def mock_customer_es(request):
+    return request.getfixturevalue(request.param)

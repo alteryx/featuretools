@@ -1,6 +1,5 @@
 import pandas as pd
 
-import featuretools as ft
 from featuretools import variable_types as vtypes
 from featuretools.utils.entity_utils import (
     convert_all_variable_data,
@@ -149,17 +148,16 @@ def test_convert_variable_data():
     assert df['date'].dtype.name in vtypes.PandasTypes._pandas_datetimes
 
 
-def test_get_linked_vars():
-    pd_es = ft.demo.load_mock_customer(return_entityset=True)
+def test_get_linked_vars(mock_customer_es):
 
-    transactions_linked_vars = get_linked_vars(pd_es['transactions'])
+    transactions_linked_vars = get_linked_vars(mock_customer_es['transactions'])
     assert transactions_linked_vars == ['product_id', 'session_id']
 
-    products_linked_vars = get_linked_vars(pd_es['products'])
+    products_linked_vars = get_linked_vars(mock_customer_es['products'])
     assert products_linked_vars == ['product_id']
 
-    sessions_linked_vars = get_linked_vars(pd_es['sessions'])
+    sessions_linked_vars = get_linked_vars(mock_customer_es['sessions'])
     assert sessions_linked_vars == ['session_id', 'customer_id']
 
-    customers_linked_vars = get_linked_vars(pd_es['customers'])
+    customers_linked_vars = get_linked_vars(mock_customer_es['customers'])
     assert customers_linked_vars == ['customer_id']
