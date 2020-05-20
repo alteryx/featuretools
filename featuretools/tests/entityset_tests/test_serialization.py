@@ -173,14 +173,14 @@ def test_dask_to_parquet(dask_es, tmpdir):
 
 def test_to_parquet_manual_interesting_values(es, tmpdir):
     es['log']['product_id'].interesting_values = ["coke_zero"]
-    es.to_pickle(str(tmpdir))
+    es.to_parquet(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
 
 
 def test_dask_to_parquet_manual_interesting_values(dask_es, tmpdir):
     dask_es['log']['product_id'].interesting_values = ["coke_zero"]
-    dask_es.to_pickle(str(tmpdir))
+    dask_es.to_parquet(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert dask_es.__eq__(new_es, deep=True)
 

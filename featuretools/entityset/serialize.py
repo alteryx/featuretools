@@ -109,9 +109,11 @@ def write_entity_data(entity, path, format='csv', **kwargs):
         df.to_parquet(file, **kwargs)
     elif format == 'pickle':
         # Dask currently does not support to_pickle
-        if isinstance(df, dd.core.DataFrame):
-            df = df.compute()
-        df.to_pickle(file, **kwargs)
+        if isinstance(df, dd.DataFrame):
+            msg = 'Cannot serialize Dask EntitySet to pickle'
+            raise ValueError(msg)
+        else:
+            df.to_pickle(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))
