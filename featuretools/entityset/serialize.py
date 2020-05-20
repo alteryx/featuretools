@@ -10,7 +10,7 @@ from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
 
 FORMATS = ['csv', 'pickle', 'parquet']
-SCHEMA_VERSION = "2.0.0"
+SCHEMA_VERSION = "2.1.0"
 
 
 def entity_to_description(entity):
