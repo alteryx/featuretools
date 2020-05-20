@@ -1,5 +1,10 @@
-import pandas as pd
+import copy
 
+import dask.dataframe as dd
+import pandas as pd
+import pytest
+
+import featuretools as ft
 from featuretools import variable_types as vtypes
 from featuretools.utils.entity_utils import (
     convert_all_variable_data,
@@ -7,6 +12,24 @@ from featuretools.utils.entity_utils import (
     get_linked_vars,
     infer_variable_types
 )
+
+
+@pytest.fixture
+def pd_mock_customer_es():
+    return ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
+
+
+@pytest.fixture
+def dask_mock_customer_es(pd_mock_customer_es):
+    dask_es = copy.deepcopy(pd_mock_customer_es)
+    for entity in dask_es.entities:
+        entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=2)
+    return dask_es
+
+
+@pytest.fixture(params=['pd_mock_customer_es', 'dask_mock_customer_es'])
+def mock_customer_es(request):
+    return request.getfixturevalue(request.param)
 
 
 def test_infer_variable_types():

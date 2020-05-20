@@ -112,21 +112,3 @@ def games_es(home_games_es):
     away_team = ft.Relationship(home_games_es['teams']['id'],
                                 home_games_es['games']['away_team_id'])
     return home_games_es.add_relationship(away_team)
-
-
-@pytest.fixture
-def pd_mock_customer_es():
-    return ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
-
-
-@pytest.fixture
-def dask_mock_customer_es(pd_mock_customer_es):
-    dask_es = copy.deepcopy(pd_mock_customer_es)
-    for entity in dask_es.entities:
-        entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=2)
-    return dask_es
-
-
-@pytest.fixture(params=['pd_mock_customer_es', 'dask_mock_customer_es'])
-def mock_customer_es(request):
-    return request.getfixturevalue(request.param)
