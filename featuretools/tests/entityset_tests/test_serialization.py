@@ -78,10 +78,26 @@ def test_entity_descriptions(es):
         assert entity.__eq__(_entity, deep=True)
 
 
+def test_dask_entity_descriptions(dask_es):
+    _es = EntitySet(dask_es.id)
+    for entity in dask_es.metadata.entities:
+        description = serialize.entity_to_description(entity)
+        deserialize.description_to_entity(description, _es)
+        _entity = _es[description['id']]
+        _entity.last_time_index = entity.last_time_index
+        assert entity.__eq__(_entity, deep=True)
+
+
 def test_entityset_description(es):
     description = serialize.entityset_to_description(es)
     _es = deserialize.description_to_entityset(description)
     assert es.metadata.__eq__(_es, deep=True)
+
+
+def test_dask_entityset_description(dask_es):
+    description = serialize.entityset_to_description(dask_es)
+    _es = deserialize.description_to_entityset(description)
+    assert dask_es.metadata.__eq__(_es, deep=True)
 
 
 def test_invalid_formats(es, tmpdir):
@@ -109,12 +125,26 @@ def test_to_csv(es, tmpdir):
     assert type(new_es['log'].df['latlong'][0]) == tuple
 
 
+def test_dask_to_csv(dask_es, tmpdir):
+    dask_es.to_csv(str(tmpdir), encoding='utf-8', engine='python')
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert dask_es.__eq__(new_es, deep=True)
+    assert type(dask_es['log'].df.set_index('id')['latlong'].compute()[0]) == tuple
+    assert type(new_es['log'].df.set_index('id')['latlong'].compute()[0]) == tuple
+
+
 def test_to_pickle(es, tmpdir):
     es.to_pickle(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
     assert type(es['log'].df['latlong'][0]) == tuple
     assert type(new_es['log'].df['latlong'][0]) == tuple
+
+
+def test_to_pickle_errors_dask(dask_es, tmpdir):
+    msg = 'Cannot serialize Dask EntitySet to pickle'
+    with pytest.raises(ValueError, match=msg):
+        dask_es.to_pickle(str(tmpdir))
 
 
 def test_to_pickle_interesting_values(es, tmpdir):
@@ -139,11 +169,26 @@ def test_to_parquet(es, tmpdir):
     assert type(new_es['log'].df['latlong'][0]) == tuple
 
 
+def test_dask_to_parquet(dask_es, tmpdir):
+    dask_es.to_parquet(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert dask_es.__eq__(new_es, deep=True)
+    assert type(dask_es['log'].df.set_index('id')['latlong'].compute()[0]) == tuple
+    assert type(new_es['log'].df.set_index('id')['latlong'].compute()[0]) == tuple
+
+
 def test_to_parquet_manual_interesting_values(es, tmpdir):
     es['log']['product_id'].interesting_values = ["coke_zero"]
-    es.to_pickle(str(tmpdir))
+    es.to_parquet(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
+
+
+def test_dask_to_parquet_manual_interesting_values(dask_es, tmpdir):
+    dask_es['log']['product_id'].interesting_values = ["coke_zero"]
+    dask_es.to_parquet(str(tmpdir))
+    new_es = deserialize.read_entityset(str(tmpdir))
+    assert dask_es.__eq__(new_es, deep=True)
 
 
 def test_to_parquet_interesting_values(es, tmpdir):
