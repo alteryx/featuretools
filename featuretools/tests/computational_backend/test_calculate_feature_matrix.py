@@ -281,33 +281,48 @@ def test_cutoff_time_binning():
 def test_cutoff_time_columns_order(es):
     property_feature = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
     times = [datetime(2011, 4, 10), datetime(2011, 4, 11), datetime(2011, 4, 7)]
-    cutoff_time = pd.DataFrame({'dummy_col_1': [1, 2, 3],
-                                'instance_id': [0, 1, 2],
-                                'dummy_col_2': [True, False, False],
-                                'time': times})
-    feature_matrix = calculate_feature_matrix([property_feature],
-                                              es,
-                                              cutoff_time=cutoff_time)
+    id_col_names = ['instance_id', es['customers'].index]
+    time_col_names = ['time', es['customers'].time_index]
+    for id_col in id_col_names:
+        for time_col in time_col_names:
+            cutoff_time = pd.DataFrame({'dummy_col_1': [1, 2, 3],
+                                        id_col: [0, 1, 2],
+                                        'dummy_col_2': [True, False, False],
+                                        time_col: times})
+            feature_matrix = calculate_feature_matrix([property_feature],
+                                                      es,
+                                                      cutoff_time=cutoff_time)
 
-    labels = [10, 5, 0]
+            labels = [10, 5, 0]
 
-    assert (feature_matrix[property_feature.get_name()] == labels).values.all()
+            assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 
-def test_cutoff_time_columns_order_with_time_index_col(es):
+def test_cutoff_time_df_redundant_column_names(es):
     property_feature = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
     times = [datetime(2011, 4, 10), datetime(2011, 4, 11), datetime(2011, 4, 7)]
-    cutoff_time = pd.DataFrame({'dummy_col_1': [1, 2, 3],
-                                es['customers'].index: [0, 1, 2],
-                                'dummy_col_2': [True, False, False],
-                                es['customers'].time_index: times})
-    feature_matrix = calculate_feature_matrix([property_feature],
-                                              es,
-                                              cutoff_time=cutoff_time)
 
-    labels = [10, 5, 0]
+    cutoff_time = pd.DataFrame({es['customers'].index: [0, 1, 2],
+                                'instance_id': [0, 1, 2],
+                                'dummy_col': [True, False, False],
+                                'time': times})
+    err_msg = 'Cutoff time DataFrame cannot contain both a column named "instance_id" and a column' \
+              ' with the same name as the target entity index'
+    with pytest.raises(AttributeError, match=err_msg):
+        calculate_feature_matrix([property_feature],
+                                 es,
+                                 cutoff_time=cutoff_time)
 
-    assert (feature_matrix[property_feature.get_name()] == labels).values.all()
+    cutoff_time = pd.DataFrame({es['customers'].time_index: [0, 1, 2],
+                                'instance_id': [0, 1, 2],
+                                'dummy_col': [True, False, False],
+                                'time': times})
+    err_msg = 'Cutoff time DataFrame cannot contain both a column named "time" and a column' \
+              ' with the same name as the target entity time index'
+    with pytest.raises(AttributeError, match=err_msg):
+        calculate_feature_matrix([property_feature],
+                                 es,
+                                 cutoff_time=cutoff_time)
 
 
 def test_training_window(es):
