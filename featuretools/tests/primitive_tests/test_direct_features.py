@@ -1,3 +1,4 @@
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
@@ -23,34 +24,38 @@ from featuretools.synthesis import dfs
 from featuretools.variable_types import Categorical, Datetime, Numeric
 
 
-def test_direct_from_identity(pd_es):
-    device = pd_es['sessions']['device_type']
-    d = DirectFeature(base_feature=device, child_entity=pd_es['log'])
+def test_direct_from_identity(es):
+    device = es['sessions']['device_type']
+    d = DirectFeature(base_feature=device, child_entity=es['log'])
 
     feature_set = FeatureSet([d])
-    calculator = FeatureSetCalculator(pd_es, feature_set=feature_set, time_last=None)
+    calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
     df = calculator.run(np.array([0, 5]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute().set_index('id').sort_index()
     v = df[d.get_name()].tolist()
     assert v == [0, 1]
 
 
-def test_direct_from_variable(pd_es):
+def test_direct_from_variable(es):
     # should be same behavior as test_direct_from_identity
-    device = pd_es['sessions']['device_type']
+    device = es['sessions']['device_type']
     d = DirectFeature(base_feature=device,
-                      child_entity=pd_es['log'])
+                      child_entity=es['log'])
 
     feature_set = FeatureSet([d])
-    calculator = FeatureSetCalculator(pd_es, feature_set=feature_set, time_last=None)
+    calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
     df = calculator.run(np.array([0, 5]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute().set_index('id').sort_index()
     v = df[d.get_name()].tolist()
     assert v == [0, 1]
 
 
-def test_direct_rename(pd_es):
+def test_direct_rename(es):
     # should be same behavior as test_direct_from_identity
-    feat = DirectFeature(base_feature=pd_es['sessions']['device_type'],
-                         child_entity=pd_es['log'])
+    feat = DirectFeature(base_feature=es['sessions']['device_type'],
+                         child_entity=es['log'])
     copy_feat = feat.rename("session_test")
     assert feat.unique_name() != copy_feat.unique_name()
     assert feat.get_name() != copy_feat.get_name()
@@ -192,8 +197,8 @@ def test_direct_with_multiple_possible_paths(games_es):
     assert feat.get_name() == 'teams[home_team_id].name'
 
 
-def test_direct_with_single_possible_path(pd_es):
-    feat = ft.DirectFeature(pd_es['customers']['age'], pd_es['sessions'])
+def test_direct_with_single_possible_path(es):
+    feat = ft.DirectFeature(es['customers']['age'], es['sessions'])
     assert feat.relationship_path_name() == 'customers'
     assert feat.get_name() == 'customers.age'
 
@@ -208,11 +213,11 @@ def test_direct_with_no_path(diamond_es):
         ft.DirectFeature(diamond_es['customers']['name'], diamond_es['customers'])
 
 
-def test_serialization(pd_es):
-    value = ft.IdentityFeature(pd_es['products']['rating'])
-    direct = ft.DirectFeature(value, pd_es['log'])
+def test_serialization(es):
+    value = ft.IdentityFeature(es['products']['rating'])
+    direct = ft.DirectFeature(value, es['log'])
 
-    log_to_products = next(r for r in pd_es.get_forward_relationships('log')
+    log_to_products = next(r for r in es.get_forward_relationships('log')
                            if r.parent_entity.id == 'products')
     dictionary = {
         'name': None,
@@ -222,6 +227,6 @@ def test_serialization(pd_es):
 
     assert dictionary == direct.get_arguments()
     assert direct == \
-        ft.DirectFeature.from_dictionary(dictionary, pd_es,
+        ft.DirectFeature.from_dictionary(dictionary, es,
                                          {value.unique_name(): value},
                                          PrimitivesDeserializer())
