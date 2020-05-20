@@ -8,7 +8,7 @@ Changelog
         * Allow cutoff time dataframe columns to be in any order (:pr:`969`)
     * Fixes
         * Normalized type_strings of entity_classes so that the find_variable_types function produces a 
-          dictionary with a clear key to name transition
+          dictionary with a clear key to name transition (:pr:`982`)
     * Changes
     * Documentation Changes
         * Add python 3.8 support for docs (:pr:`983`)
