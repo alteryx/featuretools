@@ -9,6 +9,7 @@ Changelog
         * Allow ``variables_types`` to be referenced by their ``type_string`` 
           for the ``entity_from_dataframe`` function (:pr:`988`)
     * Fixes
+        * Fix errors with Equals and NotEquals primitives when comparing categoricals or different dtypes (:pr:`968`)
         * Normalized type_strings of ``Variable`` classes so that the ``find_variable_types`` function produces a 
           dictionary with a clear key to name transition (:pr:`982`)
     * Changes
@@ -19,7 +20,7 @@ Changelog
         * Update testing dependencies (:pr:`976`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`sebrahimi1988`, :user:`tuethan1999`
+    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`sebrahimi1988`, :user:`tuethan1999`, :user:`frances-h`
 
 **Breaking Changes**
 
