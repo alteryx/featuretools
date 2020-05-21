@@ -66,7 +66,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
         entities (dict[str -> tuple(pd.DataFrame, str, str)]): dictionary of
             entities. Entries take the format
-            {entity id: (dataframe, id column, (time_column))}.
+            {entity id -> (dataframe, id column, (time_column), (variable_types (dict[str -> Variable])))}.
+            Note that time_column and variable_types are optional.
 
         relationships (list[(str, str, str, str)]): list of relationships
             between entities. List items are a tuple with the format
