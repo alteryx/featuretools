@@ -399,6 +399,37 @@ def test_include_cutoff_time_without_training_window(es):
     np.testing.assert_array_equal(actual.values, [0, 5])
 
 
+def test_approximate_dfeat_of_agg_on_target_include_cutoff_time(es):
+    agg_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
+    agg_feat2 = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Sum)
+    dfeat = DirectFeature(agg_feat2, es['sessions'])
+
+    cutoff_time = pd.DataFrame({'time': [datetime(2011, 4, 9, 10, 31, 19)], 'instance_id': [0]})
+    feature_matrix = calculate_feature_matrix([dfeat, agg_feat2, agg_feat],
+                                              es,
+                                              approximate=Timedelta(20, 's'),
+                                              cutoff_time=cutoff_time,
+                                              include_cutoff_time=False)
+
+    # binned cutoff_time will be datetime(2011, 4, 9, 10, 31, 0) and
+    # log event 5 at datetime(2011, 4, 9, 10, 31, 0) will be
+    # excluded due to approximate cutoff time point
+    assert feature_matrix[dfeat.get_name()].tolist() == [5]
+    assert feature_matrix[agg_feat.get_name()].tolist() == [5]
+
+    feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
+                                              es,
+                                              approximate=Timedelta(20, 's'),
+                                              cutoff_time=cutoff_time,
+                                              include_cutoff_time=True)
+
+    # binned cutoff_time will be datetime(2011, 4, 9, 10, 31, 0) and
+    # log event 5 at datetime(2011, 4, 9, 10, 31, 0) will be
+    # included due to approximate cutoff time point
+    assert feature_matrix[dfeat.get_name()].tolist() == [6]
+    assert feature_matrix[agg_feat.get_name()].tolist() == [5]
+
+
 def test_training_window_recent_time_index(es):
     # customer with no sessions
     row = {
