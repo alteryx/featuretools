@@ -16,7 +16,7 @@ Changelog
         * Update testing dependencies (:pr:`976`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`sebrahimi1988`
+    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`sebrahimi1988`, :user:`ctduffy`
 
 **Breaking Changes**
 

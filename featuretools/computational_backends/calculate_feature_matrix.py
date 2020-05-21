@@ -67,9 +67,9 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         instance_ids (list): List of instances to calculate features on. Only
             used if cutoff_time is a single datetime.
 
-        entities (dict[str -> tuple(pd.DataFrame, str, str)]): dictionary of
+        entities (dict[str -> tuple(pd.DataFrame, str, str, dict[str -> Variable])]): dictionary of
             entities. Entries take the format
-            {entity id -> (dataframe, id column, (time_column), (variable_types (dict[str -> Variable])))}.
+            {entity id -> (dataframe, id column, (time_column), (variable_types))}.
             Note that time_column and variable_types are optional.
 
         relationships (list[(str, str, str, str)]): list of relationships

@@ -37,9 +37,9 @@ class EntitySet(object):
             Args:
                 id (str) : Unique identifier to associate with this instance
 
-                entities (dict[str -> tuple(pd.DataFrame, str, str)]): dictionary of
+                entities (dict[str -> tuple(pd.DataFrame, str, str, dict[str -> Variable])]): dictionary of
                     entities. Entries take the format
-                    {entity id -> (dataframe, id column, (time_column), (variable_types (dict[str -> Variable])))}.
+                    {entity id -> (dataframe, id column, (time_column), (variable_types))}.
                     Note that time_column and variable_types are optional.
 
                 relationships (list[(str, str, str, str)]): List of relationships
