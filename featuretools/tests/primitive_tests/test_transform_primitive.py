@@ -1,14 +1,10 @@
 from datetime import datetime
 
-import pytest
-import pandas as pd
 import numpy as np
+import pandas as pd
+import pytest
 
-
-from featuretools.primitives import (
-    Age,
-    TimeSince
-)
+from featuretools.primitives import Age, TimeSince
 
 
 def test_time_since():

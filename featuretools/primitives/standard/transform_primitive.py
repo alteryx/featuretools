@@ -7,9 +7,9 @@ from featuretools.primitives.base.transform_primitive_base import (
 from featuretools.utils import convert_time_units
 from featuretools.variable_types import (
     Boolean,
+    DateOfBirth,
     Datetime,
     DatetimeTimeIndex,
-    DateOfBirth,
     LatLong,
     Numeric,
     Ordinal,
