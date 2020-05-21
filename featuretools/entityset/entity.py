@@ -17,6 +17,7 @@ from featuretools.utils.wrangle import (
     _check_timedelta,
     _dataframes_equal
 )
+from featuretools.variable_types.variable import find_variable_types
 
 logger = logging.getLogger('featuretools.entityset')
 
@@ -278,6 +279,13 @@ class Entity(object):
         """
         variables = []
         variable_types = variable_types.copy() or {}
+        string_to_class_map = find_variable_types()
+        for vid in variable_types.copy():
+            vtype = variable_types[vid]
+            if isinstance(vtype, str):
+                # convert form str to vtype
+                variable_types[vid] = string_to_class_map[vtype]
+
         if index not in variable_types:
             variable_types[index] = vtypes.Index
 

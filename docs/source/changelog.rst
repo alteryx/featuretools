@@ -6,6 +6,8 @@ Changelog
     * Enhancements
         * Add ``get_default_aggregation_primitives`` and ``get_default_transform_primitives`` (:pr:`945`)
         * Allow cutoff time dataframe columns to be in any order (:pr:`969`)
+        * Allow ``variables_types`` to be referenced by their ``type_string`` 
+          for the ``entity_from_dataframe`` function (:pr:`988`)
     * Fixes
         * Normalized type_strings of ``Variable`` classes so that the ``find_variable_types`` function produces a 
           dictionary with a clear key to name transition (:pr:`982`)

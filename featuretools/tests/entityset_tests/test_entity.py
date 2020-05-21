@@ -6,7 +6,9 @@ import pytest
 
 import featuretools as ft
 from featuretools import variable_types
+from featuretools.entityset import EntitySet, deserialize
 from featuretools.tests.testing_utils import make_ecommerce_entityset
+from featuretools.variable_types.variable import find_variable_types
 
 
 def test_enforces_variable_id_is_str(es):
@@ -158,3 +160,23 @@ def test_variable_types_unmodified():
                              time_index='transaction_time',
                              variable_types=variable_types)
     assert old_variable_types == variable_types
+
+
+def test_passing_strings_to_variable_types():
+    variable_types = find_variable_types()
+    reversed_variable_types = {str(v): k for k, v in variable_types.items()}
+
+    es = EntitySet()
+    dataframe = pd.DataFrame(columns=list(reversed_variable_types))
+    es.entity_from_dataframe(
+        'reversed_variable_types',
+        dataframe,
+        index="<class 'featuretools.variable_types.variable.Index'>",
+        time_index="<class 'featuretools.variable_types.variable.DatetimeTimeIndex'>",
+        variable_types=reversed_variable_types,
+    )
+    entity = es['reversed_variable_types']
+    for variable in entity.variables:
+        description = variable.to_data_description()
+        _variable = deserialize.description_to_variable(description, entity=entity)
+        assert variable.__eq__(_variable)
