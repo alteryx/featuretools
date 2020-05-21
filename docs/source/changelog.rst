@@ -6,6 +6,7 @@ Changelog
     * Enhancements
         * Add ``get_default_aggregation_primitives`` and ``get_default_transform_primitives`` (:pr:`945`)
     * Fixes
+        * Fix errors with Equals and NotEquals primitives when comparing categoricals or different dtypes (:pr:`968`)
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -13,7 +14,7 @@ Changelog
         * Update testing dependencies (:pr:`976`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`
+    :user:`frances-h`, :user:`gsheni`, :user:`rwedge`
 
 **v0.14.0 Apr 30, 2020**
     * Enhancements
