@@ -129,6 +129,7 @@ def simple_es():
         'id': range(4),
         'value': pd.Categorical(['a', 'c', 'b', 'd']),
         'value2': pd.Categorical(['a', 'b', 'a', 'd']),
+        'object': ['time1', 'time2', 'time3', 'time4'],
         'datetime': pd.Series([pd.Timestamp('2001-01-01'),
                                pd.Timestamp('2001-01-02'),
                                pd.Timestamp('2001-01-03'),
@@ -153,16 +154,16 @@ def test_equal_categorical(simple_es):
 
 
 def test_equal_different_dtypes(simple_es):
-    f1 = ft.Feature([simple_es['values']['value'], simple_es['values']['datetime']],
+    f1 = ft.Feature([simple_es['values']['object'], simple_es['values']['datetime']],
                     primitive=Equal)
-    f2 = ft.Feature([simple_es['values']['datetime'], simple_es['values']['value']],
+    f2 = ft.Feature([simple_es['values']['datetime'], simple_es['values']['object']],
                     primitive=Equal)
 
     # verify that equals works for different dtypes regardless of order
     df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1, f2])
 
-    assert df['value = datetime'].to_list() == [False, False, False, False]
-    assert df['datetime = value'].to_list() == [False, False, False, False]
+    assert df['object = datetime'].to_list() == [False, False, False, False]
+    assert df['datetime = object'].to_list() == [False, False, False, False]
 
 
 def test_not_equal_categorical(simple_es):
@@ -177,16 +178,16 @@ def test_not_equal_categorical(simple_es):
 
 
 def test_not_equal_different_dtypes(simple_es):
-    f1 = ft.Feature([simple_es['values']['value'], simple_es['values']['datetime']],
+    f1 = ft.Feature([simple_es['values']['object'], simple_es['values']['datetime']],
                     primitive=NotEqual)
-    f2 = ft.Feature([simple_es['values']['datetime'], simple_es['values']['value']],
+    f2 = ft.Feature([simple_es['values']['datetime'], simple_es['values']['object']],
                     primitive=NotEqual)
 
     # verify that equals works for different dtypes regardless of order
     df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1, f2])
     print(df)
-    assert df['value != datetime'].to_list() == [True, True, True, True]
-    assert df['datetime != value'].to_list() == [True, True, True, True]
+    assert df['object != datetime'].to_list() == [True, True, True, True]
+    assert df['datetime != object'].to_list() == [True, True, True, True]
 
 
 def test_diff(es):
