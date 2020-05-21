@@ -115,13 +115,6 @@ class FeatureSetCalculator(object):
         # df_trie.
         df = df_trie.value
 
-        if len(df.columns) == 0:
-            default_df = self.generate_default_df(instance_ids=instance_ids)
-            if isinstance(df, dd.DataFrame):
-                cols = [col for col in default_df.columns] + [default_df.index.name]
-                return dd.from_pandas(default_df.reset_index(), npartitions=1)[cols]
-            return default_df
-
         # Fill in empty rows with default values. This only works for pandas dataframes
         # and is not currently supported for Dask dataframes.
         if isinstance(df, pd.DataFrame):
