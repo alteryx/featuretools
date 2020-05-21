@@ -7,7 +7,7 @@ Changelog
         * Add ``get_default_aggregation_primitives`` and ``get_default_transform_primitives`` (:pr:`945`)
         * Allow cutoff time dataframe columns to be in any order (:pr:`969`)
     * Fixes
-        * Normalized type_strings of entity_classes so that the find_variable_types function produces a 
+        * Normalized type_strings of ``Variable`` classes so that the ``find_variable_types`` function produces a 
           dictionary with a clear key to name transition (:pr:`982`)
     * Changes
     * Documentation Changes
@@ -28,9 +28,9 @@ Changelog
   no longer used to determine the time column. Now, both instance id columns and time columns in a cutoff time
   dataframe can be in any order as long as they are named properly.
 
-* The type_string attributes of all entity classes are now a snake case conversion of their class names. This
-  changes the type_strings of the Unknown, IPAddress, EmailAddress, SubRegionCode, and FilePath classes. The 
-  entity and feature schema versions have been updated to reflect this change.
+* The ``type_string`` attributes of all ``Variable`` subclasses are now a snake case conversion of their class names. This
+  changes the ``type_string`` of the ``Unknown``, ``IPAddress``, ``EmailAddress``, ``SubRegionCode``, and ``FilePath`` classes.
+  Old saved entitysets that used these variables may load incorrectly.
 
 **v0.14.0 Apr 30, 2020**
     * Enhancements
