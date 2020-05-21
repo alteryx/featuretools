@@ -107,8 +107,13 @@ def dask_diamond_es(pd_diamond_es):
     return ft.EntitySet(id=pd_diamond_es.id, entities=entities, relationships=relationships)
 
 
+@pytest.fixture(params=['pd_home_games_es', 'dask_home_games_es'])
+def home_games_es(request):
+    return request.getfixturevalue(request.param)
+
+
 @pytest.fixture
-def home_games_es():
+def pd_home_games_es():
     teams = pd.DataFrame({
         'id': range(3),
         'name': ['Breakers', 'Spirit', 'Thorns']
@@ -124,6 +129,20 @@ def home_games_es():
     relationships = [('teams', 'id', 'games', 'home_team_id')]
     return ft.EntitySet(entities=entities,
                         relationships=relationships)
+
+
+@pytest.fixture
+def dask_home_games_es(pd_home_games_es):
+    entities = {}
+    for entity in pd_home_games_es.entities:
+        entities[entity.id] = (dd.from_pandas(entity.df, npartitions=2), entity.index, None, entity.variable_types)
+
+    relationships = [(rel.parent_entity.id,
+                      rel.parent_variable.name,
+                      rel.child_entity.id,
+                      rel.child_variable.name) for rel in pd_home_games_es.relationships]
+
+    return ft.EntitySet(id=pd_home_games_es.id, entities=entities, relationships=relationships)
 
 
 @pytest.fixture
