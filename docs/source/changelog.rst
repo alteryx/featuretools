@@ -6,7 +6,7 @@ Changelog
     * Enhancements
         * Add ``get_default_aggregation_primitives`` and ``get_default_transform_primitives`` (:pr:`945`)
         * Allow cutoff time dataframe columns to be in any order (:pr:`969`)
-        * Add `include_cutoff_time` arg - control whether data at cutoff times are included in feature calculations (:pr:`959`)
+        * Add ``include_cutoff_time`` arg - control whether data at cutoff times are included in feature calculations (:pr:`959`)
     * Fixes
     * Changes
     * Documentation Changes
