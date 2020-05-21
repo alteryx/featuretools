@@ -1,8 +1,8 @@
 import copy
 
+import dask.dataframe as dd
 import pandas as pd
 import pytest
-from dask import dataframe as dd
 
 import featuretools as ft
 from featuretools.tests.testing_utils import make_ecommerce_entityset
@@ -41,8 +41,13 @@ def es(request):
     return request.getfixturevalue(request.param)
 
 
+@pytest.fixture(params=['pd_diamond_es', 'dask_diamond_es'])
+def diamond_es(request):
+    return request.getfixturevalue(request.param)
+
+
 @pytest.fixture
-def diamond_es():
+def pd_diamond_es():
     countries_df = pd.DataFrame({
         'id': range(2),
         'name': ['US', 'Canada']
@@ -86,6 +91,20 @@ def diamond_es():
     return ft.EntitySet(id='ecommerce_diamond',
                         entities=entities,
                         relationships=relationships)
+
+
+@pytest.fixture
+def dask_diamond_es(pd_diamond_es):
+    entities = {}
+    for entity in pd_diamond_es.entities:
+        entities[entity.id] = (dd.from_pandas(entity.df, npartitions=2), entity.index, None, entity.variable_types)
+
+    relationships = [(rel.parent_entity.id,
+                      rel.parent_variable.name,
+                      rel.child_entity.id,
+                      rel.child_variable.name) for rel in pd_diamond_es.relationships]
+
+    return ft.EntitySet(id=pd_diamond_es.id, entities=entities, relationships=relationships)
 
 
 @pytest.fixture

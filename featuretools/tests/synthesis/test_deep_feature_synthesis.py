@@ -916,10 +916,9 @@ def test_does_not_make_trans_of_single_direct_feature(es):
     assert feature_with_name(features, 'customers.WEEKDAY(signup_date)')
 
 
-def test_makes_trans_of_multiple_direct_features(diamond_es):
-    pd_es = diamond_es
+def test_makes_trans_of_multiple_direct_features(pd_diamond_es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='transactions',
-                                   entityset=pd_es,
+                                   entityset=pd_diamond_es,
                                    agg_primitives=['mean'],
                                    trans_primitives=[Equal],
                                    max_depth=4)
