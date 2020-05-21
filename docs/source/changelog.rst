@@ -8,6 +8,9 @@ Changelog
         * Allow cutoff time dataframe columns to be in any order (:pr:`969`)
         * Add ``include_cutoff_time`` arg - control whether data at cutoff times are included in feature calculations (:pr:`959`)
     * Fixes
+        * Fix errors with Equals and NotEquals primitives when comparing categoricals or different dtypes (:pr:`968`)
+        * Normalized type_strings of ``Variable`` classes so that the ``find_variable_types`` function produces a 
+          dictionary with a clear key to name transition (:pr:`982`)
     * Changes
     * Documentation Changes
         * Add python 3.8 support for docs (:pr:`983`)
@@ -16,7 +19,7 @@ Changelog
         * Update testing dependencies (:pr:`976`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`sebrahimi1988`, :user:`rightx2`, :user:`jeff-hernandez`, 
+    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`sebrahimi1988`, :user:`rightx2`, :user:`jeff-hernandez`, :user:`tuethan1999`, :user:`frances-h`
 
 **Breaking Changes**
 
@@ -26,6 +29,10 @@ Changelog
   column that was not the instance id column. With this update, the position of the column in the dataframe is
   no longer used to determine the time column. Now, both instance id columns and time columns in a cutoff time
   dataframe can be in any order as long as they are named properly.
+
+* The ``type_string`` attributes of all ``Variable`` subclasses are now a snake case conversion of their class names. This
+  changes the ``type_string`` of the ``Unknown``, ``IPAddress``, ``EmailAddress``, ``SubRegionCode``, and ``FilePath`` classes.
+  Old saved entitysets that used these variables may load incorrectly.
 
 **v0.14.0 Apr 30, 2020**
     * Enhancements
