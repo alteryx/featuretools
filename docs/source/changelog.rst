@@ -28,6 +28,10 @@ Changelog
   no longer used to determine the time column. Now, both instance id columns and time columns in a cutoff time
   dataframe can be in any order as long as they are named properly.
 
+* The type_string attributes of all entity classes are now a snake case conversion of their class names. This
+  changes the type_strings of the Unknown, IPAddress, EmailAddress, SubRegionCode, and FilePath classes. The 
+  entity and feature schema versions have been updated to reflect this change.
+
 **v0.14.0 Apr 30, 2020**
     * Enhancements
         * ft.encode_features - use less memory for one-hot encoded columns (:pr:`876`)
