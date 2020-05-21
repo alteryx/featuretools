@@ -1,3 +1,4 @@
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
@@ -89,14 +90,14 @@ def test_init_and_name(pd_es):
             ft.calculate_feature_matrix([instance], entityset=pd_es).head(5)
 
 
-def test_relationship_path(pd_es):
-    f = ft.TransformFeature(pd_es['log']['datetime'], Hour)
+def test_relationship_path(es):
+    f = ft.TransformFeature(es['log']['datetime'], Hour)
 
     assert len(f.relationship_path) == 0
 
 
-def test_serialization(pd_es):
-    value = ft.IdentityFeature(pd_es['log']['value'])
+def test_serialization(es):
+    value = ft.IdentityFeature(es['log']['value'])
     primitive = ft.primitives.MultiplyNumericScalar(value=2)
     value_x2 = ft.TransformFeature(value, primitive)
 
@@ -108,17 +109,19 @@ def test_serialization(pd_es):
 
     assert dictionary == value_x2.get_arguments()
     assert value_x2 == \
-        ft.TransformFeature.from_dictionary(dictionary, pd_es,
+        ft.TransformFeature.from_dictionary(dictionary, es,
                                             {value.unique_name(): value},
                                             PrimitivesDeserializer())
 
 
-def test_make_trans_feat(pd_es):
-    f = ft.Feature(pd_es['log']['datetime'], primitive=Hour)
+def test_make_trans_feat(es):
+    f = ft.Feature(es['log']['datetime'], primitive=Hour)
 
     feature_set = FeatureSet([f])
-    calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
+    calculator = FeatureSetCalculator(es, feature_set=feature_set)
     df = calculator.run(np.array([0]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     v = df[f.get_name()][0]
     assert v == 10
 
@@ -179,7 +182,7 @@ def test_diff_single_value_is_nan(pd_es):
     assert df[diff.get_name()].dropna().shape[0] == 0
 
 
-def test_compare_of_identity(pd_es):
+def test_compare_of_identity(es):
     to_test = [(EqualScalar, [False, False, True, False]),
                (NotEqualScalar, [True, True, False, True]),
                (LessThanScalar, [True, True, False, False]),
@@ -189,17 +192,19 @@ def test_compare_of_identity(pd_es):
 
     features = []
     for test in to_test:
-        features.append(ft.Feature(pd_es['log']['value'], primitive=test[0](10)))
+        features.append(ft.Feature(es['log']['value'], primitive=test[0](10)))
 
-    df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=[0, 1, 2, 3])
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert v == test[1]
 
 
-def test_compare_of_direct(pd_es):
-    log_rating = ft.Feature(pd_es['products']['rating'], entity=pd_es['log'])
+def test_compare_of_direct(es):
+    log_rating = ft.Feature(es['products']['rating'], entity=es['log'])
     to_test = [(EqualScalar, [False, False, False, False]),
                (NotEqualScalar, [True, True, True, True]),
                (LessThanScalar, [False, False, False, True]),
@@ -211,15 +216,17 @@ def test_compare_of_direct(pd_es):
     for test in to_test:
         features.append(ft.Feature(log_rating, primitive=test[0](4.5)))
 
-    df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=[0, 1, 2, 3])
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert v == test[1]
 
 
-def test_compare_of_transform(pd_es):
-    day = ft.Feature(pd_es['log']['datetime'], primitive=Day)
+def test_compare_of_transform(es):
+    day = ft.Feature(es['log']['datetime'], primitive=Day)
     to_test = [(EqualScalar, [False, True]),
                (NotEqualScalar, [True, False]),
                (LessThanScalar, [True, False]),
@@ -231,15 +238,17 @@ def test_compare_of_transform(pd_es):
     for test in to_test:
         features.append(ft.Feature(day, primitive=test[0](10)))
 
-    df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=[0, 14])
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 14])
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert v == test[1]
 
 
-def test_compare_of_agg(pd_es):
-    count_logs = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['sessions'], primitive=Count)
+def test_compare_of_agg(es):
+    count_logs = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
 
     to_test = [(EqualScalar, [False, False, False, True]),
                (NotEqualScalar, [True, True, True, False]),
@@ -252,25 +261,29 @@ def test_compare_of_agg(pd_es):
     for test in to_test:
         features.append(ft.Feature(count_logs, primitive=test[0](2)))
 
-    df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=[0, 1, 2, 3])
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert v == test[1]
 
 
-def test_compare_all_nans(pd_es):
-    nan_feat = ft.Feature(pd_es['log']['product_id'], parent_entity=pd_es['sessions'], primitive=Mode)
+def test_compare_all_nans(es):
+    nan_feat = ft.Feature(es['log']['product_id'], parent_entity=es['sessions'], primitive=Mode)
     compare = nan_feat == 'brown bag'
     # before all data
     time_last = pd.Timestamp('1/1/1993')
 
-    df = ft.calculate_feature_matrix(entityset=pd_es, features=[nan_feat, compare], instance_ids=[0, 1, 2], cutoff_time=time_last)
+    df = ft.calculate_feature_matrix(entityset=es, features=[nan_feat, compare], instance_ids=[0, 1, 2], cutoff_time=time_last)
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     assert df[nan_feat.get_name()].dropna().shape[0] == 0
     assert not df[compare.get_name()].any()
 
 
-def test_arithmetic_of_val(pd_es):
+def test_arithmetic_of_val(es):
     to_test = [(AddNumericScalar, [2.0, 7.0, 12.0, 17.0]),
                (SubtractNumericScalar, [-2.0, 3.0, 8.0, 13.0]),
                (ScalarSubtractNumericFeature, [2.0, -3.0, -8.0, -13.0]),
@@ -280,11 +293,13 @@ def test_arithmetic_of_val(pd_es):
 
     features = []
     for test in to_test:
-        features.append(ft.Feature(pd_es['log']['value'], primitive=test[0](2)))
+        features.append(ft.Feature(es['log']['value'], primitive=test[0](2)))
 
-    features.append(ft.Feature(pd_es['log']['value']) / 0)
+    features.append(ft.Feature(es['log']['value']) / 0)
 
-    df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=[0, 1, 2, 3])
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
 
     for f, test in zip(features, to_test):
         v = df[f.get_name()].values.tolist()
@@ -296,14 +311,14 @@ def test_arithmetic_of_val(pd_es):
     assert v[1:] == test[1:]
 
 
-def test_arithmetic_two_vals_fails(pd_es):
+def test_arithmetic_two_vals_fails(es):
     error_text = "Not a feature"
     with pytest.raises(Exception, match=error_text):
         ft.Feature([2, 2], primitive=AddNumeric)
 
 
-def test_arithmetic_of_identity(pd_es):
-    logs = pd_es['log']
+def test_arithmetic_of_identity(es):
+    logs = es['log']
 
     to_test = [(AddNumeric, [0., 7., 14., 21.]),
                (SubtractNumeric, [0, 3, 6, 9]),
@@ -314,7 +329,9 @@ def test_arithmetic_of_identity(pd_es):
     for test in to_test:
         features.append(ft.Feature([logs['value'], logs['value_2']], primitive=test[0]))
 
-    df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=[0, 1, 2, 3])
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
 
     for i, test in enumerate(to_test[:-1]):
         v = df[features[i].get_name()].values.tolist()
@@ -325,12 +342,12 @@ def test_arithmetic_of_identity(pd_es):
     assert v[1:] == test[1][1:]
 
 
-def test_arithmetic_of_direct(pd_es):
-    rating = pd_es['products']['rating']
-    log_rating = ft.Feature(rating, entity=pd_es['log'])
-    customer_age = pd_es['customers']['age']
-    session_age = ft.Feature(customer_age, entity=pd_es['sessions'])
-    log_age = ft.Feature(session_age, entity=pd_es['log'])
+def test_arithmetic_of_direct(es):
+    rating = es['products']['rating']
+    log_rating = ft.Feature(rating, entity=es['log'])
+    customer_age = es['customers']['age']
+    session_age = ft.Feature(customer_age, entity=es['sessions'])
+    log_age = ft.Feature(session_age, entity=es['log'])
 
     to_test = [(AddNumeric, [38, 37, 37.5, 37.5]),
                (SubtractNumeric, [28, 29, 28.5, 28.5]),
@@ -341,7 +358,10 @@ def test_arithmetic_of_direct(pd_es):
     for test in to_test:
         features.append(ft.Feature([log_age, log_rating], primitive=test[0]))
 
-    df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=[0, 3, 5, 7])
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 3, 5, 7])
+    if isinstance(df, dd.DataFrame):
+        df = df.compute().set_index('id').sort_index()
+
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert v == test[1]
@@ -377,9 +397,9 @@ def test_boolean_multiply():
             assert fm[col_name].equals(df[row[0]] * df[row[1]])
 
 
-def test_arithmetic_of_transform(pd_es):
-    diff1 = ft.Feature([pd_es['log']['value']], primitive=Diff)
-    diff2 = ft.Feature([pd_es['log']['value_2']], primitive=Diff)
+def test_arithmetic_of_transform(es):
+    diff1 = ft.Feature([es['log']['value']], primitive=Diff)
+    diff2 = ft.Feature([es['log']['value_2']], primitive=Diff)
 
     to_test = [(AddNumeric, [np.nan, 7., -7., 10.]),
                (SubtractNumeric, [np.nan, 3., -3., 4.]),
@@ -391,8 +411,10 @@ def test_arithmetic_of_transform(pd_es):
         features.append(ft.Feature([diff1, diff2], primitive=test[0]()))
 
     feature_set = FeatureSet(features)
-    calculator = FeatureSetCalculator(pd_es, feature_set=feature_set)
+    calculator = FeatureSetCalculator(es, feature_set=feature_set)
     df = calculator.run(np.array([0, 2, 12, 13]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert np.isnan(v.pop(0))
@@ -400,20 +422,22 @@ def test_arithmetic_of_transform(pd_es):
         assert v == test[1]
 
 
-def test_not_feature(pd_es):
-    not_feat = ft.Feature(pd_es['customers']['loves_ice_cream'], primitive=Not)
+def test_not_feature(es):
+    not_feat = ft.Feature(es['customers']['loves_ice_cream'], primitive=Not)
     features = [not_feat]
-    df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=[0, 1])
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1])
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     v = df[not_feat.get_name()].values
     assert not v[0]
     assert v[1]
 
 
-def test_arithmetic_of_agg(pd_es):
-    customer_id_feat = pd_es['customers']['id']
-    store_id_feat = pd_es['stores']['id']
-    count_customer = ft.Feature(customer_id_feat, parent_entity=pd_es[u'régions'], primitive=Count)
-    count_stores = ft.Feature(store_id_feat, parent_entity=pd_es[u'régions'], primitive=Count)
+def test_arithmetic_of_agg(es):
+    customer_id_feat = es['customers']['id']
+    store_id_feat = es['stores']['id']
+    count_customer = ft.Feature(customer_id_feat, parent_entity=es[u'régions'], primitive=Count)
+    count_stores = ft.Feature(store_id_feat, parent_entity=es[u'régions'], primitive=Count)
     to_test = [(AddNumeric, [6, 2]),
                (SubtractNumeric, [0, -2]),
                (MultiplyNumeric, [9, 0]),
@@ -424,8 +448,10 @@ def test_arithmetic_of_agg(pd_es):
         features.append(ft.Feature([count_customer, count_stores], primitive=test[0]()))
 
     ids = ['United States', 'Mexico']
-    df = ft.calculate_feature_matrix(entityset=pd_es, features=features,
+    df = ft.calculate_feature_matrix(entityset=es, features=features,
                                      instance_ids=ids)
+    if isinstance(df, dd.DataFrame):
+        df = df.compute().set_index('id')
     df = df.loc[ids]
 
     for i, test in enumerate(to_test):
@@ -446,6 +472,8 @@ def test_latlong(pd_es):
     longitude = ft.Feature(log_latlong_feat, primitive=Longitude)
     features = [latitude, longitude]
     df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(15))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     latvalues = df[latitude.get_name()].values
     lonvalues = df[longitude.get_name()].values
     assert len(latvalues) == 15
@@ -490,13 +518,15 @@ def test_haversine(pd_es):
         Haversine(unit='inches')
 
 
-def test_text_primitives(pd_es):
-    words = ft.Feature(pd_es['log']['comments'], primitive=NumWords)
-    chars = ft.Feature(pd_es['log']['comments'], primitive=NumCharacters)
+def test_text_primitives(es):
+    words = ft.Feature(es['log']['comments'], primitive=NumWords)
+    chars = ft.Feature(es['log']['comments'], primitive=NumCharacters)
 
     features = [words, chars]
 
-    df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(15))
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
 
     word_counts = [514, 3, 3, 644, 1268, 1269, 177, 172, 79,
                    240, 1239, 3, 3, 3, 3]
@@ -511,37 +541,45 @@ def test_text_primitives(pd_es):
         assert v == char_counts[i]
 
 
-def test_isin_feat(pd_es):
-    isin = ft.Feature(pd_es['log']['product_id'], primitive=IsIn(list_of_outputs=["toothpaste", "coke zero"]))
+def test_isin_feat(es):
+    isin = ft.Feature(es['log']['product_id'], primitive=IsIn(list_of_outputs=["toothpaste", "coke zero"]))
     features = [isin]
-    df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(8))
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     true = [True, True, True, False, False, True, True, True]
     v = df[isin.get_name()].values.tolist()
     assert true == v
 
 
-def test_isin_feat_other_syntax(pd_es):
-    isin = ft.Feature(pd_es['log']['product_id']).isin(["toothpaste", "coke zero"])
+def test_isin_feat_other_syntax(es):
+    isin = ft.Feature(es['log']['product_id']).isin(["toothpaste", "coke zero"])
     features = [isin]
-    df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(8))
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     true = [True, True, True, False, False, True, True, True]
     v = df[isin.get_name()].values.tolist()
     assert true == v
 
 
-def test_isin_feat_other_syntax_int(pd_es):
-    isin = ft.Feature(pd_es['log']['value']).isin([5, 10])
+def test_isin_feat_other_syntax_int(es):
+    isin = ft.Feature(es['log']['value']).isin([5, 10])
     features = [isin]
-    df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(8))
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     true = [False, True, True, False, False, False, False, False]
     v = df[isin.get_name()].values.tolist()
     assert true == v
 
 
-def test_isin_feat_custom(pd_es):
+def test_isin_feat_custom(es):
     def pd_is_in(array, list_of_outputs=None):
         if list_of_outputs is None:
             list_of_outputs = []
+        if isinstance(array, dd.Series):
+            return array.isin(list_of_outputs)
         return pd.Series(array).isin(list_of_outputs)
 
     def isin_generate_name(self, base_feature_names):
@@ -557,23 +595,29 @@ def test_isin_feat_custom(pd_es):
         "in a list that is provided.",
         cls_attributes={"generate_name": isin_generate_name})
 
-    isin = ft.Feature(pd_es['log']['product_id'], primitive=IsIn(list_of_outputs=["toothpaste", "coke zero"]))
+    isin = ft.Feature(es['log']['product_id'], primitive=IsIn(list_of_outputs=["toothpaste", "coke zero"]))
     features = [isin]
-    df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(8))
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     true = [True, True, True, False, False, True, True, True]
     v = df[isin.get_name()].values.tolist()
     assert true == v
 
-    isin = ft.Feature(pd_es['log']['product_id']).isin(["toothpaste", "coke zero"])
+    isin = ft.Feature(es['log']['product_id']).isin(["toothpaste", "coke zero"])
     features = [isin]
-    df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(8))
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     true = [True, True, True, False, False, True, True, True]
     v = df[isin.get_name()].values.tolist()
     assert true == v
 
-    isin = ft.Feature(pd_es['log']['value']).isin([5, 10])
+    isin = ft.Feature(es['log']['value']).isin([5, 10])
     features = [isin]
-    df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(8))
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     true = [False, True, True, False, False, False, False, False]
     v = df[isin.get_name()].values.tolist()
     assert true == v
@@ -599,6 +643,8 @@ def test_percentile(pd_es):
     feature_set = FeatureSet([p])
     calculator = FeatureSetCalculator(pd_es, feature_set)
     df = calculator.run(np.array(range(10, 17)))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     true = pd_es['log'].df[v.get_name()].rank(pct=True)
     true = true.loc[range(10, 17)]
     for t, a in zip(true.values, df[p.get_name()].values):
@@ -761,7 +807,7 @@ def test_make_transform_restricts_time_arg():
             description="This primitive should erorr")
 
 
-def test_make_transform_sets_kwargs_correctly(pd_es):
+def test_make_transform_sets_kwargs_correctly(es):
     def pd_is_in(array, list_of_outputs=None):
         if list_of_outputs is None:
             list_of_outputs = []
@@ -781,10 +827,10 @@ def test_make_transform_sets_kwargs_correctly(pd_es):
         cls_attributes={"generate_name": isin_generate_name})
 
     isin_1_list = ["toothpaste", "coke_zero"]
-    isin_1_base_f = ft.Feature(pd_es['log']['product_id'])
+    isin_1_base_f = ft.Feature(es['log']['product_id'])
     isin_1 = ft.Feature(isin_1_base_f, primitive=IsIn(list_of_outputs=isin_1_list))
     isin_2_list = ["coke_zero"]
-    isin_2_base_f = ft.Feature(pd_es['log']['session_id'])
+    isin_2_base_f = ft.Feature(es['log']['session_id'])
     isin_2 = ft.Feature(isin_2_base_f, primitive=IsIn(list_of_outputs=isin_2_list))
     assert isin_1_base_f == isin_1.base_features[0]
     assert isin_1_list == isin_1.primitive.kwargs['list_of_outputs']
@@ -841,12 +887,13 @@ def test_feature_names_inherit_from_make_trans_primitive():
     pass
 
 
-def test_get_filepath(pd_es):
+def test_get_filepath(es):
     class Mod4(TransformPrimitive):
         '''Return base feature modulo 4'''
         name = "mod4"
         input_types = [Numeric]
         return_type = Numeric
+        dask_compatible = True
 
         def get_function(self):
             filepath = self.get_filepath("featuretools_unit_test_example.csv")
@@ -857,23 +904,25 @@ def test_get_filepath(pd_es):
                     if pd.isnull(x):
                         return x
                     return reference[int(x) % 4]
-                return pd.Series(x).apply(_map)
+                return x.apply(_map)
             return map_to_word
 
-    feat = ft.Feature(pd_es['log']['value'], primitive=Mod4)
+    feat = ft.Feature(es['log']['value'], primitive=Mod4)
     df = ft.calculate_feature_matrix(features=[feat],
-                                     entityset=pd_es,
+                                     entityset=es,
                                      instance_ids=range(17))
-
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     assert pd.isnull(df["MOD4(value)"][15])
     assert df["MOD4(value)"][0] == 0
     assert df["MOD4(value)"][14] == 2
 
-    fm, fl = ft.dfs(entityset=pd_es,
+    fm, fl = ft.dfs(entityset=es,
                     target_entity="log",
                     agg_primitives=[],
                     trans_primitives=[Mod4])
-
+    if isinstance(fm, dd.DataFrame):
+        fm = fm.compute().set_index('id')
     assert fm["MOD4(value)"][0] == 0
     assert fm["MOD4(value)"][14] == 2
     assert pd.isnull(fm["MOD4(value)"][15])
