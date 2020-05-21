@@ -139,7 +139,7 @@ def test_equal_categorical():
     df = ft.calculate_feature_matrix(entityset=es, features=[f1])
 
     assert set(es['values'].df['value'].cat.categories) != \
-           set(es['values'].df['value2'].cat.categories)
+        set(es['values'].df['value2'].cat.categories)
     assert df['value = value2'].to_list() == [True, False, False, True]
 
 
@@ -159,7 +159,7 @@ def test_not_equal_categorical():
     df = ft.calculate_feature_matrix(entityset=es, features=[f1])
 
     assert set(es['values'].df['value'].cat.categories) != \
-           set(es['values'].df['value2'].cat.categories)
+        set(es['values'].df['value2'].cat.categories)
     assert df['value != value2'].to_list() == [False, True, True, False]
 
 
