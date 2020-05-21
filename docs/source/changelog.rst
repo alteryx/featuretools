@@ -6,6 +6,7 @@ Changelog
     * Enhancements
         * Add ``get_default_aggregation_primitives`` and ``get_default_transform_primitives`` (:pr:`945`)
         * Allow cutoff time dataframe columns to be in any order (:pr:`969`)
+        * Add Age primitive (:pr:`987`)
     * Fixes
     * Changes
     * Documentation Changes
