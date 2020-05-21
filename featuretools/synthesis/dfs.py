@@ -56,15 +56,16 @@ def dfs(entities=None,
 
         target_entity (str): Entity id of entity on which to make predictions.
 
-        cutoff_time (pd.DataFrame or Datetime): Specifies times at which to
-            calculate each instance. The resulting feature matrix will use data
-            up to and including the cutoff_time. Can either be a DataFrame with
-            'instance_id' and 'time' columns, a DataFrame with the name of the
-            index variable in the target entity and a time column, a
-            list of values, or a single
-            value to calculate for all instances. If the dataframe has more than
-            two columns, any additional columns will be added to the resulting
-            feature matrix.
+        cutoff_time (pd.DataFrame or Datetime): Specifies times at which to calculate
+            the features for each instance. The resulting feature matrix will use data
+            up to and including the cutoff_time. Can either be a DataFrame or a single
+            value. If a DataFrame is passed the instance ids for which to calculate features
+            must be in a column with the same name as the target entity index or a column
+            named `instance_id`. The cutoff time values in the DataFrame must be in a column with
+            the same name as the target entity time index or a column named `time`. If the
+            DataFrame has more than two columns, any additional columns will be added to the
+            resulting feature matrix. If a single value is passed, this value will be used for
+            all instances.
 
         instance_ids (list): List of instances on which to calculate features. Only
             used if cutoff_time is a single datetime.

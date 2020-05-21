@@ -5,16 +5,27 @@ Changelog
 **Future Release**
     * Enhancements
         * Add ``get_default_aggregation_primitives`` and ``get_default_transform_primitives`` (:pr:`945`)
+        * Allow cutoff time dataframe columns to be in any order (:pr:`969`)
         * Add `include_cutoff_time` arg - control whether data at cutoff times are included in feature calculations (:pr:`959`)
     * Fixes
     * Changes
     * Documentation Changes
+        * Add python 3.8 support for docs (:pr:`983`)
     * Testing Changes
         * Add automated tests for python 3.8 environment (:pr:`847`)
         * Update testing dependencies (:pr:`976`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rightx2`, :user:`jeff-hernandez`, :user:`rwedge`
+    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`sebrahimi1988`, :user:`rightx2`, :user:`jeff-hernandez`, 
+
+**Breaking Changes**
+
+* Calls to ``featuretools.dfs`` or ``featuretools.calculate_feature_matrix`` that use a cutoff time
+  dataframe, but do not label the time column with either the target entity time index variable name or
+  as ``time``, will now result in an ``AttributeError``. Previously, the time column was selected to be the first
+  column that was not the instance id column. With this update, the position of the column in the dataframe is
+  no longer used to determine the time column. Now, both instance id columns and time columns in a cutoff time
+  dataframe can be in any order as long as they are named properly.
 
 **v0.14.0 Apr 30, 2020**
     * Enhancements
