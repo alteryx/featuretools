@@ -214,13 +214,17 @@ def test_stack_on_self(es, test_primitive):
     assert not check_stacking(test_primitive(), [child])
 
 
-def test_init_and_name(pd_es):
-    session = pd_es['sessions']
-    log = pd_es['log']
+def test_init_and_name(es):
+    session = es['sessions']
+    log = es['log']
 
     features = [ft.Feature(v) for v in log.variables]
-    for agg_prim in get_aggregation_primitives().values():
+    agg_primitives = get_aggregation_primitives().values()
+    # If Dask EntitySet use only Dask compatible primitives
+    if isinstance(es['sessions'].df, dd.DataFrame):
+        agg_primitives = [prim for prim in agg_primitives if prim.dask_compatible]
 
+    for agg_prim in agg_primitives:
         input_types = agg_prim.input_types
         if type(input_types[0]) != list:
             input_types = [input_types]
@@ -236,7 +240,7 @@ def test_init_and_name(pd_es):
 
                 # try to get name and calculate
                 instance.get_name()
-                ft.calculate_feature_matrix([instance], entityset=pd_es).head(5)
+                ft.calculate_feature_matrix([instance], entityset=es)
 
 
 def test_invalid_init_args(diamond_es):

@@ -60,15 +60,18 @@ from featuretools.tests.testing_utils import feature_with_name
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
 
-def test_init_and_name(pd_es):
-    log = pd_es['log']
-    rating = ft.Feature(pd_es["products"]["rating"], pd_es["log"])
+def test_init_and_name(es):
+    log = es['log']
+    rating = ft.Feature(es["products"]["rating"], es["log"])
     features = [ft.Feature(v) for v in log.variables] +\
         [ft.Feature(rating, primitive=GreaterThanScalar(2.5))]
     # Add Timedelta feature
     # features.append(pd.Timestamp.now() - ft.Feature(log['datetime']))
-    for transform_prim in get_transform_primitives().values():
-
+    trans_primitives = get_transform_primitives().values()
+    # If Dask EntitySet use only Dask compatible primitives
+    if isinstance(es['log'].df, dd.DataFrame):
+        trans_primitives = [prim for prim in trans_primitives if prim.dask_compatible]
+    for transform_prim in trans_primitives:
         # skip automated testing if a few special cases
         if transform_prim in [NotEqual, Equal]:
             continue
@@ -87,7 +90,7 @@ def test_init_and_name(pd_es):
 
             # try to get name and calculate
             instance.get_name()
-            ft.calculate_feature_matrix([instance], entityset=pd_es).head(5)
+            ft.calculate_feature_matrix([instance], entityset=es)
 
 
 def test_relationship_path(es):
@@ -367,16 +370,36 @@ def test_arithmetic_of_direct(es):
         assert v == test[1]
 
 
-def test_boolean_multiply():
-    pd_es = ft.EntitySet()
+@pytest.fixture(params=['pd_boolean_mult_es', 'dask_boolean_mult_es'])
+def boolean_mult_es(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture
+def pd_boolean_mult_es():
+    es = ft.EntitySet()
     df = pd.DataFrame({"index": [0, 1, 2],
                        "bool": [True, False, True],
                        "numeric": [2, 3, np.nan]})
 
-    pd_es.entity_from_dataframe(entity_id="test",
-                                dataframe=df,
-                                index="index")
+    es.entity_from_dataframe(entity_id="test",
+                             dataframe=df,
+                             index="index")
 
+    return es
+
+
+@pytest.fixture
+def dask_boolean_mult_es(pd_boolean_mult_es):
+    entities = {}
+    for entity in pd_boolean_mult_es.entities:
+        entities[entity.id] = (dd.from_pandas(entity.df, npartitions=2), entity.index, None, entity.variable_types)
+
+    return ft.EntitySet(id=pd_boolean_mult_es.id, entities=entities)
+
+
+def test_boolean_multiply(boolean_mult_es):
+    es = boolean_mult_es
     to_test = [
         ('numeric', 'numeric'),
         ('numeric', 'bool'),
@@ -385,9 +408,16 @@ def test_boolean_multiply():
     ]
     features = []
     for row in to_test:
-        features.append(ft.Feature(pd_es["test"][row[0]]) * ft.Feature(pd_es["test"][row[1]]))
+        features.append(ft.Feature(es["test"][row[0]]) * ft.Feature(es["test"][row[1]]))
 
-    fm = ft.calculate_feature_matrix(entityset=pd_es, features=features)
+    fm = ft.calculate_feature_matrix(entityset=es, features=features)
+
+    if isinstance(fm, dd.DataFrame):
+        fm = fm.compute()
+
+    df = es['test'].df
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
 
     for row in to_test:
         col_name = '{} * {}'.format(row[0], row[1])
