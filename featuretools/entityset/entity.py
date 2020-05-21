@@ -283,8 +283,10 @@ class Entity(object):
         for vid in variable_types.copy():
             vtype = variable_types[vid]
             if isinstance(vtype, str):
-                # convert form str to vtype
-                variable_types[vid] = string_to_class_map[vtype]
+                if vtype in string_to_class_map:
+                    variable_types[vid] = string_to_class_map[vtype]
+                else:
+                    variable_types[vid] = string_to_class_map['unknown']
 
         if index not in variable_types:
             variable_types[index] = vtypes.Index

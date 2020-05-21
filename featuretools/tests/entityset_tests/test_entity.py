@@ -165,6 +165,7 @@ def test_variable_types_unmodified():
 def test_passing_strings_to_variable_types():
     variable_types = find_variable_types()
     reversed_variable_types = {str(v): k for k, v in variable_types.items()}
+    reversed_variable_types['unknown variable'] = 'some unknown type string'
 
     es = EntitySet()
     dataframe = pd.DataFrame(columns=list(reversed_variable_types))
