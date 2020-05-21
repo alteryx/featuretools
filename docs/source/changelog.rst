@@ -7,6 +7,8 @@ Changelog
         * Add ``get_default_aggregation_primitives`` and ``get_default_transform_primitives`` (:pr:`945`)
         * Allow cutoff time dataframe columns to be in any order (:pr:`969`)
     * Fixes
+        * Normalized type_strings of ``Variable`` classes so that the ``find_variable_types`` function produces a 
+          dictionary with a clear key to name transition (:pr:`982`)
     * Changes
     * Documentation Changes
         * Add python 3.8 support for docs (:pr:`983`)
@@ -15,7 +17,7 @@ Changelog
         * Update testing dependencies (:pr:`976`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`sebrahimi1988`
+    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`sebrahimi1988`, :user:`tuethan1999`
 
 **Breaking Changes**
 
@@ -25,6 +27,10 @@ Changelog
   column that was not the instance id column. With this update, the position of the column in the dataframe is
   no longer used to determine the time column. Now, both instance id columns and time columns in a cutoff time
   dataframe can be in any order as long as they are named properly.
+
+* The ``type_string`` attributes of all ``Variable`` subclasses are now a snake case conversion of their class names. This
+  changes the ``type_string`` of the ``Unknown``, ``IPAddress``, ``EmailAddress``, ``SubRegionCode``, and ``FilePath`` classes.
+  Old saved entitysets that used these variables may load incorrectly.
 
 **v0.14.0 Apr 30, 2020**
     * Enhancements
