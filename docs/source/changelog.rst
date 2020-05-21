@@ -10,6 +10,7 @@ Changelog
     * Changes
     * Documentation Changes
         * Add python 3.8 support for docs (:pr:`983`)
+        * Adds consistent Entityset Docstrings (:pr:`986`)
     * Testing Changes
         * Add automated tests for python 3.8 environment (:pr:`847`)
         * Update testing dependencies (:pr:`976`)
