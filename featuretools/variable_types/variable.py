@@ -422,8 +422,8 @@ class FilePath(Variable):
 
 
 def find_variable_types():
-    return {str(vtype.type_string): vtype for vtype in find_descendents(
-        Variable) if hasattr(vtype, 'type_string')}
+    return {vtype.type_string: vtype for vtype in find_descendents(Variable)
+            if issubclass(vtype, Variable) and vtype.type_string}
 
 
 DEFAULT_DTYPE_VALUES = {
