@@ -97,9 +97,10 @@ jobs:
       - run : |
           virtualenv venv
           source venv/bin/activate
-          pip config --site set global.progress_bar off
-          pip install -e unpacked_sdist/
-          pip install -r unpacked_sdist/test-requirements.txt
+          python -m pip config --site set global.progress_bar off
+          python -m pip install --upgrade pip
+          python -m pip install -e unpacked_sdist/
+          python -m pip install -r unpacked_sdist/test-requirements.txt
       - persist_to_workspace:
           root: ~/featuretools
           paths:
@@ -142,7 +143,7 @@ jobs:
           steps:
             - run: |
                 source venv/bin/activate
-                pip install "$(cat dev-requirements.txt | grep codecov)"
+                python -m pip install "$(cat dev-requirements.txt | grep codecov)"
                 coverage erase
                 cd unpacked_sdist/
                 coverage erase
@@ -173,13 +174,18 @@ jobs:
           at: ~/featuretools
       - run: |
           source venv/bin/activate
-          pip install -r unpacked_sdist/dev-requirements.txt
+          python -m pip install -r unpacked_sdist/dev-requirements.txt
       - run: source venv/bin/activate && make lint
 
   build_docs:
     working_directory: ~/featuretools
-    docker:
-      - image: circleci/python:3.7-stretch
+    parameters:
+      image_tag:
+        type: string
+        default: "3.8"
+    executor:
+      name: python
+      image_tag: << parameters.image_tag >>
     steps:
       - run: sudo apt update && sudo apt install -y pandoc
       - run: sudo apt install -y graphviz
@@ -188,7 +194,7 @@ jobs:
           at: ~/featuretools
       - run: |
           source venv/bin/activate
-          pip install -r unpacked_sdist/dev-requirements.txt
+          python -m pip install -r unpacked_sdist/dev-requirements.txt
       - run: |
           source venv/bin/activate
           make -C docs/ -e "SPHINXOPTS=-W" clean html
@@ -208,8 +214,8 @@ jobs:
       - run: |
           virtualenv venv
           source venv/bin/activate
-          pip config --site set global.progress_bar off
-          pip install -e unpacked_sdist/[complete]
+          python -m pip config --site set global.progress_bar off
+          python -m pip install -e unpacked_sdist/[complete]
       - run:
           command: |
             source venv/bin/activate
@@ -281,9 +287,19 @@ workflows:
           requires:
             - "py38 install featuretools"
       - build_docs:
-          name: "build docs"
+          name: "build docs 3.6"
+          image_tag: "3.6"
+          requires:
+            - "py36 install featuretools"
+      - build_docs:
+          name: "build docs 3.7"
+          image_tag: "3.7"
           requires:
             - "py37 install featuretools"
+      - build_docs:
+          name: "build docs 3.8"
+          requires:
+            - "py38 install featuretools"
       - install_ft_complete:
           name: "py36 install featuretools complete test"
           image_tag: "3.6"
