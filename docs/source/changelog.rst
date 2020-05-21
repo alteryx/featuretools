@@ -7,6 +7,7 @@ Changelog
         * Add ``get_default_aggregation_primitives`` and ``get_default_transform_primitives`` (:pr:`945`)
         * Allow cutoff time dataframe columns to be in any order (:pr:`969`)
     * Fixes
+        * Fix errors with Equals and NotEquals primitives when comparing categoricals or different dtypes (:pr:`968`)
         * Normalized type_strings of ``Variable`` classes so that the ``find_variable_types`` function produces a 
           dictionary with a clear key to name transition (:pr:`982`)
     * Changes
@@ -17,7 +18,7 @@ Changelog
         * Update testing dependencies (:pr:`976`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`sebrahimi1988`, :user:`tuethan1999`
+    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`sebrahimi1988`, :user:`tuethan1999`, :user:`frances-h`
 
 **Breaking Changes**
 
