@@ -29,6 +29,33 @@ def entities():
 
 
 @pytest.fixture
+def dask_entities():
+    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
+    transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                                    "card_id": [1, 2, 1, 3, 4, 5],
+                                    "transaction_time": [10, 12, 13, 20, 21, 20],
+                                    "fraud": [True, False, False, False, True, True]})
+    cards_df = dd.from_pandas(cards_df, npartitions=2)
+    transactions_df = dd.from_pandas(transactions_df, npartitions=2)
+
+    cards_vtypes = {
+        'id': vtypes.Index
+    }
+    transactions_vtypes = {
+        'id': vtypes.Index,
+        'card_id': vtypes.Id,
+        'transaction_time': vtypes.NumericTimeIndex,
+        'fraud': vtypes.Boolean
+    }
+
+    entities = {
+        "cards": (cards_df, "id", None, cards_vtypes),
+        "transactions": (transactions_df, "id", "transaction_time", transactions_vtypes)
+    }
+    return entities
+
+
+@pytest.fixture
 def relationships():
     return [("cards", "id", "transactions", "card_id")]
 
@@ -154,7 +181,9 @@ def test_accepts_cutoff_time_compose(entities, relationships):
     assert len(feature_matrix.columns) == len(features) + 1
 
 
-def test_accepts_cutoff_time_compose_dask(dask_es):
+def test_accepts_cutoff_time_compose_dask(dask_entities, relationships):
+    entities = dask_entities
+
     def fraud_occured(df):
         return df['fraud'].any()
 
@@ -162,23 +191,24 @@ def test_accepts_cutoff_time_compose_dask(dask_es):
         target_entity='card_id',
         time_index='transaction_time',
         labeling_function=fraud_occured,
-        window_size='1y'
+        window_size=1
     )
 
     labels = lm.search(
-        dask_es['transactions'].df.compute(),
+        entities['transactions'][0].compute(),
         num_examples_per_instance=-1
     )
 
+    labels['cutoff_time'] = pd.to_numeric(labels['cutoff_time'])
     labels.rename({'card_id': 'id', 'cutoff_time': 'time'}, axis=1, inplace=True)
 
-    feature_matrix, features = dfs(entityset=dask_es,
+    feature_matrix, features = dfs(entities=entities,
+                                   relationships=relationships,
                                    target_entity="cards",
                                    cutoff_time=labels)
+    feature_matrix = feature_matrix.compute().set_index('id')
 
-    feature_matrix = feature_matrix.set_index('id').compute()
-
-    assert len(feature_matrix.index) == 4
+    assert len(feature_matrix.index) == 6
     assert len(feature_matrix.columns) == len(features) + 1
 
 

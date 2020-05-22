@@ -442,7 +442,8 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                             _feature_matrix[col] = pass_through[col]
                 elif isinstance(_feature_matrix, dd.core.DataFrame) and (len(pass_columns) > 0):
                     _feature_matrix['time'] = time_last
-                    _feature_matrix['time'] = dd.to_datetime(_feature_matrix['time'])
+                    if isinstance(time_last, pd.Timestamp):
+                        _feature_matrix['time'] = dd.to_datetime(_feature_matrix['time'])
                     pass_through = group[['instance_id', cutoff_df_time_var] + pass_columns]
                     pass_through.rename(columns={'instance_id': id_name,
                                                  cutoff_df_time_var: 'time'},
