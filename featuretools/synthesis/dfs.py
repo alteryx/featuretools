@@ -43,9 +43,10 @@ def dfs(entities=None,
 
 
     Args:
-        entities (dict[str -> tuple(pd.DataFrame, str, str)]): Dictionary of
+        entities (dict[str -> tuple(pd.DataFrame, str, str, dict[str -> Variable])]): dictionary of
             entities. Entries take the format
-            {entity id -> (dataframe, id column, (time_column))}.
+            {entity id -> (dataframe, id column, (time_column), (variable_types))}.
+            Note that time_column and variable_types are optional.
 
         relationships (list[(str, str, str, str)]): List of relationships
             between entities. List items are a tuple with the format
