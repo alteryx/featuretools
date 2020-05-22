@@ -162,7 +162,7 @@ def test_variable_types_unmodified():
     assert old_variable_types == variable_types
 
 
-def test_passing_strings_to_variable_types():
+def test_passing_strings_to_variable_types_entity_init():
     variable_types = find_variable_types()
     reversed_variable_types = {str(v): k for k, v in variable_types.items()}
     reversed_variable_types['unknown variable'] = 'some unknown type string'
@@ -178,3 +178,24 @@ def test_passing_strings_to_variable_types():
         description = variable.to_data_description()
         _variable = deserialize.description_to_variable(description, entity=entity)
         assert variable.__eq__(_variable)
+
+def test_passing_strings_to_variable_types_from_dataframe():
+    variable_types = find_variable_types()
+    reversed_variable_types = {str(v): k for k, v in variable_types.items()}
+    reversed_variable_types['unknown variable'] = 'some unknown type string'
+
+    es = EntitySet()
+    dataframe = pd.DataFrame(columns=list(reversed_variable_types))
+    es.entity_from_dataframe(
+        entity_id="reversed_variable_types",
+        dataframe=dataframe,
+        index="<class 'featuretools.variable_types.variable.Index'>",
+        time_index="<class 'featuretools.variable_types.variable.DatetimeTimeIndex'>",
+        variable_types=reversed_variable_types)
+    
+    entity = es["reversed_variable_types"]
+    for variable in entity.variables:
+        description = variable.to_data_description()
+        _variable = deserialize.description_to_variable(description, entity=entity)
+        assert variable.__eq__(_variable)
+
