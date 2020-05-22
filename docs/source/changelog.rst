@@ -7,6 +7,7 @@ Changelog
         * Add ``get_default_aggregation_primitives`` and ``get_default_transform_primitives`` (:pr:`945`)
         * Allow cutoff time dataframe columns to be in any order (:pr:`969`)
         * Add Age primitive, and make it a default transform primitive for DFS (:pr:`987`)
+        * Add ``include_cutoff_time`` arg - control whether data at cutoff times are included in feature calculations (:pr:`959`)
     * Fixes
         * Fix errors with Equals and NotEquals primitives when comparing categoricals or different dtypes (:pr:`968`)
         * Normalized type_strings of ``Variable`` classes so that the ``find_variable_types`` function produces a 
@@ -20,7 +21,7 @@ Changelog
         * Update testing dependencies (:pr:`976`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`sebrahimi1988`, :user:`ctduffy`, :user:`tuethan1999`, :user:`frances-h`
+    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`sebrahimi1988`, :user:`ctduffy`, :user:`rightx2`, :user:`jeff-hernandez`, :user:`tuethan1999`, :user:`frances-h`
 
 **Breaking Changes**
 
