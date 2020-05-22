@@ -143,7 +143,7 @@ def test_accepts_cutoff_time_compose(entities, relationships):
     )
 
     labels['cutoff_time'] = pd.to_numeric(labels['cutoff_time'])
-    labels.rename({'card_id': 'id'}, axis=1, inplace=True)
+    labels.rename({'card_id': 'id', 'cutoff_time': 'time'}, axis=1, inplace=True)
 
     feature_matrix, features = dfs(entities=entities,
                                    relationships=relationships,
@@ -170,7 +170,7 @@ def test_accepts_cutoff_time_compose_dask(dask_es):
         num_examples_per_instance=-1
     )
 
-    labels.rename({'card_id': 'id'}, axis=1, inplace=True)
+    labels.rename({'card_id': 'id', 'cutoff_time': 'time'}, axis=1, inplace=True)
 
     feature_matrix, features = dfs(entityset=dask_es,
                                    target_entity="cards",
