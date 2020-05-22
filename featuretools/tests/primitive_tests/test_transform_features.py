@@ -11,6 +11,7 @@ from featuretools.primitives import (
     Absolute,
     AddNumeric,
     AddNumericScalar,
+    Age,
     Count,
     Day,
     Diff,
@@ -62,27 +63,32 @@ from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 def test_init_and_name(es):
     log = es['log']
     rating = ft.Feature(es["products"]["rating"], es["log"])
-    features = [ft.Feature(v) for v in log.variables] +\
+    log_features = [ft.Feature(v) for v in log.variables] +\
         [ft.Feature(rating, primitive=GreaterThanScalar(2.5))]
     # Add Timedelta feature
     # features.append(pd.Timestamp.now() - ft.Feature(log['datetime']))
+    customers_features = [ft.Feature(v) for v in es["customers"].variables]
     for transform_prim in get_transform_primitives().values():
+
+        features_to_use = log_features
 
         # skip automated testing if a few special cases
         if transform_prim in [NotEqual, Equal]:
             continue
+        if transform_prim in [Age]:
+            features_to_use = customers_features
 
         # use the input_types matching function from DFS
         input_types = transform_prim.input_types
         if type(input_types[0]) == list:
-            matching_inputs = match(input_types[0], features)
+            matching_inputs = match(input_types[0], features_to_use)
         else:
-            matching_inputs = match(input_types, features)
+            matching_inputs = match(input_types, features_to_use)
         if len(matching_inputs) == 0:
             raise Exception(
                 "Transform Primitive %s not tested" % transform_prim.name)
-        for s in matching_inputs:
-            instance = ft.Feature(s, primitive=transform_prim)
+        for prim in matching_inputs:
+            instance = ft.Feature(prim, primitive=transform_prim)
 
             # try to get name and calculate
             instance.get_name()
