@@ -32,9 +32,9 @@ from featuretools.primitives import (  # CumMean,
     NumCharacters,
     NumUnique,
     Sum,
-    Trend,
     TimeSincePrevious,
     TransformPrimitive,
+    Trend,
     Year
 )
 from featuretools.synthesis import DeepFeatureSynthesis
@@ -1176,7 +1176,7 @@ def test_primitive_options_multiple_inputs(es):
                              agg_primitives=['mode'],
                              trans_primitives=[],
                              primitive_options=too_many_options)
-    
+
     unknown_primitive = Trend()
     unknown_primitive.name = 'unknown_primitive'
     unknown_primitive_option = {'unknown_primitive': [{'include_entities': ['logs']},
@@ -1190,14 +1190,14 @@ def test_primitive_options_multiple_inputs(es):
                              primitive_options=unknown_primitive_option)
 
     options1 = {'trend': [{'include_entities': ['log'],
-                          'ignore_variables': {'log': ['value']}},
-                         {'include_entities': ['log'],
-                          'include_variables': {'log': ['datetime']}}]}
+                           'ignore_variables': {'log': ['value']}},
+                          {'include_entities': ['log'],
+                           'include_variables': {'log': ['datetime']}}]}
     dfs_obj1 = DeepFeatureSynthesis(target_entity_id='sessions',
-                                   entityset=es,
-                                   agg_primitives=['trend'],
-                                   trans_primitives=[],
-                                   primitive_options=options1)
+                                    entityset=es,
+                                    agg_primitives=['trend'],
+                                    trans_primitives=[],
+                                    primitive_options=options1)
     features1 = dfs_obj1.build_features()
     for f in features1:
         deps = f.get_dependencies()
@@ -1210,9 +1210,9 @@ def test_primitive_options_multiple_inputs(es):
                 assert 'value' != variables[0]
 
     options2 = {Trend: [{'include_entities': ['log'],
-                        'ignore_variables': {'log': ['value']}},
-                       {'include_entities': ['log'],
-                        'include_variables': {'log': ['datetime']}}]}
+                         'ignore_variables': {'log': ['value']}},
+                        {'include_entities': ['log'],
+                         'include_variables': {'log': ['datetime']}}]}
     dfs_obj2 = DeepFeatureSynthesis(target_entity_id='sessions',
                                     entityset=es,
                                     agg_primitives=['trend'],
@@ -1232,28 +1232,28 @@ def test_primitive_options_class_names(es):
         Mean: {'include_entities': ['customers']}
     }
 
-    dfs_obj1 = DeepFeatureSynthesis(target_entity_id='customers',
+    dfs_obj1 = DeepFeatureSynthesis(target_entity_id='cohorts',
                                     entityset=es,
                                     agg_primitives=['mean'],
                                     trans_primitives=[],
                                     primitive_options=options1)
     features1 = dfs_obj1.build_features()
 
-    dfs_obj2 = DeepFeatureSynthesis(target_entity_id='customers',
+    dfs_obj2 = DeepFeatureSynthesis(target_entity_id='cohorts',
                                     entityset=es,
                                     agg_primitives=['mean'],
                                     trans_primitives=[],
                                     primitive_options=options2)
     features2 = dfs_obj2.build_features()
 
-    dfs_obj3 = DeepFeatureSynthesis(target_entity_id='customers',
+    dfs_obj3 = DeepFeatureSynthesis(target_entity_id='cohorts',
                                     entityset=es,
                                     agg_primitives=[Mean],
                                     trans_primitives=[],
                                     primitive_options=options1)
     features3 = dfs_obj3.build_features()
 
-    dfs_obj4 = DeepFeatureSynthesis(target_entity_id='customers',
+    dfs_obj4 = DeepFeatureSynthesis(target_entity_id='cohorts',
                                     entityset=es,
                                     agg_primitives=[Mean],
                                     trans_primitives=[],
@@ -1273,14 +1273,14 @@ def test_primitive_options_instantiated_primitive(es):
     skipna_mean = Mean(skipna=False)
     options = {
         skipna_mean: {'include_entities': ['customers']},
-        'mean': {'ignore_entities': ['sessions']}
+        'mean': {'ignore_entities': ['customers']}
     }
     instance_and_generic_warning = "Options present for primitive instance and generic " \
         "primitive class \(mean\), primitive instance will not use generic " \
         "options"  # noqa: W605
 
     with pytest.warns(UserWarning, match=instance_and_generic_warning) as record:
-        dfs_obj = DeepFeatureSynthesis(target_entity_id='customers',
+        dfs_obj = DeepFeatureSynthesis(target_entity_id='cohorts',
                                        entityset=es,
                                        agg_primitives=['mean', skipna_mean],
                                        trans_primitives=[],
