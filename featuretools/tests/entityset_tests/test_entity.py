@@ -6,7 +6,7 @@ import pytest
 
 import featuretools as ft
 from featuretools import variable_types
-from featuretools.entityset import EntitySet, deserialize
+from featuretools.entityset import Entity, EntitySet, deserialize
 from featuretools.tests.testing_utils import make_ecommerce_entityset
 from featuretools.variable_types.variable import find_variable_types
 
@@ -169,14 +169,11 @@ def test_passing_strings_to_variable_types():
 
     es = EntitySet()
     dataframe = pd.DataFrame(columns=list(reversed_variable_types))
-    es.entity_from_dataframe(
-        'reversed_variable_types',
-        dataframe,
-        index="<class 'featuretools.variable_types.variable.Index'>",
-        time_index="<class 'featuretools.variable_types.variable.DatetimeTimeIndex'>",
-        variable_types=reversed_variable_types,
-    )
-    entity = es['reversed_variable_types']
+    entity = Entity('reversed_variable_types', dataframe, es,
+            variable_types=reversed_variable_types,
+            index="<class 'featuretools.variable_types.variable.Index'>",
+            time_index="<class 'featuretools.variable_types.variable.DatetimeTimeIndex'>",
+        )
     for variable in entity.variables:
         description = variable.to_data_description()
         _variable = deserialize.description_to_variable(description, entity=entity)
