@@ -11,26 +11,25 @@ from featuretools.feature_base.features_deserializer import (
 )
 from featuretools.feature_base.features_serializer import FeaturesSerializer
 from featuretools.primitives import (
-    CumSum,
-    make_agg_primitive,
-    Sum,
-    Std,
-    Max,
-    Skew,
-    Min,
-    Mean,
     Count,
-    PercentTrue,
-    NumUnique,
-    Mode,
+    CumSum,
     Day,
-    Year,
-    Month,
-    Weekday,
     Haversine,
+    Max,
+    Mean,
+    Min,
+    Mode,
+    Month,
+    NumCharacters,
+    NumUnique,
     NumWords,
-    NumCharacters
-
+    PercentTrue,
+    Skew,
+    Std,
+    Sum,
+    Weekday,
+    Year,
+    make_agg_primitive
 )
 from featuretools.variable_types import Numeric
 
@@ -220,7 +219,7 @@ def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
 
 
 @pytest.mark.parametrize("url,profile_name", [(S3_URL, None), (S3_URL, False),
-                         (URL, None)])
+                                              (URL, None)])
 def test_deserialize_features_s3(es, url, profile_name):
     agg_primitives = [Sum, Std, Max, Skew, Min, Mean, Count, PercentTrue,
                       NumUnique, Mode]
