@@ -165,8 +165,7 @@ def test_warns_cutoff_time_dask(entities, relationships):
                                        cutoff_time=cutoff_times_df)
 
 
-def test_accepts_cutoff_time_compose(pd_entities, relationships):
-    # TODO: Review to see if this can be combined with test that follows
+def test_accepts_cutoff_time_compose(entities, relationships):
     def fraud_occured(df):
         return df['fraud'].any()
 
@@ -177,35 +176,7 @@ def test_accepts_cutoff_time_compose(pd_entities, relationships):
         window_size=1
     )
 
-    labels = lm.search(
-        pd_entities['transactions'][0],
-        num_examples_per_instance=-1
-    )
-
-    labels['cutoff_time'] = pd.to_numeric(labels['cutoff_time'])
-    labels.rename({'card_id': 'id'}, axis=1, inplace=True)
-
-    feature_matrix, features = dfs(entities=pd_entities,
-                                   relationships=relationships,
-                                   target_entity="cards",
-                                   cutoff_time=labels)
-
-    assert len(feature_matrix.index) == 6
-    assert len(feature_matrix.columns) == len(features) + 1
-
-
-def test_accepts_cutoff_time_compose_dask(es):
-    def fraud_occured(df):
-        return df['fraud'].any()
-
-    lm = cp.LabelMaker(
-        target_entity='card_id',
-        time_index='transaction_time',
-        labeling_function=fraud_occured,
-        window_size='1y'
-    )
-
-    transactions_df = es['transactions'].df
+    transactions_df = entities['transactions'][0]
     if isinstance(transactions_df, dd.DataFrame):
         transactions_df = transactions_df.compute()
 
@@ -214,16 +185,18 @@ def test_accepts_cutoff_time_compose_dask(es):
         num_examples_per_instance=-1
     )
 
+    labels['cutoff_time'] = pd.to_numeric(labels['cutoff_time'])
     labels.rename({'card_id': 'id'}, axis=1, inplace=True)
 
-    feature_matrix, features = dfs(entityset=es,
+    feature_matrix, features = dfs(entities=entities,
+                                   relationships=relationships,
                                    target_entity="cards",
                                    cutoff_time=labels)
 
     if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.set_index('id').compute()
+        feature_matrix = feature_matrix.compute().set_index('id')
 
-    assert len(feature_matrix.index) == 4
+    assert len(feature_matrix.index) == 6
     assert len(feature_matrix.columns) == len(features) + 1
 
 
