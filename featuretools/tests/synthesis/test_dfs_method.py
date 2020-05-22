@@ -86,49 +86,6 @@ def datetime_es():
     return datetime_es
 
 
-@pytest.fixture
-def dask_es():
-    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
-    cards_df = dd.from_pandas(cards_df, npartitions=2)
-
-    transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5],
-                                    "card_id": [1, 1, 5, 1, 5],
-                                    "transaction_time": pd.to_datetime([
-                                        '2011-2-28 04:00', '2012-2-28 05:00',
-                                        '2012-2-29 06:00', '2012-3-1 08:00',
-                                        '2014-4-1 10:00']),
-                                    "fraud": [True, False, False, False, True]})
-    transactions_df = dd.from_pandas(transactions_df, npartitions=2)
-
-    cards_vtypes = {
-        'id': vtypes.Index
-    }
-
-    transactions_vtypes = {
-        'id': vtypes.Index,
-        'card_id': vtypes.Id,
-        'transaction_time': vtypes.Datetime,
-        'fraud': vtypes.Boolean
-    }
-
-    dask_es = EntitySet(id="fraud_data")
-    dask_es = dask_es.entity_from_dataframe(entity_id="transactions",
-                                            dataframe=transactions_df,
-                                            index="id",
-                                            time_index="transaction_time",
-                                            variable_types=transactions_vtypes)
-
-    dask_es = dask_es.entity_from_dataframe(entity_id="cards",
-                                            dataframe=cards_df,
-                                            index="id",
-                                            variable_types=cards_vtypes)
-
-    relationship = Relationship(dask_es["cards"]["id"], dask_es["transactions"]["card_id"])
-    dask_es = dask_es.add_relationship(relationship)
-    dask_es.add_last_time_indexes()
-    return dask_es
-
-
 def test_accepts_cutoff_time_df(entities, relationships):
     cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
                                     "time": [10, 12, 15]})
