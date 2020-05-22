@@ -82,7 +82,7 @@ class DeepFeatureSynthesis(object):
             where_stacking_limit (int, optional): Cap the depth of the where features.
                 Default: 1
 
-            primitive_options (list[dict[str or tuple[str] -> dict] or dict[str or tuple[str] -> dict, optional]):
+            primitive_options (dict[str or tuple[str] or PrimitiveBase -> dict or list[dict]], optional):
                 Specify options for a single primitive or a group of primitives.
                 Lists of option dicts are used to specify options per input for primitives
                 with multiple inputs. Each option ``dict`` can have the following keys:
@@ -540,7 +540,9 @@ class DeepFeatureSynthesis(object):
             new_max_depth = max_depth - 1
 
         for trans_prim in self.trans_primitives:
-            current_options = self.primitive_options[trans_prim.name]
+            current_options = self.primitive_options.get(
+                trans_prim,
+                self.primitive_options.get(trans_prim.name))
             if ignore_entity_for_primitive(current_options, entity):
                 continue
             # if multiple input_types, only use first one for DFS
@@ -564,7 +566,9 @@ class DeepFeatureSynthesis(object):
                                              new_feature=new_f)
 
         for groupby_prim in self.groupby_trans_primitives:
-            current_options = self.primitive_options[groupby_prim.name]
+            current_options = self.primitive_options.get(
+                groupby_prim,
+                self.primitive_options.get(groupby_prim.name))
             if ignore_entity_for_primitive(current_options, entity, groupby=True):
                 continue
             input_types = groupby_prim.input_types[:]
@@ -641,7 +645,9 @@ class DeepFeatureSynthesis(object):
         if max_depth is not None:
             new_max_depth = max_depth - 1
         for agg_prim in self.agg_primitives:
-            current_options = self.primitive_options[agg_prim.name]
+            current_options = self.primitive_options.get(
+                agg_prim,
+                self.primitive_options.get(agg_prim.name))
 
             if ignore_entity_for_primitive(current_options, child_entity):
                 continue

@@ -53,14 +53,17 @@ def generate_all_primitive_options(all_primitives,
     global_ignore_variables = ignore_variables.copy()
     # for now, only use primitive names as option keys
     for primitive in all_primitives:
-        if not isinstance(primitive, str):
-            primitive = primitive.name
-        if primitive in primitive_options:
+        if primitive in primitive_options and primitive.name in primitive_options:
+            msg = "Options present for primitive instance and generic " \
+                  "primitive class (%s), primitive instance will not use generic " \
+                  "options" % (primitive.name)
+            warnings.warn(msg)
+        if primitive in primitive_options or primitive.name in primitive_options:
+            options = primitive_options.get(primitive, primitive_options.get(primitive.name))
             # Reconcile global options with individually-specified options
-            options = primitive_options[primitive]
-            included_entities = set().union(*[set().union(
-                option.get('include_entities') if option.get('include_entities') else set([]),
-                option.get('include_variables').keys() if option.get('include_variables') else set([]))
+            included_entities = set().union(*[
+                option.get('include_entities', set()).union(
+                    option.get('include_variables', {}).keys())
                 for option in options])
             global_ignore_entities = global_ignore_entities.difference(included_entities)
             for option in options:
@@ -94,26 +97,38 @@ def _init_primitive_options(primitive_options, es):
     # Flatten all tuple keys, convert value lists into sets, check for
     # conflicting keys
     flattened_options = {}
-    for primitive_key, options in primitive_options.items():
+    for primitive_keys, options in primitive_options.items():
+        if not isinstance(primitive_keys, tuple):
+            primitive_keys = (primitive_keys,)
         if isinstance(options, list):
-            primitive = primitives.get_aggregation_primitives().get(primitive_key) or \
-                primitives.get_transform_primitives().get(primitive_key)
-            assert len(primitive.input_types[0]) == len(options) if \
-                isinstance(primitive.input_types[0], list) else \
-                len(primitive.input_types) == len(options), \
-                "Number of options does not match number of inputs for primitive %s" \
-                % (primitive_key)
-            options = [_init_option_dict(primitive_key, option, es) for option in options]
+            for primitive_key in primitive_keys:
+                if isinstance(primitive_key, str):
+                    primitive = primitives.get_aggregation_primitives().get(primitive_key) or \
+                        primitives.get_transform_primitives().get(primitive_key)
+                    if not primitive:
+                        msg = "Unknown primitive with name '{}'".format(primitive_key)
+                        raise ValueError(msg)
+                else:
+                    primitive = primitive_key
+                assert len(primitive.input_types[0]) == len(options) if \
+                    isinstance(primitive.input_types[0], list) else \
+                    len(primitive.input_types) == len(options), \
+                    "Number of options does not match number of inputs for primitive %s" \
+                    % (primitive_key)
+            options = [_init_option_dict(primitive_keys, option, es) for option in options]
         else:
-            options = [_init_option_dict(primitive_key, options, es)]
-        if not isinstance(primitive_key, tuple):
-            primitive_key = (primitive_key,)
-        for each_primitive in primitive_key:
+            options = [_init_option_dict(primitive_keys, options, es)]
+
+        for primitive in primitive_keys:
+            if isinstance(primitive, type):
+                primitive = primitive.name
+
             # if primitive is specified more than once, raise error
-            if each_primitive in flattened_options:
+            if primitive in flattened_options:
                 raise KeyError('Multiple options found for primitive %s' %
-                               (each_primitive))
-            flattened_options[each_primitive] = options
+                               (primitive))
+
+            flattened_options[primitive] = options
     return flattened_options
 
 
@@ -124,10 +139,10 @@ def _init_option_dict(key, option_dict, es):
     for option_key, option in option_dict.items():
         if option_key not in primitive_options:
             raise KeyError("Unrecognized primitive option \'%s\' for %s" %
-                           (option_key, key))
+                           (option_key, ','.join(key)))
         if not primitive_options[option_key](option, es):
             raise TypeError("Incorrect type formatting for \'%s\' for %s" %
-                            (option_key, key))
+                            (option_key, ','.join(key)))
         if isinstance(option, list):
             initialized_option_dict[option_key] = set(option)
         elif isinstance(option, dict):
