@@ -1281,10 +1281,10 @@ def test_primitive_options_instantiated_primitive(es):
 
     with pytest.warns(UserWarning, match=instance_and_generic_warning) as record:
         dfs_obj = DeepFeatureSynthesis(target_entity_id='régions',
-                                        entityset=es,
-                                        agg_primitives=['mean', skipna_mean],
-                                        trans_primitives=[],
-                                        primitive_options=options)
+                                       entityset=es,
+                                       agg_primitives=['mean', skipna_mean],
+                                       trans_primitives=[],
+                                       primitive_options=options)
     assert len(record) == 1
 
     features = dfs_obj.build_features()
