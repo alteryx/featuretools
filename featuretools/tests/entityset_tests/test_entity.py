@@ -170,14 +170,15 @@ def test_passing_strings_to_variable_types_entity_init():
     es = EntitySet()
     dataframe = pd.DataFrame(columns=list(reversed_variable_types))
     entity = Entity('reversed_variable_types', dataframe, es,
-            variable_types=reversed_variable_types,
-            index="<class 'featuretools.variable_types.variable.Index'>",
-            time_index="<class 'featuretools.variable_types.variable.DatetimeTimeIndex'>",
-        )
+                    variable_types=reversed_variable_types,
+                    index="<class 'featuretools.variable_types.variable.Index'>",
+                    time_index="<class 'featuretools.variable_types.variable.DatetimeTimeIndex'>",
+                    )
     for variable in entity.variables:
         description = variable.to_data_description()
         _variable = deserialize.description_to_variable(description, entity=entity)
         assert variable.__eq__(_variable)
+
 
 def test_passing_strings_to_variable_types_from_dataframe():
     variable_types = find_variable_types()
@@ -192,11 +193,12 @@ def test_passing_strings_to_variable_types_from_dataframe():
         index="<class 'featuretools.variable_types.variable.Index'>",
         time_index="<class 'featuretools.variable_types.variable.DatetimeTimeIndex'>",
         variable_types=reversed_variable_types)
-    
+
     entity = es["reversed_variable_types"]
     for variable in entity.variables:
         variable_class = variable.__class__
         assert variable_class == variable_types[variable_class.type_string]
+
 
 def test_passing_strings_to_variable_types_dfs():
     variable_types = find_variable_types()
@@ -213,7 +215,7 @@ def test_passing_strings_to_variable_types_dfs():
     })
     entities = {'teams': (teams, 'id', None, {'name': 'text'}), 'games': (games, 'id')}
     relationships = [('teams', 'id', 'games', 'home_team_id')]
-    
-    _, features = ft.dfs(entities, relationships, target_entity = "teams")
+
+    _, features = ft.dfs(entities, relationships, target_entity="teams")
     name_class = features[0].entity.variables[1].__class__
     assert name_class == variable_types['text']
