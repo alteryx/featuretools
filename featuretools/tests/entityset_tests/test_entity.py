@@ -195,7 +195,25 @@ def test_passing_strings_to_variable_types_from_dataframe():
     
     entity = es["reversed_variable_types"]
     for variable in entity.variables:
-        description = variable.to_data_description()
-        _variable = deserialize.description_to_variable(description, entity=entity)
-        assert variable.__eq__(_variable)
+        variable_class = variable.__class__
+        assert variable_class == variable_types[variable_class.type_string]
 
+def test_passing_strings_to_variable_types_dfs():
+    variable_types = find_variable_types()
+    teams = pd.DataFrame({
+        'id': range(3),
+        'name': ['Breakers', 'Spirit', 'Thorns']
+    })
+    games = pd.DataFrame({
+        'id': range(5),
+        'home_team_id': [2, 2, 1, 0, 1],
+        'away_team_id': [1, 0, 2, 1, 0],
+        'home_team_score': [3, 0, 1, 0, 4],
+        'away_team_score': [2, 1, 2, 0, 0]
+    })
+    entities = {'teams': (teams, 'id', None, {'name': 'text'}), 'games': (games, 'id')}
+    relationships = [('teams', 'id', 'games', 'home_team_id')]
+    
+    _, features = ft.dfs(entities, relationships, target_entity = "teams")
+    name_class = features[0].entity.variables[1].__class__
+    assert name_class == variable_types['text']
