@@ -339,12 +339,13 @@ def test_single_table_dask_entityset_cutoff_time_df():
     vtypes = {
         "id": ft.variable_types.Id,
         "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.Datetime,
+        "dates": ft.variable_types.DatetimeTimeIndex,
         "strings": ft.variable_types.Text
     }
     dask_es.entity_from_dataframe(entity_id="data",
                                   dataframe=values_dd,
                                   index="id",
+                                  time_index="dates",
                                   variable_types=vtypes)
     ids = [0, 1, 2, 0]
     times = [pd.Timestamp("2019-01-05 04:00"),
@@ -363,14 +364,19 @@ def test_single_table_dask_entityset_cutoff_time_df():
     es.entity_from_dataframe(entity_id="data",
                              dataframe=df,
                              index="id",
+                             time_index="dates",
                              variable_types={"strings": ft.variable_types.Text})
 
     fm, _ = ft.dfs(entityset=es,
                    target_entity="data",
                    trans_primitives=primitives_list,
                    cutoff_time=cutoff_times)
-
-    pd.testing.assert_frame_equal(fm, dask_fm.compute().set_index('id'))
+    # Because row ordering with Dask is not guaranteed, we need to sort on two columns to make sure that values
+    # for instance id 0 are compared correctly. Also, make sure the boolean column has the same dtype.
+    fm = fm.sort_values(['id', 'labels'])
+    dask_fm = dask_fm.compute().set_index('id').sort_values(['id', 'labels'])
+    dask_fm['IS_WEEKEND(dates)'] = dask_fm['IS_WEEKEND(dates)'].astype(fm['IS_WEEKEND(dates)'].dtype)
+    pd.testing.assert_frame_equal(fm, dask_fm)
 
 
 def test_single_table_dask_entityset_dates_not_sorted():

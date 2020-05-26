@@ -445,7 +445,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                     _feature_matrix['time'] = time_last
                     for col in pass_columns:
                         pass_df = dd.from_pandas(pass_through[[id_name, 'time', col]], npartitions=_feature_matrix.npartitions)
-                        _feature_matrix = _feature_matrix.merge(pass_df)
+                        _feature_matrix = _feature_matrix.merge(pass_df, how="outer")
                     _feature_matrix = _feature_matrix.drop(columns=['time'])
 
             feature_matrix.append(_feature_matrix)
