@@ -39,7 +39,8 @@ def dfs(entities=None,
         dask_kwargs=None,
         verbose=False,
         return_variable_types=None,
-        progress_callback=None):
+        progress_callback=None,
+        include_cutoff_time=True):
     '''Calculates a feature matrix and features given a dictionary of entities
     and a list of relationships.
 
@@ -207,6 +208,8 @@ def dfs(entities=None,
                 progress_percent: percentage (float between 0 and 100) of total computation completed
                 time_elapsed: total time in seconds that has elapsed since start of call
 
+        include_cutoff_time (bool): Include data at cutoff times in feature calculations. Defaults to ``True``.
+
     Examples:
         .. code-block:: python
 
@@ -270,7 +273,8 @@ def dfs(entities=None,
                                                   n_jobs=n_jobs,
                                                   dask_kwargs=dask_kwargs,
                                                   verbose=verbose,
-                                                  progress_callback=progress_callback)
+                                                  progress_callback=progress_callback,
+                                                  include_cutoff_time=include_cutoff_time)
     else:
         feature_matrix = calculate_feature_matrix(features,
                                                   entityset=entityset,
@@ -284,5 +288,6 @@ def dfs(entities=None,
                                                   n_jobs=n_jobs,
                                                   dask_kwargs=dask_kwargs,
                                                   verbose=verbose,
-                                                  progress_callback=progress_callback)
+                                                  progress_callback=progress_callback,
+                                                  include_cutoff_time=include_cutoff_time)
     return feature_matrix, features

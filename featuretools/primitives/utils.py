@@ -71,7 +71,8 @@ def get_default_aggregation_primitives():
 
 def get_default_transform_primitives():
     # featuretools.primitives.TimeSince
-    trans_primitives = [featuretools.primitives.Day,
+    trans_primitives = [featuretools.primitives.Age,
+                        featuretools.primitives.Day,
                         featuretools.primitives.Year,
                         featuretools.primitives.Month,
                         featuretools.primitives.Weekday,

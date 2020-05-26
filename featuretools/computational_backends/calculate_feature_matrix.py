@@ -45,7 +45,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                              training_window=None, approximate=None,
                              save_progress=None, verbose=False,
                              chunk_size=None, n_jobs=1,
-                             dask_kwargs=None, progress_callback=None):
+                             dask_kwargs=None, progress_callback=None,
+                             include_cutoff_time=True):
     """Calculates a matrix for a given set of instance ids and calculation times.
 
     Args:
@@ -126,6 +127,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                 progress_percent: percentage (float between 0 and 100) of total computation completed
                 time_elapsed: total time in seconds that has elapsed since start of call
 
+        include_cutoff_time (bool): Include data at cutoff times in feature calculations. Defaults to ``True``.
     """
     assert (isinstance(features, list) and features != [] and
             all([isinstance(feature, FeatureBase) for feature in features])), \
@@ -167,7 +169,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             index_var = target_entity.index
             df = target_entity._handle_time(target_entity.df,
                                             time_last=cutoff_time,
-                                            training_window=training_window)
+                                            training_window=training_window,
+                                            include_cutoff_time=include_cutoff_time)
             instance_ids = list(df[index_var])
 
         cutoff_time = [cutoff_time] * len(instance_ids)
@@ -192,10 +195,12 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         cutoff_time.rename(columns={target_entity.time_index: "time"}, inplace=True)
 
     # Make sure user supplies only one valid name for instance id and time columns
-    if "instance_id" in cutoff_time.columns and target_entity.index in cutoff_time.columns:
+    if "instance_id" in cutoff_time.columns and target_entity.index in cutoff_time.columns and \
+            "instance_id" != target_entity.index:
         raise AttributeError('Cutoff time DataFrame cannot contain both a column named "instance_id" and a column'
                              ' with the same name as the target entity index')
-    if "time" in cutoff_time.columns and target_entity.time_index in cutoff_time.columns:
+    if "time" in cutoff_time.columns and target_entity.time_index in cutoff_time.columns and \
+            "time" != target_entity.time_index:
         raise AttributeError('Cutoff time DataFrame cannot contain both a column named "time" and a column'
                              ' with the same name as the target entity time index')
 
@@ -295,7 +300,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                                    pass_columns=pass_columns,
                                                    progress_bar=progress_bar,
                                                    dask_kwargs=dask_kwargs or {},
-                                                   progress_callback=progress_callback)
+                                                   progress_callback=progress_callback,
+                                                   include_cutoff_time=include_cutoff_time)
     else:
         feature_matrix = calculate_chunk(cutoff_time=cutoff_time_to_pass,
                                          chunk_size=chunk_size,
@@ -309,7 +315,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                          target_time=target_time,
                                          pass_columns=pass_columns,
                                          progress_bar=progress_bar,
-                                         progress_callback=progress_callback)
+                                         progress_callback=progress_callback,
+                                         include_cutoff_time=include_cutoff_time)
 
     # ensure rows are sorted by input order
     if isinstance(feature_matrix, pd.DataFrame):
@@ -337,7 +344,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
 def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate, training_window,
                     save_progress, no_unapproximated_aggs, cutoff_df_time_var, target_time,
-                    pass_columns, progress_bar=None, progress_callback=None):
+                    pass_columns, progress_bar=None, progress_callback=None, include_cutoff_time=True):
+
     if not isinstance(feature_set, FeatureSet):
         feature_set = cloudpickle.loads(feature_set)
 
@@ -357,13 +365,13 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                 window=approximate,
                 entityset=entityset,
                 training_window=training_window,
+                include_cutoff_time=include_cutoff_time,
             )
         else:
             precalculated_features_trie = None
 
         @save_csv_decorator(save_progress)
-        def calc_results(time_last, ids, precalculated_features=None, training_window=None):
-
+        def calc_results(time_last, ids, precalculated_features=None, training_window=None, include_cutoff_time=True):
             update_progress_callback = None
 
             if progress_bar is not None:
@@ -374,12 +382,13 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                         update, progress_percent, time_elapsed = update_progress_callback_parameters(progress_bar,
                                                                                                      previous_progress)
                         progress_callback(update, progress_percent, time_elapsed)
+
             calculator = FeatureSetCalculator(entityset,
                                               feature_set,
                                               time_last,
                                               training_window=training_window,
                                               precalculated_features=precalculated_features)
-            matrix = calculator.run(ids, progress_callback=update_progress_callback)
+            matrix = calculator.run(ids, progress_callback=update_progress_callback, include_cutoff_time=include_cutoff_time)
             return matrix
 
         # if all aggregations have been approximated, can calculate all together
@@ -408,7 +417,8 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
             _feature_matrix = calc_results(time_last,
                                            ids,
                                            precalculated_features=precalculated_features_trie,
-                                           training_window=window)
+                                           training_window=window,
+                                           include_cutoff_time=include_cutoff_time)
 
             if isinstance(_feature_matrix, dd.core.DataFrame):
                 id_name = _feature_matrix.columns[-1]
@@ -463,7 +473,8 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
 
 def approximate_features(feature_set, cutoff_time, window, entityset,
-                         training_window=None):
+                         training_window=None, include_cutoff_time=True):
+
     '''Given a set of features and cutoff_times to be passed to
     calculate_feature_matrix, calculates approximate values of some features
     to speed up calculations.  Cutoff times are sorted into
@@ -494,7 +505,9 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
             Window defining how much older than the cutoff time data
             can be to be included when calculating the feature. If None, all older data is used.
 
-        save_progress (str, optional): path to save intermediate computational results
+        include_cutoff_time (bool):
+            If True, data at cutoff times are included in feature calculations.
+
     '''
     approx_fms_trie = Trie(path_constructor=RelationshipPath)
 
@@ -541,7 +554,8 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
                                                  training_window=training_window,
                                                  approximate=None,
                                                  cutoff_time_in_index=False,
-                                                 chunk_size=cutoff_time_to_pass.shape[0])
+                                                 chunk_size=cutoff_time_to_pass.shape[0],
+                                                 include_cutoff_time=include_cutoff_time)
 
         approx_fms_trie.get_node(relationship_path).value = approx_fm
 
@@ -557,7 +571,7 @@ def scatter_warning(num_scattered_workers, num_workers):
 def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate, training_window,
                               save_progress, entityset, n_jobs, no_unapproximated_aggs,
                               cutoff_df_time_var, target_time, pass_columns,
-                              progress_bar, dask_kwargs=None, progress_callback=None):
+                              progress_bar, dask_kwargs=None, progress_callback=None, include_cutoff_time=True):
     from distributed import as_completed, Future
     from dask.base import tokenize
 
@@ -625,7 +639,8 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
                              target_time=target_time,
                              pass_columns=pass_columns,
                              progress_bar=None,
-                             progress_callback=progress_callback)
+                             progress_callback=progress_callback,
+                             include_cutoff_time=include_cutoff_time)
 
         feature_matrix = []
         iterator = as_completed(_chunks).batches()
