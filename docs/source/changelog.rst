@@ -5,7 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
         * Add ``get_default_aggregation_primitives`` and ``get_default_transform_primitives`` (:pr:`945`)
-        * Allow cutoff time dataframe columns to be in any order (:pr:`969`)
+        * Allow cutoff time dataframe columns to be in any order (:pr:`969`, :pr:`995`)
         * Add Age primitive, and make it a default transform primitive for DFS (:pr:`987`)
         * Add ``include_cutoff_time`` arg - control whether data at cutoff times are included in feature calculations (:pr:`959`)
         * Add ability to use primitive classes and instances as keys in primitive_options dictionary (:pr:`993`)
