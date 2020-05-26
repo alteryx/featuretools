@@ -97,7 +97,7 @@ There are a few key limitations when generating a feature matrix from a Dask ``E
 
 If a ``cutoff_time`` parammeter is passed to ``featuretools.dfs()`` it must either be a single cutoff time value, or a pandas dataframe. The current implementation does not support the use of a Dask dataframe for cutoff time values.
 
-Additionally, Featuretools does not currently support the use of the ``approximate`` or ``training_window`` paramaters when working with Dask entitiysets, but should in future releases.
+Additionally, Featuretools does not currently support the use of the ``approximate`` or ``training_window`` parameters when working with Dask entitiysets, but should in future releases.
 
 Other Limitations
 *****************
