@@ -514,7 +514,7 @@ class Entity(object):
         dataframe.
         """
         if self.time_index:
-            if time_last is not None and not len(df):
+            if time_last is not None and len(df) != 0:
                 if include_cutoff_time:
                     df = df[df[self.time_index] <= time_last]
                 else:
