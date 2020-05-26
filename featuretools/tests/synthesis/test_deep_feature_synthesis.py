@@ -1272,19 +1272,19 @@ def test_primitive_options_class_names(es):
 def test_primitive_options_instantiated_primitive(es):
     skipna_mean = Mean(skipna=False)
     options = {
-        skipna_mean: {'include_entities': ['customers']},
-        'mean': {'ignore_entities': ['customers']}
+        skipna_mean: {'include_entities': ['stores']},
+        'mean': {'ignore_entities': ['stores']}
     }
     instance_and_generic_warning = "Options present for primitive instance and generic " \
         "primitive class \(mean\), primitive instance will not use generic " \
         "options"  # noqa: W605
 
     with pytest.warns(UserWarning, match=instance_and_generic_warning) as record:
-        dfs_obj = DeepFeatureSynthesis(target_entity_id='cohorts',
-                                       entityset=es,
-                                       agg_primitives=['mean', skipna_mean],
-                                       trans_primitives=[],
-                                       primitive_options=options)
+        dfs_obj = DeepFeatureSynthesis(target_entity_id='régions',
+                                        entityset=es,
+                                        agg_primitives=['mean', skipna_mean],
+                                        trans_primitives=[],
+                                        primitive_options=options)
     assert len(record) == 1
 
     features = dfs_obj.build_features()
@@ -1292,6 +1292,6 @@ def test_primitive_options_instantiated_primitive(es):
         deps = f.get_dependencies(deep=True)
         entities = [d.entity.id for d in deps]
         if f.primitive == skipna_mean:
-            assert all(entity == 'customers' for entity in entities)
+            assert all(entity == 'stores' for entity in entities)
         elif isinstance(f.primitive, Mean):
-            assert 'customers' not in entities
+            assert 'stores' not in entities
