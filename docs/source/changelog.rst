@@ -33,7 +33,7 @@ Changelog
   dataframe can be in any order as long as they are named properly.
 
 * The ``type_string`` attributes of all ``Variable`` subclasses are now a snake case conversion of their class names. This
-  changes the ``type_string`` of the ``Unknown``, ``IPAddress``, ``EmailAddress``, ``SubRegionCode``, and ``FilePath`` classes.
+  changes the ``type_string`` of the ``Unknown``, ``IPAddress``, ``EmailAddress``, ``SubRegionCode``, ``FilePath``, ``LatLong``, and ``ZIPcode`` classes.
   Old saved entitysets that used these variables may load incorrectly.
 
 **v0.14.0 Apr 30, 2020**
