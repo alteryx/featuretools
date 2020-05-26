@@ -1,5 +1,6 @@
 from featuretools import list_primitives
 from featuretools.primitives import (
+    Age,
     Count,
     Day,
     GreaterThan,
@@ -61,6 +62,6 @@ def test_get_default_aggregation_primitives():
 
 def test_get_default_transform_primitives():
     primitives = get_default_transform_primitives()
-    expected_primitives = [Day, Year, Month, Weekday, Haversine, NumWords,
+    expected_primitives = [Age, Day, Year, Month, Weekday, Haversine, NumWords,
                            NumCharacters]
     assert set(primitives) == set(expected_primitives)

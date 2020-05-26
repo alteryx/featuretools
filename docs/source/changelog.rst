@@ -5,7 +5,9 @@ Changelog
 **Future Release**
     * Enhancements
         * Add ``get_default_aggregation_primitives`` and ``get_default_transform_primitives`` (:pr:`945`)
-        * Allow cutoff time dataframe columns to be in any order (:pr:`969`)
+        * Allow cutoff time dataframe columns to be in any order (:pr:`969`, :pr:`995`)
+        * Add Age primitive, and make it a default transform primitive for DFS (:pr:`987`)
+        * Add ``include_cutoff_time`` arg - control whether data at cutoff times are included in feature calculations (:pr:`959`)
         * Allow ``variables_types`` to be referenced by their ``type_string`` 
           for the ``entity_from_dataframe`` function (:pr:`988`)
     * Fixes
@@ -15,12 +17,13 @@ Changelog
     * Changes
     * Documentation Changes
         * Add python 3.8 support for docs (:pr:`983`)
+        * Adds consistent Entityset Docstrings (:pr:`986`)
     * Testing Changes
         * Add automated tests for python 3.8 environment (:pr:`847`)
         * Update testing dependencies (:pr:`976`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`sebrahimi1988`, :user:`tuethan1999`, :user:`frances-h`
+    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`sebrahimi1988`, :user:`ctduffy`, :user:`rightx2`, :user:`jeff-hernandez`, :user:`tuethan1999`, :user:`frances-h`
 
 **Breaking Changes**
 

@@ -1,8 +1,10 @@
 from datetime import datetime
 
+import numpy as np
+import pandas as pd
 import pytest
 
-from featuretools.primitives import TimeSince
+from featuretools.primitives import Age, TimeSince
 
 
 def test_time_since():
@@ -44,3 +46,40 @@ def test_time_since():
     with pytest.raises(ValueError, match=error_text):
         time_since = TimeSince(unit='na')
         time_since(array=times, time=cutoff_time)
+
+
+def test_age():
+    age = Age()
+    dates = pd.Series(datetime(2010, 2, 26))
+    ages = age(dates, time=datetime(2020, 2, 26))
+    correct_ages = [10.005]   # .005 added due to leap years
+    np.testing.assert_array_almost_equal(ages, correct_ages, decimal=3)
+
+
+def test_age_two_years_quarterly():
+    age = Age()
+    dates = pd.Series(pd.date_range('2010-01-01', '2011-12-31', freq='Q'))
+    ages = age(dates, time=datetime(2020, 2, 26))
+    correct_ages = [9.915, 9.666, 9.414, 9.162, 8.915, 8.666, 8.414, 8.162]
+    np.testing.assert_array_almost_equal(ages, correct_ages, decimal=3)
+
+
+def test_age_leap_year():
+    age = Age()
+    dates = pd.Series([datetime(2016, 1, 1)])
+    ages = age(dates, time=datetime(2016, 3, 1))
+    correct_ages = [(31 + 29) / 365.0]
+    np.testing.assert_array_almost_equal(ages, correct_ages, decimal=3)
+    # born leap year date
+    dates = pd.Series([datetime(2016, 2, 29)])
+    ages = age(dates, time=datetime(2020, 2, 29))
+    correct_ages = [4.0027]  # .0027 added due to leap year
+    np.testing.assert_array_almost_equal(ages, correct_ages, decimal=3)
+
+
+def test_age_nan():
+    age = Age()
+    dates = pd.Series([datetime(2010, 1, 1), np.nan, datetime(2012, 1, 1)])
+    ages = age(dates, time=datetime(2020, 2, 26))
+    correct_ages = [10.159, np.nan, 8.159]
+    np.testing.assert_array_almost_equal(ages, correct_ages, decimal=3)
