@@ -181,11 +181,12 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         cutoff_time.rename(columns={target_entity.time_index: "time"}, inplace=True)
 
     # Make sure user supplies only one valid name for instance id and time columns
-    if "instance_id" in cutoff_time.columns and target_entity.index in cutoff_time.columns:
+    if "instance_id" in cutoff_time.columns and target_entity.index in cutoff_time.columns and \
+            "instance_id" != target_entity.index:
         raise AttributeError('Cutoff time DataFrame cannot contain both a column named "instance_id" and a column'
                              ' with the same name as the target entity index')
     if "time" in cutoff_time.columns and target_entity.time_index in cutoff_time.columns and \
-        "time" != target_entity.time_index:
+            "time" != target_entity.time_index:
         raise AttributeError('Cutoff time DataFrame cannot contain both a column named "time" and a column'
                              ' with the same name as the target entity time index')
 
