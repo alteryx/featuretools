@@ -61,7 +61,7 @@ class FeatureSetCalculator(object):
         # total number of features (including dependencies) to be calculate
         self.num_features = sum(len(features1) + len(features2) for _, (_, features1, features2) in self.feature_set.feature_trie)
 
-    def run(self, instance_ids, progress_callback=None):
+    def run(self, instance_ids, progress_callback=None, include_cutoff_time=True):
         """
         Calculate values of features for the given instances of the target
         entity.
@@ -83,6 +83,9 @@ class FeatureSetCalculator(object):
                 to build features.
 
             progress_callback (callable): function to be called with incremental progress updates
+
+            include_cutoff_time (bool): If True, data at cutoff time are included
+                in calculating features.
 
         Returns:
             pd.DataFrame : Pandas DataFrame of calculated feature values.
@@ -108,7 +111,8 @@ class FeatureSetCalculator(object):
                                             precalculated_trie=self.precalculated_features,
                                             filter_variable=target_entity.index,
                                             filter_values=instance_ids,
-                                            progress_callback=progress_callback)
+                                            progress_callback=progress_callback,
+                                            include_cutoff_time=include_cutoff_time)
 
         # The dataframe for the target entity should be stored at the root of
         # df_trie.
@@ -143,7 +147,8 @@ class FeatureSetCalculator(object):
                                        precalculated_trie,
                                        filter_variable, filter_values,
                                        parent_data=None,
-                                       progress_callback=None):
+                                       progress_callback=None,
+                                       include_cutoff_time=True):
         """
         Generate dataframes with features calculated for this node of the trie,
         and all descendant nodes. The dataframes will be stored in df_trie.
@@ -177,6 +182,10 @@ class FeatureSetCalculator(object):
                 ancestor_relationship_variables, parent_df).
                 ancestor_relationship_variables is the names of variables which
                 link the parent entity to its ancestors.
+
+            include_cutoff_time (bool): If True, data at cutoff time are included
+                in calculating features.
+
         """
         # Step 1: Get a dataframe for the given entity, filtered by the given
         # conditions.
@@ -199,7 +208,8 @@ class FeatureSetCalculator(object):
                                     variable_id=query_variable,
                                     columns=columns,
                                     time_last=self.time_last,
-                                    training_window=self.training_window)
+                                    training_window=self.training_window,
+                                    include_cutoff_time=include_cutoff_time)
 
         # call to update timer
         progress_callback(0)
@@ -257,7 +267,8 @@ class FeatureSetCalculator(object):
                 filter_variable=sub_filter_variable,
                 filter_values=sub_filter_values,
                 parent_data=parent_data,
-                progress_callback=progress_callback)
+                progress_callback=progress_callback,
+                include_cutoff_time=include_cutoff_time)
 
         # Step 4: Calculate the features for this entity.
         #
