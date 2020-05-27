@@ -158,6 +158,7 @@ def test_cfm_compose(es):
         df,
         num_examples_per_instance=-1
     )
+    labels = labels.rename(columns={'cutoff_time': 'time'})
 
     property_feature = ft.Feature(es['log']['value']) > 10
 
@@ -187,6 +188,7 @@ def test_cfm_dask_compose(dask_es):
         dask_es['log'].df.compute(),
         num_examples_per_instance=-1
     )
+    labels = labels.rename(columns={'cutoff_time': 'time'})
 
     property_feature = ft.Feature(dask_es['log']['value']) > 10
 
@@ -388,6 +390,54 @@ def test_training_window_fails_dask(dask_es):
                                  training_window='2 hours')
 
 
+def test_cutoff_time_columns_order(es):
+    property_feature = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
+    times = [datetime(2011, 4, 10), datetime(2011, 4, 11), datetime(2011, 4, 7)]
+    id_col_names = ['instance_id', es['customers'].index]
+    time_col_names = ['time', es['customers'].time_index]
+    for id_col in id_col_names:
+        for time_col in time_col_names:
+            cutoff_time = pd.DataFrame({'dummy_col_1': [1, 2, 3],
+                                        id_col: [0, 1, 2],
+                                        'dummy_col_2': [True, False, False],
+                                        time_col: times})
+            feature_matrix = calculate_feature_matrix([property_feature],
+                                                      es,
+                                                      cutoff_time=cutoff_time)
+
+            labels = [10, 5, 0]
+            if isinstance(feature_matrix, dd.DataFrame):
+                feature_matrix = feature_matrix.compute().set_index('id').sort_index()
+            assert (feature_matrix[property_feature.get_name()] == labels).values.all()
+
+
+def test_cutoff_time_df_redundant_column_names(es):
+    property_feature = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
+    times = [datetime(2011, 4, 10), datetime(2011, 4, 11), datetime(2011, 4, 7)]
+
+    cutoff_time = pd.DataFrame({es['customers'].index: [0, 1, 2],
+                                'instance_id': [0, 1, 2],
+                                'dummy_col': [True, False, False],
+                                'time': times})
+    err_msg = 'Cutoff time DataFrame cannot contain both a column named "instance_id" and a column' \
+              ' with the same name as the target entity index'
+    with pytest.raises(AttributeError, match=err_msg):
+        calculate_feature_matrix([property_feature],
+                                 es,
+                                 cutoff_time=cutoff_time)
+
+    cutoff_time = pd.DataFrame({es['customers'].time_index: [0, 1, 2],
+                                'instance_id': [0, 1, 2],
+                                'dummy_col': [True, False, False],
+                                'time': times})
+    err_msg = 'Cutoff time DataFrame cannot contain both a column named "time" and a column' \
+              ' with the same name as the target entity time index'
+    with pytest.raises(AttributeError, match=err_msg):
+        calculate_feature_matrix([property_feature],
+                                 es,
+                                 cutoff_time=cutoff_time)
+
+
 def test_training_window(pd_es):
     property_feature = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['customers'], primitive=Count)
     top_level_agg = ft.Feature(pd_es['customers']['id'], parent_entity=pd_es[u'régions'], primitive=Count)
@@ -414,11 +464,24 @@ def test_training_window(pd_es):
                                                   cutoff_time=cutoff_time,
                                                   training_window=Timedelta(2, 'observations'))
 
+    # Case1. include_cutoff_time = True
     feature_matrix = calculate_feature_matrix([property_feature, dagg],
                                               pd_es,
                                               cutoff_time=cutoff_time,
-                                              training_window='2 hours')
+                                              training_window='2 hours',
+                                              include_cutoff_time=True)
     prop_values = [4, 5, 1]
+    dagg_values = [3, 2, 1]
+    assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
+    assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
+
+    # Case2. include_cutoff_time = False
+    feature_matrix = calculate_feature_matrix([property_feature, dagg],
+                                              pd_es,
+                                              cutoff_time=cutoff_time,
+                                              training_window='2 hours',
+                                              include_cutoff_time=False)
+    prop_values = [5, 5, 2]
     dagg_values = [3, 2, 1]
     assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
     assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
@@ -438,15 +501,93 @@ def test_training_window_overlap(pd_es):
         'time': ['2011-04-09 10:30:00', '2011-04-09 10:40:00'],
     }).astype({'time': 'datetime64[ns]'})
 
+    # Case1. include_cutoff_time = True
     actual = ft.calculate_feature_matrix(
         features=[count_log],
         entityset=pd_es,
         cutoff_time=cutoff_time,
         cutoff_time_in_index=True,
         training_window='10 minutes',
+        include_cutoff_time=True,
     )['COUNT(log)']
-
     np.testing.assert_array_equal(actual.values, [1, 9])
+
+    # Case2. include_cutoff_time = False
+    actual = ft.calculate_feature_matrix(
+        features=[count_log],
+        entityset=pd_es,
+        cutoff_time=cutoff_time,
+        cutoff_time_in_index=True,
+        training_window='10 minutes',
+        include_cutoff_time=False,
+    )['COUNT(log)']
+    np.testing.assert_array_equal(actual.values, [0, 9])
+
+
+def test_include_cutoff_time_without_training_window(es):
+    es.add_last_time_indexes()
+
+    count_log = ft.Feature(
+        base=es['log']['id'],
+        parent_entity=es['customers'],
+        primitive=Count,
+    )
+
+    cutoff_time = pd.DataFrame({
+        'id': [0, 0],
+        'time': ['2011-04-09 10:30:00', '2011-04-09 10:31:00'],
+    }).astype({'time': 'datetime64[ns]'})
+
+    # Case1. include_cutoff_time = True
+    actual = ft.calculate_feature_matrix(
+        features=[count_log],
+        entityset=es,
+        cutoff_time=cutoff_time,
+        cutoff_time_in_index=True,
+        include_cutoff_time=True,
+    )['COUNT(log)']
+    np.testing.assert_array_equal(actual.values, [1, 6])
+
+    # Case2. include_cutoff_time = False
+    actual = ft.calculate_feature_matrix(
+        features=[count_log],
+        entityset=es,
+        cutoff_time=cutoff_time,
+        cutoff_time_in_index=True,
+        include_cutoff_time=False,
+    )['COUNT(log)']
+    np.testing.assert_array_equal(actual.values, [0, 5])
+
+
+def test_approximate_dfeat_of_agg_on_target_include_cutoff_time(es):
+    agg_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
+    agg_feat2 = ft.Feature(agg_feat, parent_entity=es['customers'], primitive=Sum)
+    dfeat = DirectFeature(agg_feat2, es['sessions'])
+
+    cutoff_time = pd.DataFrame({'time': [datetime(2011, 4, 9, 10, 31, 19)], 'instance_id': [0]})
+    feature_matrix = calculate_feature_matrix([dfeat, agg_feat2, agg_feat],
+                                              es,
+                                              approximate=Timedelta(20, 's'),
+                                              cutoff_time=cutoff_time,
+                                              include_cutoff_time=False)
+
+    # binned cutoff_time will be datetime(2011, 4, 9, 10, 31, 0) and
+    # log event 5 at datetime(2011, 4, 9, 10, 31, 0) will be
+    # excluded due to approximate cutoff time point
+    assert feature_matrix[dfeat.get_name()].tolist() == [5]
+    assert feature_matrix[agg_feat.get_name()].tolist() == [5]
+
+    feature_matrix = calculate_feature_matrix([dfeat, agg_feat],
+                                              es,
+                                              approximate=Timedelta(20, 's'),
+                                              cutoff_time=cutoff_time,
+                                              include_cutoff_time=True)
+
+    # binned cutoff_time will be datetime(2011, 4, 9, 10, 31, 0) and
+    # log event 5 at datetime(2011, 4, 9, 10, 31, 0) will be
+    # included due to approximate cutoff time point
+    assert feature_matrix[dfeat.get_name()].tolist() == [6]
+    assert feature_matrix[agg_feat.get_name()].tolist() == [5]
 
 
 def test_training_window_recent_time_index(pd_es):
@@ -489,16 +630,35 @@ def test_training_window_recent_time_index(pd_es):
     times = [datetime(2011, 4, 9, 12, 31), datetime(2011, 4, 10, 11),
              datetime(2011, 4, 10, 13, 10, 1), datetime(2011, 4, 10, 1, 59, 59)]
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': instance_ids})
+
+    # Case1. include_cutoff_time = True
     feature_matrix = calculate_feature_matrix(
         [property_feature, dagg],
         pd_es,
         cutoff_time=cutoff_time,
-        training_window='2 hours'
+        training_window='2 hours',
+        include_cutoff_time=True,
     )
     prop_values = [4, 5, 1, 0]
+    assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
+
     dagg_values = [3, 2, 1, 3]
     feature_matrix.sort_index(inplace=True)
+    assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
+
+    # Case2. include_cutoff_time = False
+    feature_matrix = calculate_feature_matrix(
+        [property_feature, dagg],
+        pd_es,
+        cutoff_time=cutoff_time,
+        training_window='2 hours',
+        include_cutoff_time=False,
+    )
+    prop_values = [5, 5, 1, 0]
     assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
+
+    dagg_values = [3, 2, 1, 3]
+    feature_matrix.sort_index(inplace=True)
     assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
 
 
@@ -528,7 +688,7 @@ def test_approximate_multiple_instances_per_cutoff_time(pd_es):
 
 
 def test_approximate_with_multiple_paths(pd_diamond_es):
-    pd_es = diamond_es
+    pd_es = pd_diamond_es
     path = backward_path(pd_es, ['regions', 'customers', 'transactions'])
     agg_feat = ft.AggregationFeature(pd_es['transactions']['id'],
                                      parent_entity=pd_es['regions'],
@@ -803,22 +963,26 @@ def test_cutoff_time_naming(es):
                                        pd.Timestamp('2011-04-09 10:30:06')],
                               'instance_id': [0, 0]})
     cutoff_df_index_name = cutoff_df.rename(columns={"instance_id": "id"})
-    cutoff_df_time_name = cutoff_df.rename(columns={"time": "cutoff_time"})
-    cutoff_df_index_name_time_name = cutoff_df.rename(columns={"instance_id": "id", "time": "cutoff_time"})
     cutoff_df_wrong_index_name = cutoff_df.rename(columns={"instance_id": "wrong_id"})
+    cutoff_df_wrong_time_name = cutoff_df.rename(columns={"time": "cutoff_time"})
 
     fm1 = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df)
     if isinstance(fm1, dd.DataFrame):
         fm1 = fm1.compute().set_index('id').sort_index()
-    for test_cutoff in [cutoff_df_index_name, cutoff_df_time_name, cutoff_df_index_name_time_name]:
-        fm2 = calculate_feature_matrix([dfeat], es, cutoff_time=test_cutoff)
-        if isinstance(fm2, dd.DataFrame):
-            fm2 = fm2.compute().set_index('id').sort_index()
-        assert all((fm1 == fm2.values).values)
+    fm2 = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df_index_name)
+    if isinstance(fm2, dd.DataFrame):
+        fm2 = fm2.compute().set_index('id').sort_index()
+    assert all((fm1 == fm2.values).values)
 
-    error_text = 'Name of the index variable in the target entity or "instance_id" must be present in cutoff_time'
+    error_text = 'Cutoff time DataFrame must contain a column with either the same name' \
+                 ' as the target entity index or a column named "instance_id"'
     with pytest.raises(AttributeError, match=error_text):
         calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df_wrong_index_name)
+
+    time_error_text = 'Cutoff time DataFrame must contain a column with either the same name' \
+                      ' as the target entity time_index or a column named "time"'
+    with pytest.raises(AttributeError, match=time_error_text):
+        calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df_wrong_time_name)
 
 
 # TODO: order doesn't match, but output matches :/
