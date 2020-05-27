@@ -213,7 +213,6 @@ class Entity(object):
 
     def query_by_values(self, instance_vals, variable_id=None, columns=None,
                         time_last=None, training_window=None, include_cutoff_time=True):
-
         """Query instances that have variable with given value
 
         Args:
