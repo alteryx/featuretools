@@ -5,8 +5,8 @@ from featuretools.utils.gen_utils import camel_to_snake, find_descendents
 
 
 class ClassNameDescriptor(object):
-    def __get__(self, obj, type_):
-        return camel_to_snake(type_.__name__)
+    def __get__(self, instance, class_):
+        return camel_to_snake(class_.__name__)
 
 
 class Variable(object):
