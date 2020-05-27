@@ -10,8 +10,9 @@ Changelog
         * Add ``include_cutoff_time`` arg - control whether data at cutoff times are included in feature calculations (:pr:`959`)
     * Fixes
         * Fix errors with Equals and NotEquals primitives when comparing categoricals or different dtypes (:pr:`968`)
-        * Normalized type_strings of ``Variable`` classes so that the ``find_variable_types`` function produces a 
+        * Normalized type_strings of ``Variable`` classes so that the ``find_variable_types`` function produces a
           dictionary with a clear key to name transition (:pr:`982`)
+        * Remove pandas.datetime in test_calculate_feature_matrix (:pr:`989`)
     * Changes
     * Documentation Changes
         * Add python 3.8 support for docs (:pr:`983`)
