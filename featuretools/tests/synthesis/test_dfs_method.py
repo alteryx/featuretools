@@ -65,13 +65,8 @@ def relationships():
     return [("cards", "id", "transactions", "card_id")]
 
 
-@pytest.fixture(params=['pd_es', 'dask_es'])
-def es(request):
-    return request.getfixturevalue(request.param)
-
-
 @pytest.fixture
-def pd_es():
+def datetime_es():
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5],
                                     "card_id": [1, 1, 5, 1, 5],
@@ -94,49 +89,6 @@ def pd_es():
     datetime_es = datetime_es.add_relationship(relationship)
     datetime_es.add_last_time_indexes()
     return datetime_es
-
-
-@pytest.fixture
-def dask_es():
-    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
-    cards_df = dd.from_pandas(cards_df, npartitions=2)
-
-    transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5],
-                                    "card_id": [1, 1, 5, 1, 5],
-                                    "transaction_time": pd.to_datetime([
-                                        '2011-2-28 04:00', '2012-2-28 05:00',
-                                        '2012-2-29 06:00', '2012-3-1 08:00',
-                                        '2014-4-1 10:00']),
-                                    "fraud": [True, False, False, False, True]})
-    transactions_df = dd.from_pandas(transactions_df, npartitions=2)
-
-    cards_vtypes = {
-        'id': vtypes.Index
-    }
-
-    transactions_vtypes = {
-        'id': vtypes.Index,
-        'card_id': vtypes.Id,
-        'transaction_time': vtypes.DatetimeTimeIndex,
-        'fraud': vtypes.Boolean
-    }
-
-    dask_es = EntitySet(id="fraud_data")
-    dask_es = dask_es.entity_from_dataframe(entity_id="transactions",
-                                            dataframe=transactions_df,
-                                            index="id",
-                                            time_index="transaction_time",
-                                            variable_types=transactions_vtypes)
-
-    dask_es = dask_es.entity_from_dataframe(entity_id="cards",
-                                            dataframe=cards_df,
-                                            index="id",
-                                            variable_types=cards_vtypes)
-
-    relationship = Relationship(dask_es["cards"]["id"], dask_es["transactions"]["card_id"])
-    dask_es = dask_es.add_relationship(relationship)
-    dask_es.add_last_time_indexes()
-    return dask_es
 
 
 def test_accepts_cutoff_time_df(entities, relationships):
@@ -186,29 +138,16 @@ def test_accepts_cutoff_time_compose(entities, relationships):
     )
 
     labels['cutoff_time'] = pd.to_numeric(labels['cutoff_time'])
-    labels.rename({'card_id': 'id'}, axis=1, inplace=True)
+    labels.rename({'card_id': 'id', 'cutoff_time': 'time'}, axis=1, inplace=True)
 
     feature_matrix, features = dfs(entities=entities,
                                    relationships=relationships,
                                    target_entity="cards",
                                    cutoff_time=labels)
-
     if isinstance(feature_matrix, dd.DataFrame):
         feature_matrix = feature_matrix.compute().set_index('id')
-
     assert len(feature_matrix.index) == 6
     assert len(feature_matrix.columns) == len(features) + 1
-
-
-def test_accepts_single_cutoff_time(entities, relationships):
-    feature_matrix, features = dfs(entities=entities,
-                                   relationships=relationships,
-                                   target_entity="transactions",
-                                   cutoff_time=20)
-    if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.set_index('id').compute()
-    assert len(feature_matrix.index) == 5
-    assert len(feature_matrix.columns) == len(features)
 
 
 def test_accepts_no_cutoff_time(entities, relationships):
@@ -307,41 +246,49 @@ def test_dask_kwargs(pd_entities, relationships):
             assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
 
 
-def test_accepts_relative_training_window(pd_es):
+def test_accepts_relative_training_window(datetime_es):
     # TODO: Update to use Dask entities when issue #882 is closed
-    feature_matrix, features = dfs(entityset=pd_es,
+    feature_matrix, features = dfs(entityset=datetime_es,
                                    target_entity="transactions")
 
-    feature_matrix_2, features_2 = dfs(entityset=pd_es,
+    feature_matrix_2, features_2 = dfs(entityset=datetime_es,
                                        target_entity="transactions",
                                        cutoff_time=pd.Timestamp("2012-4-1 04:00"))
 
-    feature_matrix_3, features_3 = dfs(entityset=pd_es,
+    feature_matrix_3, features_3 = dfs(entityset=datetime_es,
                                        target_entity="transactions",
                                        cutoff_time=pd.Timestamp("2012-4-1 04:00"),
                                        training_window=Timedelta("3 months"))
 
-    feature_matrix_4, features_4 = dfs(entityset=pd_es,
+    feature_matrix_4, features_4 = dfs(entityset=datetime_es,
                                        target_entity="transactions",
                                        cutoff_time=pd.Timestamp("2012-4-1 04:00"),
                                        training_window="3 months")
-
-    # Test case for leap years
-    feature_matrix_5, features_5 = dfs(entityset=pd_es,
-                                       target_entity="transactions",
-                                       cutoff_time=pd.Timestamp("2012-2-29 04:00"),
-                                       training_window=Timedelta("1 year"))
 
     assert (feature_matrix.index == [1, 2, 3, 4, 5]).all()
     assert (feature_matrix_2.index == [1, 2, 3, 4]).all()
     assert (feature_matrix_3.index == [2, 3, 4]).all()
     assert (feature_matrix_4.index == [2, 3, 4]).all()
+
+    # Test case for leap years
+    feature_matrix_5, features_5 = dfs(entityset=datetime_es,
+                                       target_entity="transactions",
+                                       cutoff_time=pd.Timestamp("2012-2-29 04:00"),
+                                       training_window=Timedelta("1 year"),
+                                       include_cutoff_time=True)
     assert (feature_matrix_5.index == [2]).all()
 
+    feature_matrix_5, features_5 = dfs(entityset=datetime_es,
+                                       target_entity="transactions",
+                                       cutoff_time=pd.Timestamp("2012-2-29 04:00"),
+                                       training_window=Timedelta("1 year"),
+                                       include_cutoff_time=False)
+    assert (feature_matrix_5.index == [1, 2]).all()
 
-def test_accepts_pd_timedelta_training_window(pd_es):
+
+def test_accepts_pd_timedelta_training_window(datetime_es):
     # TODO: Update to use Dask entities when issue #882 is closed
-    feature_matrix, features = dfs(entityset=pd_es,
+    feature_matrix, features = dfs(entityset=datetime_es,
                                    target_entity="transactions",
                                    cutoff_time=pd.Timestamp("2012-3-31 04:00"),
                                    training_window=pd.Timedelta(61, "D"))
@@ -349,14 +296,14 @@ def test_accepts_pd_timedelta_training_window(pd_es):
     assert (feature_matrix.index == [2, 3, 4]).all()
 
 
-def test_accepts_pd_dateoffset_training_window(pd_es):
+def test_accepts_pd_dateoffset_training_window(datetime_es):
     # TODO: Update to use Dask entities when issue #882 is closed
-    feature_matrix, features = dfs(entityset=pd_es,
+    feature_matrix, features = dfs(entityset=datetime_es,
                                    target_entity="transactions",
                                    cutoff_time=pd.Timestamp("2012-3-31 04:00"),
                                    training_window=pd.DateOffset(months=2))
 
-    feature_matrix_2, features_2 = dfs(entityset=pd_es,
+    feature_matrix_2, features_2 = dfs(entityset=datetime_es,
                                        target_entity="transactions",
                                        cutoff_time=pd.Timestamp("2012-3-31 04:00"),
                                        training_window=pd.offsets.BDay(44))

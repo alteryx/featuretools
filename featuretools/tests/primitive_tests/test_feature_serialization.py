@@ -10,13 +10,33 @@ from featuretools.feature_base.features_deserializer import (
     FeaturesDeserializer
 )
 from featuretools.feature_base.features_serializer import FeaturesSerializer
-from featuretools.primitives import CumSum, make_agg_primitive
+from featuretools.primitives import (
+    Count,
+    CumSum,
+    Day,
+    Haversine,
+    Max,
+    Mean,
+    Min,
+    Mode,
+    Month,
+    NumCharacters,
+    NumUnique,
+    NumWords,
+    PercentTrue,
+    Skew,
+    Std,
+    Sum,
+    Weekday,
+    Year,
+    make_agg_primitive
+)
 from featuretools.variable_types import Numeric
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_feature_serialization_feature_schema_3.2.0_entityset_schema_2.0.0.json"
+TEST_FILE = "test_feature_serialization_feature_schema_4.0.0_entityset_schema_3.0.0.json"
 S3_URL = "s3://featuretools-static/" + TEST_FILE
 URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
 TEST_CONFIG = "CheckConfigPassesOn"
@@ -198,15 +218,31 @@ def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
     assert_features(features_original, features_deserialized)
 
 
-@pytest.mark.parametrize("url,profile_name", [(S3_URL, None), (S3_URL, False), (URL, None)])
+@pytest.mark.parametrize("url,profile_name", [(S3_URL, None), (S3_URL, False),
+                                              (URL, None)])
 def test_deserialize_features_s3(pd_es, url, profile_name):
-    features_original = sorted(ft.dfs(target_entity='sessions', entityset=pd_es, features_only=True), key=lambda x: x.unique_name())
-    features_deserialized = sorted(ft.load_features(url, profile_name=profile_name), key=lambda x: x.unique_name())
+    agg_primitives = [Sum, Std, Max, Skew, Min, Mean, Count, PercentTrue,
+                      NumUnique, Mode]
+
+    trans_primitives = [Day, Year, Month, Weekday, Haversine, NumWords,
+                        NumCharacters]
+
+    features_original = sorted(ft.dfs(target_entity='sessions',
+                                      entityset=pd_es,
+                                      features_only=True,
+                                      agg_primitives=agg_primitives,
+                                      trans_primitives=trans_primitives),
+                               key=lambda x: x.unique_name())
+    features_deserialized = sorted(ft.load_features(url,
+                                                    profile_name=profile_name),
+                                   key=lambda x: x.unique_name())
     assert_features(features_original, features_deserialized)
 
 
 def test_serialize_url(es):
-    features_original = ft.dfs(target_entity='sessions', entityset=es, features_only=True)
+    features_original = ft.dfs(target_entity='sessions',
+                               entityset=es,
+                               features_only=True)
     error_text = "Writing to URLs is not supported"
     with pytest.raises(ValueError, match=error_text):
         ft.save_features(features_original, URL)
