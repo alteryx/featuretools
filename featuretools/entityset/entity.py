@@ -48,9 +48,9 @@ class Entity(object):
             df (pd.DataFrame): Dataframe providing the data for the
                 entity.
             entityset (EntitySet): Entityset for this Entity.
-            variable_types (dict[str -> dict[str -> type]]) : An entity's
+            variable_types (dict[str -> type/str/dict[str -> type]]) : An entity's
                 variable_types dict maps string variable ids to types (:class:`.Variable`)
-                or (type, kwargs) to pass keyword arguments to the Variable.
+                or type_string (str) or (type, kwargs) to pass keyword arguments to the Variable.
             index (str): Name of id column in the dataframe.
             time_index (str): Name of time column in the dataframe.
             secondary_time_index (dict[str -> str]): Dictionary mapping columns
@@ -274,9 +274,9 @@ class Entity(object):
         """Extracts the variables from a dataframe
 
         Args:
-            variable_types (dict[str -> dict[str -> type]]) : An entity's
+            variable_types (dict[str -> types/str/dict[str -> type]]) : An entity's
                 variable_types dict maps string variable ids to types (:class:`.Variable`)
-                or (type, kwargs) to pass keyword arguments to the Variable.
+                or type_strings (str) or (type, kwargs) to pass keyword arguments to the Variable.
             index (str): Name of index column
             time_index (str or None): Name of time_index column
             secondary_time_index (dict[str: [str]]): Dictionary of secondary time columns
