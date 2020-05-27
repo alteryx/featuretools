@@ -1275,17 +1275,11 @@ def test_primitive_options_instantiated_primitive(es):
         skipna_mean: {'include_entities': ['stores']},
         'mean': {'ignore_entities': ['stores']}
     }
-    instance_and_generic_warning = "Options present for primitive instance and generic " \
-        "primitive class \(mean\), primitive instance will not use generic " \
-        "options"  # noqa: W605
-
-    with pytest.warns(UserWarning, match=instance_and_generic_warning) as record:
-        dfs_obj = DeepFeatureSynthesis(target_entity_id='régions',
-                                       entityset=es,
-                                       agg_primitives=['mean', skipna_mean],
-                                       trans_primitives=[],
-                                       primitive_options=options)
-    assert len(record) == 1
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='régions',
+                                   entityset=es,
+                                   agg_primitives=['mean', skipna_mean],
+                                   trans_primitives=[],
+                                   primitive_options=options)
 
     features = dfs_obj.build_features()
     for f in features:

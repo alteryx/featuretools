@@ -1,8 +1,11 @@
+import logging
 import warnings
 
 from featuretools import primitives
 from featuretools.feature_base import IdentityFeature
 from featuretools.variable_types import Discrete
+
+logger = logging.getLogger('featuretools')
 
 
 def _get_primitive_options():
@@ -57,7 +60,7 @@ def generate_all_primitive_options(all_primitives,
             msg = "Options present for primitive instance and generic " \
                   "primitive class (%s), primitive instance will not use generic " \
                   "options" % (primitive.name)
-            warnings.warn(msg)
+            logger.warning(msg)
         if primitive in primitive_options or primitive.name in primitive_options:
             options = primitive_options.get(primitive, primitive_options.get(primitive.name))
             # Reconcile global options with individually-specified options
