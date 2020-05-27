@@ -292,7 +292,7 @@ class Entity(object):
                     variable_types[vid] = string_to_class_map[vtype]
                 else:
                     variable_types[vid] = string_to_class_map['unknown']
-                    warnings.warn("Variable type {} was unrecognized, Unknown Class was used instead".format(vtype))
+                    warnings.warn("Variable type {} was unrecognized, Unknown variable type was used instead".format(vtype))
 
         if index not in variable_types:
             variable_types[index] = vtypes.Index

@@ -6,7 +6,7 @@ import pytest
 
 import featuretools as ft
 from featuretools import variable_types
-from featuretools.entityset import Entity, EntitySet, deserialize
+from featuretools.entityset import Entity, EntitySet
 from featuretools.tests.testing_utils import make_ecommerce_entityset
 from featuretools.variable_types.variable import find_variable_types
 
@@ -169,15 +169,15 @@ def test_passing_strings_to_variable_types_entity_init():
 
     es = EntitySet()
     dataframe = pd.DataFrame(columns=list(reversed_variable_types))
-    entity = Entity('reversed_variable_types', dataframe, es,
-                    variable_types=reversed_variable_types,
-                    index="<class 'featuretools.variable_types.variable.Index'>",
-                    time_index="<class 'featuretools.variable_types.variable.DatetimeTimeIndex'>",
-                    )
+    with pytest.warns(UserWarning, match='Variable type {} was unrecognized, Unknown variable type was used instead'.format('some unknown type string')):
+        entity = Entity('reversed_variable_types', dataframe, es,
+                        variable_types=reversed_variable_types,
+                        index="<class 'featuretools.variable_types.variable.Index'>",
+                        time_index="<class 'featuretools.variable_types.variable.DatetimeTimeIndex'>",
+                        )
     for variable in entity.variables:
-        description = variable.to_data_description()
-        _variable = deserialize.description_to_variable(description, entity=entity)
-        assert variable.__eq__(_variable)
+        variable_class = variable.__class__
+        assert variable_class.type_string == reversed_variable_types[str(variable_class)]
 
 
 def test_passing_strings_to_variable_types_from_dataframe():
@@ -187,17 +187,18 @@ def test_passing_strings_to_variable_types_from_dataframe():
 
     es = EntitySet()
     dataframe = pd.DataFrame(columns=list(reversed_variable_types))
-    es.entity_from_dataframe(
-        entity_id="reversed_variable_types",
-        dataframe=dataframe,
-        index="<class 'featuretools.variable_types.variable.Index'>",
-        time_index="<class 'featuretools.variable_types.variable.DatetimeTimeIndex'>",
-        variable_types=reversed_variable_types)
+    with pytest.warns(UserWarning, match='Variable type {} was unrecognized, Unknown variable type was used instead'.format('some unknown type string')):
+        es.entity_from_dataframe(
+            entity_id="reversed_variable_types",
+            dataframe=dataframe,
+            index="<class 'featuretools.variable_types.variable.Index'>",
+            time_index="<class 'featuretools.variable_types.variable.DatetimeTimeIndex'>",
+            variable_types=reversed_variable_types)
 
     entity = es["reversed_variable_types"]
     for variable in entity.variables:
         variable_class = variable.__class__
-        assert variable_class == variable_types[variable_class.type_string]
+        assert variable_class.type_string == reversed_variable_types[str(variable_class)]
 
 
 def test_passing_strings_to_variable_types_dfs():
@@ -216,6 +217,6 @@ def test_passing_strings_to_variable_types_dfs():
     entities = {'teams': (teams, 'id', None, {'name': 'text'}), 'games': (games, 'id')}
     relationships = [('teams', 'id', 'games', 'home_team_id')]
 
-    _, features = ft.dfs(entities, relationships, target_entity="teams")
-    name_class = features[0].entity.variables[1].__class__
+    features = ft.dfs(entities, relationships, target_entity="teams", features_only=True)
+    name_class = features[0].entity['name'].__class__
     assert name_class == variable_types['text']
