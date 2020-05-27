@@ -12,6 +12,7 @@ Changelog
         * Fix errors with Equals and NotEquals primitives when comparing categoricals or different dtypes (:pr:`968`)
         * Normalized type_strings of ``Variable`` classes so that the ``find_variable_types`` function produces a 
           dictionary with a clear key to name transition (:pr:`982`)(:pr:`996`)
+        * Remove pandas.datetime in test_calculate_feature_matrix due to deprecation (:pr:`998`)
     * Changes
     * Documentation Changes
         * Add python 3.8 support for docs (:pr:`983`)

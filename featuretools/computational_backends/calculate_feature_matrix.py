@@ -437,7 +437,6 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
 def approximate_features(feature_set, cutoff_time, window, entityset,
                          training_window=None, include_cutoff_time=True):
-
     '''Given a set of features and cutoff_times to be passed to
     calculate_feature_matrix, calculates approximate values of some features
     to speed up calculations.  Cutoff times are sorted into
