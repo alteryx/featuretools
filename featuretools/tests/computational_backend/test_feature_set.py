@@ -79,13 +79,13 @@ def test_feature_trie_with_needs_full_entity(diamond_es):
     assert trie.get_node(path_through_stores[:1]).value == (False, set(), set())
 
 
-def test_feature_trie_with_needs_full_entity_direct(pd_es):
-    value = ft.IdentityFeature(pd_es['log']['value'],)
-    agg = ft.AggregationFeature(value, pd_es['sessions'],
+def test_feature_trie_with_needs_full_entity_direct(es):
+    value = ft.IdentityFeature(es['log']['value'],)
+    agg = ft.AggregationFeature(value, es['sessions'],
                                 primitive=ft.primitives.Mean)
-    agg_of_agg = ft.AggregationFeature(agg, pd_es['customers'],
+    agg_of_agg = ft.AggregationFeature(agg, es['customers'],
                                        primitive=ft.primitives.Sum)
-    direct = ft.DirectFeature(agg_of_agg, pd_es['sessions'])
+    direct = ft.DirectFeature(agg_of_agg, es['sessions'])
     trans = ft.TransformFeature(direct, ft.primitives.CumSum)
 
     features = [trans, agg]
@@ -108,13 +108,13 @@ def test_feature_trie_with_needs_full_entity_direct(pd_es):
         (True, {value.unique_name()}, set())
 
 
-def test_feature_trie_ignores_approximate_features(pd_es):
-    value = ft.IdentityFeature(pd_es['log']['value'],)
-    agg = ft.AggregationFeature(value, pd_es['sessions'],
+def test_feature_trie_ignores_approximate_features(es):
+    value = ft.IdentityFeature(es['log']['value'],)
+    agg = ft.AggregationFeature(value, es['sessions'],
                                 primitive=ft.primitives.Mean)
-    agg_of_agg = ft.AggregationFeature(agg, pd_es['customers'],
+    agg_of_agg = ft.AggregationFeature(agg, es['customers'],
                                        primitive=ft.primitives.Sum)
-    direct = ft.DirectFeature(agg_of_agg, pd_es['sessions'])
+    direct = ft.DirectFeature(agg_of_agg, es['sessions'])
     features = [direct, agg]
 
     approximate_feature_trie = Trie(default=list, path_constructor=RelationshipPath)

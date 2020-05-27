@@ -24,6 +24,7 @@ def test_es(pd_es, feature_matrix):
     return pd_es
 
 
+# remove low information features not supported in Dask
 def test_remove_low_information_feature_names(feature_matrix):
     feature_matrix = remove_low_information_features(feature_matrix)
     assert feature_matrix.shape == (3, 5)
@@ -31,6 +32,7 @@ def test_remove_low_information_feature_names(feature_matrix):
     assert 'all_null' not in feature_matrix.columns
 
 
+# remove low information features not supported in Dask
 def test_remove_low_information_features(test_es, feature_matrix):
     features = [Feature(v) for v in test_es['test'].variables]
     feature_matrix, features = remove_low_information_features(feature_matrix,
