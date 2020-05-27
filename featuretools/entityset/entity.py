@@ -1,4 +1,5 @@
 import logging
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -17,6 +18,7 @@ from featuretools.utils.wrangle import (
     _check_timedelta,
     _dataframes_equal
 )
+from featuretools.variable_types.variable import find_variable_types
 
 logger = logging.getLogger('featuretools.entityset')
 
@@ -46,9 +48,9 @@ class Entity(object):
             df (pd.DataFrame): Dataframe providing the data for the
                 entity.
             entityset (EntitySet): Entityset for this Entity.
-            variable_types (dict[str -> dict[str -> type]]) : An entity's
+            variable_types (dict[str -> type/str/dict[str -> type]]) : An entity's
                 variable_types dict maps string variable ids to types (:class:`.Variable`)
-                or (type, kwargs) to pass keyword arguments to the Variable.
+                or type_string (str) or (type, kwargs) to pass keyword arguments to the Variable.
             index (str): Name of id column in the dataframe.
             time_index (str): Name of time column in the dataframe.
             secondary_time_index (dict[str -> str]): Dictionary mapping columns
@@ -211,7 +213,6 @@ class Entity(object):
 
     def query_by_values(self, instance_vals, variable_id=None, columns=None,
                         time_last=None, training_window=None, include_cutoff_time=True):
-
         """Query instances that have variable with given value
 
         Args:
@@ -272,9 +273,9 @@ class Entity(object):
         """Extracts the variables from a dataframe
 
         Args:
-            variable_types (dict[str -> dict[str -> type]]) : An entity's
+            variable_types (dict[str -> types/str/dict[str -> type]]) : An entity's
                 variable_types dict maps string variable ids to types (:class:`.Variable`)
-                or (type, kwargs) to pass keyword arguments to the Variable.
+                or type_strings (str) or (type, kwargs) to pass keyword arguments to the Variable.
             index (str): Name of index column
             time_index (str or None): Name of time_index column
             secondary_time_index (dict[str: [str]]): Dictionary of secondary time columns
@@ -282,6 +283,16 @@ class Entity(object):
         """
         variables = []
         variable_types = variable_types.copy() or {}
+        string_to_class_map = find_variable_types()
+        for vid in variable_types.copy():
+            vtype = variable_types[vid]
+            if isinstance(vtype, str):
+                if vtype in string_to_class_map:
+                    variable_types[vid] = string_to_class_map[vtype]
+                else:
+                    variable_types[vid] = string_to_class_map['unknown']
+                    warnings.warn("Variable type {} was unrecognized, Unknown variable type was used instead".format(vtype))
+
         if index not in variable_types:
             variable_types[index] = vtypes.Index
 
