@@ -11,6 +11,7 @@ from featuretools.primitives import (
     Absolute,
     AddNumeric,
     AddNumericScalar,
+    Age,
     Count,
     Day,
     Diff,
@@ -62,27 +63,32 @@ from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 def test_init_and_name(es):
     log = es['log']
     rating = ft.Feature(es["products"]["rating"], es["log"])
-    features = [ft.Feature(v) for v in log.variables] +\
+    log_features = [ft.Feature(v) for v in log.variables] +\
         [ft.Feature(rating, primitive=GreaterThanScalar(2.5))]
     # Add Timedelta feature
     # features.append(pd.Timestamp.now() - ft.Feature(log['datetime']))
+    customers_features = [ft.Feature(v) for v in es["customers"].variables]
     for transform_prim in get_transform_primitives().values():
+
+        features_to_use = log_features
 
         # skip automated testing if a few special cases
         if transform_prim in [NotEqual, Equal]:
             continue
+        if transform_prim in [Age]:
+            features_to_use = customers_features
 
         # use the input_types matching function from DFS
         input_types = transform_prim.input_types
         if type(input_types[0]) == list:
-            matching_inputs = match(input_types[0], features)
+            matching_inputs = match(input_types[0], features_to_use)
         else:
-            matching_inputs = match(input_types, features)
+            matching_inputs = match(input_types, features_to_use)
         if len(matching_inputs) == 0:
             raise Exception(
                 "Transform Primitive %s not tested" % transform_prim.name)
-        for s in matching_inputs:
-            instance = ft.Feature(s, primitive=transform_prim)
+        for prim in matching_inputs:
+            instance = ft.Feature(prim, primitive=transform_prim)
 
             # try to get name and calculate
             instance.get_name()
@@ -121,6 +127,73 @@ def test_make_trans_feat(es):
     df = calculator.run(np.array([0]))
     v = df[f.get_name()][0]
     assert v == 10
+
+
+@pytest.fixture
+def simple_es():
+    df = pd.DataFrame({
+        'id': range(4),
+        'value': pd.Categorical(['a', 'c', 'b', 'd']),
+        'value2': pd.Categorical(['a', 'b', 'a', 'd']),
+        'object': ['time1', 'time2', 'time3', 'time4'],
+        'datetime': pd.Series([pd.Timestamp('2001-01-01'),
+                               pd.Timestamp('2001-01-02'),
+                               pd.Timestamp('2001-01-03'),
+                               pd.Timestamp('2001-01-04')])
+    })
+
+    es = ft.EntitySet('equal_test')
+    es.entity_from_dataframe('values', df, index='id')
+
+    return es
+
+
+def test_equal_categorical(simple_es):
+    f1 = ft.Feature([simple_es['values']['value'], simple_es['values']['value2']],
+                    primitive=Equal)
+
+    df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1])
+
+    assert set(simple_es['values'].df['value'].cat.categories) != \
+        set(simple_es['values'].df['value2'].cat.categories)
+    assert df['value = value2'].to_list() == [True, False, False, True]
+
+
+def test_equal_different_dtypes(simple_es):
+    f1 = ft.Feature([simple_es['values']['object'], simple_es['values']['datetime']],
+                    primitive=Equal)
+    f2 = ft.Feature([simple_es['values']['datetime'], simple_es['values']['object']],
+                    primitive=Equal)
+
+    # verify that equals works for different dtypes regardless of order
+    df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1, f2])
+
+    assert df['object = datetime'].to_list() == [False, False, False, False]
+    assert df['datetime = object'].to_list() == [False, False, False, False]
+
+
+def test_not_equal_categorical(simple_es):
+    f1 = ft.Feature([simple_es['values']['value'], simple_es['values']['value2']],
+                    primitive=NotEqual)
+
+    df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1])
+
+    assert set(simple_es['values'].df['value'].cat.categories) != \
+        set(simple_es['values'].df['value2'].cat.categories)
+    assert df['value != value2'].to_list() == [False, True, True, False]
+
+
+def test_not_equal_different_dtypes(simple_es):
+    f1 = ft.Feature([simple_es['values']['object'], simple_es['values']['datetime']],
+                    primitive=NotEqual)
+    f2 = ft.Feature([simple_es['values']['datetime'], simple_es['values']['object']],
+                    primitive=NotEqual)
+
+    # verify that equals works for different dtypes regardless of order
+    df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1, f2])
+    print(df)
+    assert df['object != datetime'].to_list() == [True, True, True, True]
+    assert df['datetime != object'].to_list() == [True, True, True, True]
 
 
 def test_diff(es):

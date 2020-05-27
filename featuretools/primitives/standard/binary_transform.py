@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
@@ -251,7 +252,15 @@ class Equal(TransformPrimitive):
     commutative = True
 
     def get_function(self):
-        return np.equal
+        def equal(x_vals, y_vals):
+            if isinstance(x_vals.dtype, pd.CategoricalDtype) and \
+               isinstance(y_vals.dtype, pd.CategoricalDtype):
+                categories = set(x_vals.cat.categories).union(set(y_vals.cat.categories))
+                x_vals = x_vals.cat.add_categories(categories.difference(set(x_vals.cat.categories)))
+                y_vals = y_vals.cat.add_categories(categories.difference(set(y_vals.cat.categories)))
+            return x_vals.eq(y_vals)
+
+        return equal
 
     def generate_name(self, base_feature_names):
         return "%s = %s" % (base_feature_names[0], base_feature_names[1])
@@ -305,7 +314,15 @@ class NotEqual(TransformPrimitive):
     commutative = True
 
     def get_function(self):
-        return np.not_equal
+        def not_equal(x_vals, y_vals):
+            if isinstance(x_vals.dtype, pd.CategoricalDtype) and \
+               isinstance(y_vals.dtype, pd.CategoricalDtype):
+                categories = set(x_vals.cat.categories).union(set(y_vals.cat.categories))
+                x_vals = x_vals.cat.add_categories(categories.difference(set(x_vals.cat.categories)))
+                y_vals = y_vals.cat.add_categories(categories.difference(set(y_vals.cat.categories)))
+            return x_vals.ne(y_vals)
+
+        return not_equal
 
     def generate_name(self, base_feature_names):
         return "%s != %s" % (base_feature_names[0], base_feature_names[1])

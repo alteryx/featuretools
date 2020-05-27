@@ -143,7 +143,7 @@ def test_accepts_cutoff_time_compose(entities, relationships):
     )
 
     labels['cutoff_time'] = pd.to_numeric(labels['cutoff_time'])
-    labels.rename({'card_id': 'id'}, axis=1, inplace=True)
+    labels.rename({'card_id': 'id', 'cutoff_time': 'time'}, axis=1, inplace=True)
 
     feature_matrix, features = dfs(entities=entities,
                                    relationships=relationships,
@@ -170,7 +170,7 @@ def test_accepts_cutoff_time_compose_dask(dask_es):
         num_examples_per_instance=-1
     )
 
-    labels.rename({'card_id': 'id'}, axis=1, inplace=True)
+    labels.rename({'card_id': 'id', 'cutoff_time': 'time'}, axis=1, inplace=True)
 
     feature_matrix, features = dfs(entityset=dask_es,
                                    target_entity="cards",
@@ -300,17 +300,24 @@ def test_accepts_relative_training_window(datetime_es):
                                        cutoff_time=pd.Timestamp("2012-4-1 04:00"),
                                        training_window="3 months")
 
-    # Test case for leap years
-    feature_matrix_5, features_5 = dfs(entityset=datetime_es,
-                                       target_entity="transactions",
-                                       cutoff_time=pd.Timestamp("2012-2-29 04:00"),
-                                       training_window=Timedelta("1 year"))
-
     assert (feature_matrix.index == [1, 2, 3, 4, 5]).all()
     assert (feature_matrix_2.index == [1, 2, 3, 4]).all()
     assert (feature_matrix_3.index == [2, 3, 4]).all()
     assert (feature_matrix_4.index == [2, 3, 4]).all()
+
+    feature_matrix_5, features_5 = dfs(entityset=datetime_es,
+                                       target_entity="transactions",
+                                       cutoff_time=pd.Timestamp("2012-2-29 04:00"),
+                                       training_window=Timedelta("1 year"),
+                                       include_cutoff_time=True)
     assert (feature_matrix_5.index == [2]).all()
+
+    feature_matrix_5, features_5 = dfs(entityset=datetime_es,
+                                       target_entity="transactions",
+                                       cutoff_time=pd.Timestamp("2012-2-29 04:00"),
+                                       training_window=Timedelta("1 year"),
+                                       include_cutoff_time=False)
+    assert (feature_matrix_5.index == [1, 2]).all()
 
 
 def test_accepts_pd_timedelta_training_window(datetime_es):
