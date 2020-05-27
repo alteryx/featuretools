@@ -173,11 +173,13 @@ def test_passing_strings_to_variable_types_entity_init():
         entity = Entity('reversed_variable_types', dataframe, es,
                         variable_types=reversed_variable_types,
                         index="<class 'featuretools.variable_types.variable.Index'>",
-                        time_index="<class 'featuretools.variable_types.variable.DatetimeTimeIndex'>",
+                        time_index="<class 'featuretools.variable_types.variable.NumericTimeIndex'>",
                         )
+                        
+    reversed_variable_types["unknown variable"] = "unknown"
     for variable in entity.variables:
         variable_class = variable.__class__
-        assert variable_class.type_string == reversed_variable_types[str(variable_class)]
+        assert variable_class.type_string == reversed_variable_types[variable.id]
 
 
 def test_passing_strings_to_variable_types_from_dataframe():
@@ -192,13 +194,14 @@ def test_passing_strings_to_variable_types_from_dataframe():
             entity_id="reversed_variable_types",
             dataframe=dataframe,
             index="<class 'featuretools.variable_types.variable.Index'>",
-            time_index="<class 'featuretools.variable_types.variable.DatetimeTimeIndex'>",
+            time_index="<class 'featuretools.variable_types.variable.NumericTimeIndex'>",
             variable_types=reversed_variable_types)
 
     entity = es["reversed_variable_types"]
+    reversed_variable_types["unknown variable"] = "unknown"
     for variable in entity.variables:
         variable_class = variable.__class__
-        assert variable_class.type_string == reversed_variable_types[str(variable_class)]
+        assert variable_class.type_string == reversed_variable_types[variable.id]
 
 
 def test_passing_strings_to_variable_types_dfs():
