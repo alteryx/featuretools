@@ -175,7 +175,7 @@ def test_passing_strings_to_variable_types_entity_init():
                         index="<class 'featuretools.variable_types.variable.Index'>",
                         time_index="<class 'featuretools.variable_types.variable.NumericTimeIndex'>",
                         )
-                        
+
     reversed_variable_types["unknown variable"] = "unknown"
     for variable in entity.variables:
         variable_class = variable.__class__
