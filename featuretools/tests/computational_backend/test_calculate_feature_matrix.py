@@ -477,7 +477,7 @@ def test_training_window(pd_es):
 
     # Case2. include_cutoff_time = False
     feature_matrix = calculate_feature_matrix([property_feature, dagg],
-                                              es,
+                                              pd_es,
                                               cutoff_time=cutoff_time,
                                               training_window='2 hours',
                                               include_cutoff_time=False)
@@ -515,7 +515,7 @@ def test_training_window_overlap(pd_es):
     # Case2. include_cutoff_time = False
     actual = ft.calculate_feature_matrix(
         features=[count_log],
-        entityset=es,
+        entityset=pd_es,
         cutoff_time=cutoff_time,
         cutoff_time_in_index=True,
         training_window='10 minutes',
@@ -649,7 +649,7 @@ def test_training_window_recent_time_index(pd_es):
     # Case2. include_cutoff_time = False
     feature_matrix = calculate_feature_matrix(
         [property_feature, dagg],
-        es,
+        pd_es,
         cutoff_time=cutoff_time,
         training_window='2 hours',
         include_cutoff_time=False,
@@ -688,7 +688,7 @@ def test_approximate_multiple_instances_per_cutoff_time(pd_es):
 
 
 def test_approximate_with_multiple_paths(pd_diamond_es):
-    pd_es = diamond_es
+    pd_es = pd_diamond_es
     path = backward_path(pd_es, ['regions', 'customers', 'transactions'])
     agg_feat = ft.AggregationFeature(pd_es['transactions']['id'],
                                      parent_entity=pd_es['regions'],
@@ -969,13 +969,13 @@ def test_cutoff_time_naming(es):
     fm1 = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df)
     if isinstance(fm1, dd.DataFrame):
         fm1 = fm1.compute().set_index('id').sort_index()
-    for test_cutoff in [cutoff_df_index_name, cutoff_df_time_name, cutoff_df_index_name_time_name]:
-        fm2 = calculate_feature_matrix([dfeat], es, cutoff_time=test_cutoff)
-        if isinstance(fm2, dd.DataFrame):
-            fm2 = fm2.compute().set_index('id').sort_index()
-        assert all((fm1 == fm2.values).values)
+    fm2 = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df_index_name)
+    if isinstance(fm2, dd.DataFrame):
+        fm2 = fm2.compute().set_index('id').sort_index()
+    assert all((fm1 == fm2.values).values)
 
-    error_text = 'Name of the index variable in the target entity or "instance_id" must be present in cutoff_time'
+    error_text = 'Cutoff time DataFrame must contain a column with either the same name' \
+                 ' as the target entity index or a column named "instance_id"'
     with pytest.raises(AttributeError, match=error_text):
         calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df_wrong_index_name)
 
