@@ -8,6 +8,8 @@ Changelog
         * Allow cutoff time dataframe columns to be in any order (:pr:`969`, :pr:`995`)
         * Add Age primitive, and make it a default transform primitive for DFS (:pr:`987`)
         * Add ``include_cutoff_time`` arg - control whether data at cutoff times are included in feature calculations (:pr:`959`)
+        * Allow ``variables_types`` to be referenced by their ``type_string`` 
+          for the ``entity_from_dataframe`` function (:pr:`988`)
     * Fixes
         * Fix errors with Equals and NotEquals primitives when comparing categoricals or different dtypes (:pr:`968`)
         * Normalized type_strings of ``Variable`` classes so that the ``find_variable_types`` function produces a dictionary with a clear key to name transition (:pr:`982`)
