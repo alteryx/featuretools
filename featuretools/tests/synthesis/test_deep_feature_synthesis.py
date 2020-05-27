@@ -1,5 +1,6 @@
 import copy
 
+import dask.dataframe as dd
 import pandas as pd
 import pytest
 
@@ -39,6 +40,37 @@ from featuretools.primitives import (
 from featuretools.synthesis import DeepFeatureSynthesis
 from featuretools.tests.testing_utils import feature_with_name
 from featuretools.variable_types import Datetime, Numeric
+
+
+@pytest.fixture(params=['pd_transform_es', 'dask_transform_es'])
+def transform_es(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture
+def pd_transform_es():
+    # Create dataframe
+    df = pd.DataFrame({'a': [14, 12, 10], 'b': [False, False, True],
+                       'b1': [True, True, False], 'b12': [4, 5, 6],
+                       'P': [10, 15, 12]})
+    es = ft.EntitySet(id='test')
+    # Add dataframe to entityset
+    es.entity_from_dataframe(entity_id='first', dataframe=df,
+                             index='index',
+                             make_index=True)
+
+    return es
+
+
+@pytest.fixture
+def dask_transform_es(pd_transform_es):
+    es = ft.EntitySet(id=pd_transform_es.id)
+    for entity in pd_transform_es.entities:
+        es.entity_from_dataframe(entity_id=entity.id,
+                                 dataframe=dd.from_pandas(entity.df, npartitions=2),
+                                 index=entity.index,
+                                 variable_types=entity.variable_types)
+    return es
 
 
 def test_makes_agg_features_from_str(es):
@@ -274,16 +306,16 @@ def test_only_makes_supplied_trans_feat(es):
     assert len(other_trans_features) == 0
 
 
-def test_makes_dfeatures_of_agg_primitives(pd_es):
+def test_makes_dfeatures_of_agg_primitives(es):
     # TODO: Update to work with Dask supported primitive
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
-                                   entityset=pd_es,
-                                   agg_primitives=[Last],
+                                   entityset=es,
+                                   agg_primitives=['max'],
                                    trans_primitives=[])
     features = dfs_obj.build_features()
 
     assert (feature_with_name(features,
-                              'customers.LAST(sessions.device_type)'))
+                              'customers.MAX(log.value)'))
 
 
 def test_makes_agg_features_of_trans_primitives(es):
@@ -693,19 +725,9 @@ def test_commutative(es):
     assert len(add_feats) == len(unordered_args)
 
 
-def test_transform_consistency():
-    # Create dataframe
-    df = pd.DataFrame({'a': [14, 12, 10], 'b': [False, False, True],
-                       'b1': [True, True, False], 'b12': [4, 5, 6],
-                       'P': [10, 15, 12]})
-    pd_es = ft.EntitySet(id='test')
-    # Add dataframe to entityset
-    pd_es.entity_from_dataframe(entity_id='first', dataframe=df,
-                                index='index',
-                                make_index=True)
-
+def test_transform_consistency(transform_es):
     # Generate features
-    feature_defs = ft.dfs(entityset=pd_es, target_entity='first',
+    feature_defs = ft.dfs(entityset=transform_es, target_entity='first',
                           trans_primitives=['and', 'add_numeric', 'or'],
                           features_only=True)
 
