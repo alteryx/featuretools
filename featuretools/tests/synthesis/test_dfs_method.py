@@ -155,6 +155,8 @@ def test_accepts_single_cutoff_time(entities, relationships):
                                    relationships=relationships,
                                    target_entity="transactions",
                                    cutoff_time=20)
+    if isinstance(feature_matrix, dd.DataFrame):
+        feature_matrix = feature_matrix.compute().set_index('id')
     assert len(feature_matrix.index) == 5
     assert len(feature_matrix.columns) == len(features)
 
