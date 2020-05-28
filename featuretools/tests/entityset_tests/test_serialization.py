@@ -205,6 +205,7 @@ def test_dask_to_parquet_manual_interesting_values(dask_es, tmpdir):
     new_es = deserialize.read_entityset(str(tmpdir))
     assert dask_es.__eq__(new_es, deep=True)
 
+
 # Dask doesn't support es.add_interesting_values
 def test_to_parquet_interesting_values(pd_es, tmpdir):
     pd_es.add_interesting_values()

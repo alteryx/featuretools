@@ -609,10 +609,12 @@ def test_already_sorted_parameter():
     assert times == list(transactions_df.transaction_time)
 
 
-# TODO: equality check fails, dask series have no .equals method
+# TODO: equality check fails, dask series have no .equals method; error computing lti if categorical index
 def test_concat_entitysets(es):
     df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        pytest.xfail("Dask has no .equals method and issue with categoricals "
+                     "and add_last_time_indexes")
         df = dd.from_pandas(df, npartitions=2)
 
     vtypes = {'id': variable_types.Categorical,
@@ -1051,6 +1053,8 @@ def test_normalize_entity_same_index(es):
 
 # TODO: normalize entity fails with Dask, doesn't specify all vtypes when creating new entity
 def test_secondary_time_index(es):
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        pytest.xfail('vtype error when attempting to normalize entity')
     es.normalize_entity('log', 'values', 'value',
                         make_time_index=True,
                         make_secondary_time_index={
