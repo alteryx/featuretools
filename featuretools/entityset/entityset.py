@@ -432,8 +432,8 @@ class EntitySet(object):
             index (str, optional): Name of the variable used to index the entity.
                 If None, take the first column.
 
-            variable_types (dict[str -> Variable], optional):
-                Keys are of variable ids and values are variable types. Used to to
+            variable_types (dict[str -> Variable/str], optional):
+                Keys are of variable ids and values are variable types or type_strings. Used to to
                 initialize an entity's store.
 
             make_index (bool, optional) : If True, assume index does not
