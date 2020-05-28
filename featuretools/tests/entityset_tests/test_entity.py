@@ -122,7 +122,7 @@ def test_update_data(es):
     if isinstance(customers_df, dd.DataFrame):
         customers_df = customers_df.compute()
     assert customers_df["id"].iloc[0] == 2
-    
+
     # only pandas allows for sorting:
     if isinstance(df, pd.DataFrame):
         es["customers"].update_data(df.copy())

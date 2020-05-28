@@ -151,7 +151,7 @@ def employee_df(request):
 
 
 def test_find_forward_paths_ignores_loops(employee_df):
-    entities = {'employees': (employee_df, 'id', None, {'id': variable_types.Id, 
+    entities = {'employees': (employee_df, 'id', None, {'id': variable_types.Id,
                                                         'manager_id': variable_types.Id})}
     relationships = [('employees', 'id', 'employees', 'manager_id')]
     es = ft.EntitySet(entities=entities, relationships=relationships)
