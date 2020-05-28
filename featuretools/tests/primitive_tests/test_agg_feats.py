@@ -421,14 +421,16 @@ def test_median(pd_es):
     np.testing.assert_equal(fm[f.get_name()].values, correct)
 
 
-def test_agg_same_method_name(pd_es):
+def test_agg_same_method_name(es):
     """
         Pandas relies on the function name when calculating aggregations. This means if a two
         primitives with the same function name are applied to the same column, pandas
         can't differentiate them. We have a work around to this based on the name property
         that we test here.
     """
-
+    # TODO: Update to work with Dask
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        pytest.xfail("Cannot use primitives made with make_agg_primitives with Dask EntitySets")
     # test with normally defined functions
     def custom_primitive(x):
         return x.sum()
@@ -442,10 +444,10 @@ def test_agg_same_method_name(pd_es):
     Max = make_agg_primitive(custom_primitive, input_types=[Numeric],
                              return_type=Numeric, name="max")
 
-    f_sum = ft.Feature(pd_es["log"]["value"], parent_entity=pd_es["customers"], primitive=Sum)
-    f_max = ft.Feature(pd_es["log"]["value"], parent_entity=pd_es["customers"], primitive=Max)
+    f_sum = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Sum)
+    f_max = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Max)
 
-    fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=pd_es)
+    fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
     assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
 
     # test with lambdas
@@ -454,9 +456,9 @@ def test_agg_same_method_name(pd_es):
     Max = make_agg_primitive(lambda x: x.max(), input_types=[Numeric],
                              return_type=Numeric, name="max")
 
-    f_sum = ft.Feature(pd_es["log"]["value"], parent_entity=pd_es["customers"], primitive=Sum)
-    f_max = ft.Feature(pd_es["log"]["value"], parent_entity=pd_es["customers"], primitive=Max)
-    fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=pd_es)
+    f_sum = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Sum)
+    f_max = ft.Feature(es["log"]["value"], parent_entity=es["customers"], primitive=Max)
+    fm = ft.calculate_feature_matrix([f_sum, f_max], entityset=es)
     assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
 
 

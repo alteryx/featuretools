@@ -74,7 +74,11 @@ def test_direct_copy(games_es):
     assert copied.relationship_path == feat.relationship_path
 
 
-def test_direct_of_multi_output_transform_feat(pd_es):
+def test_direct_of_multi_output_transform_feat(es):
+    # TODO: Update to work with Dask
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        pytest.xfail("Custom primitive is not compabible with Dask")
+
     class TestTime(TransformPrimitive):
         name = "test_time"
         input_types = [Datetime]
@@ -88,22 +92,22 @@ def test_direct_of_multi_output_transform_feat(pd_es):
                 return [times.apply(lambda x: getattr(x, unit)) for unit in units]
             return test_f
 
-    join_time_split = Feature(pd_es["customers"]["signup_date"],
+    join_time_split = Feature(es["customers"]["signup_date"],
                               primitive=TestTime)
-    alt_features = [Feature(pd_es["customers"]["signup_date"], primitive=Year),
-                    Feature(pd_es["customers"]["signup_date"], primitive=Month),
-                    Feature(pd_es["customers"]["signup_date"], primitive=Day),
-                    Feature(pd_es["customers"]["signup_date"], primitive=Hour),
-                    Feature(pd_es["customers"]["signup_date"], primitive=Minute),
-                    Feature(pd_es["customers"]["signup_date"], primitive=Second)]
+    alt_features = [Feature(es["customers"]["signup_date"], primitive=Year),
+                    Feature(es["customers"]["signup_date"], primitive=Month),
+                    Feature(es["customers"]["signup_date"], primitive=Day),
+                    Feature(es["customers"]["signup_date"], primitive=Hour),
+                    Feature(es["customers"]["signup_date"], primitive=Minute),
+                    Feature(es["customers"]["signup_date"], primitive=Second)]
     fm, fl = dfs(
-        entityset=pd_es,
+        entityset=es,
         target_entity="sessions",
         trans_primitives=[TestTime, Year, Month, Day, Hour, Minute, Second])
 
     # Get column names of for multi feature and normal features
-    subnames = DirectFeature(join_time_split, pd_es["sessions"]).get_feature_names()
-    altnames = [DirectFeature(f, pd_es["sessions"]).get_name() for f in alt_features]
+    subnames = DirectFeature(join_time_split, es["sessions"]).get_feature_names()
+    altnames = [DirectFeature(f, es["sessions"]).get_name() for f in alt_features]
 
     # Check values are equal between
     for col1, col2 in zip(subnames, altnames):
