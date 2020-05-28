@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+from dask import dataframe as dd
 
 import featuretools as ft
 from featuretools import EntitySet, Relationship, variable_types
@@ -134,9 +135,24 @@ def test_find_forward_paths_multiple_relationships(games_es):
     assert r2.parent_variable.id == 'id'
 
 
-def test_find_forward_paths_ignores_loops():
-    employee_df = pd.DataFrame({'id': [0], 'manager_id': [0]})
-    entities = {'employees': (employee_df, 'id')}
+@pytest.fixture
+def pd_employee_df():
+    return pd.DataFrame({'id': [0], 'manager_id': [0]})
+
+
+@pytest.fixture
+def dd_employee_df(pd_employee_df):
+    return dd.from_pandas(pd_employee_df, npartitions=2)
+
+
+@pytest.fixture(params=['pd_employee_df', 'dd_employee_df'])
+def employee_df(request):
+    return request.getfixturevalue(request.param)
+
+
+def test_find_forward_paths_ignores_loops(employee_df):
+    entities = {'employees': (employee_df, 'id', None, {'id': variable_types.Id, 
+                                                        'manager_id': variable_types.Id})}
     relationships = [('employees', 'id', 'employees', 'manager_id')]
     es = ft.EntitySet(entities=entities, relationships=relationships)
 
