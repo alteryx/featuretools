@@ -5,7 +5,7 @@ from featuretools.utils.gen_utils import camel_to_snake, find_descendents
 
 
 class ClassNameDescriptor(object):
-    """Descriptor to derive the a variable's type_string from it's class name
+    """Descriptor to convert a class's name from camelcase to snakcase
     """
     def __get__(self, instance, class_):
         return camel_to_snake(class_.__name__)
