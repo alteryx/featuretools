@@ -439,14 +439,15 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
             else:
                 # all rows have same cutoff time. set time and add passed columns
                 num_rows = len(ids)
+                if len(pass_columns) > 0:
+                    pass_through = group[['instance_id', cutoff_df_time_var] + pass_columns]
+                    pass_through.rename(columns={'instance_id': id_name,
+                                                 cutoff_df_time_var: 'time'},
+                                        inplace=True)
                 if isinstance(_feature_matrix, pd.DataFrame):
                     time_index = pd.Index([time_last] * num_rows, name='time')
                     _feature_matrix = _feature_matrix.set_index(time_index, append=True)
                     if len(pass_columns) > 0:
-                        pass_through = group[['instance_id', cutoff_df_time_var] + pass_columns]
-                        pass_through.rename(columns={'instance_id': id_name,
-                                                     cutoff_df_time_var: 'time'},
-                                            inplace=True)
                         pass_through.set_index([id_name, 'time'], inplace=True)
                         for col in pass_columns:
                             _feature_matrix[col] = pass_through[col]
@@ -454,13 +455,9 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                     _feature_matrix['time'] = time_last
                     if isinstance(time_last, pd.Timestamp):
                         _feature_matrix['time'] = dd.to_datetime(_feature_matrix['time'])
-                    pass_through = group[['instance_id', cutoff_df_time_var] + pass_columns]
-                    pass_through.rename(columns={'instance_id': id_name,
-                                                 cutoff_df_time_var: 'time'},
-                                        inplace=True)
                     for col in pass_columns:
                         pass_df = dd.from_pandas(pass_through[[id_name, 'time', col]], npartitions=_feature_matrix.npartitions)
-                        _feature_matrix = _feature_matrix.merge(pass_df)
+                        _feature_matrix = _feature_matrix.merge(pass_df, how="outer")
                     _feature_matrix = _feature_matrix.drop(columns=['time'])
 
             feature_matrix.append(_feature_matrix)

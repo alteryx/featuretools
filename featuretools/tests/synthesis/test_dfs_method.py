@@ -150,6 +150,15 @@ def test_accepts_cutoff_time_compose(entities, relationships):
     assert len(feature_matrix.columns) == len(features) + 1
 
 
+def test_accepts_single_cutoff_time(entities, relationships):
+    feature_matrix, features = dfs(entities=entities,
+                                   relationships=relationships,
+                                   target_entity="transactions",
+                                   cutoff_time=20)
+    assert len(feature_matrix.index) == 5
+    assert len(feature_matrix.columns) == len(features)
+
+
 def test_accepts_no_cutoff_time(entities, relationships):
     feature_matrix, features = dfs(entities=entities,
                                    relationships=relationships,
