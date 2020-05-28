@@ -136,15 +136,18 @@ def convert_variable_data(df, column_id, new_type, **kwargs):
     if empty:
         return df
     if new_type == vtypes.Numeric:
-        orig_nonnull = df[column_id].dropna().shape[0]
-        df[column_id] = pd.to_numeric(df[column_id], errors='coerce')
-        # This will convert strings to nans
-        # If column contained all strings, then we should
-        # just raise an error, because that shouldn't have
-        # been converted to numeric
-        nonnull = df[column_id].dropna().shape[0]
-        if nonnull == 0 and orig_nonnull != 0:
-            raise TypeError("Attempted to convert all string column {} to numeric".format(column_id))
+        if isinstance(df, dd.DataFrame):
+            df[column_id] = dd.to_numeric(df[column_id], errors='coerce')
+        else:
+            orig_nonnull = df[column_id].dropna().shape[0]
+            df[column_id] = pd.to_numeric(df[column_id], errors='coerce')
+            # This will convert strings to nans
+            # If column contained all strings, then we should
+            # just raise an error, because that shouldn't have
+            # been converted to numeric
+            nonnull = df[column_id].dropna().shape[0]
+            if nonnull == 0 and orig_nonnull != 0:
+                raise TypeError("Attempted to convert all string column {} to numeric".format(column_id))
     elif issubclass(new_type, vtypes.Datetime):
         format = kwargs.get("format", None)
         # TODO: if float convert to int?
