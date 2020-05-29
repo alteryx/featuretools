@@ -96,7 +96,7 @@ class Entity(object):
     @property
     def shape(self):
         '''Shape of the entity's dataframe'''
-        return self.df.shape
+        return (len(self.df), self.df.shape[1])
 
     def __eq__(self, other, deep=False):
         if self.index != other.index:
@@ -212,7 +212,6 @@ class Entity(object):
 
     def query_by_values(self, instance_vals, variable_id=None, columns=None,
                         time_last=None, training_window=None, include_cutoff_time=True):
-
         """Query instances that have variable with given value
 
         Args:

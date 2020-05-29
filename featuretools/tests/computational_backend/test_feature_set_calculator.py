@@ -218,6 +218,8 @@ def test_make_agg_feat_using_prev_n_events(es):
 
 
 def test_make_agg_feat_multiple_dtypes(es):
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        pytest.xfail('Currently no dask compatible agg prims that use multiple dtypes')
     compare_prod = IdentityFeature(es['log']['product_id']) == 'coke zero'
 
     agg_feat = ft.Feature(es['log']['id'],
@@ -696,7 +698,6 @@ def test_agg_empty_child(es):
     assert df["COUNT(log)"].iloc[0] == 0
 
 
-# TODO: Add dask version of diamond entityset
 def test_diamond_entityset(diamond_es):
     es = diamond_es
 
@@ -722,25 +723,25 @@ def test_diamond_entityset(diamond_es):
 
 
 def test_two_relationships_to_single_entity(games_es):
-    pd_es = games_es
-    home_team, away_team = pd_es.relationships
+    es = games_es
+    home_team, away_team = es.relationships
     path = RelationshipPath([(False, home_team)])
-    mean_at_home = ft.AggregationFeature(pd_es['games']['home_team_score'],
-                                         pd_es['teams'],
+    mean_at_home = ft.AggregationFeature(es['games']['home_team_score'],
+                                         es['teams'],
                                          relationship_path=path,
                                          primitive=ft.primitives.Mean)
     path = RelationshipPath([(False, away_team)])
-    mean_at_away = ft.AggregationFeature(pd_es['games']['away_team_score'],
-                                         pd_es['teams'],
+    mean_at_away = ft.AggregationFeature(es['games']['away_team_score'],
+                                         es['teams'],
                                          relationship_path=path,
                                          primitive=ft.primitives.Mean)
-    home_team_mean = ft.DirectFeature(mean_at_home, pd_es['games'],
+    home_team_mean = ft.DirectFeature(mean_at_home, es['games'],
                                       relationship=home_team)
-    away_team_mean = ft.DirectFeature(mean_at_away, pd_es['games'],
+    away_team_mean = ft.DirectFeature(mean_at_away, es['games'],
                                       relationship=away_team)
 
     feature_set = FeatureSet([home_team_mean, away_team_mean])
-    calculator = FeatureSetCalculator(pd_es,
+    calculator = FeatureSetCalculator(es,
                                       time_last=datetime(2011, 8, 28),
                                       feature_set=feature_set)
     df = calculator.run(np.array(range(3)))

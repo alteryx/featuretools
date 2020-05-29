@@ -1127,7 +1127,6 @@ def test_primitive_options(es):
 
 
 def test_primitive_options_with_globals(es):
-    # TODO: Update to work with Dask supported primitive
     # non-overlapping ignore_entities
     options = {'mode': {'ignore_entities': ['sessions']}}
     dfs_obj = DeepFeatureSynthesis(target_entity_id='cohorts',
@@ -1243,7 +1242,6 @@ def test_primitive_options_groupbys(pd_es):
 
 
 def test_primitive_options_multiple_inputs(es):
-    # TODO: Update to work with Dask supported primitive
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail("Dask EntitySets do not support various primitives used in this test")
     too_many_options = {'mode': [{'include_entities': ['logs']},

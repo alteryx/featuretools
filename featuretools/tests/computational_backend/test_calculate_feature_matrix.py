@@ -153,9 +153,8 @@ def test_cfm_compose(es):
         window_size='1m'
     )
 
-    if isinstance(es['log'].df, pd.DataFrame):
-        df = es['log'].df
-    else:
+    df = es['log'].df
+    if isinstance(df, dd.DataFrame):
         df = es['log'].df.compute()
     labels = lm.search(
         df,

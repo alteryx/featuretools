@@ -453,8 +453,6 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                             _feature_matrix[col] = pass_through[col]
                 elif isinstance(_feature_matrix, dd.DataFrame) and (len(pass_columns) > 0):
                     _feature_matrix['time'] = time_last
-                    if isinstance(time_last, pd.Timestamp):
-                        _feature_matrix['time'] = dd.to_datetime(_feature_matrix['time'])
                     for col in pass_columns:
                         pass_df = dd.from_pandas(pass_through[[id_name, 'time', col]], npartitions=_feature_matrix.npartitions)
                         _feature_matrix = _feature_matrix.merge(pass_df, how="outer")
@@ -472,7 +470,6 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
 def approximate_features(feature_set, cutoff_time, window, entityset,
                          training_window=None, include_cutoff_time=True):
-
     '''Given a set of features and cutoff_times to be passed to
     calculate_feature_matrix, calculates approximate values of some features
     to speed up calculations.  Cutoff times are sorted into

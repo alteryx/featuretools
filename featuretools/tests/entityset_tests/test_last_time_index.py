@@ -120,7 +120,6 @@ class TestLastTimeIndex(object):
                       'values_id': 11}
         # make sure index doesn't have same name as column to suppress pandas warning
         row = pd.DataFrame(row_values, index=pd.Index([11]))
-        df = values.df
         df = values.df.append(row, sort=True)
         df = df[['value', 'value_time']].sort_values(by='value')
         df.index.name = 'values_id'

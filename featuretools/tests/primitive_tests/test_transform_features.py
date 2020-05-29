@@ -346,8 +346,13 @@ def test_compare_of_agg(es):
 
 
 def test_compare_all_nans(es):
-    nan_feat = ft.Feature(es['log']['product_id'], parent_entity=es['sessions'], primitive=Mode)
-    compare = nan_feat == 'brown bag'
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        nan_feat = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=ft.primitives.Min)
+        compare = nan_feat == 0.0
+    else:
+        nan_feat = ft.Feature(es['log']['product_id'], parent_entity=es['sessions'], primitive=Mode)
+        compare = nan_feat == 'brown bag'
+
     # before all data
     time_last = pd.Timestamp('1/1/1993')
 
