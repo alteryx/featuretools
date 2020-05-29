@@ -25,13 +25,13 @@ def description_to_variable(description, entity=None):
     Returns:
         variable (Variable) : Returns :class:`.Variable`.
     '''
-    variable_types = find_variable_types()
     is_type_string = isinstance(description['type'], str)
-    type = description['type'] if is_type_string else description['type'].pop('value')
-    variable = variable_types.get(type, variable_types.get('unknown'))
+    variable = description['type'] if is_type_string else description['type'].pop('value')
     if entity is not None:
+        variable_types = find_variable_types()
+        variable_class = variable_types.get(variable, variable_types.get('unknown'))
         kwargs = {} if is_type_string else description['type']
-        variable = variable(description['id'], entity, **kwargs)
+        variable = variable_class(description['id'], entity, **kwargs)
         interesting_values = pd.read_json(description['properties']['interesting_values'], typ='series')
         variable.interesting_values = interesting_values
     return variable

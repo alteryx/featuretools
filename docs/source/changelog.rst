@@ -8,10 +8,13 @@ Changelog
         * Allow cutoff time dataframe columns to be in any order (:pr:`969`, :pr:`995`)
         * Add Age primitive, and make it a default transform primitive for DFS (:pr:`987`)
         * Add ``include_cutoff_time`` arg - control whether data at cutoff times are included in feature calculations (:pr:`959`)
+        * Allow ``variables_types`` to be referenced by their ``type_string`` 
+          for the ``entity_from_dataframe`` function (:pr:`988`)
     * Fixes
         * Fix errors with Equals and NotEquals primitives when comparing categoricals or different dtypes (:pr:`968`)
         * Normalized type_strings of ``Variable`` classes so that the ``find_variable_types`` function produces a 
-          dictionary with a clear key to name transition (:pr:`982`)
+          dictionary with a clear key to name transition (:pr:`982`, :pr:`996`)
+        * Remove pandas.datetime in test_calculate_feature_matrix due to deprecation (:pr:`998`)
     * Changes
     * Documentation Changes
         * Add python 3.8 support for docs (:pr:`983`)
@@ -33,7 +36,7 @@ Changelog
   dataframe can be in any order as long as they are named properly.
 
 * The ``type_string`` attributes of all ``Variable`` subclasses are now a snake case conversion of their class names. This
-  changes the ``type_string`` of the ``Unknown``, ``IPAddress``, ``EmailAddress``, ``SubRegionCode``, and ``FilePath`` classes.
+  changes the ``type_string`` of the ``Unknown``, ``IPAddress``, ``EmailAddress``, ``SubRegionCode``, ``FilePath``, ``LatLong``, and ``ZIPcode`` classes.
   Old saved entitysets that used these variables may load incorrectly.
 
 **v0.14.0 Apr 30, 2020**

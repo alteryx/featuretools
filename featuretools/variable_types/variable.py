@@ -1,7 +1,14 @@
 import numpy as np
 import pandas as pd
 
-from featuretools.utils.gen_utils import find_descendents
+from featuretools.utils.gen_utils import camel_to_snake, find_descendents
+
+
+class ClassNameDescriptor(object):
+    """Descriptor to convert a class's name from camelcase to snakecase
+    """
+    def __get__(self, instance, class_):
+        return camel_to_snake(class_.__name__)
 
 
 class Variable(object):
@@ -18,7 +25,7 @@ class Variable(object):
     See Also:
         :class:`.Entity`, :class:`.Relationship`, :class:`.BaseEntitySet`
     """
-    type_string = None
+    type_string = ClassNameDescriptor()
     _default_pandas_dtype = object
 
     def __init__(self, id, entity, name=None):
@@ -112,12 +119,11 @@ class Variable(object):
 
 
 class Unknown(Variable):
-    type_string = "unknown"
+    pass
 
 
 class Discrete(Variable):
     """Superclass representing variables that take on discrete values"""
-    type_string = "discrete"
 
     def __init__(self, id, entity, name=None):
         super(Discrete, self).__init__(id, entity, name)
@@ -142,7 +148,6 @@ class Boolean(Variable):
         true_values (list) : List of valued true values. Defaults to [1, True, "true", "True", "yes", "t", "T"]
         false_values (list): List of valued false values. Defaults to [0, False, "false", "False", "no", "f", "F"]
     """
-    type_string = "boolean"
     _default_pandas_dtype = bool
 
     def __init__(self,
@@ -172,7 +177,6 @@ class Categorical(Discrete):
     Args:
         categories (list) : List of categories. If left blank, inferred from data.
     """
-    type_string = "categorical"
 
     def __init__(self, id, entity, name=None, categories=None):
         self.categories = None or []
@@ -186,13 +190,11 @@ class Categorical(Discrete):
 
 class Id(Categorical):
     """Represents variables that identify another entity"""
-    type_string = "id"
     _default_pandas_dtype = int
 
 
 class Ordinal(Discrete):
     """Represents variables that take on an ordered discrete value"""
-    type_string = "ordinal"
     _default_pandas_dtype = int
 
 
@@ -210,7 +212,6 @@ class Numeric(Variable):
         std (float)
         mean (float)
     """
-    type_string = "numeric"
     _default_pandas_dtype = float
 
     def __init__(self,
@@ -241,7 +242,6 @@ class Index(Variable):
     Attributes:
         count (int)
     """
-    type_string = "index"
     _default_pandas_dtype = int
 
 
@@ -251,7 +251,6 @@ class Datetime(Variable):
     Args:
         format (str): Python datetime format string documented `here <http://strftime.org/>`_.
     """
-    type_string = "datetime"
     _default_pandas_dtype = np.datetime64
 
     def __init__(self, id, entity, name=None, format=None):
@@ -269,19 +268,16 @@ class Datetime(Variable):
 
 class TimeIndex(Variable):
     """Represents time index of entity"""
-    type_string = "time_index"
     _default_pandas_dtype = np.datetime64
 
 
 class NumericTimeIndex(TimeIndex, Numeric):
     """Represents time index of entity that is numeric"""
-    type_string = "numeric_time_index"
     _default_pandas_dtype = float
 
 
 class DatetimeTimeIndex(TimeIndex, Datetime):
     """Represents time index of entity that is a datetime"""
-    type_string = "datetime_time_index"
     _default_pandas_dtype = np.datetime64
 
 
@@ -293,7 +289,6 @@ class Timedelta(Variable):
         start_inclusive (bool, optional) : Whether or not range includes the start value.
         end_inclusive (bool, optional) : Whether or not range includes the end value
     """
-    type_string = "timedelta"
     _default_pandas_dtype = np.timedelta64
 
     def __init__(self,
@@ -320,7 +315,6 @@ class Timedelta(Variable):
 
 class Text(Variable):
     """Represents variables that are arbitary strings"""
-    type_string = "text"
     _default_pandas_dtype = str
 
 
@@ -338,7 +332,6 @@ class LatLong(Variable):
     To make a latlong in a dataframe do
     data['latlong'] = data[['latitude', 'longitude']].apply(tuple, axis=1)
     """
-    type_string = "latlong"
 
 
 class ZIPCode(Categorical):
@@ -346,7 +339,6 @@ class ZIPCode(Categorical):
     Consists of a series of digits which are casts as
     string. Five digit and 9 digit zipcodes are supported.
     """
-    type_string = "zipcode"
     _default_pandas_dtype = str
 
 
@@ -354,7 +346,6 @@ class IPAddress(Variable):
     """Represents a computer network address. Represented
     in dotted-decimal notation. IPv4 and IPv6 are supported.
     """
-    type_string = "ip_address"
     _default_pandas_dtype = str
 
 
@@ -362,7 +353,6 @@ class FullName(Variable):
     """Represents a person's full name. May consist of a
     first name, last name, and a title.
     """
-    type_string = "full_name"
     _default_pandas_dtype = str
 
 
@@ -370,13 +360,11 @@ class EmailAddress(Variable):
     """Represents an email box to which email message are sent.
     Consists of a local-part, an @ symbol, and a domain.
     """
-    type_string = "email_address"
     _default_pandas_dtype = str
 
 
 class URL(Variable):
     """Represents a valid web url (with or without http/www)"""
-    type_string = "url"
     _default_pandas_dtype = str
 
 
@@ -385,13 +373,11 @@ class PhoneNumber(Variable):
     Can be with/without parenthesis.
     Can be with/without area/country codes.
     """
-    type_string = "phone_number"
     _default_pandas_dtype = str
 
 
 class DateOfBirth(Datetime):
     """Represents a date of birth as a datetime"""
-    type_string = "date_of_birth"
     _default_pandas_dtype = np.datetime64
 
 
@@ -401,7 +387,6 @@ class CountryCode(Categorical):
     should be in the Alpha-2 format.
     e.g. United States of America = US
     """
-    type_string = "country_code"
     _default_pandas_dtype = str
 
 
@@ -411,19 +396,17 @@ class SubRegionCode(Categorical):
     should be in the Alpha-2 format.
     e.g. United States of America, Arizona = US-AZ
     """
-    type_string = "sub_region_code"
     _default_pandas_dtype = str
 
 
 class FilePath(Variable):
     """Represents a valid filepath, absolute or relative"""
-    type_string = "file_path"
     _default_pandas_dtype = str
 
 
 def find_variable_types():
     return {vtype.type_string: vtype for vtype in find_descendents(Variable)
-            if issubclass(vtype, Variable) and vtype.type_string}
+            if vtype != Variable}
 
 
 DEFAULT_DTYPE_VALUES = {

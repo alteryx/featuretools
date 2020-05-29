@@ -97,8 +97,8 @@ def test_calc_feature_matrix(es):
                                  instance_ids=range(17),
                                  cutoff_time=times)
 
-    cutoff_times_dup = pd.DataFrame({'time': [pd.datetime(2018, 3, 1),
-                                              pd.datetime(2018, 3, 1)],
+    cutoff_times_dup = pd.DataFrame({'time': [datetime(2018, 3, 1),
+                                              datetime(2018, 3, 1)],
                                      es['log'].index: [1, 1]})
 
     error_text = 'Duplicated rows in cutoff time dataframe.'
@@ -289,8 +289,8 @@ def test_cfm_no_cutoff_time_index(pd_es):
 def test_cfm_duplicated_index_in_cutoff_time(es):
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail('Dask result not ordered, missing duplicates')
-    times = [pd.datetime(2011, 4, 1), pd.datetime(2011, 5, 1),
-             pd.datetime(2011, 4, 1), pd.datetime(2011, 5, 1)]
+    times = [datetime(2011, 4, 1), datetime(2011, 5, 1),
+             datetime(2011, 4, 1), datetime(2011, 5, 1)]
 
     instances = [1, 1, 2, 2]
     property_feature = ft.Feature(es['log']['value']) > 10
