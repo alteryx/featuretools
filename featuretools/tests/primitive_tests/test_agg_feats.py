@@ -432,6 +432,7 @@ def test_agg_same_method_name(es):
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail("Cannot use primitives made with make_agg_primitives with Dask EntitySets")
     # test with normally defined functions
+
     def custom_primitive(x):
         return x.sum()
 

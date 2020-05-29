@@ -892,6 +892,7 @@ def test_stacks_multioutput_features(es):
     # TODO: Update to work with Dask supported primitive
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail("Dask EntitySets do not support the NumUnique and NMostCommon primitives")
+
     class TestTime(TransformPrimitive):
         name = "test_time"
         input_types = [Datetime]
