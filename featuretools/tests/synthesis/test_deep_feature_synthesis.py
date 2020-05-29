@@ -307,7 +307,6 @@ def test_only_makes_supplied_trans_feat(es):
 
 
 def test_makes_dfeatures_of_agg_primitives(es):
-    # TODO: Update to work with Dask supported primitive
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
                                    entityset=es,
                                    agg_primitives=['max'],

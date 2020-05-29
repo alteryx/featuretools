@@ -155,7 +155,7 @@ def test_cfm_compose(es):
 
     df = es['log'].df
     if isinstance(df, dd.DataFrame):
-        df = es['log'].df.compute()
+        df = df.compute()
     labels = lm.search(
         df,
         num_examples_per_instance=-1
