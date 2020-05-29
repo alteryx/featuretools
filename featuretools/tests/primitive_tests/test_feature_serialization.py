@@ -77,7 +77,7 @@ def test_pickle_features(es, tmpdir):
     pickle_features_test_helper(asizeof(es), features_original, str(tmpdir))
 
 
-def test_pickle_features_with_custom_primitive(es, tmpdir):
+def test_pickle_features_with_custom_primitive(pd_es, tmpdir):
     NewMax = make_agg_primitive(
         lambda x: max(x),
         name="NewMax",
@@ -85,11 +85,11 @@ def test_pickle_features_with_custom_primitive(es, tmpdir):
         return_type=Numeric,
         description="Calculate means ignoring nan values")
 
-    features_original = ft.dfs(target_entity='sessions', entityset=es,
+    features_original = ft.dfs(target_entity='sessions', entityset=pd_es,
                                agg_primitives=["Last", "Mean", NewMax], features_only=True)
 
     assert any([isinstance(feat.primitive, NewMax) for feat in features_original])
-    pickle_features_test_helper(asizeof(es), features_original, str(tmpdir))
+    pickle_features_test_helper(asizeof(pd_es), features_original, str(tmpdir))
 
 
 def test_serialized_renamed_features(es):
@@ -220,7 +220,7 @@ def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
 
 @pytest.mark.parametrize("url,profile_name", [(S3_URL, None), (S3_URL, False),
                                               (URL, None)])
-def test_deserialize_features_s3(es, url, profile_name):
+def test_deserialize_features_s3(pd_es, url, profile_name):
     agg_primitives = [Sum, Std, Max, Skew, Min, Mean, Count, PercentTrue,
                       NumUnique, Mode]
 
@@ -228,7 +228,7 @@ def test_deserialize_features_s3(es, url, profile_name):
                         NumCharacters]
 
     features_original = sorted(ft.dfs(target_entity='sessions',
-                                      entityset=es,
+                                      entityset=pd_es,
                                       features_only=True,
                                       agg_primitives=agg_primitives,
                                       trans_primitives=trans_primitives),

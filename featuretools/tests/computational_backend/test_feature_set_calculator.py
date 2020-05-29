@@ -3,10 +3,11 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pytest
+from dask import dataframe as dd
 from numpy.testing import assert_array_equal
 
 import featuretools as ft
-from featuretools import Timedelta
+from featuretools import Timedelta, variable_types
 from featuretools.computational_backends.feature_set import FeatureSet
 from featuretools.computational_backends.feature_set_calculator import (
     FeatureSetCalculator
@@ -25,6 +26,7 @@ from featuretools.primitives import (  # NMostCommon,
     Mean,
     Min,
     Mode,
+    Negate,
     NMostCommon,
     NotEqualScalar,
     NumTrue,
@@ -46,6 +48,9 @@ def test_make_identity(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
+
     v = df[f.get_name()][0]
     assert (v == datetime(2011, 4, 9, 10, 30, 0))
 
@@ -59,6 +64,9 @@ def test_make_dfeat(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
+
     v = df[f.get_name()][0]
     assert (v == 33)
 
@@ -71,17 +79,21 @@ def test_make_agg_feat_of_identity_variable(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
+
     v = df[agg_feat.get_name()][0]
     assert (v == 50)
 
 
-def test_full_entity_trans_of_agg(es):
-    agg_feat = ft.Feature(es['log']['value'], parent_entity=es['customers'],
+# full_entity not supported with Dask
+def test_full_entity_trans_of_agg(pd_es):
+    agg_feat = ft.Feature(pd_es['log']['value'], parent_entity=pd_es['customers'],
                           primitive=Sum)
     trans_feat = ft.Feature(agg_feat, primitive=CumSum)
 
     feature_set = FeatureSet([trans_feat])
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([1]))
@@ -113,6 +125,9 @@ def test_make_agg_feat_of_identity_index_variable(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
+
     v = df[agg_feat.get_name()][0]
     assert (v == 5)
 
@@ -128,6 +143,8 @@ def test_make_agg_feat_where_count(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
 
     v = df[agg_feat.get_name()][0]
     assert (v == 3)
@@ -144,6 +161,8 @@ def test_make_agg_feat_using_prev_time(es):
                                       time_last=datetime(2011, 4, 9, 10, 30, 10),
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
 
     v = df[agg_feat.get_name()][0]
     assert (v == 2)
@@ -152,12 +171,16 @@ def test_make_agg_feat_using_prev_time(es):
                                       time_last=datetime(2011, 4, 9, 10, 30, 30),
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
 
     v = df[agg_feat.get_name()][0]
     assert (v == 1)
 
 
 def test_make_agg_feat_using_prev_n_events(es):
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        pytest.xfail('Dask currently does not support use_previous')
     agg_feat_1 = ft.Feature(es['log']['value'],
                             parent_entity=es['sessions'],
                             use_previous=Timedelta(1, 'observations'),
@@ -195,6 +218,8 @@ def test_make_agg_feat_using_prev_n_events(es):
 
 
 def test_make_agg_feat_multiple_dtypes(es):
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        pytest.xfail('Currently no dask compatible agg prims that use multiple dtypes')
     compare_prod = IdentityFeature(es['log']['product_id']) == 'coke zero'
 
     agg_feat = ft.Feature(es['log']['id'],
@@ -212,6 +237,8 @@ def test_make_agg_feat_multiple_dtypes(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
 
     v = df[agg_feat.get_name()][0]
     v2 = df[agg_feat2.get_name()][0]
@@ -230,6 +257,8 @@ def test_make_agg_feat_where_different_identity_feat(es):
                                 primitive=Count))
 
     df = ft.calculate_feature_matrix(entityset=es, features=feats, instance_ids=[0, 1, 2, 3])
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
 
     for i, where_cmp in enumerate(where_cmps):
         name = feats[i].get_name()
@@ -275,6 +304,9 @@ def test_make_agg_feat_of_grandchild_entity(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute().set_index('id')
+        df.index = pd.Int64Index(df.index)
     v = df[agg_feat.get_name()][0]
     assert (v == 10)
 
@@ -297,6 +329,8 @@ def test_make_agg_feat_where_count_feat(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0, 1]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     name = feat.get_name()
     instances = df[name]
     v0, v1 = instances[0:2]
@@ -323,6 +357,8 @@ def test_make_compare_feat(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0, 1, 2]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     name = feat.get_name()
     instances = df[name]
     v0, v1, v2 = instances[0:3]
@@ -352,6 +388,9 @@ def test_make_agg_feat_where_count_and_device_type_feat(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute().set_index('id')
+        df.index = pd.Int64Index(df.index)
     name = feat.get_name()
     instances = df[name]
     assert (instances[0] == 1)
@@ -378,6 +417,9 @@ def test_make_agg_feat_where_count_or_device_type_feat(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute().set_index('id')
+        df.index = pd.Int64Index(df.index)
     name = feat.get_name()
     instances = df[name]
     assert (instances[0] == 3)
@@ -393,19 +435,16 @@ def test_make_agg_feat_of_agg_feat(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute().set_index('id')
+        df.index = pd.Int64Index(df.index)
     v = df[customer_sum_feat.get_name()][0]
     assert (v == 10)
 
 
-def test_make_3_stacked_agg_feats():
-    """
-    Tests stacking 3 agg features.
-
-    The test specifically uses non numeric indices to test how ancestor variables are handled
-    as dataframes are merged together
-
-    """
-    df = pd.DataFrame({
+@pytest.fixture
+def pd_df():
+    return pd.DataFrame({
         "id": ["a", "b", "c", "d", "e"],
         "e1": ["h", "h", "i", "i", "j"],
         "e2": ["x", "x", "y", "y", "x"],
@@ -413,10 +452,39 @@ def test_make_3_stacked_agg_feats():
         "val": [1, 1, 1, 1, 1]
     })
 
+
+@pytest.fixture
+def dd_df(pd_df):
+    return dd.from_pandas(pd_df, npartitions=2)
+
+
+@pytest.fixture(params=['pd_df', 'dd_df'])
+def df(request):
+    return request.getfixturevalue(request.param)
+
+
+def test_make_3_stacked_agg_feats(df):
+    """
+    Tests stacking 3 agg features.
+
+    The test specifically uses non numeric indices to test how ancestor variables are handled
+    as dataframes are merged together
+
+    """
+    if isinstance(df, dd.DataFrame):
+        pytest.xfail('normalize_entity fails with dask DataFrame')
     es = ft.EntitySet()
+    vtypes = {
+        'id': variable_types.Index,
+        'e1': variable_types.Categorical,
+        'e2': variable_types.Categorical,
+        'e3': variable_types.Categorical,
+        'val': variable_types.Numeric
+    }
     es.entity_from_dataframe(dataframe=df,
                              index="id",
-                             entity_id="e0")
+                             entity_id="e0",
+                             variable_types=vtypes)
 
     es.normalize_entity(base_entity_id="e0",
                         new_entity_id="e1",
@@ -466,6 +534,9 @@ def test_make_dfeat_of_agg_feat_on_self(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute().set_index('id')
+        df.index = pd.Int64Index(df.index)
     v = df[num_customers_feat.get_name()][0]
     assert (v == 3)
 
@@ -493,6 +564,9 @@ def test_make_dfeat_of_agg_feat_through_parent(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute().set_index('id')
+        df.index = pd.Int64Index(df.index)
     v = df[num_stores_feat.get_name()][0]
     assert (v == 3)
 
@@ -522,6 +596,9 @@ def test_make_deep_agg_feat_of_dfeat_of_agg_feat(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute().set_index('id')
+        df.index = pd.Int64Index(df.index)
     v = df[purchase_popularity.get_name()][0]
     assert (v == 38.0 / 10.0)
 
@@ -540,21 +617,23 @@ def test_deep_agg_feat_chain(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array(['United States']))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute().set_index('id')
     v = df[region_avg_feat.get_name()][0]
     assert (v == 17 / 3.)
 
 
-def test_topn(es):
-    topn = ft.Feature(es['log']['product_id'],
-                      parent_entity=es['customers'],
+# NMostCommon not supported with Dask
+def test_topn(pd_es):
+    topn = ft.Feature(pd_es['log']['product_id'],
+                      parent_entity=pd_es['customers'],
                       primitive=NMostCommon(n=2))
     feature_set = FeatureSet([topn])
 
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0, 1, 2]))
-
     true_results = pd.DataFrame([
         ['toothpaste', 'coke zero'],
         ['coke zero', 'Haribo sugar-free gummy bears'],
@@ -573,13 +652,14 @@ def test_topn(es):
                 assert (pd.isnull(i1) and pd.isnull(i2)) or (i1 == i2)
 
 
-def test_trend(es):
-    trend = ft.Feature([es['log']['value'], es['log']['datetime']],
-                       parent_entity=es['customers'],
+# Trend not supported with Dask
+def test_trend(pd_es):
+    trend = ft.Feature([pd_es['log']['value'], pd_es['log']['datetime']],
+                       parent_entity=pd_es['customers'],
                        primitive=Trend)
     feature_set = FeatureSet([trend])
 
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0, 1, 2]))
@@ -597,6 +677,8 @@ def test_direct_squared(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0, 1, 2]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     for i, row in df.iterrows():
         assert (row[0] * row[0]) == row[1]
 
@@ -610,6 +692,8 @@ def test_agg_empty_child(es):
                                       time_last=datetime(2011, 4, 8),
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
 
     assert df["COUNT(log)"].iloc[0] == 0
 
@@ -632,6 +716,8 @@ def test_diamond_entityset(diamond_es):
                                       time_last=datetime(2011, 4, 8),
                                       feature_set=feature_set)
     df = calculator.run(np.array([0, 1, 2]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     assert (df['SUM(stores.transactions.amount)'] == [94, 261, 128]).all()
     assert (df['SUM(customers.transactions.amount)'] == [72, 411, 0]).all()
 
@@ -659,21 +745,62 @@ def test_two_relationships_to_single_entity(games_es):
                                       time_last=datetime(2011, 8, 28),
                                       feature_set=feature_set)
     df = calculator.run(np.array(range(3)))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     assert (df[home_team_mean.get_name()] == [1.5, 1.5, 2.5]).all()
     assert (df[away_team_mean.get_name()] == [1, 0.5, 2]).all()
 
 
-def test_empty_child_dataframe():
+@pytest.fixture
+def pd_parent_child():
     parent_df = pd.DataFrame({"id": [1]})
     child_df = pd.DataFrame({"id": [1, 2, 3],
                              "parent_id": [1, 1, 1],
                              "time_index": pd.date_range(start='1/1/2018', periods=3),
                              "value": [10, 5, 2],
                              "cat": ['a', 'a', 'b']})
+    return (parent_df, child_df)
 
+
+@pytest.fixture
+def dd_parent_child(pd_parent_child):
+    parent_df, child_df = pd_parent_child
+    parent_df = dd.from_pandas(parent_df, npartitions=2)
+    child_df = dd.from_pandas(child_df, npartitions=2)
+    return (parent_df, child_df)
+
+
+@pytest.fixture(params=['pd_parent_child', 'dd_parent_child'])
+def parent_child(request):
+    return request.getfixturevalue(request.param)
+
+
+def test_empty_child_dataframe(parent_child):
+    parent_df, child_df = parent_child
+    if isinstance(parent_df, dd.DataFrame):
+        parent_vtypes = {
+            'id': variable_types.Index
+        }
+        child_vtypes = {
+            'id': variable_types.Index,
+            'parent_id': variable_types.Numeric,
+            'time_index': variable_types.Datetime,
+            'value': variable_types.Numeric,
+            'cat': variable_types.Categorical
+        }
+    else:
+        parent_vtypes = None
+        child_vtypes = None
     es = ft.EntitySet(id="blah")
-    es.entity_from_dataframe(entity_id="parent", dataframe=parent_df, index="id")
-    es.entity_from_dataframe(entity_id="child", dataframe=child_df, index="id", time_index="time_index")
+    es.entity_from_dataframe(entity_id="parent",
+                             dataframe=parent_df,
+                             index="id",
+                             variable_types=parent_vtypes)
+    es.entity_from_dataframe(entity_id="child",
+                             dataframe=child_df,
+                             index="id",
+                             time_index="time_index",
+                             variable_types=child_vtypes)
     es.add_relationship(ft.Relationship(es["parent"]["id"], es["child"]["parent_id"]))
 
     # create regular agg
@@ -691,24 +818,43 @@ def test_empty_child_dataframe():
     trend_where = ft.Feature([es["child"]['value'], es["child"]['time_index']], parent_entity=es["parent"], where=where, primitive=Trend)
     n_most_common_where = ft.Feature(es["child"]['cat'], parent_entity=es["parent"], where=where, primitive=NMostCommon)
 
+    if isinstance(parent_df, dd.DataFrame):
+        features = [count, count_where]
+        names = [count.get_name(), count_where.get_name()]
+        values = [0, 0]
+    else:
+        features = [count, count_where, trend, trend_where, n_most_common, n_most_common_where]
+        names = [count.get_name(), count_where.get_name(),
+                 trend.get_name(), trend_where.get_name(),
+                 *n_most_common.get_names(), *n_most_common_where.get_names()]
+        values = [0, 0,
+                  np.nan, np.nan,
+                  *np.full(n_most_common.number_output_features, np.nan), *np.full(n_most_common_where.number_output_features, np.nan)]
+
     # cutoff time before all rows
     fm = ft.calculate_feature_matrix(entityset=es,
-                                     features=[count, count_where, trend, trend_where, n_most_common, n_most_common_where],
+                                     features=features,
                                      cutoff_time=pd.Timestamp("12/31/2017"))
-    names = [count.get_name(), count_where.get_name(),
-             trend.get_name(), trend_where.get_name(),
-             *n_most_common.get_names(), *n_most_common_where.get_names()]
-    values = [0, 0,
-              np.nan, np.nan,
-              *np.full(n_most_common.number_output_features, np.nan), *np.full(n_most_common_where.number_output_features, np.nan)]
+    if isinstance(fm, dd.DataFrame):
+        fm = fm.compute()
     assert_array_equal(fm[names], [values])
 
     # cutoff time after all rows, but where clause filters all rows
+    if isinstance(parent_df, dd.DataFrame):
+        features = [count_where]
+        names = [count_where.get_name()]
+        values = [0]
+    else:
+        features = [count_where, trend_where, n_most_common_where]
+        names = [count_where.get_name(), trend_where.get_name(), *n_most_common_where.get_names()]
+        values = [0, np.nan, *np.full(n_most_common_where.number_output_features, np.nan)]
+
     fm2 = ft.calculate_feature_matrix(entityset=es,
-                                      features=[count_where, trend_where, n_most_common_where],
+                                      features=features,
                                       cutoff_time=pd.Timestamp("1/4/2018"))
-    names = [count_where.get_name(), trend_where.get_name(), *n_most_common_where.get_names()]
-    assert_array_equal(fm2[names], [[0, np.nan, *np.full(n_most_common_where.number_output_features, np.nan)]])
+    if isinstance(fm2, dd.DataFrame):
+        fm2 = fm2.compute()
+    assert_array_equal(fm2[names], [values])
 
 
 def test_with_features_built_from_es_metadata(es):
@@ -720,11 +866,18 @@ def test_with_features_built_from_es_metadata(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute().set_index('id')
+        df.index = pd.Int64Index(df.index)
     v = df[agg_feat.get_name()][0]
     assert (v == 10)
 
 
+# TODO: Fails with Dask (conflicting aggregation primitives)
 def test_handles_primitive_function_name_uniqueness(es):
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        pytest.xfail("Fails with Dask due conflicting aggregation primitive names")
+
     class SumTimesN(AggregationPrimitive):
         name = "sum_times_n"
         input_types = [Numeric]
@@ -739,11 +892,25 @@ def test_handles_primitive_function_name_uniqueness(es):
 
             return my_function
 
+        def get_dask_aggregation(self):
+            def chunk(s):
+                return s.sum()
+
+            def agg(s):
+                return s.sum()
+
+            def finalize(s):
+                return s * self.n
+
+            return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
+
     # works as expected
     f1 = ft.Feature(es["log"]["value"],
                     parent_entity=es["customers"],
                     primitive=SumTimesN(n=1))
     fm = ft.calculate_feature_matrix(features=[f1], entityset=es)
+    if isinstance(fm, dd.DataFrame):
+        fm = fm.compute().set_index('id')
     value_sum = pd.Series([56, 26, 0])
     assert all(fm[f1.get_name()].sort_index() == value_sum)
 
@@ -752,11 +919,15 @@ def test_handles_primitive_function_name_uniqueness(es):
                     parent_entity=es["customers"],
                     primitive=SumTimesN(n=2))
     fm = ft.calculate_feature_matrix(features=[f2], entityset=es)
+    if isinstance(fm, dd.DataFrame):
+        fm = fm.compute().set_index('id')
     double_value_sum = pd.Series([112, 52, 0])
     assert all(fm[f2.get_name()].sort_index() == double_value_sum)
 
     # same primitive, same variable, different args
     fm = ft.calculate_feature_matrix(features=[f1, f2], entityset=es)
+    if isinstance(fm, dd.DataFrame):
+        fm = fm.compute().set_index('id')
     assert all(fm[f1.get_name()].sort_index() == value_sum)
     assert all(fm[f2.get_name()].sort_index() == double_value_sum)
 
@@ -769,6 +940,8 @@ def test_handles_primitive_function_name_uniqueness(es):
                     parent_entity=es["customers"],
                     primitive=NumTrue)
     fm = ft.calculate_feature_matrix(features=[f3, f4], entityset=es)
+    if isinstance(fm, dd.DataFrame):
+        fm = fm.compute().set_index('id')
     purchased_sum = pd.Series([10, 1, 1])
     assert all(fm[f3.get_name()].sort_index() == value_sum)
     assert all(fm[f4.get_name()].sort_index() == purchased_sum)\
@@ -827,14 +1000,15 @@ def test_handles_primitive_function_name_uniqueness(es):
     assert all(fm[f7.get_name()].sort_index() == value_sum)
 
 
-def test_returns_order_of_instance_ids(es):
-    feature_set = FeatureSet([ft.Feature(es['customers']['age'])])
-    calculator = FeatureSetCalculator(es,
+# No order guarantees w/ Dask
+def test_returns_order_of_instance_ids(pd_es):
+    feature_set = FeatureSet([ft.Feature(pd_es['customers']['age'])])
+    calculator = FeatureSetCalculator(pd_es,
                                       time_last=None,
                                       feature_set=feature_set)
 
     instance_ids = [0, 1, 2]
-    assert list(es['customers'].df['id']) != instance_ids
+    assert list(pd_es['customers'].df['id']) != instance_ids
 
     df = calculator.run(np.array(instance_ids))
 
@@ -847,9 +1021,14 @@ def test_calls_progress_callback(es):
     direct = ft.Feature(es['cohorts']['cohort_name'], es['customers'])
     agg = ft.Feature(es["sessions"]["id"], parent_entity=es['customers'], primitive=Count)
     agg_apply = ft.Feature(es["log"]["datetime"], parent_entity=es['customers'], primitive=TimeSinceLast)  # this feature is handle differently than simple features
-    trans = ft.Feature(agg, primitive=CumSum)
+    trans = ft.Feature(agg, primitive=Negate)
+    trans_full = ft.Feature(agg, primitive=CumSum)
     groupby_trans = ft.Feature(agg, primitive=CumSum, groupby=es["customers"]["cohort"])
-    all_features = [identity, direct, agg, agg_apply, trans, groupby_trans]
+
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        all_features = [identity, direct, agg, trans]
+    else:
+        all_features = [identity, direct, agg, agg_apply, trans, trans_full, groupby_trans]
 
     feature_set = FeatureSet(all_features)
     calculator = FeatureSetCalculator(es,
@@ -882,7 +1061,8 @@ def test_calls_progress_callback(es):
     assert np.isclose(mock_progress_callback.total, 1)
 
 
-def test_precalculated_features(es):
+# precalcualted_features is only used with approximate
+def test_precalculated_features(pd_es):
     error_msg = 'This primitive should never be used because the features are precalculated'
 
     class ErrorPrim(AggregationPrimitive):
@@ -896,14 +1076,14 @@ def test_precalculated_features(es):
                 raise RuntimeError(error_msg)
             return error
 
-    value = ft.Feature(es['log']['value'])
+    value = ft.Feature(pd_es['log']['value'])
     agg = ft.Feature(value,
-                     parent_entity=es['sessions'],
+                     parent_entity=pd_es['sessions'],
                      primitive=ErrorPrim)
     agg2 = ft.Feature(agg,
-                      parent_entity=es['customers'],
+                      parent_entity=pd_es['customers'],
                       primitive=ErrorPrim)
-    direct = ft.Feature(agg2, entity=es['sessions'])
+    direct = ft.Feature(agg2, entity=pd_es['sessions'])
 
     # Set up a FeatureSet which knows which features are precalculated.
     precalculated_feature_trie = Trie(default=set, path_constructor=RelationshipPath)
@@ -916,7 +1096,7 @@ def test_precalculated_features(es):
     precalculated_fm_trie = Trie(path_constructor=RelationshipPath)
     precalculated_fm_trie.get_node(direct.relationship_path).value = parent_fm
 
-    calculator = FeatureSetCalculator(es,
+    calculator = FeatureSetCalculator(pd_es,
                                       feature_set=feature_set,
                                       precalculated_features=precalculated_fm_trie)
 
@@ -927,4 +1107,4 @@ def test_precalculated_features(es):
 
     # Calculating without precalculated features should error.
     with pytest.raises(RuntimeError, match=error_msg):
-        FeatureSetCalculator(es, feature_set=FeatureSet([direct])).run(instance_ids)
+        FeatureSetCalculator(pd_es, feature_set=FeatureSet([direct])).run(instance_ids)

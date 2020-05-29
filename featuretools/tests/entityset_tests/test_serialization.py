@@ -4,6 +4,7 @@ import os
 import boto3
 import pandas as pd
 import pytest
+from dask import dataframe as dd
 
 from featuretools.demo import load_mock_customer
 from featuretools.entityset import EntitySet, deserialize, serialize
@@ -127,23 +128,22 @@ def test_to_csv(es, tmpdir):
     es.to_csv(str(tmpdir), encoding='utf-8', engine='python')
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
-    assert type(es['log'].df['latlong'][0]) == tuple
-    assert type(new_es['log'].df['latlong'][0]) == tuple
+    df = es['log'].df
+    if isinstance(df, dd.DataFrame):
+        df = df.compute().set_index('id')
+    new_df = new_es['log'].df
+    if isinstance(new_df, dd.DataFrame):
+        new_df = new_df.compute().set_index('id')
+    assert type(df['latlong'][0]) == tuple
+    assert type(new_df['latlong'][0]) == tuple
 
 
-def test_dask_to_csv(dask_es, tmpdir):
-    dask_es.to_csv(str(tmpdir), encoding='utf-8', engine='python')
+# Dask does not support to_pickle
+def test_to_pickle(pd_es, tmpdir):
+    pd_es.to_pickle(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
-    assert dask_es.__eq__(new_es, deep=True)
-    assert type(dask_es['log'].df.set_index('id')['latlong'].compute()[0]) == tuple
-    assert type(new_es['log'].df.set_index('id')['latlong'].compute()[0]) == tuple
-
-
-def test_to_pickle(es, tmpdir):
-    es.to_pickle(str(tmpdir))
-    new_es = deserialize.read_entityset(str(tmpdir))
-    assert es.__eq__(new_es, deep=True)
-    assert type(es['log'].df['latlong'][0]) == tuple
+    assert pd_es.__eq__(new_es, deep=True)
+    assert type(pd_es['log'].df['latlong'][0]) == tuple
     assert type(new_es['log'].df['latlong'][0]) == tuple
 
 
@@ -153,26 +153,34 @@ def test_to_pickle_errors_dask(dask_es, tmpdir):
         dask_es.to_pickle(str(tmpdir))
 
 
-def test_to_pickle_interesting_values(es, tmpdir):
-    es.add_interesting_values()
-    es.to_pickle(str(tmpdir))
+# Dask does not support to_pickle
+def test_to_pickle_interesting_values(pd_es, tmpdir):
+    pd_es.add_interesting_values()
+    pd_es.to_pickle(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 
-def test_to_pickle_manual_interesting_values(es, tmpdir):
-    es['log']['product_id'].interesting_values = ["coke_zero"]
-    es.to_pickle(str(tmpdir))
+# Dask does not support to_pickle
+def test_to_pickle_manual_interesting_values(pd_es, tmpdir):
+    pd_es['log']['product_id'].interesting_values = ["coke_zero"]
+    pd_es.to_pickle(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 
 def test_to_parquet(es, tmpdir):
     es.to_parquet(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
-    assert type(es['log'].df['latlong'][0]) == tuple
-    assert type(new_es['log'].df['latlong'][0]) == tuple
+    df = es['log'].df
+    new_df = new_es['log'].df
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
+    if isinstance(new_df, dd.DataFrame):
+        new_df = new_df.compute()
+    assert type(df['latlong'][0]) == tuple
+    assert type(df['latlong'][0]) == tuple
 
 
 def test_dask_to_parquet(dask_es, tmpdir):
@@ -190,6 +198,7 @@ def test_to_parquet_manual_interesting_values(es, tmpdir):
     assert es.__eq__(new_es, deep=True)
 
 
+# Dask does not support es.add_interesting_values
 def test_dask_to_parquet_manual_interesting_values(dask_es, tmpdir):
     dask_es['log']['product_id'].interesting_values = ["coke_zero"]
     dask_es.to_parquet(str(tmpdir))
@@ -197,11 +206,12 @@ def test_dask_to_parquet_manual_interesting_values(dask_es, tmpdir):
     assert dask_es.__eq__(new_es, deep=True)
 
 
-def test_to_parquet_interesting_values(es, tmpdir):
-    es.add_interesting_values()
-    es.to_parquet(str(tmpdir))
+# Dask doesn't support es.add_interesting_values
+def test_to_parquet_interesting_values(pd_es, tmpdir):
+    pd_es.add_interesting_values()
+    pd_es.to_parquet(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 
 def test_to_parquet_with_lti(tmpdir):
@@ -241,42 +251,56 @@ def make_public(s3_client, s3_bucket):
     s3_client.ObjectAcl(BUCKET_NAME, obj).put(ACL='public-read-write')
 
 
+# TODO: tmp file disappears after deserialize step, cannot check equality with Dask
 def test_serialize_s3_csv(es, s3_client, s3_bucket):
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
     es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python')
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL)
     assert es.__eq__(new_es, deep=True)
 
 
-def test_serialize_s3_pickle(es, s3_client, s3_bucket):
-    es.to_pickle(TEST_S3_URL)
+# Dask does not support to_pickle
+def test_serialize_s3_pickle(pd_es, s3_client, s3_bucket):
+    pd_es.to_pickle(TEST_S3_URL)
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL)
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 
+# TODO: tmp file disappears after deserialize step, cannot check equality with Dask
 def test_serialize_s3_parquet(es, s3_client, s3_bucket):
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
     es.to_parquet(TEST_S3_URL)
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL)
     assert es.__eq__(new_es, deep=True)
 
 
+# TODO: tmp file disappears after deserialize step, cannot check equality with Dask
 def test_serialize_s3_anon_csv(es, s3_client, s3_bucket):
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
     es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=False)
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=False)
     assert es.__eq__(new_es, deep=True)
 
 
-def test_serialize_s3_anon_pickle(es, s3_client, s3_bucket):
-    es.to_pickle(TEST_S3_URL, profile_name=False)
+# Dask does not support to_pickle
+def test_serialize_s3_anon_pickle(pd_es, s3_client, s3_bucket):
+    pd_es.to_pickle(TEST_S3_URL, profile_name=False)
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=False)
-    assert es.__eq__(new_es, deep=True)
+    assert pd_es.__eq__(new_es, deep=True)
 
 
+# TODO: tmp file disappears after deserialize step, cannot check equality with Dask
 def test_serialize_s3_anon_parquet(es, s3_client, s3_bucket):
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
     es.to_parquet(TEST_S3_URL, profile_name=False)
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=False)
@@ -322,6 +346,8 @@ def setup_test_profile(monkeypatch, tmpdir):
 
 
 def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
     es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name='test')
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL, profile_name='test')

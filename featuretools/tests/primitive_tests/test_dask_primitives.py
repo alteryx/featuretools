@@ -10,16 +10,16 @@ UNSUPPORTED = [p.name for p in get_transform_primitives().values() if not p.dask
 UNSUPPORTED += [p.name for p in get_aggregation_primitives().values() if not p.dask_compatible]
 
 
-def test_transform(es, dask_es):
+def test_transform(pd_es, dask_es):
     primitives = ft.list_primitives()
     trans_list = primitives[primitives['type'] == 'transform']['name'].tolist()
     trans_primitives = [prim for prim in trans_list if prim not in UNSUPPORTED]
     agg_primitives = []
 
-    assert es == dask_es
+    assert pd_es == dask_es
     # Run DFS using each entity as a target and confirm results match
-    for entity in es.entities:
-        fm, _ = ft.dfs(entityset=es,
+    for entity in pd_es.entities:
+        fm, _ = ft.dfs(entityset=pd_es,
                        target_entity=entity.id,
                        trans_primitives=trans_primitives,
                        agg_primitives=agg_primitives,
@@ -39,17 +39,17 @@ def test_transform(es, dask_es):
         pd.testing.assert_frame_equal(fm, dask_computed_fm)
 
 
-def test_aggregation(es, dask_es):
+def test_aggregation(pd_es, dask_es):
     primitives = ft.list_primitives()
     trans_primitives = []
     agg_list = primitives[primitives['type'] == 'aggregation']['name'].tolist()
     agg_primitives = [prim for prim in agg_list if prim not in UNSUPPORTED]
 
-    assert es == dask_es
+    assert pd_es == dask_es
 
     # Run DFS using each entity as a target and confirm results match
-    for entity in es.entities:
-        fm, _ = ft.dfs(entityset=es,
+    for entity in pd_es.entities:
+        fm, _ = ft.dfs(entityset=pd_es,
                        target_entity=entity.id,
                        trans_primitives=trans_primitives,
                        agg_primitives=agg_primitives,

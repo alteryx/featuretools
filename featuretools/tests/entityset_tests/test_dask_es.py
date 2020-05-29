@@ -6,25 +6,25 @@ import featuretools as ft
 from featuretools.entityset import EntitySet, Relationship
 
 
-def test_create_entity_from_dask_df(es):
+def test_create_entity_from_dask_df(pd_es):
     dask_es = EntitySet(id="dask_es")
-    log_dask = dd.from_pandas(es["log"].df, npartitions=2)
+    log_dask = dd.from_pandas(pd_es["log"].df, npartitions=2)
     dask_es = dask_es.entity_from_dataframe(
         entity_id="log_dask",
         dataframe=log_dask,
         index="id",
         time_index="datetime",
-        variable_types=es["log"].variable_types
+        variable_types=pd_es["log"].variable_types
     )
-    pd.testing.assert_frame_equal(es["log"].df, dask_es["log_dask"].df.compute(), check_like=True)
+    pd.testing.assert_frame_equal(pd_es["log"].df, dask_es["log_dask"].df.compute(), check_like=True)
 
 
-def test_create_entity_with_non_numeric_index(es, dask_es):
+def test_create_entity_with_non_numeric_index(pd_es, dask_es):
     df = pd.DataFrame({"id": ["A_1", "A_2", "C", "D"],
                        "values": [1, 12, -34, 27]})
     dask_df = dd.from_pandas(df, npartitions=2)
 
-    es.entity_from_dataframe(
+    pd_es.entity_from_dataframe(
         entity_id="new_entity",
         dataframe=df,
         index="id")
@@ -35,10 +35,10 @@ def test_create_entity_with_non_numeric_index(es, dask_es):
         index="id",
         variable_types={"id": ft.variable_types.Id, "values": ft.variable_types.Numeric})
 
-    pd.testing.assert_frame_equal(es['new_entity'].df.reset_index(drop=True), dask_es['new_entity'].df.compute())
+    pd.testing.assert_frame_equal(pd_es['new_entity'].df.reset_index(drop=True), dask_es['new_entity'].df.compute())
 
 
-def test_create_entityset_with_mixed_dataframe_types(es, dask_es):
+def test_create_entityset_with_mixed_dataframe_types(pd_es, dask_es):
     df = pd.DataFrame({"id": [0, 1, 2, 3],
                        "values": [1, 12, -34, 27]})
     dask_df = dd.from_pandas(df, npartitions=2)
@@ -46,10 +46,10 @@ def test_create_entityset_with_mixed_dataframe_types(es, dask_es):
     # Test error is raised when trying to add Dask entity to entitset with existing pandas entities
     err_msg = "All entity dataframes must be of the same type. " \
               "Cannot add entity of type {} to an entityset with existing entities " \
-              "of type {}".format(type(dask_df), type(es.entities[0].df))
+              "of type {}".format(type(dask_df), type(pd_es.entities[0].df))
 
     with pytest.raises(ValueError, match=err_msg):
-        es.entity_from_dataframe(
+        pd_es.entity_from_dataframe(
             entity_id="new_entity",
             dataframe=dask_df,
             index="id")
@@ -67,7 +67,7 @@ def test_create_entityset_with_mixed_dataframe_types(es, dask_es):
 
 
 def test_add_last_time_indexes():
-    es = EntitySet(id="es")
+    pd_es = EntitySet(id="pd_es")
     dask_es = EntitySet(id="dask_es")
 
     sessions = pd.DataFrame({"id": [0, 1, 2, 3],
@@ -105,27 +105,27 @@ def test_add_last_time_indexes():
         "time": ft.variable_types.DatetimeTimeIndex,
     }
 
-    es.entity_from_dataframe(entity_id="sessions", dataframe=sessions, index="id", time_index="time")
+    pd_es.entity_from_dataframe(entity_id="sessions", dataframe=sessions, index="id", time_index="time")
     dask_es.entity_from_dataframe(entity_id="sessions", dataframe=sessions_dask, index="id", time_index="time", variable_types=sessions_vtypes)
 
-    es.entity_from_dataframe(entity_id="transactions", dataframe=transactions, index="id", time_index="time")
+    pd_es.entity_from_dataframe(entity_id="transactions", dataframe=transactions, index="id", time_index="time")
     dask_es.entity_from_dataframe(entity_id="transactions", dataframe=transactions_dask, index="id", time_index="time", variable_types=transactions_vtypes)
 
-    new_rel = Relationship(es["sessions"]["id"],
-                           es["transactions"]["session_id"])
+    new_rel = Relationship(pd_es["sessions"]["id"],
+                           pd_es["transactions"]["session_id"])
     dask_rel = Relationship(dask_es["sessions"]["id"],
                             dask_es["transactions"]["session_id"])
 
-    es = es.add_relationship(new_rel)
+    pd_es = pd_es.add_relationship(new_rel)
     dask_es = dask_es.add_relationship(dask_rel)
 
-    assert es['sessions'].last_time_index is None
+    assert pd_es['sessions'].last_time_index is None
     assert dask_es['sessions'].last_time_index is None
 
-    es.add_last_time_indexes()
+    pd_es.add_last_time_indexes()
     dask_es.add_last_time_indexes()
 
-    pd.testing.assert_series_equal(es['sessions'].last_time_index.sort_index(), dask_es['sessions'].last_time_index.compute(), check_names=False)
+    pd.testing.assert_series_equal(pd_es['sessions'].last_time_index.sort_index(), dask_es['sessions'].last_time_index.compute(), check_names=False)
 
 
 def test_create_entity_with_make_index():
@@ -170,13 +170,13 @@ def test_single_table_dask_entityset():
                         target_entity="data",
                         trans_primitives=primitives_list)
 
-    es = ft.EntitySet(id="es")
-    es.entity_from_dataframe(entity_id="data",
-                             dataframe=df,
-                             index="id",
-                             variable_types={"strings": ft.variable_types.Text})
+    pd_es = ft.EntitySet(id="pd_es")
+    pd_es.entity_from_dataframe(entity_id="data",
+                                dataframe=df,
+                                index="id",
+                                variable_types={"strings": ft.variable_types.Text})
 
-    fm, _ = ft.dfs(entityset=es,
+    fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
                    trans_primitives=primitives_list)
 
@@ -215,13 +215,13 @@ def test_single_table_dask_entityset_ids_not_sorted():
                         target_entity="data",
                         trans_primitives=primitives_list)
 
-    es = ft.EntitySet(id="es")
-    es.entity_from_dataframe(entity_id="data",
-                             dataframe=df,
-                             index="id",
-                             variable_types={"strings": ft.variable_types.Text})
+    pd_es = ft.EntitySet(id="pd_es")
+    pd_es.entity_from_dataframe(entity_id="data",
+                                dataframe=df,
+                                index="id",
+                                variable_types={"strings": ft.variable_types.Text})
 
-    fm, _ = ft.dfs(entityset=es,
+    fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
                    trans_primitives=primitives_list)
 
@@ -262,13 +262,13 @@ def test_single_table_dask_entityset_with_instance_ids():
                         trans_primitives=primitives_list,
                         instance_ids=instance_ids)
 
-    es = ft.EntitySet(id="es")
-    es.entity_from_dataframe(entity_id="data",
-                             dataframe=df,
-                             index="id",
-                             variable_types={"strings": ft.variable_types.Text})
+    pd_es = ft.EntitySet(id="pd_es")
+    pd_es.entity_from_dataframe(entity_id="data",
+                                dataframe=df,
+                                index="id",
+                                variable_types={"strings": ft.variable_types.Text})
 
-    fm, _ = ft.dfs(entityset=es,
+    fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
                    trans_primitives=primitives_list,
                    instance_ids=instance_ids)
@@ -308,13 +308,13 @@ def test_single_table_dask_entityset_single_cutoff_time():
                         trans_primitives=primitives_list,
                         cutoff_time=pd.Timestamp("2019-01-05 04:00"))
 
-    es = ft.EntitySet(id="es")
-    es.entity_from_dataframe(entity_id="data",
-                             dataframe=df,
-                             index="id",
-                             variable_types={"strings": ft.variable_types.Text})
+    pd_es = ft.EntitySet(id="pd_es")
+    pd_es.entity_from_dataframe(entity_id="data",
+                                dataframe=df,
+                                index="id",
+                                variable_types={"strings": ft.variable_types.Text})
 
-    fm, _ = ft.dfs(entityset=es,
+    fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
                    trans_primitives=primitives_list,
                    cutoff_time=pd.Timestamp("2019-01-05 04:00"))
@@ -360,14 +360,14 @@ def test_single_table_dask_entityset_cutoff_time_df():
                         trans_primitives=primitives_list,
                         cutoff_time=cutoff_times)
 
-    es = ft.EntitySet(id="es")
-    es.entity_from_dataframe(entity_id="data",
-                             dataframe=df,
-                             index="id",
-                             time_index="dates",
-                             variable_types={"strings": ft.variable_types.Text})
+    pd_es = ft.EntitySet(id="pd_es")
+    pd_es.entity_from_dataframe(entity_id="data",
+                                dataframe=df,
+                                index="id",
+                                time_index="dates",
+                                variable_types={"strings": ft.variable_types.Text})
 
-    fm, _ = ft.dfs(entityset=es,
+    fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
                    trans_primitives=primitives_list,
                    cutoff_time=cutoff_times)
@@ -406,13 +406,13 @@ def test_single_table_dask_entityset_dates_not_sorted():
                         trans_primitives=primitives_list,
                         max_depth=1)
 
-    es = ft.EntitySet(id="es")
-    es.entity_from_dataframe(entity_id="data",
-                             dataframe=df,
-                             index="id",
-                             time_index="dates")
+    pd_es = ft.EntitySet(id="pd_es")
+    pd_es.entity_from_dataframe(entity_id="data",
+                                dataframe=df,
+                                index="id",
+                                time_index="dates")
 
-    fm, _ = ft.dfs(entityset=es,
+    fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
                    trans_primitives=primitives_list,
                    max_depth=1)
@@ -449,15 +449,15 @@ def test_secondary_time_index():
     flights_df['origin'] = ["BOS", "LAX", "BOS", "LAX"]
     flights_dask = dd.from_pandas(flights_df, npartitions=2)
 
-    es = ft.EntitySet("flights")
+    pd_es = ft.EntitySet("flights")
     dask_es = ft.EntitySet("flights_dask")
 
-    es.entity_from_dataframe(entity_id='logs',
-                             dataframe=log_df,
-                             index="id",
-                             time_index="scheduled_time",
-                             secondary_time_index={
-                                 'arrival_time': ['departure_time', 'delay']})
+    pd_es.entity_from_dataframe(entity_id='logs',
+                                dataframe=log_df,
+                                index="id",
+                                time_index="scheduled_time",
+                                secondary_time_index={
+                                    'arrival_time': ['departure_time', 'delay']})
 
     log_vtypes = {
         "id": ft.variable_types.Id,
@@ -475,20 +475,20 @@ def test_secondary_time_index():
                                   secondary_time_index={
                                       'arrival_time': ['departure_time', 'delay']})
 
-    es.entity_from_dataframe('flights', flights_df, index="id")
-    flights_vtypes = es['flights'].variable_types
+    pd_es.entity_from_dataframe('flights', flights_df, index="id")
+    flights_vtypes = pd_es['flights'].variable_types
     dask_es.entity_from_dataframe('flights', flights_dask, index="id", variable_types=flights_vtypes)
 
-    new_rel = ft.Relationship(es['flights']['id'], es['logs']['flight_id'])
+    new_rel = ft.Relationship(pd_es['flights']['id'], pd_es['logs']['flight_id'])
     dask_rel = ft.Relationship(dask_es['flights']['id'], dask_es['logs']['flight_id'])
-    es.add_relationship(new_rel)
+    pd_es.add_relationship(new_rel)
     dask_es.add_relationship(dask_rel)
 
     cutoff_df = pd.DataFrame()
     cutoff_df['id'] = [0, 1, 1]
     cutoff_df['time'] = pd.to_datetime(['2019-02-02', '2019-02-02', '2019-02-20'])
 
-    fm, _ = ft.dfs(entityset=es,
+    fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="logs",
                    cutoff_time=cutoff_df,
                    agg_primitives=["max"],

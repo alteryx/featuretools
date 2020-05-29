@@ -1,7 +1,32 @@
+import dask.dataframe as dd
 import pandas as pd
 import pytest
 
 from featuretools import dfs
+
+
+@pytest.fixture
+def pd_entry_point_dfs():
+    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
+    transactions_df = pd.DataFrame({
+        "id": [1, 2, 3, 4, 5, 6],
+        "card_id": [1, 2, 1, 3, 4, 5],
+        "transaction_time": [10, 12, 13, 20, 21, 20],
+        "fraud": [True, False, True, False, True, True]
+    })
+    return cards_df, transactions_df
+
+
+@pytest.fixture
+def dask_entry_point_dfs(pd_entry_point_dfs):
+    cards_df = dd.from_pandas(pd_entry_point_dfs[0], npartitions=2)
+    transactions_df = dd.from_pandas(pd_entry_point_dfs[1], npartitions=2)
+    return cards_df, transactions_df
+
+
+@pytest.fixture(params=['pd_entry_point_dfs', 'dask_entry_point_dfs'])
+def entry_points_dfs(request):
+    return request.getfixturevalue(request.param)
 
 
 class MockEntryPoint(object):
@@ -53,7 +78,9 @@ def test_entry_point_error(es, monkeypatch):
     assert isinstance(entry_point.error, KeyError)
 
 
-def test_entry_point_detect_arg(monkeypatch):
+def test_entry_point_detect_arg(monkeypatch, entry_points_dfs):
+    cards_df = entry_points_dfs[0]
+    transactions_df = entry_points_dfs[1]
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = pd.DataFrame({
         "id": [1, 2, 3, 4, 5, 6],

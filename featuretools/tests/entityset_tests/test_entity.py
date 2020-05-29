@@ -3,6 +3,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pytest
+from dask import dataframe as dd
 
 import featuretools as ft
 from featuretools import variable_types
@@ -57,7 +58,7 @@ def test_eq(es):
 
     assert es['log'].__eq__(es['log'], deep=True)
     assert es['log'].__eq__(other_es['log'], deep=True)
-    assert (es['log'].df['latlong'] == latlong).all()
+    assert all(es['log'].df['latlong'].eq(latlong))
 
     other_es['log'].add_interesting_values()
     assert not es['log'].__eq__(other_es['log'], deep=True)
@@ -79,7 +80,7 @@ def test_eq(es):
 
 def test_update_data(es):
     df = es['customers'].df.copy()
-    df['new'] = [1, 2, 3]
+    df['new'] = pd.Series([1, 2, 3])
 
     error_text = 'Updated dataframe is missing new cohort column'
     with pytest.raises(ValueError, match=error_text):
@@ -90,20 +91,42 @@ def test_update_data(es):
         es['customers'].update_data(df)
 
     # test already_sorted on entity without time index
-    df = es["sessions"].df.copy(deep=True)
-    df["id"].iloc[1:3] = [2, 1]
-    es["sessions"].update_data(df.copy(deep=True))
-    assert es["sessions"].df["id"].iloc[1] == 2  # no sorting since time index not defined
-    es["sessions"].update_data(df.copy(deep=True), already_sorted=True)
-    assert es["sessions"].df["id"].iloc[1] == 2
+    df = es["sessions"].df.copy()
+    if isinstance(df, dd.DataFrame):
+        updated_id = df['id'].compute()
+    else:
+        updated_id = df['id']
+    updated_id.iloc[1:3] = [2, 1]
+    df["id"] = updated_id
+    es["sessions"].update_data(df.copy())
+    sessions_df = es['sessions'].df
+    if isinstance(sessions_df, dd.DataFrame):
+        sessions_df = sessions_df.compute()
+    assert sessions_df["id"].iloc[1] == 2  # no sorting since time index not defined
+    es["sessions"].update_data(df.copy(), already_sorted=True)
+    sessions_df = es['sessions'].df
+    if isinstance(sessions_df, dd.DataFrame):
+        sessions_df = sessions_df.compute()
+    assert sessions_df["id"].iloc[1] == 2
 
     # test already_sorted on entity with time index
-    df = es["customers"].df.copy(deep=True)
-    df["signup_date"].iloc[0] = datetime(2011, 4, 11)
-    es["customers"].update_data(df.copy(deep=True))
-    assert es["customers"].df["id"].iloc[0] == 0
-    es["customers"].update_data(df.copy(deep=True), already_sorted=True)
-    assert es["customers"].df["id"].iloc[0] == 2
+    df = es["customers"].df.copy()
+    if isinstance(df, dd.DataFrame):
+        updated_signup = df['signup_date'].compute()
+    else:
+        updated_signup = df['signup_date']
+    updated_signup.iloc[0] = datetime(2011, 4, 11)
+    df['signup_date'] = updated_signup
+    es["customers"].update_data(df.copy(), already_sorted=True)
+    customers_df = es['customers'].df
+    if isinstance(customers_df, dd.DataFrame):
+        customers_df = customers_df.compute()
+    assert customers_df["id"].iloc[0] == 2
+
+    # only pandas allows for sorting:
+    if isinstance(df, pd.DataFrame):
+        es["customers"].update_data(df.copy())
+        assert es['customers'].df["id"].iloc[0] == 0
 
 
 def test_query_by_values_returns_rows_in_given_order():
@@ -116,7 +139,7 @@ def test_query_by_values_returns_rows_in_given_order():
     es = ft.EntitySet()
     es = es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
                                   time_index="time", variable_types={
-                                      "value": ft.variable_types.Categorical
+                                            "value": ft.variable_types.Categorical
                                   })
     query = es['test'].query_by_values(['b', 'a'], variable_id='value')
     assert np.array_equal(query['id'], [1, 3, 4, 5])
@@ -127,6 +150,8 @@ def test_query_by_values_secondary_time_index(es):
     all_instances = [0, 1, 2]
     result = es['customers'].query_by_values(all_instances, time_last=end)
 
+    if isinstance(result, dd.DataFrame):
+        result = result.compute().set_index('id')
     for col in ["cancel_date", "cancel_reason"]:
         nulls = result.loc[all_instances][col].isnull() == [False, True, True]
         assert nulls.all(), "Some instance has data it shouldn't for column %s" % col

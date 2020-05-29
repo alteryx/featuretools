@@ -50,18 +50,18 @@ def test_feature_trie_without_needs_full_entity(diamond_es):
 
 
 def test_feature_trie_with_needs_full_entity(diamond_es):
-    es = diamond_es
-    amount = ft.IdentityFeature(es['transactions']['amount'])
+    pd_es = diamond_es
+    amount = ft.IdentityFeature(pd_es['transactions']['amount'])
 
-    path_through_customers = backward_path(es, ['regions', 'customers', 'transactions'])
-    agg = ft.AggregationFeature(amount, es['regions'],
+    path_through_customers = backward_path(pd_es, ['regions', 'customers', 'transactions'])
+    agg = ft.AggregationFeature(amount, pd_es['regions'],
                                 primitive=ft.primitives.Mean,
                                 relationship_path=path_through_customers)
     trans_of_agg = ft.TransformFeature(agg, ft.primitives.CumSum)
 
-    path_through_stores = backward_path(es, ['regions', 'stores', 'transactions'])
+    path_through_stores = backward_path(pd_es, ['regions', 'stores', 'transactions'])
     trans = ft.TransformFeature(amount, ft.primitives.CumSum)
-    agg_of_trans = ft.AggregationFeature(trans, es['regions'],
+    agg_of_trans = ft.AggregationFeature(trans, pd_es['regions'],
                                          primitive=ft.primitives.Mean,
                                          relationship_path=path_through_stores)
 
