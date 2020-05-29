@@ -2,7 +2,15 @@
 
 Changelog
 ---------
-**Future Release**
+.. **Future Release**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+    Thanks to the following people for contributing to this release:
+
+**v0.15.0 May 29, 2020**
     * Enhancements
         * Add ``get_default_aggregation_primitives`` and ``get_default_transform_primitives`` (:pr:`945`)
         * Allow cutoff time dataframe columns to be in any order (:pr:`969`, :pr:`995`)
@@ -15,7 +23,6 @@ Changelog
         * Normalized type_strings of ``Variable`` classes so that the ``find_variable_types`` function produces a 
           dictionary with a clear key to name transition (:pr:`982`, :pr:`996`)
         * Remove pandas.datetime in test_calculate_feature_matrix due to deprecation (:pr:`998`)
-    * Changes
     * Documentation Changes
         * Add python 3.8 support for docs (:pr:`983`)
         * Adds consistent Entityset Docstrings (:pr:`986`)
@@ -24,7 +31,7 @@ Changelog
         * Update testing dependencies (:pr:`976`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`, :user:`sebrahimi1988`, :user:`ctduffy`, :user:`rightx2`, :user:`jeff-hernandez`, :user:`tuethan1999`, :user:`frances-h`
+    :user:`ctduffy`, :user:`frances-h`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`rightx2`, :user:`rwedge`, :user:`sebrahimi1988`, :user:`thehomebrewnerd`,  :user:`tuethan1999`
 
 **Breaking Changes**
 
