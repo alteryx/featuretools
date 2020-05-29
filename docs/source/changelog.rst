@@ -2,6 +2,14 @@
 
 Changelog
 ---------
+.. **Future Release**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+    Thanks to the following people for contributing to this release:
+
 **v0.15.0 May 29, 2020**
     * Enhancements
         * Add ``get_default_aggregation_primitives`` and ``get_default_transform_primitives`` (:pr:`945`)
