@@ -420,7 +420,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                                            training_window=window,
                                            include_cutoff_time=include_cutoff_time)
 
-            if isinstance(_feature_matrix, dd.core.DataFrame):
+            if isinstance(_feature_matrix, dd.DataFrame):
                 id_name = _feature_matrix.columns[-1]
             else:
                 id_name = _feature_matrix.index.name
@@ -451,7 +451,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                         pass_through.set_index([id_name, 'time'], inplace=True)
                         for col in pass_columns:
                             _feature_matrix[col] = pass_through[col]
-                elif isinstance(_feature_matrix, dd.core.DataFrame) and (len(pass_columns) > 0):
+                elif isinstance(_feature_matrix, dd.DataFrame) and (len(pass_columns) > 0):
                     _feature_matrix['time'] = time_last
                     if isinstance(time_last, pd.Timestamp):
                         _feature_matrix['time'] = dd.to_datetime(_feature_matrix['time'])
@@ -462,7 +462,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
             feature_matrix.append(_feature_matrix)
 
-    if any(isinstance(fm, dd.core.DataFrame) for fm in feature_matrix):
+    if any(isinstance(fm, dd.DataFrame) for fm in feature_matrix):
         feature_matrix = dd.concat(feature_matrix)
     else:
         feature_matrix = pd.concat(feature_matrix)
@@ -531,11 +531,12 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
 
         cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids[columns_we_want]
         cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids.drop_duplicates()
-        cutoffs_with_approx_e_ids = cutoffs_with_approx_e_ids.dropna(subset=[new_approx_entity_index_var])
+        cutoffs_with_approx_e_ids.dropna(subset=[new_approx_entity_index_var],
+                                         inplace=True)
 
         approx_features = [feature_set.features_by_name[name]
                            for name in approx_feature_names]
-        if len(cutoffs_with_approx_e_ids) == 0:
+        if cutoffs_with_approx_e_ids.empty:
             approx_fm = gen_empty_approx_features_df(approx_features)
         else:
             cutoffs_with_approx_e_ids.sort_values([cutoff_df_time_var,
@@ -687,9 +688,9 @@ def _add_approx_entity_index_var(es, target_entity_id, cutoffs, path):
         new_var_name = '%s.%s' % (last_child_var, relationship.child_variable.id)
         to_rename = {relationship.child_variable.id: new_var_name}
         child_df = child_df.rename(columns=to_rename)
-        cutoffs = child_df.merge(cutoffs,
-                                 left_on=last_parent_var,
-                                 right_on=last_child_var)
+        cutoffs = cutoffs.merge(child_df,
+                                left_on=last_child_var,
+                                right_on=last_parent_var)
 
         # These will be used in the next iteration.
         last_child_var = new_var_name
