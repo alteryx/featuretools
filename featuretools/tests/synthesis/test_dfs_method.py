@@ -323,6 +323,7 @@ def test_accepts_pd_dateoffset_training_window(datetime_es):
     assert (feature_matrix.index == feature_matrix_2.index).all()
 
 
+# TODO: split out cluster test to run on pandas seperately
 def test_calls_progress_callback(pd_entities, relationships):
     class MockProgressCallback:
         def __init__(self):

@@ -993,7 +993,8 @@ def test_cutoff_time_naming(es):
         calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df_wrong_time_name)
 
 
-# TODO: order doesn't match, but output matches :/
+# TODO: order doesn't match, but output matches
+# TODO: split out approximate test into seperate test for only pandas
 def test_cutoff_time_extra_columns(es):
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail('Dask result not ordered')
@@ -1065,6 +1066,7 @@ def test_instances_with_id_kept_after_cutoff(es):
 
 
 # TODO: Fails with Dask
+# TODO: split out approximate portion into seperate test for pandas
 def test_cfm_returns_original_time_indexes(es):
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail('Dask result not ordered, indexes are lost due to not multiindexing')
@@ -1594,7 +1596,7 @@ def test_chunk_dataframe_groups():
     assert fourth[0] == 3 and fourth[1].shape[0] == 1
 
 
-# TODO:
+# TODO: split out cluster tests into seperate test for pandas
 def test_calls_progress_callback(mock_customer):
     class MockProgressCallback:
         def __init__(self):

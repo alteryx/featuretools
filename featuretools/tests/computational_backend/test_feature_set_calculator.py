@@ -1102,8 +1102,6 @@ def test_precalculated_features(pd_es):
 
     instance_ids = [0, 2, 3, 5]
     fm = calculator.run(np.array(instance_ids))
-    if isinstance(fm, dd.DataFrame):
-        fm = fm.compute()
 
     assert list(fm[direct.get_name()]) == [values[0], values[0], values[1], values[2]]
 

@@ -352,7 +352,6 @@ def df4(request):
     return request.getfixturevalue(request.param)
 
 
-# TODO: Fails with dask? can't convert to vtype
 def test_converts_variable_types_on_init(df4):
     vtypes = {'id': variable_types.Categorical,
               'ints': variable_types.Numeric,
@@ -373,7 +372,6 @@ def test_converts_variable_types_on_init(df4):
     assert isinstance(e['category_int'], variable_types.Categorical)
 
 
-# TODO: Fails with dask, same issue as above, can't force to different vtype
 def test_converts_variable_type_after_init(df4):
     df4["category"] = df4["category"].astype("category")
     if isinstance(df4, dd.DataFrame):
@@ -1113,7 +1111,6 @@ def datetime3(request):
     return request.getfixturevalue(request.param)
 
 
-# TODO: failing with Dask, can't convert to desired vtype
 def test_datetime64_conversion(datetime3):
     df = datetime3
     df["time"] = pd.Timestamp.now()

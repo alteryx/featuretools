@@ -174,7 +174,7 @@ def test_to_parquet(es, tmpdir):
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
     df = es['log'].df
-    new_df = es['log'].df
+    new_df = new_es['log'].df
     if isinstance(df, dd.DataFrame):
         df = df.compute()
     if isinstance(new_df, dd.DataFrame):
