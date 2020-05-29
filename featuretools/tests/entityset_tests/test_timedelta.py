@@ -41,11 +41,11 @@ def test_delta_with_observations(es):
 def test_delta_with_time_unit_matches_pandas(es):
     customer_id = 0
     sessions_df = es['sessions'].df
-    if isinstance(sessions_df, dd.core.DataFrame):
+    if isinstance(sessions_df, dd.DataFrame):
         sessions_df = sessions_df.compute()
     sessions_df = sessions_df[sessions_df['customer_id'] == customer_id]
     log_df = es['log'].df
-    if isinstance(log_df, dd.core.DataFrame):
+    if isinstance(log_df, dd.DataFrame):
         log_df = log_df.compute()
     log_df = log_df[log_df['session_id'].isin(sessions_df['id'])]
     all_times = log_df['datetime'].sort_values().tolist()
@@ -122,11 +122,11 @@ def test_feature_takes_timedelta_string(es):
 def test_deltas_week(es):
     customer_id = 0
     sessions_df = es['sessions'].df
-    if isinstance(sessions_df, dd.core.DataFrame):
+    if isinstance(sessions_df, dd.DataFrame):
         sessions_df = sessions_df.compute()
     sessions_df = sessions_df[sessions_df['customer_id'] == customer_id]
     log_df = es['log'].df
-    if isinstance(log_df, dd.core.DataFrame):
+    if isinstance(log_df, dd.DataFrame):
         log_df = log_df.compute()
     log_df = log_df[log_df['session_id'].isin(sessions_df['id'])]
     all_times = log_df['datetime'].sort_values().tolist()

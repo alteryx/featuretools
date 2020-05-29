@@ -256,7 +256,7 @@ class EntitySet(object):
         # indexes/ids default to ints. In this case, we convert
         # the empty column's type to int
         if isinstance(child_e.df, pd.DataFrame) and \
-                (len(child_e.df) == 0 and child_e.df[child_v].dtype == object and
+                (child_e.df.empty and child_e.df[child_v].dtype == object and
                  is_numeric_dtype(parent_e.df[parent_v])):
             child_e.df[child_v] = pd.Series(name=child_v, dtype=np.int64)
 

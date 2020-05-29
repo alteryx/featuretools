@@ -765,7 +765,7 @@ def test_normalize_time_index_from_none(es):
                         copy_variables=['date_of_birth'])
     assert es['birthdays'].time_index == 'date_of_birth'
     df = es['birthdays'].df
-    if isinstance(df, dd.core.DataFrame):
+    if isinstance(df, dd.DataFrame):
         df = df.compute()
     assert df['date_of_birth'].is_monotonic_increasing
 
@@ -837,7 +837,7 @@ def test_normalize_entity_new_time_index(es):
     assert new_time_index in es['values'].df.columns
     assert len(es['values'].df.columns) == 2
     df = es['values'].df
-    if isinstance(df, dd.core.DataFrame):
+    if isinstance(df, dd.DataFrame):
         df = df.compute()
     assert df[new_time_index].is_monotonic_increasing
 
