@@ -185,7 +185,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             raise AttributeError('Cutoff time DataFrame must contain a column with either the same name'
                                  ' as the target entity index or a column named "instance_id"')
         # rename to instance_id
-        cutoff_time = cutoff_time.rename(columns={target_entity.index: "instance_id"})
+        cutoff_time.rename(columns={target_entity.index: "instance_id"}, inplace=True)
 
     if "time" not in cutoff_time.columns:
         if target_entity.time_index and target_entity.time_index not in cutoff_time.columns:
@@ -218,8 +218,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     pass_columns = [col for col in cutoff_time.columns if col not in ['instance_id', 'time']]
 
-    time_check = cutoff_time['time'].iloc[0]
-    if _check_time_type(time_check) is None:
+    if _check_time_type(cutoff_time['time'].iloc[0]) is None:
         raise ValueError("cutoff_time time values must be datetime or numeric")
 
     # make sure dtype of instance_id in cutoff time
@@ -271,8 +270,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     else:
         cutoff_time_to_pass = cutoff_time
 
-    chunk_size = _handle_chunk_size(chunk_size, len(cutoff_time))
-    tqdm_options = {'total': (len(cutoff_time) / FEATURE_CALCULATION_PERCENTAGE),
+    chunk_size = _handle_chunk_size(chunk_size, cutoff_time.shape[0])
+    tqdm_options = {'total': (cutoff_time.shape[0] / FEATURE_CALCULATION_PERCENTAGE),
                     'bar_format': PBAR_FORMAT,
                     'disable': True}
 
