@@ -568,6 +568,10 @@ class Haversine(TransformPrimitive):
 
     def get_function(self):
         def haversine(latlong1, latlong2):
+            if latlong1.hasnans:
+                latlong1 = np.where(latlong1.isnull(), pd.Series([(np.nan, np.nan)] * len(latlong1)), latlong1)
+            if latlong2.hasnans:
+                latlong2 = np.where(latlong2.isnull(), pd.Series([(np.nan, np.nan)] * len(latlong2)), latlong2)
             lat_1s = np.array([x[0] for x in latlong1])
             lon_1s = np.array([x[1] for x in latlong1])
             lat_2s = np.array([x[0] for x in latlong2])

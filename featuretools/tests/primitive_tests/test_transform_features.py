@@ -563,6 +563,43 @@ def test_haversine(es):
         Haversine(unit='inches')
 
 
+def test_haversine_with_nan(es):
+    # Check some `nan` values
+    df = es['log'].df
+    df['latlong'][0] = np.nan
+    df['latlong'][1] = (10, np.nan)
+    es['log'].update_data(df)
+    log_latlong_feat = es['log']['latlong']
+    log_latlong_feat2 = es['log']['latlong2']
+    haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
+                           primitive=Haversine)
+    features = [haversine]
+
+    df = ft.calculate_feature_matrix(entityset=es, features=features)
+    values = df[haversine.get_name()].values
+    real = [np.nan, np.nan, 1045.32190304, 1554.56176802, 2047.3294327, 0,
+            138.16578931, 276.20524822, 413.99185444, 0, 0, 525.318462, 0,
+            741.57941183, 1467.52760175, np.nan, np.nan]
+
+    assert np.allclose(values, real, atol=0.0001, equal_nan=True)
+
+    # Check all `nan` values
+    df = es['log'].df
+    df['latlong2'] = np.nan
+    es['log'].update_data(df)
+    log_latlong_feat = es['log']['latlong']
+    log_latlong_feat2 = es['log']['latlong2']
+    haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
+                           primitive=Haversine)
+    features = [haversine]
+
+    df = ft.calculate_feature_matrix(entityset=es, features=features)
+    values = df[haversine.get_name()].values
+    real = [np.nan] * es['log'].df.shape[0]
+
+    assert np.allclose(values, real, atol=0.0001, equal_nan=True)
+
+
 def test_text_primitives(es):
     words = ft.Feature(es['log']['comments'], primitive=NumWords)
     chars = ft.Feature(es['log']['comments'], primitive=NumCharacters)
