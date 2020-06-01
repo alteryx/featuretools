@@ -1,8 +1,6 @@
 import logging
 from collections import defaultdict
 
-from dask import dataframe as dd
-
 from featuretools import primitives, variable_types
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import (
@@ -180,8 +178,6 @@ class DeepFeatureSynthesis(object):
 
         if agg_primitives is None:
             agg_primitives = primitives.get_default_aggregation_primitives()
-            if any(isinstance(e.df, dd.DataFrame) for e in self.es.entities):
-                agg_primitives = [p for p in agg_primitives if p.dask_compatible]
         self.agg_primitives = []
         agg_prim_dict = primitives.get_aggregation_primitives()
         for a in agg_primitives:
@@ -199,8 +195,6 @@ class DeepFeatureSynthesis(object):
 
         if trans_primitives is None:
             trans_primitives = primitives.get_default_transform_primitives()
-            if any(isinstance(e.df, dd.DataFrame) for e in self.es.entities):
-                trans_primitives = [p for p in trans_primitives if p.dask_compatible]
         self.trans_primitives = []
         for t in trans_primitives:
             t = check_trans_primitive(t)
@@ -231,11 +225,6 @@ class DeepFeatureSynthesis(object):
             primitive_options = {}
         all_primitives = self.trans_primitives + self.agg_primitives + \
             self.where_primitives + self.groupby_trans_primitives
-        if any(isinstance(entity.df, dd.DataFrame) for entity in self.es.entities):
-            if not all([primitive.dask_compatible for primitive in all_primitives]):
-                bad_primitives = ", ".join([prim.name for prim in all_primitives if not prim.dask_compatible])
-                raise ValueError('Selected primitives are incompatible with Dask EntitySets: {}'.format(bad_primitives))
-
         self.primitive_options, self.ignore_entities, self.ignore_variables =\
             generate_all_primitive_options(all_primitives,
                                            primitive_options,
