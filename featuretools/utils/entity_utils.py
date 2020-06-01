@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
@@ -29,7 +30,10 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
     for variable in df.columns:
         if variable in variable_types:
             continue
-
+        elif isinstance(df, dd.DataFrame):
+            msg = 'Variable types cannot be inferred from Dask DataFrames, ' \
+                  'use variable_types to provide type metadata for entity'
+            raise ValueError(msg)
         elif variable in vids_to_assume_datetime:
             if col_is_datetime(df[variable]):
                 inferred_type = vtypes.Datetime
@@ -128,23 +132,31 @@ def convert_all_variable_data(df, variable_types):
 def convert_variable_data(df, column_id, new_type, **kwargs):
     """Convert dataframe's variable to different type.
     """
-    if df[column_id].empty:
+    empty = df[column_id].empty if isinstance(df, pd.DataFrame) else False
+    if empty:
         return df
     if new_type == vtypes.Numeric:
-        orig_nonnull = df[column_id].dropna().shape[0]
-        df[column_id] = pd.to_numeric(df[column_id], errors='coerce')
-        # This will convert strings to nans
-        # If column contained all strings, then we should
-        # just raise an error, because that shouldn't have
-        # been converted to numeric
-        nonnull = df[column_id].dropna().shape[0]
-        if nonnull == 0 and orig_nonnull != 0:
-            raise TypeError("Attempted to convert all string column {} to numeric".format(column_id))
+        if isinstance(df, dd.DataFrame):
+            df[column_id] = dd.to_numeric(df[column_id], errors='coerce')
+        else:
+            orig_nonnull = df[column_id].dropna().shape[0]
+            df[column_id] = pd.to_numeric(df[column_id], errors='coerce')
+            # This will convert strings to nans
+            # If column contained all strings, then we should
+            # just raise an error, because that shouldn't have
+            # been converted to numeric
+            nonnull = df[column_id].dropna().shape[0]
+            if nonnull == 0 and orig_nonnull != 0:
+                raise TypeError("Attempted to convert all string column {} to numeric".format(column_id))
     elif issubclass(new_type, vtypes.Datetime):
         format = kwargs.get("format", None)
         # TODO: if float convert to int?
-        df[column_id] = pd.to_datetime(df[column_id], format=format,
-                                       infer_datetime_format=True)
+        if isinstance(df, dd.DataFrame):
+            df[column_id] = dd.to_datetime(df[column_id], format=format,
+                                           infer_datetime_format=True)
+        else:
+            df[column_id] = pd.to_datetime(df[column_id], format=format,
+                                           infer_datetime_format=True)
     elif new_type == vtypes.Boolean:
         map_dict = {kwargs.get("true_val", True): True,
                     kwargs.get("false_val", False): False,
@@ -171,9 +183,10 @@ def get_linked_vars(entity):
 
 
 def col_is_datetime(col):
-    # check if dtype is datetime
+    # check if dtype is datetime - use .head() when getting first value
+    # in case column is a dask Series
     if (col.dtype.name.find('datetime') > -1 or
-            (len(col) and isinstance(col.iloc[0], datetime))):
+            (len(col) and isinstance(col.head(1).iloc[0], datetime))):
         return True
 
     # if it can be casted to numeric, it's not a datetime
