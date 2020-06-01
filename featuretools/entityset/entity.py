@@ -1,7 +1,6 @@
 import logging
 import warnings
 
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
@@ -245,17 +244,13 @@ class Entity(object):
         if instance_vals is None:
             df = self.df.copy()
 
-        elif isinstance(instance_vals, pd.Series) and instance_vals.empty:
+        elif instance_vals.shape[0] == 0:
             df = self.df.head(0)
 
         else:
-            if isinstance(instance_vals, dd.Series):
-                df = self.df.merge(instance_vals.to_frame(), how="inner", on=variable_id)
-            else:
-                df = self.df[self.df[variable_id].isin(instance_vals)]
+            df = self.df[self.df[variable_id].isin(instance_vals)]
 
-            if isinstance(self.df, pd.DataFrame):
-                df = df.set_index(self.index, drop=False)
+            df = df.set_index(self.index, drop=False)
 
             # ensure filtered df has same categories as original
             # workaround for issue below
@@ -414,7 +409,7 @@ class Entity(object):
         Remove variables from entity's dataframe and from
         self.variables
         """
-        self.df = self.df.drop(variable_ids, axis=1)
+        self.df.drop(variable_ids, axis=1, inplace=True)
 
         for v_id in variable_ids:
             v = self._get_variable(v_id)
@@ -422,12 +417,12 @@ class Entity(object):
 
     def set_time_index(self, variable_id, already_sorted=False):
         # check time type
-        if isinstance(self.df, dd.DataFrame) or self.df.empty:
+        if self.df.empty:
             time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
         else:
             time_to_check = self.df[variable_id].iloc[0]
-        time_type = _check_time_type(time_to_check)
 
+        time_type = _check_time_type(time_to_check)
         if time_type is None:
             raise TypeError("%s time index not recognized as numeric or"
                             " datetime" % (self.id))
@@ -439,19 +434,14 @@ class Entity(object):
                             " other entityset time indexes" %
                             (self.id, time_type))
 
-        if isinstance(self.df, dd.DataFrame):
-            t = time_type  # skip checking values
-            already_sorted = True  # skip sorting
-        else:
-            t = vtypes.NumericTimeIndex
-            if col_is_datetime(self.df[variable_id]):
-                t = vtypes.DatetimeTimeIndex
-
         # use stable sort
         if not already_sorted:
             # sort by time variable, then by index
-            self.df = self.df.sort_values([variable_id, self.index])
+            self.df.sort_values([variable_id, self.index], inplace=True)
 
+        t = vtypes.NumericTimeIndex
+        if col_is_datetime(self.df[variable_id]):
+            t = vtypes.DatetimeTimeIndex
         self.convert_variable_type(variable_id, t, convert_data=False)
 
         self.time_index = variable_id
@@ -462,22 +452,20 @@ class Entity(object):
             variable_id (string) : Name of an existing variable to set as index.
             unique (bool) : Whether to assert that the index is unique.
         """
-        if isinstance(self.df, pd.DataFrame):
-            self.df = self.df.set_index(self.df[variable_id], drop=False)
-            self.df.index.name = None
-            if unique:
-                assert self.df.index.is_unique, "Index is not unique on dataframe " \
-                    "(Entity {})".format(self.id)
+        self.df = self.df.set_index(self.df[variable_id], drop=False)
+        self.df.index.name = None
+        if unique:
+            assert self.df.index.is_unique, "Index is not unique on dataframe (Entity {})".format(self.id)
 
         self.convert_variable_type(variable_id, vtypes.Index, convert_data=False)
         self.index = variable_id
 
     def set_secondary_time_index(self, secondary_time_index):
         for time_index, columns in secondary_time_index.items():
-            if len(self.df) == 0:
+            if self.df.empty:
                 time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[time_index]._default_pandas_dtype]
             else:
-                time_to_check = self.df[time_index].head(1).iloc[0]
+                time_to_check = self.df[time_index].iloc[0]
             time_type = _check_time_type(time_to_check)
             if time_type is None:
                 raise TypeError("%s time index not recognized as numeric or"
@@ -506,7 +494,7 @@ class Entity(object):
         # convert iterable to pd.Series
         if type(instance_vals) == pd.DataFrame:
             out_vals = instance_vals[variable_id]
-        elif type(instance_vals) == pd.Series or type(instance_vals) == dd.Series:
+        elif type(instance_vals) == pd.Series:
             out_vals = instance_vals.rename(variable_id)
         else:
             out_vals = pd.Series(instance_vals)
@@ -526,8 +514,7 @@ class Entity(object):
         dataframe.
         """
         if self.time_index:
-            df_empty = df.empty if isinstance(df, pd.DataFrame) else False
-            if time_last is not None and not df_empty:
+            if time_last is not None and not df.empty:
                 if include_cutoff_time:
                     df = df[df[self.time_index] <= time_last]
                 else:
@@ -550,19 +537,13 @@ class Entity(object):
                             "Using training_window but last_time_index is "
                             "not set on entity %s" % (self.id)
                         )
-
                     df = df[mask]
 
         for secondary_time_index, columns in self.secondary_time_index.items():
             # should we use ignore time last here?
-            df_empty = df.empty if isinstance(df, pd.DataFrame) else False
-            if time_last is not None and not df_empty:
+            if time_last is not None and not df.empty:
                 mask = df[secondary_time_index] >= time_last
-                if isinstance(df, dd.DataFrame):
-                    for col in columns:
-                        df[col] = df[col].mask(mask, np.nan)
-                else:
-                    df.loc[mask, columns] = np.nan
+                df.loc[mask, columns] = np.nan
 
         return df
 
@@ -589,11 +570,7 @@ def _create_index(index, make_index, df):
                            "integer column", index)
         # Case 5: make_index with no errors or warnings
         # (Case 4 also uses this code path)
-        if isinstance(df, dd.DataFrame):
-            df[index] = 1
-            df[index] = df[index].cumsum() - 1
-        else:
-            df.insert(0, index, range(len(df)))
+        df.insert(0, index, range(0, len(df)))
         created_index = index
     # Case 6: user specified index, which is already in df. No action needed.
     return created_index, index, df
