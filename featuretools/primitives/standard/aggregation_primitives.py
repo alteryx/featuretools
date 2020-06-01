@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
-from dask import dataframe as dd
 from scipy import stats
 
 from featuretools.primitives.base.aggregation_primitive_base import (
@@ -33,13 +32,9 @@ class Count(AggregationPrimitive):
     return_type = Numeric
     stack_on_self = False
     default_value = 0
-    dask_compatible = True
 
     def get_function(self):
         return pd.Series.count
-
-    def get_dask_aggregation(self):
-        return 'count'
 
     def generate_name(self, base_feature_names, relationship_path_name,
                       parent_entity_id, where_str, use_prev_str):
@@ -61,13 +56,9 @@ class Sum(AggregationPrimitive):
     stack_on_self = False
     stack_on_exclude = [Count]
     default_value = 0
-    dask_compatible = True
 
     def get_function(self):
         return np.sum
-
-    def get_dask_aggregation(self):
-        return 'sum'
 
 
 class Mean(AggregationPrimitive):
@@ -91,7 +82,6 @@ class Mean(AggregationPrimitive):
     name = "mean"
     input_types = [Numeric]
     return_type = Numeric
-    dask_compatible = True
 
     def __init__(self, skipna=True):
         self.skipna = skipna
@@ -105,9 +95,6 @@ class Mean(AggregationPrimitive):
             return np.mean(series.values)
 
         return mean
-
-    def get_dask_aggregation(self):
-        return 'mean'
 
 
 class Mode(AggregationPrimitive):
@@ -146,13 +133,9 @@ class Min(AggregationPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     stack_on_self = False
-    dask_compatible = True
 
     def get_function(self):
         return np.min
-
-    def get_dask_aggregation(self):
-        return 'min'
 
 
 class Max(AggregationPrimitive):
@@ -167,13 +150,9 @@ class Max(AggregationPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     stack_on_self = False
-    dask_compatible = True
 
     def get_function(self):
         return np.max
-
-    def get_dask_aggregation(self):
-        return 'max'
 
 
 class NumUnique(AggregationPrimitive):
@@ -193,30 +172,9 @@ class NumUnique(AggregationPrimitive):
     input_types = [Discrete]
     return_type = Numeric
     stack_on_self = False
-    dask_compatible = True
 
     def get_function(self):
         return pd.Series.nunique
-
-    def get_dask_aggregation(self):
-        def chunk(s):
-            def inner_chunk(x):
-                x = x[:].dropna()
-                return set(x.unique())
-
-            return s.agg(inner_chunk)
-
-        def agg(s):
-            def inner_agg(x):
-                x = x[:].dropna()
-                return(set().union(*x.values))
-
-            return s.agg(inner_agg)
-
-        def finalize(s):
-            return s.apply(lambda x: len(x))
-
-        return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
 
 
 class NumTrue(AggregationPrimitive):
@@ -237,22 +195,9 @@ class NumTrue(AggregationPrimitive):
     default_value = 0
     stack_on = []
     stack_on_exclude = []
-    dask_compatible = True
 
     def get_function(self):
         return np.sum
-
-    def get_dask_aggregation(self):
-        def chunk(s):
-            chunk_sum = s.agg(np.sum)
-            if chunk_sum.dtype == 'bool':
-                chunk_sum = chunk_sum.astype('int64')
-            return chunk_sum
-
-        def agg(s):
-            return s.agg(np.sum)
-
-        return dd.Aggregation(self.name, chunk=chunk, agg=agg)
 
 
 class PercentTrue(AggregationPrimitive):
@@ -275,34 +220,12 @@ class PercentTrue(AggregationPrimitive):
     stack_on = []
     stack_on_exclude = []
     default_value = 0
-    dask_compatible = True
 
     def get_function(self):
         def percent_true(s):
             return s.fillna(0).mean()
 
         return percent_true
-
-    def get_dask_aggregation(self):
-        def chunk(s):
-            def format_chunk(x):
-                return x[:].fillna(0)
-
-            chunk_sum = s.agg(lambda x: format_chunk(x).sum())
-            chunk_len = s.agg(lambda x: len(format_chunk(x)))
-            if chunk_sum.dtype == 'bool':
-                chunk_sum = chunk_sum.astype('int64')
-            if chunk_len.dtype == 'bool':
-                chunk_len = chunk_len.astype('int64')
-            return (chunk_sum, chunk_len)
-
-        def agg(val, length):
-            return (val.sum(), length.sum())
-
-        def finalize(total, length):
-            return total / length
-
-        return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
 
 
 class NMostCommon(AggregationPrimitive):
@@ -462,13 +385,9 @@ class Std(AggregationPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     stack_on_self = False
-    dask_compatible = True
 
     def get_function(self):
         return np.std
-
-    def get_dask_aggregation(self):
-        return 'std'
 
 
 class First(AggregationPrimitive):
@@ -527,19 +446,9 @@ class Any(AggregationPrimitive):
     input_types = [Boolean]
     return_type = Boolean
     stack_on_self = False
-    dask_compatible = True
 
     def get_function(self):
         return np.any
-
-    def get_dask_aggregation(self):
-        def chunk(s):
-            return s.agg(np.any)
-
-        def agg(s):
-            return s.agg(np.any)
-
-        return dd.Aggregation(self.name, chunk=chunk, agg=agg)
 
 
 class All(AggregationPrimitive):
@@ -558,19 +467,9 @@ class All(AggregationPrimitive):
     input_types = [Boolean]
     return_type = Boolean
     stack_on_self = False
-    dask_compatible = True
 
     def get_function(self):
         return np.all
-
-    def get_dask_aggregation(self):
-        def chunk(s):
-            return s.agg(np.all)
-
-        def agg(s):
-            return s.agg(np.all)
-
-        return dd.Aggregation(self.name, chunk=chunk, agg=agg)
 
 
 class TimeSinceLast(AggregationPrimitive):
