@@ -5,6 +5,7 @@ from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
 )
 from featuretools.utils import convert_time_units
+from featuretools.utils.entity_utils import replace_latlong_nan
 from featuretools.variable_types import (
     Boolean,
     DateOfBirth,
@@ -511,7 +512,7 @@ class Latitude(TransformPrimitive):
     def get_function(self):
         def latitude(latlong):
             if latlong.hasnans:
-                latlong = _replace_latlong_nan(latlong)
+                latlong = replace_latlong_nan(latlong)
             return pd.Series(x[0] for x in latlong)
         return latitude
 
@@ -534,7 +535,7 @@ class Longitude(TransformPrimitive):
     def get_function(self):
         def longitude(latlong):
             if latlong.hasnans:
-                latlong = _replace_latlong_nan(latlong)
+                latlong = replace_latlong_nan(latlong)
             return pd.Series(x[1] for x in latlong)
         return longitude
 
@@ -577,9 +578,9 @@ class Haversine(TransformPrimitive):
     def get_function(self):
         def haversine(latlong1, latlong2):
             if latlong1.hasnans:
-                latlong1 = _replace_latlong_nan(latlong1)
+                latlong1 = replace_latlong_nan(latlong1)
             if latlong2.hasnans:
-                latlong2 = _replace_latlong_nan(latlong2)
+                latlong2 = replace_latlong_nan(latlong2)
             lat_1s = np.array([x[0] for x in latlong1])
             lon_1s = np.array([x[1] for x in latlong1])
             lat_2s = np.array([x[0] for x in latlong2])
@@ -635,8 +636,3 @@ class Age(TransformPrimitive):
         def age(x, time=None):
             return (time - x).dt.days / 365
         return age
-
-
-def _replace_latlong_nan(values):
-    """replace a single `NaN` value with a tuple: `(np.nan, np.nan)`"""
-    return np.where(values.isnull(), pd.Series([(np.nan, np.nan)] * len(values)), values)

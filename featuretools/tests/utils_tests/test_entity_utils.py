@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 import featuretools as ft
@@ -6,7 +7,8 @@ from featuretools.utils.entity_utils import (
     convert_all_variable_data,
     convert_variable_data,
     get_linked_vars,
-    infer_variable_types
+    infer_variable_types,
+    replace_latlong_nan
 )
 
 
@@ -163,3 +165,11 @@ def test_get_linked_vars():
 
     customers_linked_vars = get_linked_vars(es['customers'])
     assert customers_linked_vars == ['customer_id']
+
+
+def test_replace_latlong_nan():
+    values = pd.Series([(np.nan, np.nan), np.nan, (10, 5)])
+    result = replace_latlong_nan(values)
+    assert result[0] == values[0]
+    assert result[1] == (np.nan, np.nan)
+    assert result[2] == values[2]

@@ -191,3 +191,8 @@ def col_is_datetime(col):
                 return True
 
     return False
+
+
+def replace_latlong_nan(values):
+    """replace a single `NaN` value with a tuple: `(np.nan, np.nan)`"""
+    return np.where(values.isnull(), pd.Series([(np.nan, np.nan)] * len(values)), values)

@@ -11,7 +11,8 @@ from featuretools.utils.entity_utils import (
     convert_all_variable_data,
     convert_variable_data,
     get_linked_vars,
-    infer_variable_types
+    infer_variable_types,
+    replace_latlong_nan
 )
 from featuretools.utils.wrangle import (
     _check_time_type,
@@ -81,6 +82,11 @@ class Entity(object):
             self.set_time_index(time_index, already_sorted=already_sorted)
 
         self.set_secondary_time_index(secondary_time_index)
+
+        # Fill in single `NaN` values in LatLong variables with a tuple
+        latlongs = [k for k, v in self.variable_types.items() if v == vtypes.LatLong]
+        for latlong in latlongs:
+            self.df[latlong] = replace_latlong_nan(self.df[latlong])
 
     def __repr__(self):
         repr_out = u"Entity: {}\n".format(self.id)
