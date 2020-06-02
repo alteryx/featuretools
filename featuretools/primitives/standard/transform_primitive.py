@@ -509,7 +509,11 @@ class Latitude(TransformPrimitive):
     return_type = Numeric
 
     def get_function(self):
-        return lambda array: pd.Series([x[0] for x in array])
+        def latitude(latlong):
+            if latlong.hasnans:
+                latlong = _replace_latlong_nan(latlong)
+            return pd.Series(x[0] for x in latlong)
+        return latitude
 
 
 class Longitude(TransformPrimitive):
@@ -528,7 +532,11 @@ class Longitude(TransformPrimitive):
     return_type = Numeric
 
     def get_function(self):
-        return lambda array: pd.Series([x[1] for x in array])
+        def longitude(latlong):
+            if latlong.hasnans:
+                latlong = _replace_latlong_nan(latlong)
+            return pd.Series(x[1] for x in latlong)
+        return longitude
 
 
 class Haversine(TransformPrimitive):
@@ -569,9 +577,9 @@ class Haversine(TransformPrimitive):
     def get_function(self):
         def haversine(latlong1, latlong2):
             if latlong1.hasnans:
-                latlong1 = np.where(latlong1.isnull(), pd.Series([(np.nan, np.nan)] * len(latlong1)), latlong1)
+                latlong1 = _replace_latlong_nan(latlong1)
             if latlong2.hasnans:
-                latlong2 = np.where(latlong2.isnull(), pd.Series([(np.nan, np.nan)] * len(latlong2)), latlong2)
+                latlong2 = _replace_latlong_nan(latlong2)
             lat_1s = np.array([x[0] for x in latlong1])
             lon_1s = np.array([x[1] for x in latlong1])
             lat_2s = np.array([x[0] for x in latlong2])
@@ -627,3 +635,8 @@ class Age(TransformPrimitive):
         def age(x, time=None):
             return (time - x).dt.days / 365
         return age
+
+
+def _replace_latlong_nan(values):
+    """replace a single `NaN` value with a tuple: `(np.nan, np.nan)`"""
+    return np.where(values.isnull(), pd.Series([(np.nan, np.nan)] * len(values)), values)

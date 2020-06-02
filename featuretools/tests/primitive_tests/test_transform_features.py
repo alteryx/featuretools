@@ -531,6 +531,28 @@ def test_latlong(es):
         assert v == lonvalues[i]
 
 
+def test_latlong_with_nan(es):
+    df = es['log'].df
+    df['latlong'][0] = np.nan
+    df['latlong'][1] = (10, np.nan)
+    df['latlong'][2] = (np.nan, 4)
+    df['latlong'][3] = (np.nan, np.nan)
+    es['log'].update_data(df)
+    log_latlong_feat = es['log']['latlong']
+    latitude = ft.Feature(log_latlong_feat, primitive=Latitude)
+    longitude = ft.Feature(log_latlong_feat, primitive=Longitude)
+    features = [latitude, longitude]
+    fm = ft.calculate_feature_matrix(entityset=es, features=features)
+    latvalues = fm[latitude.get_name()].values
+    lonvalues = fm[longitude.get_name()].values
+    assert len(latvalues) == 17
+    assert len(lonvalues) == 17
+    real_lats = [np.nan, 10, np.nan, np.nan, 20, 0, 1, 2, 3, 0, 0, 5, 0, 7, 14, np.nan, np.nan]
+    real_lons = [np.nan, np.nan, 4, np.nan, 8, 0, 1, 2, 3, 0, 0, 2, 0, 3, 6, np.nan, np.nan]
+    assert np.allclose(latvalues, real_lats, atol=0.0001, equal_nan=True)
+    assert np.allclose(lonvalues, real_lons, atol=0.0001, equal_nan=True)
+
+
 def test_haversine(es):
     log_latlong_feat = es['log']['latlong']
     log_latlong_feat2 = es['log']['latlong2']
