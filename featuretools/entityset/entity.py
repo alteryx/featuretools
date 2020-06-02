@@ -245,6 +245,9 @@ class Entity(object):
         if instance_vals is None:
             df = self.df.copy()
 
+        elif isinstance(instance_vals, pd.Series) and instance_vals.empty:
+            df = self.df.head(0)
+
         else:
             if isinstance(instance_vals, dd.Series):
                 df = self.df.merge(instance_vals.to_frame(), how="inner", on=variable_id)
@@ -419,10 +422,10 @@ class Entity(object):
 
     def set_time_index(self, variable_id, already_sorted=False):
         # check time type
-        if isinstance(self.df, dd.DataFrame) or len(self.df) == 0:
+        if isinstance(self.df, dd.DataFrame) or self.df.empty:
             time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
         else:
-            time_to_check = self.df[variable_id].head(1).iloc[0]
+            time_to_check = self.df[variable_id].iloc[0]
         time_type = _check_time_type(time_to_check)
 
         if time_type is None:
