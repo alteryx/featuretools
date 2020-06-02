@@ -4,8 +4,6 @@ import os
 import tarfile
 import tempfile
 
-import dask.dataframe as dd
-
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
 
@@ -24,10 +22,6 @@ def entity_to_description(entity):
     '''
     index = entity.df.columns.isin([variable.id for variable in entity.variables])
     dtypes = entity.df[entity.df.columns[index]].dtypes.astype(str).to_dict()
-    if isinstance(entity.df, dd.DataFrame):
-        entity_type = 'dask'
-    else:
-        entity_type = 'pandas'
     description = {
         "id": entity.id,
         "index": entity.index,
@@ -38,7 +32,6 @@ def entity_to_description(entity):
         },
         "variables": [variable.to_data_description() for variable in entity.variables],
         "loading_info": {
-            'entity_type': entity_type,
             'params': {},
             'properties': {
                 'dtypes': dtypes
@@ -83,16 +76,11 @@ def write_entity_data(entity, path, format='csv', **kwargs):
         loading_info (dict) : Information on storage location and format of entity data.
     '''
     format = format.lower()
-    if isinstance(entity.df, dd.DataFrame) and format == 'csv':
-        basename = "{}-*.{}".format(entity.id, format)
-    else:
-        basename = '.'.join([entity.id, format])
+    basename = '.'.join([entity.id, format])
     location = os.path.join('data', basename)
     file = os.path.join(path, location)
-    df = entity.df
-
     if format == 'csv':
-        df.to_csv(
+        entity.df.to_csv(
             file,
             index=kwargs['index'],
             sep=kwargs['sep'],
@@ -103,17 +91,12 @@ def write_entity_data(entity, path, format='csv', **kwargs):
         # Serializing to parquet format raises an error when columns contain tuples.
         # Columns containing tuples are mapped as dtype object.
         # Issue is resolved by casting columns of dtype object to string.
-        df = df.copy()
-        columns = list(df.select_dtypes('object').columns)
+        df = entity.df.copy()
+        columns = df.select_dtypes('object').columns
         df[columns] = df[columns].astype('unicode')
         df.to_parquet(file, **kwargs)
     elif format == 'pickle':
-        # Dask currently does not support to_pickle
-        if isinstance(df, dd.DataFrame):
-            msg = 'Cannot serialize Dask EntitySet to pickle'
-            raise ValueError(msg)
-        else:
-            df.to_pickle(file, **kwargs)
+        entity.df.to_pickle(file, **kwargs)
     else:
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))
