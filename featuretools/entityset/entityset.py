@@ -837,7 +837,11 @@ class EntitySet(object):
                         lti_df = lti_df.groupby(lti_df[entity.index]).agg('max')
 
                         lti_df = entity.last_time_index.to_frame(name='last_time_old').join(lti_df)
-
+                        
+                        lti_df['last_time'] = lti_df['last_time'].astype('datetime64[ns]')
+                        lti_df['last_time_old'] = lti_df['last_time_old'].astype('datetime64[ns]')
+                        lti_df = lti_df.fillna(pd.to_datetime('1800-01-01 00:00')).max(axis=1)
+                        lti_df = lti_df.replace(pd.to_datetime('1800-01-01 00:00'), pd.NaT)
                     else:
                         lti_df = pd.DataFrame({'last_time': child_e.last_time_index,
                                                entity.index: child_e.df[link_var]})
@@ -853,15 +857,7 @@ class EntitySet(object):
                         lti_df.set_index(entity.index, inplace=True)
                         lti_df = lti_df.reindex(entity.last_time_index.index)
                         lti_df['last_time_old'] = entity.last_time_index
-                    if not isinstance(lti_df, dd.DataFrame) and lti_df.empty:
-                        # Pandas errors out if it tries to do fillna and then max on an empty dataframe
-                        lti_df = pd.Series()
-                    else:
-                        lti_df['last_time'] = lti_df['last_time'].astype('datetime64[ns]')
-                        lti_df['last_time_old'] = lti_df['last_time_old'].astype('datetime64[ns]')
-                        lti_df = lti_df.fillna(pd.to_datetime('1800-01-01 00:00')).max(axis=1)
-                        lti_df = lti_df.replace(pd.to_datetime('1800-01-01 00:00'), pd.NaT)
-                    # lti_df = lti_df.apply(lambda x: x.dropna().max(), axis=1)
+                        lti_df = lti_df.apply(lambda x: x.dropna().max(), axis=1)
 
                     entity.last_time_index = lti_df
                     entity.last_time_index.name = 'last_time'
