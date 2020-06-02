@@ -245,13 +245,17 @@ class Entity(object):
         if instance_vals is None:
             df = self.df.copy()
 
-        elif instance_vals.shape[0] == 0:
+        elif isinstance(instance_vals, pd.Series) and instance_vals.empty:
             df = self.df.head(0)
 
         else:
-            df = self.df[self.df[variable_id].isin(instance_vals)]
+            if isinstance(instance_vals, dd.Series):
+                df = self.df.merge(instance_vals.to_frame(), how="inner", on=variable_id)
+            else:
+                df = self.df[self.df[variable_id].isin(instance_vals)]
 
-            df = df.set_index(self.index, drop=False)
+            if isinstance(self.df, pd.DataFrame):
+                df = df.set_index(self.index, drop=False)
 
             # ensure filtered df has same categories as original
             # workaround for issue below
@@ -515,8 +519,7 @@ class Entity(object):
         dataframe.
         """
         if self.time_index:
-            df_empty = df.empty if isinstance(df, pd.DataFrame) else False
-            if time_last is not None and not df_empty:
+            if time_last is not None and not df.empty:
                 if include_cutoff_time:
                     df = df[df[self.time_index] <= time_last]
                 else:
@@ -543,14 +546,9 @@ class Entity(object):
 
         for secondary_time_index, columns in self.secondary_time_index.items():
             # should we use ignore time last here?
-            df_empty = df.empty if isinstance(df, pd.DataFrame) else False
-            if time_last is not None and not df_empty:
+            if time_last is not None and not df.empty:
                 mask = df[secondary_time_index] >= time_last
-                if isinstance(df, dd.DataFrame):
-                    for col in columns:
-                        df[col] = df[col].mask(mask, np.nan)
-                else:
-                    df.loc[mask, columns] = np.nan
+                df.loc[mask, columns] = np.nan
 
         return df
 
