@@ -622,13 +622,6 @@ def test_haversine_with_nan(es):
     assert np.allclose(values, real, atol=0.0001, equal_nan=True)
 
 
-def test_hav(es):
-    df = es['log'].df
-    df['latlong'] = np.nan
-    es['log'].update_data(df)
-    fm, features = ft.dfs(entityset=es, target_entity='sessions', trans_primitives=['latitude', 'longitude', 'haversine'], agg_primitives=['last', 'first'])
-
-
 def test_text_primitives(es):
     words = ft.Feature(es['log']['comments'], primitive=NumWords)
     chars = ft.Feature(es['log']['comments'], primitive=NumCharacters)
