@@ -137,8 +137,8 @@ def test_accepts_cutoff_time_compose(entities, relationships):
         num_examples_per_instance=-1
     )
 
-    labels['cutoff_time'] = pd.to_numeric(labels['cutoff_time'])
-    labels.rename({'card_id': 'id', 'cutoff_time': 'time'}, axis=1, inplace=True)
+    labels['time'] = pd.to_numeric(labels['time'])
+    labels.rename({'card_id': 'id'}, axis=1, inplace=True)
 
     feature_matrix, features = dfs(entities=entities,
                                    relationships=relationships,
