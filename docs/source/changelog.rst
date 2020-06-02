@@ -5,10 +5,12 @@ Changelog
 .. **Future Release**
     * Enhancements
     * Fixes
+        * Resolve issue with `NaN` values in `LatLong` columns (:pr:`1007`)
     * Changes
     * Documentation Changes
     * Testing Changes
     Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`, :user:`Alex-Monahan`
 
 **v0.15.0 May 29, 2020**
     * Enhancements
