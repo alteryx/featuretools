@@ -245,14 +245,13 @@ class Entity(object):
         if instance_vals is None:
             df = self.df.copy()
 
-        else:
-            if isinstance(instance_vals, dd.Series):
-                df = self.df.merge(instance_vals.to_frame(), how="inner", on=variable_id)
-            else:
-                df = self.df[self.df[variable_id].isin(instance_vals)]
+        elif instance_vals.shape[0] == 0:
+            df = self.df.head(0)
 
-            if isinstance(self.df, pd.DataFrame):
-                df = df.set_index(self.index, drop=False)
+        else:
+            df = self.df[self.df[variable_id].isin(instance_vals)]
+
+            df = df.set_index(self.index, drop=False)
 
             # ensure filtered df has same categories as original
             # workaround for issue below
@@ -419,12 +418,13 @@ class Entity(object):
 
     def set_time_index(self, variable_id, already_sorted=False):
         # check time type
-        if self.df.empty:
+        if isinstance(self.df, dd.DataFrame) or self.df.empty:
             time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
         else:
             time_to_check = self.df[variable_id].iloc[0]
-
         time_type = _check_time_type(time_to_check)
+
+
         if time_type is None:
             raise TypeError("%s time index not recognized as numeric or"
                             " datetime" % (self.id))
@@ -436,14 +436,19 @@ class Entity(object):
                             " other entityset time indexes" %
                             (self.id, time_type))
 
+        if isinstance(self.df, dd.DataFrame):
+            t = time_type # skip checking values
+            already_sorted = True
+        else:
+            t = vtypes.NumericTimeIndex
+            if col_is_datetime(self.df[variable_id]):
+                t = vtypes.DatetimeTimeIndex
+
         # use stable sort
         if not already_sorted:
             # sort by time variable, then by index
-            self.df.sort_values([variable_id, self.index], inplace=True)
+            self.df = self.df.sort_values([variable_id, self.index])
 
-        t = vtypes.NumericTimeIndex
-        if col_is_datetime(self.df[variable_id]):
-            t = vtypes.DatetimeTimeIndex
         self.convert_variable_type(variable_id, t, convert_data=False)
 
         self.time_index = variable_id
