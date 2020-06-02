@@ -418,13 +418,12 @@ class Entity(object):
 
     def set_time_index(self, variable_id, already_sorted=False):
         # check time type
-        if isinstance(self.df, dd.DataFrame) or self.df.empty:
+        if self.df.empty:
             time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
         else:
             time_to_check = self.df[variable_id].iloc[0]
+
         time_type = _check_time_type(time_to_check)
-
-
         if time_type is None:
             raise TypeError("%s time index not recognized as numeric or"
                             " datetime" % (self.id))
@@ -436,19 +435,14 @@ class Entity(object):
                             " other entityset time indexes" %
                             (self.id, time_type))
 
-        if isinstance(self.df, dd.DataFrame):
-            t = time_type # skip checking values
-            already_sorted = True
-        else:
-            t = vtypes.NumericTimeIndex
-            if col_is_datetime(self.df[variable_id]):
-                t = vtypes.DatetimeTimeIndex
-
         # use stable sort
         if not already_sorted:
             # sort by time variable, then by index
-            self.df = self.df.sort_values([variable_id, self.index])
+            self.df.sort_values([variable_id, self.index], inplace=True)
 
+        t = vtypes.NumericTimeIndex
+        if col_is_datetime(self.df[variable_id]):
+            t = vtypes.DatetimeTimeIndex
         self.convert_variable_type(variable_id, t, convert_data=False)
 
         self.time_index = variable_id
@@ -521,7 +515,8 @@ class Entity(object):
         dataframe.
         """
         if self.time_index:
-            if time_last is not None and not df.empty:
+            df_empty = df.empty if isinstance(df, pd.DataFrame) else False
+            if time_last is not None and not df_empty:
                 if include_cutoff_time:
                     df = df[df[self.time_index] <= time_last]
                 else:
@@ -548,9 +543,14 @@ class Entity(object):
 
         for secondary_time_index, columns in self.secondary_time_index.items():
             # should we use ignore time last here?
-            if time_last is not None and not df.empty:
+            df_empty = df.empty if isinstance(df, pd.DataFrame) else False
+            if time_last is not None and not df_empty:
                 mask = df[secondary_time_index] >= time_last
-                df.loc[mask, columns] = np.nan
+                if isinstance(df, dd.DataFrame):
+                    for col in columns:
+                        df[col] = df[col].mask(mask, np.nan)
+                else:
+                    df.loc[mask, columns] = np.nan
 
         return df
 
