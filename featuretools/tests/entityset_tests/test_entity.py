@@ -229,5 +229,7 @@ def test_replace_latlong_nan_during_entity_creation(es):
     nan_es = ft.EntitySet("latlong_nan")
     df = es['log'].df.copy()
     df['latlong'][0] = np.nan
-    entity = ft.Entity(id="nan_latlong_entity", df=df, entityset=nan_es, variable_types=es['log'].variable_types)
+
+    with pytest.warns(UserWarning, match="All single `NaN` values in column `latlong` have been replaced with `\\(NaN, NaN\\)`"):
+        entity = ft.Entity(id="nan_latlong_entity", df=df, entityset=nan_es, variable_types=es['log'].variable_types)
     assert entity.df['latlong'][0] == (np.nan, np.nan)

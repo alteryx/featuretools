@@ -83,11 +83,6 @@ class Entity(object):
 
         self.set_secondary_time_index(secondary_time_index)
 
-        # Fill in single `NaN` values in LatLong variables with a tuple
-        latlongs = [k for k, v in self.variable_types.items() if v == vtypes.LatLong]
-        for latlong in latlongs:
-            self.df[latlong] = replace_latlong_nan(self.df[latlong])
-
     def __repr__(self):
         repr_out = u"Entity: {}\n".format(self.id)
         repr_out += u"  Variables:"
@@ -298,6 +293,11 @@ class Entity(object):
                 else:
                     variable_types[vid] = string_to_class_map['unknown']
                     warnings.warn("Variable type {} was unrecognized, Unknown variable type was used instead".format(vtype))
+
+            # Fill in any single `NaN` values in LatLong variables with a tuple
+            if variable_types[vid] == vtypes.LatLong and self.df[vid].hasnans:
+                self.df[vid] = replace_latlong_nan(self.df[vid])
+                warnings.warn("All single `NaN` values in column `{}` have been replaced with `(NaN, NaN)`".format(vid))
 
         if index not in variable_types:
             variable_types[index] = vtypes.Index
