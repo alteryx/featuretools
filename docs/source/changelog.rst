@@ -10,6 +10,7 @@ Changelog
     * Changes
     * Documentation Changes
     * Testing Changes
+
     Thanks to the following people for contributing to this release:
     :user:`frances-h`,  :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
 
