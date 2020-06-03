@@ -2,7 +2,7 @@
 
 Changelog
 ---------
-.. **Future Release**
+**Future Release**
     * Enhancements
         * Support use of Dask DataFrames in entitysets (:pr:`783`)
         * Add ``make_index`` when initializing an EntitySet by passing in an ``entities`` dictionary (:pr:`1010`)
