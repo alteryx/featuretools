@@ -4,11 +4,13 @@ Changelog
 ---------
 .. **Future Release**
     * Enhancements
+        * Support use of Dask DataFrames in entitysets (:pr:`783`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
     Thanks to the following people for contributing to this release:
+    :user:`frances-h`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.15.0 May 29, 2020**
     * Enhancements
@@ -18,7 +20,6 @@ Changelog
         * Add ``include_cutoff_time`` arg - control whether data at cutoff times are included in feature calculations (:pr:`959`)
         * Allow ``variables_types`` to be referenced by their ``type_string`` 
           for the ``entity_from_dataframe`` function (:pr:`988`)
-        * Support use of Dask DataFrames in entitysets (:pr:`783`)
     * Fixes
         * Fix errors with Equals and NotEquals primitives when comparing categoricals or different dtypes (:pr:`968`)
         * Normalized type_strings of ``Variable`` classes so that the ``find_variable_types`` function produces a 

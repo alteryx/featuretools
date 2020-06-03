@@ -579,8 +579,6 @@ def test_latlong(pd_es):
     longitude = ft.Feature(log_latlong_feat, primitive=Longitude)
     features = [latitude, longitude]
     df = ft.calculate_feature_matrix(entityset=pd_es, features=features, instance_ids=range(15))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
     latvalues = df[latitude.get_name()].values
     lonvalues = df[longitude.get_name()].values
     assert len(latvalues) == 15
@@ -750,8 +748,6 @@ def test_percentile(pd_es):
     feature_set = FeatureSet([p])
     calculator = FeatureSetCalculator(pd_es, feature_set)
     df = calculator.run(np.array(range(10, 17)))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
     true = pd_es['log'].df[v.get_name()].rank(pct=True)
     true = true.loc[range(10, 17)]
     for t, a in zip(true.values, df[p.get_name()].values):
