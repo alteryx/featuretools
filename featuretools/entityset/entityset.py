@@ -11,6 +11,7 @@ from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.entity import Entity
 from featuretools.entityset.relationship import Relationship, RelationshipPath
 from featuretools.utils.gen_utils import import_or_raise
+from featuretools.utils.entity_utils import check_graphviz
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
@@ -862,22 +863,7 @@ class EntitySet(object):
                 Jupyter notebooks.
 
         """
-        GRAPHVIZ_ERR_MSG = ('Please install graphviz to plot entity sets.' +
-                            ' (See https://docs.featuretools.com/en/stable/getting_started/install.html#installing-graphviz for' +
-                            ' details)')
-        graphviz = import_or_raise("graphviz", GRAPHVIZ_ERR_MSG)
-        # Try rendering a dummy graph to see if a working backend is installed
-        try:
-            graphviz.Digraph().pipe()
-        except graphviz.backend.ExecutableNotFound:
-            raise RuntimeError(
-                "To plot entity sets, a graphviz backend is required.\n" +
-                "Install the backend using one of the following commands:\n" +
-                "  Mac OS: brew install graphviz\n" +
-                "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
-                "  Windows: conda install python-graphviz\n" +
-                "  For more details visit: https://docs.featuretools.com/en/stable/getting_started/install.html"
-            )
+        graphviz = check_graphviz()
 
         if to_file:
             # Explicitly cast to str in case a Path object was passed in

@@ -155,6 +155,7 @@ Table of contents
    loading_data/using_entitysets
    automated_feature_engineering/afe
    automated_feature_engineering/primitives
+   variables
    automated_feature_engineering/handling_time
 
 .. toctree::
