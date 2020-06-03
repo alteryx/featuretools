@@ -40,7 +40,7 @@ class EntitySet(object):
                 entities (dict[str -> tuple(pd.DataFrame, str, str, dict[str -> Variable])]): dictionary of
                     entities. Entries take the format
                     {entity id -> (dataframe, id column, (time_index), (variable_types), (make_index))}.
-                    Note that time_index and variable_types are optional.
+                    Note that time_index, variable_types and make_index are optional.
 
                 relationships (list[(str, str, str, str)]): List of relationships
                     between entities. List items are a tuple with the format

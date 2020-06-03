@@ -1037,20 +1037,18 @@ def test_entityset_init():
                       relationships=relationships)
     assert es['transactions'].index == 'id'
     assert es['transactions'].time_index == 'transaction_time'
-
     es_copy = ft.EntitySet(id="fraud_data")
-    es_copy = es_copy.entity_from_dataframe(entity_id='cards',
-                                            dataframe=cards_df,
-                                            index='id')
-    es_copy = es_copy.entity_from_dataframe(entity_id='transactions',
-                                            dataframe=transactions_df,
-                                            index='id',
-                                            variable_types=variable_types,
-                                            make_index=False,
-                                            time_index='transaction_time')
+    es_copy.entity_from_dataframe(entity_id='cards',
+                                  dataframe=cards_df,
+                                  index='id')
+    es_copy.entity_from_dataframe(entity_id='transactions',
+                                  dataframe=transactions_df,
+                                  index='id',
+                                  variable_types=variable_types,
+                                  make_index=False,
+                                  time_index='transaction_time')
     relationship = ft.Relationship(es_copy["cards"]["id"],
                                    es_copy["transactions"]["id"])
-
-    es_copy = es_copy.add_relationship(relationship)
+    es_copy.add_relationship(relationship)
     assert es['cards'].__eq__(es_copy['cards'], deep=True)
     assert es['transactions'].__eq__(es_copy['transactions'], deep=True)
