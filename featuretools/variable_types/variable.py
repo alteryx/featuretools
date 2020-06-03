@@ -7,6 +7,7 @@ from featuretools.utils.gen_utils import camel_to_snake, find_descendents
 class ClassNameDescriptor(object):
     """Descriptor to convert a class's name from camelcase to snakecase
     """
+
     def __get__(self, instance, class_):
         return camel_to_snake(class_.__name__)
 
@@ -402,11 +403,6 @@ class SubRegionCode(Categorical):
 class FilePath(Variable):
     """Represents a valid filepath, absolute or relative"""
     _default_pandas_dtype = str
-
-
-def find_variable_types():
-    return {vtype.type_string: vtype for vtype in find_descendents(Variable)
-            if vtype != Variable}
 
 
 DEFAULT_DTYPE_VALUES = {

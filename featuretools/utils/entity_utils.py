@@ -192,23 +192,3 @@ def col_is_datetime(col):
                 return True
 
     return False
-
-
-def check_graphviz():
-    GRAPHVIZ_ERR_MSG = ('Please install graphviz to plot.' +
-                        ' (See https://docs.featuretools.com/en/stable/getting_started/install.html#installing-graphviz for' +
-                        ' details)')
-    graphviz = import_or_raise("graphviz", GRAPHVIZ_ERR_MSG)
-    # Try rendering a dummy graph to see if a working backend is installed
-    try:
-        graphviz.Digraph().pipe()
-    except graphviz.backend.ExecutableNotFound:
-        raise RuntimeError(
-            "To plot entity sets, a graphviz backend is required.\n" +
-            "Install the backend using one of the following commands:\n" +
-            "  Mac OS: brew install graphviz\n" +
-            "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
-            "  Windows: conda install python-graphviz\n" +
-            "  For more details visit: https://docs.featuretools.com/en/stable/getting_started/install.html"
-        )
-    return graphviz

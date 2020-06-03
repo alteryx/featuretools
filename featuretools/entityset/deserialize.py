@@ -11,7 +11,8 @@ from featuretools.entityset.serialize import FORMATS
 from featuretools.utils.gen_utils import check_schema_version
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
-from featuretools.variable_types.variable import LatLong, find_variable_types
+from featuretools.variable_types.utils import find_variable_types
+from featuretools.variable_types.variable import LatLong
 
 
 def description_to_variable(description, entity=None):

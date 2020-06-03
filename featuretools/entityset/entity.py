@@ -18,7 +18,7 @@ from featuretools.utils.wrangle import (
     _check_timedelta,
     _dataframes_equal
 )
-from featuretools.variable_types.variable import find_variable_types
+from featuretools.variable_types.utils import find_variable_types
 
 logger = logging.getLogger('featuretools.entityset')
 
