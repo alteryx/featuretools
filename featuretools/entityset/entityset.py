@@ -39,8 +39,8 @@ class EntitySet(object):
 
                 entities (dict[str -> tuple(pd.DataFrame, str, str, dict[str -> Variable])]): dictionary of
                     entities. Entries take the format
-                    {entity id -> (dataframe, id column, (time_column), (variable_types))}.
-                    Note that time_column and variable_types are optional.
+                    {entity id -> (dataframe, id column, (time_index), (variable_types), (make_index))}.
+                    Note that time_index and variable_types are optional.
 
                 relationships (list[(str, str, str, str)]): List of relationships
                     between entities. List items are a tuple with the format
@@ -69,17 +69,21 @@ class EntitySet(object):
         for entity in entities:
             df = entities[entity][0]
             index_column = entities[entity][1]
-            time_column = None
+            time_index = None
             variable_types = None
+            make_index = None
             if len(entities[entity]) > 2:
-                time_column = entities[entity][2]
+                time_index = entities[entity][2]
             if len(entities[entity]) > 3:
                 variable_types = entities[entity][3]
+            if len(entities[entity]) > 4:
+                make_index = entities[entity][4]
             self.entity_from_dataframe(entity_id=entity,
                                        dataframe=df,
                                        index=index_column,
-                                       time_index=time_column,
-                                       variable_types=variable_types)
+                                       time_index=time_index,
+                                       variable_types=variable_types,
+                                       make_index=make_index)
 
         for relationship in relationships:
             parent_variable = self[relationship[0]][relationship[1]]
