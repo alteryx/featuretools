@@ -1232,41 +1232,38 @@ def test_primitive_options_class_names(es):
         Mean: {'include_entities': ['customers']}
     }
 
-    dfs_obj1 = DeepFeatureSynthesis(target_entity_id='cohorts',
-                                    entityset=es,
-                                    agg_primitives=['mean'],
-                                    trans_primitives=[],
-                                    primitive_options=options1)
-    features1 = dfs_obj1.build_features()
+    bad_options = {
+        'mean': {'include_entities': ['customers']},
+        Mean: {'ignore_entities': ['customers']}
+    }
+    conflicting_error_text = "Multiple options found for primitive mean"
 
-    dfs_obj2 = DeepFeatureSynthesis(target_entity_id='cohorts',
-                                    entityset=es,
-                                    agg_primitives=['mean'],
-                                    trans_primitives=[],
-                                    primitive_options=options2)
-    features2 = dfs_obj2.build_features()
+    primitives = [['mean'], [Mean]]
+    options = [options1, options2]
 
-    dfs_obj3 = DeepFeatureSynthesis(target_entity_id='cohorts',
-                                    entityset=es,
-                                    agg_primitives=[Mean],
-                                    trans_primitives=[],
-                                    primitive_options=options1)
-    features3 = dfs_obj3.build_features()
+    features = []
+    for primitive in primitives:
+        with pytest.raises(KeyError, match=conflicting_error_text):
+            DeepFeatureSynthesis(target_entity_id='cohorts',
+                                 entityset=es,
+                                 agg_primitives=primitive,
+                                 trans_primitives=[],
+                                 primitive_options=bad_options)
+        for option in options:
+            dfs_obj = DeepFeatureSynthesis(target_entity_id='cohorts',
+                                           entityset=es,
+                                           agg_primitives=primitive,
+                                           trans_primitives=[],
+                                           primitive_options=option)
+            features.append(set(dfs_obj.build_features()))
 
-    dfs_obj4 = DeepFeatureSynthesis(target_entity_id='cohorts',
-                                    entityset=es,
-                                    agg_primitives=[Mean],
-                                    trans_primitives=[],
-                                    primitive_options=options2)
-    features4 = dfs_obj4.build_features()
-
-    for f in features1:
+    for f in features[0]:
         deps = f.get_dependencies(deep=True)
         entities = [d.entity.id for d in deps]
         if isinstance(f.primitive, Mean):
             assert all(entity == 'customers' for entity in entities)
 
-    assert set(features1) == set(features2) == set(features3) == set(features4)
+    assert features[0] == features[1] == features[2] == features[3]
 
 
 def test_primitive_options_instantiated_primitive(es):
