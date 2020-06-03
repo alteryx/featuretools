@@ -4,7 +4,7 @@ Changelog
 ---------
 .. **Future Release**
     * Enhancements
-        * Add ``make_index`` when initializing an EntitySet by passing in an ``entities`` dictionary (:pr:`1004`)
+        * Add ``make_index`` when initializing an EntitySet by passing in an ``entities`` dictionary (:pr:`1010`)
     * Fixes
     * Changes
     * Documentation Changes
