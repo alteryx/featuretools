@@ -1309,3 +1309,42 @@ def test_normalize_with_invalid_time_index(es):
                             index="cancel_reason",
                             copy_variables=['upgrade_date'])
     es['customers'].convert_variable_type('signup_date', variable_types.DatetimeTimeIndex)
+
+
+def test_entityset_init():
+    cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
+    transactions_df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                                    "card_id": [1, 2, 1, 3, 4, 5],
+                                    "transaction_time": [10, 12, 13, 20, 21, 20],
+                                    "upgrade_date": [51, 23, 45, 12, 22, 53],
+                                    "fraud": [True, False, False, False, True, True]})
+    variable_types = {
+        'fraud': 'boolean',
+        'card_id': 'categorical'
+    }
+    entities = {
+        "cards": (cards_df, "id"),
+        "transactions": (transactions_df, 'id', 'transaction_time',
+                         variable_types, False)
+    }
+    relationships = [('cards', 'id', 'transactions', 'id')]
+    es = ft.EntitySet(id="fraud_data",
+                      entities=entities,
+                      relationships=relationships)
+    assert es['transactions'].index == 'id'
+    assert es['transactions'].time_index == 'transaction_time'
+    es_copy = ft.EntitySet(id="fraud_data")
+    es_copy.entity_from_dataframe(entity_id='cards',
+                                  dataframe=cards_df,
+                                  index='id')
+    es_copy.entity_from_dataframe(entity_id='transactions',
+                                  dataframe=transactions_df,
+                                  index='id',
+                                  variable_types=variable_types,
+                                  make_index=False,
+                                  time_index='transaction_time')
+    relationship = ft.Relationship(es_copy["cards"]["id"],
+                                   es_copy["transactions"]["id"])
+    es_copy.add_relationship(relationship)
+    assert es['cards'].__eq__(es_copy['cards'], deep=True)
+    assert es['transactions'].__eq__(es_copy['transactions'], deep=True)
