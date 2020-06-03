@@ -5,6 +5,7 @@ Changelog
 .. **Future Release**
     * Enhancements
         * Add ``make_index`` when initializing an EntitySet by passing in an ``entities`` dictionary (:pr:`1010`)
+        * Add ``list_variable_types`` and ``graph_variable_types`` for Variable Types (:pr:`1013`)
     * Fixes
     * Changes
     * Documentation Changes
