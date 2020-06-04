@@ -2,6 +2,21 @@
 
 Parallel Feature Computation
 ============================
+There are several different approaches that can be used to perform parallel feature computation with Featuretools. This document provides an overview of the most commonly used approaches.
+
+Computation with Dask EntitySet (BETA)
+----------------------------------------
+.. note::
+    Support for Dask EntitySets is still in Beta. While the key functionality has been implemented, development is still ongoing to add the remaining functionality.
+    
+    All planned improvements to the Featuretools/Dask integration are `documented on Github <https://github.com/FeatureLabs/featuretools/issues?q=is%3Aopen+is%3Aissue+label%3ADask>`_. If you see an open issue that is important for your application, please let us know by upvoting the issue. If you encounter any errors using Dask entities, or find missing functionality that does not yet have an open issue, please create a `new issue on Github <https://github.com/FeatureLabs/featuretools/issues>`_.
+
+Dask can be used with Featuretools to perform parallel feature computation with virtually no changes to the workflow required. Featuretools supports creating an ``EntitySet`` directly from Dask dataframes instead of using pandas dataframes, enabling the parallel and distributed computation capabilities of Dask to be used. By creating an ``EntitySet`` directly from Dask dataframes, Featuretools can be used to generate a larger-than-memory feature matrix, something that may be difficult with other approaches. When computing a feature matrix from an ``EntitySet`` created from Dask dataframes, the resulting feature matrix will be returned as a Dask dataframe.
+
+This method does have some limitations in terms of the primitives that are available and the optional parameters that can be used when calculating the feature matrix. For more information on generating a feature matrix with this approach, refer to the guide :doc:`/guides/using_dask_entitysets`.
+
+Simple Parallel Feature Computation
+-----------------------------------
 Featuretools can optionally compute features on multiple cores. The simplest way to control the amount of parallelism is to specify the ``n_jobs`` parameter::
 
     fm = ft.calculate_feature_matrix(features=features,
@@ -12,11 +27,7 @@ Featuretools can optionally compute features on multiple cores. The simplest way
 
 The above command will start 2 processes to compute chunks of the feature matrix in parallel. Each process receives its own copy of the entity set, so memory use will be proportional to the number of parallel processes. Because the entity set has to be copied to each process, there is overhead to perform this operation before calculation can begin. To avoid this overhead on successive calls to ``calculate_feature_matrix``, read the section below on using a persistent cluster.
 
-Running Featuretools with Spark and Dask
-----------------------------------------
-The Featuretools development team is continually working to improve integration with Dask and Spark for performing feature engineering at scale. If you have a big data problem and are interested in testing our latest Dask or Spark integrations for free, please let us know by completing `this simple request form <https://forms.office.com/Pages/ResponsePage.aspx?id=2TkvUj0wj0id66bXfx6v2ASd4JAap6pFigRj7EKGsuBUNDI4WDlGSzI1VVRHTUdMS0gyR1EyMkdJVi4u>`__.
 
-Continue reading below to learn how to perform parallel feature computation with the current integrations.
 
 Using persistent cluster
 ------------------------
@@ -63,10 +74,6 @@ Parallel Computation by Partitioning Data
 -----------------------------------------
 As an alternative to Featuretool's parallelization, the data can be partitioned and the feature calculations run on multiple cores or a cluster using Dask or Apache Spark with PySpark. This approach may be necessary with a large ``EntitySet`` because the current parallel implementation sends the entire ``EntitySet`` to each worker which may exhaust the worker memory. For more information on partitioning the data and using Dask or Spark, see :doc:`/guides/performance`. Dask and Spark allow Featuretools to scale to multiple cores on a single machine or multiple machines on a cluster.
 
-Computation with a Dask EntitySet (BETA)
-----------------------------------------
-Support for Dask EntitySets is still in Beta - if you encounter any errors using this approach, please let us know by creating a `new issue on Github <https://github.com/FeatureLabs/featuretools/issues>`_.
-
-A final approach that can be used is to create a Featuretools ``EntitySet`` directly from Dask dataframes instead of using pandas dataframes. The other methods discussed above may not work with very large datasets because of the memory required to load or partition the pandas dataframes. By creating an ``EntitySet`` directly from Dask dataframes, Featuretools can be used to generate a larger-than-memory feature matrix in a parallel manner. When computing a feature matrix from an ``EntitySet`` created from Dask dataframes, the resulting feature matrix will be returned as a Dask dataframe.
-
-This method does have some limitations in terms of the primitives that are available and the optional parameters that can be used when calculating the feature matrix. For more information on generating a feature matrix with this approach, refer to the guide :doc:`/guides/dfs_with_dask_entitysets`.
+Running Featuretoools with Spark
+--------------------------------
+The Featuretools development team is continually working to improve integration with Spark for performing feature engineering at scale. If you have a big data problem and are interested in testing our latest integrations for free, please let us know by completing `this simple request form <https://forms.office.com/Pages/ResponsePage.aspx?id=2TkvUj0wj0id66bXfx6v2ASd4JAap6pFigRj7EKGsuBUNDI4WDlGSzI1VVRHTUdMS0gyR1EyMkdJVi4u>`__.
