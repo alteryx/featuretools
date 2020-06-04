@@ -1,6 +1,7 @@
-import featuretools as ft
+import dask.dataframe as dd
 
-from featuretools.primitives import (  # CumCount,; CumMax,; CumMean,; CumMin,; CumSum,
+import featuretools as ft
+from featuretools.primitives import (
     AddNumeric,
     AddNumericScalar,
     Count,
@@ -90,6 +91,8 @@ def test_override_boolean(es):
     features.append(~(count_lo.AND(count_hi)))
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2])
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert v == test
@@ -159,6 +162,8 @@ def test_override_cmp_from_variable(es):
     features = [count_lo]
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2])
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     v = df[count_lo.get_name()].values.tolist()
     for i, test in enumerate(to_test):
         assert v[i] == test
@@ -190,6 +195,8 @@ def test_override_cmp(es):
                 lt_other, le_hi, le_other, ne_lo, ne_other]
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2])
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert v == test

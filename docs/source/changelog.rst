@@ -2,16 +2,19 @@
 
 Changelog
 ---------
-.. **Future Release**
+**Future Release**
     * Enhancements
+        * Support use of Dask DataFrames in entitysets (:pr:`783`)
         * Add ``make_index`` when initializing an EntitySet by passing in an ``entities`` dictionary (:pr:`1010`)
     * Fixes
         * Resolve issue with `NaN` values in `LatLong` columns (:pr:`1007`)
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Update tests for numpy v1.19.0 compatability (:pr:`1016`)
+
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`Alex-Monahan`
+    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`Alex-Monahan`, :user:`frances-h`, :user:`rwedge`
 
 **v0.15.0 May 29, 2020**
     * Enhancements

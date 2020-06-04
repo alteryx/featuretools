@@ -29,6 +29,7 @@ class GreaterThan(TransformPrimitive):
     name = "greater_than"
     input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
+    dask_compatible = True
 
     def get_function(self):
         return np.greater
@@ -53,14 +54,14 @@ class GreaterThanScalar(TransformPrimitive):
     name = "greater_than_scalar"
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
+    dask_compatible = True
 
     def __init__(self, value=0):
         self.value = value
 
     def get_function(self):
         def greater_than_scalar(vals):
-            # convert series to handle both numeric and datetime case
-            return pd.Series(vals) > self.value
+            return vals > self.value
         return greater_than_scalar
 
     def generate_name(self, base_feature_names):
@@ -83,6 +84,7 @@ class GreaterThanEqualTo(TransformPrimitive):
     name = "greater_than_equal_to"
     input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
+    dask_compatible = True
 
     def get_function(self):
         return np.greater_equal
@@ -107,14 +109,14 @@ class GreaterThanEqualToScalar(TransformPrimitive):
     name = "greater_than_equal_to_scalar"
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
+    dask_compatible = True
 
     def __init__(self, value=0):
         self.value = value
 
     def get_function(self):
         def greater_than_equal_to_scalar(vals):
-            # convert series to handle both numeric and datetime case
-            return pd.Series(vals) >= self.value
+            return vals >= self.value
         return greater_than_equal_to_scalar
 
     def generate_name(self, base_feature_names):
@@ -137,6 +139,7 @@ class LessThan(TransformPrimitive):
     name = "less_than"
     input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
+    dask_compatible = True
 
     def get_function(self):
         return np.less
@@ -161,14 +164,14 @@ class LessThanScalar(TransformPrimitive):
     name = "less_than_scalar"
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
+    dask_compatible = True
 
     def __init__(self, value=0):
         self.value = value
 
     def get_function(self):
         def less_than_scalar(vals):
-            # convert series to handle both numeric and datetime case
-            return pd.Series(vals) < self.value
+            return vals < self.value
         return less_than_scalar
 
     def generate_name(self, base_feature_names):
@@ -191,6 +194,7 @@ class LessThanEqualTo(TransformPrimitive):
     name = "less_than_equal_to"
     input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
+    dask_compatible = True
 
     def get_function(self):
         return np.less_equal
@@ -215,14 +219,14 @@ class LessThanEqualToScalar(TransformPrimitive):
     name = "less_than_equal_to_scalar"
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
+    dask_compatible = True
 
     def __init__(self, value=0):
         self.value = value
 
     def get_function(self):
         def less_than_equal_to_scalar(vals):
-            # convert series to handle both numeric and datetime case
-            return pd.Series(vals) <= self.value
+            return vals <= self.value
         return less_than_equal_to_scalar
 
     def generate_name(self, base_feature_names):
@@ -277,13 +281,14 @@ class EqualScalar(TransformPrimitive):
     name = "equal_scalar"
     input_types = [Variable]
     return_type = Boolean
+    dask_compatible = True
 
     def __init__(self, value=None):
         self.value = value
 
     def get_function(self):
         def equal_scalar(vals):
-            return pd.Series(vals) == self.value
+            return vals == self.value
         return equal_scalar
 
     def generate_name(self, base_feature_names):
@@ -338,13 +343,14 @@ class NotEqualScalar(TransformPrimitive):
     name = "not_equal_scalar"
     input_types = [Variable]
     return_type = Boolean
+    dask_compatible = True
 
     def __init__(self, value=None):
         self.value = value
 
     def get_function(self):
         def not_equal_scalar(vals):
-            return pd.Series(vals) != self.value
+            return vals != self.value
         return not_equal_scalar
 
     def generate_name(self, base_feature_names):
@@ -368,6 +374,7 @@ class AddNumeric(TransformPrimitive):
     input_types = [Numeric, Numeric]
     return_type = Numeric
     commutative = True
+    dask_compatible = True
 
     def get_function(self):
         return np.add
@@ -391,6 +398,7 @@ class AddNumericScalar(TransformPrimitive):
     name = "add_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
+    dask_compatible = True
 
     def __init__(self, value=0):
         self.value = value
@@ -425,6 +433,7 @@ class SubtractNumeric(TransformPrimitive):
     name = "subtract_numeric"
     input_types = [Numeric, Numeric]
     return_type = Numeric
+    dask_compatible = True
 
     def __init__(self, commutative=True):
         self.commutative = commutative
@@ -451,6 +460,7 @@ class SubtractNumericScalar(TransformPrimitive):
     name = "subtract_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
+    dask_compatible = True
 
     def __init__(self, value=0):
         self.value = value
@@ -480,6 +490,7 @@ class ScalarSubtractNumericFeature(TransformPrimitive):
     name = "scalar_subtract_numeric_feature"
     input_types = [Numeric]
     return_type = Numeric
+    dask_compatible = True
 
     def __init__(self, value=0):
         self.value = value
@@ -514,6 +525,7 @@ class MultiplyNumeric(TransformPrimitive):
     ]
     return_type = Numeric
     commutative = True
+    dask_compatible = True
 
     def get_function(self):
         return np.multiply
@@ -537,6 +549,7 @@ class MultiplyNumericScalar(TransformPrimitive):
     name = "multiply_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
+    dask_compatible = True
 
     def __init__(self, value=1):
         self.value = value
@@ -568,6 +581,7 @@ class MultiplyBoolean(TransformPrimitive):
 
     return_type = Boolean
     commutative = True
+    dask_compatible = True
 
     def get_function(self):
         return np.bitwise_and
@@ -597,6 +611,7 @@ class DivideNumeric(TransformPrimitive):
     name = "divide_numeric"
     input_types = [Numeric, Numeric]
     return_type = Numeric
+    dask_compatible = True
 
     def __init__(self, commutative=False):
         self.commutative = commutative
@@ -623,6 +638,7 @@ class DivideNumericScalar(TransformPrimitive):
     name = "divide_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
+    dask_compatible = True
 
     def __init__(self, value=1):
         self.value = value
@@ -652,6 +668,7 @@ class DivideByFeature(TransformPrimitive):
     name = "divide_by_feature"
     input_types = [Numeric]
     return_type = Numeric
+    dask_compatible = True
 
     def __init__(self, value=1):
         self.value = value
@@ -681,6 +698,7 @@ class ModuloNumeric(TransformPrimitive):
     name = "modulo_numeric"
     input_types = [Numeric, Numeric]
     return_type = Numeric
+    dask_compatible = True
 
     def get_function(self):
         return np.mod
@@ -705,6 +723,7 @@ class ModuloNumericScalar(TransformPrimitive):
     name = "modulo_numeric_scalar"
     input_types = [Numeric]
     return_type = Numeric
+    dask_compatible = True
 
     def __init__(self, value=1):
         self.value = value
@@ -734,6 +753,7 @@ class ModuloByFeature(TransformPrimitive):
     name = "modulo_by_feature"
     input_types = [Numeric]
     return_type = Numeric
+    dask_compatible = True
 
     def __init__(self, value=1):
         self.value = value
@@ -764,6 +784,7 @@ class And(TransformPrimitive):
     input_types = [Boolean, Boolean]
     return_type = Boolean
     commutative = True
+    dask_compatible = True
 
     def get_function(self):
         return np.logical_and
@@ -789,6 +810,7 @@ class Or(TransformPrimitive):
     input_types = [Boolean, Boolean]
     return_type = Boolean
     commutative = True
+    dask_compatible = True
 
     def get_function(self):
         return np.logical_or
