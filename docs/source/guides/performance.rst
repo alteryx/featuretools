@@ -62,7 +62,7 @@ We can also set chunk size to be a percentage of total rows::
                                            chunk_size=.05)
 
 Using persistent cluster
-************************
+++++++++++++++++++++++++
 Behind the scenes, Featuretools uses `Dask's <http://dask.pydata.org/>`_ distributed scheduler to implement multiprocessing. When you only specify the ``n_jobs`` parameter, a cluster will be created for that specific feature matrix calculation and destroyed once calculations have finished. A drawback of this is that each time a feature matrix is calculated, the entity set has to be transmitted to the workers again. To avoid this, we would like to reuse the same cluster between calls. The way to do this is by creating a cluster first and telling featuretools to use it with the ``dask_kwargs`` parameter::
 
     import featuretools as ft
@@ -88,7 +88,7 @@ The 'cluster' value can either be the actual cluster object or a string of the a
     When using a persistent cluster, Featuretools publishes a copy of the ``EntitySet`` to the cluster the first time it calculates a feature matrix. Based on the ``EntitySet``'s metadata the cluster will reuse it for successive computations. This means if two ``EntitySets`` have the same metadata but different row values (e.g. new data is added to the ``EntitySet``), Featuretools won’t recopy the second ``EntitySet`` in later calls. A simple way to avoid this scenario is to use a unique ``EntitySet`` id.
 
 Using the distributed dashboard
-*******************************
++++++++++++++++++++++++++++++++
 Dask.distributed has a web-based diagnostics dashboard that can be used to analyze the state of the workers and tasks. It can also be useful for tracking memory use or visualizing task run-times. An in-depth description of the web interface can be found `here <https://distributed.readthedocs.io/en/latest/web.html>`_.
 
 .. image:: /images/dashboard.png

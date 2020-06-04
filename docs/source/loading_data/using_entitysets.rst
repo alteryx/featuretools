@@ -159,3 +159,8 @@ Finally, we are ready to use this EntitySet with any functionality within Featur
     feature_matrix
 
 As we can see, the features from DFS use the relational structure of our entity set. Therefore it is important to think carefully about the entities that we create.
+
+Dask EntitySets
+~~~~~~~~~~~~~~~
+
+EntitySets can also be created using Dask dataframes. For more information refer to :doc:`../guides/using_dask_entitysets`.
