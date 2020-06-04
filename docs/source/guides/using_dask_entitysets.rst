@@ -67,6 +67,9 @@ Limitations
 -----------
 The key functionality of Featuretools is available for use with a Dask ``EntitySet``, and work is ongoing to add the remaining functionality that is available when using a pandas ``EntitySet``. There are, however, some limitations to be aware of when creating a Dask ``Entityset`` and then using it to generate a feature matrix. The most significant limitations are reviewed in more detail in this section.
 
+.. note::
+    If the limitations of using a Dask ``EntitySet`` are problematic for your problem, you may still be able to compute a larger-than-memory feature matrix by partitioning your data as described in :doc:`performance`.
+
 Supported Primitives
 ********************
 When creating a feature matrix from a Dask ``EntitySet``, only certain primitives can be used. Primitives that rely on the order of the entire dataframe or require an entire column for computation are currently not supported when using a Dask ``EntitySet``. Multivariable and time-dependent aggregation primitives also are not currently supported.
