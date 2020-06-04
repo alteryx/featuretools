@@ -1,3 +1,4 @@
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
@@ -30,6 +31,8 @@ def test_direct_from_identity(es):
     feature_set = FeatureSet([d])
     calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
     df = calculator.run(np.array([0, 5]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute().set_index('id').sort_index()
     v = df[d.get_name()].tolist()
     assert v == [0, 1]
 
@@ -43,6 +46,8 @@ def test_direct_from_variable(es):
     feature_set = FeatureSet([d])
     calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
     df = calculator.run(np.array([0, 5]))
+    if isinstance(df, dd.DataFrame):
+        df = df.compute().set_index('id').sort_index()
     v = df[d.get_name()].tolist()
     assert v == [0, 1]
 
@@ -70,6 +75,10 @@ def test_direct_copy(games_es):
 
 
 def test_direct_of_multi_output_transform_feat(es):
+    # TODO: Update to work with Dask
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        pytest.xfail("Custom primitive is not compabible with Dask")
+
     class TestTime(TransformPrimitive):
         name = "test_time"
         input_types = [Datetime]
@@ -105,7 +114,7 @@ def test_direct_of_multi_output_transform_feat(es):
         assert (fm[col1] == fm[col2]).all()
 
 
-def test_direct_features_of_multi_output_agg_primitives(es):
+def test_direct_features_of_multi_output_agg_primitives(pd_es):
     class ThreeMostCommonCat(AggregationPrimitive):
         name = "n_most_common_categorical"
         input_types = [Categorical]
@@ -121,7 +130,7 @@ def test_direct_features_of_multi_output_agg_primitives(es):
                 return array
             return pd_top3
 
-    fm, fl = dfs(entityset=es,
+    fm, fl = dfs(entityset=pd_es,
                  target_entity="log",
                  agg_primitives=[ThreeMostCommonCat],
                  trans_primitives=[],
