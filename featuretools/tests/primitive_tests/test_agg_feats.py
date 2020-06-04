@@ -1,6 +1,7 @@
 from datetime import datetime
 from math import isnan
 
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
@@ -90,7 +91,7 @@ def test_makes_count(es):
     assert feature_with_name(features, 'customers.COUNT(log)')
 
 
-def test_count_null_and_make_agg_primitive(es):
+def test_count_null_and_make_agg_primitive(pd_es):
     def count_func(values, count_null=False):
         if len(values) == 0:
             return 0
@@ -109,8 +110,8 @@ def test_count_null_and_make_agg_primitive(es):
     Count = make_agg_primitive(count_func, [[Index], [Variable]], Numeric,
                                name="count", stack_on_self=False,
                                cls_attributes={"generate_name": count_generate_name})
-    count_null = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Count(count_null=True))
-    feature_matrix = ft.calculate_feature_matrix([count_null], entityset=es)
+    count_null = ft.Feature(pd_es['log']['value'], parent_entity=pd_es['sessions'], primitive=Count(count_null=True))
+    feature_matrix = ft.calculate_feature_matrix([count_null], entityset=pd_es)
     values = [5, 4, 1, 2, 3, 2]
     assert (values == feature_matrix[count_null.get_name()]).all()
 
@@ -218,8 +219,12 @@ def test_init_and_name(es):
     log = es['log']
 
     features = [ft.Feature(v) for v in log.variables]
-    for agg_prim in get_aggregation_primitives().values():
+    agg_primitives = get_aggregation_primitives().values()
+    # If Dask EntitySet use only Dask compatible primitives
+    if isinstance(es['sessions'].df, dd.DataFrame):
+        agg_primitives = [prim for prim in agg_primitives if prim.dask_compatible]
 
+    for agg_prim in agg_primitives:
         input_types = agg_prim.input_types
         if type(input_types[0]) != list:
             input_types = [input_types]
@@ -235,7 +240,7 @@ def test_init_and_name(es):
 
                 # try to get name and calculate
                 instance.get_name()
-                ft.calculate_feature_matrix([instance], entityset=es).head(5)
+                ft.calculate_feature_matrix([instance], entityset=es)
 
 
 def test_invalid_init_args(diamond_es):
@@ -381,10 +386,10 @@ def test_serialization(es):
     _assert_agg_feats_equal(max2, deserialized)
 
 
-def test_time_since_last(es):
-    f = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=TimeSinceLast)
+def test_time_since_last(pd_es):
+    f = ft.Feature(pd_es["log"]["datetime"], parent_entity=pd_es["customers"], primitive=TimeSinceLast)
     fm = ft.calculate_feature_matrix([f],
-                                     entityset=es,
+                                     entityset=pd_es,
                                      instance_ids=[0, 1, 2],
                                      cutoff_time=datetime(2015, 6, 8))
 
@@ -393,10 +398,10 @@ def test_time_since_last(es):
     assert all(fm[f.get_name()].round().values == correct)
 
 
-def test_time_since_first(es):
-    f = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=TimeSinceFirst)
+def test_time_since_first(pd_es):
+    f = ft.Feature(pd_es["log"]["datetime"], parent_entity=pd_es["customers"], primitive=TimeSinceFirst)
     fm = ft.calculate_feature_matrix([f],
-                                     entityset=es,
+                                     entityset=pd_es,
                                      instance_ids=[0, 1, 2],
                                      cutoff_time=datetime(2015, 6, 8))
 
@@ -405,10 +410,10 @@ def test_time_since_first(es):
     assert all(fm[f.get_name()].round().values == correct)
 
 
-def test_median(es):
-    f = ft.Feature(es["log"]["value_many_nans"], parent_entity=es["customers"], primitive=Median)
+def test_median(pd_es):
+    f = ft.Feature(pd_es["log"]["value_many_nans"], parent_entity=pd_es["customers"], primitive=Median)
     fm = ft.calculate_feature_matrix([f],
-                                     entityset=es,
+                                     entityset=pd_es,
                                      instance_ids=[0, 1, 2],
                                      cutoff_time=datetime(2015, 6, 8))
 
@@ -423,8 +428,11 @@ def test_agg_same_method_name(es):
         can't differentiate them. We have a work around to this based on the name property
         that we test here.
     """
-
+    # TODO: Update to work with Dask
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        pytest.xfail("Cannot use primitives made with make_agg_primitives with Dask EntitySets")
     # test with normally defined functions
+
     def custom_primitive(x):
         return x.sum()
 
@@ -455,7 +463,7 @@ def test_agg_same_method_name(es):
     assert fm.columns.tolist() == [f_sum.get_name(), f_max.get_name()]
 
 
-def test_time_since_last_custom(es):
+def test_time_since_last_custom(pd_es):
     def time_since_last(values, time=None):
         time_since = time - values.iloc[0]
         return time_since.total_seconds()
@@ -465,9 +473,9 @@ def test_time_since_last_custom(es):
                                        Numeric,
                                        name="time_since_last",
                                        uses_calc_time=True)
-    f = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=TimeSinceLast)
+    f = ft.Feature(pd_es["log"]["datetime"], parent_entity=pd_es["customers"], primitive=TimeSinceLast)
     fm = ft.calculate_feature_matrix([f],
-                                     entityset=es,
+                                     entityset=pd_es,
                                      instance_ids=[0, 1, 2],
                                      cutoff_time=datetime(2015, 6, 8))
 
@@ -483,7 +491,7 @@ def test_time_since_last_custom(es):
                                            uses_calc_time=False)
 
 
-def test_custom_primitive_time_as_arg(es):
+def test_custom_primitive_time_as_arg(pd_es):
     def time_since_last(values, time):
         time_since = time - values.iloc[0]
         return time_since.total_seconds()
@@ -493,9 +501,9 @@ def test_custom_primitive_time_as_arg(es):
                                        Numeric,
                                        uses_calc_time=True)
     assert TimeSinceLast.name == "time_since_last"
-    f = ft.Feature(es["log"]["datetime"], parent_entity=es["customers"], primitive=TimeSinceLast)
+    f = ft.Feature(pd_es["log"]["datetime"], parent_entity=pd_es["customers"], primitive=TimeSinceLast)
     fm = ft.calculate_feature_matrix([f],
-                                     entityset=es,
+                                     entityset=pd_es,
                                      instance_ids=[0, 1, 2],
                                      cutoff_time=datetime(2015, 6, 8))
 
@@ -511,7 +519,7 @@ def test_custom_primitive_time_as_arg(es):
                            uses_calc_time=False)
 
 
-def test_custom_primitive_multiple_inputs(es):
+def test_custom_primitive_multiple_inputs(pd_es):
     def mean_sunday(numeric, datetime):
         '''
         Finds the mean of non-null values of a feature that occurred on Sundays
@@ -524,7 +532,7 @@ def test_custom_primitive_multiple_inputs(es):
                                     input_types=[Numeric, Datetime],
                                     return_type=Numeric)
 
-    fm, features = ft.dfs(entityset=es,
+    fm, features = ft.dfs(entityset=pd_es,
                           target_entity="sessions",
                           agg_primitives=[MeanSunday],
                           trans_primitives=[])
@@ -533,9 +541,9 @@ def test_custom_primitive_multiple_inputs(es):
     for x, y in iterator:
         assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
 
-    es.add_interesting_values()
+    pd_es.add_interesting_values()
     mean_sunday_value_priority_0 = pd.Series([None, None, None, 2.5, 0, None])
-    fm, features = ft.dfs(entityset=es,
+    fm, features = ft.dfs(entityset=pd_es,
                           target_entity="sessions",
                           agg_primitives=[MeanSunday],
                           trans_primitives=[],
@@ -575,7 +583,7 @@ def test_makes_numtrue(es):
     assert feature_with_name(features, 'NUM_TRUE(log.purchased)')
 
 
-def test_make_three_most_common(es):
+def test_make_three_most_common(pd_es):
     def pd_top3(x):
         array = np.array(x.value_counts()[:3].index)
         if len(array) < 3:
@@ -588,7 +596,7 @@ def test_make_three_most_common(es):
                                        return_type=Discrete,
                                        number_output_features=3)
 
-    fm, features = ft.dfs(entityset=es,
+    fm, features = ft.dfs(entityset=pd_es,
                           target_entity="customers",
                           instance_ids=[0, 1, 2],
                           agg_primitives=[NMostCommoner],
@@ -603,15 +611,15 @@ def test_make_three_most_common(es):
     assert df.iloc[2].reset_index(drop=True).equals(pd.Series(['taco clock', np.nan, np.nan]))
 
 
-def test_stacking_multi(es):
+def test_stacking_multi(pd_es):
     threecommon = NMostCommon(3)
-    tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=threecommon)
+    tc = ft.Feature(pd_es['log']['product_id'], parent_entity=pd_es["sessions"], primitive=threecommon)
 
     stacked = []
     for i in range(3):
-        stacked.append(ft.Feature(tc[i], parent_entity=es['customers'], primitive=NumUnique))
+        stacked.append(ft.Feature(tc[i], parent_entity=pd_es['customers'], primitive=NumUnique))
 
-    fm = ft.calculate_feature_matrix(stacked, entityset=es, instance_ids=[0, 1, 2])
+    fm = ft.calculate_feature_matrix(stacked, entityset=pd_es, instance_ids=[0, 1, 2])
 
     correct_vals = [[3, 2, 1], [2, 1, 0], [0, 0, 0]]
     correct_vals1 = [[3, 1, 1], [2, 1, 0], [0, 0, 0]]
@@ -634,6 +642,8 @@ def test_use_previous_pd_dateoffset(es):
     feature_matrix = ft.calculate_feature_matrix([total_events_pd], es,
                                                  cutoff_time=pd.Timestamp('2011-04-11 10:31:30'),
                                                  instance_ids=[0, 1, 2])
+    if isinstance(feature_matrix, dd.DataFrame):
+        feature_matrix = feature_matrix.compute().set_index('id').sort_index()
     col_name = list(feature_matrix.head().keys())[0]
     assert (feature_matrix[col_name] == [1, 5, 2]).all()
 
@@ -646,7 +656,7 @@ def _assert_agg_feats_equal(f1, f2):
     assert f1.use_previous == f2.use_previous
 
 
-def test_override_multi_feature_names(es):
+def test_override_multi_feature_names(pd_es):
     def gen_custom_names(primitive, base_feature_names, relationship_path_name,
                          parent_entity_id, where_str, use_prev_str):
         base_string = 'Custom_%s({}.{})'.format(parent_entity_id, base_feature_names)
@@ -666,7 +676,7 @@ def test_override_multi_feature_names(es):
                                        number_output_features=num_features,
                                        cls_attributes={"generate_names": gen_custom_names})
 
-    fm, features = ft.dfs(entityset=es,
+    fm, features = ft.dfs(entityset=pd_es,
                           target_entity="products",
                           instance_ids=[0, 1, 2],
                           agg_primitives=[NMostCommoner],

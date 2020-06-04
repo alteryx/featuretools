@@ -8,3 +8,4 @@ graphviz>=0.8.4
 moto>=1.3.13
 smart-open>=1.8.4
 boto3>=1.10.45
+composeml>=0.2.0

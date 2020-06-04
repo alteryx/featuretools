@@ -1,3 +1,4 @@
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 
@@ -29,9 +30,15 @@ class IsNull(TransformPrimitive):
     name = "is_null"
     input_types = [Variable]
     return_type = Boolean
+    dask_compatible = True
 
     def get_function(self):
-        return lambda array: pd.isnull(pd.Series(array))
+        def isnull(array):
+            if isinstance(array, dd.Series):
+                return dd.Series.isnull(array)
+            else:
+                return pd.isnull(pd.Series(array))
+        return isnull
 
 
 class Absolute(TransformPrimitive):
@@ -45,6 +52,7 @@ class Absolute(TransformPrimitive):
     name = "absolute"
     input_types = [Numeric]
     return_type = Numeric
+    dask_compatible = True
 
     def get_function(self):
         return np.absolute
@@ -102,9 +110,12 @@ class Day(TransformPrimitive):
     name = "day"
     input_types = [Datetime]
     return_type = Ordinal
+    dask_compatible = True
 
     def get_function(self):
         def day(vals):
+            if isinstance(vals, dd.Series):
+                return vals.dt.day
             return pd.DatetimeIndex(vals).day.values
         return day
 
@@ -124,9 +135,12 @@ class Hour(TransformPrimitive):
     name = "hour"
     input_types = [Datetime]
     return_type = Ordinal
+    dask_compatible = True
 
     def get_function(self):
         def hour(vals):
+            if isinstance(vals, dd.Series):
+                return vals.dt.hour
             return pd.DatetimeIndex(vals).hour.values
         return hour
 
@@ -146,9 +160,12 @@ class Second(TransformPrimitive):
     name = "second"
     input_types = [Datetime]
     return_type = Numeric
+    dask_compatible = True
 
     def get_function(self):
         def second(vals):
+            if isinstance(vals, dd.Series):
+                return vals.dt.second
             return pd.DatetimeIndex(vals).second.values
         return second
 
@@ -168,9 +185,12 @@ class Minute(TransformPrimitive):
     name = "minute"
     input_types = [Datetime]
     return_type = Numeric
+    dask_compatible = True
 
     def get_function(self):
         def minute(vals):
+            if isinstance(vals, dd.Series):
+                return vals.dt.minute
             return pd.DatetimeIndex(vals).minute.values
         return minute
 
@@ -195,9 +215,12 @@ class Week(TransformPrimitive):
     name = "week"
     input_types = [Datetime]
     return_type = Ordinal
+    dask_compatible = True
 
     def get_function(self):
         def week(vals):
+            if isinstance(vals, dd.Series):
+                return vals.dt.week
             return pd.DatetimeIndex(vals).week.values
         return week
 
@@ -217,9 +240,12 @@ class Month(TransformPrimitive):
     name = "month"
     input_types = [Datetime]
     return_type = Ordinal
+    dask_compatible = True
 
     def get_function(self):
         def month(vals):
+            if isinstance(vals, dd.Series):
+                return vals.dt.month
             return pd.DatetimeIndex(vals).month.values
         return month
 
@@ -239,9 +265,12 @@ class Year(TransformPrimitive):
     name = "year"
     input_types = [Datetime]
     return_type = Ordinal
+    dask_compatible = True
 
     def get_function(self):
         def year(vals):
+            if isinstance(vals, dd.Series):
+                return vals.dt.year
             return pd.DatetimeIndex(vals).year.values
         return year
 
@@ -261,9 +290,12 @@ class IsWeekend(TransformPrimitive):
     name = "is_weekend"
     input_types = [Datetime]
     return_type = Boolean
+    dask_compatible = True
 
     def get_function(self):
         def is_weekend(vals):
+            if isinstance(vals, dd.Series):
+                return vals.dt.weekday > 4
             return pd.DatetimeIndex(vals).weekday.values > 4
         return is_weekend
 
@@ -287,9 +319,12 @@ class Weekday(TransformPrimitive):
     name = "weekday"
     input_types = [Datetime]
     return_type = Ordinal
+    dask_compatible = True
 
     def get_function(self):
         def weekday(vals):
+            if isinstance(vals, dd.Series):
+                return vals.dt.weekday
             return pd.DatetimeIndex(vals).weekday.values
         return weekday
 
@@ -307,9 +342,12 @@ class NumCharacters(TransformPrimitive):
     name = 'num_characters'
     input_types = [Text]
     return_type = Numeric
+    dask_compatible = True
 
     def get_function(self):
-        return lambda array: pd.Series(array).fillna('').str.len()
+        def character_counter(array):
+            return array.fillna('').str.len()
+        return character_counter
 
 
 class NumWords(TransformPrimitive):
@@ -326,10 +364,11 @@ class NumWords(TransformPrimitive):
     name = 'num_words'
     input_types = [Text]
     return_type = Numeric
+    dask_compatible = True
 
     def get_function(self):
         def word_counter(array):
-            return pd.Series(array).fillna('').str.count(' ') + 1
+            return array.fillna('').str.count(' ') + 1
         return word_counter
 
 
@@ -368,13 +407,16 @@ class TimeSince(TransformPrimitive):
     input_types = [[DatetimeTimeIndex], [Datetime]]
     return_type = Numeric
     uses_calc_time = True
+    dask_compatible = True
 
     def __init__(self, unit="seconds"):
         self.unit = unit.lower()
 
     def get_function(self):
         def pd_time_since(array, time):
-            return convert_time_units((time - pd.DatetimeIndex(array)).total_seconds(), self.unit)
+            if isinstance(array, list):
+                array = pd.Series(array)
+            return convert_time_units((time - array).dt.total_seconds(), self.unit)
         return pd_time_since
 
 
@@ -390,13 +432,17 @@ class IsIn(TransformPrimitive):
     name = "isin"
     input_types = [Variable]
     return_type = Boolean
+    dask_compatible = True
 
     def __init__(self, list_of_outputs=None):
         self.list_of_outputs = list_of_outputs
 
     def get_function(self):
         def pd_is_in(array):
-            return pd.Series(array).isin(self.list_of_outputs or [])
+            if isinstance(array, dd.Series):
+                return array.isin(self.list_of_outputs or [])
+            else:
+                return pd.Series(array).isin(self.list_of_outputs or [])
         return pd_is_in
 
     def generate_name(self, base_feature_names):
@@ -442,6 +488,7 @@ class Negate(TransformPrimitive):
     name = "negate"
     input_types = [Numeric]
     return_type = Numeric
+    dask_compatible = True
 
     def get_function(self):
         def negate(vals):
@@ -463,6 +510,7 @@ class Not(TransformPrimitive):
     name = "not"
     input_types = [Boolean]
     return_type = Boolean
+    dask_compatible = True
 
     def generate_name(self, base_feature_names):
         return u"NOT({})".format(base_feature_names[0])
