@@ -1,8 +1,11 @@
-DFS with Dask EntitySets (BETA)
-===============================
-Support for Dask EntitySets is still in Beta - if you encounter any errors using this approach, please let us know by creating a `new issue on Github <https://github.com/FeatureLabs/featuretools/issues>`_.
+Using Dask EntitySets (BETA)
+============================
+.. note::
+    Support for Dask EntitySets is still in Beta. While the key functionality has been implemented, development is ongoing to add the remaining functionality.
+    
+    All planned improvements to the Featuretools/Dask integration are `documented on Github <https://github.com/FeatureLabs/featuretools/issues?q=is%3Aopen+is%3Aissue+label%3ADask>`_. If you see an open issue that is important for your application, please let us know by upvoting or commenting on the issue. If you encounter any errors using Dask entities, or find missing functionality that does not yet have an open issue, please create a `new issue on Github <https://github.com/FeatureLabs/featuretools/issues>`_.
 
-Creating a feature matrix from a very large dataset can be problematic if the underlying pandas dataframes that make up the entities cannot easily fit in memory. To help get around this issue, Featuretools supports creating ``Entity`` and ``EntitySet`` objects from Dask dataframes. A Dask ``EntitySet`` can then be passed to ``featuretools.dfs`` or ``featuretools.calculate_feature_matrix`` to create a feature matrix, which will be returned as a Dask dataframe. In addition to working on larger than memory datasets, this approach also allows users to take advantage of the parallel processing capabilities offered by Dask.
+Creating a feature matrix from a very large dataset can be problematic if the underlying pandas dataframes that make up the entities cannot easily fit in memory. To help get around this issue, Featuretools supports creating ``Entity`` and ``EntitySet`` objects from Dask dataframes. A Dask ``EntitySet`` can then be passed to ``featuretools.dfs`` or ``featuretools.calculate_feature_matrix`` to create a feature matrix, which will be returned as a Dask dataframe. In addition to working on larger than memory datasets, this approach also allows users to take advantage of the parallel and distributed processing capabilities offered by Dask.
 
 This guide will provide an overview of how to create a Dask ``EntitySet`` and then generate a feature matrix from it. If you are already familiar with creating a feature matrix starting from pandas dataframes, this process will seem quite familiar, as there are no differences in the process. There are, however, some limitations when using Dask dataframes, and those limitations are reviewed in more detail below.
 
@@ -35,7 +38,7 @@ Now that we have our Dask dataframe, we can start to create the ``EntitySet``. T
     es
 
 
-Notice that when we print our ``EntitySet``, the number of rows for the ``dask_entity`` entity is returned as a Dask ``Delayed`` object. This is because obtaining the length of a Dask dataframe requires an expensive compute operation to sum up the lengths of all the individual partitions that make up the dataframe and that operation is not performed by default.
+Notice that when we print our ``EntitySet``, the number of rows for the ``dask_entity`` entity is returned as a Dask ``Delayed`` object. This is because obtaining the length of a Dask dataframe may require an expensive compute operation to sum up the lengths of all the individual partitions that make up the dataframe and that operation is not performed by default.
 
 
 Running DFS
@@ -62,11 +65,14 @@ While this is a simple example to illustrate the process of using Dask dataframe
 
 Limitations
 -----------
-There are many parts of Featuretools that are difficult to implement in a distributed environment and several primitives that are not well suited to operate on distributed dataframes. As a result, there are some limitations when creating a Dask ``Entityset`` and then using it to generate a feature matrix. The most significant limitations are reviewed in more detail in this section.
+The key functionality of Featuretools is available for use with a Dask ``EntitySet``, and work is ongoing to add the remaining functionality that is available when using a pandas ``EntitySet``. There are, however, some limitations to be aware of when creating a Dask ``Entityset`` and then using it to generate a feature matrix. The most significant limitations are reviewed in more detail in this section.
+
+.. note::
+    If the limitations of using a Dask ``EntitySet`` are problematic for your problem, you may still be able to compute a larger-than-memory feature matrix by partitioning your data as described in :doc:`performance`.
 
 Supported Primitives
 ********************
-When creating a feature matrix from a Dask ``EntitySet``, only certain primitives can be used. Primitives that rely on the order of the entire dataframe or require an entire column to be computed are inefficient and difficult to support in a distributed environment. As a result, only a subset of Featuretools primitives are currently supported when using a Dask ``EntitySet``.
+When creating a feature matrix from a Dask ``EntitySet``, only certain primitives can be used. Primitives that rely on the order of the entire dataframe or require an entire column for computation are currently not supported when using a Dask ``EntitySet``. Multivariable and time-dependent aggregation primitives also are not currently supported.
 
 To obtain a list of the primitives that can be used with a Dask ``EntitySet``, you can call ``featuretools.list_primitives()``. This will return a table of all primitives. Any primitive that can be used with a Dask ``EntitySet`` will have a value of ``True`` in the ``dask_compatible`` column.
 
@@ -80,7 +86,7 @@ To obtain a list of the primitives that can be used with a Dask ``EntitySet``, y
 
 Primitive Limitations
 *********************
-At this time, custom primitives created with ``featuretools.primitives.make_trans_primitive()`` or ``featuretools.primitives.make_agg_primitive()`` cannot be used for running deep feature synthesis on a Dask ``EntitySet``. Additionally, multivariable and time-dependent aggregation primitives are not currently supported. While it is possible to create custom primitives for use with a Dask ``EntitySet`` by extending the proper primitive class, there are several potential problems in doing so, and those issues are beyond the scope of this guide.
+At this time, custom primitives created with ``featuretools.primitives.make_trans_primitive()`` or ``featuretools.primitives.make_agg_primitive()`` cannot be used for running deep feature synthesis on a Dask ``EntitySet``. While it is possible to create custom primitives for use with a Dask ``EntitySet`` by extending the proper primitive class, there are several potential problems in doing so, and those issues are beyond the scope of this guide.
 
 Entity Limitations
 ******************
