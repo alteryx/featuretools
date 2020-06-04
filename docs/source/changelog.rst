@@ -10,6 +10,7 @@ Changelog
     * Documentation Changes
     * Testing Changes
         * Update tests for numpy v1.19.0 compatability (:pr:`1016`)
+
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`frances-h`
 
