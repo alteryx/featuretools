@@ -4,13 +4,14 @@ Changelog
 ---------
 .. **Future Release**
     * Enhancements
+        * Add ``make_index`` when initializing an EntitySet by passing in an ``entities`` dictionary (:pr:`1010`)
     * Fixes
         * Resolve issue with `NaN` values in `LatLong` columns (:pr:`1007`)
     * Changes
     * Documentation Changes
     * Testing Changes
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`, :user:`Alex-Monahan`
+    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`Alex-Monahan`
 
 **v0.15.0 May 29, 2020**
     * Enhancements
@@ -18,11 +19,11 @@ Changelog
         * Allow cutoff time dataframe columns to be in any order (:pr:`969`, :pr:`995`)
         * Add Age primitive, and make it a default transform primitive for DFS (:pr:`987`)
         * Add ``include_cutoff_time`` arg - control whether data at cutoff times are included in feature calculations (:pr:`959`)
-        * Allow ``variables_types`` to be referenced by their ``type_string`` 
+        * Allow ``variables_types`` to be referenced by their ``type_string``
           for the ``entity_from_dataframe`` function (:pr:`988`)
     * Fixes
         * Fix errors with Equals and NotEquals primitives when comparing categoricals or different dtypes (:pr:`968`)
-        * Normalized type_strings of ``Variable`` classes so that the ``find_variable_types`` function produces a 
+        * Normalized type_strings of ``Variable`` classes so that the ``find_variable_types`` function produces a
           dictionary with a clear key to name transition (:pr:`982`, :pr:`996`)
         * Remove pandas.datetime in test_calculate_feature_matrix due to deprecation (:pr:`998`)
     * Documentation Changes
