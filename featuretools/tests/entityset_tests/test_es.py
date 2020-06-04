@@ -610,7 +610,7 @@ def test_checks_time_type_setting_secondary_time_index(es):
     # add secondary index that is non-time type
     new_2nd_ti = {'favorite_quote': ['favorite_quote', 'loves_ice_cream']}
 
-    error_text = "data type \"All members of the working classes must seize the means of production.\" not understood"
+    error_text = r"data type (\"|')All members of the working classes must seize the means of production.(\"|') not understood"
     with pytest.raises(TypeError, match=error_text):
         es["customers"].set_secondary_time_index(new_2nd_ti)
     # add mismatched pair of secondary time indexes
@@ -652,7 +652,7 @@ def test_checks_time_type_setting_secondary_time_index(es):
     # add secondary index that is non-time type
     new_2nd_ti = {'transaction_city': ['transaction_city', 'fraud']}
 
-    error_text = 'data type \"City A\" not understood'
+    error_text = r"data type ('|\")City A('|\") not understood"
     with pytest.raises(TypeError, match=error_text):
         card_es['transactions'].set_secondary_time_index(new_2nd_ti)
     # add mixed secondary time indexes
