@@ -283,61 +283,61 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     progress_bar = make_tqdm_iterator(**tqdm_options)
     progress_bar._instances.clear()
+    with make_tqdm_iterator(**tqdm_options) as progress_bar:
+        if n_jobs != 1 or dask_kwargs is not None:
+            feature_matrix = parallel_calculate_chunks(cutoff_time=cutoff_time_to_pass,
+                                                       chunk_size=chunk_size,
+                                                       feature_set=feature_set,
+                                                       approximate=approximate,
+                                                       training_window=training_window,
+                                                       save_progress=save_progress,
+                                                       entityset=entityset,
+                                                       n_jobs=n_jobs,
+                                                       no_unapproximated_aggs=no_unapproximated_aggs,
+                                                       cutoff_df_time_var=cutoff_df_time_var,
+                                                       target_time=target_time,
+                                                       pass_columns=pass_columns,
+                                                       progress_bar=progress_bar,
+                                                       dask_kwargs=dask_kwargs or {},
+                                                       progress_callback=progress_callback,
+                                                       include_cutoff_time=include_cutoff_time)
+        else:
+            feature_matrix = calculate_chunk(cutoff_time=cutoff_time_to_pass,
+                                             chunk_size=chunk_size,
+                                             feature_set=feature_set,
+                                             approximate=approximate,
+                                             training_window=training_window,
+                                             save_progress=save_progress,
+                                             entityset=entityset,
+                                             no_unapproximated_aggs=no_unapproximated_aggs,
+                                             cutoff_df_time_var=cutoff_df_time_var,
+                                             target_time=target_time,
+                                             pass_columns=pass_columns,
+                                             progress_bar=progress_bar,
+                                             progress_callback=progress_callback,
+                                             include_cutoff_time=include_cutoff_time)
 
-    if n_jobs != 1 or dask_kwargs is not None:
-        feature_matrix = parallel_calculate_chunks(cutoff_time=cutoff_time_to_pass,
-                                                   chunk_size=chunk_size,
-                                                   feature_set=feature_set,
-                                                   approximate=approximate,
-                                                   training_window=training_window,
-                                                   save_progress=save_progress,
-                                                   entityset=entityset,
-                                                   n_jobs=n_jobs,
-                                                   no_unapproximated_aggs=no_unapproximated_aggs,
-                                                   cutoff_df_time_var=cutoff_df_time_var,
-                                                   target_time=target_time,
-                                                   pass_columns=pass_columns,
-                                                   progress_bar=progress_bar,
-                                                   dask_kwargs=dask_kwargs or {},
-                                                   progress_callback=progress_callback,
-                                                   include_cutoff_time=include_cutoff_time)
-    else:
-        feature_matrix = calculate_chunk(cutoff_time=cutoff_time_to_pass,
-                                         chunk_size=chunk_size,
-                                         feature_set=feature_set,
-                                         approximate=approximate,
-                                         training_window=training_window,
-                                         save_progress=save_progress,
-                                         entityset=entityset,
-                                         no_unapproximated_aggs=no_unapproximated_aggs,
-                                         cutoff_df_time_var=cutoff_df_time_var,
-                                         target_time=target_time,
-                                         pass_columns=pass_columns,
-                                         progress_bar=progress_bar,
-                                         progress_callback=progress_callback,
-                                         include_cutoff_time=include_cutoff_time)
+        # ensure rows are sorted by input order
+        if isinstance(feature_matrix, pd.DataFrame):
+            feature_matrix = feature_matrix.reindex(
+                pd.MultiIndex.from_frame(cutoff_time[["instance_id", "time"]],
+                                         names=feature_matrix.index.names))
+            if not cutoff_time_in_index:
+                feature_matrix.reset_index(level='time', drop=True, inplace=True)
 
-    # ensure rows are sorted by input order
-    if isinstance(feature_matrix, pd.DataFrame):
-        feature_matrix = feature_matrix.reindex(
-            pd.MultiIndex.from_frame(cutoff_time[["instance_id", "time"]],
-                                     names=feature_matrix.index.names))
-        if not cutoff_time_in_index:
-            feature_matrix.reset_index(level='time', drop=True, inplace=True)
+        if save_progress and os.path.exists(os.path.join(save_progress, 'temp')):
+            shutil.rmtree(os.path.join(save_progress, 'temp'))
 
-    if save_progress and os.path.exists(os.path.join(save_progress, 'temp')):
-        shutil.rmtree(os.path.join(save_progress, 'temp'))
+        # force to 100% since we saved last 5 percent
+        previous_progress = progress_bar.n
+        progress_bar.update(progress_bar.total - progress_bar.n)
 
-    # force to 100% since we saved last 5 percent
-    previous_progress = progress_bar.n
-    progress_bar.update(progress_bar.total - progress_bar.n)
+        if progress_callback is not None:
+            update, progress_percent, time_elapsed = update_progress_callback_parameters(progress_bar, previous_progress)
+            progress_callback(update, progress_percent, time_elapsed)
 
-    if progress_callback is not None:
-        update, progress_percent, time_elapsed = update_progress_callback_parameters(progress_bar, previous_progress)
-        progress_callback(update, progress_percent, time_elapsed)
+        progress_bar.refresh()
 
-    progress_bar.refresh()
-    progress_bar.close()
     return feature_matrix
 
 
