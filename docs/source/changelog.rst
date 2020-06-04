@@ -10,9 +10,10 @@ Changelog
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Update tests for numpy v1.19.0 compatability (:pr:`1016`)
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`,  :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`gsheni`, :user:`frances-h`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.15.0 May 29, 2020**
     * Enhancements
