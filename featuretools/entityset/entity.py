@@ -300,7 +300,8 @@ class Entity(object):
                     warnings.warn("Variable type {} was unrecognized, Unknown variable type was used instead".format(vtype))
 
             # Fill in any single `NaN` values in LatLong variables with a tuple
-            if variable_types[vid] == vtypes.LatLong and self.df[vid].hasnans:
+            if (vid in self.df.columns and isinstance(self.df[vid], pd.Series) and
+               variable_types[vid] == vtypes.LatLong and self.df[vid].hasnans):
                 self.df[vid] = replace_latlong_nan(self.df[vid])
                 warnings.warn("All single `NaN` values in column `{}` have been replaced with `(NaN, NaN)`".format(vid))
 

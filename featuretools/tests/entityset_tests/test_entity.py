@@ -250,11 +250,11 @@ def test_passing_strings_to_variable_types_dfs():
     assert name_class == variable_types['text']
 
 
-def test_replace_latlong_nan_during_entity_creation(es):
+def test_replace_latlong_nan_during_entity_creation(pd_es):
     nan_es = ft.EntitySet("latlong_nan")
-    df = es['log'].df.copy()
+    df = pd_es['log'].df.copy()
     df['latlong'][0] = np.nan
 
     with pytest.warns(UserWarning, match="All single `NaN` values in column `latlong` have been replaced with `\\(NaN, NaN\\)`"):
-        entity = ft.Entity(id="nan_latlong_entity", df=df, entityset=nan_es, variable_types=es['log'].variable_types)
+        entity = ft.Entity(id="nan_latlong_entity", df=df, entityset=nan_es, variable_types=pd_es['log'].variable_types)
     assert entity.df['latlong'][0] == (np.nan, np.nan)
