@@ -2,7 +2,7 @@
 
 Changelog
 ---------
-.. **Future Release**
+**Future Release**
     * Enhancements
         * Add ``make_index`` when initializing an EntitySet by passing in an ``entities`` dictionary (:pr:`1010`)
     * Fixes
@@ -10,8 +10,10 @@ Changelog
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Update tests for numpy v1.19.0 compatability (:pr:`1016`)
+
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`thehomebrewnerd`, :user:`Alex-Monahan`
+    :user:`gsheni`, :user:`frances-h`, :user:`thehomebrewnerd`, :user:`Alex-Monahan`
 
 **v0.15.0 May 29, 2020**
     * Enhancements
