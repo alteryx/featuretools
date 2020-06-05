@@ -1675,6 +1675,8 @@ def test_closes_tqdm(es):
                                  es,
                                  verbose=True)
         assert False
-    except:
+    except RuntimeError as e:
+        assert e.args[0] == "This primitive has errored"
+    finally:
         assert len(tqdm._instances) == 0
 
