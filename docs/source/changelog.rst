@@ -8,6 +8,7 @@ Changelog
         * Add ``make_index`` when initializing an EntitySet by passing in an ``entities`` dictionary (:pr:`1010`)
         * Add ability to use primitive classes and instances as keys in primitive_options dictionary (:pr:`993`)
     * Fixes
+        * Cleanly close tqdm instance (:pr:`1018`)
         * Resolve issue with `NaN` values in `LatLong` columns (:pr:`1007`)
     * Changes
     * Documentation Changes

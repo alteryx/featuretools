@@ -13,6 +13,7 @@ import psutil
 import pytest
 from dask import dataframe as dd
 from distributed.utils_test import cluster
+from tqdm import tqdm
 
 import featuretools as ft
 from featuretools import EntitySet, Timedelta, calculate_feature_matrix, dfs
@@ -33,7 +34,14 @@ from featuretools.feature_base import (
     DirectFeature,
     IdentityFeature
 )
-from featuretools.primitives import Count, Max, Min, Percentile, Sum
+from featuretools.primitives import (
+    Count,
+    Max,
+    Min,
+    Percentile,
+    Sum,
+    TransformPrimitive
+)
 from featuretools.tests.testing_utils import (
     backward_path,
     get_mock_client_cluster
@@ -1637,3 +1645,37 @@ def test_calls_progress_callback(mock_customer):
 
         assert np.isclose(mock_progress_callback.total_update, 100.0)
         assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
+
+
+def test_closes_tqdm(es):
+    class ErrorPrim(TransformPrimitive):
+        '''A primitive whose function raises an error'''
+        name = "error_prim"
+        input_types = [ft.variable_types.Numeric]
+        return_type = "Numeric"
+        dask_compatible = True
+
+        def get_function(self):
+            def error(s):
+                raise RuntimeError("This primitive has errored")
+            return error
+
+    value = ft.Feature(es['log']['value'])
+    property_feature = value > 10
+    error_feature = ft.Feature(value, primitive=ErrorPrim)
+
+    calculate_feature_matrix([property_feature],
+                             es,
+                             verbose=True)
+
+    assert len(tqdm._instances) == 0
+
+    try:
+        calculate_feature_matrix([value, error_feature],
+                                 es,
+                                 verbose=True)
+        assert False
+    except RuntimeError as e:
+        assert e.args[0] == "This primitive has errored"
+    finally:
+        assert len(tqdm._instances) == 0
