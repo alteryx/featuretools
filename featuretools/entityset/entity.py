@@ -12,8 +12,7 @@ from featuretools.utils.entity_utils import (
     convert_all_variable_data,
     convert_variable_data,
     get_linked_vars,
-    infer_variable_types,
-    replace_latlong_nan
+    infer_variable_types
 )
 from featuretools.utils.wrangle import (
     _check_time_type,
@@ -298,12 +297,6 @@ class Entity(object):
                 else:
                     variable_types[vid] = string_to_class_map['unknown']
                     warnings.warn("Variable type {} was unrecognized, Unknown variable type was used instead".format(vtype))
-
-            # Fill in any single `NaN` values in LatLong variables with a tuple
-            if (vid in self.df.columns and isinstance(self.df[vid], pd.Series) and
-               variable_types[vid] == vtypes.LatLong and self.df[vid].hasnans):
-                self.df[vid] = replace_latlong_nan(self.df[vid])
-                warnings.warn("All single `NaN` values in column `{}` have been replaced with `(NaN, NaN)`".format(vid))
 
         if index not in variable_types:
             variable_types[index] = vtypes.Index

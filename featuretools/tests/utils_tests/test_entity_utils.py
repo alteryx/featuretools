@@ -114,7 +114,8 @@ def test_convert_all_variable_data():
                        'ints': ['1', '2', '1'],
                        'boolean': [True, False, True],
                        'date': ['3/11/2000', '3/12/2000', '3/13/2000'],
-                       'integers': [1, 2, 1]})
+                       'integers': [1, 2, 1],
+                       'latlong': [np.nan, (10, 4), (np.nan, 4)]})
 
     variable_types = {
         'id': vtypes.Numeric,
@@ -122,7 +123,8 @@ def test_convert_all_variable_data():
         'ints': vtypes.Numeric,
         'boolean': vtypes.Boolean,
         'date': vtypes.Datetime,
-        'integers': vtypes.Numeric
+        'integers': vtypes.Numeric,
+        'latlong': vtypes.LatLong
     }
 
     df = convert_all_variable_data(df, variable_types)
@@ -133,6 +135,8 @@ def test_convert_all_variable_data():
     assert df['boolean'].dtype.name == 'bool'
     assert df['date'].dtype.name in vtypes.PandasTypes._pandas_datetimes
     assert df['integers'].dtype.name in vtypes.PandasTypes._pandas_numerics
+    # confirm `nan` value in latlong is replaced by `(nan, nan)`
+    assert df['latlong'][0] == (np.nan, np.nan)
 
 
 def test_convert_variable_data():

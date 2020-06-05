@@ -1,3 +1,4 @@
+import warnings
 from datetime import datetime
 
 import dask.dataframe as dd
@@ -125,6 +126,11 @@ def convert_all_variable_data(df, variable_types):
                                        column_id=var_id,
                                        new_type=desired_type,
                                        **type_args)
+
+        # Fill in any single `NaN` values in LatLong variables with a tuple
+        if issubclass(desired_type, vtypes.LatLong) and isinstance(df[var_id], pd.Series) and df[var_id].hasnans:
+            df[var_id] = replace_latlong_nan(df[var_id])
+            warnings.warn("All single `NaN` values in column `{}` have been replaced with `(NaN, NaN)`".format(var_id))
 
     return df
 
