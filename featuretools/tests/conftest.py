@@ -1,5 +1,6 @@
 import copy
 
+import dask.dataframe as dd
 import pandas as pd
 import pytest
 
@@ -18,7 +19,7 @@ def make_int_es():
 
 
 @pytest.fixture
-def es(make_es):
+def pd_es(make_es):
     return copy.deepcopy(make_es)
 
 
@@ -28,7 +29,25 @@ def int_es(make_int_es):
 
 
 @pytest.fixture
-def diamond_es():
+def dask_es(make_es):
+    dask_es = copy.deepcopy(make_es)
+    for entity in dask_es.entities:
+        entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=2)
+    return dask_es
+
+
+@pytest.fixture(params=['pd_es', 'dask_es'])
+def es(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture(params=['pd_diamond_es', 'dask_diamond_es'])
+def diamond_es(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture
+def pd_diamond_es():
     countries_df = pd.DataFrame({
         'id': range(2),
         'name': ['US', 'Canada']
@@ -75,7 +94,26 @@ def diamond_es():
 
 
 @pytest.fixture
-def home_games_es():
+def dask_diamond_es(pd_diamond_es):
+    entities = {}
+    for entity in pd_diamond_es.entities:
+        entities[entity.id] = (dd.from_pandas(entity.df, npartitions=2), entity.index, None, entity.variable_types)
+
+    relationships = [(rel.parent_entity.id,
+                      rel.parent_variable.name,
+                      rel.child_entity.id,
+                      rel.child_variable.name) for rel in pd_diamond_es.relationships]
+
+    return ft.EntitySet(id=pd_diamond_es.id, entities=entities, relationships=relationships)
+
+
+@pytest.fixture(params=['pd_home_games_es', 'dask_home_games_es'])
+def home_games_es(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture
+def pd_home_games_es():
     teams = pd.DataFrame({
         'id': range(3),
         'name': ['Breakers', 'Spirit', 'Thorns']
@@ -91,6 +129,20 @@ def home_games_es():
     relationships = [('teams', 'id', 'games', 'home_team_id')]
     return ft.EntitySet(entities=entities,
                         relationships=relationships)
+
+
+@pytest.fixture
+def dask_home_games_es(pd_home_games_es):
+    entities = {}
+    for entity in pd_home_games_es.entities:
+        entities[entity.id] = (dd.from_pandas(entity.df, npartitions=2), entity.index, None, entity.variable_types)
+
+    relationships = [(rel.parent_entity.id,
+                      rel.parent_variable.name,
+                      rel.child_entity.id,
+                      rel.child_variable.name) for rel in pd_home_games_es.relationships]
+
+    return ft.EntitySet(id=pd_home_games_es.id, entities=entities, relationships=relationships)
 
 
 @pytest.fixture

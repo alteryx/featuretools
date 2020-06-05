@@ -1,6 +1,8 @@
 import logging
 from collections import defaultdict
 
+from dask import dataframe as dd
+
 from featuretools import primitives, variable_types
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import (
@@ -82,7 +84,7 @@ class DeepFeatureSynthesis(object):
             where_stacking_limit (int, optional): Cap the depth of the where features.
                 Default: 1
 
-            primitive_options (list[dict[str or tuple[str] -> dict] or dict[str or tuple[str] -> dict, optional]):
+            primitive_options (dict[str or tuple[str] or PrimitiveBase -> dict or list[dict]], optional):
                 Specify options for a single primitive or a group of primitives.
                 Lists of option dicts are used to specify options per input for primitives
                 with multiple inputs. Each option ``dict`` can have the following keys:
@@ -178,6 +180,8 @@ class DeepFeatureSynthesis(object):
 
         if agg_primitives is None:
             agg_primitives = primitives.get_default_aggregation_primitives()
+            if any(isinstance(e.df, dd.DataFrame) for e in self.es.entities):
+                agg_primitives = [p for p in agg_primitives if p.dask_compatible]
         self.agg_primitives = []
         agg_prim_dict = primitives.get_aggregation_primitives()
         for a in agg_primitives:
@@ -195,6 +199,8 @@ class DeepFeatureSynthesis(object):
 
         if trans_primitives is None:
             trans_primitives = primitives.get_default_transform_primitives()
+            if any(isinstance(e.df, dd.DataFrame) for e in self.es.entities):
+                trans_primitives = [p for p in trans_primitives if p.dask_compatible]
         self.trans_primitives = []
         for t in trans_primitives:
             t = check_trans_primitive(t)
@@ -225,6 +231,11 @@ class DeepFeatureSynthesis(object):
             primitive_options = {}
         all_primitives = self.trans_primitives + self.agg_primitives + \
             self.where_primitives + self.groupby_trans_primitives
+        if any(isinstance(entity.df, dd.DataFrame) for entity in self.es.entities):
+            if not all([primitive.dask_compatible for primitive in all_primitives]):
+                bad_primitives = ", ".join([prim.name for prim in all_primitives if not prim.dask_compatible])
+                raise ValueError('Selected primitives are incompatible with Dask EntitySets: {}'.format(bad_primitives))
+
         self.primitive_options, self.ignore_entities, self.ignore_variables =\
             generate_all_primitive_options(all_primitives,
                                            primitive_options,
@@ -540,7 +551,9 @@ class DeepFeatureSynthesis(object):
             new_max_depth = max_depth - 1
 
         for trans_prim in self.trans_primitives:
-            current_options = self.primitive_options[trans_prim.name]
+            current_options = self.primitive_options.get(
+                trans_prim,
+                self.primitive_options.get(trans_prim.name))
             if ignore_entity_for_primitive(current_options, entity):
                 continue
             # if multiple input_types, only use first one for DFS
@@ -564,7 +577,9 @@ class DeepFeatureSynthesis(object):
                                              new_feature=new_f)
 
         for groupby_prim in self.groupby_trans_primitives:
-            current_options = self.primitive_options[groupby_prim.name]
+            current_options = self.primitive_options.get(
+                groupby_prim,
+                self.primitive_options.get(groupby_prim.name))
             if ignore_entity_for_primitive(current_options, entity, groupby=True):
                 continue
             input_types = groupby_prim.input_types[:]
@@ -641,7 +656,9 @@ class DeepFeatureSynthesis(object):
         if max_depth is not None:
             new_max_depth = max_depth - 1
         for agg_prim in self.agg_primitives:
-            current_options = self.primitive_options[agg_prim.name]
+            current_options = self.primitive_options.get(
+                agg_prim,
+                self.primitive_options.get(agg_prim.name))
 
             if ignore_entity_for_primitive(current_options, child_entity):
                 continue

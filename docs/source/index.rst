@@ -165,7 +165,7 @@ Table of contents
    guides/tuning_dfs
    guides/specifying_primitive_options
    guides/performance
-   guides/parallel
+   guides/using_dask_entitysets
    guides/deployment
    guides/advanced_custom_primitives
 
