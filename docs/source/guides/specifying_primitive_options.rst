@@ -54,6 +54,10 @@ Specifying for Individual Primitives
 Options for individual primitives or groups of primitives are set by the ``primitive_options`` parameter of DFS. This parameter
 maps any desired options to specific primitives. In the case of conflicting options, options set at this level will override
 options set at the entire DFS run level, and the include options will always take priority over their ignore counterparts.
+Using the string primitive name or the primitive type will apply the options to all primitives of the same name. You can
+also set options for a specific instance of a primitive by using the primitive instance as a key in the ``primitive_options``
+dictionary. Note, however, that specifying options for a specific instance will result in that instance ignoring any
+options set for the generic primitive through options with the primitive name or class as the key. 
 
 Specifying Entities for Individual Primitives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
