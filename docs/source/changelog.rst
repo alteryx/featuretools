@@ -7,6 +7,7 @@ Changelog
         * Support use of Dask DataFrames in entitysets (:pr:`783`)
         * Add ``make_index`` when initializing an EntitySet by passing in an ``entities`` dictionary (:pr:`1010`)
     * Fixes
+        * Cleanly close tqdm instance (:pr:`1018`)
     * Changes
     * Documentation Changes
     * Testing Changes
