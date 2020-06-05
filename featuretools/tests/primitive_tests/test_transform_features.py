@@ -196,7 +196,7 @@ def test_not_equal_different_dtypes(simple_es):
 
     # verify that equals works for different dtypes regardless of order
     df = ft.calculate_feature_matrix(entityset=simple_es, features=[f1, f2])
-    print(df)
+
     assert df['object != datetime'].to_list() == [True, True, True, True]
     assert df['datetime != object'].to_list() == [True, True, True, True]
 
@@ -591,6 +591,28 @@ def test_latlong(pd_es):
         assert v == lonvalues[i]
 
 
+def test_latlong_with_nan(pd_es):
+    df = pd_es['log'].df
+    df['latlong'][0] = np.nan
+    df['latlong'][1] = (10, np.nan)
+    df['latlong'][2] = (np.nan, 4)
+    df['latlong'][3] = (np.nan, np.nan)
+    pd_es['log'].update_data(df)
+    log_latlong_feat = pd_es['log']['latlong']
+    latitude = ft.Feature(log_latlong_feat, primitive=Latitude)
+    longitude = ft.Feature(log_latlong_feat, primitive=Longitude)
+    features = [latitude, longitude]
+    fm = ft.calculate_feature_matrix(entityset=pd_es, features=features)
+    latvalues = fm[latitude.get_name()].values
+    lonvalues = fm[longitude.get_name()].values
+    assert len(latvalues) == 17
+    assert len(lonvalues) == 17
+    real_lats = [np.nan, 10, np.nan, np.nan, 20, 0, 1, 2, 3, 0, 0, 5, 0, 7, 14, np.nan, np.nan]
+    real_lons = [np.nan, np.nan, 4, np.nan, 8, 0, 1, 2, 3, 0, 0, 2, 0, 3, 6, np.nan, np.nan]
+    assert np.allclose(latvalues, real_lats, atol=0.0001, equal_nan=True)
+    assert np.allclose(lonvalues, real_lons, atol=0.0001, equal_nan=True)
+
+
 def test_haversine(pd_es):
     log_latlong_feat = pd_es['log']['latlong']
     log_latlong_feat2 = pd_es['log']['latlong2']
@@ -621,6 +643,43 @@ def test_haversine(pd_es):
     error_text = "Invalid unit inches provided. Must be one of"
     with pytest.raises(ValueError, match=error_text):
         Haversine(unit='inches')
+
+
+def test_haversine_with_nan(pd_es):
+    # Check some `nan` values
+    df = pd_es['log'].df
+    df['latlong'][0] = np.nan
+    df['latlong'][1] = (10, np.nan)
+    pd_es['log'].update_data(df)
+    log_latlong_feat = pd_es['log']['latlong']
+    log_latlong_feat2 = pd_es['log']['latlong2']
+    haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
+                           primitive=Haversine)
+    features = [haversine]
+
+    df = ft.calculate_feature_matrix(entityset=pd_es, features=features)
+    values = df[haversine.get_name()].values
+    real = [np.nan, np.nan, 1045.32190304, 1554.56176802, 2047.3294327, 0,
+            138.16578931, 276.20524822, 413.99185444, 0, 0, 525.318462, 0,
+            741.57941183, 1467.52760175, np.nan, np.nan]
+
+    assert np.allclose(values, real, atol=0.0001, equal_nan=True)
+
+    # Check all `nan` values
+    df = pd_es['log'].df
+    df['latlong2'] = np.nan
+    pd_es['log'].update_data(df)
+    log_latlong_feat = pd_es['log']['latlong']
+    log_latlong_feat2 = pd_es['log']['latlong2']
+    haversine = ft.Feature([log_latlong_feat, log_latlong_feat2],
+                           primitive=Haversine)
+    features = [haversine]
+
+    df = ft.calculate_feature_matrix(entityset=pd_es, features=features)
+    values = df[haversine.get_name()].values
+    real = [np.nan] * pd_es['log'].df.shape[0]
+
+    assert np.allclose(values, real, atol=0.0001, equal_nan=True)
 
 
 def test_text_primitives(es):

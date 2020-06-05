@@ -1,6 +1,7 @@
 import copy
 
 import dask.dataframe as dd
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -10,7 +11,8 @@ from featuretools.utils.entity_utils import (
     convert_all_variable_data,
     convert_variable_data,
     get_linked_vars,
-    infer_variable_types
+    infer_variable_types,
+    replace_latlong_nan
 )
 
 
@@ -112,7 +114,8 @@ def test_convert_all_variable_data():
                        'ints': ['1', '2', '1'],
                        'boolean': [True, False, True],
                        'date': ['3/11/2000', '3/12/2000', '3/13/2000'],
-                       'integers': [1, 2, 1]})
+                       'integers': [1, 2, 1],
+                       'latlong': [np.nan, (10, 4), (np.nan, 4)]})
 
     variable_types = {
         'id': vtypes.Numeric,
@@ -120,7 +123,8 @@ def test_convert_all_variable_data():
         'ints': vtypes.Numeric,
         'boolean': vtypes.Boolean,
         'date': vtypes.Datetime,
-        'integers': vtypes.Numeric
+        'integers': vtypes.Numeric,
+        'latlong': vtypes.LatLong
     }
 
     df = convert_all_variable_data(df, variable_types)
@@ -131,6 +135,8 @@ def test_convert_all_variable_data():
     assert df['boolean'].dtype.name == 'bool'
     assert df['date'].dtype.name in vtypes.PandasTypes._pandas_datetimes
     assert df['integers'].dtype.name in vtypes.PandasTypes._pandas_numerics
+    # confirm `nan` value in latlong is replaced by `(nan, nan)`
+    assert df['latlong'][0] == (np.nan, np.nan)
 
 
 def test_convert_variable_data():
@@ -184,3 +190,11 @@ def test_get_linked_vars(mock_customer_es):
 
     customers_linked_vars = get_linked_vars(mock_customer_es['customers'])
     assert customers_linked_vars == ['customer_id']
+
+
+def test_replace_latlong_nan():
+    values = pd.Series([(np.nan, np.nan), np.nan, (10, 5)])
+    result = replace_latlong_nan(values)
+    assert result[0] == values[0]
+    assert result[1] == (np.nan, np.nan)
+    assert result[2] == values[2]
