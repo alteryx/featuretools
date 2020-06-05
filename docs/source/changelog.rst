@@ -6,6 +6,7 @@ Changelog
     * Enhancements
         * Support use of Dask DataFrames in entitysets (:pr:`783`)
         * Add ``make_index`` when initializing an EntitySet by passing in an ``entities`` dictionary (:pr:`1010`)
+        * Add ability to use primitive classes and instances as keys in primitive_options dictionary (:pr:`993`)
     * Fixes
     * Changes
     * Documentation Changes
@@ -21,7 +22,7 @@ Changelog
         * Allow cutoff time dataframe columns to be in any order (:pr:`969`, :pr:`995`)
         * Add Age primitive, and make it a default transform primitive for DFS (:pr:`987`)
         * Add ``include_cutoff_time`` arg - control whether data at cutoff times are included in feature calculations (:pr:`959`)
-        * Allow ``variables_types`` to be referenced by their ``type_string``
+        * Allow ``variables_types`` to be referenced by their ``type_string`` 
           for the ``entity_from_dataframe`` function (:pr:`988`)
     * Fixes
         * Fix errors with Equals and NotEquals primitives when comparing categoricals or different dtypes (:pr:`968`)

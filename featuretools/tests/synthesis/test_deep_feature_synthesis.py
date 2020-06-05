@@ -1,4 +1,5 @@
 import copy
+import logging
 
 import dask.dataframe as dd
 import pandas as pd
@@ -35,6 +36,7 @@ from featuretools.primitives import (
     Sum,
     TimeSincePrevious,
     TransformPrimitive,
+    Trend,
     Year
 )
 from featuretools.synthesis import DeepFeatureSynthesis
@@ -1253,17 +1255,29 @@ def test_primitive_options_multiple_inputs(es):
                              trans_primitives=[],
                              primitive_options=too_many_options)
 
-    options = {'trend': [{'include_entities': ['log'],
-                          'ignore_variables': {'log': ['value']}},
-                         {'include_entities': ['log'],
-                          'include_variables': {'log': ['datetime']}}]}
-    dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
-                                   entityset=es,
-                                   agg_primitives=['trend'],
-                                   trans_primitives=[],
-                                   primitive_options=options)
-    features = dfs_obj.build_features()
-    for f in features:
+    unknown_primitive = Trend()
+    unknown_primitive.name = 'unknown_primitive'
+    unknown_primitive_option = {'unknown_primitive': [{'include_entities': ['logs']},
+                                                      {'ignore_entities': ['sessions']}]}
+    error_msg = "Unknown primitive with name 'unknown_primitive'"
+    with pytest.raises(ValueError, match=error_msg):
+        DeepFeatureSynthesis(target_entity_id='customers',
+                             entityset=es,
+                             agg_primitives=[unknown_primitive],
+                             trans_primitives=[],
+                             primitive_options=unknown_primitive_option)
+
+    options1 = {'trend': [{'include_entities': ['log'],
+                           'ignore_variables': {'log': ['value']}},
+                          {'include_entities': ['log'],
+                           'include_variables': {'log': ['datetime']}}]}
+    dfs_obj1 = DeepFeatureSynthesis(target_entity_id='sessions',
+                                    entityset=es,
+                                    agg_primitives=['trend'],
+                                    trans_primitives=[],
+                                    primitive_options=options1)
+    features1 = dfs_obj1.build_features()
+    for f in features1:
         deps = f.get_dependencies()
         entities = [d.entity.id for d in deps]
         variables = [d.get_name() for d in deps]
@@ -1272,3 +1286,90 @@ def test_primitive_options_multiple_inputs(es):
             assert 'datetime' in variables
             if len(variables) == 2:
                 assert 'value' != variables[0]
+
+    options2 = {Trend: [{'include_entities': ['log'],
+                         'ignore_variables': {'log': ['value']}},
+                        {'include_entities': ['log'],
+                         'include_variables': {'log': ['datetime']}}]}
+    dfs_obj2 = DeepFeatureSynthesis(target_entity_id='sessions',
+                                    entityset=es,
+                                    agg_primitives=['trend'],
+                                    trans_primitives=[],
+                                    primitive_options=options2)
+    features2 = dfs_obj2.build_features()
+
+    assert set(features2) == set(features1)
+
+
+def test_primitive_options_class_names(es):
+    options1 = {
+        'mean': {'include_entities': ['customers']}
+    }
+
+    options2 = {
+        Mean: {'include_entities': ['customers']}
+    }
+
+    bad_options = {
+        'mean': {'include_entities': ['customers']},
+        Mean: {'ignore_entities': ['customers']}
+    }
+    conflicting_error_text = "Multiple options found for primitive mean"
+
+    primitives = [['mean'], [Mean]]
+    options = [options1, options2]
+
+    features = []
+    for primitive in primitives:
+        with pytest.raises(KeyError, match=conflicting_error_text):
+            DeepFeatureSynthesis(target_entity_id='cohorts',
+                                 entityset=es,
+                                 agg_primitives=primitive,
+                                 trans_primitives=[],
+                                 primitive_options=bad_options)
+        for option in options:
+            dfs_obj = DeepFeatureSynthesis(target_entity_id='cohorts',
+                                           entityset=es,
+                                           agg_primitives=primitive,
+                                           trans_primitives=[],
+                                           primitive_options=option)
+            features.append(set(dfs_obj.build_features()))
+
+    for f in features[0]:
+        deps = f.get_dependencies(deep=True)
+        entities = [d.entity.id for d in deps]
+        if isinstance(f.primitive, Mean):
+            assert all(entity == 'customers' for entity in entities)
+
+    assert features[0] == features[1] == features[2] == features[3]
+
+
+def test_primitive_options_instantiated_primitive(es, caplog):
+    logger = logging.getLogger('featuretools')
+    warning_msg = "WARNING  featuretools:options_utils.py:63 Options present " \
+                  "for primitive instance and generic primitive class (mean), " \
+                  "primitive instance will not use generic options\n"
+
+    skipna_mean = Mean(skipna=False)
+    options = {
+        skipna_mean: {'include_entities': ['stores']},
+        'mean': {'ignore_entities': ['stores']}
+    }
+    # Set propagate to True so caplog can catch warning
+    logger.propagate = True
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='régions',
+                                   entityset=es,
+                                   agg_primitives=['mean', skipna_mean],
+                                   trans_primitives=[],
+                                   primitive_options=options)
+    logger.propagate = False
+    assert caplog.text == warning_msg
+
+    features = dfs_obj.build_features()
+    for f in features:
+        deps = f.get_dependencies(deep=True)
+        entities = [d.entity.id for d in deps]
+        if f.primitive == skipna_mean:
+            assert all(entity == 'stores' for entity in entities)
+        elif isinstance(f.primitive, Mean):
+            assert 'stores' not in entities
