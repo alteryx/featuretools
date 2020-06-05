@@ -248,3 +248,13 @@ def test_passing_strings_to_variable_types_dfs():
     features = ft.dfs(entities, relationships, target_entity="teams", features_only=True)
     name_class = features[0].entity['name'].__class__
     assert name_class == variable_types['text']
+
+
+def test_replace_latlong_nan_during_entity_creation(pd_es):
+    nan_es = ft.EntitySet("latlong_nan")
+    df = pd_es['log'].df.copy()
+    df['latlong'][0] = np.nan
+
+    with pytest.warns(UserWarning, match="LatLong columns should contain only tuples. All single 'NaN' values in column 'latlong' have been replaced with '\\(NaN, NaN\\)'."):
+        entity = ft.Entity(id="nan_latlong_entity", df=df, entityset=nan_es, variable_types=pd_es['log'].variable_types)
+    assert entity.df['latlong'][0] == (np.nan, np.nan)
