@@ -1674,5 +1674,7 @@ def test_closes_tqdm(es):
         calculate_feature_matrix([value, error_feature],
                                  es,
                                  verbose=True)
-    finally:
+        assert False
+    except:
         assert len(tqdm._instances) == 0
+
