@@ -130,7 +130,7 @@ def convert_all_variable_data(df, variable_types):
         # Fill in any single `NaN` values in LatLong variables with a tuple
         if issubclass(desired_type, vtypes.LatLong) and isinstance(df[var_id], pd.Series) and df[var_id].hasnans:
             df[var_id] = replace_latlong_nan(df[var_id])
-            warnings.warn("All single `NaN` values in column `{}` have been replaced with `(NaN, NaN)`".format(var_id))
+            warnings.warn("LatLong columns should contain only tuples. All single 'NaN' values in column '{}' have been replaced with '(NaN, NaN)'.".format(var_id))
 
     return df
 

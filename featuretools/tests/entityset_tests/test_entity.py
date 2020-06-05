@@ -255,6 +255,6 @@ def test_replace_latlong_nan_during_entity_creation(pd_es):
     df = pd_es['log'].df.copy()
     df['latlong'][0] = np.nan
 
-    with pytest.warns(UserWarning, match="All single `NaN` values in column `latlong` have been replaced with `\\(NaN, NaN\\)`"):
+    with pytest.warns(UserWarning, match="LatLong columns should contain only tuples. All single 'NaN' values in column 'latlong' have been replaced with '\\(NaN, NaN\\)'."):
         entity = ft.Entity(id="nan_latlong_entity", df=df, entityset=nan_es, variable_types=pd_es['log'].variable_types)
     assert entity.df['latlong'][0] == (np.nan, np.nan)
