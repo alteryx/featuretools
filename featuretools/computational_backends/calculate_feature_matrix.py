@@ -281,8 +281,6 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         # allows us to utilize progress_bar updates without printing to anywhere
         tqdm_options.update({'file': open(os.devnull, 'w'), 'disable': False})
 
-    progress_bar = make_tqdm_iterator(**tqdm_options)
-    progress_bar._instances.clear()
     with make_tqdm_iterator(**tqdm_options) as progress_bar:
         if n_jobs != 1 or dask_kwargs is not None:
             feature_matrix = parallel_calculate_chunks(cutoff_time=cutoff_time_to_pass,
