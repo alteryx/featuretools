@@ -1,4 +1,5 @@
 import logging
+from contextlib import ExitStack
 
 import pandas as pd
 
@@ -92,78 +93,79 @@ def encode_features(feature_matrix, features, top_n=DEFAULT_TOP_N, include_unkno
 
     extra_columns = [col for col in X.columns if col not in feature_names]
 
-    if verbose:
-        iterator = make_tqdm_iterator(iterable=features,
-                                      total=len(features),
-                                      desc="Encoding pass 1",
-                                      unit="feature")
-    else:
-        iterator = features
+    with ExitStack() as stack:
+        if verbose:
+            iterator = stack.enter_context(make_tqdm_iterator(iterable=features,
+                                                              total=len(features),
+                                                              desc="Encoding pass 1",
+                                                              unit="feature"))
+        else:
+            iterator = features
 
-    for f in iterator:
-        # TODO: features with multiple columns are not encoded by this method,
-        # which can cause an "encoded" matrix with non-numeric vlaues
-        is_discrete = issubclass(f.variable_type, Discrete)
-        if (f.number_output_features > 1 or not is_discrete):
-            if f.number_output_features > 1:
-                logger.warning("Feature %s has multiple columns and will not "
-                               "be encoded.  This may result in a matrix with"
-                               " non-numeric values." % (f))
-            encoded.append(f)
-            continue
+        for f in iterator:
+            # TODO: features with multiple columns are not encoded by this method,
+            # which can cause an "encoded" matrix with non-numeric vlaues
+            is_discrete = issubclass(f.variable_type, Discrete)
+            if (f.number_output_features > 1 or not is_discrete):
+                if f.number_output_features > 1:
+                    logger.warning("Feature %s has multiple columns and will not "
+                                   "be encoded.  This may result in a matrix with"
+                                   " non-numeric values." % (f))
+                encoded.append(f)
+                continue
 
-        if to_encode is not None and f.get_name() not in to_encode:
-            encoded.append(f)
-            continue
+            if to_encode is not None and f.get_name() not in to_encode:
+                encoded.append(f)
+                continue
 
-        val_counts = X[f.get_name()].value_counts().to_frame()
-        index_name = val_counts.index.name
-        if index_name is None:
-            if 'index' in val_counts.columns:
-                index_name = 'level_0'
-            else:
-                index_name = 'index'
-        val_counts.reset_index(inplace=True)
-        val_counts = val_counts.sort_values([f.get_name(), index_name],
-                                            ascending=False)
-        val_counts.set_index(index_name, inplace=True)
-        select_n = top_n
-        if isinstance(top_n, dict):
-            select_n = top_n.get(f.get_name(), DEFAULT_TOP_N)
-        if drop_first:
-            select_n = min(len(val_counts), top_n)
-            select_n = max(select_n - 1, 1)
-        unique = val_counts.head(select_n).index.tolist()
-        for label in unique:
-            add = f == label
-            encoded.append(add)
-            X[add.get_name()] = (X[f.get_name()] == label).astype("uint8")
+            val_counts = X[f.get_name()].value_counts().to_frame()
+            index_name = val_counts.index.name
+            if index_name is None:
+                if 'index' in val_counts.columns:
+                    index_name = 'level_0'
+                else:
+                    index_name = 'index'
+            val_counts.reset_index(inplace=True)
+            val_counts = val_counts.sort_values([f.get_name(), index_name],
+                                                ascending=False)
+            val_counts.set_index(index_name, inplace=True)
+            select_n = top_n
+            if isinstance(top_n, dict):
+                select_n = top_n.get(f.get_name(), DEFAULT_TOP_N)
+            if drop_first:
+                select_n = min(len(val_counts), top_n)
+                select_n = max(select_n - 1, 1)
+            unique = val_counts.head(select_n).index.tolist()
+            for label in unique:
+                add = f == label
+                encoded.append(add)
+                X[add.get_name()] = (X[f.get_name()] == label).astype("uint8")
 
-        if include_unknown:
-            unknown = f.isin(unique).NOT().rename(f.get_name() + " is unknown")
-            encoded.append(unknown)
-            X[unknown.get_name()] = (~X[f.get_name()].isin(unique)).astype("uint8")
+            if include_unknown:
+                unknown = f.isin(unique).NOT().rename(f.get_name() + " is unknown")
+                encoded.append(unknown)
+                X[unknown.get_name()] = (~X[f.get_name()].isin(unique)).astype("uint8")
 
-        X.drop(f.get_name(), axis=1, inplace=True)
+            X.drop(f.get_name(), axis=1, inplace=True)
 
-    new_columns = []
-    for e in encoded:
-        new_columns.extend(e.get_feature_names())
+        new_columns = []
+        for e in encoded:
+            new_columns.extend(e.get_feature_names())
 
-    new_columns.extend(extra_columns)
-    new_X = X[new_columns]
-    iterator = new_X.columns
-    if verbose:
-        iterator = make_tqdm_iterator(iterable=new_X.columns,
-                                      total=len(new_X.columns),
-                                      desc="Encoding pass 2",
-                                      unit="feature")
-    for c in iterator:
-        if c in extra_columns:
-            continue
-        try:
-            new_X[c] = pd.to_numeric(new_X[c], errors='raise')
-        except (TypeError, ValueError):
-            pass
+        new_columns.extend(extra_columns)
+        new_X = X[new_columns]
+        iterator = new_X.columns
+        if verbose:
+            iterator = stack.enter_context(make_tqdm_iterator(iterable=new_X.columns,
+                                                              total=len(new_X.columns),
+                                                              desc="Encoding pass 2",
+                                                              unit="feature"))
+        for c in iterator:
+            if c in extra_columns:
+                continue
+            try:
+                new_X[c] = pd.to_numeric(new_X[c], errors='raise')
+            except (TypeError, ValueError):
+                pass
 
     return new_X, encoded
