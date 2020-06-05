@@ -1670,8 +1670,9 @@ def test_closes_tqdm(es):
 
     assert len(tqdm._instances) == 0
 
-    with pytest.raises(RuntimeError, match="This primitive has errored"):
+    try:
         calculate_feature_matrix([value, error_feature],
                                  es,
                                  verbose=True)
-    assert len(tqdm._instances) == 0
+    finally:
+        assert len(tqdm._instances) == 0
