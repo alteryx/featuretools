@@ -16,15 +16,39 @@ from featuretools.variable_types import (
 
 
 def find_variable_types():
+    """
+    Retrieves all Variable Types as a dictionary where key is type_string
+        of Variable, and value is Variable object
+
+    Args:
+        None
+
+    Returns:
+        variable_types (dict):
+
+    """
     return {vtype.type_string: vtype for vtype in find_descendents(Variable)
             if vtype != Variable}
 
 
 def list_variable_types():
-    v_names = list(find_variable_types().keys())
+    """
+    Retrieves all Variable Types as a dataframe, with the columns
+        of name, and
+
+    Args:
+        None
+
+    Returns:
+        variable_types (pd.DataFrame):
+    """
     v_types = list(find_variable_types().values())
+    v_type_strings = list(find_variable_types().keys())
+    v_names = [x.__name__ for x in v_types]
     descriptions = [v.__doc__ for v in v_types]
-    return pd.DataFrame({'name': v_names, 'description': descriptions})
+    return pd.DataFrame({'name': v_names,
+                         'type_string': v_type_strings,
+                         'description': descriptions})
 
 
 def graph_variable_types(to_file=None):

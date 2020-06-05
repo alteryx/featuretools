@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from featuretools.utils.gen_utils import camel_to_snake, find_descendents
+from featuretools.utils.gen_utils import camel_to_snake
 
 
 class ClassNameDescriptor(object):

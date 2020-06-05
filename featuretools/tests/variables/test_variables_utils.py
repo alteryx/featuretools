@@ -10,11 +10,17 @@ from featuretools.variable_types.utils import (
 )
 
 
+def test_find_variable_types():
+    for type_string, v_type in find_variable_types().items():
+        assert v_type.type_string == type_string
+
+
 def test_list_variables():
     df = list_variable_types()
     for v_name, v_type in find_variable_types().items():
-        assert v_name in df['name'].values
+        assert v_name.__name__ in df['name'].values
         assert v_type.__doc__ in df['description'].values
+        assert v_type.type_string in df['type_string'].values
 
 
 def test_returns_digraph_object():

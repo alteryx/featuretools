@@ -321,6 +321,16 @@ Relationship attributes
     Relationship.parent_entity
     Relationship.child_entity
 
+Variable Utils Methods
+----------------------
+.. currentmodule:: featuretools.variable_types.utils
+.. autosummary::
+    :toctree: generated/
+
+    find_variable_types
+    list_variable_types
+    graph_variable_types
+
 Variable types
 ----------------
 .. currentmodule:: featuretools.variable_types
