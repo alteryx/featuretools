@@ -1679,4 +1679,3 @@ def test_closes_tqdm(es):
         assert e.args[0] == "This primitive has errored"
     finally:
         assert len(tqdm._instances) == 0
-
