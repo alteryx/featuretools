@@ -6,7 +6,7 @@ Changelog
     * Enhancements
     * Fixes
     * Changes
-        * Deprecated feature's get_name function, get_feature_names should be used instead.
+        * Deprecated feature's get_name function, get_feature_names should be used instead
     * Documentation Changes
     * Testing Changes
 
