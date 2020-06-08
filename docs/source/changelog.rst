@@ -6,10 +6,12 @@ Changelog
     * Enhancements
     * Fixes
     * Changes
+        * Deprecated feature's get_name function, get_feature_names should be used instead.
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
+    :user:`tuethan1999`
 
 **v0.16.0 June 5, 2020**
     * Enhancements
