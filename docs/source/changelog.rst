@@ -2,7 +2,7 @@
 
 Changelog
 ---------
-.. **Future Release**
+**Future Release**
     * Enhancements
         * Add ``list_variable_types`` and ``graph_variable_types`` for Variable Types (:pr:`1013`)
     * Fixes
