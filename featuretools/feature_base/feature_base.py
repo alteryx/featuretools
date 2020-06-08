@@ -82,7 +82,7 @@ class FeatureBase(object):
             self._name = self.generate_name()
         return self._name
 
-    def get_names(self):
+    def __get_names(self):
         if not self._names:
             self._names = self.generate_names()
         return self._names
@@ -92,7 +92,7 @@ class FeatureBase(object):
         if n == 1:
             names = [self.get_name()]
         else:
-            names = self.get_names()
+            names = self.__get_names()
         return names
 
     def get_function(self):
