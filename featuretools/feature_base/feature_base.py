@@ -801,7 +801,7 @@ class FeatureOutputSlice(FeatureBase):
         raise ValueError("Cannot get item from slice of multi output feature")
 
     def generate_name(self):
-        return self.base_feature.get_names()[self.n]
+        return self.base_feature.get_feature_names()[self.n]
 
     @property
     def number_output_features(self):
