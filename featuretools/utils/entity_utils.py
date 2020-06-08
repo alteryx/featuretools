@@ -1,3 +1,4 @@
+import warnings
 from datetime import datetime
 
 import dask.dataframe as dd
@@ -126,6 +127,11 @@ def convert_all_variable_data(df, variable_types):
                                        new_type=desired_type,
                                        **type_args)
 
+        # Fill in any single `NaN` values in LatLong variables with a tuple
+        if issubclass(desired_type, vtypes.LatLong) and isinstance(df[var_id], pd.Series) and df[var_id].hasnans:
+            df[var_id] = replace_latlong_nan(df[var_id])
+            warnings.warn("LatLong columns should contain only tuples. All single 'NaN' values in column '{}' have been replaced with '(NaN, NaN)'.".format(var_id))
+
     return df
 
 
@@ -204,3 +210,8 @@ def col_is_datetime(col):
                 return True
 
     return False
+
+
+def replace_latlong_nan(values):
+    """replace a single `NaN` value with a tuple: `(np.nan, np.nan)`"""
+    return np.where(values.isnull(), pd.Series([(np.nan, np.nan)] * len(values)), values)

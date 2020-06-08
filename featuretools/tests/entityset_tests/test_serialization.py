@@ -227,6 +227,7 @@ def test_to_pickle_id_none(tmpdir):
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
 
+
 # TODO: Fix Moto tests needing to explicitly set permissions for objects
 @pytest.fixture
 def s3_client():

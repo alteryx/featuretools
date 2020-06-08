@@ -2,19 +2,28 @@
 
 Changelog
 ---------
-**Future Release**
+.. **Future Release**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+    Thanks to the following people for contributing to this release:
+
+**v0.16.0 June 5, 2020**
     * Enhancements
         * Support use of Dask DataFrames in entitysets (:pr:`783`)
         * Add ``make_index`` when initializing an EntitySet by passing in an ``entities`` dictionary (:pr:`1010`)
         * Add ability to use primitive classes and instances as keys in primitive_options dictionary (:pr:`993`)
     * Fixes
-    * Changes
-    * Documentation Changes
+        * Cleanly close tqdm instance (:pr:`1018`)
+        * Resolve issue with ``NaN`` values in ``LatLong`` columns (:pr:`1007`)
     * Testing Changes
         * Update tests for numpy v1.19.0 compatability (:pr:`1016`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`frances-h`, :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`Alex-Monahan`, :user:`frances-h`, :user:`gsheni`, :user:`rwedge`, :user:`thehomebrewnerd`
 
 **v0.15.0 May 29, 2020**
     * Enhancements
