@@ -72,25 +72,25 @@ def graph_variable_types(to_file=None):
     graph.attr(rankdir="LR")
 
     v_types = list(find_variable_types().values())
-    v_types.remove(NumericTimeIndex)
-    v_types.remove(DatetimeTimeIndex)
+    # from featuretools.variable_types import Text
+    # print(inspect.signature(Text.__init__))
+    # print(inspect.signature(NumericTimeIndex.__init__))
+    # print(inspect.getargspec(NumericTimeIndex.__init__))
+    # v_types.remove(DatetimeTimeIndex)
     v_types.sort(key=lambda x: x.__name__)
 
     graph.node(Variable.__name__, shape='Mdiamond')
     for x in v_types:
+        print(x)
         parents = [y for y in inspect.getmro(x) if y not in [object, x]]
+        print(parents)
+        print('---')
         if parents == [Variable]:
             # a direct child of Variable
             graph.edge(Variable.__name__, x.__name__)
         else:
             # a descent of Variable, only plot the parent - child relation
             graph.edge(parents[0].__name__, x.__name__)
-
-    # NumericTimeIndex and DatetimeTimeIndex are different since they subclassed under 2 variables
-    for x in [NumericTimeIndex, DatetimeTimeIndex]:
-        parents = [y for y in inspect.getmro(x) if y not in [object, x]]
-        for y in parents[:-1]:
-            graph.edge(y.__name__, x.__name__)
 
     if to_file:
         save_graph(graph, to_file, format_)
