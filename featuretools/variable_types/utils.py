@@ -81,10 +81,7 @@ def graph_variable_types(to_file=None):
 
     graph.node(Variable.__name__, shape='Mdiamond')
     for x in v_types:
-        print(x)
         parents = [y for y in inspect.getmro(x) if y not in [object, x]]
-        print(parents)
-        print('---')
         if parents == [Variable]:
             # a direct child of Variable
             graph.edge(Variable.__name__, x.__name__)
