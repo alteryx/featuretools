@@ -38,7 +38,7 @@ class IsNull(TransformPrimitive):
             if isinstance(array, dd.Series):
                 return dd.Series.isnull(array)
             else:
-                return pd.isnull(pd.Series(array))
+                return pd.isnull(array)
         return isnull
 
 
@@ -388,7 +388,7 @@ class TimeSince(TransformPrimitive):
         ...          datetime(2019, 3, 1, 0, 0, 1, 0),
         ...          datetime(2019, 3, 1, 0, 2, 0, 0)]
         >>> cutoff_time = datetime(2019, 3, 1, 0, 0, 0, 0)
-        >>> values = time_since(array=times, time=cutoff_time)
+        >>> values = time_since(times, time=cutoff_time)
         >>> list(map(int, values))
         [0, -1, -120]
 
@@ -400,7 +400,7 @@ class TimeSince(TransformPrimitive):
         ...          datetime(2019, 3, 1, 0, 0, 1, 0),
         ...          datetime(2019, 3, 1, 0, 2, 0, 0)]
         >>> cutoff_time = datetime(2019, 3, 1, 0, 0, 0, 0)
-        >>> values = time_since_nano(array=times, time=cutoff_time)
+        >>> values = time_since_nano(times, time=cutoff_time)
         >>> list(map(lambda x: int(round(x)), values))
         [-1000, -1000000000, -120000000000]
     """
@@ -415,8 +415,6 @@ class TimeSince(TransformPrimitive):
 
     def get_function(self):
         def pd_time_since(array, time):
-            if isinstance(array, list):
-                array = pd.Series(array)
             return convert_time_units((time - array).dt.total_seconds(), self.unit)
         return pd_time_since
 
@@ -440,10 +438,7 @@ class IsIn(TransformPrimitive):
 
     def get_function(self):
         def pd_is_in(array):
-            if isinstance(array, dd.Series):
-                return array.isin(self.list_of_outputs or [])
-            else:
-                return pd.Series(array).isin(self.list_of_outputs or [])
+            return array.isin(self.list_of_outputs or [])
         return pd_is_in
 
     def generate_name(self, base_feature_names):
@@ -539,7 +534,7 @@ class Percentile(TransformPrimitive):
     return_type = Numeric
 
     def get_function(self):
-        return lambda array: pd.Series(array).rank(pct=True)
+        return lambda array: array.rank(pct=True)
 
 
 class Latitude(TransformPrimitive):
@@ -561,7 +556,7 @@ class Latitude(TransformPrimitive):
         def latitude(latlong):
             if latlong.hasnans:
                 latlong = replace_latlong_nan(latlong)
-            return pd.Series(x[0] for x in latlong)
+            return latlong.map(lambda x: x[0])
         return latitude
 
 
@@ -584,7 +579,7 @@ class Longitude(TransformPrimitive):
         def longitude(latlong):
             if latlong.hasnans:
                 latlong = replace_latlong_nan(latlong)
-            return pd.Series(x[1] for x in latlong)
+            return latlong.map(lambda x: x[1])
         return longitude
 
 
