@@ -6,7 +6,7 @@ Changelog
     * Enhancements
     * Fixes
     * Changes
-        * Remove unnecessary ``pd.Series`` calls from primitives (:pr:`1020`)
+        * Remove unnecessary ``pd.Series`` and ``pd.DatetimeIndex`` calls from primitives (:pr:`1020`, :pr:`1024`)
     * Documentation Changes
     * Testing Changes
 
