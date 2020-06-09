@@ -7,9 +7,11 @@ Changelog
     * Fixes
     * Changes
     * Documentation Changes
+        * Remove featuretools enterprise from documentation (:pr: `1022`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
+    :user:`kmax12`
 
 **v0.16.0 June 5, 2020**
     * Enhancements
