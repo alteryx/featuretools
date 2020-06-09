@@ -9,10 +9,11 @@ Changelog
     * Changes
         * Remove unnecessary ``pd.Series`` calls from primitives (:pr:`1020`)
     * Documentation Changes
+        * Remove featuretools enterprise from documentation (:pr:`1022`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`thehomebrewnerd`
+    :user:`kmax12`,  :user:`thehomebrewnerd`
 
 **v0.16.0 June 5, 2020**
     * Enhancements
