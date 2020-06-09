@@ -46,12 +46,3 @@ few simple guidelines:
 
 4.  **Sharing data privately**: If you have data that you can't share publicly,
     feel free to send an email to help@featurelabs.com.
-
-
-Commercial support
--------------------
-
-Featuretools Enterprise offers expert support from the creators and core developers of Featuretools. Whether you need help getting a project off the ground or scaling Featuretools usage across your organization, we’ll provide our expertise to help you build the best machine learning models possible. More information can be found `here <https://www.featurelabs.com/featuretools/>`__.
-
-
-

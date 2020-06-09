@@ -175,7 +175,6 @@ Table of contents
 
    frequently_asked_questions
    help
-   featuretools_enterprise
    usage_tips/limitations
    usage_tips/glossary
    ecosystem
