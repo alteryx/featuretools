@@ -108,7 +108,7 @@ DFS Limitations
 ***************
 There are a few key limitations when generating a feature matrix from a Dask ``EntitySet``.
 
-If a ``cutoff_time`` parameter is passed to ``featuretools.dfs()`` it should be a single cutoff time value, or a pandas dataframe. The current implementation will still work if a Dask dataframe is supplied for cutoff timess, but a ``.compute()`` call will be made on the dataframe to convert it into a pandas dataframe. This conversion will result in a warning, and the process could take a considerable amount of time to complete depending on the size of the supplied dataframe.
+If a ``cutoff_time`` parameter is passed to ``featuretools.dfs()`` it should be a single cutoff time value, or a pandas dataframe. The current implementation will still work if a Dask dataframe is supplied for cutoff times, but a ``.compute()`` call will be made on the dataframe to convert it into a pandas dataframe. This conversion will result in a warning, and the process could take a considerable amount of time to complete depending on the size of the supplied dataframe.
 
 Additionally, Featuretools does not currently support the use of the ``approximate`` or ``training_window`` parameters when working with Dask entitiysets, but should in future releases.
 
