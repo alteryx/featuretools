@@ -142,9 +142,9 @@ def test_cfm_fails_dask_cutoff_time(es):
 
     property_feature = ft.Feature(es['log']['value']) > 10
 
-    error_text = "cannot use Dask DataFrame for cutoff_time: "\
-                 "cutoff_time must a single value or a Pandas DataFrame"
-    with pytest.raises(TypeError, match=error_text):
+    match = "cutoff_time should be a Pandas DataFrame: " \
+            "computing cutoff_time, this may take a while"
+    with pytest.warns(UserWarning, match=match):
         calculate_feature_matrix([property_feature],
                                  es,
                                  cutoff_time=cutoff_time)

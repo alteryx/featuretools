@@ -150,14 +150,15 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     target_entity = entityset[features[0].entity.id]
     pass_columns = []
 
+    if isinstance(cutoff_time, dd.DataFrame):
+        msg = "cutoff_time should be a Pandas DataFrame: "\
+            "computing cutoff_time, this may take a while"
+        warnings.warn(msg)
+        cutoff_time = cutoff_time.compute()
+
     if not isinstance(cutoff_time, pd.DataFrame):
         if isinstance(cutoff_time, list):
             raise TypeError("cutoff_time must be a single value or DataFrame")
-
-        if isinstance(cutoff_time, dd.DataFrame):
-            msg = "cannot use Dask DataFrame for cutoff_time: "\
-                  "cutoff_time must a single value or a Pandas DataFrame"
-            raise TypeError(msg)
 
         if cutoff_time is None:
             if entityset.time_type == NumericTimeIndex:
