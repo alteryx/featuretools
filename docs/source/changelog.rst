@@ -7,11 +7,13 @@ Changelog
     * Fixes
     * Changes
         * Deprecated ``feature's get_names`` function, ``get_feature_names`` should be used instead
+        * Remove unnecessary ``pd.Series`` calls from primitives (:pr:`1020`)
     * Documentation Changes
+        * Remove featuretools enterprise from documentation (:pr:`1022`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`tuethan1999`
+        :user:`tuethan1999`, :user:`kmax12`,  :user:`thehomebrewnerd`
 
 **v0.16.0 June 5, 2020**
     * Enhancements
