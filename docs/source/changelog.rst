@@ -5,6 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
     * Fixes
+        * Improve warnings when using a Dask dataframe for cutoff times (:pr:`1026`)
     * Changes
         * Remove unnecessary ``pd.Series`` calls from primitives (:pr:`1020`)
     * Documentation Changes
