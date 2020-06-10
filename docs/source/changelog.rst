@@ -9,10 +9,11 @@ Changelog
         * Improve warnings when using a Dask dataframe for cutoff times (:pr:`1026`)
     * Changes
         * Remove unnecessary ``pd.Series`` and ``pd.DatetimeIndex`` calls from primitives (:pr:`1020`, :pr:`1024`)
+        * Moved ``find_variable_types`` to Variable utils (:pr:`1013`)
     * Documentation Changes
         * Add page on Variable Types to describe some Variable Types, and util functions (:pr:`1013`)
-    * Testing Changes
         * Remove featuretools enterprise from documentation (:pr:`1022`)
+    * Testing Changes
 
     Thanks to the following people for contributing to this release:
     :user:`kmax12`, :user:`thehomebrewnerd`, :user:`gsheni`

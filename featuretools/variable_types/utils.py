@@ -6,7 +6,7 @@ from featuretools.utils.plot_utils import (
     get_graphviz_format,
     save_graph
 )
-from featuretools.variable_types import Variable
+from featuretools.variable_types.variable import Variable
 
 
 def find_variable_types():
@@ -67,10 +67,10 @@ def graph_variable_types(to_file=None):
     graph.attr(rankdir="LR")
     graph.node(Variable.__name__, shape='Mdiamond')
 
-    v_types = list(find_variable_types().values())
-    v_types.sort(key=lambda x: x.__name__)
+    all_variables_types = list(find_variable_types().values())
+    all_variables_types.sort(key=lambda x: x.__name__)
 
-    for node in v_types:
+    for node in all_variables_types:
         for parent in node.__bases__:
             graph.edge(parent.__name__, node.__name__)
 
