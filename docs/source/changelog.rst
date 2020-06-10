@@ -5,9 +5,10 @@ Changelog
 **Future Release**
     * Enhancements
     * Fixes
+        * Improve warnings when using a Dask dataframe for cutoff times (:pr:`1026`)
     * Changes
         * Deprecated ``Feature.get_names()``, ``Feature.get_feature_names()`` should be used instead(:pr:`1021`)
-        * Remove unnecessary ``pd.Series`` calls from primitives (:pr:`1020`)
+        * Remove unnecessary ``pd.Series`` and ``pd.DatetimeIndex`` calls from primitives (:pr:`1020`, :pr:`1024`)
     * Documentation Changes
         * Remove featuretools enterprise from documentation (:pr:`1022`)
     * Testing Changes

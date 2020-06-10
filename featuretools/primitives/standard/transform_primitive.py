@@ -115,9 +115,7 @@ class Day(TransformPrimitive):
 
     def get_function(self):
         def day(vals):
-            if isinstance(vals, dd.Series):
-                return vals.dt.day
-            return pd.DatetimeIndex(vals).day.values
+            return vals.dt.day
         return day
 
 
@@ -140,9 +138,7 @@ class Hour(TransformPrimitive):
 
     def get_function(self):
         def hour(vals):
-            if isinstance(vals, dd.Series):
-                return vals.dt.hour
-            return pd.DatetimeIndex(vals).hour.values
+            return vals.dt.hour
         return hour
 
 
@@ -165,9 +161,7 @@ class Second(TransformPrimitive):
 
     def get_function(self):
         def second(vals):
-            if isinstance(vals, dd.Series):
-                return vals.dt.second
-            return pd.DatetimeIndex(vals).second.values
+            return vals.dt.second
         return second
 
 
@@ -190,9 +184,7 @@ class Minute(TransformPrimitive):
 
     def get_function(self):
         def minute(vals):
-            if isinstance(vals, dd.Series):
-                return vals.dt.minute
-            return pd.DatetimeIndex(vals).minute.values
+            return vals.dt.minute
         return minute
 
 
@@ -220,9 +212,7 @@ class Week(TransformPrimitive):
 
     def get_function(self):
         def week(vals):
-            if isinstance(vals, dd.Series):
-                return vals.dt.week
-            return pd.DatetimeIndex(vals).week.values
+            return vals.dt.week
         return week
 
 
@@ -245,9 +235,7 @@ class Month(TransformPrimitive):
 
     def get_function(self):
         def month(vals):
-            if isinstance(vals, dd.Series):
-                return vals.dt.month
-            return pd.DatetimeIndex(vals).month.values
+            return vals.dt.month
         return month
 
 
@@ -270,9 +258,7 @@ class Year(TransformPrimitive):
 
     def get_function(self):
         def year(vals):
-            if isinstance(vals, dd.Series):
-                return vals.dt.year
-            return pd.DatetimeIndex(vals).year.values
+            return vals.dt.year
         return year
 
 
@@ -295,9 +281,7 @@ class IsWeekend(TransformPrimitive):
 
     def get_function(self):
         def is_weekend(vals):
-            if isinstance(vals, dd.Series):
-                return vals.dt.weekday > 4
-            return pd.DatetimeIndex(vals).weekday.values > 4
+            return vals.dt.weekday > 4
         return is_weekend
 
 
@@ -324,9 +308,7 @@ class Weekday(TransformPrimitive):
 
     def get_function(self):
         def weekday(vals):
-            if isinstance(vals, dd.Series):
-                return vals.dt.weekday
-            return pd.DatetimeIndex(vals).weekday.values
+            return vals.dt.weekday
         return weekday
 
 

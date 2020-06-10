@@ -1,7 +1,4 @@
-import warnings
-
 import pandas as pd
-from dask import dataframe as dd
 
 from featuretools.computational_backends import calculate_feature_matrix
 from featuretools.entityset import EntitySet
@@ -254,12 +251,6 @@ def dfs(entities=None,
 
     if features_only:
         return features
-
-    if isinstance(cutoff_time, dd.DataFrame):
-        msg = "cutoff_time should be a Pandas DataFrame: "\
-              "computing cutoff_time, this may take a while"
-        warnings.warn(msg)
-        cutoff_time = cutoff_time.compute()
 
     if isinstance(cutoff_time, pd.DataFrame):
         feature_matrix = calculate_feature_matrix(features,
