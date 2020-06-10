@@ -6,7 +6,7 @@ Changelog
     * Enhancements
     * Fixes
     * Changes
-        * Deprecated ``feature's get_names`` function, ``get_feature_names`` should be used instead
+        * Deprecated ``Feature.get_names()``, ``Feature.get_feature_names()`` should be used instead(:pr:`1021`)
         * Remove unnecessary ``pd.Series`` calls from primitives (:pr:`1020`)
     * Documentation Changes
         * Remove featuretools enterprise from documentation (:pr:`1022`)
