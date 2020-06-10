@@ -8,7 +8,7 @@ from dask import dataframe as dd
 
 from featuretools.demo import load_mock_customer
 from featuretools.entityset import EntitySet, deserialize, serialize
-from featuretools.variable_types.utils import find_variable_types
+from featuretools.variable_types import find_variable_types
 from featuretools.variable_types.variable import Categorical, Index, TimeIndex
 
 BUCKET_NAME = "test-bucket"
