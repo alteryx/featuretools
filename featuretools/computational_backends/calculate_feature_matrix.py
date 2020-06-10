@@ -156,10 +156,39 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         warnings.warn(msg)
         cutoff_time = cutoff_time.compute()
 
-    if not isinstance(cutoff_time, pd.DataFrame):
+    if isinstance(cutoff_time, pd.DataFrame):
+        cutoff_time = cutoff_time.reset_index(drop=True)
+        # handle how columns are names in cutoff_time
+        # maybe add _check_time_dtype helper function
+        if "instance_id" not in cutoff_time.columns:
+            if target_entity.index not in cutoff_time.columns:
+                raise AttributeError('Cutoff time DataFrame must contain a column with either the same name'
+                                    ' as the target entity index or a column named "instance_id"')
+            # rename to instance_id
+            cutoff_time.rename(columns={target_entity.index: "instance_id"}, inplace=True)
+
+        if "time" not in cutoff_time.columns:
+            if target_entity.time_index and target_entity.time_index not in cutoff_time.columns:
+                raise AttributeError('Cutoff time DataFrame must contain a column with either the same name'
+                                    ' as the target entity time_index or a column named "time"')
+            # rename to time
+            cutoff_time.rename(columns={target_entity.time_index: "time"}, inplace=True)
+
+        # Make sure user supplies only one valid name for instance id and time columns
+        if "instance_id" in cutoff_time.columns and target_entity.index in cutoff_time.columns and \
+                "instance_id" != target_entity.index:
+            raise AttributeError('Cutoff time DataFrame cannot contain both a column named "instance_id" and a column'
+                                ' with the same name as the target entity index')
+        if "time" in cutoff_time.columns and target_entity.time_index in cutoff_time.columns and \
+                "time" != target_entity.time_index:
+            raise AttributeError('Cutoff time DataFrame cannot contain both a column named "time" and a column'
+                                ' with the same name as the target entity time index')
+
+        pass_columns = [col for col in cutoff_time.columns if col not in ['instance_id', 'time']]
+        cutoff_time_check = cutoff_time['time'].iloc[0]
+    else:
         if isinstance(cutoff_time, list):
             raise TypeError("cutoff_time must be a single value or DataFrame")
-
         if cutoff_time is None:
             if entityset.time_type == NumericTimeIndex:
                 cutoff_time = np.inf
@@ -178,32 +207,9 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         map_args = [(id, time) for id, time in zip(instance_ids, cutoff_time)]
         cutoff_time = pd.DataFrame(map_args, columns=['instance_id', 'time'])
 
-    cutoff_time = cutoff_time.reset_index(drop=True)
-    # handle how columns are names in cutoff_time
-    # maybe add _check_time_dtype helper function
-    if "instance_id" not in cutoff_time.columns:
-        if target_entity.index not in cutoff_time.columns:
-            raise AttributeError('Cutoff time DataFrame must contain a column with either the same name'
-                                 ' as the target entity index or a column named "instance_id"')
-        # rename to instance_id
-        cutoff_time.rename(columns={target_entity.index: "instance_id"}, inplace=True)
-
-    if "time" not in cutoff_time.columns:
-        if target_entity.time_index and target_entity.time_index not in cutoff_time.columns:
-            raise AttributeError('Cutoff time DataFrame must contain a column with either the same name'
-                                 ' as the target entity time_index or a column named "time"')
-        # rename to time
-        cutoff_time.rename(columns={target_entity.time_index: "time"}, inplace=True)
-
-    # Make sure user supplies only one valid name for instance id and time columns
-    if "instance_id" in cutoff_time.columns and target_entity.index in cutoff_time.columns and \
-            "instance_id" != target_entity.index:
-        raise AttributeError('Cutoff time DataFrame cannot contain both a column named "instance_id" and a column'
-                             ' with the same name as the target entity index')
-    if "time" in cutoff_time.columns and target_entity.time_index in cutoff_time.columns and \
-            "time" != target_entity.time_index:
-        raise AttributeError('Cutoff time DataFrame cannot contain both a column named "time" and a column'
-                             ' with the same name as the target entity time index')
+        # cutoff_time = (cutoff_time, instance_ids)
+        pass_columns = []
+        cutoff_time_check = cutoff_time['time'].iloc[0]
 
     # Check that cutoff_time time type matches entityset time type
     if entityset.time_type == NumericTimeIndex:
@@ -217,9 +223,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     assert (cutoff_time[['instance_id', 'time']].duplicated().sum() == 0), \
         "Duplicated rows in cutoff time dataframe."
 
-    pass_columns = [col for col in cutoff_time.columns if col not in ['instance_id', 'time']]
-
-    if _check_time_type(cutoff_time['time'].iloc[0]) is None:
+    if _check_time_type(cutoff_time_check) is None:
         raise ValueError("cutoff_time time values must be datetime or numeric")
 
     # make sure dtype of instance_id in cutoff time
