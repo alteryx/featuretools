@@ -9,7 +9,7 @@ import featuretools as ft
 from featuretools import variable_types
 from featuretools.entityset import Entity, EntitySet
 from featuretools.tests.testing_utils import make_ecommerce_entityset
-from featuretools.variable_types.utils import find_variable_types
+from featuretools.variable_types import find_variable_types
 
 
 def test_enforces_variable_id_is_str(es):
