@@ -11,8 +11,8 @@ from featuretools.variable_types import Variable
 
 def find_variable_types():
     """
-    Retrieves all Variable Types as a dictionary where key is type_string
-        of Variable, and value is Variable object
+    Retrieves all Variable types as a dictionary where key is type_string
+        of Variable, and value is a Variable object.
 
     Args:
         None
@@ -27,14 +27,15 @@ def find_variable_types():
 
 def list_variable_types():
     """
-    Retrieves all Variable Types as a dataframe, with the columns
-        of name, and
+    Retrieves all Variable types as a dataframe, with the column headers
+        of name, type_string, and description.
 
     Args:
         None
 
     Returns:
-        variable_types (pd.DataFrame):
+        variable_types (pd.DataFrame): a DataFrame with column headers of
+            name, type_strings, and description.
     """
     v_types = list(find_variable_types().values())
     v_type_strings = list(find_variable_types().keys())
