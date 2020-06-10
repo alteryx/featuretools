@@ -1,5 +1,3 @@
-import inspect
-
 import pandas as pd
 
 from featuretools.utils.gen_utils import find_descendents
@@ -8,9 +6,7 @@ from featuretools.utils.plot_utils import (
     get_graphviz_format,
     save_graph
 )
-from featuretools.variable_types import (
-    Variable
-)
+from featuretools.variable_types import Variable
 
 
 def find_variable_types():
@@ -68,6 +64,7 @@ def graph_variable_types(to_file=None):
     # Initialize a new directed graph
     graph = graphviz.Digraph('variables', format=format_)
     graph.attr(rankdir="LR")
+    graph.node(Variable.__name__, shape='Mdiamond')
 
     v_types = list(find_variable_types().values())
     v_types.sort(key=lambda x: x.__name__)
