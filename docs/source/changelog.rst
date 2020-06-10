@@ -13,7 +13,6 @@ Changelog
         * Add page on Variable Types to describe some Variable Types, and util functions (:pr:`1013`)
     * Testing Changes
         * Remove featuretools enterprise from documentation (:pr:`1022`)
-    * Testing Changes
 
     Thanks to the following people for contributing to this release:
     :user:`kmax12`, :user:`thehomebrewnerd`, :user:`gsheni`
