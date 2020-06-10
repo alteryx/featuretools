@@ -2,17 +2,30 @@ import os
 
 import graphviz
 import pytest
+import inspect
 
 from featuretools.variable_types.utils import (
     find_variable_types,
     graph_variable_types,
     list_variable_types
 )
+from featuretools import variable_types as v_types
+from featuretools.variable_types import Variable
 
 
 def test_find_variable_types():
-    for type_string, v_type in find_variable_types().items():
-        assert v_type.type_string == type_string
+    expected_v_types = []
+    for name, obj in inspect.getmembers(v_types.variable):
+        if inspect.isclass(obj) and issubclass(obj, Variable) \
+                and obj != Variable:
+            expected_v_types.append(obj)
+
+    assert isinstance(find_variable_types(), dict)
+    v_objects = [v_obj for v_obj in find_variable_types().values()]
+    type_strings = [v_type_str for v_type_str in find_variable_types().keys()]
+    for v_type in expected_v_types:
+        assert v_type in v_objects
+        assert v_type.type_string in type_strings
 
 
 def test_list_variables():
