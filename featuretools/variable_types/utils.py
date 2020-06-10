@@ -9,8 +9,6 @@ from featuretools.utils.plot_utils import (
     save_graph
 )
 from featuretools.variable_types import (
-    DatetimeTimeIndex,
-    NumericTimeIndex,
     Variable
 )
 
@@ -74,30 +72,10 @@ def graph_variable_types(to_file=None):
     v_types = list(find_variable_types().values())
     v_types.sort(key=lambda x: x.__name__)
 
-    from collections import defaultdict
-    adjacency_list = defaultdict(list)
+    for node in v_types:
+        for parent in node.__bases__:
+            graph.edge(parent.__name__, node.__name__)
 
-    graph.node(Variable.__name__, shape='Mdiamond')
-    for x in v_types:
-        parents = [y for y in inspect.getmro(x) if y not in [object, x]]
-        subclasses = x.__subclasses__()
-
-        print('---')
-        print(x.__name__)
-        print('parents -> ', parents)
-        print('subclasses -> ', subclasses)
-        print('---')
-        # if len(subclasses) == 0:
-        #     graph.edge(Variable.__name__, x.__name__)
-        if parents == [Variable]:
-            # a direct child of Variable
-            adjacency_list[Variable].append(x)
-            graph.edge(Variable.__name__, x.__name__)
-        # else:
-        #     # a descent of Variable, only plot the parent - child relation
-        #     graph.edge(parents[0].__name__, x.__name__)
-    import pprint
-    pprint(dict(adjacency_list))
     if to_file:
         save_graph(graph, to_file, format_)
     return graph
