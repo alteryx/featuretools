@@ -1,16 +1,16 @@
+import inspect
 import os
 
 import graphviz
 import pytest
-import inspect
 
+from featuretools import variable_types as v_types
+from featuretools.variable_types import Variable
 from featuretools.variable_types.utils import (
     find_variable_types,
     graph_variable_types,
     list_variable_types
 )
-from featuretools import variable_types as v_types
-from featuretools.variable_types import Variable
 
 
 def test_find_variable_types():
