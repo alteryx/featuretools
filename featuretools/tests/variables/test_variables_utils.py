@@ -5,7 +5,7 @@ import graphviz
 import pytest
 
 from featuretools import variable_types as v_types
-from featuretools.variable_types.utils import (
+from featuretools.variable_types import (
     Variable,
     find_variable_types,
     graph_variable_types,
