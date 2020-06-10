@@ -19,13 +19,11 @@ def test_find_variable_types():
         if inspect.isclass(obj) and issubclass(obj, Variable) \
                 and obj != Variable:
             expected_v_types.append(obj)
-
     assert isinstance(find_variable_types(), dict)
-    v_objects = [v_obj for v_obj in find_variable_types().values()]
-    type_strings = [v_type_str for v_type_str in find_variable_types().keys()]
+    found_vtypes = find_variable_types()
+    assert len(found_vtypes) == len(expected_v_types)
     for v_type in expected_v_types:
-        assert v_type in v_objects
-        assert v_type.type_string in type_strings
+        assert found_vtypes[v_type.type_string] == v_type
 
 
 def test_list_variables():
