@@ -6,8 +6,9 @@ Changelog
     * Enhancements
         * Add ``list_variable_types`` and ``graph_variable_types`` for Variable Types (:pr:`1013`)
     * Fixes
+        * Improve warnings when using a Dask dataframe for cutoff times (:pr:`1026`)
     * Changes
-        * Remove unnecessary ``pd.Series`` calls from primitives (:pr:`1020`)
+        * Remove unnecessary ``pd.Series`` and ``pd.DatetimeIndex`` calls from primitives (:pr:`1020`, :pr:`1024`)
     * Documentation Changes
         * Add page on Variable Types to describe some Variable Types, and util functions (:pr:`1013`)
     * Testing Changes
