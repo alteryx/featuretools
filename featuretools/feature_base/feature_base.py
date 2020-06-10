@@ -72,6 +72,7 @@ class FeatureBase(object):
         """Rename Feature, returns copy"""
         feature_copy = self.copy()
         feature_copy._name = name
+        feature_copy._names = None
         return feature_copy
 
     def copy(self):
@@ -83,6 +84,8 @@ class FeatureBase(object):
         return self._name
 
     def get_feature_names(self):
+        if not hasattr(self, '_names'):
+            return [self.get_name()]
         if not self._names:
             if self.number_output_features == 1:
                 self._names = [self.get_name()]
@@ -459,8 +462,12 @@ class DirectFeature(FeatureBase):
 
     def generate_name(self):
         return self._name_from_base(self.base_features[0].get_name())
+    # def generate_names(self):
+    #   pass
 
     def get_feature_names(self):
+        # if self.generate_name() != self._name:
+        #     return super().get_feature_names()
         return [self._name_from_base(base_name)
                 for base_name in self.base_features[0].get_feature_names()]
 
