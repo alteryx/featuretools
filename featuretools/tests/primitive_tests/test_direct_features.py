@@ -70,7 +70,6 @@ def test_rename_multioutput(es):
     feat = ft.Feature(es['log']['product_id'],
                       parent_entity=es['customers'],
                       primitive=NMostCommon(n=2))
-    feat.get_feature_names()
     copy_feat = feat.rename("session_test")
     assert feat.unique_name() != copy_feat.unique_name()
     assert feat.get_name() != copy_feat.get_name()
