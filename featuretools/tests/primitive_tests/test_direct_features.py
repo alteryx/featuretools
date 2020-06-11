@@ -72,7 +72,6 @@ def test_rename_multioutput(es):
                       primitive=NMostCommon(n=2))
     feat.get_feature_names()
     copy_feat = feat.rename("session_test")
-    breakpoint()
     assert feat.unique_name() != copy_feat.unique_name()
     assert feat.get_name() != copy_feat.get_name()
     assert feat.base_features[0].generate_name() == copy_feat.base_features[0].generate_name()
