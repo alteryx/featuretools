@@ -15,6 +15,7 @@ Changelog
 
     Thanks to the following people for contributing to this release:
         :user:`tuethan1999`, :user:`kmax12`,  :user:`thehomebrewnerd`
+        
 **Breaking Changes**
 
 * Removed ``Feature.get_names()``, ``Feature.get_feature_names()`` should be used instead
