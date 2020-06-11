@@ -16,6 +16,8 @@ from featuretools.computational_backends.feature_set_calculator import (
     FeatureSetCalculator
 )
 from featuretools.computational_backends.utils import (
+    _check_cutoff_time_type,
+    _validate_cutoff_time,
     bin_cutoff_times,
     create_client_and_cluster,
     gather_approximate_features,
@@ -26,12 +28,7 @@ from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, FeatureBase
 from featuretools.utils import Trie
 from featuretools.utils.gen_utils import make_tqdm_iterator
-from featuretools.utils.wrangle import _check_time_type
-from featuretools.variable_types import (
-    DatetimeTimeIndex,
-    NumericTimeIndex,
-    PandasTypes
-)
+from featuretools.variable_types import NumericTimeIndex
 
 logger = logging.getLogger('featuretools.computational_backend')
 
@@ -148,47 +145,13 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             raise ValueError(msg)
 
     target_entity = entityset[features[0].entity.id]
+
+    cutoff_time = _validate_cutoff_time(cutoff_time, target_entity)
+
     pass_columns = []
-
-    if isinstance(cutoff_time, dd.DataFrame):
-        msg = "cutoff_time should be a Pandas DataFrame: "\
-            "computing cutoff_time, this may take a while"
-        warnings.warn(msg)
-        cutoff_time = cutoff_time.compute()
-
     if isinstance(cutoff_time, pd.DataFrame):
-        cutoff_time = cutoff_time.reset_index(drop=True)
-        # handle how columns are names in cutoff_time
-        # maybe add _check_time_dtype helper function
-        if "instance_id" not in cutoff_time.columns:
-            if target_entity.index not in cutoff_time.columns:
-                raise AttributeError('Cutoff time DataFrame must contain a column with either the same name'
-                                    ' as the target entity index or a column named "instance_id"')
-            # rename to instance_id
-            cutoff_time.rename(columns={target_entity.index: "instance_id"}, inplace=True)
-
-        if "time" not in cutoff_time.columns:
-            if target_entity.time_index and target_entity.time_index not in cutoff_time.columns:
-                raise AttributeError('Cutoff time DataFrame must contain a column with either the same name'
-                                    ' as the target entity time_index or a column named "time"')
-            # rename to time
-            cutoff_time.rename(columns={target_entity.time_index: "time"}, inplace=True)
-
-        # Make sure user supplies only one valid name for instance id and time columns
-        if "instance_id" in cutoff_time.columns and target_entity.index in cutoff_time.columns and \
-                "instance_id" != target_entity.index:
-            raise AttributeError('Cutoff time DataFrame cannot contain both a column named "instance_id" and a column'
-                                ' with the same name as the target entity index')
-        if "time" in cutoff_time.columns and target_entity.time_index in cutoff_time.columns and \
-                "time" != target_entity.time_index:
-            raise AttributeError('Cutoff time DataFrame cannot contain both a column named "time" and a column'
-                                ' with the same name as the target entity time index')
-
         pass_columns = [col for col in cutoff_time.columns if col not in ['instance_id', 'time']]
-        cutoff_time_check = cutoff_time['time'].iloc[0]
     else:
-        if isinstance(cutoff_time, list):
-            raise TypeError("cutoff_time must be a single value or DataFrame")
         if cutoff_time is None:
             if entityset.time_type == NumericTimeIndex:
                 cutoff_time = np.inf
@@ -207,24 +170,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         map_args = [(id, time) for id, time in zip(instance_ids, cutoff_time)]
         cutoff_time = pd.DataFrame(map_args, columns=['instance_id', 'time'])
 
-        # cutoff_time = (cutoff_time, instance_ids)
-        pass_columns = []
-        cutoff_time_check = cutoff_time['time'].iloc[0]
-
-    # Check that cutoff_time time type matches entityset time type
-    if entityset.time_type == NumericTimeIndex:
-        if cutoff_time['time'].dtype.name not in PandasTypes._pandas_numerics:
-            raise TypeError("cutoff_time times must be numeric: try casting "
-                            "via pd.to_numeric(cutoff_time['time'])")
-    elif entityset.time_type == DatetimeTimeIndex:
-        if cutoff_time['time'].dtype.name not in PandasTypes._pandas_datetimes:
-            raise TypeError(
-                "cutoff_time times must be datetime type: try casting via pd.to_datetime(cutoff_time['time'])")
-    assert (cutoff_time[['instance_id', 'time']].duplicated().sum() == 0), \
-        "Duplicated rows in cutoff time dataframe."
-
-    if _check_time_type(cutoff_time_check) is None:
-        raise ValueError("cutoff_time time values must be datetime or numeric")
+    _check_cutoff_time_type(cutoff_time, entityset.time_type)
 
     # make sure dtype of instance_id in cutoff time
     # is same as column it references
