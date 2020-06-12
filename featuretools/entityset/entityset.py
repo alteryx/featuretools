@@ -11,7 +11,11 @@ import featuretools.variable_types.variable as vtypes
 from featuretools.entityset import deserialize, serialize
 from featuretools.entityset.entity import Entity
 from featuretools.entityset.relationship import Relationship, RelationshipPath
-from featuretools.utils.gen_utils import import_or_raise
+from featuretools.utils.plot_utils import (
+    check_graphviz,
+    get_graphviz_format,
+    save_graph
+)
 
 pd.options.mode.chained_assignment = None  # default='warn'
 logger = logging.getLogger('featuretools.entityset')
@@ -905,42 +909,12 @@ class EntitySet(object):
                 Jupyter notebooks.
 
         """
-        GRAPHVIZ_ERR_MSG = ('Please install graphviz to plot entity sets.' +
-                            ' (See https://docs.featuretools.com/en/stable/getting_started/install.html#installing-graphviz for' +
-                            ' details)')
-        graphviz = import_or_raise("graphviz", GRAPHVIZ_ERR_MSG)
-        # Try rendering a dummy graph to see if a working backend is installed
-        try:
-            graphviz.Digraph().pipe()
-        except graphviz.backend.ExecutableNotFound:
-            raise RuntimeError(
-                "To plot entity sets, a graphviz backend is required.\n" +
-                "Install the backend using one of the following commands:\n" +
-                "  Mac OS: brew install graphviz\n" +
-                "  Linux (Ubuntu): sudo apt-get install graphviz\n" +
-                "  Windows: conda install python-graphviz\n" +
-                "  For more details visit: https://docs.featuretools.com/en/stable/getting_started/install.html"
-            )
-
-        if to_file:
-            # Explicitly cast to str in case a Path object was passed in
-            to_file = str(to_file)
-
-            split_path = to_file.split('.')
-            if len(split_path) < 2:
-                raise ValueError("Please use a file extension like '.pdf'" +
-                                 " so that the format can be inferred")
-
-            format = split_path[-1]
-            valid_formats = graphviz.backend.FORMATS
-            if format not in valid_formats:
-                raise ValueError("Unknown format. Make sure your format is" +
-                                 " amongst the following: %s" % valid_formats)
-        else:
-            format = None
+        graphviz = check_graphviz()
+        format_ = get_graphviz_format(graphviz=graphviz,
+                                      to_file=to_file)
 
         # Initialize a new directed graph
-        graph = graphviz.Digraph(self.id, format=format,
+        graph = graphviz.Digraph(self.id, format=format_,
                                  graph_attr={'splines': 'ortho'})
 
         # Draw entities
@@ -963,10 +937,5 @@ class EntitySet(object):
             graph.edge(rel._child_entity_id, rel._parent_entity_id, xlabel=label)
 
         if to_file:
-            # Graphviz always appends the format to the file name, so we need to
-            # remove it manually to avoid file names like 'file_name.pdf.pdf'
-            offset = len(format) + 1  # Add 1 for the dot
-            output_path = to_file[:-offset]
-            graph.render(output_path, cleanup=True)
-
+            save_graph(graph, to_file, format_)
         return graph

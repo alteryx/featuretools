@@ -2,7 +2,7 @@ Using Dask EntitySets (BETA)
 ============================
 .. note::
     Support for Dask EntitySets is still in Beta. While the key functionality has been implemented, development is ongoing to add the remaining functionality.
-    
+
     All planned improvements to the Featuretools/Dask integration are `documented on Github <https://github.com/FeatureLabs/featuretools/issues?q=is%3Aopen+is%3Aissue+label%3ADask>`_. If you see an open issue that is important for your application, please let us know by upvoting or commenting on the issue. If you encounter any errors using Dask entities, or find missing functionality that does not yet have an open issue, please create a `new issue on Github <https://github.com/FeatureLabs/featuretools/issues>`_.
 
 Creating a feature matrix from a very large dataset can be problematic if the underlying pandas dataframes that make up the entities cannot easily fit in memory. To help get around this issue, Featuretools supports creating ``Entity`` and ``EntitySet`` objects from Dask dataframes. A Dask ``EntitySet`` can then be passed to ``featuretools.dfs`` or ``featuretools.calculate_feature_matrix`` to create a feature matrix, which will be returned as a Dask dataframe. In addition to working on larger than memory datasets, this approach also allows users to take advantage of the parallel and distributed processing capabilities offered by Dask.

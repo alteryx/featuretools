@@ -8,7 +8,7 @@ from dask import dataframe as dd
 
 from featuretools.demo import load_mock_customer
 from featuretools.entityset import EntitySet, deserialize, serialize
-from featuretools.variable_types.variable import (
+from featuretools.variable_types import (
     Categorical,
     Index,
     TimeIndex,
