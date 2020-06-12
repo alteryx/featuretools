@@ -7,7 +7,6 @@ from featuretools.utils.gen_utils import camel_to_snake, find_descendents
 class ClassNameDescriptor(object):
     """Descriptor to convert a class's name from camelcase to snakecase
     """
-
     def __get__(self, instance, class_):
         return camel_to_snake(class_.__name__)
 
