@@ -1678,3 +1678,21 @@ def test_closes_tqdm(es):
         assert e.args[0] == "This primitive has errored"
     finally:
         assert len(tqdm._instances) == 0
+
+
+def test_approximate_with_single_cutoff_warns(pd_es):
+    property_feature = ft.Feature(pd_es['log']['value']) > 10
+
+    match = "Using approximate with a single cutoff_time value or no cutoff_time " \
+        "provides no benefit - ignoring"
+    # test single cutoff time
+    with pytest.warns(UserWarning, match=match):
+        calculate_feature_matrix([property_feature],
+                                 pd_es,
+                                 cutoff_time=pd.to_datetime('2020-01-01'),
+                                 approximate="1 day")
+    # test no cutoff time
+    with pytest.warns(UserWarning, match=match):
+        calculate_feature_matrix([property_feature],
+                                 pd_es,
+                                 approximate="1 day")

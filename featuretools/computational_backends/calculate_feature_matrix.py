@@ -178,6 +178,13 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     _check_cutoff_time_type(cutoff_time, entityset.time_type)
 
+    # Approximate provides no benefit with a single cutoff time, so ignore it
+    if isinstance(cutoff_time, tuple) and approximate is not None:
+        msg = "Using approximate with a single cutoff_time value or no cutoff_time " \
+            "provides no benefit - ignoring"
+        warnings.warn(msg)
+        approximate = None
+
     feature_set = FeatureSet(features)
 
     # Get features to approximate
