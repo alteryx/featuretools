@@ -318,6 +318,16 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
             group_time = datetime.now()
 
     if isinstance(cutoff_time, tuple):
+        update_progress_callback = None
+        if progress_bar is not None:
+            def update_progress_callback(done):
+                previous_progress = progress_bar.n
+                progress_bar.update(done * len(cutoff_time[1]))
+                if progress_callback is not None:
+                    update, progress_percent, time_elapsed = update_progress_callback_parameters(progress_bar,
+                                                                                                 previous_progress)
+                    progress_callback(update, progress_percent, time_elapsed)
+
         time_last = cutoff_time[0]
         ids = cutoff_time[1]
         if isinstance(ids, dd.Series):
@@ -326,7 +336,8 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
         calculator = FeatureSetCalculator(entityset,
                                           feature_set,
                                           time_last)
-        _feature_matrix = calculator.run(ids)
+
+        _feature_matrix = calculator.run(ids, progress_callback=update_progress_callback, include_cutoff_time=include_cutoff_time)
         if isinstance(_feature_matrix, pd.DataFrame):
             time_index = pd.Index([time_last] * len(ids), name='time')
             _feature_matrix = _feature_matrix.set_index(time_index, append=True)
@@ -573,10 +584,15 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
         num_scattered_workers = len(client.who_has([Future(es_token)]).get(es_token, []))
         num_workers = len(client.scheduler_info()['workers'].values())
 
-        chunks = cutoff_time.groupby(cutoff_df_time_var)
+        if isinstance(cutoff_time, pd.DataFrame):
+            chunks = cutoff_time.groupby(cutoff_df_time_var)
+            cutoff_time_len = cutoff_time.shape[0]
+        else:
+            chunks = cutoff_time
+            cutoff_time_len = len(cutoff_time[1])
 
         if not chunk_size:
-            chunk_size = _handle_chunk_size(1.0 / num_workers, cutoff_time.shape[0])
+            chunk_size = _handle_chunk_size(1.0 / num_workers, cutoff_time_len)
 
         chunks = _chunk_dataframe_groups(chunks, chunk_size)
 
@@ -675,9 +691,13 @@ def _add_approx_entity_index_var(es, target_entity_id, cutoffs, path):
 
 def _chunk_dataframe_groups(grouped, chunk_size):
     """chunks a grouped dataframe into groups no larger than chunk_size"""
-    for group_key, group_df in grouped:
-        for i in range(0, len(group_df), chunk_size):
-            yield group_key, group_df.iloc[i:i + chunk_size]
+    if isinstance(grouped, tuple):
+        for i in range(0, len(grouped[1]), chunk_size):
+            yield None, (grouped[0], grouped[1].iloc[i:i + chunk_size])
+    else:
+        for group_key, group_df in grouped:
+            for i in range(0, len(group_df), chunk_size):
+                yield group_key, group_df.iloc[i:i + chunk_size]
 
 
 def _handle_chunk_size(chunk_size, total_size):
