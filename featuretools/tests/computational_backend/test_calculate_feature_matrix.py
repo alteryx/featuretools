@@ -91,7 +91,7 @@ def test_calc_feature_matrix(es):
         feature_matrix = calculate_feature_matrix([1, 2, 3], es, cutoff_time=cutoff_time)
 
     error_text = "cutoff_time times must be datetime type: try casting via "\
-        "pd\\.to_datetime\\(cutoff_time\\['time'\\]\\)"
+        "pd\\.to_datetime\\(\\)"
     with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([property_feature],
                                  es,
@@ -128,7 +128,7 @@ def test_calc_feature_matrix(es):
     # - can't tell if wrong/different all are false so can't check positional
 
 
-def test_cfm_fails_dask_cutoff_time(es):
+def test_cfm_warns_dask_cutoff_time(es):
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
                  [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
                  [datetime(2011, 4, 9, 10, 40, 0)] +
@@ -1334,8 +1334,7 @@ def test_integer_time_index_datetime_cutoffs(int_es):
     cutoff_df = pd.DataFrame({'time': times, 'instance_id': range(17)})
     property_feature = IdentityFeature(int_es['log']['value']) > 10
 
-    error_text = "cutoff_time times must be numeric: try casting via "\
-        "pd\\.to_numeric\\(cutoff_time\\['time'\\]\\)"
+    error_text = "cutoff_time times must be numeric: try casting via pd\\.to_numeric\\(\\)"
     with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([property_feature],
                                  int_es,

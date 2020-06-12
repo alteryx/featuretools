@@ -1,3 +1,4 @@
+import datetime
 import logging
 import os
 import warnings
@@ -258,16 +259,23 @@ def _check_cutoff_time_type(cutoff_time, es_time_type):
     Check that the cutoff time values are of the proper type given the entityset time type
     """
     # Check that cutoff_time time type matches entityset time type
-    if es_time_type == NumericTimeIndex:
-        if cutoff_time['time'].dtype.name not in PandasTypes._pandas_numerics:
-            raise TypeError("cutoff_time times must be numeric: try casting "
-                            "via pd.to_numeric(cutoff_time['time'])")
-    elif es_time_type == DatetimeTimeIndex:
-        if cutoff_time['time'].dtype.name not in PandasTypes._pandas_datetimes:
-            raise TypeError(
-                "cutoff_time times must be datetime type: try casting via pd.to_datetime(cutoff_time['time'])")
+    if isinstance(cutoff_time, tuple):
+        cutoff_time_dtype = type(cutoff_time[0])
+        numeric_types = [int, float]
+        datetime_types = [datetime.datetime, pd.Timestamp]
+        cutoff_time_check = cutoff_time[0]
+    else:
+        cutoff_time_dtype = cutoff_time['time'].dtype.name
+        numeric_types = PandasTypes._pandas_numerics
+        datetime_types = PandasTypes._pandas_datetimes
+        cutoff_time_check = cutoff_time['time'].iloc[0]
 
-    cutoff_time_check = cutoff_time['time'].iloc[0]
+    if es_time_type == NumericTimeIndex and cutoff_time_dtype not in numeric_types:
+        raise TypeError("cutoff_time times must be numeric: try casting "
+                        "via pd.to_numeric()")
+    if es_time_type == DatetimeTimeIndex and cutoff_time_dtype not in datetime_types:
+        raise TypeError("cutoff_time times must be datetime type: try casting "
+                        "via pd.to_datetime()")
 
     if _check_time_type(cutoff_time_check) is None:
         raise ValueError("cutoff_time time values must be datetime or numeric")
