@@ -574,6 +574,27 @@ def test_include_cutoff_time_without_training_window(es):
     )['COUNT(log)']
     np.testing.assert_array_equal(actual.values, [0, 5])
 
+    # Case3. include_cutoff_time = True with single cutoff time value
+    actual = ft.calculate_feature_matrix(
+        features=[count_log],
+        entityset=es,
+        cutoff_time=pd.to_datetime("2011-04-09 10:31:00"),
+        instance_ids=[0],
+        cutoff_time_in_index=True,
+        include_cutoff_time=True,
+    )['COUNT(log)']
+    np.testing.assert_array_equal(actual.values, [6])
+
+    # Case4. include_cutoff_time = False with single cutoff time value
+    actual = ft.calculate_feature_matrix(
+        features=[count_log],
+        entityset=es,
+        cutoff_time=pd.to_datetime("2011-04-09 10:31:00"),
+        instance_ids=[0],
+        cutoff_time_in_index=True,
+        include_cutoff_time=False,
+    )['COUNT(log)']
+    np.testing.assert_array_equal(actual.values, [5])
 
 def test_approximate_dfeat_of_agg_on_target_include_cutoff_time(pd_es):
     agg_feat = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['sessions'], primitive=Count)

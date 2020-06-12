@@ -336,8 +336,9 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
         calculator = FeatureSetCalculator(entityset,
                                           feature_set,
                                           time_last)
-
-        _feature_matrix = calculator.run(ids, progress_callback=update_progress_callback, include_cutoff_time=include_cutoff_time)
+        _feature_matrix = calculator.run(ids,
+                                         progress_callback=update_progress_callback,
+                                         include_cutoff_time=include_cutoff_time)
         if isinstance(_feature_matrix, pd.DataFrame):
             time_index = pd.Index([time_last] * len(ids), name='time')
             _feature_matrix = _feature_matrix.set_index(time_index, append=True)
