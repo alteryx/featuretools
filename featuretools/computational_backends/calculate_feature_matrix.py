@@ -335,7 +335,8 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
         ids = ids.sort_values()
         calculator = FeatureSetCalculator(entityset,
                                           feature_set,
-                                          time_last)
+                                          time_last,
+                                          training_window=training_window)
         _feature_matrix = calculator.run(ids,
                                          progress_callback=update_progress_callback,
                                          include_cutoff_time=include_cutoff_time)

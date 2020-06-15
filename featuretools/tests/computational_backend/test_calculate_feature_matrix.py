@@ -459,6 +459,8 @@ def test_training_window(pd_es):
     top_level_agg = ft.Feature(pd_es['customers']['id'], parent_entity=pd_es[u'régions'], primitive=Count)
 
     # make sure features that have a direct to a higher level agg
+    # so we have multiple "filter eids" in get_pandas_data_slice,
+    # and we go through the loop to pull data with a training_window param more than once
     dagg = DirectFeature(top_level_agg, pd_es['customers'])
 
     # for now, warns if last_time_index not present
@@ -499,6 +501,20 @@ def test_training_window(pd_es):
                                               include_cutoff_time=False)
     prop_values = [5, 5, 2]
     dagg_values = [3, 2, 1]
+
+    assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
+    assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
+
+    # Case3. include_cutoff_time = False with single cutoff time value
+    feature_matrix = calculate_feature_matrix([property_feature, dagg],
+                                              pd_es,
+                                              cutoff_time=pd.to_datetime("2011-04-09 10:40:00"),
+                                              training_window='9 minutes',
+                                              # n_jobs=3,
+                                              include_cutoff_time=False)
+    breakpoint()
+    prop_values = [4, 0, 0]
+    dagg_values = [3, 3, 3]
     assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
     assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
 
@@ -595,6 +611,7 @@ def test_include_cutoff_time_without_training_window(es):
         include_cutoff_time=False,
     )['COUNT(log)']
     np.testing.assert_array_equal(actual.values, [5])
+
 
 def test_approximate_dfeat_of_agg_on_target_include_cutoff_time(pd_es):
     agg_feat = ft.Feature(pd_es['log']['id'], parent_entity=pd_es['sessions'], primitive=Count)
