@@ -13,6 +13,7 @@ Changelog
     * Documentation Changes
         * Add page on Variable Types to describe some Variable Types, and util functions (:pr:`1013`)
         * Remove featuretools enterprise from documentation (:pr:`1022`)
+        * Add development install instructions to contributin.md (:pr:`1030`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
