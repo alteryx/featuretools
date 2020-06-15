@@ -1,11 +1,12 @@
 import copy
 
 import dask.dataframe as dd
+import databricks.koalas as ks
 import pandas as pd
 import pytest
 
 import featuretools as ft
-from featuretools.tests.testing_utils import make_ecommerce_entityset
+from featuretools.tests.testing_utils import make_ecommerce_entityset, pandas_to_koalas_clean
 
 
 @pytest.fixture(scope='session')
@@ -35,13 +36,21 @@ def dask_es(make_es):
         entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=2)
     return dask_es
 
+@pytest.fixture
+def koalas_es(make_es):
+    koalas_es = copy.deepcopy(make_es)
+    for entity in koalas_es.entities:
+        cleaned_df = pandas_to_koalas_clean(entity.df).reset_index(drop=True)
+        breakpoint()
+        entity.df = ks.from_pandas(cleaned_df)
+    return koalas_es
 
-@pytest.fixture(params=['pd_es', 'dask_es'])
+@pytest.fixture(params=['pd_es', 'dask_es', 'koalas_es'])
 def es(request):
     return request.getfixturevalue(request.param)
 
 
-@pytest.fixture(params=['pd_diamond_es', 'dask_diamond_es'])
+@pytest.fixture(params=['pd_diamond_es', 'dask_diamond_es', 'koalas_diamond_es'])
 def diamond_es(request):
     return request.getfixturevalue(request.param)
 
@@ -107,7 +116,21 @@ def dask_diamond_es(pd_diamond_es):
     return ft.EntitySet(id=pd_diamond_es.id, entities=entities, relationships=relationships)
 
 
-@pytest.fixture(params=['pd_home_games_es', 'dask_home_games_es'])
+@pytest.fixture
+def koalas_diamond_es(pd_diamond_es):
+    entities = {}
+    for entity in pd_diamond_es.entities:
+        entities[entity.id] = (ks.from_pandas(pandas_to_koalas_clean(entity.df)), entity.index, None, entity.variable_types)
+
+    relationships = [(rel.parent_entity.id,
+                      rel.parent_variable.name,
+                      rel.child_entity.id,
+                      rel.child_variable.name) for rel in pd_diamond_es.relationships]
+
+    return ft.EntitySet(id=pd_diamond_es.id, entities=entities, relationships=relationships)
+
+
+@pytest.fixture(params=['pd_home_games_es', 'dask_home_games_es', 'koalas_home_games_es'])
 def home_games_es(request):
     return request.getfixturevalue(request.param)
 
@@ -144,6 +167,18 @@ def dask_home_games_es(pd_home_games_es):
 
     return ft.EntitySet(id=pd_home_games_es.id, entities=entities, relationships=relationships)
 
+@pytest.fixture
+def koalas_home_games_es(pd_home_games_es):
+    entities = {}
+    for entity in pd_home_games_es.entities:
+        entities[entity.id] = (ks.from_pandas(pandas_to_koalas_clean(entity.df)), entity.index, None, entity.variable_types)
+
+    relationships = [(rel.parent_entity.id,
+                      rel.parent_variable.name,
+                      rel.child_entity.id,
+                      rel.child_variable.name) for rel in pd_home_games_es.relationships]
+
+    return ft.EntitySet(id=pd_home_games_es.id, entities=entities, relationships=relationships)
 
 @pytest.fixture
 def games_es(home_games_es):
