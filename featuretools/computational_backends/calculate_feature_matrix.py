@@ -284,6 +284,8 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                 feature_matrix = feature_matrix.reindex(
                     pd.MultiIndex.from_frame(cutoff_time[["instance_id", "time"]],
                                              names=feature_matrix.index.names))
+            else:
+                feature_matrix = feature_matrix.reindex(cutoff_time[1], level=0)
             if not cutoff_time_in_index:
                 feature_matrix.reset_index(level='time', drop=True, inplace=True)
 

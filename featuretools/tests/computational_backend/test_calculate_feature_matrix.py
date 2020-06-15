@@ -510,10 +510,8 @@ def test_training_window(pd_es):
                                               pd_es,
                                               cutoff_time=pd.to_datetime("2011-04-09 10:40:00"),
                                               training_window='9 minutes',
-                                              # n_jobs=3,
                                               include_cutoff_time=False)
-    breakpoint()
-    prop_values = [4, 0, 0]
+    prop_values = [0, 4, 0]
     dagg_values = [3, 3, 3]
     assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
     assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
