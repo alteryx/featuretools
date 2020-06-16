@@ -154,7 +154,6 @@ class FeatureBase(object):
                     return True
         else:
             return True
-        breakpoint()
         return False
 
     @property
