@@ -276,6 +276,3 @@ def _check_cutoff_time_type(cutoff_time, es_time_type):
     if es_time_type == DatetimeTimeIndex and cutoff_time_dtype not in datetime_types:
         raise TypeError("cutoff_time times must be datetime type: try casting "
                         "via pd.to_datetime()")
-
-    if _check_time_type(cutoff_time_check) is None:
-        raise ValueError("cutoff_time time values must be datetime or numeric")

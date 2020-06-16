@@ -1667,6 +1667,18 @@ def test_calls_progress_callback(mock_customer):
     assert np.isclose(mock_progress_callback.total_update, 100.0)
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
 
+    # test with cutoff time dataframe
+    mock_progress_callback = MockProgressCallback()
+    cutoff_time = pd.DataFrame({"instance_id":[1, 2, 3], 
+                                "time":[pd.to_datetime("2014-01-01 01:00:00"),
+                                        pd.to_datetime("2014-01-01 02:00:00"),
+                                        pd.to_datetime("2014-01-01 03:00:00")]})
+
+    ft.calculate_feature_matrix(features, entityset=es, cutoff_time=cutoff_time, progress_callback=mock_progress_callback)
+    assert np.isclose(mock_progress_callback.progress_history[-2], FEATURE_CALCULATION_PERCENTAGE * 100)
+    assert np.isclose(mock_progress_callback.total_update, 100.0)
+    assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
+
     # test with multiple jobs, pandas only
     if any(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
         mock_progress_callback = MockProgressCallback()
