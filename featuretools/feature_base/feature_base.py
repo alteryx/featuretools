@@ -87,8 +87,6 @@ class FeatureBase(object):
         return self._name
 
     def get_feature_names(self):
-        if not hasattr(self, '_names'):
-            return [self.get_name()]
         if not self._names:
             if self.number_output_features == 1:
                 self._names = [self.get_name()]
@@ -156,7 +154,7 @@ class FeatureBase(object):
                     return True
         else:
             return True
-
+        breakpoint()
         return False
 
     @property
@@ -788,15 +786,12 @@ class FeatureOutputSlice(FeatureBase):
         assert(n < self.num_output_parent), msg
 
         self.n = n
-        self._name = name
-        self.base_features = base_features
         self.base_feature = base_features[0]
-
-        self.entity_id = base_feature.entity_id
-        self.entityset = base_feature.entityset
-        self.primitive = base_feature.primitive
-
-        self.relationship_path = base_feature.relationship_path
+        super(FeatureOutputSlice, self).__init__(entity=base_feature.entity,
+                                                 base_features=base_features,
+                                                 relationship_path=base_feature.relationship_path,
+                                                 primitive=base_feature.primitive,
+                                                 name=name, names=[name] if name else None)
 
     def __getitem__(self, key):
         raise ValueError("Cannot get item from slice of multi output feature")
