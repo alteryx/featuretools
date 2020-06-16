@@ -333,9 +333,6 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
         time_last = cutoff_time[0]
         ids = cutoff_time[1]
-        if isinstance(ids, dd.Series):
-            ids = ids.compute()
-        ids = ids.sort_values()
         calculator = FeatureSetCalculator(entityset,
                                           feature_set,
                                           time_last,
