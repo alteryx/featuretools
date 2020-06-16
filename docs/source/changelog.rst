@@ -4,17 +4,21 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Add ``list_variable_types`` and ``graph_variable_types`` for Variable Types (:pr:`1013`)
     * Fixes
         * Improve warnings when using a Dask dataframe for cutoff times (:pr:`1026`)
     * Changes
         * Remove unnecessary ``pd.Series`` and ``pd.DatetimeIndex`` calls from primitives (:pr:`1020`, :pr:`1024`)
         * Improve cutoff time handling when a single value or no value is passed (:pr:`1028`)
+        * Moved ``find_variable_types`` to Variable utils (:pr:`1013`)
     * Documentation Changes
+        * Add page on Variable Types to describe some Variable Types, and util functions (:pr:`1013`)
         * Remove featuretools enterprise from documentation (:pr:`1022`)
+        * Add development install instructions to contributing.md (:pr:`1030`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`kmax12`,  :user:`thehomebrewnerd`
+    :user:`kmax12`, :user:`thehomebrewnerd`, :user:`gsheni`
 
 **v0.16.0 June 5, 2020**
     * Enhancements
@@ -36,7 +40,7 @@ Changelog
         * Allow cutoff time dataframe columns to be in any order (:pr:`969`, :pr:`995`)
         * Add Age primitive, and make it a default transform primitive for DFS (:pr:`987`)
         * Add ``include_cutoff_time`` arg - control whether data at cutoff times are included in feature calculations (:pr:`959`)
-        * Allow ``variables_types`` to be referenced by their ``type_string`` 
+        * Allow ``variables_types`` to be referenced by their ``type_string``
           for the ``entity_from_dataframe`` function (:pr:`988`)
     * Fixes
         * Fix errors with Equals and NotEquals primitives when comparing categoricals or different dtypes (:pr:`968`)
