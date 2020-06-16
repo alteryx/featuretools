@@ -785,12 +785,16 @@ class FeatureOutputSlice(FeatureBase):
         assert(n < self.num_output_parent), msg
 
         self.n = n
+        self._name = name
+        self._names = [name] if name else None
+        self.base_features = base_features
         self.base_feature = base_features[0]
-        super(FeatureOutputSlice, self).__init__(entity=base_feature.entity,
-                                                 base_features=base_features,
-                                                 relationship_path=base_feature.relationship_path,
-                                                 primitive=base_feature.primitive,
-                                                 name=name, names=[name] if name else None)
+
+        self.entity_id = base_feature.entity_id
+        self.entityset = base_feature.entityset
+        self.primitive = base_feature.primitive
+
+        self.relationship_path = base_feature.relationship_path
 
     def __getitem__(self, key):
         raise ValueError("Cannot get item from slice of multi output feature")
