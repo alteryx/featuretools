@@ -11,7 +11,7 @@ import psutil
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, DirectFeature
 from featuretools.utils import Trie
-from featuretools.utils.wrangle import _check_time_type, _check_timedelta
+from featuretools.utils.wrangle import _check_timedelta
 from featuretools.variable_types import (
     DatetimeTimeIndex,
     NumericTimeIndex,
@@ -263,12 +263,10 @@ def _check_cutoff_time_type(cutoff_time, es_time_type):
         cutoff_time_dtype = type(cutoff_time[0])
         numeric_types = [int, float]
         datetime_types = [datetime.datetime, pd.Timestamp]
-        cutoff_time_check = cutoff_time[0]
     else:
         cutoff_time_dtype = cutoff_time['time'].dtype.name
         numeric_types = PandasTypes._pandas_numerics
         datetime_types = PandasTypes._pandas_datetimes
-        cutoff_time_check = cutoff_time['time'].iloc[0]
 
     if es_time_type == NumericTimeIndex and cutoff_time_dtype not in numeric_types:
         raise TypeError("cutoff_time times must be numeric: try casting "

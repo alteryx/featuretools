@@ -1669,10 +1669,10 @@ def test_calls_progress_callback(mock_customer):
 
     # test with cutoff time dataframe
     mock_progress_callback = MockProgressCallback()
-    cutoff_time = pd.DataFrame({"instance_id":[1, 2, 3], 
-                                "time":[pd.to_datetime("2014-01-01 01:00:00"),
-                                        pd.to_datetime("2014-01-01 02:00:00"),
-                                        pd.to_datetime("2014-01-01 03:00:00")]})
+    cutoff_time = pd.DataFrame({"instance_id": [1, 2, 3],
+                                "time": [pd.to_datetime("2014-01-01 01:00:00"),
+                                         pd.to_datetime("2014-01-01 02:00:00"),
+                                         pd.to_datetime("2014-01-01 03:00:00")]})
 
     ft.calculate_feature_matrix(features, entityset=es, cutoff_time=cutoff_time, progress_callback=mock_progress_callback)
     assert np.isclose(mock_progress_callback.progress_history[-2], FEATURE_CALCULATION_PERCENTAGE * 100)
