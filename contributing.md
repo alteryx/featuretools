@@ -29,9 +29,11 @@ Before starting major work, you should touch base with the maintainers of Featur
 * You can run the following steps to clone the code, create a separate virtual environment, and install featuretools in editable mode. 
   ```bash
   git clone https://github.com/FeatureLabs/featuretools.git
+  cd featuretools
   virtualenv venv
   source venv/bin/activate
-  python -m pip install -e featuretools/.
+  python -m pip install -e .
+  python -m pip install -r dev-requirements.txt
   ```
 #### 2. Implement your Pull Request
 
