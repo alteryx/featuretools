@@ -7,6 +7,7 @@ import featuretools as ft
 from featuretools import config
 from featuretools.feature_base import IdentityFeature
 from featuretools.primitives import (
+    Count,
     Diff,
     Last,
     Mode,
@@ -208,3 +209,27 @@ def test_multi_output_index_error(es):
     error_text = 'index is higher than the number of outputs'
     with pytest.raises(AssertionError, match=error_text):
         three_common[10]
+
+
+def test_rename(es):
+    feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
+    feat.get_feature_names()
+    copy_feat = feat.rename("session_test")
+    assert feat.unique_name() != copy_feat.unique_name()
+    assert feat.get_name() != copy_feat.get_name()
+    assert feat.base_features[0].generate_name() == copy_feat.base_features[0].generate_name()
+    assert feat.entity == copy_feat.entity
+    assert feat._names != copy_feat._names
+    assert feat.get_feature_names() != copy_feat.get_feature_names()
+
+
+def test_rename_multioutput(es):
+    feat = ft.Feature(es['log']['product_id'],
+                      parent_entity=es['customers'],
+                      primitive=NMostCommon(n=2))
+    copy_feat = feat.rename("session_test")
+    assert feat.unique_name() != copy_feat.unique_name()
+    assert feat.get_name() != copy_feat.get_name()
+    assert feat.base_features[0].generate_name() == copy_feat.base_features[0].generate_name()
+    assert feat.entity == copy_feat.entity
+    assert feat._names != copy_feat._names
