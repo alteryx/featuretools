@@ -20,8 +20,18 @@ def replace_nan_with_flag(pdf, flag=-1):
             new_df[c] = pdf[c]
     return new_df
 
-def pandas_to_koalas_clean(pdf):
-    steps = [replace_tuple_columns, replace_nan_with_flag]
+def replace_categorical_columns(pdf):
+    new_df = pd.DataFrame()
+    for c in pdf.columns:
+        col = pdf[c]
+        if col.dtype.name == 'category':
+            new_df[c] = col.astype(col.dtype.categories.dtype)
+        else:
+            new_df[c] = pdf[c]
+    return new_df
+
+def pd_to_ks_clean(pdf):
+    steps = [replace_tuple_columns, replace_nan_with_flag, replace_categorical_columns]
     intermediate_df = pdf
     for f in steps:
         intermediate_df = f(intermediate_df)
