@@ -233,3 +233,16 @@ def test_rename_multioutput(es):
     assert feat.base_features[0].generate_name() == copy_feat.base_features[0].generate_name()
     assert feat.entity == copy_feat.entity
     assert feat._names != copy_feat._names
+
+
+def test_rename_featureoutputslice(es):
+    multi_output_feat = ft.Feature(es['log']['product_id'],
+                                   parent_entity=es['customers'],
+                                   primitive=NMostCommon(n=2))
+    feat = ft.feature_base.FeatureOutputSlice(multi_output_feat, 0)
+    copy_feat = feat.rename("session_test")
+    assert feat.unique_name() != copy_feat.unique_name()
+    assert feat.get_name() != copy_feat.get_name()
+    assert feat.base_features[0].generate_name() == copy_feat.base_features[0].generate_name()
+    assert feat.entity == copy_feat.entity
+    assert feat._names != copy_feat._names

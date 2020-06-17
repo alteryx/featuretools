@@ -820,6 +820,9 @@ class FeatureOutputSlice(FeatureBase):
         name = arguments['name']
         return cls(base_feature=base_feature, n=n, name=name)
 
+    def copy(self):
+        return FeatureOutputSlice(self.base_feature, self.n)
+
 
 def _check_feature(feature):
     if isinstance(feature, Variable):
