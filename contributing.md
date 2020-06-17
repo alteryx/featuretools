@@ -26,7 +26,15 @@ Before starting major work, you should touch base with the maintainers of Featur
 
 #### 1. Clone repo
 * The code is hosted on GitHub, so you will need to use Git to clone the project and make changes to the codebase. Once you have obtained a copy of the code, you should create a development environment that is separate from your existing Python environment so that you can make and test changes without compromising your own work environment.
-
+* You can run the following steps to clone the code, create a separate virtual environment, and install featuretools in editable mode. 
+  ```bash
+  git clone https://github.com/FeatureLabs/featuretools.git
+  cd featuretools
+  virtualenv venv
+  source venv/bin/activate
+  python -m pip install -e .
+  python -m pip install -r dev-requirements.txt
+  ```
 #### 2. Implement your Pull Request
 
 * Implement your pull request. If needed, add new tests or update the documentation.
