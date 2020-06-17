@@ -17,7 +17,7 @@ Changelog
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-        :user:`tuethan1999`, :user:`kmax12`,  :user:`thehomebrewnerd`,  :user:`gsheni`
+    :user:`tuethan1999`, :user:`kmax12`,  :user:`thehomebrewnerd`,  :user:`gsheni`
         
 **Breaking Changes**
 

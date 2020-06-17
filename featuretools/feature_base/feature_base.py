@@ -74,8 +74,8 @@ class FeatureBase(object):
         feature_copy._name = name
         feature_copy._names = None
         feature_copy.get_feature_names()
-        if feature_copy._names and len(feature_copy._names) > 1:
-            feature_copy._names = [feature_copy._name + '[{}]'.format(i) for i, name in enumerate(feature_copy._names)]
+        if len(feature_copy._names) > 1:
+            feature_copy._names = [feature_copy._name + '[{}]'.format(i) for i in range(len(feature_copy._names)))]
         return feature_copy
 
     def copy(self):
