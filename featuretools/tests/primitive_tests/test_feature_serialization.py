@@ -100,7 +100,6 @@ def test_serialized_renamed_features(es):
             if len(names) == 1:
                 assert names == [name]
             else:
-                breakpoint()
                 assert names == [name + '[{}]'.format(i) for i in range(len(names))]
         new_name = 'MyFeature'
         renamed = original.rename(new_name)
