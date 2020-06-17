@@ -75,7 +75,7 @@ class FeatureBase(object):
         feature_copy._names = None
         feature_copy.get_feature_names()
         if len(feature_copy._names) > 1:
-            feature_copy._names = [feature_copy._name + '[{}]'.format(i) for i in range(len(feature_copy._names)))]
+            feature_copy._names = [feature_copy._name + '[{}]'.format(i) for i in range(len(feature_copy._names))]
         return feature_copy
 
     def copy(self):
@@ -463,7 +463,7 @@ class DirectFeature(FeatureBase):
     def generate_name(self):
         return self._name_from_base(self.base_features[0].get_name())
 
-    def get_feature_names(self):
+    def generate_names(self):
         return [self._name_from_base(base_name)
                 for base_name in self.base_features[0].get_feature_names()]
 
