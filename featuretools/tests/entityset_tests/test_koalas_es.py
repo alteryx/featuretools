@@ -139,7 +139,7 @@ def test_create_entity_with_make_index():
     ks_es.entity_from_dataframe(entity_id="new_entity", dataframe=ks_df, make_index=True, index="new_index", variable_types=vtypes)
 
     expected_df = pd.DataFrame({"new_index": range(len(values)), "values": values})
-    pd.testing.assert_frame_equal(expected_df, ks_es['new_entity'].df.compute())
+    pd.testing.assert_frame_equal(expected_df, ks_es['new_entity'].df.to_pandas())
 
 
 def test_single_table_ks_entityset():
@@ -228,7 +228,7 @@ def test_single_table_ks_entityset_ids_not_sorted():
                    trans_primitives=primitives_list)
 
     # Make sure both indexes are sorted the same
-    pd.testing.assert_frame_equal(fm, ks_fm.compute().set_index('id').loc[fm.index])
+    pd.testing.assert_frame_equal(fm, ks_fm.to_pandas().set_index('id').loc[fm.index], check_dtype=False)
 
 
 def test_single_table_ks_entityset_with_instance_ids():
@@ -276,7 +276,7 @@ def test_single_table_ks_entityset_with_instance_ids():
                    instance_ids=instance_ids)
 
     # Make sure both indexes are sorted the same
-    pd.testing.assert_frame_equal(fm, ks_fm.compute().set_index('id').loc[fm.index])
+    pd.testing.assert_frame_equal(fm, ks_fm.to_pandas().set_index('id').loc[fm.index], check_dtype=False)
 
 
 def test_single_table_ks_entityset_single_cutoff_time():
@@ -322,7 +322,7 @@ def test_single_table_ks_entityset_single_cutoff_time():
                    cutoff_time=pd.Timestamp("2019-01-05 04:00"))
 
     # Make sure both indexes are sorted the same
-    pd.testing.assert_frame_equal(fm, ks_fm.compute().set_index('id').loc[fm.index])
+    pd.testing.assert_frame_equal(fm, ks_fm.to_pandas().set_index('id').loc[fm.index], check_dtype=False)
 
 
 def test_single_table_ks_entityset_cutoff_time_df():
@@ -376,7 +376,7 @@ def test_single_table_ks_entityset_cutoff_time_df():
     # Because row ordering with koalas is not guaranteed, `we need to sort on two columns to make sure that values
     # for instance id 0 are compared correctly. Also, make sure the boolean column has the same dtype.
     fm = fm.sort_values(['id', 'labels'])
-    ks_fm = ks_fm.compute().set_index('id').sort_values(['id', 'labels'])
+    ks_fm = ks_fm.to_pandas().set_index('id').sort_values(['id', 'labels'])
     ks_fm['IS_WEEKEND(dates)'] = ks_fm['IS_WEEKEND(dates)'].astype(fm['IS_WEEKEND(dates)'].dtype)
     pd.testing.assert_frame_equal(fm, ks_fm)
 
@@ -419,7 +419,7 @@ def test_single_table_ks_entityset_dates_not_sorted():
                    trans_primitives=primitives_list,
                    max_depth=1)
 
-    pd.testing.assert_frame_equal(fm, ks_fm.compute().set_index('id').loc[fm.index])
+    pd.testing.assert_frame_equal(fm, ks_fm.to_pandas().set_index('id').loc[fm.index])
 
 
 def test_secondary_time_index():
@@ -503,4 +503,4 @@ def test_secondary_time_index():
                         trans_primitives=["month"])
 
     # Make sure both matrixes are sorted the same
-    pd.testing.assert_frame_equal(fm.sort_values('delay'), ks_fm.compute().set_index('id').sort_values('delay'))
+    pd.testing.assert_frame_equal(fm.sort_values('delay'), ks_fm.to_pandas().set_index('id').sort_values('delay'))
