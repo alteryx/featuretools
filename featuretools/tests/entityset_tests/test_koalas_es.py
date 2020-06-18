@@ -182,9 +182,9 @@ def test_single_table_ks_entityset():
                    target_entity="data",
                    trans_primitives=primitives_list)
 
-    # Use the same columns and make sure both indexes are sorted the same
-    ks_computed_fm = ks_fm.compute().set_index('id').loc[fm.index][fm.columns]
-    pd.testing.assert_frame_equal(fm, ks_computed_fm)
+    ks_computed_fm = ks_fm.to_pandas().loc[fm.index][fm.columns]
+    # NUM_WORDS(strings) is int32 in koalas for some reason
+    pd.testing.assert_frame_equal(fm, ks_computed_fm, check_dtype= False)
 
 
 def test_single_table_ks_entityset_ids_not_sorted():

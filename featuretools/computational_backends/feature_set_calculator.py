@@ -3,6 +3,7 @@ from datetime import datetime
 from functools import partial
 
 import dask.dataframe as dd
+import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
@@ -149,9 +150,10 @@ class FeatureSetCalculator(object):
         for feat in self.feature_set.target_features:
             column_list.extend(feat.get_feature_names())
 
-        if isinstance(df, dd.DataFrame):
+        if isinstance(df, dd.DataFrame) or isinstance(df, ks.DataFrame):
             column_list.extend([target_entity.index])
             df.index.name = target_entity.index
+        
         return df[column_list]
 
     def _calculate_features_for_entity(self, entity_id, feature_trie, df_trie,

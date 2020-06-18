@@ -5,6 +5,7 @@ import tarfile
 import tempfile
 
 import dask.dataframe as dd
+import databricks.koalas as ks
 
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
@@ -23,9 +24,12 @@ def entity_to_description(entity):
         dictionary (dict) : Description of :class:`.Entity`.
     '''
     index = entity.df.columns.isin([variable.id for variable in entity.variables])
-    dtypes = entity.df[entity.df.columns[index]].dtypes.astype(str).to_dict()
+    indexer = entity.df.columns[index].to_list() if isinstance(entity.df, ks.DataFrame) else entity.df.columns[index]
+    dtypes = entity.df[indexer].dtypes.astype(str).to_dict()
     if isinstance(entity.df, dd.DataFrame):
         entity_type = 'dask'
+    elif isinstance(entity.df, ks.DataFrame):
+        entity_type = 'koalas'
     else:
         entity_type = 'pandas'
     description = {

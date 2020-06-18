@@ -8,6 +8,7 @@ from datetime import datetime
 
 import cloudpickle
 import dask.dataframe as dd
+import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 
@@ -172,7 +173,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
                                             time_last=cutoff_time,
                                             training_window=training_window,
                                             include_cutoff_time=include_cutoff_time)
-            instance_ids = list(df[index_var])
+            instance_ids = df[index_var].to_list() if isinstance(df[index_var], ks.Series) else list(df[index_var])
 
         cutoff_time = [cutoff_time] * len(instance_ids)
         map_args = [(id, time) for id, time in zip(instance_ids, cutoff_time)]
@@ -460,6 +461,8 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
     if any(isinstance(fm, dd.DataFrame) for fm in feature_matrix):
         feature_matrix = dd.concat(feature_matrix)
+    elif any(isinstance(fm, ks.DataFrame) for fm in feature_matrix):
+        feature_matrix = ks.concat(feature_matrix)
     else:
         feature_matrix = pd.concat(feature_matrix)
 
