@@ -3,6 +3,7 @@ import logging
 from collections import defaultdict
 
 import dask.dataframe as dd
+import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_dtype_equal, is_numeric_dtype
@@ -828,20 +829,26 @@ class EntitySet(object):
 
                 # updated last time from all children
                 for child_e in child_entities:
+                    # TODO: Figure out if Dask code related to indexes is important for Koalas
                     if child_e.last_time_index is None:
                         continue
                     link_var = child_vars[entity.id][child_e.id].id
 
-                    if isinstance(child_e.last_time_index, dd.Series):
+                    lti_is_dask = isinstance(child_e.last_time_index, dd.Series)
+                    lti_is_koalas = isinstance(child_e.last_time_index, ks.Series)
+                    if  lti_is_dask or lti_is_koalas:
                         to_join = child_e.df[link_var]
-                        to_join.index = child_e.df[child_e.index]
+                        if lti_is_dask:
+                            to_join.index = child_e.df[child_e.index]
 
                         lti_df = child_e.last_time_index.to_frame(name='last_time').join(
                             to_join.to_frame(name=entity.index)
                         )
-                        new_index = lti_df.index.copy()
-                        new_index.name = None
-                        lti_df.index = new_index
+                        
+                        if lti_is_dask:
+                            new_index = lti_df.index.copy()
+                            new_index.name = None
+                            lti_df.index = new_index
                         lti_df = lti_df.groupby(lti_df[entity.index]).agg('max')
 
                         lti_df = entity.last_time_index.to_frame(name='last_time_old').join(lti_df)
@@ -861,14 +868,20 @@ class EntitySet(object):
                         lti_df.set_index(entity.index, inplace=True)
                         lti_df = lti_df.reindex(entity.last_time_index.index)
                         lti_df['last_time_old'] = entity.last_time_index
-                    if not isinstance(lti_df, dd.DataFrame) and lti_df.empty:
+                    if not lti_is_dask and lti_df.empty:
                         # Pandas errors out if it tries to do fillna and then max on an empty dataframe
                         lti_df = pd.Series()
                     else:
-                        lti_df['last_time'] = lti_df['last_time'].astype('datetime64[ns]')
-                        lti_df['last_time_old'] = lti_df['last_time_old'].astype('datetime64[ns]')
-                        lti_df = lti_df.fillna(pd.to_datetime('1800-01-01 00:00')).max(axis=1)
-                        lti_df = lti_df.replace(pd.to_datetime('1800-01-01 00:00'), pd.NaT)
+                        if lti_is_koalas:
+                            lti_df['last_time'] = ks.to_datetime(lti_df['last_time'])
+                            lti_df['last_time_old'] = ks.to_datetime(lti_df['last_time_old'])
+                            # TODO: Figure out a workaround for fillna and replace
+                            lti_df = lti_df.max(axis=1)
+                        else:
+                            lti_df['last_time'] = lti_df['last_time'].astype('datetime64[ns]')
+                            lti_df['last_time_old'] = lti_df['last_time_old'].astype('datetime64[ns]')
+                            lti_df = lti_df.fillna(pd.to_datetime('1800-01-01 00:00')).max(axis=1)
+                            lti_df = lti_df.replace(pd.to_datetime('1800-01-01 00:00'), pd.NaT)
                     # lti_df = lti_df.apply(lambda x: x.dropna().max(), axis=1)
 
                     entity.last_time_index = lti_df

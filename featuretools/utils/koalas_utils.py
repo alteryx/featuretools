@@ -36,3 +36,20 @@ def pd_to_ks_clean(pdf):
     for f in steps:
         intermediate_df = f(intermediate_df)
     return intermediate_df
+
+def map_over_columns(ks_df, func):
+    df = ks_df.copy()
+    for c in df.columns:
+        df[c] = df[c].map(func)
+    return df
+
+# def replace_lambda(x, target_val, new_val):
+#     if x != target_val:
+#         return x
+#     return new_val
+
+# def ks_fillna(ks_df, new_val):
+#     return map_over_columns(ks_df, lambda x: replace_lambda(x, None, new_val))
+
+# def ks_replace(ks_df, target_val, new_val):
+#     return map_over_columns(ks_df, lambda x: replace_lambda(x, target_val, new_val))

@@ -6,7 +6,8 @@ import pandas as pd
 import pytest
 
 import featuretools as ft
-from featuretools.tests.testing_utils import make_ecommerce_entityset, pd_to_ks_clean
+from featuretools.tests.testing_utils import make_ecommerce_entityset
+from featuretools.utils.koalas_utils import pd_to_ks_clean
 
 
 @pytest.fixture(scope='session')

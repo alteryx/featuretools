@@ -2,6 +2,7 @@ import logging
 import warnings
 
 import dask.dataframe as dd
+import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
@@ -589,7 +590,7 @@ def _create_index(index, make_index, df):
                            "integer column", index)
         # Case 5: make_index with no errors or warnings
         # (Case 4 also uses this code path)
-        if isinstance(df, dd.DataFrame):
+        if isinstance(df, dd.DataFrame) or isinstance(df, ks.DataFrame):
             df[index] = 1
             df[index] = df[index].cumsum() - 1
         else:

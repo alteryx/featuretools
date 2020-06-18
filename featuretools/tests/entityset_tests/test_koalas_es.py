@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from featuretools.entityset import EntitySet, Relationship
-from featuretools.tests.testing_utils import pd_to_ks_clean
+from featuretools.utils.koalas_utils import pd_to_ks_clean
 
 import featuretools as ft
 
@@ -20,7 +20,7 @@ def test_create_entity_from_ks_df(pd_es):
         time_index="datetime",
         variable_types=pd_es["log"].variable_types
     )
-    pd.testing.assert_frame_equal(cleaned_df, ks_es["log_ks"].df.compute(), check_like=True)
+    pd.testing.assert_frame_equal(cleaned_df, ks_es["log_ks"].df.to_pandas(), check_like=True)
 
 def test_create_entity_with_non_numeric_index(pd_es, ks_es):
     df = pd.DataFrame({"id": ["A_1", "A_2", "C", "D"],
@@ -37,7 +37,7 @@ def test_create_entity_with_non_numeric_index(pd_es, ks_es):
         dataframe=ks_df,
         index="id",
         variable_types={"id": ft.variable_types.Id, "values": ft.variable_types.Numeric})
-    pd.testing.assert_frame_equal(pd_es['new_entity'].df.reset_index(drop=True), ks_es['new_entity'].df.compute())
+    pd.testing.assert_frame_equal(pd_es['new_entity'].df.reset_index(drop=True), ks_es['new_entity'].df.to_pandas())
 
 
 def test_create_entityset_with_mixed_dataframe_types(pd_es, ks_es):
@@ -127,7 +127,7 @@ def test_add_last_time_indexes():
     pd_es.add_last_time_indexes()
     ks_es.add_last_time_indexes()
 
-    pd.testing.assert_series_equal(pd_es['sessions'].last_time_index.sort_index(), ks_es['sessions'].last_time_index.compute(), check_names=False)
+    pd.testing.assert_series_equal(pd_es['sessions'].last_time_index.sort_index(), ks_es['sessions'].last_time_index.to_pandas().sort_index(), check_names=False)
 
 
 def test_create_entity_with_make_index():
