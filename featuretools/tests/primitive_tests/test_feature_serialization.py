@@ -32,8 +32,8 @@ from featuretools.primitives import (
     Year,
     make_agg_primitive
 )
-from featuretools.variable_types import Numeric
 from featuretools.tests.testing_utils import check_names
+from featuretools.variable_types import Numeric
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"

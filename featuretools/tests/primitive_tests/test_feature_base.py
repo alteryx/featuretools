@@ -16,8 +16,8 @@ from featuretools.primitives import (
     Sum,
     TransformPrimitive
 )
-from featuretools.variable_types import Categorical, Datetime, Id, Numeric
 from featuretools.tests.testing_utils import check_rename
+from featuretools.variable_types import Categorical, Datetime, Id, Numeric
 
 
 def test_copy_features_does_not_copy_entityset(es):
