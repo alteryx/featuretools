@@ -17,6 +17,7 @@ from featuretools.primitives import (
     TransformPrimitive
 )
 from featuretools.variable_types import Categorical, Datetime, Id, Numeric
+from featuretools.tests.testing_utils import check_rename
 
 
 def test_copy_features_does_not_copy_entityset(es):
@@ -213,26 +214,20 @@ def test_multi_output_index_error(es):
 
 def test_rename(es):
     feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
-    feat.get_feature_names()
-    copy_feat = feat.rename("session_test")
-    assert feat.unique_name() != copy_feat.unique_name()
-    assert feat.get_name() != copy_feat.get_name()
-    assert feat.base_features[0].generate_name() == copy_feat.base_features[0].generate_name()
-    assert feat.entity == copy_feat.entity
-    assert feat._names != copy_feat._names
-    assert feat.get_feature_names() != copy_feat.get_feature_names()
+    num_feature_names = len(feat.get_feature_names())
+    new_name = 'session_test'
+    new_names = [new_name] if num_feature_names == 1 else [new_name + '[{}]'.format(i) for i in range(num_feature_names)]
+    check_rename(feat, new_name, new_names)
 
 
 def test_rename_multioutput(es):
     feat = ft.Feature(es['log']['product_id'],
                       parent_entity=es['customers'],
                       primitive=NMostCommon(n=2))
-    copy_feat = feat.rename("session_test")
-    assert feat.unique_name() != copy_feat.unique_name()
-    assert feat.get_name() != copy_feat.get_name()
-    assert feat.base_features[0].generate_name() == copy_feat.base_features[0].generate_name()
-    assert feat.entity == copy_feat.entity
-    assert feat._names != copy_feat._names
+    num_feature_names = len(feat.get_feature_names())
+    new_name = 'session_test'
+    new_names = [new_name] if num_feature_names == 1 else [new_name + '[{}]'.format(i) for i in range(num_feature_names)]
+    check_rename(feat, new_name, new_names)
 
 
 def test_rename_featureoutputslice(es):
@@ -240,9 +235,7 @@ def test_rename_featureoutputslice(es):
                                    parent_entity=es['customers'],
                                    primitive=NMostCommon(n=2))
     feat = ft.feature_base.FeatureOutputSlice(multi_output_feat, 0)
-    copy_feat = feat.rename("session_test")
-    assert feat.unique_name() != copy_feat.unique_name()
-    assert feat.get_name() != copy_feat.get_name()
-    assert feat.base_features[0].generate_name() == copy_feat.base_features[0].generate_name()
-    assert feat.entity == copy_feat.entity
-    assert feat._names != copy_feat._names
+    num_feature_names = len(feat.get_feature_names())
+    new_name = 'session_test'
+    new_names = [new_name] if num_feature_names == 1 else [new_name + '[{}]'.format(i) for i in range(num_feature_names)]
+    check_rename(feat, new_name, new_names)

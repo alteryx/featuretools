@@ -73,9 +73,6 @@ class FeatureBase(object):
         feature_copy = self.copy()
         feature_copy._name = name
         feature_copy._names = None
-        feature_copy.get_feature_names()
-        if len(feature_copy._names) > 1:
-            feature_copy._names = [feature_copy._name + '[{}]'.format(i) for i in range(len(feature_copy._names))]
         return feature_copy
 
     def copy(self):
@@ -92,6 +89,8 @@ class FeatureBase(object):
                 self._names = [self.get_name()]
             else:
                 self._names = self.generate_names()
+                if self.get_name() != self.generate_name():
+                    self._names = [self.get_name() + '[{}]'.format(i) for i in range(len(self._names))]
         return self._names
 
     def get_function(self):

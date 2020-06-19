@@ -33,6 +33,7 @@ from featuretools.primitives import (
     make_agg_primitive
 )
 from featuretools.variable_types import Numeric
+from featuretools.tests.testing_utils import check_names
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
@@ -95,23 +96,18 @@ def test_pickle_features_with_custom_primitive(pd_es, tmpdir):
 
 def test_serialized_renamed_features(es):
     def serialize_name_unchanged(original):
-        def check_names(feature, name):
-            assert feature.get_name() == name
-            if len(names) == 1:
-                assert names == [name]
-            else:
-                assert names == [name + '[{}]'.format(i) for i in range(len(names))]
         new_name = 'MyFeature'
+        original_names = original.get_feature_names()
         renamed = original.rename(new_name)
-        names = renamed.get_feature_names()
-        check_names(renamed, new_name)
+        new_names = [new_name] if len(original_names) == 1 else [new_name + '[{}]'.format(i) for i in range(len(original_names))]
+        check_names(renamed, new_name, new_names)
 
         serializer = FeaturesSerializer([renamed])
         serialized = serializer.to_dict()
 
         deserializer = FeaturesDeserializer(serialized)
         deserialized = deserializer.to_list()[0]
-        check_names(deserialized, new_name)
+        check_names(deserialized, new_name, new_names)
 
     identity_original = ft.IdentityFeature(es['log']['value'])
     assert identity_original.get_name() == 'value'
