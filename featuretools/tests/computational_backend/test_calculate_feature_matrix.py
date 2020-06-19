@@ -516,6 +516,17 @@ def test_training_window(pd_es):
     assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
     assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
 
+    # Case4. include_cutoff_time = True with single cutoff time value
+    feature_matrix = calculate_feature_matrix([property_feature, dagg],
+                                              pd_es,
+                                              cutoff_time=pd.to_datetime("2011-04-10 10:40:00"),
+                                              training_window='2 days',
+                                              include_cutoff_time=True)
+    prop_values = [0, 10, 1]
+    dagg_values = [3, 3, 3]
+    assert (feature_matrix[property_feature.get_name()] == prop_values).values.all()
+    assert (feature_matrix[dagg.get_name()] == dagg_values).values.all()
+
 
 def test_training_window_overlap(pd_es):
     pd_es.add_last_time_indexes()
