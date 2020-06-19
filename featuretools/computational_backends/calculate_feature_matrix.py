@@ -149,6 +149,9 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     cutoff_time = _validate_cutoff_time(cutoff_time, target_entity)
 
     if isinstance(cutoff_time, pd.DataFrame):
+        if instance_ids:
+            msg = "Passing 'instance_ids' is valid only if 'cutoff_time' is a single value or None - ignoring"
+            warnings.warn(msg)
         pass_columns = [col for col in cutoff_time.columns if col not in ['instance_id', 'time']]
         # make sure dtype of instance_id in cutoff time
         # is same as column it references

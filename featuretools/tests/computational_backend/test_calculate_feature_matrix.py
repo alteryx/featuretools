@@ -1744,3 +1744,29 @@ def test_approximate_with_single_cutoff_warns(pd_es):
         calculate_feature_matrix([property_feature],
                                  pd_es,
                                  approximate="1 day")
+
+
+def test_calc_feature_matrix_with_cutoff_df_and_instance_ids(es):
+    times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
+                 [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
+                 [datetime(2011, 4, 9, 10, 40, 0)] +
+                 [datetime(2011, 4, 10, 10, 40, i) for i in range(2)] +
+                 [datetime(2011, 4, 10, 10, 41, i * 3) for i in range(3)] +
+                 [datetime(2011, 4, 10, 11, 10, i * 3) for i in range(2)])
+    instances = range(17)
+    cutoff_time = pd.DataFrame({'time': times, es['log'].index: instances})
+    labels = [False] * 3 + [True] * 2 + [False] * 9 + [True] + [False] * 2
+
+    property_feature = ft.Feature(es['log']['value']) > 10
+
+    match = "Passing 'instance_ids' is valid only if 'cutoff_time' is a single value or None - ignoring"
+    with pytest.warns(UserWarning, match=match):
+        feature_matrix = calculate_feature_matrix([property_feature],
+                                                  es,
+                                                  cutoff_time=cutoff_time,
+                                                  instance_ids=[1, 3, 5],
+                                                  verbose=True)
+
+    if isinstance(feature_matrix, dd.DataFrame):
+        feature_matrix = feature_matrix.compute()
+    assert (feature_matrix[property_feature.get_name()] == labels).values.all()
