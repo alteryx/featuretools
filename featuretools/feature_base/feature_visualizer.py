@@ -151,8 +151,6 @@ def get_feature_data(feat, entities, groupbys, edges, primitives, layer=0):
         dependencies.remove((groupby.hash(), groupby))
 
         groupby_name = groupby.get_name()
-        if groupby.entity.id not in entities:
-            add_entity(groupby.entity, entities)
         if isinstance(groupby, IdentityFeature):
             entities[groupby.entity.id]['vars'].add(groupby_name)
         else:

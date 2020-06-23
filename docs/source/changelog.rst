@@ -5,6 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
         * Add ``list_variable_types`` and ``graph_variable_types`` for Variable Types (:pr:`1013`)
+        * Add ``graph_feature`` to generate a feature lineage graph for a given feature (:pr:`1032`)
     * Fixes
         * Improve warnings when using a Dask dataframe for cutoff times (:pr:`1026`)
     * Changes
@@ -17,7 +18,7 @@ Changelog
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`kmax12`, :user:`thehomebrewnerd`, :user:`gsheni`
+    :user:`kmax12`, :user:`thehomebrewnerd`, :user:`gsheni`, :user:`frances-h`
 
 **v0.16.0 June 5, 2020**
     * Enhancements

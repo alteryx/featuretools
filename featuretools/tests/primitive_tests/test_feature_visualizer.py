@@ -8,12 +8,13 @@ import pytest
 from featuretools.feature_base import (
     AggregationFeature,
     DirectFeature,
+    FeatureOutputSlice,
     GroupByTransformFeature,
     IdentityFeature,
     TransformFeature,
     graph_feature
 )
-from featuretools.primitives import CumMax, Mode, Year
+from featuretools.primitives import Count, CumMax, Mode, NMostCommon, Year
 
 
 @pytest.fixture
@@ -92,21 +93,106 @@ def test_groupby_transform(es):
     assert len(rows) == 4
     assert entity_table in rows[0]
     assert feat_name in rows[-1]
-    if 'age' in rows[1]:
-        assert 'cohort' in rows[2]
-    elif 'age' in rows[2]:
-        assert 'cohort' in rows[1]
-    else:
-        assert False
+    assert ('age' in rows[1] and 'cohort' in rows[2]) or \
+           ('age' in rows[2] and 'cohort' in rows[1])
+
+
+def test_groupby_transform_direct_groupby(es):
+    groupby = DirectFeature(es['cohorts']['cohort_name'], es['customers'])
+    feat = GroupByTransformFeature(es['customers']['age'], CumMax, groupby)
+    graph = graph_feature(feat).source
+
+    groupby_name = groupby.get_name()
+    feat_name = feat.get_name()
+    join_node = '1_{}_join'.format(groupby_name)
+    prim_node = "0_{}_cum_max".format(feat_name)
+    groupby_node = '{}_groupby_customers--{}'.format(feat_name, groupby_name)
+    customers_table = '\u2605 customers (target)'
+    cohorts_table = 'cohorts'
+
+    join_groupby = '"{}" -> customers:cohort'.format(join_node)
+    join_input = 'cohorts:cohort_name -> "{}"'.format(join_node)
+    join_out_edge = '"{}" -> customers:"{}"'.format(join_node, groupby_name)
+    groupby_edge = 'customers:"{}" -> "{}"'.format(groupby_name, groupby_node)
+    groupby_input = 'customers:age -> "{}"'.format(groupby_node)
+    prim_input = '"{}" -> "{}"'.format(groupby_node, prim_node)
+    feat_edge = '"{}" -> customers:"{}"'.format(prim_node, feat_name)
+
+    graph_components = [groupby_name, feat_name, join_node, prim_node, groupby_node,
+                        customers_table, cohorts_table, join_groupby, join_input,
+                        join_out_edge, groupby_edge, groupby_input, prim_input, feat_edge]
+    for component in graph_components:
+        assert component in graph
+
+    entities = {'cohorts': [cohorts_table, 'cohort_name'],
+                'customers': [customers_table, 'cohort', 'age', groupby_name, feat_name]}
+    for entity in entities:
+        regex = r"{} \[label=<\n<TABLE.*?</TABLE>>".format(entity)
+        matches = re.findall(regex, graph, re.DOTALL)
+        assert len(matches) == 1
+
+        rows = re.findall(r"<TR.*?</TR>", matches[0], re.DOTALL)
+        assert len(rows) == len(entities[entity])
+
+        for row in rows:
+            matched = False
+            for i in entities[entity]:
+                if i in row:
+                    matched = True
+                    entities[entity].remove(i)
+                    break
+            assert matched
 
 
 def test_aggregation(es):
-    feat = AggregationFeature(es['log']['zipcode'], es['sessions'], Mode)
+    feat = AggregationFeature(es['log']['id'], es['sessions'], Count)
     graph = graph_feature(feat).source
 
     feat_name = feat.get_name()
-    prim_node = '0_{}_mode'.format(feat_name)
+    prim_node = '0_{}_count'.format(feat_name)
     groupby_node = '{}_groupby_log--session_id'.format(feat_name)
+
+    sessions_table = '\u2605 sessions (target)'
+    log_table = 'log'
+    groupby_edge = 'log:session_id -> "{}"'.format(groupby_node)
+    groupby_input = 'log:id -> "{}"'.format(groupby_node)
+    prim_input = '"{}" -> "{}"'.format(groupby_node, prim_node)
+    feat_edge = '"{}" -> sessions:"{}"'.format(prim_node, feat_name)
+
+    graph_components = [feat_name, prim_node, groupby_node, sessions_table,
+                        log_table, groupby_edge, groupby_input, prim_input,
+                        feat_edge]
+
+    for component in graph_components:
+        assert component in graph
+
+    entities = {'log': [log_table, 'id', 'session_id'],
+                'sessions': [sessions_table, feat_name]}
+    for entity in entities:
+        regex = r"{} \[label=<\n<TABLE.*?</TABLE>>".format(entity)
+        matches = re.findall(regex, graph, re.DOTALL)
+        assert len(matches) == 1
+
+        rows = re.findall(r"<TR.*?</TR>", matches[0], re.DOTALL)
+        assert len(rows) == len(entities[entity])
+        for row in rows:
+            matched = False
+            for i in entities[entity]:
+                if i in row:
+                    matched = True
+                    entities[entity].remove(i)
+                    break
+            assert matched
+
+
+def test_multioutput(es):
+    multioutput = AggregationFeature(es['log']['zipcode'], es['sessions'], NMostCommon)
+    feat = FeatureOutputSlice(multioutput, 0)
+    graph = graph_feature(feat).source
+
+    feat_name = feat.get_name()
+    prim_node = '0_{}_n_most_common'.format(multioutput.get_name())
+    groupby_node = '{}_groupby_log--session_id'.format(multioutput.get_name())
 
     sessions_table = '\u2605 sessions (target)'
     log_table = 'log'
@@ -142,25 +228,35 @@ def test_aggregation(es):
 
 
 def test_direct(es):
-    feat = DirectFeature(es['sessions']['device_name'], es['log'])
-    graph = graph_feature(feat).source
+    d1 = DirectFeature(es['customers']['engagement_level'], es['sessions'])
+    d2 = DirectFeature(d1, es['log'])
+    graph = graph_feature(d2).source
 
-    feat_name = feat.get_name()
-    prim_node = '0_{}_join'.format(feat_name)
+    d1_name = d1.get_name()
+    d2_name = d2.get_name()
+    prim_node1 = '1_{}_join'.format(d1_name)
+    prim_node2 = '0_{}_join'.format(d2_name)
 
     log_table = '\u2605 log (target)'
     sessions_table = 'sessions'
-    groupby_edge = '"{}" -> log:session_id'.format(prim_node)
-    groupby_input = 'sessions:device_name -> "{}"'.format(prim_node)
-    feat_edge = '"{}" -> log:"{}"'.format(prim_node, feat_name)
+    customers_table = 'customers'
+    groupby_edge1 = '"{}" -> sessions:customer_id'.format(prim_node1)
+    groupby_edge2 = '"{}" -> log:session_id'.format(prim_node2)
+    groupby_input1 = 'customers:engagement_level -> "{}"'.format(prim_node1)
+    groupby_input2 = 'sessions:"{}" -> "{}"'.format(d1_name, prim_node2)
+    d1_edge = '"{}" -> sessions:"{}"'.format(prim_node1, d1_name)
+    d2_edge = '"{}" -> log:"{}"'.format(prim_node2, d2_name)
 
-    graph_components = [feat_name, prim_node, log_table, sessions_table,
-                        groupby_edge, groupby_input, feat_edge]
+    graph_components = [d1_name, d2_name, prim_node1, prim_node2, log_table,
+                        sessions_table, customers_table, groupby_edge1,
+                        groupby_edge2, groupby_input1, groupby_input2,
+                        d1_edge, d2_edge]
     for component in graph_components:
         assert component in graph
 
-    entities = {'sessions': [sessions_table, 'device_name'],
-                'log': [log_table, 'session_id', feat_name]}
+    entities = {'customers': [customers_table, 'engagement_level'],
+                'sessions': [sessions_table, 'customer_id', d1_name],
+                'log': [log_table, 'session_id', d2_name]}
 
     for entity in entities:
         regex = r"{} \[label=<\n<TABLE.*?</TABLE>>".format(entity)
