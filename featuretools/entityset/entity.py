@@ -250,7 +250,7 @@ class Entity(object):
             df = self.df.head(0)
 
         else:
-            if isinstance(instance_vals, dd.Series):
+            if isinstance(instance_vals, dd.Series) or isinstance(instance_vals, ks.Series):
                 df = self.df.merge(instance_vals.to_frame(), how="inner", on=variable_id)
             else:
                 df = self.df[self.df[variable_id].isin(instance_vals)]
@@ -507,7 +507,7 @@ class Entity(object):
         # convert iterable to pd.Series
         if type(instance_vals) == pd.DataFrame:
             out_vals = instance_vals[variable_id]
-        elif type(instance_vals) == pd.Series or type(instance_vals) == dd.Series:
+        elif type(instance_vals) == pd.Series or type(instance_vals) == dd.Series or type(instance_vals) == ks.Series:
             out_vals = instance_vals.rename(variable_id)
         else:
             out_vals = pd.Series(instance_vals)
@@ -562,6 +562,8 @@ class Entity(object):
                 if isinstance(df, dd.DataFrame):
                     for col in columns:
                         df[col] = df[col].mask(mask, np.nan)
+                elif isinstance(df, ks.DataFrame):
+                    df.loc[mask, columns] = None
                 else:
                     df.loc[mask, columns] = np.nan
 

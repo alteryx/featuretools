@@ -418,11 +418,11 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                                            precalculated_features=precalculated_features_trie,
                                            training_window=window,
                                            include_cutoff_time=include_cutoff_time)
-
-            if isinstance(_feature_matrix, dd.DataFrame):
+            if isinstance(_feature_matrix, dd.DataFrame) or isinstance(_feature_matrix, ks.DataFrame):
                 id_name = _feature_matrix.columns[-1]
             else:
                 id_name = _feature_matrix.index.name
+           #breakpoint()
 
             # if approximate, merge feature matrix with group frame to get original
             # cutoff times and passed columns
@@ -454,6 +454,12 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                     _feature_matrix['time'] = time_last
                     for col in pass_columns:
                         pass_df = dd.from_pandas(pass_through[[id_name, 'time', col]], npartitions=_feature_matrix.npartitions)
+                        _feature_matrix = _feature_matrix.merge(pass_df, how="outer")
+                    _feature_matrix = _feature_matrix.drop(columns=['time'])
+                elif isinstance(_feature_matrix, ks.DataFrame) and (len(pass_columns) > 0):
+                    _feature_matrix['time'] = time_last
+                    for col in pass_columns:
+                        pass_df = ks.from_pandas(pass_through[[id_name, 'time', col]])
                         _feature_matrix = _feature_matrix.merge(pass_df, how="outer")
                     _feature_matrix = _feature_matrix.drop(columns=['time'])
 

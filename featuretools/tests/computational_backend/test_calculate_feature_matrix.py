@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import psutil
 import pytest
+import databricks.koalas as ks
 from dask import dataframe as dd
 from distributed.utils_test import cluster
 from tqdm import tqdm
@@ -46,6 +47,7 @@ from featuretools.tests.testing_utils import (
     backward_path,
     get_mock_client_cluster
 )
+from featuretools.utils.koalas_utils import pd_to_ks_clean
 
 
 def test_scatter_warning():
@@ -59,6 +61,8 @@ def test_scatter_warning():
 def test_calc_feature_matrix(es):
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail('Dask result not ordered')
+    if any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+        pytest.xfail('Koalas result not ordered')
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
                  [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
                  [datetime(2011, 4, 9, 10, 40, 0)] +
@@ -77,7 +81,8 @@ def test_calc_feature_matrix(es):
                                               verbose=True)
     if isinstance(feature_matrix, dd.DataFrame):
         feature_matrix = feature_matrix.compute().set_index('id').sort_index()
-
+    if isinstance(feature_matrix, ks.DataFrame):
+        feature_matrix = feature_matrix.to_pandas().set_index('id').sort_index()
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
     error_text = 'features must be a non-empty list of features'
@@ -122,9 +127,11 @@ def test_calc_feature_matrix(es):
                                               verbose=True)
     if isinstance(feature_matrix, dd.DataFrame):
         feature_matrix = feature_matrix.compute().set_index('id').sort_index()
+    if isinstance(feature_matrix, ks.DataFrame):
+        feature_matrix = feature_matrix.to_pandas().set_index('id').sort_index()
 
     assert all(feature_matrix.index == cutoff_reordered["id"].values)
-    # fails with Dask entitysets, cutoff time not reordered; cannot verify out of order
+    # fails with Dask and Koalas entitysets, cutoff time not reordered; cannot verify out of order
     # - can't tell if wrong/different all are false so can't check positional
 
 
@@ -164,6 +171,8 @@ def test_cfm_compose(es):
     df = es['log'].df
     if isinstance(df, dd.DataFrame):
         df = df.compute()
+    if isinstance(df, ks.DataFrame):
+        df = df.to_pandas()
     labels = lm.search(
         df,
         num_examples_per_instance=-1
@@ -178,6 +187,8 @@ def test_cfm_compose(es):
                                               verbose=True)
     if isinstance(feature_matrix, dd.DataFrame):
         feature_matrix = feature_matrix.compute().set_index('id').sort_index()
+    if isinstance(feature_matrix, ks.DataFrame):
+        feature_matrix = feature_matrix.to_pandas().set_index('id').sort_index()
 
     assert (feature_matrix[property_feature.get_name()] ==
             feature_matrix['label_func']).values.all()
@@ -294,9 +305,12 @@ def test_cfm_no_cutoff_time_index(pd_es):
 
 
 # TODO: fails with dask entitysets
+# TODO: fails with koalas entitysets
 def test_cfm_duplicated_index_in_cutoff_time(es):
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail('Dask result not ordered, missing duplicates')
+    if any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+        pytest.xfail('Koalas result not ordered, missing duplicates')
     times = [datetime(2011, 4, 1), datetime(2011, 5, 1),
              datetime(2011, 4, 1), datetime(2011, 5, 1)]
 
@@ -311,14 +325,18 @@ def test_cfm_duplicated_index_in_cutoff_time(es):
                                               chunk_size=1)
     if isinstance(feature_matrix, dd.DataFrame):
         feature_matrix = feature_matrix.compute().set_index('id').sort_index()
-
+    if isinstance(feature_matrix, ks.DataFrame):
+        feature_matrix = feature_matrix.to_pandas().set_index('id').sort_index()
     assert (feature_matrix.shape[0] == cutoff_time.shape[0])
 
 
 # TODO: fails with Dask
+# TODO: fails with Koalas
 def test_saveprogress(es, tmpdir):
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail('saveprogress fails with Dask')
+    if any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+        pytest.xfail('saveprogress fails with Koalas')
     times = list([datetime(2011, 4, 9, 10, 30, i * 6) for i in range(5)] +
                  [datetime(2011, 4, 9, 10, 31, i * 9) for i in range(4)] +
                  [datetime(2011, 4, 9, 10, 40, 0)] +
@@ -362,6 +380,8 @@ def test_cutoff_time_correctly(es):
                                               cutoff_time=cutoff_time)
     if isinstance(feature_matrix, dd.DataFrame):
         feature_matrix = feature_matrix.compute().set_index('id').sort_index()
+    if isinstance(feature_matrix, ks.DataFrame):
+        feature_matrix = feature_matrix.to_pandas().set_index('id').sort_index()
     labels = [10, 5, 0]
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
@@ -423,6 +443,8 @@ def test_cutoff_time_columns_order(es):
 
             labels = [10, 5, 0]
             if isinstance(feature_matrix, dd.DataFrame):
+                feature_matrix = feature_matrix.compute().set_index('id').sort_index()
+            if isinstance(feature_matrix, ks.DataFrame):
                 feature_matrix = feature_matrix.compute().set_index('id').sort_index()
             assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
@@ -985,9 +1007,13 @@ def test_cutoff_time_naming(es):
     fm1 = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df)
     if isinstance(fm1, dd.DataFrame):
         fm1 = fm1.compute().set_index('id').sort_index()
+    if isinstance(fm1, ks.DataFrame):
+        fm1 = fm1.to_pandas().set_index('id').sort_index()
     fm2 = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df_index_name)
     if isinstance(fm2, dd.DataFrame):
         fm2 = fm2.compute().set_index('id').sort_index()
+    if isinstance(fm2, ks.DataFrame):
+        fm2 = fm2.to_pandas().set_index('id').sort_index()
     assert all((fm1 == fm2.values).values)
 
     error_text = 'Cutoff time DataFrame must contain a column with either the same name' \
@@ -1006,6 +1032,8 @@ def test_cutoff_time_naming(es):
 def test_cutoff_time_extra_columns(es):
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail('Dask result not ordered')
+    if any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+        pytest.xfail('Koalas result not ordered')
     agg_feat = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count)
     dfeat = DirectFeature(agg_feat, es['customers'])
 
@@ -1017,6 +1045,8 @@ def test_cutoff_time_extra_columns(es):
                              columns=['time', 'instance_id', 'label'])
     fm = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df)
     if isinstance(fm, dd.DataFrame):
+        fm = fm.compute()
+    if isinstance(fm, ks.DataFrame):
         fm = fm.compute()
     # check column was added to end of matrix
     assert 'label' == fm.columns[-1]
@@ -1044,6 +1074,9 @@ def test_instances_after_cutoff_time_removed(es):
     if isinstance(fm, dd.DataFrame):
         fm = fm.compute().set_index('id')
         actual_ids = fm.index
+    elif isinstance(fm, ks.DataFrame):
+        fm = fm.to_pandas().set_index('id')
+        actual_ids = fm.index
     else:
         actual_ids = [id for (id, _) in fm.index]
 
@@ -1052,9 +1085,12 @@ def test_instances_after_cutoff_time_removed(es):
 
 
 # TODO: Dask doesn't keep instance_id after cutoff
+# TODO: Koalas doesn't keep instance_id after cutoff
 def test_instances_with_id_kept_after_cutoff(es):
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail('Dask result not ordered, missing extra instances')
+    if any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+        pytest.xfail('Koalas result not ordered, missing extra instances')
     property_feature = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
     cutoff_time = datetime(2011, 4, 8)
     fm = calculate_feature_matrix([property_feature],
@@ -1068,16 +1104,22 @@ def test_instances_with_id_kept_after_cutoff(es):
     if isinstance(fm, dd.DataFrame):
         fm = fm.compute().set_index('id')
         actual_ids = fm.index
+    elif isinstance(fm, ks.DataFrame):
+        fm = fm.to_pandas().set_index('id')
+        actual_ids = fm.index
     else:
         actual_ids = [id for (id, _) in fm.index]
     assert set(actual_ids) == set([0, 1, 2])
 
 
 # TODO: Fails with Dask
+# TODO: Fails with Koalas
 # TODO: split out approximate portion into seperate test for pandas
 def test_cfm_returns_original_time_indexes(es):
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail('Dask result not ordered, indexes are lost due to not multiindexing')
+    if any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+        pytest.xfail('Koalas result not ordered, indexes are lost due to not multiindexing')
     agg_feat = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count)
     dfeat = DirectFeature(agg_feat, es['customers'])
     agg_feat_2 = ft.Feature(es['sessions']['id'], parent_entity=es['customers'], primitive=Count)
@@ -1090,7 +1132,7 @@ def test_cfm_returns_original_time_indexes(es):
     fm = calculate_feature_matrix([dfeat],
                                   es, cutoff_time=cutoff_df,
                                   cutoff_time_in_index=True)
-    if isinstance(fm, dd.DataFrame):
+    if isinstance(fm, dd.DataFrame) or isinstance(fm, ks.DataFrame):
         fm = fm.compute().set_index('id')
         instance_level_vals = fm.index
         # Dask doesn't return time (doesn't support multi-index)
@@ -1467,16 +1509,27 @@ def dd_mock_customer(pd_mock_customer):
         entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=4)
     return dd_mock_customer
 
+@pytest.fixture
+def ks_mock_customer(pd_mock_customer):
+    ks_mock_customer = copy.deepcopy(pd_mock_customer)
+    for entity in ks_mock_customer.entities:
+        cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
+        entity.df = ks.from_pandas(cleaned_df)
+    return ks_mock_customer
 
-@pytest.fixture(params=['pd_mock_customer', 'dd_mock_customer'])
+
+@pytest.fixture(params=['pd_mock_customer', 'dd_mock_customer', 'ks_mock_customer'])
 def mock_customer(request):
     return request.getfixturevalue(request.param)
 
 
 # TODO: Dask version fails (feature matrix is empty)
+# TODO: Koalas version fails (koalas groupby agg doesn't support custom functions)
 def test_no_data_for_cutoff_time(mock_customer):
     if any(isinstance(entity.df, dd.DataFrame) for entity in mock_customer.entities):
         pytest.xfail('Dask version fails, returned feature matrix is empty')
+    if any(isinstance(entity.df, ks.DataFrame) for entity in mock_customer.entities):
+        pytest.xfail('Koalas version fails. Koalas groupby agg does not support custom functions')
     es = mock_customer
     cutoff_times = pd.DataFrame({"customer_id": [4],
                                  "time": pd.Timestamp('2011-04-08 20:08:13')})
@@ -1488,6 +1541,9 @@ def test_no_data_for_cutoff_time(mock_customer):
     fm = ft.calculate_feature_matrix(features, entityset=es, cutoff_time=cutoff_times)
     if isinstance(fm, dd.DataFrame):
         fm = fm.compute().set_index('customer_id')
+    
+    elif isinstance(fm, ks.DataFrame):
+        fm = fm.to_pandas().set_index('customer_id')
 
     # due to default values for each primitive
     # count will be 0, but max will nan

@@ -140,7 +140,7 @@ class FeatureSetCalculator(object):
         # Order by instance_ids
         unique_instance_ids = pd.unique(instance_ids)
 
-        if isinstance(df, dd.DataFrame):
+        if isinstance(df, dd.DataFrame) or isinstance(df, ks.DataFrame):
             unique_instance_ids = unique_instance_ids.astype(object)
         else:
             # pd.unique changes the dtype for Categorical, so reset it.
@@ -153,7 +153,7 @@ class FeatureSetCalculator(object):
         if isinstance(df, dd.DataFrame) or isinstance(df, ks.DataFrame):
             column_list.extend([target_entity.index])
             df.index.name = target_entity.index
-        
+
         return df[column_list]
 
     def _calculate_features_for_entity(self, entity_id, feature_trie, df_trie,
@@ -547,7 +547,7 @@ class FeatureSetCalculator(object):
 
         # merge the identity feature from the parent entity into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
-        if isinstance(merge_df, dd.DataFrame):
+        if isinstance(merge_df, dd.DataFrame) or isinstance(merge_df, ks.DataFrame):
             new_df = child_df.merge(merge_df, left_on=merge_var, right_on=merge_var,
                                     how='left')
         else:
@@ -633,7 +633,7 @@ class FeatureSetCalculator(object):
                     variable_id = f.base_features[0].get_name()
                     if variable_id not in to_agg:
                         to_agg[variable_id] = []
-                    if isinstance(base_frame, dd.DataFrame):
+                    if isinstance(base_frame, dd.DataFrame) or isinstance(base_frame, ks.DataFrame):
                         func = f.get_dask_aggregation()
                     else:
                         func = f.get_function()
@@ -692,7 +692,7 @@ class FeatureSetCalculator(object):
                 # to silence pandas warning about ambiguity we explicitly pass
                 # the column (in actuality grouping by both index and group would
                 # work)
-                if isinstance(base_frame, dd.DataFrame):
+                if isinstance(base_frame, dd.DataFrame) or isinstance(base_frame, ks.DataFrame):
                     to_merge = base_frame.groupby(groupby_var).agg(to_agg)
 
                 else:
@@ -708,7 +708,7 @@ class FeatureSetCalculator(object):
                     categories = pdtypes.CategoricalDtype(categories=frame.index.categories)
                     to_merge.index = to_merge.index.astype(object).astype(categories)
 
-                if isinstance(frame, dd.DataFrame):
+                if isinstance(frame, dd.DataFrame) or isinstance(frame, ks.DataFrame):
                     frame = frame.merge(to_merge, left_on=parent_merge_var, right_index=True, how='left')
                 else:
                     frame = pd.merge(left=frame, right=to_merge,

@@ -807,6 +807,8 @@ class EntitySet(object):
                     if isinstance(entity.df, dd.DataFrame):
                         lti.index = entity.df[entity.index].copy()
                         lti = lti.apply(lambda x: None)
+                    elif isinstance(entity.df, ks.DataFrame):
+                        lti = ks.Series(index = lti.to_list()).rename(lti.name)
                     else:
                         lti[:] = None
                 entity.last_time_index = lti

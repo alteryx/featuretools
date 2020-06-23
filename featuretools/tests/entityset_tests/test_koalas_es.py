@@ -503,4 +503,4 @@ def test_secondary_time_index():
                         trans_primitives=["month"])
 
     # Make sure both matrixes are sorted the same
-    pd.testing.assert_frame_equal(fm.sort_values('delay'), ks_fm.to_pandas().set_index('id').sort_values('delay'))
+    pd.testing.assert_frame_equal(fm.sort_values('delay'), ks_fm.to_pandas().set_index('id').sort_values('delay'), check_dtype= False)
