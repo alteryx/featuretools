@@ -422,7 +422,6 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                 id_name = _feature_matrix.columns[-1]
             else:
                 id_name = _feature_matrix.index.name
-           #breakpoint()
 
             # if approximate, merge feature matrix with group frame to get original
             # cutoff times and passed columns

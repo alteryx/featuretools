@@ -7,11 +7,11 @@ from itertools import combinations
 from random import randint
 
 import composeml as cp
+import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import psutil
 import pytest
-import databricks.koalas as ks
 from dask import dataframe as dd
 from distributed.utils_test import cluster
 from tqdm import tqdm
@@ -1509,6 +1509,7 @@ def dd_mock_customer(pd_mock_customer):
         entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=4)
     return dd_mock_customer
 
+
 @pytest.fixture
 def ks_mock_customer(pd_mock_customer):
     ks_mock_customer = copy.deepcopy(pd_mock_customer)
@@ -1541,7 +1542,6 @@ def test_no_data_for_cutoff_time(mock_customer):
     fm = ft.calculate_feature_matrix(features, entityset=es, cutoff_time=cutoff_times)
     if isinstance(fm, dd.DataFrame):
         fm = fm.compute().set_index('customer_id')
-    
     elif isinstance(fm, ks.DataFrame):
         fm = fm.to_pandas().set_index('customer_id')
 

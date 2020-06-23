@@ -37,6 +37,7 @@ def dask_es(make_es):
         entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=2)
     return dask_es
 
+
 @pytest.fixture
 def ks_es(make_es):
     ks_es = copy.deepcopy(make_es)
@@ -44,6 +45,7 @@ def ks_es(make_es):
         cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
         entity.df = ks.from_pandas(cleaned_df)
     return ks_es
+
 
 @pytest.fixture(params=['pd_es', 'dask_es', 'ks_es'])
 def es(request):
@@ -167,6 +169,7 @@ def dask_home_games_es(pd_home_games_es):
 
     return ft.EntitySet(id=pd_home_games_es.id, entities=entities, relationships=relationships)
 
+
 @pytest.fixture
 def ks_home_games_es(pd_home_games_es):
     entities = {}
@@ -179,6 +182,7 @@ def ks_home_games_es(pd_home_games_es):
                       rel.child_variable.name) for rel in pd_home_games_es.relationships]
 
     return ft.EntitySet(id=pd_home_games_es.id, entities=entities, relationships=relationships)
+
 
 @pytest.fixture
 def games_es(home_games_es):

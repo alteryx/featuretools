@@ -1,12 +1,11 @@
 import databricks.koalas as ks
-import numpy as np
 import pandas as pd
 import pytest
 
+import featuretools as ft
 from featuretools.entityset import EntitySet, Relationship
 from featuretools.utils.koalas_utils import pd_to_ks_clean
 
-import featuretools as ft
 
 def test_create_entity_from_ks_df(pd_es):
     cleaned_df = pd_to_ks_clean(pd_es["log"].df)
@@ -21,6 +20,7 @@ def test_create_entity_from_ks_df(pd_es):
         variable_types=pd_es["log"].variable_types
     )
     pd.testing.assert_frame_equal(cleaned_df, ks_es["log_ks"].df.to_pandas(), check_like=True)
+
 
 def test_create_entity_with_non_numeric_index(pd_es, ks_es):
     df = pd.DataFrame({"id": ["A_1", "A_2", "C", "D"],
@@ -113,10 +113,8 @@ def test_add_last_time_indexes():
     pd_es.entity_from_dataframe(entity_id="transactions", dataframe=transactions, index="id", time_index="time")
     ks_es.entity_from_dataframe(entity_id="transactions", dataframe=transactions_ks, index="id", time_index="time", variable_types=transactions_vtypes)
 
-    new_rel = Relationship(pd_es["sessions"]["id"],
-                           pd_es["transactions"]["session_id"])
-    ks_rel = Relationship(ks_es["sessions"]["id"],
-                            ks_es["transactions"]["session_id"])
+    new_rel = Relationship(pd_es["sessions"]["id"], pd_es["transactions"]["session_id"])
+    ks_rel = Relationship(ks_es["sessions"]["id"], ks_es["transactions"]["session_id"])
 
     pd_es = pd_es.add_relationship(new_rel)
     ks_es = ks_es.add_relationship(ks_rel)
@@ -164,13 +162,13 @@ def test_single_table_ks_entityset():
         "strings": ft.variable_types.Text
     }
     ks_es.entity_from_dataframe(entity_id="data",
-                                  dataframe=values_dd,
-                                  index="id",
-                                  variable_types=vtypes)
+                                dataframe=values_dd,
+                                index="id",
+                                variable_types=vtypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
-                        target_entity="data",
-                        trans_primitives=primitives_list)
+                      target_entity="data",
+                      trans_primitives=primitives_list)
 
     pd_es = ft.EntitySet(id="pd_es")
     pd_es.entity_from_dataframe(entity_id="data",
@@ -184,7 +182,7 @@ def test_single_table_ks_entityset():
 
     ks_computed_fm = ks_fm.to_pandas().loc[fm.index][fm.columns]
     # NUM_WORDS(strings) is int32 in koalas for some reason
-    pd.testing.assert_frame_equal(fm, ks_computed_fm, check_dtype= False)
+    pd.testing.assert_frame_equal(fm, ks_computed_fm, check_dtype=False)
 
 
 def test_single_table_ks_entityset_ids_not_sorted():
@@ -209,13 +207,13 @@ def test_single_table_ks_entityset_ids_not_sorted():
         "strings": ft.variable_types.Text
     }
     ks_es.entity_from_dataframe(entity_id="data",
-                                  dataframe=values_dd,
-                                  index="id",
-                                  variable_types=vtypes)
+                                dataframe=values_dd,
+                                index="id",
+                                variable_types=vtypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
-                        target_entity="data",
-                        trans_primitives=primitives_list)
+                      target_entity="data",
+                      trans_primitives=primitives_list)
 
     pd_es = ft.EntitySet(id="pd_es")
     pd_es.entity_from_dataframe(entity_id="data",
@@ -255,14 +253,14 @@ def test_single_table_ks_entityset_with_instance_ids():
         "strings": ft.variable_types.Text
     }
     ks_es.entity_from_dataframe(entity_id="data",
-                                  dataframe=values_dd,
-                                  index="id",
-                                  variable_types=vtypes)
+                                dataframe=values_dd,
+                                index="id",
+                                variable_types=vtypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
-                        target_entity="data",
-                        trans_primitives=primitives_list,
-                        instance_ids=instance_ids)
+                      target_entity="data",
+                      trans_primitives=primitives_list,
+                      instance_ids=instance_ids)
 
     pd_es = ft.EntitySet(id="pd_es")
     pd_es.entity_from_dataframe(entity_id="data",
@@ -301,14 +299,14 @@ def test_single_table_ks_entityset_single_cutoff_time():
         "strings": ft.variable_types.Text
     }
     ks_es.entity_from_dataframe(entity_id="data",
-                                  dataframe=values_dd,
-                                  index="id",
-                                  variable_types=vtypes)
+                                dataframe=values_dd,
+                                index="id",
+                                variable_types=vtypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
-                        target_entity="data",
-                        trans_primitives=primitives_list,
-                        cutoff_time=pd.Timestamp("2019-01-05 04:00"))
+                      target_entity="data",
+                      trans_primitives=primitives_list,
+                      cutoff_time=pd.Timestamp("2019-01-05 04:00"))
 
     pd_es = ft.EntitySet(id="pd_es")
     pd_es.entity_from_dataframe(entity_id="data",
@@ -345,10 +343,10 @@ def test_single_table_ks_entityset_cutoff_time_df():
         "strings": ft.variable_types.Text
     }
     ks_es.entity_from_dataframe(entity_id="data",
-                                  dataframe=values_dd,
-                                  index="id",
-                                  time_index="dates",
-                                  variable_types=vtypes)
+                                dataframe=values_dd,
+                                index="id",
+                                time_index="dates",
+                                variable_types=vtypes)
     ids = [0, 1, 2, 0]
     times = [pd.Timestamp("2019-01-05 04:00"),
              pd.Timestamp("2019-01-05 04:00"),
@@ -358,9 +356,9 @@ def test_single_table_ks_entityset_cutoff_time_df():
     cutoff_times = pd.DataFrame({"id": ids, "time": times, "labels": labels}, columns=["id", "time", "labels"])
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
-                        target_entity="data",
-                        trans_primitives=primitives_list,
-                        cutoff_time=cutoff_times)
+                      target_entity="data",
+                      trans_primitives=primitives_list,
+                      cutoff_time=cutoff_times)
 
     pd_es = ft.EntitySet(id="pd_es")
     pd_es.entity_from_dataframe(entity_id="data",
@@ -398,15 +396,15 @@ def test_single_table_ks_entityset_dates_not_sorted():
         "dates": ft.variable_types.Datetime,
     }
     ks_es.entity_from_dataframe(entity_id="data",
-                                  dataframe=values_dd,
-                                  index="id",
-                                  time_index="dates",
-                                  variable_types=vtypes)
+                                dataframe=values_dd,
+                                index="id",
+                                time_index="dates",
+                                variable_types=vtypes)
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
-                        target_entity="data",
-                        trans_primitives=primitives_list,
-                        max_depth=1)
+                      target_entity="data",
+                      trans_primitives=primitives_list,
+                      max_depth=1)
 
     pd_es = ft.EntitySet(id="pd_es")
     pd_es.entity_from_dataframe(entity_id="data",
@@ -470,11 +468,11 @@ def test_secondary_time_index():
         "flight_id": ft.variable_types.Id
     }
     ks_es.entity_from_dataframe(entity_id='logs',
-                                  dataframe=log_ks,
-                                  index="id",
-                                  variable_types=log_vtypes,
-                                  time_index="scheduled_time",
-                                  secondary_time_index={
+                                dataframe=log_ks,
+                                index="id",
+                                variable_types=log_vtypes,
+                                time_index="scheduled_time",
+                                secondary_time_index={
                                       'arrival_time': ['departure_time', 'delay']})
 
     pd_es.entity_from_dataframe('flights', flights_df, index="id")
@@ -497,10 +495,10 @@ def test_secondary_time_index():
                    trans_primitives=["month"])
 
     ks_fm, _ = ft.dfs(entityset=ks_es,
-                        target_entity="logs",
-                        cutoff_time=cutoff_df,
-                        agg_primitives=["max"],
-                        trans_primitives=["month"])
+                      target_entity="logs",
+                      cutoff_time=cutoff_df,
+                      agg_primitives=["max"],
+                      trans_primitives=["month"])
 
     # Make sure both matrixes are sorted the same
-    pd.testing.assert_frame_equal(fm.sort_values('delay'), ks_fm.to_pandas().set_index('id').sort_values('delay'), check_dtype= False)
+    pd.testing.assert_frame_equal(fm.sort_values('delay'), ks_fm.to_pandas().set_index('id').sort_values('delay'), check_dtype=False)

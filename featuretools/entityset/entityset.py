@@ -808,7 +808,7 @@ class EntitySet(object):
                         lti.index = entity.df[entity.index].copy()
                         lti = lti.apply(lambda x: None)
                     elif isinstance(entity.df, ks.DataFrame):
-                        lti = ks.Series(index = lti.to_list()).rename(lti.name)
+                        lti = ks.Series(index=lti.to_list()).rename(lti.name)
                     else:
                         lti[:] = None
                 entity.last_time_index = lti
@@ -838,7 +838,7 @@ class EntitySet(object):
 
                     lti_is_dask = isinstance(child_e.last_time_index, dd.Series)
                     lti_is_koalas = isinstance(child_e.last_time_index, ks.Series)
-                    if  lti_is_dask or lti_is_koalas:
+                    if lti_is_dask or lti_is_koalas:
                         to_join = child_e.df[link_var]
                         if lti_is_dask:
                             to_join.index = child_e.df[child_e.index]
@@ -846,7 +846,7 @@ class EntitySet(object):
                         lti_df = child_e.last_time_index.to_frame(name='last_time').join(
                             to_join.to_frame(name=entity.index)
                         )
-                        
+
                         if lti_is_dask:
                             new_index = lti_df.index.copy()
                             new_index.name = None
