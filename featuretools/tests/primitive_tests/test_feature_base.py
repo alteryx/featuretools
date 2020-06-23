@@ -214,9 +214,8 @@ def test_multi_output_index_error(es):
 
 def test_rename(es):
     feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
-    num_feature_names = len(feat.get_feature_names())
     new_name = 'session_test'
-    new_names = [new_name] if num_feature_names == 1 else [new_name + '[{}]'.format(i) for i in range(num_feature_names)]
+    new_names = ['session_test']
     check_rename(feat, new_name, new_names)
 
 
@@ -224,9 +223,8 @@ def test_rename_multioutput(es):
     feat = ft.Feature(es['log']['product_id'],
                       parent_entity=es['customers'],
                       primitive=NMostCommon(n=2))
-    num_feature_names = len(feat.get_feature_names())
     new_name = 'session_test'
-    new_names = [new_name] if num_feature_names == 1 else [new_name + '[{}]'.format(i) for i in range(num_feature_names)]
+    new_names = ['session_test[0]', 'session_test[1]']
     check_rename(feat, new_name, new_names)
 
 
@@ -235,7 +233,6 @@ def test_rename_featureoutputslice(es):
                                    parent_entity=es['customers'],
                                    primitive=NMostCommon(n=2))
     feat = ft.feature_base.FeatureOutputSlice(multi_output_feat, 0)
-    num_feature_names = len(feat.get_feature_names())
     new_name = 'session_test'
-    new_names = [new_name] if num_feature_names == 1 else [new_name + '[{}]'.format(i) for i in range(num_feature_names)]
+    new_names = ['session_test']
     check_rename(feat, new_name, new_names)
