@@ -415,6 +415,8 @@ class Entity(object):
         Remove variables from entity's dataframe and from
         self.variables
         """
+        if len(variable_ids) == 0:
+            return
         self.df = self.df.drop(variable_ids, axis=1)
 
         for v_id in variable_ids:

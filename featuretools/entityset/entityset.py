@@ -674,6 +674,9 @@ class EntitySet(object):
             ti_cols = [c if c != old_ti_name else secondary_time_index for c in ti_cols]
             make_secondary_time_index = {secondary_time_index: ti_cols}
 
+        if isinstance(new_entity_df, ks.DataFrame):
+            already_sorted = False
+
         self.entity_from_dataframe(
             new_entity_id,
             new_entity_df,

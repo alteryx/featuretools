@@ -2,6 +2,7 @@ import copy
 from datetime import datetime
 
 import dask.dataframe as dd
+import databricks.koalas as ks
 import pandas as pd
 import pytest
 
@@ -34,7 +35,7 @@ def test_operations_invalidate_metadata(es):
     assert new_es._data_description is None
     assert new_es.metadata is not None  # generated after access
     assert new_es._data_description is not None
-    if isinstance(es['customers'].df, dd.DataFrame):
+    if isinstance(es['customers'].df, dd.DataFrame) or isinstance(es['customers'].df, ks.DataFrame):
         customers_vtypes = es["customers"].variable_types
         customers_vtypes['signup_date'] = variable_types.Datetime
     else:
@@ -43,7 +44,7 @@ def test_operations_invalidate_metadata(es):
                                  es["customers"].df,
                                  index=es["customers"].index,
                                  variable_types=customers_vtypes)
-    if isinstance(es['sessions'].df, dd.DataFrame):
+    if isinstance(es['sessions'].df, dd.DataFrame) or isinstance(es['sessions'].df, ks.DataFrame):
         sessions_vtypes = es["sessions"].variable_types
     else:
         sessions_vtypes = None
@@ -103,7 +104,10 @@ def test_add_relationships_convert_type(es):
         assert parent_e.df[r.parent_variable.id].dtype == child_e.df[r.child_variable.id].dtype
 
 
+# TODO: Koalas does not support categorical types
 def test_add_relationship_errors_on_dtype_mismatch(es):
+    if isinstance(es['customers'].df, ks.DataFrame):
+        pytest.xfail('Koalas does not support categorical types')
     log_2_df = es['log'].df.copy()
     log_variable_types = {
         'id': variable_types.Categorical,
@@ -523,9 +527,11 @@ def test_entity_init(es):
                        'number': [4, 5, 6]})
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         df = dd.from_pandas(df, npartitions=2)
+    if any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+        df = ks.from_pandas(df)
 
     vtypes = {'time': variable_types.Datetime}
-    if isinstance(df, dd.DataFrame):
+    if isinstance(df, dd.DataFrame) or isinstance(df, ks.DataFrame):
         extra_vtypes = {
             'id': variable_types.Categorical,
             'category': variable_types.Categorical,
@@ -548,7 +554,10 @@ def test_entity_init(es):
     assert set([v.id for v in es['test_entity'].variables]) == set(df.columns)
 
     assert es['test_entity'].df['time'].dtype == df['time'].dtype
-    assert set(es['test_entity'].df['id']) == set(df['id'])
+    if isinstance(es['test_entity'].df, ks.DataFrame):
+        assert set(es['test_entity'].df['id'].to_list()) == set(df['id'].to_list())
+    else:
+        assert set(es['test_entity'].df['id']) == set(df['id'])
 
 
 @pytest.fixture
@@ -608,12 +617,16 @@ def test_already_sorted_parameter():
 
 
 # TODO: equality check fails, dask series have no .equals method; error computing lti if categorical index
+# TODO: dask deepcopy
 def test_concat_entitysets(es):
     df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail("Dask has no .equals method and issue with categoricals "
                      "and add_last_time_indexes")
         df = dd.from_pandas(df, npartitions=2)
+    if any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+        pytest.xfail("Koalas deepcopy fails")
+        df = ks.from_pandas(df)
 
     vtypes = {'id': variable_types.Categorical,
               'category': variable_types.Categorical}
@@ -803,7 +816,7 @@ def test_sets_time_when_adding_entity(transactions_df):
 
 def test_checks_time_type_setting_time_index(es):
     # set non time type as time index, Dask and Pandas error differently
-    if isinstance(es['log'].df, pd.DataFrame):
+    if isinstance(es['log'].df, pd.DataFrame) or isinstance(es['log'].df, ks.DataFrame):
         error_text = 'log time index not recognized as numeric or datetime'
     else:
         error_text = "log time index is %s type which differs from" \
@@ -1028,6 +1041,8 @@ def test_normalize_entity_new_time_index(es):
     df = es['values'].df
     if isinstance(df, dd.DataFrame):
         df = df.compute()
+    if isinstance(df, ks.DataFrame):
+        df = df.to_pandas()
     assert df[new_time_index].is_monotonic_increasing
 
 
@@ -1051,7 +1066,7 @@ def test_normalize_entity_same_index(es):
 
 # TODO: normalize entity fails with Dask, doesn't specify all vtypes when creating new entity
 def test_secondary_time_index(es):
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
         pytest.xfail('vtype error when attempting to normalize entity')
     es.normalize_entity('log', 'values', 'value',
                         make_time_index=True,
