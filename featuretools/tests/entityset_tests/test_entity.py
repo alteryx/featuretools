@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pytest
@@ -60,7 +61,10 @@ def test_eq(es):
 
     assert es['log'].__eq__(es['log'], deep=True)
     assert es['log'].__eq__(other_es['log'], deep=True)
-    assert all(es['log'].df['latlong'].eq(latlong))
+    if isinstance(latlong, ks.Series):
+        assert all(es['log'].df['latlong'].to_pandas().eq(latlong.to_pandas()))
+    else:
+        assert all(es['log'].df['latlong'].eq(latlong))
 
     other_es['log'].add_interesting_values()
     assert not es['log'].__eq__(other_es['log'], deep=True)
@@ -82,7 +86,12 @@ def test_eq(es):
 
 def test_update_data(es):
     df = es['customers'].df.copy()
-    df['new'] = pd.Series([1, 2, 3])
+    if isinstance(df, ks.DataFrame):
+        new_series = ks.Series([1, 2, 3])
+        new_series.rename('new')
+        df = df.join(new_series)
+    else:
+        df['new'] = pd.Series([1, 2, 3])
 
     error_text = 'Updated dataframe is missing new cohort column'
     with pytest.raises(ValueError, match=error_text):
@@ -98,17 +107,26 @@ def test_update_data(es):
         updated_id = df['id'].compute()
     else:
         updated_id = df['id']
-    updated_id.iloc[1:3] = [2, 1]
-    df["id"] = updated_id
+    updated_id.iloc[1] = 2
+    updated_id.iloc[2] = 1
+
+    if isinstance(df, ks.DataFrame):
+        df = df.drop('id').join(updated_id).sort_index()
+    else:
+        df["id"] = updated_id
     es["sessions"].update_data(df.copy())
     sessions_df = es['sessions'].df
     if isinstance(sessions_df, dd.DataFrame):
         sessions_df = sessions_df.compute()
+    elif isinstance(sessions_df, ks.DataFrame):
+        sessions_df = sessions_df.to_pandas()
     assert sessions_df["id"].iloc[1] == 2  # no sorting since time index not defined
     es["sessions"].update_data(df.copy(), already_sorted=True)
     sessions_df = es['sessions'].df
     if isinstance(sessions_df, dd.DataFrame):
         sessions_df = sessions_df.compute()
+    elif isinstance(sessions_df, ks.DataFrame):
+        sessions_df = sessions_df.to_pandas()
     assert sessions_df["id"].iloc[1] == 2
 
     # test already_sorted on entity with time index
@@ -118,7 +136,11 @@ def test_update_data(es):
     else:
         updated_signup = df['signup_date']
     updated_signup.iloc[0] = datetime(2011, 4, 11)
-    df['signup_date'] = updated_signup
+
+    if isinstance(df, ks.DataFrame):
+        df = df.drop('signup_date').join(updated_signup).sort_index()
+    else:
+        df['signup_date'] = updated_signup
     es["customers"].update_data(df.copy(), already_sorted=True)
     customers_df = es['customers'].df
     if isinstance(customers_df, dd.DataFrame):
@@ -154,6 +176,8 @@ def test_query_by_values_secondary_time_index(es):
 
     if isinstance(result, dd.DataFrame):
         result = result.compute().set_index('id')
+    if isinstance(result, ks.DataFrame):
+        result = result.to_pandas().set_index('id')
     for col in ["cancel_date", "cancel_reason"]:
         nulls = result.loc[all_instances][col].isnull() == [False, True, True]
         assert nulls.all(), "Some instance has data it shouldn't for column %s" % col
