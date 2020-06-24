@@ -7,6 +7,7 @@ Changelog
         * Add ``list_variable_types`` and ``graph_variable_types`` for Variable Types (:pr:`1013`)
     * Fixes
         * Improve warnings when using a Dask dataframe for cutoff times (:pr:`1026`)
+        * Error if attempting to add entityset relationship where child variable is also child index (:pr:`1034`)
     * Changes
         * Remove ``Feature.get_names`` (:pr:`1021`)
         * Remove unnecessary ``pd.Series`` and ``pd.DatetimeIndex`` calls from primitives (:pr:`1020`, :pr:`1024`)
@@ -18,7 +19,7 @@ Changelog
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`tuethan1999`, :user:`kmax12`,  :user:`thehomebrewnerd`,  :user:`gsheni`
+    :user:`tuethan1999`, :user:`kmax12`,  :user:`thehomebrewnerd`,  :user:`gsheni`, :user:`frances-h`
         
 **Breaking Changes**
 
