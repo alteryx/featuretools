@@ -20,6 +20,7 @@ from featuretools.primitives import (
     Min,
     Mode,
     Month,
+    NMostCommon,
     NumCharacters,
     NumUnique,
     NumWords,
@@ -31,6 +32,7 @@ from featuretools.primitives import (
     Year,
     make_agg_primitive
 )
+from featuretools.tests.testing_utils import check_names
 from featuretools.variable_types import Numeric
 
 BUCKET_NAME = "test-bucket"
@@ -94,15 +96,18 @@ def test_pickle_features_with_custom_primitive(pd_es, tmpdir):
 
 def test_serialized_renamed_features(es):
     def serialize_name_unchanged(original):
-        renamed = original.rename('MyFeature')
-        assert renamed.get_name() == 'MyFeature'
+        new_name = 'MyFeature'
+        original_names = original.get_feature_names()
+        renamed = original.rename(new_name)
+        new_names = [new_name] if len(original_names) == 1 else [new_name + '[{}]'.format(i) for i in range(len(original_names))]
+        check_names(renamed, new_name, new_names)
 
         serializer = FeaturesSerializer([renamed])
         serialized = serializer.to_dict()
 
         deserializer = FeaturesDeserializer(serialized)
         deserialized = deserializer.to_list()[0]
-        assert deserialized.get_name() == 'MyFeature'
+        check_names(deserialized, new_name, new_names)
 
     identity_original = ft.IdentityFeature(es['log']['value'])
     assert identity_original.get_name() == 'value'
@@ -125,7 +130,13 @@ def test_serialized_renamed_features(es):
     groupby_original = ft.feature_base.GroupByTransformFeature(value, primitive, zipcode)
     assert groupby_original.get_name() == 'CUM_SUM(value) by zipcode'
 
-    feature_type_list = [identity_original, agg_original, direct_original, transform_original, groupby_original]
+    multioutput_original = ft.Feature(es['log']['product_id'], parent_entity=es['customers'], primitive=NMostCommon(n=2))
+    assert multioutput_original.get_name() == 'N_MOST_COMMON(log.product_id, n=2)'
+
+    featureslice_original = ft.feature_base.FeatureOutputSlice(multioutput_original, 0)
+    assert featureslice_original.get_name() == 'N_MOST_COMMON(log.product_id, n=2)[0]'
+
+    feature_type_list = [identity_original, agg_original, direct_original, transform_original, groupby_original, multioutput_original, featureslice_original]
 
     for feature_type in feature_type_list:
         serialize_name_unchanged(feature_type)

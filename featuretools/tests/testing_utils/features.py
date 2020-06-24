@@ -37,3 +37,18 @@ def forward_path(es, entity_ids):
                      for child, parent in zip(entity_ids[:-1], entity_ids[1:])]
 
     return RelationshipPath([(True, r) for r in relationships])
+
+
+def check_rename(feat, new_name, new_names):
+    copy_feat = feat.rename(new_name)
+    assert feat.unique_name() != copy_feat.unique_name()
+    assert feat.get_name() != copy_feat.get_name()
+    assert feat.base_features[0].generate_name() == copy_feat.base_features[0].generate_name()
+    assert feat.entity == copy_feat.entity
+    assert feat.get_feature_names() != copy_feat.get_feature_names()
+    check_names(copy_feat, new_name, new_names)
+
+
+def check_names(feat, new_name, new_names):
+    assert feat.get_name() == new_name
+    assert feat.get_feature_names() == new_names
