@@ -248,6 +248,8 @@ class EntitySet(object):
         # this is a new pair of entities
         child_e = relationship.child_entity
         child_v = relationship.child_variable.id
+        if child_e.index == child_v:
+            raise ValueError('Child variable cannot be index of child entity')
         parent_e = relationship.parent_entity
         parent_v = relationship.parent_variable.id
         if not isinstance(child_e[child_v], vtypes.Id):

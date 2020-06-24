@@ -135,6 +135,20 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
         es.add_relationship(mismatch)
 
 
+def test_add_relationship_errors_child_v_index(es):
+    log_df = es['log'].df.copy()
+    log_vtypes = es['log'].variable_types
+    es.entity_from_dataframe(entity_id='log2',
+                             dataframe=log_df,
+                             index='id',
+                             variable_types=log_vtypes,
+                             time_index='datetime')
+
+    bad_relationship = ft.Relationship(es['log']['id'], es['log2']['id'])
+    with pytest.raises(ValueError, match='Child variable cannot be index of child entity'):
+        es.add_relationship(bad_relationship)
+
+
 def test_add_relationship_empty_child_convert_dtype(es):
     relationship = ft.Relationship(es["sessions"]["id"], es["log"]["session_id"])
     es['log'].df = pd.DataFrame(columns=es['log'].df.columns)
@@ -1327,7 +1341,7 @@ def test_entityset_init():
         "transactions": (transactions_df, 'id', 'transaction_time',
                          variable_types, False)
     }
-    relationships = [('cards', 'id', 'transactions', 'id')]
+    relationships = [('cards', 'id', 'transactions', 'card_id')]
     es = ft.EntitySet(id="fraud_data",
                       entities=entities,
                       relationships=relationships)
@@ -1344,7 +1358,7 @@ def test_entityset_init():
                                   make_index=False,
                                   time_index='transaction_time')
     relationship = ft.Relationship(es_copy["cards"]["id"],
-                                   es_copy["transactions"]["id"])
+                                   es_copy["transactions"]["card_id"])
     es_copy.add_relationship(relationship)
     assert es['cards'].__eq__(es_copy['cards'], deep=True)
     assert es['transactions'].__eq__(es_copy['transactions'], deep=True)
