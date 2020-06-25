@@ -188,9 +188,9 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
     # Approximate provides no benefit with a single cutoff time, so ignore it
     if isinstance(cutoff_time, tuple) and approximate is not None:
         msg = "Using approximate with a single cutoff_time value or no cutoff_time " \
-            "provides no benefit - ignoring"
+            "provides no computational efficiency benefit"
         warnings.warn(msg)
-        approximate = None
+        cutoff_time = pd.DataFrame({"instance_id": cutoff_time[1], "time": [cutoff_time[0]] * len(cutoff_time[1])})
 
     feature_set = FeatureSet(features)
 

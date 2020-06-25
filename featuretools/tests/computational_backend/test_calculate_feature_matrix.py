@@ -1740,21 +1740,34 @@ def test_closes_tqdm(es):
 
 
 def test_approximate_with_single_cutoff_warns(pd_es):
-    property_feature = ft.Feature(pd_es['log']['value']) > 10
+    features = dfs(entityset=pd_es,
+                   target_entity='customers',
+                   features_only=True,
+                   ignore_entities=['cohorts'],
+                   agg_primitives=['sum'])
 
     match = "Using approximate with a single cutoff_time value or no cutoff_time " \
-        "provides no benefit - ignoring"
-    # test single cutoff time
+        "provides no computational efficiency benefit"
+    # test warning with single cutoff time
     with pytest.warns(UserWarning, match=match):
-        calculate_feature_matrix([property_feature],
+        calculate_feature_matrix(features,
                                  pd_es,
-                                 cutoff_time=pd.to_datetime('2020-01-01'),
+                                 cutoff_time=pd.to_datetime("2020-01-01"),
                                  approximate="1 day")
-    # test no cutoff time
+    # test warning with no cutoff time
     with pytest.warns(UserWarning, match=match):
-        calculate_feature_matrix([property_feature],
+        calculate_feature_matrix(features,
                                  pd_es,
                                  approximate="1 day")
+
+    # check proper handling of approximate
+    feature_matrix = calculate_feature_matrix(features,
+                                              pd_es,
+                                              cutoff_time=pd.to_datetime("2011-04-09 10:31:30"),
+                                              approximate="1 minute")
+
+    expected_values = [50, 50, 50]
+    assert (feature_matrix['régions.SUM(log.value)'] == expected_values).values.all()
 
 
 def test_calc_feature_matrix_with_cutoff_df_and_instance_ids(es):
