@@ -145,7 +145,8 @@ def test_add_relationship_errors_child_v_index(es):
                              time_index='datetime')
 
     bad_relationship = ft.Relationship(es['log']['id'], es['log2']['id'])
-    with pytest.raises(ValueError, match='Child variable cannot be index of child entity'):
+    to_match = "Unable to add relationship because child variable 'id' in 'log2' is also its index"
+    with pytest.raises(ValueError, match=to_match):
         es.add_relationship(bad_relationship)
 
 
