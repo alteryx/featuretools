@@ -7,6 +7,7 @@ import featuretools as ft
 from featuretools import config
 from featuretools.feature_base import IdentityFeature
 from featuretools.primitives import (
+    Count,
     Diff,
     Last,
     Mode,
@@ -15,6 +16,7 @@ from featuretools.primitives import (
     Sum,
     TransformPrimitive
 )
+from featuretools.tests.testing_utils import check_rename
 from featuretools.variable_types import Categorical, Datetime, Id, Numeric
 
 
@@ -208,3 +210,29 @@ def test_multi_output_index_error(es):
     error_text = 'index is higher than the number of outputs'
     with pytest.raises(AssertionError, match=error_text):
         three_common[10]
+
+
+def test_rename(es):
+    feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
+    new_name = 'session_test'
+    new_names = ['session_test']
+    check_rename(feat, new_name, new_names)
+
+
+def test_rename_multioutput(es):
+    feat = ft.Feature(es['log']['product_id'],
+                      parent_entity=es['customers'],
+                      primitive=NMostCommon(n=2))
+    new_name = 'session_test'
+    new_names = ['session_test[0]', 'session_test[1]']
+    check_rename(feat, new_name, new_names)
+
+
+def test_rename_featureoutputslice(es):
+    multi_output_feat = ft.Feature(es['log']['product_id'],
+                                   parent_entity=es['customers'],
+                                   primitive=NMostCommon(n=2))
+    feat = ft.feature_base.FeatureOutputSlice(multi_output_feat, 0)
+    new_name = 'session_test'
+    new_names = ['session_test']
+    check_rename(feat, new_name, new_names)
