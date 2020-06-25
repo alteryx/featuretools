@@ -25,11 +25,11 @@ TARGET_TEMPLATE = '''
     </TR>'''.format('{}', '{}', target_color=TARGET_COLOR)
 
 
-def graph_feature(feat, to_file=None):
+def graph_feature(feature, to_file=None):
     '''Generates a feature lineage graph for the given feature
 
     Args:
-        feat (FeatureBase) : Feature to generate lineage graph for
+        feature (FeatureBase) : Feature to generate lineage graph for
         to_file (str, optional) : Path to where the plot should be saved.
             If set to None (as by default), the plot will not be saved.
 
@@ -41,7 +41,7 @@ def graph_feature(feat, to_file=None):
                                   to_file=to_file)
 
     # Initialize a new directed graph
-    graph = graphviz.Digraph(feat.get_name(), format=format_,
+    graph = graphviz.Digraph(feature.get_name(), format=format_,
                              graph_attr={'rankdir': 'LR'})
 
     entities = {}
@@ -49,11 +49,11 @@ def graph_feature(feat, to_file=None):
     primitives = []
     groupbys = []
 
-    _, max_depth = get_feature_data(feat, entities, groupbys, edges, primitives, layer=0)
-    entities[feat.entity.id]['targets'].add(feat.get_name())
+    _, max_depth = get_feature_data(feature, entities, groupbys, edges, primitives, layer=0)
+    entities[feature.entity.id]['targets'].add(feature.get_name())
 
     for entity in entities:
-        entity_name = '\u2605 {} (target)'.format(entity) if entity == feat.entity.id else entity
+        entity_name = '\u2605 {} (target)'.format(entity) if entity == feature.entity.id else entity
         entity_table = get_entity_table(entity_name, entities[entity])
         graph.attr('node', shape='plaintext')
         graph.node(entity, entity_table)
