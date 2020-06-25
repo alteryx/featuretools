@@ -26,6 +26,16 @@ TARGET_TEMPLATE = '''
 
 
 def graph_feature(feat, to_file=None):
+    '''Generates a feature lineage graph for the given feature
+
+    Args:
+        feat (FeatureBase) : Feature to generate lineage graph for
+        to_file (str, optional) : Path to where the plot should be saved.
+            If set to None (as by default), the plot will not be saved.
+
+    Returns:
+        graphviz.Digraph : Graph object that can directly be displayed in Jupyter notebooks.
+    '''
     graphviz = check_graphviz()
     format_ = get_graphviz_format(graphviz=graphviz,
                                   to_file=to_file)
