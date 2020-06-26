@@ -225,7 +225,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
     if approximate is not None:
         # If there are approximated aggs, bin times
-        binned_cutoff_time = bin_cutoff_times(cutoff_time.copy(), approximate)
+        binned_cutoff_time = bin_cutoff_times(cutoff_time, approximate)
 
         # Think about collisions: what if original time is a feature
         binned_cutoff_time[target_time] = cutoff_time[cutoff_df_time_var]
@@ -504,7 +504,7 @@ def approximate_features(feature_set, cutoff_time, window, entityset,
 
     target_time_colname = 'target_time'
     cutoff_time[target_time_colname] = cutoff_time['time']
-    approx_cutoffs = bin_cutoff_times(cutoff_time.copy(), window)
+    approx_cutoffs = bin_cutoff_times(cutoff_time, window)
     cutoff_df_time_var = 'time'
     cutoff_df_instance_var = 'instance_id'
     # should this order be by dependencies so that calculate_feature_matrix

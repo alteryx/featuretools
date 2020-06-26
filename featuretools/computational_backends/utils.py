@@ -21,8 +21,8 @@ from featuretools.variable_types import (
 logger = logging.getLogger('featuretools.computational_backend')
 
 
-def bin_cutoff_times(cuttoff_time, bin_size):
-    binned_cutoff_time = cuttoff_time.copy()
+def bin_cutoff_times(cutoff_time, bin_size):
+    binned_cutoff_time = cutoff_time.copy()
     if type(bin_size) == int:
         binned_cutoff_time['time'] = binned_cutoff_time['time'].apply(lambda x: x / bin_size * bin_size)
     else:
