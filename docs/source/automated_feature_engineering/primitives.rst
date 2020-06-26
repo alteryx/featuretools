@@ -70,6 +70,9 @@ In the example above, we use two types of primitives.
 .. graphviz:: graphs/trans_feat.dot
 
 
+The above graphs were generated using the :func:`graph_feature <featuretools.graph_feature>` function. These feature lineage graphs help to visually show how primitives were stacked to generate a feature.
+
+
 For a DataFrame that lists and describes each built-in primitive in Featuretools, call ``ft.list_primitives()``.  In addition, a list of all available primitives can be obtained by visiting `primitives.featurelabs.com <https://primitives.featurelabs.com/>`__.
 
 
