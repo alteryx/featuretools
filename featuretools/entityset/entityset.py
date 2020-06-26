@@ -248,6 +248,9 @@ class EntitySet(object):
         # this is a new pair of entities
         child_e = relationship.child_entity
         child_v = relationship.child_variable.id
+        if child_e.index == child_v:
+            msg = "Unable to add relationship because child variable '{}' in '{}' is also its index"
+            raise ValueError(msg.format(child_v, child_e.id))
         parent_e = relationship.parent_entity
         parent_v = relationship.parent_variable.id
         if not isinstance(child_e[child_v], vtypes.Id):
