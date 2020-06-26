@@ -150,7 +150,7 @@ jobs:
                 pytest featuretools/ -n 2 --cov=featuretools --cov-config=../.coveragerc
                 cd ../
                 cp unpacked_sdist/.coverage .coverage
-                codecov
+                codecov --required
       - unless:
           condition: << parameters.codecov >>
           steps:

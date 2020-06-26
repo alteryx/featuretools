@@ -16,9 +16,10 @@ Changelog
         * Remove featuretools enterprise from documentation (:pr:`1022`)
         * Add development install instructions to contributing.md (:pr:`1030`)
     * Testing Changes
+        * Add ``required`` flag to CircleCI codecov upload command (:pr:`1035`)
 
     Thanks to the following people for contributing to this release:
-    :user:`tuethan1999`, :user:`kmax12`,  :user:`thehomebrewnerd`,  :user:`gsheni`
+    :user:`tuethan1999`, :user:`kmax12`,  :user:`thehomebrewnerd`,  :user:`gsheni`, :user:`frances-h`
         
 **Breaking Changes**
 
