@@ -11,11 +11,11 @@ from featuretools.utils.plot_utils import (
     save_graph
 )
 
-TARGET_COLOR = '#d9ead3'
+TARGET_COLOR = '#D9EAD3'
 TABLE_TEMPLATE = '''<
 <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10">
     <TR>
-        <TD colspan="1" bgcolor="darkgrey"><B>{entity_name}</B></TD>
+        <TD colspan="1" bgcolor="#A9A9A9"><B>{entity_name}</B></TD>
     </TR>{table_cols}
 </TABLE>>'''
 COL_TEMPLATE = '''<TR><TD ALIGN="LEFT" port="{}">{}</TD></TR>'''
