@@ -18,6 +18,7 @@ Changelog
         * Add development install instructions to contributing.md (:pr:`1030`)
     * Testing Changes
         * Add ``required`` flag to CircleCI codecov upload command (:pr:`1035`)
+        * Add fixture for ``ft.demo.load_mock_customer`` (:pr:`1036`)
 
     Thanks to the following people for contributing to this release:
     :user:`tuethan1999`, :user:`kmax12`,  :user:`thehomebrewnerd`,  :user:`gsheni`, :user:`frances-h`
