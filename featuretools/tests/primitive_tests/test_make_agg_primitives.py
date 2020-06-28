@@ -35,11 +35,14 @@ def test_description_make_agg_primitive():
     assert Maximum.__doc__ != Maximum2.__doc__
     assert Maximum2.__doc__ != Maximum3.__doc__
 
+
 @pytest.fixture
 def pd_mock_customer():
     return ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
 
 # Check the successful default value for custom aggregation primitives
+
+
 def test_default_value_make_agg_primitive(pd_mock_customer):
 
     def mean_sunday(numeric, datetime):
