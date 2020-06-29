@@ -21,7 +21,7 @@ Changelog
 
     Thanks to the following people for contributing to this release:
     :user:`tuethan1999`, :user:`kmax12`,  :user:`thehomebrewnerd`,  :user:`gsheni`, :user:`frances-h`
-        
+
 **Breaking Changes**
 
 * Removed ``Feature.get_names``, ``Feature.get_feature_names`` should be used instead
@@ -295,7 +295,7 @@ Changelog
         * Added FAQ (:pr:`620`, :pr:`677`)
         * Fixed FAQ question with multiple question marks (:pr:`673`)
     * Testing Changes
-        * Add master, and release tests for premium primitives (:pr:`660`, :pr:`669`)
+        * Add main, and release tests for premium primitives (:pr:`660`, :pr:`669`)
         * Miscellaneous changes (:pr:`672`, :pr:`674`)
 
     Thanks to the following people for contributing to this release:
