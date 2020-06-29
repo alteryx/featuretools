@@ -1,5 +1,6 @@
 import datetime
 import logging
+import numbers
 import os
 import warnings
 from functools import wraps
@@ -260,17 +261,18 @@ def _check_cutoff_time_type(cutoff_time, es_time_type):
     """
     # Check that cutoff_time time type matches entityset time type
     if isinstance(cutoff_time, tuple):
-        cutoff_time_dtype = type(cutoff_time[0])
-        numeric_types = [int, float]
+        cutoff_time_value = cutoff_time[0]
         datetime_types = [datetime.datetime, pd.Timestamp]
+        is_numeric = isinstance(cutoff_time_value, numbers.Number)
+        is_datetime = type(cutoff_time_value) in datetime_types
     else:
         cutoff_time_dtype = cutoff_time['time'].dtype.name
-        numeric_types = PandasTypes._pandas_numerics
-        datetime_types = PandasTypes._pandas_datetimes
+        is_numeric = cutoff_time_dtype in PandasTypes._pandas_numerics
+        is_datetime = cutoff_time_dtype in PandasTypes._pandas_datetimes
 
-    if es_time_type == NumericTimeIndex and cutoff_time_dtype not in numeric_types:
+    if es_time_type == NumericTimeIndex and not is_numeric:
         raise TypeError("cutoff_time times must be numeric: try casting "
                         "via pd.to_numeric()")
-    if es_time_type == DatetimeTimeIndex and cutoff_time_dtype not in datetime_types:
+    if es_time_type == DatetimeTimeIndex and not is_datetime:
         raise TypeError("cutoff_time times must be datetime type: try casting "
                         "via pd.to_datetime()")
