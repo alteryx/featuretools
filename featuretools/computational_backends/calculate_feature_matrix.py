@@ -178,7 +178,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
             instance_ids = instance_ids.compute()
 
         # convert list or range object into series
-        if not isinstance(instance_ids, pd.Series) and not isinstance(instance_ids, dd.Series):
+        if not isinstance(instance_ids, pd.Series):
             instance_ids = pd.Series(instance_ids)
 
         cutoff_time = (cutoff_time, instance_ids)
