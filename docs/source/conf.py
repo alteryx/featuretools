@@ -19,8 +19,8 @@ import sys
 import featuretools
 
 # run setup script
-path = os.path.dirname(os.path.abspath(__file__)) + '/setup.py'
-subprocess.check_call(['python', path])
+path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'setup.py')
+subprocess.check_call([sys.executable, path])
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
