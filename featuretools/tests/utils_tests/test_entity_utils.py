@@ -23,7 +23,7 @@ def dask_mock_customer_es(pd_mock_customer):
     return dask_es
 
 
-@pytest.fixture(params=['pd_mock_customer_es', 'dask_mock_customer_es'])
+@pytest.fixture(params=['pd_mock_customer', 'dask_mock_customer_es'])
 def mock_customer_es(request):
     return request.getfixturevalue(request.param)
 
