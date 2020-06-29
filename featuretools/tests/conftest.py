@@ -150,3 +150,8 @@ def games_es(home_games_es):
     away_team = ft.Relationship(home_games_es['teams']['id'],
                                 home_games_es['games']['away_team_id'])
     return home_games_es.add_relationship(away_team)
+
+
+@pytest.fixture
+def pd_mock_customer():
+    return ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
