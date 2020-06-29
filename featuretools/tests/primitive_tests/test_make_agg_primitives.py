@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import pytest
 
 import featuretools as ft
 from featuretools.primitives.base.aggregation_primitive_base import (
@@ -35,10 +34,6 @@ def test_description_make_agg_primitive():
     assert Maximum.__doc__ != Maximum2.__doc__
     assert Maximum2.__doc__ != Maximum3.__doc__
 
-
-@pytest.fixture
-def pd_mock_customer():
-    return ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
 
 # Check the successful default value for custom aggregation primitives
 
