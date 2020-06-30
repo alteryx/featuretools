@@ -12,6 +12,7 @@ Changelog
     * Changes
         * Remove ``Feature.get_names`` (:pr:`1021`)
         * Remove unnecessary ``pd.Series`` and ``pd.DatetimeIndex`` calls from primitives (:pr:`1020`, :pr:`1024`)
+        * Improve cutoff time handling when a single value or no value is passed (:pr:`1028`)
         * Moved ``find_variable_types`` to Variable utils (:pr:`1013`)
     * Documentation Changes
         * Add page on Variable Types to describe some Variable Types, and util functions (:pr:`1013`)
