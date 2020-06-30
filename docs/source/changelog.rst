@@ -7,7 +7,7 @@ Changelog
         * Add ``list_variable_types`` and ``graph_variable_types`` for Variable Types (:pr:`1013`)
     * Fixes
         * Improve warnings when using a Dask dataframe for cutoff times (:pr:`1026`)
-        * Use more consistent and uniform warnings (:pr:'1040')
+        * Use more consistent and uniform warnings (:pr:`1040`)
         * Error if attempting to add entityset relationship where child variable is also child index (:pr:`1034`)
     * Changes
         * Remove ``Feature.get_names`` (:pr:`1021`)
