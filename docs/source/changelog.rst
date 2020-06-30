@@ -5,6 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
         * Add ``list_variable_types`` and ``graph_variable_types`` for Variable Types (:pr:`1013`)
+        * Add ``graph_feature`` to generate a feature lineage graph for a given feature (:pr:`1032`)
     * Fixes
         * Improve warnings when using a Dask dataframe for cutoff times (:pr:`1026`)
         * Error if attempting to add entityset relationship where child variable is also child index (:pr:`1034`)

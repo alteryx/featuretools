@@ -1,5 +1,6 @@
 #
 docs/source/generated/
+docs/source/automated_feature_engineering/graphs
 venv/
 data/
 installed/

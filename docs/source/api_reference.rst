@@ -226,6 +226,14 @@ Feature calculation
     calculate_feature_matrix
     .. approximate_features
 
+Feature visualization
+~~~~~~~~~~~~~~~~~~~~~~
+.. currentmodule:: featuretools
+.. autosummary::
+    :toctree: generated/
+
+    graph_feature
+
 Feature encoding
 ~~~~~~~~~~~~~~~~~
 .. currentmodule:: featuretools
