@@ -2,7 +2,15 @@
 
 Changelog
 ---------
-**Future Release**
+.. *Future Release*
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+    Thanks to the following people for contributing to this release:
+
+**v0.17.0 June 30, 2020**
     * Enhancements
         * Add ``list_variable_types`` and ``graph_variable_types`` for Variable Types (:pr:`1013`)
         * Add ``graph_feature`` to generate a feature lineage graph for a given feature (:pr:`1032`)
@@ -22,7 +30,8 @@ Changelog
         * Add ``required`` flag to CircleCI codecov upload command (:pr:`1035`)
 
     Thanks to the following people for contributing to this release:
-    :user:`tuethan1999`, :user:`kmax12`,  :user:`thehomebrewnerd`,  :user:`gsheni`, :user:`frances-h`
+    :user:`frances-h`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`,
+    :user:`thehomebrewnerd`, :user:`tuethan1999`
         
 **Breaking Changes**
 
