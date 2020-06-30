@@ -1,6 +1,4 @@
-import datetime
 import logging
-import numbers
 import os
 import warnings
 from functools import wraps
@@ -12,7 +10,7 @@ import psutil
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, DirectFeature
 from featuretools.utils import Trie
-from featuretools.utils.wrangle import _check_timedelta
+from featuretools.utils.wrangle import _check_time_type, _check_timedelta
 from featuretools.variable_types import (
     DatetimeTimeIndex,
     NumericTimeIndex,
@@ -262,9 +260,9 @@ def _check_cutoff_time_type(cutoff_time, es_time_type):
     # Check that cutoff_time time type matches entityset time type
     if isinstance(cutoff_time, tuple):
         cutoff_time_value = cutoff_time[0]
-        datetime_types = [datetime.datetime, pd.Timestamp]
-        is_numeric = isinstance(cutoff_time_value, numbers.Number)
-        is_datetime = type(cutoff_time_value) in datetime_types
+        time_type = _check_time_type(cutoff_time_value)
+        is_numeric = time_type == NumericTimeIndex
+        is_datetime = time_type == DatetimeTimeIndex
     else:
         cutoff_time_dtype = cutoff_time['time'].dtype.name
         is_numeric = cutoff_time_dtype in PandasTypes._pandas_numerics
