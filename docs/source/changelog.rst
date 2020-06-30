@@ -21,7 +21,7 @@ Changelog
         * Add fixture for ``ft.demo.load_mock_customer`` (:pr:`1036`)
 
     Thanks to the following people for contributing to this release:
-    :user:`tuethan1999`, :user:`kmax12`,  :user:`thehomebrewnerd`,  :user:`gsheni`, :user:`frances-h`
+    :user:`tuethan1999`, :user:`kmax12`,  :user:`thehomebrewnerd`,  :user:`gsheni`, :user:`frances-h`, :user:`systemshift`
         
 **Breaking Changes**
 
