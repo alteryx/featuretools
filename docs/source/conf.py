@@ -13,9 +13,14 @@
 # serve to show the default.
 
 import os
+import subprocess
 import sys
 
 import featuretools
+
+# run setup script
+path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'setup.py')
+subprocess.check_call([sys.executable, path])
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -41,6 +46,7 @@ extensions = [
     'IPython.sphinxext.ipython_directive',
     'sphinx.ext.extlinks',
     'sphinx.ext.viewcode',
+    'sphinx.ext.graphviz'
 ]
 
 

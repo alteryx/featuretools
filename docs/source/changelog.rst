@@ -5,12 +5,14 @@ Changelog
 **Future Release**
     * Enhancements
         * Add ``list_variable_types`` and ``graph_variable_types`` for Variable Types (:pr:`1013`)
+        * Add ``graph_feature`` to generate a feature lineage graph for a given feature (:pr:`1032`)
     * Fixes
         * Improve warnings when using a Dask dataframe for cutoff times (:pr:`1026`)
         * Error if attempting to add entityset relationship where child variable is also child index (:pr:`1034`)
     * Changes
         * Remove ``Feature.get_names`` (:pr:`1021`)
         * Remove unnecessary ``pd.Series`` and ``pd.DatetimeIndex`` calls from primitives (:pr:`1020`, :pr:`1024`)
+        * Improve cutoff time handling when a single value or no value is passed (:pr:`1028`)
         * Moved ``find_variable_types`` to Variable utils (:pr:`1013`)
         * Change default branch to ``master`` (:pr:`1038`)
     * Documentation Changes
