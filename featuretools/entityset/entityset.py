@@ -1,5 +1,6 @@
 import copy
 import logging
+import warnings
 from collections import defaultdict
 
 import dask.dataframe as dd
@@ -239,7 +240,7 @@ class EntitySet(object):
                 relationship to be added.
         """
         if relationship in self.relationships:
-            logger.warning(
+            warnings.warn(
                 "Not adding duplicate relationship: %s", relationship)
             return self
 

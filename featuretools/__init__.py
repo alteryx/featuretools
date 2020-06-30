@@ -15,6 +15,7 @@ from . import feature_base
 from .feature_base import AggregationFeature, DirectFeature, Feature, FeatureBase, IdentityFeature, TransformFeature, GroupByTransformFeature, save_features, load_features
 
 import logging
+import warnings
 import pkg_resources
 import sys
 import traceback
@@ -37,5 +38,5 @@ for entry_point in pkg_resources.iter_entry_points('featuretools_plugin'):
     except Exception:
         message = "Featuretools failed to load plugin {} from library {}. "
         message += "For a full stack trace, set logging to debug."
-        logger.warning(message.format(entry_point.name, entry_point.module_name))
+        warnings.warn(message.format(entry_point.name, entry_point.module_name))
         logger.debug(traceback.format_exc())
