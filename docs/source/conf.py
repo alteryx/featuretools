@@ -69,7 +69,7 @@ source_suffix = ['.rst', '.ipynb']
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
 
-# The main toctree document.
+# The master toctree document.
 master_doc = 'index'
 
 # General information about the project.
