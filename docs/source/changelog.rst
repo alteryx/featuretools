@@ -2,15 +2,25 @@
 
 Changelog
 ---------
-**Future Release**
+.. **Future Release**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+    Thanks to the following people for contributing to this release:
+
+**v0.17.0 June 30, 2020**
     * Enhancements
         * Add ``list_variable_types`` and ``graph_variable_types`` for Variable Types (:pr:`1013`)
+        * Add ``graph_feature`` to generate a feature lineage graph for a given feature (:pr:`1032`)
     * Fixes
         * Improve warnings when using a Dask dataframe for cutoff times (:pr:`1026`)
         * Error if attempting to add entityset relationship where child variable is also child index (:pr:`1034`)
     * Changes
         * Remove ``Feature.get_names`` (:pr:`1021`)
         * Remove unnecessary ``pd.Series`` and ``pd.DatetimeIndex`` calls from primitives (:pr:`1020`, :pr:`1024`)
+        * Improve cutoff time handling when a single value or no value is passed (:pr:`1028`)
         * Moved ``find_variable_types`` to Variable utils (:pr:`1013`)
     * Documentation Changes
         * Add page on Variable Types to describe some Variable Types, and util functions (:pr:`1013`)
@@ -21,7 +31,8 @@ Changelog
         * Add fixture for ``ft.demo.load_mock_customer`` (:pr:`1036`)
 
     Thanks to the following people for contributing to this release:
-    :user:`tuethan1999`, :user:`kmax12`,  :user:`thehomebrewnerd`,  :user:`gsheni`, :user:`frances-h`, :user:`systemshift`
+    :user:`frances-h`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`,
+    :user:`thehomebrewnerd`, :user:`tuethan1999`, :user:`systemshift`
         
 **Breaking Changes**
 

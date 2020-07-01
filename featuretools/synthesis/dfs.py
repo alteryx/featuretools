@@ -1,5 +1,3 @@
-import pandas as pd
-
 from featuretools.computational_backends import calculate_feature_matrix
 from featuretools.entityset import EntitySet
 from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
@@ -252,33 +250,18 @@ def dfs(entities=None,
     if features_only:
         return features
 
-    if isinstance(cutoff_time, pd.DataFrame):
-        feature_matrix = calculate_feature_matrix(features,
-                                                  entityset=entityset,
-                                                  cutoff_time=cutoff_time,
-                                                  training_window=training_window,
-                                                  approximate=approximate,
-                                                  cutoff_time_in_index=cutoff_time_in_index,
-                                                  save_progress=save_progress,
-                                                  chunk_size=chunk_size,
-                                                  n_jobs=n_jobs,
-                                                  dask_kwargs=dask_kwargs,
-                                                  verbose=verbose,
-                                                  progress_callback=progress_callback,
-                                                  include_cutoff_time=include_cutoff_time)
-    else:
-        feature_matrix = calculate_feature_matrix(features,
-                                                  entityset=entityset,
-                                                  cutoff_time=cutoff_time,
-                                                  instance_ids=instance_ids,
-                                                  training_window=training_window,
-                                                  approximate=approximate,
-                                                  cutoff_time_in_index=cutoff_time_in_index,
-                                                  save_progress=save_progress,
-                                                  chunk_size=chunk_size,
-                                                  n_jobs=n_jobs,
-                                                  dask_kwargs=dask_kwargs,
-                                                  verbose=verbose,
-                                                  progress_callback=progress_callback,
-                                                  include_cutoff_time=include_cutoff_time)
+    feature_matrix = calculate_feature_matrix(features,
+                                              entityset=entityset,
+                                              cutoff_time=cutoff_time,
+                                              instance_ids=instance_ids,
+                                              training_window=training_window,
+                                              approximate=approximate,
+                                              cutoff_time_in_index=cutoff_time_in_index,
+                                              save_progress=save_progress,
+                                              chunk_size=chunk_size,
+                                              n_jobs=n_jobs,
+                                              dask_kwargs=dask_kwargs,
+                                              verbose=verbose,
+                                              progress_callback=progress_callback,
+                                              include_cutoff_time=include_cutoff_time)
     return feature_matrix, features
