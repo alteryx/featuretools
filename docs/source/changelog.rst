@@ -9,6 +9,7 @@ Changelog
         * Change default branch to ``master`` (:pr:`1038`)
     * Documentation Changes
     * Testing Changes
+    
     Thanks to the following people for contributing to this release:
     :user:`gsheni`
     
