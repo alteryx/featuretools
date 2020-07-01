@@ -6,7 +6,7 @@ Changelog
     * Enhancements
     * Fixes
     * Changes
-        * Change default branch to ``master`` (:pr:`1038`)
+        * Change default branch to ``main`` (:pr:`1038`)
     * Documentation Changes
     * Testing Changes
     
@@ -309,7 +309,7 @@ Changelog
         * Added FAQ (:pr:`620`, :pr:`677`)
         * Fixed FAQ question with multiple question marks (:pr:`673`)
     * Testing Changes
-        * Add main, and release tests for premium primitives (:pr:`660`, :pr:`669`)
+        * Add master, and release tests for premium primitives (:pr:`660`, :pr:`669`)
         * Miscellaneous changes (:pr:`672`, :pr:`674`)
 
     Thanks to the following people for contributing to this release:
