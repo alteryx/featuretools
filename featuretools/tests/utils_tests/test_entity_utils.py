@@ -12,11 +12,6 @@ from featuretools.utils.entity_utils import (
 )
 
 
-@pytest.fixture(params=['pd_mock_customer', 'dask_mock_customer_es'])
-def mock_customer_es(request):
-    return request.getfixturevalue(request.param)
-
-
 def test_infer_variable_types():
 
     df = pd.DataFrame({'id': [0, 1, 2],
