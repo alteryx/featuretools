@@ -22,8 +22,8 @@ def test_load_retail_diff():
     assert es_second['order_products'].df.shape[0] == nrows_second
 
 
-def test_mock_customer(pd_mock_customer):
-    es = pd_mock_customer
+def test_mock_customer(mock_customer):
+    es = mock_customer
     fm, fl = dfs(entityset=es, target_entity="customers", max_depth=3)
     for feature in fl:
         assert feature.get_name() in fm.columns
