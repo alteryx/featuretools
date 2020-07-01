@@ -15,14 +15,6 @@ from featuretools.utils.entity_utils import (
 )
 
 
-@pytest.fixture
-def dask_mock_customer_es(dd_mock_customer):
-    dask_es = copy.deepcopy(dd_mock_customer)
-    for entity in dask_es.entities:
-        entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=2)
-    return dask_es
-
-
 @pytest.fixture(params=['pd_mock_customer', 'dask_mock_customer_es'])
 def mock_customer_es(request):
     return request.getfixturevalue(request.param)
