@@ -155,7 +155,7 @@ def test_convert_variable_data():
     assert df['date'].dtype.name in vtypes.PandasTypes._pandas_datetimes
 
 
-def test_get_linked_vars(mock_customer_es):
+def test_get_linked_vars(mock_customer):
 
     transactions_linked_vars = get_linked_vars(mock_customer_es['transactions'])
     assert transactions_linked_vars == ['product_id', 'session_id']
