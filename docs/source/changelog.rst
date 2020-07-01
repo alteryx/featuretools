@@ -4,6 +4,16 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+    * Fixes
+    * Changes
+        * Change default branch to ``master`` (:pr:`1038`)
+    * Documentation Changes
+    * Testing Changes
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`
+    
+**v0.17.0 June 30, 2020**
+    * Enhancements
         * Add ``list_variable_types`` and ``graph_variable_types`` for Variable Types (:pr:`1013`)
         * Add ``graph_feature`` to generate a feature lineage graph for a given feature (:pr:`1032`)
     * Fixes
@@ -14,7 +24,6 @@ Changelog
         * Remove unnecessary ``pd.Series`` and ``pd.DatetimeIndex`` calls from primitives (:pr:`1020`, :pr:`1024`)
         * Improve cutoff time handling when a single value or no value is passed (:pr:`1028`)
         * Moved ``find_variable_types`` to Variable utils (:pr:`1013`)
-        * Change default branch to ``master`` (:pr:`1038`)
     * Documentation Changes
         * Add page on Variable Types to describe some Variable Types, and util functions (:pr:`1013`)
         * Remove featuretools enterprise from documentation (:pr:`1022`)
@@ -23,8 +32,9 @@ Changelog
         * Add ``required`` flag to CircleCI codecov upload command (:pr:`1035`)
 
     Thanks to the following people for contributing to this release:
-    :user:`tuethan1999`, :user:`kmax12`,  :user:`thehomebrewnerd`,  :user:`gsheni`, :user:`frances-h`
-
+    :user:`frances-h`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`,
+    :user:`thehomebrewnerd`, :user:`tuethan1999`
+        
 **Breaking Changes**
 
 * Removed ``Feature.get_names``, ``Feature.get_feature_names`` should be used instead
