@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import pytest
 
 from featuretools import variable_types as vtypes
 from featuretools.utils.entity_utils import (
@@ -157,16 +156,16 @@ def test_convert_variable_data():
 
 def test_get_linked_vars(mock_customer):
 
-    transactions_linked_vars = get_linked_vars(mock_customer_es['transactions'])
+    transactions_linked_vars = get_linked_vars(mock_customer['transactions'])
     assert transactions_linked_vars == ['product_id', 'session_id']
 
-    products_linked_vars = get_linked_vars(mock_customer_es['products'])
+    products_linked_vars = get_linked_vars(mock_customer['products'])
     assert products_linked_vars == ['product_id']
 
-    sessions_linked_vars = get_linked_vars(mock_customer_es['sessions'])
+    sessions_linked_vars = get_linked_vars(mock_customer['sessions'])
     assert sessions_linked_vars == ['session_id', 'customer_id']
 
-    customers_linked_vars = get_linked_vars(mock_customer_es['customers'])
+    customers_linked_vars = get_linked_vars(mock_customer['customers'])
     assert customers_linked_vars == ['customer_id']
 
 
