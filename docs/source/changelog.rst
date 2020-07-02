@@ -9,6 +9,7 @@ Changelog
     * Documentation Changes
     * Testing Changes
         * Add fixture for ``ft.demo.load_mock_customer`` (:pr:`1036`)
+    
     Thanks to the following people for contributing to this release:
     :user:`systemshift`
 
