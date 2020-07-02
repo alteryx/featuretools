@@ -2,13 +2,15 @@
 
 Changelog
 ---------
-.. **Future Release**
+ **Future Release**
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Add fixture for ``ft.demo.load_mock_customer`` (:pr:`1036`)
     Thanks to the following people for contributing to this release:
+    :user:`systemshift`
 
 **v0.17.0 June 30, 2020**
     * Enhancements
@@ -28,11 +30,10 @@ Changelog
         * Add development install instructions to contributing.md (:pr:`1030`)
     * Testing Changes
         * Add ``required`` flag to CircleCI codecov upload command (:pr:`1035`)
-        * Add fixture for ``ft.demo.load_mock_customer`` (:pr:`1036`)
 
     Thanks to the following people for contributing to this release:
     :user:`frances-h`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`,
-    :user:`thehomebrewnerd`, :user:`tuethan1999`, :user:`systemshift`
+    :user:`thehomebrewnerd`, :user:`tuethan1999`
         
 **Breaking Changes**
 
