@@ -97,7 +97,7 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
 
 ## Create featuretools release on github
 #### Create release branch
-1. Branch off of featuretools master and name the branch the release version number (e.g. v0.13.3)
+1. Branch off of featuretools main and name the branch the release version number (e.g. v0.13.3)
 
 #### Bump version number
 2. Bump version number in `setup.py`, `featuretools/version.py`, and `featuretools/tests/test_version.py`.
@@ -116,8 +116,8 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
 A [release pr](https://github.com/FeatureLabs/featuretools/pull/856) should have the version number as the title and the changelog updates as the PR body text. The contributors list is not necessary. The special sphinx docs syntax (:pr:\`547\`) needs to be changed to github link syntax (#547).
 
 #### Create Github Release
-After the release pull request has been merged into the master branch, it is time draft the github release. [Example release](https://github.com/FeatureLabs/featuretools/releases/tag/v0.13.3)
-* The target should be the master branch
+After the release pull request has been merged into the main branch, it is time draft the github release. [Example release](https://github.com/FeatureLabs/featuretools/releases/tag/v0.13.3)
+* The target should be the main branch
 * The tag should be the version number with a v prefix (e.g. v0.13.3)
 * Release title is the same as the tag
 * Release description should be the full changelog updates for the release, including the line thanking contributors.  Contributors should also have their links changed from the docs syntax (:user:\`rwedge\`) to github syntax (@rwedge)
