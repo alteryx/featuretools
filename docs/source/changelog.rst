@@ -2,13 +2,16 @@
 
 Changelog
 ---------
-.. **Future Release**
+**Future Release**
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Implement automated process for checking critical dependencies (:pr:`1045`)
+
     Thanks to the following people for contributing to this release:
+    :user:`thehomebrewnerd`
 
 **v0.17.0 June 30, 2020**
     * Enhancements
