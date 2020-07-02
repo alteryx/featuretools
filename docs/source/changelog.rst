@@ -9,10 +9,11 @@ Changelog
         * Change default branch to ``main`` (:pr:`1038`)
     * Documentation Changes
     * Testing Changes
+        * Add fixture for ``ft.demo.load_mock_customer`` (:pr:`1036`)
     
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`
-    
+    :user:`gsheni`, :user:`systemshift`
+
 **v0.17.0 June 30, 2020**
     * Enhancements
         * Add ``list_variable_types`` and ``graph_variable_types`` for Variable Types (:pr:`1013`)
