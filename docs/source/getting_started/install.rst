@@ -96,7 +96,7 @@ of ``setup.py``.
 
 Development
 -----------
-Before making contributing to the codebase, please follow the guidelines `here <https://github.com/FeatureLabs/featuretools/blob/master/contributing.md>`_
+Before making contributing to the codebase, please follow the guidelines `here <https://github.com/FeatureLabs/featuretools/blob/main/contributing.md>`_
 
 Virtualenv
 ~~~~~~~~~~
