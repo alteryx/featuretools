@@ -5,6 +5,7 @@ Changelog
 .. **Future Release**
     * Enhancements
     * Fixes
+        * Make ``time_since`` primitive match all ``Datetime`` types (:pr:`1048`)
     * Changes
     * Documentation Changes
     * Testing Changes
