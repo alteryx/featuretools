@@ -241,7 +241,7 @@ class EntitySet(object):
         """
         if relationship in self.relationships:
             warnings.warn(
-                "Not adding duplicate relationship: %s", relationship)
+                "Not adding duplicate relationship: " + str(relationship))
             return self
 
         # _operations?
