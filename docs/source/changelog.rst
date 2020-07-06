@@ -5,6 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
     * Fixes
+        * Fix issue with missing instance ids and categorical entity index (:pr:`1050`)
     * Changes
         * Change default branch to ``main`` (:pr:`1038`)
     * Documentation Changes
@@ -12,7 +13,7 @@ Changelog
         * Add fixture for ``ft.demo.load_mock_customer`` (:pr:`1036`)
     
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`systemshift`
+    :user:`gsheni`, :user:`systemshift`, :user:`thehomebrewnerd`
 
 **v0.17.0 June 30, 2020**
     * Enhancements
