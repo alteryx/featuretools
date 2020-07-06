@@ -1601,6 +1601,15 @@ def test_some_instances_not_in_data(pd_es):
         np.testing.assert_array_equal(fm[x], y)
 
 
+def test_missing_instances_with_categorical_index(pd_es):
+    instance_ids = [0, 1, 2, 3]
+    features = ft.dfs(entityset=pd_es, target_entity='customers', features_only=True)
+    fm = ft.calculate_feature_matrix(entityset=pd_es,
+                                     features=features,
+                                     instance_ids=instance_ids)
+    assert all(fm.index.values == instance_ids)
+
+
 def test_handle_chunk_size():
     total_size = 100
 
