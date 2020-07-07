@@ -10,7 +10,7 @@ Changelog
     * Documentation Changes
     * Testing Changes
         * Add fixture for ``ft.demo.load_mock_customer`` (:pr:`1036`)
-        * Refactor Dask test units (:pr: `1052`)
+        * Refactor Dask test units (:pr:`1052`)
     
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`systemshift`
