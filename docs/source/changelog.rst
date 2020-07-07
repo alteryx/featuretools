@@ -7,6 +7,7 @@ Changelog
     * Fixes
         * Remove warnings.simplefilter in feature_set_calculator to un-silence warnings (:pr:`1053`)
     * Changes
+        * Make DFS match ``TimeSince`` primitive with all ``Datetime`` types (:pr:`1048`)
         * Change default branch to ``main`` (:pr:`1038`)
     * Documentation Changes
         * Remove benchmarks folder (:pr:`1049`)
@@ -14,7 +15,7 @@ Changelog
         * Add fixture for ``ft.demo.load_mock_customer`` (:pr:`1036`)
     
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`systemshift`
+    :user:`gsheni`, :user:`systemshift`, :user:`monti-python`
 
 **v0.17.0 June 30, 2020**
     * Enhancements
