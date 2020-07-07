@@ -1069,15 +1069,25 @@ def test_cutoff_time_extra_columns(es):
 
     assert (fm['label'].values == cutoff_df['label'].values).all()
 
-    if any(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
-        fm_2 = calculate_feature_matrix([dfeat],
-                                        es,
+def test_cutoff_time_extra_columns_approximate(pd_es):
+    if any(isinstance(entity.df, pd.DataFrame) for entity in pd_es.entities):
+        agg_feat = ft.Feature(pd_es['customers']['id'], parent_entity=pd_es[u'régions'], primitive=Count)
+        dfeat = DirectFeature(agg_feat, pd_es['customers'])
+
+        cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),
+                                       pd.Timestamp('2011-04-09 10:30:03'),
+                                       pd.Timestamp('2011-04-08 10:30:00')],
+                              'instance_id': [0, 1, 0],
+                              'label': [True, True, False]},
+                             columns=['time', 'instance_id', 'label'])
+        fm = calculate_feature_matrix([dfeat],
+                                        pd_es,
                                         cutoff_time=cutoff_df,
                                         approximate="2 days")
         # check column was added to end of matrix
-        assert 'label' in fm_2.columns
+        assert 'label' in fm.columns
 
-        assert (fm_2['label'].values == cutoff_df['label'].values).all()
+        assert (fm['label'].values == cutoff_df['label'].values).all()
 
 
 def test_instances_after_cutoff_time_removed(es):
