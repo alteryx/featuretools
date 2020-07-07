@@ -2,14 +2,19 @@
 
 Changelog
 ---------
-.. **Future Release**
+**Future Release**
     * Enhancements
     * Fixes
         * Make ``time_since`` primitive match all ``Datetime`` types (:pr:`1048`)
     * Changes
+        * Change default branch to ``main`` (:pr:`1038`)
     * Documentation Changes
+        * Remove benchmarks folder (:pr:`1049`)
     * Testing Changes
+        * Add fixture for ``ft.demo.load_mock_customer`` (:pr:`1036`)
+    
     Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`systemshift`
 
 **v0.17.0 June 30, 2020**
     * Enhancements

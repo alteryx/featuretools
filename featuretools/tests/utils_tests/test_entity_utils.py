@@ -1,11 +1,6 @@
-import copy
-
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
-import pytest
 
-import featuretools as ft
 from featuretools import variable_types as vtypes
 from featuretools.utils.entity_utils import (
     convert_all_variable_data,
@@ -14,24 +9,6 @@ from featuretools.utils.entity_utils import (
     infer_variable_types,
     replace_latlong_nan
 )
-
-
-@pytest.fixture
-def pd_mock_customer_es():
-    return ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
-
-
-@pytest.fixture
-def dask_mock_customer_es(pd_mock_customer_es):
-    dask_es = copy.deepcopy(pd_mock_customer_es)
-    for entity in dask_es.entities:
-        entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=2)
-    return dask_es
-
-
-@pytest.fixture(params=['pd_mock_customer_es', 'dask_mock_customer_es'])
-def mock_customer_es(request):
-    return request.getfixturevalue(request.param)
 
 
 def test_infer_variable_types():
@@ -177,18 +154,18 @@ def test_convert_variable_data():
     assert df['date'].dtype.name in vtypes.PandasTypes._pandas_datetimes
 
 
-def test_get_linked_vars(mock_customer_es):
+def test_get_linked_vars(mock_customer):
 
-    transactions_linked_vars = get_linked_vars(mock_customer_es['transactions'])
+    transactions_linked_vars = get_linked_vars(mock_customer['transactions'])
     assert transactions_linked_vars == ['product_id', 'session_id']
 
-    products_linked_vars = get_linked_vars(mock_customer_es['products'])
+    products_linked_vars = get_linked_vars(mock_customer['products'])
     assert products_linked_vars == ['product_id']
 
-    sessions_linked_vars = get_linked_vars(mock_customer_es['sessions'])
+    sessions_linked_vars = get_linked_vars(mock_customer['sessions'])
     assert sessions_linked_vars == ['session_id', 'customer_id']
 
-    customers_linked_vars = get_linked_vars(mock_customer_es['customers'])
+    customers_linked_vars = get_linked_vars(mock_customer['customers'])
     assert customers_linked_vars == ['customer_id']
 
 
