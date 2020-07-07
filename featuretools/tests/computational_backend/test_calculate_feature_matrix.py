@@ -1075,15 +1075,15 @@ def test_cutoff_time_extra_columns_approximate(pd_es):
     dfeat = DirectFeature(agg_feat, pd_es['customers'])
 
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),
-                                    pd.Timestamp('2011-04-09 10:30:03'),
-                                    pd.Timestamp('2011-04-08 10:30:00')],
-                            'instance_id': [0, 1, 0],
-                            'label': [True, True, False]},
-                            columns=['time', 'instance_id', 'label'])
+                                       pd.Timestamp('2011-04-09 10:30:03'),
+                                       pd.Timestamp('2011-04-08 10:30:00')],
+                              'instance_id': [0, 1, 0],
+                              'label': [True, True, False]},
+                             columns=['time', 'instance_id', 'label'])
     fm = calculate_feature_matrix([dfeat],
-                                pd_es,
-                                cutoff_time=cutoff_df,
-                                approximate="2 days")
+                                  pd_es,
+                                  cutoff_time=cutoff_df,
+                                  approximate="2 days")
     # check column was added to end of matrix
     assert 'label' in fm.columns
 
@@ -1136,7 +1136,6 @@ def test_cfm_returns_original_time_indexes(es):
         pytest.xfail('Dask result not ordered, indexes are lost due to not multiindexing')
     agg_feat = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count)
     dfeat = DirectFeature(agg_feat, es['customers'])
-    agg_feat_2 = ft.Feature(es['sessions']['id'], parent_entity=es['customers'], primitive=Count)
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),
                                        pd.Timestamp('2011-04-09 10:30:03'),
                                        pd.Timestamp('2011-04-08 10:30:00')],
@@ -1156,6 +1155,7 @@ def test_cfm_returns_original_time_indexes(es):
     assert (instance_level_vals == cutoff_df['instance_id'].values).all()
     assert (time_level_vals == cutoff_df['time'].values).all()
 
+
 def test_cfm_returns_original_time_indexes_approximate(pd_es):
     agg_feat = ft.Feature(pd_es['customers']['id'], parent_entity=pd_es[u'régions'], primitive=Count)
     dfeat = DirectFeature(agg_feat, pd_es['customers'])
@@ -1166,7 +1166,7 @@ def test_cfm_returns_original_time_indexes_approximate(pd_es):
                               'instance_id': [0, 1, 0]})
     # approximate, in different windows, no unapproximated aggs
     fm = calculate_feature_matrix([dfeat], pd_es, cutoff_time=cutoff_df,
-                                    cutoff_time_in_index=True, approximate="1 m")
+                                  cutoff_time_in_index=True, approximate="1 m")
     instance_level_vals = fm.index.get_level_values(0).values
     time_level_vals = fm.index.get_level_values(1).values
     assert (instance_level_vals == cutoff_df['instance_id'].values).all()
@@ -1174,7 +1174,7 @@ def test_cfm_returns_original_time_indexes_approximate(pd_es):
 
     # approximate, in different windows, unapproximated aggs
     fm = calculate_feature_matrix([dfeat, agg_feat_2], pd_es, cutoff_time=cutoff_df,
-                                    cutoff_time_in_index=True, approximate="1 m")
+                                  cutoff_time_in_index=True, approximate="1 m")
     instance_level_vals = fm.index.get_level_values(0).values
     time_level_vals = fm.index.get_level_values(1).values
     assert (instance_level_vals == cutoff_df['instance_id'].values).all()
@@ -1182,7 +1182,7 @@ def test_cfm_returns_original_time_indexes_approximate(pd_es):
 
     # approximate, in same window, no unapproximated aggs
     fm2 = calculate_feature_matrix([dfeat], pd_es, cutoff_time=cutoff_df,
-                                    cutoff_time_in_index=True, approximate="2 d")
+                                   cutoff_time_in_index=True, approximate="2 d")
     instance_level_vals = fm2.index.get_level_values(0).values
     time_level_vals = fm2.index.get_level_values(1).values
     assert (instance_level_vals == cutoff_df['instance_id'].values).all()
@@ -1190,7 +1190,7 @@ def test_cfm_returns_original_time_indexes_approximate(pd_es):
 
     # approximate, in same window, unapproximated aggs
     fm3 = calculate_feature_matrix([dfeat, agg_feat_2], pd_es, cutoff_time=cutoff_df,
-                                    cutoff_time_in_index=True, approximate="2 d")
+                                   cutoff_time_in_index=True, approximate="2 d")
     instance_level_vals = fm3.index.get_level_values(0).values
     time_level_vals = fm3.index.get_level_values(1).values
     assert (instance_level_vals == cutoff_df['instance_id'].values).all()
