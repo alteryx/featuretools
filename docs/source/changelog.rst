@@ -6,6 +6,7 @@ Changelog
     * Enhancements
     * Fixes
         * Make ``time_since`` primitive match all ``Datetime`` types (:pr:`1048`)
+        * Remove warnings.simplefilter in feature_set_calculator to un-silence warnings (:pr:`1053`)
     * Changes
         * Change default branch to ``main`` (:pr:`1038`)
     * Documentation Changes
