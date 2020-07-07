@@ -5,6 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
     * Fixes
+        * Use more consistent and uniform warnings (:pr:`1040`)
     * Changes
         * Change default branch to ``main`` (:pr:`1038`)
     * Documentation Changes
@@ -21,7 +22,6 @@ Changelog
         * Add ``graph_feature`` to generate a feature lineage graph for a given feature (:pr:`1032`)
     * Fixes
         * Improve warnings when using a Dask dataframe for cutoff times (:pr:`1026`)
-        * Use more consistent and uniform warnings (:pr:`1040`)
         * Error if attempting to add entityset relationship where child variable is also child index (:pr:`1034`)
     * Changes
         * Remove ``Feature.get_names`` (:pr:`1021`)
