@@ -14,7 +14,7 @@ Changelog
         * Add fixture for ``ft.demo.load_mock_customer`` (:pr:`1036`)
     
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`systemshift`
+    :user:`gsheni`, :user:`systemshift`, :user:`monti-python`
 
 **v0.17.0 June 30, 2020**
     * Enhancements
