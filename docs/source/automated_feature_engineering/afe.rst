@@ -91,6 +91,11 @@ For each customer this feature calculates
 
 Stacking results in features that are more expressive than individual primitives themselves. This enables the automatic creation of complex patterns for machine learning.
 
+.. note ::
+
+    You can graphically visualize the lineage of a feature by calling :func:`featuretools.graph_feature` on it.
+
+
 Changing Target Entity
 **********************
 
