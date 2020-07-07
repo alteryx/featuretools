@@ -5,9 +5,9 @@ Changelog
 **Future Release**
     * Enhancements
     * Fixes
-        * Make ``time_since`` primitive match all ``Datetime`` types (:pr:`1048`)
         * Remove warnings.simplefilter in feature_set_calculator to un-silence warnings (:pr:`1053`)
     * Changes
+        * Make DFS match ``TimeSince`` primitive with all ``Datetime`` types (:pr:`1048`)
         * Change default branch to ``main`` (:pr:`1038`)
     * Documentation Changes
         * Remove benchmarks folder (:pr:`1049`)
