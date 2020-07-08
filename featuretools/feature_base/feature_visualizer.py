@@ -1,3 +1,5 @@
+import html
+
 from featuretools.feature_base.feature_base import (
     AggregationFeature,
     DirectFeature,
@@ -50,8 +52,7 @@ def graph_feature(feature, to_file=None):
     groupbys = []
 
     _, max_depth = get_feature_data(feature, entities, groupbys, edges, primitives, layer=0)
-    entities[feature.entity.id]['targets'].add(
-        feature.get_name().replace('>', '&gt;').replace('<', '&lt;'))
+    entities[feature.entity.id]['targets'].add(feature.get_name())
     for entity in entities:
         entity_name = '\u2605 {} (target)'.format(entity) if entity == feature.entity.id else entity
         entity_table = get_entity_table(entity_name, entities[entity])
@@ -105,14 +106,13 @@ def get_feature_data(feat, entities, groupbys, edges, primitives, layer=0):
 
     # if we've already explored this feat, continue
     feat_node = "{}:{}".format(feat.entity.id, feat_name)
-    html_feat_name = feat_name.replace('>', '&gt;').replace('<', '&lt;')
-    if html_feat_name in entity_dict['vars'] or html_feat_name in entity_dict['feats']:
+    if feat_name in entity_dict['vars'] or feat_name in entity_dict['feats']:
         return feat_node, layer
 
     if isinstance(feat, IdentityFeature):
-        entity_dict['vars'].add(html_feat_name)
+        entity_dict['vars'].add(feat_name)
     else:
-        entity_dict['feats'].add(html_feat_name)
+        entity_dict['feats'].add(feat_name)
     base_node = feat_node
 
     # 2) if multi-output, convert feature to generic base
@@ -189,7 +189,7 @@ def get_feature_data(feat, entities, groupbys, edges, primitives, layer=0):
 
 def add_entity(entity, entity_dict):
     entity_dict[entity.id] = {
-        'index': entity.index.replace('>', '&gt;').replace('<', '&lt;'),
+        'index': entity.index,
         'targets': set(),
         'vars': set(),
         'feats': set()
@@ -206,11 +206,12 @@ def get_entity_table(entity_name, entity_dict):
     feats = entity_dict['feats'].difference(targets)
 
     # If the index is used, make sure it's the first element in the table
+    clean_index = html.escape(index)
     if index in variables:
-        rows = [COL_TEMPLATE.format(entity_dict['index'], entity_dict['index'] + " (index)")]
+        rows = [COL_TEMPLATE.format(clean_index, clean_index + " (index)")]
         variables.discard(index)
     elif index in targets:
-        rows = [TARGET_TEMPLATE.format(entity_dict['index'], entity_dict['index'] + " (index)")]
+        rows = [TARGET_TEMPLATE.format(clean_index, clean_index + " (index)")]
         targets.discard(index)
     else:
         rows = []
@@ -220,6 +221,7 @@ def get_entity_table(entity_name, entity_dict):
         if var in targets:
             template = TARGET_TEMPLATE
 
+        var = html.escape(var)
         rows.append(template.format(var, var))
 
     table = TABLE_TEMPLATE.format(entity_name=entity_name,
