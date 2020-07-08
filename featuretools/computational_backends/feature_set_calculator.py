@@ -131,17 +131,12 @@ class FeatureSetCalculator(object):
 
             df.index.name = self.entityset[self.feature_set.target_eid].index
 
-        column_list = []
-
-        # Order by instance_ids
-        unique_instance_ids = pd.unique(instance_ids)
-
-        if isinstance(df, dd.DataFrame):
-            unique_instance_ids = unique_instance_ids.astype(object)
-        else:
-            # pd.unique changes the dtype for Categorical, so reset it.
+            # Order by instance_ids
+            unique_instance_ids = pd.unique(instance_ids)
             unique_instance_ids = unique_instance_ids.astype(instance_ids.dtype)
             df = df.reindex(unique_instance_ids)
+
+        column_list = []
 
         for feat in self.feature_set.target_features:
             column_list.extend(feat.get_feature_names())
