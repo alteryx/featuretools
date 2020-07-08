@@ -350,6 +350,7 @@ def test_calls_progress_callback(pd_entities, relationships):
     # test with multiple jobs
     mock_progress_callback = MockProgressCallback()
 
+
 def test_calls_progress_callback_cluster(pd_entities, relationships):
     class MockProgressCallback:
         def __init__(self):
