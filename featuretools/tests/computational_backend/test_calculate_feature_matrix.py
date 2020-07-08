@@ -1,4 +1,3 @@
-import copy
 import os
 import re
 import shutil
@@ -1514,24 +1513,6 @@ def test_string_time_values_in_cutoff_time(es):
     error_text = 'cutoff_time times must be.*try casting via.*'
     with pytest.raises(TypeError, match=error_text):
         calculate_feature_matrix([agg_feature], es, cutoff_time=cutoff_time)
-
-
-@pytest.fixture
-def pd_mock_customer():
-    return ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
-
-
-@pytest.fixture
-def dd_mock_customer(pd_mock_customer):
-    dd_mock_customer = copy.deepcopy(pd_mock_customer)
-    for entity in dd_mock_customer.entities:
-        entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=4)
-    return dd_mock_customer
-
-
-@pytest.fixture(params=['pd_mock_customer', 'dd_mock_customer'])
-def mock_customer(request):
-    return request.getfixturevalue(request.param)
 
 
 # TODO: Dask version fails (feature matrix is empty)
