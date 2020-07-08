@@ -1660,7 +1660,6 @@ def test_chunk_dataframe_groups():
     assert fourth[0] == 3 and fourth[1].shape[0] == 1
 
 
-# TODO: split out cluster tests into seperate test for pandas
 def test_calls_progress_callback(mock_customer):
     class MockProgressCallback:
         def __init__(self):
@@ -1700,19 +1699,34 @@ def test_calls_progress_callback(mock_customer):
     assert np.isclose(mock_progress_callback.total_update, 100.0)
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
 
-    # test with multiple jobs, pandas only
-    if any(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
-        mock_progress_callback = MockProgressCallback()
 
-        with cluster() as (scheduler, [a, b]):
-            dkwargs = {'cluster': scheduler['address']}
-            ft.calculate_feature_matrix(features,
-                                        entityset=es,
-                                        progress_callback=mock_progress_callback,
-                                        dask_kwargs=dkwargs)
+def test_calls_progress_callback_cluster(pd_mock_customer):
+    class MockProgressCallback:
+        def __init__(self):
+            self.progress_history = []
+            self.total_update = 0
+            self.total_progress_percent = 0
 
-        assert np.isclose(mock_progress_callback.total_update, 100.0)
-        assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
+        def __call__(self, update, progress_percent, time_elapsed):
+            self.total_update += update
+            self.total_progress_percent = progress_percent
+            self.progress_history.append(progress_percent)
+
+    mock_progress_callback = MockProgressCallback()
+
+    trans_per_session = ft.Feature(pd_mock_customer["transactions"]["transaction_id"], parent_entity=pd_mock_customer["sessions"], primitive=Count)
+    trans_per_customer = ft.Feature(pd_mock_customer["transactions"]["transaction_id"], parent_entity=pd_mock_customer["customers"], primitive=Count)
+    features = [trans_per_session, ft.Feature(trans_per_customer, entity=pd_mock_customer["sessions"])]
+
+    with cluster() as (scheduler, [a, b]):
+        dkwargs = {'cluster': scheduler['address']}
+        ft.calculate_feature_matrix(features,
+                                    entityset=pd_mock_customer,
+                                    progress_callback=mock_progress_callback,
+                                    dask_kwargs=dkwargs)
+
+    assert np.isclose(mock_progress_callback.total_update, 100.0)
+    assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
 
 
 def test_closes_tqdm(es):
