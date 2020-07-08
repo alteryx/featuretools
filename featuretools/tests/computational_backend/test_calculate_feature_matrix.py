@@ -1048,7 +1048,6 @@ def test_cutoff_time_naming(es):
 
 
 # TODO: order doesn't match, but output matches
-# TODO: split out approximate test into seperate test for only pandas
 def test_cutoff_time_extra_columns(es):
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail('Dask result not ordered')
