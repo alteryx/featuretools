@@ -50,8 +50,8 @@ def graph_feature(feature, to_file=None):
     groupbys = []
 
     _, max_depth = get_feature_data(feature, entities, groupbys, edges, primitives, layer=0)
-    entities[feature.entity.id]['targets'].add(feature.get_name())
-
+    entities[feature.entity.id]['targets'].add(
+        feature.get_name().replace('>', '&gt;').replace('<', '&lt;'))
     for entity in entities:
         entity_name = '\u2605 {} (target)'.format(entity) if entity == feature.entity.id else entity
         entity_table = get_entity_table(entity_name, entities[entity])
@@ -105,13 +105,14 @@ def get_feature_data(feat, entities, groupbys, edges, primitives, layer=0):
 
     # if we've already explored this feat, continue
     feat_node = "{}:{}".format(feat.entity.id, feat_name)
-    if feat_name in entity_dict['vars'] or feat_name in entity_dict['feats']:
+    html_feat_name = feat_name.replace('>', '&gt;').replace('<', '&lt;')
+    if html_feat_name in entity_dict['vars'] or html_feat_name in entity_dict['feats']:
         return feat_node, layer
 
     if isinstance(feat, IdentityFeature):
-        entity_dict['vars'].add(feat_name)
+        entity_dict['vars'].add(html_feat_name)
     else:
-        entity_dict['feats'].add(feat_name)
+        entity_dict['feats'].add(html_feat_name)
     base_node = feat_node
 
     # 2) if multi-output, convert feature to generic base
@@ -188,7 +189,7 @@ def get_feature_data(feat, entities, groupbys, edges, primitives, layer=0):
 
 def add_entity(entity, entity_dict):
     entity_dict[entity.id] = {
-        'index': entity.index,
+        'index': entity.index.replace('>', '&gt;').replace('<', '&lt;'),
         'targets': set(),
         'vars': set(),
         'feats': set()
