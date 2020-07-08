@@ -69,14 +69,15 @@ def test_transform(es):
 
 
 def test_html_symbols(es, tmpdir):
-    output_path = str(tmpdir.join("test2.png"))
+    output_path_template = str(tmpdir.join("test{}.png"))
     value = IdentityFeature(es['log']['value'])
     gt = value > 5
     lt = value < 5
     ge = value >= 5
     le = value <= 5
 
-    for feat in [gt, lt, ge, le]:
+    for i, feat in enumerate([gt, lt, ge, le]):
+        output_path = output_path_template.format(i)
         graph = graph_feature(feat, to_file=output_path).source
         assert os.path.isfile(output_path)
         assert feat.get_name() in graph
