@@ -18,7 +18,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         make installdeps
-        make checkdeps DEPENDENCY_FILE_PATH=featuretools/tests/latest_dependencies.txt
+        make checkdeps OUTPUT_PATH=featuretools/tests/latest_dependencies.txt
     - name: Create Pull Request
       uses: Featurelabs/create-pull-request@v2
       with:
