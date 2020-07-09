@@ -323,7 +323,7 @@ def test_accepts_pd_dateoffset_training_window(datetime_es):
     assert (feature_matrix.index == feature_matrix_2.index).all()
 
 
-def test_calls_progress_callback(pd_entities, relationships):
+def test_calls_progress_callback(entities, relationships):
     class MockProgressCallback:
         def __init__(self):
             self.progress_history = []
@@ -337,7 +337,7 @@ def test_calls_progress_callback(pd_entities, relationships):
 
     mock_progress_callback = MockProgressCallback()
 
-    feature_matrix, features = dfs(entities=pd_entities,
+    feature_matrix, features = dfs(entities=entities,
                                    relationships=relationships,
                                    target_entity="transactions",
                                    progress_callback=mock_progress_callback)
