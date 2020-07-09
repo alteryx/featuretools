@@ -6,7 +6,7 @@ Changelog
     * Enhancements
     * Fixes
         * Remove warnings.simplefilter in feature_set_calculator to un-silence warnings (:pr:`1053`)
-        * Fix feature visualzation for features with '>' or '<' in name (:pr:`1055`)
+        * Fix feature visualization for features with '>' or '<' in name (:pr:`1055`)
     * Changes
         * Make DFS match ``TimeSince`` primitive with all ``Datetime`` types (:pr:`1048`)
         * Change default branch to ``main`` (:pr:`1038`)

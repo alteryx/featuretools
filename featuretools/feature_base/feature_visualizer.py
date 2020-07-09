@@ -53,6 +53,7 @@ def graph_feature(feature, to_file=None):
 
     _, max_depth = get_feature_data(feature, entities, groupbys, edges, primitives, layer=0)
     entities[feature.entity.id]['targets'].add(feature.get_name())
+
     for entity in entities:
         entity_name = '\u2605 {} (target)'.format(entity) if entity == feature.entity.id else entity
         entity_table = get_entity_table(entity_name, entities[entity])
