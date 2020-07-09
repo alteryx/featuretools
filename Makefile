@@ -27,3 +27,8 @@ installdeps:
 	pip install --upgrade pip
 	pip install -e .
 	pip install -r dev-requirements.txt
+
+.PHONY: checkdeps
+checkdeps:
+	$(eval allow_list='scipy|numpy|pandas|tqdm|pyyaml|cloudpickle|distributed|dask|psutil|click')
+	pip freeze | grep -v "FeatureLabs/featuretools.git" | grep -E $(allow_list) > $(OUTPUT_PATH)
