@@ -1129,7 +1129,6 @@ def test_instances_with_id_kept_after_cutoff(es):
 
 
 # TODO: Fails with Dask
-# TODO: split out approximate portion into seperate test for pandas
 def test_cfm_returns_original_time_indexes(es):
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail('Dask result not ordered, indexes are lost due to not multiindexing')
