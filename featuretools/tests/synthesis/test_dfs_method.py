@@ -347,9 +347,6 @@ def test_calls_progress_callback(pd_entities, relationships):
     assert np.isclose(mock_progress_callback.total_update, 100.0)
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
 
-    # test with multiple jobs
-    mock_progress_callback = MockProgressCallback()
-
 
 def test_calls_progress_callback_cluster(pd_entities, relationships):
     class MockProgressCallback:
