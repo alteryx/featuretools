@@ -1048,7 +1048,6 @@ def test_cutoff_time_naming(es):
 
 
 # TODO: order doesn't match, but output matches
-# TODO: split out approximate test into seperate test for only pandas
 def test_cutoff_time_extra_columns(es):
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail('Dask result not ordered')
@@ -1069,15 +1068,25 @@ def test_cutoff_time_extra_columns(es):
 
     assert (fm['label'].values == cutoff_df['label'].values).all()
 
-    if any(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
-        fm_2 = calculate_feature_matrix([dfeat],
-                                        es,
-                                        cutoff_time=cutoff_df,
-                                        approximate="2 days")
-        # check column was added to end of matrix
-        assert 'label' in fm_2.columns
 
-        assert (fm_2['label'].values == cutoff_df['label'].values).all()
+def test_cutoff_time_extra_columns_approximate(pd_es):
+    agg_feat = ft.Feature(pd_es['customers']['id'], parent_entity=pd_es[u'régions'], primitive=Count)
+    dfeat = DirectFeature(agg_feat, pd_es['customers'])
+
+    cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),
+                                       pd.Timestamp('2011-04-09 10:30:03'),
+                                       pd.Timestamp('2011-04-08 10:30:00')],
+                              'instance_id': [0, 1, 0],
+                              'label': [True, True, False]},
+                             columns=['time', 'instance_id', 'label'])
+    fm = calculate_feature_matrix([dfeat],
+                                  pd_es,
+                                  cutoff_time=cutoff_df,
+                                  approximate="2 days")
+    # check column was added to end of matrix
+    assert 'label' in fm.columns
+
+    assert (fm['label'].values == cutoff_df['label'].values).all()
 
 
 def test_instances_after_cutoff_time_removed(es):
@@ -1120,19 +1129,16 @@ def test_instances_with_id_kept_after_cutoff(es):
 
 
 # TODO: Fails with Dask
-# TODO: split out approximate portion into seperate test for pandas
 def test_cfm_returns_original_time_indexes(es):
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail('Dask result not ordered, indexes are lost due to not multiindexing')
     agg_feat = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count)
     dfeat = DirectFeature(agg_feat, es['customers'])
-    agg_feat_2 = ft.Feature(es['sessions']['id'], parent_entity=es['customers'], primitive=Count)
     cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),
                                        pd.Timestamp('2011-04-09 10:30:03'),
                                        pd.Timestamp('2011-04-08 10:30:00')],
                               'instance_id': [0, 1, 0]})
 
-    # no approximate
     fm = calculate_feature_matrix([dfeat],
                                   es, cutoff_time=cutoff_df,
                                   cutoff_time_in_index=True)
@@ -1147,39 +1153,46 @@ def test_cfm_returns_original_time_indexes(es):
     assert (instance_level_vals == cutoff_df['instance_id'].values).all()
     assert (time_level_vals == cutoff_df['time'].values).all()
 
-    # skip approximate for Dask
-    if any(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
-        # approximate, in different windows, no unapproximated aggs
-        fm2 = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df,
-                                       cutoff_time_in_index=True, approximate="1 m")
-        instance_level_vals = fm2.index.get_level_values(0).values
-        time_level_vals = fm2.index.get_level_values(1).values
-        assert (instance_level_vals == cutoff_df['instance_id'].values).all()
-        assert (time_level_vals == cutoff_df['time'].values).all()
 
-        # approximate, in different windows, unapproximated aggs
-        fm2 = calculate_feature_matrix([dfeat, agg_feat_2], es, cutoff_time=cutoff_df,
-                                       cutoff_time_in_index=True, approximate="1 m")
-        instance_level_vals = fm2.index.get_level_values(0).values
-        time_level_vals = fm2.index.get_level_values(1).values
-        assert (instance_level_vals == cutoff_df['instance_id'].values).all()
-        assert (time_level_vals == cutoff_df['time'].values).all()
+def test_cfm_returns_original_time_indexes_approximate(pd_es):
+    agg_feat = ft.Feature(pd_es['customers']['id'], parent_entity=pd_es[u'régions'], primitive=Count)
+    dfeat = DirectFeature(agg_feat, pd_es['customers'])
+    agg_feat_2 = ft.Feature(pd_es['sessions']['id'], parent_entity=pd_es['customers'], primitive=Count)
+    cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),
+                                       pd.Timestamp('2011-04-09 10:30:03'),
+                                       pd.Timestamp('2011-04-08 10:30:00')],
+                              'instance_id': [0, 1, 0]})
+    # approximate, in different windows, no unapproximated aggs
+    fm = calculate_feature_matrix([dfeat], pd_es, cutoff_time=cutoff_df,
+                                  cutoff_time_in_index=True, approximate="1 m")
+    instance_level_vals = fm.index.get_level_values(0).values
+    time_level_vals = fm.index.get_level_values(1).values
+    assert (instance_level_vals == cutoff_df['instance_id'].values).all()
+    assert (time_level_vals == cutoff_df['time'].values).all()
 
-        # approximate, in same window, no unapproximated aggs
-        fm3 = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df,
-                                       cutoff_time_in_index=True, approximate="2 d")
-        instance_level_vals = fm3.index.get_level_values(0).values
-        time_level_vals = fm3.index.get_level_values(1).values
-        assert (instance_level_vals == cutoff_df['instance_id'].values).all()
-        assert (time_level_vals == cutoff_df['time'].values).all()
+    # approximate, in different windows, unapproximated aggs
+    fm = calculate_feature_matrix([dfeat, agg_feat_2], pd_es, cutoff_time=cutoff_df,
+                                  cutoff_time_in_index=True, approximate="1 m")
+    instance_level_vals = fm.index.get_level_values(0).values
+    time_level_vals = fm.index.get_level_values(1).values
+    assert (instance_level_vals == cutoff_df['instance_id'].values).all()
+    assert (time_level_vals == cutoff_df['time'].values).all()
 
-        # approximate, in same window, unapproximated aggs
-        fm3 = calculate_feature_matrix([dfeat, agg_feat_2], es, cutoff_time=cutoff_df,
-                                       cutoff_time_in_index=True, approximate="2 d")
-        instance_level_vals = fm3.index.get_level_values(0).values
-        time_level_vals = fm3.index.get_level_values(1).values
-        assert (instance_level_vals == cutoff_df['instance_id'].values).all()
-        assert (time_level_vals == cutoff_df['time'].values).all()
+    # approximate, in same window, no unapproximated aggs
+    fm2 = calculate_feature_matrix([dfeat], pd_es, cutoff_time=cutoff_df,
+                                   cutoff_time_in_index=True, approximate="2 d")
+    instance_level_vals = fm2.index.get_level_values(0).values
+    time_level_vals = fm2.index.get_level_values(1).values
+    assert (instance_level_vals == cutoff_df['instance_id'].values).all()
+    assert (time_level_vals == cutoff_df['time'].values).all()
+
+    # approximate, in same window, unapproximated aggs
+    fm3 = calculate_feature_matrix([dfeat, agg_feat_2], pd_es, cutoff_time=cutoff_df,
+                                   cutoff_time_in_index=True, approximate="2 d")
+    instance_level_vals = fm3.index.get_level_values(0).values
+    time_level_vals = fm3.index.get_level_values(1).values
+    assert (instance_level_vals == cutoff_df['instance_id'].values).all()
+    assert (time_level_vals == cutoff_df['time'].values).all()
 
 
 def test_dask_kwargs(pd_es):
@@ -1646,7 +1659,6 @@ def test_chunk_dataframe_groups():
     assert fourth[0] == 3 and fourth[1].shape[0] == 1
 
 
-# TODO: split out cluster tests into seperate test for pandas
 def test_calls_progress_callback(mock_customer):
     class MockProgressCallback:
         def __init__(self):
@@ -1686,19 +1698,34 @@ def test_calls_progress_callback(mock_customer):
     assert np.isclose(mock_progress_callback.total_update, 100.0)
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
 
-    # test with multiple jobs, pandas only
-    if any(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
-        mock_progress_callback = MockProgressCallback()
 
-        with cluster() as (scheduler, [a, b]):
-            dkwargs = {'cluster': scheduler['address']}
-            ft.calculate_feature_matrix(features,
-                                        entityset=es,
-                                        progress_callback=mock_progress_callback,
-                                        dask_kwargs=dkwargs)
+def test_calls_progress_callback_cluster(pd_mock_customer):
+    class MockProgressCallback:
+        def __init__(self):
+            self.progress_history = []
+            self.total_update = 0
+            self.total_progress_percent = 0
 
-        assert np.isclose(mock_progress_callback.total_update, 100.0)
-        assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
+        def __call__(self, update, progress_percent, time_elapsed):
+            self.total_update += update
+            self.total_progress_percent = progress_percent
+            self.progress_history.append(progress_percent)
+
+    mock_progress_callback = MockProgressCallback()
+
+    trans_per_session = ft.Feature(pd_mock_customer["transactions"]["transaction_id"], parent_entity=pd_mock_customer["sessions"], primitive=Count)
+    trans_per_customer = ft.Feature(pd_mock_customer["transactions"]["transaction_id"], parent_entity=pd_mock_customer["customers"], primitive=Count)
+    features = [trans_per_session, ft.Feature(trans_per_customer, entity=pd_mock_customer["sessions"])]
+
+    with cluster() as (scheduler, [a, b]):
+        dkwargs = {'cluster': scheduler['address']}
+        ft.calculate_feature_matrix(features,
+                                    entityset=pd_mock_customer,
+                                    progress_callback=mock_progress_callback,
+                                    dask_kwargs=dkwargs)
+
+    assert np.isclose(mock_progress_callback.total_update, 100.0)
+    assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
 
 
 def test_closes_tqdm(es):
