@@ -47,6 +47,7 @@ from featuretools.primitives import (
     SubtractNumeric,
     SubtractNumericScalar,
     Sum,
+    TimeSince,
     TransformPrimitive,
     Year,
     get_transform_primitives
@@ -1113,6 +1114,22 @@ def test_override_multi_feature_names(pd_es):
                           trans_primitives=[IsGreater])
 
     expected_names = gen_custom_names(IsGreater, ['age'])
+
+    for name in expected_names:
+        assert name in fm.columns
+
+
+def test_time_since_primitive_matches_all_datetime_types(es):
+    fm, fl = ft.dfs(
+        target_entity="customers",
+        entityset=es,
+        trans_primitives=[TimeSince],
+        agg_primitives=[],
+        max_depth=1
+    )
+
+    customers_datetime_vars = [id for id, t in es['customers'].variable_types.items() if issubclass(t, Datetime)]
+    expected_names = [f"TIME_SINCE({v})" for v in customers_datetime_vars]
 
     for name in expected_names:
         assert name in fm.columns
