@@ -13,6 +13,7 @@ Changelog
         * Remove benchmarks folder (:pr:`1049`)
     * Testing Changes
         * Add fixture for ``ft.demo.load_mock_customer`` (:pr:`1036`)
+        * Refactor Dask test units (:pr:`1052`)
         * Implement automated process for checking critical dependencies (:pr:`1045`)        
     
     Thanks to the following people for contributing to this release:
