@@ -7,6 +7,7 @@ import pandas as pd
 import pandas.api.types as pdtypes
 
 from featuretools import variable_types as vtypes
+from featuretools.variable_types.utils import convert_vtypes
 from featuretools.utils.entity_utils import (
     col_is_datetime,
     convert_all_variable_data,
@@ -288,15 +289,7 @@ class Entity(object):
         """
         variables = []
         variable_types = variable_types.copy() or {}
-        string_to_class_map = find_variable_types()
-        for vid in variable_types.copy():
-            vtype = variable_types[vid]
-            if isinstance(vtype, str):
-                if vtype in string_to_class_map:
-                    variable_types[vid] = string_to_class_map[vtype]
-                else:
-                    variable_types[vid] = string_to_class_map['unknown']
-                    warnings.warn("Variable type {} was unrecognized, Unknown variable type was used instead".format(vtype))
+        variable_types = convert_vtypes(variable_types)
 
         if index not in variable_types:
             variable_types[index] = vtypes.Index

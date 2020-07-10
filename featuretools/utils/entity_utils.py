@@ -7,6 +7,11 @@ import pandas as pd
 import pandas.api.types as pdtypes
 
 from featuretools import variable_types as vtypes
+from featuretools.variable_types.utils import convert_vtypes
+from featuretools.utils.column_utils import (
+    get_top_values,
+    get_time_values
+)
 
 
 def infer_variable_types(df, link_vars, variable_types, time_index, secondary_time_index):
@@ -215,3 +220,67 @@ def col_is_datetime(col):
 def replace_latlong_nan(values):
     """replace a single `NaN` value with a tuple: `(np.nan, np.nan)`"""
     return values.where(values.notnull(), pd.Series([(np.nan, np.nan)] * len(values)))
+
+
+def generate_statistics(df, variable_types, top_x_discrete=10, time_x_datetime=10,
+                        ascending_time=False):
+    """Calculates statistics for data.
+
+    Args:
+        df (pd.DataFrame): Input DataFrame
+
+        variable_types (dict[str -> Variable/str], optional):
+            Keys are of variable ids and values are variable types or type_strings.
+
+        top_x_discrete (int, optional): Specify how many to retrieve when
+            determing the number of frequent values for Discrete columns
+            (including Categorical, and Ordinal). Defaults to 10
+
+        time_x_datetime (int, optional): Specify how many to retrieve when
+            determing the most recent/oldest dates for DateTime columns.
+            Defaults to 10.
+
+        ascending_time (bool, optional): Specify if recent or
+            oldest values should be calculated when determine the highly frequent
+            datetimes.
+
+    Returns:
+        payload (dict): Statistics of the data. Key is the column
+            name of the data, value is dict of the statistics
+            information (which can have keys of `count`, `nunique`
+            `max`, `min`, `mode`, `mean`, `std` )
+    """
+    COMMON_STATISTICS = ["count", "nunique"]
+    DATETIME_STATISTICS = ["max", "min", "mean"]
+    NUMERIC_STATISTICS = ["max", "min", "mean", "std"]
+    LATLONG_STATISTICS = ["count"]
+    variable_types = convert_vtypes(variable_types)
+    statistics = {}
+    for column_name, v_type in variable_types.items():
+        values = {}
+        column = df.reset_index()[column_name]
+        values.update(column.agg(COMMON_STATISTICS).to_dict())
+        if isinstance(v_type, vtypes.Boolean):
+            column = column.astype(bool)
+            values["num_false"] = column.value_counts().get(False, 0)
+            values["num_true"] = column.value_counts().get(True, 0)
+        elif isinstance(v_type, vtypes.Numeric):
+            column = column.astype(float)
+            values.update(column.agg(NUMERIC_STATISTICS).to_dict())
+            quant_values = column.quantile([0.25, 0.5, 0.75]).tolist()
+            values["first_quartile"] = quant_values[0]
+            values["second_quartile"] = quant_values[2]
+            values["third_quartile"] = quant_values[2]
+        elif isinstance(v_type, vtypes.Discrete):
+            values["top_values"] = get_top_values(column, top_x_discrete)
+        elif isinstance(v_type, vtypes.Datetime):
+            values.update(column.agg(DATETIME_STATISTICS).to_dict())
+            values["recent_values"] = get_time_values(column, time_x_datetime)
+        values["nan_count"] = column.isna().sum()
+        mode_values = column.mode()
+        values["mode"] = None
+        if mode_values is not None and len(mode_values) > 0:
+            values["mode"] = mode_values[0]
+        values['Variable Type'] = v_type.type_string.title()
+        statistics[column_name] = values
+    return statistics

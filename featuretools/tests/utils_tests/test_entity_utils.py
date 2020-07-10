@@ -1,3 +1,4 @@
+from datetime import datetime
 import numpy as np
 import pandas as pd
 
@@ -5,6 +6,7 @@ from featuretools import variable_types as vtypes
 from featuretools.utils.entity_utils import (
     convert_all_variable_data,
     convert_variable_data,
+    generate_statistics,
     get_linked_vars,
     infer_variable_types,
     replace_latlong_nan
@@ -175,3 +177,23 @@ def test_replace_latlong_nan():
     assert result[0] == values[0]
     assert result[1] == (np.nan, np.nan)
     assert result[2] == values[2]
+
+
+def test_generate_statistics():
+    df = pd.DataFrame({'id': [0, 1, 2],
+                       'time': [datetime(2011, 4, 9, 10, 31, 3 * i)
+                                for i in range(3)],
+                       'category': ['a', 'b', 'a'],
+                       'number': [4, 5, 6],
+                       'boolean': [True, False, True],
+                       'boolean_with_nan': [True, False, np.nan]})
+    variable_types = {'id': vtypes.Categorical,
+                      'time': vtypes.Datetime,
+                      'category': vtypes.Categorical,
+                      'number': vtypes.Numeric,
+                      'boolean': vtypes.Boolean,
+                      'boolean_with_nan': vtypes.Boolean}
+    statistics = generate_statistics(df, variable_types)
+    for col in df.columns:
+        expected_count = 3 if col != 'boolean_with_nan' else 2
+        assert statistics[col]['count'] == expected_count

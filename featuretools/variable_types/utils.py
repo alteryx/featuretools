@@ -1,4 +1,5 @@
 import pandas as pd
+import warnings
 
 from featuretools.utils.gen_utils import find_descendents
 from featuretools.utils.plot_utils import (
@@ -77,3 +78,18 @@ def graph_variable_types(to_file=None):
     if to_file:
         save_graph(graph, to_file, format_)
     return graph
+
+
+def convert_vtypes(variable_types):
+    converted_variable_types = {}
+    string_to_class_map = find_variable_types()
+    for vid, vtype in variable_types.items():
+        if isinstance(vtype, str):
+            if vtype in string_to_class_map:
+                converted_variable_types[vid] = string_to_class_map[vtype]
+            else:
+                converted_variable_types[vid] = string_to_class_map['unknown']
+                warnings.warn("Variable type {} was unrecognized, Unknown variable type was used instead".format(vtype))
+        elif issubclass(vtype, Variable):
+            converted_variable_types[vid] = variable_types[vid]
+    return converted_variable_types
