@@ -68,6 +68,21 @@ def test_transform(es):
         assert match in row
 
 
+def test_html_symbols(es, tmpdir):
+    output_path_template = str(tmpdir.join("test{}.png"))
+    value = IdentityFeature(es['log']['value'])
+    gt = value > 5
+    lt = value < 5
+    ge = value >= 5
+    le = value <= 5
+
+    for i, feat in enumerate([gt, lt, ge, le]):
+        output_path = output_path_template.format(i)
+        graph = graph_feature(feat, to_file=output_path).source
+        assert os.path.isfile(output_path)
+        assert feat.get_name() in graph
+
+
 def test_groupby_transform(es):
     feat = GroupByTransformFeature(es['customers']['age'], CumMax, es['customers']['cohort'])
     graph = graph_feature(feat).source

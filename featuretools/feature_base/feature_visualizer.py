@@ -1,3 +1,5 @@
+import html
+
 from featuretools.feature_base.feature_base import (
     AggregationFeature,
     DirectFeature,
@@ -205,11 +207,12 @@ def get_entity_table(entity_name, entity_dict):
     feats = entity_dict['feats'].difference(targets)
 
     # If the index is used, make sure it's the first element in the table
+    clean_index = html.escape(index)
     if index in variables:
-        rows = [COL_TEMPLATE.format(entity_dict['index'], entity_dict['index'] + " (index)")]
+        rows = [COL_TEMPLATE.format(clean_index, clean_index + " (index)")]
         variables.discard(index)
     elif index in targets:
-        rows = [TARGET_TEMPLATE.format(entity_dict['index'], entity_dict['index'] + " (index)")]
+        rows = [TARGET_TEMPLATE.format(clean_index, clean_index + " (index)")]
         targets.discard(index)
     else:
         rows = []
@@ -219,6 +222,7 @@ def get_entity_table(entity_name, entity_dict):
         if var in targets:
             template = TARGET_TEMPLATE
 
+        var = html.escape(var)
         rows.append(template.format(var, var))
 
     table = TABLE_TEMPLATE.format(entity_name=entity_name,

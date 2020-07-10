@@ -312,7 +312,10 @@ workflows:
           name: "changelog updated"
           filters:
             branches:
-              ignore: /^main?/
+              ignore:
+                - /^main?/
+                - /^v\d+\.\d+\.\d+$/
+                - /^dep-update-[a-f0-9]{7}$/
       - run_premium_primitives_tests_on_main:
           name: "run premium primitives tests on main"
           filters:
