@@ -1,4 +1,5 @@
 import dask.dataframe as dd
+import databricks.koalas as ks
 import pandas as pd
 import pytest
 from dateutil.relativedelta import relativedelta
@@ -43,10 +44,14 @@ def test_delta_with_time_unit_matches_pandas(es):
     sessions_df = es['sessions'].df
     if isinstance(sessions_df, dd.DataFrame):
         sessions_df = sessions_df.compute()
+    if isinstance(sessions_df, ks.DataFrame):
+        sessions_df = sessions_df.to_pandas()
     sessions_df = sessions_df[sessions_df['customer_id'] == customer_id]
     log_df = es['log'].df
     if isinstance(log_df, dd.DataFrame):
         log_df = log_df.compute()
+    if isinstance(log_df, ks.DataFrame):
+        log_df = log_df.to_pandas()
     log_df = log_df[log_df['session_id'].isin(sessions_df['id'])]
     all_times = log_df['datetime'].sort_values().tolist()
 
@@ -124,10 +129,14 @@ def test_deltas_week(es):
     sessions_df = es['sessions'].df
     if isinstance(sessions_df, dd.DataFrame):
         sessions_df = sessions_df.compute()
+    if isinstance(sessions_df, ks.DataFrame):
+        sessions_df = sessions_df.to_pandas()
     sessions_df = sessions_df[sessions_df['customer_id'] == customer_id]
     log_df = es['log'].df
     if isinstance(log_df, dd.DataFrame):
         log_df = log_df.compute()
+    if isinstance(log_df, ks.DataFrame):
+        log_df = log_df.to_pandas()
     log_df = log_df[log_df['session_id'].isin(sessions_df['id'])]
     all_times = log_df['datetime'].sort_values().tolist()
     delta_week = Timedelta(1, "w")

@@ -1,4 +1,5 @@
 import dask.dataframe as dd
+import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pytest
@@ -73,6 +74,8 @@ def test_init_and_name(es):
     # If Dask EntitySet use only Dask compatible primitives
     if isinstance(es['log'].df, dd.DataFrame):
         trans_primitives = [prim for prim in trans_primitives if prim.dask_compatible]
+    if isinstance(es['log'].df, ks.DataFrame):
+        trans_primitives = [prim for prim in trans_primitives if prim.koalas_compatible]
     for transform_prim in trans_primitives:
         # skip automated testing if a few special cases
         features_to_use = log_features
@@ -339,6 +342,8 @@ def test_compare_of_agg(es):
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
     if isinstance(df, dd.DataFrame):
         df = df.compute()
+    if isinstance(df, ks.DataFrame):
+        df = df.to_pandas().set_index('id').sort_index()
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
@@ -346,7 +351,7 @@ def test_compare_of_agg(es):
 
 
 def test_compare_all_nans(es):
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
         nan_feat = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=ft.primitives.Min)
         compare = nan_feat == 0.0
     else:
@@ -359,6 +364,8 @@ def test_compare_all_nans(es):
     df = ft.calculate_feature_matrix(entityset=es, features=[nan_feat, compare], instance_ids=[0, 1, 2], cutoff_time=time_last)
     if isinstance(df, dd.DataFrame):
         df = df.compute()
+    if isinstance(df, ks.DataFrame):
+        df = df.to_pandas().set_index('id').sort_index()
     assert df[nan_feat.get_name()].dropna().shape[0] == 0
     assert not df[compare.get_name()].any()
 
@@ -404,6 +411,9 @@ def test_arithmetic_of_identity(es):
                (SubtractNumeric, [0, 3, 6, 9]),
                (MultiplyNumeric, [0, 10, 40, 90]),
                (DivideNumeric, [np.nan, 2.5, 2.5, 2.5])]
+    # SubtractNumeric not supported for Koalas EntitySets
+    if any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+        to_test = to_test[:1] + to_test[2:]
 
     features = []
     for test in to_test:
@@ -412,11 +422,13 @@ def test_arithmetic_of_identity(es):
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
     if isinstance(df, dd.DataFrame):
         df = df.compute()
+    if isinstance(df, ks.DataFrame):
+        df = df.to_pandas().set_index('id').sort_index()
 
     for i, test in enumerate(to_test[:-1]):
         v = df[features[i].get_name()].values.tolist()
         assert v == test[1]
-    i, test = 3, to_test[-1]
+    i, test = -1, to_test[-1]
     v = df[features[i].get_name()].values.tolist()
     assert (np.isnan(v[0]))
     assert v[1:] == test[1][1:]
@@ -433,6 +445,8 @@ def test_arithmetic_of_direct(es):
                (SubtractNumeric, [28, 29, 28.5, 28.5]),
                (MultiplyNumeric, [165, 132, 148.5, 148.5]),
                (DivideNumeric, [6.6, 8.25, 22. / 3, 22. / 3])]
+    if any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+        to_test = to_test[:1] + to_test[2:]
 
     features = []
     for test in to_test:
@@ -441,12 +455,15 @@ def test_arithmetic_of_direct(es):
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 3, 5, 7])
     if isinstance(df, dd.DataFrame):
         df = df.compute().set_index('id').sort_index()
+    if isinstance(df, ks.DataFrame):
+        df = df.to_pandas().set_index('id').sort_index()
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert v == test[1]
 
 
+# Koalas EntitySets do not support boolean multiplication
 @pytest.fixture(params=['pd_boolean_mult_es', 'dask_boolean_mult_es'])
 def boolean_mult_es(request):
     return request.getfixturevalue(request.param)
@@ -504,7 +521,10 @@ def test_boolean_multiply(boolean_mult_es):
             assert fm[col_name].equals(df[row[0]] * df[row[1]])
 
 
+# TODO: rework test to be Dask and Koalas compatible
 def test_arithmetic_of_transform(es):
+    if any(isinstance(e.df, dd.DataFrame) or isinstance(e.df, ks.DataFrame) for e in es.entities):
+        pytest.xfail("Test uses Diff which is not supported in Dask or Koalas")
     diff1 = ft.Feature([es['log']['value']], primitive=Diff)
     diff2 = ft.Feature([es['log']['value_2']], primitive=Diff)
 
@@ -549,6 +569,9 @@ def test_arithmetic_of_agg(es):
                (SubtractNumeric, [0, -2]),
                (MultiplyNumeric, [9, 0]),
                (DivideNumeric, [1, 0])]
+    # Skip SubtractNumeric for Koalas as it's unsupported
+    if any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+        to_test = to_test[:1] + to_test[2:]
 
     features = []
     for test in to_test:
@@ -559,6 +582,8 @@ def test_arithmetic_of_agg(es):
                                      instance_ids=ids)
     if isinstance(df, dd.DataFrame):
         df = df.compute().set_index('id')
+    if isinstance(df, ks.DataFrame):
+        df = df.to_pandas().set_index('id').sort_index()
     df = df.loc[ids]
 
     for i, test in enumerate(to_test):
@@ -742,9 +767,7 @@ def test_isin_feat_custom(es):
     def pd_is_in(array, list_of_outputs=None):
         if list_of_outputs is None:
             list_of_outputs = []
-        if isinstance(array, dd.Series):
-            return array.isin(list_of_outputs)
-        return pd.Series(array).isin(list_of_outputs)
+        return array.isin(list_of_outputs)
 
     def isin_generate_name(self, base_feature_names):
         return u"%s.isin(%s)" % (base_feature_names[0],
@@ -1056,6 +1079,7 @@ def test_get_filepath(es):
         input_types = [Numeric]
         return_type = Numeric
         dask_compatible = True
+        koalas_compatible = True
 
         def get_function(self):
             filepath = self.get_filepath("featuretools_unit_test_example.csv")
@@ -1075,6 +1099,8 @@ def test_get_filepath(es):
                                      instance_ids=range(17))
     if isinstance(df, dd.DataFrame):
         df = df.compute()
+    if isinstance(df, ks.DataFrame):
+        df = df.set_index('id')
     assert pd.isnull(df["MOD4(value)"][15])
     assert df["MOD4(value)"][0] == 0
     assert df["MOD4(value)"][14] == 2
@@ -1085,6 +1111,8 @@ def test_get_filepath(es):
                     trans_primitives=[Mod4])
     if isinstance(fm, dd.DataFrame):
         fm = fm.compute().set_index('id')
+    if isinstance(fm, ks.DataFrame):
+        fm = fm.set_index('id')
     assert fm["MOD4(value)"][0] == 0
     assert fm["MOD4(value)"][14] == 2
     assert pd.isnull(fm["MOD4(value)"][15])

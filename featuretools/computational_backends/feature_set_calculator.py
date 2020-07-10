@@ -152,7 +152,6 @@ class FeatureSetCalculator(object):
 
         if isinstance(df, dd.DataFrame) or isinstance(df, ks.DataFrame):
             column_list.extend([target_entity.index])
-            df.index.name = target_entity.index
 
         return df[column_list]
 

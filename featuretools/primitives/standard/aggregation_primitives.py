@@ -34,6 +34,7 @@ class Count(AggregationPrimitive):
     stack_on_self = False
     default_value = 0
     dask_compatible = True
+    koalas_compatible = True
 
     def get_function(self):
         return pd.Series.count
@@ -62,6 +63,7 @@ class Sum(AggregationPrimitive):
     stack_on_exclude = [Count]
     default_value = 0
     dask_compatible = True
+    koalas_compatible = True
 
     def get_function(self):
         return np.sum
@@ -92,6 +94,7 @@ class Mean(AggregationPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     dask_compatible = True
+    koalas_compatible = True
 
     def __init__(self, skipna=True):
         self.skipna = skipna
@@ -147,6 +150,7 @@ class Min(AggregationPrimitive):
     return_type = Numeric
     stack_on_self = False
     dask_compatible = True
+    koalas_compatible = True
 
     def get_function(self):
         return np.min
@@ -168,6 +172,7 @@ class Max(AggregationPrimitive):
     return_type = Numeric
     stack_on_self = False
     dask_compatible = True
+    koalas_compatible = True
 
     def get_function(self):
         return np.max
@@ -463,6 +468,7 @@ class Std(AggregationPrimitive):
     return_type = Numeric
     stack_on_self = False
     dask_compatible = True
+    koalas_compatible = True
 
     def get_function(self):
         return np.std

@@ -445,7 +445,7 @@ def test_cutoff_time_columns_order(es):
             if isinstance(feature_matrix, dd.DataFrame):
                 feature_matrix = feature_matrix.compute().set_index('id').sort_index()
             if isinstance(feature_matrix, ks.DataFrame):
-                feature_matrix = feature_matrix.compute().set_index('id').sort_index()
+                feature_matrix = feature_matrix.to_pandas().set_index('id').sort_index()
             assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 

@@ -2,6 +2,7 @@ from datetime import datetime
 from math import isnan
 
 import dask.dataframe as dd
+import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pytest
@@ -223,6 +224,8 @@ def test_init_and_name(es):
     # If Dask EntitySet use only Dask compatible primitives
     if isinstance(es['sessions'].df, dd.DataFrame):
         agg_primitives = [prim for prim in agg_primitives if prim.dask_compatible]
+    if isinstance(es['sessions'].df, ks.DataFrame):
+        agg_primitives = [prim for prim in agg_primitives if prim.koalas_compatible]
 
     for agg_prim in agg_primitives:
         input_types = agg_prim.input_types
@@ -428,8 +431,8 @@ def test_agg_same_method_name(es):
         can't differentiate them. We have a work around to this based on the name property
         that we test here.
     """
-    # TODO: Update to work with Dask
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+    # TODO: Update to work with Dask and Koalas
+    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
         pytest.xfail("Cannot use primitives made with make_agg_primitives with Dask EntitySets")
     # test with normally defined functions
 
@@ -574,6 +577,8 @@ def test_custom_primitive_default_kwargs(es):
 
 
 def test_makes_numtrue(es):
+    if any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+        pytest.xfail('Koalas EntitySets do not support NumTrue primitive')
     dfs = DeepFeatureSynthesis(target_entity_id='sessions',
                                entityset=es,
                                agg_primitives=[NumTrue],
@@ -644,6 +649,8 @@ def test_use_previous_pd_dateoffset(es):
                                                  instance_ids=[0, 1, 2])
     if isinstance(feature_matrix, dd.DataFrame):
         feature_matrix = feature_matrix.compute().set_index('id').sort_index()
+    if isinstance(feature_matrix, ks.DataFrame):
+        feature_matrix = feature_matrix.to_pandas().set_index('id').sort_index()
     col_name = list(feature_matrix.head().keys())[0]
     assert (feature_matrix[col_name] == [1, 5, 2]).all()
 

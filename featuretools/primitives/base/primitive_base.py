@@ -33,6 +33,8 @@ class PrimitiveBase(object):
     commutative = False
     # (bool) If True, is compatible with Dask EntitySets
     dask_compatible = False
+    # (bool) If True, is compatible with Koalas EntitySets
+    koalas_compatible = False
 
     def __init__(self):
         pass

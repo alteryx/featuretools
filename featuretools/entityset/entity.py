@@ -442,7 +442,7 @@ class Entity(object):
                             " other entityset time indexes" %
                             (self.id, time_type))
 
-        if isinstance(self.df, dd.DataFrame):
+        if isinstance(self.df, dd.DataFrame) or isinstance(self.df, ks.DataFrame):
             t = time_type  # skip checking values
             already_sorted = True  # skip sorting
         else:

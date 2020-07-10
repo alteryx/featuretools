@@ -55,6 +55,7 @@ class GreaterThanScalar(TransformPrimitive):
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
     dask_compatible = True
+    koalas_compatible = True
 
     def __init__(self, value=0):
         self.value = value
@@ -85,6 +86,7 @@ class GreaterThanEqualTo(TransformPrimitive):
     input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
     dask_compatible = True
+    koalas_compatible = True
 
     def get_function(self):
         return np.greater_equal
@@ -110,6 +112,7 @@ class GreaterThanEqualToScalar(TransformPrimitive):
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
     dask_compatible = True
+    koalas_compatible = True
 
     def __init__(self, value=0):
         self.value = value
@@ -140,6 +143,7 @@ class LessThan(TransformPrimitive):
     input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
     dask_compatible = True
+    koalas_compatible = True
 
     def get_function(self):
         return np.less
@@ -165,6 +169,7 @@ class LessThanScalar(TransformPrimitive):
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
     dask_compatible = True
+    koalas_compatible = True
 
     def __init__(self, value=0):
         self.value = value
@@ -195,6 +200,7 @@ class LessThanEqualTo(TransformPrimitive):
     input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
     dask_compatible = True
+    koalas_compatible = True
 
     def get_function(self):
         return np.less_equal
@@ -220,6 +226,7 @@ class LessThanEqualToScalar(TransformPrimitive):
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
     dask_compatible = True
+    koalas_compatible = True
 
     def __init__(self, value=0):
         self.value = value
@@ -250,6 +257,8 @@ class Equal(TransformPrimitive):
     input_types = [Variable, Variable]
     return_type = Boolean
     commutative = True
+    dask_compatible = True
+    koalas_compatible = True
 
     def get_function(self):
         def equal(x_vals, y_vals):
@@ -282,6 +291,7 @@ class EqualScalar(TransformPrimitive):
     input_types = [Variable]
     return_type = Boolean
     dask_compatible = True
+    koalas_compatible = True
 
     def __init__(self, value=None):
         self.value = value
@@ -312,6 +322,7 @@ class NotEqual(TransformPrimitive):
     input_types = [Variable, Variable]
     return_type = Boolean
     commutative = True
+    dask_compatible = True
 
     def get_function(self):
         def not_equal(x_vals, y_vals):
@@ -344,6 +355,7 @@ class NotEqualScalar(TransformPrimitive):
     input_types = [Variable]
     return_type = Boolean
     dask_compatible = True
+    koalas_compatible = True
 
     def __init__(self, value=None):
         self.value = value
@@ -375,6 +387,7 @@ class AddNumeric(TransformPrimitive):
     return_type = Numeric
     commutative = True
     dask_compatible = True
+    koalas_compatible = True
 
     def get_function(self):
         return np.add
@@ -399,6 +412,7 @@ class AddNumericScalar(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     dask_compatible = True
+    koalas_compatible = True
 
     def __init__(self, value=0):
         self.value = value
@@ -461,6 +475,7 @@ class SubtractNumericScalar(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     dask_compatible = True
+    koalas_compatible = True
 
     def __init__(self, value=0):
         self.value = value
@@ -491,6 +506,7 @@ class ScalarSubtractNumericFeature(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     dask_compatible = True
+    koalas_compatible = True
 
     def __init__(self, value=0):
         self.value = value
@@ -526,6 +542,7 @@ class MultiplyNumeric(TransformPrimitive):
     return_type = Numeric
     commutative = True
     dask_compatible = True
+    koalas_compatible = True
 
     def get_function(self):
         return np.multiply
@@ -550,6 +567,7 @@ class MultiplyNumericScalar(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     dask_compatible = True
+    koalas_compatible = True
 
     def __init__(self, value=1):
         self.value = value
@@ -612,6 +630,7 @@ class DivideNumeric(TransformPrimitive):
     input_types = [Numeric, Numeric]
     return_type = Numeric
     dask_compatible = True
+    koalas_compatible = True
 
     def __init__(self, commutative=False):
         self.commutative = commutative
@@ -639,6 +658,7 @@ class DivideNumericScalar(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     dask_compatible = True
+    koalas_compatible = True
 
     def __init__(self, value=1):
         self.value = value
@@ -669,6 +689,7 @@ class DivideByFeature(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     dask_compatible = True
+    koalas_compatible = True
 
     def __init__(self, value=1):
         self.value = value
@@ -699,6 +720,7 @@ class ModuloNumeric(TransformPrimitive):
     input_types = [Numeric, Numeric]
     return_type = Numeric
     dask_compatible = True
+    koalas_compatible = True
 
     def get_function(self):
         return np.mod
@@ -724,6 +746,7 @@ class ModuloNumericScalar(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     dask_compatible = True
+    koalas_compatible = True
 
     def __init__(self, value=1):
         self.value = value
@@ -754,6 +777,7 @@ class ModuloByFeature(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     dask_compatible = True
+    koalas_compatible = True
 
     def __init__(self, value=1):
         self.value = value
@@ -785,6 +809,7 @@ class And(TransformPrimitive):
     return_type = Boolean
     commutative = True
     dask_compatible = True
+    koalas_compatible = True
 
     def get_function(self):
         return np.logical_and
@@ -811,6 +836,7 @@ class Or(TransformPrimitive):
     return_type = Boolean
     commutative = True
     dask_compatible = True
+    koalas_compatible = True
 
     def get_function(self):
         return np.logical_or

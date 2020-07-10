@@ -1042,7 +1042,7 @@ def test_normalize_entity_new_time_index(es):
     if isinstance(df, dd.DataFrame):
         df = df.compute()
     if isinstance(df, ks.DataFrame):
-        df = df.to_pandas()
+        df = df.sort_index()
     assert df[new_time_index].is_monotonic_increasing
 
 
