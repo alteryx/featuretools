@@ -118,6 +118,7 @@ class FeatureSetCalculator(object):
         # Fill in empty rows with default values. This only works for pandas dataframes
         # and is not currently supported for Dask dataframes.
         if isinstance(df, pd.DataFrame):
+            index_dtype = df.index.dtype.name
             if df.empty:
                 return self.generate_default_df(instance_ids=instance_ids)
 
@@ -135,6 +136,10 @@ class FeatureSetCalculator(object):
             unique_instance_ids = pd.unique(instance_ids)
             unique_instance_ids = unique_instance_ids.astype(instance_ids.dtype)
             df = df.reindex(unique_instance_ids)
+
+            # Keep categorical index if original index was categorical
+            if index_dtype == 'category':
+                df.index = df.index.astype('category')
 
         column_list = []
 

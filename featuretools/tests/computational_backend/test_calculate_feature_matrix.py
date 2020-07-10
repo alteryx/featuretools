@@ -1615,12 +1615,13 @@ def test_some_instances_not_in_data(pd_es):
 
 
 def test_missing_instances_with_categorical_index(pd_es):
-    instance_ids = [0, 1, 2, 3]
+    instance_ids = [0, 1, 3, 2]
     features = ft.dfs(entityset=pd_es, target_entity='customers', features_only=True)
     fm = ft.calculate_feature_matrix(entityset=pd_es,
                                      features=features,
                                      instance_ids=instance_ids)
     assert all(fm.index.values == instance_ids)
+    assert isinstance(fm.index, pd.CategoricalIndex)
 
 
 def test_handle_chunk_size():
