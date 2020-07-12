@@ -235,3 +235,5 @@ def test_generate_statistics():
             assert column_stats['top_values'] == [{'value': 'b', 'count': 1}, {'value': 'a', 'count': 2}]
         if col == 'numeric_all_nans':
             assert column_stats['nan_count'] == 3
+    statistics_df = generate_statistics(df, variable_types, return_dataframe=True)
+    assert isinstance(statistics_df, pd.DataFrame)

@@ -275,11 +275,13 @@ def generate_statistics(df, variable_types, top_x_discrete=10, time_x_datetime=1
             values["third_quartile"] = quant_values[2]
         elif v_type == vtypes.Discrete or issubclass(v_type, vtypes.Discrete):
             column = column.astype("category")
-            values["top_values"] = get_top_values(column, top_x_discrete)
+            if not return_dataframe:
+                values["top_values"] = get_top_values(column, top_x_discrete)
         elif v_type == vtypes.Datetime:
             column = pd.to_datetime(column)
             values.update(column.agg(DATETIME_STATISTICS).to_dict())
-            values["recent_values"] = get_time_values(column, time_x_datetime)
+            if not return_dataframe:
+                values["recent_values"] = get_time_values(column, time_x_datetime)
         values["nan_count"] = column.isna().sum()
         mode_values = column.mode()
         values["mode"] = np.nan
