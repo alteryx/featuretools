@@ -220,7 +220,7 @@ def replace_latlong_nan(values):
 
 
 def generate_statistics(df, variable_types, top_x_discrete=10, time_x_datetime=10,
-                        ascending_time=False):
+                        ascending_time=False, return_dataframe=False):
     """Calculates statistics for data.
 
     Args:
@@ -250,7 +250,7 @@ def generate_statistics(df, variable_types, top_x_discrete=10, time_x_datetime=1
     COMMON_STATISTICS = ["count", "nunique"]
     DATETIME_STATISTICS = ["max", "min", "mean"]
     NUMERIC_STATISTICS = ["max", "min", "mean", "std"]
-    LATLONG_STATISTICS = ["count"]
+    # LATLONG_STATISTICS = ["count"]
     variable_types = convert_vtypes(variable_types)
     statistics = {}
     for column_name, v_type in variable_types.items():
@@ -280,4 +280,8 @@ def generate_statistics(df, variable_types, top_x_discrete=10, time_x_datetime=1
             values["mode"] = mode_values[0]
         values['Variable Type'] = v_type.type_string.title()
         statistics[column_name] = values
+    if return_dataframe:
+        df = pd.DataFrame.from_dict(statistics)
+        df = df.round(1).fillna(value='')
+        return df
     return statistics

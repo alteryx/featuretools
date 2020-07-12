@@ -1,5 +1,4 @@
 import logging
-import warnings
 
 import dask.dataframe as dd
 import numpy as np
@@ -19,7 +18,6 @@ from featuretools.utils.wrangle import (
     _check_timedelta,
     _dataframes_equal
 )
-from featuretools.variable_types import find_variable_types
 from featuretools.variable_types.utils import convert_vtypes
 
 logger = logging.getLogger('featuretools.entityset')
