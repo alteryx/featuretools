@@ -4,7 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
-        * Add ``generate_statistics`` to entity_utils for statistical information aobut an entity (:pr:`1013`)
+        * Add ``generate_statistics`` to entity_utils for statistical information aobut an entity (:pr:`1061`)
     * Fixes
         * Remove warnings.simplefilter in feature_set_calculator to un-silence warnings (:pr:`1053`)
         * Fix feature visualization for features with '>' or '<' in name (:pr:`1055`)
