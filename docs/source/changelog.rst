@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Add ``generate_statistics`` to entity_utils for statistical information aobut an entity (:pr:`1013`)
     * Fixes
         * Remove warnings.simplefilter in feature_set_calculator to un-silence warnings (:pr:`1053`)
         * Fix feature visualization for features with '>' or '<' in name (:pr:`1055`)
@@ -17,7 +18,7 @@ Changelog
         * Refactor Dask test units (:pr:`1052`)
         * Implement automated process for checking critical dependencies (:pr:`1045`, :pr:`1054`)
         * Don't run changelog check for release PRs or automated dependency PRs (:pr:`1057`)
-    
+
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`systemshift`, :user:`monti-python`, :user:`thehomebrewnerd`, :user:`frances-h`, :user:`rwedge`
 
@@ -43,7 +44,7 @@ Changelog
     Thanks to the following people for contributing to this release:
     :user:`frances-h`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`,
     :user:`thehomebrewnerd`, :user:`tuethan1999`
-        
+
 **Breaking Changes**
 
 * Removed ``Feature.get_names``, ``Feature.get_feature_names`` should be used instead
