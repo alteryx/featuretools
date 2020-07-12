@@ -7,7 +7,6 @@ import pandas as pd
 import pandas.api.types as pdtypes
 
 from featuretools import variable_types as vtypes
-from featuretools.variable_types.utils import convert_vtypes
 from featuretools.utils.entity_utils import (
     col_is_datetime,
     convert_all_variable_data,
@@ -21,6 +20,7 @@ from featuretools.utils.wrangle import (
     _dataframes_equal
 )
 from featuretools.variable_types import find_variable_types
+from featuretools.variable_types.utils import convert_vtypes
 
 logger = logging.getLogger('featuretools.entityset')
 

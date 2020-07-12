@@ -7,11 +7,8 @@ import pandas as pd
 import pandas.api.types as pdtypes
 
 from featuretools import variable_types as vtypes
+from featuretools.utils.column_utils import get_time_values, get_top_values
 from featuretools.variable_types.utils import convert_vtypes
-from featuretools.utils.column_utils import (
-    get_top_values,
-    get_time_values
-)
 
 
 def infer_variable_types(df, link_vars, variable_types, time_index, secondary_time_index):

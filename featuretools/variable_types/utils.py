@@ -1,5 +1,6 @@
-import pandas as pd
 import warnings
+
+import pandas as pd
 
 from featuretools.utils.gen_utils import find_descendents
 from featuretools.utils.plot_utils import (
@@ -90,6 +91,6 @@ def convert_vtypes(variable_types):
             else:
                 converted_variable_types[vid] = string_to_class_map['unknown']
                 warnings.warn("Variable type {} was unrecognized, Unknown variable type was used instead".format(vtype))
-        elif issubclass(vtype, Variable):
+        else:
             converted_variable_types[vid] = variable_types[vid]
     return converted_variable_types
