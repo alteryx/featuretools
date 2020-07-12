@@ -237,9 +237,12 @@ def generate_statistics(df, variable_types, top_x_discrete=10, time_x_datetime=1
             determing the most recent/oldest dates for DateTime columns.
             Defaults to 10.
 
-        ascending_time (bool, optional): Specify if recent or
-            oldest values should be calculated when determine the highly frequent
+        ascending_time (bool, optional): Specify if recent or oldest values
+            should be calculated when determine the highly frequent
             datetimes.
+
+        return_dataframe (bool): Specify whether to return a dataframe with the
+            statistics instead of a dictionary.
 
     Returns:
         payload (dict): Statistics of the data. Key is the column
@@ -250,38 +253,42 @@ def generate_statistics(df, variable_types, top_x_discrete=10, time_x_datetime=1
     COMMON_STATISTICS = ["count", "nunique"]
     DATETIME_STATISTICS = ["max", "min", "mean"]
     NUMERIC_STATISTICS = ["max", "min", "mean", "std"]
-    # LATLONG_STATISTICS = ["count"]
     variable_types = convert_vtypes(variable_types)
     statistics = {}
     for column_name, v_type in variable_types.items():
         values = {}
         column = df.reset_index()[column_name]
-        values.update(column.agg(COMMON_STATISTICS).to_dict())
-        if isinstance(v_type, vtypes.Boolean):
+        applicable = COMMON_STATISTICS
+        if isinstance(vtypes, vtypes.LatLong):
+            applicable = applicable.remove('nunique')
+        values.update(column.agg(applicable).to_dict())
+        if v_type == vtypes.Boolean:
             column = column.astype(bool)
             values["num_false"] = column.value_counts().get(False, 0)
             values["num_true"] = column.value_counts().get(True, 0)
-        elif isinstance(v_type, vtypes.Numeric):
+        elif v_type == vtypes.Numeric:
             column = column.astype(float)
             values.update(column.agg(NUMERIC_STATISTICS).to_dict())
             quant_values = column.quantile([0.25, 0.5, 0.75]).tolist()
             values["first_quartile"] = quant_values[0]
             values["second_quartile"] = quant_values[2]
             values["third_quartile"] = quant_values[2]
-        elif isinstance(v_type, vtypes.Discrete):
+        elif v_type == vtypes.Discrete or issubclass(v_type, vtypes.Discrete):
+            column = column.astype("category")
             values["top_values"] = get_top_values(column, top_x_discrete)
-        elif isinstance(v_type, vtypes.Datetime):
+        elif v_type == vtypes.Datetime:
+            column = pd.to_datetime(column)
             values.update(column.agg(DATETIME_STATISTICS).to_dict())
             values["recent_values"] = get_time_values(column, time_x_datetime)
         values["nan_count"] = column.isna().sum()
         mode_values = column.mode()
-        values["mode"] = None
+        values["mode"] = np.nan
         if mode_values is not None and len(mode_values) > 0:
             values["mode"] = mode_values[0]
         values['Variable Type'] = v_type.type_string.title()
         statistics[column_name] = values
     if return_dataframe:
         df = pd.DataFrame.from_dict(statistics)
-        df = df.round(1).fillna(value='')
+        df = df.fillna(value='')
         return df
     return statistics

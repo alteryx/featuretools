@@ -182,19 +182,56 @@ def test_replace_latlong_nan():
 
 def test_generate_statistics():
     df = pd.DataFrame({'id': [0, 1, 2],
-                       'time': [datetime(2011, 4, 9, 10, 31, 3 * i)
-                                for i in range(3)],
+                       'product_id': [0, 1, 2],
+                       'time': [datetime(2011, 4, 9, 1, 0, 0),
+                                datetime(2011, 4, 9, 5, 0, 0),
+                                datetime(2011, 4, 9, 10, 0, 0)],
                        'category': ['a', 'b', 'a'],
+                       'latlong': [(1, 1), (2, 2), (3, 3)],
+                       'zipcode': ['02116', '02116-3899', '0'],
+                       'countrycode': ['US', 'AL', 'USA'],
+                       'subregioncode': ['US-AZ', 'US-MT', 'UG-219'],
+                       'numeric_all_nans': [np.nan, np.nan, np.nan],
+                       'priority_level': [0, 1, 2],
+                       'comments': ['I loved it', 'taco clock', 'coke zero'],
                        'number': [4, 5, 6],
-                       'boolean': [True, False, True],
-                       'boolean_with_nan': [True, False, np.nan]})
-    variable_types = {'id': vtypes.Categorical,
+                       'boolean': [True, False, True]})
+    variable_types = {'id': vtypes.Id,
+                      'product_id': vtypes.Categorical,
                       'time': vtypes.Datetime,
                       'category': vtypes.Categorical,
+                      'latlong': vtypes.LatLong,
+                      'zipcode': vtypes.ZIPCode,
+                      'countrycode': vtypes.CountryCode,
+                      'subregioncode': vtypes.SubRegionCode,
+                      'numeric_all_nans': vtypes.Numeric,
+                      'priority_level': vtypes.Ordinal,
+                      'comments': vtypes.Text,
                       'number': vtypes.Numeric,
-                      'boolean': vtypes.Boolean,
-                      'boolean_with_nan': vtypes.Boolean}
+                      'boolean': vtypes.Boolean}
     statistics = generate_statistics(df, variable_types)
     for col in df.columns:
-        expected_count = 3 if col != 'boolean_with_nan' else 2
-        assert statistics[col]['count'] == expected_count
+        expected_count = 3 if col not in ['numeric_all_nans'] else 0
+        column_stats = statistics[col]
+        assert column_stats['count'] == expected_count
+        assert variable_types[col].type_string.title() == column_stats['Variable Type']
+        if variable_types[col] != vtypes.LatLong:
+            assert 'nunique' in column_stats and isinstance(column_stats['nunique'], (int, float))
+        if col == 'boolean':
+            assert column_stats['num_true'] == 2
+            assert column_stats['num_false'] == 1
+        if col == 'number':
+            assert column_stats['max'] == df['number'].max()
+            assert column_stats['min'] == df['number'].min()
+            assert column_stats['mean'] == df['number'].mean()
+            assert column_stats['std'] == df['number'].std()
+        if col == 'time':
+            assert column_stats['max'] == df['time'].max()
+            assert column_stats['min'] == df['time'].min()
+            assert column_stats['mean'] == df['time'].mean()
+        if col == 'product_id':
+            assert column_stats['top_values'] == [{'value': 0, 'count': 1}, {'value': 1, 'count': 1}, {'value': 2, 'count': 1}]
+        if col == 'category':
+            assert column_stats['top_values'] == [{'value': 'b', 'count': 1}, {'value': 'a', 'count': 2}]
+        if col == 'numeric_all_nans':
+            assert column_stats['nan_count'] == 3
