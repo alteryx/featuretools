@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+import logging
 
 import featuretools as ft
 from featuretools.feature_base.features_deserializer import (
@@ -96,7 +97,7 @@ def test_base_features_not_in_list(es):
     assert expected == deserializer.to_list()
 
 
-def test_later_schema_version(es):
+def test_later_schema_version(es, caplog):
     def test_version(major, minor, patch, raises=True):
         version = '.'.join([str(v) for v in [major, minor, patch]])
         if raises:
@@ -107,7 +108,7 @@ def test_later_schema_version(es):
         else:
             warning_text = None
 
-        _check_schema_version(version, es, warning_text)
+        _check_schema_version(version, es, warning_text, caplog)
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
@@ -117,7 +118,7 @@ def test_later_schema_version(es):
     test_version(major, minor - 1, patch + 1, raises=False)
 
 
-def test_earlier_schema_version(es):
+def test_earlier_schema_version(es, caplog):
     def test_version(major, minor, patch, raises=True):
         version = '.'.join([str(v) for v in [major, minor, patch]])
 
@@ -129,7 +130,7 @@ def test_earlier_schema_version(es):
         else:
             warning_text = None
 
-        _check_schema_version(version, es, warning_text)
+        _check_schema_version(version, es, warning_text, caplog)
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
@@ -266,7 +267,7 @@ def test_feature_use_previous_pd_dateoffset(es):
     assert expected == deserializer.to_list()
 
 
-def _check_schema_version(version, es, warning_text):
+def _check_schema_version(version, es, warning_text, caplog):
     dictionary = {
         'ft_version': ft.__version__,
         'schema_version': version,
@@ -276,9 +277,9 @@ def _check_schema_version(version, es, warning_text):
     }
 
     if warning_text:
-        with pytest.warns(UserWarning) as record:
+        with caplog.at_level(logging.WARNING, logger='featuretools.utils'):
             FeaturesDeserializer(dictionary)
 
-        assert record[0].message.args[0] == warning_text
+        assert caplog.text == warning_text
     else:
         FeaturesDeserializer(dictionary)
