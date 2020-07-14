@@ -7,7 +7,6 @@ import pandas as pd
 import pandas.api.types as pdtypes
 
 from featuretools import variable_types as vtypes
-from featuretools.utils.column_utils import get_time_values, get_top_values
 from featuretools.variable_types.utils import convert_vtypes
 
 
@@ -275,19 +274,15 @@ def generate_statistics(df, variable_types, top_x_discrete=10, time_x_datetime=1
             values["third_quartile"] = quant_values[2]
         elif v_type == vtypes.Discrete or issubclass(v_type, vtypes.Discrete):
             column = column.astype("category")
-            if not return_dataframe:
-                values["top_values"] = get_top_values(column, top_x_discrete)
         elif v_type == vtypes.Datetime:
             column = pd.to_datetime(column)
             values.update(column.agg(DATETIME_STATISTICS).to_dict())
-            if not return_dataframe:
-                values["recent_values"] = get_time_values(column, time_x_datetime)
         values["nan_count"] = column.isna().sum()
         mode_values = column.mode()
         values["mode"] = np.nan
         if mode_values is not None and len(mode_values) > 0:
             values["mode"] = mode_values[0]
-        values['Variable Type'] = v_type.type_string.title()
+        values['variable_type'] = v_type.type_string.title()
         statistics[column_name] = values
     if return_dataframe:
         df = pd.DataFrame.from_dict(statistics)
