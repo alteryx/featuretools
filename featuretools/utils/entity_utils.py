@@ -218,8 +218,7 @@ def replace_latlong_nan(values):
     return values.where(values.notnull(), pd.Series([(np.nan, np.nan)] * len(values)))
 
 
-def generate_statistics(df, variable_types, top_x_discrete=10, time_x_datetime=10,
-                        ascending_time=False, return_dataframe=False):
+def generate_statistics(df, variable_types, return_dataframe=False):
     """Calculates statistics for data.
 
     Args:
@@ -227,14 +226,6 @@ def generate_statistics(df, variable_types, top_x_discrete=10, time_x_datetime=1
 
         variable_types (dict[str -> Variable/str], optional):
             Keys are of variable ids and values are variable types or type_strings.
-
-        top_x_discrete (int, optional): Specify how many to retrieve when
-            determing the number of frequent values for Discrete columns
-            (including Categorical, and Ordinal). Defaults to 10
-
-        time_x_datetime (int, optional): Specify how many to retrieve when
-            determing the most recent/oldest dates for DateTime columns.
-            Defaults to 10.
 
         ascending_time (bool, optional): Specify if recent or oldest values
             should be calculated when determine the highly frequent
@@ -279,7 +270,6 @@ def generate_statistics(df, variable_types, top_x_discrete=10, time_x_datetime=1
             values.update(column.agg(DATETIME_STATISTICS).to_dict())
         values["nan_count"] = column.isna().sum()
         mode_values = column.mode()
-        values["mode"] = np.nan
         if mode_values is not None and len(mode_values) > 0:
             values["mode"] = mode_values[0]
         values['variable_type'] = v_type.type_string.title()
