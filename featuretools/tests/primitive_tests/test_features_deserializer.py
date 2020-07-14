@@ -1,6 +1,7 @@
+import logging
+
 import pandas as pd
 import pytest
-import logging
 
 import featuretools as ft
 from featuretools.feature_base.features_deserializer import (
