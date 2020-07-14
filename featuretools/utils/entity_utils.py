@@ -235,10 +235,12 @@ def generate_statistics(df, variable_types, return_dataframe=False):
             statistics instead of a dictionary.
 
     Returns:
-        payload (dict): Statistics of the data. Key is the column
+        dict[str -> dict[str -> int/float/str] : Statistics of the data. Key is the column
             name of the data, value is dict of the statistics
             information (which can have keys of `count`, `nunique`
-            `max`, `min`, `mode`, `mean`, `std` )
+            `max`, `min`, `mode`, `mean`, `std`, `variable_type`, `nan_count`,
+            `first_quartile`, `second_quartile`, `third_quartile`, `num_false`
+            `num_true`)
     """
     COMMON_STATISTICS = ["count", "nunique"]
     DATETIME_STATISTICS = ["max", "min", "mean"]
