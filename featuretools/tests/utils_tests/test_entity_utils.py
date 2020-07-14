@@ -214,7 +214,7 @@ def test_generate_statistics():
         expected_count = 3 if col not in ['numeric_all_nans'] else 0
         column_stats = statistics[col]
         assert column_stats['count'] == expected_count
-        assert variable_types[col].type_string.title() == column_stats['Variable Type']
+        assert variable_types[col].type_string.title() == column_stats['variable_type']
         if variable_types[col] != vtypes.LatLong:
             assert 'nunique' in column_stats and isinstance(column_stats['nunique'], (int, float))
         if col == 'boolean':
