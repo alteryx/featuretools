@@ -82,6 +82,19 @@ def graph_variable_types(to_file=None):
 
 
 def convert_vtypes(variable_types):
+    """
+    Convert a dictionary of variable types into the propery type (:class:`.Variable`)
+        if it is a valid str.
+
+    Args:
+        variable_types (dict[str -> type/str/dict[str -> type]]) : An entity's
+            variable_types dict maps string variable ids to types (:class:`.Variable`)
+            or type_string (str) or (type, kwargs) to pass keyword arguments to the Variable.
+
+    Returns:
+        dict[str -> dict[str -> type] : Graph object that can directly be displayed in
+            Jupyter notebooks.
+    """
     converted_variable_types = {}
     string_to_class_map = find_variable_types()
     for vid, vtype in variable_types.items():

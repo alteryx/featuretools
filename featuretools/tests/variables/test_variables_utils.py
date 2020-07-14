@@ -6,7 +6,10 @@ import pytest
 
 from featuretools import variable_types as v_types
 from featuretools.variable_types import (
+    Numeric,
+    Unknown,
     Variable,
+    convert_vtypes,
     find_variable_types,
     graph_variable_types,
     list_variable_types
@@ -64,3 +67,26 @@ def test_invalid_format():
         graph_variable_types(to_file=output_path)
 
     assert str(excinfo.value).startswith("Unknown format")
+
+
+def test_convert_vtypes():
+    variable_types = {
+        'col_1': 'numeric',
+        'col_2': Numeric,
+        'col_3': Numeric.type_string
+    }
+    converted = convert_vtypes(variable_types)
+    for ky in converted.keys():
+        assert ky in variable_types.keys()
+        assert converted[ky] == Numeric
+    for v in converted.values():
+        assert issubclass(v, Variable)
+
+
+def test_convert_vtypes_unknown():
+    variable_types = {
+        'col_1': 'unknown type',
+    }
+    with pytest.warns(UserWarning, match='Variable type {} was unrecognized, Unknown variable type was used instead'.format('unknown type')):
+        converted = convert_vtypes(variable_types)
+    assert converted['col_1'] == Unknown
