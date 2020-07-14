@@ -248,10 +248,6 @@ def generate_statistics(df, variable_types, return_dataframe=False):
     for column_name, v_type in variable_types.items():
         values = {}
         column = df.reset_index()[column_name]
-        applicable = COMMON_STATISTICS
-        if isinstance(vtypes, vtypes.LatLong):
-            applicable = applicable.remove('nunique')
-        values.update(column.agg(applicable).to_dict())
         if v_type == vtypes.Boolean:
             column = column.astype(bool)
             values["num_false"] = column.value_counts().get(False, 0)
@@ -268,11 +264,15 @@ def generate_statistics(df, variable_types, return_dataframe=False):
         elif v_type == vtypes.Datetime:
             column = pd.to_datetime(column)
             values.update(column.agg(DATETIME_STATISTICS).to_dict())
+        applicable = COMMON_STATISTICS
+        if isinstance(vtypes, vtypes.LatLong):
+            applicable = applicable.remove('nunique')
+        values.update(column.agg(applicable).to_dict())
         values["nan_count"] = column.isna().sum()
         mode_values = column.mode()
         if mode_values is not None and len(mode_values) > 0:
             values["mode"] = mode_values[0]
-        values['variable_type'] = v_type.type_string.title()
+        values['variable_type'] = v_type.type_string
         statistics[column_name] = values
     if return_dataframe:
         df = pd.DataFrame.from_dict(statistics)
