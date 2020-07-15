@@ -306,7 +306,7 @@ def test_make_agg_feat_of_grandchild_entity(es):
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
         df = df.compute().set_index('id')
-    v = df[agg_feat.get_name()].values[0]
+    v = df[agg_feat.get_name()].loc[0]
     assert (v == 10)
 
 
@@ -390,8 +390,8 @@ def test_make_agg_feat_where_count_and_device_type_feat(es):
     if isinstance(df, dd.DataFrame):
         df = df.compute().set_index('id')
     name = feat.get_name()
-    instances = df[name].values
-    assert (instances[0] == 1)
+    instances = df[name]
+    assert (instances.loc[0] == 1)
 
 
 def test_make_agg_feat_where_count_or_device_type_feat(es):
@@ -418,8 +418,8 @@ def test_make_agg_feat_where_count_or_device_type_feat(es):
     if isinstance(df, dd.DataFrame):
         df = df.compute().set_index('id')
     name = feat.get_name()
-    instances = df[name].values
-    assert (instances[0] == 3)
+    instances = df[name]
+    assert (instances.loc[0] == 3)
 
 
 def test_make_agg_feat_of_agg_feat(es):
@@ -434,7 +434,7 @@ def test_make_agg_feat_of_agg_feat(es):
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
         df = df.compute().set_index('id')
-    v = df[customer_sum_feat.get_name()].values[0]
+    v = df[customer_sum_feat.get_name()].loc[0]
     assert (v == 10)
 
 
@@ -532,7 +532,7 @@ def test_make_dfeat_of_agg_feat_on_self(es):
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
         df = df.compute().set_index('id')
-    v = df[num_customers_feat.get_name()].values[0]
+    v = df[num_customers_feat.get_name()].loc[0]
     assert (v == 3)
 
 
@@ -561,7 +561,7 @@ def test_make_dfeat_of_agg_feat_through_parent(es):
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
         df = df.compute().set_index('id')
-    v = df[num_stores_feat.get_name()].values[0]
+    v = df[num_stores_feat.get_name()].loc[0]
     assert (v == 3)
 
 
@@ -592,7 +592,7 @@ def test_make_deep_agg_feat_of_dfeat_of_agg_feat(es):
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
         df = df.compute().set_index('id')
-    v = df[purchase_popularity.get_name()].values[0]
+    v = df[purchase_popularity.get_name()].loc[0]
     assert (v == 38.0 / 10.0)
 
 
@@ -861,7 +861,7 @@ def test_with_features_built_from_es_metadata(es):
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
         df = df.compute().set_index('id')
-    v = df[agg_feat.get_name()].values[0]
+    v = df[agg_feat.get_name()].loc[0]
     assert (v == 10)
 
 
