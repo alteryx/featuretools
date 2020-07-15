@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 
@@ -210,8 +211,9 @@ def test_generate_statistics():
                       'number': vtypes.Numeric,
                       'boolean': vtypes.Boolean}
     statistics = generate_statistics(df, variable_types)
+    assert isinstance(statistics, dict)
     for col in df.columns:
-        expected_count = 3 if col not in ['numeric_all_nans'] else 0
+        expected_count = 3 if col != 'numeric_all_nans' else 0
         column_stats = statistics[col]
         assert column_stats['count'] == expected_count
         assert variable_types[col].type_string == column_stats['variable_type']
@@ -233,3 +235,9 @@ def test_generate_statistics():
             assert column_stats['nan_count'] == 3
     statistics_df = generate_statistics(df, variable_types, return_dataframe=True)
     assert isinstance(statistics_df, pd.DataFrame)
+
+
+def test_generate_statistics_all_entities(es):
+    for entity in es.entities:
+        statistics = generate_statistics(entity.df, entity.variable_types)
+        assert isinstance(statistics, dict)

@@ -222,7 +222,8 @@ def generate_statistics(df, variable_types, return_dataframe=False):
     """Calculates statistics for data.
 
     Args:
-        df (pd.DataFrame): Input DataFrame
+        df (pd.DataFrame/dd.DataFrame): Input DataFrame. Supports pandas or
+            dask dataframes.
 
         variable_types (dict[str -> Variable/str], optional):
             Keys are of variable ids and values are variable types or type_strings.
@@ -242,6 +243,9 @@ def generate_statistics(df, variable_types, return_dataframe=False):
             `first_quartile`, `second_quartile`, `third_quartile`, `num_false`
             `num_true`)
     """
+    if isinstance(df, dd.DataFrame):
+        df = df.compute()
+
     COMMON_STATISTICS = ["count", "nunique"]
     DATETIME_STATISTICS = ["max", "min", "mean"]
     NUMERIC_STATISTICS = ["max", "min", "mean", "std"]
