@@ -546,7 +546,7 @@ class Entity(object):
                             lti_mask = lti_slice >= time_last - training_window
                         mask = mask | lti_mask
                     else:
-                        logger.warning(
+                        warnings.warn(
                             "Using training_window but last_time_index is "
                             "not set on entity %s" % (self.id)
                         )
