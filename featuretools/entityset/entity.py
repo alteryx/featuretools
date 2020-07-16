@@ -415,7 +415,7 @@ class Entity(object):
         self.variables
 
         Args:
-            variable_ids (list): Variables to delete
+            variable_ids (list[str]): Variables to delete
 
         Returns:
             None
