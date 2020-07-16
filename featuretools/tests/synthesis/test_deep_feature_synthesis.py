@@ -1353,7 +1353,7 @@ def test_primitive_options_instantiated_primitive(es):
         skipna_mean: {'include_entities': ['stores']},
         'mean': {'ignore_entities': ['stores']}
     }
-    with pytest.warns(UserWarning, match=str(warning_msg)):
+    with pytest.warns(UserWarning, match=warning_msg):
         dfs_obj = DeepFeatureSynthesis(target_entity_id='régions',
                                        entityset=es,
                                        agg_primitives=['mean', skipna_mean],
