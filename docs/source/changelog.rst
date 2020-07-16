@@ -6,6 +6,7 @@ Changelog
     * Enhancements
         * Add ``generate_statistics`` to entity_utils for statistical information aobut an entity (:pr:`1061`)
     * Fixes
+        * Fix issue with missing instance ids and categorical entity index (:pr:`1050`)
         * Remove warnings.simplefilter in feature_set_calculator to un-silence warnings (:pr:`1053`)
         * Fix feature visualization for features with '>' or '<' in name (:pr:`1055`)
     * Changes
