@@ -6,4 +6,4 @@ numpy==1.19.0
 pandas==1.0.5
 psutil==5.7.2
 scipy==1.5.1
-tqdm==4.47.0
+tqdm==4.48.0
