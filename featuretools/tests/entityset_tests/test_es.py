@@ -1,4 +1,5 @@
 import copy
+import logging
 from datetime import datetime
 
 import dask.dataframe as dd
@@ -1148,7 +1149,7 @@ def test_datetime64_conversion(datetime3):
     es['test_entity'].convert_variable_type('time', vtype_time_index)
 
 
-def test_later_schema_version(es):
+def test_later_schema_version(es, caplog):
     def test_version(major, minor, patch, raises=True):
         version = '.'.join([str(v) for v in [major, minor, patch]])
         if raises:
@@ -1159,7 +1160,7 @@ def test_later_schema_version(es):
         else:
             warning_text = None
 
-        _check_schema_version(version, es, warning_text)
+        _check_schema_version(version, es, warning_text, caplog)
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
@@ -1169,7 +1170,7 @@ def test_later_schema_version(es):
     test_version(major, minor - 1, patch + 1, raises=False)
 
 
-def test_earlier_schema_version(es):
+def test_earlier_schema_version(es, caplog):
     def test_version(major, minor, patch, raises=True):
         version = '.'.join([str(v) for v in [major, minor, patch]])
         if raises:
@@ -1180,7 +1181,7 @@ def test_earlier_schema_version(es):
         else:
             warning_text = None
 
-        _check_schema_version(version, es, warning_text)
+        _check_schema_version(version, es, warning_text, caplog)
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
@@ -1189,7 +1190,7 @@ def test_earlier_schema_version(es):
     test_version(major, minor, patch - 1, raises=False)
 
 
-def _check_schema_version(version, es, warning_text):
+def _check_schema_version(version, es, warning_text, caplog):
     entities = {entity.id: serialize.entity_to_description(entity) for entity in es.entities}
     relationships = [relationship.to_dictionary() for relationship in es.relationships]
     dictionary = {
@@ -1199,10 +1200,14 @@ def _check_schema_version(version, es, warning_text):
         'relationships': relationships,
     }
 
-    if warning_text:
-        with pytest.warns(UserWarning) as record:
-            deserialize.description_to_entityset(dictionary)
-        assert record[0].message.args[0] == warning_text
+    # TODO Refactor this function and both parent functions to run tests with a less complex implementation
+    earlier_schema_warning = 'is no longer supported by this version'
+    if earlier_schema_warning in str(warning_text):
+        logger = logging.getLogger('featuretools')
+        logger.propagate = True
+        deserialize.description_to_entityset(dictionary)
+        assert warning_text in caplog.text
+        logger.propagate = False
     else:
         deserialize.description_to_entityset(dictionary)
 
