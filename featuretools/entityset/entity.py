@@ -414,8 +414,8 @@ class Entity(object):
         Remove variables from entity's dataframe and from
         self.variables
         """
-        # check variable is a list
-        if isinstance(variable_ids, str):
+        # check if variable is not a list
+        if not isinstance(variable_ids, list):
             raise TypeError('variable_ids must be a list of variable names')
         self.df = self.df.drop(variable_ids, axis=1)
 
