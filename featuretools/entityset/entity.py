@@ -575,7 +575,7 @@ def _create_index(index, make_index, df):
         # Case 1: user wanted to make index but did not specify column name
         assert not make_index, "Must specify an index name if make_index is True"
         # Case 2: make_index not specified but no index supplied, use first column
-        logger.warning(("Using first column as index. ",
+        warnings.warn(("Using first column as index. " \
                         "To change this, specify the index parameter"))
         index = df.columns[0]
     elif make_index and index in df.columns:
