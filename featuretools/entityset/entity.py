@@ -413,7 +413,14 @@ class Entity(object):
         """
         Remove variables from entity's dataframe and from
         self.variables
+
+        Args:
+            variable_ids (list): Variables to delete
+
+        Returns:
+            None
         """
+
         # check if variable is not a list
         if not isinstance(variable_ids, list):
             raise TypeError('variable_ids must be a list of variable names')
