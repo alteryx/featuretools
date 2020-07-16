@@ -277,10 +277,13 @@ def _check_schema_version(version, es, warning_text, caplog):
         'feature_definitions': {}
     }
 
-    if warning_text:
-        with caplog.at_level(logging.WARNING, logger='featuretools.utils'):
-            FeaturesDeserializer(dictionary)
-
-        assert caplog.text == warning_text
+    # TODO Refactor this function and both parent functions to run tests with a less complex implementation
+    earlier_schema_warning = 'is no longer supported by this version'
+    if earlier_schema_warning in str(warning_text):
+        logger = logging.getLogger('featuretools')
+        logger.propagate = True
+        FeaturesDeserializer(dictionary)
+        assert warning_text in caplog.text
+        logger.propagate = False
     else:
         FeaturesDeserializer(dictionary)
