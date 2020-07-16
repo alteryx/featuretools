@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import shutil
@@ -47,11 +48,14 @@ from featuretools.tests.testing_utils import (
 )
 
 
-def test_scatter_warning():
-    match = r'EntitySet was only scattered to .* out of .* workers'
-    with pytest.warns(UserWarning, match=match) as record:
-        scatter_warning(1, 2)
-    assert len(record) == 1
+def test_scatter_warning(caplog):
+    logger = logging.getLogger('featuretools')
+    match = "EntitySet was only scattered to {} out of {} workers"
+    warning_message = match.format(1, 2)
+    logger.propagate = True
+    scatter_warning(1, 2)
+    logger.propagate = False
+    assert warning_message in caplog.text
 
 
 # TODO: final assert fails w/ Dask
