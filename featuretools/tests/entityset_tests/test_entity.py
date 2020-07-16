@@ -173,7 +173,7 @@ def test_delete_variables(es):
 
 def test_delete_variables_string_input(es):
     entity = es['customers']
-    with pytest.raises(TypeError, match='strings not accepted, must be of type list'):
+    with pytest.raises(TypeError, match='variable_ids must be a list of variable names'):
         entity.delete_variables('age')
 
 
