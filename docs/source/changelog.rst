@@ -14,6 +14,7 @@ Changelog
         * Change default branch to ``main`` (:pr:`1038`)
     * Documentation Changes
         * Remove benchmarks folder (:pr:`1049`)
+        * Add custom variables types section to variables page (:pr:`1066`)
     * Testing Changes
         * Add fixture for ``ft.demo.load_mock_customer`` (:pr:`1036`)
         * Refactor Dask test units (:pr:`1052`)
