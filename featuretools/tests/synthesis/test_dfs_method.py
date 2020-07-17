@@ -10,8 +10,16 @@ from featuretools.computational_backends.calculate_feature_matrix import (
     FEATURE_CALCULATION_PERCENTAGE
 )
 from featuretools.entityset import EntitySet, Relationship, Timedelta
-from featuretools.primitives import Max, Mean, Min, Sum
+from featuretools.primitives import (
+    Max,
+    Mean,
+    Min,
+    Sum,
+    make_agg_primitive,
+    make_trans_primitive
+)
 from featuretools.synthesis import dfs
+from featuretools.variable_types import Numeric
 
 
 @pytest.fixture(params=['pd_entities', 'dask_entities'])
@@ -235,28 +243,6 @@ def test_features_only(entities, relationships):
     assert len(features) > 0
 
 
-def test_dask_kwargs(pd_entities, relationships):
-    cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
-                                    "time": [10, 12, 15]})
-    feature_matrix, features = dfs(entities=pd_entities,
-                                   relationships=relationships,
-                                   target_entity="transactions",
-                                   cutoff_time=cutoff_times_df)
-
-    with cluster() as (scheduler, [a, b]):
-        dask_kwargs = {'cluster': scheduler['address']}
-        feature_matrix_2, features_2 = dfs(entities=pd_entities,
-                                           relationships=relationships,
-                                           target_entity="transactions",
-                                           cutoff_time=cutoff_times_df,
-                                           dask_kwargs=dask_kwargs)
-
-    assert all(f1.unique_name() == f2.unique_name() for f1, f2 in zip(features, features_2))
-    for column in feature_matrix:
-        for x, y in zip(feature_matrix[column], feature_matrix_2[column]):
-            assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
-
-
 def test_accepts_relative_training_window(datetime_es):
     # TODO: Update to use Dask entities when issue #882 is closed
     feature_matrix, features = dfs(entityset=datetime_es,
@@ -323,6 +309,144 @@ def test_accepts_pd_dateoffset_training_window(datetime_es):
     assert (feature_matrix.index == feature_matrix_2.index).all()
 
 
+def test_warns_with_unused_primitives(es):
+    trans_primitives = ['num_characters', 'num_words', 'add_numeric']
+    agg_primitives = [Max, 'min']
+
+    warning_text = "Some specified primitives were not used during DFS. " + \
+        "trans_primitives: ['add_numeric'] agg_primitives: ['max', 'min']. " + \
+        "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
+        "or it may indicate no compatible variable types for the primitive were found in the data."
+
+    with pytest.warns(UserWarning) as record:
+        dfs(entityset=es,
+            target_entity='customers',
+            trans_primitives=trans_primitives,
+            agg_primitives=agg_primitives,
+            max_depth=1,
+            features_only=True)
+
+    assert record[0].message.args[0] == warning_text
+
+    # Should not raise a warning
+    with pytest.warns(None) as record:
+        dfs(entityset=es,
+            target_entity='customers',
+            trans_primitives=trans_primitives,
+            agg_primitives=agg_primitives,
+            max_depth=2,
+            features_only=True)
+
+    assert not record
+
+
+def test_warns_with_unused_where_primitives(es):
+    warning_text = "Some specified primitives were not used during DFS. " + \
+        "where_primitives: ['count', 'sum']. " + \
+        "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
+        "or it may indicate no compatible variable types for the primitive were found in the data."
+
+    with pytest.warns(UserWarning) as record:
+        dfs(entityset=es,
+            target_entity='customers',
+            agg_primitives=['count'],
+            where_primitives=['sum', 'count'],
+            max_depth=1,
+            features_only=True)
+
+    assert record[0].message.args[0] == warning_text
+
+
+def test_warns_with_unused_groupby_primitives(pd_es):
+    warning_text = "Some specified primitives were not used during DFS. " + \
+        "groupby_trans_primitives: ['cum_sum']. " + \
+        "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
+        "or it may indicate no compatible variable types for the primitive were found in the data."
+
+    with pytest.warns(UserWarning) as record:
+        dfs(entityset=pd_es,
+            target_entity='sessions',
+            groupby_trans_primitives=['cum_sum'],
+            max_depth=1,
+            features_only=True)
+
+    assert record[0].message.args[0] == warning_text
+
+    # Should not raise a warning
+    with pytest.warns(None) as record:
+        dfs(entityset=pd_es,
+            target_entity='customers',
+            groupby_trans_primitives=['cum_sum'],
+            max_depth=1,
+            features_only=True)
+
+    assert not record
+
+
+def test_warns_with_unused_custom_primitives(pd_es):
+    def above_ten(column):
+        return column > 10
+
+    AboveTen = make_trans_primitive(function=above_ten,
+                                    input_types=[Numeric],
+                                    return_type=Numeric)
+
+    trans_primitives = [AboveTen]
+
+    warning_text = "Some specified primitives were not used during DFS. " + \
+        "trans_primitives: ['above_ten']. " + \
+        "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
+        "or it may indicate no compatible variable types for the primitive were found in the data."
+
+    with pytest.warns(UserWarning) as record:
+        dfs(entityset=pd_es,
+            target_entity='sessions',
+            trans_primitives=trans_primitives,
+            max_depth=1,
+            features_only=True)
+
+    assert record[0].message.args[0] == warning_text
+
+    # Should not raise a warning
+    with pytest.warns(None) as record:
+        dfs(entityset=pd_es,
+            target_entity='customers',
+            trans_primitives=trans_primitives,
+            max_depth=1,
+            features_only=True)
+
+    def max_above_ten(column):
+        return max(column) > 10
+
+    MaxAboveTen = make_agg_primitive(function=max_above_ten,
+                                     input_types=[Numeric],
+                                     return_type=Numeric)
+
+    agg_primitives = [MaxAboveTen]
+
+    warning_text = "Some specified primitives were not used during DFS. " + \
+        "agg_primitives: ['max_above_ten']. " + \
+        "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
+        "or it may indicate no compatible variable types for the primitive were found in the data."
+
+    with pytest.warns(UserWarning) as record:
+        dfs(entityset=pd_es,
+            target_entity='stores',
+            agg_primitives=agg_primitives,
+            max_depth=1,
+            features_only=True)
+
+    assert record[0].message.args[0] == warning_text
+
+    # Should not raise a warning
+    with pytest.warns(None) as record:
+        dfs(entityset=pd_es,
+            target_entity='sessions',
+            agg_primitives=agg_primitives,
+            max_depth=1,
+            features_only=True)
+
+
 def test_calls_progress_callback(entities, relationships):
     class MockProgressCallback:
         def __init__(self):
@@ -372,3 +496,25 @@ def test_calls_progress_callback_cluster(pd_entities, relationships):
 
     assert np.isclose(mock_progress_callback.total_update, 100.0)
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
+
+
+def test_dask_kwargs(pd_entities, relationships):
+    cutoff_times_df = pd.DataFrame({"instance_id": [1, 2, 3],
+                                    "time": [10, 12, 15]})
+    feature_matrix, features = dfs(entities=pd_entities,
+                                   relationships=relationships,
+                                   target_entity="transactions",
+                                   cutoff_time=cutoff_times_df)
+
+    with cluster() as (scheduler, [a, b]):
+        dask_kwargs = {'cluster': scheduler['address']}
+        feature_matrix_2, features_2 = dfs(entities=pd_entities,
+                                           relationships=relationships,
+                                           target_entity="transactions",
+                                           cutoff_time=cutoff_times_df,
+                                           dask_kwargs=dask_kwargs)
+
+    assert all(f1.unique_name() == f2.unique_name() for f1, f2 in zip(features, features_2))
+    for column in feature_matrix:
+        for x, y in zip(feature_matrix[column], feature_matrix_2[column]):
+            assert ((pd.isnull(x) and pd.isnull(y)) or (x == y))
