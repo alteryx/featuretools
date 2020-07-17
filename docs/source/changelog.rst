@@ -12,6 +12,7 @@ Changelog
     * Changes
         * Make DFS match ``TimeSince`` primitive with all ``Datetime`` types (:pr:`1048`)
         * Change default branch to ``main`` (:pr:`1038`)
+        * Raise TypeError if improper input is supplied to ``Entity.delete_variables()`` (:pr:`1064`)
     * Documentation Changes
         * Remove benchmarks folder (:pr:`1049`)
         * Add custom variables types section to variables page (:pr:`1066`)
