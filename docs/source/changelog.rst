@@ -14,12 +14,14 @@ Changelog
         * Raise TypeError if improper input is supplied to ``Entity.delete_variables()`` (:pr:`1064`)
     * Documentation Changes
         * Remove benchmarks folder (:pr:`1049`)
+        * Add custom variables types section to variables page (:pr:`1066`)
     * Testing Changes
         * Add fixture for ``ft.demo.load_mock_customer`` (:pr:`1036`)
         * Refactor Dask test units (:pr:`1052`)
         * Implement automated process for checking critical dependencies (:pr:`1045`, :pr:`1054`)
         * Don't run changelog check for release PRs or automated dependency PRs (:pr:`1057`)
-    
+        * Fix non-deterministic behavior in Dask test causing codecov issues (:pr:`1070`)
+
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`systemshift`, :user:`monti-python`, :user:`thehomebrewnerd`, :user:`frances-h`, :user:`rwedge`
 
@@ -45,7 +47,7 @@ Changelog
     Thanks to the following people for contributing to this release:
     :user:`frances-h`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`,
     :user:`thehomebrewnerd`, :user:`tuethan1999`
-        
+
 **Breaking Changes**
 
 * Removed ``Feature.get_names``, ``Feature.get_feature_names`` should be used instead
