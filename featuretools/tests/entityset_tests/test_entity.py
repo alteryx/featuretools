@@ -176,6 +176,11 @@ def test_delete_variables_string_input(es):
     with pytest.raises(TypeError, match='variable_ids must be a list of variable names'):
         entity.delete_variables('age')
 
+    variable_names = [v.id for v in entity.variables]
+
+    assert 'age' in variable_names
+    assert 'age' in entity.df.columns
+
 
 def test_variable_types_unmodified():
     df = pd.DataFrame({"id": [1, 2, 3, 4, 5, 6],
