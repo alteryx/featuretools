@@ -5,6 +5,7 @@ import boto3
 import pandas as pd
 import pytest
 from dask import dataframe as dd
+from databricks import koalas as ks
 
 from featuretools.demo import load_mock_customer
 from featuretools.entityset import EntitySet, deserialize, serialize
@@ -134,8 +135,8 @@ def test_to_csv(es, tmpdir):
     new_df = new_es['log'].df
     if isinstance(new_df, dd.DataFrame):
         new_df = new_df.compute().set_index('id')
-    assert type(df['latlong'][0]) == tuple
-    assert type(new_df['latlong'][0]) == tuple
+    assert type(df['latlong'][0]) in (tuple, list)
+    assert type(new_df['latlong'][0]) in (tuple, list)
 
 
 # Dask does not support to_pickle
@@ -179,8 +180,8 @@ def test_to_parquet(es, tmpdir):
         df = df.compute()
     if isinstance(new_df, dd.DataFrame):
         new_df = new_df.compute()
-    assert type(df['latlong'][0]) == tuple
-    assert type(df['latlong'][0]) == tuple
+    assert type(df['latlong'][0]) in (tuple, list)
+    assert type(df['latlong'][0]) in (tuple, list)
 
 
 def test_dask_to_parquet(dask_es, tmpdir):
@@ -254,7 +255,7 @@ def make_public(s3_client, s3_bucket):
 
 # TODO: tmp file disappears after deserialize step, cannot check equality with Dask
 def test_serialize_s3_csv(es, s3_client, s3_bucket):
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
     es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python')
     make_public(s3_client, s3_bucket)
@@ -272,7 +273,7 @@ def test_serialize_s3_pickle(pd_es, s3_client, s3_bucket):
 
 # TODO: tmp file disappears after deserialize step, cannot check equality with Dask
 def test_serialize_s3_parquet(es, s3_client, s3_bucket):
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
     es.to_parquet(TEST_S3_URL)
     make_public(s3_client, s3_bucket)
@@ -282,7 +283,7 @@ def test_serialize_s3_parquet(es, s3_client, s3_bucket):
 
 # TODO: tmp file disappears after deserialize step, cannot check equality with Dask
 def test_serialize_s3_anon_csv(es, s3_client, s3_bucket):
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
     es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=False)
     make_public(s3_client, s3_bucket)
@@ -300,7 +301,7 @@ def test_serialize_s3_anon_pickle(pd_es, s3_client, s3_bucket):
 
 # TODO: tmp file disappears after deserialize step, cannot check equality with Dask
 def test_serialize_s3_anon_parquet(es, s3_client, s3_bucket):
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
     es.to_parquet(TEST_S3_URL, profile_name=False)
     make_public(s3_client, s3_bucket)
@@ -347,7 +348,7 @@ def setup_test_profile(monkeypatch, tmpdir):
 
 
 def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
     es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name='test')
     make_public(s3_client, s3_bucket)
@@ -366,7 +367,11 @@ def test_serialize_subdirs_not_removed(es, tmpdir):
     test_dir = write_path.mkdir("test_dir")
     with open(str(write_path.join('data_description.json')), 'w') as f:
         json.dump('__SAMPLE_TEXT__', f)
-    serialize.write_data_description(es, path=str(write_path), index='1', sep='\t', encoding='utf-8', compression=None)
+    if any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+        compression = 'none'
+    else:
+        compression = None
+    serialize.write_data_description(es, path=str(write_path), index='1', sep='\t', encoding='utf-8', compression=compression)
     assert os.path.exists(str(test_dir))
     with open(str(write_path.join('data_description.json')), 'r') as f:
         assert '__SAMPLE_TEXT__' not in json.load(f)

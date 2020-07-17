@@ -96,6 +96,9 @@ def write_entity_data(entity, path, format='csv', **kwargs):
     df = entity.df
 
     if format == 'csv':
+        df = df.copy()
+        columns = list(df.select_dtypes('object').columns)
+        df[columns] = df[columns].astype(str)
         df.to_csv(
             file,
             index=kwargs['index'],
@@ -109,7 +112,7 @@ def write_entity_data(entity, path, format='csv', **kwargs):
         # Issue is resolved by casting columns of dtype object to string.
         df = df.copy()
         columns = list(df.select_dtypes('object').columns)
-        df[columns] = df[columns].astype('unicode')
+        df[columns] = df[columns].astype(str)
         df.to_parquet(file, **kwargs)
     elif format == 'pickle':
         # Dask currently does not support to_pickle

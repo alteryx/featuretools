@@ -5,7 +5,9 @@ import tempfile
 from pathlib import Path
 
 import pandas as pd
+import numpy as np
 from dask import dataframe as dd
+from databricks import koalas as ks
 
 from featuretools.entityset.relationship import Relationship
 from featuretools.entityset.serialize import FORMATS
@@ -127,8 +129,13 @@ def read_entity_data(description, path):
     kwargs = description['loading_info'].get('params', {})
     load_format = description['loading_info']['type']
     entity_type = description['loading_info'].get('entity_type', 'pandas')
+    read_kwargs = {}
     if entity_type == 'dask':
         lib = dd
+    elif entity_type == 'koalas':
+        lib = ks
+        read_kwargs['multiline'] = True
+        kwargs['compression'] = str(kwargs['compression'])
     else:
         lib = pd
     if load_format == 'csv':
@@ -137,6 +144,7 @@ def read_entity_data(description, path):
             engine=kwargs['engine'],
             compression=kwargs['compression'],
             encoding=kwargs['encoding'],
+            **read_kwargs
         )
     elif load_format == 'parquet':
         dataframe = lib.read_parquet(file, engine=kwargs['engine'])
@@ -146,6 +154,12 @@ def read_entity_data(description, path):
         error = 'must be one of the following formats: {}'
         raise ValueError(error.format(', '.join(FORMATS)))
     dtypes = description['loading_info']['properties']['dtypes']
+    if entity_type == 'koalas':
+        for col, dtype in dtypes.items():
+            if dtype == 'object':
+                dtypes[col] = 'string'
+            if dtype == 'datetime64[ns]':
+                dtypes[col] = np.datetime64
     dataframe = dataframe.astype(dtypes)
 
     if load_format in ['parquet', 'csv']:
@@ -154,16 +168,22 @@ def read_entity_data(description, path):
             if var_description['type']['value'] == LatLong.type_string:
                 latlongs.append(var_description["id"])
 
-        def parse_latlong(x):
+        def parse_latlong_tuple(x):
             return tuple(float(y) for y in x[1:-1].split(","))
+
+        def parse_latlong_list(x):
+            return list(float(y) for y in x[1:-1].split(","))
 
         for column in latlongs:
             if entity_type == 'dask':
                 meta = (column, tuple([float, float]))
-                dataframe[column] = dataframe[column].apply(parse_latlong,
+                dataframe[column] = dataframe[column].apply(parse_latlong_tuple,
                                                             meta=meta)
+            elif entity_type == 'koalas':
+                dataframe[column] = dataframe[column].apply(parse_latlong_list)
+
             else:
-                dataframe[column] = dataframe[column].apply(parse_latlong)
+                dataframe[column] = dataframe[column].apply(parse_latlong_tuple)
 
     return dataframe
 
