@@ -323,8 +323,7 @@ def test_warns_with_unused_primitives(es):
             target_entity='customers',
             trans_primitives=trans_primitives,
             agg_primitives=agg_primitives,
-            max_depth=1,
-            features_only=True)
+            max_depth=1)
 
     assert record[0].message.args[0] == warning_text
 
@@ -334,8 +333,7 @@ def test_warns_with_unused_primitives(es):
             target_entity='customers',
             trans_primitives=trans_primitives,
             agg_primitives=agg_primitives,
-            max_depth=2,
-            features_only=True)
+            max_depth=2)
 
     assert not record
 
@@ -351,8 +349,7 @@ def test_warns_with_unused_where_primitives(es):
             target_entity='customers',
             agg_primitives=['count'],
             where_primitives=['sum', 'count'],
-            max_depth=1,
-            features_only=True)
+            max_depth=1)
 
     assert record[0].message.args[0] == warning_text
 
@@ -367,8 +364,7 @@ def test_warns_with_unused_groupby_primitives(pd_es):
         dfs(entityset=pd_es,
             target_entity='sessions',
             groupby_trans_primitives=['cum_sum'],
-            max_depth=1,
-            features_only=True)
+            max_depth=1)
 
     assert record[0].message.args[0] == warning_text
 
@@ -377,8 +373,7 @@ def test_warns_with_unused_groupby_primitives(pd_es):
         dfs(entityset=pd_es,
             target_entity='customers',
             groupby_trans_primitives=['cum_sum'],
-            max_depth=1,
-            features_only=True)
+            max_depth=1)
 
     assert not record
 
@@ -402,8 +397,7 @@ def test_warns_with_unused_custom_primitives(pd_es):
         dfs(entityset=pd_es,
             target_entity='sessions',
             trans_primitives=trans_primitives,
-            max_depth=1,
-            features_only=True)
+            max_depth=1)
 
     assert record[0].message.args[0] == warning_text
 
@@ -412,8 +406,7 @@ def test_warns_with_unused_custom_primitives(pd_es):
         dfs(entityset=pd_es,
             target_entity='customers',
             trans_primitives=trans_primitives,
-            max_depth=1,
-            features_only=True)
+            max_depth=1)
 
     def max_above_ten(column):
         return max(column) > 10
@@ -433,8 +426,7 @@ def test_warns_with_unused_custom_primitives(pd_es):
         dfs(entityset=pd_es,
             target_entity='stores',
             agg_primitives=agg_primitives,
-            max_depth=1,
-            features_only=True)
+            max_depth=1)
 
     assert record[0].message.args[0] == warning_text
 
@@ -443,8 +435,7 @@ def test_warns_with_unused_custom_primitives(pd_es):
         dfs(entityset=pd_es,
             target_entity='sessions',
             agg_primitives=agg_primitives,
-            max_depth=1,
-            features_only=True)
+            max_depth=1)
 
 
 def test_calls_progress_callback(entities, relationships):
