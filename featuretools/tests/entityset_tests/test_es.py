@@ -1160,7 +1160,7 @@ def test_later_schema_version(es, caplog):
         else:
             warning_text = None
 
-        _check_schema_version(version, es, warning_text, caplog)
+        _check_schema_version(version, es, warning_text, caplog, 'warn')
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
@@ -1181,7 +1181,7 @@ def test_earlier_schema_version(es, caplog):
         else:
             warning_text = None
 
-        _check_schema_version(version, es, warning_text, caplog)
+        _check_schema_version(version, es, warning_text, caplog, 'log')
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
@@ -1190,7 +1190,7 @@ def test_earlier_schema_version(es, caplog):
     test_version(major, minor, patch - 1, raises=False)
 
 
-def _check_schema_version(version, es, warning_text, caplog):
+def _check_schema_version(version, es, warning_text, caplog, warning_type=None):
     entities = {entity.id: serialize.entity_to_description(entity) for entity in es.entities}
     relationships = [relationship.to_dictionary() for relationship in es.relationships]
     dictionary = {
@@ -1200,14 +1200,16 @@ def _check_schema_version(version, es, warning_text, caplog):
         'relationships': relationships,
     }
 
-    # TODO Refactor this function and both parent functions to run tests with a less complex implementation
-    earlier_schema_warning = 'is no longer supported by this version'
-    if earlier_schema_warning in str(warning_text):
+    if warning_type == 'log' and warning_text:
         logger = logging.getLogger('featuretools')
         logger.propagate = True
         deserialize.description_to_entityset(dictionary)
         assert warning_text in caplog.text
         logger.propagate = False
+    elif warning_type == 'warn' and warning_text:
+        with pytest.warns(UserWarning) as record:
+            deserialize.description_to_entityset(dictionary)
+        assert record[0].message.args[0] == warning_text
     else:
         deserialize.description_to_entityset(dictionary)
 
