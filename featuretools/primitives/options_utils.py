@@ -58,7 +58,7 @@ def generate_all_primitive_options(all_primitives,
     for primitive in all_primitives:
         if primitive in primitive_options and primitive.name in primitive_options:
             msg = "Options present for primitive instance and generic " \
-                  "primitive class %s, primitive instance will not use generic " \
+                  "primitive class (%s), primitive instance will not use generic " \
                   "options" % (primitive.name)
             warnings.warn(msg)
         if primitive in primitive_options or primitive.name in primitive_options:

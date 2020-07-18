@@ -1345,7 +1345,7 @@ def test_primitive_options_class_names(es):
 
 def test_primitive_options_instantiated_primitive(es):
     warning_msg = "Options present for primitive instance and generic " \
-                  "primitive class mean, primitive instance will not use generic " \
+                  "primitive class \\(mean\\), primitive instance will not use generic " \
                   "options"
 
     skipna_mean = Mean(skipna=False)
