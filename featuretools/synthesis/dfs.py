@@ -5,6 +5,7 @@ from featuretools.entityset import EntitySet
 from featuretools.feature_base import (
     AggregationFeature,
     DirectFeature,
+    FeatureOutputSlice,
     GroupByTransformFeature,
     TransformFeature
 )
@@ -332,13 +333,16 @@ def warn_unused_primitives(unused_primitives):
 
 def get_base_features(features):
     """Take a list of features and add all base features for any direct features"""
-    if any([isinstance(feature, DirectFeature) for feature in features]):
-        new_features = []
-        for feature in features:
-            if isinstance(feature, DirectFeature):
-                new_features.extend(feature.base_features)
-            else:
-                new_features.append(feature)
-        return get_base_features(new_features)
-    else:
+    updated = False
+    new_features = []
+    for feature in features:
+        if isinstance(feature, DirectFeature) or isinstance(feature, FeatureOutputSlice):
+            new_features.extend(feature.base_features)
+            updated = True
+        else:
+            new_features.append(feature)
+
+    if not updated:
         return features
+    else:
+        return get_base_features(new_features)
