@@ -12,6 +12,7 @@ Changelog
     * Changes
         * Make DFS match ``TimeSince`` primitive with all ``Datetime`` types (:pr:`1048`)
         * Change default branch to ``main`` (:pr:`1038`)
+        * Raise TypeError if improper input is supplied to ``Entity.delete_variables()`` (:pr:`1064`)
     * Documentation Changes
         * Remove benchmarks folder (:pr:`1049`)
         * Add custom variables types section to variables page (:pr:`1066`)
@@ -20,6 +21,7 @@ Changelog
         * Refactor Dask test units (:pr:`1052`)
         * Implement automated process for checking critical dependencies (:pr:`1045`, :pr:`1054`)
         * Don't run changelog check for release PRs or automated dependency PRs (:pr:`1057`)
+        * Fix non-deterministic behavior in Dask test causing codecov issues (:pr:`1070`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`systemshift`, :user:`monti-python`, :user:`thehomebrewnerd`, :user:`frances-h`, :user:`rwedge`
