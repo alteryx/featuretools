@@ -4,6 +4,7 @@ from featuretools.computational_backends import calculate_feature_matrix
 from featuretools.entityset import EntitySet
 from featuretools.feature_base import (
     AggregationFeature,
+    DirectFeature,
     GroupByTransformFeature,
     TransformFeature
 )
@@ -259,7 +260,9 @@ def dfs(entities=None,
     groupby_features = []
     where_features = []
 
-    for feature in features:
+    base_features = get_base_features(features)
+
+    for feature in base_features:
         if isinstance(feature, AggregationFeature):
             if feature.where:
                 where_features.append(feature)
@@ -325,3 +328,17 @@ def warn_unused_primitives(unused_primitives):
         "or it may indicate no compatible variable types for the primitive were found in the data."
 
     warnings.warn(warning_msg)
+
+
+def get_base_features(features):
+    """Take a list of features and add all base features for any direct features"""
+    if any([isinstance(feature, DirectFeature) for feature in features]):
+        new_features = []
+        for feature in features:
+            if isinstance(feature, DirectFeature):
+                new_features.extend(feature.base_features)
+            else:
+                new_features.append(feature)
+        return get_base_features(new_features)
+    else:
+        return features
