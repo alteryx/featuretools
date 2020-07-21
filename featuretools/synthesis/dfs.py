@@ -4,7 +4,6 @@ from featuretools.computational_backends import calculate_feature_matrix
 from featuretools.entityset import EntitySet
 from featuretools.feature_base import (
     AggregationFeature,
-    DirectFeature,
     FeatureOutputSlice,
     GroupByTransformFeature,
     TransformFeature
@@ -256,28 +255,12 @@ def dfs(entities=None,
     features = dfs_object.build_features(
         verbose=verbose, return_variable_types=return_variable_types)
 
-    trans_features = []
-    agg_features = []
-    groupby_features = []
-    where_features = []
+    trans, agg, groupby, where = _categorize_features(features)
 
-    base_features = get_base_features(features)
-
-    for feature in base_features:
-        if isinstance(feature, AggregationFeature):
-            if feature.where:
-                where_features.append(feature)
-            else:
-                agg_features.append(feature)
-        elif isinstance(feature, GroupByTransformFeature):
-            groupby_features.append(feature)
-        elif isinstance(feature, TransformFeature):
-            trans_features.append(feature)
-
-    trans_unused = get_unused_primitives(trans_primitives, trans_features)
-    agg_unused = get_unused_primitives(agg_primitives, agg_features)
-    groupby_unused = get_unused_primitives(groupby_trans_primitives, groupby_features)
-    where_unused = get_unused_primitives(where_primitives, where_features)
+    trans_unused = get_unused_primitives(trans_primitives, trans)
+    agg_unused = get_unused_primitives(agg_primitives, agg)
+    groupby_unused = get_unused_primitives(groupby_trans_primitives, groupby)
+    where_unused = get_unused_primitives(where_primitives, where)
 
     unused_primitives = [trans_unused, agg_unused, groupby_unused, where_unused]
     if any(unused_primitives):
@@ -331,18 +314,43 @@ def warn_unused_primitives(unused_primitives):
     warnings.warn(warning_msg)
 
 
-def get_base_features(features):
-    """Take a list of features and add all base features for any direct features"""
-    updated = False
-    new_features = []
-    for feature in features:
-        if isinstance(feature, DirectFeature) or isinstance(feature, FeatureOutputSlice):
-            new_features.extend(feature.base_features)
-            updated = True
-        else:
-            new_features.append(feature)
+def _categorize_features(features):
+    """Categorize each feature in a list of features along with any dependencies"""
+    transform = []
+    agg = []
+    groupby = []
+    where = []
+    explored = []
 
-    if not updated:
-        return features
-    else:
-        return get_base_features(new_features)
+    def get_feature_data(feature):
+        if feature.get_name() in explored:
+            return
+
+        dependencies = []
+
+        if isinstance(feature, FeatureOutputSlice):
+            feature = feature.base_feature
+
+        if isinstance(feature, AggregationFeature):
+            if feature.where:
+                where.append(feature)
+            else:
+                agg.append(feature)
+        elif isinstance(feature, GroupByTransformFeature):
+            groupby.append(feature)
+        elif isinstance(feature, TransformFeature):
+            transform.append(feature)
+
+        feature_deps = feature.get_dependencies()
+        if feature_deps:
+            dependencies.extend(feature_deps)
+
+        explored.append(feature.get_name())
+
+        for dep in dependencies:
+            get_feature_data(dep)
+
+    for feature in features:
+        get_feature_data(feature)
+
+    return transform, agg, groupby, where

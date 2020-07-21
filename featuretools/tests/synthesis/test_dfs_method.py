@@ -11,6 +11,7 @@ from featuretools.computational_backends.calculate_feature_matrix import (
 )
 from featuretools.entityset import EntitySet, Relationship, Timedelta
 from featuretools.primitives import (
+    GreaterThanScalar,
     Max,
     Mean,
     Min,
@@ -338,6 +339,18 @@ def test_warns_with_unused_primitives(es):
     assert not record
 
 
+def test_does_not_warn_with_stacking_feature(pd_es):
+    with pytest.warns(None) as record:
+        dfs(entityset=pd_es,
+            target_entity='régions',
+            agg_primitives=['percent_true'],
+            trans_primitives=[GreaterThanScalar(5)],
+            primitive_options={'greater_than_scalar': {'include_entities': ['stores']}},
+            features_only=True)
+
+    assert not record
+
+
 def test_warns_with_unused_where_primitives(es):
     warning_text = "Some specified primitives were not used during DFS:\n" + \
         "  where_primitives: ['count', 'sum']\n" + \
@@ -350,7 +363,7 @@ def test_warns_with_unused_where_primitives(es):
             agg_primitives=['count'],
             where_primitives=['sum', 'count'],
             max_depth=1)
-    breakpoint()
+
     assert record[0].message.args[0] == warning_text
 
 
