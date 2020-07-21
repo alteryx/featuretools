@@ -316,15 +316,15 @@ def warn_unused_primitives(unused_primitives):
     trans_unused, agg_unused, groupby_unused, where_unused = unused_primitives
     unused_string = ""
     if trans_unused:
-        unused_string += " trans_primitives: {}".format(trans_unused)
+        unused_string += "  trans_primitives: {}\n".format(trans_unused)
     if agg_unused:
-        unused_string += " agg_primitives: {}".format(agg_unused)
+        unused_string += "  agg_primitives: {}\n".format(agg_unused)
     if groupby_unused:
-        unused_string += " groupby_trans_primitives: {}".format(groupby_unused)
+        unused_string += "  groupby_trans_primitives: {}\n".format(groupby_unused)
     if where_unused:
-        unused_string += " where_primitives: {}".format(where_unused)
+        unused_string += "  where_primitives: {}\n".format(where_unused)
 
-    warning_msg = "Some specified primitives were not used during DFS.{}. ".format(unused_string) + \
+    warning_msg = "Some specified primitives were not used during DFS:\n{}".format(unused_string) + \
         "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
         "or it may indicate no compatible variable types for the primitive were found in the data."
 

@@ -313,8 +313,8 @@ def test_warns_with_unused_primitives(es):
     trans_primitives = ['num_characters', 'num_words', 'add_numeric']
     agg_primitives = [Max, 'min']
 
-    warning_text = "Some specified primitives were not used during DFS. " + \
-        "trans_primitives: ['add_numeric'] agg_primitives: ['max', 'min']. " + \
+    warning_text = "Some specified primitives were not used during DFS:\n" + \
+        "  trans_primitives: ['add_numeric']\n  agg_primitives: ['max', 'min']\n" + \
         "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
         "or it may indicate no compatible variable types for the primitive were found in the data."
 
@@ -339,8 +339,8 @@ def test_warns_with_unused_primitives(es):
 
 
 def test_warns_with_unused_where_primitives(es):
-    warning_text = "Some specified primitives were not used during DFS. " + \
-        "where_primitives: ['count', 'sum']. " + \
+    warning_text = "Some specified primitives were not used during DFS:\n" + \
+        "  where_primitives: ['count', 'sum']\n" + \
         "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
         "or it may indicate no compatible variable types for the primitive were found in the data."
 
@@ -350,13 +350,13 @@ def test_warns_with_unused_where_primitives(es):
             agg_primitives=['count'],
             where_primitives=['sum', 'count'],
             max_depth=1)
-
+    breakpoint()
     assert record[0].message.args[0] == warning_text
 
 
 def test_warns_with_unused_groupby_primitives(pd_es):
-    warning_text = "Some specified primitives were not used during DFS. " + \
-        "groupby_trans_primitives: ['cum_sum']. " + \
+    warning_text = "Some specified primitives were not used during DFS:\n" + \
+        "  groupby_trans_primitives: ['cum_sum']\n" + \
         "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
         "or it may indicate no compatible variable types for the primitive were found in the data."
 
@@ -388,8 +388,8 @@ def test_warns_with_unused_custom_primitives(pd_es):
 
     trans_primitives = [AboveTen]
 
-    warning_text = "Some specified primitives were not used during DFS. " + \
-        "trans_primitives: ['above_ten']. " + \
+    warning_text = "Some specified primitives were not used during DFS:\n" + \
+        "  trans_primitives: ['above_ten']\n" + \
         "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
         "or it may indicate no compatible variable types for the primitive were found in the data."
 
@@ -417,8 +417,8 @@ def test_warns_with_unused_custom_primitives(pd_es):
 
     agg_primitives = [MaxAboveTen]
 
-    warning_text = "Some specified primitives were not used during DFS. " + \
-        "agg_primitives: ['max_above_ten']. " + \
+    warning_text = "Some specified primitives were not used during DFS:\n" + \
+        "  agg_primitives: ['max_above_ten']\n" + \
         "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
         "or it may indicate no compatible variable types for the primitive were found in the data."
 
