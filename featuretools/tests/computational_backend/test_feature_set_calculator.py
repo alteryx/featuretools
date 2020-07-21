@@ -98,7 +98,7 @@ def test_full_entity_trans_of_agg(pd_es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([1]))
 
-    v = df[trans_feat.get_name()][1]
+    v = df[trans_feat.get_name()].loc[1]
     assert v == 82
 
 
