@@ -146,8 +146,8 @@ class Boolean(Variable):
     """Represents variables that take on one of two values
 
     Args:
-        true_values (list) : List of valued true values. Defaults to [1, True, "true", "True", "yes", "t", "T"]
-        false_values (list): List of valued false values. Defaults to [0, False, "false", "False", "no", "f", "F"]
+        true_values (list) : List of valued true values. Defaults to [1, True, "true", "True", "TRUE", "yes", "t", "T", "y", "Y"]
+        false_values (list): List of valued false values. Defaults to [0, False, "false", "False", "FALSE", "no", "f", "F", "n", "N"]
     """
     _default_pandas_dtype = bool
 
@@ -157,9 +157,9 @@ class Boolean(Variable):
                  name=None,
                  true_values=None,
                  false_values=None):
-        default = [1, True, "true", "True", "yes", "t", "T"]
+        default = [1, True, "true", "True", "TRUE", "yes", "t", "T", "y", "Y"]
         self.true_values = true_values or default
-        default = [0, False, "false", "False", "no", "f", "F"]
+        default = [0, False, "false", "False", "FALSE", "no", "f", "F", "n", "N"]
         self.false_values = false_values or default
         super(Boolean, self).__init__(id, entity, name=name)
 
