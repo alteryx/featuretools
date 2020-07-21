@@ -42,17 +42,17 @@ def _check_timedelta(td):
         return Timedelta(times, delta_obj=td)
     elif isinstance(td, pd.DateOffset):
         # DateOffsets
-        if td.__class__.__name__ == "DateOffset":
-            times = dict()
-            for td_unit, td_value in td.kwds.items():
-                times[td_unit] = td_value
-            return Timedelta(times, delta_obj=td)
+        # if td.__class__.__name__ == "DateOffset":
+        times = dict()
+        for td_unit, td_value in td.kwds.items():
+            times[td_unit] = td_value
+        return Timedelta(times, delta_obj=td)
         # Special offsets (such as BDay)
-        else:
-            unit = td.__class__.__name__
-            value = td.__dict__['n']
-            times = dict([(unit, value)])
-            return Timedelta(times, delta_obj=td)
+        # else:
+        #     unit = td.__class__.__name__
+        #     value = td.__dict__['n']
+        #     times = dict([(unit, value)])
+        #     return Timedelta(times, delta_obj=td)
     else:
         pattern = '([0-9]+) *([a-zA-Z]+)$'
         match = re.match(pattern, td)
