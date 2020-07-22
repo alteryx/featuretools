@@ -471,10 +471,12 @@ def test_training_window(pd_es):
              datetime(2011, 4, 10, 11),
              datetime(2011, 4, 10, 13, 10)]
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 1, 2]})
-    feature_matrix = calculate_feature_matrix([property_feature, dagg],
-                                              pd_es,
-                                              cutoff_time=cutoff_time,
-                                              training_window='2 hours')
+    warn_text = "Using training_window but last_time_index is not set on entity customers"
+    with pytest.warns(UserWarning, match=warn_text):
+        feature_matrix = calculate_feature_matrix([property_feature, dagg],
+                                                  pd_es,
+                                                  cutoff_time=cutoff_time,
+                                                  training_window='2 hours')
 
     pd_es.add_last_time_indexes()
 
