@@ -2,7 +2,7 @@ click==7.1.2
 cloudpickle==1.5.0
 dask==2.21.0
 distributed==2.21.0
-numpy==1.19.0
+numpy==1.19.1
 pandas==1.0.5
 psutil==5.7.2
 scipy==1.5.1
