@@ -1,6 +1,7 @@
 import random
 
 import pandas as pd
+from dask.distributed import Client
 
 import featuretools as ft
 from featuretools.primitives import (
@@ -53,6 +54,7 @@ def test_transform(pd_es, dask_es):
 
 
 def test_aggregation(pd_es, dask_es):
+    client = Client()
     primitives = ft.list_primitives()
     trans_primitives = []
     agg_list = primitives[primitives['type'] == 'aggregation']['name'].tolist()
@@ -78,3 +80,5 @@ def test_aggregation(pd_es, dask_es):
         # Use the same columns and make sure both indexes are sorted the same
         dask_computed_fm = dask_fm.compute().set_index(entity.index).loc[fm.index][fm.columns]
         pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
+
+    client.close()
