@@ -61,7 +61,6 @@ def test_aggregation(pd_es, dask_es):
     assert pd_es == dask_es
 
     # Run DFS using each entity as a target and confirm results match
-    breakpoint()
     # for entity in pd_es.entities:
     #     fm, _ = ft.dfs(entityset=pd_es,
     #                    target_entity=entity.id,
@@ -179,7 +178,7 @@ def test_aggregation(pd_es, dask_es):
                         cutoff_time=pd.Timestamp("2019-01-05 04:00"),
                         max_depth=2)
     # Use the same columns and make sure both indexes are sorted the same
-    dask_computed_fm = dask_fm.compute().set_index('id').loc[fm.index][fm.columns]
+    dask_computed_fm = dask_fm.compute().set_index('cohort').loc[fm.index][fm.columns]
     pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
 
     fm, _ = ft.dfs(entityset=pd_es,
