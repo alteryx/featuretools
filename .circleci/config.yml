@@ -11,6 +11,7 @@ executors:
         default: "3.7-stretch"
     docker:
       - image: circleci/python:<< parameters.image_tag >>
+    resource_class: large
 
 commands:
   package_featuretools:
@@ -36,7 +37,6 @@ jobs:
         default: "f18060cc0bb50ae75e4d602b7ce35197c8e31e81288d069b758594f1bb46ab45"
     executor:
       name: windows/default
-      size: large
     steps:
       - checkout
       - run:
@@ -134,7 +134,6 @@ jobs:
     executor:
       name: python
       image_tag: << parameters.image_tag >>
-      size: large
     steps:
       - run: sudo apt update && sudo apt install -y graphviz
       - checkout
