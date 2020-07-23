@@ -1,4 +1,5 @@
 import copy
+import logging
 from datetime import datetime
 
 import dask.dataframe as dd
@@ -88,8 +89,10 @@ def test_reset_metadata(es):
 
 
 def test_cannot_re_add_relationships_that_already_exists(es):
+    warn_text = "Not adding duplicate relationship: " + str(es.relationships[0])
     before_len = len(es.relationships)
-    es.add_relationship(es.relationships[0])
+    with pytest.warns(UserWarning, match=warn_text):
+        es.add_relationship(es.relationships[0])
     after_len = len(es.relationships)
     assert before_len == after_len
 
@@ -292,10 +295,12 @@ def df2(request):
 def test_none_index(df2):
     vtypes = {'category': variable_types.Categorical, 'category2': variable_types.Categorical}
 
+    warn_text = "Using first column as index. To change this, specify the index parameter"
     es = EntitySet(id='test')
-    es.entity_from_dataframe(entity_id='test_entity',
-                             dataframe=df2,
-                             variable_types=vtypes)
+    with pytest.warns(UserWarning, match=warn_text):
+        es.entity_from_dataframe(entity_id='test_entity',
+                                 dataframe=df2,
+                                 variable_types=vtypes)
     assert es['test_entity'].index == 'category'
     assert isinstance(es['test_entity']['category'], variable_types.Index)
 
@@ -318,10 +323,12 @@ def df3(request):
 def test_unknown_index(df3):
     vtypes = {'category': variable_types.Categorical}
 
+    warn_text = "index id not found in dataframe, creating new integer column"
     es = EntitySet(id='test')
-    es.entity_from_dataframe(entity_id='test_entity',
-                             index='id',
-                             variable_types=vtypes, dataframe=df3)
+    with pytest.warns(UserWarning, match=warn_text):
+        es.entity_from_dataframe(entity_id='test_entity',
+                                 index='id',
+                                 variable_types=vtypes, dataframe=df3)
     assert es['test_entity'].index == 'id'
     assert list(es['test_entity'].df['id']) == list(range(3))
 
@@ -1148,7 +1155,7 @@ def test_datetime64_conversion(datetime3):
     es['test_entity'].convert_variable_type('time', vtype_time_index)
 
 
-def test_later_schema_version(es):
+def test_later_schema_version(es, caplog):
     def test_version(major, minor, patch, raises=True):
         version = '.'.join([str(v) for v in [major, minor, patch]])
         if raises:
@@ -1159,7 +1166,7 @@ def test_later_schema_version(es):
         else:
             warning_text = None
 
-        _check_schema_version(version, es, warning_text)
+        _check_schema_version(version, es, warning_text, caplog, 'warn')
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
@@ -1169,7 +1176,7 @@ def test_later_schema_version(es):
     test_version(major, minor - 1, patch + 1, raises=False)
 
 
-def test_earlier_schema_version(es):
+def test_earlier_schema_version(es, caplog):
     def test_version(major, minor, patch, raises=True):
         version = '.'.join([str(v) for v in [major, minor, patch]])
         if raises:
@@ -1180,7 +1187,7 @@ def test_earlier_schema_version(es):
         else:
             warning_text = None
 
-        _check_schema_version(version, es, warning_text)
+        _check_schema_version(version, es, warning_text, caplog, 'log')
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
@@ -1189,7 +1196,7 @@ def test_earlier_schema_version(es):
     test_version(major, minor, patch - 1, raises=False)
 
 
-def _check_schema_version(version, es, warning_text):
+def _check_schema_version(version, es, warning_text, caplog, warning_type=None):
     entities = {entity.id: serialize.entity_to_description(entity) for entity in es.entities}
     relationships = [relationship.to_dictionary() for relationship in es.relationships]
     dictionary = {
@@ -1199,7 +1206,13 @@ def _check_schema_version(version, es, warning_text):
         'relationships': relationships,
     }
 
-    if warning_text:
+    if warning_type == 'log' and warning_text:
+        logger = logging.getLogger('featuretools')
+        logger.propagate = True
+        deserialize.description_to_entityset(dictionary)
+        assert warning_text in caplog.text
+        logger.propagate = False
+    elif warning_type == 'warn' and warning_text:
         with pytest.warns(UserWarning) as record:
             deserialize.description_to_entityset(dictionary)
         assert record[0].message.args[0] == warning_text

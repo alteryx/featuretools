@@ -1,10 +1,13 @@
 import importlib
+import logging
 import re
 import sys
 import warnings
 from itertools import zip_longest
 
 from tqdm import tqdm
+
+logger = logging.getLogger('featuretools.utils')
 
 
 def make_tqdm_iterator(**kwargs):
@@ -70,7 +73,7 @@ def check_schema_version(cls, cls_type):
                                  % (cls_type, version_string, cls_type))
         # Check if saved has older major version.
         if current[0] > saved[0]:
-            warnings.warn(warning_text_outdated)
+            logger.warning(warning_text_outdated)
 
 
 def import_or_raise(library, error_msg):

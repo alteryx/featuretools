@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import shutil
@@ -47,11 +48,14 @@ from featuretools.tests.testing_utils import (
 )
 
 
-def test_scatter_warning():
-    match = r'EntitySet was only scattered to .* out of .* workers'
-    with pytest.warns(UserWarning, match=match) as record:
-        scatter_warning(1, 2)
-    assert len(record) == 1
+def test_scatter_warning(caplog):
+    logger = logging.getLogger('featuretools')
+    match = "EntitySet was only scattered to {} out of {} workers"
+    warning_message = match.format(1, 2)
+    logger.propagate = True
+    scatter_warning(1, 2)
+    logger.propagate = False
+    assert warning_message in caplog.text
 
 
 # TODO: final assert fails w/ Dask
@@ -467,10 +471,12 @@ def test_training_window(pd_es):
              datetime(2011, 4, 10, 11),
              datetime(2011, 4, 10, 13, 10)]
     cutoff_time = pd.DataFrame({'time': times, 'instance_id': [0, 1, 2]})
-    feature_matrix = calculate_feature_matrix([property_feature, dagg],
-                                              pd_es,
-                                              cutoff_time=cutoff_time,
-                                              training_window='2 hours')
+    warn_text = "Using training_window but last_time_index is not set on entity customers"
+    with pytest.warns(UserWarning, match=warn_text):
+        feature_matrix = calculate_feature_matrix([property_feature, dagg],
+                                                  pd_es,
+                                                  cutoff_time=cutoff_time,
+                                                  training_window='2 hours')
 
     pd_es.add_last_time_indexes()
 
