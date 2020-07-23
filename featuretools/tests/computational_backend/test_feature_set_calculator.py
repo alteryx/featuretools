@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from dask import dataframe as dd
-from dask.distributed import Client
 from numpy.testing import assert_array_equal
 
 import featuretools as ft
@@ -41,15 +40,7 @@ from featuretools.utils import Trie
 from featuretools.variable_types import Numeric
 
 
-@pytest.fixture(scope="module")
-def dask_client():
-    client = Client()
-    yield client
-    # teardown
-    client.close()
-
-
-def test_make_identity(es, dask_client):
+def test_make_identity(es):
     f = IdentityFeature(es['log']['datetime'])
 
     feature_set = FeatureSet([f])
@@ -64,7 +55,7 @@ def test_make_identity(es, dask_client):
     assert (v == datetime(2011, 4, 9, 10, 30, 0))
 
 
-def test_make_dfeat(es, dask_client):
+def test_make_dfeat(es):
     f = DirectFeature(es['customers']['age'],
                       child_entity=es['sessions'])
 
@@ -80,7 +71,7 @@ def test_make_dfeat(es, dask_client):
     assert (v == 33)
 
 
-def test_make_agg_feat_of_identity_variable(es, dask_client):
+def test_make_agg_feat_of_identity_variable(es):
     agg_feat = ft.Feature(es['log']['value'], parent_entity=es['sessions'], primitive=Sum)
 
     feature_set = FeatureSet([agg_feat])
@@ -111,7 +102,7 @@ def test_full_entity_trans_of_agg(pd_es):
     assert v == 82
 
 
-def test_full_entity_error_dask(dask_es, dask_client):
+def test_full_entity_error_dask(dask_es):
     agg_feat = ft.Feature(dask_es['log']['value'], parent_entity=dask_es['customers'],
                           primitive=Sum)
     trans_feat = ft.Feature(agg_feat, primitive=CumSum)
@@ -126,7 +117,7 @@ def test_full_entity_error_dask(dask_es, dask_client):
         calculator.run(np.array([1]))
 
 
-def test_make_agg_feat_of_identity_index_variable(es, dask_client):
+def test_make_agg_feat_of_identity_index_variable(es):
     agg_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
 
     feature_set = FeatureSet([agg_feat])
@@ -141,7 +132,7 @@ def test_make_agg_feat_of_identity_index_variable(es, dask_client):
     assert (v == 5)
 
 
-def test_make_agg_feat_where_count(es, dask_client):
+def test_make_agg_feat_where_count(es):
     agg_feat = ft.Feature(es['log']['id'],
                           parent_entity=es['sessions'],
                           where=IdentityFeature(es['log']['product_id']) == 'coke zero',
@@ -159,7 +150,7 @@ def test_make_agg_feat_where_count(es, dask_client):
     assert (v == 3)
 
 
-def test_make_agg_feat_using_prev_time(es, dask_client):
+def test_make_agg_feat_using_prev_time(es):
     agg_feat = ft.Feature(es['log']['id'],
                           parent_entity=es['sessions'],
                           use_previous=Timedelta(10, 's'),
@@ -187,7 +178,7 @@ def test_make_agg_feat_using_prev_time(es, dask_client):
     assert (v == 1)
 
 
-def test_make_agg_feat_using_prev_n_events(es, dask_client):
+def test_make_agg_feat_using_prev_n_events(es):
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail('Dask currently does not support use_previous')
     agg_feat_1 = ft.Feature(es['log']['value'],
@@ -226,7 +217,7 @@ def test_make_agg_feat_using_prev_n_events(es, dask_client):
     assert v2 == 10
 
 
-def test_make_agg_feat_multiple_dtypes(es, dask_client):
+def test_make_agg_feat_multiple_dtypes(es):
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail('Currently no dask compatible agg prims that use multiple dtypes')
     compare_prod = IdentityFeature(es['log']['product_id']) == 'coke zero'
@@ -255,7 +246,7 @@ def test_make_agg_feat_multiple_dtypes(es, dask_client):
     assert (v2 == 'coke zero')
 
 
-def test_make_agg_feat_where_different_identity_feat(es, dask_client):
+def test_make_agg_feat_where_different_identity_feat(es):
     feats = []
     where_cmps = [LessThanScalar, GreaterThanScalar, LessThanEqualToScalar,
                   GreaterThanEqualToScalar, EqualScalar, NotEqualScalar]
@@ -305,7 +296,7 @@ def test_make_agg_feat_where_different_identity_feat(es, dask_client):
             assert (v3 == 1)
 
 
-def test_make_agg_feat_of_grandchild_entity(es, dask_client):
+def test_make_agg_feat_of_grandchild_entity(es):
     agg_feat = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
 
     feature_set = FeatureSet([agg_feat])
@@ -319,7 +310,7 @@ def test_make_agg_feat_of_grandchild_entity(es, dask_client):
     assert (v == 10)
 
 
-def test_make_agg_feat_where_count_feat(es, dask_client):
+def test_make_agg_feat_where_count_feat(es):
     """
     Feature we're creating is:
     Number of sessions for each customer where the
@@ -346,7 +337,7 @@ def test_make_agg_feat_where_count_feat(es, dask_client):
     assert (v1 == 2)
 
 
-def test_make_compare_feat(es, dask_client):
+def test_make_compare_feat(es):
     """
     Feature we're creating is:
     Number of sessions for each customer where the
@@ -375,7 +366,7 @@ def test_make_compare_feat(es, dask_client):
     assert not v2
 
 
-def test_make_agg_feat_where_count_and_device_type_feat(es, dask_client):
+def test_make_agg_feat_where_count_and_device_type_feat(es):
     """
     Feature we're creating is:
     Number of sessions for each customer where the
@@ -403,7 +394,7 @@ def test_make_agg_feat_where_count_and_device_type_feat(es, dask_client):
     assert (instances.loc[0] == 1)
 
 
-def test_make_agg_feat_where_count_or_device_type_feat(es, dask_client):
+def test_make_agg_feat_where_count_or_device_type_feat(es):
     """
     Feature we're creating is:
     Number of sessions for each customer where the
@@ -431,7 +422,7 @@ def test_make_agg_feat_where_count_or_device_type_feat(es, dask_client):
     assert (instances.loc[0] == 3)
 
 
-def test_make_agg_feat_of_agg_feat(es, dask_client):
+def test_make_agg_feat_of_agg_feat(es):
     log_count_feat = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
 
     customer_sum_feat = ft.Feature(log_count_feat, parent_entity=es['customers'], primitive=Sum)
@@ -518,7 +509,7 @@ def test_make_3_stacked_agg_feats(df):
     assert (v == 5)
 
 
-def test_make_dfeat_of_agg_feat_on_self(es, dask_client):
+def test_make_dfeat_of_agg_feat_on_self(es):
     """
     The graph looks like this:
 
@@ -545,7 +536,7 @@ def test_make_dfeat_of_agg_feat_on_self(es, dask_client):
     assert (v == 3)
 
 
-def test_make_dfeat_of_agg_feat_through_parent(es, dask_client):
+def test_make_dfeat_of_agg_feat_through_parent(es):
     """
     The graph looks like this:
 
@@ -574,7 +565,7 @@ def test_make_dfeat_of_agg_feat_through_parent(es, dask_client):
     assert (v == 3)
 
 
-def test_make_deep_agg_feat_of_dfeat_of_agg_feat(es, dask_client):
+def test_make_deep_agg_feat_of_dfeat_of_agg_feat(es):
     """
     The graph looks like this (higher implies parent):
 
@@ -605,7 +596,7 @@ def test_make_deep_agg_feat_of_dfeat_of_agg_feat(es, dask_client):
     assert (v == 38.0 / 10.0)
 
 
-def test_deep_agg_feat_chain(es, dask_client):
+def test_deep_agg_feat_chain(es):
     """
     Agg feat of agg feat:
         region.Mean(customer.Count(Log))
@@ -671,7 +662,7 @@ def test_trend(pd_es):
     np.testing.assert_almost_equal(df[trend.get_name()].values.tolist(), true_results, decimal=5)
 
 
-def test_direct_squared(es, dask_client):
+def test_direct_squared(es):
     feature = IdentityFeature(es['log']['value'])
     squared = feature * feature
     feature_set = FeatureSet([feature, squared])
@@ -685,7 +676,7 @@ def test_direct_squared(es, dask_client):
         assert (row[0] * row[0]) == row[1]
 
 
-def test_agg_empty_child(es, dask_client):
+def test_agg_empty_child(es):
     customer_count_feat = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
     feature_set = FeatureSet([customer_count_feat])
 
@@ -700,7 +691,7 @@ def test_agg_empty_child(es, dask_client):
     assert df["COUNT(log)"].iloc[0] == 0
 
 
-def test_diamond_entityset(diamond_es, dask_client):
+def test_diamond_entityset(diamond_es):
     es = diamond_es
 
     amount = ft.IdentityFeature(es['transactions']['amount'])
@@ -724,7 +715,7 @@ def test_diamond_entityset(diamond_es, dask_client):
     assert (df['SUM(customers.transactions.amount)'] == [72, 411, 0]).all()
 
 
-def test_two_relationships_to_single_entity(games_es, dask_client):
+def test_two_relationships_to_single_entity(games_es):
     es = games_es
     home_team, away_team = es.relationships
     path = RelationshipPath([(False, home_team)])
@@ -777,7 +768,7 @@ def parent_child(request):
     return request.getfixturevalue(request.param)
 
 
-def test_empty_child_dataframe(parent_child, dask_client):
+def test_empty_child_dataframe(parent_child):
     parent_df, child_df = parent_child
     if isinstance(parent_df, dd.DataFrame):
         parent_vtypes = {
@@ -859,7 +850,7 @@ def test_empty_child_dataframe(parent_child, dask_client):
     assert_array_equal(fm2[names], [values])
 
 
-def test_with_features_built_from_es_metadata(es, dask_client):
+def test_with_features_built_from_es_metadata(es):
     metadata = es.metadata
     agg_feat = ft.Feature(metadata['log']['id'], parent_entity=metadata['customers'], primitive=Count)
 
@@ -875,7 +866,7 @@ def test_with_features_built_from_es_metadata(es, dask_client):
 
 
 # TODO: Fails with Dask (conflicting aggregation primitives)
-def test_handles_primitive_function_name_uniqueness(es, dask_client):
+def test_handles_primitive_function_name_uniqueness(es):
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         pytest.xfail("Fails with Dask due conflicting aggregation primitive names")
 
@@ -1016,7 +1007,7 @@ def test_returns_order_of_instance_ids(pd_es):
     assert list(df.index) == instance_ids
 
 
-def test_calls_progress_callback(es, dask_client):
+def test_calls_progress_callback(es):
     # call with all feature types. make sure progress callback calls sum to 1
     identity = ft.Feature(es['customers']['age'])
     direct = ft.Feature(es['cohorts']['cohort_name'], es['customers'])
