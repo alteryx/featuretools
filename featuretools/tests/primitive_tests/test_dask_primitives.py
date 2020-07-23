@@ -81,11 +81,11 @@ def test_aggregation(pd_es, dask_es):
     #     pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
 
     fm, _ = ft.dfs(entityset=pd_es,
-                    target_entity="log",
-                    trans_primitives=trans_primitives,
-                    agg_primitives=agg_primitives,
-                    cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                    max_depth=2)
+                   target_entity="log",
+                   trans_primitives=trans_primitives,
+                   agg_primitives=agg_primitives,
+                   cutoff_time=pd.Timestamp("2019-01-05 04:00"),
+                   max_depth=2)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
                         target_entity="log",
@@ -98,11 +98,11 @@ def test_aggregation(pd_es, dask_es):
     pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
 
     fm, _ = ft.dfs(entityset=pd_es,
-                    target_entity="customers",
-                    trans_primitives=trans_primitives,
-                    agg_primitives=agg_primitives,
-                    cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                    max_depth=2)
+                   target_entity="customers",
+                   trans_primitives=trans_primitives,
+                   agg_primitives=agg_primitives,
+                   cutoff_time=pd.Timestamp("2019-01-05 04:00"),
+                   max_depth=2)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
                         target_entity="customers",
@@ -115,11 +115,11 @@ def test_aggregation(pd_es, dask_es):
     pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
 
     fm, _ = ft.dfs(entityset=pd_es,
-                    target_entity="sessions",
-                    trans_primitives=trans_primitives,
-                    agg_primitives=agg_primitives,
-                    cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                    max_depth=2)
+                   target_entity="sessions",
+                   trans_primitives=trans_primitives,
+                   agg_primitives=agg_primitives,
+                   cutoff_time=pd.Timestamp("2019-01-05 04:00"),
+                   max_depth=2)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
                         target_entity="sessions",
@@ -132,11 +132,11 @@ def test_aggregation(pd_es, dask_es):
     pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
 
     fm, _ = ft.dfs(entityset=pd_es,
-                    target_entity="products",
-                    trans_primitives=trans_primitives,
-                    agg_primitives=agg_primitives,
-                    cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                    max_depth=2)
+                   target_entity="products",
+                   trans_primitives=trans_primitives,
+                   agg_primitives=agg_primitives,
+                   cutoff_time=pd.Timestamp("2019-01-05 04:00"),
+                   max_depth=2)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
                         target_entity="products",
@@ -149,11 +149,11 @@ def test_aggregation(pd_es, dask_es):
     pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
 
     fm, _ = ft.dfs(entityset=pd_es,
-                    target_entity="stores",
-                    trans_primitives=trans_primitives,
-                    agg_primitives=agg_primitives,
-                    cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                    max_depth=2)
+                   target_entity="stores",
+                   trans_primitives=trans_primitives,
+                   agg_primitives=agg_primitives,
+                   cutoff_time=pd.Timestamp("2019-01-05 04:00"),
+                   max_depth=2)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
                         target_entity="stores",
@@ -166,11 +166,11 @@ def test_aggregation(pd_es, dask_es):
     pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
 
     fm, _ = ft.dfs(entityset=pd_es,
-                    target_entity="cohorts",
-                    trans_primitives=trans_primitives,
-                    agg_primitives=agg_primitives,
-                    cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                    max_depth=2)
+                   target_entity="cohorts",
+                   trans_primitives=trans_primitives,
+                   agg_primitives=agg_primitives,
+                   cutoff_time=pd.Timestamp("2019-01-05 04:00"),
+                   max_depth=2)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
                         target_entity="cohorts",
@@ -183,11 +183,11 @@ def test_aggregation(pd_es, dask_es):
     pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
 
     fm, _ = ft.dfs(entityset=pd_es,
-                    target_entity="régions",
-                    trans_primitives=trans_primitives,
-                    agg_primitives=agg_primitives,
-                    cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                    max_depth=2)
+                   target_entity="régions",
+                   trans_primitives=trans_primitives,
+                   agg_primitives=agg_primitives,
+                   cutoff_time=pd.Timestamp("2019-01-05 04:00"),
+                   max_depth=2)
 
     dask_fm, _ = ft.dfs(entityset=dask_es,
                         target_entity="régions",
