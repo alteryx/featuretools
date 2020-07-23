@@ -6,6 +6,7 @@ Changelog
     * Enhancements
         * Warn user if supplied primitives are not used during dfs (:pr:`1073`)
     * Fixes
+        * Use more consistent and uniform warnings (:pr:`1040`)
         * Fix issue with missing instance ids and categorical entity index (:pr:`1050`)
         * Remove warnings.simplefilter in feature_set_calculator to un-silence warnings (:pr:`1053`)
         * Fix feature visualization for features with '>' or '<' in name (:pr:`1055`)

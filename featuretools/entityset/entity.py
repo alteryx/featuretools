@@ -556,7 +556,7 @@ class Entity(object):
                             lti_mask = lti_slice >= time_last - training_window
                         mask = mask | lti_mask
                     else:
-                        logger.warning(
+                        warnings.warn(
                             "Using training_window but last_time_index is "
                             "not set on entity %s" % (self.id)
                         )
@@ -585,8 +585,8 @@ def _create_index(index, make_index, df):
         # Case 1: user wanted to make index but did not specify column name
         assert not make_index, "Must specify an index name if make_index is True"
         # Case 2: make_index not specified but no index supplied, use first column
-        logger.warning(("Using first column as index. ",
-                        "To change this, specify the index parameter"))
+        warnings.warn(("Using first column as index. "
+                       "To change this, specify the index parameter"))
         index = df.columns[0]
     elif make_index and index in df.columns:
         # Case 3: user wanted to make index but column already exists
@@ -595,8 +595,8 @@ def _create_index(index, make_index, df):
         if not make_index:
             # Case 4: user names index, it is not in df. does not specify
             # make_index.  Make new index column and warn
-            logger.warning("index %s not found in dataframe, creating new "
-                           "integer column", index)
+            warnings.warn("index {} not found in dataframe, creating new "
+                          "integer column".format(index))
         # Case 5: make_index with no errors or warnings
         # (Case 4 also uses this code path)
         if isinstance(df, dd.DataFrame):
