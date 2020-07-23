@@ -40,6 +40,7 @@ from featuretools.tests.testing_utils import backward_path
 from featuretools.utils import Trie
 from featuretools.variable_types import Numeric
 
+
 @pytest.fixture(scope="module")
 def dask_client():
     client = Client()

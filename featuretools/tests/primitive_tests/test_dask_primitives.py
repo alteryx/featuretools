@@ -1,8 +1,8 @@
 import random
-import pytest
 
-from dask.distributed import Client
 import pandas as pd
+import pytest
+from dask.distributed import Client
 
 import featuretools as ft
 from featuretools.primitives import (
@@ -12,6 +12,7 @@ from featuretools.primitives import (
 
 UNSUPPORTED = [p.name for p in get_transform_primitives().values() if not p.dask_compatible]
 UNSUPPORTED += [p.name for p in get_aggregation_primitives().values() if not p.dask_compatible]
+
 
 @pytest.fixture(scope="module")
 def dask_client():
