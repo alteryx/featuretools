@@ -90,11 +90,11 @@ def test_reset_metadata(es):
 
 def test_cannot_re_add_relationships_that_already_exists(es):
     warn_text = "Not adding duplicate relationship: " + str(es.relationships[0])
+    before_len = len(es.relationships)
     with pytest.warns(UserWarning, match=warn_text):
-        before_len = len(es.relationships)
         es.add_relationship(es.relationships[0])
-        after_len = len(es.relationships)
-        assert before_len == after_len
+    after_len = len(es.relationships)
+    assert before_len == after_len
 
 
 def test_add_relationships_convert_type(es):
