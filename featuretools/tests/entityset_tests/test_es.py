@@ -324,13 +324,13 @@ def test_unknown_index(df3):
     vtypes = {'category': variable_types.Categorical}
 
     warn_text = "index id not found in dataframe, creating new integer column"
+    es = EntitySet(id='test')
     with pytest.warns(UserWarning, match=warn_text):
-        es = EntitySet(id='test')
         es.entity_from_dataframe(entity_id='test_entity',
                                  index='id',
                                  variable_types=vtypes, dataframe=df3)
-        assert es['test_entity'].index == 'id'
-        assert list(es['test_entity'].df['id']) == list(range(3))
+    assert es['test_entity'].index == 'id'
+    assert list(es['test_entity'].df['id']) == list(range(3))
 
 
 def test_doesnt_remake_index(df):
