@@ -20,7 +20,7 @@ Changelog
     * Testing Changes
         * Add fixture for ``ft.demo.load_mock_customer`` (:pr:`1036`)
         * Refactor Dask test units (:pr:`1052`)
-        * Implement automated process for checking critical dependencies (:pr:`1045`, :pr:`1054`)
+        * Implement automated process for checking critical dependencies (:pr:`1045`, :pr:`1054`, :pr:`1081`)
         * Don't run changelog check for release PRs or automated dependency PRs (:pr:`1057`)
         * Fix non-deterministic behavior in Dask test causing codecov issues (:pr:`1070`)
 
