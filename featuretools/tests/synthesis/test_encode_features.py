@@ -223,4 +223,4 @@ def test_encode_features_matches_calculate_feature_matrix():
     features_calc = calculate_feature_matrix(feature_defs_enc, entityset=pd_es)
 
     assert features_enc['category = e'].dtypes == bool
-    assert features_enc['category = e'].dtypes == features_calc['category = e']
+    assert features_enc['category = e'].dtypes == features_calc['category = e'].dtypes
