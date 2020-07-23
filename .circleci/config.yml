@@ -11,7 +11,7 @@ executors:
         default: "3.7-stretch"
     docker:
       - image: circleci/python:<< parameters.image_tag >>
-    resource_class: large
+    resource_class: 2xlarge+
 
 commands:
   package_featuretools:
