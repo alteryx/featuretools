@@ -296,13 +296,13 @@ def test_none_index(df2):
     vtypes = {'category': variable_types.Categorical, 'category2': variable_types.Categorical}
 
     warn_text = "Using first column as index. To change this, specify the index parameter"
+    es = EntitySet(id='test')
     with pytest.warns(UserWarning, match=warn_text):
-        es = EntitySet(id='test')
         es.entity_from_dataframe(entity_id='test_entity',
                                  dataframe=df2,
                                  variable_types=vtypes)
-        assert es['test_entity'].index == 'category'
-        assert isinstance(es['test_entity']['category'], variable_types.Index)
+    assert es['test_entity'].index == 'category'
+    assert isinstance(es['test_entity']['category'], variable_types.Index)
 
 
 @pytest.fixture
