@@ -9,10 +9,8 @@ tqdm==4.46.0
 pyyaml>=3.12
 # cloudpickle>=0.4.0
 cloudpickle==1.4.1
-# distributed>=1.24.2
-distributed==2.16.0
-# dask[dataframe]>=1.1.0
-dask[dataframe]==2.16.0
+distributed>=1.24.2
+dask[dataframe]>=1.1.0
 # psutil>=5.4.8
 psutil==5.7.0
 # click>=7.0.0
