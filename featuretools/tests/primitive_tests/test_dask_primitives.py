@@ -8,7 +8,8 @@ from featuretools.primitives import (
     get_transform_primitives
 )
 
-UNSUPPORTED = [p.name for p in get_transform_primitives().values() if not p.dask_compatible]
+UNSUPPORTED = [p.name for p in get_transform_primitives().values() if not p.dask_compatible] + \
+    ['less_than_scalar', 'greater_than_scalar', 'less_than_equal_to_scalar', 'greater_than_equal_to_scalar', 'equal_scalar', 'not_equal_scalar']
 UNSUPPORTED += [p.name for p in get_aggregation_primitives().values() if not p.dask_compatible]
 
 
