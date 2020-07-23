@@ -1,5 +1,7 @@
 import random
+import pytest
 
+from dask.distributed import Client
 import pandas as pd
 
 import featuretools as ft
@@ -11,8 +13,15 @@ from featuretools.primitives import (
 UNSUPPORTED = [p.name for p in get_transform_primitives().values() if not p.dask_compatible]
 UNSUPPORTED += [p.name for p in get_aggregation_primitives().values() if not p.dask_compatible]
 
+@pytest.fixture(scope="module")
+def dask_client():
+    client = Client()
+    yield client
+    # teardown
+    client.close()
 
-def test_transform(pd_es, dask_es):
+
+def test_transform(pd_es, dask_es, dask_client):
     primitives = ft.list_primitives()
     trans_list = primitives[primitives['type'] == 'transform']['name'].tolist()
     trans_primitives = [prim for prim in trans_list if prim not in UNSUPPORTED]
@@ -52,7 +61,7 @@ def test_transform(pd_es, dask_es):
         pd.testing.assert_frame_equal(fm, dask_computed_fm)
 
 
-def test_aggregation(pd_es, dask_es):
+def test_aggregation(pd_es, dask_es, dask_client):
     primitives = ft.list_primitives()
     trans_primitives = []
     agg_list = primitives[primitives['type'] == 'aggregation']['name'].tolist()
