@@ -777,7 +777,7 @@ def parent_child(request):
     return request.getfixturevalue(request.param)
 
 
-def test_empty_child_dataframe(parent_child):
+def test_empty_child_dataframe(parent_child, dask_client):
     parent_df, child_df = parent_child
     if isinstance(parent_df, dd.DataFrame):
         parent_vtypes = {
