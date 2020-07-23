@@ -37,7 +37,7 @@ jobs:
         default: "f18060cc0bb50ae75e4d602b7ce35197c8e31e81288d069b758594f1bb46ab45"
     executor:
       name: windows/default
-      resource_class: large
+      size: "large"
     steps:
       - checkout
       - run:
