@@ -32,6 +32,7 @@ from featuretools.primitives import (
     NotEqual,
     NumCharacters,
     NumUnique,
+    SubtractNumeric,
     Sum,
     TimeSincePrevious,
     TransformPrimitive,
@@ -1368,3 +1369,22 @@ def test_primitive_options_instantiated_primitive(es):
             assert all(entity == 'stores' for entity in entities)
         elif isinstance(f.primitive, Mean):
             assert 'stores' not in entities
+
+
+def test_primitive_options_commutative(es):
+    options = {'subtract_numeric': [
+        {'include_variables': {'log': ['value_2']}},
+        {'include_variables': {'log': ['value']}}
+    ]}
+    dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
+                                   entityset=es,
+                                   agg_primitives=[],
+                                   trans_primitives=[SubtractNumeric],
+                                   primitive_options=options,
+                                   max_depth=1)
+    features = dfs_obj.build_features()
+    assert any(isinstance(f.primitive, SubtractNumeric) for f in features)
+    for f in features:
+        deps = f.get_dependencies(deep=True)
+        if isinstance(f.primitive, SubtractNumeric):
+            assert 'value_2' == deps[0] and 'value' == deps[1]
