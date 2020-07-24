@@ -60,7 +60,7 @@ def test_aggregation(pd_es, dask_es):
 
     assert pd_es == dask_es
 
-    Run DFS using each entity as a target and confirm results match
+    # Run DFS using each entity as a target and confirm results match
     for entity in pd_es.entities:
         fm, _ = ft.dfs(entityset=pd_es,
                        target_entity=entity.id,
