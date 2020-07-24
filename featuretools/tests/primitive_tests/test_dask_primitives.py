@@ -8,8 +8,7 @@ from featuretools.primitives import (
     get_transform_primitives
 )
 
-UNSUPPORTED = [p.name for p in get_transform_primitives().values() if not p.dask_compatible] + \
-    ['less_than_scalar', 'greater_than_scalar', 'less_than_equal_to_scalar', 'greater_than_equal_to_scalar', 'equal_scalar', 'not_equal_scalar']
+UNSUPPORTED = [p.name for p in get_transform_primitives().values() if not p.dask_compatible]
 UNSUPPORTED += [p.name for p in get_aggregation_primitives().values() if not p.dask_compatible]
 
 
@@ -61,140 +60,21 @@ def test_aggregation(pd_es, dask_es):
 
     assert pd_es == dask_es
 
-    # Run DFS using each entity as a target and confirm results match
-    # for entity in pd_es.entities:
-    #     fm, _ = ft.dfs(entityset=pd_es,
-    #                    target_entity=entity.id,
-    #                    trans_primitives=trans_primitives,
-    #                    agg_primitives=agg_primitives,
-    #                    cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-    #                    max_depth=2)
+    Run DFS using each entity as a target and confirm results match
+    for entity in pd_es.entities:
+        fm, _ = ft.dfs(entityset=pd_es,
+                       target_entity=entity.id,
+                       trans_primitives=trans_primitives,
+                       agg_primitives=agg_primitives,
+                       cutoff_time=pd.Timestamp("2019-01-05 04:00"),
+                       max_depth=2)
 
-    #     dask_fm, _ = ft.dfs(entityset=dask_es,
-    #                         target_entity=entity.id,
-    #                         trans_primitives=trans_primitives,
-    #                         agg_primitives=agg_primitives,
-    #                         cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-    #                         max_depth=2)
-    #     # Use the same columns and make sure both indexes are sorted the same
-    #     dask_computed_fm = dask_fm.compute().set_index(entity.index).loc[fm.index][fm.columns]
-    #     pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
-
-    fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="log",
-                   trans_primitives=trans_primitives,
-                   agg_primitives=agg_primitives,
-                   cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                   max_depth=2)
-
-    dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_entity="log",
-                        trans_primitives=trans_primitives,
-                        agg_primitives=agg_primitives,
-                        cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                        max_depth=2)
-    # Use the same columns and make sure both indexes are sorted the same
-    dask_computed_fm = dask_fm.compute().set_index('id').loc[fm.index][fm.columns]
-    pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
-
-    fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="customers",
-                   trans_primitives=trans_primitives,
-                   agg_primitives=agg_primitives,
-                   cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                   max_depth=2)
-
-    dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_entity="customers",
-                        trans_primitives=trans_primitives,
-                        agg_primitives=agg_primitives,
-                        cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                        max_depth=2)
-    # Use the same columns and make sure both indexes are sorted the same
-    dask_computed_fm = dask_fm.compute().set_index('id').loc[fm.index][fm.columns]
-    pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
-
-    fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="sessions",
-                   trans_primitives=trans_primitives,
-                   agg_primitives=agg_primitives,
-                   cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                   max_depth=2)
-
-    dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_entity="sessions",
-                        trans_primitives=trans_primitives,
-                        agg_primitives=agg_primitives,
-                        cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                        max_depth=2)
-    # Use the same columns and make sure both indexes are sorted the same
-    dask_computed_fm = dask_fm.compute().set_index('id').loc[fm.index][fm.columns]
-    pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
-
-    fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="products",
-                   trans_primitives=trans_primitives,
-                   agg_primitives=agg_primitives,
-                   cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                   max_depth=2)
-
-    dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_entity="products",
-                        trans_primitives=trans_primitives,
-                        agg_primitives=agg_primitives,
-                        cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                        max_depth=2)
-    # Use the same columns and make sure both indexes are sorted the same
-    dask_computed_fm = dask_fm.compute().set_index('id').loc[fm.index][fm.columns]
-    pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
-
-    fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="stores",
-                   trans_primitives=trans_primitives,
-                   agg_primitives=agg_primitives,
-                   cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                   max_depth=2)
-
-    dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_entity="stores",
-                        trans_primitives=trans_primitives,
-                        agg_primitives=agg_primitives,
-                        cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                        max_depth=2)
-    # Use the same columns and make sure both indexes are sorted the same
-    dask_computed_fm = dask_fm.compute().set_index('id').loc[fm.index][fm.columns]
-    pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
-
-    fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="cohorts",
-                   trans_primitives=trans_primitives,
-                   agg_primitives=agg_primitives,
-                   cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                   max_depth=2)
-
-    dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_entity="cohorts",
-                        trans_primitives=trans_primitives,
-                        agg_primitives=agg_primitives,
-                        cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                        max_depth=2)
-    # Use the same columns and make sure both indexes are sorted the same
-    dask_computed_fm = dask_fm.compute().set_index('cohort').loc[fm.index][fm.columns]
-    pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
-
-    fm, _ = ft.dfs(entityset=pd_es,
-                   target_entity="régions",
-                   trans_primitives=trans_primitives,
-                   agg_primitives=agg_primitives,
-                   cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                   max_depth=2)
-
-    dask_fm, _ = ft.dfs(entityset=dask_es,
-                        target_entity="régions",
-                        trans_primitives=trans_primitives,
-                        agg_primitives=agg_primitives,
-                        cutoff_time=pd.Timestamp("2019-01-05 04:00"),
-                        max_depth=2)
-    # Use the same columns and make sure both indexes are sorted the same
-    dask_computed_fm = dask_fm.compute().set_index('id').loc[fm.index][fm.columns]
-    pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
+        dask_fm, _ = ft.dfs(entityset=dask_es,
+                            target_entity=entity.id,
+                            trans_primitives=trans_primitives,
+                            agg_primitives=agg_primitives,
+                            cutoff_time=pd.Timestamp("2019-01-05 04:00"),
+                            max_depth=2)
+        # Use the same columns and make sure both indexes are sorted the same
+        dask_computed_fm = dask_fm.compute().set_index(entity.index).loc[fm.index][fm.columns]
+        pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)
