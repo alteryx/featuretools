@@ -212,7 +212,7 @@ def filter_groupby_matches_by_options(groupby_matches, options):
                                      groupby=True)
 
 
-def filter_matches_by_options(matches, options, groupby=False):
+def filter_matches_by_options(matches, options, groupby=False, commutative=False):
     # If more than one option, than need to handle each for each input
     if len(options) > 1:
         def is_valid_match(match):
@@ -231,4 +231,6 @@ def filter_matches_by_options(matches, options, groupby=False):
     for match in matches:
         if is_valid_match(match):
             valid_matches.add(match)
+        elif commutative and is_valid_match(tuple(reversed(match))):
+            valid_matches.add(tuple(reversed(match)))
     return valid_matches
