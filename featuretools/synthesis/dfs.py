@@ -296,16 +296,14 @@ def get_unused_primitives(specified, features):
 
 
 def warn_unused_primitives(unused_primitives):
-    trans_unused, agg_unused, groupby_unused, where_unused = unused_primitives
+    messages = ["  trans_primitives: {}\n",
+                "  agg_primitives: {}\n",
+                "  groupby_trans_primitives: {}\n",
+                "  where_primitives: {}\n"]
     unused_string = ""
-    if trans_unused:
-        unused_string += "  trans_primitives: {}\n".format(trans_unused)
-    if agg_unused:
-        unused_string += "  agg_primitives: {}\n".format(agg_unused)
-    if groupby_unused:
-        unused_string += "  groupby_trans_primitives: {}\n".format(groupby_unused)
-    if where_unused:
-        unused_string += "  where_primitives: {}\n".format(where_unused)
+    for primitives, message in zip(unused_primitives, messages):
+        if primitives:
+            unused_string += message.format(primitives)
 
     warning_msg = "Some specified primitives were not used during DFS:\n{}".format(unused_string) + \
         "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
