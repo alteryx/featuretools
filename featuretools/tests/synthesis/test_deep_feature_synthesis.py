@@ -45,7 +45,7 @@ from featuretools.tests.testing_utils import feature_with_name
 from featuretools.variable_types import Datetime, Numeric
 
 
-@pytest.fixture(params=['pd_transform_es', 'dask_transform_es'])
+@pytest.fixture(params=['pd_transform_es', 'dask_transform_es', 'koalas_transform_es'])
 def transform_es(request):
     return request.getfixturevalue(request.param)
 
@@ -71,6 +71,17 @@ def dask_transform_es(pd_transform_es):
     for entity in pd_transform_es.entities:
         es.entity_from_dataframe(entity_id=entity.id,
                                  dataframe=dd.from_pandas(entity.df, npartitions=2),
+                                 index=entity.index,
+                                 variable_types=entity.variable_types)
+    return es
+
+
+@pytest.fixture
+def koalas_transform_es(pd_transform_es):
+    es = ft.EntitySet(id=pd_transform_es.id)
+    for entity in pd_transform_es.entities:
+        es.entity_from_dataframe(entity_id=entity.id,
+                                 dataframe=ks.from_pandas(entity.df),
                                  index=entity.index,
                                  variable_types=entity.variable_types)
     return es
@@ -332,9 +343,8 @@ def test_makes_agg_features_of_trans_primitives(es):
 
 def test_makes_agg_features_with_where(es):
     # TODO: Update to work with Dask and Koalas `es` fixture when issue #978 is closed
-    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         pytest.xfail("Dask EntitySets do not support add_interesting_values")
-
     es.add_interesting_values()
 
     dfs_obj = DeepFeatureSynthesis(target_entity_id='sessions',
@@ -493,7 +503,7 @@ def test_seed_features(es):
 
 def test_does_not_make_agg_of_direct_of_target_entity(es):
     # TODO: Update to work with Dask and Koalas supported primitive
-    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         pytest.xfail("Dask EntitySets do not support the Last primitive")
 
     count_sessions = ft.Feature(es['sessions']['id'], parent_entity=es['customers'], primitive=Count)
@@ -512,7 +522,7 @@ def test_does_not_make_agg_of_direct_of_target_entity(es):
 
 def test_dfs_builds_on_seed_features_more_than_max_depth(es):
     # TODO: Update to work with Dask and Koalas supported primitive
-    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         pytest.xfail("Dask EntitySets do not support the Last and Mode primitives")
 
     seed_feature_sessions = ft.Feature(es['log']['id'], parent_entity=es['sessions'], primitive=Count)
@@ -540,7 +550,7 @@ def test_dfs_builds_on_seed_features_more_than_max_depth(es):
 
 def test_allowed_paths(es):
     # TODO: Update to work with Dask and Koalas supported primitive
-    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         pytest.xfail("Dask EntitySets do not support the Last primitive")
 
     kwargs = dict(
@@ -626,7 +636,7 @@ def test_where_primitives(es):
 
 def test_stacking_where_primitives(es):
     # TODO: Update to work with Dask supported primitive
-    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         pytest.xfail("Dask and Koalas EntitySets do not support the Last primitive")
     es = copy.deepcopy(es)
     es['sessions']['device_type'].interesting_values = [0]
@@ -701,7 +711,7 @@ def test_where_different_base_feats(es):
 
 def test_dfeats_where(es):
     # TODO: Update to work with Dask `es` fixture when issue #978 is closed
-    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         pytest.xfail("Dask and Koalas EntitySets do not support add_interesting_values")
     es.add_interesting_values()
 
@@ -765,7 +775,7 @@ def test_transform_consistency(transform_es):
 
 def test_transform_no_stack_agg(es):
     # TODO: Update to work with Dask and Koalas supported primitives
-    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         pytest.xfail("Dask EntitySets do not support the NMostCommon primitive")
     feature_defs = ft.dfs(entityset=es,
                           target_entity="customers",
@@ -789,7 +799,7 @@ def test_intialized_trans_prim(es):
 
 def test_initialized_agg_prim(es):
     # TODO: Update to work with Dask and Koalas supported primitives
-    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         pytest.xfail("Dask EntitySets do not support the NMostCommon primitive")
     ThreeMost = NMostCommon(n=3)
     dfs_obj = DeepFeatureSynthesis(target_entity_id="sessions",
@@ -802,7 +812,7 @@ def test_initialized_agg_prim(es):
 
 def test_return_variable_types(es):
     # TODO: Update to work with Dask and Koalas supported primitive
-    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         pytest.xfail("Dask and Koalas EntitySets do not support the NMostCommon primitive")
     dfs_obj = DeepFeatureSynthesis(target_entity_id="sessions",
                                    entityset=es,
@@ -890,7 +900,7 @@ def test_makes_direct_features_through_multiple_relationships(games_es):
 
 def test_stacks_multioutput_features(es):
     # TODO: Update to work with Dask and Koalas supported primitive
-    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         pytest.xfail("Dask EntitySets do not support the NumUnique and NMostCommon primitives")
 
     class TestTime(TransformPrimitive):
@@ -925,7 +935,7 @@ def test_stacks_multioutput_features(es):
 
 def test_seed_multi_output_feature_stacking(es):
     # TODO: Update to work with Dask and Koalas supported primitive
-    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         pytest.xfail("Dask EntitySets do not support the NMostCommon and NumUnique primitives")
     threecommon = NMostCommon(3)
     tc = ft.Feature(es['log']['product_id'], parent_entity=es["sessions"], primitive=threecommon)
@@ -969,9 +979,6 @@ def test_does_not_make_trans_of_single_direct_feature(es):
 
 
 def test_makes_trans_of_multiple_direct_features(diamond_es):
-    # TODO: Update to work with Dask supported primitive
-    if any(isinstance(entity.df, dd.DataFrame) for entity in diamond_es.entities):
-        pytest.xfail("Dask EntitySets do not support the Equal primitive")
     dfs_obj = DeepFeatureSynthesis(target_entity_id='transactions',
                                    entityset=diamond_es,
                                    agg_primitives=['mean'],
@@ -1242,7 +1249,7 @@ def test_primitive_options_groupbys(pd_es):
 
 
 def test_primitive_options_multiple_inputs(es):
-    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         pytest.xfail("Dask and Koalas EntitySets do not support various primitives used in this test")
     too_many_options = {'mode': [{'include_entities': ['logs']},
                                  {'ignore_entities': ['sessions']}]}

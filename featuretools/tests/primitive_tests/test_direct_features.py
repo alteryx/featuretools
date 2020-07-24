@@ -22,6 +22,7 @@ from featuretools.primitives import (
 )
 from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools.synthesis import dfs
+from featuretools.tests.testing_utils import to_pandas
 from featuretools.variable_types import Categorical, Datetime, Numeric
 
 
@@ -32,8 +33,7 @@ def test_direct_from_identity(es):
     feature_set = FeatureSet([d])
     calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
     df = calculator.run(np.array([0, 5]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id').sort_index()
+    df = to_pandas(df, index='id', sort_index=True)
     v = df[d.get_name()].tolist()
     assert v == [0, 1]
 
@@ -47,8 +47,7 @@ def test_direct_from_variable(es):
     feature_set = FeatureSet([d])
     calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
     df = calculator.run(np.array([0, 5]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id').sort_index()
+    df = to_pandas(df, index='id', sort_index=True)
     v = df[d.get_name()].tolist()
     assert v == [0, 1]
 
@@ -77,8 +76,8 @@ def test_direct_copy(games_es):
 
 def test_direct_of_multi_output_transform_feat(es):
     # TODO: Update to work with Dask and Koalas
-    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
-        pytest.xfail("Custom primitive is not compabible with Dask")
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
+        pytest.xfail("Custom primitive is not compabible with Dask or Koalas")
 
     class TestTime(TransformPrimitive):
         name = "test_time"

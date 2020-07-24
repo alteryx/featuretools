@@ -36,7 +36,7 @@ from featuretools.primitives import (  # NMostCommon,
     Trend
 )
 from featuretools.primitives.base import AggregationPrimitive
-from featuretools.tests.testing_utils import backward_path
+from featuretools.tests.testing_utils import backward_path, to_pandas
 from featuretools.utils import Trie
 from featuretools.variable_types import Numeric
 
@@ -48,9 +48,7 @@ def test_make_identity(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run(np.array([0]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
+    df = to_pandas(calculator.run(np.array([0])))
 
     v = df[f.get_name()][0]
     assert (v == datetime(2011, 4, 9, 10, 30, 0))
@@ -64,9 +62,7 @@ def test_make_dfeat(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run(np.array([0]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
+    df = to_pandas(calculator.run(np.array([0])))
 
     v = df[f.get_name()][0]
     assert (v == 33)
@@ -79,9 +75,7 @@ def test_make_agg_feat_of_identity_variable(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run(np.array([0]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
+    df = to_pandas(calculator.run(np.array([0])))
 
     v = df[agg_feat.get_name()][0]
     assert (v == 50)
@@ -125,9 +119,7 @@ def test_make_agg_feat_of_identity_index_variable(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run(np.array([0]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
+    df = to_pandas(calculator.run(np.array([0])))
 
     v = df[agg_feat.get_name()][0]
     assert (v == 5)
@@ -143,9 +135,7 @@ def test_make_agg_feat_where_count(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run(np.array([0]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
+    df = to_pandas(calculator.run(np.array([0])))
 
     v = df[agg_feat.get_name()][0]
     assert (v == 3)
@@ -161,9 +151,7 @@ def test_make_agg_feat_using_prev_time(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=datetime(2011, 4, 9, 10, 30, 10),
                                       feature_set=feature_set)
-    df = calculator.run(np.array([0]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
+    df = to_pandas(calculator.run(np.array([0])))
 
     v = df[agg_feat.get_name()][0]
     assert (v == 2)
@@ -171,17 +159,15 @@ def test_make_agg_feat_using_prev_time(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=datetime(2011, 4, 9, 10, 30, 30),
                                       feature_set=feature_set)
-    df = calculator.run(np.array([0]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
+    df = to_pandas(calculator.run(np.array([0])))
 
     v = df[agg_feat.get_name()][0]
     assert (v == 1)
 
 
 def test_make_agg_feat_using_prev_n_events(es):
-    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
-        pytest.xfail('Dask currently does not support use_previous')
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
+        pytest.xfail('Distrubuted entitysets do not support use_previous')
     agg_feat_1 = ft.Feature(es['log']['value'],
                             parent_entity=es['sessions'],
                             use_previous=Timedelta(1, 'observations'),
@@ -219,8 +205,8 @@ def test_make_agg_feat_using_prev_n_events(es):
 
 
 def test_make_agg_feat_multiple_dtypes(es):
-    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
-        pytest.xfail('Currently no Dask compatible or Koalas compatible agg prims that use multiple dtypes')
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
+        pytest.xfail('Currently no Dask or Koalas compatible agg prims that use multiple dtypes')
     compare_prod = IdentityFeature(es['log']['product_id']) == 'coke zero'
 
     agg_feat = ft.Feature(es['log']['id'],
@@ -237,9 +223,7 @@ def test_make_agg_feat_multiple_dtypes(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run(np.array([0]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
+    df = to_pandas(calculator.run(np.array([0])))
 
     v = df[agg_feat.get_name()][0]
     v2 = df[agg_feat2.get_name()][0]
@@ -258,10 +242,7 @@ def test_make_agg_feat_where_different_identity_feat(es):
                                 primitive=Count))
 
     df = ft.calculate_feature_matrix(entityset=es, features=feats, instance_ids=[0, 1, 2, 3])
-    if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id').sort_index()
-    if isinstance(df, ks.DataFrame):
-        df = df.set_index('id').sort_index().to_pandas()
+    df = to_pandas(df, index='id', sort_index=True)
 
     for i, where_cmp in enumerate(where_cmps):
         name = feats[i].get_name()
@@ -307,11 +288,8 @@ def test_make_agg_feat_of_grandchild_entity(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
-        df.index = pd.Int64Index(df.index)
-    if isinstance(df, ks.DataFrame):
-        df = df.set_index('id')
+    df = to_pandas(df, index='id', int_index=True)
+
     v = df[agg_feat.get_name()][0]
     assert (v == 10)
 
@@ -334,10 +312,8 @@ def test_make_agg_feat_where_count_feat(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0, 1]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
-    if isinstance(df, ks.DataFrame):
-        df = df.set_index('id').sort_index().to_pandas()
+    df = to_pandas(df, index='id', sort_index=True)
+
     name = feat.get_name()
     instances = df[name]
     v0, v1 = instances[0:2]
@@ -364,10 +340,8 @@ def test_make_compare_feat(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0, 1, 2]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
-    if isinstance(df, ks.DataFrame):
-        df = df.set_index('id').sort_index().to_pandas()
+    df = to_pandas(df, index='id', sort_index=True)
+
     name = feat.get_name()
     instances = df[name]
     v0, v1, v2 = instances[0:3]
@@ -397,11 +371,8 @@ def test_make_agg_feat_where_count_and_device_type_feat(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
-        df.index = pd.Int64Index(df.index)
-    if isinstance(df, ks.DataFrame):
-        df = df.set_index('id')
+    df = to_pandas(df, index='id', int_index=True)
+
     name = feat.get_name()
     instances = df[name]
     assert (instances[0] == 1)
@@ -428,11 +399,8 @@ def test_make_agg_feat_where_count_or_device_type_feat(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
-        df.index = pd.Int64Index(df.index)
-    if isinstance(df, ks.DataFrame):
-        df = df.set_index('id')
+    df = to_pandas(df, index='id', int_index=True)
+
     name = feat.get_name()
     instances = df[name]
     assert (instances[0] == 3)
@@ -448,11 +416,7 @@ def test_make_agg_feat_of_agg_feat(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
-        df.index = pd.Int64Index(df.index)
-    if isinstance(df, ks.DataFrame):
-        df = df.set_index('id')
+    df = to_pandas(df, index='id', int_index=True)
     v = df[customer_sum_feat.get_name()][0]
     assert (v == 10)
 
@@ -554,9 +518,8 @@ def test_make_dfeat_of_agg_feat_on_self(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
-        df.index = pd.Int64Index(df.index)
+    df = to_pandas(df, index='id', int_index=True)
+
     v = df[num_customers_feat.get_name()][0]
     assert (v == 3)
 
@@ -584,9 +547,8 @@ def test_make_dfeat_of_agg_feat_through_parent(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
-        df.index = pd.Int64Index(df.index)
+    df = to_pandas(df, index='id', int_index=True)
+
     v = df[num_stores_feat.get_name()][0]
     assert (v == 3)
 
@@ -616,11 +578,8 @@ def test_make_deep_agg_feat_of_dfeat_of_agg_feat(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
-        df.index = pd.Int64Index(df.index)
-    if isinstance(df, ks.DataFrame):
-        df = df.set_index('id')
+    df = to_pandas(df, index='id', int_index=True)
+
     v = df[purchase_popularity.get_name()][0]
     assert (v == 38.0 / 10.0)
 
@@ -639,8 +598,8 @@ def test_deep_agg_feat_chain(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array(['United States']))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
+    df = to_pandas(df, index='id')
+
     v = df[region_avg_feat.get_name()][0]
     assert (v == 17 / 3.)
 
@@ -698,9 +657,7 @@ def test_direct_squared(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = calculator.run(np.array([0, 1, 2]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
+    df = to_pandas(calculator.run(np.array([0, 1, 2])))
     for i, row in df.iterrows():
         assert (row[0] * row[0]) == row[1]
 
@@ -713,9 +670,7 @@ def test_agg_empty_child(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=datetime(2011, 4, 8),
                                       feature_set=feature_set)
-    df = calculator.run(np.array([0]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
+    df = to_pandas(calculator.run(np.array([0])), index='id')
 
     assert df["COUNT(log)"].iloc[0] == 0
 
@@ -738,10 +693,8 @@ def test_diamond_entityset(diamond_es):
                                       time_last=datetime(2011, 4, 8),
                                       feature_set=feature_set)
     df = calculator.run(np.array([0, 1, 2]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
-    if isinstance(df, ks.DataFrame):
-        df = df.to_pandas().set_index('id').sort_index()
+    df = to_pandas(df, index='id', sort_index=True)
+
     assert (df['SUM(stores.transactions.amount)'] == [94, 261, 128]).all()
     assert (df['SUM(customers.transactions.amount)'] == [72, 411, 0]).all()
 
@@ -769,10 +722,8 @@ def test_two_relationships_to_single_entity(games_es):
                                       time_last=datetime(2011, 8, 28),
                                       feature_set=feature_set)
     df = calculator.run(np.array(range(3)))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
-    if isinstance(df, ks.DataFrame):
-        df = df.to_pandas().set_index('id').sort_index()
+    df = to_pandas(df, index='id', sort_index=True)
+
     assert (df[home_team_mean.get_name()] == [1.5, 1.5, 2.5]).all()
     assert (df[away_team_mean.get_name()] == [1, 0.5, 2]).all()
 
@@ -811,7 +762,7 @@ def parent_child(request):
 
 def test_empty_child_dataframe(parent_child):
     parent_df, child_df = parent_child
-    if isinstance(parent_df, dd.DataFrame) or isinstance(parent_df, ks.DataFrame):
+    if isinstance(parent_df, (dd.DataFrame, ks.DataFrame)):
         parent_vtypes = {
             'id': variable_types.Index
         }
@@ -852,7 +803,7 @@ def test_empty_child_dataframe(parent_child):
     trend_where = ft.Feature([es["child"]['value'], es["child"]['time_index']], parent_entity=es["parent"], where=where, primitive=Trend)
     n_most_common_where = ft.Feature(es["child"]['cat'], parent_entity=es["parent"], where=where, primitive=NMostCommon)
 
-    if isinstance(parent_df, dd.DataFrame) or isinstance(parent_df, ks.DataFrame):
+    if isinstance(parent_df, (dd.DataFrame, ks.DataFrame)):
         features = [count, count_where]
         names = [count.get_name(), count_where.get_name()]
         values = [0, 0]
@@ -869,14 +820,12 @@ def test_empty_child_dataframe(parent_child):
     fm = ft.calculate_feature_matrix(entityset=es,
                                      features=features,
                                      cutoff_time=pd.Timestamp("12/31/2017"))
-    if isinstance(fm, dd.DataFrame):
-        fm = fm.compute()
-    if isinstance(fm, ks.DataFrame):
-        fm = fm.to_pandas()
+    fm = to_pandas(fm)
+
     assert_array_equal(fm[names], [values])
 
     # cutoff time after all rows, but where clause filters all rows
-    if isinstance(parent_df, dd.DataFrame) or isinstance(parent_df, ks.DataFrame):
+    if isinstance(parent_df, (dd.DataFrame, ks.DataFrame)):
         features = [count_where]
         names = [count_where.get_name()]
         values = [0]
@@ -888,10 +837,8 @@ def test_empty_child_dataframe(parent_child):
     fm2 = ft.calculate_feature_matrix(entityset=es,
                                       features=features,
                                       cutoff_time=pd.Timestamp("1/4/2018"))
-    if isinstance(fm2, dd.DataFrame):
-        fm2 = fm2.compute()
-    if isinstance(fm2, ks.DataFrame):
-        fm2 = fm2.to_pandas()
+    fm2 = to_pandas(fm2)
+
     assert_array_equal(fm2[names], [values])
 
 
@@ -904,18 +851,15 @@ def test_with_features_built_from_es_metadata(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
-        df.index = pd.Int64Index(df.index)
-    if isinstance(df, ks.DataFrame):
-        df = df.set_index('id')
+    df = to_pandas(df, index='id', int_index=True)
+
     v = df[agg_feat.get_name()][0]
     assert (v == 10)
 
 
 # TODO: Fails with Dask and Koalas (conflicting aggregation primitives)
 def test_handles_primitive_function_name_uniqueness(es):
-    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         pytest.xfail("Fails with Dask and Koalas due conflicting aggregation primitive names")
 
     class SumTimesN(AggregationPrimitive):
@@ -949,8 +893,8 @@ def test_handles_primitive_function_name_uniqueness(es):
                     parent_entity=es["customers"],
                     primitive=SumTimesN(n=1))
     fm = ft.calculate_feature_matrix(features=[f1], entityset=es)
-    if isinstance(fm, dd.DataFrame):
-        fm = fm.compute().set_index('id')
+    fm = to_pandas(fm, index='id')
+
     value_sum = pd.Series([56, 26, 0])
     assert all(fm[f1.get_name()].sort_index() == value_sum)
 
@@ -959,15 +903,15 @@ def test_handles_primitive_function_name_uniqueness(es):
                     parent_entity=es["customers"],
                     primitive=SumTimesN(n=2))
     fm = ft.calculate_feature_matrix(features=[f2], entityset=es)
-    if isinstance(fm, dd.DataFrame):
-        fm = fm.compute().set_index('id')
+    fm = to_pandas(fm, index='id')
+
     double_value_sum = pd.Series([112, 52, 0])
     assert all(fm[f2.get_name()].sort_index() == double_value_sum)
 
     # same primitive, same variable, different args
     fm = ft.calculate_feature_matrix(features=[f1, f2], entityset=es)
-    if isinstance(fm, dd.DataFrame):
-        fm = fm.compute().set_index('id')
+    fm = to_pandas(fm, index='id')
+
     assert all(fm[f1.get_name()].sort_index() == value_sum)
     assert all(fm[f2.get_name()].sort_index() == double_value_sum)
 
@@ -980,8 +924,8 @@ def test_handles_primitive_function_name_uniqueness(es):
                     parent_entity=es["customers"],
                     primitive=NumTrue)
     fm = ft.calculate_feature_matrix(features=[f3, f4], entityset=es)
-    if isinstance(fm, dd.DataFrame):
-        fm = fm.compute().set_index('id')
+    fm = to_pandas(fm, index='id')
+
     purchased_sum = pd.Series([10, 1, 1])
     assert all(fm[f3.get_name()].sort_index() == value_sum)
     assert all(fm[f4.get_name()].sort_index() == purchased_sum)\
@@ -1065,7 +1009,7 @@ def test_calls_progress_callback(es):
     trans_full = ft.Feature(agg, primitive=CumSum)
     groupby_trans = ft.Feature(agg, primitive=CumSum, groupby=es["customers"]["cohort"])
 
-    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         all_features = [identity, direct, agg, trans]
     else:
         all_features = [identity, direct, agg, agg_apply, trans, trans_full, groupby_trans]

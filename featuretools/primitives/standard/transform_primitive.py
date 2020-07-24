@@ -1,4 +1,5 @@
 import numpy as np
+
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
 )

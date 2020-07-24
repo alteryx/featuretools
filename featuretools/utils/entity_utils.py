@@ -150,7 +150,7 @@ def convert_variable_data(df, column_id, new_type, **kwargs):
         if isinstance(df, dd.DataFrame):
             df[column_id] = dd.to_numeric(df[column_id], errors='coerce')
         elif isinstance(df, ks.DataFrame):
-            df[column_id] = ks.to_numeric(df[column_id], errors='coerce')
+            df[column_id] = ks.to_numeric(df[column_id])
         else:
             orig_nonnull = df[column_id].dropna().shape[0]
             df[column_id] = pd.to_numeric(df[column_id], errors='coerce')

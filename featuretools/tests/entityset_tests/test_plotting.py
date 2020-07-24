@@ -5,6 +5,7 @@ import graphviz
 import pandas as pd
 import pytest
 from dask import dataframe as dd
+from databricks import koalas as ks
 
 import featuretools as ft
 
@@ -26,7 +27,15 @@ def dd_simple():
     return es
 
 
-@pytest.fixture(params=['pd_simple', 'dd_simple'])
+@pytest.fixture
+def ks_simple():
+    es = ft.EntitySet("test")
+    df = ks.DataFrame({'foo': [1]})
+    es.entity_from_dataframe('test', df)
+    return es
+
+
+@pytest.fixture(params=['pd_simple', 'dd_simple', 'ks_simple'])
 def simple_es(request):
     return request.getfixturevalue(request.param)
 

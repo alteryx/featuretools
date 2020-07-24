@@ -4,12 +4,14 @@ import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pytest
-from dask import dataframe as dd
 
 import featuretools as ft
 from featuretools import variable_types
 from featuretools.entityset import Entity, EntitySet
-from featuretools.tests.testing_utils import make_ecommerce_entityset
+from featuretools.tests.testing_utils import (
+    make_ecommerce_entityset,
+    to_pandas
+)
 from featuretools.variable_types import find_variable_types
 
 
@@ -61,10 +63,7 @@ def test_eq(es):
 
     assert es['log'].__eq__(es['log'], deep=True)
     assert es['log'].__eq__(other_es['log'], deep=True)
-    if isinstance(latlong, ks.Series):
-        assert all(es['log'].df['latlong'].to_pandas().eq(latlong.to_pandas()))
-    else:
-        assert all(es['log'].df['latlong'].eq(latlong))
+    assert all(to_pandas(es['log'].df['latlong']).eq(to_pandas(latlong)))
 
     other_es['log'].add_interesting_values()
     assert not es['log'].__eq__(other_es['log'], deep=True)
@@ -87,9 +86,7 @@ def test_eq(es):
 def test_update_data(es):
     df = es['customers'].df.copy()
     if isinstance(df, ks.DataFrame):
-        new_series = ks.Series([1, 2, 3])
-        new_series.rename('new')
-        df = df.join(new_series)
+        df['new'] = [1, 2, 3]
     else:
         df['new'] = pd.Series([1, 2, 3])
 
@@ -103,48 +100,34 @@ def test_update_data(es):
 
     # test already_sorted on entity without time index
     df = es["sessions"].df.copy()
-    if isinstance(df, dd.DataFrame):
-        updated_id = df['id'].compute()
-    else:
-        updated_id = df['id']
+    updated_id = to_pandas(df['id'])
     updated_id.iloc[1] = 2
     updated_id.iloc[2] = 1
 
     if isinstance(df, ks.DataFrame):
-        df = df.drop('id').join(updated_id).sort_index()
+        df["id"] = updated_id.to_list()
+        df = df.sort_index()
     else:
         df["id"] = updated_id
     es["sessions"].update_data(df.copy())
-    sessions_df = es['sessions'].df
-    if isinstance(sessions_df, dd.DataFrame):
-        sessions_df = sessions_df.compute()
-    elif isinstance(sessions_df, ks.DataFrame):
-        sessions_df = sessions_df.to_pandas()
+    sessions_df = to_pandas(es['sessions'].df)
     assert sessions_df["id"].iloc[1] == 2  # no sorting since time index not defined
     es["sessions"].update_data(df.copy(), already_sorted=True)
-    sessions_df = es['sessions'].df
-    if isinstance(sessions_df, dd.DataFrame):
-        sessions_df = sessions_df.compute()
-    elif isinstance(sessions_df, ks.DataFrame):
-        sessions_df = sessions_df.to_pandas()
+    sessions_df = to_pandas(es['sessions'].df)
     assert sessions_df["id"].iloc[1] == 2
 
     # test already_sorted on entity with time index
     df = es["customers"].df.copy()
-    if isinstance(df, dd.DataFrame):
-        updated_signup = df['signup_date'].compute()
-    else:
-        updated_signup = df['signup_date']
+    updated_signup = to_pandas(df['signup_date'])
     updated_signup.iloc[0] = datetime(2011, 4, 11)
 
     if isinstance(df, ks.DataFrame):
-        df = df.drop('signup_date').join(updated_signup).sort_index()
+        df['signup_date'] = updated_signup.to_list()
+        df = df.sort_index()
     else:
         df['signup_date'] = updated_signup
     es["customers"].update_data(df.copy(), already_sorted=True)
-    customers_df = es['customers'].df
-    if isinstance(customers_df, dd.DataFrame):
-        customers_df = customers_df.compute()
+    customers_df = to_pandas(es['customers'].df)
     assert customers_df["id"].iloc[0] == 2
 
     # only pandas allows for sorting:
@@ -173,11 +156,8 @@ def test_query_by_values_secondary_time_index(es):
     end = np.datetime64(datetime(2011, 10, 1))
     all_instances = [0, 1, 2]
     result = es['customers'].query_by_values(all_instances, time_last=end)
+    result = to_pandas(result, index='id')
 
-    if isinstance(result, dd.DataFrame):
-        result = result.compute().set_index('id')
-    if isinstance(result, ks.DataFrame):
-        result = result.to_pandas().set_index('id')
     for col in ["cancel_date", "cancel_reason"]:
         nulls = result.loc[all_instances][col].isnull() == [False, True, True]
         assert nulls.all(), "Some instance has data it shouldn't for column %s" % col

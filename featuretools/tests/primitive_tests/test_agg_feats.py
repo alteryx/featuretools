@@ -34,7 +34,11 @@ from featuretools.synthesis.deep_feature_synthesis import (
     check_stacking,
     match
 )
-from featuretools.tests.testing_utils import backward_path, feature_with_name
+from featuretools.tests.testing_utils import (
+    backward_path,
+    feature_with_name,
+    to_pandas
+)
 from featuretools.variable_types import (
     Datetime,
     DatetimeTimeIndex,
@@ -432,7 +436,7 @@ def test_agg_same_method_name(es):
         that we test here.
     """
     # TODO: Update to work with Dask and Koalas
-    if any(isinstance(entity.df, dd.DataFrame) or isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
         pytest.xfail("Cannot use primitives made with make_agg_primitives with Dask EntitySets")
     # test with normally defined functions
 
@@ -647,10 +651,7 @@ def test_use_previous_pd_dateoffset(es):
     feature_matrix = ft.calculate_feature_matrix([total_events_pd], es,
                                                  cutoff_time=pd.Timestamp('2011-04-11 10:31:30'),
                                                  instance_ids=[0, 1, 2])
-    if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.compute().set_index('id').sort_index()
-    if isinstance(feature_matrix, ks.DataFrame):
-        feature_matrix = feature_matrix.to_pandas().set_index('id').sort_index()
+    feature_matrix = to_pandas(feature_matrix, index='id', sort_index=True)
     col_name = list(feature_matrix.head().keys())[0]
     assert (feature_matrix[col_name] == [1, 5, 2]).all()
 

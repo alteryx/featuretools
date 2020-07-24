@@ -442,7 +442,7 @@ class Entity(object):
                             " other entityset time indexes" %
                             (self.id, time_type))
 
-        if isinstance(self.df, dd.DataFrame) or isinstance(self.df, ks.DataFrame):
+        if isinstance(self.df, (dd.DataFrame, ks.DataFrame)):
             t = time_type  # skip checking values
             already_sorted = True  # skip sorting
         else:
@@ -477,7 +477,7 @@ class Entity(object):
 
     def set_secondary_time_index(self, secondary_time_index):
         for time_index, columns in secondary_time_index.items():
-            if len(self.df) == 0:
+            if isinstance(self.df, (dd.DataFrame, ks.DataFrame)) or self.df.empty:
                 time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[time_index]._default_pandas_dtype]
             else:
                 time_to_check = self.df[time_index].head(1).iloc[0]
@@ -596,9 +596,11 @@ def _create_index(index, make_index, df):
                            "integer column", index)
         # Case 5: make_index with no errors or warnings
         # (Case 4 also uses this code path)
-        if isinstance(df, dd.DataFrame) or isinstance(df, ks.DataFrame):
+        if isinstance(df, dd.DataFrame):
             df[index] = 1
             df[index] = df[index].cumsum() - 1
+        elif isinstance(df, ks.DataFrame):
+            df = df.koalas.attach_id_column('distributed-sequence', index)
         else:
             df.insert(0, index, range(len(df)))
         created_index = index

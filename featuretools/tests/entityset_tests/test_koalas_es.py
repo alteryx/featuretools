@@ -137,7 +137,7 @@ def test_create_entity_with_make_index():
     ks_es.entity_from_dataframe(entity_id="new_entity", dataframe=ks_df, make_index=True, index="new_index", variable_types=vtypes)
 
     expected_df = pd.DataFrame({"new_index": range(len(values)), "values": values})
-    pd.testing.assert_frame_equal(expected_df, ks_es['new_entity'].df.to_pandas())
+    pd.testing.assert_frame_equal(expected_df, ks_es['new_entity'].df.to_pandas().sort_index())
 
 
 def test_single_table_ks_entityset():

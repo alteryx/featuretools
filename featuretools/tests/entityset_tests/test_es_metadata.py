@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 from dask import dataframe as dd
+from databricks import koalas as ks
 
 import featuretools as ft
 from featuretools import EntitySet, Relationship, variable_types
@@ -145,7 +146,12 @@ def dd_employee_df(pd_employee_df):
     return dd.from_pandas(pd_employee_df, npartitions=2)
 
 
-@pytest.fixture(params=['pd_employee_df', 'dd_employee_df'])
+@pytest.fixture
+def ks_employee_df(pd_employee_df):
+    return ks.from_pandas(pd_employee_df)
+
+
+@pytest.fixture(params=['pd_employee_df', 'dd_employee_df', 'ks_employee_df'])
 def employee_df(request):
     return request.getfixturevalue(request.param)
 

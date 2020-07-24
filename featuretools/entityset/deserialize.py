@@ -4,8 +4,8 @@ import tarfile
 import tempfile
 from pathlib import Path
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from dask import dataframe as dd
 from databricks import koalas as ks
 
