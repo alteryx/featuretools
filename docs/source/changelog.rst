@@ -8,6 +8,7 @@ Changelog
         * Fix issue with missing instance ids and categorical entity index (:pr:`1050`)
         * Remove warnings.simplefilter in feature_set_calculator to un-silence warnings (:pr:`1053`)
         * Fix feature visualization for features with '>' or '<' in name (:pr:`1055`)
+        * Fix ``EntitySet.plot()`` when given a dask entityset (:pr:`1086`)
     * Changes
         * Make DFS match ``TimeSince`` primitive with all ``Datetime`` types (:pr:`1048`)
         * Change default branch to ``main`` (:pr:`1038`)
@@ -21,6 +22,7 @@ Changelog
         * Implement automated process for checking critical dependencies (:pr:`1045`, :pr:`1054`)
         * Don't run changelog check for release PRs or automated dependency PRs (:pr:`1057`)
         * Fix non-deterministic behavior in Dask test causing codecov issues (:pr:`1070`)
+        * Remove xfail cases from ``test_plotting.py`` (:pr:`1086`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`systemshift`, :user:`monti-python`, :user:`thehomebrewnerd`, :user:`frances-h`, :user:`rwedge`
