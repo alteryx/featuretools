@@ -171,7 +171,6 @@ class FeatureBase(object):
         return hash(self.get_name() + self.entity.id)
 
     def __hash__(self):
-        # logger.warning("To hash a feature, use feature.hash()")
         return self.hash()
 
     @property
