@@ -1383,8 +1383,7 @@ def test_primitive_options_commutative(es):
                                    primitive_options=options,
                                    max_depth=1)
     features = dfs_obj.build_features()
-    assert any(isinstance(f.primitive, SubtractNumeric) for f in features)
-    for f in features:
-        deps = f.get_dependencies(deep=True)
-        if isinstance(f.primitive, SubtractNumeric):
-            assert 'value_2' == deps[0] and 'value' == deps[1]
+    subtract_numeric = [f for f in features if isinstance(f.primitive, SubtractNumeric)]
+    assert len(subtract_numeric) == 1
+    deps = subtract_numeric[0].get_dependencies(deep=True)
+    assert deps[0].get_name() == 'value_2' and deps[1].get_name() == 'value'
