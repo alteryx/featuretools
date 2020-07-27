@@ -794,7 +794,7 @@ class DeepFeatureSynthesis(object):
         matching_inputs = filter_matches_by_options(matching_inputs,
                                                     primitive_options,
                                                     commutative=primitive.commutative)
-        return matching_inputs
+        return sorted(list(matching_inputs), key=lambda features: ([feature.get_name() for feature in features]))
 
 
 def check_stacking(primitive, inputs):
