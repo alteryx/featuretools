@@ -53,7 +53,8 @@ Featuretools Sklearn Transformer:
 Installing Graphviz
 -------------------
 
-In order to use :meth:`EntitySet.plot <featuretools.entityset.EntitySet.plot>` you will need to install the graphviz library.
+In order to use :meth:`EntitySet.plot <featuretools.entityset.EntitySet.plot>` or :func:`featuretools.graph_feature` 
+you will need to install the graphviz library.
 
 Conda users::
 
@@ -95,7 +96,7 @@ of ``setup.py``.
 
 Development
 -----------
-Before making contributing to the codebase, please follow the guidelines `here <https://github.com/FeatureLabs/featuretools/blob/master/contributing.md>`_
+Before making contributing to the codebase, please follow the guidelines `here <https://github.com/FeatureLabs/featuretools/blob/main/contributing.md>`_
 
 Virtualenv
 ~~~~~~~~~~

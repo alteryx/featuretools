@@ -339,7 +339,7 @@ def test_single_table_ks_entityset_cutoff_time_df():
     vtypes = {
         "id": ft.variable_types.Id,
         "values": ft.variable_types.Numeric,
-        "dates": ft.variable_types.DatetimeTimeIndex,
+        "dates": ft.variable_types.Datetime,
         "strings": ft.variable_types.Text
     }
     ks_es.entity_from_dataframe(entity_id="data",

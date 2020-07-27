@@ -342,8 +342,7 @@ def test_accepts_pd_dateoffset_training_window(datetime_es):
     assert (feature_matrix.index == feature_matrix_2.index).all()
 
 
-# TODO: split out cluster test to run on pandas seperately
-def test_calls_progress_callback(pd_entities, relationships):
+def test_calls_progress_callback(entities, relationships):
     class MockProgressCallback:
         def __init__(self):
             self.progress_history = []
@@ -357,7 +356,7 @@ def test_calls_progress_callback(pd_entities, relationships):
 
     mock_progress_callback = MockProgressCallback()
 
-    feature_matrix, features = dfs(entities=pd_entities,
+    feature_matrix, features = dfs(entities=entities,
                                    relationships=relationships,
                                    target_entity="transactions",
                                    progress_callback=mock_progress_callback)
@@ -367,7 +366,19 @@ def test_calls_progress_callback(pd_entities, relationships):
     assert np.isclose(mock_progress_callback.total_update, 100.0)
     assert np.isclose(mock_progress_callback.total_progress_percent, 100.0)
 
-    # test with multiple jobs
+
+def test_calls_progress_callback_cluster(pd_entities, relationships):
+    class MockProgressCallback:
+        def __init__(self):
+            self.progress_history = []
+            self.total_update = 0
+            self.total_progress_percent = 0
+
+        def __call__(self, update, progress_percent, time_elapsed):
+            self.total_update += update
+            self.total_progress_percent = progress_percent
+            self.progress_history.append(progress_percent)
+
     mock_progress_callback = MockProgressCallback()
 
     with cluster() as (scheduler, [a, b]):

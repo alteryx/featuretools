@@ -16,6 +16,7 @@ from featuretools.primitives import (
     Hour,
     Minute,
     Month,
+    NMostCommon,
     Second,
     TransformPrimitive,
     Year
@@ -50,6 +51,18 @@ def test_direct_from_variable(es):
     df = to_pandas(df, index='id', sort_index=True)
     v = df[d.get_name()].tolist()
     assert v == [0, 1]
+
+
+def test_direct_rename_multioutput(es):
+    n_common = ft.Feature(es['log']['product_id'],
+                          parent_entity=es['customers'],
+                          primitive=NMostCommon(n=2))
+    feat = DirectFeature(n_common, es['sessions'])
+    copy_feat = feat.rename("session_test")
+    assert feat.unique_name() != copy_feat.unique_name()
+    assert feat.get_name() != copy_feat.get_name()
+    assert feat.base_features[0].generate_name() == copy_feat.base_features[0].generate_name()
+    assert feat.entity == copy_feat.entity
 
 
 def test_direct_rename(es):

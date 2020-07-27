@@ -289,8 +289,7 @@ def test_make_agg_feat_of_grandchild_entity(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
     df = to_pandas(df, index='id', int_index=True)
-
-    v = df[agg_feat.get_name()][0]
+    v = df[agg_feat.get_name()].loc[0]
     assert (v == 10)
 
 
@@ -371,11 +370,11 @@ def test_make_agg_feat_where_count_and_device_type_feat(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
-    df = to_pandas(df, index='id', int_index=True)
+    df = to_pandas(df, index='id')
 
     name = feat.get_name()
     instances = df[name]
-    assert (instances[0] == 1)
+    assert (instances.loc[0] == 1)
 
 
 def test_make_agg_feat_where_count_or_device_type_feat(es):
@@ -403,7 +402,7 @@ def test_make_agg_feat_where_count_or_device_type_feat(es):
 
     name = feat.get_name()
     instances = df[name]
-    assert (instances[0] == 3)
+    assert (instances.loc[0] == 3)
 
 
 def test_make_agg_feat_of_agg_feat(es):
@@ -417,7 +416,7 @@ def test_make_agg_feat_of_agg_feat(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
     df = to_pandas(df, index='id', int_index=True)
-    v = df[customer_sum_feat.get_name()][0]
+    v = df[customer_sum_feat.get_name()].loc[0]
     assert (v == 10)
 
 
@@ -520,7 +519,7 @@ def test_make_dfeat_of_agg_feat_on_self(es):
     df = calculator.run(np.array([0]))
     df = to_pandas(df, index='id', int_index=True)
 
-    v = df[num_customers_feat.get_name()][0]
+    v = df[num_customers_feat.get_name()].loc[0]
     assert (v == 3)
 
 
@@ -549,7 +548,7 @@ def test_make_dfeat_of_agg_feat_through_parent(es):
     df = calculator.run(np.array([0]))
     df = to_pandas(df, index='id', int_index=True)
 
-    v = df[num_stores_feat.get_name()][0]
+    v = df[num_stores_feat.get_name()].loc[0]
     assert (v == 3)
 
 
@@ -580,7 +579,7 @@ def test_make_deep_agg_feat_of_dfeat_of_agg_feat(es):
     df = calculator.run(np.array([0]))
     df = to_pandas(df, index='id', int_index=True)
 
-    v = df[purchase_popularity.get_name()][0]
+    v = df[purchase_popularity.get_name()].loc[0]
     assert (v == 38.0 / 10.0)
 
 
@@ -811,7 +810,7 @@ def test_empty_child_dataframe(parent_child):
         features = [count, count_where, trend, trend_where, n_most_common, n_most_common_where]
         names = [count.get_name(), count_where.get_name(),
                  trend.get_name(), trend_where.get_name(),
-                 *n_most_common.get_names(), *n_most_common_where.get_names()]
+                 *n_most_common.get_feature_names(), *n_most_common_where.get_feature_names()]
         values = [0, 0,
                   np.nan, np.nan,
                   *np.full(n_most_common.number_output_features, np.nan), *np.full(n_most_common_where.number_output_features, np.nan)]
@@ -831,7 +830,7 @@ def test_empty_child_dataframe(parent_child):
         values = [0]
     else:
         features = [count_where, trend_where, n_most_common_where]
-        names = [count_where.get_name(), trend_where.get_name(), *n_most_common_where.get_names()]
+        names = [count_where.get_name(), trend_where.get_name(), *n_most_common_where.get_feature_names()]
         values = [0, np.nan, *np.full(n_most_common_where.number_output_features, np.nan)]
 
     fm2 = ft.calculate_feature_matrix(entityset=es,
@@ -853,7 +852,7 @@ def test_with_features_built_from_es_metadata(es):
     df = calculator.run(np.array([0]))
     df = to_pandas(df, index='id', int_index=True)
 
-    v = df[agg_feat.get_name()][0]
+    v = df[agg_feat.get_name()].loc[0]
     assert (v == 10)
 
 

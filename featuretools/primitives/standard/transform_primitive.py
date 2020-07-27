@@ -395,7 +395,7 @@ class TimeSince(TransformPrimitive):
         [-1000, -1000000000, -120000000000]
     """
     name = 'time_since'
-    input_types = [[DatetimeTimeIndex], [Datetime]]
+    input_types = [Datetime]
     return_type = Numeric
     uses_calc_time = True
     dask_compatible = True

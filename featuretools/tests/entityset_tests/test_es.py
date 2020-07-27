@@ -1,4 +1,5 @@
 import copy
+import logging
 from datetime import datetime
 
 import dask.dataframe as dd
@@ -92,8 +93,10 @@ def test_reset_metadata(es):
 
 
 def test_cannot_re_add_relationships_that_already_exists(es):
+    warn_text = "Not adding duplicate relationship: " + str(es.relationships[0])
     before_len = len(es.relationships)
-    es.add_relationship(es.relationships[0])
+    with pytest.warns(UserWarning, match=warn_text):
+        es.add_relationship(es.relationships[0])
     after_len = len(es.relationships)
     assert before_len == after_len
 
@@ -140,6 +143,21 @@ def test_add_relationship_errors_on_dtype_mismatch(es):
     with pytest.raises(ValueError, match=error_text):
         mismatch = Relationship(es[u'customers']['id'], es['log2']['session_id'])
         es.add_relationship(mismatch)
+
+
+def test_add_relationship_errors_child_v_index(es):
+    log_df = es['log'].df.copy()
+    log_vtypes = es['log'].variable_types
+    es.entity_from_dataframe(entity_id='log2',
+                             dataframe=log_df,
+                             index='id',
+                             variable_types=log_vtypes,
+                             time_index='datetime')
+
+    bad_relationship = ft.Relationship(es['log']['id'], es['log2']['id'])
+    to_match = "Unable to add relationship because child variable 'id' in 'log2' is also its index"
+    with pytest.raises(ValueError, match=to_match):
+        es.add_relationship(bad_relationship)
 
 
 def test_add_relationship_empty_child_convert_dtype(es):
@@ -288,10 +306,12 @@ def df2(request):
 def test_none_index(df2):
     vtypes = {'category': variable_types.Categorical, 'category2': variable_types.Categorical}
 
+    warn_text = "Using first column as index. To change this, specify the index parameter"
     es = EntitySet(id='test')
-    es.entity_from_dataframe(entity_id='test_entity',
-                             dataframe=df2,
-                             variable_types=vtypes)
+    with pytest.warns(UserWarning, match=warn_text):
+        es.entity_from_dataframe(entity_id='test_entity',
+                                 dataframe=df2,
+                                 variable_types=vtypes)
     assert es['test_entity'].index == 'category'
     assert isinstance(es['test_entity']['category'], variable_types.Index)
 
@@ -319,10 +339,12 @@ def df3(request):
 def test_unknown_index(df3):
     vtypes = {'category': variable_types.Categorical}
 
+    warn_text = "index id not found in dataframe, creating new integer column"
     es = EntitySet(id='test')
-    es.entity_from_dataframe(entity_id='test_entity',
-                             index='id',
-                             variable_types=vtypes, dataframe=df3)
+    with pytest.warns(UserWarning, match=warn_text):
+        es.entity_from_dataframe(entity_id='test_entity',
+                                 index='id',
+                                 variable_types=vtypes, dataframe=df3)
     assert es['test_entity'].index == 'id'
     assert list(to_pandas(es['test_entity'].df['id'], sort_index=True)) == list(range(3))
 
@@ -1197,7 +1219,7 @@ def test_datetime64_conversion(datetime3):
     es['test_entity'].convert_variable_type('time', vtype_time_index)
 
 
-def test_later_schema_version(es):
+def test_later_schema_version(es, caplog):
     def test_version(major, minor, patch, raises=True):
         version = '.'.join([str(v) for v in [major, minor, patch]])
         if raises:
@@ -1208,7 +1230,7 @@ def test_later_schema_version(es):
         else:
             warning_text = None
 
-        _check_schema_version(version, es, warning_text)
+        _check_schema_version(version, es, warning_text, caplog, 'warn')
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
@@ -1218,7 +1240,7 @@ def test_later_schema_version(es):
     test_version(major, minor - 1, patch + 1, raises=False)
 
 
-def test_earlier_schema_version(es):
+def test_earlier_schema_version(es, caplog):
     def test_version(major, minor, patch, raises=True):
         version = '.'.join([str(v) for v in [major, minor, patch]])
         if raises:
@@ -1229,7 +1251,7 @@ def test_earlier_schema_version(es):
         else:
             warning_text = None
 
-        _check_schema_version(version, es, warning_text)
+        _check_schema_version(version, es, warning_text, caplog, 'log')
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
@@ -1238,7 +1260,7 @@ def test_earlier_schema_version(es):
     test_version(major, minor, patch - 1, raises=False)
 
 
-def _check_schema_version(version, es, warning_text):
+def _check_schema_version(version, es, warning_text, caplog, warning_type=None):
     entities = {entity.id: serialize.entity_to_description(entity) for entity in es.entities}
     relationships = [relationship.to_dictionary() for relationship in es.relationships]
     dictionary = {
@@ -1248,7 +1270,13 @@ def _check_schema_version(version, es, warning_text):
         'relationships': relationships,
     }
 
-    if warning_text:
+    if warning_type == 'log' and warning_text:
+        logger = logging.getLogger('featuretools')
+        logger.propagate = True
+        deserialize.description_to_entityset(dictionary)
+        assert warning_text in caplog.text
+        logger.propagate = False
+    elif warning_type == 'warn' and warning_text:
         with pytest.warns(UserWarning) as record:
             deserialize.description_to_entityset(dictionary)
         assert record[0].message.args[0] == warning_text
@@ -1396,7 +1424,7 @@ def test_entityset_init():
         "transactions": (transactions_df, 'id', 'transaction_time',
                          variable_types, False)
     }
-    relationships = [('cards', 'id', 'transactions', 'id')]
+    relationships = [('cards', 'id', 'transactions', 'card_id')]
     es = ft.EntitySet(id="fraud_data",
                       entities=entities,
                       relationships=relationships)
@@ -1413,7 +1441,7 @@ def test_entityset_init():
                                   make_index=False,
                                   time_index='transaction_time')
     relationship = ft.Relationship(es_copy["cards"]["id"],
-                                   es_copy["transactions"]["id"])
+                                   es_copy["transactions"]["card_id"])
     es_copy.add_relationship(relationship)
     assert es['cards'].__eq__(es_copy['cards'], deep=True)
     assert es['transactions'].__eq__(es_copy['transactions'], deep=True)

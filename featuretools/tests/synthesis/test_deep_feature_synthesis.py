@@ -1,5 +1,4 @@
 import copy
-import logging
 
 import dask.dataframe as dd
 import databricks.koalas as ks
@@ -1350,26 +1349,22 @@ def test_primitive_options_class_names(es):
     assert features[0] == features[1] == features[2] == features[3]
 
 
-def test_primitive_options_instantiated_primitive(es, caplog):
-    logger = logging.getLogger('featuretools')
-    warning_msg = "WARNING  featuretools:options_utils.py:63 Options present " \
-                  "for primitive instance and generic primitive class (mean), " \
-                  "primitive instance will not use generic options\n"
+def test_primitive_options_instantiated_primitive(es):
+    warning_msg = "Options present for primitive instance and generic " \
+                  "primitive class \\(mean\\), primitive instance will not use generic " \
+                  "options"
 
     skipna_mean = Mean(skipna=False)
     options = {
         skipna_mean: {'include_entities': ['stores']},
         'mean': {'ignore_entities': ['stores']}
     }
-    # Set propagate to True so caplog can catch warning
-    logger.propagate = True
-    dfs_obj = DeepFeatureSynthesis(target_entity_id='régions',
-                                   entityset=es,
-                                   agg_primitives=['mean', skipna_mean],
-                                   trans_primitives=[],
-                                   primitive_options=options)
-    logger.propagate = False
-    assert caplog.text == warning_msg
+    with pytest.warns(UserWarning, match=warning_msg):
+        dfs_obj = DeepFeatureSynthesis(target_entity_id='régions',
+                                       entityset=es,
+                                       agg_primitives=['mean', skipna_mean],
+                                       trans_primitives=[],
+                                       primitive_options=options)
 
     features = dfs_obj.build_features()
     for f in features:

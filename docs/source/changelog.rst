@@ -4,20 +4,55 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+    * Fixes
+        * Use more consistent and uniform warnings (:pr:`1040`)
+        * Fix issue with missing instance ids and categorical entity index (:pr:`1050`)
+        * Remove warnings.simplefilter in feature_set_calculator to un-silence warnings (:pr:`1053`)
+        * Fix feature visualization for features with '>' or '<' in name (:pr:`1055`)
+        * Fix boolean dtype mismatch between encode_features and dfs and calculate_feature_matrix (:pr:`1082`)
+    * Changes
+        * Make DFS match ``TimeSince`` primitive with all ``Datetime`` types (:pr:`1048`)
+        * Change default branch to ``main`` (:pr:`1038`)
+        * Raise TypeError if improper input is supplied to ``Entity.delete_variables()`` (:pr:`1064`)
+    * Documentation Changes
+        * Remove benchmarks folder (:pr:`1049`)
+        * Add custom variables types section to variables page (:pr:`1066`)
+    * Testing Changes
+        * Add fixture for ``ft.demo.load_mock_customer`` (:pr:`1036`)
+        * Refactor Dask test units (:pr:`1052`)
+        * Implement automated process for checking critical dependencies (:pr:`1045`, :pr:`1054`, :pr:`1081`)
+        * Don't run changelog check for release PRs or automated dependency PRs (:pr:`1057`)
+        * Fix non-deterministic behavior in Dask test causing codecov issues (:pr:`1070`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`gsheni`, :user:`systemshift`, :user:`monti-python`, :user:`thehomebrewnerd`, :user:`frances-h`, :user:`rwedge`, :user:`tamargrey`
+
+**v0.17.0 June 30, 2020**
+    * Enhancements
         * Add ``list_variable_types`` and ``graph_variable_types`` for Variable Types (:pr:`1013`)
+        * Add ``graph_feature`` to generate a feature lineage graph for a given feature (:pr:`1032`)
     * Fixes
         * Improve warnings when using a Dask dataframe for cutoff times (:pr:`1026`)
+        * Error if attempting to add entityset relationship where child variable is also child index (:pr:`1034`)
     * Changes
+        * Remove ``Feature.get_names`` (:pr:`1021`)
         * Remove unnecessary ``pd.Series`` and ``pd.DatetimeIndex`` calls from primitives (:pr:`1020`, :pr:`1024`)
+        * Improve cutoff time handling when a single value or no value is passed (:pr:`1028`)
         * Moved ``find_variable_types`` to Variable utils (:pr:`1013`)
     * Documentation Changes
         * Add page on Variable Types to describe some Variable Types, and util functions (:pr:`1013`)
         * Remove featuretools enterprise from documentation (:pr:`1022`)
         * Add development install instructions to contributing.md (:pr:`1030`)
     * Testing Changes
+        * Add ``required`` flag to CircleCI codecov upload command (:pr:`1035`)
 
     Thanks to the following people for contributing to this release:
-    :user:`kmax12`, :user:`thehomebrewnerd`, :user:`gsheni`
+    :user:`frances-h`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`,
+    :user:`thehomebrewnerd`, :user:`tuethan1999`
+
+**Breaking Changes**
+
+* Removed ``Feature.get_names``, ``Feature.get_feature_names`` should be used instead
 
 **v0.16.0 June 5, 2020**
     * Enhancements

@@ -1,4 +1,3 @@
-import warnings
 from datetime import datetime
 from functools import partial
 
@@ -20,9 +19,6 @@ from featuretools.feature_base import (
 )
 from featuretools.utils import Trie
 from featuretools.utils.gen_utils import get_relationship_variable_id
-
-warnings.simplefilter('ignore', np.RankWarning)
-warnings.simplefilter("ignore", category=RuntimeWarning)
 
 
 class FeatureSetCalculator(object):
@@ -123,6 +119,7 @@ class FeatureSetCalculator(object):
         # Fill in empty rows with default values. This only works for pandas dataframes
         # and is not currently supported for Dask dataframes.
         if isinstance(df, pd.DataFrame):
+            index_dtype = df.index.dtype.name
             if df.empty:
                 return self.generate_default_df(instance_ids=instance_ids)
 
@@ -131,21 +128,21 @@ class FeatureSetCalculator(object):
             if missing_ids:
                 default_df = self.generate_default_df(instance_ids=missing_ids,
                                                       extra_columns=df.columns)
-                df = df.append(default_df, sort=True)
+
+                df = default_df.append(df, sort=True)
 
             df.index.name = self.entityset[self.feature_set.target_eid].index
 
-        column_list = []
-
-        # Order by instance_ids
-        unique_instance_ids = pd.unique(instance_ids)
-
-        if isinstance(df, dd.DataFrame) or isinstance(df, ks.DataFrame):
-            unique_instance_ids = unique_instance_ids.astype(object)
-        else:
-            # pd.unique changes the dtype for Categorical, so reset it.
+            # Order by instance_ids
+            unique_instance_ids = pd.unique(instance_ids)
             unique_instance_ids = unique_instance_ids.astype(instance_ids.dtype)
             df = df.reindex(unique_instance_ids)
+
+            # Keep categorical index if original index was categorical
+            if index_dtype == 'category':
+                df.index = df.index.astype('category')
+
+        column_list = []
 
         for feat in self.feature_set.target_features:
             column_list.extend(feat.get_feature_names())

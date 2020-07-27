@@ -106,20 +106,20 @@ jobs:
           paths:
             - venv
             - unpacked_sdist
-  run_premium_primitives_tests_on_master:
+  run_premium_primitives_tests_on_main:
     docker:
       - image: circleci/buildpack-deps:curl
     steps:
       - run:
           name: "Trigger premium primitives tests for python 3.6"
-          command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-36 https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
+          command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-36 https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/main"
   run_premium_primitives_tests_on_release:
     docker:
       - image: circleci/buildpack-deps:curl
     steps:
       - run:
           name: "Trigger premium primitives tests for python 3.6 release"
-          command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-36-ft-release https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/master"
+          command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-36-ft-release https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/main"
 
   unit_tests:
     working_directory: ~/featuretools
@@ -150,7 +150,7 @@ jobs:
                 pytest featuretools/ -n 2 --cov=featuretools --cov-config=../.coveragerc
                 cd ../
                 cp unpacked_sdist/.coverage .coverage
-                codecov
+                codecov --required
       - unless:
           condition: << parameters.codecov >>
           steps:
@@ -312,13 +312,16 @@ workflows:
           name: "changelog updated"
           filters:
             branches:
-              ignore: /^master?/
-      - run_premium_primitives_tests_on_master:
-          name: "run premium primitives tests on master"
+              ignore:
+                - /^main?/
+                - /^v\d+\.\d+\.\d+$/
+                - /^dep-update-[a-f0-9]{7}$/
+      - run_premium_primitives_tests_on_main:
+          name: "run premium primitives tests on main"
           filters:
             branches:
               only:
-                - master
+                - main
       - run_premium_primitives_tests_on_release:
           name: "run premium primitives tests on release"
           filters:

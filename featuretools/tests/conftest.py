@@ -189,3 +189,30 @@ def games_es(home_games_es):
     away_team = ft.Relationship(home_games_es['teams']['id'],
                                 home_games_es['games']['away_team_id'])
     return home_games_es.add_relationship(away_team)
+
+
+@pytest.fixture
+def pd_mock_customer():
+    return ft.demo.load_mock_customer(return_entityset=True, random_seed=0)
+
+
+@pytest.fixture
+def dd_mock_customer(pd_mock_customer):
+    dd_mock_customer = copy.deepcopy(pd_mock_customer)
+    for entity in dd_mock_customer.entities:
+        entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=4)
+    return dd_mock_customer
+
+
+@pytest.fixture
+def ks_mock_customer(pd_mock_customer):
+    ks_mock_customer = copy.deepcopy(pd_mock_customer)
+    for entity in ks_mock_customer.entities:
+        cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
+        entity.df = ks.from_pandas(cleaned_df)
+    return ks_mock_customer
+
+
+@pytest.fixture(params=['pd_mock_customer', 'dd_mock_customer', 'ks_mock_customer'])
+def mock_customer(request):
+    return request.getfixturevalue(request.param)

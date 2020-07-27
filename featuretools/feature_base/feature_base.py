@@ -72,6 +72,7 @@ class FeatureBase(object):
         """Rename Feature, returns copy"""
         feature_copy = self.copy()
         feature_copy._name = name
+        feature_copy._names = None
         return feature_copy
 
     def copy(self):
@@ -82,18 +83,15 @@ class FeatureBase(object):
             self._name = self.generate_name()
         return self._name
 
-    def get_names(self):
-        if not self._names:
-            self._names = self.generate_names()
-        return self._names
-
     def get_feature_names(self):
-        n = self.number_output_features
-        if n == 1:
-            names = [self.get_name()]
-        else:
-            names = self.get_names()
-        return names
+        if not self._names:
+            if self.number_output_features == 1:
+                self._names = [self.get_name()]
+            else:
+                self._names = self.generate_names()
+                if self.get_name() != self.generate_name():
+                    self._names = [self.get_name() + '[{}]'.format(i) for i in range(len(self._names))]
+        return self._names
 
     def get_function(self):
         return self.primitive.get_function()
@@ -155,7 +153,6 @@ class FeatureBase(object):
                     return True
         else:
             return True
-
         return False
 
     @property
@@ -174,7 +171,6 @@ class FeatureBase(object):
         return hash(self.get_name() + self.entity.id)
 
     def __hash__(self):
-        # logger.warning("To hash a feature, use feature.hash()")
         return self.hash()
 
     @property
@@ -465,7 +461,7 @@ class DirectFeature(FeatureBase):
     def generate_name(self):
         return self._name_from_base(self.base_features[0].get_name())
 
-    def get_feature_names(self):
+    def generate_names(self):
         return [self._name_from_base(base_name)
                 for base_name in self.base_features[0].get_feature_names()]
 
@@ -788,6 +784,7 @@ class FeatureOutputSlice(FeatureBase):
 
         self.n = n
         self._name = name
+        self._names = [name] if name else None
         self.base_features = base_features
         self.base_feature = base_features[0]
 
@@ -801,7 +798,7 @@ class FeatureOutputSlice(FeatureBase):
         raise ValueError("Cannot get item from slice of multi output feature")
 
     def generate_name(self):
-        return self.base_feature.get_names()[self.n]
+        return self.base_feature.get_feature_names()[self.n]
 
     @property
     def number_output_features(self):
@@ -820,6 +817,9 @@ class FeatureOutputSlice(FeatureBase):
         n = arguments['n']
         name = arguments['name']
         return cls(base_feature=base_feature, n=n, name=name)
+
+    def copy(self):
+        return FeatureOutputSlice(self.base_feature, self.n)
 
 
 def _check_feature(feature):

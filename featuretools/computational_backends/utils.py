@@ -3,19 +3,25 @@ import os
 import warnings
 from functools import wraps
 
+import dask.dataframe as dd
 import pandas as pd
 import psutil
 
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, DirectFeature
 from featuretools.utils import Trie
-from featuretools.utils.wrangle import _check_timedelta
+from featuretools.utils.wrangle import _check_time_type, _check_timedelta
+from featuretools.variable_types import (
+    DatetimeTimeIndex,
+    NumericTimeIndex,
+    PandasTypes
+)
 
 logger = logging.getLogger('featuretools.computational_backend')
 
 
-def bin_cutoff_times(cuttoff_time, bin_size):
-    binned_cutoff_time = cuttoff_time.copy()
+def bin_cutoff_times(cutoff_time, bin_size):
+    binned_cutoff_time = cutoff_time.copy()
     if type(bin_size) == int:
         binned_cutoff_time['time'] = binned_cutoff_time['time'].apply(lambda x: x / bin_size * bin_size)
     else:
@@ -198,3 +204,73 @@ def get_client_cluster():
     """
     from distributed import Client, LocalCluster
     return Client, LocalCluster
+
+
+def _validate_cutoff_time(cutoff_time, target_entity):
+    """
+    Verify that the cutoff time is a single value or a pandas dataframe with the proper columns
+    containing no duplicate rows
+    """
+    if isinstance(cutoff_time, dd.DataFrame):
+        msg = "cutoff_time should be a Pandas DataFrame: "\
+            "computing cutoff_time, this may take a while"
+        warnings.warn(msg)
+        cutoff_time = cutoff_time.compute()
+
+    if isinstance(cutoff_time, pd.DataFrame):
+        cutoff_time = cutoff_time.reset_index(drop=True)
+
+        if "instance_id" not in cutoff_time.columns:
+            if target_entity.index not in cutoff_time.columns:
+                raise AttributeError('Cutoff time DataFrame must contain a column with either the same name'
+                                     ' as the target entity index or a column named "instance_id"')
+            # rename to instance_id
+            cutoff_time.rename(columns={target_entity.index: "instance_id"}, inplace=True)
+
+        if "time" not in cutoff_time.columns:
+            if target_entity.time_index and target_entity.time_index not in cutoff_time.columns:
+                raise AttributeError('Cutoff time DataFrame must contain a column with either the same name'
+                                     ' as the target entity time_index or a column named "time"')
+            # rename to time
+            cutoff_time.rename(columns={target_entity.time_index: "time"}, inplace=True)
+
+        # Make sure user supplies only one valid name for instance id and time columns
+        if "instance_id" in cutoff_time.columns and target_entity.index in cutoff_time.columns and \
+                "instance_id" != target_entity.index:
+            raise AttributeError('Cutoff time DataFrame cannot contain both a column named "instance_id" and a column'
+                                 ' with the same name as the target entity index')
+        if "time" in cutoff_time.columns and target_entity.time_index in cutoff_time.columns and \
+                "time" != target_entity.time_index:
+            raise AttributeError('Cutoff time DataFrame cannot contain both a column named "time" and a column'
+                                 ' with the same name as the target entity time index')
+
+        assert (cutoff_time[['instance_id', 'time']].duplicated().sum() == 0), \
+            "Duplicated rows in cutoff time dataframe."
+    else:
+        if isinstance(cutoff_time, list):
+            raise TypeError("cutoff_time must be a single value or DataFrame")
+
+    return cutoff_time
+
+
+def _check_cutoff_time_type(cutoff_time, es_time_type):
+    """
+    Check that the cutoff time values are of the proper type given the entityset time type
+    """
+    # Check that cutoff_time time type matches entityset time type
+    if isinstance(cutoff_time, tuple):
+        cutoff_time_value = cutoff_time[0]
+        time_type = _check_time_type(cutoff_time_value)
+        is_numeric = time_type == NumericTimeIndex
+        is_datetime = time_type == DatetimeTimeIndex
+    else:
+        cutoff_time_dtype = cutoff_time['time'].dtype.name
+        is_numeric = cutoff_time_dtype in PandasTypes._pandas_numerics
+        is_datetime = cutoff_time_dtype in PandasTypes._pandas_datetimes
+
+    if es_time_type == NumericTimeIndex and not is_numeric:
+        raise TypeError("cutoff_time times must be numeric: try casting "
+                        "via pd.to_numeric()")
+    if es_time_type == DatetimeTimeIndex and not is_datetime:
+        raise TypeError("cutoff_time times must be datetime type: try casting "
+                        "via pd.to_datetime()")

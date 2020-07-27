@@ -7,7 +7,6 @@ import pytest
 from dask import dataframe as dd
 from databricks import koalas as ks
 
-from featuretools.demo import load_mock_customer
 from featuretools.entityset import EntitySet, deserialize, serialize
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.variable_types import (
@@ -200,8 +199,8 @@ def test_to_parquet_interesting_values(pd_es, tmpdir):
     assert pd_es.__eq__(new_es, deep=True)
 
 
-def test_to_parquet_with_lti(tmpdir):
-    es = load_mock_customer(return_entityset=True, random_seed=0)
+def test_to_parquet_with_lti(tmpdir, pd_mock_customer):
+    es = pd_mock_customer
     es.to_parquet(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)

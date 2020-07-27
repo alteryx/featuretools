@@ -1,4 +1,4 @@
-.. featuretools documentation master file, created by
+.. featuretools documentation main file, created by
    sphinx-quickstart on Thu May 19 20:40:30 2016.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
