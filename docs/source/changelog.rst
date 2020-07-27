@@ -24,7 +24,6 @@ Changelog
         * Implement automated process for checking critical dependencies (:pr:`1045`, :pr:`1054`, :pr:`1081`)
         * Don't run changelog check for release PRs or automated dependency PRs (:pr:`1057`)
         * Fix non-deterministic behavior in Dask test causing codecov issues (:pr:`1070`)
-        * Remove xfail cases from ``test_plotting.py`` (:pr:`1086`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`systemshift`, :user:`monti-python`, :user:`thehomebrewnerd`, :user:`frances-h`, :user:`rwedge`, :user:`tamargrey`
