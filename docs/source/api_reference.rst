@@ -329,6 +329,7 @@ Entity utils methods
 
 Relationship attributes
 -----------------------
+.. currentmodule:: featuretools.entityset.relationship
 .. autosummary::
     :toctree: generated/
 
