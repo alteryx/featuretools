@@ -10,6 +10,7 @@ from featuretools.computational_backends.calculate_feature_matrix import (
     FEATURE_CALCULATION_PERCENTAGE
 )
 from featuretools.entityset import EntitySet, Relationship, Timedelta
+from featuretools.exceptions import UnusedPrimitiveWarning
 from featuretools.primitives import (
     GreaterThanScalar,
     Max,
@@ -319,7 +320,7 @@ def test_warns_with_unused_primitives(es):
         "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
         "or it may indicate no compatible variable types for the primitive were found in the data."
 
-    with pytest.warns(UserWarning) as record:
+    with pytest.warns(UnusedPrimitiveWarning) as record:
         dfs(entityset=es,
             target_entity='customers',
             trans_primitives=trans_primitives,
@@ -357,7 +358,7 @@ def test_warns_with_unused_where_primitives(es):
         "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
         "or it may indicate no compatible variable types for the primitive were found in the data."
 
-    with pytest.warns(UserWarning) as record:
+    with pytest.warns(UnusedPrimitiveWarning) as record:
         dfs(entityset=es,
             target_entity='customers',
             agg_primitives=['count'],
@@ -373,7 +374,7 @@ def test_warns_with_unused_groupby_primitives(pd_es):
         "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
         "or it may indicate no compatible variable types for the primitive were found in the data."
 
-    with pytest.warns(UserWarning) as record:
+    with pytest.warns(UnusedPrimitiveWarning) as record:
         dfs(entityset=pd_es,
             target_entity='sessions',
             groupby_trans_primitives=['cum_sum'],
@@ -406,7 +407,7 @@ def test_warns_with_unused_custom_primitives(pd_es):
         "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
         "or it may indicate no compatible variable types for the primitive were found in the data."
 
-    with pytest.warns(UserWarning) as record:
+    with pytest.warns(UnusedPrimitiveWarning) as record:
         dfs(entityset=pd_es,
             target_entity='sessions',
             trans_primitives=trans_primitives,
@@ -435,7 +436,7 @@ def test_warns_with_unused_custom_primitives(pd_es):
         "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
         "or it may indicate no compatible variable types for the primitive were found in the data."
 
-    with pytest.warns(UserWarning) as record:
+    with pytest.warns(UnusedPrimitiveWarning) as record:
         dfs(entityset=pd_es,
             target_entity='stores',
             agg_primitives=agg_primitives,

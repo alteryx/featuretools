@@ -2,6 +2,7 @@ import warnings
 
 from featuretools.computational_backends import calculate_feature_matrix
 from featuretools.entityset import EntitySet
+from featuretools.exceptions import UnusedPrimitiveWarning
 from featuretools.feature_base import (
     AggregationFeature,
     FeatureOutputSlice,
@@ -309,7 +310,7 @@ def warn_unused_primitives(unused_primitives):
         "This may be caused by a using a value of max_depth that is too small, not setting interesting values, " + \
         "or it may indicate no compatible variable types for the primitive were found in the data."
 
-    warnings.warn(warning_msg)
+    warnings.warn(warning_msg, UnusedPrimitiveWarning)
 
 
 def _categorize_features(features):
