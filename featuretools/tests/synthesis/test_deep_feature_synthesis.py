@@ -1,6 +1,7 @@
 import copy
 
 import dask.dataframe as dd
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -1372,14 +1373,36 @@ def test_primitive_options_instantiated_primitive(es):
 
 
 def test_primitive_options_commutative(es):
-    options = {'subtract_numeric': [
-        {'include_variables': {'log': ['value_2']}},
-        {'include_variables': {'log': ['value']}}
-    ]}
+    class AddThree(TransformPrimitive):
+        name = 'add_three'
+        input_types = [Numeric, Numeric, Numeric]
+        return_type = Numeric
+        dask_compatible = True
+
+        def __init__(self, commutative=True):
+            self.commutative = commutative
+
+        def get_function(self):
+            return np.add
+
+        def generate_name(self, base_feature_names):
+            return "%s + %s + %s" % (base_feature_names[0], base_feature_names[1], base_feature_names[2])
+
+    options = {
+        'subtract_numeric': [
+            {'include_variables': {'log': ['value_2']}},
+            {'include_variables': {'log': ['value']}}
+        ],
+        AddThree: [
+            {'include_variables': {'log': ['value_2']}},
+            {'include_variables': {'log': ['value_many_nans']}},
+            {'include_variables': {'log': ['value']}}
+        ]
+    }
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
                                    agg_primitives=[],
-                                   trans_primitives=[SubtractNumeric],
+                                   trans_primitives=[SubtractNumeric, AddThree],
                                    primitive_options=options,
                                    max_depth=1)
     features = dfs_obj.build_features()
@@ -1387,3 +1410,8 @@ def test_primitive_options_commutative(es):
     assert len(subtract_numeric) == 1
     deps = subtract_numeric[0].get_dependencies(deep=True)
     assert deps[0].get_name() == 'value_2' and deps[1].get_name() == 'value'
+
+    add_three = [f for f in features if isinstance(f.primitive, AddThree)]
+    assert len(add_three) == 1
+    deps = add_three[0].get_dependencies(deep=True)
+    assert deps[0].get_name() == 'value_2' and deps[1].get_name() == 'value_many_nans' and deps[2].get_name() == 'value'

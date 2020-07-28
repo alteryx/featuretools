@@ -1,5 +1,6 @@
 import logging
 import warnings
+from itertools import permutations
 
 from featuretools import primitives
 from featuretools.feature_base import IdentityFeature
@@ -231,6 +232,9 @@ def filter_matches_by_options(matches, options, groupby=False, commutative=False
     for match in matches:
         if is_valid_match(match):
             valid_matches.add(match)
-        elif commutative and is_valid_match(tuple(reversed(match))):
-            valid_matches.add(tuple(reversed(match)))
+        elif commutative:
+            for order in permutations(match):
+                if is_valid_match(order):
+                    valid_matches.add(order)
+                    break
     return valid_matches
