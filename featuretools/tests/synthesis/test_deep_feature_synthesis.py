@@ -1378,12 +1378,7 @@ def test_primitive_options_commutative(es):
         input_types = [Numeric, Numeric, Numeric]
         return_type = Numeric
         dask_compatible = True
-
-        def __init__(self, commutative=True):
-            self.commutative = commutative
-
-        def get_function(self):
-            return np.add
+        commutative = True
 
         def generate_name(self, base_feature_names):
             return "%s + %s + %s" % (base_feature_names[0], base_feature_names[1], base_feature_names[2])
