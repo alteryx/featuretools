@@ -7,15 +7,15 @@ import pandas as pd
 import pandas.api.types as pdtypes
 
 from featuretools.variable_types import (
-    Unknown,
-    Datetime,
-    Numeric,
-    Categorical,
-    Text,
     Boolean,
-    PandasTypes,
+    Categorical,
+    Datetime,
     Discrete,
-    LatLong
+    LatLong,
+    Numeric,
+    PandasTypes,
+    Text,
+    Unknown
 )
 from featuretools.variable_types.utils import convert_vtypes
 
