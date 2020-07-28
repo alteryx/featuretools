@@ -2,6 +2,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from featuretools import variable_types as vtypes
 from featuretools.utils.entity_utils import (
@@ -240,3 +241,9 @@ def test_generate_statistics_all_entities(es):
     for entity in es.entities:
         statistics = generate_statistics(entity.df, entity.variable_types)
         assert isinstance(statistics, dict)
+
+
+def test_statistics_raises_error(es):
+    error_text = 'Invalid data type. Please specify the specific entity.'
+    with pytest.raises(TypeError, match=error_text):
+        generate_statistics(es, {})

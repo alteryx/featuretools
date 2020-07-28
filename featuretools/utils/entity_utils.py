@@ -6,7 +6,17 @@ import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
 
-from featuretools import variable_types as vtypes
+from featuretools.variable_types import (
+    Unknown,
+    Datetime,
+    Numeric,
+    Categorical,
+    Text,
+    Boolean,
+    PandasTypes,
+    Discrete,
+    LatLong
+)
 from featuretools.variable_types.utils import convert_vtypes
 
 
@@ -28,7 +38,7 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
     vids_to_assume_datetime = [time_index]
     if len(list(secondary_time_index.keys())):
         vids_to_assume_datetime.append(list(secondary_time_index.keys())[0])
-    inferred_type = vtypes.Unknown
+    inferred_type = Unknown
     for variable in df.columns:
         if variable in variable_types:
             continue
@@ -38,20 +48,20 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
             raise ValueError(msg)
         elif variable in vids_to_assume_datetime:
             if col_is_datetime(df[variable]):
-                inferred_type = vtypes.Datetime
+                inferred_type = Datetime
             else:
-                inferred_type = vtypes.Numeric
+                inferred_type = Numeric
 
         elif variable in link_vars:
-            inferred_type = vtypes.Categorical
+            inferred_type = Categorical
 
         elif df[variable].dtype == "object":
             if not len(df[variable]):
-                inferred_type = vtypes.Categorical
+                inferred_type = Categorical
             elif col_is_datetime(df[variable]):
-                inferred_type = vtypes.Datetime
+                inferred_type = Datetime
             else:
-                inferred_type = vtypes.Categorical
+                inferred_type = Categorical
 
                 # heuristics to predict this some other than categorical
                 sample = df[variable].sample(min(10000, len(df[variable])))
@@ -60,21 +70,21 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
                 try:
                     avg_length = sample.str.len().mean()
                     if avg_length > 50:
-                        inferred_type = vtypes.Text
+                        inferred_type = Text
                 except AttributeError:
                     pass
 
         elif df[variable].dtype == "bool":
-            inferred_type = vtypes.Boolean
+            inferred_type = Boolean
 
         elif pdtypes.is_categorical_dtype(df[variable].dtype):
-            inferred_type = vtypes.Categorical
+            inferred_type = Categorical
 
         elif pdtypes.is_numeric_dtype(df[variable].dtype):
-            inferred_type = vtypes.Numeric
+            inferred_type = Numeric
 
         elif col_is_datetime(df[variable]):
-            inferred_type = vtypes.Datetime
+            inferred_type = Datetime
 
         elif len(df[variable]):
             sample = df[variable] \
@@ -84,9 +94,9 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
             percent_unique = sample.size / len(unique)
 
             if percent_unique < .05:
-                inferred_type = vtypes.Categorical
+                inferred_type = Categorical
             else:
-                inferred_type = vtypes.Numeric
+                inferred_type = Numeric
 
         inferred_types[variable] = inferred_type
 
@@ -107,29 +117,29 @@ def convert_all_variable_data(df, variable_types):
             raise LookupError("Variable ID %s not in DataFrame" % (var_id))
         current_type = df[var_id].dtype.name
 
-        if issubclass(desired_type, vtypes.Numeric) and \
-                current_type not in vtypes.PandasTypes._pandas_numerics:
+        if issubclass(desired_type, Numeric) and \
+                current_type not in PandasTypes._pandas_numerics:
             df = convert_variable_data(df=df,
                                        column_id=var_id,
                                        new_type=desired_type,
                                        **type_args)
 
-        if issubclass(desired_type, vtypes.Discrete) and \
-                current_type not in [vtypes.PandasTypes._categorical]:
+        if issubclass(desired_type, Discrete) and \
+                current_type not in [PandasTypes._categorical]:
             df = convert_variable_data(df=df,
                                        column_id=var_id,
                                        new_type=desired_type,
                                        **type_args)
 
-        if issubclass(desired_type, vtypes.Datetime) and \
-                current_type not in vtypes.PandasTypes._pandas_datetimes:
+        if issubclass(desired_type, Datetime) and \
+                current_type not in PandasTypes._pandas_datetimes:
             df = convert_variable_data(df=df,
                                        column_id=var_id,
                                        new_type=desired_type,
                                        **type_args)
 
         # Fill in any single `NaN` values in LatLong variables with a tuple
-        if issubclass(desired_type, vtypes.LatLong) and isinstance(df[var_id], pd.Series) and df[var_id].hasnans:
+        if issubclass(desired_type, LatLong) and isinstance(df[var_id], pd.Series) and df[var_id].hasnans:
             df[var_id] = replace_latlong_nan(df[var_id])
             warnings.warn("LatLong columns should contain only tuples. All single 'NaN' values in column '{}' have been replaced with '(NaN, NaN)'.".format(var_id))
 
@@ -142,7 +152,7 @@ def convert_variable_data(df, column_id, new_type, **kwargs):
     empty = df[column_id].empty if isinstance(df, pd.DataFrame) else False
     if empty:
         return df
-    if new_type == vtypes.Numeric:
+    if new_type == Numeric:
         if isinstance(df, dd.DataFrame):
             df[column_id] = dd.to_numeric(df[column_id], errors='coerce')
         else:
@@ -155,7 +165,7 @@ def convert_variable_data(df, column_id, new_type, **kwargs):
             nonnull = df[column_id].dropna().shape[0]
             if nonnull == 0 and orig_nonnull != 0:
                 raise TypeError("Attempted to convert all string column {} to numeric".format(column_id))
-    elif issubclass(new_type, vtypes.Datetime):
+    elif issubclass(new_type, Datetime):
         format = kwargs.get("format", None)
         # TODO: if float convert to int?
         if isinstance(df, dd.DataFrame):
@@ -164,14 +174,14 @@ def convert_variable_data(df, column_id, new_type, **kwargs):
         else:
             df[column_id] = pd.to_datetime(df[column_id], format=format,
                                            infer_datetime_format=True)
-    elif new_type == vtypes.Boolean:
+    elif new_type == Boolean:
         map_dict = {kwargs.get("true_val", True): True,
                     kwargs.get("false_val", False): False,
                     True: True,
                     False: False}
         # TODO: what happens to nans?
         df[column_id] = df[column_id].map(map_dict).astype(np.bool)
-    elif not issubclass(new_type, vtypes.Discrete):
+    elif not issubclass(new_type, Discrete):
         raise Exception("Cannot convert column %s to %s" %
                         (column_id, new_type))
     return df
@@ -218,12 +228,12 @@ def replace_latlong_nan(values):
     return values.where(values.notnull(), pd.Series([(np.nan, np.nan)] * len(values)))
 
 
-def generate_statistics(df, variable_types, return_dataframe=False):
-    """Calculates statistics for data.
+def generate_statistics(data, variable_types, return_dataframe=False):
+    """Calculates statistics for given data.
 
     Args:
-        df (pd.DataFrame/dd.DataFrame): Input DataFrame. Supports pandas or
-            dask dataframes.
+        data (ft.Entity/pd.DataFrame/dd.DataFrame): Input data. Supports featuretools
+            Entity, pandas DataFrame or dask DataFrame.
 
         variable_types (dict[str -> Variable/str], optional):
             Keys are of variable ids and values are variable types or type_strings.
@@ -243,8 +253,18 @@ def generate_statistics(df, variable_types, return_dataframe=False):
             `first_quartile`, `second_quartile`, `third_quartile`, `num_false`
             `num_true`)
     """
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
+    from featuretools import (
+        Entity,
+        EntitySet
+    )
+    if isinstance(data, EntitySet):
+        raise TypeError('Invalid data type. Please specify the specific entity.')
+
+    if isinstance(data, dd.DataFrame):
+        data = data.compute()
+
+    if isinstance(data, Entity):
+        data = data.df
 
     COMMON_STATISTICS = ["count", "nunique"]
     DATETIME_STATISTICS = ["max", "min", "mean"]
@@ -253,25 +273,25 @@ def generate_statistics(df, variable_types, return_dataframe=False):
     statistics = {}
     for column_name, v_type in variable_types.items():
         values = {}
-        column = df.reset_index()[column_name]
-        if v_type == vtypes.Boolean:
+        column = data.reset_index()[column_name]
+        if v_type == Boolean:
             column = column.astype(bool)
             values["num_false"] = column.value_counts().get(False, 0)
             values["num_true"] = column.value_counts().get(True, 0)
-        elif v_type == vtypes.Numeric:
+        elif v_type == Numeric:
             column = column.astype(float)
             values.update(column.agg(NUMERIC_STATISTICS).to_dict())
             quant_values = column.quantile([0.25, 0.5, 0.75]).tolist()
             values["first_quartile"] = quant_values[0]
             values["second_quartile"] = quant_values[2]
             values["third_quartile"] = quant_values[2]
-        elif v_type == vtypes.Discrete or issubclass(v_type, vtypes.Discrete):
+        elif v_type == Discrete or issubclass(v_type, Discrete):
             column = column.astype("category")
-        elif v_type == vtypes.Datetime:
+        elif v_type == Datetime:
             column = pd.to_datetime(column)
             values.update(column.agg(DATETIME_STATISTICS).to_dict())
         applicable = COMMON_STATISTICS
-        if isinstance(vtypes, vtypes.LatLong):
+        if isinstance(v_type, LatLong):
             applicable = applicable.remove('nunique')
         values.update(column.agg(applicable).to_dict())
         values["nan_count"] = column.isna().sum()
