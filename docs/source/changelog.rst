@@ -6,9 +6,11 @@ Changelog
     * Enhancements
         * Add ``generate_statistics`` to entity_utils for statistical information aobut an entity (:pr:`1061`)
     * Fixes
+        * Use more consistent and uniform warnings (:pr:`1040`)
         * Fix issue with missing instance ids and categorical entity index (:pr:`1050`)
         * Remove warnings.simplefilter in feature_set_calculator to un-silence warnings (:pr:`1053`)
         * Fix feature visualization for features with '>' or '<' in name (:pr:`1055`)
+        * Fix boolean dtype mismatch between encode_features and dfs and calculate_feature_matrix (:pr:`1082`)
     * Changes
         * Make DFS match ``TimeSince`` primitive with all ``Datetime`` types (:pr:`1048`)
         * Change default branch to ``main`` (:pr:`1038`)
@@ -19,12 +21,12 @@ Changelog
     * Testing Changes
         * Add fixture for ``ft.demo.load_mock_customer`` (:pr:`1036`)
         * Refactor Dask test units (:pr:`1052`)
-        * Implement automated process for checking critical dependencies (:pr:`1045`, :pr:`1054`)
+        * Implement automated process for checking critical dependencies (:pr:`1045`, :pr:`1054`, :pr:`1081`)
         * Don't run changelog check for release PRs or automated dependency PRs (:pr:`1057`)
         * Fix non-deterministic behavior in Dask test causing codecov issues (:pr:`1070`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`systemshift`, :user:`monti-python`, :user:`thehomebrewnerd`, :user:`frances-h`, :user:`rwedge`
+    :user:`gsheni`, :user:`systemshift`, :user:`monti-python`, :user:`thehomebrewnerd`, :user:`frances-h`, :user:`rwedge`, :user:`tamargrey`
 
 **v0.17.0 June 30, 2020**
     * Enhancements

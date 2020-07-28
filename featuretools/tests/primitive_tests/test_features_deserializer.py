@@ -1,3 +1,5 @@
+import logging
+
 import pandas as pd
 import pytest
 
@@ -96,7 +98,7 @@ def test_base_features_not_in_list(es):
     assert expected == deserializer.to_list()
 
 
-def test_later_schema_version(es):
+def test_later_schema_version(es, caplog):
     def test_version(major, minor, patch, raises=True):
         version = '.'.join([str(v) for v in [major, minor, patch]])
         if raises:
@@ -107,7 +109,7 @@ def test_later_schema_version(es):
         else:
             warning_text = None
 
-        _check_schema_version(version, es, warning_text)
+        _check_schema_version(version, es, warning_text, caplog, 'warn')
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
@@ -117,7 +119,7 @@ def test_later_schema_version(es):
     test_version(major, minor - 1, patch + 1, raises=False)
 
 
-def test_earlier_schema_version(es):
+def test_earlier_schema_version(es, caplog):
     def test_version(major, minor, patch, raises=True):
         version = '.'.join([str(v) for v in [major, minor, patch]])
 
@@ -129,7 +131,7 @@ def test_earlier_schema_version(es):
         else:
             warning_text = None
 
-        _check_schema_version(version, es, warning_text)
+        _check_schema_version(version, es, warning_text, caplog, 'log')
 
     major, minor, patch = [int(s) for s in SCHEMA_VERSION.split('.')]
 
@@ -266,7 +268,7 @@ def test_feature_use_previous_pd_dateoffset(es):
     assert expected == deserializer.to_list()
 
 
-def _check_schema_version(version, es, warning_text):
+def _check_schema_version(version, es, warning_text, caplog, warning_type=None):
     dictionary = {
         'ft_version': ft.__version__,
         'schema_version': version,
@@ -275,10 +277,15 @@ def _check_schema_version(version, es, warning_text):
         'feature_definitions': {}
     }
 
-    if warning_text:
+    if warning_type == 'log' and warning_text:
+        logger = logging.getLogger('featuretools')
+        logger.propagate = True
+        FeaturesDeserializer(dictionary)
+        assert warning_text in caplog.text
+        logger.propagate = False
+    elif warning_type == 'warn' and warning_text:
         with pytest.warns(UserWarning) as record:
             FeaturesDeserializer(dictionary)
-
         assert record[0].message.args[0] == warning_text
     else:
         FeaturesDeserializer(dictionary)

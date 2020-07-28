@@ -23,9 +23,9 @@ jobs:
       uses: Featurelabs/create-pull-request@v2
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: Update latest dependencies
-        title: Automated Update with New Dependencies
-        body: "This is an auto-generated PR with dependency updates."
+        commit-message: Update latest_dependencies.txt
+        title: Automated Update to latest_dependencies.txt
+        body: "This is an auto-generated PR with updates to latest_dependencies.txt."
         branch: dep-update
         branch-suffix: short-commit-hash
         base: main

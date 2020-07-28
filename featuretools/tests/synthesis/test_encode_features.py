@@ -208,3 +208,19 @@ def test_encode_features_handles_dictionary_input(pd_es):
     assert len(features_encoded) == 8
     for col in true_values:
         assert col in list(feature_matrix_encoded.columns)
+
+
+def test_encode_features_matches_calculate_feature_matrix():
+    df = pd.DataFrame({'category': ['b', 'c', 'd', 'e']})
+
+    pd_es = EntitySet('test')
+    pd_es.entity_from_dataframe(
+        entity_id='a', dataframe=df, index='index', make_index=True)
+    features, feature_defs = dfs(entityset=pd_es, target_entity='a')
+
+    features_enc, feature_defs_enc = encode_features(features, feature_defs, to_encode=['category'])
+
+    features_calc = calculate_feature_matrix(feature_defs_enc, entityset=pd_es)
+
+    assert features_enc['category = e'].dtypes == bool
+    assert features_enc['category = e'].dtypes == features_calc['category = e'].dtypes
