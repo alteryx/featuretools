@@ -547,22 +547,16 @@ class DeepFeatureSynthesis(object):
 
           entity (Entity): Entity to calculate features for.
         """
-        print('______________________________')
-        print(all_features['data'].values())
         new_max_depth = None
         if max_depth is not None:
             new_max_depth = max_depth - 1
 
-        working_features = all_features
+        active_features = all_features
 
         while max_depth > 0:
-            print('MAX DEPTH', max_depth)
-            print('all features', all_features)
-            print('working features', working_features)
             features_to_add = []
 
             for trans_prim in self.trans_primitives:
-                print('~~~~~~PRIMITIVE~~~~~~~', trans_prim.name)
                 current_options = self.primitive_options.get(
                     trans_prim,
                     self.primitive_options.get(trans_prim.name))
@@ -573,7 +567,7 @@ class DeepFeatureSynthesis(object):
                 if type(input_types[0]) == list:
                     input_types = input_types[0]
 
-                matching_inputs = self._get_matching_inputs(working_features,
+                matching_inputs = self._get_matching_inputs(active_features,
                                                             entity,
                                                             new_max_depth,
                                                             input_types,
@@ -582,23 +576,22 @@ class DeepFeatureSynthesis(object):
                                                             require_direct_input=require_direct_input)
 
                 for matching_input in matching_inputs:
-                    args = matching_input[0].get_arguments()
-                    if 'primitive' in args:
-                        print(trans_prim.name, args['primitive']['type'], '\n')
-                    if all(bf.number_output_features == 1 for bf in matching_input):
+                    # -->This keeps any self stacking from happening - even good ones
+                    is_self_stacking = matching_input[0].primitive == trans_prim
+                    if all(bf.number_output_features == 1 for bf in matching_input) and not is_self_stacking:
                         new_f = TransformFeature(matching_input,
                                                  primitive=trans_prim)
                         features_to_add.append(new_f)
-            print('features to add', features_to_add)
-            working_features = {}
+
+            active_features = {}
             for new_feature in features_to_add:
                 self._handle_new_feature(all_features=all_features,
                                          new_feature=new_feature)
 
-                if (new_feature.entity.id not in working_features):
-                    working_features[new_feature.entity.id] = {}
+                if (new_feature.entity.id not in active_features):
+                    active_features[new_feature.entity.id] = {}
 
-                working_features[new_feature.entity.id][new_feature.unique_name()] = new_feature
+                active_features[new_feature.entity.id][new_feature.unique_name()] = new_feature
 
             max_depth -= 1
 
