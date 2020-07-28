@@ -312,12 +312,20 @@ EntitySet visualization
 
 
 Entity methods
--------------------
+--------------
 .. autosummary::
     :toctree: generated/
 
     Entity.convert_variable_type
     Entity.add_interesting_values
+
+Entity utils methods
+--------------------
+.. currentmodule:: featuretools.utils.entity_utils
+.. autosummary::
+    :toctree: generated/
+
+    generate_statistics
 
 Relationship attributes
 -----------------------
