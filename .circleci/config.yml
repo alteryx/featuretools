@@ -134,7 +134,8 @@ jobs:
       name: python
       image_tag: << parameters.image_tag >>
     steps:
-      - run: sudo apt update && sudo apt install -y graphviz openjdk-8-jre-headless
+      - run: sudo apt update && sudo apt install -y graphviz 
+      - run: sudo apt-get -y update && sudo apt-get install -y openjdk-8-jre-headless
       - checkout
       - attach_workspace:
           at: ~/featuretools
