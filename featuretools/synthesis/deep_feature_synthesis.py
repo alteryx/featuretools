@@ -556,7 +556,7 @@ class DeepFeatureSynthesis(object):
         base_features = all_features
         active_features = all_features
 
-        while max_depth > 0:
+        for _ in range(max_depth):
             features_to_add = []
 
             for trans_prim in self.trans_primitives:
@@ -593,12 +593,7 @@ class DeepFeatureSynthesis(object):
                 self._handle_new_feature(all_features=all_features,
                                          new_feature=new_feature)
 
-                if (new_feature.entity.id not in active_features):
-                    active_features[new_feature.entity.id] = {}
-
                 active_features[new_feature.entity.id][new_feature.unique_name()] = new_feature
-
-            max_depth -= 1
 
         for groupby_prim in self.groupby_trans_primitives:
             current_options = self.primitive_options.get(
