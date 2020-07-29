@@ -13,6 +13,7 @@ class TransformPrimitive(PrimitiveBase):
     #   (and will receive these values as input, regardless of specified instance ids)
     uses_full_entity = False
     # -->Add stack_on_self and determine which primitives should allow it
+    stack_on_self = True
 
     def generate_name(self, base_feature_names):
         return u"%s(%s%s)" % (

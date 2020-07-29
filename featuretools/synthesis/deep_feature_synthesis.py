@@ -579,11 +579,8 @@ class DeepFeatureSynthesis(object):
                                                             require_direct_input=require_direct_input)
 
                 for matching_input in matching_inputs:
-                    # defining bad self-stacking as all the features being used have already applied the same primitive
-                    # Note, this will exclude cases like f(a,b) + f(c,d) which we probably want to keeps
-                    is_self_stacking = all([matching_input[i].primitive == trans_prim for i in range(len(matching_input))])
                     # --> add a check to only add features of the correct depth?
-                    if all(bf.number_output_features == 1 for bf in matching_input) and not is_self_stacking:
+                    if all(bf.number_output_features == 1 for bf in matching_input) and check_transform_stacking(trans_prim, matching_input):
                         new_f = TransformFeature(matching_input,
                                                  primitive=trans_prim)
                         features_to_add.append(new_f)
@@ -703,7 +700,7 @@ class DeepFeatureSynthesis(object):
             wheres = list(self.where_clauses[child_entity.id])
 
             for matching_input in matching_inputs:
-                if not check_stacking(agg_prim, matching_input):
+                if not check_aggregate_stacking(agg_prim, matching_input):
                     continue
                 new_f = AggregationFeature(matching_input,
                                            parent_entity=parent_entity,
@@ -816,7 +813,7 @@ class DeepFeatureSynthesis(object):
         return matching_inputs
 
 
-def check_stacking(primitive, inputs):
+def check_aggregate_stacking(primitive, inputs):
     """checks if features in inputs can be used with supplied primitive
        using the stacking rules"""
     if primitive.stack_on_self is False:
@@ -855,6 +852,14 @@ def check_stacking(primitive, inputs):
             continue
         return False
 
+    return True
+
+
+def check_transform_stacking(primitive, inputs):
+    if not primitive.stack_on_self:
+        for f in inputs:
+            if isinstance(f.primitive, primitive.__class__):
+                return False
     return True
 
 

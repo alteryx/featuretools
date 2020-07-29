@@ -34,6 +34,7 @@ class IsNull(TransformPrimitive):
     input_types = [Variable]
     return_type = Boolean
     dask_compatible = True
+    stack_on_self = False
 
     def get_function(self):
         def isnull(array):
@@ -56,6 +57,7 @@ class Absolute(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     dask_compatible = True
+    stack_on_self = False
 
     def get_function(self):
         return np.absolute
@@ -88,6 +90,7 @@ class TimeSincePrevious(TransformPrimitive):
     name = "time_since_previous"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
+    stack_on_self = False
 
     def __init__(self, unit="seconds"):
         self.unit = unit.lower()
@@ -114,6 +117,7 @@ class Day(TransformPrimitive):
     input_types = [Datetime]
     return_type = Ordinal
     dask_compatible = True
+    stack_on_self = False
 
     def get_function(self):
         def day(vals):
@@ -137,6 +141,7 @@ class Hour(TransformPrimitive):
     input_types = [Datetime]
     return_type = Ordinal
     dask_compatible = True
+    stack_on_self = False
 
     def get_function(self):
         def hour(vals):
@@ -160,6 +165,7 @@ class Second(TransformPrimitive):
     input_types = [Datetime]
     return_type = Numeric
     dask_compatible = True
+    stack_on_self = False
 
     def get_function(self):
         def second(vals):
@@ -183,6 +189,7 @@ class Minute(TransformPrimitive):
     input_types = [Datetime]
     return_type = Numeric
     dask_compatible = True
+    stack_on_self = False
 
     def get_function(self):
         def minute(vals):
@@ -211,6 +218,7 @@ class Week(TransformPrimitive):
     input_types = [Datetime]
     return_type = Ordinal
     dask_compatible = True
+    stack_on_self = False
 
     def get_function(self):
         def week(vals):
@@ -239,6 +247,7 @@ class Month(TransformPrimitive):
     input_types = [Datetime]
     return_type = Ordinal
     dask_compatible = True
+    stack_on_self = False
 
     def get_function(self):
         def month(vals):
@@ -262,6 +271,7 @@ class Year(TransformPrimitive):
     input_types = [Datetime]
     return_type = Ordinal
     dask_compatible = True
+    stack_on_self = False
 
     def get_function(self):
         def year(vals):
@@ -285,6 +295,7 @@ class IsWeekend(TransformPrimitive):
     input_types = [Datetime]
     return_type = Boolean
     dask_compatible = True
+    stack_on_self = False
 
     def get_function(self):
         def is_weekend(vals):
@@ -312,6 +323,7 @@ class Weekday(TransformPrimitive):
     input_types = [Datetime]
     return_type = Ordinal
     dask_compatible = True
+    stack_on_self = False
 
     def get_function(self):
         def weekday(vals):
@@ -333,6 +345,7 @@ class NumCharacters(TransformPrimitive):
     input_types = [Text]
     return_type = Numeric
     dask_compatible = True
+    stack_on_self = False
 
     def get_function(self):
         def character_counter(array):
@@ -355,6 +368,7 @@ class NumWords(TransformPrimitive):
     input_types = [Text]
     return_type = Numeric
     dask_compatible = True
+    stack_on_self = False
 
     def get_function(self):
         def word_counter(array):
@@ -398,6 +412,7 @@ class TimeSince(TransformPrimitive):
     return_type = Numeric
     uses_calc_time = True
     dask_compatible = True
+    stack_on_self = False
 
     def __init__(self, unit="seconds"):
         self.unit = unit.lower()
@@ -474,6 +489,7 @@ class Negate(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     dask_compatible = True
+    stack_on_self = False
 
     def get_function(self):
         def negate(vals):
@@ -521,6 +537,7 @@ class Percentile(TransformPrimitive):
     uses_full_entity = True
     input_types = [Numeric]
     return_type = Numeric
+    stack_on_self = False
 
     def get_function(self):
         return lambda array: array.rank(pct=True)
@@ -540,6 +557,7 @@ class Latitude(TransformPrimitive):
     name = 'latitude'
     input_types = [LatLong]
     return_type = Numeric
+    stack_on_self = False
 
     def get_function(self):
         def latitude(latlong):
@@ -563,6 +581,7 @@ class Longitude(TransformPrimitive):
     name = 'longitude'
     input_types = [LatLong]
     return_type = Numeric
+    stack_on_self = False
 
     def get_function(self):
         def longitude(latlong):
@@ -599,6 +618,7 @@ class Haversine(TransformPrimitive):
     input_types = [LatLong, LatLong]
     return_type = Numeric
     commutative = True
+    stack_on_self = False
 
     def __init__(self, unit='miles'):
         valid_units = ['miles', 'kilometers']
@@ -663,6 +683,7 @@ class Age(TransformPrimitive):
     input_types = [DateOfBirth]
     return_type = Numeric
     uses_calc_time = True
+    stack_on_self = False
 
     def get_function(self):
         def age(x, time=None):

@@ -49,6 +49,7 @@ class CumCount(TransformPrimitive):
     input_types = [[Id], [Discrete]]
     return_type = Numeric
     uses_full_entity = True
+    stack_on_self = False
 
     def get_function(self):
         def cum_count(values):
@@ -103,6 +104,7 @@ class CumMin(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     uses_full_entity = True
+    stack_on_self = False
 
     def get_function(self):
         def cum_min(values):
@@ -130,6 +132,7 @@ class CumMax(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     uses_full_entity = True
+    stack_on_self = False
 
     def get_function(self):
         def cum_max(values):

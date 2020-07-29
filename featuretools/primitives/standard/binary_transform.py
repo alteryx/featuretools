@@ -30,6 +30,7 @@ class GreaterThan(TransformPrimitive):
     input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
     dask_compatible = True
+    stack_on_self = False
 
     def get_function(self):
         return np.greater
@@ -55,6 +56,7 @@ class GreaterThanScalar(TransformPrimitive):
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
     dask_compatible = True
+    stack_on_self = False
 
     def __init__(self, value=0):
         self.value = value
@@ -85,6 +87,7 @@ class GreaterThanEqualTo(TransformPrimitive):
     input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
     dask_compatible = True
+    stack_on_self = False
 
     def get_function(self):
         return np.greater_equal
@@ -110,6 +113,7 @@ class GreaterThanEqualToScalar(TransformPrimitive):
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
     dask_compatible = True
+    stack_on_self = False
 
     def __init__(self, value=0):
         self.value = value
@@ -140,6 +144,7 @@ class LessThan(TransformPrimitive):
     input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
     dask_compatible = True
+    stack_on_self = False
 
     def get_function(self):
         return np.less
@@ -165,6 +170,7 @@ class LessThanScalar(TransformPrimitive):
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
     dask_compatible = True
+    stack_on_self = False
 
     def __init__(self, value=0):
         self.value = value
@@ -195,6 +201,7 @@ class LessThanEqualTo(TransformPrimitive):
     input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
     dask_compatible = True
+    stack_on_self = False
 
     def get_function(self):
         return np.less_equal
@@ -220,6 +227,7 @@ class LessThanEqualToScalar(TransformPrimitive):
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
     dask_compatible = True
+    stack_on_self = False
 
     def __init__(self, value=0):
         self.value = value
