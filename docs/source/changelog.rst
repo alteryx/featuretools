@@ -15,7 +15,7 @@ Changelog
         * Make DFS match ``TimeSince`` primitive with all ``Datetime`` types (:pr:`1048`)
         * Change default branch to ``main`` (:pr:`1038`)
         * Raise TypeError if improper input is supplied to ``Entity.delete_variables()`` (:pr:`1064`)
-        * Restrict pandas version to <1.1.0 due to issues with Dask EntitySets (:pr:`1089`)
+        * Updates for compatibility with pandas 1.1.0 (:pr:`1079`, :pr:`1089`)
     * Documentation Changes
         * Remove benchmarks folder (:pr:`1049`)
         * Add custom variables types section to variables page (:pr:`1066`)
@@ -25,7 +25,6 @@ Changelog
         * Implement automated process for checking critical dependencies (:pr:`1045`, :pr:`1054`, :pr:`1081`)
         * Don't run changelog check for release PRs or automated dependency PRs (:pr:`1057`)
         * Fix non-deterministic behavior in Dask test causing codecov issues (:pr:`1070`)
-        * Update tests to work with pandas 1.1.0 (:pr:`1079`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`systemshift`, :user:`monti-python`, :user:`thehomebrewnerd`, :user:`frances-h`, :user:`rwedge`, :user:`tamargrey`
