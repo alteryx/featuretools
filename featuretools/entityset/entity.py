@@ -537,7 +537,7 @@ class Entity(object):
         If this entity does not have a time index, return the original
         dataframe.
         """
-        if isinstance(df, ks.DataFrame):
+        if isinstance(df, ks.DataFrame) and isinstance(time_last, np.datetime64):
             time_last = pd.to_datetime(time_last)
         if self.time_index:
             df_empty = df.empty if isinstance(df, pd.DataFrame) else False
