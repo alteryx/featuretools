@@ -129,10 +129,10 @@ def test_to_csv(es, tmpdir):
     assert es.__eq__(new_es, deep=True)
     df = es['log'].df
     if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
+        df = df.compute(scheduler="single-threaded").set_index('id')
     new_df = new_es['log'].df
     if isinstance(new_df, dd.DataFrame):
-        new_df = new_df.compute().set_index('id')
+        new_df = new_df.compute(scheduler="single-threaded").set_index('id')
     assert type(df['latlong'][0]) == tuple
     assert type(new_df['latlong'][0]) == tuple
 
@@ -175,9 +175,9 @@ def test_to_parquet(es, tmpdir):
     df = es['log'].df
     new_df = new_es['log'].df
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
     if isinstance(new_df, dd.DataFrame):
-        new_df = new_df.compute()
+        new_df = new_df.compute(scheduler="single-threaded")
     assert type(df['latlong'][0]) == tuple
     assert type(df['latlong'][0]) == tuple
 
@@ -186,8 +186,8 @@ def test_dask_to_parquet(dask_es, tmpdir):
     dask_es.to_parquet(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert dask_es.__eq__(new_es, deep=True)
-    assert type(dask_es['log'].df.set_index('id')['latlong'].compute()[0]) == tuple
-    assert type(new_es['log'].df.set_index('id')['latlong'].compute()[0]) == tuple
+    assert type(dask_es['log'].df.set_index('id')['latlong'].compute(scheduler="single-threaded")[0]) == tuple
+    assert type(new_es['log'].df.set_index('id')['latlong'].compute(scheduler="single-threaded")[0]) == tuple
 
 
 def test_to_parquet_manual_interesting_values(es, tmpdir):

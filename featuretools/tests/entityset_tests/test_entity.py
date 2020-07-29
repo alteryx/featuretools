@@ -95,7 +95,7 @@ def test_update_data(es):
     # test already_sorted on entity without time index
     df = es["sessions"].df.copy()
     if isinstance(df, dd.DataFrame):
-        updated_id = df['id'].compute()
+        updated_id = df['id'].compute(scheduler="single-threaded")
     else:
         updated_id = df['id']
     updated_id.iloc[1:3] = [2, 1]
@@ -103,18 +103,18 @@ def test_update_data(es):
     es["sessions"].update_data(df.copy())
     sessions_df = es['sessions'].df
     if isinstance(sessions_df, dd.DataFrame):
-        sessions_df = sessions_df.compute()
+        sessions_df = sessions_df.compute(scheduler="single-threaded")
     assert sessions_df["id"].iloc[1] == 2  # no sorting since time index not defined
     es["sessions"].update_data(df.copy(), already_sorted=True)
     sessions_df = es['sessions'].df
     if isinstance(sessions_df, dd.DataFrame):
-        sessions_df = sessions_df.compute()
+        sessions_df = sessions_df.compute(scheduler="single-threaded")
     assert sessions_df["id"].iloc[1] == 2
 
     # test already_sorted on entity with time index
     df = es["customers"].df.copy()
     if isinstance(df, dd.DataFrame):
-        updated_signup = df['signup_date'].compute()
+        updated_signup = df['signup_date'].compute(scheduler="single-threaded")
     else:
         updated_signup = df['signup_date']
     updated_signup.iloc[0] = datetime(2011, 4, 11)
@@ -122,7 +122,7 @@ def test_update_data(es):
     es["customers"].update_data(df.copy(), already_sorted=True)
     customers_df = es['customers'].df
     if isinstance(customers_df, dd.DataFrame):
-        customers_df = customers_df.compute()
+        customers_df = customers_df.compute(scheduler="single-threaded")
     assert customers_df["id"].iloc[0] == 2
 
     # only pandas allows for sorting:
@@ -153,7 +153,7 @@ def test_query_by_values_secondary_time_index(es):
     result = es['customers'].query_by_values(all_instances, time_last=end)
 
     if isinstance(result, dd.DataFrame):
-        result = result.compute().set_index('id')
+        result = result.compute(scheduler="single-threaded").set_index('id')
     for col in ["cancel_date", "cancel_reason"]:
         nulls = result.loc[all_instances][col].isnull() == [False, True, True]
         assert nulls.all(), "Some instance has data it shouldn't for column %s" % col

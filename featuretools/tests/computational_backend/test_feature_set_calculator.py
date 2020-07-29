@@ -49,7 +49,7 @@ def test_make_identity(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
 
     v = df[f.get_name()][0]
     assert (v == datetime(2011, 4, 9, 10, 30, 0))
@@ -65,7 +65,7 @@ def test_make_dfeat(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
 
     v = df[f.get_name()][0]
     assert (v == 33)
@@ -80,7 +80,7 @@ def test_make_agg_feat_of_identity_variable(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
 
     v = df[agg_feat.get_name()][0]
     assert (v == 50)
@@ -126,7 +126,7 @@ def test_make_agg_feat_of_identity_index_variable(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
 
     v = df[agg_feat.get_name()][0]
     assert (v == 5)
@@ -144,7 +144,7 @@ def test_make_agg_feat_where_count(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
 
     v = df[agg_feat.get_name()][0]
     assert (v == 3)
@@ -162,7 +162,7 @@ def test_make_agg_feat_using_prev_time(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
 
     v = df[agg_feat.get_name()][0]
     assert (v == 2)
@@ -172,7 +172,7 @@ def test_make_agg_feat_using_prev_time(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
 
     v = df[agg_feat.get_name()][0]
     assert (v == 1)
@@ -238,7 +238,7 @@ def test_make_agg_feat_multiple_dtypes(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
 
     v = df[agg_feat.get_name()][0]
     v2 = df[agg_feat2.get_name()][0]
@@ -258,7 +258,7 @@ def test_make_agg_feat_where_different_identity_feat(es):
 
     df = ft.calculate_feature_matrix(entityset=es, features=feats, instance_ids=[0, 1, 2, 3])
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
 
     for i, where_cmp in enumerate(where_cmps):
         name = feats[i].get_name()
@@ -305,7 +305,7 @@ def test_make_agg_feat_of_grandchild_entity(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
+        df = df.compute(scheduler="single-threaded").set_index('id')
     v = df[agg_feat.get_name()].loc[0]
     assert (v == 10)
 
@@ -329,7 +329,7 @@ def test_make_agg_feat_where_count_feat(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0, 1]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
     name = feat.get_name()
     instances = df[name]
     v0, v1 = instances[0:2]
@@ -357,7 +357,7 @@ def test_make_compare_feat(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0, 1, 2]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
     name = feat.get_name()
     instances = df[name]
     v0, v1, v2 = instances[0:3]
@@ -388,7 +388,7 @@ def test_make_agg_feat_where_count_and_device_type_feat(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
+        df = df.compute(scheduler="single-threaded").set_index('id')
     name = feat.get_name()
     instances = df[name]
     assert (instances.loc[0] == 1)
@@ -416,7 +416,7 @@ def test_make_agg_feat_where_count_or_device_type_feat(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
+        df = df.compute(scheduler="single-threaded").set_index('id')
     name = feat.get_name()
     instances = df[name]
     assert (instances.loc[0] == 3)
@@ -433,7 +433,7 @@ def test_make_agg_feat_of_agg_feat(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
+        df = df.compute(scheduler="single-threaded").set_index('id')
     v = df[customer_sum_feat.get_name()].loc[0]
     assert (v == 10)
 
@@ -531,7 +531,7 @@ def test_make_dfeat_of_agg_feat_on_self(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
+        df = df.compute(scheduler="single-threaded").set_index('id')
     v = df[num_customers_feat.get_name()].loc[0]
     assert (v == 3)
 
@@ -560,7 +560,7 @@ def test_make_dfeat_of_agg_feat_through_parent(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
+        df = df.compute(scheduler="single-threaded").set_index('id')
     v = df[num_stores_feat.get_name()].loc[0]
     assert (v == 3)
 
@@ -591,7 +591,7 @@ def test_make_deep_agg_feat_of_dfeat_of_agg_feat(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
+        df = df.compute(scheduler="single-threaded").set_index('id')
     v = df[purchase_popularity.get_name()].loc[0]
     assert (v == 38.0 / 10.0)
 
@@ -611,7 +611,7 @@ def test_deep_agg_feat_chain(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array(['United States']))
     if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
+        df = df.compute(scheduler="single-threaded").set_index('id')
     v = df[region_avg_feat.get_name()][0]
     assert (v == 17 / 3.)
 
@@ -671,7 +671,7 @@ def test_direct_squared(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0, 1, 2]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
     for i, row in df.iterrows():
         assert (row[0] * row[0]) == row[1]
 
@@ -686,7 +686,7 @@ def test_agg_empty_child(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
 
     assert df["COUNT(log)"].iloc[0] == 0
 
@@ -710,7 +710,7 @@ def test_diamond_entityset(diamond_es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0, 1, 2]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
     assert (df['SUM(stores.transactions.amount)'] == [94, 261, 128]).all()
     assert (df['SUM(customers.transactions.amount)'] == [72, 411, 0]).all()
 
@@ -739,7 +739,7 @@ def test_two_relationships_to_single_entity(games_es):
                                       feature_set=feature_set)
     df = calculator.run(np.array(range(3)))
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
     assert (df[home_team_mean.get_name()] == [1.5, 1.5, 2.5]).all()
     assert (df[away_team_mean.get_name()] == [1, 0.5, 2]).all()
 
@@ -829,7 +829,7 @@ def test_empty_child_dataframe(parent_child):
                                      features=features,
                                      cutoff_time=pd.Timestamp("12/31/2017"))
     if isinstance(fm, dd.DataFrame):
-        fm = fm.compute()
+        fm = fm.compute(scheduler="single-threaded")
     assert_array_equal(fm[names], [values])
 
     # cutoff time after all rows, but where clause filters all rows
@@ -846,7 +846,7 @@ def test_empty_child_dataframe(parent_child):
                                       features=features,
                                       cutoff_time=pd.Timestamp("1/4/2018"))
     if isinstance(fm2, dd.DataFrame):
-        fm2 = fm2.compute()
+        fm2 = fm2.compute(scheduler="single-threaded")
     assert_array_equal(fm2[names], [values])
 
 
@@ -860,7 +860,7 @@ def test_with_features_built_from_es_metadata(es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
+        df = df.compute(scheduler="single-threaded").set_index('id')
     v = df[agg_feat.get_name()].loc[0]
     assert (v == 10)
 
@@ -902,7 +902,7 @@ def test_handles_primitive_function_name_uniqueness(es):
                     primitive=SumTimesN(n=1))
     fm = ft.calculate_feature_matrix(features=[f1], entityset=es)
     if isinstance(fm, dd.DataFrame):
-        fm = fm.compute().set_index('id')
+        fm = fm.compute(scheduler="single-threaded").set_index('id')
     value_sum = pd.Series([56, 26, 0])
     assert all(fm[f1.get_name()].sort_index() == value_sum)
 
@@ -912,14 +912,14 @@ def test_handles_primitive_function_name_uniqueness(es):
                     primitive=SumTimesN(n=2))
     fm = ft.calculate_feature_matrix(features=[f2], entityset=es)
     if isinstance(fm, dd.DataFrame):
-        fm = fm.compute().set_index('id')
+        fm = fm.compute(scheduler="single-threaded").set_index('id')
     double_value_sum = pd.Series([112, 52, 0])
     assert all(fm[f2.get_name()].sort_index() == double_value_sum)
 
     # same primitive, same variable, different args
     fm = ft.calculate_feature_matrix(features=[f1, f2], entityset=es)
     if isinstance(fm, dd.DataFrame):
-        fm = fm.compute().set_index('id')
+        fm = fm.compute(scheduler="single-threaded").set_index('id')
     assert all(fm[f1.get_name()].sort_index() == value_sum)
     assert all(fm[f2.get_name()].sort_index() == double_value_sum)
 
@@ -933,7 +933,7 @@ def test_handles_primitive_function_name_uniqueness(es):
                     primitive=NumTrue)
     fm = ft.calculate_feature_matrix(features=[f3, f4], entityset=es)
     if isinstance(fm, dd.DataFrame):
-        fm = fm.compute().set_index('id')
+        fm = fm.compute(scheduler="single-threaded").set_index('id')
     purchased_sum = pd.Series([10, 1, 1])
     assert all(fm[f3.get_name()].sort_index() == value_sum)
     assert all(fm[f4.get_name()].sort_index() == purchased_sum)\

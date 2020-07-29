@@ -92,7 +92,7 @@ def test_override_boolean(es):
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2])
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert v == test
@@ -163,7 +163,7 @@ def test_override_cmp_from_variable(es):
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2])
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
     v = df[count_lo.get_name()].values.tolist()
     for i, test in enumerate(to_test):
         assert v[i] == test
@@ -196,7 +196,7 @@ def test_override_cmp(es):
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2])
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert v == test

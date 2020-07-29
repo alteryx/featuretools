@@ -69,7 +69,7 @@ def extra_session_df(es):
     row = pd.DataFrame(row_values, index=pd.Index([6], name='id'))
     df = es['sessions'].df
     if isinstance(df, dd.DataFrame):
-        df = df.compute()
+        df = df.compute(scheduler="single-threaded")
     df = df.append(row, sort=True).sort_index()
     if isinstance(es['sessions'].df, dd.DataFrame):
         df = dd.from_pandas(df, npartitions=3)
@@ -102,7 +102,7 @@ class TestLastTimeIndex(object):
         assert len(values.last_time_index) == 11
         sorted_lti = values.last_time_index
         if isinstance(sorted_lti, dd.Series):
-            sorted_lti = sorted_lti.compute()
+            sorted_lti = sorted_lti.compute(scheduler="single-threaded")
         sorted_lti = sorted_lti.sort_index()
         for v1, v2 in zip(sorted_lti, true_values_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
@@ -141,7 +141,7 @@ class TestLastTimeIndex(object):
         assert len(sessions.last_time_index) == 6
         lti = sessions.last_time_index
         if isinstance(lti, dd.Series):
-            lti = lti.compute()
+            lti = lti.compute(scheduler="single-threaded")
         sorted_lti = lti.sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
@@ -160,7 +160,7 @@ class TestLastTimeIndex(object):
         assert len(sessions.last_time_index) == 7
         lti = sessions.last_time_index
         if isinstance(lti, dd.Series):
-            lti = lti.compute()
+            lti = lti.compute(scheduler="single-threaded")
         sorted_lti = lti.sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
@@ -192,7 +192,7 @@ class TestLastTimeIndex(object):
         assert len(sessions.last_time_index) == 6
         lti = sessions.last_time_index
         if isinstance(lti, dd.Series):
-            lti = lti.compute()
+            lti = lti.compute(scheduler="single-threaded")
         sorted_lti = lti.sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
@@ -227,7 +227,7 @@ class TestLastTimeIndex(object):
         assert len(sessions.last_time_index) == 6
         lti = sessions.last_time_index
         if isinstance(lti, dd.Series):
-            lti = lti.compute()
+            lti = lti.compute(scheduler="single-threaded")
         sorted_lti = lti.sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
@@ -271,7 +271,7 @@ class TestLastTimeIndex(object):
         assert len(sessions.last_time_index) == 7
         lti = sessions.last_time_index
         if isinstance(lti, dd.Series):
-            lti = lti.compute()
+            lti = lti.compute(scheduler="single-threaded")
         sorted_lti = lti.sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
@@ -317,7 +317,7 @@ class TestLastTimeIndex(object):
         assert len(sessions.last_time_index) == 7
         lti = sessions.last_time_index
         if isinstance(lti, dd.Series):
-            lti = lti.compute()
+            lti = lti.compute(scheduler="single-threaded")
         sorted_lti = lti.sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
@@ -357,7 +357,7 @@ class TestLastTimeIndex(object):
         assert len(sessions.last_time_index) == 7
         lti = sessions.last_time_index
         if isinstance(lti, dd.Series):
-            lti = lti.compute()
+            lti = lti.compute(scheduler="single-threaded")
         sorted_lti = lti.sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
@@ -372,7 +372,7 @@ class TestLastTimeIndex(object):
         # the current last time index.
         df = log.df
         if isinstance(df, dd.DataFrame):
-            df = log.df.compute()
+            df = log.df.compute(scheduler="single-threaded")
         df['datetime'][5] = pd.Timestamp("2011-4-09 10:40:01")
         df = (df.set_index('datetime', append=True)
               .sort_index(level=[1, 0], kind="mergesort")
@@ -389,7 +389,7 @@ class TestLastTimeIndex(object):
         assert len(customers.last_time_index) == 3
         lti = customers.last_time_index
         if isinstance(lti, dd.Series):
-            lti = lti.compute()
+            lti = lti.compute(scheduler="single-threaded")
         sorted_lti = lti.sort_index()
         for v1, v2 in zip(sorted_lti, true_customers_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2

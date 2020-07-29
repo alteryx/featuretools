@@ -48,7 +48,7 @@ def test_transform(pd_es, dask_es):
         dask_fm = ft.calculate_feature_matrix(features=features, entityset=dask_es, cutoff_time=cutoff_time)
 
         # Use the same columns and make sure both indexes are sorted the same
-        dask_computed_fm = dask_fm.compute().set_index(entity.index).loc[fm.index][fm.columns]
+        dask_computed_fm = dask_fm.compute(scheduler="single-threaded").set_index(entity.index).loc[fm.index][fm.columns]
         pd.testing.assert_frame_equal(fm, dask_computed_fm)
 
 
@@ -76,5 +76,5 @@ def test_aggregation(pd_es, dask_es):
                             cutoff_time=pd.Timestamp("2019-01-05 04:00"),
                             max_depth=2)
         # Use the same columns and make sure both indexes are sorted the same
-        dask_computed_fm = dask_fm.compute().set_index(entity.index).loc[fm.index][fm.columns]
+        dask_computed_fm = dask_fm.compute(scheduler="single-threaded").set_index(entity.index).loc[fm.index][fm.columns]
         pd.testing.assert_frame_equal(fm, dask_computed_fm, check_dtype=False)

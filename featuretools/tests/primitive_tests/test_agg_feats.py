@@ -643,7 +643,7 @@ def test_use_previous_pd_dateoffset(es):
                                                  cutoff_time=pd.Timestamp('2011-04-11 10:31:30'),
                                                  instance_ids=[0, 1, 2])
     if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.compute().set_index('id').sort_index()
+        feature_matrix = feature_matrix.compute(scheduler="single-threaded").set_index('id').sort_index()
     col_name = list(feature_matrix.head().keys())[0]
     assert (feature_matrix[col_name] == [1, 5, 2]).all()
 
