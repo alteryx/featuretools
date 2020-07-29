@@ -197,6 +197,8 @@ class DeepFeatureSynthesis(object):
                                  "aggregation primitive".format(type(a)))
             self.agg_primitives.append(a)
 
+        # Sorting the primitives list so that we get deterministic feature orders
+        #  --> do we want that? If so it might be good for the rest of the primitives as well?
         trans_primitives.sort()
         if trans_primitives is None:
             trans_primitives = primitives.get_default_transform_primitives()
@@ -551,6 +553,7 @@ class DeepFeatureSynthesis(object):
         if max_depth is not None:
             new_max_depth = max_depth - 1
 
+        base_features = all_features
         active_features = all_features
 
         while max_depth > 0:
@@ -569,21 +572,23 @@ class DeepFeatureSynthesis(object):
 
                 matching_inputs = self._get_matching_inputs(active_features,
                                                             entity,
-                                                            new_max_depth,
+                                                            new_max_depth,  # --> double check this is correct
                                                             input_types,
                                                             trans_prim,
                                                             current_options,
                                                             require_direct_input=require_direct_input)
 
                 for matching_input in matching_inputs:
-                    # -->This keeps any self stacking from happening - even good ones
+                    # defining bad self-stacking as all the features being used have already applied the same primitive
+                    # Note, this will exclude cases like f(a,b) + f(c,d) which we probably want to keeps
                     is_self_stacking = all([matching_input[i].primitive == trans_prim for i in range(len(matching_input))])
+                    # --> add a check to only add features of the correct depth?
                     if all(bf.number_output_features == 1 for bf in matching_input) and not is_self_stacking:
                         new_f = TransformFeature(matching_input,
                                                  primitive=trans_prim)
                         features_to_add.append(new_f)
 
-            active_features = {}
+            active_features = base_features  # Right now this creates warnings since it'll try and create depth 1 features again
             for new_feature in features_to_add:
                 self._handle_new_feature(all_features=all_features,
                                          new_feature=new_feature)
