@@ -9,11 +9,6 @@ import featuretools as ft
 from featuretools.tests.testing_utils import make_ecommerce_entityset
 
 
-@pytest.fixture(scope='session', autouse=True)
-def set_dask_scheduler():
-    dask.config.set(scheduler='single-threaded')
-
-
 @pytest.fixture(scope='session')
 def make_es():
     return make_ecommerce_entityset()
@@ -36,6 +31,7 @@ def int_es(make_int_es):
 
 @pytest.fixture
 def dask_es(make_es):
+    dask.config.set(scheduler='single-threaded')
     dask_es = copy.deepcopy(make_es)
     for entity in dask_es.entities:
         entity.df = dd.from_pandas(entity.df.reset_index(drop=True), npartitions=2)
