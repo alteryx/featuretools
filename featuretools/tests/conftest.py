@@ -1,11 +1,17 @@
 import copy
 
+import dask
 import dask.dataframe as dd
 import pandas as pd
 import pytest
 
 import featuretools as ft
 from featuretools.tests.testing_utils import make_ecommerce_entityset
+
+
+@pytest.fixture(scope='session', autouse=True)
+def set_dask_scheduler():
+    dask.config.set(scheduler='single-threaded')
 
 
 @pytest.fixture(scope='session')

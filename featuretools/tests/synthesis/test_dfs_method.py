@@ -99,7 +99,7 @@ def test_accepts_cutoff_time_df(entities, relationships):
                                    target_entity="transactions",
                                    cutoff_time=cutoff_times_df)
     if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.compute(scheduler="single-threaded").set_index("id")
+        feature_matrix = feature_matrix.compute().set_index("id")
     assert len(feature_matrix.index) == 3
     assert len(feature_matrix.columns) == len(features)
 
@@ -130,7 +130,7 @@ def test_accepts_cutoff_time_compose(entities, relationships):
 
     transactions_df = entities['transactions'][0]
     if isinstance(transactions_df, dd.DataFrame):
-        transactions_df = transactions_df.compute(scheduler="single-threaded")
+        transactions_df = transactions_df.compute()
 
     labels = lm.search(
         transactions_df,
@@ -145,7 +145,7 @@ def test_accepts_cutoff_time_compose(entities, relationships):
                                    target_entity="cards",
                                    cutoff_time=labels)
     if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.compute(scheduler="single-threaded").set_index('id')
+        feature_matrix = feature_matrix.compute().set_index('id')
     assert len(feature_matrix.index) == 6
     assert len(feature_matrix.columns) == len(features) + 1
 
@@ -156,7 +156,7 @@ def test_accepts_single_cutoff_time(entities, relationships):
                                    target_entity="transactions",
                                    cutoff_time=20)
     if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.compute(scheduler="single-threaded").set_index('id')
+        feature_matrix = feature_matrix.compute().set_index('id')
     assert len(feature_matrix.index) == 5
     assert len(feature_matrix.columns) == len(features)
 
@@ -167,7 +167,7 @@ def test_accepts_no_cutoff_time(entities, relationships):
                                    target_entity="transactions",
                                    instance_ids=[1, 2, 3, 5, 6])
     if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.set_index('id').compute(scheduler="single-threaded")
+        feature_matrix = feature_matrix.set_index('id').compute()
     assert len(feature_matrix.index) == 5
     assert len(feature_matrix.columns) == len(features)
 
@@ -182,7 +182,7 @@ def test_ignores_instance_ids_if_cutoff_df(entities, relationships):
                                    cutoff_time=cutoff_times_df,
                                    instance_ids=instance_ids)
     if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.set_index('id').compute(scheduler="single-threaded")
+        feature_matrix = feature_matrix.set_index('id').compute()
     assert len(feature_matrix.index) == 3
     assert len(feature_matrix.columns) == len(features)
 

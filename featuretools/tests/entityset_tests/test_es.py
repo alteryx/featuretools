@@ -169,7 +169,7 @@ def test_add_relationship_empty_child_convert_dtype(es):
 def test_query_by_id(es):
     df = es['log'].query_by_values(instance_vals=[0])
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
     assert df['id'].values[0] == 0
 
 
@@ -178,7 +178,7 @@ def test_query_by_id_with_time(es):
         instance_vals=[0, 1, 2, 3, 4],
         time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
     assert list(df['id'].values) == [0, 1, 2]
 
 
@@ -187,7 +187,7 @@ def test_query_by_variable_with_time(es):
         instance_vals=[0, 1, 2], variable_id='session_id',
         time_last=datetime(2011, 4, 9, 10, 50, 0))
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
 
     true_values = [
         i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
@@ -202,7 +202,7 @@ def test_query_by_variable_with_training_window(es):
         time_last=datetime(2011, 4, 9, 10, 50, 0),
         training_window='15m')
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
 
     assert list(df['id'].values) == [9]
     assert list(df['value'].values) == [0]
@@ -213,7 +213,7 @@ def test_query_by_indexed_variable(es):
         instance_vals=['taco clock'],
         variable_id='product_id')
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
 
     assert list(df['id'].values) == [15, 16]
 
@@ -468,7 +468,7 @@ def test_converts_datetime(datetime1):
         dataframe=datetime1)
     pd_col = es['test_entity'].df['time']
     if isinstance(pd_col, dd.Series):
-        pd_col = pd_col.compute(scheduler="single-threaded")
+        pd_col = pd_col.compute()
     # assert type(es['test_entity']['time']) == variable_types.Datetime
     assert type(pd_col[0]) == pd.Timestamp
 
@@ -512,8 +512,8 @@ def test_handles_datetime_format(datetime2):
     col_format = es['test_entity'].df['time_format']
     col_no_format = es['test_entity'].df['time_no_format']
     if isinstance(col_format, dd.Series):
-        col_format = col_format.compute(scheduler="single-threaded")
-        col_no_format = col_no_format.compute(scheduler="single-threaded")
+        col_format = col_format.compute()
+        col_no_format = col_no_format.compute()
     # without formatting pandas gets it wrong
     assert (col_no_format != actual).all()
 
@@ -557,11 +557,11 @@ def test_entity_init(es):
     es.entity_from_dataframe('test_entity', df, index='id',
                              time_index='time', variable_types=vtypes)
     if isinstance(df, dd.DataFrame):
-        df_shape = (df.shape[0].compute(scheduler="single-threaded"), df.shape[1])
+        df_shape = (df.shape[0].compute(), df.shape[1])
     else:
         df_shape = df.shape
     if isinstance(es['test_entity'].df, dd.DataFrame):
-        es_df_shape = (es['test_entity'].df.shape[0].compute(scheduler="single-threaded"), es['test_entity'].df.shape[1])
+        es_df_shape = (es['test_entity'].df.shape[0].compute(), es['test_entity'].df.shape[1])
     else:
         es_df_shape = es['test_entity'].df.shape
     assert es_df_shape == df_shape
@@ -1049,7 +1049,7 @@ def test_normalize_entity_new_time_index(es):
     assert len(es['values'].df.columns) == 2
     df = es['values'].df
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
     assert df[new_time_index].is_monotonic_increasing
 
 

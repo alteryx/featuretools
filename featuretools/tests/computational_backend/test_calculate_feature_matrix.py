@@ -79,7 +79,7 @@ def test_calc_feature_matrix(es):
                                               cutoff_time=cutoff_time,
                                               verbose=True)
     if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.compute(scheduler="single-threaded").set_index('id').sort_index()
+        feature_matrix = feature_matrix.compute().set_index('id').sort_index()
 
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
@@ -124,7 +124,7 @@ def test_calc_feature_matrix(es):
                                               cutoff_time=cutoff_reordered,
                                               verbose=True)
     if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.compute(scheduler="single-threaded").set_index('id').sort_index()
+        feature_matrix = feature_matrix.compute().set_index('id').sort_index()
 
     assert all(feature_matrix.index == cutoff_reordered["id"].values)
     # fails with Dask entitysets, cutoff time not reordered; cannot verify out of order
@@ -166,7 +166,7 @@ def test_cfm_compose(es):
 
     df = es['log'].df
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
     labels = lm.search(
         df,
         num_examples_per_instance=-1
@@ -180,7 +180,7 @@ def test_cfm_compose(es):
                                               cutoff_time=labels,
                                               verbose=True)
     if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.compute(scheduler="single-threaded").set_index('id').sort_index()
+        feature_matrix = feature_matrix.compute().set_index('id').sort_index()
 
     assert (feature_matrix[property_feature.get_name()] ==
             feature_matrix['label_func']).values.all()
@@ -198,7 +198,7 @@ def test_cfm_dask_compose(dask_es):
     )
 
     labels = lm.search(
-        dask_es['log'].df.compute(scheduler="single-threaded"),
+        dask_es['log'].df.compute(),
         num_examples_per_instance=-1
     )
     labels = labels.rename(columns={'cutoff_time': 'time'})
@@ -209,7 +209,7 @@ def test_cfm_dask_compose(dask_es):
                                               dask_es,
                                               cutoff_time=labels,
                                               verbose=True)
-    feature_matrix = feature_matrix.compute(scheduler="single-threaded")
+    feature_matrix = feature_matrix.compute()
 
     assert (feature_matrix[property_feature.get_name()] == feature_matrix['label_func']).values.all()
 
@@ -313,7 +313,7 @@ def test_cfm_duplicated_index_in_cutoff_time(es):
                                               cutoff_time=cutoff_time,
                                               chunk_size=1)
     if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.compute(scheduler="single-threaded").set_index('id').sort_index()
+        feature_matrix = feature_matrix.compute().set_index('id').sort_index()
 
     assert (feature_matrix.shape[0] == cutoff_time.shape[0])
 
@@ -364,7 +364,7 @@ def test_cutoff_time_correctly(es):
                                               es,
                                               cutoff_time=cutoff_time)
     if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.compute(scheduler="single-threaded").set_index('id').sort_index()
+        feature_matrix = feature_matrix.compute().set_index('id').sort_index()
     labels = [10, 5, 0]
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
@@ -426,7 +426,7 @@ def test_cutoff_time_columns_order(es):
 
             labels = [10, 5, 0]
             if isinstance(feature_matrix, dd.DataFrame):
-                feature_matrix = feature_matrix.compute(scheduler="single-threaded").set_index('id').sort_index()
+                feature_matrix = feature_matrix.compute().set_index('id').sort_index()
             assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 
@@ -1036,10 +1036,10 @@ def test_cutoff_time_naming(es):
 
     fm1 = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df)
     if isinstance(fm1, dd.DataFrame):
-        fm1 = fm1.compute(scheduler="single-threaded").set_index('id').sort_index()
+        fm1 = fm1.compute().set_index('id').sort_index()
     fm2 = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df_index_name)
     if isinstance(fm2, dd.DataFrame):
-        fm2 = fm2.compute(scheduler="single-threaded").set_index('id').sort_index()
+        fm2 = fm2.compute().set_index('id').sort_index()
     assert all((fm1 == fm2.values).values)
 
     error_text = 'Cutoff time DataFrame must contain a column with either the same name' \
@@ -1068,7 +1068,7 @@ def test_cutoff_time_extra_columns(es):
                              columns=['time', 'instance_id', 'label'])
     fm = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df)
     if isinstance(fm, dd.DataFrame):
-        fm = fm.compute(scheduler="single-threaded")
+        fm = fm.compute()
     # check column was added to end of matrix
     assert 'label' == fm.columns[-1]
 
@@ -1103,7 +1103,7 @@ def test_instances_after_cutoff_time_removed(es):
                                   cutoff_time=cutoff_time,
                                   cutoff_time_in_index=True)
     if isinstance(fm, dd.DataFrame):
-        fm = fm.compute(scheduler="single-threaded").set_index('id')
+        fm = fm.compute().set_index('id')
         actual_ids = fm.index
     else:
         actual_ids = [id for (id, _) in fm.index]
@@ -1127,7 +1127,7 @@ def test_instances_with_id_kept_after_cutoff(es):
     # Customer #1 is after cutoff, but since it is included in instance_ids it
     # should be kept.
     if isinstance(fm, dd.DataFrame):
-        fm = fm.compute(scheduler="single-threaded").set_index('id')
+        fm = fm.compute().set_index('id')
         actual_ids = fm.index
     else:
         actual_ids = [id for (id, _) in fm.index]
@@ -1149,7 +1149,7 @@ def test_cfm_returns_original_time_indexes(es):
                                   es, cutoff_time=cutoff_df,
                                   cutoff_time_in_index=True)
     if isinstance(fm, dd.DataFrame):
-        fm = fm.compute(scheduler="single-threaded").set_index('id')
+        fm = fm.compute().set_index('id')
         instance_level_vals = fm.index
         # Dask doesn't return time (doesn't support multi-index)
         time_level_vals = []
@@ -1548,7 +1548,7 @@ def test_no_data_for_cutoff_time(mock_customer):
 
     fm = ft.calculate_feature_matrix(features, entityset=es, cutoff_time=cutoff_times)
     if isinstance(fm, dd.DataFrame):
-        fm = fm.compute(scheduler="single-threaded").set_index('customer_id')
+        fm = fm.compute().set_index('customer_id')
 
     # due to default values for each primitive
     # count will be 0, but max will nan
@@ -1831,5 +1831,5 @@ def test_calc_feature_matrix_with_cutoff_df_and_instance_ids(es):
                                                   verbose=True)
 
     if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.compute(scheduler="single-threaded")
+        feature_matrix = feature_matrix.compute()
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()

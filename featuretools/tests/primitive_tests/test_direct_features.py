@@ -33,7 +33,7 @@ def test_direct_from_identity(es):
     calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
     df = calculator.run(np.array([0, 5]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded").set_index('id').sort_index()
+        df = df.compute().set_index('id').sort_index()
     v = df[d.get_name()].tolist()
     assert v == [0, 1]
 
@@ -48,7 +48,7 @@ def test_direct_from_variable(es):
     calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
     df = calculator.run(np.array([0, 5]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded").set_index('id').sort_index()
+        df = df.compute().set_index('id').sort_index()
     v = df[d.get_name()].tolist()
     assert v == [0, 1]
 

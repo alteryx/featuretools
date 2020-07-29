@@ -130,7 +130,7 @@ def test_make_trans_feat(es):
     calculator = FeatureSetCalculator(es, feature_set=feature_set)
     df = calculator.run(np.array([0]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
     v = df[f.get_name()][0]
     assert v == 10
 
@@ -272,7 +272,7 @@ def test_compare_of_identity(es):
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
@@ -294,7 +294,7 @@ def test_compare_of_direct(es):
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
@@ -316,7 +316,7 @@ def test_compare_of_transform(es):
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 14])
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
@@ -339,7 +339,7 @@ def test_compare_of_agg(es):
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
@@ -359,7 +359,7 @@ def test_compare_all_nans(es):
 
     df = ft.calculate_feature_matrix(entityset=es, features=[nan_feat, compare], instance_ids=[0, 1, 2], cutoff_time=time_last)
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
     assert df[nan_feat.get_name()].dropna().shape[0] == 0
     assert not df[compare.get_name()].any()
 
@@ -380,7 +380,7 @@ def test_arithmetic_of_val(es):
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
 
     for f, test in zip(features, to_test):
         v = df[f.get_name()].values.tolist()
@@ -412,7 +412,7 @@ def test_arithmetic_of_identity(es):
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
 
     for i, test in enumerate(to_test[:-1]):
         v = df[features[i].get_name()].values.tolist()
@@ -441,7 +441,7 @@ def test_arithmetic_of_direct(es):
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 3, 5, 7])
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded").set_index('id').sort_index()
+        df = df.compute().set_index('id').sort_index()
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
@@ -491,11 +491,11 @@ def test_boolean_multiply(boolean_mult_es):
     fm = ft.calculate_feature_matrix(entityset=es, features=features)
 
     if isinstance(fm, dd.DataFrame):
-        fm = fm.compute(scheduler="single-threaded")
+        fm = fm.compute()
 
     df = es['test'].df
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
 
     for row in to_test:
         col_name = '{} * {}'.format(row[0], row[1])
@@ -522,7 +522,7 @@ def test_arithmetic_of_transform(es):
     calculator = FeatureSetCalculator(es, feature_set=feature_set)
     df = calculator.run(np.array([0, 2, 12, 13]))
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert np.isnan(v.pop(0))
@@ -535,7 +535,7 @@ def test_not_feature(es):
     features = [not_feat]
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1])
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
     v = df[not_feat.get_name()].values
     assert not v[0]
     assert v[1]
@@ -559,7 +559,7 @@ def test_arithmetic_of_agg(es):
     df = ft.calculate_feature_matrix(entityset=es, features=features,
                                      instance_ids=ids)
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded").set_index('id')
+        df = df.compute().set_index('id')
     df = df.loc[ids]
 
     for i, test in enumerate(to_test):
@@ -691,7 +691,7 @@ def test_text_primitives(es):
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15))
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
 
     word_counts = [514, 3, 3, 644, 1268, 1269, 177, 172, 79,
                    240, 1239, 3, 3, 3, 3]
@@ -711,7 +711,7 @@ def test_isin_feat(es):
     features = [isin]
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8))
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
     true = [True, True, True, False, False, True, True, True]
     v = df[isin.get_name()].values.tolist()
     assert true == v
@@ -722,7 +722,7 @@ def test_isin_feat_other_syntax(es):
     features = [isin]
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8))
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
     true = [True, True, True, False, False, True, True, True]
     v = df[isin.get_name()].values.tolist()
     assert true == v
@@ -733,7 +733,7 @@ def test_isin_feat_other_syntax_int(es):
     features = [isin]
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8))
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
     true = [False, True, True, False, False, False, False, False]
     v = df[isin.get_name()].values.tolist()
     assert true == v
@@ -764,7 +764,7 @@ def test_isin_feat_custom(es):
     features = [isin]
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8))
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
     true = [True, True, True, False, False, True, True, True]
     v = df[isin.get_name()].values.tolist()
     assert true == v
@@ -773,7 +773,7 @@ def test_isin_feat_custom(es):
     features = [isin]
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8))
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
     true = [True, True, True, False, False, True, True, True]
     v = df[isin.get_name()].values.tolist()
     assert true == v
@@ -782,7 +782,7 @@ def test_isin_feat_custom(es):
     features = [isin]
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8))
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
     true = [False, True, True, False, False, False, False, False]
     v = df[isin.get_name()].values.tolist()
     assert true == v
@@ -1075,7 +1075,7 @@ def test_get_filepath(es):
                                      entityset=es,
                                      instance_ids=range(17))
     if isinstance(df, dd.DataFrame):
-        df = df.compute(scheduler="single-threaded")
+        df = df.compute()
     assert pd.isnull(df["MOD4(value)"][15])
     assert df["MOD4(value)"][0] == 0
     assert df["MOD4(value)"][14] == 2
@@ -1085,7 +1085,7 @@ def test_get_filepath(es):
                     agg_primitives=[],
                     trans_primitives=[Mod4])
     if isinstance(fm, dd.DataFrame):
-        fm = fm.compute(scheduler="single-threaded").set_index('id')
+        fm = fm.compute().set_index('id')
     assert fm["MOD4(value)"][0] == 0
     assert fm["MOD4(value)"][14] == 2
     assert pd.isnull(fm["MOD4(value)"][15])
