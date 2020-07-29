@@ -577,7 +577,7 @@ class DeepFeatureSynthesis(object):
 
                 for matching_input in matching_inputs:
                     # -->This keeps any self stacking from happening - even good ones
-                    is_self_stacking = matching_input[0].primitive == trans_prim
+                    is_self_stacking = all([matching_input[i].primitive == trans_prim for i in range(len(matching_input))])
                     if all(bf.number_output_features == 1 for bf in matching_input) and not is_self_stacking:
                         new_f = TransformFeature(matching_input,
                                                  primitive=trans_prim)
