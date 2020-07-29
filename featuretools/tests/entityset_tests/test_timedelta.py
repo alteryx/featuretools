@@ -224,10 +224,10 @@ def test_pd_dateoffset_to_timedelta():
     # get_name() for multiple values is not deterministic
     assert len(mult_td.get_name()) == len("10 Years 3 Months 5 Days")
 
-    # special_dateoffset = pd.offsets.BDay(100)
-    # special_td = _check_timedelta(special_dateoffset)
-    # assert special_td.get_value("businessdays") == 100
-    # assert special_td.delta_obj == special_dateoffset
+    special_dateoffset = pd.offsets.BDay(100)
+    special_td = _check_timedelta(special_dateoffset)
+    assert special_td.get_value("businessdays") == 100
+    assert special_td.delta_obj == special_dateoffset
 
 
 def test_pd_dateoffset_to_timedelta_math():
