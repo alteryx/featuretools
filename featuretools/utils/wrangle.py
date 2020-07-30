@@ -42,17 +42,20 @@ def _check_timedelta(td):
         return Timedelta(times, delta_obj=td)
     elif isinstance(td, pd.DateOffset):
         # DateOffsets
-        if td.__class__.__name__ == "DateOffset":
+        if td.__class__.__name__ != "DateOffset":
+            if hasattr(td, "__dict__"):
+                # Special offsets (such as BDay) - prior to pandas 1.0.0
+                value = td.__dict__['n']
+            else:
+                # Special offsets (such as BDay) - after pandas 1.0.0
+                value = td.n
+            unit = td.__class__.__name__
+            times = dict([(unit, value)])
+        else:
             times = dict()
             for td_unit, td_value in td.kwds.items():
                 times[td_unit] = td_value
-            return Timedelta(times, delta_obj=td)
-        # Special offsets (such as BDay)
-        else:
-            unit = td.__class__.__name__
-            value = td.__dict__['n']
-            times = dict([(unit, value)])
-            return Timedelta(times, delta_obj=td)
+        return Timedelta(times, delta_obj=td)
     else:
         pattern = '([0-9]+) *([a-zA-Z]+)$'
         match = re.match(pattern, td)

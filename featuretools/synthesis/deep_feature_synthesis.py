@@ -800,7 +800,9 @@ class DeepFeatureSynthesis(object):
             # features with the same relationship_path.
             matching_inputs = {inputs for inputs in matching_inputs
                                if not _all_direct_and_same_path(inputs)}
-        matching_inputs = filter_matches_by_options(matching_inputs, primitive_options)
+        matching_inputs = filter_matches_by_options(matching_inputs,
+                                                    primitive_options,
+                                                    commutative=primitive.commutative)
         return matching_inputs
 
 

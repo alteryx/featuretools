@@ -10,10 +10,12 @@ Changelog
         * Remove warnings.simplefilter in feature_set_calculator to un-silence warnings (:pr:`1053`)
         * Fix feature visualization for features with '>' or '<' in name (:pr:`1055`)
         * Fix boolean dtype mismatch between encode_features and dfs and calculate_feature_matrix (:pr:`1082`)
+        * Update primitive options to check reversed inputs if primitive is commutative (:pr:`1085`)
     * Changes
         * Make DFS match ``TimeSince`` primitive with all ``Datetime`` types (:pr:`1048`)
         * Change default branch to ``main`` (:pr:`1038`)
         * Raise TypeError if improper input is supplied to ``Entity.delete_variables()`` (:pr:`1064`)
+        * Updates for compatibility with pandas 1.1.0 (:pr:`1079`, :pr:`1089`)
     * Documentation Changes
         * Remove benchmarks folder (:pr:`1049`)
         * Add custom variables types section to variables page (:pr:`1066`)

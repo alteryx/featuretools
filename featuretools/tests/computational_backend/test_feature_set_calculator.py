@@ -93,7 +93,7 @@ def test_full_entity_trans_of_agg(pd_es):
                                       feature_set=feature_set)
     df = calculator.run(np.array([1]))
 
-    v = df[trans_feat.get_name()][1]
+    v = df[trans_feat.get_name()].values[0]
     assert v == 82
 
 
@@ -288,8 +288,8 @@ def test_make_agg_feat_of_grandchild_entity(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
-    df = to_pandas(df, index='id', int_index=True)
-    v = df[agg_feat.get_name()].loc[0]
+    df = to_pandas(df, index='id')
+    v = df[agg_feat.get_name()].values[0]
     assert (v == 10)
 
 
@@ -374,7 +374,7 @@ def test_make_agg_feat_where_count_and_device_type_feat(es):
 
     name = feat.get_name()
     instances = df[name]
-    assert (instances.loc[0] == 1)
+    assert (instances.values[0] == 1)
 
 
 def test_make_agg_feat_where_count_or_device_type_feat(es):
@@ -402,7 +402,7 @@ def test_make_agg_feat_where_count_or_device_type_feat(es):
 
     name = feat.get_name()
     instances = df[name]
-    assert (instances.loc[0] == 3)
+    assert (instances.values[0] == 3)
 
 
 def test_make_agg_feat_of_agg_feat(es):
@@ -415,8 +415,8 @@ def test_make_agg_feat_of_agg_feat(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
-    df = to_pandas(df, index='id', int_index=True)
-    v = df[customer_sum_feat.get_name()].loc[0]
+    df = to_pandas(df, index='id')
+    v = df[customer_sum_feat.get_name()].values[0]
     assert (v == 10)
 
 
@@ -517,9 +517,8 @@ def test_make_dfeat_of_agg_feat_on_self(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
-    df = to_pandas(df, index='id', int_index=True)
-
-    v = df[num_customers_feat.get_name()].loc[0]
+    df = to_pandas(df, index='id')
+    v = df[num_customers_feat.get_name()].values[0]
     assert (v == 3)
 
 
@@ -546,9 +545,8 @@ def test_make_dfeat_of_agg_feat_through_parent(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
-    df = to_pandas(df, index='id', int_index=True)
-
-    v = df[num_stores_feat.get_name()].loc[0]
+    df = to_pandas(df, index='id')
+    v = df[num_stores_feat.get_name()].values[0]
     assert (v == 3)
 
 
@@ -577,9 +575,8 @@ def test_make_deep_agg_feat_of_dfeat_of_agg_feat(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
-    df = to_pandas(df, index='id', int_index=True)
-
-    v = df[purchase_popularity.get_name()].loc[0]
+    df = to_pandas(df, index='id')
+    v = df[purchase_popularity.get_name()].values[0]
     assert (v == 38.0 / 10.0)
 
 
@@ -850,9 +847,8 @@ def test_with_features_built_from_es_metadata(es):
                                       time_last=None,
                                       feature_set=feature_set)
     df = calculator.run(np.array([0]))
-    df = to_pandas(df, index='id', int_index=True)
-
-    v = df[agg_feat.get_name()].loc[0]
+    df = to_pandas(df, index='id')
+    v = df[agg_feat.get_name()].values[0]
     assert (v == 10)
 
 
