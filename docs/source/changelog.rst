@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Warn user if supplied primitives are not used during dfs (:pr:`1073`)
     * Fixes
         * Use more consistent and uniform warnings (:pr:`1040`)
         * Fix issue with missing instance ids and categorical entity index (:pr:`1050`)
