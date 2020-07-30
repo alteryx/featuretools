@@ -122,6 +122,7 @@ jobs:
           command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-36-ft-release https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/main"
 
   unit_tests:
+    resource_class: large
     working_directory: ~/featuretools
     parameters:
       image_tag:
@@ -134,8 +135,8 @@ jobs:
       name: python
       image_tag: << parameters.image_tag >>
     steps:
-      - run: sudo apt update && sudo apt install -y graphviz 
-      - run: sudo apt-get -y update && sudo apt-get install -y openjdk-8-jre-headless
+      - run: sudo apt update && sudo apt install -y graphviz openjdk-8-jre-headless
+      - run: JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64"
       - checkout
       - attach_workspace:
           at: ~/featuretools
@@ -260,7 +261,7 @@ workflows:
             image_tag: "3.8"
       - unit_tests:
           name: "py36 unit tests"
-          image_tag: "3.6"
+          image_tag: "3.6-stretch"
           codecov: true
           requires:
             - "py36 install featuretools"
@@ -270,7 +271,7 @@ workflows:
             - "py37 install featuretools"
       - unit_tests:
           name: "py38 unit tests"
-          image_tag: "3.8"
+          image_tag: "3.8-stretch"
           requires:
             - "py38 install featuretools"
       - lint_test:
