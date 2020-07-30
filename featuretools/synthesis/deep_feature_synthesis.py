@@ -556,6 +556,7 @@ class DeepFeatureSynthesis(object):
 
         active_features = all_features
 
+        # -->  bug when combined with agg primitives
         for current_depth in range(max_depth):
             features_to_add = []
 
@@ -885,8 +886,7 @@ def match(input_types, features, replace=False, commutative=False, require_direc
 
     if len(input_types) == 1:
         return [(m,) for m in matches
-                if ((not require_direct_input or isinstance(m, DirectFeature))
-                    and is_acceptable_depth((m,)))]
+                if ((not require_direct_input or isinstance(m, DirectFeature)) and is_acceptable_depth((m,)))]
 
     matching_inputs = set([])
 
