@@ -199,7 +199,9 @@ class DeepFeatureSynthesis(object):
 
         # Sorting the primitives list so that we get deterministic feature orders
         #  --> do we want that? If so it might be good for the rest of the primitives as well?
-        trans_primitives.sort()
+        if trans_primitives:
+            trans_primitives.sort()
+
         if trans_primitives is None:
             trans_primitives = primitives.get_default_transform_primitives()
             if any(isinstance(e.df, dd.DataFrame) for e in self.es.entities):
@@ -403,7 +405,6 @@ class DeepFeatureSynthesis(object):
         """
         Step 4 - Create transform features of identity and aggregation features
         """
-
         self._build_transform_features(all_features, entity, max_depth=max_depth)
 
         """
@@ -553,7 +554,6 @@ class DeepFeatureSynthesis(object):
         if max_depth is not None:
             new_max_depth = max_depth - 1
 
-        base_features = all_features
         active_features = all_features
 
         for _ in range(max_depth):
@@ -585,12 +585,52 @@ class DeepFeatureSynthesis(object):
                                                  primitive=trans_prim)
                         features_to_add.append(new_f)
 
-            active_features = base_features  # Right now this creates warnings since it'll try and create depth 1 features again
+            active_features = {}
             for new_feature in features_to_add:
                 self._handle_new_feature(all_features=all_features,
                                          new_feature=new_feature)
 
+                if new_feature.entity.id not in active_features:
+                    active_features[new_feature.entity.id] = {}
+
                 active_features[new_feature.entity.id][new_feature.unique_name()] = new_feature
+
+        # Until now we've only been getting inputs whose depth is the same - this will get features with different depths
+        # --> clean this up
+        for trans_prim in self.trans_primitives:
+            current_options = self.primitive_options.get(
+                trans_prim,
+                self.primitive_options.get(trans_prim.name))
+            if ignore_entity_for_primitive(current_options, entity):
+                continue
+
+            # if multiple input_types, only use first one for DFS
+            input_types = trans_prim.input_types
+
+            if not trans_prim.stack_on_self:
+                continue
+
+            if type(input_types[0]) == list:
+                input_types = input_types[0]
+
+            matching_inputs = self._get_matching_inputs(all_features,
+                                                        entity,
+                                                        new_max_depth,  # --> double check this is correct
+                                                        input_types,
+                                                        trans_prim,
+                                                        current_options,
+                                                        require_direct_input=require_direct_input)
+
+            for matching_input in matching_inputs:
+                if all([feature.get_depth() == matching_input[0].get_depth() for feature in matching_input]):
+                    continue
+
+                if all(bf.number_output_features == 1 for bf in matching_input) and check_transform_stacking(trans_prim, matching_input):
+                    new_f = TransformFeature(matching_input,
+                                             primitive=trans_prim)
+                    # Still getting a lot of redundancy in some primitives --> look into this
+                    self._handle_new_feature(all_features=all_features,
+                                             new_feature=new_f)
 
         for groupby_prim in self.groupby_trans_primitives:
             current_options = self.primitive_options.get(

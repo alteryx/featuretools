@@ -436,6 +436,7 @@ class IsIn(TransformPrimitive):
     input_types = [Variable]
     return_type = Boolean
     dask_compatible = True
+    stack_on_self = False
 
     def __init__(self, list_of_outputs=None):
         self.list_of_outputs = list_of_outputs
@@ -470,6 +471,7 @@ class Diff(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     uses_full_entity = True
+    stack_on_self = False
 
     def get_function(self):
         def pd_diff(values):
@@ -512,6 +514,7 @@ class Not(TransformPrimitive):
     input_types = [Boolean]
     return_type = Boolean
     dask_compatible = True
+    stack_on_self = False
 
     def generate_name(self, base_feature_names):
         return u"NOT({})".format(base_feature_names[0])

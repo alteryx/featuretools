@@ -23,6 +23,7 @@ class CumSum(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     uses_full_entity = True
+    stack_on_self = False
 
     def get_function(self):
         def cum_sum(values):
@@ -77,6 +78,7 @@ class CumMean(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     uses_full_entity = True
+    stack_on_self = False
 
     def get_function(self):
         def cum_mean(values):
