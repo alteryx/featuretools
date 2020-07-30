@@ -606,7 +606,7 @@ class DeepFeatureSynthesis(object):
             # if multiple input_types, only use first one for DFS
             input_types = trans_prim.input_types
 
-            if not trans_prim.stack_on_self:
+            if len(input_types) < 2:
                 continue
 
             if type(input_types[0]) == list:
@@ -624,7 +624,8 @@ class DeepFeatureSynthesis(object):
                 if all([feature.get_depth() == matching_input[0].get_depth() for feature in matching_input]):
                     continue
 
-                if all(bf.number_output_features == 1 for bf in matching_input) and check_transform_stacking(trans_prim, matching_input):
+                if all(bf.number_output_features == 1 for bf in matching_input)\
+                        and check_transform_stacking(trans_prim, matching_input):
                     new_f = TransformFeature(matching_input,
                                              primitive=trans_prim)
                     # Still getting a lot of redundancy in some primitives --> look into this
