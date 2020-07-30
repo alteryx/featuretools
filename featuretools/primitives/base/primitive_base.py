@@ -33,6 +33,8 @@ class PrimitiveBase(object):
     commutative = False
     # (bool) If True, is compatible with Dask EntitySets
     dask_compatible = False
+    # (bool) If True, is allowed to have an input type of self
+    stack_on_self = True
 
     def __init__(self):
         pass

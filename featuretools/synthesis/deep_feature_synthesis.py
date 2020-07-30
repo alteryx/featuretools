@@ -579,7 +579,6 @@ class DeepFeatureSynthesis(object):
                                                             require_direct_input=require_direct_input)
 
                 for matching_input in matching_inputs:
-                    # --> add a check to only add features of the correct depth?
                     if all(bf.number_output_features == 1 for bf in matching_input) and check_transform_stacking(trans_prim, matching_input):
                         new_f = TransformFeature(matching_input,
                                                  primitive=trans_prim)
