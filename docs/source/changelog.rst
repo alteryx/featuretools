@@ -17,7 +17,7 @@ Changelog
         * Change default branch to ``main`` (:pr:`1038`)
         * Raise TypeError if improper input is supplied to ``Entity.delete_variables()`` (:pr:`1064`)
         * Updates for compatibility with pandas 1.1.0 (:pr:`1079`, :pr:`1089`)
-        * Upgrade pandas to >=1.1.0 (:pr: `1094`)
+        * Set pandas version to pandas>=0.24.1,<2.0.0. Filter week and weekofyear primitive warning. (:pr:`1094`)
     * Documentation Changes
         * Remove benchmarks folder (:pr:`1049`)
         * Add custom variables types section to variables page (:pr:`1066`)
@@ -29,7 +29,7 @@ Changelog
         * Fix non-deterministic behavior in Dask test causing codecov issues (:pr:`1070`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`systemshift`, :user:`monti-python`, :user:`thehomebrewnerd`, :user:`frances-h`, :user:`rwedge`, :user:`tamargrey`
+    :user:`gsheni`, :user:`systemshift`, :user:`monti-python`, :user:`thehomebrewnerd`, :user:`frances-h`, :user:`rwedge`, :user:`tamargrey`, :user:`wsankey`
 
 **v0.17.0 June 30, 2020**
     * Enhancements
