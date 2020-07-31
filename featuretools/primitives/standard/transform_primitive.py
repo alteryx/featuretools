@@ -1,7 +1,8 @@
+import warnings
+
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
-import warnings
 
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
@@ -213,6 +214,7 @@ class Week(TransformPrimitive):
 
     def get_function(self):
         def week(vals):
+            warnings.filterwarnings("ignore", message="Series.dt.weekofyear and Series.dt.week have been deprecated.", module="featuretools")
             return vals.dt.week
         return week
 
