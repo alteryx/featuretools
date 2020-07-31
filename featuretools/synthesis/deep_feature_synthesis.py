@@ -198,7 +198,6 @@ class DeepFeatureSynthesis(object):
             self.agg_primitives.append(a)
 
         # Sorting the primitives list so that we get deterministic feature orders
-        #  --> do we want that? If so it might be good for the rest of the primitives as well?
         if trans_primitives:
             trans_primitives.sort()
 
@@ -556,8 +555,7 @@ class DeepFeatureSynthesis(object):
 
         active_features = all_features
 
-        # -->  bug when combined with agg primitives
-        for current_depth in range(max_depth):
+        for _ in range(max_depth):
             features_to_add = []
 
             for trans_prim in self.trans_primitives:
@@ -571,14 +569,14 @@ class DeepFeatureSynthesis(object):
                 if type(input_types[0]) == list:
                     input_types = input_types[0]
 
-                matching_inputs = self._get_matching_inputs(all_features,
+                matching_inputs = self._get_matching_inputs(active_features,
                                                             entity,
                                                             new_max_depth,  # --> double check this is correct
                                                             input_types,
                                                             trans_prim,
                                                             current_options,
                                                             require_direct_input=require_direct_input,
-                                                            current_depth=current_depth)
+                                                            )
 
                 for matching_input in matching_inputs:
                     if all(bf.number_output_features == 1 for bf in matching_input) and check_transform_stacking(trans_prim, matching_input):
@@ -794,7 +792,7 @@ class DeepFeatureSynthesis(object):
 
     def _get_matching_inputs(self, all_features, entity, max_depth, input_types,
                              primitive, primitive_options, require_direct_input=False,
-                             feature_filter=None, current_depth=None):
+                             feature_filter=None):
         features = self._features_by_type(all_features=all_features,
                                           entity=entity,
                                           max_depth=max_depth,
@@ -804,7 +802,7 @@ class DeepFeatureSynthesis(object):
 
         matching_inputs = match(input_types, features,
                                 commutative=primitive.commutative,
-                                require_direct_input=require_direct_input, current_depth=current_depth)
+                                require_direct_input=require_direct_input)
 
         if require_direct_input:
             # Don't create trans features of inputs which are all direct
@@ -875,18 +873,13 @@ def match_by_type(features, t):
     return matches
 
 
-def match(input_types, features, replace=False, commutative=False, require_direct_input=False, current_depth=None):
+def match(input_types, features, replace=False, commutative=False, require_direct_input=False):
     to_match = input_types[0]
     matches = match_by_type(features, to_match)
 
-    def is_acceptable_depth(possible_feature):
-        if current_depth is None:
-            return True
-        return any([feature.get_depth() == current_depth for feature in possible_feature])
-
     if len(input_types) == 1:
         return [(m,) for m in matches
-                if ((not require_direct_input or isinstance(m, DirectFeature)) and is_acceptable_depth((m,)))]
+                if (not require_direct_input or isinstance(m, DirectFeature))]
 
     matching_inputs = set([])
 
@@ -899,7 +892,7 @@ def match(input_types, features, replace=False, commutative=False, require_direc
         # If we need a DirectFeature and this is not a DirectFeature then one of the rest must be.
         still_require_direct_input = require_direct_input and not isinstance(m, DirectFeature)
         rest = match(input_types[1:], copy, replace,
-                     require_direct_input=still_require_direct_input, current_depth=current_depth)
+                     require_direct_input=still_require_direct_input)
 
         for r in rest:
             new_match = [m] + list(r)
@@ -911,8 +904,6 @@ def match(input_types, features, replace=False, commutative=False, require_direc
             else:
                 new_match = tuple(new_match)
 
-            if not is_acceptable_depth(new_match):
-                continue
             matching_inputs.add(new_match)
 
     if commutative:
