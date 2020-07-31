@@ -17,7 +17,7 @@ Changelog
         * Change default branch to ``main`` (:pr:`1038`)
         * Raise TypeError if improper input is supplied to ``Entity.delete_variables()`` (:pr:`1064`)
         * Updates for compatibility with pandas 1.1.0 (:pr:`1079`, :pr:`1089`)
-        * Set pandas version to pandas>=0.24.1,<2.0.0. Filter week and weekofyear primitive warning. (:pr:`1094`)
+        * Set pandas version to pandas>=0.24.1,<2.0.0. Filter pandas deprecation warning in Week primitive. (:pr:`1094`)
     * Documentation Changes
         * Remove benchmarks folder (:pr:`1049`)
         * Add custom variables types section to variables page (:pr:`1066`)
