@@ -2,7 +2,15 @@
 
 Changelog
 ---------
-**Future Release**
+.. **Future Release**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+    Thanks to the following people for contributing to this release:
+
+**v0.18.0 July 31, 2020**
     * Enhancements
         * Warn user if supplied primitives are not used during dfs (:pr:`1073`)
     * Fixes
@@ -30,7 +38,8 @@ Changelog
         * Fix non-deterministic behavior in Dask test causing codecov issues (:pr:`1070`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`systemshift`, :user:`monti-python`, :user:`thehomebrewnerd`, :user:`frances-h`, :user:`rwedge`, :user:`tamargrey`, :user:`wsankey`
+    :user:`frances-h`, :user:`gsheni`, :user:`monti-python`, :user:`rwedge`,
+    :user:`systemshift`,  :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`wsankey`
 
 **v0.17.0 June 30, 2020**
     * Enhancements
