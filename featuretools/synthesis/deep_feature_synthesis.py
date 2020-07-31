@@ -794,7 +794,6 @@ class DeepFeatureSynthesis(object):
         matching_inputs = filter_matches_by_options(matching_inputs,
                                                     primitive_options,
                                                     commutative=primitive.commutative)
-
         return matching_inputs
 
 
