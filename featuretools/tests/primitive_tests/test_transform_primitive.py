@@ -85,7 +85,7 @@ def test_age_nan():
     np.testing.assert_array_almost_equal(ages, correct_ages, decimal=3)
 
 
-def test_no_deprecation_message():
+def test_week_no_deprecation_message():
     dates = [datetime(2019, 1, 3),
              datetime(2019, 6, 17, 11, 10, 50),
              datetime(2019, 11, 30, 19, 45, 15)
