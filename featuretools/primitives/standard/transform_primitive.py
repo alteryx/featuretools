@@ -214,7 +214,11 @@ class Week(TransformPrimitive):
 
     def get_function(self):
         def week(vals):
-            warnings.filterwarnings("ignore", message="Series.dt.weekofyear and Series.dt.week have been deprecated.", module="featuretools")
+            warnings.filterwarnings("ignore",
+                                    message=("Series.dt.weekofyear and Series.dt.week "
+                                             "have been deprecated."),
+                                    module="featuretools"
+                                    )
             return vals.dt.week
         return week
 
