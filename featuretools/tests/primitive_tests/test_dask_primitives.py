@@ -1,5 +1,3 @@
-import random
-
 import pandas as pd
 
 import featuretools as ft
@@ -21,7 +19,6 @@ def test_transform(pd_es, dask_es):
 
     assert pd_es == dask_es
 
-    # TODO: Update when issue #833 is closed to use max_features instead of random sampling
     # Run DFS using each entity as a target and confirm results match
     for entity in pd_es.entities:
         features = ft.dfs(entityset=pd_es,
@@ -39,13 +36,10 @@ def test_transform(pd_es, dask_es):
                                features_only=True)
         assert features == dask_features
 
-        # Randomly sample up to 100 features to use to calculate feature matrix values to confirm
-        # output is the same between dask and pandas. Use random seed to make sure same features
-        # are tested each time. Not testing on all returned features due to long run times.
-        random.seed(0)
-        features = random.sample(features, min(100, len(features)))
-        fm = ft.calculate_feature_matrix(features=features, entityset=pd_es, cutoff_time=cutoff_time)
-        dask_fm = ft.calculate_feature_matrix(features=features, entityset=dask_es, cutoff_time=cutoff_time)
+        # Calculate feature matrix values to confirm output is the same between dask and pandas.
+        # Not testing on all returned features due to long run times.
+        fm = ft.calculate_feature_matrix(features=features[:100], entityset=pd_es, cutoff_time=cutoff_time)
+        dask_fm = ft.calculate_feature_matrix(features=dask_features[:100], entityset=dask_es, cutoff_time=cutoff_time)
 
         # Use the same columns and make sure both indexes are sorted the same
         dask_computed_fm = dask_fm.compute().set_index(entity.index).loc[fm.index][fm.columns]
