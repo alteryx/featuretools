@@ -1,6 +1,7 @@
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
+import warnings
 
 from featuretools.primitives.base.transform_primitive_base import (
     TransformPrimitive
@@ -212,7 +213,7 @@ class Week(TransformPrimitive):
 
     def get_function(self):
         def week(vals):
-            return vals.dt.isocalendar().week
+            return vals.dt.week
         return week
 
 
@@ -387,7 +388,7 @@ class TimeSince(TransformPrimitive):
         [-1000, -1000000000, -120000000000]
     """
     name = 'time_since'
-    input_types = [Datetime]
+    input_types = [[DatetimeTimeIndex], [Datetime]]
     return_type = Numeric
     uses_calc_time = True
     dask_compatible = True
