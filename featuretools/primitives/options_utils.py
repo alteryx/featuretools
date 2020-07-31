@@ -237,4 +237,4 @@ def filter_matches_by_options(matches, options, groupby=False, commutative=False
                 if is_valid_match(order):
                     valid_matches.add(order)
                     break
-    return valid_matches
+    return sorted(list(valid_matches), key=lambda features: ([feature.unique_name() for feature in features]))
