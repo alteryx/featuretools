@@ -212,7 +212,7 @@ class Week(TransformPrimitive):
 
     def get_function(self):
         def week(vals):
-            return vals.dt.week
+            return vals.dt.isocalendar().week
         return week
 
 
