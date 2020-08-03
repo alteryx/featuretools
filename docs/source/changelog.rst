@@ -5,10 +5,12 @@ Changelog
 .. **Future Release**
     * Enhancements
     * Fixes
+        * Fix ``EntitySet.plot()`` when given a dask entityset (:pr:`1086`)
     * Changes
     * Documentation Changes
     * Testing Changes
     Thanks to the following people for contributing to this release:
+    :user:`systemshift`,
 
 **v0.18.0 July 31, 2020**
     * Enhancements
@@ -18,7 +20,6 @@ Changelog
         * Fix issue with missing instance ids and categorical entity index (:pr:`1050`)
         * Remove warnings.simplefilter in feature_set_calculator to un-silence warnings (:pr:`1053`)
         * Fix feature visualization for features with '>' or '<' in name (:pr:`1055`)
-        * Fix ``EntitySet.plot()`` when given a dask entityset (:pr:`1086`)
         * Fix boolean dtype mismatch between encode_features and dfs and calculate_feature_matrix (:pr:`1082`)
         * Update primitive options to check reversed inputs if primitive is commutative (:pr:`1085`)
         * Fix inconsistent ordering of features between kernel restarts (:pr:`1088`)
