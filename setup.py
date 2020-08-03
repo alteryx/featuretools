@@ -10,7 +10,7 @@ extras_require = {
   'tsfresh': ['featuretools-tsfresh-primitives >= 0.1.0'],
   'update_checker': ['featuretools-update-checker >= 1.0.0'],
   'categorical_encoding': ['categorical-encoding >= 0.2.0'],
-  'nlp_primitives': ['nlp-primitives >= 0.2.2'],
+  'nlp_primitives': ['nlp_primitives[complete] @ git+https://github.com/FeatureLabs/nlp_primitives.git@nlp-complete'],
   'autonormalize': ['autonormalize >= 1.0.0'],
   'sklearn_transformer': ['featuretools-sklearn-transformer >= 0.1.0'],
 }
