@@ -588,11 +588,11 @@ class DeepFeatureSynthesis(object):
             for new_feature in features_to_add:
                 self._handle_new_feature(all_features=all_features,
                                          new_feature=new_feature)
+                entity_id = new_feature.entity.id
+                if entity_id not in active_features:
+                    active_features[entity_id] = {}
 
-                if new_feature.entity.id not in active_features:
-                    active_features[new_feature.entity.id] = {}
-
-                active_features[new_feature.entity.id][new_feature.unique_name()] = new_feature
+                active_features[entity_id][new_feature.unique_name()] = new_feature
 
         for groupby_prim in self.groupby_trans_primitives:
             current_options = self.primitive_options.get(
@@ -903,7 +903,6 @@ def match(input_types, features, replace=False, commutative=False, require_direc
                 new_match = frozenset(new_match)
             else:
                 new_match = tuple(new_match)
-
             matching_inputs.add(new_match)
 
     if commutative:
