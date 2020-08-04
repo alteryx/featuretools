@@ -33,7 +33,6 @@ from featuretools.primitives import (
     NotEqual,
     NumCharacters,
     NumUnique,
-    SubtractNumeric,
     Sum,
     TimeSincePrevious,
     TransformPrimitive,
@@ -1383,13 +1382,14 @@ def test_primitive_options_commutative(es):
         input_types = [Numeric, Numeric, Numeric]
         return_type = Numeric
         dask_compatible = True
+        koalas_compatible = True
         commutative = True
 
         def generate_name(self, base_feature_names):
             return "%s + %s + %s" % (base_feature_names[0], base_feature_names[1], base_feature_names[2])
 
     options = {
-        'subtract_numeric': [
+        'add_numeric': [
             {'include_variables': {'log': ['value_2']}},
             {'include_variables': {'log': ['value']}}
         ],
@@ -1402,13 +1402,13 @@ def test_primitive_options_commutative(es):
     dfs_obj = DeepFeatureSynthesis(target_entity_id='log',
                                    entityset=es,
                                    agg_primitives=[],
-                                   trans_primitives=[SubtractNumeric, AddThree],
+                                   trans_primitives=[AddNumeric, AddThree],
                                    primitive_options=options,
                                    max_depth=1)
     features = dfs_obj.build_features()
-    subtract_numeric = [f for f in features if isinstance(f.primitive, SubtractNumeric)]
-    assert len(subtract_numeric) == 1
-    deps = subtract_numeric[0].get_dependencies(deep=True)
+    add_numeric = [f for f in features if isinstance(f.primitive, AddNumeric)]
+    assert len(add_numeric) == 1
+    deps = add_numeric[0].get_dependencies(deep=True)
     assert deps[0].get_name() == 'value_2' and deps[1].get_name() == 'value'
 
     add_three = [f for f in features if isinstance(f.primitive, AddThree)]

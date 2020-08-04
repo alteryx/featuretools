@@ -55,17 +55,30 @@ jobs:
           command: start /wait C:\featuretools\\<< parameters.miniconda_pkg_name >> /InstallationType=JustMe /RegisterPython=0 /S /D=%UserProfile%\Miniconda3
           shell: cmd.exe
       - run:
+          name: Install Java 8
+          command: |
+              choco install openjdk8
+              refreshenv
+      - run:
           name: Create New Python Environment
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda create -n featuretools python=<< parameters.python_version >>
       - run:
-          name: Install Graphviz
+          name: Install Graphviz and Pyspark
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
               conda activate featuretools
               conda config --add channels conda-forge
               conda install python-graphviz -q -y
+              conda install pyspark -q -y
+      - run:
+          name: Install winutils for pyspark
+          command: |
+                $File = "C:\Users\circleci\Miniconda3\envs\featuretools\Lib\site-packages\pyspark\bin\winutils.exe"
+                $Uri = "https://github.com/steveloughran/winutils/blob/master/hadoop-3.0.0/bin/winutils.exe?raw=True"
+                $ProgressPreference = "silentlyContinue"
+                Invoke-WebRequest -Uri $Uri -Outfile $File
       - run:
           name: Install Featuretools
           command: |
