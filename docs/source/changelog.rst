@@ -5,10 +5,12 @@ Changelog
 .. **Future Release**
     * Enhancements
     * Fixes
+        * Fix ``EntitySet.plot()`` when given a dask entityset (:pr:`1086`)
     * Changes
     * Documentation Changes
     * Testing Changes
     Thanks to the following people for contributing to this release:
+    :user:`systemshift`,
 
 **v0.18.0 July 31, 2020**
     * Enhancements
