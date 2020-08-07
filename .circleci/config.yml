@@ -8,7 +8,6 @@ executors:
     parameters:
       image_tag:
         type: string
-        default: "3.7-stretch"
     docker:
       - image: circleci/python:<< parameters.image_tag >>
 
@@ -27,7 +26,6 @@ jobs:
     parameters:
       python_version:
         type: string
-        default: "3.7"
       miniconda_pkg_name:
         type: string
         default: "Miniconda3-4.7.12.1-Windows-x86_64.exe"
@@ -85,7 +83,6 @@ jobs:
     parameters:
       image_tag:
         type: string
-        default: "3.7-stretch"
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -126,7 +123,6 @@ jobs:
     parameters:
       image_tag:
         type: string
-        default: "3.7-stretch"
       codecov:
         type: boolean
         default: false
@@ -164,7 +160,6 @@ jobs:
     parameters:
       image_tag:
         type: string
-        default: "3.7-stretch"
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -182,7 +177,6 @@ jobs:
     parameters:
       image_tag:
         type: string
-        default: "3.8"
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -204,7 +198,6 @@ jobs:
     parameters:
       image_tag:
         type: string
-        default: "3.7-stretch"
     executor:
       name: python
       image_tag: << parameters.image_tag >>
