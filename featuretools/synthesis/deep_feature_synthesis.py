@@ -197,10 +197,6 @@ class DeepFeatureSynthesis(object):
                                  "aggregation primitive".format(type(a)))
             self.agg_primitives.append(a)
 
-        # Sorting the primitives list so that we get deterministic feature orders
-        if trans_primitives:
-            trans_primitives.sort()
-
         if trans_primitives is None:
             trans_primitives = primitives.get_default_transform_primitives()
             if any(isinstance(e.df, dd.DataFrame) for e in self.es.entities):
@@ -571,7 +567,7 @@ class DeepFeatureSynthesis(object):
 
                 matching_inputs = self._get_matching_inputs(active_features,
                                                             entity,
-                                                            new_max_depth,  # --> double check this is correct
+                                                            new_max_depth,
                                                             input_types,
                                                             trans_prim,
                                                             current_options,
