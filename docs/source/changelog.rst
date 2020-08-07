@@ -10,6 +10,7 @@ Changelog
     * Documentation Changes
     * Testing Changes
         * Use CircleCI matrix jobs in config to trigger multiple runs of same job with different parameters (:pr:`1105`)
+
     Thanks to the following people for contributing to this release:
     :user:`systemshift`, :user:`gsheni`,
 
