@@ -123,8 +123,6 @@ jobs:
     parameters:
       image_tag:
         type: string
-      codecov:
-        type: boolean
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -135,9 +133,7 @@ jobs:
           at: ~/featuretools
       - when:
           condition:
-            and:
-              - << parameters.codecov >>
-              - equal: ["3.6", << pipeline.image_tag >>]
+            - equal: ["3.6", << pipeline.image_tag >>]
           steps:
             - run: |
                 source venv/bin/activate
@@ -150,7 +146,6 @@ jobs:
                 cp unpacked_sdist/.coverage .coverage
                 codecov --required
       - unless:
-          condition: << parameters.codecov >>
           steps:
             - run: |
                 source venv/bin/activate
