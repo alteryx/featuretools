@@ -246,68 +246,38 @@ workflows:
               python_version: ["3.8", "3.7", "3.6"]
           name: py<< matrix.image_tag >> windows unit tests
       - install_ft:
-                matrix:
+          matrix:
             parameters:
-              python_version: ["3.8", "3.7", "3.6"]
-              
-          name: "py36 install featuretools"
-          image_tag: "3.6"
-      - install_ft:
-          name: "py37 install featuretools"
-      - install_ft:
-            name: "py38 install featuretools"
-            image_tag: "3.8"
+              image_tag: ["3.8", "3.7", "3.6"]
+          name: << matrix.image_tag >> install featuretools
       - unit_tests:
-          name: "py36 unit tests"
+          matrix:
+            parameters:
+              image_tag: ["3.8", "3.7", "3.6"]
+              codecov: true
+          name: << matrix.image_tag >> unit tests
           image_tag: "3.6"
-          codecov: true
           requires:
-            - "py36 install featuretools"
-      - unit_tests:
-          name: "py37 unit tests"
-          requires:
-            - "py37 install featuretools"
-      - unit_tests:
-          name: "py38 unit tests"
-          image_tag: "3.8"
-          requires:
-            - "py38 install featuretools"
+            - << matrix.image_tag >> install featuretools
       - lint_test:
-          name: "py36 lint test"
-          image_tag: "3.6"
+          matrix:
+            parameters:
+              image_tag: ["3.8", "3.7", "3.6"]
+          name: << matrix.image_tag >> lint test
           requires:
-            - "py36 install featuretools"
-      - lint_test:
-          name: "py37 lint test"
-          requires:
-            - "py37 install featuretools"
-      - lint_test:
-          name: "py38 lint test"
-          image_tag: "3.8"
-          requires:
-            - "py38 install featuretools"
+            - << matrix.image_tag >> install featuretools
       - build_docs:
-          name: "build docs 3.6"
-          image_tag: "3.6"
+          matrix:
+            parameters:
+              image_tag: ["3.8", "3.7", "3.6"]
+          name: build docs << matrix.image_tag >>
           requires:
-            - "py36 install featuretools"
-      - build_docs:
-          name: "build docs 3.7"
-          image_tag: "3.7"
-          requires:
-            - "py37 install featuretools"
-      - build_docs:
-          name: "build docs 3.8"
-          requires:
-            - "py38 install featuretools"
+            - << matrix.image_tag >> install featuretools
       - install_ft_complete:
-          name: "py36 install featuretools complete test"
-          image_tag: "3.6"
-      - install_ft_complete:
-          name: "py37 install featuretools complete test"
-      - install_ft_complete:
-          name: "py38 install featuretools complete test"
-          image_tag: "3.8"
+          matrix:
+            parameters:
+              image_tag: ["3.8", "3.7", "3.6"]
+          name: << matrix.image_tag >>  install featuretools complete test
       - changelog_updated:
           name: "changelog updated"
           filters:
