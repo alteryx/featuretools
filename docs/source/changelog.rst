@@ -2,15 +2,17 @@
 
 Changelog
 ---------
-.. **Future Release**
+**Future Release**
     * Enhancements
     * Fixes
         * Fix ``EntitySet.plot()`` when given a dask entityset (:pr:`1086`)
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Use CircleCI matrix jobs in config to trigger multiple runs of same job with different parameters (:pr:`1105`)
+
     Thanks to the following people for contributing to this release:
-    :user:`systemshift`,
+    :user:`systemshift`, :user:`gsheni`,
 
 **v0.18.0 July 31, 2020**
     * Enhancements
