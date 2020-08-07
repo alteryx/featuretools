@@ -241,15 +241,15 @@ workflows:
   test_all_python_versions:
     jobs:
       - win_unit_tests:
-          name: "py36 windows unit tests"
-          python_version: "3.6"
-      - win_unit_tests:
-          name: "py37 windows unit tests"
-          python_version: "3.7"
-      - win_unit_tests:
-          name: "py38 windows unit tests"
-          python_version: "3.8"
+          matrix:
+            parameters:
+              python_version: ["3.8", "3.7", "3.6"]
+          name: py<< matrix.image_tag >> windows unit tests
       - install_ft:
+                matrix:
+            parameters:
+              python_version: ["3.8", "3.7", "3.6"]
+              
           name: "py36 install featuretools"
           image_tag: "3.6"
       - install_ft:
