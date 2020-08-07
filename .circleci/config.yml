@@ -147,9 +147,7 @@ jobs:
                 codecov --required
       - unless:
           condition:
-            or:
-              - equal: [ "3.7", << parameters.image_tag >> ]
-              - equal: [ "3.8", << parameters.image_tag >> ]
+            equal: [ "3.6", << parameters.image_tag >> ]
           steps:
             - run: |
                 source venv/bin/activate
