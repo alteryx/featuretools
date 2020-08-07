@@ -133,7 +133,7 @@ jobs:
           at: ~/featuretools
       - when:
           condition:
-            - equal: ["3.6", << pipeline.image_tag >>]
+            equal: [ "3.6", << parameters.image_tag >> ]
           steps:
             - run: |
                 source venv/bin/activate
@@ -146,6 +146,10 @@ jobs:
                 cp unpacked_sdist/.coverage .coverage
                 codecov --required
       - unless:
+          condition:
+            or:
+              - equal: [ "3.7", << parameters.image_tag >> ]
+              - equal: [ "3.8", << parameters.image_tag >> ]
           steps:
             - run: |
                 source venv/bin/activate
