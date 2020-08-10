@@ -551,6 +551,7 @@ class DeepFeatureSynthesis(object):
 
         active_features = all_features
 
+        # --> figure out how to deal with -1 case
         for _ in range(max_depth):
             features_to_add = []
 
