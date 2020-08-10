@@ -1,4 +1,5 @@
 import copy
+import sys
 
 import dask.dataframe as dd
 import databricks.koalas as ks
@@ -77,6 +78,8 @@ def dask_transform_es(pd_transform_es):
 
 @pytest.fixture
 def koalas_transform_es(pd_transform_es):
+    if sys.platform.startswith('win'):
+        pytest.skip('skipping Koalas tests for Windows')
     es = ft.EntitySet(id=pd_transform_es.id)
     for entity in pd_transform_es.entities:
         es.entity_from_dataframe(entity_id=entity.id,

@@ -55,11 +55,6 @@ jobs:
           command: start /wait C:\featuretools\\<< parameters.miniconda_pkg_name >> /InstallationType=JustMe /RegisterPython=0 /S /D=%UserProfile%\Miniconda3
           shell: cmd.exe
       - run:
-          name: Install Java 8
-          command: |
-              choco install openjdk8
-              refreshenv
-      - run:
           name: Create New Python Environment
           command: |
               C:\Users\circleci\Miniconda3\shell\condabin\conda-hook.ps1
@@ -272,6 +267,7 @@ workflows:
             - "py36 install featuretools"
       - unit_tests:
           name: "py37 unit tests"
+          image_tag: "3.7"
           requires:
             - "py37 install featuretools"
       - unit_tests:

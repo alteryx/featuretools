@@ -663,7 +663,7 @@ def test_training_window_recent_time_index(pd_es):
         'signup_date': [datetime(2011, 4, 10)],
         'upgrade_date': [datetime(2011, 4, 12)],
         'cancel_date': [datetime(2011, 5, 13)],
-        'date_of_birth': [datetime(1978, 2, 1)],
+        'date_of_birth': [datetime(1938, 2, 1)],
         'engagement_level': [2],
     }
     to_add_df = pd.DataFrame(row)

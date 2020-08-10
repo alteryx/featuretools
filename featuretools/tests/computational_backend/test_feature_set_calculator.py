@@ -1,3 +1,4 @@
+import sys
 from datetime import datetime
 
 import numpy as np
@@ -438,6 +439,8 @@ def dd_df(pd_df):
 
 @pytest.fixture
 def ks_df(pd_df):
+    if sys.platform.startswith('win'):
+        pytest.skip('skipping Koalas tests for Windows')
     return ks.from_pandas(pd_df)
 
 
@@ -745,6 +748,8 @@ def dd_parent_child(pd_parent_child):
 
 @pytest.fixture
 def ks_parent_child(pd_parent_child):
+    if sys.platform.startswith('win'):
+        pytest.skip('skipping Koalas tests for Windows')
     parent_df, child_df = pd_parent_child
     parent_df = ks.from_pandas(parent_df)
     child_df = ks.from_pandas(child_df)
@@ -1031,7 +1036,7 @@ def test_calls_progress_callback(es):
     # testing again with a time_last with no data
     feature_set = FeatureSet(all_features)
     calculator = FeatureSetCalculator(es,
-                                      time_last=pd.Timestamp("1970"),
+                                      time_last=pd.Timestamp("1950"),
                                       feature_set=feature_set)
 
     mock_progress_callback = MockProgressCallback()

@@ -87,7 +87,7 @@ def make_ecommerce_dataframes(with_integer_time_index=False):
                          datetime(2011, 4, 7)],
         'cancel_date': [datetime(2011, 6, 8), datetime(2011, 10, 9),
                         datetime(2012, 1, 6)],
-        'date_of_birth': [datetime(1993, 3, 8), datetime(1971, 8, 2),
+        'date_of_birth': [datetime(1993, 3, 8), datetime(1926, 8, 2),
                           datetime(1993, 4, 20)]
     }
     if with_integer_time_index:

@@ -1,3 +1,4 @@
+import sys
 from datetime import datetime
 
 import pandas as pd
@@ -74,6 +75,8 @@ def extra_session_df(es):
     if isinstance(es['sessions'].df, dd.DataFrame):
         df = dd.from_pandas(df, npartitions=3)
     if isinstance(es['sessions'].df, ks.DataFrame):
+        if sys.platform.startswith('win'):
+            pytest.skip('skipping Koalas tests for Windows')
         df = ks.from_pandas(df)
     return df
 

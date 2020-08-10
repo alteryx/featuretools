@@ -1,3 +1,5 @@
+import sys
+
 import composeml as cp
 import numpy as np
 import pandas as pd
@@ -64,6 +66,8 @@ def dask_entities():
 
 @pytest.fixture
 def koalas_entities():
+    if sys.platform.startswith('win'):
+        pytest.skip('skipping Koalas tests for Windows')
     cards_df = ks.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = ks.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                                     "card_id": [1, 2, 1, 3, 4, 5],

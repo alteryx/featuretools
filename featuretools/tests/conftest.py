@@ -1,4 +1,5 @@
 import copy
+import sys
 
 import dask
 import dask.dataframe as dd
@@ -22,7 +23,6 @@ def spark_session(request):
         .master('local[2]') \
         .config("spark.driver.extraJavaOptions", "-Dio.netty.tryReflectionSetAccessible=True") \
         .config("spark.sql.shuffle.partitions", "2") \
-        .config("spark.default.parallelism", "2") \
         .getOrCreate()
 
     return spark
@@ -59,6 +59,8 @@ def dask_es(make_es):
 
 @pytest.fixture
 def ks_es(make_es):
+    if sys.platform.startswith('win'):
+        pytest.skip('skipping Koalas tests for Windows')
     ks_es = copy.deepcopy(make_es)
     for entity in ks_es.entities:
         cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
@@ -139,6 +141,8 @@ def dask_diamond_es(pd_diamond_es):
 
 @pytest.fixture
 def ks_diamond_es(pd_diamond_es):
+    if sys.platform.startswith('win'):
+        pytest.skip('skipping Koalas tests for Windows')
     entities = {}
     for entity in pd_diamond_es.entities:
         entities[entity.id] = (ks.from_pandas(pd_to_ks_clean(entity.df)), entity.index, None, entity.variable_types)
@@ -191,6 +195,8 @@ def dask_home_games_es(pd_home_games_es):
 
 @pytest.fixture
 def ks_home_games_es(pd_home_games_es):
+    if sys.platform.startswith('win'):
+        pytest.skip('skipping Koalas tests for Windows')
     entities = {}
     for entity in pd_home_games_es.entities:
         entities[entity.id] = (ks.from_pandas(pd_to_ks_clean(entity.df)), entity.index, None, entity.variable_types)
@@ -225,6 +231,8 @@ def dd_mock_customer(pd_mock_customer):
 
 @pytest.fixture
 def ks_mock_customer(pd_mock_customer):
+    if sys.platform.startswith('win'):
+        pytest.skip('skipping Koalas tests for Windows')
     ks_mock_customer = copy.deepcopy(pd_mock_customer)
     for entity in ks_mock_customer.entities:
         cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
