@@ -6,7 +6,5 @@ pyyaml>=3.12
 cloudpickle>=0.4.0
 distributed>=2.12.0
 dask[dataframe]>=2.12.0
-koalas>=1.0.1
-pyspark>=3.0.0
 psutil>=5.4.8
 click>=7.0.0

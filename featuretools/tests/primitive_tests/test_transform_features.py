@@ -291,7 +291,8 @@ def test_compare_of_direct(es):
     for test in to_test:
         features.append(ft.Feature(log_rating, primitive=test[0](4.5)))
 
-    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3]))
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
+    df = to_pandas(df, index='id', sort_index=True)
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
@@ -311,7 +312,8 @@ def test_compare_of_transform(es):
     for test in to_test:
         features.append(ft.Feature(day, primitive=test[0](10)))
 
-    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 14]))
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 14])
+    df = to_pandas(df, index='id', sort_index=True)
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
@@ -372,7 +374,8 @@ def test_arithmetic_of_val(es):
 
     features.append(ft.Feature(es['log']['value']) / 0)
 
-    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3]))
+    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3])
+    df = to_pandas(df, index='id', sort_index=True)
 
     for f, test in zip(features, to_test):
         v = df[f.get_name()].values.tolist()

@@ -5,10 +5,27 @@ import dask.dataframe as dd
 import databricks.koalas as ks
 import pandas as pd
 import pytest
+from pyspark.sql import SparkSession
 
 import featuretools as ft
 from featuretools.tests.testing_utils import make_ecommerce_entityset
 from featuretools.utils.koalas_utils import pd_to_ks_clean
+
+
+@pytest.fixture(scope='session', autouse=True)
+def spark_session(request):
+    ''' fixture for creating a spark context
+    Args:
+        request: pytest.fixtureRequest object
+    '''
+    spark = SparkSession.builder \
+        .master('local[2]') \
+        .config("spark.driver.extraJavaOptions", "-Dio.netty.tryReflectionSetAccessible=True") \
+        .config("spark.sql.shuffle.partitions", "2") \
+        .config("spark.default.parallelism", "2") \
+        .getOrCreate()
+
+    return spark
 
 
 @pytest.fixture(scope='session')

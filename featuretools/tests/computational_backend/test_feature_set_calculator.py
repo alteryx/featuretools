@@ -1031,7 +1031,7 @@ def test_calls_progress_callback(es):
     # testing again with a time_last with no data
     feature_set = FeatureSet(all_features)
     calculator = FeatureSetCalculator(es,
-                                      time_last=pd.Timestamp("1950"),
+                                      time_last=pd.Timestamp("1970"),
                                       feature_set=feature_set)
 
     mock_progress_callback = MockProgressCallback()

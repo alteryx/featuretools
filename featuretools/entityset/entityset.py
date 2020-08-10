@@ -879,7 +879,7 @@ class EntitySet(object):
                         lti_df.set_index(entity.index, inplace=True)
                         lti_df = lti_df.reindex(entity.last_time_index.index)
                         lti_df['last_time_old'] = entity.last_time_index
-                    if not lti_is_dask and lti_df.empty:
+                    if not (lti_is_dask or lti_is_koalas) and lti_df.empty:
                         # Pandas errors out if it tries to do fillna and then max on an empty dataframe
                         lti_df = pd.Series()
                     else:
