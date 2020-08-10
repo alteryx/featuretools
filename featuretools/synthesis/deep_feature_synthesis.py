@@ -698,7 +698,7 @@ class DeepFeatureSynthesis(object):
             wheres = list(self.where_clauses[child_entity.id])
 
             for matching_input in matching_inputs:
-                if not check_aggregate_stacking(agg_prim, matching_input):
+                if not check_stacking(agg_prim, matching_input):
                     continue
                 new_f = AggregationFeature(matching_input,
                                            parent_entity=parent_entity,
@@ -811,7 +811,7 @@ class DeepFeatureSynthesis(object):
         return matching_inputs
 
 
-def check_aggregate_stacking(primitive, inputs):
+def check_stacking(primitive, inputs):
     """checks if features in inputs can be used with supplied primitive
        using the stacking rules"""
     if primitive.stack_on_self is False:

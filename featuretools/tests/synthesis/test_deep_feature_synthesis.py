@@ -1,9 +1,9 @@
 import copy
+import random
 
 import dask.dataframe as dd
 import pandas as pd
 import pytest
-import random
 
 import featuretools as ft
 from featuretools.feature_base import (
@@ -41,7 +41,10 @@ from featuretools.primitives import (
     Year
 )
 from featuretools.synthesis import DeepFeatureSynthesis
-from featuretools.tests.testing_utils import feature_with_name, make_ecommerce_entityset
+from featuretools.tests.testing_utils import (
+    feature_with_name,
+    make_ecommerce_entityset
+)
 from featuretools.variable_types import Datetime, Numeric
 
 
@@ -744,6 +747,7 @@ def test_commutative(es):
 
 
 def test_transform_consistency(transform_es):
+    # --> currently fails now that we've changed the features produced
     # Generate features
     feature_defs = ft.dfs(entityset=transform_es, target_entity='first',
                           trans_primitives=['and', 'add_numeric', 'or'],
@@ -761,7 +765,7 @@ def test_transform_consistency(transform_es):
     assert feature_with_name(feature_defs, 'b12 + P')
     assert feature_with_name(feature_defs, 'a + b12')
     assert feature_with_name(feature_defs, 'OR(b, b1)')
-    assert feature_with_name(feature_defs, 'OR(AND(b, b1), b)')
+    assert feature_with_name(feature_defs, 'OR(AND(b, b1), b)')  # -->if getting rid of multi level, dont keep
     assert feature_with_name(feature_defs, 'OR(AND(b, b1), b1)')
 
 
@@ -1413,6 +1417,7 @@ def test_primitive_options_commutative(es):
 
 
 def test_primitive_ordering():
+    # Test that the order of the transform_primitives input does not impact the features created
     es = make_ecommerce_entityset()
     all_primitives = ft.list_primitives()
     trans_prim = all_primitives[all_primitives['type'] == 'transform']['name'].to_list()
