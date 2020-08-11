@@ -335,6 +335,8 @@ def test_accepts_pd_dateoffset_training_window(datetime_es):
 
 
 def test_warns_with_unused_primitives(es):
+    if any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+        pytest.skip('Koalas throws extra warnings')
     trans_primitives = ['num_characters', 'num_words', 'add_numeric']
     agg_primitives = [Max, 'min']
 
