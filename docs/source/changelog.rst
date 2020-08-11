@@ -5,17 +5,32 @@ Changelog
 **Future Release**
     * Enhancements
     * Fixes
+        * Fix ``EntitySet.plot()`` when given a dask entityset (:pr:`1086`)
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+        * Use CircleCI matrix jobs in config to trigger multiple runs of same job with different parameters (:pr:`1105`)
+
+    Thanks to the following people for contributing to this release:
+    :user:`systemshift`, :user:`gsheni`,
+
+**v0.18.0 July 31, 2020**
+    * Enhancements
+        * Warn user if supplied primitives are not used during dfs (:pr:`1073`)
+    * Fixes
         * Use more consistent and uniform warnings (:pr:`1040`)
         * Fix issue with missing instance ids and categorical entity index (:pr:`1050`)
         * Remove warnings.simplefilter in feature_set_calculator to un-silence warnings (:pr:`1053`)
         * Fix feature visualization for features with '>' or '<' in name (:pr:`1055`)
         * Fix boolean dtype mismatch between encode_features and dfs and calculate_feature_matrix (:pr:`1082`)
         * Update primitive options to check reversed inputs if primitive is commutative (:pr:`1085`)
+        * Fix inconsistent ordering of features between kernel restarts (:pr:`1088`)
     * Changes
         * Make DFS match ``TimeSince`` primitive with all ``Datetime`` types (:pr:`1048`)
         * Change default branch to ``main`` (:pr:`1038`)
         * Raise TypeError if improper input is supplied to ``Entity.delete_variables()`` (:pr:`1064`)
         * Updates for compatibility with pandas 1.1.0 (:pr:`1079`, :pr:`1089`)
+        * Set pandas version to pandas>=0.24.1,<2.0.0. Filter pandas deprecation warning in Week primitive. (:pr:`1094`)
     * Documentation Changes
         * Remove benchmarks folder (:pr:`1049`)
         * Add custom variables types section to variables page (:pr:`1066`)
@@ -27,7 +42,8 @@ Changelog
         * Fix non-deterministic behavior in Dask test causing codecov issues (:pr:`1070`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`systemshift`, :user:`monti-python`, :user:`thehomebrewnerd`, :user:`frances-h`, :user:`rwedge`, :user:`tamargrey`
+    :user:`frances-h`, :user:`gsheni`, :user:`monti-python`, :user:`rwedge`,
+    :user:`systemshift`,  :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`wsankey`
 
 **v0.17.0 June 30, 2020**
     * Enhancements

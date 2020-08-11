@@ -8,7 +8,6 @@ executors:
     parameters:
       image_tag:
         type: string
-        default: "3.7-stretch"
     docker:
       - image: circleci/python:<< parameters.image_tag >>
 
@@ -27,7 +26,6 @@ jobs:
     parameters:
       python_version:
         type: string
-        default: "3.7"
       miniconda_pkg_name:
         type: string
         default: "Miniconda3-4.7.12.1-Windows-x86_64.exe"
@@ -85,7 +83,6 @@ jobs:
     parameters:
       image_tag:
         type: string
-        default: "3.7-stretch"
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -127,10 +124,6 @@ jobs:
     parameters:
       image_tag:
         type: string
-        default: "3.7-stretch"
-      codecov:
-        type: boolean
-        default: false
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -141,7 +134,8 @@ jobs:
       - attach_workspace:
           at: ~/featuretools
       - when:
-          condition: << parameters.codecov >>
+          condition:
+            equal: [ "3.6", << parameters.image_tag >> ]
           steps:
             - run: |
                 source venv/bin/activate
@@ -154,7 +148,8 @@ jobs:
                 cp unpacked_sdist/.coverage .coverage
                 codecov --required
       - unless:
-          condition: << parameters.codecov >>
+          condition:
+            equal: [ "3.6", << parameters.image_tag >> ]
           steps:
             - run: |
                 source venv/bin/activate
@@ -166,7 +161,6 @@ jobs:
     parameters:
       image_tag:
         type: string
-        default: "3.7-stretch"
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -184,7 +178,6 @@ jobs:
     parameters:
       image_tag:
         type: string
-        default: "3.8"
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -206,7 +199,6 @@ jobs:
     parameters:
       image_tag:
         type: string
-        default: "3.7-stretch"
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -243,74 +235,41 @@ workflows:
   test_all_python_versions:
     jobs:
       - win_unit_tests:
-          name: "py36 windows unit tests"
-          python_version: "3.6"
-      - win_unit_tests:
-          name: "py37 windows unit tests"
-          python_version: "3.7"
-      - win_unit_tests:
-          name: "py38 windows unit tests"
-          python_version: "3.8"
+          matrix:
+            parameters:
+              python_version: ["3.8", "3.7", "3.6"]
+          name: py<< matrix.python_version >> windows unit tests
       - install_ft:
-          name: "py36 install featuretools"
-          image_tag: "3.6"
-      - install_ft:
-          name: "py37 install featuretools"
-      - install_ft:
-            name: "py38 install featuretools"
-            image_tag: "3.8"
+          matrix:
+            parameters:
+              image_tag: ["3.8", "3.7", "3.6"]
+          name: << matrix.image_tag >> install featuretools
       - unit_tests:
-          name: "py36 unit tests"
-          image_tag: "3.6"
-          codecov: true
+          matrix:
+            parameters:
+              image_tag: ["3.8", "3.7", "3.6"]
+          name: << matrix.image_tag >> unit tests
           requires:
-            - "py36 install featuretools"
-      - unit_tests:
-          name: "py37 unit tests"
-          image_tag: "3.7"
-          requires:
-            - "py37 install featuretools"
-      - unit_tests:
-          name: "py38 unit tests"
-          image_tag: "3.8"
-          requires:
-            - "py38 install featuretools"
+            - << matrix.image_tag >> install featuretools
       - lint_test:
-          name: "py36 lint test"
-          image_tag: "3.6"
+          matrix:
+            parameters:
+              image_tag: ["3.8", "3.7", "3.6"]
+          name: << matrix.image_tag >> lint test
           requires:
-            - "py36 install featuretools"
-      - lint_test:
-          name: "py37 lint test"
-          requires:
-            - "py37 install featuretools"
-      - lint_test:
-          name: "py38 lint test"
-          image_tag: "3.8"
-          requires:
-            - "py38 install featuretools"
+            - << matrix.image_tag >> install featuretools
       - build_docs:
-          name: "build docs 3.6"
-          image_tag: "3.6"
+          matrix:
+            parameters:
+              image_tag: ["3.8", "3.7", "3.6"]
+          name: build docs << matrix.image_tag >>
           requires:
-            - "py36 install featuretools"
-      - build_docs:
-          name: "build docs 3.7"
-          image_tag: "3.7"
-          requires:
-            - "py37 install featuretools"
-      - build_docs:
-          name: "build docs 3.8"
-          requires:
-            - "py38 install featuretools"
+            - << matrix.image_tag >> install featuretools
       - install_ft_complete:
-          name: "py36 install featuretools complete test"
-          image_tag: "3.6"
-      - install_ft_complete:
-          name: "py37 install featuretools complete test"
-      - install_ft_complete:
-          name: "py38 install featuretools complete test"
-          image_tag: "3.8"
+          matrix:
+            parameters:
+              image_tag: ["3.8", "3.7", "3.6"]
+          name: << matrix.image_tag >>  install featuretools complete test
       - changelog_updated:
           name: "changelog updated"
           filters:

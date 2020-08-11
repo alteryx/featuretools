@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 
 from featuretools.primitives.base.transform_primitive_base import (
@@ -214,6 +216,11 @@ class Week(TransformPrimitive):
 
     def get_function(self):
         def week(vals):
+            warnings.filterwarnings("ignore",
+                                    message=("Series.dt.weekofyear and Series.dt.week "
+                                             "have been deprecated."),
+                                    module="featuretools"
+                                    )
             return vals.dt.week
         return week
 
