@@ -8,7 +8,7 @@ Changelog
         * Fix ``EntitySet.plot()`` when given a dask entityset (:pr:`1086`)
     * Changes
     * Documentation Changes
-        * Fix Broken Downloads Badge in README.md (:pr:`1107`)
+        * Fix broken downloads badge in README.md (:pr:`1107`)
     * Testing Changes
         * Use CircleCI matrix jobs in config to trigger multiple runs of same job with different parameters (:pr:`1105`)
 
