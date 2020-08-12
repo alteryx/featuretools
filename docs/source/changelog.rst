@@ -9,6 +9,7 @@ Changelog
     * Changes
         * Use ``nlp-primitives[complete]`` install for ``nlp_primitives`` extra in ``setup.py`` (:pr:`1103`)
     * Documentation Changes
+        * Fix broken downloads badge in README.md (:pr:`1107`)
     * Testing Changes
         * Use CircleCI matrix jobs in config to trigger multiple runs of same job with different parameters (:pr:`1105`)
 
