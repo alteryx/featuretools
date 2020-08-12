@@ -7,7 +7,7 @@ Changelog
     * Fixes
         * Fix ``EntitySet.plot()`` when given a dask entityset (:pr:`1086`)
     * Changes
-        * Use ``nlp-primitives[complete]`` install for ``nlp_primivies`` extra in ``setup.py`` (:pr:`1103`)
+        * Use ``nlp-primitives[complete]`` install for ``nlp_primitives`` extra in ``setup.py`` (:pr:`1103`)
     * Documentation Changes
     * Testing Changes
         * Use CircleCI matrix jobs in config to trigger multiple runs of same job with different parameters (:pr:`1105`)
