@@ -2,7 +2,6 @@ import logging
 import warnings
 
 import dask.dataframe as dd
-import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
@@ -15,12 +14,15 @@ from featuretools.utils.entity_utils import (
     get_linked_vars,
     infer_variable_types
 )
+from featuretools.utils.gen_utils import import_or_none, is_instance
 from featuretools.utils.wrangle import (
     _check_time_type,
     _check_timedelta,
     _dataframes_equal
 )
 from featuretools.variable_types import find_variable_types
+
+ks = import_or_none('databricks.koalas')
 
 logger = logging.getLogger('featuretools.entityset')
 
@@ -250,7 +252,7 @@ class Entity(object):
             df = self.df.head(0)
 
         else:
-            if isinstance(instance_vals, dd.Series) or isinstance(instance_vals, ks.Series):
+            if is_instance(instance_vals, (dd, ks), 'Series'):
                 df = self.df.merge(instance_vals.to_frame(), how="inner", on=variable_id)
             else:
                 df = self.df[self.df[variable_id].isin(instance_vals)]
@@ -451,7 +453,7 @@ class Entity(object):
                             " other entityset time indexes" %
                             (self.id, time_type))
 
-        if isinstance(self.df, (dd.DataFrame, ks.DataFrame)):
+        if is_instance(self.df, (dd, ks), 'DataFrame'):
             t = time_type  # skip checking values
             already_sorted = True  # skip sorting
         else:
@@ -486,7 +488,7 @@ class Entity(object):
 
     def set_secondary_time_index(self, secondary_time_index):
         for time_index, columns in secondary_time_index.items():
-            if isinstance(self.df, (dd.DataFrame, ks.DataFrame)) or self.df.empty:
+            if is_instance(self.df, (dd, ks), 'DataFrame') or self.df.empty:
                 time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[time_index]._default_pandas_dtype]
             else:
                 time_to_check = self.df[time_index].head(1).iloc[0]
@@ -516,9 +518,9 @@ class Entity(object):
             instance_vals = [instance_vals]
 
         # convert iterable to pd.Series
-        if type(instance_vals) == pd.DataFrame:
+        if isinstance(instance_vals, pd.DataFrame):
             out_vals = instance_vals[variable_id]
-        elif type(instance_vals) == pd.Series or type(instance_vals) == dd.Series or type(instance_vals) == ks.Series:
+        elif is_instance(instance_vals, (pd, dd, ks), 'Series'):
             out_vals = instance_vals.rename(variable_id)
         else:
             out_vals = pd.Series(instance_vals)
@@ -537,7 +539,7 @@ class Entity(object):
         If this entity does not have a time index, return the original
         dataframe.
         """
-        if isinstance(df, ks.DataFrame) and isinstance(time_last, np.datetime64):
+        if is_instance(df, ks, 'DataFrame') and isinstance(time_last, np.datetime64):
             time_last = pd.to_datetime(time_last)
         if self.time_index:
             df_empty = df.empty if isinstance(df, pd.DataFrame) else False
@@ -575,7 +577,7 @@ class Entity(object):
                 if isinstance(df, dd.DataFrame):
                     for col in columns:
                         df[col] = df[col].mask(mask, np.nan)
-                elif isinstance(df, ks.DataFrame):
+                elif is_instance(df, ks, 'DataFrame'):
                     df.loc[mask, columns] = None
                 else:
                     df.loc[mask, columns] = np.nan
@@ -608,7 +610,7 @@ def _create_index(index, make_index, df):
         if isinstance(df, dd.DataFrame):
             df[index] = 1
             df[index] = df[index].cumsum() - 1
-        elif isinstance(df, ks.DataFrame):
+        elif is_instance(df, ks, 'DataFrame'):
             df = df.koalas.attach_id_column('distributed-sequence', index)
         else:
             df.insert(0, index, range(len(df)))

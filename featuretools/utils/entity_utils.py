@@ -2,12 +2,14 @@ import warnings
 from datetime import datetime
 
 import dask.dataframe as dd
-import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
 
 from featuretools import variable_types as vtypes
+from featuretools.utils.gen_utils import import_or_none, is_instance
+
+ks = import_or_none('databricks.koalas')
 
 
 def infer_variable_types(df, link_vars, variable_types, time_index, secondary_time_index):
@@ -36,7 +38,7 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
             msg = 'Variable types cannot be inferred from Dask DataFrames, ' \
                   'use variable_types to provide type metadata for entity'
             raise ValueError(msg)
-        elif isinstance(df, ks.DataFrame):
+        elif is_instance(df, ks, 'DataFrame'):
             msg = 'Variable types cannot be inferred from Koalas DataFrames, ' \
                   'use variable_types to provide type metadata for entity'
             raise ValueError(msg)
@@ -149,7 +151,7 @@ def convert_variable_data(df, column_id, new_type, **kwargs):
     if new_type == vtypes.Numeric:
         if isinstance(df, dd.DataFrame):
             df[column_id] = dd.to_numeric(df[column_id], errors='coerce')
-        elif isinstance(df, ks.DataFrame):
+        elif is_instance(df, ks, 'DataFrame'):
             df[column_id] = ks.to_numeric(df[column_id])
         else:
             orig_nonnull = df[column_id].dropna().shape[0]
@@ -167,7 +169,7 @@ def convert_variable_data(df, column_id, new_type, **kwargs):
         if isinstance(df, dd.DataFrame):
             df[column_id] = dd.to_datetime(df[column_id], format=format,
                                            infer_datetime_format=True)
-        elif isinstance(df, ks.DataFrame):
+        elif is_instance(df, ks, 'DataFrame'):
             df[column_id] = ks.to_datetime(df[column_id], format=format,
                                            infer_datetime_format=True)
         else:

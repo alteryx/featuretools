@@ -26,6 +26,7 @@ def test_transform(pd_es, dask_es):
                           trans_primitives=trans_primitives,
                           agg_primitives=agg_primitives,
                           max_depth=2,
+                          max_features=20000,
                           features_only=True)
 
         dask_features = ft.dfs(entityset=dask_es,
@@ -33,6 +34,7 @@ def test_transform(pd_es, dask_es):
                                trans_primitives=trans_primitives,
                                agg_primitives=agg_primitives,
                                max_depth=2,
+                               max_features=20000,
                                features_only=True)
         assert features == dask_features
 

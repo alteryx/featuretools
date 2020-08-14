@@ -2,7 +2,6 @@ from datetime import datetime
 from functools import partial
 
 import dask.dataframe as dd
-import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pandas.api.types as pdtypes
@@ -18,7 +17,13 @@ from featuretools.feature_base import (
     TransformFeature
 )
 from featuretools.utils import Trie
-from featuretools.utils.gen_utils import get_relationship_variable_id
+from featuretools.utils.gen_utils import (
+    get_relationship_variable_id,
+    import_or_none,
+    is_instance
+)
+
+ks = import_or_none('databricks.koalas')
 
 
 class FeatureSetCalculator(object):
@@ -147,7 +152,7 @@ class FeatureSetCalculator(object):
         for feat in self.feature_set.target_features:
             column_list.extend(feat.get_feature_names())
 
-        if isinstance(df, dd.DataFrame) or isinstance(df, ks.DataFrame):
+        if is_instance(df, (dd, ks), 'DataFrame'):
             column_list.extend([target_entity.index])
 
         return df[column_list]
@@ -543,7 +548,7 @@ class FeatureSetCalculator(object):
 
         # merge the identity feature from the parent entity into the child
         merge_df = parent_df[list(col_map.keys())].rename(columns=col_map)
-        if isinstance(merge_df, dd.DataFrame) or isinstance(merge_df, ks.DataFrame):
+        if is_instance(merge_df, (dd, ks), 'DataFrame'):
             new_df = child_df.merge(merge_df, left_on=merge_var, right_on=merge_var,
                                     how='left')
         else:
@@ -629,7 +634,7 @@ class FeatureSetCalculator(object):
                     variable_id = f.base_features[0].get_name()
                     if variable_id not in to_agg:
                         to_agg[variable_id] = []
-                    if isinstance(base_frame, dd.DataFrame) or isinstance(base_frame, ks.DataFrame):
+                    if is_instance(base_frame, (dd, ks), 'DataFrame'):
                         func = f.get_dask_aggregation()
                     else:
                         func = f.get_function()
@@ -688,7 +693,7 @@ class FeatureSetCalculator(object):
                 # to silence pandas warning about ambiguity we explicitly pass
                 # the column (in actuality grouping by both index and group would
                 # work)
-                if isinstance(base_frame, dd.DataFrame) or isinstance(base_frame, ks.DataFrame):
+                if is_instance(base_frame, (dd, ks), 'DataFrame'):
                     to_merge = base_frame.groupby(groupby_var).agg(to_agg)
 
                 else:
@@ -704,7 +709,7 @@ class FeatureSetCalculator(object):
                     categories = pdtypes.CategoricalDtype(categories=frame.index.categories)
                     to_merge.index = to_merge.index.astype(object).astype(categories)
 
-                if isinstance(frame, dd.DataFrame) or isinstance(frame, ks.DataFrame):
+                if is_instance(frame, (dd, ks), 'DataFrame'):
                     frame = frame.merge(to_merge, left_on=parent_merge_var, right_index=True, how='left')
                 else:
                     frame = pd.merge(left=frame, right=to_merge,

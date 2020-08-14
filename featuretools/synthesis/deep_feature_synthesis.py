@@ -2,7 +2,6 @@ import logging
 from collections import defaultdict
 
 from dask import dataframe as dd
-from databricks import koalas as ks
 
 from featuretools import primitives, variable_types
 from featuretools.entityset.relationship import RelationshipPath
@@ -24,7 +23,10 @@ from featuretools.primitives.options_utils import (
     generate_all_primitive_options,
     ignore_entity_for_primitive
 )
+from featuretools.utils.gen_utils import import_or_none, is_instance
 from featuretools.variable_types import Boolean, Discrete, Id, Numeric
+
+ks = import_or_none('databricks.koalas')
 
 logger = logging.getLogger('featuretools')
 
@@ -183,7 +185,7 @@ class DeepFeatureSynthesis(object):
             agg_primitives = primitives.get_default_aggregation_primitives()
             if any(isinstance(e.df, dd.DataFrame) for e in self.es.entities):
                 agg_primitives = [p for p in agg_primitives if p.dask_compatible]
-            if any(isinstance(e.df, ks.DataFrame) for e in self.es.entities):
+            if any(is_instance(e.df, ks, 'DataFrame') for e in self.es.entities):
                 agg_primitives = [p for p in agg_primitives if p.koalas_compatible]
         self.agg_primitives = []
         agg_prim_dict = primitives.get_aggregation_primitives()
@@ -204,7 +206,7 @@ class DeepFeatureSynthesis(object):
             trans_primitives = primitives.get_default_transform_primitives()
             if any(isinstance(e.df, dd.DataFrame) for e in self.es.entities):
                 trans_primitives = [p for p in trans_primitives if p.dask_compatible]
-            if any(isinstance(e.df, ks.DataFrame) for e in self.es.entities):
+            if any(is_instance(e.df, ks, 'DataFrame') for e in self.es.entities):
                 trans_primitives = [p for p in trans_primitives if p.koalas_compatible]
         self.trans_primitives = []
         for t in trans_primitives:
@@ -240,7 +242,7 @@ class DeepFeatureSynthesis(object):
             if not all([primitive.dask_compatible for primitive in all_primitives]):
                 bad_primitives = ", ".join([prim.name for prim in all_primitives if not prim.dask_compatible])
                 raise ValueError('Selected primitives are incompatible with Dask EntitySets: {}'.format(bad_primitives))
-        if any(isinstance(entity.df, ks.DataFrame) for entity in self.es.entities):
+        if any(is_instance(entity.df, ks, 'DataFrame') for entity in self.es.entities):
             if not all([primitive.koalas_compatible for primitive in all_primitives]):
                 bad_primitives = ", ".join([prim.name for prim in all_primitives if not prim.dask_compatible])
                 raise ValueError('Selected primitives are incompatible with Koalas EntitySets: {}'.format(bad_primitives))
