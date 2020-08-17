@@ -967,17 +967,29 @@ def test_normalize_entity_new_time_index_additional_success_check(es):
                         copy_variables=[])
 
 
-def test_normalize_time_index_from_none(es):
-    es['customers'].time_index = None
-    es.normalize_entity('customers', 'birthdays', 'age',
-                        make_time_index='date_of_birth',
-                        copy_variables=['date_of_birth'])
-    assert es['birthdays'].time_index == 'date_of_birth'
-    df = es['birthdays'].df
+def test_normalize_time_index_from_none():
+    df = pd.DataFrame({
+        "id": [0, 1, 2, 3],
+        "A": [5, 4, 2, 3],
+        'time': [datetime(2020, 6, 3), (datetime(2020, 3, 12)), datetime(2020, 5, 1), datetime(2020, 4, 22)]
+    })
+    es = ft.EntitySet("es")
+    es = es.entity_from_dataframe(
+        entity_id="data",
+        dataframe=df,
+        index="id"
+    )
+    assert es['data'].time_index is None
+
+    es.normalize_entity('data', 'normalized', 'A',
+                        make_time_index='time',
+                        copy_variables=['time'])
+    assert es['normalized'].time_index == 'time'
+    df = es['normalized'].df
 
     # only pandas sorts by time index
     if isinstance(df, pd.DataFrame):
-        assert df['date_of_birth'].is_monotonic_increasing
+        assert df['time'].is_monotonic_increasing
 
 
 def test_raise_error_if_dupicate_additional_variables_passed(es):
