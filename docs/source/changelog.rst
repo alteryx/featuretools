@@ -2,14 +2,16 @@
 
 Changelog
 ---------
-.. **Future Release**
+**Future Release**
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Better test case for normalizing from no time index to time index (:pr:`1113`)
 
     Thanks to the following people for contributing to this release:
+    :user:`tamargrey`
 
 **v0.18.1 Aug 12, 2020**
     * Fixes
@@ -20,10 +22,9 @@ Changelog
         * Fix broken downloads badge in README.md (:pr:`1107`)
     * Testing Changes
         * Use CircleCI matrix jobs in config to trigger multiple runs of same job with different parameters (:pr:`1105`)
-        * Change to normalize from base entity with no time index for test_normalize_time_index_from_none (:pr:`1113`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`systemshift`, :user:`thehomebrewnerd`, :user:`tamargrey`
+    :user:`gsheni`, :user:`systemshift`, :user:`thehomebrewnerd`
 
 **v0.18.0 July 31, 2020**
     * Enhancements
