@@ -977,11 +977,12 @@ def test_normalize_time_index_from_none():
     es = es.entity_from_dataframe(
         entity_id="data",
         dataframe=df,
-        index="id"
-    )
+        index="id")
     assert es['data'].time_index is None
 
-    es.normalize_entity('data', 'normalized', 'A',
+    es.normalize_entity(base_entity_id='data',
+                        new_entity_id='normalized',
+                        index='A',
                         make_time_index='time',
                         copy_variables=['time'])
     assert es['normalized'].time_index == 'time'
