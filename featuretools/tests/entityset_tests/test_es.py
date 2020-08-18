@@ -897,8 +897,8 @@ def test_sets_time_when_adding_entity(transactions_df):
 
 
 def test_checks_time_type_setting_time_index(es):
-    # set non time type as time index, Dask and Pandas error differently
-    if isinstance(es['log'].df, (pd.DataFrame, ks.DataFrame)):
+    # set non time type as time index, Dask/Koalas and Pandas error differently
+    if isinstance(es['log'].df, pd.DataFrame):
         error_text = 'log time index not recognized as numeric or datetime'
     else:
         error_text = "log time index is %s type which differs from" \
