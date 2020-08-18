@@ -129,5 +129,7 @@ def is_instance(obj, modules, classnames):
         modules = (modules, )
     if type(classnames) is not tuple:
         classnames = (classnames, ) * len(modules)
+    if len(modules) != len(classnames):
+        raise ValueError('Number of modules does not match number of classnames')
     to_check = tuple(getattr(mod, classname, mod) for mod, classname in zip(modules, classnames) if mod)
     return isinstance(obj, to_check)

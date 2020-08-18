@@ -44,6 +44,12 @@ def test_is_instance_multiple_modules(df):
     assert not is_instance(df2['id'], (dd, pd), ('DataFrame', 'Series'))
 
 
+def test_is_instance_errors_mismatch():
+    msg = 'Number of modules does not match number of classnames'
+    with pytest.raises(ValueError, match=msg):
+        is_instance('abc', pd, ('DataFrame', 'Series'))
+
+
 def test_is_instance_none_module(df):
     assert not is_instance(df, None, 'DataFrame')
     assert is_instance(df, (None, pd), 'DataFrame')
