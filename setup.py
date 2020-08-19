@@ -13,7 +13,7 @@ extras_require = {
   'nlp_primitives': ['nlp-primitives >= 0.2.2'],
   'autonormalize': ['autonormalize >= 1.0.0'],
   'sklearn_transformer': ['featuretools-sklearn-transformer >= 0.1.0'],
-  'koalas': ['pyspark >= 3.0.0', 'koalas >= 1.0.1']
+  'koalas': ['pyspark >= 3.0.0', 'koalas >= 1.1.0']
 }
 extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
