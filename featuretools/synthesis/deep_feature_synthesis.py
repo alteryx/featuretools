@@ -550,6 +550,9 @@ class DeepFeatureSynthesis(object):
         if max_depth is not None:
             new_max_depth = max_depth - 1
 
+        # Avoid transform stacking by waiting to add features to all_features all at once
+        new_features = []
+
         for trans_prim in self.trans_primitives:
             current_options = self.primitive_options.get(
                 trans_prim,
@@ -570,11 +573,10 @@ class DeepFeatureSynthesis(object):
                                                         require_direct_input=require_direct_input)
 
             for matching_input in matching_inputs:
-                if all(bf.number_output_features == 1 for bf in matching_input):
+                if all(bf.number_output_features == 1 for bf in matching_input) and check_transform_stacking(matching_input):
                     new_f = TransformFeature(matching_input,
                                              primitive=trans_prim)
-                    self._handle_new_feature(all_features=all_features,
-                                             new_feature=new_f)
+                    new_features.append(new_f)
 
         for groupby_prim in self.groupby_trans_primitives:
             current_options = self.primitive_options.get(
@@ -609,7 +611,7 @@ class DeepFeatureSynthesis(object):
             # groupby, and don't create features of inputs/groupbys which are
             # all direct features with the same relationship path
             for matching_input in matching_inputs:
-                if all(bf.number_output_features == 1 for bf in matching_input):
+                if all(bf.number_output_features == 1 for bf in matching_input) and check_transform_stacking(matching_input):
                     for groupby in groupby_matches:
                         if require_direct_input and (
                             _all_direct_and_same_path(matching_input + (groupby,)) or
@@ -620,8 +622,10 @@ class DeepFeatureSynthesis(object):
                         new_f = GroupByTransformFeature(list(matching_input),
                                                         groupby=groupby[0],
                                                         primitive=groupby_prim)
-                        self._handle_new_feature(all_features=all_features,
-                                                 new_feature=new_f)
+                        new_features.append(new_f)
+        for new_f in new_features:
+            self._handle_new_feature(all_features=all_features,
+                                     new_feature=new_f)
 
     def _build_forward_features(self, all_features, relationship_path, max_depth=0):
         _, relationship = relationship_path[0]
@@ -795,6 +799,14 @@ class DeepFeatureSynthesis(object):
                                                     primitive_options,
                                                     commutative=primitive.commutative)
         return matching_inputs
+
+
+def check_transform_stacking(inputs):
+    # Avoid transform stacking when building from direct features
+    for f in inputs:
+        if isinstance(f.primitive, TransformPrimitive):
+            return False
+    return True
 
 
 def check_stacking(primitive, inputs):
