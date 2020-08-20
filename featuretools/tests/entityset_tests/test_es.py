@@ -984,11 +984,11 @@ def pd_normalize_es():
 @pytest.fixture
 def dd_normalize_es(pd_normalize_es):
     es = ft.EntitySet(id=pd_normalize_es.id)
-    for entity in pd_normalize_es.entities:
-        es.entity_from_dataframe(entity_id=entity.id,
-                                 dataframe=dd.from_pandas(entity.df, npartitions=2),
-                                 index=entity.index,
-                                 variable_types=entity.variable_types)
+    entity = pd_normalize_es['data']
+    es.entity_from_dataframe(entity_id=entity.id,
+                             dataframe=dd.from_pandas(entity.df, npartitions=2),
+                             index=entity.index,
+                             variable_types=entity.variable_types)
     return es
 
 
