@@ -967,17 +967,50 @@ def test_normalize_entity_new_time_index_additional_success_check(es):
                         copy_variables=[])
 
 
-def test_normalize_time_index_from_none(es):
-    es['customers'].time_index = None
-    es.normalize_entity('customers', 'birthdays', 'age',
-                        make_time_index='date_of_birth',
-                        copy_variables=['date_of_birth'])
-    assert es['birthdays'].time_index == 'date_of_birth'
-    df = es['birthdays'].df
+@pytest.fixture
+def pd_normalize_es():
+    df = pd.DataFrame({
+        "id": [0, 1, 2, 3],
+        "A": [5, 4, 2, 3],
+        'time': [datetime(2020, 6, 3), (datetime(2020, 3, 12)), datetime(2020, 5, 1), datetime(2020, 4, 22)]
+    })
+    es = ft.EntitySet("es")
+    return es.entity_from_dataframe(
+        entity_id="data",
+        dataframe=df,
+        index="id")
+
+
+@pytest.fixture
+def dd_normalize_es(pd_normalize_es):
+    es = ft.EntitySet(id=pd_normalize_es.id)
+    entity = pd_normalize_es['data']
+    es.entity_from_dataframe(entity_id=entity.id,
+                             dataframe=dd.from_pandas(entity.df, npartitions=2),
+                             index=entity.index,
+                             variable_types=entity.variable_types)
+    return es
+
+
+@pytest.fixture(params=['dd_normalize_es', 'pd_normalize_es'])
+def normalize_es(request):
+    return request.getfixturevalue(request.param)
+
+
+def test_normalize_time_index_from_none(normalize_es):
+    assert normalize_es['data'].time_index is None
+
+    normalize_es.normalize_entity(base_entity_id='data',
+                                  new_entity_id='normalized',
+                                  index='A',
+                                  make_time_index='time',
+                                  copy_variables=['time'])
+    assert normalize_es['normalized'].time_index == 'time'
+    df = normalize_es['normalized'].df
 
     # only pandas sorts by time index
     if isinstance(df, pd.DataFrame):
-        assert df['date_of_birth'].is_monotonic_increasing
+        assert df['time'].is_monotonic_increasing
 
 
 def test_raise_error_if_dupicate_additional_variables_passed(es):
