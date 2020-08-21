@@ -763,8 +763,6 @@ def test_transform_consistency(transform_es):
     assert feature_with_name(feature_defs, 'b12 + P')
     assert feature_with_name(feature_defs, 'a + b12')
     assert feature_with_name(feature_defs, 'OR(b, b1)')
-    assert feature_with_name(feature_defs, 'OR(AND(b, b1), b)')
-    assert feature_with_name(feature_defs, 'OR(AND(b, b1), b1)')
 
 
 def test_transform_no_stack_agg(es):
@@ -920,10 +918,6 @@ def test_stacks_multioutput_features(es):
 
     for i in range(3):
         f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.countrycode)[%d])' % i
-        assert feature_with_name(feat, f)
-
-    for i in range(6):
-        f = 'DIFF(TEST_TIME(date_of_birth)[%d])' % i
         assert feature_with_name(feat, f)
 
 
