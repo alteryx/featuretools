@@ -6,9 +6,11 @@ import graphviz
 import pandas as pd
 import pytest
 from dask import dataframe as dd
-from databricks import koalas as ks
 
 import featuretools as ft
+from featuretools.utils.gen_utils import import_or_none
+
+ks = import_or_none('databricks.koalas')
 
 
 @pytest.fixture
@@ -32,6 +34,8 @@ def dd_simple():
 def ks_simple():
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
+    if not ks:
+        pytest.skip('Koalas not installed, skipping')
     es = ft.EntitySet("test")
     df = ks.DataFrame({'foo': [1]})
     es.entity_from_dataframe('test', df)

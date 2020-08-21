@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from dask import dataframe as dd
-from databricks import koalas as ks
 from distributed.utils_test import cluster
 
 from featuretools import variable_types as vtypes
@@ -26,6 +25,9 @@ from featuretools.primitives import (
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.variable_types import Numeric
+from featuretools.utils.gen_utils import import_or_none
+
+ks = import_or_none('databricks.koalas')
 
 
 @pytest.fixture(params=['pd_entities', 'dask_entities', 'koalas_entities'])
@@ -78,6 +80,8 @@ def dask_entities():
 def koalas_entities():
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
+    if not ks:
+        pytest.skip('Koalas not installed, skipping')
     cards_df = ks.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = ks.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                                     "card_id": [1, 2, 1, 3, 4, 5],
@@ -335,7 +339,7 @@ def test_accepts_pd_dateoffset_training_window(datetime_es):
 
 
 def test_warns_with_unused_primitives(es):
-    if any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+    if ks and any(isinstance(e.df, ks.DataFrame) for e in es.entities):
         pytest.skip('Koalas throws extra warnings')
     trans_primitives = ['num_characters', 'num_words', 'add_numeric']
     agg_primitives = [Max, 'min']

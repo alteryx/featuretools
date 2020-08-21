@@ -1,5 +1,3 @@
-import dask.dataframe as dd
-import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pytest
@@ -89,7 +87,7 @@ def test_direct_copy(games_es):
 
 def test_direct_of_multi_output_transform_feat(es):
     # TODO: Update to work with Dask and Koalas
-    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
+    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
         pytest.xfail("Custom primitive is not compabible with Dask or Koalas")
 
     class TestTime(TransformPrimitive):

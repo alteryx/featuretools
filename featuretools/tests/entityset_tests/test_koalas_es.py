@@ -1,12 +1,15 @@
-import databricks.koalas as ks
 import pandas as pd
 import pytest
 
 import featuretools as ft
 from featuretools.entityset import EntitySet, Relationship
 from featuretools.utils.koalas_utils import pd_to_ks_clean
+from featuretools.utils.gen_utils import import_or_none
+
+ks = import_or_none('databricks.koalas')
 
 
+@pytest.mark.skipif('not ks')
 def test_create_entity_from_ks_df(pd_es):
     cleaned_df = pd_to_ks_clean(pd_es["log"].df)
     log_ks = ks.from_pandas(cleaned_df)
@@ -22,6 +25,7 @@ def test_create_entity_from_ks_df(pd_es):
     pd.testing.assert_frame_equal(cleaned_df, ks_es["log_ks"].df.to_pandas(), check_like=True)
 
 
+@pytest.mark.skipif('not ks')
 def test_create_entity_with_non_numeric_index(pd_es, ks_es):
     df = pd.DataFrame({"id": ["A_1", "A_2", "C", "D"],
                        "values": [1, 12, -34, 27]})
@@ -40,6 +44,7 @@ def test_create_entity_with_non_numeric_index(pd_es, ks_es):
     pd.testing.assert_frame_equal(pd_es['new_entity'].df.reset_index(drop=True), ks_es['new_entity'].df.to_pandas())
 
 
+@pytest.mark.skipif('not ks')
 def test_create_entityset_with_mixed_dataframe_types(pd_es, ks_es):
     df = pd.DataFrame({"id": [0, 1, 2, 3],
                        "values": [1, 12, -34, 27]})
@@ -68,6 +73,7 @@ def test_create_entityset_with_mixed_dataframe_types(pd_es, ks_es):
             index="id")
 
 
+@pytest.mark.skipif('not ks')
 def test_add_last_time_indexes():
     pd_es = EntitySet(id="pd_es")
     ks_es = EntitySet(id="ks_es")
@@ -128,6 +134,7 @@ def test_add_last_time_indexes():
     pd.testing.assert_series_equal(pd_es['sessions'].last_time_index.sort_index(), ks_es['sessions'].last_time_index.to_pandas().sort_index(), check_names=False)
 
 
+@pytest.mark.skipif('not ks')
 def test_create_entity_with_make_index():
     values = [1, 12, -23, 27]
     df = pd.DataFrame({"values": values})
@@ -140,6 +147,7 @@ def test_create_entity_with_make_index():
     pd.testing.assert_frame_equal(expected_df, ks_es['new_entity'].df.to_pandas().sort_index())
 
 
+@pytest.mark.skipif('not ks')
 def test_single_table_ks_entityset():
     primitives_list = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
 
@@ -185,6 +193,7 @@ def test_single_table_ks_entityset():
     pd.testing.assert_frame_equal(fm, ks_computed_fm, check_dtype=False)
 
 
+@pytest.mark.skipif('not ks')
 def test_single_table_ks_entityset_ids_not_sorted():
     primitives_list = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
 
@@ -229,6 +238,7 @@ def test_single_table_ks_entityset_ids_not_sorted():
     pd.testing.assert_frame_equal(fm, ks_fm.to_pandas().set_index('id').loc[fm.index], check_dtype=False)
 
 
+@pytest.mark.skipif('not ks')
 def test_single_table_ks_entityset_with_instance_ids():
     primitives_list = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
     instance_ids = [0, 1, 3]
@@ -277,6 +287,7 @@ def test_single_table_ks_entityset_with_instance_ids():
     pd.testing.assert_frame_equal(fm, ks_fm.to_pandas().set_index('id').loc[fm.index], check_dtype=False)
 
 
+@pytest.mark.skipif('not ks')
 def test_single_table_ks_entityset_single_cutoff_time():
     primitives_list = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
 
@@ -323,6 +334,7 @@ def test_single_table_ks_entityset_single_cutoff_time():
     pd.testing.assert_frame_equal(fm, ks_fm.to_pandas().set_index('id').loc[fm.index], check_dtype=False)
 
 
+@pytest.mark.skipif('not ks')
 def test_single_table_ks_entityset_cutoff_time_df():
     primitives_list = ['absolute', 'is_weekend', 'year', 'day', 'num_characters', 'num_words']
 
@@ -379,6 +391,7 @@ def test_single_table_ks_entityset_cutoff_time_df():
     pd.testing.assert_frame_equal(fm, ks_fm)
 
 
+@pytest.mark.skipif('not ks')
 def test_single_table_ks_entityset_dates_not_sorted():
     ks_es = EntitySet(id="ks_es")
     df = pd.DataFrame({"id": [0, 1, 2, 3],
@@ -420,6 +433,7 @@ def test_single_table_ks_entityset_dates_not_sorted():
     pd.testing.assert_frame_equal(fm, ks_fm.to_pandas().set_index('id').loc[fm.index])
 
 
+@pytest.mark.skipif('not ks')
 def test_secondary_time_index():
     log_df = pd.DataFrame()
     log_df['id'] = [0, 1, 2, 3]

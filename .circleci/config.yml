@@ -83,6 +83,8 @@ jobs:
     parameters:
       image_tag:
         type: string
+      optional_libraries:
+        type: string
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -96,8 +98,17 @@ jobs:
           source venv/bin/activate
           python -m pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
-          python -m pip install -e unpacked_sdist/
-          python -m pip install -r unpacked_sdist/test-requirements.txt
+      - when:
+          condition: 
+            equal: [ "complete", << parameters.optional_libraries >> ]
+          steps:
+            - run: python -m pip install -e unpacked_sdist/[koalas]
+      - unless:
+          condition:
+            equal: ["complete", << parameters.optional_libraries >> ]
+          steps:
+            - run: python -m pip install -e unpacked_sdist/
+      - run: python -m pip install -r unpacked_sdist/test-requirements.txt
       - persist_to_workspace:
           root: ~/featuretools
           paths:
@@ -124,6 +135,8 @@ jobs:
     parameters:
       image_tag:
         type: string
+      optional_libraries:
+        type: string
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -135,7 +148,9 @@ jobs:
           at: ~/featuretools
       - when:
           condition:
-            equal: [ "3.6", << parameters.image_tag >> ]
+            and:
+              - equal: [ "3.6", << parameters.image_tag >> ]
+              - equal: ["complete", << parameters.optional_libraries >>]
           steps:
             - run: |
                 source venv/bin/activate
@@ -149,7 +164,9 @@ jobs:
                 codecov --required
       - unless:
           condition:
-            equal: [ "3.6", << parameters.image_tag >> ]
+            and: 
+              - equal: [ "3.6", << parameters.image_tag >> ]
+              - equal: ["complete", << parameters.optional_libraries >>]
           steps:
             - run: |
                 source venv/bin/activate
@@ -243,28 +260,30 @@ workflows:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
-          name: << matrix.image_tag >> install featuretools
+              optional_libraries: ["minimal", "complete"]
+          name: << matrix.image_tag >> install featuretools << matrix.optional_libraries >>
       - unit_tests:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
-          name: << matrix.image_tag >> unit tests
+              optional_libraries: ["minimal", "complete"]
+          name: << matrix.image_tag >> unit tests << matrix.optional_libraries >>
           requires:
-            - << matrix.image_tag >> install featuretools
+            - << matrix.image_tag >> install featuretools << matrix.optional_libraries >>
       - lint_test:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
           name: << matrix.image_tag >> lint test
           requires:
-            - << matrix.image_tag >> install featuretools
+            - << matrix.image_tag >> install featuretools complete
       - build_docs:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
           name: build docs << matrix.image_tag >>
           requires:
-            - << matrix.image_tag >> install featuretools
+            - << matrix.image_tag >> install featuretools complete
       - install_ft_complete:
           matrix:
             parameters:

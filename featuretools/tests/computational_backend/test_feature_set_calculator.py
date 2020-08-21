@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import pytest
 from dask import dataframe as dd
-from databricks import koalas as ks
 from numpy.testing import assert_array_equal
 
 import featuretools as ft
@@ -40,6 +39,9 @@ from featuretools.primitives.base import AggregationPrimitive
 from featuretools.tests.testing_utils import backward_path, to_pandas
 from featuretools.utils import Trie
 from featuretools.variable_types import Numeric
+from featuretools.utils.gen_utils import import_or_none
+
+ks = import_or_none('databricks.koalas')
 
 
 def test_make_identity(es):
@@ -167,7 +169,7 @@ def test_make_agg_feat_using_prev_time(es):
 
 
 def test_make_agg_feat_using_prev_n_events(es):
-    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
+    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
         pytest.xfail('Distrubuted entitysets do not support use_previous')
     agg_feat_1 = ft.Feature(es['log']['value'],
                             parent_entity=es['sessions'],
@@ -206,7 +208,7 @@ def test_make_agg_feat_using_prev_n_events(es):
 
 
 def test_make_agg_feat_multiple_dtypes(es):
-    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
+    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
         pytest.xfail('Currently no Dask or Koalas compatible agg prims that use multiple dtypes')
     compare_prod = IdentityFeature(es['log']['product_id']) == 'coke zero'
 
@@ -441,6 +443,8 @@ def dd_df(pd_df):
 def ks_df(pd_df):
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
+    if not ks:
+        pytest.skip('Koalas not installed, skipping')
     return ks.from_pandas(pd_df)
 
 
@@ -750,6 +754,8 @@ def dd_parent_child(pd_parent_child):
 def ks_parent_child(pd_parent_child):
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
+    if not ks:
+        pytest.skip('Koalas not installed, skipping')
     parent_df, child_df = pd_parent_child
     parent_df = ks.from_pandas(parent_df)
     child_df = ks.from_pandas(child_df)
@@ -763,7 +769,7 @@ def parent_child(request):
 
 def test_empty_child_dataframe(parent_child):
     parent_df, child_df = parent_child
-    if isinstance(parent_df, (dd.DataFrame, ks.DataFrame)):
+    if not isinstance(parent_df, pd.DataFrame):
         parent_vtypes = {
             'id': variable_types.Index
         }
@@ -804,11 +810,7 @@ def test_empty_child_dataframe(parent_child):
     trend_where = ft.Feature([es["child"]['value'], es["child"]['time_index']], parent_entity=es["parent"], where=where, primitive=Trend)
     n_most_common_where = ft.Feature(es["child"]['cat'], parent_entity=es["parent"], where=where, primitive=NMostCommon)
 
-    if isinstance(parent_df, (dd.DataFrame, ks.DataFrame)):
-        features = [count, count_where]
-        names = [count.get_name(), count_where.get_name()]
-        values = [0, 0]
-    else:
+    if isinstance(parent_df, pd.DataFrame):
         features = [count, count_where, trend, trend_where, n_most_common, n_most_common_where]
         names = [count.get_name(), count_where.get_name(),
                  trend.get_name(), trend_where.get_name(),
@@ -816,6 +818,10 @@ def test_empty_child_dataframe(parent_child):
         values = [0, 0,
                   np.nan, np.nan,
                   *np.full(n_most_common.number_output_features, np.nan), *np.full(n_most_common_where.number_output_features, np.nan)]
+    else:
+        features = [count, count_where]
+        names = [count.get_name(), count_where.get_name()]
+        values = [0, 0]
 
     # cutoff time before all rows
     fm = ft.calculate_feature_matrix(entityset=es,
@@ -826,14 +832,14 @@ def test_empty_child_dataframe(parent_child):
     assert_array_equal(fm[names], [values])
 
     # cutoff time after all rows, but where clause filters all rows
-    if isinstance(parent_df, (dd.DataFrame, ks.DataFrame)):
-        features = [count_where]
-        names = [count_where.get_name()]
-        values = [0]
-    else:
+    if isinstance(parent_df, pd.DataFrame):
         features = [count_where, trend_where, n_most_common_where]
         names = [count_where.get_name(), trend_where.get_name(), *n_most_common_where.get_feature_names()]
         values = [0, np.nan, *np.full(n_most_common_where.number_output_features, np.nan)]
+    else:
+        features = [count_where]
+        names = [count_where.get_name()]
+        values = [0]
 
     fm2 = ft.calculate_feature_matrix(entityset=es,
                                       features=features,
@@ -859,7 +865,7 @@ def test_with_features_built_from_es_metadata(es):
 
 # TODO: Fails with Dask and Koalas (conflicting aggregation primitives)
 def test_handles_primitive_function_name_uniqueness(es):
-    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
+    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
         pytest.xfail("Fails with Dask and Koalas due conflicting aggregation primitive names")
 
     class SumTimesN(AggregationPrimitive):
@@ -1009,7 +1015,7 @@ def test_calls_progress_callback(es):
     trans_full = ft.Feature(agg, primitive=CumSum)
     groupby_trans = ft.Feature(agg, primitive=CumSum, groupby=es["customers"]["cohort"])
 
-    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
+    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
         all_features = [identity, direct, agg, trans]
     else:
         all_features = [identity, direct, agg, agg_apply, trans, trans_full, groupby_trans]
