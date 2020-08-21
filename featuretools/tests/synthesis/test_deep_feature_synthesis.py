@@ -1,5 +1,4 @@
 import copy
-import random
 
 import dask.dataframe as dd
 import pandas as pd
@@ -1416,45 +1415,41 @@ def test_primitive_options_commutative(es):
 
 
 def test_primitive_ordering():
-    # Test that the order of the transform_primitives input does not impact the features created
+    # Test that the order of the input primitives impacts neither
+    # which features are created nor their order
     es = make_ecommerce_entityset()
-    all_primitives = ft.list_primitives()
 
-    trans_prim = all_primitives[all_primitives['type'] == 'transform']['name'].to_list()
+    trans_prims = [AddNumeric, Absolute, 'divide_numeric', NotEqual, 'is_null']
+    groupby_trans_prim = ['cum_mean', CumMin, CumSum]
+    agg_prims = [NMostCommon(n=3), Sum, 'min', 'max']
+    where_prims = ['count', Sum]
 
-    trans_prim.sort()
-    trans_prim = trans_prim[:15]
+    features1 = ft.dfs(entityset=es,
+                       target_entity="customers",
+                       trans_primitives=trans_prims,
+                       groupby_trans_primitives=groupby_trans_prim,
+                       agg_primitives=agg_prims,
+                       where_primitives=where_prims,
+                       max_features=-1,
+                       max_depth=2,
+                       features_only=2)
 
-    features_sorted = ft.dfs(entityset=es,
-                             target_entity="customers",
-                             trans_primitives=trans_prim,
-                             max_features=-1,
-                             max_depth=2,
-                             features_only=2)
+    trans_prims.reverse()
+    groupby_trans_prim.reverse()
+    agg_prims.reverse()
+    where_prims.reverse()
 
-    random.shuffle(prims)
-    features_random1 = ft.dfs(entityset=es,
-                              target_entity="customers",
-                              trans_primitives=trans_prim,
-                              max_features=-1,
-                              max_depth=2,
-                              features_only=2)
-    diff_1 = set(features_sorted) - set(features_random1)
+    features2 = ft.dfs(entityset=es,
+                       target_entity="customers",
+                       trans_primitives=trans_prims,
+                       groupby_trans_primitives=groupby_trans_prim,
+                       agg_primitives=agg_prims,
+                       where_primitives=where_prims,
+                       max_features=-1,
+                       max_depth=2,
+                       features_only=2)
 
-    random.shuffle(prims)
-    features_random2 = ft.dfs(entityset=es,
-                              target_entity="customers",
-                              trans_primitives=trans_prim,
-                              max_features=-1,
-                              max_depth=2,
-                              features_only=2)
-    diff_2 = set(features_sorted) - set(features_random2)
+    assert len(features1) == len(features2)
 
-    assert len(features_sorted) == len(features_random1)
-    assert len(features_sorted) == len(features_random2)
-
-    # It's possible that they have the same number of features but still different ones
-    assert len(diff_1) == 0
-    assert len(diff_2) == 0
-
-    # TODO - add check that the order actually matches up
+    for i in range(len(features2)):
+        assert features1[i].unique_name() == features2[i].unique_name()
