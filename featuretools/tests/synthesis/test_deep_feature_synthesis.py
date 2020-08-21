@@ -1419,14 +1419,15 @@ def test_primitive_ordering():
     # Test that the order of the transform_primitives input does not impact the features created
     es = make_ecommerce_entityset()
     all_primitives = ft.list_primitives()
+
     trans_prim = all_primitives[all_primitives['type'] == 'transform']['name'].to_list()
 
     trans_prim.sort()
-    prims = trans_prim[:15]
+    trans_prim = trans_prim[:15]
 
     features_sorted = ft.dfs(entityset=es,
                              target_entity="customers",
-                             trans_primitives=prims,
+                             trans_primitives=trans_prim,
                              max_features=-1,
                              max_depth=2,
                              features_only=2)
@@ -1434,7 +1435,7 @@ def test_primitive_ordering():
     random.shuffle(prims)
     features_random1 = ft.dfs(entityset=es,
                               target_entity="customers",
-                              trans_primitives=prims,
+                              trans_primitives=trans_prim,
                               max_features=-1,
                               max_depth=2,
                               features_only=2)
@@ -1443,7 +1444,7 @@ def test_primitive_ordering():
     random.shuffle(prims)
     features_random2 = ft.dfs(entityset=es,
                               target_entity="customers",
-                              trans_primitives=prims,
+                              trans_primitives=trans_prim,
                               max_features=-1,
                               max_depth=2,
                               features_only=2)
@@ -1456,4 +1457,4 @@ def test_primitive_ordering():
     assert len(diff_1) == 0
     assert len(diff_2) == 0
 
-    # TODO - add check that each feature actually matches up
+    # TODO - add check that the order actually matches up
