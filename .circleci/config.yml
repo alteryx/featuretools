@@ -103,6 +103,7 @@ jobs:
             equal: [ "complete", << parameters.optional_libraries >> ]
           steps:
             - run: |
+                source venv/bin/activate
                 python -m pip install -e unpacked_sdist/[koalas]
                 python -m pip install -r unpacked_sdist/test-requirements.txt
       - unless:
@@ -110,6 +111,7 @@ jobs:
             equal: ["complete", << parameters.optional_libraries >> ]
           steps:
             - run: |
+                source venv/bin/activate
                 python -m pip install -e unpacked_sdist/
                 python -m pip install -r unpacked_sdist/test-requirements.txt
       - persist_to_workspace:
