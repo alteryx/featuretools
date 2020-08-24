@@ -1418,12 +1418,17 @@ def test_primitive_ordering():
     agg_prims = [NMostCommon(n=3), Sum, 'min', 'max']
     where_prims = ['count', Sum]
 
+    seed_num_chars = ft.Feature(es['customers']['favorite_quote'], primitive=NumCharacters)
+    seed_is_null = ft.Feature(es['customers']['age'], primitive=IsNull)
+    seed_features = [seed_num_chars, seed_is_null]
+
     features1 = ft.dfs(entityset=es,
                        target_entity="customers",
                        trans_primitives=trans_prims,
                        groupby_trans_primitives=groupby_trans_prim,
                        agg_primitives=agg_prims,
                        where_primitives=where_prims,
+                       seed_features=seed_features,
                        max_features=-1,
                        max_depth=2,
                        features_only=2)
@@ -1432,6 +1437,7 @@ def test_primitive_ordering():
     groupby_trans_prim.reverse()
     agg_prims.reverse()
     where_prims.reverse()
+    seed_features.reverse()
 
     features2 = ft.dfs(entityset=es,
                        target_entity="customers",
@@ -1439,6 +1445,7 @@ def test_primitive_ordering():
                        groupby_trans_primitives=groupby_trans_prim,
                        agg_primitives=agg_prims,
                        where_primitives=where_prims,
+                       seed_features=seed_features,
                        max_features=-1,
                        max_depth=2,
                        features_only=2)

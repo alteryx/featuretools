@@ -242,7 +242,7 @@ class DeepFeatureSynthesis(object):
                                            self.ignore_entities,
                                            self.ignore_variables,
                                            self.es)
-        self.seed_features = seed_features or []  # --> figure out if this needs to be sorted
+        self.seed_features = sorted(seed_features or [], key=lambda f: f.primitive.name)
         self.drop_exact = drop_exact or []
         self.drop_contains = drop_contains or []
         self.where_stacking_limit = where_stacking_limit
@@ -806,8 +806,6 @@ def check_transform_stacking(inputs):
     for f in inputs:
         if isinstance(f.primitive, TransformPrimitive):
             return False
-        if isinstance(f, DirectFeature) and isinstance(f.base_features[0].primitive, TransformPrimitive):
-            return False
     return True
 
 
@@ -944,6 +942,4 @@ def _direct_of_entity(feature, parent_entity):
 
 
 def _sort_primitives(prim_list):
-    # --> Handle the none case if that's at all relevant?
-    # Might be better tp handle this by . implementing comparison operators in the class
     return sorted(prim_list, key=lambda prim: prim if isinstance(prim, str) else prim.name)
