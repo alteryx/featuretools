@@ -132,7 +132,9 @@ def read_entity_data(description, path):
     if entity_type == 'dask':
         lib = dd
     elif entity_type == 'koalas':
-        lib = import_or_raise('databricks.koalas', 'Koalas not found, cannot serialize Koalas entityset')
+        import_error = 'Cannot load Koalas entityset - unable to import Koalas. ' \
+                       'Consider doing a pip install with [koalas] extra to install Koalas with pip'
+        lib = import_or_raise('databricks.koalas', import_error)
         read_kwargs['multiline'] = True
         kwargs['compression'] = str(kwargs['compression'])
     else:
