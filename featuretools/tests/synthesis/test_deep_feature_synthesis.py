@@ -1447,3 +1447,37 @@ def test_primitive_ordering():
 
     for i in range(len(features2)):
         assert features1[i].unique_name() == features2[i].unique_name()
+
+
+def test_no_transform_stacking():
+    df1 = pd.DataFrame({"id": [0, 1, 2, 3],
+                        "A": [0, 1, 2, 3]})
+    df2 = pd.DataFrame({'first_id': [0, 1, 1, 3], 'B': [99, 88, 77, 66]})
+
+    entities = {"first": (df1, 'id'),
+                "second": (df2, 'index')}
+    relationships = [("first", 'id', 'second', 'first_id')]
+    es = ft.EntitySet("data", entities, relationships)
+
+    feature_defs = ft.dfs(entityset=es, target_entity='second',
+                          trans_primitives=['negate', 'add_numeric'],
+                          agg_primitives=['sum'],
+                          max_depth=4,
+                          features_only=2)
+    assert len(feature_defs) == 15
+
+    assert feature_with_name(feature_defs, 'first_id')
+    assert feature_with_name(feature_defs, 'B')
+    assert feature_with_name(feature_defs, '-(B)')
+    assert feature_with_name(feature_defs, 'first.A')
+    assert feature_with_name(feature_defs, 'first.SUM(second.B)')
+    assert feature_with_name(feature_defs, 'first.-(A)')
+    assert feature_with_name(feature_defs, 'B + first.A')
+    assert feature_with_name(feature_defs, 'first.SUM(second.-(B))')
+    assert feature_with_name(feature_defs, 'first.A + SUM(second.B)')
+    assert feature_with_name(feature_defs, 'first.-(SUM(second.B))')
+    assert feature_with_name(feature_defs, 'B + first.SUM(second.B)')
+    assert feature_with_name(feature_defs, 'first.A + SUM(second.-(B))')
+    assert feature_with_name(feature_defs, 'first.SUM(second.-(B)) + SUM(second.B)')
+    assert feature_with_name(feature_defs, 'first.-(SUM(second.-(B)))')
+    assert feature_with_name(feature_defs, 'B + first.SUM(second.-(B))')
