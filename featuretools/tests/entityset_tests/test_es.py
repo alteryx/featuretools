@@ -234,10 +234,9 @@ def dd_df(pd_df):
 
 @pytest.fixture
 def ks_df(pd_df):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
-    if not ks:
-        pytest.skip('Koalas not installed, skipping')
     return ks.from_pandas(pd_df)
 
 
@@ -302,10 +301,9 @@ def dd_df2(pd_df2):
 
 @pytest.fixture
 def ks_df2(pd_df2):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
-    if not ks:
-        pytest.skip('Koalas not installed, skipping')
     return ks.from_pandas(pd_df2)
 
 
@@ -339,10 +337,9 @@ def dd_df3(pd_df3):
 
 @pytest.fixture
 def ks_df3(pd_df3):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
-    if not ks:
-        pytest.skip('Koalas not installed, skipping')
     return ks.from_pandas(pd_df3)
 
 
@@ -402,10 +399,9 @@ def dd_df4(pd_df4):
 
 @pytest.fixture
 def ks_df4(pd_df4):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
-    if not ks:
-        pytest.skip('Koalas not installed, skipping')
     return ks.from_pandas(pd_to_ks_clean(pd_df4))
 
 
@@ -500,10 +496,9 @@ def dd_datetime1(pd_datetime1):
 
 @pytest.fixture
 def ks_datetime1(pd_datetime1):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
-    if not ks:
-        pytest.skip('Koalas not installed, skipping')
     return ks.from_pandas(pd_datetime1)
 
 
@@ -547,10 +542,9 @@ def dd_datetime2(pd_datetime2):
 
 @pytest.fixture
 def ks_datetime2(pd_datetime2):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
-    if not ks:
-        pytest.skip('Koalas not installed, skipping')
     return ks.from_pandas(pd_datetime2)
 
 
@@ -809,10 +803,9 @@ def dd_transactions_df(pd_transactions_df):
 
 @pytest.fixture
 def ks_transactions_df(pd_transactions_df):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
-    if not ks:
-        pytest.skip('Koalas not installed, skipping')
     return ks.from_pandas(pd_transactions_df)
 
 
@@ -1217,10 +1210,9 @@ def dd_datetime3(pd_datetime3):
 
 @pytest.fixture
 def ks_datetime3(pd_datetime3):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
-    if not ks:
-        pytest.skip('Koalas not installed, skipping')
     return ks.from_pandas(pd_datetime3)
 
 
@@ -1333,10 +1325,9 @@ def dd_index_df(pd_index_df):
 
 @pytest.fixture
 def ks_index_df(pd_index_df):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
-    if not ks:
-        pytest.skip('Koalas not installed, skipping')
     return ks.from_pandas(pd_index_df)
 
 

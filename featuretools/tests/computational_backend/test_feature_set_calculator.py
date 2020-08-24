@@ -38,10 +38,7 @@ from featuretools.primitives import (  # NMostCommon,
 from featuretools.primitives.base import AggregationPrimitive
 from featuretools.tests.testing_utils import backward_path, to_pandas
 from featuretools.utils import Trie
-from featuretools.utils.gen_utils import import_or_none
 from featuretools.variable_types import Numeric
-
-ks = import_or_none('databricks.koalas')
 
 
 def test_make_identity(es):
@@ -441,10 +438,9 @@ def dd_df(pd_df):
 
 @pytest.fixture
 def ks_df(pd_df):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
-    if not ks:
-        pytest.skip('Koalas not installed, skipping')
     return ks.from_pandas(pd_df)
 
 
@@ -752,10 +748,9 @@ def dd_parent_child(pd_parent_child):
 
 @pytest.fixture
 def ks_parent_child(pd_parent_child):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
-    if not ks:
-        pytest.skip('Koalas not installed, skipping')
     parent_df, child_df = pd_parent_child
     parent_df = ks.from_pandas(parent_df)
     child_df = ks.from_pandas(child_df)

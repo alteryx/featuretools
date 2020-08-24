@@ -7,9 +7,6 @@ from dask import dataframe as dd
 import featuretools as ft
 from featuretools import EntitySet, Relationship, variable_types
 from featuretools.tests.testing_utils import backward_path, forward_path
-from featuretools.utils.gen_utils import import_or_none
-
-ks = import_or_none('databricks.koalas')
 
 
 def test_cannot_re_add_relationships_that_already_exists(es):
@@ -152,10 +149,9 @@ def dd_employee_df(pd_employee_df):
 
 @pytest.fixture
 def ks_employee_df(pd_employee_df):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
-    if not ks:
-        pytest.skip('Koalas not installed, skipping')
     return ks.from_pandas(pd_employee_df)
 
 

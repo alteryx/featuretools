@@ -78,10 +78,9 @@ def dask_entities():
 
 @pytest.fixture
 def koalas_entities():
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
-    if not ks:
-        pytest.skip('Koalas not installed, skipping')
     cards_df = ks.DataFrame({"id": [1, 2, 3, 4, 5]})
     transactions_df = ks.DataFrame({"id": [1, 2, 3, 4, 5, 6],
                                     "card_id": [1, 2, 1, 3, 4, 5],

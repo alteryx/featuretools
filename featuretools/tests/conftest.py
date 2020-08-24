@@ -11,16 +11,13 @@ from featuretools.tests.testing_utils import make_ecommerce_entityset
 from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
 
-ks = import_or_none('databricks.koalas')
-sql = import_or_none('pyspark.sql')
-
 
 @pytest.fixture(scope='session', autouse=True)
 def spark_session():
+    sql = import_or_none('pyspark.sql')
     if not sql:
         return
-    SparkSession = sql.SparkSession
-    spark = SparkSession.builder \
+    spark = sql.SparkSession.builder \
         .master('local[2]') \
         .config("spark.driver.extraJavaOptions", "-Dio.netty.tryReflectionSetAccessible=True") \
         .config("spark.sql.shuffle.partitions", "2") \
@@ -60,10 +57,9 @@ def dask_es(make_es):
 
 @pytest.fixture
 def ks_es(make_es):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
-    if not ks:
-        pytest.skip('Koalas not installed, skipping Koalas tests')
     ks_es = copy.deepcopy(make_es)
     for entity in ks_es.entities:
         cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)
@@ -144,10 +140,9 @@ def dask_diamond_es(pd_diamond_es):
 
 @pytest.fixture
 def ks_diamond_es(pd_diamond_es):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
-    if not ks:
-        pytest.skip('Koalas not installed, skipping')
     entities = {}
     for entity in pd_diamond_es.entities:
         entities[entity.id] = (ks.from_pandas(pd_to_ks_clean(entity.df)), entity.index, None, entity.variable_types)
@@ -200,10 +195,9 @@ def dask_home_games_es(pd_home_games_es):
 
 @pytest.fixture
 def ks_home_games_es(pd_home_games_es):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
-    if not ks:
-        pytest.skip('Koalas not installed, skipping Koalas tests')
     entities = {}
     for entity in pd_home_games_es.entities:
         entities[entity.id] = (ks.from_pandas(pd_to_ks_clean(entity.df)), entity.index, None, entity.variable_types)
@@ -238,10 +232,9 @@ def dd_mock_customer(pd_mock_customer):
 
 @pytest.fixture
 def ks_mock_customer(pd_mock_customer):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
-    if not ks:
-        pytest.skip('Koalas not installed, skipping Koalas tests')
     ks_mock_customer = copy.deepcopy(pd_mock_customer)
     for entity in ks_mock_customer.entities:
         cleaned_df = pd_to_ks_clean(entity.df).reset_index(drop=True)

@@ -41,10 +41,7 @@ from featuretools.primitives import (
 )
 from featuretools.synthesis import DeepFeatureSynthesis
 from featuretools.tests.testing_utils import feature_with_name
-from featuretools.utils.gen_utils import import_or_none
 from featuretools.variable_types import Datetime, Numeric
-
-ks = import_or_none('databricks.koalas')
 
 
 @pytest.fixture(params=['pd_transform_es', 'dask_transform_es', 'koalas_transform_es'])
@@ -80,10 +77,9 @@ def dask_transform_es(pd_transform_es):
 
 @pytest.fixture
 def koalas_transform_es(pd_transform_es):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
-    if not ks:
-        pytest.skip('Koalas not installed, skipping')
     es = ft.EntitySet(id=pd_transform_es.id)
     for entity in pd_transform_es.entities:
         es.entity_from_dataframe(entity_id=entity.id,
