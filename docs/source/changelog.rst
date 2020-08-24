@@ -6,6 +6,7 @@ Changelog
     * Enhancements
     * Fixes
     * Changes
+        * Remove the ability to stack transform primitives (:pr:`1119`)
     * Documentation Changes
     * Testing Changes
         * Better test case for normalizing from no time index to time index (:pr:`1113`)
