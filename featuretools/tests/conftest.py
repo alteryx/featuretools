@@ -12,13 +12,14 @@ from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
 
 ks = import_or_none('databricks.koalas')
-SparkSession = import_or_none('pyspark.sql.SparkSession')
+sql = import_or_none('pyspark.sql')
 
 
 @pytest.fixture(scope='session', autouse=True)
 def spark_session():
-    if not SparkSession:
+    if not sql:
         return
+    SparkSession = sql.SparkSession
     spark = SparkSession.builder \
         .master('local[2]') \
         .config("spark.driver.extraJavaOptions", "-Dio.netty.tryReflectionSetAccessible=True") \
