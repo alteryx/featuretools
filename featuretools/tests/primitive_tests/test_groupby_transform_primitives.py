@@ -21,8 +21,7 @@ from featuretools.primitives.utils import (
     serialize_primitive
 )
 from featuretools.synthesis import dfs
-from featuretools.tests.testing_utils import feature_with_name
-from featuretools.variable_types import Datetime, DatetimeTimeIndex, Numeric
+from featuretools.variable_types import DatetimeTimeIndex, Numeric
 
 
 class TestCumCount:
@@ -353,30 +352,6 @@ def test_groupby_uses_calc_time(pd_es):
 
     for x, y in zip(df[time_since_product.get_name()], answers):
         assert ((pd.isnull(x) and pd.isnull(y)) or x == y)
-
-
-def test_groupby_multi_output_stacking(pd_es):
-    TestTime = make_trans_primitive(
-        function=lambda x: x,
-        name="test_time",
-        input_types=[Datetime],
-        return_type=Numeric,
-        number_output_features=6,
-    )
-
-    fl = dfs(
-        entityset=pd_es,
-        target_entity="sessions",
-        agg_primitives=[],
-        trans_primitives=[TestTime],
-        groupby_trans_primitives=[CumSum],
-        features_only=True,
-        max_depth=4)
-
-    for i in range(6):
-        f = 'CUM_SUM(customers.TEST_TIME(cancel_date)[%d]) by customers.cohort' % i
-        assert feature_with_name(fl, f)
-        assert ('CUM_SUM(customers.TEST_TIME(cancel_date)[%d]) by customers.cohort' % i) in fl
 
 
 def test_serialization(pd_es):

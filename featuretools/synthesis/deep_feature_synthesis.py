@@ -806,6 +806,8 @@ def check_transform_stacking(inputs):
     for f in inputs:
         if isinstance(f.primitive, TransformPrimitive):
             return False
+        if isinstance(f, DirectFeature) and isinstance(f.base_features[0].primitive, TransformPrimitive):
+            return False
     return True
 
 
