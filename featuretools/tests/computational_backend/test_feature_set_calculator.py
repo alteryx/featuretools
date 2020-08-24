@@ -38,8 +38,8 @@ from featuretools.primitives import (  # NMostCommon,
 from featuretools.primitives.base import AggregationPrimitive
 from featuretools.tests.testing_utils import backward_path, to_pandas
 from featuretools.utils import Trie
-from featuretools.variable_types import Numeric
 from featuretools.utils.gen_utils import import_or_none
+from featuretools.variable_types import Numeric
 
 ks = import_or_none('databricks.koalas')
 

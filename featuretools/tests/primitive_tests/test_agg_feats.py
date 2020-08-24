@@ -38,6 +38,7 @@ from featuretools.tests.testing_utils import (
     feature_with_name,
     to_pandas
 )
+from featuretools.utils.gen_utils import import_or_none
 from featuretools.variable_types import (
     Datetime,
     DatetimeTimeIndex,
@@ -46,7 +47,6 @@ from featuretools.variable_types import (
     Numeric,
     Variable
 )
-from featuretools.utils.gen_utils import import_or_none
 
 ks = import_or_none('databricks.koalas')
 

@@ -41,8 +41,8 @@ from featuretools.primitives import (
 )
 from featuretools.synthesis import DeepFeatureSynthesis
 from featuretools.tests.testing_utils import feature_with_name
-from featuretools.variable_types import Datetime, Numeric
 from featuretools.utils.gen_utils import import_or_none
+from featuretools.variable_types import Datetime, Numeric
 
 ks = import_or_none('databricks.koalas')
 

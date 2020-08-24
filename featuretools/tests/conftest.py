@@ -8,8 +8,8 @@ import pytest
 
 import featuretools as ft
 from featuretools.tests.testing_utils import make_ecommerce_entityset
-from featuretools.utils.koalas_utils import pd_to_ks_clean
 from featuretools.utils.gen_utils import import_or_none
+from featuretools.utils.koalas_utils import pd_to_ks_clean
 
 ks = import_or_none('databricks.koalas')
 SparkSession = import_or_none('pyspark.sql.SparkSession')

@@ -11,8 +11,8 @@ from featuretools.tests.testing_utils import (
     make_ecommerce_entityset,
     to_pandas
 )
-from featuretools.variable_types import find_variable_types
 from featuretools.utils.gen_utils import import_or_none
+from featuretools.variable_types import find_variable_types
 
 ks = import_or_none('databricks.koalas')
 

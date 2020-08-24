@@ -18,8 +18,8 @@ from featuretools.entityset import (
 )
 from featuretools.entityset.serialize import SCHEMA_VERSION
 from featuretools.tests.testing_utils import to_pandas
-from featuretools.utils.koalas_utils import pd_to_ks_clean
 from featuretools.utils.gen_utils import import_or_none
+from featuretools.utils.koalas_utils import pd_to_ks_clean
 
 ks = import_or_none('databricks.koalas')
 

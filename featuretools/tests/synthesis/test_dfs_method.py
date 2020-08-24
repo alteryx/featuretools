@@ -24,8 +24,8 @@ from featuretools.primitives import (
 )
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils import to_pandas
-from featuretools.variable_types import Numeric
 from featuretools.utils.gen_utils import import_or_none
+from featuretools.variable_types import Numeric
 
 ks = import_or_none('databricks.koalas')
 
