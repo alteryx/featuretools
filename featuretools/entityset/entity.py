@@ -436,7 +436,7 @@ class Entity(object):
 
     def set_time_index(self, variable_id, already_sorted=False):
         # check time type
-        if isinstance(self.df, dd.DataFrame) or self.df.empty:
+        if not isinstance(self.df, pd.DataFrame) or self.df.empty:
             time_to_check = vtypes.DEFAULT_DTYPE_VALUES[self[variable_id]._default_pandas_dtype]
         else:
             time_to_check = self.df[variable_id].iloc[0]
