@@ -11,6 +11,7 @@ from featuretools.feature_base import (
 )
 from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
 from featuretools.utils import entry_point
+import time
 
 
 @entry_point('featuretools_dfs')
@@ -240,6 +241,7 @@ def dfs(entities=None,
                            target_entity="transactions",
                            features_only=True)
     '''
+    start = time.time()
     if not isinstance(entityset, EntitySet):
         entityset = EntitySet("dfs", entities, relationships)
 
@@ -257,16 +259,24 @@ def dfs(entities=None,
                                       primitive_options=primitive_options,
                                       max_features=max_features,
                                       seed_features=seed_features)
-
+    make_dfs_obj = time.time()
+    print('time to build dfs obj', make_dfs_obj - start)
     features = dfs_object.build_features(
         verbose=verbose, return_variable_types=return_variable_types)
-
+    get_features = time.time()
+    print('time to make features', get_features - make_dfs_obj)
     trans, agg, groupby, where = _categorize_features(features)
+
+    categorize_features = time.time()
+    print('time to categorize', categorize_features - get_features)
 
     trans_unused = get_unused_primitives(trans_primitives, trans)
     agg_unused = get_unused_primitives(agg_primitives, agg)
     groupby_unused = get_unused_primitives(groupby_trans_primitives, groupby)
     where_unused = get_unused_primitives(where_primitives, where)
+
+    unused = time.time()
+    print('time to get unused', unused - categorize_features)
 
     unused_primitives = [trans_unused, agg_unused, groupby_unused, where_unused]
     if any(unused_primitives):
@@ -289,6 +299,8 @@ def dfs(entities=None,
                                               verbose=verbose,
                                               progress_callback=progress_callback,
                                               include_cutoff_time=include_cutoff_time)
+    build_fm = time.time()
+    print('time to build feature matrix', build_fm - unused)
     return feature_matrix, features
 
 
@@ -324,7 +336,7 @@ def _categorize_features(features):
     agg = []
     groupby = []
     where = []
-    explored = []
+    explored = set([])
 
     def get_feature_data(feature):
         if feature.get_name() in explored:
@@ -349,7 +361,7 @@ def _categorize_features(features):
         if feature_deps:
             dependencies.extend(feature_deps)
 
-        explored.append(feature.get_name())
+        explored.add(feature.get_name())
 
         for dep in dependencies:
             get_feature_data(dep)
