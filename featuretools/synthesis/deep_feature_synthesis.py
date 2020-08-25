@@ -550,8 +550,9 @@ class DeepFeatureSynthesis(object):
         if max_depth is not None:
             new_max_depth = max_depth - 1
 
-        # Avoid transform stacking by waiting to add features to all_features all at once
-        new_features = []
+        # Keep track of features to add until the end to avoid applying
+        # transform primitives to features that were also built by transform primitives
+        features_to_add = []
 
         for trans_prim in self.trans_primitives:
             current_options = self.primitive_options.get(
@@ -576,7 +577,7 @@ class DeepFeatureSynthesis(object):
                 if all(bf.number_output_features == 1 for bf in matching_input) and check_transform_stacking(matching_input):
                     new_f = TransformFeature(matching_input,
                                              primitive=trans_prim)
-                    new_features.append(new_f)
+                    features_to_add.append(new_f)
 
         for groupby_prim in self.groupby_trans_primitives:
             current_options = self.primitive_options.get(
@@ -622,8 +623,8 @@ class DeepFeatureSynthesis(object):
                         new_f = GroupByTransformFeature(list(matching_input),
                                                         groupby=groupby[0],
                                                         primitive=groupby_prim)
-                        new_features.append(new_f)
-        for new_f in new_features:
+                        features_to_add.append(new_f)
+        for new_f in features_to_add:
             self._handle_new_feature(all_features=all_features,
                                      new_feature=new_f)
 
@@ -806,6 +807,8 @@ def check_transform_stacking(inputs):
     for f in inputs:
         if isinstance(f.primitive, TransformPrimitive):
             return False
+        if isinstance(f, DirectFeature) and isinstance(f.base_features[0].primitive, TransformPrimitive):
+            return False
     return True
 
 
@@ -942,4 +945,11 @@ def _direct_of_entity(feature, parent_entity):
 
 
 def _sort_primitives(prim_list):
-    return sorted(prim_list, key=lambda prim: prim if isinstance(prim, str) else prim.name)
+    def get_sortby_string(prim):
+        if isinstance(prim, str):
+            return prim
+        if isinstance(prim, PrimitiveBase):
+            return prim.name + prim.get_args_string()
+        return prim.name
+
+    return sorted(prim_list, key=get_sortby_string)

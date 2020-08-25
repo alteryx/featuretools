@@ -24,6 +24,7 @@ from featuretools.primitives import (
     Equal,
     Hour,
     IsIn,
+    IsNull,
     Last,
     Mean,
     Mode,
@@ -1415,7 +1416,7 @@ def test_primitive_ordering():
 
     trans_prims = [AddNumeric, Absolute, 'divide_numeric', NotEqual, 'is_null']
     groupby_trans_prim = ['cum_mean', CumMin, CumSum]
-    agg_prims = [NMostCommon(n=3), Sum, 'min', 'max']
+    agg_prims = [NMostCommon(n=3), Sum, Mean, Mean(skipna=False), 'min', 'max']
     where_prims = ['count', Sum]
 
     seed_num_chars = ft.Feature(es['customers']['favorite_quote'], primitive=NumCharacters)

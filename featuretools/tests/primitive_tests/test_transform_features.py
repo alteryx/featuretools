@@ -58,6 +58,7 @@ from featuretools.primitives.utils import (
     serialize_primitive
 )
 from featuretools.synthesis.deep_feature_synthesis import match
+from featuretools.tests.testing_utils import feature_with_name
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
 
@@ -1029,7 +1030,7 @@ def test_make_transform_multiple_output_features(pd_es):
     fm, fl = ft.dfs(
         entityset=pd_es,
         target_entity="log",
-        agg_primitives=[],
+        agg_primitives=['sum'],
         trans_primitives=[TestTime, Year, Month, Day, Hour, Minute, Second, Diff],
         max_depth=5)
 
@@ -1037,6 +1038,11 @@ def test_make_transform_multiple_output_features(pd_es):
     altnames = [f.get_name() for f in alt_features]
     for col1, col2 in zip(subnames, altnames):
         assert (fm[col1] == fm[col2]).all()
+
+    for i in range(6):
+        f = 'sessions.customers.SUM(log.TEST_TIME(datetime)[%d])' % i
+        assert feature_with_name(fl, f)
+        assert ('products.DIFF(SUM(log.TEST_TIME(datetime)[%d]))' % i) in fl
 
 
 def test_feature_names_inherit_from_make_trans_primitive():
