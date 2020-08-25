@@ -1472,20 +1472,25 @@ def test_no_transform_stacking():
                           agg_primitives=['sum'],
                           max_depth=4,
                           features_only=2)
-    assert len(feature_defs) == 15
+    expected = [
+        'first_id',
+        'B',
+        '-(B)',
+        'first.A',
+        'first.SUM(second.B)',
+        'first.-(A)',
+        'B + first.A',
+        'first.SUM(second.-(B))',
+        'first.A + SUM(second.B)',
+        'first.-(SUM(second.B))',
+        'B + first.SUM(second.B)',
+        'first.A + SUM(second.-(B))',
+        'first.SUM(second.-(B)) + SUM(second.B)',
+        'first.-(SUM(second.-(B)))',
+        'B + first.SUM(second.-(B))'
+    ]
 
-    assert feature_with_name(feature_defs, 'first_id')
-    assert feature_with_name(feature_defs, 'B')
-    assert feature_with_name(feature_defs, '-(B)')
-    assert feature_with_name(feature_defs, 'first.A')
-    assert feature_with_name(feature_defs, 'first.SUM(second.B)')
-    assert feature_with_name(feature_defs, 'first.-(A)')
-    assert feature_with_name(feature_defs, 'B + first.A')
-    assert feature_with_name(feature_defs, 'first.SUM(second.-(B))')
-    assert feature_with_name(feature_defs, 'first.A + SUM(second.B)')
-    assert feature_with_name(feature_defs, 'first.-(SUM(second.B))')
-    assert feature_with_name(feature_defs, 'B + first.SUM(second.B)')
-    assert feature_with_name(feature_defs, 'first.A + SUM(second.-(B))')
-    assert feature_with_name(feature_defs, 'first.SUM(second.-(B)) + SUM(second.B)')
-    assert feature_with_name(feature_defs, 'first.-(SUM(second.-(B)))')
-    assert feature_with_name(feature_defs, 'B + first.SUM(second.-(B))')
+    assert len(feature_defs) == len(expected)
+
+    for feature_name in expected:
+        assert feature_with_name(feature_defs, feature_name)
