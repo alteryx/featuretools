@@ -252,6 +252,8 @@ class Entity(object):
         else:
             if isinstance(instance_vals, dd.Series) or isinstance(instance_vals, ks.Series):
                 df = self.df.merge(instance_vals.to_frame(), how="inner", on=variable_id)
+            elif isinstance(instance_vals, pd.Series) and isinstance(self.df, ks.DataFrame):
+                df = self.df.merge(ks.DataFrame({variable_id: instance_vals}), how="inner", on=variable_id)
             else:
                 df = self.df[self.df[variable_id].isin(instance_vals)]
 
