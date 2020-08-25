@@ -100,7 +100,7 @@ jobs:
           python -m pip install --upgrade pip
       - when:
           condition: 
-            equal: [ "complete", << parameters.optional_libraries >> ]
+            equal: [ "optional", << parameters.optional_libraries >> ]
           steps:
             - run: |
                 source venv/bin/activate
@@ -108,7 +108,7 @@ jobs:
                 python -m pip install -r unpacked_sdist/test-requirements.txt
       - unless:
           condition:
-            equal: ["complete", << parameters.optional_libraries >> ]
+            equal: ["optional", << parameters.optional_libraries >> ]
           steps:
             - run: |
                 source venv/bin/activate
@@ -149,7 +149,7 @@ jobs:
       - run: sudo apt update && sudo apt install -y graphviz
       - when:
           condition:
-            equal: ["complete", << parameters.optional_libraries >>]
+            equal: ["optional", << parameters.optional_libraries >>]
           steps:
             - run: |
                 sudo apt install -y openjdk-11-jre-headless
@@ -161,7 +161,7 @@ jobs:
           condition:
             and:
               - equal: [ "3.6", << parameters.image_tag >> ]
-              - equal: ["complete", << parameters.optional_libraries >>]
+              - equal: ["optional", << parameters.optional_libraries >>]
           steps:
             - run: |
                 source venv/bin/activate
@@ -177,7 +177,7 @@ jobs:
           condition:
             and: 
               - equal: [ "3.6", << parameters.image_tag >> ]
-              - equal: ["complete", << parameters.optional_libraries >>]
+              - equal: ["optional", << parameters.optional_libraries >>]
           steps:
             - run: |
                 source venv/bin/activate
@@ -271,13 +271,13 @@ workflows:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
-              optional_libraries: ["minimal", "complete"]
+              optional_libraries: ["minimal", "optional"]
           name: << matrix.image_tag >> install featuretools << matrix.optional_libraries >>
       - unit_tests:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
-              optional_libraries: ["minimal", "complete"]
+              optional_libraries: ["minimal", "optional"]
           name: << matrix.image_tag >> unit tests << matrix.optional_libraries >>
           requires:
             - << matrix.image_tag >> install featuretools << matrix.optional_libraries >>
@@ -287,14 +287,14 @@ workflows:
               image_tag: ["3.8", "3.7", "3.6"]
           name: << matrix.image_tag >> lint test
           requires:
-            - << matrix.image_tag >> install featuretools complete
+            - << matrix.image_tag >> install featuretools optional
       - build_docs:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
           name: build docs << matrix.image_tag >>
           requires:
-            - << matrix.image_tag >> install featuretools complete
+            - << matrix.image_tag >> install featuretools optional
       - install_ft_complete:
           matrix:
             parameters:
