@@ -5,13 +5,14 @@ Changelog
 **Future Release**
     * Enhancements
     * Fixes
+        * Fix ``encode_features`` converting excluded feature columns to a numeric dtype (:pr:`1123`)
     * Changes
     * Documentation Changes
     * Testing Changes
         * Better test case for normalizing from no time index to time index (:pr:`1113`)
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`
+    :user:`rwedge`, :user:`tamargrey`
 
 **v0.18.1 Aug 12, 2020**
     * Fixes
