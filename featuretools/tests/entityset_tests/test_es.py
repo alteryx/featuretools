@@ -4,7 +4,6 @@ import sys
 from datetime import datetime
 
 import dask.dataframe as dd
-import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pytest
@@ -19,7 +18,10 @@ from featuretools.entityset import (
 )
 from featuretools.entityset.serialize import SCHEMA_VERSION
 from featuretools.tests.testing_utils import to_pandas
+from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
+
+ks = import_or_none('databricks.koalas')
 
 
 def test_normalize_time_index_as_additional_variable(es):
@@ -40,7 +42,7 @@ def test_operations_invalidate_metadata(es):
     assert new_es._data_description is None
     assert new_es.metadata is not None  # generated after access
     assert new_es._data_description is not None
-    if isinstance(es['customers'].df, (dd.DataFrame, ks.DataFrame)):
+    if not isinstance(es['customers'].df, pd.DataFrame):
         customers_vtypes = es["customers"].variable_types
         customers_vtypes['signup_date'] = variable_types.Datetime
     else:
@@ -49,7 +51,7 @@ def test_operations_invalidate_metadata(es):
                                  es["customers"].df,
                                  index=es["customers"].index,
                                  variable_types=customers_vtypes)
-    if isinstance(es['sessions'].df, (dd.DataFrame, ks.DataFrame)):
+    if not isinstance(es['sessions'].df, pd.DataFrame):
         sessions_vtypes = es["sessions"].variable_types
     else:
         sessions_vtypes = None
@@ -113,7 +115,7 @@ def test_add_relationships_convert_type(es):
 
 # TODO: Koalas does not support categorical types
 def test_add_relationship_errors_on_dtype_mismatch(es):
-    if isinstance(es['customers'].df, ks.DataFrame):
+    if ks and isinstance(es['customers'].df, ks.DataFrame):
         pytest.xfail('Koalas does not support categorical types')
     log_2_df = es['log'].df.copy()
     log_variable_types = {
@@ -232,6 +234,7 @@ def dd_df(pd_df):
 
 @pytest.fixture
 def ks_df(pd_df):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
     return ks.from_pandas(pd_df)
@@ -298,6 +301,7 @@ def dd_df2(pd_df2):
 
 @pytest.fixture
 def ks_df2(pd_df2):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
     return ks.from_pandas(pd_df2)
@@ -333,6 +337,7 @@ def dd_df3(pd_df3):
 
 @pytest.fixture
 def ks_df3(pd_df3):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
     return ks.from_pandas(pd_df3)
@@ -394,6 +399,7 @@ def dd_df4(pd_df4):
 
 @pytest.fixture
 def ks_df4(pd_df4):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
     return ks.from_pandas(pd_to_ks_clean(pd_df4))
@@ -408,7 +414,7 @@ def test_converts_variable_types_on_init(df4):
     vtypes = {'id': variable_types.Categorical,
               'ints': variable_types.Numeric,
               'floats': variable_types.Numeric}
-    if isinstance(df4, (dd.DataFrame, ks.DataFrame)):
+    if not isinstance(df4, pd.DataFrame):
         vtypes['category'] = variable_types.Categorical
         vtypes['category_int'] = variable_types.Categorical
     es = EntitySet(id='test')
@@ -425,10 +431,10 @@ def test_converts_variable_types_on_init(df4):
 
 
 def test_converts_variable_type_after_init(df4):
-    if isinstance(df4, ks.DataFrame):
+    if ks and isinstance(df4, ks.DataFrame):
         pytest.xfail("Koalas doesn't support category dtype")
     df4["category"] = df4["category"].astype("category")
-    if isinstance(df4, (dd.DataFrame, ks.DataFrame)):
+    if not isinstance(df4, pd.DataFrame):
         vtypes = {'id': variable_types.Categorical,
                   'category': variable_types.Categorical,
                   'category_int': variable_types.Categorical,
@@ -490,6 +496,7 @@ def dd_datetime1(pd_datetime1):
 
 @pytest.fixture
 def ks_datetime1(pd_datetime1):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
     return ks.from_pandas(pd_datetime1)
@@ -535,6 +542,7 @@ def dd_datetime2(pd_datetime2):
 
 @pytest.fixture
 def ks_datetime2(pd_datetime2):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
     return ks.from_pandas(pd_datetime2)
@@ -595,11 +603,11 @@ def test_entity_init(es):
                        'number': [4, 5, 6]})
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
         df = dd.from_pandas(df, npartitions=2)
-    if any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    if ks and any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
         df = ks.from_pandas(df)
 
     vtypes = {'time': variable_types.Datetime}
-    if isinstance(df, (dd.DataFrame, ks.DataFrame)):
+    if not isinstance(df, pd.DataFrame):
         extra_vtypes = {
             'id': variable_types.Categorical,
             'category': variable_types.Categorical,
@@ -622,7 +630,7 @@ def test_entity_init(es):
     assert set([v.id for v in es['test_entity'].variables]) == set(df.columns)
 
     assert es['test_entity'].df['time'].dtype == df['time'].dtype
-    if isinstance(es['test_entity'].df, ks.DataFrame):
+    if ks and isinstance(es['test_entity'].df, ks.DataFrame):
         assert set(es['test_entity'].df['id'].to_list()) == set(df['id'].to_list())
     else:
         assert set(es['test_entity'].df['id']) == set(df['id'])
@@ -693,7 +701,7 @@ def test_concat_entitysets(es):
         pytest.xfail("Dask has no .equals method and issue with categoricals "
                      "and add_last_time_indexes")
         df = dd.from_pandas(df, npartitions=2)
-    if any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
+    if ks and any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
         pytest.xfail("Koalas deepcopy fails")
         df = ks.from_pandas(df)
 
@@ -795,6 +803,7 @@ def dd_transactions_df(pd_transactions_df):
 
 @pytest.fixture
 def ks_transactions_df(pd_transactions_df):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
     return ks.from_pandas(pd_transactions_df)
@@ -810,9 +819,9 @@ def test_set_time_type_on_init(transactions_df):
     cards_df = pd.DataFrame({"id": [1, 2, 3, 4, 5]})
     if isinstance(transactions_df, dd.DataFrame):
         cards_df = dd.from_pandas(cards_df, npartitions=3)
-    if isinstance(transactions_df, ks.DataFrame):
+    if ks and isinstance(transactions_df, ks.DataFrame):
         cards_df = ks.from_pandas(cards_df)
-    if isinstance(transactions_df, (dd.DataFrame, ks.DataFrame)):
+    if not isinstance(transactions_df, pd.DataFrame):
         cards_vtypes = {'id': variable_types.Categorical}
         transactions_vtypes = {
             'id': variable_types.Categorical,
@@ -845,9 +854,9 @@ def test_sets_time_when_adding_entity(transactions_df):
                                                        "editable"]})
     if isinstance(transactions_df, dd.DataFrame):
         accounts_df = dd.from_pandas(accounts_df, npartitions=2)
-    if isinstance(transactions_df, ks.DataFrame):
+    if ks and isinstance(transactions_df, ks.DataFrame):
         accounts_df = ks.from_pandas(accounts_df)
-    if isinstance(transactions_df, (dd.DataFrame, ks.DataFrame)):
+    if not isinstance(transactions_df, pd.DataFrame):
         accounts_vtypes = {'id': variable_types.Categorical, 'signup_date': variable_types.Datetime}
         transactions_vtypes = {
             'id': variable_types.Categorical,
@@ -1144,7 +1153,7 @@ def test_normalize_entity_same_index(es):
 
 # TODO: normalize entity fails with Dask, doesn't specify all vtypes when creating new entity
 def test_secondary_time_index(es):
-    if any(isinstance(entity.df, (dd.DataFrame, ks.DataFrame)) for entity in es.entities):
+    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
         pytest.xfail('vtype error when attempting to normalize entity')
     es.normalize_entity('log', 'values', 'value',
                         make_time_index=True,
@@ -1201,6 +1210,7 @@ def dd_datetime3(pd_datetime3):
 
 @pytest.fixture
 def ks_datetime3(pd_datetime3):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
     return ks.from_pandas(pd_datetime3)
@@ -1214,12 +1224,12 @@ def datetime3(request):
 def test_datetime64_conversion(datetime3):
     df = datetime3
     df["time"] = pd.Timestamp.now()
-    if isinstance(df, ks.DataFrame):
+    if ks and isinstance(df, ks.DataFrame):
         df['time'] = df['time'].astype(np.datetime64)
     else:
         df["time"] = df["time"].astype("datetime64[ns, UTC]")
 
-    if isinstance(df, (dd.DataFrame, ks.DataFrame)):
+    if not isinstance(df, pd.DataFrame):
         vtypes = {
             'id': variable_types.Categorical,
             'ints': variable_types.Numeric,
@@ -1315,6 +1325,7 @@ def dd_index_df(pd_index_df):
 
 @pytest.fixture
 def ks_index_df(pd_index_df):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
     return ks.from_pandas(pd_index_df)
@@ -1326,7 +1337,7 @@ def index_df(request):
 
 
 def test_same_index_values(index_df):
-    if isinstance(index_df, (dd.DataFrame, ks.DataFrame)):
+    if not isinstance(index_df, pd.DataFrame):
         vtypes = {
             'id': variable_types.Categorical,
             'transaction_time': variable_types.Datetime,
@@ -1359,7 +1370,7 @@ def test_same_index_values(index_df):
 
 
 def test_use_time_index(index_df):
-    if isinstance(index_df, (dd.DataFrame, ks.DataFrame)):
+    if not isinstance(index_df, pd.DataFrame):
         bad_vtypes = {
             'id': variable_types.Categorical,
             'transaction_time': variable_types.DatetimeTimeIndex,

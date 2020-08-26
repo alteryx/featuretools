@@ -3,7 +3,6 @@ import sys
 import pandas as pd
 import pytest
 from dask import dataframe as dd
-from databricks import koalas as ks
 
 import featuretools as ft
 from featuretools import EntitySet, Relationship, variable_types
@@ -150,6 +149,7 @@ def dd_employee_df(pd_employee_df):
 
 @pytest.fixture
 def ks_employee_df(pd_employee_df):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
     return ks.from_pandas(pd_employee_df)
