@@ -273,7 +273,9 @@ def test_compare_of_identity(es):
     for test in to_test:
         features.append(ft.Feature(es['log']['value'], primitive=test[0](10)))
 
-    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3]))
+    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2, 3]),
+                   index='id',
+                   sort_index=True)
 
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
@@ -686,7 +688,9 @@ def test_text_primitives(es):
 
     features = [words, chars]
 
-    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15)))
+    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(15)),
+                   index='id',
+                   sort_index=True)
 
     word_counts = [514, 3, 3, 644, 1268, 1269, 177, 172, 79,
                    240, 1239, 3, 3, 3, 3]
@@ -704,7 +708,9 @@ def test_text_primitives(es):
 def test_isin_feat(es):
     isin = ft.Feature(es['log']['product_id'], primitive=IsIn(list_of_outputs=["toothpaste", "coke zero"]))
     features = [isin]
-    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)))
+    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)),
+                   index='id',
+                   sort_index=True)
     true = [True, True, True, False, False, True, True, True]
     v = df[isin.get_name()].values.tolist()
     assert true == v
@@ -713,7 +719,9 @@ def test_isin_feat(es):
 def test_isin_feat_other_syntax(es):
     isin = ft.Feature(es['log']['product_id']).isin(["toothpaste", "coke zero"])
     features = [isin]
-    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)))
+    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)),
+                   index='id',
+                   sort_index=True)
     true = [True, True, True, False, False, True, True, True]
     v = df[isin.get_name()].values.tolist()
     assert true == v
@@ -722,7 +730,9 @@ def test_isin_feat_other_syntax(es):
 def test_isin_feat_other_syntax_int(es):
     isin = ft.Feature(es['log']['value']).isin([5, 10])
     features = [isin]
-    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)))
+    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)),
+                   index='id',
+                   sort_index=True)
     true = [False, True, True, False, False, False, False, False]
     v = df[isin.get_name()].values.tolist()
     assert true == v
@@ -749,21 +759,27 @@ def test_isin_feat_custom(es):
 
     isin = ft.Feature(es['log']['product_id'], primitive=IsIn(list_of_outputs=["toothpaste", "coke zero"]))
     features = [isin]
-    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)))
+    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)),
+                   index='id',
+                   sort_index=True)
     true = [True, True, True, False, False, True, True, True]
     v = df[isin.get_name()].values.tolist()
     assert true == v
 
     isin = ft.Feature(es['log']['product_id']).isin(["toothpaste", "coke zero"])
     features = [isin]
-    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)))
+    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)),
+                   index='id',
+                   sort_index=True)
     true = [True, True, True, False, False, True, True, True]
     v = df[isin.get_name()].values.tolist()
     assert true == v
 
     isin = ft.Feature(es['log']['value']).isin([5, 10])
     features = [isin]
-    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)))
+    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=range(8)),
+                   index='id',
+                   sort_index=True)
     true = [False, True, True, False, False, False, False, False]
     v = df[isin.get_name()].values.tolist()
     assert true == v

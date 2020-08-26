@@ -159,7 +159,9 @@ def test_override_cmp_from_variable(es):
 
     features = [count_lo]
 
-    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2]))
+    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2]),
+                   index='id',
+                   sort_index=True)
     v = df[count_lo.get_name()].values.tolist()
     for i, test in enumerate(to_test):
         assert v[i] == test

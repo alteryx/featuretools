@@ -188,7 +188,7 @@ def test_single_table_ks_entityset():
                    target_entity="data",
                    trans_primitives=primitives_list)
 
-    ks_computed_fm = ks_fm.to_pandas().loc[fm.index][fm.columns]
+    ks_computed_fm = ks_fm.to_pandas().set_index('id').loc[fm.index][fm.columns]
     # NUM_WORDS(strings) is int32 in koalas for some reason
     pd.testing.assert_frame_equal(fm, ks_computed_fm, check_dtype=False)
 
