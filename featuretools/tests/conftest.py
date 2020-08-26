@@ -3,23 +3,21 @@ import sys
 
 import dask
 import dask.dataframe as dd
-import databricks.koalas as ks
 import pandas as pd
 import pytest
-from pyspark.sql import SparkSession
 
 import featuretools as ft
 from featuretools.tests.testing_utils import make_ecommerce_entityset
+from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
 
 
 @pytest.fixture(scope='session', autouse=True)
-def spark_session(request):
-    ''' fixture for creating a spark context
-    Args:
-        request: pytest.fixtureRequest object
-    '''
-    spark = SparkSession.builder \
+def spark_session():
+    sql = import_or_none('pyspark.sql')
+    if not sql:
+        return
+    spark = sql.SparkSession.builder \
         .master('local[2]') \
         .config("spark.driver.extraJavaOptions", "-Dio.netty.tryReflectionSetAccessible=True") \
         .config("spark.sql.shuffle.partitions", "2") \
@@ -59,6 +57,7 @@ def dask_es(make_es):
 
 @pytest.fixture
 def ks_es(make_es):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
     ks_es = copy.deepcopy(make_es)
@@ -141,6 +140,7 @@ def dask_diamond_es(pd_diamond_es):
 
 @pytest.fixture
 def ks_diamond_es(pd_diamond_es):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
     entities = {}
@@ -195,6 +195,7 @@ def dask_home_games_es(pd_home_games_es):
 
 @pytest.fixture
 def ks_home_games_es(pd_home_games_es):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
     entities = {}
@@ -231,6 +232,7 @@ def dd_mock_customer(pd_mock_customer):
 
 @pytest.fixture
 def ks_mock_customer(pd_mock_customer):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
     if sys.platform.startswith('win'):
         pytest.skip('skipping Koalas tests for Windows')
     ks_mock_customer = copy.deepcopy(pd_mock_customer)

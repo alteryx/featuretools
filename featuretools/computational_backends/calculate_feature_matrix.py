@@ -8,7 +8,6 @@ from datetime import datetime
 
 import cloudpickle
 import dask.dataframe as dd
-import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 
@@ -28,8 +27,14 @@ from featuretools.computational_backends.utils import (
 from featuretools.entityset.relationship import RelationshipPath
 from featuretools.feature_base import AggregationFeature, FeatureBase
 from featuretools.utils import Trie
-from featuretools.utils.gen_utils import make_tqdm_iterator
+from featuretools.utils.gen_utils import (
+    import_or_none,
+    is_instance,
+    make_tqdm_iterator
+)
 from featuretools.variable_types import NumericTimeIndex
+
+ks = import_or_none('databricks.koalas')
 
 logger = logging.getLogger('featuretools.computational_backend')
 
@@ -177,7 +182,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
         if isinstance(instance_ids, dd.Series):
             instance_ids = instance_ids.compute()
-        if isinstance(instance_ids, ks.Series):
+        if is_instance(instance_ids, ks, 'Series'):
             instance_ids = instance_ids.to_pandas()
 
         # convert list or range object into series
@@ -421,7 +426,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                                                training_window=window,
                                                include_cutoff_time=include_cutoff_time)
 
-                if isinstance(_feature_matrix, (dd.DataFrame, ks.DataFrame)):
+                if is_instance(_feature_matrix, (dd, ks), 'DataFrame'):
                     id_name = _feature_matrix.columns[-1]
                 else:
                     id_name = _feature_matrix.index.name
@@ -458,7 +463,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                             pass_df = dd.from_pandas(pass_through[[id_name, 'time', col]], npartitions=_feature_matrix.npartitions)
                             _feature_matrix = _feature_matrix.merge(pass_df, how="outer")
                         _feature_matrix = _feature_matrix.drop(columns=['time'])
-                    elif isinstance(_feature_matrix, ks.DataFrame) and (len(pass_columns) > 0):
+                    elif is_instance(_feature_matrix, ks, 'DataFrame') and (len(pass_columns) > 0):
                         _feature_matrix['time'] = time_last
                         for col in pass_columns:
                             pass_df = ks.from_pandas(pass_through[[id_name, 'time', col]])
@@ -468,7 +473,7 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
 
     if any(isinstance(fm, dd.DataFrame) for fm in feature_matrix):
         feature_matrix = dd.concat(feature_matrix)
-    elif any(isinstance(fm, ks.DataFrame) for fm in feature_matrix):
+    elif any(is_instance(fm, ks, 'DataFrame') for fm in feature_matrix):
         feature_matrix = ks.concat(feature_matrix)
     else:
         feature_matrix = pd.concat(feature_matrix)

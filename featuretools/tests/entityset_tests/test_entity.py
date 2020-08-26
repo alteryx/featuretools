@@ -1,6 +1,5 @@
 from datetime import datetime
 
-import databricks.koalas as ks
 import numpy as np
 import pandas as pd
 import pytest
@@ -12,7 +11,10 @@ from featuretools.tests.testing_utils import (
     make_ecommerce_entityset,
     to_pandas
 )
+from featuretools.utils.gen_utils import import_or_none
 from featuretools.variable_types import find_variable_types
+
+ks = import_or_none('databricks.koalas')
 
 
 def test_enforces_variable_id_is_str(es):
@@ -85,7 +87,7 @@ def test_eq(es):
 
 def test_update_data(es):
     df = es['customers'].df.copy()
-    if isinstance(df, ks.DataFrame):
+    if ks and isinstance(df, ks.DataFrame):
         df['new'] = [1, 2, 3]
     else:
         df['new'] = pd.Series([1, 2, 3])
@@ -104,7 +106,7 @@ def test_update_data(es):
     updated_id.iloc[1] = 2
     updated_id.iloc[2] = 1
 
-    if isinstance(df, ks.DataFrame):
+    if ks and isinstance(df, ks.DataFrame):
         df["id"] = updated_id.to_list()
         df = df.sort_index()
     else:
@@ -121,7 +123,7 @@ def test_update_data(es):
     updated_signup = to_pandas(df['signup_date'])
     updated_signup.iloc[0] = datetime(2011, 4, 11)
 
-    if isinstance(df, ks.DataFrame):
+    if ks and isinstance(df, ks.DataFrame):
         df['signup_date'] = updated_signup.to_list()
         df = df.sort_index()
     else:
