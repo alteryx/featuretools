@@ -1,5 +1,5 @@
 click==7.1.2
-cloudpickle==1.5.0
+cloudpickle==1.6.0
 dask==2.24.0
 distributed==2.24.0
 numpy==1.19.1
