@@ -184,7 +184,7 @@ class DeepFeatureSynthesis(object):
                 agg_primitives = [p for p in agg_primitives if p.dask_compatible]
         self.agg_primitives = []
         agg_prim_dict = primitives.get_aggregation_primitives()
-        for a in _sort_primitives(agg_primitives):
+        for a in agg_primitives:
             if isinstance(a, str):
                 if a.lower() not in agg_prim_dict:
                     raise ValueError("Unknown aggregation primitive {}. ".format(a),
@@ -196,20 +196,22 @@ class DeepFeatureSynthesis(object):
                 raise ValueError("Primitive {} in agg_primitives is not an "
                                  "aggregation primitive".format(type(a)))
             self.agg_primitives.append(a)
+        self.agg_primitives.sort()
 
         if trans_primitives is None:
             trans_primitives = primitives.get_default_transform_primitives()
             if any(isinstance(e.df, dd.DataFrame) for e in self.es.entities):
                 trans_primitives = [p for p in trans_primitives if p.dask_compatible]
         self.trans_primitives = []
-        for t in _sort_primitives(trans_primitives):
+        for t in trans_primitives:
             t = check_trans_primitive(t)
             self.trans_primitives.append(t)
+        self.trans_primitives.sort()
 
         if where_primitives is None:
             where_primitives = [primitives.Count]
         self.where_primitives = []
-        for p in _sort_primitives(where_primitives):
+        for p in where_primitives:
             if isinstance(p, str):
                 prim_obj = agg_prim_dict.get(p.lower(), None)
                 if prim_obj is None:
@@ -219,13 +221,15 @@ class DeepFeatureSynthesis(object):
                 p = prim_obj
             p = handle_primitive(p)
             self.where_primitives.append(p)
+        self.where_primitives.sort()
 
         if groupby_trans_primitives is None:
             groupby_trans_primitives = []
         self.groupby_trans_primitives = []
-        for p in _sort_primitives(groupby_trans_primitives):
+        for p in groupby_trans_primitives:
             p = check_trans_primitive(p)
             self.groupby_trans_primitives.append(p)
+        self.groupby_trans_primitives.sort()
 
         if primitive_options is None:
             primitive_options = {}
@@ -942,14 +946,3 @@ def _features_have_same_path(input_features):
 def _direct_of_entity(feature, parent_entity):
     return isinstance(feature, DirectFeature) \
         and feature.parent_entity.id == parent_entity.id
-
-
-def _sort_primitives(prim_list):
-    def get_sortby_string(prim):
-        if isinstance(prim, str):
-            return prim
-        if isinstance(prim, PrimitiveBase):
-            return prim.name + prim.get_args_string()
-        return prim.name
-
-    return sorted(prim_list, key=get_sortby_string)

@@ -45,6 +45,9 @@ class PrimitiveBase(object):
             self._method = self.get_function()
             return self._method(*series_args, **kwargs)
 
+    def __lt__(self, other):
+        return (self.name + self.get_args_string()) < (other.name + other.get_args_string())
+
     def generate_name(self):
         raise NotImplementedError("Subclass must implement")
 
