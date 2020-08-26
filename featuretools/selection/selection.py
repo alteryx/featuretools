@@ -20,21 +20,31 @@ def remove_low_information_features(feature_matrix, features=None):
     return feature_matrix
 
 
-def find_highly_null_features():
+'''
+The three functions below use logic from EvalML DataChecks
+'''
+
+
+def find_highly_null_features(feature_matrix, pct_null_threshold=0.95):
     """
     Determine features from a feature matrix that have higher than a set threshold
     of null values.
 
     Args:
-        feature_matrix (:class:`pd.DataFrame`): DataFrame whose columns are feature names and rows are instances 
+        feature_matrix (:class:`pd.DataFrame`): DataFrame whose columns are feature names and rows are instances
         pct_null_threshold (float): If the percentage of NaN values in an input feature exceeds this amount,
                 that feature will be considered highly-null. Defaults to 0.95.
 
     Returns:
-        List of feature names 
+        List of featxure names that will match columns in the inputted feature matrix
+        where the null percentage was above the set threshold
 
     """
-    pass
+    if pct_null_threshold < 0 or pct_null_threshold > 1:
+        raise ValueError("pct_null_threshold must be a float between 0 and 1, inclusive.")
+
+    percent_null_by_col = (feature_matrix.isnull().mean()).to_dict()
+    return [f_name for f_name, pct_null in percent_null_by_col.items() if pct_null > pct_null_threshold]
 
 
 def find_single_value_features(feature_matrix, count_nan_as_value=False):
@@ -48,21 +58,23 @@ def find_single_value_features(feature_matrix, count_nan_as_value=False):
                     counted as only having a single unique value. Defaults to False.
 
     Returns:
-        List/Set (?) of feature names/features (?) of all the single value features
+        List of feature names of all the single value features - note None is not counted
+        as a value, so "single value" is either 0 or 1 unique values
     """
-    pass
+    unique_counts_by_col = feature_matrix.nunique(dropna=not count_nan_as_value).to_dict()
+    return [f_name for f_name, unique_count in unique_counts_by_col.items() if unique_count <= 1]
 
 
 def find_highly_correlated_features(feature_matrix, pct_corr_threshold=0.95, cols_to_check=None, cols_to_exclude=None):
     """
-    Determines whether pairs of features are highly correlated with one another. 
+    Determines whether pairs of features are highly correlated with one another.
 
     Args:
         feature_matrix (:class:`pd.DataFrame`): DataFrame whose columns are feature names and rows are instances
         pct_corr_threshold (float): The correlation threshold to be considered highly correlated. Defaults to 0.95.
-        cols_to_check (list[str], optional): List of column names to check whether any pairs are highly correlated. 
+        cols_to_check (list[str], optional): List of column names to check whether any pairs are highly correlated.
                     If null, defaults to checking all columns.
-        cols_to_exclude list[str], optional): List of colum names to not check correlation between. 
+        cols_to_exclude list[str], optional): List of colum names to not check correlation between.
                     If null, will not exclude any columns.
 
     Returns:
