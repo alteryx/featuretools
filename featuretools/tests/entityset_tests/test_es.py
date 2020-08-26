@@ -186,7 +186,7 @@ def test_query_by_id_with_time(es):
         instance_vals=[0, 1, 2, 3, 4],
         time_last=datetime(2011, 4, 9, 10, 30, 2 * 6))
     df = to_pandas(df)
-    if isinstance(es['log'].df, ks.DataFrame):
+    if ks and isinstance(es['log'].df, ks.DataFrame):
         # Koalas doesn't maintain order
         df = df.sort_values('id')
 
@@ -201,7 +201,7 @@ def test_query_by_variable_with_time(es):
 
     true_values = [
         i * 5 for i in range(5)] + [i * 1 for i in range(4)] + [0]
-    if isinstance(es['log'].df, ks.DataFrame):
+    if ks and isinstance(es['log'].df, ks.DataFrame):
         # Koalas doesn't maintain order
         df = df.sort_values('id')
 
