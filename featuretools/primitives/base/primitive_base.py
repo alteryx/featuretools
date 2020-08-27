@@ -79,13 +79,13 @@ class PrimitiveBase(object):
 
         args = signature(self.__class__).parameters.items()
         for name, arg in args:
-            # assert that arg is attribute of primitive
-            error = '"{}" must be attribute of {}'
-            assert hasattr(self, name), error.format(name, self.__class__.__name__)
-
             # skip if not a standard argument (e.g. excluding *args and **kwargs)
             if arg.kind != arg.POSITIONAL_OR_KEYWORD:
                 continue
+
+            # assert that arg is attribute of primitive
+            error = '"{}" must be attribute of {}'
+            assert hasattr(self, name), error.format(name, self.__class__.__name__)
 
             value = getattr(self, name)
             # check if args are the same type

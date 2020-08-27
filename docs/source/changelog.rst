@@ -7,9 +7,14 @@ Changelog
     * Fixes
     * Changes
         * Remove the ability to stack transform primitives (:pr:`1119`)
+        * Sort primitives passed to ``dfs`` to get consistent ordering of features\* (:pr:`1119`)
     * Documentation Changes
     * Testing Changes
         * Better test case for normalizing from no time index to time index (:pr:`1113`)
+
+    \*When passing multiple instances of a primitive built with ``make_<trans/agg>_primitive``, 
+     those instances must have the same relative order when passed
+     to ``dfs`` to ensure the order of features the same between runs
 
     Thanks to the following people for contributing to this release:
     :user:`tamargrey`
