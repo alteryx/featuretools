@@ -44,8 +44,11 @@ def find_highly_null_features(feature_matrix, pct_null_threshold=0.95):
         raise ValueError("pct_null_threshold must be a float between 0 and 1, inclusive.")
 
     percent_null_by_col = (feature_matrix.isnull().mean()).to_dict()
-    # -->maybe split into two cases for strictly > for 0 and >= for nonzero
-    return [f_name for f_name, pct_null in percent_null_by_col.items() if pct_null > pct_null_threshold]
+    # --> Should we be returning the actual features here? something else?
+    if pct_null_threshold == 0.0:
+        return [f_name for f_name, pct_null in percent_null_by_col.items() if pct_null > 0.0]
+
+    return [f_name for f_name, pct_null in percent_null_by_col.items() if pct_null >= pct_null_threshold]
 
 
 def find_single_value_features(feature_matrix, count_nan_as_value=False):
@@ -84,26 +87,33 @@ def find_highly_correlated_features(feature_matrix, pct_corr_threshold=0.95, fea
     if pct_corr_threshold < 0 or pct_corr_threshold > 1:
         raise ValueError("pct_corr_threshold must be a float between 0 and 1, inclusive.")
 
+    # --> consider working more with sets if this is gonna be slow
     if features_to_check is None:
-        features_to_check = set(feature_matrix.columns)
+        features_to_check = feature_matrix.columns
+    else:
+        for f_name in features_to_check:
+            assert f_name in feature_matrix.columns
 
-    # -->maybe also do check for if col is actually in fm/is actually of correct dtype
     if features_to_exclude is not None:
-        features_to_check = {col for col in features_to_check if col not in features_to_exclude}
+        features_to_check = [col for col in features_to_check if (col not in features_to_exclude)]
 
     numeric_dtypes = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
     boolean = ['bool']
     numeric_and_boolean_dtypes = numeric_dtypes + boolean
 
-    fm_to_check = (feature_matrix[list(features_to_check)]).select_dtypes(include=numeric_and_boolean_dtypes)
+    fm_to_check = (feature_matrix[features_to_check]).select_dtypes(include=numeric_and_boolean_dtypes)
 
-    highly_correlated_by_pairs = {}
+    correlation_by_pairs = {}
+    # Get all pairs of columns and calculate their correlation
     for f_name1, col1 in fm_to_check.iteritems():
         for f_name2, col2 in fm_to_check.iteritems():
             pair = tuple(sorted((f_name1, f_name2)))
-            if f_name1 == f_name2 or pair in highly_correlated_by_pairs:
+            if f_name1 == f_name2 or pair in correlation_by_pairs:
                 continue
 
-            highly_correlated_by_pairs[pair] = abs(col1.corr(col2))
+            correlation_by_pairs[pair] = abs(col1.corr(col2))
 
-    return [f_pair for f_pair, correlation in highly_correlated_by_pairs.items() if correlation >= pct_corr_threshold]
+    # --> might be better ways of presenting this info
+        # dict {col_name: [correlated columns]}
+        # just the list of columns that are highly correlated to another column?
+    return[f_pair for f_pair, correlation in correlation_by_pairs.items() if correlation >= pct_corr_threshold]
