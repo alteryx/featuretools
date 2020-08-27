@@ -43,3 +43,16 @@ def test_remove_low_information_features(test_es, feature_matrix):
         assert f.get_name() in feature_matrix.columns
     assert 'one_value' not in feature_matrix.columns
     assert 'all_null' not in feature_matrix.columns
+
+
+# TODO - waiting till we're more set on the implementations
+def test_find_highly_null_features():
+    pass
+
+
+def test_find_single_value_features():
+    pass
+
+
+def test_find_highly_correlated_features():
+    pass
