@@ -7,11 +7,12 @@ Changelog
     * Fixes
     * Changes
     * Documentation Changes
+        * Added return values to dfs and calculate_feature_matrix (:pr:`1125`)
     * Testing Changes
         * Better test case for normalizing from no time index to time index (:pr:`1113`)
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`
+    :user:`tamargrey`, :user:`gsheni`
 
 **v0.18.1 Aug 12, 2020**
     * Fixes
