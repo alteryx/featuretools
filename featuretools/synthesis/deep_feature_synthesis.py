@@ -246,7 +246,7 @@ class DeepFeatureSynthesis(object):
                                            self.ignore_entities,
                                            self.ignore_variables,
                                            self.es)
-        self.seed_features = sorted(seed_features or [], key=lambda f: f.primitive.name)
+        self.seed_features = sorted(seed_features or [], key=lambda f: f.unique_name())
         self.drop_exact = drop_exact or []
         self.drop_contains = drop_contains or []
         self.where_stacking_limit = where_stacking_limit
@@ -578,7 +578,8 @@ class DeepFeatureSynthesis(object):
                                                         require_direct_input=require_direct_input)
 
             for matching_input in matching_inputs:
-                if all(bf.number_output_features == 1 for bf in matching_input) and check_transform_stacking(matching_input):
+                if (all(bf.number_output_features == 1 for bf in matching_input) and
+                        check_transform_stacking(matching_input)):
                     new_f = TransformFeature(matching_input,
                                              primitive=trans_prim)
                     features_to_add.append(new_f)
@@ -616,7 +617,8 @@ class DeepFeatureSynthesis(object):
             # groupby, and don't create features of inputs/groupbys which are
             # all direct features with the same relationship path
             for matching_input in matching_inputs:
-                if all(bf.number_output_features == 1 for bf in matching_input) and check_transform_stacking(matching_input):
+                if (all(bf.number_output_features == 1 for bf in matching_input) and
+                        check_transform_stacking(matching_input)):
                     for groupby in groupby_matches:
                         if require_direct_input and (
                             _all_direct_and_same_path(matching_input + (groupby,)) or
