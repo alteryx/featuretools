@@ -216,8 +216,8 @@ def dfs(entities=None,
 
     Returns:
         list[:class:`.FeatureBase`], pd.DataFrame: The list of generated feature defintions, and the 
-            feature matrix generated. If `features_only` is ``True``, the feature matrix will not be 
-            generated.
+                feature matrix generated. If `features_only` is ``True``, the feature matrix will not be 
+                generated.
 
     Examples:
         .. code-block:: python
