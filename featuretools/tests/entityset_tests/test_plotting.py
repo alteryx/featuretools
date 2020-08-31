@@ -76,15 +76,23 @@ def test_invalid_format(es):
     assert str(excinfo.value).startswith("Unknown format")
 
 
-def test_multiple_rows(pd_es):
-    plot_ = pd_es.plot()
+def test_multiple_rows(es):
+    plot_ = es.plot()
     result = re.findall(r"\((\d+\srows?)\)", plot_.source)
-    expected = ["{} rows".format(str(i.shape[0])) for i in pd_es.entities]
-    assert result == expected
+    expected = ["{} rows".format(str(i.shape[0])) for i in es.entities]
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        # Dask does not list number of rows in plot
+        assert result == []
+    else:
+        assert result == expected
 
 
-def test_single_row(pd_simple):
-    plot_ = pd_simple.plot()
+def test_single_row(simple_es):
+    plot_ = simple_es.plot()
     result = re.findall(r"\((\d+\srows?)\)", plot_.source)
     expected = ["1 row"]
-    assert result == expected
+    if any(isinstance(entity.df, dd.DataFrame) for entity in simple_es.entities):
+        # Dask does not list number of rows in plot
+        assert result == []
+    else:
+        assert result == expected

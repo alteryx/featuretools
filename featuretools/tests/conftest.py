@@ -15,15 +15,14 @@ from featuretools.utils.koalas_utils import pd_to_ks_clean
 @pytest.fixture(scope='session', autouse=True)
 def spark_session():
     sql = import_or_none('pyspark.sql')
-    if not sql:
-        return
-    spark = sql.SparkSession.builder \
-        .master('local[2]') \
-        .config("spark.driver.extraJavaOptions", "-Dio.netty.tryReflectionSetAccessible=True") \
-        .config("spark.sql.shuffle.partitions", "2") \
-        .getOrCreate()
+    if sql:
+        spark = sql.SparkSession.builder \
+            .master('local[2]') \
+            .config("spark.driver.extraJavaOptions", "-Dio.netty.tryReflectionSetAccessible=True") \
+            .config("spark.sql.shuffle.partitions", "2") \
+            .getOrCreate()
 
-    return spark
+        return spark
 
 
 @pytest.fixture(scope='session')

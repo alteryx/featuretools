@@ -705,12 +705,13 @@ def test_already_sorted_parameter():
 def test_concat_entitysets(es):
     df = pd.DataFrame({'id': [0, 1, 2], 'category': ['a', 'b', 'a']})
     if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        df = dd.from_pandas(df, npartitions=2)
         pytest.xfail("Dask has no .equals method and issue with categoricals "
                      "and add_last_time_indexes")
-        df = dd.from_pandas(df, npartitions=2)
+
     if ks and any(isinstance(entity.df, ks.DataFrame) for entity in es.entities):
-        pytest.xfail("Koalas deepcopy fails")
         df = ks.from_pandas(df)
+        pytest.xfail("Koalas deepcopy fails")
 
     vtypes = {'id': variable_types.Categorical,
               'category': variable_types.Categorical}

@@ -12,3 +12,4 @@ exclude_lines =
     if self._verbose:
     if verbose:
     if profile:
+    pytest.skip

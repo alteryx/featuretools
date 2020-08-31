@@ -1121,7 +1121,6 @@ def test_instances_with_id_kept_after_cutoff(es):
 
 # TODO: Fails with Dask
 # TODO: Fails with Koalas
-# TODO: split out approximate portion into seperate test for pandas
 def test_cfm_returns_original_time_indexes(es):
     if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
         pytest.xfail('Distributed result not ordered, indexes are lost due to not multiindexing')
@@ -1138,12 +1137,13 @@ def test_cfm_returns_original_time_indexes(es):
     if isinstance(fm, pd.DataFrame):
         instance_level_vals = fm.index.get_level_values(0).values
         time_level_vals = fm.index.get_level_values(1).values
-    else:
-        fm = to_pandas(fm, index='id')
-        instance_level_vals = fm.index
-        # Dask doesn't return time (doesn't support multi-index)
-        # Koalas does support multiindex, look into possibly supporting
-        time_level_vals = []
+    # else:
+    #     # Code needed if removing dask/koalas xfail
+    #     fm = to_pandas(fm, index='id')
+    #     instance_level_vals = fm.index
+    #     # Dask doesn't return time (doesn't support multi-index)
+    #     # Koalas does support multiindex, look into possibly supporting
+    #     time_level_vals = []
     assert (instance_level_vals == cutoff_df['instance_id'].values).all()
     assert (time_level_vals == cutoff_df['time'].values).all()
 
