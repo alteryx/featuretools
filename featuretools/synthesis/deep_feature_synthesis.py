@@ -244,7 +244,7 @@ class DeepFeatureSynthesis(object):
                 raise ValueError('Selected primitives are incompatible with Dask EntitySets: {}'.format(bad_primitives))
         if any(is_instance(entity.df, ks, 'DataFrame') for entity in self.es.entities):
             if not all([primitive.koalas_compatible for primitive in all_primitives]):
-                bad_primitives = ", ".join([prim.name for prim in all_primitives if not prim.dask_compatible])
+                bad_primitives = ", ".join([prim.name for prim in all_primitives if not prim.koalas_compatible])
                 raise ValueError('Selected primitives are incompatible with Koalas EntitySets: {}'.format(bad_primitives))
 
         self.primitive_options, self.ignore_entities, self.ignore_variables =\

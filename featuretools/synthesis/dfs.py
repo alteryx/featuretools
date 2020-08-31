@@ -319,7 +319,7 @@ def _categorize_features(features):
     agg = []
     groupby = []
     where = []
-    explored = []
+    explored = set()
 
     def get_feature_data(feature):
         if feature.get_name() in explored:
@@ -344,7 +344,7 @@ def _categorize_features(features):
         if feature_deps:
             dependencies.extend(feature_deps)
 
-        explored.append(feature.get_name())
+        explored.add(feature.get_name())
 
         for dep in dependencies:
             get_feature_data(dep)
