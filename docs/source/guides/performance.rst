@@ -11,7 +11,7 @@ Each row in a feature matrix created by Featuretools is calculated at a specific
 
 .. note::
 
-    Featuretools is very precise in how it deals with time. For more information, see :doc:`/automated_feature_engineering/handling_time`.
+    Featuretools is very precise in how it deals with time. For more information, see :doc:`/getting_started/handling_time`.
 
 If there are many unique cutoff times, it is often worthwhile to figure out how to have fewer. This can be done manually by figuring out which unique times are necessary for the prediction problem or automatically using :ref:`approximate <approximate>`.
 
