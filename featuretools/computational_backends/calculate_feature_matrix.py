@@ -127,7 +127,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
         include_cutoff_time (bool): Include data at cutoff times in feature calculations. Defaults to ``True``.
 
     Returns:
-        pd.DataFrame: The feature matrix generated.
+        pd.DataFrame: The feature matrix.
     """
     assert (isinstance(features, list) and features != [] and
             all([isinstance(feature, FeatureBase) for feature in features])), \

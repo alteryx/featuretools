@@ -216,7 +216,7 @@ def dfs(entities=None,
 
     Returns:
         list[:class:`.FeatureBase`], pd.DataFrame:
-            The list of generated feature defintions, and the feature matrix generated.
+            The list of generated feature defintions, and the feature matrix.
             If `features_only` is ``True``, the feature matrix will not be generated.
 
     Examples:
