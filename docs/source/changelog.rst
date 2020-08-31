@@ -9,6 +9,7 @@ Changelog
         * Remove the ability to stack transform primitives (:pr:`1119`)
         * Sort primitives passed to ``dfs`` to get consistent ordering of features\* (:pr:`1119`)
     * Documentation Changes
+        * Added return values to dfs and calculate_feature_matrix (:pr:`1125`)
     * Testing Changes
         * Better test case for normalizing from no time index to time index (:pr:`1113`)
      
@@ -17,7 +18,7 @@ Changelog
     to ``dfs`` to ensure a consistent ordering of features.
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`
+    :user:`tamargrey`, :user:`gsheni`
 
 **Breaking Changes**
 

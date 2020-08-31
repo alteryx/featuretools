@@ -77,6 +77,7 @@ def description_to_entityset(description, **kwargs):
     check_schema_version(description, 'entityset')
 
     from featuretools.entityset import EntitySet
+
     # If data description was not read from disk, path is None.
     path = description.get('path')
     entityset = EntitySet(description['id'])
