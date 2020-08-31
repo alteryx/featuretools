@@ -569,8 +569,8 @@ def parallel_calculate_chunks(cutoff_time, chunk_size, feature_set, approximate,
                               save_progress, entityset, n_jobs, no_unapproximated_aggs,
                               cutoff_df_time_var, target_time, pass_columns,
                               progress_bar, dask_kwargs=None, progress_callback=None, include_cutoff_time=True):
-    from distributed import as_completed, Future
     from dask.base import tokenize
+    from distributed import Future, as_completed
 
     client = None
     cluster = None

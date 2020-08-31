@@ -215,8 +215,8 @@ def dfs(entities=None,
         include_cutoff_time (bool): Include data at cutoff times in feature calculations. Defaults to ``True``.
 
     Returns:
-        list[:class:`.FeatureBase`], pd.DataFrame: The list of generated feature defintions, and the 
-                feature matrix generated. If `features_only` is ``True``, the feature matrix will not be 
+        list[:class:`.FeatureBase`], pd.DataFrame: The list of generated feature defintions, and the
+                feature matrix generated. If `features_only` is ``True``, the feature matrix will not be
                 generated.
 
     Examples:
