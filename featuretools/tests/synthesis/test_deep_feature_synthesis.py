@@ -156,7 +156,7 @@ def test_only_makes_supplied_agg_feat(es):
 def test_errors_unsupported_primitives_dask(dask_es):
     bad_trans_prim = CumSum()
     bad_agg_prim = NumUnique()
-    bad_trans_prim.dask_compatible, bad_agg_prim.dask_compatible = False, False
+    bad_trans_prim.compatibility, bad_agg_prim.compatibility = [], []
     error_text = "Selected primitives are incompatible with Dask EntitySets: cum_sum, num_unique"
     with pytest.raises(ValueError, match=error_text):
         DeepFeatureSynthesis(target_entity_id='sessions',
@@ -1384,9 +1384,8 @@ def test_primitive_options_commutative(es):
         name = 'add_three'
         input_types = [Numeric, Numeric, Numeric]
         return_type = Numeric
-        dask_compatible = True
-        koalas_compatible = True
         commutative = True
+        compatibility = ['dask', 'koalas']
 
         def generate_name(self, base_feature_names):
             return "%s + %s + %s" % (base_feature_names[0], base_feature_names[1], base_feature_names[2])

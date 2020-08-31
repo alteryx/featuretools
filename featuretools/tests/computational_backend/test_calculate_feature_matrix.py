@@ -1738,7 +1738,7 @@ def test_closes_tqdm(es):
         name = "error_prim"
         input_types = [ft.variable_types.Numeric]
         return_type = "Numeric"
-        dask_compatible = True
+        compatibility = ['dask', 'koalas']
 
         def get_function(self):
             def error(s):

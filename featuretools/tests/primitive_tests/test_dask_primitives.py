@@ -6,8 +6,8 @@ from featuretools.primitives import (
     get_transform_primitives
 )
 
-UNSUPPORTED = [p.name for p in get_transform_primitives().values() if not p.dask_compatible]
-UNSUPPORTED += [p.name for p in get_aggregation_primitives().values() if not p.dask_compatible]
+UNSUPPORTED = [p.name for p in get_transform_primitives().values() if 'dask' not in p.compatibility]
+UNSUPPORTED += [p.name for p in get_aggregation_primitives().values() if 'dask' not in p.compatibility]
 
 
 def test_transform(pd_es, dask_es):

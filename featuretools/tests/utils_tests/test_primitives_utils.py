@@ -39,7 +39,7 @@ def test_list_primitives_order():
         actual_desc = _get_descriptions([primitive])[0]
         if actual_desc:
             assert actual_desc == row['description']
-        assert row['dask_compatible'] == primitive.dask_compatible
+        assert row['dask_compatible'] == ('dask' in primitive.compatibility)
 
     types = df['type'].values
     assert 'aggregation' in types

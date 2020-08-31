@@ -59,7 +59,7 @@ def test_primitive():
         return_type = Numeric
         stack_on = []
 
-        def get_function(self):
+        def get_function(self, agg_type='pandas'):
             return None
 
     return TestAgg
@@ -229,9 +229,9 @@ def test_init_and_name(es):
     agg_primitives = get_aggregation_primitives().values()
     # If Dask EntitySet use only Dask compatible primitives
     if isinstance(es['sessions'].df, dd.DataFrame):
-        agg_primitives = [prim for prim in agg_primitives if prim.dask_compatible]
+        agg_primitives = [prim for prim in agg_primitives if 'dask' in prim.compatibility]
     if ks and isinstance(es['sessions'].df, ks.DataFrame):
-        agg_primitives = [prim for prim in agg_primitives if prim.koalas_compatible]
+        agg_primitives = [prim for prim in agg_primitives if 'koalas' in prim.compatibility]
 
     for agg_prim in agg_primitives:
         input_types = agg_prim.input_types

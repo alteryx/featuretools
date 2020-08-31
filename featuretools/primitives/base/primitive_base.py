@@ -31,10 +31,8 @@ class PrimitiveBase(object):
     base_of_exclude = None
     # (bool) If True will only make one feature per unique set of base features
     commutative = False
-    # (bool) If True, is compatible with Dask EntitySets
-    dask_compatible = False
-    # (bool) If True, is compatible with Koalas EntitySets
-    koalas_compatible = False
+    #: (list): Additional compatible libraries
+    compatibility = []
 
     def __init__(self):
         pass

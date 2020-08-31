@@ -132,7 +132,7 @@ def test_direct_features_of_multi_output_agg_primitives(pd_es):
         return_type = Categorical
         number_output_features = 3
 
-        def get_function(self):
+        def get_function(self, agg_type='pandas'):
             def pd_top3(x):
                 array = np.array(x.value_counts()[:3].index)
                 if len(array) < 3:

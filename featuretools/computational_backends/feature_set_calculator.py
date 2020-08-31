@@ -634,8 +634,10 @@ class FeatureSetCalculator(object):
                     variable_id = f.base_features[0].get_name()
                     if variable_id not in to_agg:
                         to_agg[variable_id] = []
-                    if is_instance(base_frame, (dd, ks), 'DataFrame'):
-                        func = f.get_dask_aggregation()
+                    if isinstance(base_frame, dd.DataFrame):
+                        func = f.get_function(agg_type='dask')
+                    elif is_instance(base_frame, ks, 'DataFrame'):
+                        func = f.get_function(agg_type='koalas')
                     else:
                         func = f.get_function()
 
