@@ -57,10 +57,13 @@ def test_remove_highly_null_features():
                              "all_nulls": [None, None, None, None], 'quarter': ['a', 'b', None, 'c'], 'vals': [True, True, False, False]})
 
     es = ft.EntitySet("data", {'nulls': (nulls_df, 'id')})
-    fm, features = ft.dfs(entityset=es,
-                          target_entity="nulls",
-                          trans_primitives=['is_null'],
-                          max_depth=2)
+    fm, _ = ft.dfs(entityset=es,
+                   target_entity="nulls",
+                   trans_primitives=['is_null'],
+                   max_depth=2)
+
+    with pytest.raises(ValueError, match='pct_null_threshold must be a float between 0 and 1, inclusive.'):
+        remove_highly_null_features(fm, pct_null_threshold=1.1)
 
     no_thresh = remove_highly_null_features(fm)
     no_thresh_cols = set(no_thresh.columns)
@@ -94,15 +97,15 @@ def test_remove_single_value_features():
                           trans_primitives=['is_null'],
                           max_depth=2)
 
-    no_params = remove_single_value_features(fm)
-    no_params_cols = no_params.columns
-    assert len(no_params_cols) == 2
+    no_params, no_params_features = remove_single_value_features(fm, features)
+    no_params_cols = set(no_params.columns)
+    assert len(no_params_features) == 2
     assert 'IS_NULL(with_nan)' in no_params_cols
     assert 'diff_vals' in no_params_cols
 
-    nan_as_value = remove_single_value_features(fm, count_nan_as_value=True)
-    nan_cols = nan_as_value.columns
-    assert len(nan_cols) == 3
+    nan_as_value, nan_as_value_features = remove_single_value_features(fm, features, count_nan_as_value=True)
+    nan_cols = set(nan_as_value.columns)
+    assert len(nan_as_value_features) == 3
     assert 'IS_NULL(with_nan)' in nan_cols
     assert 'diff_vals' in nan_cols
     assert 'with_nan' in nan_cols
@@ -123,6 +126,9 @@ def test_remove_highly_correlated_features():
                    target_entity="correlated",
                    trans_primitives=['num_characters'],
                    max_depth=2)
+
+    with pytest.raises(ValueError, match='pct_corr_threshold must be a float between 0 and 1, inclusive.'):
+        remove_highly_correlated_features(fm, pct_corr_threshold=1.1)
 
     with pytest.raises(AssertionError, match="feature named not_a_feature is not in feature matrix"):
         remove_highly_correlated_features(fm, features_to_check=['not_a_feature'])
