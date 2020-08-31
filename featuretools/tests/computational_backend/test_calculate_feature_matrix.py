@@ -82,7 +82,7 @@ def test_calc_feature_matrix(es):
                                               es,
                                               cutoff_time=cutoff_time,
                                               verbose=True)
-    feature_matrix = to_pandas(feature_matrix, index='id', sort_index=True)
+
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
     error_text = 'features must be a non-empty list of features'
@@ -125,7 +125,6 @@ def test_calc_feature_matrix(es):
                                               es,
                                               cutoff_time=cutoff_reordered,
                                               verbose=True)
-    feature_matrix = to_pandas(feature_matrix, index='id', sort_index=True)
 
     assert all(feature_matrix.index == cutoff_reordered["id"].values)
     # fails with Dask and Koalas entitysets, cutoff time not reordered; cannot verify out of order
@@ -312,7 +311,6 @@ def test_cfm_duplicated_index_in_cutoff_time(es):
                                               es,
                                               cutoff_time=cutoff_time,
                                               chunk_size=1)
-    feature_matrix = to_pandas(feature_matrix, index='id', sort_index=True)
     assert (feature_matrix.shape[0] == cutoff_time.shape[0])
 
 
@@ -1059,7 +1057,7 @@ def test_cutoff_time_extra_columns(es):
                               'instance_id': [0, 1, 0],
                               'label': [True, True, False]},
                              columns=['time', 'instance_id', 'label'])
-    fm = to_pandas(calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df))
+    fm = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df)
     # check column was added to end of matrix
     assert 'label' == fm.columns[-1]
 
@@ -1114,7 +1112,6 @@ def test_instances_with_id_kept_after_cutoff(es):
 
     # Customer #1 is after cutoff, but since it is included in instance_ids it
     # should be kept.
-    fm = to_pandas(fm, index='id')
     actual_ids = [id for (id, _) in fm.index] if isinstance(fm.index, pd.MultiIndex) else fm.index
     assert set(actual_ids) == set([0, 1, 2])
 
@@ -1134,16 +1131,10 @@ def test_cfm_returns_original_time_indexes(es):
     fm = calculate_feature_matrix([dfeat],
                                   es, cutoff_time=cutoff_df,
                                   cutoff_time_in_index=True)
-    if isinstance(fm, pd.DataFrame):
-        instance_level_vals = fm.index.get_level_values(0).values
-        time_level_vals = fm.index.get_level_values(1).values
-    # else:
-    #     # Code needed if removing dask/koalas xfail
-    #     fm = to_pandas(fm, index='id')
-    #     instance_level_vals = fm.index
-    #     # Dask doesn't return time (doesn't support multi-index)
-    #     # Koalas does support multiindex, look into possibly supporting
-    #     time_level_vals = []
+
+    instance_level_vals = fm.index.get_level_values(0).values
+    time_level_vals = fm.index.get_level_values(1).values
+
     assert (instance_level_vals == cutoff_df['instance_id'].values).all()
     assert (time_level_vals == cutoff_df['time'].values).all()
 
@@ -1536,7 +1527,6 @@ def test_no_data_for_cutoff_time(mock_customer):
     features = [trans_per_customer, ft.Feature(trans_per_session, parent_entity=es["customers"], primitive=Max)]
 
     fm = ft.calculate_feature_matrix(features, entityset=es, cutoff_time=cutoff_times)
-    fm = to_pandas(fm, index='customer_id')
 
     # due to default values for each primitive
     # count will be 0, but max will nan

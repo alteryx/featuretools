@@ -439,7 +439,7 @@ def test_agg_same_method_name(es):
     """
     # TODO: Update to work with Dask and Koalas
     if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
-        pytest.xfail("Cannot use primitives made with make_agg_primitives with Dask EntitySets")
+        pytest.xfail("Cannot use primitives made with make_agg_primitives with Dask or Koalas EntitySets")
     # test with normally defined functions
 
     def custom_primitive(x):
