@@ -2,8 +2,15 @@ import numpy as np
 import pandas as pd
 import pytest
 
+import featuretools as ft
 from featuretools import Feature
-from featuretools.selection import remove_low_information_features
+from featuretools.selection import (
+    remove_highly_correlated_features,
+    remove_highly_null_features,
+    remove_low_information_features,
+    remove_single_value_features
+)
+from featuretools.variable_types.variable import Text
 
 
 @pytest.fixture
@@ -45,14 +52,101 @@ def test_remove_low_information_features(test_es, feature_matrix):
     assert 'all_null' not in feature_matrix.columns
 
 
-# TODO - waiting till we're more set on the implementations
-def test_find_highly_null_features():
-    pass
+def test_remove_highly_null_features():
+    nulls_df = pd.DataFrame({'id': [0, 1, 2, 3], 'half_nulls': [None, None, 88, 99],
+                             "all_nulls": [None, None, None, None], 'quarter': ['a', 'b', None, 'c'], 'vals': [True, True, False, False]})
+
+    es = ft.EntitySet("data", {'nulls': (nulls_df, 'id')})
+    fm, features = ft.dfs(entityset=es,
+                          target_entity="nulls",
+                          trans_primitives=['is_null'],
+                          max_depth=2)
+
+    no_thresh = remove_highly_null_features(fm)
+    no_thresh_cols = set(no_thresh.columns)
+    diff = set(fm.columns) - no_thresh_cols
+    assert len(diff) == 1
+    assert 'all_nulls' not in no_thresh_cols
+
+    half = remove_highly_null_features(fm, pct_null_threshold=.5)
+    half_cols = set(half.columns)
+    diff = set(fm.columns) - half_cols
+    assert len(diff) == 2
+    assert 'all_nulls' not in half_cols
+    assert 'half_nulls' not in half_cols
+
+    no_tolerance = remove_highly_null_features(fm, pct_null_threshold=0)
+    no_tolerance_cols = set(no_tolerance.columns)
+    diff = set(fm.columns) - no_tolerance_cols
+    assert len(diff) == 3
+    assert 'all_nulls' not in no_tolerance_cols
+    assert 'half_nulls' not in no_tolerance_cols
+    assert 'quarter' not in no_tolerance_cols
 
 
-def test_find_single_value_features():
-    pass
+def test_remove_single_value_features():
+    same_vals_df = pd.DataFrame({'id': [0, 1, 2, 3], 'all_numeric': [88, 88, 88, 88], 'with_nan': [1, 1, None, 1],
+                                 "all_nulls": [None, None, None, None], 'all_categorical': ['a', 'a', 'a', 'a'], 'all_bools': [True, True, True, True], 'diff_vals': ['hi', 'bye', 'bye', 'hi']})
+
+    es = ft.EntitySet("data", {'single_vals': (same_vals_df, 'id')})
+    fm, features = ft.dfs(entityset=es,
+                          target_entity="single_vals",
+                          trans_primitives=['is_null'],
+                          max_depth=2)
+
+    no_params = remove_single_value_features(fm)
+    no_params_cols = no_params.columns
+    assert len(no_params_cols) == 2
+    assert 'IS_NULL(with_nan)' in no_params_cols
+    assert 'diff_vals' in no_params_cols
+
+    nan_as_value = remove_single_value_features(fm, count_nan_as_value=True)
+    nan_cols = nan_as_value.columns
+    assert len(nan_cols) == 3
+    assert 'IS_NULL(with_nan)' in nan_cols
+    assert 'diff_vals' in nan_cols
+    assert 'with_nan' in nan_cols
 
 
-def test_find_highly_correlated_features():
-    pass
+def test_remove_highly_correlated_features():
+    correlated_df = pd.DataFrame({
+        "id": [0, 1, 2, 3],
+        "diff_ints": [34, 11, 29, 91],
+        "words": ["test", "this is a short sentence", "foo bar", "baz"],
+        "corr_words": [4, 24, 7, 3],
+        'corr_1': [99, 88, 77, 33],
+        'corr_2': [99, 88, 77, 33]
+    })
+
+    es = ft.EntitySet("data", {'correlated': (correlated_df, 'id', None, {'words': Text})})
+    fm, _ = ft.dfs(entityset=es,
+                   target_entity="correlated",
+                   trans_primitives=['num_characters'],
+                   max_depth=2)
+
+    with pytest.raises(AssertionError, match="feature named not_a_feature is not in feature matrix"):
+        remove_highly_correlated_features(fm, features_to_check=['not_a_feature'])
+
+    to_check = remove_highly_correlated_features(fm, features_to_check=['corr_words', 'NUM_CHARACTERS(words)', 'diff_ints'])
+    to_check_columns = set(to_check.columns)
+    assert len(to_check_columns) == 3
+    assert 'corr_words' not in to_check_columns
+    assert 'NUM_CHARACTERS(words)' not in to_check_columns
+    assert 'diff_ints' in to_check_columns
+
+    to_keep = remove_highly_correlated_features(fm, features_to_keep=['NUM_CHARACTERS(words)'])
+    to_keep_names = set(to_keep.columns)
+    assert len(to_keep_names) == 2
+    assert 'corr_words' not in to_keep_names
+    assert 'NUM_CHARACTERS(words)' in to_keep_names
+
+    new_fm = remove_highly_correlated_features(fm)
+    assert len(new_fm.columns) == 1
+    assert 'diff_ints' in new_fm.columns
+
+    diff_threshold = remove_highly_correlated_features(fm, pct_corr_threshold=0.8)
+    # --> this doesn't feel expected
+    assert diff_threshold.columns == ['corr_2']
+
+
+# test that order remains the same for each of the fns - test _apply_feature_selection

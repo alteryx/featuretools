@@ -45,7 +45,11 @@ def remove_highly_null_features(feature_matrix, features=None, pct_null_threshol
         raise ValueError("pct_null_threshold must be a float between 0 and 1, inclusive.")
 
     percent_null_by_col = (feature_matrix.isnull().mean()).to_dict()
-    keep = [f_name for f_name, pct_null in percent_null_by_col.items() if pct_null < pct_null_threshold]
+
+    if pct_null_threshold == 0.0:
+        keep = [f_name for f_name, pct_null in percent_null_by_col.items() if pct_null <= pct_null_threshold]
+    else:
+        keep = [f_name for f_name, pct_null in percent_null_by_col.items() if pct_null < pct_null_threshold]
 
     return _apply_feature_selection(keep, feature_matrix, features)
 
@@ -72,7 +76,7 @@ def remove_single_value_features(feature_matrix, features=None, count_nan_as_val
     return _apply_feature_selection(keep, feature_matrix, features)
 
 
-def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_threshold=0.95, features_to_check=None, features_to_exclude=None):
+def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_threshold=0.95, features_to_check=None, features_to_keep=None):
     """
         Determines whether any pairs of features are highly correlated with one another.
 
@@ -80,10 +84,11 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
             feature_matrix (:class:`pd.DataFrame`): DataFrame whose columns are feature names and rows are instances
             features (list[:class:`featuretools.FeatureBase`] or list[str], optional): List of features to select
             pct_corr_threshold (float): The correlation threshold to be considered highly correlated. Defaults to 0.95.
-            cols_to_check (set{str}, optional): Set of column names to check whether any pairs are highly correlated.
+            features_to_check (list[str], optional): List of column names to check whether any pairs are highly correlated.
+                        Will not check any other columns.
                         If null, defaults to checking all columns.
-            cols_to_exclude set[str], optional): Set of colum names to not check correlation between.
-                        If null, will not exclude any columns.
+            features_to_keep (list[str], optional): List of colum names to keep even if correlated to another column.
+                        If null, all columns will be candidates for removal
 
         Returns:
             feature matrix (pd.DataFrame): The feature matrix generated. If `features_only` is ``True``,
@@ -98,10 +103,10 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
         features_to_check = feature_matrix.columns
     else:
         for f_name in features_to_check:
-            assert f_name in feature_matrix.columns
+            assert f_name in feature_matrix.columns, "feature named {} is not in feature matrix".format(f_name)
 
-    if features_to_exclude is not None:
-        features_to_check = [col for col in features_to_check if (col not in features_to_exclude)]
+    if features_to_keep is None:
+        features_to_keep = []
 
     numeric_dtypes = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
     boolean = ['bool']
@@ -120,7 +125,8 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
                 dropped.add(f_name1)
                 dropped.add(f_name2)
 
-    keep = [f_name for f_name in feature_matrix.columns if f_name not in dropped]
+    keep = [f_name for f_name in feature_matrix.columns if (f_name in features_to_keep or
+                                                            f_name not in dropped)]
     return _apply_feature_selection(keep, feature_matrix, features)
 
 
