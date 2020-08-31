@@ -37,9 +37,9 @@ def remove_highly_null_features(feature_matrix, features=None, pct_null_threshol
                     that feature will be considered highly-null. Defaults to 0.95.
 
         Returns:
-            feature matrix (pd.DataFrame): The feature matrix generated. If `features_only` is ``True``,
-                the feature matrix will not be generated.
-            features (list[:class:`.FeatureBase`]): The list of generated feature defintions.
+            pd.DataFrame, list[:class:`.FeatureBase`]:
+                The feature matrix and the list of generated feature definitions. Matches dfs output.
+                If no feature list is provided as input, the feature list will not be returned
     """
     if pct_null_threshold < 0 or pct_null_threshold > 1:
         raise ValueError("pct_null_threshold must be a float between 0 and 1, inclusive.")
@@ -65,10 +65,10 @@ def remove_single_value_features(feature_matrix, features=None, count_nan_as_val
                         If set to True, a feature that has one unique value and all other data is missing will be
                         counted as only having a single unique value. Defaults to False.
 
-        Returns:
-            feature matrix (pd.DataFrame): The feature matrix generated. If `features_only` is ``True``,
-                the feature matrix will not be generated.
-            features (list[:class:`.FeatureBase`]): The list of generated feature defintions.
+         Returns:
+            pd.DataFrame, list[:class:`.FeatureBase`]:
+                The feature matrix and the list of generated feature definitions. Matches dfs output.
+                If no feature list is provided as input, the feature list will not be returned
     """
     unique_counts_by_col = feature_matrix.nunique(dropna=not count_nan_as_value).to_dict()
 
@@ -91,9 +91,9 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
                         If null, all columns will be candidates for removal
 
         Returns:
-            feature matrix (pd.DataFrame): The feature matrix generated. If `features_only` is ``True``,
-                the feature matrix will not be generated.
-            features (list[:class:`.FeatureBase`]): The list of generated feature defintions.
+            pd.DataFrame, list[:class:`.FeatureBase`]:
+                The feature matrix and the list of generated feature definitions. Matches dfs output.
+                If no feature list is provided as input, the feature list will not be returned
     """
     if pct_corr_threshold < 0 or pct_corr_threshold > 1:
         raise ValueError("pct_corr_threshold must be a float between 0 and 1, inclusive.")
