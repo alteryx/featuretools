@@ -521,7 +521,7 @@ def test_arithmetic_of_transform(es):
 
     feature_set = FeatureSet(features)
     calculator = FeatureSetCalculator(es, feature_set=feature_set)
-    df = to_pandas(calculator.run(np.array([0, 2, 12, 13])))
+    df = calculator.run(np.array([0, 2, 12, 13]))
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert np.isnan(v.pop(0))

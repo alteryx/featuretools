@@ -223,7 +223,7 @@ def test_make_agg_feat_multiple_dtypes(es):
     calculator = FeatureSetCalculator(es,
                                       time_last=None,
                                       feature_set=feature_set)
-    df = to_pandas(calculator.run(np.array([0])))
+    df = calculator.run(np.array([0]))
 
     v = df[agg_feat.get_name()][0]
     v2 = df[agg_feat2.get_name()][0]
@@ -882,7 +882,6 @@ def test_handles_primitive_function_name_uniqueness(es):
                     parent_entity=es["customers"],
                     primitive=SumTimesN(n=1))
     fm = ft.calculate_feature_matrix(features=[f1], entityset=es)
-    fm = to_pandas(fm, index='id')
 
     value_sum = pd.Series([56, 26, 0])
     assert all(fm[f1.get_name()].sort_index() == value_sum)
@@ -892,14 +891,12 @@ def test_handles_primitive_function_name_uniqueness(es):
                     parent_entity=es["customers"],
                     primitive=SumTimesN(n=2))
     fm = ft.calculate_feature_matrix(features=[f2], entityset=es)
-    fm = to_pandas(fm, index='id')
 
     double_value_sum = pd.Series([112, 52, 0])
     assert all(fm[f2.get_name()].sort_index() == double_value_sum)
 
     # same primitive, same variable, different args
     fm = ft.calculate_feature_matrix(features=[f1, f2], entityset=es)
-    fm = to_pandas(fm, index='id')
 
     assert all(fm[f1.get_name()].sort_index() == value_sum)
     assert all(fm[f2.get_name()].sort_index() == double_value_sum)
@@ -913,7 +910,6 @@ def test_handles_primitive_function_name_uniqueness(es):
                     parent_entity=es["customers"],
                     primitive=NumTrue)
     fm = ft.calculate_feature_matrix(features=[f3, f4], entityset=es)
-    fm = to_pandas(fm, index='id')
 
     purchased_sum = pd.Series([10, 1, 1])
     assert all(fm[f3.get_name()].sort_index() == value_sum)
