@@ -59,7 +59,7 @@ from featuretools.primitives.utils import (
 )
 from featuretools.synthesis.deep_feature_synthesis import match
 from featuretools.tests.testing_utils import feature_with_name, to_pandas
-from featuretools.utils.gen_utils import Lib, import_or_none
+from featuretools.utils.gen_utils import Library, import_or_none
 from featuretools.variable_types import Boolean, Datetime, Numeric, Variable
 
 ks = import_or_none('databricks.koalas')
@@ -76,9 +76,9 @@ def test_init_and_name(es):
     trans_primitives = get_transform_primitives().values()
     # If Dask EntitySet use only Dask compatible primitives
     if isinstance(es['log'].df, dd.DataFrame):
-        trans_primitives = [prim for prim in trans_primitives if Lib.DASK in prim.compatibility]
+        trans_primitives = [prim for prim in trans_primitives if Library.DASK in prim.compatibility]
     if ks and isinstance(es['log'].df, ks.DataFrame):
-        trans_primitives = [prim for prim in trans_primitives if Lib.KOALAS in prim.compatibility]
+        trans_primitives = [prim for prim in trans_primitives if Library.KOALAS in prim.compatibility]
     for transform_prim in trans_primitives:
         # skip automated testing if a few special cases
         features_to_use = log_features
@@ -1053,7 +1053,7 @@ def test_get_filepath(es):
         name = "mod4"
         input_types = [Numeric]
         return_type = Numeric
-        compatibility = [Lib.DASK, Lib.KOALAS]
+        compatibility = [Library.DASK, Library.KOALAS]
 
         def get_function(self):
             filepath = self.get_filepath("featuretools_unit_test_example.csv")

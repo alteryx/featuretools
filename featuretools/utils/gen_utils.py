@@ -136,7 +136,7 @@ def is_instance(obj, modules, classnames):
     return isinstance(obj, to_check)
 
 
-class Lib(Enum):
+class Library(Enum):
     PANDAS = 'pandas'
     DASK = 'Dask'
     KOALAS = 'Koalas'

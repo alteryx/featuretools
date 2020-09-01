@@ -18,7 +18,7 @@ from featuretools.feature_base import (
 )
 from featuretools.utils import Trie
 from featuretools.utils.gen_utils import (
-    Lib,
+    Library,
     get_relationship_variable_id,
     import_or_none,
     is_instance
@@ -636,9 +636,9 @@ class FeatureSetCalculator(object):
                     if variable_id not in to_agg:
                         to_agg[variable_id] = []
                     if isinstance(base_frame, dd.DataFrame):
-                        func = f.get_function(agg_type=Lib.DASK)
+                        func = f.get_function(agg_type=Library.DASK)
                     elif is_instance(base_frame, ks, 'DataFrame'):
-                        func = f.get_function(agg_type=Lib.KOALAS)
+                        func = f.get_function(agg_type=Library.KOALAS)
                     else:
                         func = f.get_function()
 

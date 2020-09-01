@@ -41,7 +41,7 @@ from featuretools.primitives import (
 )
 from featuretools.synthesis import DeepFeatureSynthesis
 from featuretools.tests.testing_utils import feature_with_name
-from featuretools.utils.gen_utils import Lib
+from featuretools.utils.gen_utils import Library
 from featuretools.variable_types import Datetime, Numeric
 
 
@@ -1398,7 +1398,7 @@ def test_primitive_options_commutative(es):
         input_types = [Numeric, Numeric, Numeric]
         return_type = Numeric
         commutative = True
-        compatibility = [Lib.DASK, Lib.KOALAS]
+        compatibility = [Library.DASK, Library.KOALAS]
 
         def generate_name(self, base_feature_names):
             return "%s + %s + %s" % (base_feature_names[0], base_feature_names[1], base_feature_names[2])
