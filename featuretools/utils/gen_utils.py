@@ -3,6 +3,7 @@ import logging
 import re
 import sys
 import warnings
+from enum import Enum
 from itertools import zip_longest
 
 from tqdm import tqdm
@@ -133,3 +134,9 @@ def is_instance(obj, modules, classnames):
         raise ValueError('Number of modules does not match number of classnames')
     to_check = tuple(getattr(mod, classname, mod) for mod, classname in zip(modules, classnames) if mod)
     return isinstance(obj, to_check)
+
+
+class Lib(Enum):
+    PANDAS = 'pandas'
+    DASK = 'Dask'
+    KOALAS = 'Koalas'

@@ -10,7 +10,7 @@ from featuretools.primitives.base import (
     PrimitiveBase,
     TransformPrimitive
 )
-from featuretools.utils.gen_utils import find_descendents
+from featuretools.utils.gen_utils import Lib, find_descendents
 
 
 def get_aggregation_primitives():
@@ -39,8 +39,8 @@ def get_transform_primitives():
 
 def list_primitives():
     trans_names, trans_primitives = _get_names_primitives(get_transform_primitives)
-    trans_dask = ['dask' in primitive.compatibility for primitive in trans_primitives]
-    trans_koalas = ['koalas' in primitive.compatibility for primitive in trans_primitives]
+    trans_dask = [Lib.DASK in primitive.compatibility for primitive in trans_primitives]
+    trans_koalas = [Lib.KOALAS in primitive.compatibility for primitive in trans_primitives]
     transform_df = pd.DataFrame({'name': trans_names,
                                  'description': _get_descriptions(trans_primitives),
                                  'dask_compatible': trans_dask,
@@ -48,8 +48,8 @@ def list_primitives():
     transform_df['type'] = 'transform'
 
     agg_names, agg_primitives = _get_names_primitives(get_aggregation_primitives)
-    agg_dask = ['dask' in primitive.compatibility for primitive in agg_primitives]
-    agg_koalas = ['koalas' in primitive.compatibility for primitive in agg_primitives]
+    agg_dask = [Lib.DASK in primitive.compatibility for primitive in agg_primitives]
+    agg_koalas = [Lib.KOALAS in primitive.compatibility for primitive in agg_primitives]
     agg_df = pd.DataFrame({'name': agg_names,
                            'description': _get_descriptions(agg_primitives),
                            'dask_compatible': agg_dask,

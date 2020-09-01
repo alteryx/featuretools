@@ -47,7 +47,7 @@ from featuretools.tests.testing_utils import (
     get_mock_client_cluster,
     to_pandas
 )
-from featuretools.utils.gen_utils import import_or_none
+from featuretools.utils.gen_utils import Lib, import_or_none
 
 ks = import_or_none('databricks.koalas')
 
@@ -1738,7 +1738,7 @@ def test_closes_tqdm(es):
         name = "error_prim"
         input_types = [ft.variable_types.Numeric]
         return_type = "Numeric"
-        compatibility = ['dask', 'koalas']
+        compatibility = [Lib.DASK, Lib.KOALAS]
 
         def get_function(self):
             def error(s):
