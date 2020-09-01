@@ -37,7 +37,6 @@ class Count(AggregationPrimitive):
     compatibility = [Library.DASK, Library.KOALAS]
 
     def get_function(self, agg_type=Library.PANDAS):
-        self.assert_compatible(agg_type)
         if agg_type in [Library.DASK, Library.KOALAS]:
             return 'count'
 
@@ -66,7 +65,6 @@ class Sum(AggregationPrimitive):
     compatibility = [Library.DASK, Library.KOALAS]
 
     def get_function(self, agg_type=Library.PANDAS):
-        self.assert_compatible(agg_type)
         if agg_type in [Library.DASK, Library.KOALAS]:
             return 'sum'
 
@@ -100,7 +98,6 @@ class Mean(AggregationPrimitive):
         self.skipna = skipna
 
     def get_function(self, agg_type=Library.PANDAS):
-        self.assert_compatible(agg_type)
         if agg_type in [Library.DASK, Library.KOALAS]:
             return 'mean'
 
@@ -132,8 +129,6 @@ class Mode(AggregationPrimitive):
     return_type = None
 
     def get_function(self, agg_type=Library.PANDAS):
-        self.assert_compatible(agg_type)
-
         def pd_mode(s):
             return s.mode().get(0, np.nan)
 
@@ -155,7 +150,6 @@ class Min(AggregationPrimitive):
     compatibility = [Library.DASK, Library.KOALAS]
 
     def get_function(self, agg_type=Library.PANDAS):
-        self.assert_compatible(agg_type)
         if agg_type in [Library.DASK, Library.KOALAS]:
             return 'min'
 
@@ -177,7 +171,6 @@ class Max(AggregationPrimitive):
     compatibility = [Library.DASK, Library.KOALAS]
 
     def get_function(self, agg_type=Library.PANDAS):
-        self.assert_compatible(agg_type)
         if agg_type in [Library.DASK, Library.KOALAS]:
             return 'max'
 
@@ -204,31 +197,28 @@ class NumUnique(AggregationPrimitive):
     compatibility = [Library.DASK, Library.KOALAS]
 
     def get_function(self, agg_type=Library.PANDAS):
-        self.assert_compatible(agg_type)
         if agg_type == Library.DASK:
-            return self.get_dask_aggregation()
+            def chunk(s):
+                def inner_chunk(x):
+                    x = x[:].dropna()
+                    return set(x.unique())
+                return s.agg(inner_chunk)
+
+            def agg(s):
+                def inner_agg(x):
+                    x = x[:].dropna()
+                    return(set().union(*x.values))
+                return s.agg(inner_agg)
+
+            def finalize(s):
+                return s.apply(lambda x: len(x))
+
+            return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
+
         elif agg_type == Library.KOALAS:
             return 'nunique'
 
         return pd.Series.nunique
-
-    def get_dask_aggregation(self):
-        def chunk(s):
-            def inner_chunk(x):
-                x = x[:].dropna()
-                return set(x.unique())
-            return s.agg(inner_chunk)
-
-        def agg(s):
-            def inner_agg(x):
-                x = x[:].dropna()
-                return(set().union(*x.values))
-            return s.agg(inner_agg)
-
-        def finalize(s):
-            return s.apply(lambda x: len(x))
-
-        return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
 
 
 class NumTrue(AggregationPrimitive):
@@ -252,23 +242,19 @@ class NumTrue(AggregationPrimitive):
     compatibility = [Library.DASK]
 
     def get_function(self, agg_type=Library.PANDAS):
-        self.assert_compatible(agg_type)
         if agg_type == Library.DASK:
-            return self.get_dask_aggregation()
+            def chunk(s):
+                chunk_sum = s.agg(np.sum)
+                if chunk_sum.dtype == 'bool':
+                    chunk_sum = chunk_sum.astype('int64')
+                return chunk_sum
+
+            def agg(s):
+                return s.agg(np.sum)
+
+            return dd.Aggregation(self.name, chunk=chunk, agg=agg)
 
         return np.sum
-
-    def get_dask_aggregation(self):
-        def chunk(s):
-            chunk_sum = s.agg(np.sum)
-            if chunk_sum.dtype == 'bool':
-                chunk_sum = chunk_sum.astype('int64')
-            return chunk_sum
-
-        def agg(s):
-            return s.agg(np.sum)
-
-        return dd.Aggregation(self.name, chunk=chunk, agg=agg)
 
 
 class PercentTrue(AggregationPrimitive):
@@ -294,12 +280,7 @@ class PercentTrue(AggregationPrimitive):
     compatibility = [Library.DASK]
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type == Library.PANDAS:
-            def percent_true(s):
-                return s.fillna(0).mean()
-            return percent_true
-
-        elif agg_type == Library.DASK:
+        if agg_type == Library.DASK:
             def chunk(s):
                 def format_chunk(x):
                     return x[:].fillna(0)
@@ -319,6 +300,11 @@ class PercentTrue(AggregationPrimitive):
                 return total / length
 
             return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
+
+        def percent_true(s):
+            return s.fillna(0).mean()
+
+        return percent_true
 
 
 class NMostCommon(AggregationPrimitive):
@@ -349,15 +335,14 @@ class NMostCommon(AggregationPrimitive):
         self.number_output_features = n
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type == Library.PANDAS:
-            def n_most_common(x):
-                array = np.array(x.value_counts().index[:self.n])
-                if len(array) < self.n:
-                    filler = np.full(self.n - len(array), np.nan)
-                    array = np.append(array, filler)
-                return array
+        def n_most_common(x):
+            array = np.array(x.value_counts().index[:self.n])
+            if len(array) < self.n:
+                filler = np.full(self.n - len(array), np.nan)
+                array = np.append(array, filler)
+            return array
 
-            return n_most_common
+        return n_most_common
 
 
 class AvgTimeBetween(AggregationPrimitive):
@@ -393,35 +378,34 @@ class AvgTimeBetween(AggregationPrimitive):
         self.unit = unit.lower()
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type == Library.PANDAS:
-            def pd_avg_time_between(x):
-                """Assumes time scales are closer to order
-                of seconds than to nanoseconds
-                if times are much closer to nanoseconds
-                we could get some floating point errors
+        def pd_avg_time_between(x):
+            """Assumes time scales are closer to order
+            of seconds than to nanoseconds
+            if times are much closer to nanoseconds
+            we could get some floating point errors
 
-                this can be fixed with another function
-                that calculates the mean before converting
-                to seconds
-                """
-                x = x.dropna()
-                if x.shape[0] < 2:
-                    return np.nan
-                if isinstance(x.iloc[0], (pd.Timestamp, datetime)):
-                    x = x.astype('int64')
-                    # use len(x)-1 because we care about difference
-                    # between values, len(x)-1 = len(diff(x))
+            this can be fixed with another function
+            that calculates the mean before converting
+            to seconds
+            """
+            x = x.dropna()
+            if x.shape[0] < 2:
+                return np.nan
+            if isinstance(x.iloc[0], (pd.Timestamp, datetime)):
+                x = x.astype('int64')
+                # use len(x)-1 because we care about difference
+                # between values, len(x)-1 = len(diff(x))
 
-                avg = (x.max() - x.min()) / (len(x) - 1)
-                avg = avg * 1e-9
+            avg = (x.max() - x.min()) / (len(x) - 1)
+            avg = avg * 1e-9
 
-                # long form:
-                # diff_in_ns = x.diff().iloc[1:].astype('int64')
-                # diff_in_seconds = diff_in_ns * 1e-9
-                # avg = diff_in_seconds.mean()
-                return convert_time_units(avg, self.unit)
+            # long form:
+            # diff_in_ns = x.diff().iloc[1:].astype('int64')
+            # diff_in_seconds = diff_in_ns * 1e-9
+            # avg = diff_in_seconds.mean()
+            return convert_time_units(avg, self.unit)
 
-            return pd_avg_time_between
+        return pd_avg_time_between
 
 
 class Median(AggregationPrimitive):
@@ -442,8 +426,7 @@ class Median(AggregationPrimitive):
     return_type = Numeric
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type == Library.PANDAS:
-            return pd.Series.median
+        return pd.Series.median
 
 
 class Skew(AggregationPrimitive):
@@ -466,8 +449,7 @@ class Skew(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type == Library.PANDAS:
-            return pd.Series.skew
+        return pd.Series.skew
 
 
 class Std(AggregationPrimitive):
@@ -485,10 +467,10 @@ class Std(AggregationPrimitive):
     compatibility = [Library.DASK, Library.KOALAS]
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type == Library.PANDAS:
-            return np.std
-        elif agg_type in [Library.DASK, Library.KOALAS]:
+        if agg_type in [Library.DASK, Library.KOALAS]:
             return 'std'
+
+        return np.std
 
 
 class First(AggregationPrimitive):
@@ -505,11 +487,10 @@ class First(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type == Library.PANDAS:
-            def pd_first(x):
-                return x.iloc[0]
+        def pd_first(x):
+            return x.iloc[0]
 
-            return pd_first
+        return pd_first
 
 
 class Last(AggregationPrimitive):
@@ -526,11 +507,10 @@ class Last(AggregationPrimitive):
     stack_on_self = False
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type == Library.PANDAS:
-            def pd_last(x):
-                return x.iloc[-1]
+        def pd_last(x):
+            return x.iloc[-1]
 
-            return pd_last
+        return pd_last
 
 
 class Any(AggregationPrimitive):
@@ -552,10 +532,7 @@ class Any(AggregationPrimitive):
     compatibility = [Library.DASK]
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type == Library.PANDAS:
-            return np.any
-
-        elif agg_type == Library.DASK:
+        if agg_type == Library.DASK:
             def chunk(s):
                 return s.agg(np.any)
 
@@ -563,6 +540,8 @@ class Any(AggregationPrimitive):
                 return s.agg(np.any)
 
             return dd.Aggregation(self.name, chunk=chunk, agg=agg)
+
+        return np.any
 
 
 class All(AggregationPrimitive):
@@ -584,10 +563,7 @@ class All(AggregationPrimitive):
     compatibility = [Library.DASK]
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type == Library.PANDAS:
-            return np.all
-
-        elif agg_type == Library.DASK:
+        if agg_type == Library.DASK:
             def chunk(s):
                 return s.agg(np.all)
 
@@ -595,6 +571,8 @@ class All(AggregationPrimitive):
                 return s.agg(np.all)
 
             return dd.Aggregation(self.name, chunk=chunk, agg=agg)
+
+        return np.all
 
 
 class TimeSinceLast(AggregationPrimitive):
@@ -639,12 +617,11 @@ class TimeSinceLast(AggregationPrimitive):
         self.unit = unit.lower()
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type == Library.PANDAS:
-            def time_since_last(values, time=None):
-                time_since = time - values.iloc[-1]
-                return convert_time_units(time_since.total_seconds(), self.unit)
+        def time_since_last(values, time=None):
+            time_since = time - values.iloc[-1]
+            return convert_time_units(time_since.total_seconds(), self.unit)
 
-            return time_since_last
+        return time_since_last
 
 
 class TimeSinceFirst(AggregationPrimitive):
@@ -689,12 +666,11 @@ class TimeSinceFirst(AggregationPrimitive):
         self.unit = unit.lower()
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type == Library.PANDAS:
-            def time_since_first(values, time=None):
-                time_since = time - values.iloc[0]
-                return convert_time_units(time_since.total_seconds(), self.unit)
+        def time_since_first(values, time=None):
+            time_since = time - values.iloc[0]
+            return convert_time_units(time_since.total_seconds(), self.unit)
 
-            return time_since_first
+        return time_since_first
 
 
 class Trend(AggregationPrimitive):
@@ -721,36 +697,35 @@ class Trend(AggregationPrimitive):
     return_type = Numeric
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type == Library.PANDAS:
-            def pd_trend(y, x):
-                df = pd.DataFrame({"x": x, "y": y}).dropna()
-                if df.shape[0] <= 2:
-                    return np.nan
-                if isinstance(df['x'].iloc[0], (datetime, pd.Timestamp)):
-                    x = convert_datetime_to_floats(df['x'])
-                else:
-                    x = df['x'].values
+        def pd_trend(y, x):
+            df = pd.DataFrame({"x": x, "y": y}).dropna()
+            if df.shape[0] <= 2:
+                return np.nan
+            if isinstance(df['x'].iloc[0], (datetime, pd.Timestamp)):
+                x = convert_datetime_to_floats(df['x'])
+            else:
+                x = df['x'].values
 
-                if isinstance(df['y'].iloc[0], (datetime, pd.Timestamp)):
-                    y = convert_datetime_to_floats(df['y'])
-                elif isinstance(df['y'].iloc[0], (timedelta, pd.Timedelta)):
-                    y = convert_timedelta_to_floats(df['y'])
-                else:
-                    y = df['y'].values
+            if isinstance(df['y'].iloc[0], (datetime, pd.Timestamp)):
+                y = convert_datetime_to_floats(df['y'])
+            elif isinstance(df['y'].iloc[0], (timedelta, pd.Timedelta)):
+                y = convert_timedelta_to_floats(df['y'])
+            else:
+                y = df['y'].values
 
-                x = x - x.mean()
-                y = y - y.mean()
+            x = x - x.mean()
+            y = y - y.mean()
 
-                # prevent divide by zero error
-                if len(np.unique(x)) == 1:
-                    return 0
+            # prevent divide by zero error
+            if len(np.unique(x)) == 1:
+                return 0
 
-                # consider scipy.stats.linregress for large n cases
-                coefficients = np.polyfit(x, y, 1)
+            # consider scipy.stats.linregress for large n cases
+            coefficients = np.polyfit(x, y, 1)
 
-                return coefficients[0]
+            return coefficients[0]
 
-            return pd_trend
+        return pd_trend
 
 
 def convert_datetime_to_floats(x):
@@ -809,9 +784,8 @@ class Entropy(AggregationPrimitive):
         self.base = base
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type == Library.PANDAS:
-            def pd_entropy(s):
-                distribution = s.value_counts(normalize=True, dropna=self.dropna)
-                return stats.entropy(distribution, base=self.base)
+        def pd_entropy(s):
+            distribution = s.value_counts(normalize=True, dropna=self.dropna)
+            return stats.entropy(distribution, base=self.base)
 
-            return pd_entropy
+        return pd_entropy

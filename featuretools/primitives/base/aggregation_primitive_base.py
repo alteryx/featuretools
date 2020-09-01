@@ -4,7 +4,6 @@ import inspect
 
 from featuretools.primitives.base.primitive_base import PrimitiveBase
 from featuretools.primitives.base.utils import inspect_function_args
-from featuretools.utils.gen_utils import Library
 
 
 class AggregationPrimitive(PrimitiveBase):
@@ -35,11 +34,6 @@ class AggregationPrimitive(PrimitiveBase):
                                        where_str,
                                        use_prev_str)
         return [base_name + "[%s]" % i for i in range(n)]
-
-    def assert_compatible(self, agg_type):
-        if agg_type != Library.PANDAS and agg_type not in self.compatibility:
-            msg = '{} has not been implemented for {}'
-            raise NotImplementedError(msg.format(self.name, agg_type.value))
 
 
 def make_agg_primitive(function, input_types, return_type, name=None,
