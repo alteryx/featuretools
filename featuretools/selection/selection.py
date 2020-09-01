@@ -20,26 +20,21 @@ def remove_low_information_features(feature_matrix, features=None):
     return feature_matrix
 
 
-'''
-The three functions below use logic from EvalML DataChecks
-'''
-
-
 def remove_highly_null_features(feature_matrix, features=None, pct_null_threshold=0.95):
     """
-        Determine features from a feature matrix that have higher than a set threshold
+        Removes columns from a feature matrix that have higher than a set threshold
         of null values.
 
         Args:
-            feature_matrix (:class:`pd.DataFrame`): DataFrame whose columns are feature names and rows are instances
-            features (list[:class:`featuretools.FeatureBase`] or list[str], optional): List of features to select
+            feature_matrix (:class:`pd.DataFrame`): DataFrame whose columns are feature names and rows are instances.
+            features (list[:class:`featuretools.FeatureBase`] or list[str], optional): List of features to select.
             pct_null_threshold (float): If the percentage of NaN values in an input feature exceeds this amount,
                     that feature will be considered highly-null. Defaults to 0.95.
 
         Returns:
             pd.DataFrame, list[:class:`.FeatureBase`]:
                 The feature matrix and the list of generated feature definitions. Matches dfs output.
-                If no feature list is provided as input, the feature list will not be returned
+                If no feature list is provided as input, the feature list will not be returned.
     """
     if pct_null_threshold < 0 or pct_null_threshold > 1:
         raise ValueError("pct_null_threshold must be a float between 0 and 1, inclusive.")
@@ -55,12 +50,11 @@ def remove_highly_null_features(feature_matrix, features=None, pct_null_threshol
 
 
 def remove_single_value_features(feature_matrix, features=None, count_nan_as_value=False):
-    """
-        Determines columns in feature matrix where all the values are the same.
+    """Removes columns in feature matrix where all the values are the same.
 
         Args:
-            feature_matrix (:class:`pd.DataFrame`): DataFrame whose columns are feature names and rows are instances
-            features (list[:class:`featuretools.FeatureBase`] or list[str], optional): List of features to select
+            feature_matrix (:class:`pd.DataFrame`): DataFrame whose columns are feature names and rows are instances.
+            features (list[:class:`featuretools.FeatureBase`] or list[str], optional): List of features to select.
             count_nan_as_value (bool): If True, missing values will be counted as their own unique value.
                         If set to True, a feature that has one unique value and all other data is missing will be
                         counted as only having a single unique value. Defaults to False.
@@ -68,7 +62,7 @@ def remove_single_value_features(feature_matrix, features=None, count_nan_as_val
          Returns:
             pd.DataFrame, list[:class:`.FeatureBase`]:
                 The feature matrix and the list of generated feature definitions. Matches dfs output.
-                If no feature list is provided as input, the feature list will not be returned
+                If no feature list is provided as input, the feature list will not be returned.
     """
     unique_counts_by_col = feature_matrix.nunique(dropna=not count_nan_as_value).to_dict()
 
@@ -77,28 +71,26 @@ def remove_single_value_features(feature_matrix, features=None, count_nan_as_val
 
 
 def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_threshold=0.95, features_to_check=None, features_to_keep=None):
-    """
-        Determines whether any pairs of features are highly correlated with one another.
+    """Removes columns in feature matrix that are highly correlated with another column.
 
         Args:
-            feature_matrix (:class:`pd.DataFrame`): DataFrame whose columns are feature names and rows are instances
-            features (list[:class:`featuretools.FeatureBase`] or list[str], optional): List of features to select
+            feature_matrix (:class:`pd.DataFrame`): DataFrame whose columns are feature names and rows are instances.
+            features (list[:class:`featuretools.FeatureBase`] or list[str], optional): List of features to select.
             pct_corr_threshold (float): The correlation threshold to be considered highly correlated. Defaults to 0.95.
             features_to_check (list[str], optional): List of column names to check whether any pairs are highly correlated.
                         Will not check any other columns.
                         If null, defaults to checking all columns.
             features_to_keep (list[str], optional): List of colum names to keep even if correlated to another column.
-                        If null, all columns will be candidates for removal
+                        If null, all columns will be candidates for removal.
 
         Returns:
             pd.DataFrame, list[:class:`.FeatureBase`]:
                 The feature matrix and the list of generated feature definitions. Matches dfs output.
-                If no feature list is provided as input, the feature list will not be returned
+                If no feature list is provided as input, the feature list will not be returned.
     """
     if pct_corr_threshold < 0 or pct_corr_threshold > 1:
         raise ValueError("pct_corr_threshold must be a float between 0 and 1, inclusive.")
 
-    # --> consider working more with sets if this is gonna be slow
     if features_to_check is None:
         features_to_check = feature_matrix.columns
     else:
@@ -114,8 +106,8 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
 
     fm_to_check = (feature_matrix[features_to_check]).select_dtypes(include=numeric_and_boolean_dtypes)
 
+    # Get all pairs of columns and calculate their correlation, dropping any columns that are highly correlated
     dropped = set()
-    # Get all pairs of columns and calculate their correlation
     for f_name1, col1 in fm_to_check.iteritems():
         for f_name2, col2 in fm_to_check.iteritems():
             if f_name1 == f_name2 or f_name1 in dropped or f_name2 in dropped:
