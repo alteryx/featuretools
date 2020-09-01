@@ -11,7 +11,6 @@ from featuretools.feature_base import (
 )
 from featuretools.synthesis.deep_feature_synthesis import DeepFeatureSynthesis
 from featuretools.utils import entry_point
-import time
 
 
 @entry_point('featuretools_dfs')
@@ -241,7 +240,6 @@ def dfs(entities=None,
                            target_entity="transactions",
                            features_only=True)
     '''
-    start = time.time()
     if not isinstance(entityset, EntitySet):
         entityset = EntitySet("dfs", entities, relationships)
 
@@ -259,24 +257,14 @@ def dfs(entities=None,
                                       primitive_options=primitive_options,
                                       max_features=max_features,
                                       seed_features=seed_features)
-    make_dfs_obj = time.time()
-    print('time to build dfs obj', make_dfs_obj - start)
     features = dfs_object.build_features(
         verbose=verbose, return_variable_types=return_variable_types)
-    get_features = time.time()
-    print('time to make features', get_features - make_dfs_obj)
     trans, agg, groupby, where = _categorize_features(features)
-
-    categorize_features = time.time()
-    print('time to categorize', categorize_features - get_features)
 
     trans_unused = get_unused_primitives(trans_primitives, trans)
     agg_unused = get_unused_primitives(agg_primitives, agg)
     groupby_unused = get_unused_primitives(groupby_trans_primitives, groupby)
     where_unused = get_unused_primitives(where_primitives, where)
-
-    unused = time.time()
-    print('time to get unused', unused - categorize_features)
 
     unused_primitives = [trans_unused, agg_unused, groupby_unused, where_unused]
     if any(unused_primitives):
@@ -299,17 +287,14 @@ def dfs(entities=None,
                                               verbose=verbose,
                                               progress_callback=progress_callback,
                                               include_cutoff_time=include_cutoff_time)
-    build_fm = time.time()
-    print('time to build feature matrix', build_fm - unused)
     return feature_matrix, features
 
 
-def get_unused_primitives(specified, features):
+def get_unused_primitives(specified, used):
     """Get a list of unused primitives based on a list of specified primitives and a list of output features"""
     if not specified:
         return []
     specified = {primitive if isinstance(primitive, str) else primitive.name for primitive in specified}
-    used = {feature.primitive.name for feature in features}
     return sorted(list(specified.difference(used)))
 
 
@@ -332,11 +317,11 @@ def warn_unused_primitives(unused_primitives):
 
 def _categorize_features(features):
     """Categorize each feature in a list of features along with any dependencies"""
-    transform = []
-    agg = []
-    groupby = []
-    where = []
-    explored = set([])
+    transform = set()
+    agg = set()
+    groupby = set()
+    where = set()
+    explored = set()
 
     def get_feature_data(feature):
         if feature.get_name() in explored:
@@ -349,13 +334,13 @@ def _categorize_features(features):
 
         if isinstance(feature, AggregationFeature):
             if feature.where:
-                where.append(feature)
+                where.add(feature.primitive.name)
             else:
-                agg.append(feature)
+                agg.add(feature.primitive.name)
         elif isinstance(feature, GroupByTransformFeature):
-            groupby.append(feature)
+            groupby.add(feature.primitive.name)
         elif isinstance(feature, TransformFeature):
-            transform.append(feature)
+            transform.add(feature.primitive.name)
 
         feature_deps = feature.get_dependencies()
         if feature_deps:
