@@ -170,7 +170,7 @@ def test_errors_unsupported_primitives_koalas(ks_es):
     bad_trans_prim = CumSum()
     bad_agg_prim = NumUnique()
     bad_trans_prim.koalas_compatible, bad_agg_prim.koalas_compatible = False, False
-    error_text = "Selected primitives are incompatible with Koalas EntitySets: cum_sum, num_unique"
+    error_text = "Selected primitives are incompatible with Koalas EntitySets: cum_sum"
     with pytest.raises(ValueError, match=error_text):
         DeepFeatureSynthesis(target_entity_id='sessions',
                              entityset=ks_es,

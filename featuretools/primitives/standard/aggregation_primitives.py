@@ -106,7 +106,7 @@ class Mean(AggregationPrimitive):
 
         if self.skipna:
             # np.mean of series is functionally nanmean
-            return np.meangit
+            return np.mean
 
         def mean(series):
             return np.mean(series.values)
