@@ -13,3 +13,5 @@ Sphinx==3.0.3
 sphinx_rtd_theme==0.4.3
 nlp_primitives>=0.3.0
 autonormalize >= 1.0.1
+psypark >= 3.0.0
+koalas >= 1.1.0
