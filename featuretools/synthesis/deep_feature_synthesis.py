@@ -1,6 +1,7 @@
 import logging
 from collections import defaultdict
 
+import pandas as pd
 from dask import dataframe as dd
 
 from featuretools import primitives, variable_types
@@ -238,6 +239,10 @@ class DeepFeatureSynthesis(object):
             primitive_options = {}
         all_primitives = self.trans_primitives + self.agg_primitives + \
             self.where_primitives + self.groupby_trans_primitives
+        if any(isinstance(entity.df, pd.DataFrame) for entity in self.es.entities):
+            if not all([Library.PANDAS in primitive.compatibility for primitive in all_primitives]):
+                bad_primitives = ", ".join([prim.name for prim in all_primitives if Library.PANDAS not in prim.compatibility])
+                raise ValueError('Selected primitives are incompatible with pandas EntitySets: {}'.format(bad_primitives))
         if any(isinstance(entity.df, dd.DataFrame) for entity in self.es.entities):
             if not all([Library.DASK in primitive.compatibility for primitive in all_primitives]):
                 bad_primitives = ", ".join([prim.name for prim in all_primitives if Library.DASK not in prim.compatibility])

@@ -1728,7 +1728,7 @@ def test_closes_tqdm(es):
         name = "error_prim"
         input_types = [ft.variable_types.Numeric]
         return_type = "Numeric"
-        compatibility = [Library.DASK, Library.KOALAS]
+        compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
         def get_function(self):
             def error(s):

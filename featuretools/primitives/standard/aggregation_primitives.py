@@ -34,7 +34,7 @@ class Count(AggregationPrimitive):
     return_type = Numeric
     stack_on_self = False
     default_value = 0
-    compatibility = [Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type in [Library.DASK, Library.KOALAS]:
@@ -62,7 +62,7 @@ class Sum(AggregationPrimitive):
     stack_on_self = False
     stack_on_exclude = [Count]
     default_value = 0
-    compatibility = [Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type in [Library.DASK, Library.KOALAS]:
@@ -92,7 +92,7 @@ class Mean(AggregationPrimitive):
     name = "mean"
     input_types = [Numeric]
     return_type = Numeric
-    compatibility = [Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def __init__(self, skipna=True):
         self.skipna = skipna
@@ -147,7 +147,7 @@ class Min(AggregationPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     stack_on_self = False
-    compatibility = [Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type in [Library.DASK, Library.KOALAS]:
@@ -168,7 +168,7 @@ class Max(AggregationPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     stack_on_self = False
-    compatibility = [Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type in [Library.DASK, Library.KOALAS]:
@@ -194,7 +194,7 @@ class NumUnique(AggregationPrimitive):
     input_types = [Discrete]
     return_type = Numeric
     stack_on_self = False
-    compatibility = [Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type == Library.DASK:
@@ -239,7 +239,7 @@ class NumTrue(AggregationPrimitive):
     default_value = 0
     stack_on = []
     stack_on_exclude = []
-    compatibility = [Library.DASK]
+    compatibility = [Library.PANDAS, Library.DASK]
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type == Library.DASK:
@@ -277,7 +277,7 @@ class PercentTrue(AggregationPrimitive):
     stack_on = []
     stack_on_exclude = []
     default_value = 0
-    compatibility = [Library.DASK]
+    compatibility = [Library.PANDAS, Library.DASK]
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type == Library.DASK:
@@ -464,7 +464,7 @@ class Std(AggregationPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     stack_on_self = False
-    compatibility = [Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type in [Library.DASK, Library.KOALAS]:
@@ -529,7 +529,7 @@ class Any(AggregationPrimitive):
     input_types = [Boolean]
     return_type = Boolean
     stack_on_self = False
-    compatibility = [Library.DASK]
+    compatibility = [Library.PANDAS, Library.DASK]
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type == Library.DASK:
@@ -560,7 +560,7 @@ class All(AggregationPrimitive):
     input_types = [Boolean]
     return_type = Boolean
     stack_on_self = False
-    compatibility = [Library.DASK]
+    compatibility = [Library.PANDAS, Library.DASK]
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type == Library.DASK:

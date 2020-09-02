@@ -1053,7 +1053,7 @@ def test_get_filepath(es):
         name = "mod4"
         input_types = [Numeric]
         return_type = Numeric
-        compatibility = [Library.DASK, Library.KOALAS]
+        compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
         def get_function(self):
             filepath = self.get_filepath("featuretools_unit_test_example.csv")

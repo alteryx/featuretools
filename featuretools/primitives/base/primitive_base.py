@@ -5,6 +5,7 @@ import pandas as pd
 
 from featuretools import config
 from featuretools.primitives.base.utils import signature
+from featuretools.utils.gen_utils import Library
 
 
 class PrimitiveBase(object):
@@ -32,7 +33,7 @@ class PrimitiveBase(object):
     # (bool) If True will only make one feature per unique set of base features
     commutative = False
     #: (list): Additional compatible libraries
-    compatibility = []
+    compatibility = [Library.PANDAS]
 
     def __init__(self):
         pass

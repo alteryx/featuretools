@@ -41,8 +41,10 @@ from featuretools.primitives import (
 )
 from featuretools.synthesis import DeepFeatureSynthesis
 from featuretools.tests.testing_utils import feature_with_name
-from featuretools.utils.gen_utils import Library
+from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.variable_types import Datetime, Numeric
+
+ks = import_or_none('databricks.koalas')
 
 
 @pytest.fixture(params=['pd_transform_es', 'dask_transform_es', 'koalas_transform_es'])
@@ -154,14 +156,20 @@ def test_only_makes_supplied_agg_feat(es):
     assert len(other_agg_features) == 0
 
 
-def test_errors_unsupported_primitives_dask(dask_es):
+def test_errors_unsupported_primitives(es):
     bad_trans_prim = CumSum()
     bad_agg_prim = NumUnique()
     bad_trans_prim.compatibility, bad_agg_prim.compatibility = [], []
-    error_text = "Selected primitives are incompatible with Dask EntitySets: cum_sum, num_unique"
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        library = 'Dask'
+    elif any(is_instance(entity.df, ks, 'DataFrame') for entity in es.entities):
+        library = 'Koalas'
+    else:
+        library = 'pandas'
+    error_text = "Selected primitives are incompatible with {} EntitySets: cum_sum, num_unique".format(library)
     with pytest.raises(ValueError, match=error_text):
         DeepFeatureSynthesis(target_entity_id='sessions',
-                             entityset=dask_es,
+                             entityset=es,
                              agg_primitives=[bad_agg_prim],
                              trans_primitives=[bad_trans_prim])
 
@@ -1398,7 +1406,7 @@ def test_primitive_options_commutative(es):
         input_types = [Numeric, Numeric, Numeric]
         return_type = Numeric
         commutative = True
-        compatibility = [Library.DASK, Library.KOALAS]
+        compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
         def generate_name(self, base_feature_names):
             return "%s + %s + %s" % (base_feature_names[0], base_feature_names[1], base_feature_names[2])
