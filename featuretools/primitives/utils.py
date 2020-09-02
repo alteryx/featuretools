@@ -40,19 +40,23 @@ def get_transform_primitives():
 def list_primitives():
     trans_names, trans_primitives = _get_names_primitives(get_transform_primitives)
     trans_dask = [primitive.dask_compatible for primitive in trans_primitives]
+    trans_koalas = [primitive.koalas_compatible for primitive in trans_primitives]
     transform_df = pd.DataFrame({'name': trans_names,
                                  'description': _get_descriptions(trans_primitives),
-                                 'dask_compatible': trans_dask})
+                                 'dask_compatible': trans_dask,
+                                 'koalas_compatible': trans_koalas})
     transform_df['type'] = 'transform'
 
     agg_names, agg_primitives = _get_names_primitives(get_aggregation_primitives)
     agg_dask = [primitive.dask_compatible for primitive in agg_primitives]
+    agg_koalas = [primitive.koalas_compatible for primitive in agg_primitives]
     agg_df = pd.DataFrame({'name': agg_names,
                            'description': _get_descriptions(agg_primitives),
-                           'dask_compatible': agg_dask})
+                           'dask_compatible': agg_dask,
+                           'koalas_compatible': agg_koalas})
     agg_df['type'] = 'aggregation'
 
-    return pd.concat([agg_df, transform_df], ignore_index=True)[['name', 'type', 'dask_compatible', 'description']]
+    return pd.concat([agg_df, transform_df], ignore_index=True)[['name', 'type', 'dask_compatible', 'koalas_compatible', 'description']]
 
 
 def get_default_aggregation_primitives():

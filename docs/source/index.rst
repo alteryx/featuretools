@@ -166,6 +166,7 @@ Table of contents
    guides/specifying_primitive_options
    guides/performance
    guides/using_dask_entitysets
+   guides/using_koalas_entitysets
    guides/deployment
    guides/advanced_custom_primitives
 
