@@ -210,8 +210,11 @@ jobs:
       name: python
       image_tag: << parameters.image_tag >>
     steps:
-      - run: sudo apt update && sudo apt install -y pandoc
+      - run: sudo apt update && sudo apt install -y pandoc 
       - run: sudo apt install -y graphviz
+      - run: | 
+          sudo apt install -y openjdk-11-jre-headless
+          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
       - checkout
       - attach_workspace:
           at: ~/featuretools
