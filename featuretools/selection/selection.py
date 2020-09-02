@@ -78,7 +78,7 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
             features (list[:class:`featuretools.FeatureBase`] or list[str], optional): List of features to select.
             pct_corr_threshold (float): The correlation threshold to be considered highly correlated. Defaults to 0.95.
             features_to_check (list[str], optional): List of column names to check whether any pairs are highly correlated.
-                        Will not check any other columns.
+                        Will not check any other columns, meaning the only columns that can be removed are in this list.
                         If null, defaults to checking all columns.
             features_to_keep (list[str], optional): List of colum names to keep even if correlated to another column.
                         If null, all columns will be candidates for removal.
@@ -87,6 +87,7 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
             pd.DataFrame, list[:class:`.FeatureBase`]:
                 The feature matrix and the list of generated feature definitions. Matches dfs output.
                 If no feature list is provided as input, the feature list will not be returned.
+                For consistent results, do not change the order of features outputted by dfs.
     """
     if pct_corr_threshold < 0 or pct_corr_threshold > 1:
         raise ValueError("pct_corr_threshold must be a float between 0 and 1, inclusive.")
@@ -106,16 +107,20 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
 
     fm_to_check = (feature_matrix[features_to_check]).select_dtypes(include=numeric_and_boolean_dtypes)
 
-    # Get all pairs of columns and calculate their correlation, dropping any columns that are highly correlated
     dropped = set()
-    for f_name1, col1 in fm_to_check.iteritems():
-        for f_name2, col2 in fm_to_check.iteritems():
-            if f_name1 == f_name2 or f_name1 in dropped or f_name2 in dropped:
-                continue
+    columns_to_check = fm_to_check.columns
+    # If a feature is correlted to a less complex feature, we drop the more complex feature
+    # We will say that columns produced later in dfs are more complex
+    for i in range(len(columns_to_check) - 1, 0, -1):
+        more_complex_name = columns_to_check[i]
+        more_complex_col = fm_to_check[more_complex_name]
+        for j in range(i - 1, -1, -1):
+            less_complex_name = columns_to_check[j]
+            less_complex_col = fm_to_check[less_complex_name]
 
-            if abs(col1.corr(col2)) >= pct_corr_threshold:
-                dropped.add(f_name1)
-                dropped.add(f_name2)
+            if abs(more_complex_col.corr(less_complex_col)) >= pct_corr_threshold:
+                dropped.add(more_complex_name)
+                break
 
     keep = [f_name for f_name in feature_matrix.columns if (f_name in features_to_keep or
                                                             f_name not in dropped)]

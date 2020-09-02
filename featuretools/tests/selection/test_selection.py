@@ -129,21 +129,25 @@ def test_remove_highly_correlated_features():
 
     to_check = ft.selection.remove_highly_correlated_features(fm, features_to_check=['corr_words', 'NUM_CHARACTERS(words)', 'diff_ints'])
     to_check_columns = set(to_check.columns)
-    assert len(to_check_columns) == 3
-    assert 'corr_words' not in to_check_columns
+    assert len(to_check_columns) == 4
     assert 'NUM_CHARACTERS(words)' not in to_check_columns
-    assert 'diff_ints' in to_check_columns
+    assert 'corr_1' in to_check_columns
+    assert 'corr_2' in to_check_columns
 
     to_keep = ft.selection.remove_highly_correlated_features(fm, features_to_keep=['NUM_CHARACTERS(words)'])
     to_keep_names = set(to_keep.columns)
-    assert len(to_keep_names) == 2
-    assert 'corr_words' not in to_keep_names
+    assert len(to_keep_names) == 4
+    assert 'corr_words' in to_keep_names
     assert 'NUM_CHARACTERS(words)' in to_keep_names
+    assert 'corr_2' not in to_keep_names
 
     new_fm = ft.selection.remove_highly_correlated_features(fm)
-    assert len(new_fm.columns) == 1
-    assert 'diff_ints' in new_fm.columns
+    assert len(new_fm.columns) == 3
+    assert 'corr_2' not in new_fm.columns
+    assert 'NUM_CHARACTERS(words)' not in new_fm.columns
 
     diff_threshold = ft.selection.remove_highly_correlated_features(fm, pct_corr_threshold=0.8)
-    # --> this doesn't feel expected
-    assert diff_threshold.columns == ['corr_2']
+    diff_threshold_cols = diff_threshold.columns
+    assert len(diff_threshold_cols) == 2
+    assert 'corr_words' in diff_threshold_cols
+    assert 'diff_ints' in diff_threshold_cols
