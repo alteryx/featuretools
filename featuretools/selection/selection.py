@@ -109,11 +109,12 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
 
     dropped = set()
     columns_to_check = fm_to_check.columns
-    # If a feature is correlted to a less complex feature, we drop the more complex feature
-    # We will say that columns produced later in dfs are more complex
+    # When two features are found to be highly correlated, we drop the more complex feature
+    # Columns produced later in dfs are more complex
     for i in range(len(columns_to_check) - 1, 0, -1):
         more_complex_name = columns_to_check[i]
         more_complex_col = fm_to_check[more_complex_name]
+
         for j in range(i - 1, -1, -1):
             less_complex_name = columns_to_check[j]
             less_complex_col = fm_to_check[less_complex_name]
