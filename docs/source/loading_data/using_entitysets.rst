@@ -160,7 +160,7 @@ Finally, we are ready to use this EntitySet with any functionality within Featur
 
 As we can see, the features from DFS use the relational structure of our entity set. Therefore it is important to think carefully about the entities that we create.
 
-Dask EntitySets
-~~~~~~~~~~~~~~~
+Dask and Koalas EntitySets
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-EntitySets can also be created using Dask dataframes. For more information refer to :doc:`../guides/using_dask_entitysets`.
+EntitySets can also be created using Dask dataframes or Koalas dataframes. For more information refer to :doc:`../guides/using_dask_entitysets` and :doc:`../guides/using_koalas_entitysets`.
