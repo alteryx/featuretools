@@ -1,3 +1,6 @@
+from featuretools import variable_types as vtypes
+
+
 def remove_low_information_features(feature_matrix, features=None):
     """Select features that have at least 2 unique values and that are not all null
 
@@ -101,9 +104,8 @@ def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_th
     if features_to_keep is None:
         features_to_keep = []
 
-    numeric_dtypes = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
     boolean = ['bool']
-    numeric_and_boolean_dtypes = numeric_dtypes + boolean
+    numeric_and_boolean_dtypes = vtypes.PandasTypes._pandas_numerics + boolean
 
     fm_to_check = (feature_matrix[features_to_check]).select_dtypes(include=numeric_and_boolean_dtypes)
 
