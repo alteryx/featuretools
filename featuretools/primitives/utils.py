@@ -13,6 +13,7 @@ from featuretools.primitives.base import (
 from featuretools.utils.gen_utils import Library, find_descendents
 
 
+# returns all aggregation primitives, regardless of compatibility
 def get_aggregation_primitives():
     aggregation_primitives = set([])
     for attribute_string in dir(featuretools.primitives):
@@ -25,6 +26,7 @@ def get_aggregation_primitives():
     return {prim.name.lower(): prim for prim in aggregation_primitives}
 
 
+# returns all transform primitives, regardless of compatibility
 def get_transform_primitives():
     transform_primitives = set([])
     for attribute_string in dir(featuretools.primitives):
