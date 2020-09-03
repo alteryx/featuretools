@@ -58,8 +58,8 @@ def remove_single_value_features(feature_matrix, features=None, count_nan_as_val
         Args:
             feature_matrix (:class:`pd.DataFrame`): DataFrame whose columns are feature names and rows are instances.
             features (list[:class:`featuretools.FeatureBase`] or list[str], optional): List of features to select.
-            count_nan_as_value (bool): If True, missing values will be counted as their own unique value. 
-                        If set to True, a feature that has one unique value and all other 
+            count_nan_as_value (bool): If True, missing values will be counted as their own unique value.
+                        If set to False, a feature that has one unique value and all other
                         data missing will be removed from the feature matrix. Defaults to False.
 
          Returns:
