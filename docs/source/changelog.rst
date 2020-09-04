@@ -6,6 +6,7 @@ Changelog
     * Enhancements
         * Add feature selection functions for null, correlated, and single value features (:pr:`1126`)
     * Fixes
+        * Fix ``encode_features`` converting excluded feature columns to a numeric dtype (:pr:`1123`)
         * Improve performance of unused primitive check in dfs (:pr:`1140`)
     * Changes
         * Remove the ability to stack transform primitives (:pr:`1119`)
@@ -20,7 +21,7 @@ Changelog
     to ``dfs`` to ensure a consistent ordering of features.
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`, :user:`gsheni`
+    :user:`tamargrey`, :user:`gsheni`, :user:`rwedge`
 
 **Breaking Changes**
 

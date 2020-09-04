@@ -60,21 +60,27 @@ def test_inplace_encodes_features(pd_es):
 def test_to_encode_features(pd_es):
     f1 = IdentityFeature(pd_es["log"]["product_id"])
     f2 = IdentityFeature(pd_es["log"]["value"])
+    f3 = IdentityFeature(pd_es["log"]["datetime"])
 
-    features = [f1, f2]
+    features = [f1, f2, f3]
     feature_matrix = calculate_feature_matrix(features, pd_es, instance_ids=[0, 1, 2, 3, 4, 5])
 
     feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features)
     feature_matrix_encoded_shape = feature_matrix_encoded.shape
 
-    # to_encode should keep product_id as a string, and not create 3 additional columns
+    # to_encode should keep product_id as a string and datetime as a date,
+    # and not have the same shape as previous encoded matrix due to fewer encoded features
     to_encode = []
     feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features, to_encode=to_encode)
     assert feature_matrix_encoded_shape != feature_matrix_encoded.shape
+    assert feature_matrix_encoded['datetime'].dtype == "datetime64[ns]"
+    assert feature_matrix_encoded['product_id'].dtype == "object"
 
     to_encode = ['value']
     feature_matrix_encoded, features_encoded = encode_features(feature_matrix, features, to_encode=to_encode)
     assert feature_matrix_encoded_shape != feature_matrix_encoded.shape
+    assert feature_matrix_encoded['datetime'].dtype == "datetime64[ns]"
+    assert feature_matrix_encoded['product_id'].dtype == "object"
 
 
 def test_encode_features_handles_pass_columns(pd_es):
