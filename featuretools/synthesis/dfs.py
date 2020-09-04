@@ -316,7 +316,7 @@ def warn_unused_primitives(unused_primitives):
 
 
 def _categorize_features(features):
-    """Categorize each feature in a list of features along with any dependencies"""
+    """Categorize each feature by its primitive type in a set of primitives along with any dependencies"""
     transform = set()
     agg = set()
     groupby = set()
