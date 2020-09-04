@@ -50,7 +50,9 @@ def check_schema_version(cls, cls_type):
             from featuretools.entityset.serialize import SCHEMA_VERSION
             version_string = cls.get('schema_version')
         elif cls_type == 'features':
-            from featuretools.feature_base.features_serializer import SCHEMA_VERSION
+            from featuretools.feature_base.features_serializer import (
+                SCHEMA_VERSION
+            )
             version_string = cls.features_dict['schema_version']
 
         current = SCHEMA_VERSION.split('.')
