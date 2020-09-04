@@ -1,5 +1,4 @@
 from featuretools import variable_types as vtypes
-from featuretools.feature_base import FeatureOutputSlice
 
 
 def remove_low_information_features(feature_matrix, features=None):
@@ -143,10 +142,11 @@ def _apply_feature_selection(keep, feature_matrix, features=None):
     if features is not None:
         sliced_features = []
         for f in features:
-            if f.number_output_features > 1:
-                sliced_features.extend([FeatureOutputSlice(f, i) for i in range(f.number_output_features)])
-            else:
+            if (f.number_output_features == 1 or
+                    all([slice_name in new_feature_names for slice_name in f.get_feature_names()])):
                 sliced_features.append(f)
+            else:
+                sliced_features.extend([f[i] for i in range(f.number_output_features)])
         new_features = [f for f in sliced_features if f.get_name() in new_feature_names]
         return new_matrix, new_features
     return new_matrix
