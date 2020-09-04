@@ -18,6 +18,7 @@ from featuretools.feature_base import (
 )
 from featuretools.utils import Trie
 from featuretools.utils.gen_utils import (
+    Library,
     get_relationship_variable_id,
     import_or_none,
     is_instance
@@ -634,8 +635,10 @@ class FeatureSetCalculator(object):
                     variable_id = f.base_features[0].get_name()
                     if variable_id not in to_agg:
                         to_agg[variable_id] = []
-                    if is_instance(base_frame, (dd, ks), 'DataFrame'):
-                        func = f.get_dask_aggregation()
+                    if isinstance(base_frame, dd.DataFrame):
+                        func = f.get_function(agg_type=Library.DASK)
+                    elif is_instance(base_frame, ks, 'DataFrame'):
+                        func = f.get_function(agg_type=Library.KOALAS)
                     else:
                         func = f.get_function()
 

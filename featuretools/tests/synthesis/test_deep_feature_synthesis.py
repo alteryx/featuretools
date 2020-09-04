@@ -41,7 +41,10 @@ from featuretools.primitives import (
 )
 from featuretools.synthesis import DeepFeatureSynthesis
 from featuretools.tests.testing_utils import feature_with_name
+from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.variable_types import Datetime, Numeric
+
+ks = import_or_none('databricks.koalas')
 
 
 @pytest.fixture(params=['pd_transform_es', 'dask_transform_es', 'koalas_transform_es'])
@@ -153,14 +156,20 @@ def test_only_makes_supplied_agg_feat(es):
     assert len(other_agg_features) == 0
 
 
-def test_errors_unsupported_primitives_dask(dask_es):
+def test_errors_unsupported_primitives(es):
     bad_trans_prim = CumSum()
     bad_agg_prim = NumUnique()
-    bad_trans_prim.dask_compatible, bad_agg_prim.dask_compatible = False, False
-    error_text = "Selected primitives are incompatible with Dask EntitySets: cum_sum, num_unique"
+    bad_trans_prim.compatibility, bad_agg_prim.compatibility = [], []
+    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+        library = 'Dask'
+    elif any(is_instance(entity.df, ks, 'DataFrame') for entity in es.entities):
+        library = 'Koalas'
+    else:
+        library = 'pandas'
+    error_text = "Selected primitives are incompatible with {} EntitySets: cum_sum, num_unique".format(library)
     with pytest.raises(ValueError, match=error_text):
         DeepFeatureSynthesis(target_entity_id='sessions',
-                             entityset=dask_es,
+                             entityset=es,
                              agg_primitives=[bad_agg_prim],
                              trans_primitives=[bad_trans_prim])
 
@@ -169,7 +178,7 @@ def test_errors_unsupported_primitives_koalas(ks_es):
     bad_trans_prim = CumSum()
     bad_agg_prim = NumUnique()
     bad_trans_prim.koalas_compatible, bad_agg_prim.koalas_compatible = False, False
-    error_text = "Selected primitives are incompatible with Koalas EntitySets: cum_sum, num_unique"
+    error_text = "Selected primitives are incompatible with Koalas EntitySets: cum_sum"
     with pytest.raises(ValueError, match=error_text):
         DeepFeatureSynthesis(target_entity_id='sessions',
                              entityset=ks_es,
@@ -1396,9 +1405,8 @@ def test_primitive_options_commutative(es):
         name = 'add_three'
         input_types = [Numeric, Numeric, Numeric]
         return_type = Numeric
-        dask_compatible = True
-        koalas_compatible = True
         commutative = True
+        compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
         def generate_name(self, base_feature_names):
             return "%s + %s + %s" % (base_feature_names[0], base_feature_names[1], base_feature_names[2])

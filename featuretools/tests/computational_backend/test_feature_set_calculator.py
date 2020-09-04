@@ -871,23 +871,11 @@ def test_handles_primitive_function_name_uniqueness(es):
         def __init__(self, n):
             self.n = n
 
-        def get_function(self):
+        def get_function(self, agg_type='pandas'):
             def my_function(values):
                 return values.sum() * self.n
 
             return my_function
-
-        def get_dask_aggregation(self):
-            def chunk(s):
-                return s.sum()
-
-            def agg(s):
-                return s.sum()
-
-            def finalize(s):
-                return s * self.n
-
-            return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
 
     # works as expected
     f1 = ft.Feature(es["log"]["value"],
@@ -939,7 +927,7 @@ def test_handles_primitive_function_name_uniqueness(es):
         stack_on_exclude = [Count]
         default_value = 0
 
-        def get_function(self):
+        def get_function(self, agg_type='pandas'):
             return np.sum
 
     class Sum2(AggregationPrimitive):
@@ -951,7 +939,7 @@ def test_handles_primitive_function_name_uniqueness(es):
         stack_on_exclude = [Count]
         default_value = 0
 
-        def get_function(self):
+        def get_function(self, agg_type='pandas'):
             return np.sum
 
     class Sum3(AggregationPrimitive):
@@ -963,7 +951,7 @@ def test_handles_primitive_function_name_uniqueness(es):
         stack_on_exclude = [Count]
         default_value = 0
 
-        def get_function(self):
+        def get_function(self, agg_type='pandas'):
             return np.sum
 
     f5 = ft.Feature(es["log"]["value"],
@@ -1052,7 +1040,7 @@ def test_precalculated_features(pd_es):
         input_types = [Numeric]
         return_type = Numeric
 
-        def get_function(self):
+        def get_function(self, agg_type='pandas'):
             def error(s):
                 raise RuntimeError(error_msg)
             return error

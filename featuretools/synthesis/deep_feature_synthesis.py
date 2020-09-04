@@ -23,7 +23,7 @@ from featuretools.primitives.options_utils import (
     generate_all_primitive_options,
     ignore_entity_for_primitive
 )
-from featuretools.utils.gen_utils import import_or_none, is_instance
+from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.variable_types import Boolean, Discrete, Id, Numeric
 
 ks = import_or_none('databricks.koalas')
@@ -181,12 +181,15 @@ class DeepFeatureSynthesis(object):
         self.target_entity_id = target_entity_id
         self.es = entityset
 
+        if any(isinstance(entity.df, dd.DataFrame) for entity in self.es.entities):
+            entityset_type = Library.DASK
+        elif any(is_instance(entity.df, ks, 'DataFrame') for entity in self.es.entities):
+            entityset_type = Library.KOALAS
+        else:
+            entityset_type = Library.PANDAS
+
         if agg_primitives is None:
-            agg_primitives = primitives.get_default_aggregation_primitives()
-            if any(isinstance(e.df, dd.DataFrame) for e in self.es.entities):
-                agg_primitives = [p for p in agg_primitives if p.dask_compatible]
-            if any(is_instance(e.df, ks, 'DataFrame') for e in self.es.entities):
-                agg_primitives = [p for p in agg_primitives if p.koalas_compatible]
+            agg_primitives = [p for p in primitives.get_default_aggregation_primitives() if entityset_type in p.compatibility]
         self.agg_primitives = []
         agg_prim_dict = primitives.get_aggregation_primitives()
         for a in agg_primitives:
@@ -203,11 +206,7 @@ class DeepFeatureSynthesis(object):
             self.agg_primitives.append(a)
 
         if trans_primitives is None:
-            trans_primitives = primitives.get_default_transform_primitives()
-            if any(isinstance(e.df, dd.DataFrame) for e in self.es.entities):
-                trans_primitives = [p for p in trans_primitives if p.dask_compatible]
-            if any(is_instance(e.df, ks, 'DataFrame') for e in self.es.entities):
-                trans_primitives = [p for p in trans_primitives if p.koalas_compatible]
+            trans_primitives = [p for p in primitives.get_default_transform_primitives() if entityset_type in p.compatibility]
         self.trans_primitives = []
         for t in trans_primitives:
             t = check_trans_primitive(t)
@@ -238,14 +237,10 @@ class DeepFeatureSynthesis(object):
             primitive_options = {}
         all_primitives = self.trans_primitives + self.agg_primitives + \
             self.where_primitives + self.groupby_trans_primitives
-        if any(isinstance(entity.df, dd.DataFrame) for entity in self.es.entities):
-            if not all([primitive.dask_compatible for primitive in all_primitives]):
-                bad_primitives = ", ".join([prim.name for prim in all_primitives if not prim.dask_compatible])
-                raise ValueError('Selected primitives are incompatible with Dask EntitySets: {}'.format(bad_primitives))
-        if any(is_instance(entity.df, ks, 'DataFrame') for entity in self.es.entities):
-            if not all([primitive.koalas_compatible for primitive in all_primitives]):
-                bad_primitives = ", ".join([prim.name for prim in all_primitives if not prim.koalas_compatible])
-                raise ValueError('Selected primitives are incompatible with Koalas EntitySets: {}'.format(bad_primitives))
+        bad_primitives = [prim.name for prim in all_primitives if entityset_type not in prim.compatibility]
+        if bad_primitives:
+            msg = 'Selected primitives are incompatible with {} EntitySets: {}'
+            raise ValueError(msg.format(entityset_type.value, ', '.join(bad_primitives)))
 
         self.primitive_options, self.ignore_entities, self.ignore_variables =\
             generate_all_primitive_options(all_primitives,

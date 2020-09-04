@@ -10,9 +10,10 @@ from featuretools.primitives.base import (
     PrimitiveBase,
     TransformPrimitive
 )
-from featuretools.utils.gen_utils import find_descendents
+from featuretools.utils.gen_utils import Library, find_descendents
 
 
+# returns all aggregation primitives, regardless of compatibility
 def get_aggregation_primitives():
     aggregation_primitives = set([])
     for attribute_string in dir(featuretools.primitives):
@@ -25,6 +26,7 @@ def get_aggregation_primitives():
     return {prim.name.lower(): prim for prim in aggregation_primitives}
 
 
+# returns all transform primitives, regardless of compatibility
 def get_transform_primitives():
     transform_primitives = set([])
     for attribute_string in dir(featuretools.primitives):
@@ -39,8 +41,8 @@ def get_transform_primitives():
 
 def list_primitives():
     trans_names, trans_primitives = _get_names_primitives(get_transform_primitives)
-    trans_dask = [primitive.dask_compatible for primitive in trans_primitives]
-    trans_koalas = [primitive.koalas_compatible for primitive in trans_primitives]
+    trans_dask = [Library.DASK in primitive.compatibility for primitive in trans_primitives]
+    trans_koalas = [Library.KOALAS in primitive.compatibility for primitive in trans_primitives]
     transform_df = pd.DataFrame({'name': trans_names,
                                  'description': _get_descriptions(trans_primitives),
                                  'dask_compatible': trans_dask,
@@ -48,8 +50,8 @@ def list_primitives():
     transform_df['type'] = 'transform'
 
     agg_names, agg_primitives = _get_names_primitives(get_aggregation_primitives)
-    agg_dask = [primitive.dask_compatible for primitive in agg_primitives]
-    agg_koalas = [primitive.koalas_compatible for primitive in agg_primitives]
+    agg_dask = [Library.DASK in primitive.compatibility for primitive in agg_primitives]
+    agg_koalas = [Library.KOALAS in primitive.compatibility for primitive in agg_primitives]
     agg_df = pd.DataFrame({'name': agg_names,
                            'description': _get_descriptions(agg_primitives),
                            'dask_compatible': agg_dask,

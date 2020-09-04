@@ -5,6 +5,7 @@ import pandas as pd
 
 from featuretools import config
 from featuretools.primitives.base.utils import signature
+from featuretools.utils.gen_utils import Library
 
 
 class PrimitiveBase(object):
@@ -31,10 +32,8 @@ class PrimitiveBase(object):
     base_of_exclude = None
     # (bool) If True will only make one feature per unique set of base features
     commutative = False
-    # (bool) If True, is compatible with Dask EntitySets
-    dask_compatible = False
-    # (bool) If True, is compatible with Koalas EntitySets
-    koalas_compatible = False
+    #: (list): Additional compatible libraries
+    compatibility = [Library.PANDAS]
 
     def __init__(self):
         pass
