@@ -1,7 +1,6 @@
 import logging
 from collections import defaultdict
 
-import pandas as pd
 from dask import dataframe as dd
 
 from featuretools import primitives, variable_types
@@ -182,12 +181,15 @@ class DeepFeatureSynthesis(object):
         self.target_entity_id = target_entity_id
         self.es = entityset
 
+        if any(isinstance(entity.df, dd.DataFrame) for entity in self.es.entities):
+            entityset_type = Library.DASK
+        elif any(is_instance(entity.df, ks, 'DataFrame') for entity in self.es.entities):
+            entityset_type = Library.KOALAS
+        else:
+            entityset_type = Library.PANDAS
+
         if agg_primitives is None:
-            agg_primitives = primitives.get_default_aggregation_primitives()
-            if any(isinstance(e.df, dd.DataFrame) for e in self.es.entities):
-                agg_primitives = [p for p in agg_primitives if Library.DASK in p.compatibility]
-            if any(is_instance(e.df, ks, 'DataFrame') for e in self.es.entities):
-                agg_primitives = [p for p in agg_primitives if Library.KOALAS in p.compatibility]
+            agg_primitives = [p for p in primitives.get_default_aggregation_primitives() if entityset_type in p.compatibility]
         self.agg_primitives = []
         agg_prim_dict = primitives.get_aggregation_primitives()
         for a in agg_primitives:
@@ -204,11 +206,7 @@ class DeepFeatureSynthesis(object):
             self.agg_primitives.append(a)
 
         if trans_primitives is None:
-            trans_primitives = primitives.get_default_transform_primitives()
-            if any(isinstance(e.df, dd.DataFrame) for e in self.es.entities):
-                trans_primitives = [p for p in trans_primitives if Library.DASK in p.compatibility]
-            if any(is_instance(e.df, ks, 'DataFrame') for e in self.es.entities):
-                trans_primitives = [p for p in trans_primitives if Library.KOALAS in p.compatibility]
+            trans_primitives = [p for p in primitives.get_default_transform_primitives() if entityset_type in p.compatibility]
         self.trans_primitives = []
         for t in trans_primitives:
             t = check_trans_primitive(t)
@@ -239,18 +237,9 @@ class DeepFeatureSynthesis(object):
             primitive_options = {}
         all_primitives = self.trans_primitives + self.agg_primitives + \
             self.where_primitives + self.groupby_trans_primitives
-        if any(isinstance(entity.df, pd.DataFrame) for entity in self.es.entities):
-            if not all([Library.PANDAS in primitive.compatibility for primitive in all_primitives]):
-                bad_primitives = ", ".join([prim.name for prim in all_primitives if Library.PANDAS not in prim.compatibility])
-                raise ValueError('Selected primitives are incompatible with pandas EntitySets: {}'.format(bad_primitives))
-        if any(isinstance(entity.df, dd.DataFrame) for entity in self.es.entities):
-            if not all([Library.DASK in primitive.compatibility for primitive in all_primitives]):
-                bad_primitives = ", ".join([prim.name for prim in all_primitives if Library.DASK not in prim.compatibility])
-                raise ValueError('Selected primitives are incompatible with Dask EntitySets: {}'.format(bad_primitives))
-        if any(is_instance(entity.df, ks, 'DataFrame') for entity in self.es.entities):
-            if not all([Library.KOALAS in primitive.compatibility for primitive in all_primitives]):
-                bad_primitives = ", ".join([prim.name for prim in all_primitives if Library.KOALAS not in prim.compatibility])
-                raise ValueError('Selected primitives are incompatible with Koalas EntitySets: {}'.format(bad_primitives))
+        bad_primitives = [prim.name for prim in all_primitives if entityset_type not in prim.compatibility]
+        if bad_primitives:
+            raise ValueError('Selected primitives are incompatible with {} EntitySets: {}'.format(entityset_type.value, ', '.join(bad_primitives)))
 
         self.primitive_options, self.ignore_entities, self.ignore_variables =\
             generate_all_primitive_options(all_primitives,
