@@ -5,6 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
         * Support use of Koalas DataFrames in entitysets (:pr:`1031`)
+        * Add feature selection functions for null, correlated, and single value features (:pr:`1126`)
     * Fixes
         * Improve performance of unused primitive check in dfs (:pr:`1140`)
     * Changes
