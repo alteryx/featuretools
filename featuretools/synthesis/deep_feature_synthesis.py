@@ -239,7 +239,8 @@ class DeepFeatureSynthesis(object):
             self.where_primitives + self.groupby_trans_primitives
         bad_primitives = [prim.name for prim in all_primitives if entityset_type not in prim.compatibility]
         if bad_primitives:
-            raise ValueError('Selected primitives are incompatible with {} EntitySets: {}'.format(entityset_type.value, ', '.join(bad_primitives)))
+            msg = 'Selected primitives are incompatible with {} EntitySets: {}'
+            raise ValueError(msg.format(entityset_type.value, ', '.join(bad_primitives)))
 
         self.primitive_options, self.ignore_entities, self.ignore_variables =\
             generate_all_primitive_options(all_primitives,
