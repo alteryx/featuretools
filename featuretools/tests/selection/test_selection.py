@@ -169,3 +169,33 @@ def test_remove_highly_correlated_features():
     assert len(diff_threshold_cols) == 2
     assert 'corr_words' in diff_threshold_cols
     assert 'diff_ints' in diff_threshold_cols
+
+
+def test_multi_output_selection():
+    df1 = pd.DataFrame({'id': [0, 1, 2, 3]})
+
+    df2 = pd.DataFrame({'first_id': [0, 1, 1, 3],
+                        "all_nulls": [None, None, None, None], 'quarter': ['a', 'b', None, 'c']})
+
+    entities = {
+        "first": (df1, 'id'),
+        "second": (df2, 'index'),
+    }
+
+    relationships = [("first", 'id', 'second', 'first_id')]
+    es = ft.EntitySet("data", entities, relationships=relationships)
+
+    fm, features = ft.dfs(entityset=es,
+                          target_entity="second",
+                          trans_primitives=[],
+                          agg_primitives=['n_most_common'],
+                          max_depth=2)
+
+    multi_output = ft.selection.remove_single_value_features(fm)
+    multi_output_cols = set(multi_output.columns)
+
+    assert 'first.N_MOST_COMMON(second.quarter)[0]' in multi_output_cols
+    for i in range(3):
+        assert 'first.N_MOST_COMMON(second.all_nulls)[%d]' % i not in multi_output_cols
+        if i != 0:
+            assert 'first.N_MOST_COMMON(second.quarter)[%d]' % i not in multi_output_cols
