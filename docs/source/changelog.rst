@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Add feature selection functions for null, correlated, and single value features (:pr:`1126`)
     * Fixes
         * Fix ``encode_features`` converting excluded feature columns to a numeric dtype (:pr:`1123`)
         * Improve performance of unused primitive check in dfs (:pr:`1140`)
