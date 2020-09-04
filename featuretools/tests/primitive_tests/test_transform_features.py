@@ -1027,7 +1027,7 @@ def test_make_transform_multiple_output_features(pd_es):
     fm, fl = ft.dfs(
         entityset=pd_es,
         target_entity="log",
-        agg_primitives=[],
+        agg_primitives=['sum'],
         trans_primitives=[TestTime, Year, Month, Day, Hour, Minute, Second, Diff],
         max_depth=5)
 
@@ -1037,9 +1037,9 @@ def test_make_transform_multiple_output_features(pd_es):
         assert (fm[col1] == fm[col2]).all()
 
     for i in range(6):
-        f = 'sessions.customers.DIFF(TEST_TIME(date_of_birth)[%d])' % i
+        f = 'sessions.customers.SUM(log.TEST_TIME(datetime)[%d])' % i
         assert feature_with_name(fl, f)
-        assert ('DIFF(TEST_TIME(datetime)[%d])' % i) in fl
+        assert ('products.DIFF(SUM(log.TEST_TIME(datetime)[%d]))' % i) in fl
 
 
 def test_feature_names_inherit_from_make_trans_primitive():

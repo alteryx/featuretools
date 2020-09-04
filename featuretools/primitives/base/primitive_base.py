@@ -46,6 +46,9 @@ class PrimitiveBase(object):
             self._method = self.get_function()
             return self._method(*series_args, **kwargs)
 
+    def __lt__(self, other):
+        return (self.name + self.get_args_string()) < (other.name + other.get_args_string())
+
     def generate_name(self):
         raise NotImplementedError("Subclass must implement")
 
@@ -77,13 +80,13 @@ class PrimitiveBase(object):
 
         args = signature(self.__class__).parameters.items()
         for name, arg in args:
-            # assert that arg is attribute of primitive
-            error = '"{}" must be attribute of {}'
-            assert hasattr(self, name), error.format(name, self.__class__.__name__)
-
             # skip if not a standard argument (e.g. excluding *args and **kwargs)
             if arg.kind != arg.POSITIONAL_OR_KEYWORD:
                 continue
+
+            # assert that arg is attribute of primitive
+            error = '"{}" must be attribute of {}'
+            assert hasattr(self, name), error.format(name, self.__class__.__name__)
 
             value = getattr(self, name)
             # check if args are the same type

@@ -25,6 +25,7 @@ from featuretools.primitives import (
     Equal,
     Hour,
     IsIn,
+    IsNull,
     Last,
     Mean,
     Mode,
@@ -40,7 +41,10 @@ from featuretools.primitives import (
     Year
 )
 from featuretools.synthesis import DeepFeatureSynthesis
-from featuretools.tests.testing_utils import feature_with_name
+from featuretools.tests.testing_utils import (
+    feature_with_name,
+    make_ecommerce_entityset
+)
 from featuretools.utils.gen_utils import Library, import_or_none, is_instance
 from featuretools.variable_types import Datetime, Numeric
 
@@ -792,8 +796,6 @@ def test_transform_consistency(transform_es):
     assert feature_with_name(feature_defs, 'b12 + P')
     assert feature_with_name(feature_defs, 'a + b12')
     assert feature_with_name(feature_defs, 'OR(b, b1)')
-    assert feature_with_name(feature_defs, 'OR(AND(b, b1), b)')
-    assert feature_with_name(feature_defs, 'OR(AND(b, b1), b1)')
 
 
 def test_transform_no_stack_agg(es):
@@ -949,10 +951,6 @@ def test_stacks_multioutput_features(es):
 
     for i in range(3):
         f = 'NUM_UNIQUE(sessions.N_MOST_COMMON(log.countrycode)[%d])' % i
-        assert feature_with_name(feat, f)
-
-    for i in range(6):
-        f = 'DIFF(TEST_TIME(date_of_birth)[%d])' % i
         assert feature_with_name(feat, f)
 
 
@@ -1438,3 +1436,90 @@ def test_primitive_options_commutative(es):
     assert len(add_three) == 1
     deps = add_three[0].get_dependencies(deep=True)
     assert deps[0].get_name() == 'value_2' and deps[1].get_name() == 'value_many_nans' and deps[2].get_name() == 'value'
+
+
+def test_primitive_ordering():
+    # Test that the order of the input primitives impacts neither
+    # which features are created nor their order
+    es = make_ecommerce_entityset()
+
+    trans_prims = [AddNumeric, Absolute, 'divide_numeric', NotEqual, 'is_null']
+    groupby_trans_prim = ['cum_mean', CumMin, CumSum]
+    agg_prims = [NMostCommon(n=3), Sum, Mean, Mean(skipna=False), 'min', 'max']
+    where_prims = ['count', Sum]
+
+    seed_num_chars = ft.Feature(es['customers']['favorite_quote'], primitive=NumCharacters)
+    seed_is_null = ft.Feature(es['customers']['age'], primitive=IsNull)
+    seed_features = [seed_num_chars, seed_is_null]
+
+    features1 = ft.dfs(entityset=es,
+                       target_entity="customers",
+                       trans_primitives=trans_prims,
+                       groupby_trans_primitives=groupby_trans_prim,
+                       agg_primitives=agg_prims,
+                       where_primitives=where_prims,
+                       seed_features=seed_features,
+                       max_features=-1,
+                       max_depth=2,
+                       features_only=2)
+
+    trans_prims.reverse()
+    groupby_trans_prim.reverse()
+    agg_prims.reverse()
+    where_prims.reverse()
+    seed_features.reverse()
+
+    features2 = ft.dfs(entityset=es,
+                       target_entity="customers",
+                       trans_primitives=trans_prims,
+                       groupby_trans_primitives=groupby_trans_prim,
+                       agg_primitives=agg_prims,
+                       where_primitives=where_prims,
+                       seed_features=seed_features,
+                       max_features=-1,
+                       max_depth=2,
+                       features_only=2)
+
+    assert len(features1) == len(features2)
+
+    for i in range(len(features2)):
+        assert features1[i].unique_name() == features2[i].unique_name()
+
+
+def test_no_transform_stacking():
+    df1 = pd.DataFrame({"id": [0, 1, 2, 3],
+                        "A": [0, 1, 2, 3]})
+    df2 = pd.DataFrame({'first_id': [0, 1, 1, 3], 'B': [99, 88, 77, 66]})
+
+    entities = {"first": (df1, 'id'),
+                "second": (df2, 'index')}
+    relationships = [("first", 'id', 'second', 'first_id')]
+    es = ft.EntitySet("data", entities, relationships)
+
+    feature_defs = ft.dfs(entityset=es, target_entity='second',
+                          trans_primitives=['negate', 'add_numeric'],
+                          agg_primitives=['sum'],
+                          max_depth=4,
+                          features_only=2)
+    expected = [
+        'first_id',
+        'B',
+        '-(B)',
+        'first.A',
+        'first.SUM(second.B)',
+        'first.-(A)',
+        'B + first.A',
+        'first.SUM(second.-(B))',
+        'first.A + SUM(second.B)',
+        'first.-(SUM(second.B))',
+        'B + first.SUM(second.B)',
+        'first.A + SUM(second.-(B))',
+        'first.SUM(second.-(B)) + SUM(second.B)',
+        'first.-(SUM(second.-(B)))',
+        'B + first.SUM(second.-(B))'
+    ]
+
+    assert len(feature_defs) == len(expected)
+
+    for feature_name in expected:
+        assert feature_with_name(feature_defs, feature_name)
