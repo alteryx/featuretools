@@ -186,16 +186,12 @@ def test_multi_output_selection():
     es = ft.EntitySet("data", entities, relationships=relationships)
 
     fm, features = ft.dfs(entityset=es,
-                          target_entity="second",
+                          target_entity="first",
                           trans_primitives=[],
                           agg_primitives=['n_most_common'],
                           max_depth=2)
 
-    multi_output = ft.selection.remove_single_value_features(fm)
-    multi_output_cols = set(multi_output.columns)
-
-    assert 'first.N_MOST_COMMON(second.quarter)[0]' in multi_output_cols
-    for i in range(3):
-        assert 'first.N_MOST_COMMON(second.all_nulls)[%d]' % i not in multi_output_cols
-        if i != 0:
-            assert 'first.N_MOST_COMMON(second.quarter)[%d]' % i not in multi_output_cols
+    multi_output, multi_output_features = ft.selection.remove_single_value_features(fm, features)
+    assert multi_output.columns == ['N_MOST_COMMON(second.quarter)[0]']
+    assert len(multi_output_features) == 1
+    assert multi_output_features[0].get_name() == multi_output.columns[0]
