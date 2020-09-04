@@ -257,8 +257,10 @@ def dfs(entities=None,
                                       primitive_options=primitive_options,
                                       max_features=max_features,
                                       seed_features=seed_features)
+
     features = dfs_object.build_features(
         verbose=verbose, return_variable_types=return_variable_types)
+
     trans, agg, groupby, where = _categorize_features(features)
 
     trans_unused = get_unused_primitives(trans_primitives, trans)

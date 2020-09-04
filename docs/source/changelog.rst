@@ -5,6 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
     * Fixes
+        * Improve performance of unused primitive check in dfs (:pr:`1140`)
     * Changes
         * Remove the ability to stack transform primitives (:pr:`1119`)
         * Sort primitives passed to ``dfs`` to get consistent ordering of features\* (:pr:`1119`)
