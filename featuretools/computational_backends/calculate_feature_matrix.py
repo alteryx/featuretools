@@ -185,7 +185,7 @@ def calculate_feature_matrix(features, entityset=None, cutoff_time=None, instanc
 
         if isinstance(instance_ids, dd.Series):
             instance_ids = instance_ids.compute()
-        if is_instance(instance_ids, ks, 'Series'):
+        elif is_instance(instance_ids, ks, 'Series'):
             instance_ids = instance_ids.to_pandas()
 
         # convert list or range object into series

@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Support use of Koalas DataFrames in entitysets (:pr:`1031`)
     * Fixes
     * Changes
         * Remove the ability to stack transform primitives (:pr:`1119`)
@@ -18,7 +19,7 @@ Changelog
     to ``dfs`` to ensure a consistent ordering of features.
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`, :user:`gsheni`
+    :user:`tamargrey`, :user:`gsheni`, :user:`frances-h`
 
 **Breaking Changes**
 

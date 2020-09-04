@@ -98,9 +98,10 @@ def write_entity_data(entity, path, format='csv', **kwargs):
     df = entity.df
 
     if format == 'csv':
-        df = df.copy()
-        columns = list(df.select_dtypes('object').columns)
-        df[columns] = df[columns].astype(str)
+        if is_instance(df, ks, 'DataFrame'):
+            df = df.copy()
+            columns = list(df.select_dtypes('object').columns)
+            df[columns] = df[columns].astype(str)
         df.to_csv(
             file,
             index=kwargs['index'],

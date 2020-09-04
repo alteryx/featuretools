@@ -11,7 +11,7 @@ This guide will provide an overview of how to create a Koalas ``EntitySet`` and 
 
 Creating Entities and EntitySets
 --------------------------------
-Koalas ``EntitySets`` require Koalas and PySpark. Both can be installed directly with ``pip install featuretools[koalas]``. Java is also required for PySpark and may need to be installed, see `the Spark documentation <https://spark.apache.org/docs/latest/index.html>`_ for more details. We will create a very small Koalas dataframe for this example. Koalas dataframes can also be created from pandas dataframes, or read in directly from a file.
+Koalas ``EntitySets`` require Koalas and PySpark. Both can be installed directly with ``pip install featuretools[koalas]``. Java is also required for PySpark and may need to be installed, see `the Spark documentation <https://spark.apache.org/docs/latest/index.html>`_ for more details. We will create a very small Koalas dataframe for this example. Koalas dataframes can also be created from pandas dataframes, Spark dataframes, or read in directly from a file.
 
 .. ipython:: python
 
