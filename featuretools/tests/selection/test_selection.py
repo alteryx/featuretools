@@ -198,14 +198,15 @@ def test_multi_output_selection():
     assert multi_output_features[0].get_name() == multi_output.columns[0]
 
     es = make_ecommerce_entityset()
-    matrix_with_slices, unsliced_features = ft.dfs(entityset=es,
-                                                   target_entity="régions",
-                                                   trans_primitives=[],
-                                                   agg_primitives=['n_most_common'],
-                                                   max_depth=2)
+    fm, features = ft.dfs(entityset=es,
+                          target_entity="régions",
+                          trans_primitives=[],
+                          agg_primitives=['n_most_common'],
+                          max_depth=2)
 
-    assert len(matrix_with_slices.columns) == 31
-    assert len(unsliced_features) == 11
+    matrix_with_slices, unsliced_features = ft.selection.remove_highly_null_features(fm, features)
+    assert len(matrix_with_slices.columns) == 22
+    assert len(unsliced_features) == 18
 
     matrix_columns = set(matrix_with_slices.columns)
     for f in unsliced_features:
