@@ -6,8 +6,11 @@ import tempfile
 
 import dask.dataframe as dd
 
+from featuretools.utils.gen_utils import import_or_none, is_instance
 from featuretools.utils.s3_utils import get_transport_params, use_smartopen_es
 from featuretools.utils.wrangle import _is_s3, _is_url
+
+ks = import_or_none('databricks.koalas')
 
 FORMATS = ['csv', 'pickle', 'parquet']
 SCHEMA_VERSION = "4.0.0"
@@ -23,9 +26,12 @@ def entity_to_description(entity):
         dictionary (dict) : Description of :class:`.Entity`.
     '''
     index = entity.df.columns.isin([variable.id for variable in entity.variables])
-    dtypes = entity.df[entity.df.columns[index]].dtypes.astype(str).to_dict()
+    indexer = entity.df.columns[index].to_list() if is_instance(entity.df, ks, 'DataFrame') else entity.df.columns[index]
+    dtypes = entity.df[indexer].dtypes.astype(str).to_dict()
     if isinstance(entity.df, dd.DataFrame):
         entity_type = 'dask'
+    elif is_instance(entity.df, ks, 'DataFrame'):
+        entity_type = 'koalas'
     else:
         entity_type = 'pandas'
     description = {
@@ -92,6 +98,10 @@ def write_entity_data(entity, path, format='csv', **kwargs):
     df = entity.df
 
     if format == 'csv':
+        if is_instance(df, ks, 'DataFrame'):
+            df = df.copy()
+            columns = list(df.select_dtypes('object').columns)
+            df[columns] = df[columns].astype(str)
         df.to_csv(
             file,
             index=kwargs['index'],
@@ -105,7 +115,7 @@ def write_entity_data(entity, path, format='csv', **kwargs):
         # Issue is resolved by casting columns of dtype object to string.
         df = df.copy()
         columns = list(df.select_dtypes('object').columns)
-        df[columns] = df[columns].astype('unicode')
+        df[columns] = df[columns].astype(str)
         df.to_parquet(file, **kwargs)
     elif format == 'pickle':
         # Dask currently does not support to_pickle

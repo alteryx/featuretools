@@ -1,5 +1,3 @@
-import dask.dataframe as dd
-
 import featuretools as ft
 from featuretools.primitives import (
     AddNumeric,
@@ -31,6 +29,7 @@ from featuretools.primitives import (
     SubtractNumericScalar,
     Sum
 )
+from featuretools.tests.testing_utils import to_pandas
 
 
 def test_overrides(es):
@@ -91,8 +90,7 @@ def test_override_boolean(es):
     features.append(~(count_lo.AND(count_hi)))
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2])
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
+    df = to_pandas(df, index='id', sort_index=True)
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert v == test
@@ -161,9 +159,9 @@ def test_override_cmp_from_variable(es):
 
     features = [count_lo]
 
-    df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2])
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
+    df = to_pandas(ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2]),
+                   index='id',
+                   sort_index=True)
     v = df[count_lo.get_name()].values.tolist()
     for i, test in enumerate(to_test):
         assert v[i] == test
@@ -195,8 +193,7 @@ def test_override_cmp(es):
                 lt_other, le_hi, le_other, ne_lo, ne_other]
 
     df = ft.calculate_feature_matrix(entityset=es, features=features, instance_ids=[0, 1, 2])
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
+    df = to_pandas(df, index='id', sort_index=True)
     for i, test in enumerate(to_test):
         v = df[features[i].get_name()].values.tolist()
         assert v == test

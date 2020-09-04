@@ -1,3 +1,5 @@
+import sys
+
 import pandas as pd
 import pytest
 from dask import dataframe as dd
@@ -145,7 +147,15 @@ def dd_employee_df(pd_employee_df):
     return dd.from_pandas(pd_employee_df, npartitions=2)
 
 
-@pytest.fixture(params=['pd_employee_df', 'dd_employee_df'])
+@pytest.fixture
+def ks_employee_df(pd_employee_df):
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+    if sys.platform.startswith('win'):
+        pytest.skip('skipping Koalas tests for Windows')
+    return ks.from_pandas(pd_employee_df)
+
+
+@pytest.fixture(params=['pd_employee_df', 'dd_employee_df', 'ks_employee_df'])
 def employee_df(request):
     return request.getfixturevalue(request.param)
 

@@ -83,6 +83,8 @@ jobs:
     parameters:
       image_tag:
         type: string
+      optional_libraries:
+        type: string
     executor:
       name: python
       image_tag: << parameters.image_tag >>
@@ -96,8 +98,22 @@ jobs:
           source venv/bin/activate
           python -m pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
-          python -m pip install -e unpacked_sdist/
-          python -m pip install -r unpacked_sdist/test-requirements.txt
+      - when:
+          condition: 
+            equal: [ "optional", << parameters.optional_libraries >> ]
+          steps:
+            - run: |
+                source venv/bin/activate
+                python -m pip install -e unpacked_sdist/[koalas]
+                python -m pip install -r unpacked_sdist/test-requirements.txt
+      - unless:
+          condition:
+            equal: ["optional", << parameters.optional_libraries >> ]
+          steps:
+            - run: |
+                source venv/bin/activate
+                python -m pip install -e unpacked_sdist/
+                python -m pip install -r unpacked_sdist/test-requirements.txt
       - persist_to_workspace:
           root: ~/featuretools
           paths:
@@ -119,21 +135,33 @@ jobs:
           command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-36-ft-release https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/main"
 
   unit_tests:
+    resource_class: large
     working_directory: ~/featuretools
     parameters:
       image_tag:
+        type: string
+      optional_libraries:
         type: string
     executor:
       name: python
       image_tag: << parameters.image_tag >>
     steps:
       - run: sudo apt update && sudo apt install -y graphviz
+      - when:
+          condition:
+            equal: ["optional", << parameters.optional_libraries >>]
+          steps:
+            - run: |
+                sudo apt install -y openjdk-11-jre-headless
+                JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
       - checkout
       - attach_workspace:
           at: ~/featuretools
       - when:
           condition:
-            equal: [ "3.6", << parameters.image_tag >> ]
+            and:
+              - equal: [ "3.6", << parameters.image_tag >> ]
+              - equal: ["optional", << parameters.optional_libraries >>]
           steps:
             - run: |
                 source venv/bin/activate
@@ -147,7 +175,9 @@ jobs:
                 codecov --required
       - unless:
           condition:
-            equal: [ "3.6", << parameters.image_tag >> ]
+            and: 
+              - equal: [ "3.6", << parameters.image_tag >> ]
+              - equal: ["optional", << parameters.optional_libraries >>]
           steps:
             - run: |
                 source venv/bin/activate
@@ -182,6 +212,9 @@ jobs:
     steps:
       - run: sudo apt update && sudo apt install -y pandoc
       - run: sudo apt install -y graphviz
+      - run: | 
+          sudo apt install -y openjdk-11-jre-headless
+          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
       - checkout
       - attach_workspace:
           at: ~/featuretools
@@ -241,28 +274,30 @@ workflows:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
-          name: << matrix.image_tag >> install featuretools
+              optional_libraries: ["minimal", "optional"]
+          name: << matrix.image_tag >> install featuretools << matrix.optional_libraries >>
       - unit_tests:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
-          name: << matrix.image_tag >> unit tests
+              optional_libraries: ["minimal", "optional"]
+          name: << matrix.image_tag >> unit tests << matrix.optional_libraries >>
           requires:
-            - << matrix.image_tag >> install featuretools
+            - << matrix.image_tag >> install featuretools << matrix.optional_libraries >>
       - lint_test:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
           name: << matrix.image_tag >> lint test
           requires:
-            - << matrix.image_tag >> install featuretools
+            - << matrix.image_tag >> install featuretools optional
       - build_docs:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
           name: build docs << matrix.image_tag >>
           requires:
-            - << matrix.image_tag >> install featuretools
+            - << matrix.image_tag >> install featuretools optional
       - install_ft_complete:
           matrix:
             parameters:

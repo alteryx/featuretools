@@ -35,9 +35,6 @@ class AggregationPrimitive(PrimitiveBase):
                                        use_prev_str)
         return [base_name + "[%s]" % i for i in range(n)]
 
-    def get_dask_aggregation(self):
-        raise NotImplementedError("Subclass must implement")
-
 
 def make_agg_primitive(function, input_types, return_type, name=None,
                        stack_on_self=True, stack_on=None,

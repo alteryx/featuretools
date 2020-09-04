@@ -96,13 +96,13 @@ By default, Featuretools checks that entities created from pandas dataframes hav
 
 When an ``Entity`` is created from a pandas dataframe, the ordering of the underlying dataframe rows is maintained. For a Dask ``Entity``, the ordering of the dataframe rows is not guaranteed, and Featuretools does not attempt to maintain row order in a Dask ``Entity``. If ordering is important, close attention must be paid to any output to avoid issues.
 
-The ``Entity.add_interesting_values()`` method is not supported when using a Dask ``Entity``.  If needed, users can manually set ``interesing_values`` on entities by assigning them directly with syntax similar to this: ``es["entity_name"]["variable_name"].interesting_values = ["Value 1", "Value 2"]``.
+The ``Entity.add_interesting_values()`` method is not supported when using a Dask ``Entity``.  If needed, users can manually set ``interesting_values`` on entities by assigning them directly with syntax similar to this: ``es["entity_name"]["variable_name"].interesting_values = ["Value 1", "Value 2"]``.
 
 EntitySet Limitations
 *********************
 When creating a Featuretools ``EntitySet`` that will be made of Dask entities, all of the entities used to create the ``EntitySet`` must be of the same type, either all Dask entities or all pandas entities. Featuretools does not support creating an ``EntitySet`` containing a mix of Dask and pandas entities.
 
-Additionally, the ``EntitySet.add_interesting_values()`` method is not supported when using a Dask ``EntitySet``. Users can manually set ``interesing_values`` on entities, as described above.
+Additionally, the ``EntitySet.add_interesting_values()`` method is not supported when using a Dask ``EntitySet``. Users can manually set ``interesting_values`` on entities, as described above.
 
 DFS Limitations
 ***************

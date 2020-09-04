@@ -93,8 +93,8 @@ class FeatureBase(object):
                     self._names = [self.get_name() + '[{}]'.format(i) for i in range(len(self._names))]
         return self._names
 
-    def get_function(self):
-        return self.primitive.get_function()
+    def get_function(self, **kwargs):
+        return self.primitive.get_function(**kwargs)
 
     def get_dependencies(self, deep=False, ignored=None, copy=True):
         """Returns features that are used to calculate this feature
@@ -629,9 +629,6 @@ class AggregationFeature(FeatureBase):
             'where': self.where and self.where.unique_name(),
             'use_previous': self.use_previous and self.use_previous.get_arguments(),
         }
-
-    def get_dask_aggregation(self):
-        return self.primitive.get_dask_aggregation()
 
     def relationship_path_name(self):
         if self._path_is_unique:

@@ -6,6 +6,10 @@ from dask import dataframe as dd
 
 import featuretools as ft
 from featuretools import Relationship
+from featuretools.tests.testing_utils import to_pandas
+from featuretools.utils.gen_utils import import_or_none
+
+ks = import_or_none('databricks.koalas')
 
 
 @pytest.fixture
@@ -67,12 +71,12 @@ def extra_session_df(es):
                   'device_type': 0,
                   'id': 6}
     row = pd.DataFrame(row_values, index=pd.Index([6], name='id'))
-    df = es['sessions'].df
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
+    df = to_pandas(es['sessions'].df)
     df = df.append(row, sort=True).sort_index()
     if isinstance(es['sessions'].df, dd.DataFrame):
         df = dd.from_pandas(df, npartitions=3)
+    if ks and isinstance(es['sessions'].df, ks.DataFrame):
+        df = ks.from_pandas(df)
     return df
 
 
@@ -81,7 +85,9 @@ class TestLastTimeIndex(object):
         es.add_last_time_indexes()
         log = es['log']
         assert len(log.last_time_index) == 17
-        for v1, v2 in zip(log.last_time_index, log.df['datetime']):
+        log_df = to_pandas(log.df)
+        log_lti = to_pandas(log.last_time_index)
+        for v1, v2 in zip(log_lti, log_df['datetime']):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     def test_leaf_no_time_index(self, es):
@@ -89,28 +95,26 @@ class TestLastTimeIndex(object):
         stores = es['stores']
         true_lti = pd.Series([None for x in range(6)], dtype='datetime64[ns]')
         assert len(true_lti) == len(stores.last_time_index)
-        for v1, v2 in zip(stores.last_time_index, true_lti):
+        stores_lti = to_pandas(stores.last_time_index)
+        for v1, v2 in zip(stores_lti, true_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     # TODO: possible issue with either normalize_entity or add_last_time_indexes
     def test_parent(self, values_es, true_values_lti):
         # test entity with time index and all instances in child entity
-        if any(isinstance(entity.df, dd.DataFrame) for entity in values_es.entities):
+        if not all(isinstance(entity.df, pd.DataFrame) for entity in values_es.entities):
             pytest.xfail('possible issue with either normalize_entity or add_last_time_indexes')
         values_es.add_last_time_indexes()
         values = values_es['values']
         assert len(values.last_time_index) == 11
-        sorted_lti = values.last_time_index
-        if isinstance(sorted_lti, dd.Series):
-            sorted_lti = sorted_lti.compute()
-        sorted_lti = sorted_lti.sort_index()
+        sorted_lti = to_pandas(values.last_time_index).sort_index()
         for v1, v2 in zip(sorted_lti, true_values_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
     # TODO: fails with Dask, tests needs to be reworked
     def test_parent_some_missing(self, values_es, true_values_lti):
         # test entity with time index and not all instances have children
-        if any(isinstance(entity.df, dd.DataFrame) for entity in values_es.entities):
+        if not all(isinstance(entity.df, pd.DataFrame) for entity in values_es.entities):
             pytest.xfail('fails with Dask, tests needs to be reworked')
         values = values_es['values']
 
@@ -139,10 +143,7 @@ class TestLastTimeIndex(object):
         es.add_last_time_indexes()
         sessions = es['sessions']
         assert len(sessions.last_time_index) == 6
-        lti = sessions.last_time_index
-        if isinstance(lti, dd.Series):
-            lti = lti.compute()
-        sorted_lti = lti.sort_index()
+        sorted_lti = to_pandas(sessions.last_time_index).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -158,10 +159,7 @@ class TestLastTimeIndex(object):
         true_sessions_lti[6] = pd.NaT
 
         assert len(sessions.last_time_index) == 7
-        lti = sessions.last_time_index
-        if isinstance(lti, dd.Series):
-            lti = lti.compute()
-        sorted_lti = lti.sort_index()
+        sorted_lti = to_pandas(sessions.last_time_index).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -170,6 +168,8 @@ class TestLastTimeIndex(object):
         # test all instances in both children
         if isinstance(es.entities[0].df, dd.DataFrame):
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
+        if ks and isinstance(es.entities[0].df, ks.DataFrame):
+            wishlist_df = ks.from_pandas(wishlist_df)
         variable_types = {'id': ft.variable_types.variable.Index,
                           'session_id': ft.variable_types.variable.Numeric,
                           'datetime': ft.variable_types.variable.DatetimeTimeIndex,
@@ -190,10 +190,7 @@ class TestLastTimeIndex(object):
         true_sessions_lti[3] = pd.Timestamp("2011-4-10 10:41:00")
 
         assert len(sessions.last_time_index) == 6
-        lti = sessions.last_time_index
-        if isinstance(lti, dd.Series):
-            lti = lti.compute()
-        sorted_lti = lti.sort_index()
+        sorted_lti = to_pandas(sessions.last_time_index).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -206,6 +203,8 @@ class TestLastTimeIndex(object):
         wishlist_df.drop(4, inplace=True)
         if isinstance(es.entities[0].df, dd.DataFrame):
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
+        if ks and isinstance(es.entities[0].df, ks.DataFrame):
+            wishlist_df = ks.from_pandas(wishlist_df)
         variable_types = {'id': ft.variable_types.variable.Index,
                           'session_id': ft.variable_types.variable.Numeric,
                           'datetime': ft.variable_types.variable.DatetimeTimeIndex,
@@ -225,10 +224,7 @@ class TestLastTimeIndex(object):
         true_sessions_lti[1] = pd.Timestamp("2011-4-9 10:31:30")
 
         assert len(sessions.last_time_index) == 6
-        lti = sessions.last_time_index
-        if isinstance(lti, dd.Series):
-            lti = lti.compute()
-        sorted_lti = lti.sort_index()
+        sorted_lti = to_pandas(sessions.last_time_index).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -248,6 +244,8 @@ class TestLastTimeIndex(object):
         df = wishlist_df.append(row)
         if isinstance(es.entities[0].df, dd.DataFrame):
             df = dd.from_pandas(df, npartitions=2)
+        if ks and isinstance(es.entities[0].df, ks.DataFrame):
+            df = ks.from_pandas(df)
         variable_types = {'id': ft.variable_types.variable.Index,
                           'session_id': ft.variable_types.variable.Numeric,
                           'datetime': ft.variable_types.variable.DatetimeTimeIndex,
@@ -269,10 +267,7 @@ class TestLastTimeIndex(object):
         true_sessions_lti[6] = pd.Timestamp("2011-04-11 11:11:11")
 
         assert len(sessions.last_time_index) == 7
-        lti = sessions.last_time_index
-        if isinstance(lti, dd.Series):
-            lti = lti.compute()
-        sorted_lti = lti.sort_index()
+        sorted_lti = to_pandas(sessions.last_time_index).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -295,6 +290,8 @@ class TestLastTimeIndex(object):
         df.drop(4, inplace=True)
         if isinstance(es.entities[0].df, dd.DataFrame):
             df = dd.from_pandas(df, npartitions=2)
+        if ks and isinstance(es.entities[0].df, ks.DataFrame):
+            df = ks.from_pandas(df)
         variable_types = {'id': ft.variable_types.variable.Index,
                           'session_id': ft.variable_types.variable.Numeric,
                           'datetime': ft.variable_types.variable.DatetimeTimeIndex,
@@ -315,10 +312,7 @@ class TestLastTimeIndex(object):
         true_sessions_lti[6] = pd.Timestamp("2011-04-11 11:11:11")
 
         assert len(sessions.last_time_index) == 7
-        lti = sessions.last_time_index
-        if isinstance(lti, dd.Series):
-            lti = lti.compute()
-        sorted_lti = lti.sort_index()
+        sorted_lti = to_pandas(sessions.last_time_index).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -329,6 +323,8 @@ class TestLastTimeIndex(object):
 
         if isinstance(es.entities[0].df, dd.DataFrame):
             wishlist_df = dd.from_pandas(wishlist_df, npartitions=2)
+        if ks and isinstance(es.entities[0].df, ks.DataFrame):
+            wishlist_df = ks.from_pandas(wishlist_df)
 
         variable_types = {'id': ft.variable_types.variable.Index,
                           'session_id': ft.variable_types.variable.Numeric,
@@ -355,10 +351,7 @@ class TestLastTimeIndex(object):
         true_sessions_lti[6] = pd.NaT
 
         assert len(sessions.last_time_index) == 7
-        lti = sessions.last_time_index
-        if isinstance(lti, dd.Series):
-            lti = lti.compute()
-        sorted_lti = lti.sort_index()
+        sorted_lti = to_pandas(sessions.last_time_index).sort_index()
         for v1, v2 in zip(sorted_lti, true_sessions_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2
 
@@ -370,15 +363,15 @@ class TestLastTimeIndex(object):
         # For one user, change a log event to be newer than the user's normal
         # last time index. This event should be from a different session than
         # the current last time index.
-        df = log.df
-        if isinstance(df, dd.DataFrame):
-            df = log.df.compute()
+        df = to_pandas(log.df)
         df['datetime'][5] = pd.Timestamp("2011-4-09 10:40:01")
         df = (df.set_index('datetime', append=True)
               .sort_index(level=[1, 0], kind="mergesort")
               .reset_index('datetime', drop=False))
         if isinstance(log.df, dd.DataFrame):
             df = dd.from_pandas(df, npartitions=2)
+        if ks and isinstance(log.df, ks.DataFrame):
+            df = ks.from_pandas(df)
         log.update_data(df)
         es.add_last_time_indexes()
 
@@ -387,9 +380,6 @@ class TestLastTimeIndex(object):
                                         datetime(2011, 4, 10, 11, 10, 3)])
 
         assert len(customers.last_time_index) == 3
-        lti = customers.last_time_index
-        if isinstance(lti, dd.Series):
-            lti = lti.compute()
-        sorted_lti = lti.sort_index()
+        sorted_lti = to_pandas(customers.last_time_index).sort_index()
         for v1, v2 in zip(sorted_lti, true_customers_lti):
             assert (pd.isnull(v1) and pd.isnull(v2)) or v1 == v2

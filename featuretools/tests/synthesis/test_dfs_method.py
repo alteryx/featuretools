@@ -1,3 +1,5 @@
+import sys
+
 import composeml as cp
 import numpy as np
 import pandas as pd
@@ -21,10 +23,14 @@ from featuretools.primitives import (
     make_trans_primitive
 )
 from featuretools.synthesis import dfs
+from featuretools.tests.testing_utils import to_pandas
+from featuretools.utils.gen_utils import import_or_none
 from featuretools.variable_types import Numeric
 
+ks = import_or_none('databricks.koalas')
 
-@pytest.fixture(params=['pd_entities', 'dask_entities'])
+
+@pytest.fixture(params=['pd_entities', 'dask_entities', 'koalas_entities'])
 def entities(request):
     return request.getfixturevalue(request.param)
 
@@ -53,6 +59,33 @@ def dask_entities():
     cards_df = dd.from_pandas(cards_df, npartitions=2)
     transactions_df = dd.from_pandas(transactions_df, npartitions=2)
 
+    cards_vtypes = {
+        'id': vtypes.Index
+    }
+    transactions_vtypes = {
+        'id': vtypes.Index,
+        'card_id': vtypes.Id,
+        'transaction_time': vtypes.NumericTimeIndex,
+        'fraud': vtypes.Boolean
+    }
+
+    entities = {
+        "cards": (cards_df, "id", None, cards_vtypes),
+        "transactions": (transactions_df, "id", "transaction_time", transactions_vtypes)
+    }
+    return entities
+
+
+@pytest.fixture
+def koalas_entities():
+    ks = pytest.importorskip('databricks.koalas', reason="Koalas not installed, skipping")
+    if sys.platform.startswith('win'):
+        pytest.skip('skipping Koalas tests for Windows')
+    cards_df = ks.DataFrame({"id": [1, 2, 3, 4, 5]})
+    transactions_df = ks.DataFrame({"id": [1, 2, 3, 4, 5, 6],
+                                    "card_id": [1, 2, 1, 3, 4, 5],
+                                    "transaction_time": [10, 12, 13, 20, 21, 20],
+                                    "fraud": [True, False, False, False, True, True]})
     cards_vtypes = {
         'id': vtypes.Index
     }
@@ -108,8 +141,7 @@ def test_accepts_cutoff_time_df(entities, relationships):
                                    relationships=relationships,
                                    target_entity="transactions",
                                    cutoff_time=cutoff_times_df)
-    if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.compute().set_index("id")
+    feature_matrix = to_pandas(feature_matrix, index='id', sort_index=True)
     assert len(feature_matrix.index) == 3
     assert len(feature_matrix.columns) == len(features)
 
@@ -138,9 +170,7 @@ def test_accepts_cutoff_time_compose(entities, relationships):
         window_size=1
     )
 
-    transactions_df = entities['transactions'][0]
-    if isinstance(transactions_df, dd.DataFrame):
-        transactions_df = transactions_df.compute()
+    transactions_df = to_pandas(entities['transactions'][0])
 
     labels = lm.search(
         transactions_df,
@@ -154,8 +184,7 @@ def test_accepts_cutoff_time_compose(entities, relationships):
                                    relationships=relationships,
                                    target_entity="cards",
                                    cutoff_time=labels)
-    if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.compute().set_index('id')
+    feature_matrix = to_pandas(feature_matrix, index='id')
     assert len(feature_matrix.index) == 6
     assert len(feature_matrix.columns) == len(features) + 1
 
@@ -165,8 +194,7 @@ def test_accepts_single_cutoff_time(entities, relationships):
                                    relationships=relationships,
                                    target_entity="transactions",
                                    cutoff_time=20)
-    if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.compute().set_index('id')
+    feature_matrix = to_pandas(feature_matrix, index='id')
     assert len(feature_matrix.index) == 5
     assert len(feature_matrix.columns) == len(features)
 
@@ -176,8 +204,7 @@ def test_accepts_no_cutoff_time(entities, relationships):
                                    relationships=relationships,
                                    target_entity="transactions",
                                    instance_ids=[1, 2, 3, 5, 6])
-    if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.set_index('id').compute()
+    feature_matrix = to_pandas(feature_matrix, index='id')
     assert len(feature_matrix.index) == 5
     assert len(feature_matrix.columns) == len(features)
 
@@ -191,8 +218,7 @@ def test_ignores_instance_ids_if_cutoff_df(entities, relationships):
                                    target_entity="transactions",
                                    cutoff_time=cutoff_times_df,
                                    instance_ids=instance_ids)
-    if isinstance(feature_matrix, dd.DataFrame):
-        feature_matrix = feature_matrix.set_index('id').compute()
+    feature_matrix = to_pandas(feature_matrix, index='id')
     assert len(feature_matrix.index) == 3
     assert len(feature_matrix.columns) == len(features)
 
@@ -312,6 +338,8 @@ def test_accepts_pd_dateoffset_training_window(datetime_es):
 
 
 def test_warns_with_unused_primitives(es):
+    if ks and any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+        pytest.skip('Koalas throws extra warnings')
     trans_primitives = ['num_characters', 'num_words', 'add_numeric']
     agg_primitives = [Max, 'min']
 

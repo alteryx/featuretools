@@ -4,6 +4,7 @@ Changelog
 ---------
 **Future Release**
     * Enhancements
+        * Support use of Koalas DataFrames in entitysets (:pr:`1031`)
         * Add feature selection functions for null, correlated, and single value features (:pr:`1126`)
     * Fixes
         * Fix ``encode_features`` converting excluded feature columns to a numeric dtype (:pr:`1123`)
@@ -21,7 +22,8 @@ Changelog
     to ``dfs`` to ensure a consistent ordering of features.
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`, :user:`gsheni`, :user:`rwedge`
+    :user:`tamargrey`, :user:`gsheni`, :user:`rwedge`, :user:`frances-h`, :user:`tuethan1999`, :user:`thehomebrewnerd`
+
 
 **Breaking Changes**
 
