@@ -19,7 +19,7 @@ Changelog
     to ``dfs`` to ensure a consistent ordering of features.
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`, :user:`gsheni`, :user:`frances-h`
+    :user:`tamargrey`, :user:`gsheni`, :user:`frances-h`, :user:`tuethan1999`, :user:`thehomebrewnerd`
 
 **Breaking Changes**
 
