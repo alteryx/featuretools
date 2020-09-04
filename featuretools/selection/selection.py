@@ -140,13 +140,18 @@ def _apply_feature_selection(keep, feature_matrix, features=None):
     new_feature_names = set(new_matrix.columns)
 
     if features is not None:
-        sliced_features = []
+        new_features = []
         for f in features:
-            if (f.number_output_features == 1 or
-                    all([slice_name in new_feature_names for slice_name in f.get_feature_names()])):
-                sliced_features.append(f)
+            if f.number_output_features > 1:
+
+                slices = [f[i] for i in range(f.number_output_features) if f[i].get_name() in new_feature_names]
+                if len(slices) == f.number_output_features:
+                    new_features.append(f)
+                else:
+                    new_features.extend(slices)
             else:
-                sliced_features.extend([f[i] for i in range(f.number_output_features)])
-        new_features = [f for f in sliced_features if f.get_name() in new_feature_names]
+                if f.get_name() in new_feature_names:
+                    new_features.append(f)
+
         return new_matrix, new_features
     return new_matrix

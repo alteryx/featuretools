@@ -4,6 +4,7 @@ import pytest
 
 import featuretools as ft
 from featuretools import Feature
+from featuretools.tests.testing_utils import make_ecommerce_entityset
 from featuretools.variable_types.variable import Text
 
 
@@ -195,3 +196,18 @@ def test_multi_output_selection():
     assert multi_output.columns == ['N_MOST_COMMON(second.quarter)[0]']
     assert len(multi_output_features) == 1
     assert multi_output_features[0].get_name() == multi_output.columns[0]
+
+    es = make_ecommerce_entityset()
+    matrix_with_slices, unsliced_features = ft.dfs(entityset=es,
+                                                   target_entity="régions",
+                                                   trans_primitives=[],
+                                                   agg_primitives=['n_most_common'],
+                                                   max_depth=2)
+
+    assert len(matrix_with_slices.columns) == 31
+    assert len(unsliced_features) == 11
+
+    matrix_columns = set(matrix_with_slices.columns)
+    for f in unsliced_features:
+        for f_name in f.get_feature_names():
+            assert f_name in matrix_columns
