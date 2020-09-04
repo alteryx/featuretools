@@ -76,6 +76,11 @@ def remove_single_value_features(feature_matrix, features=None, count_nan_as_val
 def remove_highly_correlated_features(feature_matrix, features=None, pct_corr_threshold=0.95, features_to_check=None, features_to_keep=None):
     """Removes columns in feature matrix that are highly correlated with another column.
 
+        Note:
+            We make the assumption that, for a pair of features, the feature that is further right in the feature matrix
+            produced by ``dfs`` is the more complex one. The assumption does not hold if the order of columns
+            in the feature matrix has changed from what ``dfs`` produces.
+
         Args:
             feature_matrix (:class:`pd.DataFrame`): DataFrame whose columns are feature names and rows are instances.
             features (list[:class:`featuretools.FeatureBase`] or list[str], optional): List of features to select.

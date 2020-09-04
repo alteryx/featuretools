@@ -51,13 +51,16 @@ def test_remove_highly_null_features():
                              "all_nulls": [None, None, None, None], 'quarter': ['a', 'b', None, 'c'], 'vals': [True, True, False, False]})
 
     es = ft.EntitySet("data", {'nulls': (nulls_df, 'id')})
-    fm, _ = ft.dfs(entityset=es,
-                   target_entity="nulls",
-                   trans_primitives=['is_null'],
-                   max_depth=2)
+    fm, features = ft.dfs(entityset=es,
+                          target_entity="nulls",
+                          trans_primitives=['is_null'],
+                          max_depth=2)
 
     with pytest.raises(ValueError, match='pct_null_threshold must be a float between 0 and 1, inclusive.'):
         ft.selection.remove_highly_null_features(fm, pct_null_threshold=1.1)
+
+    with pytest.raises(ValueError, match='pct_null_threshold must be a float between 0 and 1, inclusive.'):
+        ft.selection.remove_highly_null_features(fm, pct_null_threshold=-0.1)
 
     no_thresh = ft.selection.remove_highly_null_features(fm)
     no_thresh_cols = set(no_thresh.columns)
@@ -79,6 +82,12 @@ def test_remove_highly_null_features():
     assert 'all_nulls' not in no_tolerance_cols
     assert 'half_nulls' not in no_tolerance_cols
     assert 'quarter' not in no_tolerance_cols
+
+    with_features_param, with_features_param_features = ft.selection.remove_highly_null_features(fm, features)
+    assert len(with_features_param_features) == len(no_thresh.columns)
+    for i in range(len(with_features_param_features)):
+        assert with_features_param_features[i].get_name() == no_thresh.columns[i]
+        assert with_features_param.columns[i] == no_thresh.columns[i]
 
 
 def test_remove_single_value_features():
@@ -104,6 +113,12 @@ def test_remove_single_value_features():
     assert 'diff_vals' in nan_cols
     assert 'with_nan' in nan_cols
 
+    without_features_param = ft.selection.remove_single_value_features(fm)
+    assert len(no_params.columns) == len(without_features_param.columns)
+    for i in range(len(no_params.columns)):
+        assert no_params.columns[i] == without_features_param.columns[i]
+        assert no_params_features[i].get_name() == without_features_param.columns[i]
+
 
 def test_remove_highly_correlated_features():
     correlated_df = pd.DataFrame({
@@ -123,6 +138,9 @@ def test_remove_highly_correlated_features():
 
     with pytest.raises(ValueError, match='pct_corr_threshold must be a float between 0 and 1, inclusive.'):
         ft.selection.remove_highly_correlated_features(fm, pct_corr_threshold=1.1)
+
+    with pytest.raises(ValueError, match='pct_corr_threshold must be a float between 0 and 1, inclusive.'):
+        ft.selection.remove_highly_correlated_features(fm, pct_corr_threshold=-0.1)
 
     with pytest.raises(AssertionError, match="feature named not_a_feature is not in feature matrix"):
         ft.selection.remove_highly_correlated_features(fm, features_to_check=['not_a_feature'])
