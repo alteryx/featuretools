@@ -375,3 +375,6 @@ Feature Selection
     :toctree: generated/
 
     remove_low_information_features
+    remove_highly_correlated_features
+    remove_highly_null_features
+    remove_single_value_features

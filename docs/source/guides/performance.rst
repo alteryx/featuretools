@@ -19,16 +19,16 @@ Parallel Feature Computation
 ----------------------------
 Computational performance can often be improved by parallelizing the feature calculation process. There are several different approaches that can be used to perform parallel feature computation with Featuretools. An overview of the most commonly used approaches is provided below.
 
-Computation with Dask EntitySets (BETA)
-***************************************
+Computation with Dask and Koalas EntitySets (BETA)
+**************************************************
 .. note::
-    Support for Dask EntitySets is still in Beta. While the key functionality has been implemented, development is ongoing to add the remaining functionality.
+    Support for Dask EntitySets and Koalas EntitySets is still in Beta. While the key functionality has been implemented, development is ongoing to add the remaining functionality.
 
-    All planned improvements to the Featuretools/Dask integration are `documented on Github <https://github.com/FeatureLabs/featuretools/issues?q=is%3Aopen+is%3Aissue+label%3ADask>`_. If you see an open issue that is important for your application, please let us know by upvoting or commenting on the issue. If you encounter any errors using Dask entities, or find missing functionality that does not yet have an open issue, please create a `new issue on Github <https://github.com/FeatureLabs/featuretools/issues>`_.
+    All planned improvements to the Featuretools/Dask and Featuretools/Koalas integration are documented on Github (`Dask issues <https://github.com/FeatureLabs/featuretools/issues?q=is%3Aopen+is%3Aissue+label%3ADask>`_, `Koalas issues <https://github.com/FeatureLabs/featuretools/issues?q=is%3Aopen+is%3Aissue+label%3AKoalas>`_). If you see an open issue that is important for your application, please let us know by upvoting or commenting on the issue. If you encounter any errors using Dask or Koalas entities, or find missing functionality that does not yet have an open issue, please create a `new issue on Github <https://github.com/FeatureLabs/featuretools/issues>`_.
 
-Dask can be used with Featuretools to perform parallel feature computation with virtually no changes to the workflow required. Featuretools supports creating an ``EntitySet`` directly from Dask dataframes instead of using pandas dataframes, enabling the parallel and distributed computation capabilities of Dask to be used. By creating an ``EntitySet`` directly from Dask dataframes, Featuretools can be used to generate a larger-than-memory feature matrix, something that may be difficult with other approaches. When computing a feature matrix from an ``EntitySet`` created from Dask dataframes, the resulting feature matrix will be returned as a Dask dataframe.
+Dask or Koalas can be used with Featuretools to perform parallel feature computation with virtually no changes to the workflow required. Featuretools supports creating an ``EntitySet`` directly from Dask or Koalas dataframes instead of using pandas dataframes, enabling the parallel and distributed computation capabilities of Dask or Spark to be used. By creating an ``EntitySet`` directly from Dask or Koalas dataframes, Featuretools can be used to generate a larger-than-memory feature matrix, something that may be difficult with other approaches. When computing a feature matrix from an ``EntitySet`` created from Dask or Koalas dataframes, the resulting feature matrix will be returned as a Dask or Koalas dataframe depending on which type was used.
 
-This method does have some limitations in terms of the primitives that are available and the optional parameters that can be used when calculating the feature matrix. For more information on generating a feature matrix with this approach, refer to the guide :doc:`/guides/using_dask_entitysets`.
+These methods do have some limitations in terms of the primitives that are available and the optional parameters that can be used when calculating the feature matrix. For more information on generating a feature matrix with this approach, refer to the guides :doc:`/guides/using_dask_entitysets` and :doc:`/guides/using_koalas_entitysets`.
 
 Simple Parallel Feature Computation
 ***********************************
@@ -116,7 +116,3 @@ An example of this approach can be seen in the `Predict Next Purchase demo noteb
 An additional example of partitioning data to distribute on multiple cores or a cluster using Dask can be seen in the `Featuretools on Dask notebook <https://github.com/Featuretools/Automated-Manual-Comparison/blob/main/Loan%20Repayment/notebooks/Featuretools%20on%20Dask.ipynb>`_. This approach is detailed in the `Parallelizing Feature Engineering with Dask article <https://medium.com/feature-labs-engineering/scaling-featuretools-with-dask-ce46f9774c7d>`_ on the Feature Labs engineering blog. Dask allows for simple scaling to multiple cores on a single computer or multiple machines on a cluster.
 
 For a similar partition and distribute implementation using Apache Spark with PySpark, refer to the `Feature Engineering on Spark notebook <https://github.com/Featuretools/predict-customer-churn/blob/main/churn/4.%20Feature%20Engineering%20on%20Spark.ipynb>`_. This implementation shows how to carry out feature engineering on a cluster of EC2 instances using Spark as the distributed framework. A write-up of this approach is described in the `Featuretools on Spark article <https://blog.featurelabs.com/featuretools-on-spark-2/>`_ on the Feature Labs engineering blog.
-
-Running Featuretoools with Spark
-********************************
-The Featuretools development team is continually working to improve integration with Spark for performing feature engineering at scale. If you have a big data problem and are interested in testing our latest integrations for free, please let us know by completing `this simple request form <https://forms.office.com/Pages/ResponsePage.aspx?id=2TkvUj0wj0id66bXfx6v2ASd4JAap6pFigRj7EKGsuBUNDI4WDlGSzI1VVRHTUdMS0gyR1EyMkdJVi4u>`__.

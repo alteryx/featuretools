@@ -214,6 +214,11 @@ def dfs(entities=None,
 
         include_cutoff_time (bool): Include data at cutoff times in feature calculations. Defaults to ``True``.
 
+    Returns:
+        list[:class:`.FeatureBase`], pd.DataFrame:
+            The list of generated feature defintions, and the feature matrix.
+            If ``features_only`` is ``True``, the feature matrix will not be generated.
+
     Examples:
         .. code-block:: python
 
@@ -287,12 +292,11 @@ def dfs(entities=None,
     return feature_matrix, features
 
 
-def get_unused_primitives(specified, features):
+def get_unused_primitives(specified, used):
     """Get a list of unused primitives based on a list of specified primitives and a list of output features"""
     if not specified:
         return []
     specified = {primitive if isinstance(primitive, str) else primitive.name for primitive in specified}
-    used = {feature.primitive.name for feature in features}
     return sorted(list(specified.difference(used)))
 
 
@@ -314,12 +318,12 @@ def warn_unused_primitives(unused_primitives):
 
 
 def _categorize_features(features):
-    """Categorize each feature in a list of features along with any dependencies"""
-    transform = []
-    agg = []
-    groupby = []
-    where = []
-    explored = []
+    """Categorize each feature by its primitive type in a set of primitives along with any dependencies"""
+    transform = set()
+    agg = set()
+    groupby = set()
+    where = set()
+    explored = set()
 
     def get_feature_data(feature):
         if feature.get_name() in explored:
@@ -332,19 +336,19 @@ def _categorize_features(features):
 
         if isinstance(feature, AggregationFeature):
             if feature.where:
-                where.append(feature)
+                where.add(feature.primitive.name)
             else:
-                agg.append(feature)
+                agg.add(feature.primitive.name)
         elif isinstance(feature, GroupByTransformFeature):
-            groupby.append(feature)
+            groupby.add(feature.primitive.name)
         elif isinstance(feature, TransformFeature):
-            transform.append(feature)
+            transform.add(feature.primitive.name)
 
         feature_deps = feature.get_dependencies()
         if feature_deps:
             dependencies.extend(feature_deps)
 
-        explored.append(feature.get_name())
+        explored.add(feature.get_name())
 
         for dep in dependencies:
             get_feature_data(dep)

@@ -4,15 +4,19 @@ import os
 import boto3
 import pandas as pd
 import pytest
-from dask import dataframe as dd
 
 from featuretools.entityset import EntitySet, deserialize, serialize
+from featuretools.tests.testing_utils import to_pandas
+from featuretools.utils.gen_utils import import_or_none
 from featuretools.variable_types import (
     Categorical,
     Index,
     TimeIndex,
     find_variable_types
 )
+
+ks = import_or_none('databricks.koalas')
+
 
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
@@ -127,14 +131,10 @@ def test_to_csv(es, tmpdir):
     es.to_csv(str(tmpdir), encoding='utf-8', engine='python')
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
-    df = es['log'].df
-    if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id')
-    new_df = new_es['log'].df
-    if isinstance(new_df, dd.DataFrame):
-        new_df = new_df.compute().set_index('id')
-    assert type(df['latlong'][0]) == tuple
-    assert type(new_df['latlong'][0]) == tuple
+    df = to_pandas(es['log'].df, index='id')
+    new_df = to_pandas(new_es['log'].df, index='id')
+    assert type(df['latlong'][0]) in (tuple, list)
+    assert type(new_df['latlong'][0]) in (tuple, list)
 
 
 # Dask does not support to_pickle
@@ -172,22 +172,10 @@ def test_to_parquet(es, tmpdir):
     es.to_parquet(str(tmpdir))
     new_es = deserialize.read_entityset(str(tmpdir))
     assert es.__eq__(new_es, deep=True)
-    df = es['log'].df
-    new_df = new_es['log'].df
-    if isinstance(df, dd.DataFrame):
-        df = df.compute()
-    if isinstance(new_df, dd.DataFrame):
-        new_df = new_df.compute()
-    assert type(df['latlong'][0]) == tuple
-    assert type(df['latlong'][0]) == tuple
-
-
-def test_dask_to_parquet(dask_es, tmpdir):
-    dask_es.to_parquet(str(tmpdir))
-    new_es = deserialize.read_entityset(str(tmpdir))
-    assert dask_es.__eq__(new_es, deep=True)
-    assert type(dask_es['log'].df.set_index('id')['latlong'].compute()[0]) == tuple
-    assert type(new_es['log'].df.set_index('id')['latlong'].compute()[0]) == tuple
+    df = to_pandas(es['log'].df)
+    new_df = to_pandas(new_es['log'].df)
+    assert type(df['latlong'][0]) in (tuple, list)
+    assert type(new_df['latlong'][0]) in (tuple, list)
 
 
 def test_to_parquet_manual_interesting_values(es, tmpdir):
@@ -253,7 +241,7 @@ def make_public(s3_client, s3_bucket):
 
 # TODO: tmp file disappears after deserialize step, cannot check equality with Dask
 def test_serialize_s3_csv(es, s3_client, s3_bucket):
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
     es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python')
     make_public(s3_client, s3_bucket)
@@ -261,7 +249,7 @@ def test_serialize_s3_csv(es, s3_client, s3_bucket):
     assert es.__eq__(new_es, deep=True)
 
 
-# Dask does not support to_pickle
+# Dask and Koalas do not support to_pickle
 def test_serialize_s3_pickle(pd_es, s3_client, s3_bucket):
     pd_es.to_pickle(TEST_S3_URL)
     make_public(s3_client, s3_bucket)
@@ -269,20 +257,20 @@ def test_serialize_s3_pickle(pd_es, s3_client, s3_bucket):
     assert pd_es.__eq__(new_es, deep=True)
 
 
-# TODO: tmp file disappears after deserialize step, cannot check equality with Dask
+# TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
 def test_serialize_s3_parquet(es, s3_client, s3_bucket):
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
-        pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
+    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+        pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask or Koalas')
     es.to_parquet(TEST_S3_URL)
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL)
     assert es.__eq__(new_es, deep=True)
 
 
-# TODO: tmp file disappears after deserialize step, cannot check equality with Dask
+# TODO: tmp file disappears after deserialize step, cannot check equality with Dask, Koalas
 def test_serialize_s3_anon_csv(es, s3_client, s3_bucket):
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
-        pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
+    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+        pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask or Koalas')
     es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name=False)
     make_public(s3_client, s3_bucket)
     new_es = deserialize.read_entityset(TEST_S3_URL, profile_name=False)
@@ -299,7 +287,7 @@ def test_serialize_s3_anon_pickle(pd_es, s3_client, s3_bucket):
 
 # TODO: tmp file disappears after deserialize step, cannot check equality with Dask
 def test_serialize_s3_anon_parquet(es, s3_client, s3_bucket):
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
     es.to_parquet(TEST_S3_URL, profile_name=False)
     make_public(s3_client, s3_bucket)
@@ -346,7 +334,7 @@ def setup_test_profile(monkeypatch, tmpdir):
 
 
 def test_s3_test_profile(es, s3_client, s3_bucket, setup_test_profile):
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
+    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
         pytest.xfail('tmp file disappears after deserialize step, cannot check equality with Dask')
     es.to_csv(TEST_S3_URL, encoding='utf-8', engine='python', profile_name='test')
     make_public(s3_client, s3_bucket)
@@ -365,7 +353,11 @@ def test_serialize_subdirs_not_removed(es, tmpdir):
     test_dir = write_path.mkdir("test_dir")
     with open(str(write_path.join('data_description.json')), 'w') as f:
         json.dump('__SAMPLE_TEXT__', f)
-    serialize.write_data_description(es, path=str(write_path), index='1', sep='\t', encoding='utf-8', compression=None)
+    if ks and any(isinstance(e.df, ks.DataFrame) for e in es.entities):
+        compression = 'none'
+    else:
+        compression = None
+    serialize.write_data_description(es, path=str(write_path), index='1', sep='\t', encoding='utf-8', compression=compression)
     assert os.path.exists(str(test_dir))
     with open(str(write_path.join('data_description.json')), 'r') as f:
         assert '__SAMPLE_TEXT__' not in json.load(f)

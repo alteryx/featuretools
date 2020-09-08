@@ -1,4 +1,3 @@
-import dask.dataframe as dd
 import numpy as np
 import pandas as pd
 import pytest
@@ -22,6 +21,7 @@ from featuretools.primitives import (
 )
 from featuretools.primitives.utils import PrimitivesDeserializer
 from featuretools.synthesis import dfs
+from featuretools.tests.testing_utils import to_pandas
 from featuretools.variable_types import Categorical, Datetime, Numeric
 
 
@@ -32,8 +32,7 @@ def test_direct_from_identity(es):
     feature_set = FeatureSet([d])
     calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
     df = calculator.run(np.array([0, 5]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id').sort_index()
+    df = to_pandas(df, index='id', sort_index=True)
     v = df[d.get_name()].tolist()
     assert v == [0, 1]
 
@@ -47,8 +46,7 @@ def test_direct_from_variable(es):
     feature_set = FeatureSet([d])
     calculator = FeatureSetCalculator(es, feature_set=feature_set, time_last=None)
     df = calculator.run(np.array([0, 5]))
-    if isinstance(df, dd.DataFrame):
-        df = df.compute().set_index('id').sort_index()
+    df = to_pandas(df, index='id', sort_index=True)
     v = df[d.get_name()].tolist()
     assert v == [0, 1]
 
@@ -88,9 +86,9 @@ def test_direct_copy(games_es):
 
 
 def test_direct_of_multi_output_transform_feat(es):
-    # TODO: Update to work with Dask
-    if any(isinstance(entity.df, dd.DataFrame) for entity in es.entities):
-        pytest.xfail("Custom primitive is not compabible with Dask")
+    # TODO: Update to work with Dask and Koalas
+    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+        pytest.xfail("Custom primitive is not compabible with Dask or Koalas")
 
     class TestTime(TransformPrimitive):
         name = "test_time"
@@ -134,7 +132,7 @@ def test_direct_features_of_multi_output_agg_primitives(pd_es):
         return_type = Categorical
         number_output_features = 3
 
-        def get_function(self):
+        def get_function(self, agg_type='pandas'):
             def pd_top3(x):
                 array = np.array(x.value_counts()[:3].index)
                 if len(array) < 3:

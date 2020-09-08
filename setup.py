@@ -12,7 +12,8 @@ extras_require = {
   'categorical_encoding': ['categorical-encoding >= 0.2.0'],
   'nlp_primitives': ['nlp-primitives[complete] >= 1.0.0'],
   'autonormalize': ['autonormalize >= 1.0.0'],
-  'sklearn_transformer': ['featuretools-sklearn-transformer >= 0.1.0'],
+  'sklearn_transformer': ['featuretools-sklearn-transformer >= 0.1.1'],
+  'koalas': ['pyspark >= 3.0.0', 'koalas >= 1.1.0']
 }
 extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
@@ -39,7 +40,7 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-          'featuretools = featuretools.__main__:cli'
+            'featuretools = featuretools.__main__:cli'
         ]
     },
     long_description=long_description,
