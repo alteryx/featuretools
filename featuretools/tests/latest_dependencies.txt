@@ -3,7 +3,7 @@ cloudpickle==1.6.0
 dask==2.25.0
 distributed==2.25.0
 numpy==1.19.1
-pandas==1.1.1
+pandas==1.1.2
 psutil==5.7.2
 scipy==1.5.2
 tqdm==4.48.2
