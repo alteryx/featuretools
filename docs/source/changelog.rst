@@ -2,7 +2,7 @@
 
 Changelog
 ---------
-**Future Release**
+**v0.19.0 Sept 8, 2020**
     * Enhancements
         * Support use of Koalas DataFrames in entitysets (:pr:`1031`)
         * Add feature selection functions for null, correlated, and single value features (:pr:`1126`)
@@ -22,7 +22,7 @@ Changelog
     to ``dfs`` to ensure a consistent ordering of features.
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`, :user:`gsheni`, :user:`rwedge`, :user:`frances-h`, :user:`tuethan1999`, :user:`thehomebrewnerd`
+    :user:`frances-h`, :user:`gsheni`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`tuethan1999`
 
 
 **Breaking Changes**
