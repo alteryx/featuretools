@@ -810,7 +810,8 @@ class FeatureOutputSlice(FeatureBase):
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
-        base_feature = arguments['base_feature']
+        base_feature_name = arguments['base_feature']
+        base_feature = dependencies[base_feature_name]
         n = arguments['n']
         name = arguments['name']
         return cls(base_feature=base_feature, n=n, name=name)
