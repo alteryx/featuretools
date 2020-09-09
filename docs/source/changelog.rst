@@ -9,6 +9,7 @@ Changelog
     * Fixes
         * Fix ``encode_features`` converting excluded feature columns to a numeric dtype (:pr:`1123`)
         * Improve performance of unused primitive check in dfs (:pr:`1140`)
+        * Fix duplicate label column generation when labels are passed in cutoff times and approximate is being used (:pr:`1147`)
     * Changes
         * Remove the ability to stack transform primitives (:pr:`1119`, :pr:`1145`)
         * Sort primitives passed to ``dfs`` to get consistent ordering of features\* (:pr:`1119`)
