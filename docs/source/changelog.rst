@@ -5,6 +5,7 @@ Changelog
 **Future Release**
     * Enhancements
     * Fixes
+        * Allow FeatureOutputSlice features to be serialized (:pr:`1150`)
     * Changes
     * Documentation Changes
         * Update release doc for clarity and to add Future Release template (:pr:`1151`)
