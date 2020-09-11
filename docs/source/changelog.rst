@@ -2,6 +2,15 @@
 
 Changelog
 ---------
+**Future Release**
+    * Enhancements
+    * Fixes
+        * Fix duplicate label column generation when labels are passed in cutoff times and approximate is being used (:pr:`1147`)
+    * Changes
+    * Documentation Changes
+        * Update release doc for clarity and to add Future Release template (:pr:`1151`)
+
+
 **v0.19.0 Sept 8, 2020**
     * Enhancements
         * Support use of Koalas DataFrames in entitysets (:pr:`1031`)
@@ -9,7 +18,6 @@ Changelog
     * Fixes
         * Fix ``encode_features`` converting excluded feature columns to a numeric dtype (:pr:`1123`)
         * Improve performance of unused primitive check in dfs (:pr:`1140`)
-        * Fix duplicate label column generation when labels are passed in cutoff times and approximate is being used (:pr:`1147`)
     * Changes
         * Remove the ability to stack transform primitives (:pr:`1119`, :pr:`1145`)
         * Sort primitives passed to ``dfs`` to get consistent ordering of features\* (:pr:`1119`)
