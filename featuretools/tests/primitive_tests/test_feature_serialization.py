@@ -94,21 +94,6 @@ def test_pickle_features_with_custom_primitive(pd_es, tmpdir):
     pickle_features_test_helper(asizeof(pd_es), features_original, str(tmpdir))
 
 
-def test_pickle_multi_output_features(pd_es, tmpdir):
-    value = ft.IdentityFeature(pd_es['log']['product_id'])
-    threecommon = ft.primitives.NMostCommon()
-    tc = ft.Feature(pd_es['log']['product_id'], parent_entity=pd_es["sessions"], primitive=threecommon)
-
-    features_original = [tc, value]
-    for i in range(3):
-        features_original.append(ft.Feature(tc[i],
-                                            parent_entity=pd_es['customers'],
-                                            primitive=ft.primitives.NumUnique))
-        features_original.append(tc[i])
-
-    pickle_features_test_helper(asizeof(pd_es), features_original, str(tmpdir))
-
-
 def test_serialized_renamed_features(es):
     def serialize_name_unchanged(original):
         new_name = 'MyFeature'
