@@ -9,7 +9,10 @@ Changelog
     * Changes
     * Documentation Changes
         * Update release doc for clarity and to add Future Release template (:pr:`1151`)
+    * Testing Changes
 
+    Thanks to the following people for contributing to this release:
+    :user:`tamargrey`, :user: `tuethan1999`
 
 **v0.19.0 Sept 8, 2020**
     * Enhancements

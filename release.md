@@ -23,7 +23,7 @@ We need to upload a featuretools package to test with the conda recipe
 #### Set up fork of our conda-forge repo
 Branches on the conda-forge featuretools repo are automatically built and the package uploaded to conda-forge, so to test a release without uploading to conda-forge we need to fork the repo and develop on the fork.
 1. Fork conda-forge/featuretools-feedstock: visit https://github.com/conda-forge/featuretools-feedstock and click fork
-2. Clone forked repo locally
+2. Clone forked repo locally, selecting your own github account as the base for the forked repo. 
 3. Add conda-forge repo as the 'upstream' repository
     ```bash
     git remote add upstream https://github.com/conda-forge/featuretools-feedstock.git
@@ -37,7 +37,7 @@ Branches on the conda-forge featuretools repo are automatically built and the pa
     ```
 5. Make a branch with the version you want to release
     ```bash
-    git checkout -b new-featuretools-version
+    git checkout -b v0.13.0.dev0
     ```
 
 #### Update conda recipe to use TestPyPI release of featuretools
@@ -105,11 +105,22 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
 #### Update changelog
 1. Replace "Future Release" in `docs/source/changelog.rst` with the current date
     ```
-    **v0.13.3** Feb 28, 2020
+    **v0.13.3 Feb 28, 2020**
     ```
 2. Remove any unused changelog sections for this release (e.g. Fixes, Testing Changes)
 3. Add yourself to the list of contributors to this release and put the contributors in alphabetical order
 4. The release PR does not need to be mentioned in the list of changes
+5. Add a commented out "Future Release" section with all of the changelog sections above the current section
+    ```
+    .. **Future Release**
+        * Enhancements
+        * Fixes
+        * Changes
+        * Documentation Changes
+        * Testing Changes
+
+    .. Thanks to the following people for contributing to this release:
+    ```
 
 
 #### Create Release PR
@@ -125,6 +136,6 @@ After the release pull request has been merged into the main branch, it is time 
 * Publishing the release will automatically upload the package to PyPI
 
 ## Release on conda-forge
-1. A bot should automatically create a new PR in conda-forge/featuretools-feedstock
+1. A bot should automatically create a new PR in conda-forge/featuretools-feedstock - note, the PR may take up to a few hours to be created
 2. Update requirements changes in `recipe/meta.yaml` (bot should have handled version and source links on its own)
 3. After tests pass, a maintainer will merge the PR in
