@@ -743,7 +743,7 @@ class Feature(object):
 
     def __new__(self, base, entity=None, groupby=None, parent_entity=None,
                 primitive=None, use_previous=None, where=None):
-        # either direct or indentity
+        # either direct or identity
         if primitive is None and entity is None:
             return IdentityFeature(base)
         elif primitive is None and entity is not None:

@@ -158,7 +158,8 @@ def test_to_dictionary_direct(es):
                       'relationship': {'parent_entity_id': 'sessions',
                                        'child_entity_id': 'log',
                                        'parent_variable_id': 'id',
-                                       'child_variable_id': 'session_id'}}
+                                       'child_variable_id': 'session_id'}
+                      }
     }
 
     assert expected == direct_feature.to_dictionary()
@@ -172,9 +173,9 @@ def test_to_dictionary_identity(es):
         'dependencies': [],
         'arguments': {'name': None,
                       'variable_id': 'customer_id',
-                      'entity_id': 'sessions'
-                      }
+                      'entity_id': 'sessions'}
     }
+
     assert expected == identity_feature.to_dictionary()
 
 
@@ -195,10 +196,33 @@ def test_to_dictionary_agg(es):
                                     'module': 'featuretools.primitives.standard.aggregation_primitives',
                                     'arguments': {}},
                       'where': None,
-                      'use_previous': None
-                      }
+                      'use_previous': None}
     }
+
     assert expected == agg_feature.to_dictionary()
+
+
+def test_to_dictionary_where(es):
+    agg_where = ft.Feature(es['log']['value'], parent_entity=es['sessions'],
+                           where=ft.IdentityFeature(es['log']['value']) == 2, primitive=Sum)
+
+    expected = {
+        'type': 'AggregationFeature',
+        'dependencies': ['log: value', 'log: value = 2'],
+        'arguments': {'name': None,
+                      'base_features': ['log: value'],
+                      'relationship_path': [{'parent_entity_id': 'sessions',
+                                             'child_entity_id': 'log',
+                                             'parent_variable_id': 'id',
+                                             'child_variable_id': 'session_id'}],
+                      'primitive': {'type': 'Sum',
+                                    'module': 'featuretools.primitives.standard.aggregation_primitives',
+                                    'arguments': {}},
+                      'where': 'log: value = 2',
+                      'use_previous': None}
+    }
+
+    assert expected == agg_where.to_dictionary()
 
 
 def test_to_dictionary_trans(es):
@@ -213,7 +237,25 @@ def test_to_dictionary_trans(es):
                                     'module': 'featuretools.primitives.standard.transform_primitive',
                                     'arguments': {}}
                       }}
+
     assert expected == trans_feature.to_dictionary()
+
+
+def test_to_dictionary_grouby_trans(es):
+    groupby_feature = ft.Feature(es['log']['value'], primitive=Negate, groupby=es['log']['product_id'])
+
+    expected = {
+        'type': 'GroupByTransformFeature',
+        'dependencies': ['log: value', 'log: product_id'],
+        'arguments': {'name': None,
+                      'base_features': ['log: value'],
+                      'primitive': {'type': 'Negate',
+                                    'module': 'featuretools.primitives.standard.transform_primitive',
+                                    'arguments': {}},
+                      'groupby': 'log: product_id'}
+    }
+
+    assert expected == groupby_feature.to_dictionary()
 
 
 def test_to_dictionary_multi_slice(es):
