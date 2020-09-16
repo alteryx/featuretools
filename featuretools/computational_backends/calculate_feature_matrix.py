@@ -437,9 +437,9 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                 # if approximate, merge feature matrix with group frame to get original
                 # cutoff times and passed columns
                 if approximate:
-                    pass_columns = [c for c in pass_columns if c not in _feature_matrix]
+                    cols = [c for c in _feature_matrix.columns if c not in pass_columns]
                     indexer = group[['instance_id', target_time] + pass_columns]
-                    _feature_matrix = indexer.merge(_feature_matrix,
+                    _feature_matrix = indexer.merge(_feature_matrix[cols],
                                                     left_on=['instance_id'],
                                                     right_index=True,
                                                     how='left')
