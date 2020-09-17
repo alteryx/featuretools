@@ -259,12 +259,12 @@ def test_passing_strings_to_variable_types_dfs():
         'home_team_score': [3, 0, 1, 0, 4],
         'away_team_score': [2, 1, 2, 0, 0]
     })
-    entities = {'teams': (teams, 'id', None, {'name': 'text'}), 'games': (games, 'id')}
+    entities = {'teams': (teams, 'id', None, {'name': 'natural_language'}), 'games': (games, 'id')}
     relationships = [('teams', 'id', 'games', 'home_team_id')]
 
     features = ft.dfs(entities, relationships, target_entity="teams", features_only=True)
     name_class = features[0].entity['name'].__class__
-    assert name_class == variable_types['text']
+    assert name_class == variable_types['natural_language']
 
 
 def test_replace_latlong_nan_during_entity_creation(pd_es):

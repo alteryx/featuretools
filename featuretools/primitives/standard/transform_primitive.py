@@ -16,7 +16,7 @@ from featuretools.variable_types import (
     LatLong,
     Numeric,
     Ordinal,
-    Text,
+    NaturalLanguage,
     Variable
 )
 
@@ -326,7 +326,7 @@ class NumCharacters(TransformPrimitive):
         [16, 11, 6]
     """
     name = 'num_characters'
-    input_types = [Text]
+    input_types = [NaturalLanguage]
     return_type = Numeric
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 
@@ -348,7 +348,7 @@ class NumWords(TransformPrimitive):
         [4, 2, 1, 6]
     """
     name = 'num_words'
-    input_types = [Text]
+    input_types = [NaturalLanguage]
     return_type = Numeric
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
 

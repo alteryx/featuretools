@@ -93,7 +93,7 @@ def test_add_last_time_indexes():
         "id": ft.variable_types.Id,
         "user": ft.variable_types.Id,
         "time": ft.variable_types.DatetimeTimeIndex,
-        "strings": ft.variable_types.Text
+        "strings": ft.variable_type.NaturalLanguage
     }
 
     transactions = pd.DataFrame({"id": [0, 1, 2, 3, 4, 5],
@@ -167,7 +167,7 @@ def test_single_table_ks_entityset():
         "id": ft.variable_types.Id,
         "values": ft.variable_types.Numeric,
         "dates": ft.variable_types.Datetime,
-        "strings": ft.variable_types.Text
+        "strings": ft.variable_type.NaturalLanguage
     }
     ks_es.entity_from_dataframe(entity_id="data",
                                 dataframe=values_dd,
@@ -182,7 +182,7 @@ def test_single_table_ks_entityset():
     pd_es.entity_from_dataframe(entity_id="data",
                                 dataframe=df,
                                 index="id",
-                                variable_types={"strings": ft.variable_types.Text})
+                                variable_types={"strings": ft.variable_type.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -213,7 +213,7 @@ def test_single_table_ks_entityset_ids_not_sorted():
         "id": ft.variable_types.Id,
         "values": ft.variable_types.Numeric,
         "dates": ft.variable_types.Datetime,
-        "strings": ft.variable_types.Text
+        "strings": ft.variable_type.NaturalLanguage
     }
     ks_es.entity_from_dataframe(entity_id="data",
                                 dataframe=values_dd,
@@ -228,7 +228,7 @@ def test_single_table_ks_entityset_ids_not_sorted():
     pd_es.entity_from_dataframe(entity_id="data",
                                 dataframe=df,
                                 index="id",
-                                variable_types={"strings": ft.variable_types.Text})
+                                variable_types={"strings": ft.variable_type.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -260,7 +260,7 @@ def test_single_table_ks_entityset_with_instance_ids():
         "id": ft.variable_types.Id,
         "values": ft.variable_types.Numeric,
         "dates": ft.variable_types.Datetime,
-        "strings": ft.variable_types.Text
+        "strings": ft.variable_type.NaturalLanguage
     }
     ks_es.entity_from_dataframe(entity_id="data",
                                 dataframe=values_dd,
@@ -276,7 +276,7 @@ def test_single_table_ks_entityset_with_instance_ids():
     pd_es.entity_from_dataframe(entity_id="data",
                                 dataframe=df,
                                 index="id",
-                                variable_types={"strings": ft.variable_types.Text})
+                                variable_types={"strings": ft.variable_type.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -307,7 +307,7 @@ def test_single_table_ks_entityset_single_cutoff_time():
         "id": ft.variable_types.Id,
         "values": ft.variable_types.Numeric,
         "dates": ft.variable_types.Datetime,
-        "strings": ft.variable_types.Text
+        "strings": ft.variable_type.NaturalLanguage
     }
     ks_es.entity_from_dataframe(entity_id="data",
                                 dataframe=values_dd,
@@ -323,7 +323,7 @@ def test_single_table_ks_entityset_single_cutoff_time():
     pd_es.entity_from_dataframe(entity_id="data",
                                 dataframe=df,
                                 index="id",
-                                variable_types={"strings": ft.variable_types.Text})
+                                variable_types={"strings": ft.variable_type.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",
@@ -352,7 +352,7 @@ def test_single_table_ks_entityset_cutoff_time_df():
         "id": ft.variable_types.Id,
         "values": ft.variable_types.Numeric,
         "dates": ft.variable_types.Datetime,
-        "strings": ft.variable_types.Text
+        "strings": ft.variable_type.NaturalLanguage
     }
     ks_es.entity_from_dataframe(entity_id="data",
                                 dataframe=values_dd,
@@ -377,7 +377,7 @@ def test_single_table_ks_entityset_cutoff_time_df():
                                 dataframe=df,
                                 index="id",
                                 time_index="dates",
-                                variable_types={"strings": ft.variable_types.Text})
+                                variable_types={"strings": ft.variable_type.NaturalLanguage})
 
     fm, _ = ft.dfs(entityset=pd_es,
                    target_entity="data",

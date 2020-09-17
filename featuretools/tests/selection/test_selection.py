@@ -5,7 +5,7 @@ import pytest
 import featuretools as ft
 from featuretools import Feature
 from featuretools.tests.testing_utils import make_ecommerce_entityset
-from featuretools.variable_types.variable import Text
+from featuretools.variable_types.variable import NaturalLanguage
 
 
 @pytest.fixture
@@ -131,7 +131,7 @@ def test_remove_highly_correlated_features():
         'corr_2': [99, 88, 77, 33]
     })
 
-    es = ft.EntitySet("data", {'correlated': (correlated_df, 'id', None, {'words': Text})})
+    es = ft.EntitySet("data", {'correlated': (correlated_df, 'id', None, {'words': NaturalLanguage})})
     fm, _ = ft.dfs(entityset=es,
                    target_entity="correlated",
                    trans_primitives=['num_characters'],
