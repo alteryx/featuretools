@@ -138,7 +138,7 @@ What's next?
 * Learn about :doc:`getting_started/using_entitysets`
 * Apply automated feature engineering with :doc:`getting_started/afe`
 * Explore `runnable demos <https://www.featuretools.com/demos>`__ based on real world use cases
-* Can't find what you're looking for? Ask for :doc:`help`
+* Can't find what you're looking for? Ask for :doc:`resources/help`
 
 
 
