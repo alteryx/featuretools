@@ -14,9 +14,9 @@ from featuretools.variable_types import (
     Datetime,
     DatetimeTimeIndex,
     LatLong,
+    NaturalLanguage,
     Numeric,
     Ordinal,
-    NaturalLanguage,
     Variable
 )
 
