@@ -5,7 +5,6 @@ Get started here
 
 .. toctree::
 
-   install
    using_entitysets
    afe
    primitives

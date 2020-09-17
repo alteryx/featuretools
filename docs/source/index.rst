@@ -147,13 +147,14 @@ Table of contents
 -----------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   getting_started/placeholder
+   install
 
 .. toctree::
    :maxdepth: 2
 
+   getting_started/placeholder
    guides/guides_index
 
 .. toctree::
