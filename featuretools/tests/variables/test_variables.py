@@ -3,10 +3,7 @@ import warnings
 import pandas as pd
 
 import featuretools as ft
-from featuretools.variable_types import (
-    NaturalLanguage,
-    Text
-)
+from featuretools.variable_types import NaturalLanguage, Text
 
 
 def test_text_depreciation():
