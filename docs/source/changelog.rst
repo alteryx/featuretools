@@ -5,7 +5,11 @@ Changelog
 **Future Release**
     * Enhancements
     * Fixes
+<<<<<<< HEAD
         * Fix duplicate label column generation when labels are passed in cutoff times and approximate is being used (:pr:`1147`)
+=======
+        * Allow FeatureOutputSlice features to be serialized (:pr:`1150`)
+>>>>>>> 380c719ba7b900d9d492cc82c1940ac08ecec6e3
     * Changes
     * Documentation Changes
         * Update release doc for clarity and to add Future Release template (:pr:`1151`)

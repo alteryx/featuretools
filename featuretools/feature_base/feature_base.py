@@ -743,7 +743,7 @@ class Feature(object):
 
     def __new__(self, base, entity=None, groupby=None, parent_entity=None,
                 primitive=None, use_previous=None, where=None):
-        # either direct or indentity
+        # either direct or identity
         if primitive is None and entity is None:
             return IdentityFeature(base)
         elif primitive is None and entity is not None:
@@ -804,13 +804,14 @@ class FeatureOutputSlice(FeatureBase):
     def get_arguments(self):
         return {
             'name': self._name,
-            'base_feature': self.base_feature,
+            'base_feature': self.base_feature.unique_name(),
             'n': self.n
         }
 
     @classmethod
     def from_dictionary(cls, arguments, entityset, dependencies, primitives_deserializer):
-        base_feature = arguments['base_feature']
+        base_feature_name = arguments['base_feature']
+        base_feature = dependencies[base_feature_name]
         n = arguments['n']
         name = arguments['name']
         return cls(base_feature=base_feature, n=n, name=name)
