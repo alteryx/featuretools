@@ -323,7 +323,7 @@ class NaturalLanguage(Variable):
 
 class Text(NaturalLanguage):
     def __init__(self, id, entity, name=None):
-        msg = "Text has been deprecated. Please use NaturalLanguage instead"
+        msg = "Text has been deprecated. Please use NaturalLanguage instead."
         warnings.warn(msg, category=FutureWarning)
         super(Text, self).__init__(id, entity, name)
 

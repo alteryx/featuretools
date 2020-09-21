@@ -297,6 +297,9 @@ class Entity(object):
         for vid in variable_types.copy():
             vtype = variable_types[vid]
             if isinstance(vtype, str):
+                if vtype in ['Text', 'text']:
+                    msg = f"{vtype} has been deprecated. Please use NaturalLanguage instead."
+                    warnings.warn(msg, category=FutureWarning)
                 if vtype in string_to_class_map:
                     variable_types[vid] = string_to_class_map[vtype]
                 else:
