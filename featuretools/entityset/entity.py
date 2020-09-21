@@ -20,7 +20,7 @@ from featuretools.utils.wrangle import (
     _check_timedelta,
     _dataframes_equal
 )
-from featuretools.variable_types import find_variable_types
+from featuretools.variable_types import Text, find_variable_types
 
 ks = import_or_none('databricks.koalas')
 
@@ -294,12 +294,11 @@ class Entity(object):
         variables = []
         variable_types = variable_types.copy() or {}
         string_to_class_map = find_variable_types()
+        # TODO: Remove once Text has been deprecated
+        string_to_class_map[Text.type_string] = Text
         for vid in variable_types.copy():
             vtype = variable_types[vid]
             if isinstance(vtype, str):
-                if vtype in ['Text', 'text']:
-                    msg = f"{vtype} has been deprecated. Please use NaturalLanguage instead."
-                    warnings.warn(msg, category=FutureWarning)
                 if vtype in string_to_class_map:
                     variable_types[vid] = string_to_class_map[vtype]
                 else:

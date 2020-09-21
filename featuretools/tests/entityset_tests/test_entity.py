@@ -1,3 +1,4 @@
+import warnings
 from datetime import datetime
 
 import numpy as np
@@ -275,3 +276,30 @@ def test_replace_latlong_nan_during_entity_creation(pd_es):
     with pytest.warns(UserWarning, match="LatLong columns should contain only tuples. All single 'NaN' values in column 'latlong' have been replaced with '\\(NaN, NaN\\)'."):
         entity = ft.Entity(id="nan_latlong_entity", df=df, entityset=nan_es, variable_types=pd_es['log'].variable_types)
     assert entity.df['latlong'][0] == (np.nan, np.nan)
+
+
+def test_text_deprecation_warning():
+    data = pd.DataFrame({
+        "id": [1, 2, 3, 4, 5],
+        "value": ["a", "c", "b", "a", "a"]
+    })
+
+    for text_repr in ['text', ft.variable_types.Text]:
+        es = ft.EntitySet()
+        warnings.resetwarnings()
+        with warnings.catch_warnings(record=True) as ws:
+            warnings.simplefilter("always")
+            es = es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
+                                          variable_types={"value": text_repr})
+        assert len(ws) == 1
+        assert ws[0].category == FutureWarning
+        assert str(ws[0].message) == "Text has been deprecated. Please use NaturalLanguage instead."
+
+    for nl_repr in ['natural_language', ft.variable_types.NaturalLanguage]:
+        es = ft.EntitySet()
+        warnings.resetwarnings()
+        with warnings.catch_warnings(record=True) as ws:
+            warnings.simplefilter("always")
+            es = es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
+                                          variable_types={"value": nl_repr})
+        assert len(ws) == 0
