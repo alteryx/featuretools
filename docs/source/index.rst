@@ -166,14 +166,6 @@ Table of contents
    Primitive Reference <https://primitives.featurelabs.com/>
    release_notes
 
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Hide from Table of Contents
-   :hidden:
-
-   feature_engineering_language/feature-types
-
 Other links
 ------------
 * :ref:`genindex`
