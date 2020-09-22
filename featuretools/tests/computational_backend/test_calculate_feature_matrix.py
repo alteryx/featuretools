@@ -1084,6 +1084,41 @@ def test_cutoff_time_extra_columns_approximate(pd_es):
     assert (fm['label'].values == cutoff_df['label'].values).all()
 
 
+def test_cutoff_time_extra_columns_same_name(es):
+    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+        pytest.xfail('Distributed result not ordered')
+    agg_feat = ft.Feature(es['customers']['id'], parent_entity=es[u'régions'], primitive=Count)
+    dfeat = DirectFeature(agg_feat, es['customers'])
+
+    cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),
+                                       pd.Timestamp('2011-04-09 10:30:03'),
+                                       pd.Timestamp('2011-04-08 10:30:00')],
+                              'instance_id': [0, 1, 0],
+                              'régions.COUNT(customers)': [False, False, True]},
+                             columns=['time', 'instance_id', 'régions.COUNT(customers)'])
+    fm = calculate_feature_matrix([dfeat], es, cutoff_time=cutoff_df)
+
+    assert (fm['régions.COUNT(customers)'].values == cutoff_df['régions.COUNT(customers)'].values).all()
+
+
+def test_cutoff_time_extra_columns_same_name_approximate(pd_es):
+    agg_feat = ft.Feature(pd_es['customers']['id'], parent_entity=pd_es[u'régions'], primitive=Count)
+    dfeat = DirectFeature(agg_feat, pd_es['customers'])
+
+    cutoff_df = pd.DataFrame({'time': [pd.Timestamp('2011-04-09 10:30:06'),
+                                       pd.Timestamp('2011-04-09 10:30:03'),
+                                       pd.Timestamp('2011-04-08 10:30:00')],
+                              'instance_id': [0, 1, 0],
+                              'régions.COUNT(customers)': [False, False, True]},
+                             columns=['time', 'instance_id', 'régions.COUNT(customers)'])
+    fm = calculate_feature_matrix([dfeat],
+                                  pd_es,
+                                  cutoff_time=cutoff_df,
+                                  approximate="2 days")
+
+    assert (fm['régions.COUNT(customers)'].values == cutoff_df['régions.COUNT(customers)'].values).all()
+
+
 def test_instances_after_cutoff_time_removed(es):
     property_feature = ft.Feature(es['log']['id'], parent_entity=es['customers'], primitive=Count)
     cutoff_time = datetime(2011, 4, 8)
