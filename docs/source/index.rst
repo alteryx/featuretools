@@ -173,7 +173,6 @@ Table of contents
    :hidden:
 
    feature_engineering_language/feature-types
-   guides/save_progress_example
 
 Other links
 ------------
