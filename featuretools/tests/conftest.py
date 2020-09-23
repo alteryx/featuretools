@@ -1,7 +1,6 @@
 import copy
 import sys
 
-import dask
 import dask.dataframe as dd
 import pandas as pd
 import pytest
