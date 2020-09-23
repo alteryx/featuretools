@@ -438,11 +438,11 @@ def calculate_chunk(cutoff_time, chunk_size, feature_set, entityset, approximate
                 # cutoff times and passed columns
                 if approximate:
                     cols = [c for c in _feature_matrix.columns if c not in pass_columns]
-                    indexer = pd.DataFrame(group[['instance_id', target_time] + pass_columns])
-                    _feature_matrix = indexer.merge(_feature_matrix[cols],
-                                                    left_on=['instance_id'],
-                                                    right_index=True,
-                                                    how='left')
+                    indexer = group[['instance_id', target_time] + pass_columns]
+                    _feature_matrix = _feature_matrix[cols].merge(indexer,
+                                                                  right_on=['instance_id'],
+                                                                  left_index=True,
+                                                                  how='right')
                     _feature_matrix.set_index(['instance_id', target_time], inplace=True)
                     _feature_matrix.index.set_names([id_name, 'time'], inplace=True)
                     _feature_matrix.sort_index(level=1, kind='mergesort', inplace=True)
