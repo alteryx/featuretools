@@ -4,7 +4,7 @@ Changelog
 ---------
 **Future Release**
     .. warning::
-        The Text variable type has been deprecated and been replaced with NaturalLanguage. Future releases of Featuretools will not have the Text variable type.
+        The Text variable type has been deprecated and been replaced with the NaturalLanguage variable type. The Text variable type will be removed in a future release.
 
     * Enhancements
     * Fixes

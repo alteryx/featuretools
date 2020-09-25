@@ -16,6 +16,7 @@ def test_text_depreciation():
         es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
                                  variable_types={"text_column": Text})
     es = ft.EntitySet()
-    with pytest.warns(None):
+    with pytest.warns(None) as record:
         es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
                                  variable_types={"text_column": NaturalLanguage})
+        assert len(record) == 0
