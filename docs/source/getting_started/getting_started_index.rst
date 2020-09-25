@@ -1,9 +1,10 @@
 Getting Started
 ---------------
 
-Get started here
+How to start working with Featuretools; The main concepts
 
 .. toctree::
+   :maxdepth: 1
 
    using_entitysets
    afe

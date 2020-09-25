@@ -154,7 +154,7 @@ Table of contents
 .. toctree::
    :maxdepth: 2
 
-   getting_started/placeholder
+   getting_started/getting_started_index
    guides/guides_index
 
 .. toctree::
