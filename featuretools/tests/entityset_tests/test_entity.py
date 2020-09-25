@@ -259,12 +259,12 @@ def test_passing_strings_to_variable_types_dfs():
         'home_team_score': [3, 0, 1, 0, 4],
         'away_team_score': [2, 1, 2, 0, 0]
     })
-    entities = {'teams': (teams, 'id', None, {'name': 'text'}), 'games': (games, 'id')}
+    entities = {'teams': (teams, 'id', None, {'name': 'natural_language'}), 'games': (games, 'id')}
     relationships = [('teams', 'id', 'games', 'home_team_id')]
 
     features = ft.dfs(entities, relationships, target_entity="teams", features_only=True)
     name_class = features[0].entity['name'].__class__
-    assert name_class == variable_types['text']
+    assert name_class == variable_types['natural_language']
 
 
 def test_replace_latlong_nan_during_entity_creation(pd_es):
@@ -275,3 +275,24 @@ def test_replace_latlong_nan_during_entity_creation(pd_es):
     with pytest.warns(UserWarning, match="LatLong columns should contain only tuples. All single 'NaN' values in column 'latlong' have been replaced with '\\(NaN, NaN\\)'."):
         entity = ft.Entity(id="nan_latlong_entity", df=df, entityset=nan_es, variable_types=pd_es['log'].variable_types)
     assert entity.df['latlong'][0] == (np.nan, np.nan)
+
+
+def test_text_deprecation_warning():
+    data = pd.DataFrame({
+        "id": [1, 2, 3, 4, 5],
+        "value": ["a", "c", "b", "a", "a"]
+    })
+
+    for text_repr in ['text', ft.variable_types.Text]:
+        es = ft.EntitySet()
+        match = "Text has been deprecated. Please use NaturalLanguage instead."
+        with pytest.warns(FutureWarning, match=match):
+            es = es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
+                                          variable_types={"value": text_repr})
+
+    for nl_repr in ['natural_language', ft.variable_types.NaturalLanguage]:
+        es = ft.EntitySet()
+        with pytest.warns(None) as record:
+            es = es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
+                                          variable_types={"value": nl_repr})
+        assert len(record) == 0

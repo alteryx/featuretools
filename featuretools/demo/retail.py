@@ -79,7 +79,7 @@ def load_retail(id='demo_retail_data', nrows=None, return_single_table=False):
                              index="order_product_id",
                              make_index=True,
                              time_index="order_date",
-                             variable_types={'description': vtypes.Text})
+                             variable_types={'description': vtypes.NaturalLanguage})
 
     es.normalize_entity(new_entity_id="products",
                         base_entity_id="order_products",

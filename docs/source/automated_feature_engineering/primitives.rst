@@ -112,7 +112,7 @@ Simple Custom Primitives
 .. ipython :: python
 
     from featuretools.primitives import make_agg_primitive, make_trans_primitive
-    from featuretools.variable_types import Text, Numeric
+    from featuretools.variable_types import NaturalLanguage, Numeric
 
     def absolute(column):
         return abs(column)
@@ -171,7 +171,7 @@ Next, we need to create a custom primitive from the ``word_count`` function.
 .. ipython :: python
 
     WordCount = make_trans_primitive(function=word_count,
-                                     input_types=[Text],
+                                     input_types=[NaturalLanguage],
                                      return_type=Numeric)
 
 .. ipython :: python

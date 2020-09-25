@@ -66,7 +66,7 @@ def infer_variable_types(df, link_vars, variable_types, time_index, secondary_ti
                 try:
                     avg_length = sample.str.len().mean()
                     if avg_length > 50:
-                        inferred_type = vtypes.Text
+                        inferred_type = vtypes.NaturalLanguage
                 except AttributeError:
                     pass
 
