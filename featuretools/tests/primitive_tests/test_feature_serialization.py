@@ -46,6 +46,8 @@ TEST_KEY = "test_access_key_features"
 
 
 def assert_features(original, deserialized):
+    original = sorted(original, key=lambda x: x.unique_name())
+    deserialized = sorted(deserialized, key=lambda x: x.unique_name())
     for feat_1, feat_2 in zip(original, deserialized):
         assert feat_1.unique_name() == feat_2.unique_name()
         assert feat_1.entityset == feat_2.entityset
