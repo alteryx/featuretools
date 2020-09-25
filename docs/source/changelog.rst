@@ -9,14 +9,16 @@ Changelog
     * Enhancements
     * Fixes
         * Allow FeatureOutputSlice features to be serialized (:pr:`1150`)
+        * Fix duplicate label column generation when labels are passed in cutoff times and approximate is being used (:pr:`1160`)
     * Changes
         * Text variable type has been replaced with NaturalLanguage (:pr:`1159`)
     * Documentation Changes
         * Update release doc for clarity and to add Future Release template (:pr:`1151`)
     * Testing Changes
+        * Stop requiring single-threaded dask scheduler in tests (:pr:`1163`)
 
     Thanks to the following people for contributing to this release:
-    :user:`tamargrey`, :user:`gsheni`
+    :user:`rwedge`, :user:`tamargrey`, :user: `tuethan1999`, :user:`gsheni`
 
 **v0.19.0 Sept 8, 2020**
     * Enhancements
