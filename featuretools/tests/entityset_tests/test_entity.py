@@ -1,4 +1,3 @@
-import warnings
 from datetime import datetime
 
 import numpy as np
@@ -286,20 +285,14 @@ def test_text_deprecation_warning():
 
     for text_repr in ['text', ft.variable_types.Text]:
         es = ft.EntitySet()
-        warnings.resetwarnings()
-        with warnings.catch_warnings(record=True) as ws:
-            warnings.simplefilter("always")
+        match = "Text has been deprecated. Please use NaturalLanguage instead."
+        with pytest.warns(FutureWarning, match=match):
             es = es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
                                           variable_types={"value": text_repr})
-        assert len(ws) == 1
-        assert ws[0].category == FutureWarning
-        assert str(ws[0].message) == "Text has been deprecated. Please use NaturalLanguage instead."
 
     for nl_repr in ['natural_language', ft.variable_types.NaturalLanguage]:
         es = ft.EntitySet()
-        warnings.resetwarnings()
-        with warnings.catch_warnings(record=True) as ws:
-            warnings.simplefilter("always")
+        with pytest.warns(None) as record:
             es = es.entity_from_dataframe(entity_id="test", dataframe=data, index="id",
                                           variable_types={"value": nl_repr})
-        assert len(ws) == 0
+        assert len(record) == 0

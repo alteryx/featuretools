@@ -294,7 +294,7 @@ class Entity(object):
         variables = []
         variable_types = variable_types.copy() or {}
         string_to_class_map = find_variable_types()
-        # TODO: Remove once Text has been deprecated
+        # TODO: Remove once Text has been removed from variable types
         string_to_class_map[Text.type_string] = Text
         for vid in variable_types.copy():
             vtype = variable_types[vid]
