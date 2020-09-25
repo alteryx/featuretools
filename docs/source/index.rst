@@ -163,7 +163,7 @@ Table of contents
 
    resources/resources_index
    api_reference
-   Primitive Reference <https://primitives.featurelabs.com/>
+   Primitives <https://primitives.featurelabs.com/>
    release_notes
 
 Other links
