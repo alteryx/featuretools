@@ -1,10 +1,10 @@
 Resources
 ---------
 
-Resources here
+Frequently asked questions and additional resources
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    frequently_asked_questions
    help

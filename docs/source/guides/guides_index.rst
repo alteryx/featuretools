@@ -1,9 +1,10 @@
 Guides
 ---------------
 
-Guides here
+Guides on more advanced Featuretools functionality
 
 .. toctree::
+   :maxdepth: 1
 
    tuning_dfs
    specifying_primitive_options
