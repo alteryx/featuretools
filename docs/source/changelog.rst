@@ -7,7 +7,7 @@ Changelog
     * Fixes
         * Allow FeatureOutputSlice features to be serialized (:pr:`1150`)
         * Fix duplicate label column generation when labels are passed in cutoff times and approximate is being used (:pr:`1160`)
-        * Fix approximate compose feature matrix type (:pr:`1166`)
+        * Determine calculate_feature_matrix behavior with approximate and a cutoff df that is a subclass of a pandas DataFrame (:pr:`1166`)
     * Changes
     * Documentation Changes
         * Update release doc for clarity and to add Future Release template (:pr:`1151`)
