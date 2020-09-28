@@ -6,7 +6,6 @@ from datetime import datetime
 from itertools import combinations
 from random import randint
 
-import composeml as cp
 import numpy as np
 import pandas as pd
 import psutil
