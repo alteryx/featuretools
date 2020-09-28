@@ -2,7 +2,6 @@ import copy
 import sys
 
 import composeml as cp
-import dask
 import dask.dataframe as dd
 import pandas as pd
 import pytest
