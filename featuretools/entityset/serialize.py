@@ -13,7 +13,7 @@ from featuretools.utils.wrangle import _is_s3, _is_url
 ks = import_or_none('databricks.koalas')
 
 FORMATS = ['csv', 'pickle', 'parquet']
-SCHEMA_VERSION = "4.0.0"
+SCHEMA_VERSION = "5.0.0"
 
 
 def entity_to_description(entity):

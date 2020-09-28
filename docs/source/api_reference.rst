@@ -166,8 +166,8 @@ Cumulative Transform Primitives
     CumMin
     CumMax
 
-Text Transform Primitives
-*************************
+NaturalLanguage Transform Primitives
+************************************
 .. autosummary::
    :toctree: generated/
 
@@ -345,7 +345,7 @@ Variable types
     Categorical
     Ordinal
     Boolean
-    Text
+    NaturalLanguage
     LatLong
     ZIPCode
     IPAddress

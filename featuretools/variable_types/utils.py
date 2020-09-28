@@ -6,7 +6,7 @@ from featuretools.utils.plot_utils import (
     get_graphviz_format,
     save_graph
 )
-from featuretools.variable_types.variable import Variable
+from featuretools.variable_types.variable import Text, Variable
 
 
 def find_variable_types():
@@ -22,7 +22,7 @@ def find_variable_types():
 
     """
     return {vtype.type_string: vtype for vtype in find_descendents(Variable)
-            if vtype != Variable}
+            if vtype != Variable and vtype != Text}
 
 
 def list_variable_types():
