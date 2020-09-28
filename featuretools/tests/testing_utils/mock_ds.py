@@ -234,7 +234,7 @@ def make_variable_types(with_integer_time_index=False):
         'age': variable_types.Numeric,
         u'région_id': variable_types.Id,
         'loves_ice_cream': variable_types.Boolean,
-        'favorite_quote': variable_types.Text,
+        'favorite_quote': variable_types.NaturalLanguage,
         'signup_date': variable_types.Datetime,
         'upgrade_date': variable_types.Datetime,
         'cancel_date': variable_types.Datetime,
@@ -269,7 +269,7 @@ def make_variable_types(with_integer_time_index=False):
         'value_many_nans': variable_types.Numeric,
         'priority_level': variable_types.Ordinal,
         'purchased': variable_types.Boolean,
-        'comments': variable_types.Text
+        'comments': variable_types.NaturalLanguage
     }
     if with_integer_time_index:
         log_variable_types['datetime'] = variable_types.Numeric

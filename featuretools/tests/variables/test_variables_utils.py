@@ -6,6 +6,7 @@ import pytest
 
 from featuretools import variable_types as v_types
 from featuretools.variable_types import (
+    Text,
     Variable,
     find_variable_types,
     graph_variable_types,
@@ -17,13 +18,15 @@ def test_find_variable_types():
     expected_v_types = []
     for name, obj in inspect.getmembers(v_types.variable):
         if inspect.isclass(obj) and issubclass(obj, Variable) \
-                and obj != Variable:
+                and obj != Variable and obj != Text:
             expected_v_types.append(obj)
     assert isinstance(find_variable_types(), dict)
     found_vtypes = find_variable_types()
     assert len(found_vtypes) == len(expected_v_types)
     for v_type in expected_v_types:
         assert found_vtypes[v_type.type_string] == v_type
+    assert 'text' not in found_vtypes.keys()
+    assert Text not in found_vtypes.values()
 
 
 def test_list_variables():
@@ -32,6 +35,8 @@ def test_list_variables():
         assert v_type.__name__ in df['name'].values
         assert v_type.__doc__ in df['description'].values
         assert v_type.type_string in df['type_string'].values
+    assert 'text' not in df['type_string']
+    assert Text not in df['name']
 
 
 def test_returns_digraph_object():

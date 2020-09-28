@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import pandas as pd
 
@@ -314,9 +316,16 @@ class Timedelta(Variable):
         return description
 
 
-class Text(Variable):
+class NaturalLanguage(Variable):
     """Represents variables that are arbitary strings"""
     _default_pandas_dtype = str
+
+
+class Text(NaturalLanguage):
+    def __init__(self, id, entity, name=None):
+        msg = "Text has been deprecated. Please use NaturalLanguage instead."
+        warnings.warn(msg, category=FutureWarning)
+        super(Text, self).__init__(id, entity, name)
 
 
 class PandasTypes(object):
