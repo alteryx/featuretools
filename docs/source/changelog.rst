@@ -19,7 +19,7 @@ Changelog
         * Stop requiring single-threaded dask scheduler in tests (:pr:`1163`)
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`, :user:`tamargrey`, :user: `tuethan1999`, :user:`gsheni`
+    :user:`rwedge`, :user:`tamargrey`, :user:`tuethan1999`, :user:`gsheni`
 
 **v0.19.0 Sept 8, 2020**
     * Enhancements
