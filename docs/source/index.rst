@@ -10,7 +10,7 @@ What is Featuretools?
 ---------------------
 
 
-.. image:: images/featuretools_nav2.png
+.. image:: images/featuretools_nav2.svg
    :width: 500 px
    :alt: Featuretools
    :align: center
