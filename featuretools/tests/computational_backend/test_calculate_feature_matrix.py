@@ -6,7 +6,6 @@ from datetime import datetime
 from itertools import combinations
 from random import randint
 
-import composeml as cp
 import numpy as np
 import pandas as pd
 import psutil
@@ -153,30 +152,12 @@ def test_cfm_warns_dask_cutoff_time(es):
                                  cutoff_time=cutoff_time)
 
 
-def test_cfm_compose(es):
-    def label_func(df):
-        return df['value'].sum() > 10
-
-    lm = cp.LabelMaker(
-        target_entity='id',
-        time_index='datetime',
-        labeling_function=label_func,
-        window_size='1m'
-    )
-
-    df = es['log'].df
-    df = to_pandas(df)
-    labels = lm.search(
-        df,
-        num_examples_per_instance=-1
-    )
-    labels = labels.rename(columns={'cutoff_time': 'time'})
-
+def test_cfm_compose(es, lt):
     property_feature = ft.Feature(es['log']['value']) > 10
 
     feature_matrix = calculate_feature_matrix([property_feature],
                                               es,
-                                              cutoff_time=labels,
+                                              cutoff_time=lt,
                                               verbose=True)
     feature_matrix = to_pandas(feature_matrix, index='id', sort_index=True)
 
@@ -184,28 +165,30 @@ def test_cfm_compose(es):
             feature_matrix['label_func']).values.all()
 
 
-def test_cfm_dask_compose(dask_es):
-    def label_func(df):
-        return df['value'].sum() > 10
+def test_cfm_compose_approximate(es, lt):
+    if not all(isinstance(entity.df, pd.DataFrame) for entity in es.entities):
+        pytest.xfail('dask does not support approximate')
 
-    lm = cp.LabelMaker(
-        target_entity='id',
-        time_index='datetime',
-        labeling_function=label_func,
-        window_size='3m'
-    )
+    property_feature = ft.Feature(es['log']['value']) > 10
 
-    labels = lm.search(
-        dask_es['log'].df.compute(),
-        num_examples_per_instance=-1
-    )
-    labels = labels.rename(columns={'cutoff_time': 'time'})
+    feature_matrix = calculate_feature_matrix([property_feature],
+                                              es,
+                                              cutoff_time=lt,
+                                              approximate='1s',
+                                              verbose=True)
+    assert(type(feature_matrix) == pd.core.frame.DataFrame)
+    feature_matrix = to_pandas(feature_matrix, index='id', sort_index=True)
 
+    assert (feature_matrix[property_feature.get_name()] ==
+            feature_matrix['label_func']).values.all()
+
+
+def test_cfm_dask_compose(dask_es, lt):
     property_feature = ft.Feature(dask_es['log']['value']) > 10
 
     feature_matrix = calculate_feature_matrix([property_feature],
                                               dask_es,
-                                              cutoff_time=labels,
+                                              cutoff_time=lt,
                                               verbose=True)
     feature_matrix = feature_matrix.compute()
 

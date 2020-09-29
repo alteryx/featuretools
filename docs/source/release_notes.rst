@@ -10,6 +10,7 @@ Release Notes
     * Fixes
         * Allow FeatureOutputSlice features to be serialized (:pr:`1150`)
         * Fix duplicate label column generation when labels are passed in cutoff times and approximate is being used (:pr:`1160`)
+        * Determine calculate_feature_matrix behavior with approximate and a cutoff df that is a subclass of a pandas DataFrame (:pr:`1166`)
     * Changes
         * Text variable type has been replaced with NaturalLanguage (:pr:`1159`)
     * Documentation Changes
