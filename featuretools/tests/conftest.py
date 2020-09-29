@@ -1,12 +1,16 @@
 import copy
 import sys
 
+import composeml as cp
 import dask.dataframe as dd
 import pandas as pd
 import pytest
 
 import featuretools as ft
-from featuretools.tests.testing_utils import make_ecommerce_entityset
+from featuretools.tests.testing_utils import (
+    make_ecommerce_entityset,
+    to_pandas
+)
 from featuretools.utils.gen_utils import import_or_none
 from featuretools.utils.koalas_utils import pd_to_ks_clean
 
@@ -242,3 +246,25 @@ def ks_mock_customer(pd_mock_customer):
 @pytest.fixture(params=['pd_mock_customer', 'dd_mock_customer', 'ks_mock_customer'])
 def mock_customer(request):
     return request.getfixturevalue(request.param)
+
+
+@pytest.fixture
+def lt(es):
+    def label_func(df):
+        return df['value'].sum() > 10
+
+    lm = cp.LabelMaker(
+        target_entity='id',
+        time_index='datetime',
+        labeling_function=label_func,
+        window_size='1m'
+    )
+
+    df = es['log'].df
+    df = to_pandas(df)
+    labels = lm.search(
+        df,
+        num_examples_per_instance=-1
+    )
+    labels = labels.rename(columns={'cutoff_time': 'time'})
+    return labels
