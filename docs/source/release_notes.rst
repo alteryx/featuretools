@@ -2,11 +2,19 @@
 
 Release Notes
 -------------
-**Future Release**
+.. **Future Release**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+**v0.13.3 Feb 28, 2020**
     .. warning::
         The Text variable type has been deprecated and been replaced with the NaturalLanguage variable type. The Text variable type will be removed in a future release.
 
-    * Enhancements
     * Fixes
         * Allow FeatureOutputSlice features to be serialized (:pr:`1150`)
         * Fix duplicate label column generation when labels are passed in cutoff times and approximate is being used (:pr:`1160`)
@@ -20,7 +28,7 @@ Release Notes
         * Stop requiring single-threaded dask scheduler in tests (:pr:`1163`, :pr:`1170`)
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`, :user:`tamargrey`, :user:`tuethan1999`, :user:`gsheni`
+    :user:`gsheni`, :user:`rwedge`, :user:`tamargrey`, :user:`tuethan1999`
 
 **v0.19.0 Sept 8, 2020**
     * Enhancements
