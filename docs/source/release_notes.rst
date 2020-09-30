@@ -17,7 +17,7 @@ Release Notes
         * Update release doc for clarity and to add Future Release template (:pr:`1151`)
         * Use the PyData Sphinx theme (:pr:`1169`)
     * Testing Changes
-        * Stop requiring single-threaded dask scheduler in tests (:pr:`1163`)
+        * Stop requiring single-threaded dask scheduler in tests (:pr:`1163`, :pr:`1170`)
 
     Thanks to the following people for contributing to this release:
     :user:`rwedge`, :user:`tamargrey`, :user:`tuethan1999`, :user:`gsheni`
