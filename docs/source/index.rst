@@ -18,6 +18,8 @@ What is Featuretools?
 **Featuretools** is a framework to perform automated feature engineering. It excels at transforming temporal and relational datasets into feature matrices for machine learning.
 
 
+.. _quick-start:
+
 5 Minute Quick Start
 ====================
 

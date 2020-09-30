@@ -1,7 +1,9 @@
 Getting Started
 ---------------
 
-How to start working with Featuretools; The main concepts
+For a quick introduction to Featuretools, check out our :ref:`5 minute quick start guide <quick-start>`.
+
+How to start working with Featuretools; the main concepts:
 
 .. toctree::
    :maxdepth: 1
