@@ -11,7 +11,7 @@ Release Notes
 
 .. Thanks to the following people for contributing to this release:
 
-**v0.13.3 Feb 28, 2020**
+**v0.20.0 Sep 30, 2020**
     .. warning::
         The Text variable type has been deprecated and been replaced with the NaturalLanguage variable type. The Text variable type will be removed in a future release.
 
