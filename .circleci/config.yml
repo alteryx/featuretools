@@ -253,13 +253,13 @@ jobs:
           environment:
             FEATURETOOLS_UPDATE_CHECKER: False
 
-  changelog_updated:
+  release_notes_updated:
     working_directory: ~/featuretools
     docker:
       - image: busybox:latest
     steps:
       - checkout
-      - run: cat docs/source/changelog.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/featuretools/pull/}\`"
+      - run: cat docs/source/release_notes.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/featuretools/pull/}\`"
 
 workflows:
   version: 2
@@ -303,8 +303,8 @@ workflows:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
           name: << matrix.image_tag >>  install featuretools complete test
-      - changelog_updated:
-          name: "changelog updated"
+      - release_notes_updated:
+          name: "release notes updated"
           filters:
             branches:
               ignore:
