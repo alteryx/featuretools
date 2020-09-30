@@ -1,7 +1,7 @@
-.. _changelog:
+.. _release_notes:
 
-Changelog
----------
+Release Notes
+-------------
 **Future Release**
     .. warning::
         The Text variable type has been deprecated and been replaced with the NaturalLanguage variable type. The Text variable type will be removed in a future release.
@@ -15,6 +15,7 @@ Changelog
         * Text variable type has been replaced with NaturalLanguage (:pr:`1159`)
     * Documentation Changes
         * Update release doc for clarity and to add Future Release template (:pr:`1151`)
+        * Use the PyData Sphinx theme (:pr:`1169`)
     * Testing Changes
         * Stop requiring single-threaded dask scheduler in tests (:pr:`1163`)
 

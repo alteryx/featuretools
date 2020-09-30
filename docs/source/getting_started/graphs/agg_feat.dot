@@ -1,0 +1,56 @@
+digraph "COUNT(sessions)" {
+	graph [bb="0,0,641.17,116",
+		rankdir=LR
+	];
+	node [label="\N",
+		shape=box
+	];
+	edge [arrowhead=none,
+		dir=forward,
+		style=dotted
+	];
+	customers	[height=1.1806,
+		label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10">
+    <TR>
+        <TD colspan="1" bgcolor="#A9A9A9"><B>★ customers (target)</B></TD>
+    </TR>
+    <TR>
+        <TD ALIGN="LEFT" port="COUNT(sessions)" BGCOLOR="#D9EAD3">COUNT(sessions)</TD>
+    </TR>
+</TABLE>>,
+		pos="563.17,61",
+		shape=plaintext,
+		width=2.1667];
+	sessions	[height=1.6111,
+		label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10">
+    <TR>
+        <TD colspan="1" bgcolor="#A9A9A9"><B>sessions</B></TD>
+    </TR><TR><TD ALIGN="LEFT" port="session_id">session_id (index)</TD></TR>
+<TR><TD ALIGN="LEFT" port="customer_id">customer_id</TD></TR>
+</TABLE>>,
+		pos="70,58",
+		shape=plaintext,
+		width=1.9444];
+	"COUNT(sessions)_groupby_sessions--customer_id"	[height=0.5,
+		label="group by
+customer_id",
+		pos="218.6,40",
+		width=1.1834];
+	sessions:session_id -> "COUNT(sessions)_groupby_sessions--customer_id"	[arrowhead="",
+		pos="e,175.8,52.502 133,58 143.7,58 154.99,56.606 165.72,54.595",
+		style=solid];
+	sessions:customer_id -> "COUNT(sessions)_groupby_sessions--customer_id"	[pos="133,22 147.12,22 162.27,24.427 175.8,27.498"];
+	"0_COUNT(sessions)_count"	[height=0.94444,
+		label=<<FONT POINT-SIZE="12"><B>Aggregation</B><BR></BR></FONT>COUNT>,
+		pos="373.19,40",
+		shape=diamond,
+		width=2.1106];
+	"0_COUNT(sessions)_count" -> customers:"COUNT(sessions)"	[arrowhead="",
+		pos="e,492.17,40 449.4,40 460.17,40 471.24,40 481.99,40",
+		style=solid];
+	"COUNT(sessions)_groupby_sessions--customer_id" -> "0_COUNT(sessions)_count"	[arrowhead="",
+		pos="e,297.1,40 261.3,40 269.38,40 278.11,40 287.01,40",
+		style=solid];
+}

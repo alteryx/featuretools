@@ -1,0 +1,37 @@
+digraph "TIME_SINCE_PREVIOUS(join_date)" {
+	graph [bb="0,0,638.23,121",
+		rankdir=LR
+	];
+	node [label="\N",
+		shape=box
+	];
+	edge [arrowhead=none,
+		dir=forward,
+		style=dotted
+	];
+	customers	[height=1.6806,
+		label=<
+<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="10">
+    <TR>
+        <TD colspan="1" bgcolor="#A9A9A9"><B>★ customers (target)</B></TD>
+    </TR><TR><TD ALIGN="LEFT" port="join_date">join_date</TD></TR>
+
+    <TR>
+        <TD ALIGN="LEFT" port="TIME_SINCE_PREVIOUS(join_date)" BGCOLOR="#D9EAD3">TIME_SINCE_PREVIOUS(join_date)</TD>
+    </TR>
+</TABLE>>,
+		pos="128,60.5",
+		shape=plaintext,
+		width=3.5556];
+	"0_TIME_SINCE_PREVIOUS(join_date)_time_since_previous"	[height=0.94444,
+		label=<<FONT POINT-SIZE="12"><B>Transform</B><BR></BR></FONT>TIME_SINCE_PREVIOUS>,
+		pos="465.12,39.5",
+		shape=diamond,
+		width=4.8088];
+	customers:join_date -> "0_TIME_SINCE_PREVIOUS(join_date)_time_since_previous"	[arrowhead="",
+		pos="e,355.93,52.099 249,57.5 280.45,57.5 314.4,55.566 345.82,52.965",
+		style=solid];
+	"0_TIME_SINCE_PREVIOUS(join_date)_time_since_previous" -> customers:"TIME_SINCE_PREVIOUS(join_date)"	[arrowhead="",
+		pos="e,249,21.5 355.93,26.901 325.11,24.171 291.22,21.97 259.29,21.566",
+		style=solid];
+}

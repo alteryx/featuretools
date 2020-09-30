@@ -16,7 +16,6 @@ Conversation happens in the following places:
     tracker`_.
 4.  **Chat** and collaboration within the community occurs on `Slack`_. For general usage questions, please post on
     Stack Overflow where answers are more searchable by other users.
-5.  **Everything else, core developers** can be reached at help@featuretools.com.
 
 .. _`StackOverflow`: http://stackoverflow.com/questions/tagged/featuretools
 .. _`Github issue tracker`: https://github.com/FeatureLabs/featuretools/issues
@@ -43,6 +42,3 @@ few simple guidelines:
     <https://stackoverflow.com/help/mcve>`_. You will get
     much better answers if your provide code that people can use to reproduce
     your problem.
-
-4.  **Sharing data privately**: If you have data that you can't share publicly,
-    feel free to send an email to help@featurelabs.com.

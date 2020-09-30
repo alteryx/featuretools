@@ -10,13 +10,15 @@ What is Featuretools?
 ---------------------
 
 
-.. image:: images/featuretools-logo.png
+.. image:: images/featuretools_nav2.svg
    :width: 500 px
    :alt: Featuretools
    :align: center
 
 **Featuretools** is a framework to perform automated feature engineering. It excels at transforming temporal and relational datasets into feature matrices for machine learning.
 
+
+.. _quick-start:
 
 5 Minute Quick Start
 ====================
@@ -82,7 +84,7 @@ In this dataset we have two relationships
 
 .. note::
 
-    To manage setting up entities and relationships, we recommend using the :class:`EntitySet <featuretools.EntitySet>` class which offers convenient APIs for managing data like this. See :doc:`loading_data/using_entitysets` for more information.
+    To manage setting up entities and relationships, we recommend using the :class:`EntitySet <featuretools.EntitySet>` class which offers convenient APIs for managing data like this. See :doc:`getting_started/using_entitysets` for more information.
 
 
 Run Deep Feature Synthesis
@@ -135,10 +137,10 @@ One of the reasons DFS is so powerful is that it can create a feature matrix for
 What's next?
 ------------
 
-* Learn about :doc:`loading_data/using_entitysets`
-* Apply automated feature engineering with :doc:`automated_feature_engineering/afe`
+* Learn about :doc:`getting_started/using_entitysets`
+* Apply automated feature engineering with :doc:`getting_started/afe`
 * Explore `runnable demos <https://www.featuretools.com/demos>`__ based on real world use cases
-* Can't find what you're looking for? Ask for :doc:`help`
+* Can't find what you're looking for? Ask for :doc:`resources/help`
 
 
 
@@ -148,49 +150,23 @@ Table of contents
 
 .. toctree::
    :maxdepth: 1
-   :caption: Getting Started
 
-   self
-   getting_started/install
-   loading_data/using_entitysets
-   automated_feature_engineering/afe
-   automated_feature_engineering/primitives
-   variables
-   automated_feature_engineering/handling_time
+   install
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Guides
+   :maxdepth: 2
 
-   guides/tuning_dfs
-   guides/specifying_primitive_options
-   guides/performance
-   guides/using_dask_entitysets
-   guides/using_koalas_entitysets
-   guides/deployment
-   guides/advanced_custom_primitives
+   getting_started/getting_started_index
+   guides/guides_index
 
 .. toctree::
    :maxdepth: 1
    :caption: Resources and References
 
-   frequently_asked_questions
-   help
-   usage_tips/limitations
-   usage_tips/glossary
-   ecosystem
+   resources/resources_index
    api_reference
-   Primitive Reference <https://primitives.featurelabs.com/>
-   changelog
-
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Hide from Table of Contents
-   :hidden:
-
-   feature_engineering_language/feature-types
-   guides/save_progress_example
+   Primitives <https://primitives.featurelabs.com/>
+   release_notes
 
 Other links
 ------------

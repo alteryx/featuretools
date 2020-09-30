@@ -102,15 +102,15 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
 #### Bump version number
 2. Bump version number in `setup.py`, `featuretools/version.py`, and `featuretools/tests/test_version.py`.
 
-#### Update changelog
-1. Replace "Future Release" in `docs/source/changelog.rst` with the current date
+#### Update release notes
+1. Replace "Future Release" in `docs/source/release_notes.rst` with the current date
     ```
     **v0.13.3 Feb 28, 2020**
     ```
-2. Remove any unused changelog sections for this release (e.g. Fixes, Testing Changes)
+2. Remove any unused sections for this release (e.g. Fixes, Testing Changes)
 3. Add yourself to the list of contributors to this release and put the contributors in alphabetical order
 4. The release PR does not need to be mentioned in the list of changes
-5. Add a commented out "Future Release" section with all of the changelog sections above the current section
+5. Add a commented out "Future Release" section with all of the release notes sections above the current section
     ```
     .. **Future Release**
         * Enhancements
@@ -124,14 +124,14 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
 
 
 #### Create Release PR
-A [release pr](https://github.com/FeatureLabs/featuretools/pull/856) should have the version number as the title and the changelog updates as the PR body text. The contributors list is not necessary. The special sphinx docs syntax (:pr:\`547\`) needs to be changed to github link syntax (#547).
+A [release pr](https://github.com/FeatureLabs/featuretools/pull/856) should have the version number as the title and the release notes for that release as the PR body text. The contributors list is not necessary. The special sphinx docs syntax (:pr:\`547\`) needs to be changed to github link syntax (#547).
 
 #### Create Github Release
 After the release pull request has been merged into the main branch, it is time draft the github release. [Example release](https://github.com/FeatureLabs/featuretools/releases/tag/v0.13.3)
 * The target should be the main branch
 * The tag should be the version number with a v prefix (e.g. v0.13.3)
 * Release title is the same as the tag
-* Release description should be the full changelog updates for the release, including the line thanking contributors.  Contributors should also have their links changed from the docs syntax (:user:\`rwedge\`) to github syntax (@rwedge)
+* Release description should be the full release notes for the release, including the line thanking contributors.  Contributors should also have their links changed from the docs syntax (:user:\`rwedge\`) to github syntax (@rwedge)
 * This is not a pre-release
 * Publishing the release will automatically upload the package to PyPI
 
