@@ -26,6 +26,7 @@ Release Notes
         * Use the PyData Sphinx theme (:pr:`1169`)
     * Testing Changes
         * Stop requiring single-threaded dask scheduler in tests (:pr:`1163`, :pr:`1170`)
+        * Add Python 3.9 test to CI (:pr:`1177`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`tamargrey`, :user:`tuethan1999`
