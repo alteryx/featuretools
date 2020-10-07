@@ -90,6 +90,12 @@ jobs:
       image_tag: << parameters.image_tag >>
     steps:
       - checkout
+      - when:
+    condition: 
+      equal: [ "3.9.0rc2", << parameters.image_tag >> ]
+    steps:
+      - run: |
+          sudo apt-get install libblas-dev liblapack-dev libatlas-base-dev gfortran
       - attach_workspace:
           at: ~/featuretools
       - package_featuretools
@@ -98,12 +104,6 @@ jobs:
           source venv/bin/activate
           python -m pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
-      - when:
-          condition: 
-            equal: [ "3.9.0rc2", << parameters.image_tag >> ]
-          steps:
-            - run: |
-                sudo apt-get install libblas-dev liblapack-dev libatlas-base-dev gfortran
       - when:
           condition: 
             equal: [ "optional", << parameters.optional_libraries >> ]
