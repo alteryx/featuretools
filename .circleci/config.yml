@@ -91,11 +91,11 @@ jobs:
     steps:
       - checkout
       - when:
-    condition: 
-      equal: [ "3.9.0rc2", << parameters.image_tag >> ]
-    steps:
-      - run: |
-          sudo apt-get install libblas-dev liblapack-dev libatlas-base-dev gfortran
+        condition: 
+            equal: [ "3.9.0rc2", << parameters.image_tag >> ]
+          steps:
+            - run: |
+                sudo apt-get install libblas-dev liblapack-dev libatlas-base-dev gfortran
       - attach_workspace:
           at: ~/featuretools
       - package_featuretools
