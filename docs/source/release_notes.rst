@@ -29,6 +29,7 @@ Release Notes
     * Documentation Changes
         * Update release doc for clarity and to add Future Release template (:pr:`1151`)
         * Use the PyData Sphinx theme (:pr:`1169`)
+        * Add guide for feature selection functions (:pr:`1184`)
     * Testing Changes
         * Stop requiring single-threaded dask scheduler in tests (:pr:`1163`, :pr:`1170`)
 
