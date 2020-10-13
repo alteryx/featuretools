@@ -100,9 +100,9 @@ PRIMITIVE_TEMPLATES_INLINE_FUNC = {
 
 
 PRIMITIVE_TEMPLATES = {
-    'count': "the number of",
+    'count': "the number",
     'sum': "the sum of {}",
-    'mean': "the average value of {}",
+    'mean': "the average of {}",
     'any': "whether any of {} are True",
     'mode': "the most frequently occurring value of {}",
     'first': "the first value of {}",
@@ -128,7 +128,7 @@ PRIMITIVE_TEMPLATES = {
     'week': "the week of the year of {}",
     'num_words': "the number of words in {}",
     'cum_min': "the cumulative minimum of {}",
-    'age': "the age of the instance of {feature.entity_id}",
+    'age': 'the current age from {}',
     'modulo_numeric': "{} modulo {}",
     'not_equal': "whether {} is not equal to {}",
     'second': "the seconds value of {}",
@@ -146,7 +146,7 @@ PRIMITIVE_TEMPLATES = {
     'greater_than': 'whether {} is greater than {}',
     'less_than': 'whether {} is less than {}',
     'multiply_numeric': 'the product of {} and {}',
-    'not': 'the negation of ',
+    'not': 'the negation of {}',
     'subtract_numeric_scalar': 'the value of {} minus {feature.primitive.value}',
     'greater_than_equal_to': 'whether {} is greater than or equal to {}',
     'diff': 'the difference from the previous value of {}',

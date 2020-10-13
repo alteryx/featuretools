@@ -6,6 +6,7 @@ import pandas as pd
 from featuretools import config
 from featuretools.primitives.base.utils import signature
 from featuretools.utils.gen_utils import Library
+from featuretools.utils.description_utils import convert_to_nth
 
 
 class PrimitiveBase(object):
@@ -34,6 +35,11 @@ class PrimitiveBase(object):
     commutative = False
     #: (list): Additional compatible libraries
     compatibility = [Library.PANDAS]
+    #: (str): description template of the primitive. Input column descriptions
+    # are passed as positional arguemtns and slice number in nth form is passed
+    # as slice_num keyword argument. Primitive arguments are available through
+    # 'self' keyword
+    description_template = None
 
     def __init__(self):
         pass
@@ -98,3 +104,31 @@ class PrimitiveBase(object):
             values.append((name, value))
 
         return values
+
+    def get_description(self, input_column_descriptions, slice_num=None, template_override=None):
+        template = template_override or self.description_template
+        if template:
+            if slice_num and isinstance(template, list):
+                slice_index = slice_num + 1
+                if slice_index <= len(template):
+                    return template[slice_index].format(*input_column_descriptions,
+                                                        slice_num=convert_to_nth(slice_index))
+                else:
+                    if len(template) > 2:
+                        raise IndexError('Slice out of range of template')
+                    return template[1].format(*input_column_descriptions,
+                                              slice_num=convert_to_nth(slice_index))
+            return template.format(*input_column_descriptions)
+
+        # generic case:
+        if not self.name:
+            return ''
+        if slice_num:
+            nth_slice = convert_to_nth(slice_num + 1)
+            description = "the {} output from applying {} to {}".format(nth_slice,
+                                                                        self.name.upper(),
+                                                                        ', '.join(input_column_descriptions))
+        else:
+            description = "the result of applying {} to {}".format(self.name.upper(),
+                                                                   ', '.join(input_column_descriptions))
+        return description

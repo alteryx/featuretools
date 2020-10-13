@@ -10,6 +10,7 @@ from featuretools.primitives.base.aggregation_primitive_base import (
 )
 from featuretools.utils import convert_time_units
 from featuretools.utils.gen_utils import Library
+from featuretools.utils.description_utils import convert_to_nth
 from featuretools.variable_types import (
     Boolean,
     Categorical,
@@ -35,6 +36,7 @@ class Count(AggregationPrimitive):
     stack_on_self = False
     default_value = 0
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the number"
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type in [Library.DASK, Library.KOALAS]:
@@ -63,6 +65,7 @@ class Sum(AggregationPrimitive):
     stack_on_exclude = [Count]
     default_value = 0
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = 'the sum of {}'
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type in [Library.DASK, Library.KOALAS]:
@@ -93,6 +96,7 @@ class Mean(AggregationPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the average of {}"
 
     def __init__(self, skipna=True):
         self.skipna = skipna
@@ -127,6 +131,7 @@ class Mode(AggregationPrimitive):
     name = "mode"
     input_types = [Discrete]
     return_type = None
+    description_template = "the most frequently occuring {}"
 
     def get_function(self, agg_type=Library.PANDAS):
         def pd_mode(s):
@@ -148,6 +153,7 @@ class Min(AggregationPrimitive):
     return_type = Numeric
     stack_on_self = False
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the minimum {}"
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type in [Library.DASK, Library.KOALAS]:
@@ -169,6 +175,7 @@ class Max(AggregationPrimitive):
     return_type = Numeric
     stack_on_self = False
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the maximum {}"
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type in [Library.DASK, Library.KOALAS]:
@@ -195,6 +202,7 @@ class NumUnique(AggregationPrimitive):
     return_type = Numeric
     stack_on_self = False
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the number of unique elements in {}"
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type == Library.DASK:
@@ -240,6 +248,7 @@ class NumTrue(AggregationPrimitive):
     stack_on = []
     stack_on_exclude = []
     compatibility = [Library.PANDAS, Library.DASK]
+    description_template = "the number of times {} is true"
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type == Library.DASK:
@@ -278,6 +287,7 @@ class PercentTrue(AggregationPrimitive):
     stack_on_exclude = []
     default_value = 0
     compatibility = [Library.PANDAS, Library.DASK]
+    description_template = "the percentage of values in {} that are true"
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type == Library.DASK:
@@ -344,6 +354,18 @@ class NMostCommon(AggregationPrimitive):
 
         return n_most_common
 
+    def get_description(self, input_column_descriptions, slice_num=None, template_override=None):
+        if template_override:
+            return super().get_description(input_column_descriptions, slice_num, template_override)
+        if slice_num is None:
+            return "the {n} most common values of {}".format(*input_column_descriptions, n=self.n)
+        else:
+            if slice_num == 0:
+                return "the most common value of {}".format(*input_column_descriptions)
+            else:
+                nth_slice = convert_to_nth(slice_num + 1)
+                return "the {nth} most common value of {}".format(*input_column_descriptions, nth=nth_slice)
+
 
 class AvgTimeBetween(AggregationPrimitive):
     """Computes the average number of seconds between consecutive events.
@@ -373,6 +395,7 @@ class AvgTimeBetween(AggregationPrimitive):
     name = "avg_time_between"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
+    description_template = "the average time between each {}"
 
     def __init__(self, unit="seconds"):
         self.unit = unit.lower()
@@ -424,6 +447,7 @@ class Median(AggregationPrimitive):
     name = "median"
     input_types = [Numeric]
     return_type = Numeric
+    description_template = "the median of {}"
 
     def get_function(self, agg_type=Library.PANDAS):
         return pd.Series.median
@@ -447,6 +471,7 @@ class Skew(AggregationPrimitive):
     return_type = Numeric
     stack_on = []
     stack_on_self = False
+    description_template = "the skewness of {}"
 
     def get_function(self, agg_type=Library.PANDAS):
         return pd.Series.skew
@@ -465,6 +490,7 @@ class Std(AggregationPrimitive):
     return_type = Numeric
     stack_on_self = False
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the standard deviation of {}"
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type in [Library.DASK, Library.KOALAS]:
@@ -485,6 +511,7 @@ class First(AggregationPrimitive):
     input_types = [Variable]
     return_type = None
     stack_on_self = False
+    description_template = "the first element of {}"
 
     def get_function(self, agg_type=Library.PANDAS):
         def pd_first(x):
@@ -505,6 +532,7 @@ class Last(AggregationPrimitive):
     input_types = [Variable]
     return_type = None
     stack_on_self = False
+    description_template = "the last element of {}"
 
     def get_function(self, agg_type=Library.PANDAS):
         def pd_last(x):
@@ -530,6 +558,7 @@ class Any(AggregationPrimitive):
     return_type = Boolean
     stack_on_self = False
     compatibility = [Library.PANDAS, Library.DASK]
+    description_template = "whether any of {} are true"
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type == Library.DASK:
@@ -561,6 +590,7 @@ class All(AggregationPrimitive):
     return_type = Boolean
     stack_on_self = False
     compatibility = [Library.PANDAS, Library.DASK]
+    description_template = "whether all of {} are true"
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type == Library.DASK:
@@ -612,6 +642,7 @@ class TimeSinceLast(AggregationPrimitive):
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
     uses_calc_time = True
+    description_template = "the time since the last {}"
 
     def __init__(self, unit="seconds"):
         self.unit = unit.lower()
@@ -661,6 +692,7 @@ class TimeSinceFirst(AggregationPrimitive):
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
     uses_calc_time = True
+    description_template = "the time since the first {}"
 
     def __init__(self, unit="seconds"):
         self.unit = unit.lower()
@@ -695,6 +727,7 @@ class Trend(AggregationPrimitive):
     name = "trend"
     input_types = [Numeric, DatetimeTimeIndex]
     return_type = Numeric
+    description_template = "the linear trend of {} over time"
 
     def get_function(self, agg_type=Library.PANDAS):
         def pd_trend(y, x):
@@ -778,6 +811,7 @@ class Entropy(AggregationPrimitive):
     input_types = [Categorical]
     return_type = Numeric
     stack_on_self = False
+    description_template = "the entropy of {}"
 
     def __init__(self, dropna=False, base=None):
         self.dropna = dropna

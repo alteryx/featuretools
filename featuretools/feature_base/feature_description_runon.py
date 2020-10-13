@@ -114,7 +114,7 @@ def get_identity_description(feature, metadata=None):
         return 'the "{}"'.format(feature.get_name())
 
 
-def get_direct_description(feature, metadata=None, shortened=False):
+def get_direct_description(feature, metadata=None):
     direct_base = generate_description(feature.base_features[0], metadata)
     if direct_base.endswith(' of the instance of "{}"'.format(feature.relationship_path[-1][1].parent_entity.id)):
         return direct_base + ' associated with this instance of "{}"'.format(feature.entity_id)

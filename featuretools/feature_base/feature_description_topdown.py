@@ -40,10 +40,6 @@ def generate_description(feature, metadata=None):
     if isinstance(feature, ft.IdentityFeature):
         return get_identity_description(feature, metadata) + '.'
 
-    # 3) Deal with direct features
-    if isinstance(feature, ft.DirectFeature):
-        return get_direct_description(feature, metadata)
-
     # Get input descriptions -OR- feature names + adding to list of to explore
     to_describe = []
     input_descriptions = []
@@ -63,10 +59,14 @@ def generate_description(feature, metadata=None):
     if isinstance(feature, ft.GroupByTransformFeature):
         groupby_description = input_descriptions.pop()
 
+    # 3) Deal with direct features  
     # Generate primitive description
-    primitive_description = get_primitive_description(feature, input_descriptions, metadata)
-    if isinstance(feature, ft.feature_base.FeatureOutputSlice):
-        feature = feature.base_feature
+    if isinstance(feature, ft.DirectFeature):
+        primitive_description = get_direct_description(feature, input_descriptions, metadata)
+    else:
+        primitive_description = get_primitive_description(feature, input_descriptions, metadata)
+        if isinstance(feature, ft.feature_base.FeatureOutputSlice):
+            feature = feature.base_feature
 
     # Generate groupby phrase if applicable
     groupby = ''
@@ -92,8 +92,11 @@ def generate_description(feature, metadata=None):
         if feature.where in feature_descriptions or feature.where.unique_name() in feature_descriptions:
             where_col = feature_descriptions.get(feature.where) or feature_descriptions.get(feature.where.unique_name())
         else:
-            where_col = generate_description(feature.where.base_features[0], metadata)[:-1]
-        where = 'where {} is {}'.format(where_col, where_value)
+            if not isinstance(feature.where.base_features[0], ft.IdentityFeature):
+                to_describe.append(feature.where.base_features[0])
+            where_col = feature.where.base_features[0].get_name()
+            # where_col = generate_description(feature.where.base_features[0], metadata)[:-1]
+        where = 'where "{}" is {}'.format(where_col, where_value)
 
     # 8) join all parts of template
     description_template = [primitive_description, entity_description, where, groupby]
@@ -115,13 +118,13 @@ def get_identity_description(feature, metadata=None):
         return 'the "{}"'.format(feature.get_name())
 
 
-def get_direct_description(feature, metadata=None):
-    direct_base = generate_description(feature.base_features[0], metadata)[:-1]
+def get_direct_description(feature, input_columns, metadata=None):
+    direct_base = input_columns[0]
     if direct_base.endswith(' of the instance of "{}"'.format(feature.relationship_path[-1][1].parent_entity.id)):
-        return direct_base + ' associated with this instance of "{}".'.format(feature.entity_id)
+        return 'the ' + direct_base + ' associated with this instance of "{}"'.format(feature.entity_id)
     else:
-        return direct_base + ' of the instance of "{}" associated with this instance of "{}".'.format(feature.relationship_path[-1][1].parent_entity.id,
-                                                                                                      feature.entity_id)
+        return 'the ' + direct_base + ' of the instance of "{}" associated with this instance of "{}"'.format(feature.relationship_path[-1][1].parent_entity.id,
+                                                                                                              feature.entity_id)
 
 
 def get_aggregation_groupby(feature, metadata=None):

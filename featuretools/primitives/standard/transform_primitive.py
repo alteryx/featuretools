@@ -33,6 +33,7 @@ class IsNull(TransformPrimitive):
     input_types = [Variable]
     return_type = Boolean
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "whether {} is null"
 
     def get_function(self):
         def isnull(array):
@@ -52,6 +53,7 @@ class Absolute(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the absolute value of {}"
 
     def get_function(self):
         return np.absolute
@@ -84,6 +86,7 @@ class TimeSincePrevious(TransformPrimitive):
     name = "time_since_previous"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
+    description_template = "the time since the previous instance of {}"
 
     def __init__(self, unit="seconds"):
         self.unit = unit.lower()
@@ -110,6 +113,7 @@ class Day(TransformPrimitive):
     input_types = [Datetime]
     return_type = Ordinal
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the day of the month of {}"
 
     def get_function(self):
         def day(vals):
@@ -133,6 +137,7 @@ class Hour(TransformPrimitive):
     input_types = [Datetime]
     return_type = Ordinal
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = 'the hour value of {}'
 
     def get_function(self):
         def hour(vals):
@@ -156,6 +161,7 @@ class Second(TransformPrimitive):
     input_types = [Datetime]
     return_type = Numeric
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the seconds value of {}"
 
     def get_function(self):
         def second(vals):
@@ -179,6 +185,7 @@ class Minute(TransformPrimitive):
     input_types = [Datetime]
     return_type = Numeric
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the minutes value of {}"
 
     def get_function(self):
         def minute(vals):
@@ -207,6 +214,7 @@ class Week(TransformPrimitive):
     input_types = [Datetime]
     return_type = Ordinal
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the week of the year of {}"
 
     def get_function(self):
         def week(vals):
@@ -235,6 +243,7 @@ class Month(TransformPrimitive):
     input_types = [Datetime]
     return_type = Ordinal
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the month of {}"
 
     def get_function(self):
         def month(vals):
@@ -258,6 +267,7 @@ class Year(TransformPrimitive):
     input_types = [Datetime]
     return_type = Ordinal
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the year of {}"
 
     def get_function(self):
         def year(vals):
@@ -281,6 +291,7 @@ class IsWeekend(TransformPrimitive):
     input_types = [Datetime]
     return_type = Boolean
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "whether {} occured on a weekend"
 
     def get_function(self):
         def is_weekend(vals):
@@ -308,6 +319,7 @@ class Weekday(TransformPrimitive):
     input_types = [Datetime]
     return_type = Ordinal
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the day of the week of {}"
 
     def get_function(self):
         def weekday(vals):
@@ -329,6 +341,7 @@ class NumCharacters(TransformPrimitive):
     input_types = [NaturalLanguage]
     return_type = Numeric
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the number of characters in {}"
 
     def get_function(self):
         def character_counter(array):
@@ -351,6 +364,7 @@ class NumWords(TransformPrimitive):
     input_types = [NaturalLanguage]
     return_type = Numeric
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the number of words in {}"
 
     def get_function(self):
         def word_counter(array):
@@ -394,6 +408,7 @@ class TimeSince(TransformPrimitive):
     return_type = Numeric
     uses_calc_time = True
     compatibility = [Library.PANDAS, Library.DASK]
+    description_template = "the time from {} to the cutoff time"
 
     def __init__(self, unit="seconds"):
         self.unit = unit.lower()
@@ -420,6 +435,11 @@ class IsIn(TransformPrimitive):
 
     def __init__(self, list_of_outputs=None):
         self.list_of_outputs = list_of_outputs
+        if not list_of_outputs:
+            stringified_output_list = '[]'
+        else:
+            stringified_output_list = ', '.join(list_of_outputs)
+        self.description_template = "whether {{}} is in {}".format(stringified_output_list)
 
     def get_function(self):
         def pd_is_in(array):
@@ -451,6 +471,7 @@ class Diff(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     uses_full_entity = True
+    description_template = "the difference from the previous value of {}"
 
     def get_function(self):
         def pd_diff(values):
@@ -470,6 +491,7 @@ class Negate(TransformPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the negation of {}"
 
     def get_function(self):
         def negate(vals):
@@ -492,6 +514,7 @@ class Not(TransformPrimitive):
     input_types = [Boolean]
     return_type = Boolean
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    description_template = "the negation of {}"
 
     def generate_name(self, base_feature_names):
         return u"NOT({})".format(base_feature_names[0])
@@ -517,6 +540,7 @@ class Percentile(TransformPrimitive):
     uses_full_entity = True
     input_types = [Numeric]
     return_type = Numeric
+    description_template = "the percentile rank of {}"
 
     def get_function(self):
         return lambda array: array.rank(pct=True)
@@ -536,6 +560,7 @@ class Latitude(TransformPrimitive):
     name = 'latitude'
     input_types = [LatLong]
     return_type = Numeric
+    description_template = "the latitude of {}"
 
     def get_function(self):
         def latitude(latlong):
@@ -559,6 +584,7 @@ class Longitude(TransformPrimitive):
     name = 'longitude'
     input_types = [LatLong]
     return_type = Numeric
+    description_template = "the longitude of {}"
 
     def get_function(self):
         def longitude(latlong):
@@ -602,6 +628,7 @@ class Haversine(TransformPrimitive):
             error_message = 'Invalid unit %s provided. Must be one of %s' % (unit, valid_units)
             raise ValueError(error_message)
         self.unit = unit
+        self.description_template = "the haversine distance in {} between {{}} and {{}}".format(self.unit)
 
     def get_function(self):
         def haversine(latlong1, latlong2):
@@ -660,6 +687,7 @@ class Age(TransformPrimitive):
     return_type = Numeric
     uses_calc_time = True
     compatibility = [Library.PANDAS, Library.DASK]
+    description_template = "the age from {}"
 
     def get_function(self):
         def age(x, time=None):
