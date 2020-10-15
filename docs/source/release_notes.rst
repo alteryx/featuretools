@@ -6,9 +6,9 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Restrict koalas version to below 1.3.0 (:pr:`1192`)
     * Documentation Changes
     * Testing Changes
-        * Add ``pyspark`` and ``koalas`` to automated dependency checks (:pr:`1192`)
 
     Thanks to the following people for contributing to this release:
     :user:`rwedge`
