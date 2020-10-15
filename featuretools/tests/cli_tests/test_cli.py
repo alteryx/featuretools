@@ -1,13 +1,15 @@
 from click.testing import CliRunner
 
-from featuretools.__main__ import info, list_primitives
 import featuretools as ft
+from featuretools.__main__ import info, list_primitives
 
 
 def test_info():
     runner = CliRunner()
     result = runner.invoke(info)
     assert result.exit_code == 0
+    assert 'Featuretools version' in result.output
+    assert 'Featuretools installation directory' in result.output
 
 
 def test_list_primitives():
