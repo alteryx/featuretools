@@ -10,9 +10,10 @@ Release Notes
     * Documentation Changes
     * Testing Changes
         * Use CliRunner for CLI tests (:pr:`1190`)
+        * Add ``pyspark`` and ``koalas`` to automated dependency checks (:pr:`1191`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`
+    :user:`gsheni`, :user:`rwedge` :user:`thehomebrewnerd`
 
 **v0.20.0 Sep 30, 2020**
     .. warning::
