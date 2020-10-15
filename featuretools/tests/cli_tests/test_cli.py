@@ -1,12 +1,13 @@
-import subprocess
 from click.testing import CliRunner
+
+from featuretools.__main__ import info, list_primitives
 
 
 def test_info():
-    subprocess.check_output(['featuretools', 'info'])
+    runner = CliRunner()
+    runner.invoke(info, [''])
 
 
 def test_list_primitives():
-    subprocess.check_output(['featuretools', 'list-primitives'])
     runner = CliRunner()
-    runner.invoke(hello, ['Peter'])
+    runner.invoke(list_primitives, [''])
