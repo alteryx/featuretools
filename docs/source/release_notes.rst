@@ -8,10 +8,11 @@ Release Notes
     * Changes
         * Restrict koalas version to below 1.3.0 (:pr:`1192`)
     * Documentation Changes
+        * Added footer to the documentation (:pr:`1189`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`
+    :user:`jeff-hernandez`, :user:`rwedge`
 
 **v0.20.0 Sep 30, 2020**
     .. warning::
