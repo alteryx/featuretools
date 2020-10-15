@@ -2,14 +2,16 @@
 
 Release Notes
 -------------
-.. **Future Release**
+**Future Release**
     * Enhancements
     * Fixes
     * Changes
     * Documentation Changes
+      * Added footer to the documentation (:pr:`1189`)
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+Thanks to the following people for contributing to this release:
+:user:`jeff-hernandez`
 
 **v0.20.0 Sep 30, 2020**
     .. warning::
