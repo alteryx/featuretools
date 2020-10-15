@@ -6,12 +6,13 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Restrict koalas version to below 1.3.0 (:pr:`1192`)
     * Documentation Changes
     * Testing Changes
         * Use CliRunner for CLI tests (:pr:`1190`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`,
+    :user:`gsheni`, :user:`rwedge`
 
 **v0.20.0 Sep 30, 2020**
     .. warning::
