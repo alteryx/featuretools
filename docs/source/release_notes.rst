@@ -10,9 +10,10 @@ Release Notes
     * Documentation Changes
         * Added footer to the documentation (:pr:`1189`)
     * Testing Changes
+        * Add ``pyspark`` and ``koalas`` to automated dependency checks (:pr:`1191`)
 
     Thanks to the following people for contributing to this release:
-    :user:`jeff-hernandez`, :user:`rwedge`
+    :user:`rwedge`, :user:`thehomebrewnerd`, :user:`jeff-hernandez`
 
 **v0.20.0 Sep 30, 2020**
     .. warning::
