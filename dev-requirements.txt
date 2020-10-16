@@ -14,5 +14,4 @@ Sphinx==3.2.1
 pydata_sphinx_theme==0.4.0
 nlp_primitives>=1.0.0
 autonormalize >= 1.0.1
-pyspark >= 3.0.1
-koalas >= 1.2.0
+-r koalas-requirements.txt
