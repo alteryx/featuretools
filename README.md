@@ -61,7 +61,7 @@ Below is an example of using Deep Feature Synthesis (DFS) to perform automated f
 >> es.plot()
 ```
 
-<img src="https://github.com/FeatureLabs/featuretools/blob/main/docs/source/images/entity_set.png?raw=true" width="350">
+<img src="https://github.com/FeatureLabs/featuretools/blob/main/docs/source/_static/images/entity_set.png?raw=true" width="350">
 
 Featuretools can automatically create a single table of features for any "target entity"
 ```python

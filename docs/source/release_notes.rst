@@ -9,11 +9,12 @@ Release Notes
         * Restrict koalas version to below 1.3.0 (:pr:`1192`)
         * Keep koalas requirements in separate file (:pr:`1195`)
     * Documentation Changes
+        * Added footer to the documentation (:pr:`1189`)
     * Testing Changes
         * Add ``pyspark`` and ``koalas`` to automated dependency checks (:pr:`1191`)
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`, :user:`thehomebrewnerd`
+    :user:`rwedge`, :user:`thehomebrewnerd`, :user:`jeff-hernandez`
 
 **v0.20.0 Sep 30, 2020**
     .. warning::
