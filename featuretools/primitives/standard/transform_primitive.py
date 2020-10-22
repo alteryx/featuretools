@@ -291,7 +291,7 @@ class IsWeekend(TransformPrimitive):
     input_types = [Datetime]
     return_type = Boolean
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
-    description_template = "whether {} occured on a weekend"
+    description_template = "whether {} occurred on a weekend"
 
     def get_function(self):
         def is_weekend(vals):
@@ -438,7 +438,7 @@ class IsIn(TransformPrimitive):
         if not list_of_outputs:
             stringified_output_list = '[]'
         else:
-            stringified_output_list = ', '.join(list_of_outputs)
+            stringified_output_list = ', '.join([str(x) for x in list_of_outputs])
         self.description_template = "whether {{}} is in {}".format(stringified_output_list)
 
     def get_function(self):

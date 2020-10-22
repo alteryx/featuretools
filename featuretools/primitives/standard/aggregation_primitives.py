@@ -131,7 +131,7 @@ class Mode(AggregationPrimitive):
     name = "mode"
     input_types = [Discrete]
     return_type = None
-    description_template = "the most frequently occuring {}"
+    description_template = "the most frequently occurring value of {}"
 
     def get_function(self, agg_type=Library.PANDAS):
         def pd_mode(s):
@@ -153,7 +153,7 @@ class Min(AggregationPrimitive):
     return_type = Numeric
     stack_on_self = False
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
-    description_template = "the minimum {}"
+    description_template = "the minimum of {}"
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type in [Library.DASK, Library.KOALAS]:
@@ -175,7 +175,7 @@ class Max(AggregationPrimitive):
     return_type = Numeric
     stack_on_self = False
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
-    description_template = "the maximum {}"
+    description_template = "the maximum of {}"
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type in [Library.DASK, Library.KOALAS]:
@@ -287,7 +287,7 @@ class PercentTrue(AggregationPrimitive):
     stack_on_exclude = []
     default_value = 0
     compatibility = [Library.PANDAS, Library.DASK]
-    description_template = "the percentage of values in {} that are true"
+    description_template = "the percentage of true values in {}"
 
     def get_function(self, agg_type=Library.PANDAS):
         if agg_type == Library.DASK:
@@ -395,7 +395,7 @@ class AvgTimeBetween(AggregationPrimitive):
     name = "avg_time_between"
     input_types = [DatetimeTimeIndex]
     return_type = Numeric
-    description_template = "the average time between each {}"
+    description_template = "the average time between each of {}"
 
     def __init__(self, unit="seconds"):
         self.unit = unit.lower()
@@ -572,6 +572,12 @@ class Any(AggregationPrimitive):
 
         return np.any
 
+    def get_description(self, input_column_descriptions, slice_num=None, template_override=None):
+        # remove "are true" from description if input_column description indicates boolean input
+        if input_column_descriptions[0].startswith('whether ') and not template_override:
+            template_override = 'whether any of {}'
+        return super().get_description(input_column_descriptions, slice_num, template_override=template_override)
+
 
 class All(AggregationPrimitive):
     """Calculates if all values are 'True' in a list.
@@ -603,6 +609,12 @@ class All(AggregationPrimitive):
             return dd.Aggregation(self.name, chunk=chunk, agg=agg)
 
         return np.all
+
+    def get_description(self, input_column_descriptions, slice_num=None, template_override=None):
+        # remove "are true" from description if input_column description indicates boolean input
+        if input_column_descriptions[0].startswith('whether ') and not template_override:
+            template_override = 'whether all of {}'
+        return super().get_description(input_column_descriptions, slice_num, template_override=template_override)
 
 
 class TimeSinceLast(AggregationPrimitive):

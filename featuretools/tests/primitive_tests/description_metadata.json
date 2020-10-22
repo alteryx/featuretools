@@ -1,0 +1,10 @@
+{
+    "feature_descriptions": {
+        "sessions: device_name": "the name of the device used for each session",
+        "customers: MODE(log.zipcode)": "the most frequently used zipcode"
+
+    },
+    "primitive_templates": {
+        "cum_mean": "the running average of {}"
+    }
+}

@@ -22,6 +22,7 @@ from .feature_base import (
     IdentityFeature,
     TransformFeature,
     graph_feature,
+    describe_feature,
     save_features,
     load_features
 )

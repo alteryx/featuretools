@@ -108,6 +108,16 @@ class PrimitiveBase(object):
     def get_description(self, input_column_descriptions, slice_num=None, template_override=None):
         template = template_override or self.description_template
         if template:
+            # removes redunant whethers for stacked boolean output primitives
+            if template.startswith('whether '):
+                stripped_inputs = []
+                for input_description in input_column_descriptions:
+                    if input_description.startswith('whether '):
+                        stripped_inputs.append(input_description[8:])
+                    else:
+                        stripped_inputs.append(input_description)
+                input_column_descriptions = stripped_inputs
+
             if slice_num and isinstance(template, list):
                 slice_index = slice_num + 1
                 if slice_index <= len(template):

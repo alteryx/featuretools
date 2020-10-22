@@ -12,3 +12,4 @@ from .feature_base import (
 from .feature_visualizer import graph_feature
 from .features_deserializer import load_features
 from .features_serializer import save_features
+from .feature_description_combined import describe_feature
