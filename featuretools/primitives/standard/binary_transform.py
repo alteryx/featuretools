@@ -822,20 +822,6 @@ class And(TransformPrimitive):
     def generate_name(self, base_feature_names):
         return "AND(%s, %s)" % (base_feature_names[0], base_feature_names[1])
 
-    def get_description(self, input_column_descriptions, slice_num=None, template_override=None):
-        # remove "is true" from description if input_column description indicates boolean input
-        if template_override:
-            return super().get_description(input_column_descriptions, slice_num,
-                                           template_override=template_override)
-        first_half, second_half = "whether {} is true", "and {} is true"
-        if input_column_descriptions[0].startswith('whether ') and not template_override:
-            first_half = "whether {}"
-        if input_column_descriptions[1].startswith('whether ') and not template_override:
-            second_half = "and {}"
-        template_override = first_half + " " + second_half
-        return super().get_description(input_column_descriptions, slice_num,
-                                       template_override=template_override)
-
 
 class Or(TransformPrimitive):
     """Element-wise logical OR of two lists.
@@ -862,17 +848,3 @@ class Or(TransformPrimitive):
 
     def generate_name(self, base_feature_names):
         return "OR(%s, %s)" % (base_feature_names[0], base_feature_names[1])
-
-    def get_description(self, input_column_descriptions, slice_num=None, template_override=None):
-        # remove "is true" from description if input_column description indicates boolean input
-        if template_override:
-            return super().get_description(input_column_descriptions, slice_num,
-                                           template_override=template_override)
-        first_half, second_half = "whether {} is true", "or {} is true"
-        if input_column_descriptions[0].startswith('whether ') and not template_override:
-            first_half = "whether {}"
-        if input_column_descriptions[1].startswith('whether ') and not template_override:
-            second_half = "or {}"
-        template_override = first_half + " " + second_half
-        return super().get_description(input_column_descriptions, slice_num,
-                                       template_override=template_override)

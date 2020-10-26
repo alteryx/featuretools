@@ -1,23 +1,29 @@
 import os
 
+import pytest
+
 from featuretools import describe_feature
 from featuretools.feature_base import (
     AggregationFeature,
     DirectFeature,
     GroupByTransformFeature,
     IdentityFeature,
-    TransformFeature,
+    TransformFeature
 )
 from featuretools.primitives import (
     Absolute,
+    AggregationPrimitive,
     CumMean,
     EqualScalar,
     Mean,
     Mode,
     NMostCommon,
     NumUnique,
-    Sum
+    PercentTrue,
+    Sum,
+    TransformPrimitive
 )
+from featuretools.variable_types import Discrete
 
 
 def test_identity_description(es):
@@ -39,11 +45,20 @@ def test_direct_description(es):
                        'this instance of "log".'
     assert describe_feature(deep_direct) == deep_description
 
+    agg = AggregationFeature(es['log']['purchased'], es['sessions'], PercentTrue)
+    complicated_direct = DirectFeature(agg, es['log'])
+    agg_on_direct = AggregationFeature(complicated_direct, es['products'], Mean)
+
+    complicated_description = 'The average of the percentage of true values in ' \
+        'the "purchased" of all instances of "log" for each "id" in "sessions" of ' \
+        'the instance of "sessions" associated with this instance of "log" of all ' \
+        'instances of "log" for each "id" in "products".'
+    assert describe_feature(agg_on_direct) == complicated_description
+
 
 def test_transform_description(es):
     feature = TransformFeature(es['log']['value'], Absolute)
     description = 'The absolute value of the "value".'
-
     assert describe_feature(feature) == description
 
 
@@ -60,8 +75,8 @@ def test_aggregation_description(es):
     assert describe_feature(feature) == description
 
     stacked_agg = AggregationFeature(feature, es['customers'], Sum)
-    stacked_description = 'The sum of "MEAN(log.value)" of all instances ' \
-                          'of "sessions" for each "id" in "customers". "MEAN(log.value)" is t' + description[1:]
+    stacked_description = 'The sum of t{} of all instances of "sessions" for each "id" ' \
+                          'in "customers".'.format(description[1:-1])
     assert describe_feature(stacked_agg) == stacked_description
 
 
@@ -83,27 +98,79 @@ def test_aggregation_description_use_previous(es):
     assert describe_feature(feature) == description
 
 
-def test_multi_output_description(es):
-    feature = AggregationFeature(es['log']['zipcode'], es['sessions'], NMostCommon)
-    first_slice = feature[0]
-    second_slice = feature[1]
+def test_multioutput_description(es):
+    n_most_common = NMostCommon(2)
+    n_most_common_feature = AggregationFeature(es['log']['zipcode'], es['sessions'], n_most_common)
+    first_most_common_slice = n_most_common_feature[0]
+    second_most_common_slice = n_most_common_feature[1]
 
-    description = 'The 3 most common values of the "zipcode" of all instances of "log" for each "id" in "sessions".'
-    first_description = 'The most common value of the "zipcode" of all instances of "log" ' \
-                        'for each "id" in "sessions".'
-    second_description = 'The 2nd most common value of the "zipcode" of all instances of ' \
-                         '"log" for each "id" in "sessions".'
+    n_most_common_base = 'The 2 most common values of the "zipcode" of all instances of "log" for each "id" in "sessions".'
+    n_most_common_first = 'The most common value of the "zipcode" of all instances of "log" ' \
+                          'for each "id" in "sessions".'
+    n_most_common_second = 'The 2nd most common value of the "zipcode" of all instances of ' \
+                           '"log" for each "id" in "sessions".'
 
-    assert describe_feature(feature) == description
-    assert describe_feature(first_slice) == first_description
-    assert describe_feature(second_slice) == second_description
+    assert describe_feature(n_most_common_feature) == n_most_common_base
+    assert describe_feature(first_most_common_slice) == n_most_common_first
+    assert describe_feature(second_most_common_slice) == n_most_common_second
+
+    class CustomMultiOutput(TransformPrimitive):
+        name = "custom_multioutput"
+        input_types = [Discrete]
+        return_type = Discrete
+
+        number_output_features = 3
+
+    custom_feat = TransformFeature(es['log']['zipcode'], CustomMultiOutput)
+
+    generic_base = 'The result of applying CUSTOM_MULTIOUTPUT to the "zipcode".'
+    generic_first = 'The 1st output from applying CUSTOM_MULTIOUTPUT to the "zipcode".'
+    generic_second = 'The 2nd output from applying CUSTOM_MULTIOUTPUT to the "zipcode".'
+
+    assert describe_feature(custom_feat) == generic_base
+    assert describe_feature(custom_feat[0]) == generic_first
+    assert describe_feature(custom_feat[1]) == generic_second
+
+    CustomMultiOutput.description_template = ['the multioutput of {}',
+                                              'the primary multioutput part of {}',
+                                              'the secondary multioutput part of {}']
+    custom_base = 'The multioutput of the "zipcode".'
+    custom_first_slice = 'The primary multioutput part of the "zipcode".'
+    custom_second_slice = 'The secondary multioutput part of the "zipcode".'
+    bad_slice_error = 'Slice out of range of template'
+    assert describe_feature(custom_feat) == custom_base
+    assert describe_feature(custom_feat[0]) == custom_first_slice
+    assert describe_feature(custom_feat[1]) == custom_second_slice
+    with pytest.raises(IndexError, match=bad_slice_error):
+        describe_feature(custom_feat[2])
+
+
+def test_generic_description(es):
+    class CustomAgg(AggregationPrimitive):
+        name = 'custom_aggregation'
+        input_types = [Discrete]
+        output_type = Discrete
+
+    class CustomTrans(TransformPrimitive):
+        name = 'custom_transform'
+        input_types = [Discrete]
+        output_type = Discrete
+
+    custom_agg = AggregationFeature(es['log']['zipcode'], es['customers'], CustomAgg)
+    custom_agg_description = 'The result of applying CUSTOM_AGGREGATION to the "zipcode" of all instances of "log" for each "id" in "customers".'
+    assert describe_feature(custom_agg) == custom_agg_description
+
+    custom_trans = TransformFeature(es['log']['zipcode'], CustomTrans)
+    custom_trans_description = 'The result of applying CUSTOM_TRANSFORM to the "zipcode".'
+    assert describe_feature(custom_trans) == custom_trans_description
 
 
 def test_metadata(es):
-    identity_feature_descriptions = {'sessions: device_name': 'the name of the device used for each session'}
+    identity_feature_descriptions = {'sessions: device_name': 'the name of the device used for each session',
+                                     'customers: id': "the customer's id"}
     agg_feat = AggregationFeature(es['sessions']['device_name'], es['customers'], NumUnique)
     agg_description = 'The number of unique elements in the name of the device used for each '\
-                      'session of all instances of "sessions" for each "id" in "customers".'
+                      'session of all instances of "sessions" for each customer\'s id.'
     assert describe_feature(agg_feat, feature_descriptions=identity_feature_descriptions) == agg_description
 
     transform_feat = GroupByTransformFeature(es['log']['value'], CumMean, es['log']['session_id'])
@@ -111,11 +178,11 @@ def test_metadata(es):
     primitive_templates = {"cum_mean": "the running average of {}"}
     assert describe_feature(transform_feat, primitive_templates=primitive_templates) == transform_description
 
-    custom_agg = AggregationFeature(es['log']['zipcode'], es['customers'], Mode)
-    auto_description = 'The most frequently occurring value of the "zipcode" of all instances of "log" for each "id" in "customers".'
+    custom_agg = AggregationFeature(es['log']['zipcode'], es['sessions'], Mode)
+    auto_description = 'The most frequently occurring value of the "zipcode" of all instances of "log" for each "id" in "sessions".'
     custom_agg_description = "the most frequently used zipcode"
     custom_feature_description = custom_agg_description[0].upper() + custom_agg_description[1:] + '.'
-    feature_description_dict = {'customers: MODE(log.zipcode)': custom_agg_description}
+    feature_description_dict = {'sessions: MODE(log.zipcode)': custom_agg_description}
     assert describe_feature(custom_agg) == auto_description
     assert describe_feature(custom_agg, feature_descriptions=feature_description_dict) == custom_feature_description
 

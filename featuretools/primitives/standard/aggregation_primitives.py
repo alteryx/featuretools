@@ -10,7 +10,6 @@ from featuretools.primitives.base.aggregation_primitive_base import (
 )
 from featuretools.utils import convert_time_units
 from featuretools.utils.gen_utils import Library
-from featuretools.utils.description_utils import convert_to_nth
 from featuretools.variable_types import (
     Boolean,
     Categorical,
@@ -343,6 +342,11 @@ class NMostCommon(AggregationPrimitive):
     def __init__(self, n=3):
         self.n = n
         self.number_output_features = n
+        self.description_template = [
+            'the {} most common values of {{}}'.format(n),
+            'the most common value of {}',
+            *['the {slice_num} most common value of {}'] * (n - 1)
+        ]
 
     def get_function(self, agg_type=Library.PANDAS):
         def n_most_common(x):
@@ -353,18 +357,6 @@ class NMostCommon(AggregationPrimitive):
             return array
 
         return n_most_common
-
-    def get_description(self, input_column_descriptions, slice_num=None, template_override=None):
-        if template_override:
-            return super().get_description(input_column_descriptions, slice_num, template_override)
-        if slice_num is None:
-            return "the {n} most common values of {}".format(*input_column_descriptions, n=self.n)
-        else:
-            if slice_num == 0:
-                return "the most common value of {}".format(*input_column_descriptions)
-            else:
-                nth_slice = convert_to_nth(slice_num + 1)
-                return "the {nth} most common value of {}".format(*input_column_descriptions, nth=nth_slice)
 
 
 class AvgTimeBetween(AggregationPrimitive):
@@ -572,12 +564,6 @@ class Any(AggregationPrimitive):
 
         return np.any
 
-    def get_description(self, input_column_descriptions, slice_num=None, template_override=None):
-        # remove "are true" from description if input_column description indicates boolean input
-        if input_column_descriptions[0].startswith('whether ') and not template_override:
-            template_override = 'whether any of {}'
-        return super().get_description(input_column_descriptions, slice_num, template_override=template_override)
-
 
 class All(AggregationPrimitive):
     """Calculates if all values are 'True' in a list.
@@ -609,12 +595,6 @@ class All(AggregationPrimitive):
             return dd.Aggregation(self.name, chunk=chunk, agg=agg)
 
         return np.all
-
-    def get_description(self, input_column_descriptions, slice_num=None, template_override=None):
-        # remove "are true" from description if input_column description indicates boolean input
-        if input_column_descriptions[0].startswith('whether ') and not template_override:
-            template_override = 'whether all of {}'
-        return super().get_description(input_column_descriptions, slice_num, template_override=template_override)
 
 
 class TimeSinceLast(AggregationPrimitive):
