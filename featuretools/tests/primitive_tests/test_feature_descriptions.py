@@ -1,4 +1,5 @@
 import os
+import json
 
 import pytest
 
@@ -165,7 +166,7 @@ def test_generic_description(es):
     assert describe_feature(custom_trans) == custom_trans_description
 
 
-def test_metadata(es):
+def test_metadata(es, tmpdir):
     identity_feature_descriptions = {'sessions: device_name': 'the name of the device used for each session',
                                      'customers: id': "the customer's id"}
     agg_feat = AggregationFeature(es['sessions']['device_name'], es['customers'], NumUnique)
@@ -186,8 +187,13 @@ def test_metadata(es):
     assert describe_feature(custom_agg) == auto_description
     assert describe_feature(custom_agg, feature_descriptions=feature_description_dict) == custom_feature_description
 
-    this_directory = os.path.dirname(os.path.abspath(__file__))
-    metadata_path = os.path.join(this_directory, 'description_metadata.json')
+    metadata = {
+        'feature_descriptions': {**identity_feature_descriptions, **feature_description_dict},
+        'primitive_templates': primitive_templates
+    }
+    metadata_path = os.path.join(tmpdir, 'description_metadata.json')
+    with open(metadata_path, 'w') as f:
+        json.dump(metadata, f)
     assert describe_feature(agg_feat, metadata_file=metadata_path) == agg_description
     assert describe_feature(transform_feat, metadata_file=metadata_path) == transform_description
     assert describe_feature(custom_agg, metadata_file=metadata_path) == custom_feature_description
