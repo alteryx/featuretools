@@ -1,5 +1,5 @@
-import os
 import json
+import os
 
 import pytest
 
@@ -120,7 +120,7 @@ def test_multioutput_description(es):
         input_types = [Discrete]
         return_type = Discrete
 
-        number_output_features = 3
+        number_output_features = 4
 
     custom_feat = TransformFeature(es['log']['zipcode'], CustomMultiOutput)
 
@@ -131,6 +131,19 @@ def test_multioutput_description(es):
     assert describe_feature(custom_feat) == generic_base
     assert describe_feature(custom_feat[0]) == generic_first
     assert describe_feature(custom_feat[1]) == generic_second
+
+    CustomMultiOutput.description_template = ['the multioutput of {}',
+                                              'the {slice_num} multioutput part of {}']
+    template_base = 'The multioutput of the "zipcode".'
+    template_first_slice = 'The 1st multioutput part of the "zipcode".'
+    template_second_slice = 'The 2nd multioutput part of the "zipcode".'
+    template_third_slice = 'The 3rd multioutput part of the "zipcode".'
+    template_fourth_slice = 'The 4th multioutput part of the "zipcode".'
+    assert describe_feature(custom_feat) == template_base
+    assert describe_feature(custom_feat[0]) == template_first_slice
+    assert describe_feature(custom_feat[1]) == template_second_slice
+    assert describe_feature(custom_feat[2]) == template_third_slice
+    assert describe_feature(custom_feat[3]) == template_fourth_slice
 
     CustomMultiOutput.description_template = ['the multioutput of {}',
                                               'the primary multioutput part of {}',
