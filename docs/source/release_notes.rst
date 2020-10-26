@@ -11,11 +11,12 @@ Release Notes
     * Documentation Changes
         * Added footer to the documentation (:pr:`1189`)
         * Add guide for feature selection functions (:pr:`1184`)
+        * Fix README.md badge with correct link (:pr:`1200`)
     * Testing Changes
         * Add ``pyspark`` and ``koalas`` to automated dependency checks (:pr:`1191`)
 
     Thanks to the following people for contributing to this release:
-    :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`jeff-hernandez`
+    :user:`gsheni`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`jeff-hernandez`
 
 **v0.20.0 Sep 30, 2020**
     .. warning::
