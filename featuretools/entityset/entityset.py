@@ -820,7 +820,7 @@ class EntitySet(object):
                         lti = lti.apply(lambda x: None)
                     elif is_instance(entity.df, ks, 'DataFrame'):
                         index = lti.to_list()
-                        lti = ks.Series(index=index, data=[None] * len(index), dtype='float64')
+                        lti = ks.Series(index=index, data=[None] * len(index), dtype='datetime64[ns]')
                     else:
                         lti[:] = None
                 entity.last_time_index = lti
