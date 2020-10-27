@@ -503,7 +503,7 @@ class First(AggregationPrimitive):
     input_types = [Variable]
     return_type = None
     stack_on_self = False
-    description_template = "the first element of {}"
+    description_template = "the first instance of {}"
 
     def get_function(self, agg_type=Library.PANDAS):
         def pd_first(x):
@@ -524,7 +524,7 @@ class Last(AggregationPrimitive):
     input_types = [Variable]
     return_type = None
     stack_on_self = False
-    description_template = "the last element of {}"
+    description_template = "the last instance of {}"
 
     def get_function(self, agg_type=Library.PANDAS):
         def pd_last(x):

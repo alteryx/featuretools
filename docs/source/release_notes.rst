@@ -4,6 +4,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Add ``describe_feature`` to generate an English language feature description for a given feature (:pr:`1201`)
     * Fixes
     * Changes
         * Restrict koalas version to below 1.3.0 (:pr:`1192`)
@@ -16,7 +17,7 @@ Release Notes
         * Add ``pyspark`` and ``koalas`` to automated dependency checks (:pr:`1191`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`jeff-hernandez`
+    :user:`gsheni`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`jeff-hernandez`, :user:`frances-h`
 
 **v0.20.0 Sep 30, 2020**
     .. warning::
