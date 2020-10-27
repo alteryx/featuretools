@@ -6,8 +6,8 @@ Release Notes
     * Enhancements
         * Add ``describe_feature`` to generate an English language feature description for a given feature (:pr:`1201`)
     * Fixes
+        * Update ``EntitySet.add_last_time_indexes`` to work with Koalas 1.3.0 (:pr:`1192`, :pr:`1202`)
     * Changes
-        * Restrict koalas version to below 1.3.0 (:pr:`1192`)
         * Keep koalas requirements in separate file (:pr:`1195`)
     * Documentation Changes
         * Added footer to the documentation (:pr:`1189`)
