@@ -5,9 +5,8 @@ Release Notes
 **Future Release**
     * Enhancements
     * Fixes
-        * Update ``EntitySet.add_last_time_indexes`` to work with Koalas 1.3.0 (:pr:`1202`)
+        * Update ``EntitySet.add_last_time_indexes`` to work with Koalas 1.3.0 (:pr:`1192`, :pr:`1202`)
     * Changes
-        * Restrict koalas version to below 1.3.0 (:pr:`1192`)
         * Keep koalas requirements in separate file (:pr:`1195`)
     * Documentation Changes
         * Added footer to the documentation (:pr:`1189`)
