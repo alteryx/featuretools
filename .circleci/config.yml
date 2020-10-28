@@ -10,9 +10,6 @@ executors:
         type: string
     docker:
       - image: circleci/python:<< parameters.image_tag >>
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASSWORD
 
 commands:
   package_featuretools:
@@ -125,9 +122,6 @@ jobs:
   run_premium_primitives_tests_on_main:
     docker:
       - image: circleci/buildpack-deps:curl
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASSWORD
     steps:
       - run:
           name: "Trigger premium primitives tests for python 3.6"
@@ -135,9 +129,6 @@ jobs:
   run_premium_primitives_tests_on_release:
     docker:
       - image: circleci/buildpack-deps:curl
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASSWORD
     steps:
       - run:
           name: "Trigger premium primitives tests for python 3.6 release"
@@ -266,9 +257,6 @@ jobs:
     working_directory: ~/featuretools
     docker:
       - image: busybox:latest
-        auth:
-          username: $DOCKERHUB_USERNAME
-          password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
       - run: cat docs/source/release_notes.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/featuretools/pull/}\`"
