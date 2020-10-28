@@ -282,8 +282,6 @@ workflows:
             parameters:
               python_version: ["3.8", "3.7", "3.6"]
           name: py<< matrix.python_version >> windows unit tests
-          context:
-            - dockerhub
       - install_ft:
           matrix:
             parameters:
