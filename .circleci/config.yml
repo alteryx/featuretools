@@ -282,16 +282,12 @@ workflows:
             parameters:
               python_version: ["3.8", "3.7", "3.6"]
           name: py<< matrix.python_version >> windows unit tests
-          context:
-            - dockerhub
       - install_ft:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
               optional_libraries: ["minimal", "optional"]
           name: << matrix.image_tag >> install featuretools << matrix.optional_libraries >>
-          context:
-            - dockerhub
       - unit_tests:
           matrix:
             parameters:
@@ -300,8 +296,6 @@ workflows:
           name: << matrix.image_tag >> unit tests << matrix.optional_libraries >>
           requires:
             - << matrix.image_tag >> install featuretools << matrix.optional_libraries >>
-          context:
-            - dockerhub
       - lint_test:
           matrix:
             parameters:
@@ -309,8 +303,6 @@ workflows:
           name: << matrix.image_tag >> lint test
           requires:
             - << matrix.image_tag >> install featuretools optional
-          context:
-            - dockerhub
       - build_docs:
           matrix:
             parameters:
@@ -318,15 +310,11 @@ workflows:
           name: build docs << matrix.image_tag >>
           requires:
             - << matrix.image_tag >> install featuretools optional
-          context:
-            - dockerhub
       - install_ft_complete:
           matrix:
             parameters:
               image_tag: ["3.8", "3.7", "3.6"]
           name: << matrix.image_tag >>  install featuretools complete test
-          context:
-            - dockerhub
       - release_notes_updated:
           name: "release notes updated"
           filters:
@@ -335,16 +323,12 @@ workflows:
                 - /^main?/
                 - /^v\d+\.\d+\.\d+$/
                 - /^dep-update-[a-f0-9]{7}$/
-          context:
-            - dockerhub
       - run_premium_primitives_tests_on_main:
           name: "run premium primitives tests on main"
           filters:
             branches:
               only:
                 - main
-          context:
-            - dockerhub
       - run_premium_primitives_tests_on_release:
           name: "run premium primitives tests on release"
           filters:
@@ -352,5 +336,3 @@ workflows:
               ignore: /.*/
             tags:
               only: /^v\d+\.\d+\.\d+$/
-          context:
-            - dockerhub
