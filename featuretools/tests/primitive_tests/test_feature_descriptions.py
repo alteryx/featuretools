@@ -36,12 +36,12 @@ def test_identity_description(es):
 
 def test_direct_description(es):
     feature = DirectFeature(es['customers']['loves_ice_cream'], es['sessions'])
-    description = 'The "loves_ice_cream" of the instance of "customers" associated ' \
+    description = 'The "loves_ice_cream" for the instance of "customers" associated ' \
                   'with this instance of "sessions".'
     assert describe_feature(feature) == description
 
     deep_direct = DirectFeature(feature, es['log'])
-    deep_description = 'The "loves_ice_cream" of the instance of "customers" ' \
+    deep_description = 'The "loves_ice_cream" for the instance of "customers" ' \
                        'associated with the instance of "sessions" associated with ' \
                        'this instance of "log".'
     assert describe_feature(deep_direct) == deep_description
@@ -51,7 +51,7 @@ def test_direct_description(es):
     agg_on_direct = AggregationFeature(complicated_direct, es['products'], Mean)
 
     complicated_description = 'The average of the percentage of true values in ' \
-        'the "purchased" of all instances of "log" for each "id" in "sessions" of ' \
+        'the "purchased" of all instances of "log" for each "id" in "sessions" for ' \
         'the instance of "sessions" associated with this instance of "log" of all ' \
         'instances of "log" for each "id" in "products".'
     assert describe_feature(agg_on_direct) == complicated_description

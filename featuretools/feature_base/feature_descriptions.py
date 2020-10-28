@@ -18,10 +18,8 @@ def describe_feature(feature, feature_descriptions=None, primitive_templates=Non
     Returns:
         str : English description of the feature
     '''
-    if not feature_descriptions:
-        feature_descriptions = {}
-    if not primitive_templates:
-        primitive_templates = {}
+    feature_descriptions = feature_descriptions or {}
+    primitive_templates = primitive_templates or {}
 
     if metadata_file:
         file_feature_descriptions, file_primitive_templates = parse_json_metadata(metadata_file)
@@ -128,7 +126,7 @@ def get_direct_description(feature):
             'with'.format(base_feat.relationship_path[-1][1].parent_entity.id)
         direct_description = base_feat_description + direct_description
         base_features = base_feat.base_features
-    direct_description = ' of' + direct_description
+    direct_description = ' for' + direct_description
 
     return base_features[0], direct_description
 

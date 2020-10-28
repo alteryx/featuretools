@@ -725,7 +725,7 @@ class ModuloNumeric(TransformPrimitive):
     input_types = [Numeric, Numeric]
     return_type = Numeric
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
-    description_template = "the result of {} modulo {}"
+    description_template = "the remainder after dividing {} by {}"
 
     def get_function(self):
         return np.mod
@@ -754,7 +754,7 @@ class ModuloNumericScalar(TransformPrimitive):
 
     def __init__(self, value=1):
         self.value = value
-        self.description_template = "the result of {{}} modulo {}".format(self.value)
+        self.description_template = "the remainder after dividing {{}} by {}".format(self.value)
 
     def get_function(self):
         def modulo_scalar(vals):
@@ -785,7 +785,7 @@ class ModuloByFeature(TransformPrimitive):
 
     def __init__(self, value=1):
         self.value = value
-        self.description_template = "the result of {} modulo {{}}".format(self.value)
+        self.description_template = "the remainder after dividing {} by {{}}".format(self.value)
 
     def get_function(self):
         def modulo_by_feature(vals):
