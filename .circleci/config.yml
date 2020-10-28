@@ -342,5 +342,5 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /^v\d+\.\d+\.\d+$ ntext:
-            - dockerhub
+              only: /^v\d+\.\d+\.\d+$/
+          context: dockerhub
