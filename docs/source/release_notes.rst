@@ -14,6 +14,8 @@ Release Notes
         * Fix README.md badge with correct link (:pr:`1200`)
     * Testing Changes
         * Add ``pyspark`` and ``koalas`` to automated dependency checks (:pr:`1191`)
+        * Add DockerHub credentials to CI testing environment (:pr:`1204`)
+        * Update premium primitives job name on CI (:pr:`1205`)
 
     Thanks to the following people for contributing to this release:
     :user:`gsheni`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`jeff-hernandez`

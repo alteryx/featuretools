@@ -10,6 +10,9 @@ executors:
         type: string
     docker:
       - image: circleci/python:<< parameters.image_tag >>
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
 
 commands:
   package_featuretools:
@@ -101,7 +104,7 @@ jobs:
           python -m pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
       - when:
-          condition: 
+          condition:
             equal: [ "optional", << parameters.optional_libraries >> ]
           steps:
             - run: |
@@ -124,17 +127,23 @@ jobs:
   run_premium_primitives_tests_on_main:
     docker:
       - image: circleci/buildpack-deps:curl
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
     steps:
       - run:
           name: "Trigger premium primitives tests for python 3.6"
-          command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-36 https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/main"
+          command: "curl -u ${PP_K}: -d 'build_parameters[CIRCLE_JOB]=python_36' https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/main"
   run_premium_primitives_tests_on_release:
     docker:
       - image: circleci/buildpack-deps:curl
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
     steps:
       - run:
           name: "Trigger premium primitives tests for python 3.6 release"
-          command: "curl -u ${PP_K}: -d build_parameters[CIRCLE_JOB]=python-36-ft-release https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/main"
+          command: "curl -u ${PP_K}: -d 'build_parameters[CIRCLE_JOB]=python_36_ft_release' https://circleci.com/api/v1.1/project/github/FeatureLabs/premium-primitives/tree/main"
 
   unit_tests:
     resource_class: large
@@ -177,7 +186,7 @@ jobs:
                 codecov --required
       - unless:
           condition:
-            and: 
+            and:
               - equal: [ "3.6", << parameters.image_tag >> ]
               - equal: ["optional", << parameters.optional_libraries >>]
           steps:
@@ -214,7 +223,7 @@ jobs:
     steps:
       - run: sudo apt update && sudo apt install -y pandoc
       - run: sudo apt install -y graphviz
-      - run: | 
+      - run: |
           sudo apt install -y openjdk-11-jre-headless
           JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
       - checkout
@@ -259,6 +268,9 @@ jobs:
     working_directory: ~/featuretools
     docker:
       - image: busybox:latest
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
     steps:
       - checkout
       - run: cat docs/source/release_notes.rst | grep ":pr:\`${CIRCLE_PULL_REQUEST##https://github.com/FeatureLabs/featuretools/pull/}\`"
@@ -278,6 +290,7 @@ workflows:
               image_tag: ["3.6", "3.7", "3.8", "3.9"]
               optional_libraries: ["minimal", "optional"]
           name: << matrix.image_tag >> install featuretools << matrix.optional_libraries >>
+          context: dockerhub
       - unit_tests:
           matrix:
             parameters:
@@ -286,6 +299,7 @@ workflows:
           name: << matrix.image_tag >> unit tests << matrix.optional_libraries >>
           requires:
             - << matrix.image_tag >> install featuretools << matrix.optional_libraries >>
+          context: dockerhub
       - lint_test:
           matrix:
             parameters:
@@ -293,6 +307,7 @@ workflows:
           name: << matrix.image_tag >> lint test
           requires:
             - << matrix.image_tag >> install featuretools optional
+          context: dockerhub
       - build_docs:
           matrix:
             parameters:
@@ -300,11 +315,13 @@ workflows:
           name: build docs << matrix.image_tag >>
           requires:
             - << matrix.image_tag >> install featuretools optional
+          context: dockerhub
       - install_ft_complete:
           matrix:
             parameters:
               image_tag: ["3.6", "3.7", "3.8", "3.9"]
           name: << matrix.image_tag >>  install featuretools complete test
+          context: dockerhub
       - release_notes_updated:
           name: "release notes updated"
           filters:
@@ -313,12 +330,14 @@ workflows:
                 - /^main?/
                 - /^v\d+\.\d+\.\d+$/
                 - /^dep-update-[a-f0-9]{7}$/
+          context: dockerhub
       - run_premium_primitives_tests_on_main:
           name: "run premium primitives tests on main"
           filters:
             branches:
               only:
                 - main
+          context: dockerhub
       - run_premium_primitives_tests_on_release:
           name: "run premium primitives tests on release"
           filters:
@@ -326,3 +345,4 @@ workflows:
               ignore: /.*/
             tags:
               only: /^v\d+\.\d+\.\d+$/
+          context: dockerhub
