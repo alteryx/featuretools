@@ -37,9 +37,9 @@ class PrimitiveBase(object):
     compatibility = [Library.PANDAS]
     #: (str, list[str]): description template of the primitive. Input column
     # descriptions are passed as positional arguments to the template. Slice
-    # number (if present) is passed to the template via the `slice_num` keyword argument.
-    # Multi-output primitives can use a list to differentiate between the base description
-    # and a slice description.
+    # number (if present) in "nth" form is passed to the template via the
+    # `nth_slice` keyword argument. Multi-output primitives can use a list to
+    # differentiate between the base description and a slice description.
     description_template = None
 
     def __init__(self):
@@ -114,12 +114,12 @@ class PrimitiveBase(object):
                     slice_index = slice_num + 1
                     if slice_index < len(template):
                         return template[slice_index].format(*input_column_descriptions,
-                                                            slice_num=convert_to_nth(slice_index))
+                                                            nth_slice=convert_to_nth(slice_index))
                     else:
                         if len(template) > 2:
                             raise IndexError('Slice out of range of template')
                         return template[1].format(*input_column_descriptions,
-                                                  slice_num=convert_to_nth(slice_index))
+                                                  nth_slice=convert_to_nth(slice_index))
                 else:
                     template = template[0]
             return template.format(*input_column_descriptions)

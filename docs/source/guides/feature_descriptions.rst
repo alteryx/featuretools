@@ -64,14 +64,14 @@ Primitives descriptions are generated using primitive templates. By default, the
                         primitive_templates=primitive_templates)
 
 
-Multi-output primitives can use a list of primitive description templates to differentiate between the generic multi-output feature description and the feature slice descriptions. The first primitive template is always the generic overall feature. If only one other template is provided, it is used as the template for all slices. The slice number converted to the "nth" form is available through the ``slice_num`` keyword.
+Multi-output primitives can use a list of primitive description templates to differentiate between the generic multi-output feature description and the feature slice descriptions. The first primitive template is always the generic overall feature. If only one other template is provided, it is used as the template for all slices. The slice number converted to the "nth" form is available through the ``nth_slice`` keyword.
 
 .. ipython:: python
 
     primitive_templates = {
         'n_most_common': [
             'the 3 most common elements of {}', # generic multi-output feature
-            'the {slice_num} most common element of {}']} # template for each slice 
+            'the {nth_slice} most common element of {}']} # template for each slice 
 
     ft.describe_feature(features['N_MOST_COMMON(sessions.device)'],
                         primitive_templates=primitive_templates)

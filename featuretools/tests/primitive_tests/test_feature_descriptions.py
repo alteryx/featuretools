@@ -133,7 +133,7 @@ def test_multioutput_description(es):
     assert describe_feature(custom_feat[1]) == generic_second
 
     CustomMultiOutput.description_template = ['the multioutput of {}',
-                                              'the {slice_num} multioutput part of {}']
+                                              'the {nth_slice} multioutput part of {}']
     template_base = 'The multioutput of the "zipcode".'
     template_first_slice = 'The 1st multioutput part of the "zipcode".'
     template_second_slice = 'The 2nd multioutput part of the "zipcode".'

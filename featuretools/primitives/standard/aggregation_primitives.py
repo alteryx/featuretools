@@ -345,7 +345,7 @@ class NMostCommon(AggregationPrimitive):
         self.description_template = [
             'the {} most common values of {{}}'.format(n),
             'the most common value of {}',
-            *['the {slice_num} most common value of {}'] * (n - 1)
+            *['the {nth_slice} most common value of {}'] * (n - 1)
         ]
 
     def get_function(self, agg_type=Library.PANDAS):
