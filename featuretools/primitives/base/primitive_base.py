@@ -125,12 +125,13 @@ class PrimitiveBase(object):
             return template.format(*input_column_descriptions)
 
         # generic case:
+        name = self.name.upper() if self.name is not None else type(self).__name__
         if slice_num is not None:
             nth_slice = convert_to_nth(slice_num + 1)
             description = "the {} output from applying {} to {}".format(nth_slice,
-                                                                        self.name.upper(),
+                                                                        name,
                                                                         ', '.join(input_column_descriptions))
         else:
-            description = "the result of applying {} to {}".format(self.name.upper(),
+            description = "the result of applying {} to {}".format(name,
                                                                    ', '.join(input_column_descriptions))
         return description

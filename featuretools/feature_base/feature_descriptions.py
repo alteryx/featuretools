@@ -67,13 +67,11 @@ def generate_description(feature, feature_descriptions, primitive_templates):
         groupby_description = input_descriptions.pop()
 
     # Generate primitive description
-    slice_num = None
     template_override = None
-    if isinstance(feature, ft.feature_base.FeatureOutputSlice):
-        slice_num = feature.n
     if feature.primitive in primitive_templates or feature.primitive.name in primitive_templates:
         template_override = (primitive_templates.get(feature.primitive) or
                              primitive_templates.get(feature.primitive.name))
+    slice_num = feature.n if hasattr(feature, 'n') else None
     primitive_description = feature.primitive.get_description(input_descriptions,
                                                               slice_num=slice_num,
                                                               template_override=template_override)
