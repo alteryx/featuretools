@@ -22,6 +22,7 @@ By default, ``describe_feature`` uses the existing variable and entity names and
 
     ft.describe_feature(features['HOUR(date_of_birth)'])
     ft.describe_feature(features['MEAN(sessions.SUM(transactions.amount))'])
+
 Improving Descriptions
 ~~~~~~~~~~~~~~~~~~~~~~~
 While the default descriptions can be helpful, they can also be further improved by providing custom definitions of variables and features, and by providing alternative templates for primitive descriptions. 
