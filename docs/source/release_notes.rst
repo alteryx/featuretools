@@ -2,7 +2,17 @@
 
 Release Notes
 -------------
-**Future Release**
+
+.. **Future Release**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. Thanks to the following people for contributing to this release:
+
+**v0.21.0 Oct 30, 2020**
     * Enhancements
         * Add ``describe_feature`` to generate an English language feature description for a given feature (:pr:`1201`)
     * Fixes
