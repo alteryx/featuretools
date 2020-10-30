@@ -29,7 +29,7 @@ Release Notes
         * Update premium primitives job name on CI (:pr:`1205`)
 
     Thanks to the following people for contributing to this release:
-    :user:`gsheni`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`, :user:`jeff-hernandez`, :user:`frances-h`
+    :user:`frances-h`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`rwedge`, :user:`tamargrey`, :user:`thehomebrewnerd`
 
 **v0.20.0 Sep 30, 2020**
     .. warning::
