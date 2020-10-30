@@ -14,14 +14,18 @@ As features become more complicated, their names can become harder to understand
                           trans_primitives=["month", "hour"],
                           max_depth=2,
                           features_only=True)
-    features = {feature.get_name(): feature for feature in feature_defs}
 
 By default, ``describe_feature`` uses the existing variable and entity names and the default primitive description templates to generate feature descriptions. 
 
 .. ipython:: python
 
-    ft.describe_feature(features['HOUR(date_of_birth)'])
-    ft.describe_feature(features['MEAN(sessions.SUM(transactions.amount))'])
+    feature_defs[7]
+    ft.describe_feature(feature_defs[7])
+
+.. ipython:: python
+
+    feature_defs[12]
+    ft.describe_feature(feature_defs[12])
 
 Improving Descriptions
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -36,8 +40,7 @@ Custom feature definitions will get used in the description in place of the auto
     feature_descriptions = {
         'customers: join_date': 'the date the customer joined'}
 
-    ft.describe_feature(features['HOUR(join_date)'],
-                        feature_descriptions=feature_descriptions)
+    ft.describe_feature(feature_defs[8], feature_descriptions=feature_descriptions)
 
 For example, the above replaces the variable name ``"join_date"`` with a more descriptive definition of what that variable represents in the dataset. Feature descriptions can also be provided for generated features.
 
@@ -46,8 +49,7 @@ For example, the above replaces the variable name ``"join_date"`` with a more de
     feature_descriptions = {
         'sessions: SUM(transactions.amount)': 'the total transaction amount for a session'}
 
-    ft.describe_feature(features['MEAN(sessions.SUM(transactions.amount))'],
-                        feature_descriptions=feature_descriptions)
+    ft.describe_feature(feature_defs[12], feature_descriptions=feature_descriptions)
 
 
 Here, we create and pass in a custom description of the intermediate feature ``SUM(transactions.amount)``. The description for ``MEAN(sessions.SUM(transactions.amount))``, which is built on top of ``SUM(transactions.amount)``, uses the custom description in place of the automatically generated one. Feature descriptions can be passed in as a dictionary that maps the custom descriptions to either the feature object itself or the unique feature name in the form ``"[entity_name]: [feature_name]"``, as shown above.
@@ -61,39 +63,39 @@ Primitives descriptions are generated using primitive templates. By default, the
     primitive_templates = {
         'sum': 'the total of {}'}
 
-    ft.describe_feature(features['SUM(transactions.amount)'],
-                        primitive_templates=primitive_templates)
+    ft.describe_feature(feature_defs[6], primitive_templates=primitive_templates)
 
 
 Multi-output primitives can use a list of primitive description templates to differentiate between the generic multi-output feature description and the feature slice descriptions. The first primitive template is always the generic overall feature. If only one other template is provided, it is used as the template for all slices. The slice number converted to the "nth" form is available through the ``nth_slice`` keyword.
 
 .. ipython:: python
 
+    feature = feature_defs[5]
+    feature
+
     primitive_templates = {
         'n_most_common': [
             'the 3 most common elements of {}', # generic multi-output feature
             'the {nth_slice} most common element of {}']} # template for each slice 
 
-    ft.describe_feature(features['N_MOST_COMMON(sessions.device)'],
-                        primitive_templates=primitive_templates)
+    ft.describe_feature(feature, primitive_templates=primitive_templates)
 
 Notice how the multi-output feature uses the first template for its description. Each slice of this feature will use the second slice template:
 
 .. ipython:: python
 
-    ft.describe_feature(features['N_MOST_COMMON(sessions.device)'][0],
-                        primitive_templates=primitive_templates)
+    ft.describe_feature(feature[0], primitive_templates=primitive_templates)
 
-    ft.describe_feature(features['N_MOST_COMMON(sessions.device)'][1],
-                        primitive_templates=primitive_templates)
+    ft.describe_feature(feature[1], primitive_templates=primitive_templates)
 
-    ft.describe_feature(features['N_MOST_COMMON(sessions.device)'][2],
-                        primitive_templates=primitive_templates)
+    ft.describe_feature(feature[2], primitive_templates=primitive_templates)
 
 
 Alternatively, instead of supplying a single template for all slices, templates can be provided for each slice to further customize the output. Note that in this case, each slice must get its own template.
 
 .. ipython:: python
+
+
 
     primitive_templates = {
         'n_most_common': [
@@ -102,17 +104,13 @@ Alternatively, instead of supplying a single template for all slices, templates 
             'the second most common element of {}',
             'the third most common element of {}']}
 
-    ft.describe_feature(features['N_MOST_COMMON(sessions.device)'],
-                        primitive_templates=primitive_templates)
+    ft.describe_feature(feature, primitive_templates=primitive_templates)
 
-    ft.describe_feature(features['N_MOST_COMMON(sessions.device)'][0],
-                        primitive_templates=primitive_templates)
+    ft.describe_feature(feature[0], primitive_templates=primitive_templates)
 
-    ft.describe_feature(features['N_MOST_COMMON(sessions.device)'][1],
-                        primitive_templates=primitive_templates)
+    ft.describe_feature(feature[1], primitive_templates=primitive_templates)
 
-    ft.describe_feature(features['N_MOST_COMMON(sessions.device)'][2],
-                        primitive_templates=primitive_templates)
+    ft.describe_feature(feature[2], primitive_templates=primitive_templates)
 
 
 Custom feature descriptions and primitive templates can also be seperately defined in a JSON file and passed to the ``describe_feature`` function using the ``metadata_file`` keyword argument. 

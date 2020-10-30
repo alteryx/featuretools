@@ -182,7 +182,7 @@ def test_generic_description(es):
         output_type = Discrete
 
     no_name = TransformFeature(es['log']['zipcode'], NoName)
-    no_name_description = 'The result of applying NoNameTrans to the "zipcode".'
+    no_name_description = 'The result of applying NoName to the "zipcode".'
     assert describe_feature(no_name) == no_name_description
 
     custom_agg = AggregationFeature(es['log']['zipcode'], es['customers'], CustomAgg)

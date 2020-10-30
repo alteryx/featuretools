@@ -119,12 +119,12 @@ One of the reasons DFS is so powerful is that it can create a feature matrix for
 
 Understanding Feature Output
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In general, Featuretools references generated features through the feature name. In order to make features easier to understand, Featuretools offers two additional tools, :func:`featuretools.graph_feature` and :func:`featuretools.describe_feature`, to help explain what a feature is and the steps Featuretools took to generate it. [let's look at this example feature]
+
 .. ipython:: python
-    :suppress:
 
-    features = {f.get_name(): f for f in features_defs}
-
-In general, Featuretools references generated features through the feature name. In order to make features easier to understand, Featuretools offers two additional tools, :func:`featuretools.graph_feature` and :func:`featuretools.describe_feature`, to help explain what a feature is and the steps Featuretools took to generate it.
+    feature = features_defs[18]
+    feature
 
 Feature lineage graphs
 """"""""""""""""""""""
@@ -132,8 +132,7 @@ Feature lineage graphs visually walk through feature generation. Starting from t
 
 .. ipython:: python
 
-    ft.graph_feature(features['MODE(transactions.WEEKDAY(transaction_time))'])
-
+    ft.graph_feature(feature)
 
 .. graphviz:: getting_started/graphs/demo_feat.dot
 
@@ -143,7 +142,7 @@ Featuretools can also automatically generate English sentence descriptions of fe
 
 .. ipython:: python
 
-    ft.describe_feature(features['MODE(transactions.WEEKDAY(transaction_time))'])
+    ft.describe_feature(feature)
 
 
 .. Technical problems it solves
