@@ -117,6 +117,34 @@ One of the reasons DFS is so powerful is that it can create a feature matrix for
     feature_matrix_sessions.head(5)
 
 
+Understanding Feature Output
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In general, Featuretools references generated features through the feature name. In order to make features easier to understand, Featuretools offers two additional tools, :func:`featuretools.graph_feature` and :func:`featuretools.describe_feature`, to help explain what a feature is and the steps Featuretools took to generate it. [let's look at this example feature]
+
+.. ipython:: python
+
+    feature = features_defs[18]
+    feature
+
+Feature lineage graphs
+""""""""""""""""""""""
+Feature lineage graphs visually walk through feature generation. Starting from the base data, they show step by step the primitives applied and intermediate features generated to create the final feature.
+
+.. ipython:: python
+
+    ft.graph_feature(feature)
+
+.. graphviz:: getting_started/graphs/demo_feat.dot
+
+Feature descriptions
+""""""""""""""""""""
+Featuretools can also automatically generate English sentence descriptions of features. Feature descriptions help to explain what a feature is, and can be further improved by including manually defined custom definitions. See :doc:`/guides/feature_descriptions` for more details on how to customize automatically generated feature descriptions.
+
+.. ipython:: python
+
+    ft.describe_feature(feature)
+
+
 .. Technical problems it solves
 .. ----------------------------
 

@@ -13,4 +13,5 @@ Guides on more advanced Featuretools functionality
    using_koalas_entitysets
    deployment
    advanced_custom_primitives
+   feature_descriptions
    feature_selection
