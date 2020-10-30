@@ -19,8 +19,8 @@ By default, ``describe_feature`` uses the existing variable and entity names and
 
 .. ipython:: python
 
-    feature_defs[7]
-    ft.describe_feature(feature_defs[7])
+    feature_defs[8]
+    ft.describe_feature(feature_defs[8])
 
 .. ipython:: python
 
@@ -63,6 +63,7 @@ Primitives descriptions are generated using primitive templates. By default, the
     primitive_templates = {
         'sum': 'the total of {}'}
 
+    feature_defs[6]
     ft.describe_feature(feature_defs[6], primitive_templates=primitive_templates)
 
 
