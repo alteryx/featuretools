@@ -63,6 +63,9 @@ def description_to_entity(description, entityset, path=None):
         interesting_values = variable_types[variable.id][1]['properties']['interesting_values']
         interesting_values = pd.read_json(interesting_values, typ="series")
         variable.interesting_values = interesting_values
+        variable_description = variable_types[variable.id][1]['properties'].get('description')
+        if variable_description is not None and variable_description != 'the "{}"'.format(variable.name):
+            variable.description = variable_description
 
 
 def description_to_entityset(description, **kwargs):

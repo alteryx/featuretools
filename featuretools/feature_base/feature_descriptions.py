@@ -39,7 +39,7 @@ def generate_description(feature, feature_descriptions, primitive_templates):
 
     # Check if identity feature:
     if isinstance(feature, ft.IdentityFeature):
-        return 'the "{}"'.format(feature.get_name())
+        return feature.variable.description
 
     # Handle direct features
     if isinstance(feature, ft.DirectFeature):
