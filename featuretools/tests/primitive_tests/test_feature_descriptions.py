@@ -194,6 +194,13 @@ def test_generic_description(es):
     assert describe_feature(custom_trans) == custom_trans_description
 
 
+def test_variable_description(es):
+    variable_description = 'the name of the device used for each session'
+    es['sessions']['device_name'].description = variable_description
+    identity_feat = IdentityFeature(es['sessions']['device_name'])
+    assert describe_feature(identity_feat) == variable_description[0].upper() + variable_description[1:] + '.'
+
+
 def test_metadata(es, tmpdir):
     identity_feature_descriptions = {'sessions: device_name': 'the name of the device used for each session',
                                      'customers: id': "the customer's id"}

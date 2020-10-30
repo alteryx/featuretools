@@ -41,7 +41,16 @@ Custom feature definitions will get used in the description in place of the auto
 
     ft.describe_feature(feature_defs[8], feature_descriptions=feature_descriptions)
 
-For example, the above replaces the variable name ``"join_date"`` with a more descriptive definition of what that variable represents in the dataset. Feature descriptions can also be provided for generated features.
+For example, the above replaces the variable name ``"join_date"`` with a more descriptive definition of what that variable represents in the dataset. Variable descriptions can also be set directly on the variable through the ``description`` attribute:
+
+.. ipython:: python
+
+    es['customers']['join_date'].description = 'the date the customer joined'
+    feature = ft.TransformFeature(es['customers']['join_date'], ft.primitives.Hour)
+    feature
+    ft.describe_feature(feature)
+
+Variable descriptions must be set on the variable before the feature is created in order for descriptions to propagate. Note that if a description is set directly on a variable and a description is passed to ``describe_feature`` with ``feature_descriptions``, ``describe_feature`` will use the description found in ``feature_descriptions``. Feature descriptions can also be provided for generated features.
 
 .. ipython:: python
 
@@ -113,4 +122,4 @@ Alternatively, instead of supplying a single template for all slices, templates 
     ft.describe_feature(feature[2], primitive_templates=primitive_templates)
 
 
-Custom feature descriptions and primitive templates can also be seperately defined in a JSON file and passed to the ``describe_feature`` function using the ``metadata_file`` keyword argument. 
+Custom feature descriptions and primitive templates can also be seperately defined in a JSON file and passed to the ``describe_feature`` function using the ``metadata_file`` keyword argument. Descriptions passed in directly through the ``feature_descriptions`` and ``primitive_templates`` keyword arguments will take precedence over any descriptions provided in the JSON metadata file.
