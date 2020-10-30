@@ -35,6 +35,10 @@ def description_to_variable(description, entity=None):
         variable = variable_class(description['id'], entity, **kwargs)
         interesting_values = pd.read_json(description['properties']['interesting_values'], typ='series')
         variable.interesting_values = interesting_values
+        variable_description = description['properties'].get('description')
+        if variable_description is not None and variable_description != 'the "{}"'.format(variable.name):
+            variable.description = variable_description
+
     return variable
 
 

@@ -78,6 +78,15 @@ def test_unknown_variable_description(es):
     assert(variable.dtype == 'unknown')
 
 
+def test_custom_description_variable_description(es):
+    for entity in es.entities:
+        for variable in entity.variables:
+            variable.description = 'a custom description'
+            description = variable.to_data_description()
+            _variable = deserialize.description_to_variable(description, entity=entity)
+            assert _variable.description == 'a custom description'
+
+
 def test_entity_descriptions(es):
     _es = EntitySet(es.id)
     for entity in es.metadata.entities:
