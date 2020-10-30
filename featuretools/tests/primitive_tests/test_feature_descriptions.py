@@ -160,6 +160,17 @@ def test_multioutput_description(es):
 
 
 def test_generic_description(es):
+    class NoName(TransformPrimitive):
+        input_types = [Discrete]
+        output_type = Discrete
+
+        def generate_name(self, base_feature_names):
+            return u"%s(%s%s)" % (
+                'NO_NAME',
+                u", ".join(base_feature_names),
+                self.get_args_string(),
+            )
+
     class CustomAgg(AggregationPrimitive):
         name = 'custom_aggregation'
         input_types = [Discrete]
@@ -169,6 +180,10 @@ def test_generic_description(es):
         name = 'custom_transform'
         input_types = [Discrete]
         output_type = Discrete
+
+    no_name = TransformFeature(es['log']['zipcode'], NoName)
+    no_name_description = 'The result of applying NoNameTrans to the "zipcode".'
+    assert describe_feature(no_name) == no_name_description
 
     custom_agg = AggregationFeature(es['log']['zipcode'], es['customers'], CustomAgg)
     custom_agg_description = 'The result of applying CUSTOM_AGGREGATION to the "zipcode" of all instances of "log" for each "id" in "customers".'
