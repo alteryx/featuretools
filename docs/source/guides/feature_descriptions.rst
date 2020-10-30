@@ -37,8 +37,7 @@ Custom feature definitions will get used in the description in place of the auto
 
 .. ipython:: python
 
-    feature_descriptions = {
-        'customers: join_date': 'the date the customer joined'}
+    feature_descriptions = {'customers: join_date': 'the date the customer joined'}
 
     ft.describe_feature(feature_defs[8], feature_descriptions=feature_descriptions)
 
@@ -60,12 +59,12 @@ Primitives descriptions are generated using primitive templates. By default, the
 
 .. ipython:: python
 
-    primitive_templates = {
-        'sum': 'the total of {}'}
+    primitive_templates = {'sum': 'the total of {}'}
 
     feature_defs[6]
     ft.describe_feature(feature_defs[6], primitive_templates=primitive_templates)
 
+In this example, we override the default template of ``'the sum of {}'`` with our custom template ``'the total of {}'``. The description uses our custom template instead of the default.
 
 Multi-output primitives can use a list of primitive description templates to differentiate between the generic multi-output feature description and the feature slice descriptions. The first primitive template is always the generic overall feature. If only one other template is provided, it is used as the template for all slices. The slice number converted to the "nth" form is available through the ``nth_slice`` keyword.
 
