@@ -3,14 +3,16 @@
 Release Notes
 -------------
 
-.. **Future Release**
+**Future Release**
     * Enhancements
+        * Allow variable descriptions to be set directly on variable (:pr:`1207`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`frances-h`
 
 **v0.21.0 Oct 30, 2020**
     * Enhancements

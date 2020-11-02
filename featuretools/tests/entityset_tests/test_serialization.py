@@ -21,7 +21,7 @@ ks = import_or_none('databricks.koalas')
 BUCKET_NAME = "test-bucket"
 WRITE_KEY_NAME = "test-key"
 TEST_S3_URL = "s3://{}/{}".format(BUCKET_NAME, WRITE_KEY_NAME)
-TEST_FILE = "test_serialization_data_entityset_schema_5.0.0.tar"
+TEST_FILE = "test_serialization_data_entityset_schema_5.1.0.tar"
 S3_URL = "s3://featuretools-static/" + TEST_FILE
 URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
 TEST_KEY = "test_access_key_es"
@@ -76,6 +76,15 @@ def test_unknown_variable_description(es):
     description = {'type': 'some_unknown_type', 'id': 'some_unknown_id', 'properties': {'name': 'some_unknown_type', 'interesting_values': '{}'}}
     variable = deserialize.description_to_variable(description, entity=es.entities[0])
     assert(variable.dtype == 'unknown')
+
+
+def test_custom_description_variable_description(es):
+    for entity in es.entities:
+        for variable in entity.variables:
+            variable.description = 'a custom description'
+            description = variable.to_data_description()
+            _variable = deserialize.description_to_variable(description, entity=entity)
+            assert _variable.description == 'a custom description'
 
 
 def test_entity_descriptions(es):
