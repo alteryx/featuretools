@@ -24,6 +24,8 @@ class Variable(object):
             it belongs to.
         entity (:class:`.Entity`) : Entity this variable belongs to.
         name (str, optional) : Variable name. Defaults to id.
+        description (str, optional) : Description of what the variable is.
+            Used when describing features with `ft.describe_feature`.
 
     See Also:
         :class:`.Entity`, :class:`.Relationship`, :class:`.BaseEntitySet`
