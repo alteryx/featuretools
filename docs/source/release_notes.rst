@@ -3,18 +3,20 @@
 Release Notes
 -------------
 
-.. **Future Release**
+**Future Release**
     * Enhancements
+        * Allow variable descriptions to be set directly on variable (:pr:`1207`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
-.. Thanks to the following people for contributing to this release:
+    Thanks to the following people for contributing to this release:
+    :user:`frances-h`
 
 **v0.21.0 Oct 30, 2020**
     * Enhancements
-        * Add ``describe_feature`` to generate an English language feature description for a given feature (:pr:`1201`, :pr:`1207`)
+        * Add ``describe_feature`` to generate an English language feature description for a given feature (:pr:`1201`)
     * Fixes
         * Update ``EntitySet.add_last_time_indexes`` to work with Koalas 1.3.0 (:pr:`1192`, :pr:`1202`)
     * Changes
