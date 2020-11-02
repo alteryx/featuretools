@@ -6,6 +6,7 @@ Release Notes
 **Future Release**
     * Enhancements
         * Allow variable descriptions to be set directly on variable (:pr:`1207`)
+        * Add ability to add feature description captions to feature lineage graphs (:pr:`1212`)
     * Fixes
     * Changes
     * Documentation Changes

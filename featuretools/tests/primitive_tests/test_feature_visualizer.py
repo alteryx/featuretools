@@ -1,4 +1,5 @@
 
+import json
 import os
 import re
 
@@ -20,6 +21,11 @@ from featuretools.primitives import Count, CumMax, Mode, NMostCommon, Year
 @pytest.fixture
 def simple_feat(es):
     return IdentityFeature(es['log']['id'])
+
+
+@pytest.fixture
+def trans_feat(es):
+    return TransformFeature(es['customers']['cancel_date'], Year)
 
 
 def test_returns_digraph_object(simple_feat):
@@ -45,8 +51,8 @@ def test_invalid_format(simple_feat):
         graph_feature(simple_feat, to_file=output_path)
 
 
-def test_transform(es):
-    feat = TransformFeature(es['customers']['cancel_date'], Year)
+def test_transform(es, trans_feat):
+    feat = trans_feat
     graph = graph_feature(feat).source
 
     feat_name = feat.get_name()
@@ -290,8 +296,7 @@ def test_direct(es):
             assert matched
 
 
-def test_stacked(es):
-    trans_feat = TransformFeature(es['customers']['cancel_date'], Year)
+def test_stacked(es, trans_feat):
     stacked = AggregationFeature(trans_feat, es['cohorts'], Mode)
     graph = graph_feature(stacked).source
 
@@ -323,3 +328,40 @@ def test_stacked(es):
     trans_node = re.findall('"{}" \\[label.*'.format(trans_primitive), graph)
     assert len(trans_node) == 1
     assert 'Step 1' in trans_node[0]
+
+
+def test_description_auto_caption(trans_feat):
+    default_graph = graph_feature(trans_feat, description=True).source
+    default_label = 'label="The year of the \\"cancel_date\\"."'
+    assert default_label in default_graph
+
+
+def test_description_auto_caption_metadata(trans_feat, tmpdir):
+    feature_descriptions = {'customers: cancel_date': 'the date the customer cancelled'}
+    primitive_templates = {'year': 'the year that {} occurred'}
+    metadata_graph = graph_feature(trans_feat,
+                                   description=True,
+                                   feature_descriptions=feature_descriptions,
+                                   primitive_templates=primitive_templates).source
+
+    metadata_label = 'label="The year that the date the customer cancelled occurred."'
+    assert metadata_label in metadata_graph
+
+    metadata = {
+        'feature_descriptions': feature_descriptions,
+        'primitive_templates': primitive_templates
+    }
+    metadata_path = os.path.join(tmpdir, 'description_metadata.json')
+    with open(metadata_path, 'w') as f:
+        json.dump(metadata, f)
+    json_metadata_graph = graph_feature(trans_feat,
+                                        description=True,
+                                        metadata_file=metadata_path).source
+    assert metadata_label in json_metadata_graph
+
+
+def test_description_custom_caption(trans_feat):
+    custom_description = 'A custom feature description'
+    custom_description_graph = graph_feature(trans_feat, description=custom_description).source
+    custom_description_label = 'label="A custom feature description"'
+    assert custom_description_label in custom_description_graph

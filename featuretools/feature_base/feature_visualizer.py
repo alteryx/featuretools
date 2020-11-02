@@ -7,6 +7,7 @@ from featuretools.feature_base.feature_base import (
     IdentityFeature,
     TransformFeature
 )
+from featuretools.feature_base.feature_descriptions import describe_feature
 from featuretools.utils.plot_utils import (
     check_graphviz,
     get_graphviz_format,
@@ -27,13 +28,18 @@ TARGET_TEMPLATE = '''
     </TR>'''.format('{}', '{}', target_color=TARGET_COLOR)
 
 
-def graph_feature(feature, to_file=None):
+def graph_feature(feature, to_file=None, description=False, **kwargs):
     '''Generates a feature lineage graph for the given feature
 
     Args:
         feature (FeatureBase) : Feature to generate lineage graph for
         to_file (str, optional) : Path to where the plot should be saved.
             If set to None (as by default), the plot will not be saved.
+        description (bool or str, optional): The feature description to use as a caption
+            for the graph. If False, no description is added. Set to True
+            to use an auto-generated description. Defaults to False.
+        kwargs (keywords): Additional keyword arguments to pass as keyword arguments
+            to the ft.describe_feature function.
 
     Returns:
         graphviz.Digraph : Graph object that can directly be displayed in Jupyter notebooks.
@@ -91,6 +97,11 @@ def graph_feature(feature, to_file=None):
     graph.attr('edge', style='dotted', arrowhead='none', dir='forward')
     for edge in edges[0]:
         graph.edge(*edge)
+
+    if description is True:
+        graph.attr(label=describe_feature(feature, **kwargs))
+    elif description is not False:
+        graph.attr(label=description)
 
     if to_file:
         save_graph(graph, to_file, format_)
