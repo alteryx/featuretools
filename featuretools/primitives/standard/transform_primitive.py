@@ -490,7 +490,7 @@ class Negate(TransformPrimitive):
     name = "negate"
     input_types = [Numeric]
     return_type = Numeric
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "the negation of {}"
 
     def get_function(self):

@@ -142,3 +142,4 @@ class Library(Enum):
     PANDAS = 'pandas'
     DASK = 'Dask'
     KOALAS = 'Koalas'
+    CUDF = 'cuDF'

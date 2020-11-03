@@ -34,11 +34,11 @@ class Count(AggregationPrimitive):
     return_type = Numeric
     stack_on_self = False
     default_value = 0
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "the number"
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type in [Library.DASK, Library.KOALAS]:
+        if agg_type in [Library.DASK, Library.KOALAS, Library.CUDF]:
             return 'count'
 
         return pd.Series.count
