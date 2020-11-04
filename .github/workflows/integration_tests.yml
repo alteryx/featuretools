@@ -31,6 +31,7 @@ jobs:
     name: ${{ matrix.python_version }} unit tests ${{ matrix.optional_libraries }}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: true
       matrix:
         python_version: ["3.6", "3.7", "3.8"]
         optional_libraries: ["minimal", "optional"]
@@ -74,6 +75,5 @@ jobs:
       - if: ${{ matrix.python_version != 3.6 && matrix.optional_libraries != 'optional' }}
         name: Run unit tests (no code coverage)
         run: |
-          source venv/bin/activate
           cd unpacked_sdist
           pytest featuretools/ -n 2
