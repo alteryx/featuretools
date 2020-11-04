@@ -2,6 +2,34 @@ on: push
 
 name: Integration Tests
 jobs:
+  build_docs:
+    name: ${{ matrix.python_version }} build docs
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python_version: ["3.6", "3.7", "3.8"]
+    steps:
+      - name: Set up python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Build featuretools package
+        run: make package_featuretools
+      - name: Install featuretools with doc requirements
+        run: |
+          sudo apt update
+          sudo apt install -y pandoc
+          sudo apt install -y graphviz
+          sudo apt install -y openjdk-11-jre-headless
+          JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+          pip config --site set global.progress_bar off
+          python -m pip install --upgrade pip
+          python -m pip install -r unpacked_sdist/dev-requirements.txt
+      - name: Build docs
+        run: make -C docs/ -e "SPHINXOPTS=-W" clean html
+
   install_ft_complete:
     name: ${{ matrix.python_version }} install featuretools complete
     runs-on: ubuntu-latest
