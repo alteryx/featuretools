@@ -48,19 +48,19 @@ jobs:
           pip config --site set global.progress_bar off
           python -m pip install --upgrade pip
           sudo apt update && sudo apt install -y graphviz
-      - if: ${{ matrix.optional_libraries == "optional" }}
+      - if: ${{ matrix.optional_libraries == 'optional' }}
         name: Install featuretools with optional requirements and test requirements
         run: |
           sudo apt install -y openjdk-11-jre-headless
           JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
           python -m pip install -e unpacked_sdist/[koalas]
           python -m pip install -r unpacked_sdist/test-requirements.txt
-      - if: ${{ matrix.optional_libraries != "optional" }}
+      - if: ${{ matrix.optional_libraries != 'optional' }}
         name: Install featuretools with test requirements (no optional requirements)
         run: |
           python -m pip install -e unpacked_sdist/
           python -m pip install -r unpacked_sdist/test-requirements.txt
-      - if: ${{ matrix.python_version == 3.6 && matrix.optional_libraries == "optional" }}
+      - if: ${{ matrix.python_version == 3.6 && matrix.optional_libraries == 'optional' }}
         name: Run unit tests with code coverage
         run: |
           python -m pip install "$(cat dev-requirements.txt | grep codecov)"
@@ -71,7 +71,7 @@ jobs:
           cd ../
           cp unpacked_sdist/.coverage .coverage
           codecov --required
-      - if: ${{ matrix.python_version != 3.6 && matrix.optional_libraries != "optional" }}
+      - if: ${{ matrix.python_version != 3.6 && matrix.optional_libraries != 'optional' }}
         name: Run unit tests (no code coverage)
         run: |
           source venv/bin/activate
