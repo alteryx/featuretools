@@ -136,3 +136,29 @@ jobs:
       #     cd ../
       #     cp unpacked_sdist/.coverage .coverage
       #     codecov --required
+
+  win_unit_tests:
+    name: ${{ matrix.python_version }} windows unit tests
+    runs-on: windows-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python_version: ["3.6", "3.7", "3.8"]
+    steps:
+      - name: Setup miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          python-version: ${{ matrix.python_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Install featuretools with test requirements
+        shell: pwsh
+        run: |
+          conda config --add channels conda-forge
+          conda install python-graphviz -q -y
+          python -m pip install --upgrade pip
+          python -m pip install .
+          python -m pip install -r test-requirements.txt
+      - name: Run unit tests
+        run: pytest featuretools\ -n 2
