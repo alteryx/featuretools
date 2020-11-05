@@ -106,7 +106,7 @@ jobs:
           patterns = list(map(compile, regex))
           ref = basename("${{ github.event.ref }}")
           is_pull_request = not any(pattern.match(ref) for pattern in  patterns)
-          value = f'::set-output name=value::{is_pull_request}'
+          value = '::set-output name=value::%s' % str(is_pull_request)
           print(value)
 
       - if: steps.is_pull_request.outputs.value == 'True'
