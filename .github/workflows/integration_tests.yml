@@ -90,16 +90,28 @@ jobs:
     name: release notes updated
     runs-on: ubuntu-latest
     steps:
-      - name: Check Tag
-        id: check-tag
+      - name: Check if branch is a pull request
+        id: is_pull_request
+        shell: python
         run: |
-          if [[ ${{ github.event.ref }} =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              echo ::set-output name=match::true
-          fi
-      - name: Build
-        if: steps.check-tag.outputs.match == 'true'
-        run: |
-          echo "Tag is a match"
+          from os.path import basename
+          from re import compile
+
+          regex =[
+            '^main?',
+            '^v\d+\.\d+\.\d+$',
+            '^dep-update-[a-f0-9]{7}$',
+          ]
+
+          patterns = list(map(compile, regex))
+          ref = basename("${{ github.event.ref }}")
+          is_pull_request = not any(pattern.match(ref) for pattern in  patterns)
+          value = f'::set-output name=value::{is_pull_request}'
+          print(value)
+
+      - if: steps.is_pull_request.outputs.value == 'True'
+        name: Check if release notes has been updatedx
+        run: echo "Checking release notes"
 
   # unit_tests:
   #   name: ${{ matrix.python_version }} unit tests ${{ matrix.optional_libraries }}
