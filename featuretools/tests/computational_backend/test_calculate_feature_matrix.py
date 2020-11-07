@@ -1828,3 +1828,32 @@ def test_calc_feature_matrix_with_cutoff_df_and_instance_ids(es):
 
     feature_matrix = to_pandas(feature_matrix)
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()
+
+
+def test_calculate_feature_matrix_returns_default_values():
+    transactions = pd.DataFrame({
+        "id": [1, 2, 3, 4],
+        "session_id": ["a", "a", "b", "c"],
+        "value": [1, 1, 1, 1]
+    })
+
+    sessions = pd.DataFrame({
+        "id": ["a", "b"]
+    })
+
+    es = ft.EntitySet()
+    es.entity_from_dataframe(entity_id="transactions",
+                             dataframe=transactions,
+                             index="id")
+    es.entity_from_dataframe(entity_id="sessions",
+                             dataframe=sessions,
+                             index="id")
+
+    es.add_relationship(ft.Relationship(es["sessions"]["id"], es["transactions"]["session_id"]))
+
+    sum_features = ft.Feature(es["transactions"]["value"], parent_entity=es["sessions"], primitive=Sum)
+    sessions_sum = ft.Feature(sum_features, entity=es["transactions"])
+
+    fm = ft.calculate_feature_matrix(features=[sessions_sum], entityset=es)
+    assert(4 in fm.index)
+    assert(fm.loc[4, 'sessions.SUM(transactions.value)'] == 0)
