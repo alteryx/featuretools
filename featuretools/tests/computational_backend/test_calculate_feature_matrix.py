@@ -869,8 +869,9 @@ def test_empty_path_approximate_full(pd_es):
                                               approximate=Timedelta(10, 's'),
                                               cutoff_time=cutoff_time)
     vals1 = feature_matrix[dfeat.get_name()].tolist()
-    assert np.isnan(vals1[0])
-    assert np.isnan(vals1[1])
+    
+    assert(vals1[0] == 0)
+    assert(vals1[1] == 0)
     assert feature_matrix[agg_feat.get_name()].tolist() == [5, 1]
 
 # todo: do we need to test this situation?
