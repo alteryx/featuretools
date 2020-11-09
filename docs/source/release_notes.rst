@@ -7,13 +7,14 @@ Release Notes
     * Enhancements
         * Allow variable descriptions to be set directly on variable (:pr:`1207`)
         * Add ability to add feature description captions to feature lineage graphs (:pr:`1212`)
+        * Allows user to pass in the snakecase string of a custom primitive's class name into DFS(:pr:`1218`)
     * Fixes
     * Changes
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`
+    :user:`tuethan1999`, :user:`frances-h`
 
 **v0.21.0 Oct 30, 2020**
     * Enhancements
