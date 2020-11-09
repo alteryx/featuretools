@@ -3,16 +3,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from featuretools.utils.gen_utils import camel_to_snake
-
-
-class ClassNameDescriptor(object):
-    """Descriptor to convert a class's name from camelcase to snakecase
-    """
-
-    def __get__(self, instance, class_):
-        return camel_to_snake(class_.__name__)
-
+from featuretools.utils.gen_utils import ClassNameDescriptor
 
 class Variable(object):
     """Represent a variable in an entity
