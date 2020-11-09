@@ -10,10 +10,11 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Removed link to unused feedback board (:pr:`1220`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`
+    :user:`frances-h`, :user:`kmax12`
 
 **v0.21.0 Oct 30, 2020**
     * Enhancements
