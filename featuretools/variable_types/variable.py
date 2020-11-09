@@ -5,6 +5,7 @@ import pandas as pd
 
 from featuretools.utils.gen_utils import ClassNameDescriptor
 
+
 class Variable(object):
     """Represent a variable in an entity
 

@@ -22,11 +22,11 @@ from featuretools.primitives import (
     make_agg_primitive,
     make_trans_primitive
 )
+from featuretools.primitives.base import AggregationPrimitive
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none
-from featuretools.variable_types import Numeric, Discrete
-from featuretools.primitives.base import AggregationPrimitive
+from featuretools.variable_types import Discrete, Numeric
 
 ks = import_or_none('databricks.koalas')
 

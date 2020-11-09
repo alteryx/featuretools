@@ -6,8 +6,8 @@ import pandas as pd
 from featuretools import config
 from featuretools.primitives.base.utils import signature
 from featuretools.utils.description_utils import convert_to_nth
-from featuretools.utils.gen_utils import Library
-from featuretools.utils.gen_utils import ClassNameDescriptor
+from featuretools.utils.gen_utils import ClassNameDescriptor, Library
+
 
 class PrimitiveBase(object):
     """Base class for all primitives."""

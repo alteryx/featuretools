@@ -25,9 +25,12 @@ from featuretools.primitives import (
     get_default_transform_primitives,
     get_transform_primitives
 )
+from featuretools.primitives.base import (
+    make_agg_primitive,
+    make_trans_primitive
+)
 from featuretools.primitives.utils import _get_descriptions
 from featuretools.utils.gen_utils import Library
-from featuretools.primitives.base import make_agg_primitive, make_trans_primitive
 from featuretools.variable_types import Numeric
 
 
