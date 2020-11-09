@@ -10,10 +10,11 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Update footer with Alteryx Innovation Labs (:pr:`1221`)
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`
+    :user:`frances-h`, :user:`gsheni`
 
 **v0.21.0 Oct 30, 2020**
     * Enhancements
