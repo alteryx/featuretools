@@ -11,9 +11,9 @@ from featuretools.primitives.base import (
     TransformPrimitive
 )
 from featuretools.utils.gen_utils import Library, find_descendents
-from featuretools.primitives.base import AggregationPrimitive, TransformPrimitive
-
 # returns all aggregation primitives, regardless of compatibility
+
+
 def get_aggregation_primitives():
     return {primitive.type_string: primitive for primitive in find_descendents(AggregationPrimitive)
             if primitive != AggregationPrimitive}

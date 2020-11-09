@@ -480,14 +480,15 @@ def test_warns_with_unused_custom_primitives(pd_es):
             agg_primitives=agg_primitives,
             max_depth=1)
 
+
 def test_type_string_custom_primitives(pd_es):
     def above_ten(column):
         return column > 10
 
-    AboveTen = make_trans_primitive(function=above_ten,
-                                    name='above_ten',
-                                    input_types=[Numeric],
-                                    return_type=Numeric)
+    make_trans_primitive(function=above_ten,
+                         name='above_ten',
+                         input_types=[Numeric],
+                         return_type=Numeric)
     trans_primitives = ['above_ten']
     dfs(entityset=pd_es,
         target_entity='stores',
@@ -497,9 +498,9 @@ def test_type_string_custom_primitives(pd_es):
     def max_above_ten(column):
         return max(column) > 10
 
-    MaxAboveTen = make_agg_primitive(function=max_above_ten,
-                                     input_types=[Numeric],
-                                     return_type=Numeric)
+    make_agg_primitive(function=max_above_ten,
+                       input_types=[Numeric],
+                       return_type=Numeric)
 
     agg_primitives = ['max_above_ten']
 
@@ -513,18 +514,20 @@ def test_type_string_custom_primitives(pd_es):
         input_types = [Discrete]
         return_type = Numeric
         default_value = 0
+
         def __init__(self, skipna=True):
             self.skipna = skipna
+
         def get_function(self):
             def average_count_per_unique(x):
                 return 1
             return average_count_per_unique
-    
+
     dfs(entityset=pd_es,
         target_entity='stores',
         agg_primitives=['test_aggregation_primitive'],
         max_depth=2)
-    
+
 
 def test_calls_progress_callback(entities, relationships):
     class MockProgressCallback:
