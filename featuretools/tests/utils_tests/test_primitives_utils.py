@@ -27,6 +27,8 @@ from featuretools.primitives import (
 )
 from featuretools.primitives.utils import _get_descriptions
 from featuretools.utils.gen_utils import Library
+from featuretools.primitives.base import make_agg_primitive, make_trans_primitive
+from featuretools.variable_types import Numeric, Datetime, DatetimeTimeIndex, Timedelta
 
 
 def test_list_primitives_order():
@@ -46,6 +48,22 @@ def test_list_primitives_order():
     assert 'aggregation' in types
     assert 'transform' in types
 
+def test_custom_primitives():
+    def pd_time_since(array, moment):
+        return (moment - pd.DatetimeIndex(array)).values
+
+    CustomMax = make_agg_primitive(lambda x: max(x),
+                               name="CustomMax",
+                               input_types=[Numeric],
+                               return_type=Numeric)
+    TimeSince = make_trans_primitive(function=pd_time_since,
+                                    input_types=[[DatetimeTimeIndex], [Datetime]],
+                                    return_type=Timedelta,
+                                    uses_calc_time=True,
+                                    name="time_since")
+    breakpoint()
+    assert 'custom_max' in get_aggregation_primitives()
+    assert 'time_since' in get_transform_primitives()
 
 def test_descriptions():
     primitives = {NumCharacters: 'Calculates the number of characters in a string.',

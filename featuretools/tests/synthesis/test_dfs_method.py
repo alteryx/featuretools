@@ -479,6 +479,34 @@ def test_warns_with_unused_custom_primitives(pd_es):
             agg_primitives=agg_primitives,
             max_depth=1)
 
+def test_type_string_custom_primitives(pd_es):
+    def above_ten(column):
+        return column > 10
+
+    AboveTen = make_trans_primitive(function=above_ten,
+                                    name='above_ten',
+                                    input_types=[Numeric],
+                                    return_type=Numeric)
+    trans_primitives = ['above_ten']
+    dfs(entityset=pd_es,
+        target_entity='stores',
+        trans_primitives=trans_primitives,
+        max_depth=1)
+
+    def max_above_ten(column):
+        return max(column) > 10
+
+    MaxAboveTen = make_agg_primitive(function=max_above_ten,
+                                     input_types=[Numeric],
+                                     return_type=Numeric)
+
+    agg_primitives = ['max_above_ten']
+
+    dfs(entityset=pd_es,
+        target_entity='stores',
+        agg_primitives=agg_primitives,
+        max_depth=1)
+
 
 def test_calls_progress_callback(entities, relationships):
     class MockProgressCallback:
