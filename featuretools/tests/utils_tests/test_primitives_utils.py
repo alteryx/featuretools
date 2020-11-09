@@ -61,7 +61,6 @@ def test_custom_primitives():
                                     return_type=Timedelta,
                                     uses_calc_time=True,
                                     name="time_since")
-    breakpoint()
     assert 'custom_max' in get_aggregation_primitives()
     assert 'time_since' in get_transform_primitives()
 
