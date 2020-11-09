@@ -7,7 +7,7 @@ from featuretools import config
 from featuretools.primitives.base.utils import signature
 from featuretools.utils.description_utils import convert_to_nth
 from featuretools.utils.gen_utils import Library
-
+from featuretools.utils.gen_utils import ClassNameDescriptor
 
 class PrimitiveBase(object):
     """Base class for all primitives."""
@@ -41,6 +41,8 @@ class PrimitiveBase(object):
     # `nth_slice` keyword argument. Multi-output primitives can use a list to
     # differentiate between the base description and a slice description.
     description_template = None
+    #: (string): type string of primitive derived from class name.
+    type_string = ClassNameDescriptor()
 
     def __init__(self):
         pass
