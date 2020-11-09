@@ -428,7 +428,7 @@ class IsIn(TransformPrimitive):
         >>> is_in(['string', 10.5, False]).tolist()
         [True, False, True]
     """
-    name = "isin"
+    name = "is_in"
     input_types = [Variable]
     return_type = Boolean
     compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
