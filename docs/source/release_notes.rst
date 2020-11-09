@@ -14,7 +14,7 @@ Release Notes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`kmax12`
+    :user:`frances-h`, :user:`kmax12` 
 
 **v0.21.0 Oct 30, 2020**
     * Enhancements
