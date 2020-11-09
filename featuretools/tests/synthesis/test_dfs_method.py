@@ -25,7 +25,8 @@ from featuretools.primitives import (
 from featuretools.synthesis import dfs
 from featuretools.tests.testing_utils import to_pandas
 from featuretools.utils.gen_utils import import_or_none
-from featuretools.variable_types import Numeric
+from featuretools.variable_types import Numeric, Discrete
+from featuretools.primitives.base import AggregationPrimitive
 
 ks = import_or_none('databricks.koalas')
 
@@ -505,8 +506,25 @@ def test_type_string_custom_primitives(pd_es):
     dfs(entityset=pd_es,
         target_entity='stores',
         agg_primitives=agg_primitives,
-        max_depth=1)
+        max_depth=2)
 
+    class TestAggregationPrimitive(AggregationPrimitive):
+        name = "test_aggregation_primitive"
+        input_types = [Discrete]
+        return_type = Numeric
+        default_value = 0
+        def __init__(self, skipna=True):
+            self.skipna = skipna
+        def get_function(self):
+            def average_count_per_unique(x):
+                return 1
+            return average_count_per_unique
+    
+    dfs(entityset=pd_es,
+        target_entity='stores',
+        agg_primitives=['test_aggregation_primitive'],
+        max_depth=2)
+    
 
 def test_calls_progress_callback(entities, relationships):
     class MockProgressCallback:
