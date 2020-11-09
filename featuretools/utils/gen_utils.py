@@ -45,6 +45,14 @@ def find_descendents(cls):
             yield c
 
 
+class ClassNameDescriptor(object):
+    """Descriptor to convert a class's name from camelcase to snakecase
+    """
+
+    def __get__(self, instance, class_):
+        return camel_to_snake(class_.__name__)
+
+
 def check_schema_version(cls, cls_type):
     if isinstance(cls_type, str):
         if cls_type == 'entityset':

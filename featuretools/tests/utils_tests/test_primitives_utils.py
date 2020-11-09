@@ -25,8 +25,13 @@ from featuretools.primitives import (
     get_default_transform_primitives,
     get_transform_primitives
 )
+from featuretools.primitives.base import (
+    make_agg_primitive,
+    make_trans_primitive
+)
 from featuretools.primitives.utils import _get_descriptions
 from featuretools.utils.gen_utils import Library
+from featuretools.variable_types import Numeric
 
 
 def test_list_primitives_order():
@@ -45,6 +50,20 @@ def test_list_primitives_order():
     types = df['type'].values
     assert 'aggregation' in types
     assert 'transform' in types
+
+
+def test_custom_primitives():
+    make_agg_primitive(lambda x: max(x),
+                       name="CustomMax",
+                       input_types=[Numeric],
+                       return_type=Numeric)
+    make_trans_primitive(function=lambda x: x,
+                         input_types=[Numeric],
+                         return_type=Numeric,
+                         uses_calc_time=True,
+                         name="IdentityFunction")
+    assert 'custom_max' in get_aggregation_primitives()
+    assert 'identity_function' in get_transform_primitives()
 
 
 def test_descriptions():

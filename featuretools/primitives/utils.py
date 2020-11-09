@@ -12,31 +12,18 @@ from featuretools.primitives.base import (
 )
 from featuretools.utils.gen_utils import Library, find_descendents
 
-
 # returns all aggregation primitives, regardless of compatibility
+
+
 def get_aggregation_primitives():
-    aggregation_primitives = set([])
-    for attribute_string in dir(featuretools.primitives):
-        attribute = getattr(featuretools.primitives, attribute_string)
-        if isclass(attribute):
-            if issubclass(attribute,
-                          featuretools.primitives.AggregationPrimitive):
-                if attribute.name:
-                    aggregation_primitives.add(attribute)
-    return {prim.name.lower(): prim for prim in aggregation_primitives}
+    return {primitive.type_string: primitive for primitive in find_descendents(AggregationPrimitive)
+            if primitive != AggregationPrimitive}
 
 
 # returns all transform primitives, regardless of compatibility
 def get_transform_primitives():
-    transform_primitives = set([])
-    for attribute_string in dir(featuretools.primitives):
-        attribute = getattr(featuretools.primitives, attribute_string)
-        if isclass(attribute):
-            if issubclass(attribute,
-                          featuretools.primitives.TransformPrimitive):
-                if attribute.name:
-                    transform_primitives.add(attribute)
-    return {prim.name.lower(): prim for prim in transform_primitives}
+    return {primitive.type_string: primitive for primitive in find_descendents(TransformPrimitive)
+            if primitive != TransformPrimitive}
 
 
 def list_primitives():
