@@ -18,7 +18,7 @@ Conversation happens in the following places:
     Stack Overflow where answers are more searchable by other users.
 
 .. _`StackOverflow`: http://stackoverflow.com/questions/tagged/featuretools
-.. _`Github issue tracker`: https://github.com/FeatureLabs/featuretools/issues
+.. _`Github issue tracker`: https://github.com/alteryx/featuretools/issues
 .. _`Slack`: https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTQ1MjZlOWFmZDk2YzAwMjEzNTkwZTZkN2NmOGFjOGI4YzE5OGMyMGM5NGIxNTE4NjkzYWI3OWEwZjkyZGExYmQ
 
 

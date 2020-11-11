@@ -10,7 +10,7 @@ We need to upload a featuretools package to test with the conda recipe
     ```
 2. Update version number in `setup.py`, `featuretools/version.py`, `featuretools/tests/test_version.py` to v0.13.3.dev0 and push branch to repo
 3. Publish a new release of featuretools on Github.
-    1. Go to the [releases page](https://github.com/FeatureLabs/featuretools/releases/) on Github
+    1. Go to the [releases page](https://github.com/alteryx/featuretools/releases/) on Github
     2. Click "Draft a new release"
     3. For the target, choose the new branch (v0.13.3.dev)
     4. For the tag, use the new version number (v0.13.3.dev0)
@@ -124,10 +124,10 @@ Fields to update in `recipe/meta.yaml` of feedstock repo:
 
 
 #### Create Release PR
-A [release pr](https://github.com/FeatureLabs/featuretools/pull/856) should have the version number as the title and the release notes for that release as the PR body text. The contributors list is not necessary. The special sphinx docs syntax (:pr:\`547\`) needs to be changed to github link syntax (#547).
+A [release pr](https://github.com/alteryx/featuretools/pull/856) should have the version number as the title and the release notes for that release as the PR body text. The contributors list is not necessary. The special sphinx docs syntax (:pr:\`547\`) needs to be changed to github link syntax (#547).
 
 #### Create Github Release
-After the release pull request has been merged into the main branch, it is time draft the github release. [Example release](https://github.com/FeatureLabs/featuretools/releases/tag/v0.13.3)
+After the release pull request has been merged into the main branch, it is time draft the github release. [Example release](https://github.com/alteryx/featuretools/releases/tag/v0.13.3)
 * The target should be the main branch
 * The tag should be the version number with a v prefix (e.g. v0.13.3)
 * Release title is the same as the tag
