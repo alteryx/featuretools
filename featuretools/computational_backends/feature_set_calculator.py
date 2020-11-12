@@ -734,6 +734,12 @@ class FeatureSetCalculator(object):
                                 for name in f.get_feature_names()}
             fillna_dict.update(feature_defaults)
 
+        # TODO: Clean way for this call
+        for c, v in fillna_dict.items():
+            if v is np.nan:
+                if frame[c].dtype in [np.int32, np.int64]:
+                    fillna_dict[c] = None
+
         frame = frame.fillna(fillna_dict)
 
         # convert boolean dtypes to floats as appropriate

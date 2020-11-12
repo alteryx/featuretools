@@ -814,7 +814,7 @@ class And(TransformPrimitive):
     input_types = [Boolean, Boolean]
     return_type = Boolean
     commutative = True
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "whether {} and {} are true"
 
     def get_function(self):

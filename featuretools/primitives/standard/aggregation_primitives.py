@@ -94,14 +94,14 @@ class Mean(AggregationPrimitive):
     name = "mean"
     input_types = [Numeric]
     return_type = Numeric
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "the average of {}"
 
     def __init__(self, skipna=True):
         self.skipna = skipna
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type in [Library.DASK, Library.KOALAS]:
+        if agg_type in [Library.DASK, Library.KOALAS, Library.CUDF]:
             return 'mean'
 
         if self.skipna:
@@ -151,11 +151,11 @@ class Min(AggregationPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     stack_on_self = False
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "the minimum of {}"
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type in [Library.DASK, Library.KOALAS]:
+        if agg_type in [Library.DASK, Library.KOALAS, Library.CUDF]:
             return 'min'
 
         return np.min
@@ -173,11 +173,11 @@ class Max(AggregationPrimitive):
     input_types = [Numeric]
     return_type = Numeric
     stack_on_self = False
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "the maximum of {}"
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type in [Library.DASK, Library.KOALAS]:
+        if agg_type in [Library.DASK, Library.KOALAS, Library.CUDF]:
             return 'max'
 
         return np.max
