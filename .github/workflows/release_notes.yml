@@ -1,0 +1,40 @@
+on: pull_request
+
+name: Relase Notes
+jobs:
+  release_notes_updated:
+    name: Check if the release notes were updated
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for development branch
+        id: is_development
+        shell: python
+        run: |
+          from os.path import basename
+          from re import compile
+
+          regex =[
+            '^main?',
+            '^v\d+\.\d+\.\d+$',
+            '^dep-update-[a-f0-9]{7}$',
+          ]
+
+          patterns = list(map(compile, regex))
+          ref = basename("${{ github.event.ref }}")
+          is_development = not any(pattern.match(ref) for pattern in  patterns)
+          value = '::set-output name=value::%s' % str(is_development)
+          print(value)
+      - if: steps.is_development.outputs.value == 'True'
+        name: Checkout repository
+        uses: actions/checkout@v2
+      - if: steps.is_development.outputs.value == 'True'
+        name: Get the PR number
+        id: pr_number
+        shell: python
+        run: |
+          from os.path import basename, dirname
+          pr = basename(dirname('${{ github.event.ref }}')) 
+          print('::set-output name=value::%s' % pr)
+      - if: steps.is_development.outputs.value == 'True'
+        name: Check if release notes has been updated
+        run: cat docs/source/release_notes.rst | grep ":pr:\`${{ steps.pr_number.outputs.value }}\`"
