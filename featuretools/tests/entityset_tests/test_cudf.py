@@ -10,8 +10,7 @@ def test_cudf_basic():
 
 
     df = cudf.DataFrame({"id": id, "values": values})
-    #dask_df = dd.from_pandas(df, npartitions=2)
-    es = ft.EntitySet(id="dask_es")
+    es = ft.EntitySet(id="cudf_es")
 
     es = es.entity_from_dataframe(entity_id="cudf_entity",
                                 dataframe=df,
@@ -23,5 +22,7 @@ def test_cudf_basic():
     feature_matrix, features = ft.dfs(entityset=es,
                                     target_entity="cudf_entity",
                                     trans_primitives=["negate"])
+
+
 
 test_cudf_basic()

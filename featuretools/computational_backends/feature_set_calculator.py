@@ -23,6 +23,7 @@ from featuretools.utils.gen_utils import (
     import_or_none,
     is_instance
 )
+import cudf
 
 ks = import_or_none('databricks.koalas')
 
@@ -639,6 +640,8 @@ class FeatureSetCalculator(object):
                         func = f.get_function(agg_type=Library.DASK)
                     elif is_instance(base_frame, ks, 'DataFrame'):
                         func = f.get_function(agg_type=Library.KOALAS)
+                    elif is_instance(base_frame, cudf, 'DataFrame'):
+                        func = f.get_function(agg_type=Library.CUDF)
                     else:
                         func = f.get_function()
 
@@ -680,6 +683,7 @@ class FeatureSetCalculator(object):
                 # to silence pandas warning about ambiguity we explicitly pass
                 # the column (in actuality grouping by both index and group would
                 # work)
+
                 to_merge = base_frame.groupby(base_frame[groupby_var],
                                               observed=True,
                                               sort=False).apply(wrap)
@@ -696,7 +700,9 @@ class FeatureSetCalculator(object):
                 # to silence pandas warning about ambiguity we explicitly pass
                 # the column (in actuality grouping by both index and group would
                 # work)
-                if is_instance(base_frame, (dd, ks), 'DataFrame'):
+                print(to_agg)
+                print(groupby_var)
+                if is_instance(base_frame, (dd, ks, cudf), 'DataFrame'):
                     to_merge = base_frame.groupby(groupby_var).agg(to_agg)
 
                 else:
@@ -712,7 +718,7 @@ class FeatureSetCalculator(object):
                     categories = pdtypes.CategoricalDtype(categories=frame.index.categories)
                     to_merge.index = to_merge.index.astype(object).astype(categories)
 
-                if is_instance(frame, (dd, ks), 'DataFrame'):
+                if is_instance(frame, (dd, ks, cudf), 'DataFrame'):
                     frame = frame.merge(to_merge, left_on=parent_merge_var, right_index=True, how='left')
                 else:
                     frame = pd.merge(left=frame, right=to_merge,

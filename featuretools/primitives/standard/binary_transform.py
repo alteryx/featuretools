@@ -30,9 +30,10 @@ class GreaterThan(TransformPrimitive):
     name = "greater_than"
     input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
-    compatibility = [Library.PANDAS, Library.DASK]
+    compatibility = [Library.PANDAS, Library.DASK, Library.CUDF]
     description_template = "whether {} is greater than {}"
-
+    
+    #TODO: Fix later
     def get_function(self):
         return np.greater
 
@@ -56,7 +57,7 @@ class GreaterThanScalar(TransformPrimitive):
     name = "greater_than_scalar"
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
 
     def __init__(self, value=0):
         self.value = value
@@ -87,7 +88,7 @@ class GreaterThanEqualTo(TransformPrimitive):
     name = "greater_than_equal_to"
     input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "whether {} is greater than or equal to {}"
 
     def get_function(self):
@@ -113,7 +114,7 @@ class GreaterThanEqualToScalar(TransformPrimitive):
     name = "greater_than_equal_to_scalar"
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
 
     def __init__(self, value=0):
         self.value = value
@@ -144,7 +145,7 @@ class LessThan(TransformPrimitive):
     name = "less_than"
     input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "whether {} is less than {}"
 
     def get_function(self):
@@ -170,7 +171,7 @@ class LessThanScalar(TransformPrimitive):
     name = "less_than_scalar"
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
 
     def __init__(self, value=0):
         self.value = value
@@ -201,7 +202,7 @@ class LessThanEqualTo(TransformPrimitive):
     name = "less_than_equal_to"
     input_types = [[Numeric, Numeric], [Datetime, Datetime], [Ordinal, Ordinal]]
     return_type = Boolean
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "whether {} is less than or equal to {}"
 
     def get_function(self):
@@ -227,7 +228,7 @@ class LessThanEqualToScalar(TransformPrimitive):
     name = "less_than_equal_to_scalar"
     input_types = [[Numeric], [Datetime], [Ordinal]]
     return_type = Boolean
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
 
     def __init__(self, value=0):
         self.value = value
@@ -259,7 +260,7 @@ class Equal(TransformPrimitive):
     input_types = [Variable, Variable]
     return_type = Boolean
     commutative = True
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "whether {} equals {}"
 
     def get_function(self):

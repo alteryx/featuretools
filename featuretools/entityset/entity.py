@@ -4,6 +4,7 @@ import warnings
 import dask.dataframe as dd
 import numpy as np
 import pandas as pd
+import cudf
 import pandas.api.types as pdtypes
 
 from featuretools import variable_types as vtypes
@@ -524,7 +525,7 @@ class Entity(object):
         # convert iterable to pd.Series
         if isinstance(instance_vals, pd.DataFrame):
             out_vals = instance_vals[variable_id]
-        elif is_instance(instance_vals, (pd, dd, ks), 'Series'):
+        elif is_instance(instance_vals, (pd, dd, ks, cudf), 'Series'):
             out_vals = instance_vals.rename(variable_id)
         else:
             out_vals = pd.Series(instance_vals)

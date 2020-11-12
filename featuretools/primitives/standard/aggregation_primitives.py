@@ -63,11 +63,11 @@ class Sum(AggregationPrimitive):
     stack_on_self = False
     stack_on_exclude = [Count]
     default_value = 0
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = 'the sum of {}'
 
     def get_function(self, agg_type=Library.PANDAS):
-        if agg_type in [Library.DASK, Library.KOALAS]:
+        if agg_type in [Library.DASK, Library.KOALAS, Library.CUDF]:
             return 'sum'
 
         return np.sum
@@ -200,7 +200,7 @@ class NumUnique(AggregationPrimitive):
     input_types = [Discrete]
     return_type = Numeric
     stack_on_self = False
-    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS]
+    compatibility = [Library.PANDAS, Library.DASK, Library.KOALAS, Library.CUDF]
     description_template = "the number of unique elements in {}"
 
     def get_function(self, agg_type=Library.PANDAS):
@@ -222,7 +222,7 @@ class NumUnique(AggregationPrimitive):
 
             return dd.Aggregation(self.name, chunk=chunk, agg=agg, finalize=finalize)
 
-        elif agg_type == Library.KOALAS:
+        elif agg_type in [Library.KOALAS, Library.CUDF]:
             return 'nunique'
 
         return pd.Series.nunique
