@@ -1841,17 +1841,16 @@ def test_calc_feature_matrix_with_cutoff_df_and_instance_ids(es):
     assert (feature_matrix[property_feature.get_name()] == labels).values.all()
 
 
-def test_calculate_feature_matrix_returns_default_values(pd_transactions_defaultvalue_es):
-    sum_features = ft.Feature(pd_transactions_defaultvalue_es["transactions"]["value"],
-                              parent_entity=pd_transactions_defaultvalue_es["sessions"], primitive=Sum)
+def test_calculate_feature_matrix_returns_default_values(transactions_defaultvalue_es):
+    sum_features = ft.Feature(transactions_defaultvalue_es["transactions"]["value"],
+                              parent_entity=transactions_defaultvalue_es["sessions"], primitive=Sum)
     sessions_sum = ft.Feature(sum_features,
-                              entity=pd_transactions_defaultvalue_es["transactions"])
+                              entity=transactions_defaultvalue_es["transactions"])
 
     feature_matrix = ft.calculate_feature_matrix(features=[sessions_sum],
-                                                 entityset=pd_transactions_defaultvalue_es)
+                                                 entityset=transactions_defaultvalue_es)
 
-    feature_matrix = to_pandas(feature_matrix)
+    feature_matrix = to_pandas(feature_matrix, index='id', sort_index=True)
     expected_values = [2.0, 2.0, 1.0, 0.0]
 
-    assert (4 in feature_matrix.index)
     assert (feature_matrix[sessions_sum.get_name()] == expected_values).values.all()

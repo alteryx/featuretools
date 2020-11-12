@@ -189,7 +189,7 @@ def pd_transactions_defaultvalue_es():
 def dask_transactions_defaultvalue_es(pd_transactions_defaultvalue_es):
     entities = {}
     for entity in pd_transactions_defaultvalue_es.entities:
-        entities[entity.id] = (dd.from_pandas(entity.df.reset_index(), npartitions=4), entity.index, None, entity.variable_types)
+        entities[entity.id] = (dd.from_pandas(entity.df, npartitions=4), entity.index, None, entity.variable_types)
 
     relationships = [(rel.parent_entity.id,
                       rel.parent_variable.name,
