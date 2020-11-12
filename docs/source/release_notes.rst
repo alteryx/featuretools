@@ -8,12 +8,13 @@ Release Notes
         * Allow variable descriptions to be set directly on variable (:pr:`1207`)
         * Add ability to add feature description captions to feature lineage graphs (:pr:`1212`)
     * Fixes
+        * Calculate direct features use default value if parent missing (:pr:`1217`)
     * Changes
     * Documentation Changes
     * Testing Changes
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`
+    :user:`frances-h`, :user:`seriallazer`
 
 **v0.21.0 Oct 30, 2020**
     * Enhancements
