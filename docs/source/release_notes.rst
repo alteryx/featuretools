@@ -11,10 +11,12 @@ Release Notes
         * Calculate direct features use default value if parent missing (:pr:`1217`)
     * Changes
     * Documentation Changes
+        * Update footer with Alteryx Innovation Labs (:pr:`1221`)
     * Testing Changes
+        * Update release notes check to use new repo url (:pr:`1222`)
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`seriallazer`
+    :user:`frances-h`, :user:`gsheni`, :user:`rwedge`, :user:`seriallazer`
 
 **v0.21.0 Oct 30, 2020**
     * Enhancements
