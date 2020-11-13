@@ -207,7 +207,7 @@ jobs:
         python_version: ["3.6", "3.7", "3.8"]
     steps:
       - name: Setup miniconda
-        uses: conda-incubator/setup-miniconda@v1.7.0
+        uses: conda-incubator/setup-miniconda@v2.0.0
         with:
           auto-update-conda: true
           python-version: ${{ matrix.python_version }}
