@@ -87,7 +87,7 @@ jobs:
   #       run: make lint
 
   release_notes_updated:
-    name: Check if the release notes were updated
+    name: release notes updated
     runs-on: ubuntu-latest
     steps:
       - name: Check for development branch
@@ -118,10 +118,9 @@ jobs:
           url=https://api.github.com/repos/alteryx/featuretools/commits/${{ github.sha }}/pulls
           json=$(curl -H "Accept: application/vnd.github.groot-preview+json" $url)
           number=$(echo $json | jq '.[0].number')
-          if [ -z "${number}" ]; then exit 1; fi
           echo "::set-output name=number::$number"
-      - if: ${{ success() }}
-        name: Check if release notes has been updated
+      - if: ${{ steps.pull_request.outputs.number != 'null' }}
+        name: Check if release notes were updated
         run: cat docs/source/release_notes.rst | grep ":pr:\`${{ steps.pull_request.outputs.number }}\`"
 
   # unit_tests:
