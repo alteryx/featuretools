@@ -8,15 +8,16 @@ Release Notes
         * Allow variable descriptions to be set directly on variable (:pr:`1207`)
         * Add ability to add feature description captions to feature lineage graphs (:pr:`1212`)
     * Fixes
-        * Calculate direct features use default value if parent missing (:pr:`1217`)
+        * Calculate direct features use default value if parent missing (:pr:`1225`)
     * Changes
     * Documentation Changes
+        * Removed link to unused feedback board (:pr:`1220`)
         * Update footer with Alteryx Innovation Labs (:pr:`1221`)
     * Testing Changes
         * Update release notes check to use new repo url (:pr:`1222`)
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`gsheni`, :user:`rwedge`, :user:`seriallazer`
+    :user:`frances-h`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`, :user:`seriallazer`
 
 **v0.21.0 Oct 30, 2020**
     * Enhancements
