@@ -103,11 +103,11 @@ jobs:
           patterns = list(map(compile, regex))
           ref = basename("${{ github.event.ref }}")
           is_dev = not any(pattern.match(ref) for pattern in patterns)
-          print('::set-output name=is_dev::%s' % str(is_dev))
-      - if: steps.branch.outputs.is_dev == 'True'
+          print('::set-output name=is_dev::' + str(is_dev))
+      - if: ${{ steps.branch.outputs.is_dev == 'True' }}
         name: Checkout repository
         uses: actions/checkout@v2
-      - if: steps.branch.outputs.is_dev == 'True'
+      - if: ${{ steps.branch.outputs.is_dev == 'True' }}
         name: Get number of pull request
         id: pull_request
         run: |
@@ -134,8 +134,8 @@ jobs:
           ref = basename("${{ github.event.ref }}")
           is_main = str(bool(main.match(ref)))
           is_release = str(bool(release.match(ref)))
-          print('::set-output name=is_main::%s' % is_main)
-          print('::set-output name=is_release::%s' % is_release)
+          print('::set-output name=is_main::' + is_main)
+          print('::set-output name=is_release::' + is_release)
       - if: ${{ steps.branch.outputs.is_main == 'True' }}
         name: "Trigger premium primitives tests for python 3.6 main"
         run: |
