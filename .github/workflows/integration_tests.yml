@@ -115,11 +115,11 @@ jobs:
         name: Get number of pull request
         id: pull_request
         run: |
-          sudo apt install -q -y jq
           url=https://api.github.com/repos/alteryx/featuretools/commits/${{ github.sha }}/pulls
           json=$(curl -H "Accept: application/vnd.github.groot-preview+json" $url)
           number=$(echo $json | jq '.[0].number')
-          echo '::set-output name=number::$number'
+          echo "::set-output name=number::$number"
+          echo $number
       - if: ${{ success() }}
         name: Check if release notes has been updated
         run: cat docs/source/release_notes.rst | grep ":pr:\`${{ steps.pull_request.outputs.number }}\`"
