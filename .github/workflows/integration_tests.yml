@@ -1,4 +1,7 @@
-on: push
+on:
+  push:
+  pull_request:
+    types: [opened]
 
 name: Integration Tests
 jobs:
