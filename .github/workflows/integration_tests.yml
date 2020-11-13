@@ -115,7 +115,7 @@ jobs:
         name: Get number of pull request
         id: pull_request
         run: |
-          url=https://api.github.com/repos/alteryx/featuretools/commits/${{ github.sha }}/pulls
+          url=https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/pulls
           json=$(curl -H "Accept: application/vnd.github.groot-preview+json" $url)
           number=$(echo $json | jq '.[0].number')
           echo "::set-output name=number::$number"
