@@ -154,7 +154,7 @@ class FeatureSetCalculator(object):
         for feat in self.feature_set.target_features:
             column_list.extend(feat.get_feature_names())
 
-        if is_instance(df, (dd, ks), 'DataFrame'):
+        if is_instance(df, (dd, ks, cudf), 'DataFrame'):
             column_list.extend([target_entity.index])
 
         return df[column_list]
@@ -696,12 +696,6 @@ class FeatureSetCalculator(object):
             # Apply the aggregate functions to generate a new dataframe, and merge
             # it with the existing one
             if len(to_agg):
-                # groupby_var can be both the name of the index and a column,
-                # to silence pandas warning about ambiguity we explicitly pass
-                # the column (in actuality grouping by both index and group would
-                # work)
-                print(to_agg)
-                print(groupby_var)
                 if is_instance(base_frame, (dd, ks, cudf), 'DataFrame'):
                     to_merge = base_frame.groupby(groupby_var).agg(to_agg)
 
