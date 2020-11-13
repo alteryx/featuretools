@@ -14,9 +14,10 @@ Release Notes
         * Update footer with Alteryx Innovation Labs (:pr:`1221`)
     * Testing Changes
         * Update release notes check to use new repo url (:pr:`1222`)
+        * Added integration tests as a github action (:pr:`1226`)
 
     Thanks to the following people for contributing to this release:
-    :user:`frances-h`, :user:`gsheni`, :user:`kmax12`, :user:`rwedge`
+    :user:`frances-h`, :user:`gsheni`, :user:`jeff-hernandez`, :user:`kmax12`, :user:`rwedge`
 
 **v0.21.0 Oct 30, 2020**
     * Enhancements
