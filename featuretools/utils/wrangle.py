@@ -165,3 +165,11 @@ def _is_url(string):
     Returns a boolean.
     '''
     return 'http' in string
+
+
+def _is_tar(string):
+    '''
+    Checks if the given string is a
+    Returns a boolean.
+    '''
+    return string.endswith(".tar")

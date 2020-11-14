@@ -180,8 +180,8 @@ def read_data_description(path):
 
     path = os.path.abspath(path)
     assert os.path.exists(path), '"{}" does not exist'.format(path)
-    file = os.path.join(path, 'data_description.json')
-    with open(file, 'r') as file:
+    filepath = os.path.join(path, 'data_description.json')
+    with open(filepath, 'r') as file:
         description = json.load(file)
     description['path'] = path
     return description
@@ -212,5 +212,13 @@ def read_entityset(path, profile_name=None, **kwargs):
             data_description = read_data_description(tmpdir)
             return description_to_entityset(data_description, **kwargs)
     else:
-        data_description = read_data_description(path)
-        return description_to_entityset(data_description, **kwargs)
+        if tarfile.is_tarfile(path):
+            with tempfile.TemporaryDirectory() as tmpdir:
+                file_path = os.path.join(tmpdir, "temporary_es")
+                with tarfile.open(str(path)) as tar:
+                    tar.extractall(path=file_path)
+                data_description = read_data_description(file_path)
+                return description_to_entityset(data_description, **kwargs)
+        else:
+            data_description = read_data_description(path)
+            return description_to_entityset(data_description, **kwargs)

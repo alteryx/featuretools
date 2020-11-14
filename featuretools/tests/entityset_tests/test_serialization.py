@@ -1,5 +1,7 @@
 import json
 import os
+import tempfile
+from urllib.request import urlretrieve
 
 import boto3
 import pandas as pd
@@ -370,6 +372,33 @@ def test_serialize_subdirs_not_removed(es, tmpdir):
     assert os.path.exists(str(test_dir))
     with open(str(write_path.join('data_description.json')), 'r') as f:
         assert '__SAMPLE_TEXT__' not in json.load(f)
+
+
+def test_deserialize_local_tar(es):
+    # from featuretools import read_entityset
+    # from urllib.request import urlretrieve
+
+    # TEST_FILE = "test_serialization_data_entityset_schema_4.0.0.tar"
+    # URL = "https://featuretools-static.s3.amazonaws.com/" + TEST_FILE
+
+    # # download from Link and save at current directory
+    # local_folder_filepath = "test_serialization_data_entityset_schema.tar"
+    # urlretrieve(URL, filename=local_folder_filepath)
+
+    # link_es = read_entityset(URL)
+    # local_es = read_entityset(local_folder_filepath)
+
+    # assert local_es.__eq__(link_es, deep=True)
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        temp_tar_filepath = os.path.join(tmpdir, TEST_FILE)
+        # temp_folder_filepath = TEST_FILE.replace(".tar", "")
+        urlretrieve(URL, filename=temp_tar_filepath)
+        # import tarfile
+        # with tarfile.open(temp_tar_filepath) as tar:
+        #     tar.extractall(path=temp_folder_filepath)
+        new_es = deserialize.read_entityset(temp_tar_filepath)
+        assert es.__eq__(new_es, deep=True)
 
 
 def test_deserialize_url_csv(es):
