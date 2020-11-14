@@ -240,7 +240,7 @@ def read_entityset(path, profile_name=None, **kwargs):
 
             data_description = read_data_description(tmpdir)
             return description_to_entityset(data_description, **kwargs)
-    elif tarfile.is_tarfile(str(path)):
+    elif str(path).endswith(".tar") and tarfile.is_tarfile(str(path)):
         with tempfile.TemporaryDirectory() as tmpdir:
             file_path = os.path.join(tmpdir, "temporary_es")
             with tarfile.open(str(path)) as tar:
